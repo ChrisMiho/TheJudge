@@ -6,7 +6,18 @@ import {
   transformCards
 } from "../../../../scripts/build-card-metadata.mjs";
 
-type TransformResultCard = {
+/** REQ-174: `cards` is the slim shape actually written to
+ * `cardMetadata.json`; `fullCards` (the pre-slim descriptive block) exists
+ * only so the build can measure the NFR-019 gzipped-size reduction — it is
+ * never written to disk. */
+type SlimTransformResultCard = {
+  cardId: string;
+  name: string;
+  imageUrl: string;
+  colors: string[];
+};
+
+type FullTransformResultCard = {
   cardId: string;
   name: string;
   oracleText: string;
@@ -20,7 +31,8 @@ type TransformResultCard = {
 };
 
 type TransformResult = {
-  cards: TransformResultCard[];
+  cards: SlimTransformResultCard[];
+  fullCards: FullTransformResultCard[];
   stats: {
     parsedCount: number;
     includedCount: number;
@@ -270,8 +282,19 @@ describe("metadata transform policy", () => {
     expect(result.stats.skippedAsDuplicate).toBe(1);
     expect(result.stats.skippedByFilter).toBe(1);
 
+    // REQ-174: `cards` (written to cardMetadata.json) carries only the
+    // up-front tile fields — no descriptive block.
     expect(result.cards.map((card) => card.name)).toEqual(["Brainstorm", "Lightning Bolt"]);
     for (const card of result.cards) {
+      expect(Object.keys(card).sort()).toEqual(["cardId", "colors", "imageUrl", "name"]);
+      expect(card.name.length).toBeGreaterThan(0);
+    }
+
+    // `fullCards` (never written to disk) proves the inclusion/dedup/filter
+    // pipeline and the descriptive-field derivation are still correct — it is
+    // also the NFR-019 gzipped-size comparison's "before" side.
+    expect(result.fullCards.map((card) => card.name)).toEqual(["Brainstorm", "Lightning Bolt"]);
+    for (const card of result.fullCards) {
       expect(Object.keys(card).sort()).toEqual([
         "cardId",
         "colors",
@@ -288,7 +311,7 @@ describe("metadata transform policy", () => {
       expect(card.oracleText.length).toBeGreaterThan(0);
     }
 
-    const brainstorm = result.cards.find((card) => card.name === "Brainstorm");
+    const brainstorm = result.fullCards.find((card) => card.name === "Brainstorm");
     expect(brainstorm).toMatchObject({
       manaCost: "{U}",
       manaValue: 1,
@@ -298,7 +321,7 @@ describe("metadata transform policy", () => {
       subtypes: []
     });
 
-    const lightningBolt = result.cards.find((card) => card.name === "Lightning Bolt");
+    const lightningBolt = result.fullCards.find((card) => card.name === "Lightning Bolt");
     expect(lightningBolt).toMatchObject({
       manaCost: "{R}",
       manaValue: 1,

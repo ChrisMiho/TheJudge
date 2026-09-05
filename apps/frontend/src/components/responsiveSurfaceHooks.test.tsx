@@ -16,14 +16,8 @@ const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
 const cardWithoutImage: CardMetadataItem = {
   cardId: "opt",
   name: "Opt",
-  oracleText: "Scry 1, then draw a card.",
   imageUrl: "",
-  manaCost: "{U}",
-  manaValue: 1,
-  typeLine: "Instant",
   colors: ["U"],
-  supertypes: [],
-  subtypes: []
 };
 
 const messages: ConversationMessage[] = [

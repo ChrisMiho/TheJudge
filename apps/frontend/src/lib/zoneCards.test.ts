@@ -12,22 +12,14 @@ import { DUPLICATE_CARD_MESSAGE } from "./stackLimits";
 const SAMPLE_CARD: CardMetadataItem = {
   cardId: "opt",
   name: "Opt",
-  oracleText: "Scry 1, then draw a card.",
   imageUrl: "",
-  manaCost: "{U}",
-  manaValue: 1,
-  typeLine: "Instant",
   colors: ["U"],
-  supertypes: [],
-  subtypes: []
 };
 
 const BOLT_CARD: CardMetadataItem = {
   ...SAMPLE_CARD,
   cardId: "lightning-bolt",
   name: "Lightning Bolt",
-  oracleText: "Lightning Bolt deals 3 damage to any target.",
-  manaCost: "{R}",
   colors: ["R"]
 };
 
@@ -37,7 +29,22 @@ describe("zoneCards", () => {
     const zoneCard = buildZoneCardFromMetadata(SAMPLE_CARD);
     expect(zoneCard.cardId).toBe("opt");
     expect(zoneCard.name).toBe("Opt");
-    expect(zoneCard.oracleText).toBe("Scry 1, then draw a card.");
+  });
+
+  // REQ-176: the descriptive block is resolved server-side by cardId now — the
+  // zone card carries only identity, the image, and colors, not oracle
+  // text/metadata. `colors` is kept (not stripped from ZoneCardItem the way
+  // the others are): it drives the local identity ring (REQ-058, DEC-078) and
+  // is not sent to ask-ai — buildAskAiRequest strips it from the wire card.
+  it("buildZoneCardFromMetadata does not copy the ask-ai descriptive block, but keeps colors for the local identity ring", () => {
+    const zoneCard = buildZoneCardFromMetadata(SAMPLE_CARD);
+    expect(zoneCard.oracleText).toBeUndefined();
+    expect(zoneCard.manaCost).toBeUndefined();
+    expect(zoneCard.manaValue).toBeUndefined();
+    expect(zoneCard.typeLine).toBeUndefined();
+    expect(zoneCard.colors).toEqual(["U"]);
+    expect(zoneCard.supertypes).toBeUndefined();
+    expect(zoneCard.subtypes).toBeUndefined();
   });
 
   it("buildZoneCardFromMetadata uses scanImageUrl override when provided", () => {
@@ -116,6 +123,29 @@ describe("zoneCards", () => {
     expect(payload.gameContext.zones?.stack?.map((card) => card.cardId)).toEqual(["opt"]);
     expect(payload.gameContext.zones?.battlefield?.map((card) => card.name)).toEqual(["Lightning Bolt"]);
     expect(payload.gameContext.zones).not.toHaveProperty("hand");
+  });
+
+  // REQ-176: `colors` renders the local identity ring but is not card-intrinsic
+  // prompt data the backend needs from the client — it resolves the whole
+  // descriptive block itself by `cardId`, colors included.
+  it("buildAskAiRequest strips colors (and instanceId) from the wire card even though the local ZoneCardItem carries it", () => {
+    const stackCard = buildZoneCardFromMetadata(SAMPLE_CARD);
+    expect(stackCard.colors).toEqual(["U"]);
+    const ctx = {
+      playerCount: 2,
+      players: [
+        { label: "Player 1" as const, lifeTotal: 20 },
+        { label: "Player 2" as const, lifeTotal: 20 }
+      ],
+      turnPhase: "main_1" as const,
+      selectedZones: ["stack"] as ZoneId[],
+      zones: { stack: [stackCard] }
+    };
+
+    const payload = buildAskAiRequest("What resolves?", ctx);
+    const wireCard = payload.gameContext.zones?.stack?.[0];
+    expect(wireCard).not.toHaveProperty("colors");
+    expect(wireCard).not.toHaveProperty("instanceId");
   });
 });
 });

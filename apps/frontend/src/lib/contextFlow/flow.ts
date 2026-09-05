@@ -24,10 +24,14 @@ export type ZoneAskAiPayload = {
   conversationHistory?: ConversationMessage[];
 };
 
+/** Identity-only wire shape for an attached lookup card (REQ-176): the
+ * descriptive block is resolved server-side by cardId, not sent. */
+export type LookupWireCard = Pick<CardMetadataItem, "cardId" | "name" | "imageUrl">;
+
 export type LookupAskAiPayload = {
   mode: "lookup";
   question: string;
-  cards?: CardMetadataItem[];
+  cards?: LookupWireCard[];
   conversationHistory?: ConversationMessage[];
 };
 
@@ -119,10 +123,13 @@ export function buildAskAiRequest(question: string, gameContext: GameContext): Z
   for (const zoneId of CANONICAL_ZONE_ORDER) {
     const cards = rawZones[zoneId];
     if (cards && cards.length > 0) {
-      // Strip instanceId (frontend-only; backend schema is .strict())
+      // Strip instanceId (frontend-only; backend schema is .strict()) and colors
+      // (REQ-176: local-only rendering state for the identity ring — the backend
+      // resolves the descriptive block, colors included, server-side by cardId).
       nonEmptyZones[zoneId] = cards.map((card) => {
         const wireCard = { ...card };
         delete wireCard.instanceId;
+        delete wireCard.colors;
         return wireCard;
       });
     }
@@ -137,23 +144,18 @@ export function buildAskAiRequest(question: string, gameContext: GameContext): Z
   };
 }
 
-/** REQ-167: the single optional card generalizes to a bounded (max 5) list. */
+/** REQ-167: the single optional card generalizes to a bounded (max 5) list.
+ * REQ-176: the descriptive block is resolved server-side by cardId now — only
+ * identity and the image (for rendering) go on the wire. */
 export function buildLookupAskAiRequest(
   question: string,
-  cards?: CardMetadataItem[] | null,
+  cards?: Pick<CardMetadataItem, "cardId" | "name" | "imageUrl">[] | null,
   conversationHistory?: ConversationMessage[]
 ): LookupAskAiPayload {
   const wireCards = (cards ?? []).map((card) => ({
     cardId: card.cardId,
     name: card.name,
-    oracleText: card.oracleText,
-    imageUrl: card.imageUrl,
-    manaCost: card.manaCost,
-    manaValue: card.manaValue,
-    typeLine: card.typeLine,
-    colors: card.colors,
-    supertypes: card.supertypes,
-    subtypes: card.subtypes
+    imageUrl: card.imageUrl
   }));
 
   return {

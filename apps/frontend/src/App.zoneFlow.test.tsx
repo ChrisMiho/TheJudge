@@ -84,10 +84,9 @@ vi.mock("./components/ScanCameraSurface", () => ({
 
 import App from "./App";
 import { PHASE_ZONE_DEFAULTS } from "./lib/contextFlow/phaseZoneDefaults";
-import { startOnInDepthQuestion } from "./test/appTestHelpers";
-import type { CardMetadataItem } from "./types";
+import { startOnInDepthQuestion, toSlimMetadata, type CardFixture } from "./test/appTestHelpers";
 
-const metadataFixture: CardMetadataItem[] = [
+const metadataFixture: CardFixture[] = [
   {
     cardId: "opt",
     name: "Opt",
@@ -174,7 +173,7 @@ describe("Target gating and pickers", () => {
       vi.fn(async (input: RequestInfo | URL): Promise<Response> => {
         const url = typeof input === "string" ? input : input instanceof URL ? input.toString() : input.url;
         if (url === "/data/cardMetadata.json") {
-          return jsonResponse(metadataFixture);
+          return jsonResponse(metadataFixture.map(toSlimMetadata));
         }
         if (url === "/data/cardScanMap.json") {
           return jsonResponse({

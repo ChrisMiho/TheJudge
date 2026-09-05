@@ -6,6 +6,7 @@ import {
 } from "../errors.js";
 import { resolveCorrelationId, type AppLogger } from "../logging.js";
 import { preparePromptInput } from "../prompt/preparation.js";
+import type { CardDetailIndex } from "../prompt/context.js";
 import type { RulingEntry } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
@@ -22,6 +23,7 @@ export type AskAiRouteDeps = {
   logger: AppLogger;
   payloadLoggingEnabled: boolean;
   cardRulingsIndex?: Map<string, RulingEntry[]>;
+  cardDetailIndex?: CardDetailIndex;
   gameRulesTopics?: GameRulesTopic[];
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
   comboCatalog?: ComboCatalog;
@@ -35,6 +37,7 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
     logger,
     payloadLoggingEnabled,
     cardRulingsIndex,
+    cardDetailIndex,
     gameRulesTopics,
     gameRulesRuleIndex,
     comboCatalog,
@@ -80,6 +83,7 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
       const promptBuildStartedAt = Date.now();
       const preparedPrompt = preparePromptInput(askAiRequest, {
         cardRulingsIndex,
+        cardDetailIndex,
         gameRulesTopics,
         gameRulesRuleIndex,
         comboCatalog,

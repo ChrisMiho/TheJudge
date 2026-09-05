@@ -281,8 +281,9 @@ language live here.
 
 - Built: whenever a card image is shown anywhere in the suite, a compact corner control
   (top-right of the image) opens a **dismissible detail popup** carrying oracle text and
-  other locally carried descriptive fields (no new fetch; a missing image keeps the
-  text-first fallback). The popup renders through a portal into the `AdaptiveContextDialog`
+  other descriptive fields fetched on demand by oracle id (REQ-175, FLOW-024) behind a
+  brief loading state; a missing image keeps the name-first fallback, which shows the card
+  name only (FLOW-001). The popup renders through a portal into the `AdaptiveContextDialog`
   overlay family — a bottom sheet below `768px`, a side panel at `768px+`, sized to its
   **own content** — not `absolute inset-0` over the image's box. Stacked oracle/detail
   under the image is not the default density path. This is one shared component across all
@@ -305,7 +306,8 @@ language live here.
   missing, or unrecognized. The ring is decorative and independent of the active
   theme palette — it does not tint the container background, add a glow or
   animation, or stand in as the sole identity cue — and applies equally when the
-  text-first metadata fallback replaces a missing image. (DEC-078, REQ-058)
+  name-only fallback (the locally available card name, shown with no detail fetch
+  on image failure) replaces a missing image. (DEC-078, REQ-058)
 - Built: every overlay close control — View Context, the history drawer, the card popup,
   the feedback modal, and Life Tracker's counter and game-setup panels — renders through
   **one shared component** whose color derives from the active theme palette, replacing the

@@ -12,10 +12,11 @@ import {
   type GameRulesRuleIndexEntry,
   type RetrievedGameRule
 } from "../gameRulesRetrieval.js";
-import { buildPromptContext } from "../prompt/context.js";
+import { buildPromptContext, type CardDetailIndex } from "../prompt/context.js";
 import { buildPromptText } from "../prompt/promptAssembly.js";
 import { preparePromptInput, resolveGameComboCandidates } from "../prompt/preparation.js";
-import type { AskAiRequest, GameAskAiRequest } from "../types/index.js";
+import type { CardDetailEntry } from "../cardDetail.js";
+import type { AskAiRequest, GameAskAiRequest, ZoneCardItem } from "../types/index.js";
 import type { ComboVariant } from "../commanderSpellbook/catalog.js";
 import {
   buildChecklistReport,
@@ -100,16 +101,59 @@ function relevanceFromPrepared(prepared: ReturnType<typeof preparePromptInput>) 
   return { selectedTopics, supplementalRules };
 }
 
+/**
+ * REQ-176: `context.ts` now resolves a card's descriptive block from an index
+ * keyed by oracle id instead of trusting the request card directly. The
+ * fixtures below still carry that block on each request card (as the real
+ * client did before this change), so this builds a per-request index from the
+ * fixture's own data — proving the new resolver plumbing is byte-identical to
+ * the old direct-read for whatever detail it is given, without coupling the
+ * eval corpus to the real committed artifact (which would let an owner-approved
+ * Scryfall refresh silently churn a prompt golden).
+ */
+function cardDetailEntryFrom(card: Partial<ZoneCardItem>): CardDetailEntry {
+  return {
+    oracleText: card.oracleText ?? "",
+    typeLine: card.typeLine ?? "",
+    manaCost: card.manaCost ?? "",
+    manaValue: card.manaValue ?? 0,
+    colors: card.colors ?? [],
+    supertypes: card.supertypes ?? [],
+    subtypes: card.subtypes ?? []
+  };
+}
+
+function cardDetailIndexFromRequest(request: AskAiRequest): CardDetailIndex {
+  const index: CardDetailIndex = new Map();
+
+  if (request.mode === "lookup") {
+    for (const card of request.cards ?? []) {
+      index.set(card.cardId, cardDetailEntryFrom(card));
+    }
+    return index;
+  }
+
+  const zones = (request as GameAskAiRequest).gameContext.zones ?? {};
+  for (const cards of Object.values(zones)) {
+    for (const card of cards ?? []) {
+      index.set(card.cardId, cardDetailEntryFrom(card));
+    }
+  }
+  return index;
+}
+
 function evaluateFixtureRequest(request: AskAiRequest, disableComboEnrichment = false) {
   // The degraded fixture omits the catalog entirely, which is exactly how the
   // runtime behaves with a missing artifact or COMBO_ENRICHMENT_ENABLED=false.
   const comboCatalog = disableComboEnrichment ? undefined : evalComboCatalog;
+  const cardDetailIndex = cardDetailIndexFromRequest(request);
 
   if (request.mode === "lookup") {
     const prepared = preparePromptInput(request, {
       gameRulesTopics: allGameRulesTopics,
       gameRulesRuleIndex: ruleIndex,
       cardRulingsIndex: fixtureRulings,
+      cardDetailIndex,
       comboCatalog,
       collectEnrichmentDebug: true
     });
@@ -121,7 +165,7 @@ function evaluateFixtureRequest(request: AskAiRequest, disableComboEnrichment = 
   }
 
   const gameRequest = request as GameAskAiRequest;
-  const context = buildPromptContext(gameRequest);
+  const context = buildPromptContext(gameRequest, cardDetailIndex);
   const selectedTopics = selectGameRulesTopics(context, allGameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(selectedTopics);
   const supplementalRules = retrieveSupplementalRules(context, ruleIndex, curatedRuleIds);

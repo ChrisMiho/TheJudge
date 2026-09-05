@@ -6,38 +6,20 @@ const sampleCards: CardMetadataItem[] = [
   {
     cardId: "1",
     name: "Lightning Bolt",
-    oracleText: "Deal 3 damage.",
     imageUrl: "",
-    manaCost: "{R}",
-    manaValue: 1,
-    typeLine: "Instant",
     colors: ["R"],
-    supertypes: [],
-    subtypes: []
   },
   {
     cardId: "2",
     name: "Counterspell",
-    oracleText: "Counter target spell.",
     imageUrl: "",
-    manaCost: "{U}{U}",
-    manaValue: 2,
-    typeLine: "Instant",
     colors: ["U"],
-    supertypes: [],
-    subtypes: []
   },
   {
     cardId: "3",
     name: "Brainstorm",
-    oracleText: "Draw three cards.",
     imageUrl: "",
-    manaCost: "{U}",
-    manaValue: 1,
-    typeLine: "Instant",
     colors: ["U"],
-    supertypes: [],
-    subtypes: []
   }
 ];
 
@@ -77,50 +59,26 @@ describe("search helpers", () => {
       {
         cardId: "exact",
         name: "Bolt",
-        oracleText: "",
         imageUrl: "",
-        manaCost: "",
-        manaValue: 0,
-        typeLine: "",
         colors: [],
-        supertypes: [],
-        subtypes: []
       },
       {
         cardId: "prefix",
         name: "Boltergeist",
-        oracleText: "",
         imageUrl: "",
-        manaCost: "",
-        manaValue: 0,
-        typeLine: "",
         colors: [],
-        supertypes: [],
-        subtypes: []
       },
       {
         cardId: "substring",
         name: "Firebolt Mage",
-        oracleText: "",
         imageUrl: "",
-        manaCost: "",
-        manaValue: 0,
-        typeLine: "",
         colors: [],
-        supertypes: [],
-        subtypes: []
       },
       {
         cardId: "typo",
         name: "Brolt",
-        oracleText: "",
         imageUrl: "",
-        manaCost: "",
-        manaValue: 0,
-        typeLine: "",
         colors: [],
-        supertypes: [],
-        subtypes: []
       }
     ];
 
@@ -136,38 +94,20 @@ describe("search helpers", () => {
       {
         cardId: "c",
         name: "Zolt",
-        oracleText: "",
         imageUrl: "",
-        manaCost: "",
-        manaValue: 0,
-        typeLine: "",
         colors: [],
-        supertypes: [],
-        subtypes: []
       },
       {
         cardId: "a",
         name: "Bolo",
-        oracleText: "",
         imageUrl: "",
-        manaCost: "",
-        manaValue: 0,
-        typeLine: "",
         colors: [],
-        supertypes: [],
-        subtypes: []
       },
       {
         cardId: "b",
         name: "Bott",
-        oracleText: "",
         imageUrl: "",
-        manaCost: "",
-        manaValue: 0,
-        typeLine: "",
         colors: [],
-        supertypes: [],
-        subtypes: []
       }
     ];
 
@@ -187,14 +127,8 @@ describe("search helpers", () => {
     const largeSet = Array.from({ length: 20 }, (_, index) => ({
       cardId: String(index),
       name: `Card Name ${index}`,
-      oracleText: "text",
       imageUrl: "",
-      manaCost: "",
-      manaValue: 0,
-      typeLine: "",
       colors: [],
-      supertypes: [],
-      subtypes: []
     }));
 
     const result = getSuggestions(largeSet, "Card");

@@ -51,14 +51,8 @@ function makeCard(cardId: string, name: string): CardMetadataItem {
   return {
     cardId,
     name,
-    oracleText: `${name} text`,
     imageUrl: "",
-    manaCost: "",
-    manaValue: 0,
-    typeLine: "Instant",
     colors: [],
-    supertypes: [],
-    subtypes: []
   };
 }
 

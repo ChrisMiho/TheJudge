@@ -1,0 +1,90 @@
+{
+  "slug": "image-first-cards",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "scripts/build-card-metadata.mjs emits records with only cardId, name, imageUrl, colors",
+      "value": true,
+      "evidence": { "paths": ["scripts/build-card-metadata.mjs"] }
+    },
+    {
+      "id": "C2",
+      "statement": "apps/frontend/src/types.ts — CardMetadataItem no longer declares the descriptive fields",
+      "value": true,
+      "evidence": { "paths": ["apps/frontend/src/types.ts"] }
+    },
+    {
+      "id": "C3",
+      "statement": "the build records before/after gzipped cardMetadata.json size and asserts at least 40% reduction (owner-recalibrated 2026-09-04 from the original, structurally unreachable 80%) versus the prior combined 16.4 MB artifact; the assertion fails the build if not met",
+      "value": true,
+      "evidence": {
+        "command": "node scripts/build-card-metadata.mjs",
+        "paths": ["scripts/build-card-metadata.mjs"],
+        "result": "Gzipped reduction: 48.1% (NFR-019 requires >= 40%); full 4,246,522B -> slim 2,204,907B"
+      }
+    },
+    {
+      "id": "C4",
+      "statement": "npm run typecheck is clean with the trimmed CardMetadataItem — every listed consumer compiles with no remaining reference to the removed fields",
+      "value": true,
+      "evidence": { "command": "npm run typecheck" }
+    },
+    {
+      "id": "C5",
+      "statement": "no card surface renders a descriptive field (oracle text, type line, mana cost/value, sub/supertypes) directly from the up-front list; those fields render only via the on-demand popup fetch",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test -- ZoneCardPicker ScanReviewBubble EnrichmentStep CardSelectionPreview"
+      }
+    },
+    {
+      "id": "C6",
+      "statement": "the color identity ring (including silver-gray for colorless/missing colors) renders from the up-front colors field with no detail fetch, on every surface that draws it",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test -- ZoneCardPicker ScanReviewBubble EnrichmentStep",
+        "manual": "Playwright: Sol Ring (colorless, silver-gray ring) and Lightning Bolt (red ring) both rendered correctly in ZoneCardPicker at 1440x900 and 390x844 — PRD/work/image-first-cards/.playwright-mcp/C6-zonecardpicker-rings-desktop.png, C6-zonecardpicker-rings-mobile.png"
+      }
+    },
+    {
+      "id": "C7",
+      "statement": "npm run test and npm run quality:check are green",
+      "value": true,
+      "evidence": {
+        "command": "npm run test.*npm run quality:check",
+        "result": "frontend 1315/1315, backend 398/398, test:scripts 436/436 (fixed a stale corpus-comparison test broken by the slim: scripts/compare-combo-answer-quality.test.mjs now checks descriptive fields against apps/backend/data/cardDetailByOracleId.json instead of the slimmed cardMetadata.json); npm run test && npm run quality:check exit 0, run repeatedly in this session"
+      }
+    },
+    {
+      "id": "C8",
+      "statement": "this slice's PRD/sections/ share is applied, re-derived against current file content, in the same change as the code",
+      "value": true,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/non-functional-requirements.md",
+          "PRD/sections/integrations-and-data.md",
+          "PRD/sections/system-map.md"
+        ],
+        "result": "REQ-174 added (functional-requirements.md, between REQ-173 and REQ-175); NFR-019 added at >=40% with the owner-recalibration provenance note (non-functional-requirements.md); Metadata Strategy amended (integrations-and-data.md); Card search & metadata summary amended (system-map.md)"
+      }
+    },
+    {
+      "id": "C9",
+      "statement": "manual/Playwright: MTG Assistant and Quick Lookup, at 390x844 and 1440x900, show autocomplete suggestions, card selection, the image, and each tile's color identity ring rendering identically to pre-slice behavior off the slimmed data — including a colorless card showing the silver-gray ring",
+      "value": true,
+      "evidence": {
+        "manual": "Verified live against the isolated dev server (ports 3101/5273). Quick Lookup: autocomplete (Sol Ring, Forest), selection, and image render correctly at 1440x900 and 390x844 (C9-quicklookup-solring-selected-desktop.png, C9-quicklookup-mobile.png). MTG Assistant In-Depth ZoneCardPicker: autocomplete, selection, image, and identity ring (Sol Ring silver-gray, Lightning Bolt red) render correctly at both viewports (C6-zonecardpicker-rings-desktop.png, C6-zonecardpicker-rings-mobile.png); the on-demand detail popup (GET /api/cards/:oracleId) still resolves oracle text/mana/type correctly post-slim. No console errors other than the pre-existing benign favicon 404."
+      }
+    },
+    {
+      "id": "C10",
+      "statement": "Browser closed, owned server(s) stopped, ports released; captures written to PRD/work/image-first-cards/.playwright-mcp/",
+      "value": true,
+      "evidence": {
+        "manual": "browser_close called after the last interaction; isolated dev servers (backend :3101, frontend :5273, started via node scripts/dev.mjs, tracked background task by9lhu265) stopped via TaskStop; ports 3101 and 5273 both confirmed released via lsof; captures written under .worktrees/implement-image-first-cards/PRD/work/image-first-cards/.playwright-mcp/ (C6-*, C9-* files)"
+      }
+    }
+  ]
+}

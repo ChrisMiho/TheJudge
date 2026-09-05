@@ -8,26 +8,14 @@ const cards: CardMetadataItem[] = [
   {
     cardId: "1",
     name: "Lightning Bolt",
-    oracleText: "Deal 3 damage.",
     imageUrl: "",
-    manaCost: "{R}",
-    manaValue: 1,
-    typeLine: "Instant",
     colors: ["R"],
-    supertypes: [],
-    subtypes: []
   },
   {
     cardId: "2",
     name: "Counterspell",
-    oracleText: "Counter target spell.",
     imageUrl: "",
-    manaCost: "{U}{U}",
-    manaValue: 2,
-    typeLine: "Instant",
     colors: ["U"],
-    supertypes: [],
-    subtypes: []
   }
 ];
 

@@ -12,7 +12,7 @@ vi.mock("./lib/debugLogger", async () => {
 
 import App from "./App";
 import { NO_MATCH_COPY } from "./lib/search";
-import type { CardMetadataItem } from "./types";
+import type { CardFixture } from "./test/appTestHelpers";
 import {
   expandPlayerDetails,
   selectTurnPhase,
@@ -43,11 +43,11 @@ describe("Interaction flows - search and game context", () => {
     await user.click(await screen.findByRole("button", { name: "Opt" }));
 
     // REQ-133/DEC-160: the staged preview is the shared CardPresentation only — no
-    // duplicated name heading beside it. This fixture carries no image, so the text-first
-    // fallback is what renders and it still carries the card's name.
+    // duplicated name heading beside it. This fixture carries no image, so the name-only
+    // fallback (D3) is what renders — no descriptive fields, no fetch.
     expect(screen.queryByRole("heading", { name: "Opt" })).not.toBeInTheDocument();
     expect(screen.getByTestId("card-presentation-fallback")).toHaveTextContent("Opt");
-    expect(screen.getByText("Scry 1, then draw a card.")).toBeInTheDocument();
+    expect(screen.queryByText("Scry 1, then draw a card.")).not.toBeInTheDocument();
   });
 
   it("shows TheJudge title on first render", () => {
@@ -195,7 +195,7 @@ describe("Interaction flows - search and game context", () => {
   });
 
   it("keeps ordered suggestions, threshold, and no-match behavior in parity across stack and battlefield flows", async () => {
-    const parityFixture: CardMetadataItem[] = [
+    const parityFixture: CardFixture[] = [
       {
         cardId: "swords-to-plowshares",
         name: "Swords to Plowshares",

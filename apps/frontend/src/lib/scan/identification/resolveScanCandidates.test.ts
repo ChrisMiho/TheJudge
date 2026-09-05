@@ -7,14 +7,8 @@ function makeMetadata(cardId: string, name: string, imageUrl = ""): CardMetadata
   return {
     cardId,
     name,
-    oracleText: "",
     imageUrl,
-    manaCost: "",
-    manaValue: 0,
-    typeLine: "",
     colors: [],
-    supertypes: [],
-    subtypes: []
   };
 }
 

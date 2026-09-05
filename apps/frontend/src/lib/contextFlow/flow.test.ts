@@ -24,7 +24,6 @@ function makeCard(id: string, name = id): ZoneCardItem {
   return {
     cardId: id,
     name,
-    oracleText: ""
   };
 }
 
@@ -346,14 +345,8 @@ describe("buildLookupAskAiRequest", () => {
   const lookupCard: CardMetadataItem = {
     cardId: "oracle-lightning-bolt",
     name: "Lightning Bolt",
-    oracleText: "Lightning Bolt deals 3 damage to any target.",
     imageUrl: "https://cards.example/lightning-bolt.jpg",
-    manaCost: "{R}",
-    manaValue: 1,
-    typeLine: "Instant",
     colors: ["R"],
-    supertypes: [],
-    subtypes: []
   };
 
   it("builds a trimmed lookup payload without a card", () => {
@@ -375,27 +368,24 @@ describe("buildLookupAskAiRequest", () => {
 
     const payload = buildLookupAskAiRequest("Follow up", [cardWithFrontendField], conversationHistory);
 
+    // REQ-176: the descriptive block is resolved server-side by cardId now —
+    // only identity and the image go on the wire.
     expect(payload).toEqual({
       mode: "lookup",
       question: "Follow up",
-      cards: [lookupCard],
+      cards: [{ cardId: lookupCard.cardId, name: lookupCard.name, imageUrl: lookupCard.imageUrl }],
       conversationHistory
     });
     expect(payload.cards?.[0]).not.toHaveProperty("instanceId");
+    expect(payload.cards?.[0]).not.toHaveProperty("oracleText");
   });
 
   it("builds a bounded multi-card lookup payload, in submitted order (REQ-167)", () => {
     const secondCard: CardMetadataItem = {
       cardId: "oracle-counterspell",
       name: "Counterspell",
-      oracleText: "Counter target spell.",
       imageUrl: "https://cards.example/counterspell.jpg",
-      manaCost: "{U}{U}",
-      manaValue: 2,
-      typeLine: "Instant",
       colors: ["U"],
-      supertypes: [],
-      subtypes: []
     };
 
     const payload = buildLookupAskAiRequest("How do these interact?", [lookupCard, secondCard]);
@@ -403,7 +393,10 @@ describe("buildLookupAskAiRequest", () => {
     expect(payload).toEqual({
       mode: "lookup",
       question: "How do these interact?",
-      cards: [lookupCard, secondCard]
+      cards: [
+        { cardId: lookupCard.cardId, name: lookupCard.name, imageUrl: lookupCard.imageUrl },
+        { cardId: secondCard.cardId, name: secondCard.name, imageUrl: secondCard.imageUrl }
+      ]
     });
   });
 });

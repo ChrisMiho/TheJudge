@@ -86,10 +86,13 @@ export const contextTargetSchema = z.discriminatedUnion("kind", [
   }).strict()
 ]);
 
+// REQ-176: the descriptive block (oracleText and the fields below) is resolved
+// server-side from the committed card-detail artifact by cardId, so none of it
+// is required on the wire any more — only identity and user-entered fields are.
 const cardReferenceShape = {
   cardId: boundedText(120),
   name: boundedText(120),
-  oracleText: boundedText(2000),
+  oracleText: optionalBoundedTextWithEmptyDefault(2000),
   imageUrl: optionalBoundedTextWithEmptyDefault(500),
   manaCost: optionalBoundedTextWithEmptyDefault(40),
   manaValue: z.number().min(0).max(20).optional().default(0),

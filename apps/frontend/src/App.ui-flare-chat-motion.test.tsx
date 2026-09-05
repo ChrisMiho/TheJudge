@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import App from "./App";
+import { clearCardDetailCache } from "./lib/cardDetail";
 import {
   addCardToStack,
   baseCardMetadataFixture,
@@ -54,6 +55,7 @@ describe("Frontend - UI flare chat motion integration", () => {
     localStorage.setItem(legacyDensityKey, "slim");
     submittedRequests = [];
     resolveQuickFollowUp = undefined;
+    clearCardDetailCache();
 
     vi.stubGlobal(
       "fetch",
@@ -65,6 +67,26 @@ describe("Frontend - UI flare chat motion integration", () => {
         }
         if (url === "/data/gameRulesCoreTopics.json") {
           return Promise.resolve(jsonResponse(coreTopics));
+        }
+        // Card-detail popup fetch (REQ-175, FLOW-024).
+        const cardDetailMatch = /\/api\/cards\/([^/?]+)$/.exec(url);
+        if (cardDetailMatch && (!init?.method || init.method === "GET")) {
+          const oracleId = decodeURIComponent(cardDetailMatch[1]);
+          const card = baseCardMetadataFixture.find((candidate) => candidate.cardId === oracleId);
+          if (!card) {
+            return Promise.resolve(jsonResponse({ error: "card_not_found" }, 404));
+          }
+          return Promise.resolve(
+            jsonResponse({
+              oracleText: card.oracleText,
+              typeLine: card.typeLine,
+              manaCost: card.manaCost,
+              manaValue: card.manaValue,
+              colors: card.colors,
+              supertypes: card.supertypes,
+              subtypes: card.subtypes
+            })
+          );
         }
         if (url.endsWith("/api/ask-ai") && init?.method === "POST") {
           const body = JSON.parse(String(init.body)) as Record<string, unknown>;
@@ -140,7 +162,9 @@ describe("Frontend - UI flare chat motion integration", () => {
     await user.click(within(cardContextDialog).getByRole("button", { name: "Show details for Lightning Bolt" }));
     const cardDetailPopup = screen.getByTestId("card-detail-popup");
     expect(cardContextDialog).not.toContainElement(cardDetailPopup);
-    expect(cardDetailPopup).toHaveTextContent("Lightning Bolt deals 3 damage to any target.");
+    await waitFor(() =>
+      expect(cardDetailPopup).toHaveTextContent("Lightning Bolt deals 3 damage to any target.")
+    );
 
     await user.click(screen.getByRole("button", { name: "Close details for Lightning Bolt" }));
     expect(screen.queryByTestId("card-detail-popup")).not.toBeInTheDocument();

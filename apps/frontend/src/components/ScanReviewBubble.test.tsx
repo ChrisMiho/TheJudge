@@ -1,10 +1,38 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearCardDetailCache } from "../lib/cardDetail";
 import type { ZoneCardItem } from "../types";
 import { ScanReviewBubble } from "./ScanReviewBubble";
 
-afterEach(cleanup);
+// The corner detail popup fetches its descriptive block on demand (REQ-175, FLOW-024);
+// stub a default response so opening it in these tests never hits the network.
+beforeEach(() => {
+  clearCardDetailCache();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          oracleText: "Scry 1, then draw a card.",
+          typeLine: "Instant",
+          manaCost: "{U}",
+          manaValue: 1,
+          colors: ["U"],
+          supertypes: [],
+          subtypes: []
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      )
+    )
+  );
+});
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  clearCardDetailCache();
+});
 
 function makeZoneCard(overrides: Partial<ZoneCardItem> = {}): ZoneCardItem {
   return {
@@ -100,7 +128,7 @@ describe("Frontend - Card Scan", () => {
       expect(list).toHaveClass("min-h-0", "overflow-y-auto");
     });
 
-    it("renders a full-width metadata fallback and keeps Remove usable when imageUrl is empty", async () => {
+    it("renders a full-width name-only fallback and keeps Remove usable when imageUrl is empty (D3)", async () => {
       const user = userEvent.setup();
       const cards = [
         makeZoneCard({
@@ -119,13 +147,10 @@ describe("Frontend - Card Scan", () => {
       const fallback = screen.getByTestId("card-presentation-fallback");
       expect(fallback).toHaveClass("w-full");
       expect(within(fallback).getByText("Opt")).toBeInTheDocument();
-      expect(within(fallback).getByText("{U}")).toBeInTheDocument();
-      expect(within(fallback).getByText("0")).toBeInTheDocument();
-      expect(within(fallback).getByText("Instant")).toBeInTheDocument();
-      expect(within(fallback).getByText("Scry 1, then draw a card.")).toBeInTheDocument();
-      expect(within(fallback).getByText("U")).toBeInTheDocument();
-      expect(within(fallback).getByText("Legendary")).toBeInTheDocument();
-      expect(within(fallback).getByText("Wizard")).toBeInTheDocument();
+      // D3: the fallback shows the card name only — no descriptive fields, no fetch.
+      expect(within(fallback).queryByText("Instant")).not.toBeInTheDocument();
+      expect(within(fallback).queryByText("Scry 1, then draw a card.")).not.toBeInTheDocument();
+      expect(fetch).not.toHaveBeenCalled();
 
       const remove = screen.getByRole("button", { name: /Remove Opt/i });
       const entry = remove.closest("li");

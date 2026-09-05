@@ -1,9 +1,12 @@
 import type { ReactNode } from "react";
-import type { CardMetadataItem } from "../types";
-import { CardPresentation } from "./CardPresentation";
+import { CardPresentation, type CardPresentationCard } from "./CardPresentation";
 
 type CardSelectionPreviewProps = {
-  card: CardMetadataItem;
+  // REQ-176: only identity (cardId, name, imageUrl) is ever read here — the
+  // pre-submit preview has the full `CardMetadataItem`, but the frozen View
+  // Context lookup card only ever carries the trimmed wire shape
+  // (`LookupWireCard`) now, and both satisfy `CardPresentationCard`.
+  card: CardPresentationCard;
   action?: ReactNode;
 };
 

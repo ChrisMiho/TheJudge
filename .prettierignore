@@ -11,4 +11,5 @@ apps/frontend/public/data/cardMetadata.json
 apps/frontend/public/data/cardScanMap.json
 apps/frontend/public/data/cardPrintingPrices.json
 apps/backend/data/cardRulingsByOracleId.json
+apps/backend/data/cardDetailByOracleId.json
 apps/backend/src/eval/fixtures/*.context.golden.json

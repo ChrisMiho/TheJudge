@@ -11,6 +11,7 @@ export {
 export type {
   FlowNavigationState,
   LookupAskAiPayload,
+  LookupWireCard,
   ZoneAskAiPayload,
   EnrichmentQueueEntry
 } from "./flow";

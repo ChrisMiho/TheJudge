@@ -1,26 +1,48 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
-import type { ZoneCardItem } from "../types";
-import { CardPresentation } from "./CardPresentation";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { clearCardDetailCache, type CardDetailBlock } from "../lib/cardDetail";
+import { CardDetailPopup, CardPresentation, type CardPresentationCard } from "./CardPresentation";
 
-afterEach(cleanup);
+const URZA_DETAIL: CardDetailBlock = {
+  oracleText: "When Urza enters, create a Construct artifact creature token.",
+  manaCost: "{2}{U}{U}",
+  manaValue: 0,
+  typeLine: "Legendary Creature — Human Artificer",
+  colors: ["U", "W"],
+  supertypes: ["Legendary"],
+  subtypes: ["Human", "Artificer"]
+};
 
-function makeCard(overrides: Partial<ZoneCardItem> = {}): ZoneCardItem {
+function makeCard(overrides: Partial<CardPresentationCard> = {}): CardPresentationCard {
   return {
     cardId: "urza",
     name: "Urza, Lord High Artificer",
-    oracleText: "When Urza enters, create a Construct artifact creature token.",
     imageUrl: "https://img.example/urza.jpg",
-    manaCost: "{2}{U}{U}",
-    manaValue: 0,
-    typeLine: "Legendary Creature — Human Artificer",
-    colors: ["U", "W"],
-    supertypes: ["Legendary"],
-    subtypes: ["Human", "Artificer"],
     ...overrides
   };
 }
+
+function jsonResponse(body: unknown, status = 200): Response {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json" }
+  });
+}
+
+let fetchMock: ReturnType<typeof vi.fn>;
+
+beforeEach(() => {
+  clearCardDetailCache();
+  fetchMock = vi.fn().mockResolvedValue(jsonResponse(URZA_DETAIL));
+  vi.stubGlobal("fetch", fetchMock);
+});
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  clearCardDetailCache();
+});
 
 describe("Frontend - MTG Assistant", () => {
 describe("CardPresentation", () => {
@@ -41,6 +63,7 @@ describe("CardPresentation", () => {
     expect(
       screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" })
     ).toHaveAttribute("aria-expanded", "false");
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("carries no fixed pixel height cap and no per-surface size variant", () => {
@@ -75,7 +98,7 @@ describe("CardPresentation", () => {
     expect(screen.getByRole("img").className).toBe(narrowClasses);
   });
 
-  it("opens a detail popup with oracle text and closes it via the X control, without unmounting the image", async () => {
+  it("opens a detail popup that fetches its descriptive block by oracle id and closes via the X control, without unmounting the image", async () => {
     const user = userEvent.setup();
     render(
       <CardPresentation
@@ -97,7 +120,13 @@ describe("CardPresentation", () => {
 
     const popup = screen.getByTestId("card-detail-popup");
     expect(popup).toBeInTheDocument();
-    expect(screen.getByText("When Urza enters, create a Construct artifact creature token.")).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/api/cards/urza"));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("When Urza enters, create a Construct artifact creature token.")
+      ).toBeInTheDocument()
+    );
     expect(screen.getByText("{2}{U}{U}")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
 
@@ -105,6 +134,25 @@ describe("CardPresentation", () => {
 
     expect(screen.queryByTestId("card-detail-popup")).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: "Urza, Lord High Artificer" })).toBeInTheDocument();
+  });
+
+  it("shows a quiet loading state confined to the popup content region while the fetch is pending (A10)", async () => {
+    let resolveFetch!: (response: Response) => void;
+    fetchMock.mockReturnValue(new Promise<Response>((resolve) => { resolveFetch = resolve; }));
+    const user = userEvent.setup();
+    render(<CardPresentation card={makeCard()} />);
+
+    await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
+
+    // Name/image/ring (already local) stay rendered while the descriptive block loads.
+    expect(screen.getByRole("img", { name: "Urza, Lord High Artificer" })).toBeInTheDocument();
+    const popup = screen.getByTestId("card-detail-popup");
+    expect(within(popup).getByText("Urza, Lord High Artificer")).toBeInTheDocument();
+    expect(within(popup).getByTestId("card-detail-loading")).toBeInTheDocument();
+
+    resolveFetch(jsonResponse(URZA_DETAIL));
+    await waitFor(() => expect(within(popup).queryByTestId("card-detail-loading")).not.toBeInTheDocument());
+    expect(within(popup).getByText("{2}{U}{U}")).toBeInTheDocument();
   });
 
   it("hosts the detail popup in a body portal outside the card image container", async () => {
@@ -188,26 +236,70 @@ describe("CardPresentation", () => {
     expect(document.body.querySelector("[data-testid='card-detail-popup']")).toBeNull();
   });
 
-  it("populates the popup only from the passed card, issuing no network request", async () => {
+  it("caches a card's detail for the session: reopening the same card issues no second fetch (A5)", async () => {
     const user = userEvent.setup();
-    const fetchSpy = vi.spyOn(globalThis, "fetch");
+    render(<CardPresentation card={makeCard()} />);
+
+    const trigger = screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" });
+    await user.click(trigger);
+    await waitFor(() =>
+      expect(
+        screen.getByText("When Urza enters, create a Construct artifact creature token.")
+      ).toBeInTheDocument()
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+
+    await user.click(screen.getByRole("button", { name: "Close details for Urza, Lord High Artificer" }));
+    await user.click(trigger);
+
+    // Cache hit: the descriptive block renders immediately with no loading flash and no
+    // second network call.
+    expect(screen.queryByTestId("card-detail-loading")).not.toBeInTheDocument();
+    expect(
+      screen.getByText("When Urza enters, create a Construct artifact creature token.")
+    ).toBeInTheDocument();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("degrades to the local identity plus a retry affordance on a failed/offline fetch, without blocking other controls (A11)", async () => {
+    fetchMock.mockRejectedValue(new TypeError("Failed to fetch"));
+    const user = userEvent.setup();
+    render(
+      <CardPresentation
+        card={makeCard()}
+        actions={<button type="button">Remove</button>}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
+
+    await waitFor(() => expect(screen.getByTestId("card-detail-error")).toBeInTheDocument());
+    expect(screen.getByText("Urza, Lord High Artificer")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove" })).toBeEnabled();
+
+    fetchMock.mockResolvedValue(jsonResponse(URZA_DETAIL));
+    await user.click(screen.getByRole("button", { name: "Retry" }));
+
+    await waitFor(() =>
+      expect(
+        screen.getByText("When Urza enters, create a Construct artifact creature token.")
+      ).toBeInTheDocument()
+    );
+  });
+
+  it("renders the not-found response as the empty-detail marker with no retry loop (REQ-175)", async () => {
+    fetchMock.mockResolvedValue(jsonResponse({ error: "card_not_found" }, 404));
+    const user = userEvent.setup();
     render(<CardPresentation card={makeCard()} />);
 
     await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
 
-    const popup = screen.getByTestId("card-detail-popup");
-    expect(within(popup).getByText("{2}{U}{U}")).toBeInTheDocument();
-    expect(within(popup).getByText("Legendary Creature — Human Artificer")).toBeInTheDocument();
-    expect(
-      within(popup).getByText("When Urza enters, create a Construct artifact creature token.")
-    ).toBeInTheDocument();
-    expect(within(popup).getByText("U, W")).toBeInTheDocument();
-    expect(fetchSpy).not.toHaveBeenCalled();
-
-    fetchSpy.mockRestore();
+    await waitFor(() => expect(screen.queryByTestId("card-detail-loading")).not.toBeInTheDocument());
+    expect(screen.queryByTestId("card-detail-error")).not.toBeInTheDocument();
+    expect(screen.getByText("Urza, Lord High Artificer")).toBeInTheDocument();
   });
 
-  it("renders the full-width fallback without mounting an image for an empty URL", () => {
+  it("renders the full-width name-only fallback without mounting an image for an empty URL, issuing no fetch", () => {
     render(
       <CardPresentation
         card={makeCard({ imageUrl: "" })}
@@ -216,12 +308,15 @@ describe("CardPresentation", () => {
     );
 
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
-    expect(screen.getByTestId("card-presentation-fallback")).toHaveClass("w-full");
+    const fallback = screen.getByTestId("card-presentation-fallback");
+    expect(fallback).toHaveClass("w-full");
+    expect(within(fallback).getByText("Urza, Lord High Artificer")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /show details for/i })).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("replaces a failed image with the fallback", () => {
+  it("replaces a failed image with the name-only fallback, issuing no detail fetch (D3, DEC-078)", () => {
     render(
       <CardPresentation
         card={makeCard()}
@@ -232,9 +327,12 @@ describe("CardPresentation", () => {
     fireEvent.error(screen.getByRole("img"));
 
     expect(screen.queryByRole("img")).not.toBeInTheDocument();
-    expect(screen.getByTestId("card-presentation-fallback")).toHaveClass("motion-error");
+    const fallback = screen.getByTestId("card-presentation-fallback");
+    expect(fallback).toHaveClass("motion-error");
+    expect(within(fallback).getByText("Urza, Lord High Artificer")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /show details for/i })).not.toBeInTheDocument();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   it("clears an image error when the source changes", () => {
@@ -245,12 +343,13 @@ describe("CardPresentation", () => {
 
     expect(screen.getByRole("img")).toHaveAttribute("src", "https://img.example/urza-2.jpg");
   });
+});
 
-  it("renders every present fallback field, including zero mana value", () => {
-    render(<CardPresentation card={makeCard({ imageUrl: undefined })} />);
+describe("CardDetailPopup", () => {
+  it("shows every present descriptive field once fetched, including zero mana value", async () => {
+    render(<CardDetailPopup card={makeCard()} onClose={vi.fn()} />);
 
-    expect(screen.getByText("Urza, Lord High Artificer")).toBeInTheDocument();
-    expect(screen.getByText("{2}{U}{U}")).toBeInTheDocument();
+    await waitFor(() => expect(screen.getByText("{2}{U}{U}")).toBeInTheDocument());
     expect(screen.getByText("0")).toBeInTheDocument();
     expect(screen.getByText("Legendary Creature — Human Artificer")).toBeInTheDocument();
     expect(screen.getByText("When Urza enters, create a Construct artifact creature token.")).toBeInTheDocument();
@@ -259,25 +358,23 @@ describe("CardPresentation", () => {
     expect(screen.getByText("Human, Artificer")).toBeInTheDocument();
   });
 
-  it("omits absent optional fallback fields instead of inventing values", () => {
-    render(
-      <CardPresentation
-        card={makeCard({
-          imageUrl: " ",
-          manaCost: "",
-          manaValue: undefined,
-          typeLine: " ",
-          oracleText: "",
-          colors: [],
-          supertypes: undefined,
-          subtypes: []
-        })}
-      />
+  it("omits absent optional fields instead of inventing values", async () => {
+    fetchMock.mockResolvedValue(
+      jsonResponse({
+        oracleText: "",
+        manaCost: "",
+        manaValue: 0,
+        typeLine: "",
+        colors: [],
+        supertypes: [],
+        subtypes: []
+      })
     );
+    render(<CardDetailPopup card={makeCard()} onClose={vi.fn()} />);
 
-    expect(screen.getByText("Urza, Lord High Artificer")).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByTestId("card-detail-loading")).not.toBeInTheDocument());
+
     expect(screen.queryByText("Mana cost")).not.toBeInTheDocument();
-    expect(screen.queryByText("Mana value")).not.toBeInTheDocument();
     expect(screen.queryByText("Type")).not.toBeInTheDocument();
     expect(screen.queryByText("Oracle text")).not.toBeInTheDocument();
     expect(screen.queryByText("Colors")).not.toBeInTheDocument();

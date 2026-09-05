@@ -1,8 +1,9 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 import type { ScanConvergence } from "../hooks/useScanCapture";
+import { clearCardDetailCache } from "../lib/cardDetail";
 import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
 
 // The camera surface is exercised in ScanCameraSurface.test.tsx; here we only
@@ -11,7 +12,29 @@ vi.mock("./ScanCameraSurface", () => ({
   ScanCameraSurface: () => <div data-testid="scan-camera" />
 }));
 
-afterEach(cleanup);
+// The corner detail popup fetches its descriptive block on demand (REQ-175, FLOW-024);
+// stub a default response so opening it in these chrome-focused tests never hits the
+// network or hangs on an unmocked fetch.
+beforeEach(() => {
+  clearCardDetailCache();
+  vi.stubGlobal(
+    "fetch",
+    vi.fn().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          colors: [],
+        }),
+        { status: 200, headers: { "content-type": "application/json" } }
+      )
+    )
+  );
+});
+
+afterEach(() => {
+  cleanup();
+  vi.unstubAllGlobals();
+  clearCardDetailCache();
+});
 
 const searching: ScanConvergence = {
   phase: "searching",
@@ -27,14 +50,8 @@ function makeZoneCard(cardId: string, name: string, overrides: Partial<ZoneCardI
   return {
     cardId,
     name,
-    oracleText: "",
     imageUrl: "",
-    manaCost: "",
-    manaValue: 0,
-    typeLine: "",
     colors: [],
-    supertypes: [],
-    subtypes: [],
     ...overrides
   };
 }
@@ -43,14 +60,8 @@ function makeMetadataCard(name: string, imageUrl: string): CardMetadataItem {
   return {
     cardId: name.toLowerCase(),
     name,
-    oracleText: "",
     imageUrl,
-    manaCost: "",
-    manaValue: 0,
-    typeLine: "",
     colors: [],
-    supertypes: [],
-    subtypes: []
   };
 }
 
@@ -367,19 +378,13 @@ describe("ZoneCardPicker card grid", () => {
     expect(tile).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
   });
 
-  it("uses a full-width metadata fallback while preserving stack position and controls", () => {
+  it("uses a full-width name-only fallback while preserving stack position and controls (D3)", () => {
     renderPicker(
       { isOpen: false },
       {
         cards: [
           makeZoneCard("urza", "Urza, Lord High Artificer", {
-            manaCost: "{2}{U}{U}",
-            manaValue: 0,
-            typeLine: "Legendary Creature — Human Artificer",
-            oracleText: "When Urza enters, create a Construct.",
-            colors: ["U", "W"],
-            supertypes: ["Legendary"],
-            subtypes: ["Human", "Artificer"]
+            colors: ["U", "W"]
           })
         ]
       }
@@ -393,25 +398,20 @@ describe("ZoneCardPicker card grid", () => {
       "--card-identity-ring: linear-gradient(90deg, rgb(248 231 185 / 0.55), rgb(14 165 233 / 0.55))"
     );
     expect(within(fallback).getByText("Urza, Lord High Artificer")).toBeInTheDocument();
-    expect(within(fallback).getByText("{2}{U}{U}")).toBeInTheDocument();
-    expect(within(fallback).getByText("0")).toBeInTheDocument();
-    expect(within(fallback).getByText("Legendary Creature — Human Artificer")).toBeInTheDocument();
-    expect(within(fallback).getByText("When Urza enters, create a Construct.")).toBeInTheDocument();
-    expect(within(fallback).getByText("U, W")).toBeInTheDocument();
-    expect(within(fallback).getByText("Legendary")).toBeInTheDocument();
-    expect(within(fallback).getByText("Human, Artificer")).toBeInTheDocument();
+    // D3: the fallback shows the card name only — no descriptive fields, no fetch.
+    expect(within(fallback).queryByText("{2}{U}{U}")).not.toBeInTheDocument();
+    expect(within(fallback).queryByText("Legendary Creature — Human Artificer")).not.toBeInTheDocument();
     expect(screen.getByText("bottom & top")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Urza, Lord High Artificer from Stack" })).toBeInTheDocument();
   });
 
-  it("replaces a failed tile image with the readable fallback", () => {
+  it("replaces a failed tile image with the name-only fallback and issues no detail fetch (D3, DEC-078)", () => {
     renderPicker(
       { isOpen: false },
       {
         cards: [
           makeZoneCard("opt", "Opt", {
-            imageUrl: "https://img.example/missing.jpg",
-            oracleText: "Scry 1, then draw a card."
+            imageUrl: "https://img.example/missing.jpg"
           })
         ]
       }
@@ -420,7 +420,8 @@ describe("ZoneCardPicker card grid", () => {
     fireEvent.error(screen.getByRole("img", { name: "Opt" }));
 
     expect(screen.queryByRole("img", { name: "Opt" })).not.toBeInTheDocument();
-    expect(within(screen.getByTestId("card-presentation-fallback")).getByText("Scry 1, then draw a card.")).toBeInTheDocument();
+    expect(within(screen.getByTestId("card-presentation-fallback")).getByText("Opt")).toBeInTheDocument();
+    expect(fetch).not.toHaveBeenCalled();
   });
 
   it("calls onRemoveCard with the instanceId of the removed card", async () => {

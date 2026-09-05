@@ -32,7 +32,7 @@
 - Title: Lightweight architecture
 - Description: The core product should use the smallest reasonable architecture.
 - Constraints:
-  - one main product-facing backend endpoint
+  - one main product-facing backend endpoint, plus the read-only card-detail retrieval route (REQ-175)
   - no microservices
   - no runtime metadata sync tooling
 
@@ -273,3 +273,19 @@
   - REQ-022, DEC-046 (retrieval the validation set exercises)
 - Notes:
   - Distinct from RAG/corpus retrieval: this external data validates and tunes the prompt; it is not injected into prompts. The mechanic-definition enrichment idea, which would inject a corpus into the prompt, is RAG-deferred (`PRD/work/prompt-context-refinement/RAG-DEFERRED.md`).
+
+### NFR-019
+- Title: First-load card-data payload target
+- Description: With descriptive card fields fetched on demand (REQ-174), the up-front card-metadata artifact the frontend downloads on entry to MTG Assistant and Quick Lookup must be at least 40% smaller, gzipped, than the prior combined 16.4 MB artifact — a firm, testable pass/fail gate, not an estimate — and the build must record the before/after gzipped sizes as acceptance evidence.
+- Constraints:
+  - the build records before/after gzipped sizes and asserts the trimmed `cardMetadata.json` (up-front fields only) is at least 40% smaller (gzipped) than the prior combined artifact — a relative gate, so acceptance does not hinge on an estimated byte ceiling and stays correct as the Scryfall corpus grows; the measured slim size against the current 33,399-card corpus is ~2.2 MB gzipped (~48% reduction), so the ≥40% floor carries headroom for data-refresh drift while still failing on a first-load regression
+  - this is a data-artifact target, distinct from and additive to the route-level code-splitting posture (NFR-014); it neither replaces nor weakens the existing lazy loads
+  - the on-demand card-detail load is a per-card fetch from the `GET /api/cards/:oracleId` endpoint (REQ-175, FLOW-024), not an up-front download, and must not reintroduce a bulk up-front payload
+- Dependencies:
+  - REQ-174
+  - REQ-175
+  - NFR-014
+  - FLOW-024
+- Notes:
+  - oracle text alone was 45.4% of the prior file; moving it plus type line, mana, and sub/supertypes off the up-front list is the bulk of the reduction
+  - owner-recalibrated 2026-09-04: the original 80% figure was derived from raw-byte proportions but stamped onto a gzipped gate; the removed descriptive text compresses well while the kept `cardId`/`imageUrl` barely do, so raw size drops ~87% but gzipped drops only ~48.1% (4.25 MB → 2.20 MB, measured against the live 33,399-card corpus). The relative-gate shape is kept (robust to corpus growth); only the floor moved, to ≥40%, below the measured ~48% with headroom for data-refresh drift while still failing a real first-load regression

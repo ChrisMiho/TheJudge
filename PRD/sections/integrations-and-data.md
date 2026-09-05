@@ -40,20 +40,15 @@ This file captures integrations, payloads, data rules, and delivery constraints.
   - `{ kind: "other"; targetDescription: string }`
 
 ### ZoneCardItem
-- `cardId: string`
+- `cardId: string` — oracle id; the backend resolves this card's descriptive block server-side from it (REQ-176)
 - `name: string`
-- `oracleText: string`
-- `imageUrl: string`
-- `manaCost: string`
-- `manaValue: number`
-- `typeLine: string`
-- `colors: string[]`
-- `supertypes: string[]`
-- `subtypes: string[]`
+- `imageUrl?: string` — local rendering only, not read by the prompt assembler; still sent on the wire (harmless, unused bytes) exactly as before this change
+- `colors?: string[]` — local rendering only (the identity ring, REQ-058/DEC-078); not card-intrinsic prompt data, so it is stripped from the wire request the same as the descriptive block below, even though it stays on the frontend object
 - `caster?: PlayerLabel`
 - `targets?: ContextTarget[]`
 - `contextNotes?: string`
-- `manaSpent?: number` (prompt-facing fallback uses `manaValue` when omitted)
+- `manaSpent?: number` (prompt-facing fallback uses the server-resolved `manaValue` when omitted)
+- the descriptive block (`oracleText`, `manaCost`, `manaValue`, `typeLine`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields by `cardId` from `cardDetailByOracleId.json` (REQ-175, REQ-176)
 
 ### GameContext
 - `playerCount: number`
@@ -149,6 +144,12 @@ Purpose:
 - invoke the model
 - return the response
 
+### Endpoint: `GET /api/cards/:oracleId`
+Purpose:
+- serve one card's descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`) by Scryfall `oracle_id`, read-only, from the committed `cardDetailByOracleId.json` artifact (REQ-175)
+- back the card-detail popup and Quick Lookup pre-submit preview's on-demand fetch (FLOW-024); a known id returns the block, an unknown id returns a not-found response
+- the product's second product-facing endpoint (D5), permitted alongside `POST /api/ask-ai` by the REQ-012 / REQ-072 / NFR-004 / goals-and-non-goals / technical-design-rules amendments
+
 ### Optional Endpoint: `GET /api/health`
 Purpose:
 - local development checks
@@ -175,16 +176,9 @@ Purpose:
         "zones": {
           "stack": [
             {
-              "cardId": "uuid-or-stable-card-id",
+              "cardId": "counterspell-oracle-id",
               "name": "Counterspell",
-              "oracleText": "Counter target spell.",
               "imageUrl": "https://example.invalid/counterspell.jpg",
-              "manaCost": "{U}{U}",
-              "manaValue": 2,
-              "typeLine": "Instant",
-              "colors": ["U"],
-              "supertypes": [],
-              "subtypes": [],
               "caster": "Player 2",
               "targets": [
                 { "kind": "card", "zone": "stack", "cardId": "bottom-spell", "cardName": "Lightning Bolt" }
@@ -197,14 +191,7 @@ Purpose:
             {
               "cardId": "rhystic-study",
               "name": "Rhystic Study",
-              "oracleText": "Whenever an opponent casts a spell, you may draw a card unless that player pays {1}.",
               "imageUrl": "",
-              "manaCost": "{2}{U}",
-              "manaValue": 3,
-              "typeLine": "Enchantment",
-              "colors": ["U"],
-              "supertypes": [],
-              "subtypes": [],
               "targets": [{ "kind": "none" }],
               "contextNotes": "Tax effect relevant to stack decisions"
             }
@@ -232,7 +219,8 @@ Purpose:
 
 ## Metadata Strategy
 - use a static prebuilt metadata file committed with the app
-- local metadata powers autocomplete and preview
+- the committed frontend metadata artifact carries only the up-front tile fields — `cardId` (oracle id), `name`, `imageUrl`, `colors` — and no descriptive block (REQ-174); descriptive fields are fetched on demand per card from the `GET /api/cards/:oracleId` endpoint (REQ-175, D5), on first card-detail open
+- local metadata powers autocomplete and the tile (name, image, color ring); the card-detail popup and Quick Lookup pre-submit preview fetch the descriptive block from the endpoint on open (FLOW-024)
 - filter source records to english, paper-playable, non-digital cards with a non-empty name
 - dedupe by normalized card name with deterministic tie-breaks (higher metadata completeness, then later release date, then stable ID)
 - do not implement runtime sync/refresh in the core product
@@ -248,6 +236,15 @@ Purpose:
 - `npm run data:build` rebuilds card metadata, card rulings, and game rules from local inputs
 - `npm run data:refresh` downloads Scryfall bulk data and WotC CR source, then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
 - the backend loads the committed artifact at startup and omits rulings enrichment if the artifact is missing or has no matches
+- runtime Scryfall fetches are out of scope for the core product
+
+## Card Detail Data Strategy
+- the card descriptive block is committed as a trimmed map keyed by Scryfall `oracle_id`, built by one builder from the same Scryfall bulk every other builder trims from; raw bulk stays gitignored and must not be committed
+- each value carries `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`
+- the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; there is no frontend copy
+- the frontend fetches one card's block on demand from `GET /api/cards/:oracleId` (FLOW-024) and caches per card for the session; ask-ai reads the same backend map internally for server-side resolution (REQ-176)
+- `GET /api/cards/:oracleId` is the product's second product-facing endpoint, authorized by D5 (see the REQ-012 / REQ-072 / NFR-004 / goals-and-non-goals / technical-design-rules amendments below)
+- `npm run data:build` rebuilds the map alongside card metadata, rulings, and game rules
 - runtime Scryfall fetches are out of scope for the core product
 
 ## Game Rules Data Strategy
@@ -344,7 +341,7 @@ The backend should include:
 - `ADDITIONAL GAME STATE` section containing `gameStateNotes` content, positioned after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE`; omitted entirely when `gameStateNotes` is absent or blank after trim (DEC-043)
 - phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` (and `ADDITIONAL GAME STATE` when present) and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
 - selected zones
-- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; empty oracle emits `(none) — no oracle text recorded for this card`
+- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; the card-intrinsic fields are resolved server-side by `cardId` from `cardDetailByOracleId.json` (REQ-176), targets and context notes come from the request; empty oracle emits `(none) — no oracle text recorded for this card`
 - ordered stack zone when populated; stack section additionally includes stack role, caster, and mana spent per item
 - non-stack sections use owner and zone item labels (`Hand 1`, `Battlefield 1`, etc.); `caster` is omitted for non-stack items
 - mana spent per stack item (fallback to `manaValue` when omitted)

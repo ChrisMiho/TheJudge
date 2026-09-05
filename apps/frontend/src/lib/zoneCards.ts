@@ -20,19 +20,20 @@ export type ZoneCardAddValidationResult =
       message: string;
     };
 
+/** REQ-176: the descriptive block (oracle text, mana cost/value, type line,
+ * sub/supertypes) is resolved server-side by cardId now — this no longer
+ * copies it onto the zone card. `colors` is kept: it is not sent to ask-ai
+ * (`buildAskAiRequest` strips it from the wire card), but it is not
+ * card-intrinsic prompt data either — it is local rendering state the
+ * identity ring reads directly off `ZoneCardItem` (REQ-058, DEC-078), the
+ * same way `CardMetadataItem` keeps `colors` up front for its own tile ring. */
 export function buildZoneCardFromMetadata(card: CardMetadataItem, scanImageUrl?: string): ZoneCardItem {
   return {
     instanceId: createInstanceId(),
     cardId: card.cardId,
     name: card.name,
-    oracleText: card.oracleText,
     imageUrl: scanImageUrl ?? card.imageUrl,
-    manaCost: card.manaCost,
-    manaValue: card.manaValue,
-    typeLine: card.typeLine,
-    colors: card.colors,
-    supertypes: card.supertypes,
-    subtypes: card.subtypes
+    colors: card.colors
   };
 }
 

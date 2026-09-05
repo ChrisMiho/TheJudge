@@ -5,8 +5,42 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `owner-action` (parked at gate-qc PASS — spec-forming half complete)
-- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR, then `/graph-implement PRD/work/image-first-cards/`
+- Current node: `build` (plan done — 3 slices A→B→C; implementing sequentially in `.worktrees/implement-image-first-cards`)
+- Next action: `/graph-implement PRD/work/image-first-cards/` (build half in progress)
+
+## Resume note — amendment set completed (2026-09-04)
+
+The owner confirmed their popup/fallback direction was clear and to proceed. A
+refinement pass (commit `cf5b9a0`, run interactively — not as a graph node) applied
+the finalized D1/D3 decision consistently across the surfaces the prior park
+flagged: REQ-058 (authoritative shared presentation), FLOW-002, FLOW-006, the two
+REQ-128 spots the earlier draft missed, and the derived `scan/README.md` +
+`shared-chrome/README.md` (sources amended in lockstep, DEC-168). DEC-078's offline
+scanning guarantee is reconciled, not reversed — the image-fail fallback stays
+name-only with no fetch and the surface stays usable offline; only the popup's
+descriptive text depends on the network, with owner-veto `- Owner note:` lines on
+REQ-058 and FLOW-006. `STATUS.refined`; the build half resumes at `gate-qc`.
+
+## Driver decision — reconcile, do not park (2026-09-04)
+
+gate-qc attempt 5 FAILed only because `DESIGN-BRIEF.md` was never synced to the
+owner's finalized D3/D5 edits — the authoritative `GATE-QUESTIONS.md` diffs are
+sound. The driver reconciles rather than parks, on three grounds: (1) the fix is
+a mechanical projection of the owner's already-finalized decisions onto derived
+narrative — no product decision, so no human gate is triggered; (2) `build` reads
+`DESIGN-BRIEF.md` as intent, so it must be reconciled before build regardless —
+parking would defer necessary mechanical work to the owner; (3) hard cap of one
+reconcile + one re-grade — a second gate-qc FAIL parks at `owner-action`, no spin.
+Workflow gap recorded: `gate-review` applies owner edits to `GATE-QUESTIONS.md`
+but does not sync `DESIGN-BRIEF.md`, so any owner *edit* guarantees this FAIL.
+
+## Build-half base note
+
+Docs PR #184 merged as the answer-then-merge build signal, which deleted the
+autonomous base `thejudge-auto/image-first-cards` from origin. The driver
+recreated it at `main`'s tip (`99c7a09`) and re-pushed it, restoring the recorded
+autonomous base so `build` can grow a fresh `-work` → base PR. The code
+deliverable's base→main PR is therefore fresh (not #184) and merges last.
 
 ## Node ledger
 
@@ -22,6 +56,13 @@
 | 4 | gate-qc | sonnet | failed | `? → 47` | FAIL loop 3/3: REQ-167 finding confirmed fixed, all quoted blocks re-verified faithful; new finding — new visible loading state on card-detail popup + Quick Lookup pre-submit needs a `screen-layout.md` catalog constraint (REQ-126/DEC-149) or explicit out-of-scope reason; `STATUS.refining`; commit `75c219a` | 2026-09-04 |
 | 3 | define | opus | ok | `? → 29` | attempt 4 (final loop): added `screen-layout.md` load-state constraint gate slot on both surfaces; 4 completeness sweeps pass — sweep (b) also closed a quick-lookup preview-prose derived-spec gap (folded into FLOW-024); `STATUS.refined`; commit `83286e7`; 15 gate slots | 2026-09-04 |
 | 4 | gate-qc | sonnet | ok | `? → 45` | PASS, no findings: every diff's Current text verified verbatim vs live source; all cross-refs resolve; every user-visible surface has a screen-layout row or reasoned exemption; derived↔source REQs in lockstep; run stops at PASS → docs PR + `owner-action` park | 2026-09-04 |
+| — | gate-review | sonnet | ok | `0 → 37` | build half: owner's 15 verdicts applied inside `GATE-QUESTIONS.md` (12 accept, 3 edit: D3/D5/NFR-019; 0 reject); `PRD/sections/` untouched; `STATUS.refined` restored; commit `b16c139` pushed to base | 2026-09-04 |
+| 4 | gate-qc | sonnet | failed | `0 → 9` | FAIL, build-half re-grade (attempt 5): `GATE-QUESTIONS.md` itself is sound — REQ/FLOW/NFR diffs consistently implement name-only (D3) and the endpoint (D5), every quoted "Current" block re-verified verbatim vs live source, all cross-refs resolve, DEC-010→REQ-012/NFR-004 substitution confirmed factually correct (DEC-010 is a retired bodyless row); but `DESIGN-BRIEF.md` was never updated after the gate — it still narrates "no new endpoint"/static artifact (D5) and "name + oracle id" fallback (D3) in 7 places, contradicting the finalized proposal; package `README.md` summary carries the same D5 staleness; minor: one-endpoint-rule amendments given as prose arrows, not Current:/Proposed: blocks; `STATUS.refining`; cannot loop to `define` (build half) — parks at `owner-action`; commit `97ce6b4` | 2026-09-04 |
+| — | gate-review | sonnet | ok | `0 → 39` | attempt 2 (driver reconcile, not park): synced `DESIGN-BRIEF.md` + `README.md` narrative to the finalized D3/D5 gate answers — 9 stale spots fixed (7 flagged + 2 swept); minor one-endpoint amendments (REQ-012/REQ-072/NFR-004/`goals-and-non-goals.md`/`technical-design-rules.md`) reformatted to 6 Current:/Proposed: blocks from live source; `PRD/sections/` zero diff; `STATUS.refining` unchanged; commit `36d5c05` |
+| 4 | gate-qc | sonnet | failed | — | FAIL (attempt 6, re-grade after reconcile): all three attempt-5 findings confirmed resolved — D5 endpoint narration, D3 name-only narration, and the REQ-012/REQ-072/NFR-004/`goals-and-non-goals.md`/`technical-design-rules.md` Current:/Proposed: reformat all verified verbatim against live source, all 24 cross-refs resolve, both screen-layout.md rows exist, REQ-167/DEC-168 lockstep holds; but the cross-cutting "locally carried descriptive fields" / local-metadata-fallback rule D1/D3 reverse is grepped incomplete — REQ-058 (a second authoritative requirement governing the same popup across `ZoneCardPicker`/`ScanReviewBubble`/`EnrichmentStep`), FLOW-002 (zone-collection inspect/remove), FLOW-006 (scan review, a surface the brief's own screen-layout section claims is covered), and derived `scan/README.md` all still assert local-carry/local-metadata-fallback language with no amendment; `DESIGN-BRIEF.md`'s completeness sweeps (a) and (b) are therefore incorrect; `STATUS.refining` unchanged; cannot loop to `define` (build half) — parks at `owner-action`; commit `14eafbd` | 2026-09-04 |
+| — | refine | opus | ok | `n/a (interactive)` | owner confirmed direction, proceed; completed the corner-popup/fallback amendment set — D1/D3 applied across REQ-058, FLOW-002, FLOW-006, two missed REQ-128 spots, derived `scan/README.md` + `shared-chrome/README.md` (sources in lockstep, DEC-168); DEC-078 offline guarantee reconciled with owner-veto notes on REQ-058/FLOW-006; `STATUS.refined`; commit `cf5b9a0` | 2026-09-04 |
+| 4 | gate-qc | sonnet | ok | `0 → 62` | PASS (attempt 7): amendment set verified complete — all named + derived locations amended in lockstep, 38 diff blocks' Current text verbatim, 26 cross-refs resolve, screen-layout coverage complete, DEC-078 reconciliation sound; incidental README `status:` line fix; `STATUS.refined`; commit `87af556` → continue to `plan` | 2026-09-04 |
+| 5 | plan | sonnet | ok | `0 → 51` | `GAMEPLAN.md` + 3 slice docs + 3 criteria files; dependency-safe order A→B→C (A endpoint/artifact/on-demand popup, B ask-ai server-side gated by byte-identical `test:eval`, C slim list gated by NFR-019 80%-gzipped); criteria: A 13 / B 8 / C 10; `STATUS.active`; board → active; no commit (driver publishes) | 2026-09-04 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -31,12 +72,48 @@ enforcement itself stayed live throughout, proven by the run-start canary deny
 (both universal and graph tiers). Run-state is armed from node 3 (`define`)
 onward, restoring the counter and cap.
 
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `D1` | accept | — |
+| `D2` | accept | "Im not sure what would be a best practice, but it also doesnt hurt to make a new endpoint for the retrieval flow if that helps at all, instead of continuing to build out a massive single endpoint right?" |
+| `D3` | edit | "just show the card name, no oracle id is needed" — applied to D3's own heading/description (the downstream diffs REQ-125, FLOW-001, FLOW-024 already showed name-only) |
+| `D4` | accept | — |
+| `D5` | edit | "`GET /api/cards/:oracleId` sounds like exactly what we need... this use case seems like the perfect excuse to justify one" — the endpoint alternative; already implemented throughout REQ-174/175/176/NFR-019/FLOW-024/REQ-128, only D5's own heading updated to state the finalized design |
+| `REQ-174` | accept | — |
+| `REQ-175` | accept | — |
+| `REQ-176` | accept | — |
+| `REQ-167` (amend) | accept | — |
+| `NFR-019` | edit | "give leg 2 a hard pass/fail instead of \"materially smaller\": ... at least 80% smaller (gzipped) ... A relative gate avoids hinging acceptance on an estimated byte ceiling." — the Constraints already carried this 80% gate; Description and "In plain terms" tightened to state it directly |
+| `FLOW-024` | accept | — |
+| `screen-layout.md` (amend) | accept | — |
+| `REQ-128` (amend) | accept | — |
+| `REQ-125` (amend) | accept | — |
+| `FLOW-001` (amend) | accept | — |
+
 ## Open gate
 
-- **Parked at `owner-action`** — gate-qc reached PASS (attempt 4); the spec-forming half is complete. The one human step in this workflow: the owner reviews and answers the 15 accept/edit/reject slots in `PRD/work/image-first-cards/GATE-QUESTIONS.md`, then merges the docs-only PR to `main`.
-- Docs-only base→main PR: https://github.com/ChrisMiho/TheJudge/pull/184
-- Evidence: quality-check PASS (README `## Preparation gate`); 15 gate slots (D1–D5, REQ-174/175/176, REQ-167 amend, NFR-019, FLOW-024, screen-layout.md amend, REQ-128/125/FLOW-001 amend).
-- Resume command (build half): `/graph-implement PRD/work/image-first-cards/`
+- **PARKED at `owner-action` 2026-09-04** — the build half stopped at the driver's capped second gate-qc FAIL (attempt 6). The mechanical staleness is gone; what remains is a genuine product decision only the owner can make.
+
+**What this decides:** whether the image-first change — card detail fetched on demand from the new `GET /api/cards/:oracleId` endpoint (D1), and a failed card image falling back to the card name only (D3) — also applies to the OTHER three surfaces that show the same corner-detail popup, or whether those stay as they are today (descriptive fields carried locally, image-fail shows the local metadata panel).
+
+**In plain terms:** the image-first popup rule is asserted in more live PRD places than the proposal amends. The proposal currently changes the main zone tiles and the shared popup requirement (REQ-128), but leaves the old local-carry rule standing for: the scan-review bubble (FLOW-006, `scan/README.md`), the zone inspect/remove flow (FLOW-002), the enrichment step, and a second authoritative popup requirement that governs all three (REQ-058). Two derived files (`scan/README.md`, `shared-chrome/README.md`) and the zone-collection scan flow (`user-flows.md`) also still say local-carry. If build ships the proposal as-is, the amended REQ-128 and the unamended REQ-058 would contradict each other on the same popup, and those three surfaces would keep behavior the change was meant to replace.
+
+**What happens if you say no** (i.e. these surfaces stay local-carry): the proposal must add an explicit out-of-scope note for each, AND REQ-128's amendment must be narrowed so it does not contradict the unamended REQ-058 — otherwise the corpus ships two rules for one popup. Saying yes means adding amendment slots for REQ-058, FLOW-002, FLOW-006, the enrichment step, `scan/README.md`, `shared-chrome/README.md`, and the `user-flows.md` zone-collection flow, each with the on-demand-fetch + name-only rule. Either answer completes the amendment set; neither can be assumed for you.
+
+- **Complete amendment set the driver grepped** (`locally carried` / `carried locally` / local-metadata-fallback, filtered to the corner-detail popup rule — the separate "local metadata for autocomplete/search" hits in `overview.md`, `integrations-and-data.md`, `goals-and-non-goals.md`, `functional-requirements.md` L22/30/286 are a different concept and are NOT in scope):
+  1. `functional-requirements.md` L1228 — **REQ-058** acceptance criterion (authoritative; governs the popup across ZoneCardPicker / ScanReviewBubble / EnrichmentStep) — not amended
+  2. `functional-requirements.md` L3050 — **REQ-128** Description ("locally carried descriptive fields") — REQ-128 IS in the amend set; confirm the amend covers this Description line, not only its criteria
+  3. `user-flows.md` L53 — **FLOW-002** (zone inspect/remove) — not amended
+  4. `user-flows.md` L135 & L148 — **FLOW-006** (scan review bubble + image-fail edge) — not amended
+  5. `user-flows.md` L12 — zone-collection scan flow — not amended
+  6. `scan/README.md` L112 — derived (DEC-168 source: FLOW-006/REQ-058) — not amended
+  7. `shared-chrome/README.md` L284 — derived — confirm against its source amend
+- **Why it recurred:** this is the same class as the D5 near-miss — a cross-cutting rule's amendment set enumerated from memory rather than by grep (see the queued `single-source-invariants` package, which exists to prevent exactly this).
+- **Evidence:** README `## Preparation gate` (attempt 6 findings, full text); gate-qc ledger row (attempt 6); commit `14eafbd`.
+- **Resume:** decide the scope above, get the proposal's amendment set completed to match (a refinement pass adds the missing slots or the out-of-scope notes; the build half cannot do `define` work itself), then re-run `/graph-implement PRD/work/image-first-cards/` to re-grade at `gate-qc` and continue to build.
+- Docs-only base→main PR (already merged by the owner): https://github.com/ChrisMiho/TheJudge/pull/184
 
 ## Dispatch prompts
 
@@ -339,6 +416,235 @@ Report back:
 3. Findings: none, or the complete issue list
 4. STATUS marker after this node
 5. Any commit hash
+
+### gate-review
+
+graph is controlling
+
+You are the `gate-review` step of an autonomous graph-implement (build-half) run. Invoke the `graph-gate-review` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal. Your job is to apply the owner's already-recorded accept/edit/reject verdicts to the proposed diffs inside `GATE-QUESTIONS.md` — you do NOT re-decide anything and you do NOT ask the owner anything.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+The owner answered all 15 verdict slots in `PRD/work/image-first-cards/GATE-QUESTIONS.md` and merged the docs PR #184. Verdicts: most `accept`; three are `edit` — D3 (image-fail fallback: show name only, not name+oracle-id), D5 (`edit — pick the endpoint alternative: GET /api/cards/:oracleId`), and NFR-019 (`edit — pin a firm, testable first-load budget`). Apply each verdict to that ID's proposed diff INSIDE `GATE-QUESTIONS.md` (finalize the proposal in the work folder). NEVER edit `PRD/sections/` — that is `build`'s apply step. A `reject`ed id (none here) would stay burned.
+
+For each `edit` verdict, reshape that ID's proposed diff to match the owner's stated edit, reading the `- Reason:` line and the D5/D3/NFR-019 answer text for the exact instruction. Keep every accepted diff as-is. Preserve the gate-question format.
+
+Restore `STATUS.refined` when done (the entry-point table then re-enters at `gate-qc` so an owner edit is re-graded).
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. Per-verdict application: one line per ID, especially how each of the three `edit`s was applied to its diff
+3. STATUS marker after this step
+4. Any commit hash
+
+### gate-qc (attempt 5 — build-half re-grade)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 5, of an autonomous graph-implement (build-half) run. This is the re-grade after `gate-review` applied the owner's verdicts. Invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` against the finalized `PRD/work/image-first-cards/GATE-QUESTIONS.md` for PRD alignment and agent-readiness, and produce a PASS or FAIL report. Do NOT write a GAMEPLAN or slice docs — that is the `plan` node.
+
+The owner answered all 15 slots (12 accept, 3 edit, 0 reject) and `gate-review` finalized the proposal inside `GATE-QUESTIONS.md`. Focus especially on whether the three owner edits left the proposal internally consistent:
+- D3 — the image-fail fallback now shows the card name only (no oracle id). Confirm every downstream diff (REQ-125, FLOW-001, FLOW-024) and D3's own text agree on name-only.
+- D5 — card detail is served by a new `GET /api/cards/:oracleId` endpoint. Confirm the four one-endpoint-rule amendments (DEC-010, `goals-and-non-goals.md`, `technical-design-rules.md`, REQ-072) are present and consistent, and that REQ-174/175/176, NFR-019, FLOW-024, REQ-128 all describe the same endpoint design.
+- NFR-019 — the first-load budget is now a firm, testable gate (leg 2 at least 80% smaller, gzipped). Confirm the Description, the In-plain-terms line, and the Constraints all state that same 80% threshold.
+
+Then run your full check across every proposed id: brief internally consistent with the REQ/FLOW/NFR diffs; every user-visible surface has a screen-layout row or reasoned exemption; every derived-spec diff has its authoritative source REQ amended in lockstep (DEC-168); every cross-reference resolves; every product-truth change the brief relies on has a matching slot; ready to slice.
+
+On FAIL, set `STATUS.refining` and report the complete findings list — a build-half gate-qc FAIL cannot loop to `define` (that node does not run here), so the driver parks at `owner-action` for the owner to reconcile their edit. On PASS, set nothing beyond what the skill sets — the driver continues to `plan`.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Verdict: PASS | FAIL
+2. Checked artifact path
+3. The three owner edits — one line each on whether the proposal is now consistent for it
+4. Findings: none, or the complete issue list
+5. STATUS marker after this node
+6. Any commit hash
+
+### gate-review (attempt 2 — reconcile DESIGN-BRIEF to finalized proposal)
+
+graph is controlling
+
+You are the `gate-review` step (attempt 2) of an autonomous graph-implement (build-half) run. This is a bounded mechanical reconciliation, NOT a refinement pass. Do NOT invoke a phase skill and do NOT make or reopen any product decision. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Context: the owner answered all 15 gate slots and gate-review attempt 1 applied the three edits (D3 name-only fallback, D5 new `GET /api/cards/:oracleId` endpoint, NFR-019 firm 80%-gzipped budget) to the authoritative diffs in `PRD/work/image-first-cards/GATE-QUESTIONS.md`. Those diffs are sound and are the source of truth. But `DESIGN-BRIEF.md` and the package `README.md` summary were never synced to those edits, so gate-qc FAILed: the brief still narrates the OLD plan (no new endpoint / static artifact for D5; name + oracle id for D3).
+
+Your ONLY job: project the finalized decisions in `GATE-QUESTIONS.md` onto the stale narrative so the brief and README match the authoritative diffs exactly. Change the narrative to match the decisions; never change the decisions. The 7 known stale spots (verify each against `GATE-QUESTIONS.md`, and sweep for any others):
+
+D5 (endpoint chosen — card detail served by a new `GET /api/cards/:oracleId` endpoint, with the one-endpoint-rule amendments to REQ-012, NFR-004, `goals-and-non-goals.md`, `technical-design-rules.md`):
+1. `DESIGN-BRIEF.md` three-seams section — still says no new endpoint / static artifact.
+2. `DESIGN-BRIEF.md` D5 decision bullet — still presents static-artifact default or an open choice.
+3. `DESIGN-BRIEF.md` material assumption #5 — still assumes no new endpoint.
+4. `DESIGN-BRIEF.md` two Constraints bullets — still say static artifact.
+5. `DESIGN-BRIEF.md` proposed-changes summary — still omits the endpoint.
+6. package `README.md` summary — carries the same no-new-backend-endpoint staleness.
+
+D3 (name-only image-fail fallback — the card name, no oracle id):
+7. `DESIGN-BRIEF.md` D3 decision bullet AND the Non-goals line — still say name + oracle id.
+
+Also address the minor gate-qc finding: the one-endpoint-rule amendments to REQ-012, NFR-004, `goals-and-non-goals.md`, and `technical-design-rules.md` in `GATE-QUESTIONS.md` are written as prose constraint→permits arrows; rewrite them as the same Current:/Proposed: diff-block format the other slots use, preserving the exact same product content (no decision change). Skip this only if reformatting would risk altering the content — if so, say why.
+
+Write ONLY inside `PRD/work/image-first-cards/` (`DESIGN-BRIEF.md`, `README.md`, and `GATE-QUESTIONS.md` for the minor reformat). Do NOT touch `PRD/sections/` or code. Leave `STATUS.refining` as-is (the driver re-grades at gate-qc next). Commit with a clear message and report the hash.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. One line per stale spot (1-7): the before→after narrative change
+3. Whether the minor amendment reformat was done (or why skipped)
+4. Confirmation no product decision was changed and `PRD/sections/` was not touched
+5. Commit hash
+
+### gate-qc (attempt 6 — re-grade after reconcile)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 6, of an autonomous graph-implement (build-half) run. gate-review attempt 2 reconciled `DESIGN-BRIEF.md` and `README.md` to the finalized gate answers (commit `36d5c05`). Invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` against the finalized `PRD/work/image-first-cards/GATE-QUESTIONS.md` for PRD alignment and agent-readiness, and produce a PASS or FAIL report. Do NOT write a GAMEPLAN or slice docs.
+
+The attempt-5 FAIL was that the brief and README still narrated the pre-edit plan. Confirm those are now reconciled: the brief and README describe the new `GET /api/cards/:oracleId` endpoint (D5, not a static artifact), the name-only image-fail fallback (D3, not name + oracle id), and the one-endpoint-rule amendments (REQ-012, REQ-072, NFR-004, goals-and-non-goals.md, technical-design-rules.md) are now Current:/Proposed: blocks matching live source. Then run your full check across every proposed id: brief internally consistent with the REQ/FLOW/NFR diffs; every user-visible surface has a screen-layout row or reasoned exemption; every derived-spec diff has its authoritative source REQ amended in lockstep (DEC-168); every cross-reference resolves; every product-truth change the brief relies on has a matching slot; ready to slice.
+
+On FAIL, set STATUS.refining and report the complete findings list — this is the driver's capped second re-grade, so a FAIL here parks at owner-action. On PASS, set nothing beyond what the skill sets — the driver continues to plan.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Verdict: PASS | FAIL
+2. Checked artifact path
+3. Whether the reconcile resolved the attempt-5 findings (one line for D5, one for D3, one for the amendment reformat)
+4. Findings: none, or the complete issue list
+5. STATUS marker after this node
+6. Any commit hash
+
+### gate-qc (attempt 7 — re-grade after amendment set completed)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 7, of an autonomous graph-implement (build-half) run. A refinement pass (commit `cf5b9a0`) completed the corner-detail-popup / image-fail-fallback amendment set that the attempt-6 FAIL flagged. Invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Validate `PRD/work/image-first-cards/DESIGN-BRIEF.md` against the finalized `PRD/work/image-first-cards/GATE-QUESTIONS.md` for PRD alignment and agent-readiness, and produce a PASS or FAIL report. Do NOT write a GAMEPLAN or slice docs.
+
+The attempt-6 FAIL was that the on-demand-fetch (D1) + name-only-fallback (D3) rule was asserted in more live PRD locations than the proposal amended. Confirm those are now all covered: REQ-058, FLOW-002, FLOW-006, the two REQ-128 spots the earlier draft missed, and the derived `scan/README.md` + `shared-chrome/README.md` — each derived source amended in lockstep (DEC-168). Confirm DEC-078's offline scanning guarantee is reconciled, not deleted: the image-fail fallback stays name-only with no forced fetch and offline-usable, and the two `- Owner note:` lines (REQ-058, FLOW-006) flag the popup-fetch-offline tension for owner veto without silently reversing the guarantee. Then run your full check across every proposed id: brief internally consistent with the diffs; every user-visible surface has a screen-layout row or reasoned exemption; every derived-spec diff has its authoritative source amended in lockstep; every cross-reference resolves; every product-truth change the brief relies on has a matching slot; ready to slice.
+
+On FAIL, set STATUS.refining and report the complete findings list. On PASS, set nothing beyond what the skill sets — the driver continues to plan.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Verdict: PASS | FAIL
+2. Checked artifact path
+3. Whether the completed amendment set resolved the attempt-6 finding (one line), and whether the DEC-078 reconciliation reads as sound
+4. Findings: none, or the complete issue list
+5. STATUS marker after this node
+6. Any commit hash
+
+### plan
+
+graph is controlling
+
+You are node 5 (`plan`) of an autonomous graph-implement (build-half) run. Invoke the `thejudge-map-out` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+
+Verify `Quality-check: PASS` in the package `README.md` `## Preparation gate` section (gate-qc attempt 7, commit `87af556`) before writing any planning artifact — do not self-certify it.
+
+Read `DESIGN-BRIEF.md` (the intent) and the finalized `GATE-QUESTIONS.md` (the approved proposal — 15 owner decisions plus the completed cross-cutting amendment set: REQ-058, FLOW-002, FLOW-006, REQ-128 spots, derived `scan/README.md` + `shared-chrome/README.md`). Produce `GAMEPLAN.md` and lettered slice docs, plus one `slice-<letter>.criteria.json` beside each slice doc (every criterion initialised `false` with an `evidence` block — command pattern, file paths, or `"manual": true`), per `thejudge-map-out/reference.md` and `PRD/instructions/requirement-format.md`. Set `STATUS.active`.
+
+Slice for sequential single-agent implementation. The deliverable spans three seams (per the brief): (1) slim the up-front card list; (2) the new `GET /api/cards/:oracleId` endpoint + backend card-detail artifact + on-demand popup fetch across all popup surfaces, preserving DEC-078 offline resilience; (3) ask-ai resolving card text server-side with the assembled prompt proven byte-identical. Each slice's `build` step will ALSO apply that slice's share of the approved `PRD/sections/` product truth by intent (re-derived against current truth), together with the code — call this out in the GAMEPLAN so the builder writes durable truth with the code, not before.
+
+Do NOT write code or edit `PRD/sections/` — planning only. Do NOT push or open a PR — the driver publishes before `build`.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. STATUS marker set
+3. GAMEPLAN.md path + the ordered slice list (letter + one-line title each)
+4. Confirmation each slice has a `slice-<letter>.criteria.json`
+5. Any commit hash
+
+### build
+
+graph is controlling
+
+You are node 6 (`build`) of an autonomous graph-implement (build-half) run. Invoke the `thejudge-implement-all` skill and follow it exactly, in graph-controlled mode. Run autonomously; there is no human at the terminal. Implement every remaining slice in one session.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Run parameters:
+- Slug: `image-first-cards`
+- Run ID: `graph-20260903-093903`
+- Package path: `PRD/work/image-first-cards/`
+- Recorded autonomous base: `origin/thejudge-auto/image-first-cards` (README `## Autonomous metadata`)
+- Shared work branch (distinct head so the PR is valid): `thejudge-auto/image-first-cards-work`
+- Worktree: `.worktrees/implement-image-first-cards` (repo-local `.worktrees/` root only; refuse any path outside it)
+
+Implement the three slices in the GAMEPLAN's dependency order A → B → C:
+- A — new `GET /api/cards/:oracleId` endpoint + backend card-detail artifact (`scripts/build-card-detail-by-oracle-id.mjs` → `apps/backend/data/cardDetailByOracleId.json`) + on-demand popup fetch across all six card surfaces via `apps/frontend/src/components/CardPresentation.tsx`, preserving DEC-078 offline resilience (image-fail fallback stays name-only with no forced fetch; popup fetch degrades gracefully offline).
+- B — ask-ai resolves card oracle text server-side (`apps/backend/src/prompt/context.ts`) against A's artifact, gated by a byte-identical prompt proof (`npm run test:eval`); only then does the client stop sending card text.
+- C — slim the up-front card list (`scripts/build-card-metadata.mjs` → `apps/frontend/public/data/cardMetadata.json`, `CardMetadataItem` in `apps/frontend/src/types.ts`), gated by the NFR-019 ≥80%-gzipped-reduction assertion.
+
+APPLY the approved product truth: for each slice, write the real `PRD/sections/` edits BY INTENT — re-derived from the finalized `GATE-QUESTIONS.md` diff and `DESIGN-BRIEF.md` against CURRENT truth, never a blind replay — TOGETHER WITH the code, in that slice's PR. This is the one place durable `PRD/sections/` truth is written. Honor the two `- Owner note:` DEC-078 flags: do not reverse the offline scanning guarantee.
+
+Each slice's `slice-<letter>.criteria.json` criteria must all read `true` before the node reports ok — the committed hook earns evidence per issued command; the check reads the emitted files, not a summary.
+
+Every path you write must lie inside `.worktrees/implement-image-first-cards/` or `PRD/work/image-first-cards/` — a write outside that set fails the node.
+
+Open the `thejudge-auto/image-first-cards-work` → `thejudge-auto/image-first-cards` (base) PR showing the whole deliverable. Do NOT merge it, do NOT force-push, do NOT push `main`. `land` (the owner's merge) stays human.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch, on its own line.
+
+Report back:
+1. Outcome: ok | failed (with reason)
+2. Per slice (A/B/C): implemented + criteria all true (with the criteria file evidence)
+3. The `PRD/sections/` product-truth applied per slice
+4. The `-work` → base PR URL
+5. Test/verification commands run and their results
+6. Any commit hashes
 
 ## Instruction ledger
 

@@ -3,6 +3,7 @@ import {
   DEFAULT_STACK_QUESTION,
   NON_STACK_CANONICAL_ZONE_ORDER
 } from "../constants.js";
+import type { CardDetailEntry } from "../cardDetail.js";
 import type {
   ContextTarget,
   GameAskAiRequest,
@@ -118,29 +119,59 @@ function normalizeNamedCounters(entries: NamedCounterEntry[] | undefined): Named
   }, []);
 }
 
-function normalizeZoneItem(card: import("../types/index.js").ZoneCardItem): PromptContextZoneItem | null {
+/** By-oracle-id resolver for a card's descriptive block (REQ-176). Keyed identically to
+ * Slice A's route (`GET /api/cards/:oracleId`) so the two readers never drift. */
+export type CardDetailIndex = Map<string, CardDetailEntry>;
+
+const EMPTY_CARD_DETAIL: CardDetailEntry = {
+  oracleText: "",
+  typeLine: "",
+  manaCost: "",
+  manaValue: 0,
+  colors: [],
+  supertypes: [],
+  subtypes: []
+};
+
+/** REQ-176: resolves a card's descriptive block server-side by `cardId` (oracle id)
+ * instead of trusting whatever the client attached to the request. An unknown id
+ * resolves to the empty block, which renders as "(none) — no oracle text recorded
+ * for this card" downstream (promptFormatting.ts) — the same fallback an
+ * empty/absent client-sent oracle text produced before this change. */
+function resolveCardDetail(cardId: string, cardDetailIndex: CardDetailIndex): CardDetailEntry {
+  return cardDetailIndex.get(normalizeWhitespace(cardId)) ?? EMPTY_CARD_DETAIL;
+}
+
+function normalizeZoneItem(
+  card: import("../types/index.js").ZoneCardItem,
+  cardDetailIndex: CardDetailIndex
+): PromptContextZoneItem | null {
   const name = normalizeWhitespace(card.name);
   if (name.length === 0) return null;
   const owner = card.owner;
+  const detail = resolveCardDetail(card.cardId, cardDetailIndex);
   return {
     cardId: normalizeWhitespace(card.cardId),
     name,
-    oracleText: normalizeCardText(card.oracleText),
+    oracleText: normalizeCardText(detail.oracleText),
     imageUrl: normalizeOptionalText(card.imageUrl),
-    manaCost: normalizeOptionalText(card.manaCost),
-    manaValue: normalizeOptionalNumber(card.manaValue),
-    typeLine: normalizeOptionalText(card.typeLine),
-    colors: normalizeOptionalList(card.colors),
-    supertypes: normalizeOptionalList(card.supertypes),
-    subtypes: normalizeOptionalList(card.subtypes),
+    manaCost: normalizeOptionalText(detail.manaCost),
+    manaValue: normalizeOptionalNumber(detail.manaValue),
+    typeLine: normalizeOptionalText(detail.typeLine),
+    colors: normalizeOptionalList(detail.colors),
+    supertypes: normalizeOptionalList(detail.supertypes),
+    subtypes: normalizeOptionalList(detail.subtypes),
     owner: owner && normalizeWhitespace(owner).length > 0 ? owner : undefined,
     targets: normalizeTargets(card.targets),
     contextNotes: normalizeOptionalText(card.contextNotes) || undefined
   };
 }
 
-function normalizeLookupCard(card: NonNullable<LookupAskAiRequest["cards"]>[number]): LookupPromptCard | undefined {
-  const normalized = normalizeZoneItem({ ...card, targets: [] });
+function normalizeLookupCard(
+  card: NonNullable<LookupAskAiRequest["cards"]>[number],
+  cardDetailIndex: CardDetailIndex
+): LookupPromptCard | undefined {
+  const normalized = normalizeZoneItem({ ...card, targets: [] }, cardDetailIndex);
   if (!normalized) return undefined;
   const lookupCard = { ...normalized };
   delete lookupCard.owner;
@@ -149,9 +180,12 @@ function normalizeLookupCard(card: NonNullable<LookupAskAiRequest["cards"]>[numb
 }
 
 /** REQ-167: normalizes the bounded (max 5) attached-card list. */
-function normalizeLookupCards(cards: LookupAskAiRequest["cards"]): LookupPromptCard[] {
+function normalizeLookupCards(
+  cards: LookupAskAiRequest["cards"],
+  cardDetailIndex: CardDetailIndex
+): LookupPromptCard[] {
   return (cards ?? [])
-    .map((card) => normalizeLookupCard(card))
+    .map((card) => normalizeLookupCard(card, cardDetailIndex))
     .filter((card): card is LookupPromptCard => card !== undefined);
 }
 
@@ -167,7 +201,10 @@ function resolveFallbackQuestion(zones: GameAskAiRequest["gameContext"]["zones"]
   return hasNonStackCards ? DEFAULT_BOARD_QUESTION : DEFAULT_STACK_QUESTION;
 }
 
-export function buildPromptContext(payload: GameAskAiRequest): PromptContext {
+export function buildPromptContext(
+  payload: GameAskAiRequest,
+  cardDetailIndex: CardDetailIndex = new Map()
+): PromptContext {
   const normalizedQuestion = normalizeQuestion(payload.question);
   const gameCtx = payload.gameContext;
 
@@ -205,7 +242,7 @@ export function buildPromptContext(payload: GameAskAiRequest): PromptContext {
     .map((zoneId) => {
       const cards = zonesMap[zoneId] ?? [];
       const items = cards
-        .map((card) => normalizeZoneItem(card))
+        .map((card) => normalizeZoneItem(card, cardDetailIndex))
         .filter((item): item is PromptContextZoneItem => item !== null);
       if (items.length === 0) return null;
       return { zoneId, items };
@@ -217,32 +254,38 @@ export function buildPromptContext(payload: GameAskAiRequest): PromptContext {
       normalizedQuestion.length > 0 ? normalizedQuestion : resolveFallbackQuestion(gameCtx.zones),
     gameContext: normalizedGameContext,
     populatedZones,
-    orderedStack: stackZoneCards.map((card, stackIndex, stack) => ({
-      cardId: normalizeWhitespace(card.cardId),
-      name: normalizeWhitespace(card.name),
-      oracleText: normalizeCardText(card.oracleText),
-      imageUrl: normalizeOptionalText(card.imageUrl),
-      manaCost: normalizeOptionalText(card.manaCost),
-      manaValue: normalizeOptionalNumber(card.manaValue),
-      typeLine: normalizeOptionalText(card.typeLine),
-      colors: normalizeOptionalList(card.colors),
-      supertypes: normalizeOptionalList(card.supertypes),
-      subtypes: normalizeOptionalList(card.subtypes),
-      caster: card.caster ?? "Player 1",
-      targets: normalizeTargets(card.targets),
-      contextNotes: normalizeOptionalText(card.contextNotes) || undefined,
-      manaSpent:
-        typeof card.manaSpent === "number" && Number.isFinite(card.manaSpent) && card.manaSpent >= 0
-          ? card.manaSpent
-          : normalizeOptionalNumber(card.manaValue),
-      stackIndex,
-      stackRole: toStackRole(stackIndex, stack.length)
-    }))
+    orderedStack: stackZoneCards.map((card, stackIndex, stack) => {
+      const detail = resolveCardDetail(card.cardId, cardDetailIndex);
+      return {
+        cardId: normalizeWhitespace(card.cardId),
+        name: normalizeWhitespace(card.name),
+        oracleText: normalizeCardText(detail.oracleText),
+        imageUrl: normalizeOptionalText(card.imageUrl),
+        manaCost: normalizeOptionalText(detail.manaCost),
+        manaValue: normalizeOptionalNumber(detail.manaValue),
+        typeLine: normalizeOptionalText(detail.typeLine),
+        colors: normalizeOptionalList(detail.colors),
+        supertypes: normalizeOptionalList(detail.supertypes),
+        subtypes: normalizeOptionalList(detail.subtypes),
+        caster: card.caster ?? "Player 1",
+        targets: normalizeTargets(card.targets),
+        contextNotes: normalizeOptionalText(card.contextNotes) || undefined,
+        manaSpent:
+          typeof card.manaSpent === "number" && Number.isFinite(card.manaSpent) && card.manaSpent >= 0
+            ? card.manaSpent
+            : normalizeOptionalNumber(detail.manaValue),
+        stackIndex,
+        stackRole: toStackRole(stackIndex, stack.length)
+      };
+    })
   };
 }
 
-export function buildLookupPromptContext(payload: LookupAskAiRequest): LookupPromptContext {
-  const cards = normalizeLookupCards(payload.cards);
+export function buildLookupPromptContext(
+  payload: LookupAskAiRequest,
+  cardDetailIndex: CardDetailIndex = new Map()
+): LookupPromptContext {
+  const cards = normalizeLookupCards(payload.cards, cardDetailIndex);
   return {
     finalQuestion: normalizeQuestion(payload.question),
     ...(cards.length > 0 ? { cards } : {}),

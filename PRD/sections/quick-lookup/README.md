@@ -50,9 +50,10 @@ not a full rules browser or a judge authority.
 - Built: card input is optional and bounded to at most 5 cards (REQ-167). The
   player adds each card by typed autocomplete search (REQ-001/REQ-002 behavior)
   or by camera scan (the shared FLOW-006 engine); each add resolves to one
-  oracle-level `CardMetadataItem`, previewed with its name, image when
-  available, and oracle text with full metadata before submit, and can be
-  removed individually. An add attempted past the cap is blocked and a stated
+  oracle-level `CardMetadataItem`, previewed with its name, image, and color
+  ring immediately; its descriptive block (oracle text and full metadata) loads
+  on demand by oracle id (REQ-174, REQ-175, FLOW-024) behind a brief loading
+  state before submit, and can be removed individually. An add attempted past the cap is blocked and a stated
   limit message is shown to the player, mirroring the existing bounded-add UX
   pattern (`ScanAddOutcome`, the In-Depth zone-collection strip). With zero or
   one card attached, behavior is unchanged from before REQ-167. There are no
@@ -169,12 +170,14 @@ both providers. (DEC-020, REQ-072)
   REQ-167)
 - Built: `cards` is an optional bounded list of at most 5 entries (REQ-167,
   amending DEC-106's single optional `card`); a 6th entry is rejected by
-  validation. Each entry keeps the prior oracle-level shape (`cardId`, `name`,
-  `oracleText` required; `imageUrl`/`manaCost`/`manaValue`/`typeLine`/`colors`/
-  `supertypes`/`subtypes` optional) and carries no zone, caster, owner,
-  targets, or context-notes fields. Zero cards and exactly one card behave
-  identically to the prior single-card shape. (DEC-106, DEC-053, REQ-072,
-  REQ-167)
+  validation. Each entry carries only `cardId` (oracle id), `name`, and
+  `imageUrl` (rendering only, not read by the prompt assembler) and carries no
+  zone, caster, owner, targets, or context-notes fields; the descriptive block
+  (`oracleText`/`manaCost`/`manaValue`/`typeLine`/`colors`/`supertypes`/
+  `subtypes`) is no longer sent, because the backend resolves the
+  card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json`
+  (REQ-175, REQ-176). Zero cards and exactly one card behave identically to the
+  prior single-card shape. (DEC-106, DEC-053, REQ-072, REQ-167, REQ-176)
 - Built: `conversationHistory` is optional and validated identically to the game
   mode (1–20 turns, first `user`, last `assistant`, strictly alternating,
   per-message cap). The `question` character bound and control-character

@@ -32,14 +32,8 @@ function makeZoneCard(cardId: string, name: string, overrides: Partial<ZoneCardI
   return {
     cardId,
     name,
-    oracleText: "",
     imageUrl: "",
-    manaCost: "",
-    manaValue: 0,
-    typeLine: "",
     colors: [],
-    supertypes: [],
-    subtypes: [],
     ...overrides
   };
 }
@@ -218,14 +212,8 @@ describe("ZoneCollectionStep scan focus", () => {
     const opt: CardMetadataItem = {
       cardId: "opt",
       name: "Opt",
-      oracleText: "",
       imageUrl: "https://img.example/opt.jpg",
-      manaCost: "",
-      manaValue: 0,
-      typeLine: "",
       colors: [],
-      supertypes: [],
-      subtypes: []
     };
 
     render(

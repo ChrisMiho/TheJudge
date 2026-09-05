@@ -1,13 +1,16 @@
 import { afterEach, beforeEach, vi } from "vitest";
 
+import { clearCardDetailCache } from "../lib/cardDetail";
 import type { ZoneAskAiPayload } from "../lib/contextFlow";
-import type { CardMetadataItem } from "../types";
 import {
   baseCardMetadataFixture,
   getUrlFromRequest,
   jsonResponse,
   normalizeHeaders,
-  startOnInDepthQuestion
+  startOnInDepthQuestion,
+  toCardDetail,
+  toSlimMetadata,
+  type CardFixture
 } from "./appTestHelpers";
 
 // `App.interaction-flows*.test.tsx` was one 1300-line file until it became the
@@ -31,20 +34,21 @@ export const submittedAskAiHeaders: Array<Record<string, string>> = [];
 export const createCorrelationIdMock = vi.fn(() => "corr-test-id");
 export const logFrontendDebugMock = vi.fn();
 
-let metadataFixture: CardMetadataItem[] = [];
+let metadataFixture: CardFixture[] = [];
 let askAiResponseQueue: AskAiResponse[] = [];
 
 export function queueAskAiResponses(...responses: AskAiResponse[]): void {
   askAiResponseQueue = responses;
 }
 
-export function setMetadataFixture(cards: CardMetadataItem[]): void {
+export function setMetadataFixture(cards: CardFixture[]): void {
   metadataFixture = cards;
 }
 
 export function installInteractionFlowsHarness(): void {
   beforeEach(() => {
     startOnInDepthQuestion();
+    clearCardDetailCache();
     metadataFixture = [...baseCardMetadataFixture];
     askAiResponseQueue = [{ status: 200, body: { answer: "Mock answer" } }];
     submittedAskAiRequests.length = 0;
@@ -56,7 +60,20 @@ export function installInteractionFlowsHarness(): void {
       const url = getUrlFromRequest(input);
 
       if (url === "/data/cardMetadata.json") {
-        return jsonResponse(metadataFixture);
+        return jsonResponse(metadataFixture.map(toSlimMetadata));
+      }
+
+      // Card-detail popup fetch (REQ-175, FLOW-024): serve the descriptive block
+      // from the same fixture the up-front list resolved a card from, matching
+      // production's per-oracle-id `GET /api/cards/:oracleId` shape.
+      const cardDetailMatch = /\/api\/cards\/([^/?]+)$/.exec(url);
+      if (cardDetailMatch && (!init?.method || init.method === "GET")) {
+        const oracleId = decodeURIComponent(cardDetailMatch[1]);
+        const card = metadataFixture.find((candidate) => candidate.cardId === oracleId);
+        if (!card) {
+          return jsonResponse({ error: "card_not_found" }, 404);
+        }
+        return jsonResponse(toCardDetail(card));
       }
 
       if (url.endsWith("/api/ask-ai") && init?.method === "POST") {

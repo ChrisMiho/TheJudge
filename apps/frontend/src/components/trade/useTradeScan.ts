@@ -54,14 +54,8 @@ export function buildScanMetadataFromPrices(prices: CardPrices): CardMetadataIte
     metadata.push({
       cardId: oracleId,
       name: firstPrinting.name,
-      oracleText: "",
       imageUrl: firstPrinting.imageUrl,
-      manaCost: "",
-      manaValue: 0,
-      typeLine: "",
-      colors: [],
-      supertypes: [],
-      subtypes: []
+      colors: []
     });
   }
 

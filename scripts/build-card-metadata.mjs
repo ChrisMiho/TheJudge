@@ -1,9 +1,44 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import { gzipSync } from "node:zlib";
 
 const inputPath = path.resolve("apps/frontend/data/scryfall/default-cards.json");
 const outputPath = path.resolve("apps/frontend/public/data/cardMetadata.json");
+
+/** NFR-019: the slim up-front artifact must be at least this much smaller,
+ * gzipped, than the full (pre-REQ-174) descriptive-block artifact the build
+ * measures in the same run — a relative, self-measuring gate rather than a
+ * hardcoded byte ceiling, so it stays correct as the Scryfall corpus grows.
+ * Owner-recalibrated 2026-09-04: the original 80% figure was derived from
+ * raw-byte proportions but stamped onto a gzipped gate; the removed
+ * descriptive text compresses well while the kept `cardId`/`imageUrl`
+ * barely do, so raw drops ~87% but gzipped only ~48% against the live
+ * 33,399-card corpus. The floor is set to >= 40% gzipped reduction — below
+ * the measured ~48% with headroom for corpus-refresh drift, while still
+ * failing on a first-load regression. */
+export const MIN_GZIPPED_REDUCTION = 0.4;
+
+export function gzippedByteLength(value) {
+  return gzipSync(Buffer.from(JSON.stringify(value))).length;
+}
+
+/**
+ * Compares the slim (REQ-174) and full (pre-slim) artifacts' gzipped sizes
+ * and asserts the required reduction. Pure and independently testable —
+ * callers pass already-computed byte counts rather than re-gzipping here.
+ */
+export function assertGzippedReduction(fullBytes, slimBytes, minReduction = MIN_GZIPPED_REDUCTION) {
+  const reduction = fullBytes === 0 ? 0 : 1 - slimBytes / fullBytes;
+  if (reduction < minReduction) {
+    throw new Error(
+      `NFR-019: slim cardMetadata.json must be at least ${(minReduction * 100).toFixed(0)}% ` +
+        `smaller (gzipped) than the full descriptive-block artifact; measured ` +
+        `${(reduction * 100).toFixed(1)}% (full ${fullBytes}B, slim ${slimBytes}B)`
+    );
+  }
+  return reduction;
+}
 const COLOR_ORDER = ["W", "U", "B", "R", "G"];
 const SUPERTYPE_SET = new Set([
   "Basic",
@@ -227,6 +262,9 @@ export function choosePreferredCard(existingCard, candidateCard) {
   return existingCard;
 }
 
+/** The full descriptive card, pre-REQ-174. Used internally to decide inclusion
+ * (a card with no oracle text anywhere is still skipped) and as the "before"
+ * side of the NFR-019 gzipped-size comparison — it is never written to disk. */
 export function buildOutputCard(card) {
   const typeLine = getTypeLine(card);
   const { supertypes, subtypes } = parseTypeLine(typeLine);
@@ -242,6 +280,18 @@ export function buildOutputCard(card) {
     colors: getColors(card),
     supertypes,
     subtypes
+  };
+}
+
+/** REQ-174: the up-front artifact carries only what a card tile renders
+ * directly. The descriptive block is fetched on demand by oracle id instead
+ * (REQ-175, FLOW-024, Slice A's `cardDetailByOracleId.json`). */
+export function toSlimCard(outputCard) {
+  return {
+    cardId: outputCard.cardId,
+    name: outputCard.name,
+    imageUrl: outputCard.imageUrl,
+    colors: outputCard.colors
   };
 }
 
@@ -275,7 +325,7 @@ export function ingestCard(state, card) {
 
 export function finalizeTransformState(state) {
   let skippedByFilter = state.skippedByFilter;
-  const trimmedCards = [];
+  const fullCards = [];
 
   for (const card of state.cardsByName.values()) {
     const outputCard = buildOutputCard(card);
@@ -284,20 +334,24 @@ export function finalizeTransformState(state) {
       continue;
     }
 
-    trimmedCards.push(outputCard);
+    fullCards.push(outputCard);
   }
 
-  trimmedCards.sort((a, b) => {
+  fullCards.sort((a, b) => {
     const byName = a.name.localeCompare(b.name);
     if (byName !== 0) return byName;
     return a.cardId.localeCompare(b.cardId);
   });
 
   return {
-    cards: trimmedCards,
+    // REQ-174: `cards` is the slim shape actually written to
+    // `apps/frontend/public/data/cardMetadata.json`; `fullCards` (pre-slim
+    // descriptive block) exists only for the NFR-019 gzipped-size comparison.
+    cards: fullCards.map(toSlimCard),
+    fullCards,
     stats: {
       parsedCount: state.parsedCount,
-      includedCount: trimmedCards.length,
+      includedCount: fullCards.length,
       skippedByFilter,
       skippedAsDuplicate: state.skippedAsDuplicate
     }
@@ -386,14 +440,25 @@ async function main() {
     }
   }
 
-  const { cards: trimmedCards, stats } = finalizeTransformState(state);
+  const { cards: slimCards, fullCards, stats } = finalizeTransformState(state);
+
+  // NFR-019: measure both sides in this same run (not against a stale
+  // hardcoded byte count) and fail the build if the slim artifact is not at
+  // least 40% smaller, gzipped, than the full descriptive-block artifact.
+  const fullGzippedBytes = gzippedByteLength(fullCards);
+  const slimGzippedBytes = gzippedByteLength(slimCards);
+  const reduction = assertGzippedReduction(fullGzippedBytes, slimGzippedBytes);
+
   ensureParentDirectory(outputPath);
-  fs.writeFileSync(outputPath, JSON.stringify(trimmedCards));
+  fs.writeFileSync(outputPath, JSON.stringify(slimCards));
 
   console.log(`Parsed cards: ${stats.parsedCount}`);
   console.log(`Included cards: ${stats.includedCount}`);
   console.log(`Skipped by filter: ${stats.skippedByFilter}`);
   console.log(`Skipped duplicates: ${stats.skippedAsDuplicate}`);
+  console.log(`Full artifact (gzipped): ${fullGzippedBytes} bytes`);
+  console.log(`Slim artifact (gzipped): ${slimGzippedBytes} bytes`);
+  console.log(`Gzipped reduction: ${(reduction * 100).toFixed(1)}% (NFR-019 requires >= 40%)`);
   console.log(`Wrote: ${outputPath}`);
 }
 
