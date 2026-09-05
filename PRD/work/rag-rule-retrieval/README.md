@@ -28,3 +28,5 @@ Next step: `/thejudge-quality-check PRD/work/rag-rule-retrieval/`
 ## Open gate
 
 - Answer `PRD/work/rag-rule-retrieval/GATE-QUESTIONS.md` (24 verdict slots), then merge the docs PR to `main`; `graph-implement` builds it from there.
+
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/190

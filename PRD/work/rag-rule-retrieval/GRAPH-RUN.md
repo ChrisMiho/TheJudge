@@ -22,7 +22,7 @@
 
 - Gate: answer the 24 verdict slots in `PRD/work/rag-rule-retrieval/GATE-QUESTIONS.md` (`accept | edit | reject`, Reason required for edit/reject), then merge the docs-only PR (URL below) to `main`.
 - Evidence: `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` at commit `797086a`; gate-qc PASS attempt 1 (row 4 above); `README.md` `## Preparation gate`.
-- Docs PR: PR_URL_PENDING
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/190
 - Resume: `graph-implement` (background loop) picks the package up from `main` after merge; manual form `/graph-implement PRD/work/rag-rule-retrieval/`.
 
 ## Dispatch prompts
