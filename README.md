@@ -13,7 +13,7 @@ Its primary feature, **MTG Assistant**, helps players build staged game context,
 ## Current Product Status
 
 - Product: MTG assistant suite (`DEC-094`); primary MTG Assistant loop is validated (past MVP), deployed on AWS with live OpenAI (`DEC-084`), and being refined from real user feedback
-- Baseline: MTG Assistant (staged zone flow + Ask AI), card scanning, personalization, and planned Trade Balancer; mock-default local backend with optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions/providers-and-contract.md`, indexed from `PRD/sections/decisions.md`)
+- Baseline: MTG Assistant (staged zone flow + Ask AI), card scanning, personalization, and planned Trade Balancer; mock-default local backend with optional OpenAI provider mode (`DEC-020` in `PRD/sections/decisions/providers-and-contract.md`, indexed from `PRD/sections/decisions.md`; canonical rule: `PRD/sections/integrations-and-data.md`)
 - Product source of truth: `PRD/sections/` (start with the `decisions.md` router)
 - Agent workflow skills: see `AGENT-SKILLS.md` (canonical: `.claude/skills/`)
 

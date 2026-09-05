@@ -28,7 +28,7 @@ The primary MTG Assistant loop is considered validated (past MVP):
 
 **Players will use a lightweight MTG assistant if it is fast to use during real gameplay.**
 
-The shipped baseline includes the MTG Assistant staged zone flow, `GameContext`, plain-text answers, card scanning, and personalization. The app is deployed to production on AWS-provided URLs and runs the live OpenAI provider (`DEC-084`); the focus now is gathering real user feedback and refining the suite. Local development continues to use `ASK_AI_PROVIDER=mock` by default under `DEC-020`.
+The shipped baseline includes the MTG Assistant staged zone flow, `GameContext`, plain-text answers, card scanning, and personalization. The app is deployed to production on AWS-provided URLs and runs the live OpenAI provider (`DEC-084`); the focus now is gathering real user feedback and refining the suite. Local development continues to use `ASK_AI_PROVIDER=mock` by default under `DEC-020` (canonical rule: `integrations-and-data.md`).
 
 MTG Assistant intentionally keeps context structured but lightweight:
 - game context (player count, life totals, active player when known, and turn phase)
@@ -56,4 +56,4 @@ Intentional constraints are tracked in `goals-and-non-goals.md`.
 - single main backend endpoint (canonical rule: NFR-004)
 - plain-text response
 - static local metadata file
-- mock-default local provider mode with optional live OpenAI provider mode
+- mock-default local provider mode with optional live OpenAI provider mode (canonical rule: `integrations-and-data.md`)

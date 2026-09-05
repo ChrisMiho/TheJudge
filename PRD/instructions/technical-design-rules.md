@@ -12,8 +12,7 @@ These rules govern how agents may propose architecture or implementation details
 - one main backend endpoint, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) — canonical rule: NFR-004
 - Node.js + TypeScript backend
 - Express or Fastify
-- backend provider boundary with explicit `ASK_AI_PROVIDER` selection (`mock` default, `openai` live)
-- mock-first local baseline before enabling live provider mode
+- backend provider boundary with explicit `ASK_AI_PROVIDER` selection, mock-first local baseline before live mode (canonical rule: `integrations-and-data.md`)
 
 ## Required Constraints
 

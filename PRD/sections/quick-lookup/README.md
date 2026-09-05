@@ -26,7 +26,7 @@ uses. Behind that one screen runs the entire Ask AI backend: the request rides
 the shared `POST /api/ask-ai` endpoint on a `mode: "lookup"` branch, the
 backend assembles one prompt that always retrieves rules from the question and
 layers in every attached card's rulings and metadata (REQ-167), and the same
-provider boundary (mock by default, OpenAI live) generates the answer.
+provider boundary (mock by default, OpenAI live; canonical rule: `integrations-and-data.md`) generates the answer.
 "How do these cards combo" explains a complete combo across the attached set
 or names the missing piece for a partial one. Off-domain questions get an
 in-character "I couldn't find that in the rules" reply rather than a chatbot
@@ -277,7 +277,7 @@ both providers. (DEC-020, REQ-072)
   provider-boundary behavior of its own — the only difference from game mode is
   the prompt text assembled before the boundary. (DEC-020, REQ-074)
 - Built: provider selection is explicit via `ASK_AI_PROVIDER` — mock is the
-  default and returns the assembled prompt text as its `answer` for inspection
+  default (canonical rule: `integrations-and-data.md`) and returns the assembled prompt text as its `answer` for inspection
   (DEC-017 / DEC-033); `openai` is the live path behind the same interface.
   HTTP contracts stay frozen across the swap and upstream failures map to the
   normalized error shape (the "Miho is working on it" copy). (DEC-020, DEC-017,

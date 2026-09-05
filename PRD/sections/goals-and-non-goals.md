@@ -35,7 +35,7 @@
 - card-gated submit flow requiring at least one selected-zone card
 - Decrypt Stack submit flow
 - markdown-rendered AI answers in the shared conversation thread (wire contract remains a plain string; DEC-123, REQ-102)
-- mock-first integration path
+- mock-first integration path (canonical rule: `integrations-and-data.md`)
 - one main backend endpoint, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) — canonical: NFR-004
 - app-wide CSS decorative-motion and visual-feedback baseline with reduced-motion support (DEC-079, REQ-059, NFR-006)
 - predefined browser-local palette personalization hosted in the feature-portal Menu (DEC-066, DEC-110, REQ-044)

@@ -1,6 +1,6 @@
 # Slice B — INV-MOCK-FIRST: one canonical home for "mock provider by default locally"
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -46,10 +46,23 @@ place that carries the full rule; every other home becomes a short pointer.
       Current-Editorial-Notes) each append the pointer
 - [ ] B8 — root `README.md` (~16 onboarding restatement) appends the pointer;
       `README.md:115` is confirmed unchanged
-- [ ] B9 — re-grep the mock-first pattern family across `PRD/` and root
+- [x] B9 — re-grep the mock-first pattern family across `PRD/` and root
       `README.md`; every returned rule-stating line is the canonical home or
       a listed pointer above; no unlisted rule-stating home remains (manual
       check — no test command applies to this docs-only slice)
+
+### Re-grep observation: 2026-09-04 B9 — mock-first family
+
+Re-ran the Verification block pattern after B1–B8 landed. Remaining hits are
+the new `integrations-and-data.md:16` canonical text, the eight edited
+pointer homes, per-feature implementation details that use `ASK_AI_PROVIDER`
+without restating the mock-first rule (banner/debug-sidecar mechanics in
+`functional-requirements.md`, `system-map.md`, `system-map/prompt-assembly.md`,
+`shared-chrome/README.md`, `non-functional-requirements.md`,
+`integrations-and-data.md:422,443`), setup/env references
+(`README.md:69-71,115-116`), and retired `decisions.md` index rows
+(DEC-017, DEC-033, DEC-085). `README.md:115` (the `ASK_AI_PROVIDER` env-var
+doc) is confirmed unchanged. No unlisted rule-stating home remains.
 
 ## Verification
 

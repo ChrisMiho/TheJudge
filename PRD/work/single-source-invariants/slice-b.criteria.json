@@ -5,55 +5,55 @@
     {
       "id": "B1",
       "statement": "integrations-and-data.md:16 carries the full canonical mock-first rule text and the echoed-in list of the other seven homes",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/integrations-and-data.md"] }
     },
     {
       "id": "B2",
       "statement": "overview.md Current Product Status (~31) and Key Constraints (~59) each append the integrations-and-data.md pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/overview.md"] }
     },
     {
       "id": "B3",
       "statement": "goals-and-non-goals.md Shipped capabilities (~38) appends the pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/goals-and-non-goals.md"] }
     },
     {
       "id": "B4",
       "statement": "technical-design-rules.md Allowed Design Direction (~15-16) collapses to one line carrying the pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/instructions/technical-design-rules.md"] }
     },
     {
       "id": "B5",
       "statement": "in-depth/README.md (~46 feature-summary, ~370 Provider-boundary restatement) each append the pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/in-depth/README.md"] }
     },
     {
       "id": "B6",
       "statement": "quick-lookup/README.md (~29 feature-summary, ~279 Provider-boundary restatement) each append the pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/quick-lookup/README.md"] }
     },
     {
       "id": "B7",
       "statement": "PRD/README.md (~137 status note, ~140 editorial note) each append the pointer",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/README.md"] }
     },
     {
       "id": "B8",
       "statement": "root README.md (~16 onboarding restatement) appends the pointer; README.md:115 is confirmed unchanged",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["README.md"] }
     },
     {
       "id": "B9",
       "statement": "A fresh re-grep of the mock-first pattern family across PRD/ and root README.md shows every rule-stating line is the canonical home or a listed pointer; no unlisted rule-stating home remains",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     }
   ]

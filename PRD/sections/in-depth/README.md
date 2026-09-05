@@ -43,7 +43,7 @@ runs the full Ask AI backend on its `mode: "game"` branch — the request carrie
 whole `GameContext`, the backend assembles one large prompt (general context,
 phase guidance, every populated zone with full card text, curated and retrieved
 Comprehensive Rules, per-card WotC rulings, and gated Commander Spellbook combo
-context), and the same provider boundary (mock by default, OpenAI live) returns a
+context), and the same provider boundary (mock by default, OpenAI live; canonical rule: `integrations-and-data.md`) returns a
 plain-text answer. The answer opens the shared chat workspace, where the game
 context is frozen and the player can ask text follow-ups that carry the whole
 conversation forward. It is an assistant, not a rules engine — it validates no
@@ -368,7 +368,7 @@ the game-mode request drives them. (DEC-020, DEC-010)
 - Built: assembly produces one prepared prompt handed to the shared
   `AskAiProvider.generateAnswer`; the provider consumes prompt text and never
   inspects `mode`. Provider selection is explicit via `ASK_AI_PROVIDER` — mock is
-  the default and returns the exact assembled prompt (including
+  the default (canonical rule: `integrations-and-data.md`) and returns the exact assembled prompt (including
   `CONVERSATION HISTORY`, frozen `gameContext`, phase guidance, and any combo
   section) as its `answer` for inspection; `openai` is the live path. HTTP
   contracts stay frozen across the swap and upstream failures map to the

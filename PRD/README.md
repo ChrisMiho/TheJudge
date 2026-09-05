@@ -134,10 +134,10 @@ Read in this order:
 Work packages: see [work/STATUS.md](./work/STATUS.md) (skill-maintained board + per-package `STATUS.*` markers).
 
 ## Current Editorial Notes
-- Current product status: TheJudge is an MTG assistant suite (`DEC-094`); the primary MTG Assistant loop is validated (past MVP) and deployed on AWS with the live OpenAI provider; local development remains mock-default (`DEC-020`, `DEC-084`).
+- Current product status: TheJudge is an MTG assistant suite (`DEC-094`); the primary MTG Assistant loop is validated (past MVP) and deployed on AWS with the live OpenAI provider; local development remains mock-default (`DEC-020`, `DEC-084`; canonical rule: `sections/integrations-and-data.md`).
 - Duplicate-card blocking is temporary and should not be treated as long-term product truth.
 - Stack ordering is critical and must remain consistent across UI, API payloads, and prompt-building logic.
-- Default local provider mode is mock (`ASK_AI_PROVIDER=mock`); live OpenAI path is documented in `DEC-020`, `sections/integrations-and-data.md`, and `apps/backend/src/providers/README.md`.
+- Default local provider mode is mock (`ASK_AI_PROVIDER=mock`); live OpenAI path is documented in `DEC-020`, `sections/integrations-and-data.md`, and `apps/backend/src/providers/README.md` (canonical rule: `sections/integrations-and-data.md`).
 - Local OpenAI onboarding should keep non-secrets in `apps/backend/.env` and real secrets in `.secrets/openai-dev.env`.
 - Provider modularity remains a hard rule: route handlers stay contract-focused and only consume the provider interface selected in bootstrap/factory composition.
 

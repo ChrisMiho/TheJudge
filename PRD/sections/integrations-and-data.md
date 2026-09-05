@@ -13,7 +13,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - Backend: Node.js + TypeScript
 - API Framework: Express or Fastify
 - Validation: request validation layer
-- AI Provider: backend provider boundary (`ASK_AI_PROVIDER=mock` default, `ASK_AI_PROVIDER=openai` for live answers)
+- AI Provider: backend provider boundary (`ASK_AI_PROVIDER=mock` default, `ASK_AI_PROVIDER=openai` for live answers). **Canonical rule — mock-first local default:** local development defaults to the mock provider; the live OpenAI provider is opt-in via `ASK_AI_PROVIDER=openai` and is what production runs. This is the single authoritative statement; echoed in `overview.md`, `goals-and-non-goals.md`, `instructions/technical-design-rules.md`, `in-depth/README.md`, `quick-lookup/README.md`, `PRD/README.md`, and root `README.md` (enumerate by grep before amending — see `instructions/writing-rules.md`, grep-before-amend).
 - Provider Access: provider SDKs are backend-only
 - Storage: none for the core product
 
