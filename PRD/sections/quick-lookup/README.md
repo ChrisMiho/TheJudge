@@ -198,10 +198,12 @@ both providers. (DEC-020, REQ-072)
   every attached card — each card's full metadata including oracle text using
   the same per-card formatting as populated-zone cards (DEC-042 / REQ-030),
   each card's WotC rulings under one `CARD (looked up)` / `OFFICIAL RULINGS`
-  heading per section, and System 3 additionally scored against every attached
-  card's oracle text and type line, not only the question. With no cards
-  attached, the rulings section and card section are empty and System 3 scores
-  on the question alone. (DEC-107, REQ-074, REQ-167)
+  heading per section, and System 3 additionally scored against a compact
+  signal for every attached card — its name, type line, and keywords — not its
+  full oracle text, which was measured to collapse supplemental recall
+  (REQ-178). With no cards attached, the rulings section and card section are
+  empty and System 3 scores on the question alone. (DEC-107, REQ-074, REQ-167,
+  REQ-178)
 - Built: game-state-only sections are always omitted — zone sections, `PHASE
   GUIDANCE` (REQ-024), System 2 game-state topic gating (DEC-045), and the merged
   zone scope sentence (DEC-025) — because lookup mode never carries game state.
@@ -262,8 +264,9 @@ both providers. (DEC-020, REQ-072)
   retrieval over the loaded rule index, excluding the curated rule numbers the
   always-on core topics already carry, returning a small capped set of the
   best-scoring rules. For lookup the query is built from the question tokens
-  always, plus every attached card's oracle text and type line (REQ-167).
-  (DEC-046, REQ-022, DEC-107, REQ-167)
+  always, plus each attached card's name, type line, and keywords — not its
+  oracle text (REQ-167, REQ-178). (DEC-046, REQ-022, REQ-178, DEC-107,
+  REQ-167)
 - Built: the always-on core game-rules topics are a fixed curated set
   (stack-and-priority, targets, zones, triggered-ability basics), not the
   state-gated selector the game flow uses — lookup carries no game state to gate
@@ -313,8 +316,9 @@ as the current shipped configuration, not product truth.
   ending with assistant, per-message cap — shared with the main flow, not a
   Quick-Lookup-specific policy. (REQ-072, REQ-075)
 - Retrieval: System 3 returns a small capped best-scoring set (top 5), curated
-  core-topic rule numbers excluded; question tokens always score, plus every
-  attached card's oracle/type tokens (REQ-167). (DEC-046, REQ-022, REQ-167)
+  core-topic rule numbers excluded; question tokens always score, plus each
+  attached card's name, type line, and keywords (REQ-167, REQ-178). (DEC-046,
+  REQ-022, REQ-178, REQ-167)
 - Card attach cap: the pre-submit card-attach strip accepts at most 5 cards
   (REQ-167); an add attempted past the cap is blocked with a stated limit
   message. (REQ-167, `QuickLookupApp.tsx`)

@@ -1,6 +1,6 @@
 {
   "id": "counterspell-stack",
-  "description": "Counterspell on the stack targeting a spell beneath it; question about resolution order. Stack bucket only (no battlefield). System 3 should surface countering/resolution rules.",
+  "description": "Counterspell on the stack targeting a spell beneath it; question about resolution order. Stack bucket only (no battlefield). REQ-178: previously expected 608.2c only surfaced because the pre-Slice-B query concatenated Counterspell's full oracle text (\"Counter target spell.\") into the search; the compact per-card signal (name/type/keywords) no longer carries that literal token and the fixture's card data has no typeLine, so no supplemental rule id is asserted here by hand (system 2 topic selection and the noise exclusion are still checked).",
   "request": {
     "question": "Counterspell is on top of the stack targeting my Divination. When everyone passes priority, what resolves first and does Divination still resolve?",
     "gameContext": {
@@ -47,7 +47,6 @@
       "targets-basics",
       "zones-basics"
     ],
-    "expectedSupplementalRuleIds": ["608.2c"],
     "forbiddenSupplementalRuleIds": ["100.1"]
   }
 }

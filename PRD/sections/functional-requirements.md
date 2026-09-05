@@ -1724,7 +1724,7 @@
 - Description: For `mode: "lookup"`, the backend must assemble one prompt that always runs question-driven rules retrieval, layers in per-card enrichment when a card is attached, omits game-state-only sections, and guards against off-domain questions.
 - Acceptance Criteria:
   - the assembled prompt always includes the static MTG reference block (DEC-025), the always-on core game-rules topics (DEC-045 core set), and question-scored System 3 supplemental rules (DEC-046 / REQ-022)
-  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings (DEC-029), and System 3 scored against the card as well as the question
+  - when a card is attached, the assembled prompt additionally includes that card's full metadata including oracle text using the same per-card formatting as populated-zone cards (REQ-030), that card's WotC rulings (DEC-029), and System 3 scored against the question plus a compact signal for each attached card — name, type line, and keyword list — rather than the card's full oracle text (REQ-178)
   - the assembled prompt omits zone sections, `PHASE GUIDANCE` (REQ-024), System 2 game-state topic gating (DEC-045), and the merged zone scope sentence (DEC-025), because this path never carries game state
   - the prompt instructs the model to quote only from the provided rule excerpts and to present the relevant ones verbatim plus an explanation
   - the prompt instructs the model to respond to off-domain / non-MTG questions in the "confused rules lookup" persona (DEC-108) rather than a direct answer or a generic capability refusal
@@ -3834,7 +3834,7 @@
 - Acceptance Criteria:
   - The lookup request carries an optional **bounded list** of cards in place of the single optional card; each entry carries only identity — `cardId` (oracle id) and `name` — and carries no zone, owner, caster, targets, or context-notes fields. The descriptive block (`oracleText`, `imageUrl`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json` (REQ-175, REQ-176). The per-card enrichment below is unchanged — it resolves each attached card's metadata server-side rather than from the request.
   - The pre-submit view lets the player add, preview, and remove more than one card; an explicit cap of **5 cards** is enforced and stated to the player so the prompt stays bounded.
-  - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings (DEC-029) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus every attached card's oracle text and type line.
+  - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings (DEC-029) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus a compact signal for every attached card — name, type line, and keyword list. It no longer scores over each card's full oracle text, which was measured to drop supplemental recall@5 from 0.577 to 0.026 on a labelled benchmark (REQ-178).
   - Combo enrichment (Commander Spellbook) adapts to the card set: the attached cards become the match instances, amending REQ-094's single-card lookup rule. A candidate qualifies when it contains at least one attached card as an exact ingredient or authoritative template match, and candidates covering more of the attached cards rank ahead of those covering fewer (attached-card coverage), applied before popularity — so "how do these cards combo" surfaces the combos using the most of the attached cards first. With exactly one card attached this is identical to today's single-card lookup; with zero cards attached, behavior is unchanged (no combo data without explicit intent and at least one card). (DEC-116/REQ-094 [amended]/REQ-095)
   - When an eligible candidate is **complete** — every ingredient slot filled by an exact or authoritative-template match across the attached cards — the answer explains that combo, with per-ingredient card state left explicitly unverified (a lookup carries no board). When a candidate is **partial** — it qualifies on at least one attached card but at least one ingredient slot is unmatched — the answer names each missing ingredient and describes what would fill that role: the missing ingredient's own card name (missing exact ingredient) or template/category description (missing template ingredient) drawn from the combo definition, so the player learns how the combo could be completed rather than getting nothing. This is a description of the missing role, **not** a card recommendation or search — no card-suggestion engine is added. Complete/partial classification for lookup and its at-most-five selection/ranking are defined in REQ-094 (amended); the answer text itself is rendered by REQ-095's existing present/missing ingredient enrichment, which already covers game and lookup candidates alike and needs no new criterion here.
   - With no cards attached, behavior is identical to today's no-card lookup; with exactly one card attached, identical to today's single-card lookup.
@@ -4086,3 +4086,27 @@
   - located in code: `apps/backend/src/eval/retrievalReportInputs.ts` calls `buildPromptContext(request)` and `preparePromptInput(request, …)` with no `cardDetailIndex`, while `apps/backend/src/eval/contextEvaluationHarness.test.ts` builds one per fixture (`cardDetailIndexFromRequest`)
   - this is Step 1 of the RAG gameplan; Steps 2–5 (REQ-178, REQ-179, REQ-180, REQ-181) each state their gate against the baseline this requirement records
   - the benchmark corpus and scoring logic originate from a throwaway harness on `origin/explore/semantic-rule-retrieval` (`PRD/work/combo-context-validation/harness/rag/`); committing it in-repo is the point of this requirement
+
+### REQ-178
+- Title: System 3 retrieval query is built from the question plus a compact card signal
+- Priority: high
+- Description: The System 3 supplemental-rules search query is built from the player's question plus a compact per-card signal — each submitted or attached card's name, type line, and keyword list — instead of the question plus every card's full oracle text, context notes, zone ids, and turn phase. The assembled prompt is unchanged; only the internal retrieval query changes.
+- Acceptance Criteria:
+  - the retrieval query carries the player's question and, per card, that card's name, type line, and keyword list; it no longer concatenates full oracle text or context notes into the query
+  - the change applies to both game mode and lookup mode, through the one shared retrieval path (no second implementation)
+  - the assembled prompt text is unchanged by this requirement: card oracle text still renders in its own card sections exactly as today, and the supplemental section still carries up to 5 excerpts
+  - measured on the committed benchmark (REQ-177), multi-card recall@5 lands within 0.10 of the same build's clean-query recall@5
+  - measured on the committed benchmark, clean-query recall@5 does not regress below the REQ-177 baseline
+  - the labelled eval fixtures and the relevance report are re-run and their new expected outcomes are re-labelled by hand where retrieval legitimately improves — never by copying current scorer output (REQ-032)
+- Constraints:
+  - backend and prompt-internal only; no `AskAiRequest` change, no Zod schema change, no frontend change, no new endpoint
+  - the acceptance gate is stated as a gap between two numbers measured on the same build, not as an absolute floor derived by proportion; absolute recall figures are recorded as evidence
+  - keyword lists come from the signal available at the time this ships (the committed keyword vocabulary); REQ-180 later replaces that source with per-card Scryfall keywords without changing this requirement's shape
+- Dependencies:
+  - REQ-177 (the benchmark and repaired report this gate is measured on)
+  - REQ-022 (the System 3 enrichment requirement this narrows the query for)
+  - REQ-167 (multi-card lookup, whose attached-card set feeds the query)
+  - REQ-074 (lookup prompt assembly)
+- Notes:
+  - this is Step 2 of the RAG gameplan and is independent of embeddings: a semantic query built from the same polluted input inherits the same flood (measured: semantic drops 0.885 clean to 0.603 polluted)
+  - located in code: `buildQueryParts` in `apps/backend/src/gameRulesRetrieval.ts` currently appends turn phase, zone ids, and every card's name, type line, oracle text, and context notes

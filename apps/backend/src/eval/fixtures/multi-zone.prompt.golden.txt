@@ -138,11 +138,11 @@ Example: An effect says that you may cast Aura spells as though they had flash, 
 
 601.3c. 601.3c If an effect allows a player to cast a spell as though it had flash only if an alternative or additional cost is paid, that player may begin to cast that spell as though it had flash.
 
-702.8a. 702.8a Flash is a static ability that functions in any zone from which you could play the card it’s on. “Flash” means “You may play this card any time you could cast an instant.”
-
 601.3d. 601.3d If a spell would have flash only if certain conditions are met, its controller may begin to cast that spell as though it had flash if those conditions are met.
 
 601.5a. 601.5a Once a player has begun casting a spell that had flash because certain conditions were met or that could be cast as though it had flash because certain conditions were met (see 601.3d), they may continue to cast that spell as though it had flash even if those conditions stop being met.
+
+702.8. 702.8. Flash
 
 SCOPE
 Zones with no cards or not included in this submission (ignore for scope unless the question says otherwise): battlefield, exile, library, command.

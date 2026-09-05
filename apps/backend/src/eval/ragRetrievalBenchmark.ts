@@ -18,6 +18,7 @@ import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import {
+  buildCompactCardSignal,
   buildQueryTokensFromParts,
   loadGameRulesRuleIndex,
   retrieveRulesForQuery,
@@ -72,6 +73,16 @@ function meanReciprocalRank(ranks: number[]): number {
   return ranks.reduce((sum, rank) => sum + (rank > 0 ? 1 / rank : 0), 0) / ranks.length;
 }
 
+/**
+ * REQ-178: the "polluted" condition simulates attached cards through the same
+ * compact per-card signal production's `buildQueryParts` builds — name, type
+ * line, and the keyword-vocabulary subset of oracle text, never full oracle
+ * text — so this benchmark measures whatever query shape is actually shipped,
+ * slice over slice, rather than freezing the pre-Slice-B pollution shape. The
+ * committed card-detail artifact carries no `name` field (it is keyed by
+ * oracle id, not card id), so the name component is empty here; that is a
+ * benchmark-methodology limitation, not a production behavior difference.
+ */
 export function buildPollutionText(cardDetailIndex: Map<string, CardDetailEntry>): string {
   const oracleIds = [...cardDetailIndex.keys()].sort();
   const chosen = POLLUTION_ORACLE_INDEXES.map((index) => oracleIds[index % oracleIds.length]).filter(
@@ -80,7 +91,7 @@ export function buildPollutionText(cardDetailIndex: Map<string, CardDetailEntry>
   return chosen
     .map((oracleId) => {
       const entry = cardDetailIndex.get(oracleId);
-      return entry ? `${entry.oracleText} ${entry.typeLine}` : "";
+      return entry ? buildCompactCardSignal("", entry.typeLine, entry.oracleText) : "";
     })
     .join(" ");
 }

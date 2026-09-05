@@ -6,6 +6,7 @@ import {
 import { formatGameRulesSection, type GameRulesTopic } from "../gameRules.js";
 import { ALWAYS_ON_TOPIC_IDS, selectGameRulesTopics } from "../gameRulesTopicSelection.js";
 import {
+  buildCompactCardSignal,
   buildQueryTokensFromParts,
   collectCuratedRuleIds,
   retrieveRulesForQuery,
@@ -161,12 +162,16 @@ function prepareLookupPromptInput(
   );
   const gameRulesSection = formatGameRulesSection(gameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(gameRulesTopics);
-  // REQ-167: System 3 scores the question plus every attached card's oracle
-  // text and type line, not just one.
+  // REQ-167 / REQ-178: System 3 scores the question plus, for every attached
+  // card, the same compact per-card signal (name, type line, keyword list)
+  // game mode builds via `buildCompactCardSignal` — not the card's full oracle
+  // text, which was measured to drop supplemental recall@5 from 0.577 to
+  // 0.026 on a labelled benchmark. One shared signal builder, not a second
+  // implementation, so lookup and game mode cannot drift apart again.
   const query = buildQueryTokensFromParts({
     questionText: request.question,
     oracleText: (context.cards ?? [])
-      .map((card) => `${card.oracleText} ${card.typeLine}`)
+      .map((card) => buildCompactCardSignal(card.name, card.typeLine, card.oracleText))
       .join(" ")
   });
   const conversationHistory = request.conversationHistory;

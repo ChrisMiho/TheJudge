@@ -215,34 +215,58 @@ export type QueryToken = { token: string; source: QueryTokenSource; isKeyword: b
 
 /**
  * Split the prompt context into a question-sourced string (the user's question)
- * and an oracle-sourced string (turn phase, zones, card fields, and context notes).
+ * and an oracle-sourced string — REQ-178: a compact per-card signal (name, type
+ * line, and keyword list) for every submitted or attached card, not the card's
+ * full oracle text or context notes, and not turn phase or zone ids. A
+ * five-card board's full oracle text was measured to drop recall@5 from 0.577
+ * to 0.026 on the committed benchmark (REQ-177) by drowning the question in
+ * card vocabulary; the compact signal is enough to know what the cards are
+ * without the flood.
  */
-function buildQueryParts(context: PromptContext): { questionText: string; oracleText: string } {
+function extractCardKeywords(oracleText: string, keywordVocabulary: Set<string>): string[] {
+  const found = new Set<string>();
+  for (const token of tokenize(oracleText)) {
+    if (keywordVocabulary.has(token)) found.add(token);
+  }
+  return [...found];
+}
+
+/**
+ * Name + type line + the subset of a card's oracle text matching the known
+ * keyword vocabulary — never the card's full oracle text or context notes
+ * (REQ-178). Exported so tooling that needs to build the same compact signal
+ * outside a full `PromptContext` (the committed retrieval benchmark, REQ-177)
+ * measures the same query production actually builds, rather than a
+ * hand-rolled approximation that could silently drift from it.
+ */
+export function buildCompactCardSignal(
+  name: string,
+  typeLine: string,
+  oracleText: string,
+  keywordVocabulary: Set<string> = getDefaultScoringResources().keywordVocabulary
+): string {
+  return [name, typeLine, ...extractCardKeywords(oracleText, keywordVocabulary)].join(" ");
+}
+
+function buildQueryParts(
+  context: PromptContext,
+  keywordVocabulary: Set<string> = getDefaultScoringResources().keywordVocabulary
+): { questionText: string; oracleText: string } {
   const questionText = context.finalQuestion;
 
-  const oracleParts: string[] = [];
-  oracleParts.push(context.gameContext.turnPhase);
-  oracleParts.push(context.gameContext.selectedZones.join(" "));
+  const cardParts: string[] = [];
 
   for (const stackItem of context.orderedStack) {
-    const stackParts = [stackItem.name, stackItem.typeLine, stackItem.oracleText];
-    if (stackItem.contextNotes) {
-      stackParts.push(stackItem.contextNotes);
-    }
-    oracleParts.push(stackParts.join(" "));
+    cardParts.push(buildCompactCardSignal(stackItem.name, stackItem.typeLine, stackItem.oracleText, keywordVocabulary));
   }
 
   for (const zone of context.populatedZones) {
     for (const item of zone.items) {
-      const itemParts = [zone.zoneId, item.name, item.typeLine, item.oracleText];
-      if (item.contextNotes) {
-        itemParts.push(item.contextNotes);
-      }
-      oracleParts.push(itemParts.join(" "));
+      cardParts.push(buildCompactCardSignal(item.name, item.typeLine, item.oracleText, keywordVocabulary));
     }
   }
 
-  return { questionText, oracleText: oracleParts.join(" ") };
+  return { questionText, oracleText: cardParts.join(" ") };
 }
 
 /** Thin concatenation of question + oracle parts, retained for debug output. */
@@ -255,7 +279,7 @@ export function buildQueryTokens(
   context: PromptContext,
   keywordVocabulary: Set<string> = getDefaultScoringResources().keywordVocabulary
 ): { queryText: string; tokens: QueryToken[]; queryRuleIds: string[] } {
-  return buildQueryTokensFromParts(buildQueryParts(context), keywordVocabulary);
+  return buildQueryTokensFromParts(buildQueryParts(context, keywordVocabulary), keywordVocabulary);
 }
 
 export function buildQueryTokensFromParts(

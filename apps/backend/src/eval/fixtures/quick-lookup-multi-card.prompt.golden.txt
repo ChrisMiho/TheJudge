@@ -62,13 +62,13 @@ Use these additional official rule excerpts as reference. They do not override t
 
 702.2c. 702.2c Any nonzero amount of combat damage assigned to a creature by a source with deathtouch is considered to be lethal damage for the purposes of determining if excess damage is being dealt.
 
-702.170a. 702.170a Plot is a keyword ability that functions while the card with plot is in a player’s hand. “Plot [cost]” means “Any time you have priority during your main phase while the stack is empty, you may exile this card from your hand and pay [cost]. It becomes a plotted card.”
-
 702.2b. 702.2b A creature with toughness greater than 0 that’s been dealt damage by a source with deathtouch since the last time state-based actions were checked is destroyed as a state-based action. See rule 704.
 
 702.2. 702.2. Deathtouch
 
 702.2a. 702.2a Deathtouch is a static ability.
+
+702.2d. 702.2d The deathtouch rules function no matter what zone an object with deathtouch deals damage from.
 
 CARD (looked up)
 name: Questing Beast

@@ -25,7 +25,7 @@ See `GRAPH-RUN.md`.
 | Slice | Step / REQ | Title | Status |
 | --- | --- | --- | --- |
 | [A](slice-a-trustworthy-measurement.md) | Step 1 / REQ-177 | Make the recall ruler trustworthy | done |
-| [B](slice-b-fix-the-query.md) | Step 2 / REQ-178 | Stop drowning the question in card text | planned |
+| [B](slice-b-fix-the-query.md) | Step 2 / REQ-178 | Stop drowning the question in card text | done |
 | [C](slice-c-clean-the-corpus.md) | Step 3 / REQ-179 | Clean the junk out of the rule index | planned |
 | [D](slice-d-scryfall-keywords.md) | Step 4 / REQ-180 | Use the keyword list Scryfall already gives us | planned |
 | [E](slice-e-pick-rules-by-meaning.md) | Step 5 / REQ-181 | Pick rules by meaning, not word overlap | planned |

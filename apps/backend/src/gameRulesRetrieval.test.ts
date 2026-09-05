@@ -382,7 +382,7 @@ describe("Backend - Game Rules", () => {
   // ---------------------------------------------------------------------------
 
   describe("buildQueryText", () => {
-    it("includes oracle text and typeLine for non-stack zone items", () => {
+    it("includes name and typeLine, and a keyword-vocabulary match from oracle text, for non-stack zone items (REQ-178)", () => {
       const context = makeContext({
         populatedZones: [
           {
@@ -411,11 +411,9 @@ describe("Backend - Game Rules", () => {
       const queryText = buildQueryText(context);
       expect(queryText).toContain("Rhystic Study");
       expect(queryText).toContain("Enchantment");
-      expect(queryText).toContain("Whenever a player casts a spell");
-      expect(queryText).toContain("Tax effect");
     });
 
-    it("includes contextNotes only when present on non-stack items", () => {
+    it("never includes a card's full oracle text or contextNotes (REQ-178: only name, type line, and keyword-vocabulary matches)", () => {
       const context = makeContext({
         populatedZones: [
           {
@@ -426,6 +424,7 @@ describe("Backend - Game Rules", () => {
                 name: "Lightning Bolt",
                 oracleText: "Lightning Bolt deals 3 damage to any target.",
                 typeLine: "Instant",
+                contextNotes: "Burn spell reminder",
                 imageUrl: "",
                 manaCost: "{R}",
                 manaValue: 1,
@@ -441,8 +440,27 @@ describe("Backend - Game Rules", () => {
 
       const queryText = buildQueryText(context);
       expect(queryText).toContain("Lightning Bolt");
-      expect(queryText).toContain("Lightning Bolt deals 3 damage");
       expect(queryText).toContain("Instant");
+      // The full oracle sentence and the context note are card-text pollution
+      // (measured to drop supplemental recall@5 from 0.577 to 0.026, REQ-178)
+      // and must never reach the retrieval query.
+      expect(queryText).not.toContain("deals 3 damage");
+      expect(queryText).not.toContain("Burn spell reminder");
+    });
+
+    it("never includes turn phase or zone ids (REQ-178)", () => {
+      const context = makeContext({
+        gameContext: {
+          playerCount: 2,
+          players: [],
+          turnPhase: "combat",
+          selectedZones: ["battlefield"]
+        }
+      });
+
+      const queryText = buildQueryText(context);
+      expect(queryText).not.toContain("combat");
+      expect(queryText).not.toContain("battlefield");
     });
   });
 
@@ -451,17 +469,21 @@ describe("Backend - Game Rules", () => {
   // ---------------------------------------------------------------------------
 
   describe("buildQueryTokens", () => {
-    it("tags question tokens as question source and flags vocabulary keywords", () => {
+    it("tags question tokens as question source, and only keyword-vocabulary oracle terms survive into the query (REQ-178)", () => {
       const context = makeContext({
         finalQuestion: "Does cascade trigger here",
-        populatedZones: [battlefieldCard("flying creature")]
+        populatedZones: [battlefieldCard("flying creature with cascade")]
       });
       const { tokens } = buildQueryTokens(context, new Set(["cascade"]));
       const cascade = tokens.find((t) => t.token === "cascade");
       const flying = tokens.find((t) => t.token === "flying");
 
+      // "cascade" is both the question's own token and a keyword found in the
+      // card's oracle text; the compact per-card signal carries only the
+      // keyword-vocabulary match, not the rest of the oracle sentence, so
+      // "flying" (not in the vocabulary) never enters the query at all.
       expect(cascade).toMatchObject({ source: "question", isKeyword: true });
-      expect(flying).toMatchObject({ source: "oracle", isKeyword: false });
+      expect(flying).toBeUndefined();
     });
 
     it("dedupes a token across sources, preferring question provenance", () => {
@@ -561,22 +583,24 @@ describe("Backend - Game Rules", () => {
   // ---------------------------------------------------------------------------
 
   describe("retrieveSupplementalRules — IDF scoring", () => {
-    it("ranks a question keyword above oracle-sourced noise", () => {
+    it("never surfaces oracle-text noise a card's full oracle text used to flood the query with (REQ-178)", () => {
       const index = [
         makeEntry({ ruleId: "702.85", sectionTitle: "Cascade", text: "702.85. Cascade.", searchText: "702.85 cascade", parentRuleIds: ["702"] }),
         makeEntry({ ruleId: "100.1", sectionTitle: "General", text: "100.1. General.", searchText: "100.1 resolve", parentRuleIds: ["100"] })
       ];
       const context = makeContext({
         finalQuestion: "How does cascade work",
+        // Before REQ-178, this card's full oracle text ("resolve") leaked into
+        // the query and let it match 100.1's searchText, exactly the flood
+        // this requirement removes: "resolve" is not a keyword, so it must
+        // never reach the query via the compact per-card signal.
         populatedZones: [battlefieldCard("resolve")]
       });
       const resources = makeResources(3432, { cascade: 4, resolve: 100 }, ["cascade"]);
       const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
 
       expect(result[0]!.ruleId).toBe("702.85");
-      const cascadeScore = result.find((r) => r.ruleId === "702.85")!.score;
-      const noiseScore = result.find((r) => r.ruleId === "100.1")!.score;
-      expect(cascadeScore).toBeGreaterThan(noiseScore);
+      expect(result.find((r) => r.ruleId === "100.1")).toBeUndefined();
     });
 
     it("boosts a keyword found in oracle text above generic low-IDF rules", () => {

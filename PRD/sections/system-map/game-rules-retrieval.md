@@ -18,9 +18,12 @@ a smaller `GAME RULES (reference)` section that still covers the stable vocabula
 model needs for stack, priority, zones, targets, combat, delayed triggers, and related
 common interactions.
 
-System 3 is supplemental retrieval. It builds a query from the user's question plus
-card/context text, scores official rule excerpts with IDF-weighted lexical matching,
-question and keyword boosts, exact rule-ID and parent rule-ID bonuses, then selects at
+System 3 is supplemental retrieval. It builds a query from the user's question plus a
+compact per-card signal — each submitted or attached card's name, type line, and
+keyword list — deliberately not the cards' full oracle text, which floods the query and
+was measured to drop recall@5 from 0.577 to 0.026 on a labelled benchmark (REQ-178). It
+scores official rule excerpts with IDF-weighted lexical matching, question and keyword
+boosts, exact rule-ID and parent rule-ID bonuses, then selects at
 most five excerpts. Ties prefer the highest matching IDF signal, then ascending rule
 ID. Before scoring output is selected, System 3 excludes rule IDs already selected by
 System 2, so the prompt does not print the same rule in both `GAME RULES (reference)`
@@ -35,7 +38,8 @@ selects System 2 topics from game-state signals and derives the selected curated
 IDs from those topics.
 
 Those curated rule IDs become the exclusion set for System 3. Supplemental retrieval
-tokenizes the question and oracle/context text, applies keyword and IDF resources,
+tokenizes the question plus each card's compact per-card signal (name, type line,
+keyword list; REQ-178), applies keyword and IDF resources,
 scores the rule index, drops entries whose rule IDs are already in the System 2 set,
 and returns the top five excerpts plus debug data when mock enrichment diagnostics are
 enabled. Prompt rendering places the resulting sections as curated rules, then
@@ -60,8 +64,9 @@ the request. System 2 sees `turnPhase: combat`, the combat step, and populated z
 it selects the always-on topics plus combat and battlefield-oriented curated topics.
 Those topics render in `GAME RULES (reference)`.
 
-System 3 then searches the question and card/context text for more specific rule
-excerpts. Tokens from the direct question carry more weight than incidental card text,
+System 3 then searches the question plus each attached card's name, type line, and
+keyword list — not its full oracle text (REQ-178) — for more specific rule
+excerpts. Tokens from the direct question carry more weight than the per-card signal,
 rules-related keywords receive their boost, and any explicit rule number in the query
 can pull in an exact or parent match. If a combat damage rule is already present in the
 System 2 topic set, that rule ID is excluded from System 3 so the supplemental block
