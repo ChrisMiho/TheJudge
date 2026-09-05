@@ -436,6 +436,48 @@ Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch. Report the worktree path, the PR URL, each slice's
 final status, and confirm every criterion is earned, back to the driver.
 
+### review
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260904-220341`). You are a fresh-context, read-only reviewer with no
+write tools; do not modify anything.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Independently review the deliverable in PR #188 (`gh pr diff 188`; base `main`,
+head `thejudge-auto/single-source-invariants-work`) against each slice's own
+stated acceptance criteria. Read only: the PR diff, the five slice docs
+(`PRD/work/single-source-invariants/slice-*.md`) with their `## Acceptance
+criteria`, the matching `slice-*.criteria.json`, `GAMEPLAN.md`, `DESIGN-BRIEF.md`,
+and `GATE-QUESTIONS.md` (the finalized proposal — the source of intent). Do NOT
+read the build agent's transcript.
+
+The rubric is each slice's acceptance criteria and the finalized proposal, not
+your taste. This is a docs-only / product-truth-only change: five cross-cutting
+invariants single-sourced to a canonical home each with an amendment-set list,
+every echo repointed; the two root-README decision-log contradictions fixed; and
+a grep-before-amend guardrail added to `writing-rules.md` + `requirement-format.md`.
+
+Grade for: (1) each canonical home carries the full rule text + its echoed-in
+amendment-set list; (2) every pointer in each invariant's amendment set is
+actually repointed in the diff (cross-check against `GATE-QUESTIONS.md` and
+`DESIGN-BRIEF.md` — a missed live home is the exact defect this feature exists to
+eliminate); (3) no in-scope rule-stating line was left carrying an independent
+copy or a retired-DEC citation as the live rule; (4) no out-of-scope per-feature
+scope clause was wrongly rewritten; (5) the guardrail substance matches
+GUARD-GREP-BEFORE-AMEND; (6) no `thejudge-*` skill or application-code file was
+edited.
+
+Severity rule: a preference, a style note, or an improvement outside a slice's
+stated requirements is **never** Critical or Important and must not loop the run
+back to build. Report only gaps affecting correctness or the stated acceptance
+criteria. For each finding give: severity (Critical / Important / Minor /
+Preference), the file:line, the criterion or proposal item it violates, and the
+concrete fix. End with an explicit verdict line: `APPROVE` (no Critical/Important
+findings) or `RETURN TO BUILD` (one or more Critical/Important findings, listed).
+
+Report your findings and verdict back to the driver.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
