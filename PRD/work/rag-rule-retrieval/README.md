@@ -1,4 +1,4 @@
-status: owner-action
+status: refined
 
 # rag-rule-retrieval
 
@@ -13,7 +13,7 @@ RAG-deferred mechanic-definition enrichment idea. Consolidates every RAG-
 shaped work-folder and the parked, never-merged `semantic-rule-retrieval`
 design (PR #154, closed unmerged) into one pinpoint gameplan.
 
-Next step: gate resolved — all 24 verdicts `accept`, docs PR #190 merged. Resume with `/graph-implement PRD/work/rag-rule-retrieval/` (build half, run `graph-20260905-010802`); see `GRAPH-RUN.md`
+Next step: gate resolved — all 24 verdicts `accept`, docs PR #190 merged. Build half running under `/loop graph-implement` (run `graph-20260905-012712`, at `gate-qc` re-check → `plan` → `build` → `review`); if interrupted, resume with `/graph-implement PRD/work/rag-rule-retrieval/`. See `GRAPH-RUN.md`
 
 ## Autonomous metadata
 

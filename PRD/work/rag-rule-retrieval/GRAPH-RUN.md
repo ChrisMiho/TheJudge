@@ -1,14 +1,15 @@
 # Graph run — rag-rule-retrieval
 
 - Run ID: `graph-20260905-061805` (run one, spec-forming half)
-- Build-half run ID: `graph-20260905-010802` (run two, `/loop graph-implement`; lock, run-state, evidence, and release records for gate-review and nodes 4–9 key on this id)
-- Profile: `unverified`
+- Build-half run ID: `graph-20260905-012712` (run two, resumed 2026-09-05 01:27 under `/loop graph-implement`; lock, run-state, evidence, and release records for gate-qc attempt 3 and nodes 5–9 key on this id). Prior build-half ids: `graph-20260905-010802` PARKED at gate-qc (cap overrun poisoned its `Agent` retry key); `graph-20260905-012215` took the lock at 01:22 and its session died before any node dispatch (pid 83033 not running, no ledger or run-state written) — reclaimed via release record `{"runId":"graph-20260905-012215","state":"BLOCKED"}` then `rm .worktrees/.graph-run.lock`
+- Profile: `loaded (env sentinel)` from 2026-09-05 01:27 — `THEJUDGE_GRAPH_PROFILE=1` observed in the driver session on resume; the user stated "ive got the graph profile on now". Run one and the earlier build-half ids ran `unverified`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "`rm -rf` is denied in every session"; graph tier: nohup true → "`nohup` is denied while a graph run holds the lock")`
 - Build-half canary: `denied — universal tier (rm -rf .worktrees/.graph-canary-nonexistent → "`rm -rf` is denied in every session"); graph tier armed (nohup true → "`nohup` is denied while a graph run holds the lock")`, 2026-09-05; run-state degraded at take-lock (`.graph-run-state.json` absent until the first node dispatch writes it)
+- Resume canary (2026-09-05 01:27, run `graph-20260905-012712`): `denied` both tiers — `nohup true` → \"`nohup` is denied while a graph run holds the lock\"; `rm -rf .worktrees/.graph-canary-nonexistent` → \"`rm -rf` is denied in every session\"; run-state degraded at take-lock, then `.graph-run-state.json` written by the driver (`driver-bookkeeping/1`) before any node dispatch
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `gate-review` resolved (24/24 verdicts `accept`, docs PR #190 merged 2026-09-05; `STATUS.refined` restored)
-- Next action: driver re-enters at `gate-qc` → `plan` → `build` → `review`; `land` stays the owner's
+- Current node: `gate-qc` (build-half re-check, attempt 3, run `graph-20260905-012712`) — dispatched, no fan-out
+- Next action: on PASS `plan → build → review`; `land` stays the owner's. Resume command if interrupted: `/graph-implement PRD/work/rag-rule-retrieval/`
 
 ## Node ledger
 
@@ -20,45 +21,11 @@
 | 3 | define | opus | ok | `0 → 73` | `STATUS.refined`; `DESIGN-BRIEF.md` (5-step gameplan REQ-177..181, 10 assumptions, intake dispositions) + `GATE-QUESTIONS.md` (24 slots: 5 new REQ, 4 SCOPE decisions, 8 amended IDs incl. NFR-017 Lambda-budget finding, 7 amended specs; 32 Current blocks verified verbatim); 0 blocker questions; commit `797086a` | 2026-09-05 |
 | 4 | gate-qc | sonnet | ok | `0 → 54` | PASS, no findings (attempt 1): all Current blocks verbatim vs live files; REQ-177–181 unused live, FLOW-024 high-water; amendment set re-grepped complete; RAG-DEFERRED citations repointed; technical-design-rules hold; live measurements reproduced (`retrieval:report` 6/9 same 3 failures, `test:eval` green, index 3,432/3,285/147/626); `STATUS.refined` unchanged, nothing committed → stop at PASS: docs PR + `owner-action` park | 2026-09-05 |
 | — | driver-resume | — | ok | `n/a (driver)` | run two (`/loop graph-implement`, tick 1): `git fetch`; ready-spec scan found `rag-rule-retrieval` (24/24 `accept`, PR #190 MERGED 2026-09-05T07:02:31Z, no code built); base `thejudge-auto/rag-rule-retrieval` fast-forwarded to `main` (`eb0db9a`); lock taken (`npm run graph:preflight -- --take-lock --slug rag-rule-retrieval --run-id graph-20260905-010802 --pid 83033`); both canaries denied; claim committed (`STATUS.owner-action → STATUS.active`, board row moved to `## active`) | 2026-09-05 |
-| — | gate-review | sonnet | ok | `0 → 23` | run two, build half. Applied 24 accept / 0 edit / 0 reject inside `GATE-QUESTIONS.md` (no diff change — all accept; `git diff` on `GATE-QUESTIONS.md` and `PRD/sections/` empty); wrote `## Gate verdicts`; resolved `## Open gate`; restored `STATUS.active → STATUS.refined`, README `status: refined`, board row moved to `## refined`. No `PRD/sections/` edits | 2026-09-05 |
-| 4 | gate-qc | sonnet | failed | `0 → 103 — cap 60 + grace 30 exhausted` | build-half re-check attempt 1 reported PASS (all `Current:` blocks verbatim, REQ-177–181 unused, `retrieval:report` 6/9 same 3 failures, `test:eval` green, budget test green, index 3,432/3,285/147/626) but the node fanned out to three helper subagents whose calls charged its own key; the hook denied every call from #91 onward, including the driver's park writes, until the owner deleted `.worktrees/.graph-run-state.json` by hand. Outcome recorded `failed` (cap overrun, contract `## Node table`), not PASS: the helpers were cut off mid-check, so the PASS is re-graded as attempt 2 with fan-out forbidden. Driver closed the two residuals it named: `prompt-assembly.md:53` is a debug-sidecar mention, not a scoring claim; `prompt-layout-spec.md:3` `Backed by:` line present and unchanged since the run-one PASS | 2026-09-05 |
-| 4 | gate-qc | sonnet | parked | `attempt 2: 0 → 1 (dispatch denied)` | attempt 2 dispatch (no fan-out) denied by the hook rule `denied-command-retry`: attempt 1's helpers had an `Agent` call denied under `tool-call-cap` (`.worktrees/.graph-denials.jsonl` key `Agent::::`, 2026-09-05T07:14:25Z), and `denialKey()` keys `Agent` on tool name alone, so every later `Agent` dispatch in run `graph-20260905-010802` is refused (`ToolSearch::::` and `ScheduleWakeup::::` poisoned the same way). Not remediable in-run; run PARKED, lock released with `.graph-run-release.json` `{ runId, state: PARKED }`, run-state deleted. Product truth untouched; no product question open | 2026-09-05 |
+| — | gate-review | sonnet | ok | `0 → 23` | run two, build half. Applied 24 accept / 0 edit / 0 reject inside `GATE-QUESTIONS.md` (no diff change — all accept; `git diff` on `GATE-QUESTIONS.md` and `PRD/sections/` empty); wrote `## Gate verdicts`; resolved `## Open gate
 
-## Gate verdicts
+- None. The gate-qc mechanics park of run `graph-20260905-010802` (cap overrun → poisoned `Agent` retry key) was resolved 2026-09-05 01:27 by resuming under fresh run id `graph-20260905-012712` — `denied-command-retry` reads prior denials per run id, so the new id carries none. The owner follow-up it raised (key dispatch tools on a prompt hash, or exempt `tool-call-cap` denials from `denied-command-retry`; `PARK_GRACE_CALLS` consumed by a node's own helpers) is unchanged and still not blocking; it is preserved verbatim in commit `658aebf`.
 
-Applied 2026-09-05 by `graph-gate-review` (build-half run `graph-20260905-010802`). All 24 stable IDs `accept`; no `## Blocker questions` entries. An `accept` leaves the proposed diff in `GATE-QUESTIONS.md` exactly as refinement wrote it — nothing was edited there.
-
-| Stable ID | Verdict | Reason |
-| --- | --- | --- |
-| `REQ-177` | accept | — |
-| `REQ-178` | accept | — |
-| `REQ-179` | accept | — |
-| `REQ-180` | accept | — |
-| `REQ-181` | accept | — |
-| `SCOPE-A` | accept | — |
-| `SCOPE-B` | accept | — |
-| `SCOPE-C` | accept | — |
-| `SCOPE-D` | accept | — |
-| `REQ-022` (amendment) | accept | — |
-| `REQ-032` (amendment) | accept | — |
-| `REQ-074` (amendment) | accept | — |
-| `REQ-167` (amendment) | accept | — |
-| `REQ-168` (amendment) | accept | — |
-| `NFR-018` (amendment) | accept | — |
-| `NFR-017` (amendment) | accept | — |
-| `Q-001` (amendment) | accept | — |
-| `system-map.md` (spec amendment) | accept | — |
-| `system-map/game-rules-retrieval.md` (spec amendment) | accept | — |
-| `system-map/prompt-layout-spec.md` (spec amendment) | accept | — |
-| `quick-lookup/README.md` (spec amendment) | accept | — |
-| `in-depth/README.md` (spec amendment) | accept | — |
-| `integrations-and-data.md` (spec amendment) | accept | — |
-| `user-flows.md` (spec amendment) | accept | — |
-
-## Open gate
-
-- Gate: mechanics, not product. Run `graph-20260905-010802` parked at `gate-qc` (build-half re-check). Attempt 1 fanned out to three helper subagents, overran the 60-call cap plus 30-call grace (counter 103), and one helper's `Agent` dispatch was denied under `tool-call-cap`. The hook's `denied-command-retry` rule then refused every later `Agent`, `ToolSearch`, and `ScheduleWakeup` call in this run id, because `denialKey()` in `scripts/lib/boundary-rules.mjs` keys those tools on tool name alone. The owner deleted the stranded `.worktrees/.graph-run-state.json` by hand (2026-09-05); the driver then parked, released the lock, and resumed under a fresh run id (denials are keyed per run).
-- Evidence: `.worktrees/.graph-denials.jsonl` rows for `graph-20260905-010802` (first: `{"node":"gate-qc","rule":"tool-call-cap","key":"Agent::::","deniedAt":"2026-09-05T07:14:25.951Z"}`); denied attempt-2 dispatch text under `## Dispatch prompts` → `### gate-qc (build-half re-check, attempt 2)`; ledger rows 4 above.
+## Dispatch prompts` → `### gate-qc (build-half re-check, attempt 2)`; ledger rows 4 above.
 - Owner follow-up (not blocking the build): `denialKey()` for `Agent`/`Task`/`ToolSearch`/`ScheduleWakeup` carries no input, so a single cap-denied dispatch poisons the rest of the run. Consider keying dispatch tools on a prompt hash, or exempting `tool-call-cap` denials from `denied-command-retry` (the cap already re-evaluates per attempt). Also: `PARK_GRACE_CALLS` was consumed by the node's own helpers, leaving the driver zero calls to park — the same strand `feedback_reset_runstate_before_park` records.
 - Resume: `/graph-implement PRD/work/rag-rule-retrieval/` — re-enters at `gate-qc` (attempt 2, fan-out forbidden), then `plan → build → review`.
 
@@ -249,6 +216,42 @@ Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch (you should dispatch none). Report PASS or FAIL and
 the complete findings list back to the driver.
 
+### gate-qc (build-half re-check, attempt 3)
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260905-012712`); no human is available, so do not stop to ask clarifying
+questions — produce the PASS/FAIL report and set the STATUS marker per the skill.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Do NOT dispatch any subagent, fork, or helper agent: this node has a hard budget
+of 60 tool calls and every helper's calls count against it. An earlier attempt
+under a prior run id fanned out to three helpers, overran the cap, and was cut
+off; you are the re-grade. Work alone, in a single pass, and keep under 45 tool
+calls — batch reads and greps into few shell commands.
+
+Invoke the `thejudge-quality-check` skill on the package at
+`PRD/work/rag-rule-retrieval/`. This is the build-half re-entry required after
+gate-review. The owner accepted all 24 blocks unchanged (0 edit, 0 reject, no
+blocker questions), so the proposal in `GATE-QUESTIONS.md` is byte-identical to
+the run-one attempt-1 PASS recorded in `README.md` `## Preparation gate`, and the
+branch (`thejudge-auto/rag-rule-retrieval`, level with `main` at `eb0db9a` plus
+driver bookkeeping commits) has had no `PRD/sections/` change since. The
+measurements in the brief were already reproduced today (`retrieval:report` 6/9
+with the same three failures, `test:eval` green, budget test green, index
+3,432/3,285/147/626) — do not re-run them. Focus the pass on agent-readiness of
+`DESIGN-BRIEF.md` and on a spot-check of the `Current:` blocks in
+`GATE-QUESTIONS.md` against live `PRD/sections/` (one `grep -F` per cited line
+batched into a single command is enough), plus a confirmation that REQ-177–181
+remain unused live. Do not write a GAMEPLAN or slice docs, do not edit
+`PRD/sections/`, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md`. On PASS leave
+`STATUS.refined`; on FAIL set `STATUS.refining` and list the findings. Do not
+commit; the driver commits.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch (you should dispatch none). Report PASS or FAIL and
+the complete findings list back to the driver.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -257,3 +260,4 @@ the complete findings list back to the driver.
 | "cleanup the rest of the work folder on that pertains to rag" | answered-once | shape | — |
 | "accept all 24 and mark them in the gate file for me" | answered-once | owner-action | — |
 | "graph-implement, this is probably a long running task, and i am heading to bed, do you wanna start with validating any credentials you need before i head out" | answered-once | driver-resume | — |
+| "graph-implement, im resuming this graph after some issues, and ive got the graph profile on now" | answered-once | driver-resume | — |
