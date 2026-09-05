@@ -8,8 +8,8 @@
 - Build-half canary: `denied — graph tier armed (nohup true), 2026-09-04 run two`; run-state degraded at take-lock (`.graph-run-state.json` absent until first node dispatch), so cap enforcement arms once run-state is written per node
 - Autonomous base: `origin/thejudge-auto/single-source-invariants`
 - Staging: none — resume of an existing `STATUS.ideation` package, no new intake staged
-- Current node: `build` (plan emitted 5 slices / 43 criteria; applying the finalized proposal to `PRD/sections/` + root/PRD README + guardrail in a worktree)
-- Next action: `/graph-implement PRD/work/single-source-invariants/` — `build → review → land → close`
+- Current node: `review` (build ok — 43/43 criteria, PR #188 opened `-work → main`; fresh-context reviewer grades the slices next)
+- Next action: `/graph-implement PRD/work/single-source-invariants/` — `review → land (owner merges PR #188) → close`
 
 ## Node ledger
 
@@ -28,6 +28,7 @@
 | — | gate-review | sonnet | ok | `1 → 17` | run two, build half. Applied 5 accept / 0 edit / 0 reject inside `GATE-QUESTIONS.md` (no diff change — all accept); wrote `## Gate verdicts`; resolved `## Open gate`; restored `STATUS.owner-action → STATUS.refined`, README `status:`, board row. No `PRD/sections/` edits | 2026-09-04 |
 | 4 | gate-qc | sonnet | ok | `1 → 26` | run two build-half re-check (PASS). Independent full-corpus `grep -rniE` of all four families + `DEC-010` sweep (9 live hits: 3 in-scope CLASS-A rule-statements, 6 out-of-scope). Every amendment-set home in `GATE-QUESTIONS.md` resolves to its cited live file:line; no unlisted rule-stating home; guardrail anchors (`writing-rules.md ## Editing Rules`, `requirement-format.md ## Formatting Rules`) present. `STATUS.refined` holds; no `PRD/sections/` edits | 2026-09-04 |
 | 5 | plan | sonnet | ok | `1 → 33` | 5 slices A–E (one per accepted gate block), 43 acceptance criteria total (A 13, B 9, C 15, D 3, E 3); all evidence path-based or dated manual re-grep (docs-only). `GAMEPLAN.md` + `slice-{a..e}-*.md` + `slice-{a..e}.criteria.json` written; `STATUS.active`; scope-clean (`git status`: only work-folder + board). Sequencing: A→C share `functional-requirements.md` REQ-094 line (A writes, C verifies) — sequential, no fan-out | 2026-09-04 |
+| 6 | build | sonnet | ok | `1 → 219` | All 5 slices `done`, **43/43 criteria earned** (evidence log run `graph-20260904-220341`: A13 B9 C15 D3 E3), each verified `value:true` in the emitted `slice-*.criteria.json` on `origin/-work`. `quality:check` green (436/436) per slice. Applied proposal by intent to `PRD/sections/` (NFR-004, functional/goals/overview/problem-statement/integrations/user-flows/in-depth/quick-lookup/life-tracker/system-map), `PRD/instructions/` (writing-rules, requirement-format, agent-working-rules, technical-design-rules), `PRD/README.md`, root `README.md`. Worktree `.worktrees/implement-single-source-invariants`. **Write-scope PASS**: launch checkout `git status` clean — build wrote only inside its worktree; no `thejudge-*` skill or code file touched (PR #188 name-only scope verified). PR #188 opened `-work → main` [READY]. `STATUS.ship-ready`. One in-scope judgment: `functional-requirements.md:1893` (DEC-013 counter-automation caveat) surfaced on Slice-C re-grep, classified out-of-scope per-feature clause | 2026-09-04 |
 
 Entry point: resume of a `STATUS.ideation` package with no prior ledger. Per the
 entry-point table, `STATUS.ideation` enters at `define`; `shape` (node 2) is
