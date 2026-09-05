@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # hybrid-rule-retrieval
 
@@ -12,6 +12,6 @@ package covers. Created by graph run `graph-20260905-173655`, node 2
 
 ## Preparation gate
 
-- Quality-check: FAIL
+- Quality-check: PASS
 - Checked artifact: `PRD/work/hybrid-rule-retrieval/DESIGN-BRIEF.md`
-- Findings: `PRD/sections/system-map/prompt-layout-spec.md`, row 8 of the prompt-section table (`ADDITIONAL RELEVANT RULE EXCERPTS`), still says the excerpts are "ranked by meaning against committed per-rule embeddings with a keyword-overlap fallback" (citing REQ-181). REQ-182's hybrid blend falsifies that row the same way it falsifies the four sibling descriptions the proposal already amends (`system-map.md`, `system-map/game-rules-retrieval.md`, `quick-lookup/README.md`, `in-depth/README.md`), and `GATE-QUESTIONS.md` has no block for it. Everything else passed: 12 `Current:` blocks byte-identical, REQ-182/183/184 unused and next free, all four measurements reproduced exactly.
+- Findings: none (attempt 2, 2026-09-05: 21 of 21 `Current:` excerpts byte-identical to live `PRD/sections/`; REQ-182/183/184 unused and next free; amendment-set re-grep leaves no uncovered live assertion; `test:eval` semantic 9/12 and lexical 12/12, benchmark recall@5 lexical 0.5833 and semantic 0.8526/0.8333, Lambda data 118.095 MB of 120 MB all reproduced; hybrid gates stated as measured thresholds with baselines). Attempt 1 FAILed on one missed spec row (`system-map/prompt-layout-spec.md` row 8), corrected at define attempt 2.
