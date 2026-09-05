@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # single-source-invariants
 
@@ -58,6 +58,21 @@ GUARD-GREP-BEFORE-AMEND), each with a `.criteria.json`. `STATUS.active`. Next:
 implementation (`/thejudge-implement-all PRD/work/single-source-invariants/`
 in direct mode; the graph build half continues per its own contract in
 orchestrated mode).
+
+Implementation complete (2026-09-05, `graph-20260904-220341`): all five
+slices (A–E) done, every acceptance criterion in every `slice-*.criteria.json`
+earned. Docs-only edits applied by intent from the accepted proposal:
+`non-functional-requirements.md` NFR-004 (Slice A, 11 pointers plus the
+shared `functional-requirements.md` REQ-094 dual pointer), `integrations-and-
+data.md:16` (Slice B, 7 pointers), `goals-and-non-goals.md:85` Scope Notes
+(Slice C, 12 pointers, verified the shared REQ-094 line), the two root
+`README.md` decision-log contradictions at `:17`/`:163` (Slice D), and the
+new grep-before-amend guardrail in `writing-rules.md` plus
+`requirement-format.md`'s cross-reference (Slice E). `npm run quality:check`
+green (436/436) after every slice. `STATUS.ship-ready`. Docs-only PR:
+https://github.com/ChrisMiho/TheJudge/pull/188 (base `main`, head
+`thejudge-auto/single-source-invariants-work`) — open, not merged. Next:
+merge PR #188, then `thejudge-cleanup PRD/work/single-source-invariants/`.
 
 ## Slice table
 
