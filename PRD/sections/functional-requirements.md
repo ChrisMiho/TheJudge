@@ -589,9 +589,10 @@
   - a digestible before/after relevance report is available for tuning review (one table per scenario: System 2 topics selected, System 3 top-5 with scores, recall hit/miss); may be a script output or harness report artifact
   - the relevance report and the eval harness model production retrieval identically — same card-detail resolution, same query construction — and a test asserts they return the same per-scenario recall verdict for every labelled fixture, failing the pull request when they diverge (REQ-177)
   - a committed offline benchmark of labelled question-to-rule pairs records recall@5 and MRR under clean and card-polluted queries, and is the standing measure retrieval changes are judged against (REQ-177)
-  - `system3-expected-recall` and `system3-noise-excluded` also run against the semantic retrieval path (REQ-181) using committed frozen query embeddings, so the eval measures semantic retrieval with no live embedding call and no live AI call; they run in report mode there — printed per fixture, not failing the run — until a hybrid lexical-plus-semantic blend lands, at which point they gate (2026-09-05 owner decision: measured semantic-only ranking is worse than lexical on short lookup-mode questions, so it cannot gate yet)
+  - `system3-expected-recall` and `system3-noise-excluded` also run against the semantic retrieval path (REQ-181/REQ-182) using committed frozen query embeddings, so the eval measures semantic retrieval with no live embedding call and no live AI call; they gate there — a failing check fails the run — from the moment the hybrid lexical-plus-semantic blend (REQ-182) clears its recall gates. Before that blend, semantic-only ranking measured 9 of 12 labelled checks against lexical's 12 of 12 (2026-09-05), which is why the checks ran in report mode until then
+  - the labelled fixture set includes one lookup-mode fixture for a multi-keyword card (a card whose committed Scryfall keyword list carries two or more keywords), with its expected supplemental rule ids hand-labelled and its frozen query embedding committed by `npm run eval:build-frozen-query-embeddings`
   - existing structural checks (section presence, ordering, budget) remain unchanged
-  - `npm run test:eval` remains the automated regression gate for the lexical retrieval path; the semantic-path checks above are report-only until the hybrid blend lands
+  - `npm run test:eval` is the automated regression gate for both retrieval paths: the lexical path always, and the semantic path from REQ-182 onward
 - Constraints:
   - no live AI provider calls in relevance checks, and no live embedding calls — the semantic path is evaluated via committed frozen query embeddings so the eval stays offline and deterministic
   - expected rule IDs are human-labeled ground truth, not inferred from current scorer output
@@ -604,6 +605,7 @@
 - Notes:
   - replaces reliance on manual multi-file `prompt:preview` review as the sole relevance verification path
   - the report/harness parity criterion exists because the two diverged in practice: after REQ-176 moved card-text resolution server-side, the report stopped passing a card-detail index and reported three false scenario failures while the gate stayed green
+  - measured 2026-09-05 before the hybrid blend: under the semantic path the labelled fixtures scored `cascade-keyword` 2/2, `combat-deathtouch` 2/2, `counterspell-stack` 1/1, `quick-lookup-card` 0/1, `quick-lookup-multi-card` 0/1, `quick-lookup-no-card` 1/1, `state-based-actions` 1/2, `upkeep-trigger` 2/2 — three fixtures failing, not the two recorded in REQ-181's earlier note
 
 ### REQ-033
 - Title: Live response-size diagnostic logs

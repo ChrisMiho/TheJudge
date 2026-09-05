@@ -23,6 +23,7 @@ near-cap-stack | 16/16 | PASS
 player-counters | 16/16 | PASS
 quick-lookup-card | 16/16 | PASS
 quick-lookup-multi-card | 16/16 | PASS
+quick-lookup-multi-keyword-card | 17/17 | PASS
 quick-lookup-no-card | 16/16 | PASS
 quick-lookup-off-domain | 15/15 | PASS
 quick-lookup-phrasing-answered | 14/14 | PASS

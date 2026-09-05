@@ -1,0 +1,27 @@
+{
+  "id": "quick-lookup-multi-keyword-card",
+  "description": "REQ-032 (Slice B): a lookup-mode card whose real, committed Scryfall keyword list carries three entries (Vigilance, Haste, Deathtouch) — a shape no existing labelled fixture tests (quick-lookup-card and quick-lookup-multi-card deliberately use South Wind Avatar, a single-keyword card, per their own notes on why a multi-keyword card was avoided). Questing Beast's real oracle id resolves its keywords through the committed cardDetailByOracleId.json artifact (REQ-180), the production path. The question asks specifically about vigilance, so this fixture also guards against the card's other two keywords (haste, deathtouch) crowding out the one rule that actually answers the question.",
+  "request": {
+    "mode": "lookup",
+    "question": "Why doesn't this creature tap when it attacks?",
+    "cards": [
+      {
+        "cardId": "b685757b-521e-4353-a233-97052359723d",
+        "name": "Questing Beast",
+        "oracleText": "Vigilance, deathtouch, haste\nQuesting Beast can't be blocked by creatures with power 2 or less.\nCombat damage that would be dealt by creatures you control can't be prevented.\nWhenever Questing Beast deals combat damage to an opponent, it deals that much damage to target planeswalker that player controls.",
+        "imageUrl": "",
+        "manaCost": "{2}{G}{G}",
+        "manaValue": 4,
+        "typeLine": "Legendary Creature — Beast",
+        "colors": ["G"],
+        "supertypes": ["Legendary"],
+        "subtypes": ["Beast"]
+      }
+    ]
+  },
+  "expected": {
+    "expectedSystem2TopicIds": ["stack-and-priority", "targets-basics", "zones-basics", "abilities-trigger-basics"],
+    "expectedSupplementalRuleIds": ["702.20b"],
+    "forbiddenSupplementalRuleIds": ["100.1"]
+  }
+}
