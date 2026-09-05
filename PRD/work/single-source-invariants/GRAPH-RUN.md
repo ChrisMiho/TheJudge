@@ -362,6 +362,39 @@ Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch. Report PASS or FAIL and the complete findings list
 back to the driver.
 
+### plan
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260904-220341`); no human is available, so do not stop to ask clarifying
+questions — plan the slices and emit the artifacts per the skill.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Invoke the `thejudge-map-out` skill on the package at
+`PRD/work/single-source-invariants/`. The package has `## Preparation gate` →
+`Quality-check: PASS`, so planning may proceed (do not self-certify a PASS — read
+the recorded one). This is a **docs-only / product-truth-only** deliverable: no
+application code changes. The apply step (`build`) will write the real
+`PRD/sections/` and root/PRD README edits **by intent** from the finalized
+proposal in `GATE-QUESTIONS.md` (five accepted blocks: INV-ENDPOINT,
+INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND) plus
+the `DESIGN-BRIEF.md` intent.
+
+Slice the work into reviewable milestones and emit `GAMEPLAN.md`, one `slice-*.md`
+per slice, and a `slice-<letter>.criteria.json` beside each, per the skill and its
+`reference.md`. Because this is docs-only, acceptance-criteria evidence blocks
+should be file-path or manual-observation based (the edited `PRD/sections/` and
+README files, and a re-grep confirming each canonical home carries its
+amendment-set list and no unlisted rule-stating home remains) — not app test
+commands. Keep each invariant's amendment set (from `DESIGN-BRIEF.md` /
+`GATE-QUESTIONS.md`) intact within its slice so a reviewer can check the full
+home+pointers set together. Do NOT edit `PRD/sections/` — planning only writes
+planning artifacts inside `PRD/work/single-source-invariants/`.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch. Report the slice list, the artifact paths written,
+and the total criteria count back to the driver.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
