@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; nohup true)`
 - Autonomous base: `origin/thejudge-auto/image-first-cards`
 - Staging: `.worktrees/.graph-intake/graph-20260903-093903/`
-- Current node: `review` (build complete, all 3 slices in PR #185; independent no-write review of the full deliverable)
-- Next action: `/graph-implement PRD/work/image-first-cards/` (review → land)
+- Current node: `land` (review APPROVED; **PARKED for the owner to merge PR #185 into `main`**)
+- Next action: owner merges PR #185; then `/graph-implement PRD/work/image-first-cards/` records `land` ok and runs `close` (cleanup)
 
 ## Owner decision — NFR-019 recalibrated (2026-09-04)
 
@@ -78,6 +78,7 @@ deliverable's base→main PR is therefore fresh (not #184) and merges last.
 | 6 | build | sonnet | failed | `0 → 152` | attempt 1 STALLED (harness stream watchdog, 600s no-progress; infra, not a logic failure) mid-Slice-A while debugging QuickLookup/interaction-flow test failures. Worktree `.worktrees/implement-image-first-cards` has Slice A largely implemented but uncommitted (21 files: `cardDetail.ts` + `routes/cardDetail.ts`+test, `build-card-detail-by-oracle-id.mjs`, `cardDetailByOracleId.json`, `CardPresentation.tsx`+tests, `lib/cardDetail.ts`, route wiring); no commits, no PR. Driver renamed worktree branch → `thejudge-auto/image-first-cards-work`, WIP preserved; re-dispatching build attempt 2 to resume with anti-stall guardrails | 2026-09-04 |
 | 6 | build | sonnet | parked | `0 → 491` | attempt 2 (resume): Slice A DONE (13/13 criteria, live Playwright verified — on-demand load, offline degrade, image-fail name-only zero-fetch; REQ-175/FLOW-024 new + 9 amended across 11 `PRD/sections/` files; commit `28e4eef`) and Slice B DONE (8/8 criteria, `test:eval` byte-identical proof; fixed 2 real bugs — `colors` kept locally + `FrozenAskAiContext` trimmed shape; REQ-176 new + REQ-167/integrations/quick-lookup amended; commit `0bea2f3`). Both pushed to `-work`, PR #185 opened → base. Slice C BLOCKED on a genuine owner decision: NFR-019's ≥80%-gzipped-reduction gate is structurally unreachable — measured 48.1% (removed oracle text compresses well; kept `cardId`/`imageUrl` barely do); C code green but uncommitted, PRD truth for C held. 4 options in PR #185 blocker comment. Parks at `owner-action` | 2026-09-04 |
 | 6 | build | sonnet | ok | `0 → 187` | attempt 3 (resume after owner recalibrated NFR-019 → ≥40%): Slice C committed (`37d5aed`) — `CardMetadataItem` slimmed, build-script floor 0.8→0.4, gate now passes at 48.1% ≥ 40%; NFR-019 truth applied fresh to `non-functional-requirements.md` at ≥40% (no lingering 80%) + REQ-174 new + integrations/system-map amendments; fixed a real combo-quality test regression the slim caused; all 10 Slice-C criteria true; full suite green (fe 1315 / be 398 / scripts 436), Playwright-verified; PR #185 un-blocked, all 3 slices A+B+C present. Build complete → review | 2026-09-04 |
+| 7 | review | opus | ok | `0 → 31` | APPROVE — no Critical/Important. All 5 focus areas pass: DEC-078 offline honored (name-only fallback, no forced fetch; `CardPresentation.tsx:275-287`), on-demand `GET /api/cards/:oracleId` wired across all shared surfaces, ask-ai byte-identical server-side (client stops sending text), NFR-019 gate ≥40% (build script + `non-functional-requirements.md`, no lingering 80%), applied PRD truth matches approved proposal. One Minor (non-blocking): stale "80%" in the ephemeral `slice-c` work doc + `slice-c.criteria.json` C3 — no effect on shipped deliverable, deleted at cleanup. Every criteria.json entry met. → land | 2026-09-04 |
 
 Heartbeat note: nodes 1–2 ran before the driver armed
 `.worktrees/.graph-run-state.json`, so the per-node counter never keyed this run
@@ -109,22 +110,18 @@ onward, restoring the counter and cap.
 
 ## Open gate
 
-- **PARKED at `owner-action` 2026-09-04** — Slices A and B are built, verified, and pushed (PR #185); Slice C is blocked on one genuine owner decision. Its code is green and sitting uncommitted in the worktree, gated only on a numeric target that turned out to be unreachable as written.
+- **PARKED at `land` 2026-09-04** — the build half is complete and the independent review APPROVED. The one remaining step is the human merge this workflow never automates.
 
-**What this decides:** how NFR-019's first-load target for the slimmed card list is restated, now that the ≥80%-gzipped-reduction gate the owner set is structurally unreachable with the four fields kept (`cardId`, `name`, `imageUrl`, `colors`).
+**What this decides:** whether the image-first-cards deliverable lands on `main`. Everything is built, verified, and reviewed; only the owner's merge remains.
 
-**In plain terms:** the slim list (name/image/id/colors only) is 2.20 MB gzipped, down from 4.25 MB — a 48.1% reduction, not 80%. The removed oracle text compresses extremely well under gzip; the kept fields (`cardId` UUID, `imageUrl` hash) barely compress, so raw size drops ~87% but gzipped drops only ~48%. The 80% figure was a relative-percentage proxy that doesn't fit this data shape — and notably the delivered 2.20 MB is right inside NFR-019's own Notes estimate of ~1–2 MB gzipped. The feature's real win (the up-front payload roughly halves, and detail loads on demand) is delivered; only the acceptance number needs restating.
+**In plain terms:** all three slices are done and passing — the new `GET /api/cards/:oracleId` endpoint + backend artifact, the on-demand card-detail popup across every card surface (name-only image-fail fallback, offline-safe per DEC-078), ask-ai resolving card text server-side (assembled prompt proven byte-identical), and the slimmed up-front card list (~48% smaller gzipped, passing the owner-recalibrated ≥40% gate). Node-7 review found no Critical/Important issues. The durable `PRD/sections/` product truth was applied with the code.
 
-**What happens if you say no** (leave NFR-019 at 80%): Slice C cannot pass its gate and cannot ship, so image-first would land as A+B only (endpoint + on-demand popup + server-side ask-ai) without the up-front-list slimming — the piece that halves the initial download. The number blocks the payload win, not the correctness.
+**What happens if you say no:** nothing lands; the deliverable stays on the `-work` branch in PR #185. Merging is the "ship it" step.
 
-- **The four options** (full diagnosis in PR #185's blocker comment):
-  1. Recalibrate NFR-019 to the measured ~48% gzipped reduction (relative % — but a relative gate is fragile, it moves with the baseline).
-  2. **[recommended]** Restate NFR-019 as an absolute gzipped-size ceiling (e.g. ≤2.3 MB), which is what the requirement's own Notes actually estimated toward (~1–2 MB) and is robust to baseline drift. The delivered 2.20 MB passes.
-  3. Change the `imageUrl` contract (store CDN-relative suffix, rebuild prefix client-side) — measured to move the number only to 48.8%, so insufficient alone.
-  4. A different `cardId` scheme to shrink the UUID — large change, breaks the `oracle_id` join key REQ-175/176/rulings/combos rely on; not recommended.
-- **State of the work:** Slice A (`28e4eef`) and Slice B (`0bea2f3`) done, verified, pushed; PR #185 `[BLOCKED]` open → base. Slice C code (type slim + ~14 consumer/test files) implemented and green (1315 frontend + 398 backend tests) but uncommitted; its `PRD/sections/` truth held so the applied NFR-019 text matches the chosen number.
-- **Code PR (owner merges last):** https://github.com/ChrisMiho/TheJudge/pull/185
-- **Resume:** pick an option (1 or 2 keep the delivered work); then `/graph-implement PRD/work/image-first-cards/` applies the NFR-019 restatement, commits Slice C, runs review, and parks at `land` for your merge.
+- **Merge this:** https://github.com/ChrisMiho/TheJudge/pull/185 — `thejudge-auto/image-first-cards-work` → `main` (retargeted from the intermediate base to `main` so it is a single merge; the branch is a clean descendant of `main`).
+- **Review verdict:** APPROVE, no Critical/Important; one Minor (stale "80%" in the ephemeral `slice-c` work doc, removed at cleanup).
+- **Resume after merge:** `/graph-implement PRD/work/image-first-cards/` — it confirms PR #185 merged (records `land` ok), then runs `close` (`thejudge-cleanup`): folds this ledger into a durable receipt and removes the `PRD/work/image-first-cards/` folder (a follow-up cleanup PR to `main`).
+- **Note:** the latest ledger rows and the NFR-019 ≥40% recalibration in `GATE-QUESTIONS.md` live on the local base branch (committed after the PR head forked, base-frozen); cleanup writes the receipt from that authoritative local ledger.
 
 ## Dispatch prompts
 

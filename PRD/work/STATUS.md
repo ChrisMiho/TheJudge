@@ -6,6 +6,8 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
+- [image-first-cards](image-first-cards/) — DONE, awaiting the owner's merge. All 3 slices built, verified, and reviewed (node-7 APPROVE, no Critical/Important): new `GET /api/cards/:oracleId` endpoint + on-demand popup across all card surfaces (name-only image-fail fallback, DEC-078 offline-safe); ask-ai resolves card text server-side (byte-identical proven); up-front list slimmed ~48% gzipped (passes owner-recalibrated ≥40% gate). Durable `PRD/sections/` truth applied with the code. **Merge PR #185 (→ `main`)**, then `/graph-implement PRD/work/image-first-cards/` runs cleanup.
+
 ## active
 
 ## refined
@@ -17,8 +19,6 @@ Do not rename package folders to encode status.
 - [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. Seeded 2026-09-04 from the image-first-cards D5 near-miss. To implement next, after image-first-cards ships.
 
 ## owner-action
-
-- [image-first-cards](image-first-cards/) — Slices A + B built, verified, and pushed (PR #185: new `GET /api/cards/:oracleId` endpoint + on-demand popup across all surfaces; ask-ai resolves card text server-side, byte-identical proven). Slice C (slim the up-front list) is blocked on one owner decision: NFR-019's ≥80%-gzipped-reduction target is structurally unreachable — measured 48.1% (kept `cardId`/`imageUrl` barely compress), though the delivered 2.20 MB gzipped is inside NFR-019's own ~1–2 MB estimate. Pick how to restate NFR-019 (rec: an absolute ≤2.3 MB gzipped ceiling) — 4 options in `GRAPH-RUN.md` `## Open gate` / PR #185 blocker comment — then `/graph-implement PRD/work/image-first-cards/` commits C, reviews, and parks at land.
 
 ## deferred
 
