@@ -8,8 +8,8 @@
 - Build-half canary: `denied — graph tier armed (nohup true), 2026-09-04 run two`; run-state degraded at take-lock (`.graph-run-state.json` absent until first node dispatch), so cap enforcement arms once run-state is written per node
 - Autonomous base: `origin/thejudge-auto/single-source-invariants`
 - Staging: none — resume of an existing `STATUS.ideation` package, no new intake staged
-- Current node: `gate-review` complete (5 accept, 0 edit, 0 reject; docs PR #187 merged to `main`); `STATUS.refined` restored
-- Next action: `/graph-implement PRD/work/single-source-invariants/` — re-enter at `gate-qc`, then `plan → build → review → land → close`
+- Current node: `plan` (gate-qc PASS on build-half re-check; proceeding to slice the deliverable)
+- Next action: `/graph-implement PRD/work/single-source-invariants/` — `plan → build → review → land → close`
 
 ## Node ledger
 
@@ -26,6 +26,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 26` | PASS (re-check 4, final). Independent full-corpus re-grep of all four families + dedicated DEC-010 sweep (9 live hits, all matching the brief's classification: 3 in-scope rule-statements, 6 out-of-scope traceability/closed-door). Every live rule-stating line is a canonical home or a listed pointer; no unlisted home; no new IDs; docs-only, no genuine blocker. `STATUS.refined` (no transition on PASS) | 2026-09-04 |
 
 | — | gate-review | sonnet | ok | `1 → 17` | run two, build half. Applied 5 accept / 0 edit / 0 reject inside `GATE-QUESTIONS.md` (no diff change — all accept); wrote `## Gate verdicts`; resolved `## Open gate`; restored `STATUS.owner-action → STATUS.refined`, README `status:`, board row. No `PRD/sections/` edits | 2026-09-04 |
+| 4 | gate-qc | sonnet | ok | `1 → 26` | run two build-half re-check (PASS). Independent full-corpus `grep -rniE` of all four families + `DEC-010` sweep (9 live hits: 3 in-scope CLASS-A rule-statements, 6 out-of-scope). Every amendment-set home in `GATE-QUESTIONS.md` resolves to its cited live file:line; no unlisted rule-stating home; guardrail anchors (`writing-rules.md ## Editing Rules`, `requirement-format.md ## Formatting Rules`) present. `STATUS.refined` holds; no `PRD/sections/` edits | 2026-09-04 |
 
 Entry point: resume of a `STATUS.ideation` package with no prior ledger. Per the
 entry-point table, `STATUS.ideation` enters at `define`; `shape` (node 2) is
@@ -335,6 +336,30 @@ diff as refinement wrote it — record the verdicts and resolve the gate.
 
 Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch. Report the verdict counts and the restored status
+back to the driver.
+
+### gate-qc (build-half re-check)
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260904-220341`); no human is available, so do not stop to ask clarifying
+questions — produce the PASS/FAIL report and set the STATUS marker per the skill.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Invoke the `thejudge-quality-check` skill on the package at
+`PRD/work/single-source-invariants/`. This is the build-half re-entry required
+after gate-review, so an owner edit at the gate is re-graded before planning. The
+owner accepted all five decision blocks unchanged (INV-ENDPOINT, INV-MOCK-FIRST,
+INV-RULES-ENGINE, INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND — 0 edit, 0 reject),
+so the proposal is byte-identical to the re-check-4 PASS. Re-validate
+`DESIGN-BRIEF.md` for PRD alignment and agent-readiness, and confirm every
+enumerated amendment-set home in `GATE-QUESTIONS.md` still resolves to the live
+file:line cited (run your own independent full-corpus grep of the four invariant
+families plus a DEC-010 sweep). Do not write a GAMEPLAN or slice docs. On FAIL set
+`STATUS.refining` and list the findings.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch. Report PASS or FAIL and the complete findings list
 back to the driver.
 
 ## Instruction ledger

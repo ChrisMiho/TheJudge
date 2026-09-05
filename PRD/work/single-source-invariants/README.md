@@ -62,7 +62,10 @@ live contradiction is the already-captured root `README.md:163`. `STATUS.refined
 
 ## Preparation gate
 
-- Quality-check: PASS (re-check 4, final — 2026-09-04, graph-20260904-201403).
+- Quality-check: PASS (build-half re-check — 2026-09-04, graph-20260904-220341;
+  originally PASS at re-check 4, graph-20260904-201403). Proposal byte-identical
+  after gate-review (5 accept, 0 edit, 0 reject), so the re-check confirmed the
+  standing PASS rather than re-grading a changed proposal.
 - Checked artifact: `PRD/work/single-source-invariants/DESIGN-BRIEF.md`
 - Findings: none. Independent full-corpus `grep -rniE` of all four invariant
   families (endpoint, mock-first, rules-engine, decision-log) plus a dedicated
