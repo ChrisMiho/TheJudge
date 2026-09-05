@@ -396,6 +396,45 @@ Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch. Report the slice list, the artifact paths written,
 and the total criteria count back to the driver.
 
+### build
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260904-220341`); no human is available, so do not stop to ask clarifying
+questions — implement every remaining slice per the skill, apply the finalized
+proposal, earn each criterion, and open the code PR.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Invoke the `thejudge-implement-all` skill on the package at
+`PRD/work/single-source-invariants/`. Use the shared build branch
+`thejudge-auto/single-source-invariants-work` (already pushed to `origin` with the
+GAMEPLAN, all five slice docs, and their `.criteria.json`). The recorded autonomous
+base is `origin/main` (docs PR #187 merged the original base into `main`), so the
+code deliverable PR opens against `main` (`gh pr create --base main --head
+thejudge-auto/single-source-invariants-work` — opens a PR, never merges).
+
+This is the **apply** step and it is **docs-only / product-truth-only** — NO
+application code. Write the real `PRD/sections/`, `PRD/README.md`, and root
+`README.md` edits **by intent** from the finalized proposal in `GATE-QUESTIONS.md`
+(five accepted blocks, 0 edit / 0 reject) and the `DESIGN-BRIEF.md` intent,
+re-derived against current truth — not a blind replay. Implement slices A→B→C→D→E
+in order (A writes the shared `functional-requirements.md` REQ-094 line carrying
+both the endpoint and rules-engine pointers; C only verifies it — see the GAMEPLAN
+Sequencing note). Slice E adds the grep-before-amend guardrail to `writing-rules.md`
+and the `requirement-format.md` cross-ref (both are non-skill instruction files, in
+scope); it must NOT edit any `thejudge-*` skill file (protected — the skill-side
+pointer is a noted follow-up, not part of this deliverable).
+
+Earn every acceptance criterion in each `slice-*.criteria.json`: path criteria by
+editing the named file, manual criteria by a dated re-grep observation line naming
+the criterion id. Every criterion must be `true` before the node reports done. All
+writes must stay inside `.worktrees/implement-single-source-invariants/` or
+`PRD/work/single-source-invariants/`.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch. Report the worktree path, the PR URL, each slice's
+final status, and confirm every criterion is earned, back to the driver.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
