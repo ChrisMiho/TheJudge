@@ -7,8 +7,8 @@
 - Build-half canary: `denied — universal tier (rm -rf .worktrees/.graph-canary-nonexistent → "`rm -rf` is denied in every session"); graph tier armed (nohup true → "`nohup` is denied while a graph run holds the lock")`, 2026-09-05; run-state degraded at take-lock (`.graph-run-state.json` absent until the first node dispatch writes it)
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `gate-review` (run two claimed the package; 24/24 verdicts `accept`, docs PR #190 merged 2026-09-05)
-- Next action: driver dispatches `graph-gate-review`, then re-enters at `gate-qc` → `plan` → `build` → `review`; `land` stays the owner's
+- Current node: `gate-review` resolved (24/24 verdicts `accept`, docs PR #190 merged 2026-09-05; `STATUS.refined` restored)
+- Next action: driver re-enters at `gate-qc` → `plan` → `build` → `review`; `land` stays the owner's
 
 ## Node ledger
 
@@ -20,14 +20,45 @@
 | 3 | define | opus | ok | `0 → 73` | `STATUS.refined`; `DESIGN-BRIEF.md` (5-step gameplan REQ-177..181, 10 assumptions, intake dispositions) + `GATE-QUESTIONS.md` (24 slots: 5 new REQ, 4 SCOPE decisions, 8 amended IDs incl. NFR-017 Lambda-budget finding, 7 amended specs; 32 Current blocks verified verbatim); 0 blocker questions; commit `797086a` | 2026-09-05 |
 | 4 | gate-qc | sonnet | ok | `0 → 54` | PASS, no findings (attempt 1): all Current blocks verbatim vs live files; REQ-177–181 unused live, FLOW-024 high-water; amendment set re-grepped complete; RAG-DEFERRED citations repointed; technical-design-rules hold; live measurements reproduced (`retrieval:report` 6/9 same 3 failures, `test:eval` green, index 3,432/3,285/147/626); `STATUS.refined` unchanged, nothing committed → stop at PASS: docs PR + `owner-action` park | 2026-09-05 |
 | — | driver-resume | — | ok | `n/a (driver)` | run two (`/loop graph-implement`, tick 1): `git fetch`; ready-spec scan found `rag-rule-retrieval` (24/24 `accept`, PR #190 MERGED 2026-09-05T07:02:31Z, no code built); base `thejudge-auto/rag-rule-retrieval` fast-forwarded to `main` (`eb0db9a`); lock taken (`npm run graph:preflight -- --take-lock --slug rag-rule-retrieval --run-id graph-20260905-010802 --pid 83033`); both canaries denied; claim committed (`STATUS.owner-action → STATUS.active`, board row moved to `## active`) | 2026-09-05 |
+| — | gate-review | sonnet | ok | `0 → 23` | run two, build half. Applied 24 accept / 0 edit / 0 reject inside `GATE-QUESTIONS.md` (no diff change — all accept; `git diff` on `GATE-QUESTIONS.md` and `PRD/sections/` empty); wrote `## Gate verdicts`; resolved `## Open gate`; restored `STATUS.active → STATUS.refined`, README `status: refined`, board row moved to `## refined`. No `PRD/sections/` edits | 2026-09-05 |
+
+## Gate verdicts
+
+Applied 2026-09-05 by `graph-gate-review` (build-half run `graph-20260905-010802`). All 24 stable IDs `accept`; no `## Blocker questions` entries. An `accept` leaves the proposed diff in `GATE-QUESTIONS.md` exactly as refinement wrote it — nothing was edited there.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-177` | accept | — |
+| `REQ-178` | accept | — |
+| `REQ-179` | accept | — |
+| `REQ-180` | accept | — |
+| `REQ-181` | accept | — |
+| `SCOPE-A` | accept | — |
+| `SCOPE-B` | accept | — |
+| `SCOPE-C` | accept | — |
+| `SCOPE-D` | accept | — |
+| `REQ-022` (amendment) | accept | — |
+| `REQ-032` (amendment) | accept | — |
+| `REQ-074` (amendment) | accept | — |
+| `REQ-167` (amendment) | accept | — |
+| `REQ-168` (amendment) | accept | — |
+| `NFR-018` (amendment) | accept | — |
+| `NFR-017` (amendment) | accept | — |
+| `Q-001` (amendment) | accept | — |
+| `system-map.md` (spec amendment) | accept | — |
+| `system-map/game-rules-retrieval.md` (spec amendment) | accept | — |
+| `system-map/prompt-layout-spec.md` (spec amendment) | accept | — |
+| `quick-lookup/README.md` (spec amendment) | accept | — |
+| `in-depth/README.md` (spec amendment) | accept | — |
+| `integrations-and-data.md` (spec amendment) | accept | — |
+| `user-flows.md` (spec amendment) | accept | — |
 
 ## Open gate
 
-- Gate: answer the 24 verdict slots in `PRD/work/rag-rule-retrieval/GATE-QUESTIONS.md` (`accept | edit | reject`, Reason required for edit/reject), then merge the docs-only PR (URL below) to `main`.
+- None. Resolved 2026-09-05 — 24/24 verdicts `accept`, docs PR #190 merged to `main`, `GATE-QUESTIONS.md` finalized as the proposal (no edits/rejects to apply). `STATUS.refined` restored on the package.
 - Evidence: `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` at commit `797086a`; gate-qc PASS attempt 1 (row 4 above); `README.md` `## Preparation gate`.
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/190
-- Resume: `graph-implement` (background loop) picks the package up from `main` after merge; manual form `/graph-implement PRD/work/rag-rule-retrieval/`.
-- Claimed 2026-09-05 by run `graph-20260905-010802`; `graph-gate-review` dispatched to apply the 24 verdicts and resolve this gate.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/190 (merged)
+- Resume: `/graph-implement PRD/work/rag-rule-retrieval/` — the run re-enters at `gate-qc` (build-half run `graph-20260905-010802`).
 
 ## Dispatch prompts
 
@@ -147,6 +178,37 @@ it — record the verdicts and resolve the gate. Do not edit `DESIGN-BRIEF.md`,
 
 Copy the `Working directory:` line above, unchanged, into every prompt you write
 for any subagent you dispatch. Report the verdict counts and the restored status
+back to the driver.
+
+### gate-qc (build-half re-check)
+
+graph is controlling. This is an autonomous graph run (build-half run ID
+`graph-20260905-010802`); no human is available, so do not stop to ask clarifying
+questions — produce the PASS/FAIL report and set the STATUS marker per the skill.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Invoke the `thejudge-quality-check` skill on the package at
+`PRD/work/rag-rule-retrieval/`. This is the build-half re-entry required after
+gate-review, so an owner edit at the gate is re-graded before planning. The owner
+accepted all 24 blocks unchanged (0 edit, 0 reject, no blocker questions), so the
+proposal in `GATE-QUESTIONS.md` is byte-identical to the run-one attempt-1 PASS
+recorded in `README.md` `## Preparation gate`. Re-validate `DESIGN-BRIEF.md` for
+PRD alignment and agent-readiness against the live `PRD/sections/` on this branch
+(`thejudge-auto/rag-rule-retrieval`, level with `main` at `eb0db9a` plus the
+driver's claim commits): confirm every `Current:` block in `GATE-QUESTIONS.md`
+still matches its cited live file verbatim, that REQ-177–181 are still unused
+live, and that the amendment set is still complete by your own independent grep
+(do not trust the brief's enumeration — re-grep the retrieval / System 3 /
+supplemental-rules family and the `EMBEDDING_PROVIDER` boundary). Reproduce the
+live measurements the brief cites if they are cheap (`npm run retrieval:report`,
+`npm --workspace apps/backend run test:eval`); they need no API key. Do not write
+a GAMEPLAN or slice docs, do not edit `PRD/sections/`, `DESIGN-BRIEF.md`, or
+`GATE-QUESTIONS.md`. On PASS leave `STATUS.refined`; on FAIL set `STATUS.refining`
+and list the findings. Do not commit; the driver commits.
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write
+for any subagent you dispatch. Report PASS or FAIL and the complete findings list
 back to the driver.
 
 ## Instruction ledger
