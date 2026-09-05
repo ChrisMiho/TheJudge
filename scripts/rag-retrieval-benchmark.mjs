@@ -12,22 +12,43 @@
 import { writeFile } from "node:fs/promises";
 import { resolve, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
-import { runBenchmark } from "../apps/backend/src/eval/ragRetrievalBenchmark.ts";
+import {
+  BENCHMARK_PATH,
+  CARD_DETAIL_PATH,
+  RULE_INDEX_PATH,
+  buildPollutionText,
+  loadBenchmarkCorpus,
+  runBenchmark,
+  scoreBenchmarkSemantic
+} from "../apps/backend/src/eval/ragRetrievalBenchmark.ts";
+import { loadCardDetailIndex } from "../apps/backend/src/cardDetail.ts";
+import { loadGameRulesRuleIndex } from "../apps/backend/src/gameRulesRetrieval.ts";
+import { localEmbeddingProvider } from "../apps/backend/src/providers/localEmbeddingProvider.ts";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputPath = resolve(repoRoot, "apps/backend/src/eval/benchmark/results.json");
 const baselinePath = resolve(repoRoot, "apps/backend/src/eval/benchmark/step1-baseline.json");
+const semanticOutputPath = resolve(repoRoot, "apps/backend/src/eval/benchmark/semantic-results.json");
 
 async function main() {
-  const result = runBenchmark();
+  const semantic = process.argv.includes("--semantic");
 
-  console.log(`RAG retrieval benchmark (n=${result.n}, recall@${result.k} / MRR)`);
+  const result = semantic
+    ? await scoreBenchmarkSemantic(
+        loadBenchmarkCorpus(BENCHMARK_PATH),
+        loadGameRulesRuleIndex(RULE_INDEX_PATH),
+        buildPollutionText(loadCardDetailIndex(CARD_DETAIL_PATH)),
+        (text) => localEmbeddingProvider.embed(text)
+      )
+    : runBenchmark();
+
+  console.log(`RAG retrieval benchmark (n=${result.n}, recall@${result.k} / MRR, method=${semantic ? "semantic-local" : "lexical-idf"})`);
   console.log(`  clean     recall ${result.clean.recall5}  mrr ${result.clean.mrr}`);
   console.log(`  polluted  recall ${result.polluted.recall5}  mrr ${result.polluted.mrr}`);
 
-  const record = { ...result, scoredAt: new Date().toISOString(), method: "lexical-idf" };
-  await writeFile(outputPath, `${JSON.stringify(record, null, 2)}\n`, "utf8");
-  console.log(`\nWrote ${outputPath}`);
+  const record = { ...result, scoredAt: new Date().toISOString(), method: semantic ? "semantic-local" : "lexical-idf" };
+  await writeFile(semantic ? semanticOutputPath : outputPath, `${JSON.stringify(record, null, 2)}\n`, "utf8");
+  console.log(`\nWrote ${semantic ? semanticOutputPath : outputPath}`);
 
   if (process.argv.includes("--record-baseline")) {
     const baseline = {

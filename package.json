@@ -6,6 +6,9 @@
     "apps/frontend",
     "apps/backend"
   ],
+  "overrides": {
+    "onnxruntime-web": "file:./vendor/onnxruntime-web-stub"
+  },
   "scripts": {
     "dev": "npm run dev:mock",
     "dev:mock": "ASK_AI_PROVIDER=mock node scripts/dev.mjs",
@@ -30,6 +33,7 @@
     "prompt:preview:all": "node scripts/prompt-preview.mjs --all-fixtures",
     "retrieval:report": "tsx scripts/retrieval-relevance-report.mjs",
     "benchmark:rag-retrieval": "tsx scripts/rag-retrieval-benchmark.mjs",
+    "data:build-rule-embeddings": "tsx scripts/build-rule-embeddings.mjs",
     "combo:answer-quality": "tsx scripts/compare-combo-answer-quality.mjs",
     "eval:worked-solutions": "tsx scripts/eval-worked-solutions.mjs",
     "data:scan-vectors": "tsx scripts/build-scan-vectors.mjs",

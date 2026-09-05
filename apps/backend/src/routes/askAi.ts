@@ -5,13 +5,14 @@ import {
   createValidationError
 } from "../errors.js";
 import { resolveCorrelationId, type AppLogger } from "../logging.js";
-import { preparePromptInput } from "../prompt/preparation.js";
+import { buildRetrievalQueryText, preparePromptInput } from "../prompt/preparation.js";
 import type { CardDetailIndex } from "../prompt/context.js";
 import type { RulingEntry } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { ComboCatalog } from "../commanderSpellbook/catalog.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
+import type { EmbeddingProvider } from "../providers/embeddingProvider.js";
 import type { AskAiRequest } from "../types/index.js";
 import { askAiRequestSchema } from "../validation/askAiRequest.js";
 import { toValidationErrorMessage } from "../app/errorHandler.js";
@@ -28,6 +29,8 @@ export type AskAiRouteDeps = {
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
   comboCatalog?: ComboCatalog;
   collectEnrichmentDebug?: boolean;
+  /** REQ-181: absent under `EMBEDDING_PROVIDER=mock` (the default) — System 3 stays lexical-only. */
+  embeddingProvider?: EmbeddingProvider;
 };
 
 export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
@@ -41,7 +44,8 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
     gameRulesTopics,
     gameRulesRuleIndex,
     comboCatalog,
-    collectEnrichmentDebug
+    collectEnrichmentDebug,
+    embeddingProvider
   } = deps;
 
   app.post("/api/ask-ai", async (req: Request, res: Response, next: NextFunction) => {
@@ -79,6 +83,19 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
         throw createProviderUnavailableError("Miho is working on it", "forced fail query parameter");
       }
 
+      // REQ-181: the one async step in prompt preparation. Embedding happens
+      // here, before the otherwise-synchronous `preparePromptInput`, so the
+      // vector is passed in as an option rather than making prompt assembly
+      // itself async. `embeddingProvider` is absent under the default
+      // `EMBEDDING_PROVIDER=mock`, and any embedding failure resolves to
+      // `null` (never throws) — either way System 3 falls back to lexical
+      // retrieval with no change in behavior or latency shape.
+      let queryEmbedding: number[] | null = null;
+      if (embeddingProvider) {
+        const queryText = buildRetrievalQueryText(askAiRequest, { cardDetailIndex });
+        queryEmbedding = await embeddingProvider.embed(queryText);
+      }
+
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
       const promptBuildStartedAt = Date.now();
       const preparedPrompt = preparePromptInput(askAiRequest, {
@@ -87,7 +104,8 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
         gameRulesTopics,
         gameRulesRuleIndex,
         comboCatalog,
-        collectEnrichmentDebug
+        collectEnrichmentDebug,
+        queryEmbedding
       });
       const diagnostics = preparedPrompt.diagnostics;
       logger.info("ask_ai.prompt_context_build_completed", {

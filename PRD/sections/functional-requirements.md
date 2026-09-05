@@ -364,22 +364,29 @@
   - manual latency sampling (p50/p95) is recorded after integration against the NFR-002 product risk
   - committed artifact `apps/backend/data/gameRulesRuleIndex.json` loads at backend startup alongside the topic artifact
   - every assembled prompt may include an `ADDITIONAL RELEVANT RULE EXCERPTS` section with up to 5 rules scored per DEC-046 against the request context
-  - supplemental rules are excluded from the curated baseline set (deduplicated against selected System 2 topic rule numbers)
+  - supplemental rules are excluded from the curated baseline set (deduplicated against selected System 2 topic rule numbers by rule-number prefix, so a curated parent rule also excludes its lettered sub-rules — REQ-179)
   - supplemental section appears after `GAME RULES (reference)` and before `OFFICIAL RULINGS`
   - supplemental section omitted when index missing, empty, or no rules score above 0
   - eval fixtures assert labeled supplemental recall per REQ-032
+  - the System 3 retrieval query is built from the player's question plus a compact per-card signal — name, type line, and keyword list — not from raw concatenated card oracle text (REQ-178)
+  - System 3 scoring is semantic-primary when the embedding-provider seam is active (REQ-181): the query embedding is cosine-ranked against the committed rule embeddings with the exact-rule-id and parent-rule-id boost merged in. Lexical scoring is retained as the mock/offline default and as the fallback on any embedding failure, so retrieval is never worse than the prior lexical-only behaviour
 - Constraints:
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text
   - no runtime CR or Scryfall fetch per request
+  - no per-request external call for System 3 query embedding in the default (`mock`) or shipped-semantic (`local`) modes; the no-per-request-external-call posture is preserved by the bundled local model (REQ-181), not reversed — only `EMBEDDING_PROVIDER=openai` would add one, and it is never the default
   - System 2 selection uses only card-agnostic game-state signals (`turnPhase`, `combatStep`, populated zones); no card names, oracle text, or keywords
   - System 3 owns all card/question-driven retrieval including oracle-keyword signals
 - Dependencies:
   - DEC-045
   - DEC-046
   - REQ-032
+  - REQ-178 (retrieval query construction)
+  - REQ-179 (rule-index hygiene and prefix-based curated exclusion)
+  - REQ-181 (semantic retrieval mechanism: embeddings artifact, provider seam, runtime query-embed, lexical fallback)
 - Notes:
   - supersedes REQ-022 acceptance criteria that required all curated topics on every request
+  - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-181; the section's placement, five-excerpt cap, and System 2 deduplication are unchanged
 
 ### REQ-023
 - Title: Decrypt wait feedback panel
@@ -581,15 +588,18 @@
   - a digestible before/after relevance report is available for tuning review (one table per scenario: System 2 topics selected, System 3 top-5 with scores, recall hit/miss); may be a script output or harness report artifact
   - the relevance report and the eval harness model production retrieval identically — same card-detail resolution, same query construction — and a test asserts they return the same per-scenario recall verdict for every labelled fixture, failing the pull request when they diverge (REQ-177)
   - a committed offline benchmark of labelled question-to-rule pairs records recall@5 and MRR under clean and card-polluted queries, and is the standing measure retrieval changes are judged against (REQ-177)
+  - `system3-expected-recall` and `system3-noise-excluded` run against the semantic retrieval path (REQ-181) using committed frozen query embeddings, so the eval measures semantic retrieval with no live embedding call and no live AI call
   - existing structural checks (section presence, ordering, budget) remain unchanged
   - `npm run test:eval` remains the automated regression gate
 - Constraints:
-  - no live AI provider calls in relevance checks
+  - no live AI provider calls in relevance checks, and no live embedding calls — the semantic path is evaluated via committed frozen query embeddings so the eval stays offline and deterministic
   - expected rule IDs are human-labeled ground truth, not inferred from current scorer output
   - do not assert full prompt golden text for relevance scenarios unless structural sections change intentionally
 - Dependencies:
   - DEC-047
   - REQ-022
+  - REQ-177 (report/harness parity and the committed benchmark)
+  - REQ-181 (the semantic retrieval path this eval now measures)
 - Notes:
   - replaces reliance on manual multi-file `prompt:preview` review as the sole relevance verification path
   - the report/harness parity criterion exists because the two diverged in practice: after REQ-176 moved card-text resolution server-side, the report stopped passing a card-detail index and reported three false scenario failures while the gate stayed green
@@ -4158,3 +4168,44 @@
   - this is Step 4 of the RAG gameplan
   - measured evidence: the Scryfall bulk record carries 62 fields and the card-metadata build keeps 10, dropping `keywords` — the exact field Q-001 names as the strongest option
   - power, toughness, and loyalty are also dropped by the same build step and would remove a large class of "does this damage kill it" guesswork; that is card-data work, not retrieval, and is deliberately out of this gameplan's scope
+
+### REQ-181
+- Title: Semantic rule retrieval for System 3
+- Priority: high
+- Description: System 3 supplemental rule retrieval ranks Comprehensive Rules excerpts by semantic similarity between the player's question and the rule corpus, not by lexical word overlap alone. A committed offline artifact holds one embedding vector per rule; at request time the query is embedded and cosine-ranked against those vectors to fill System 3's existing five-excerpt slot. The query embedder is selected by an explicit provider flag that mirrors the existing `ASK_AI_PROVIDER` boundary.
+- Acceptance Criteria:
+  - a committed offline artifact in `apps/backend/data/` holds one embedding vector per entry in `gameRulesRuleIndex.json`, built by an offline step alongside `build-game-rules.mjs` and rebuilt only on a Comprehensive Rules refresh
+  - a new `EMBEDDING_PROVIDER` flag selects the query embedder with values `mock` | `local` | `openai`; the default when unset is `mock`, and it never auto-switches on `NODE_ENV` or deploy target, mirroring `ASK_AI_PROVIDER`
+  - `EMBEDDING_PROVIDER=mock` performs no embedding and makes no external call; System 3 uses lexical retrieval only, so a checkout with no model access and no network behaves exactly as before
+  - `EMBEDDING_PROVIDER=local` embeds the query in-process with the bundled model and cosine-ranks it against the committed rule vectors
+  - `EMBEDDING_PROVIDER=openai` is seam-selectable for live mode only and is never the default
+  - the async route handler embeds the query and passes the resulting vector (or null) into prompt preparation as an option, so `preparePromptInput` stays synchronous
+  - the exact-rule-id and parent-rule-id boost is merged with the semantic ranking, so a question citing a rule number by name (for example "rule 613.9") still pulls that rule even when semantic similarity misses it — measured on the benchmark, gold rule 613.9 ranks 1st lexically and 5th semantically
+  - on any embedding failure — model load, inference error, missing artifact, provider error — System 3 falls back to lexical retrieval, still returns up to 5 excerpts, and emits one diagnostic warning
+  - each rule's embedding text is `sectionTitle: text` — measured against the more elaborate transformation originally proposed here (folding a keyword's numbered sub-rules into one document, prefixing an orphaned lettered sub-rule with its parent sentence, excluding fused `Example:` text), which scored 13/20 recall@5 on a benchmark sample against 19/20 for the plain form; the worked examples and each sub-rule's own text carry meaning the model needs, so nothing is folded, prefixed, or stripped before embedding
+  - System 3 remains capped at 5 excerpts, still deduplicated against the curated System 2 selection by rule-number prefix (REQ-179)
+  - the shipped quantised model's clean and multi-card recall@5 are re-measured on the committed benchmark (REQ-177) against the full-precision reference of 0.865 clean / 0.763 multi-card; a material drop ships the full-precision model by container image instead of the quantised package — measured 2026-09-05: 0.853 clean / 0.833 multi-card, no material drop
+  - the eval measures the semantic path using committed frozen query vectors, so `system3-expected-recall` and `system3-noise-excluded` run with no live embedding call and no live AI call
+  - the deploy package budget test (NFR-017) is green with the bundled model and the embeddings artifact present
+- Constraints:
+  - backend and prompt-internal only; no `AskAiRequest` change, no Zod schema change, no frontend change, no new endpoint
+  - the raw model download and any oversized full-precision vector blob are gitignored and never committed; only the trimmed committed vectors ship
+  - NFR-002's under-3-second answer target holds; an in-process query embedding adds about 2 milliseconds
+  - semantic retrieval scope is the Comprehensive Rules corpus only; cards, WotC rulings, and Commander Spellbook combos remain exact-id keyed lookups and are never embedded or semantically searched under this requirement
+  - the shipped semantic provider is a small embedding model bundled in the answer process and run in-process (`all-MiniLM-L6-v2`, 384 dimensions, quantised), not a hosted service and not a per-request external call; System 3's no-per-request-external-call posture is preserved by this choice rather than reversed, and only `EMBEDDING_PROVIDER=openai` would add such a call, which is never the default. A dedicated always-on inference host is out of scope
+  - no vector database and no new storage service: the rule vectors are loaded in-process alongside the rule index and cosine-searched directly. A hosted vector store would only be justified if semantic search later spanned cards, rulings, and combos (over 150,000 vectors), which the corpus-scope constraint above excludes
+  - lexical retrieval is retained and never removed: it is the retrieval path under `EMBEDDING_PROVIDER=mock` (the default, which must run with no model access — canonical mock-first rule, `integrations-and-data.md` Tech Stack), it supplies the exact-rule-id and parent-rule-id boost merged into semantic ranking, and it is the fallback on any embedding failure. System 3 is therefore never worse than its prior lexical-only behaviour under any provider setting or failure mode
+- Dependencies:
+  - REQ-177 (the committed benchmark this is gated on)
+  - REQ-178 (the query-construction fix this inherits — a semantic query built from polluted input inherits the same flood)
+  - REQ-179 (the cleaned corpus this embeds)
+  - REQ-180 (the keyword signal that feeds the query and the merged boost)
+  - REQ-022 (the System 3 enrichment behaviour this mechanism serves)
+  - REQ-032 (the offline eval this extends)
+  - NFR-017 (the deploy package budget this consumes)
+  - NFR-002 (the latency target)
+- Notes:
+  - this is Step 5 of the RAG gameplan, the end state
+  - the parked mechanic-definition corpus idea reuses this machinery but is a different feature — a new corpus and a new prompt section — and is not built here
+  - no hybrid lexical-plus-semantic fusion score was ever measured; this requirement merges the exact-rule-id boost with semantic ranking rather than claiming a measured fusion result
+  - the embedding-text shaping described in early drafts of this requirement was measured, not assumed, and dropped when it measurably hurt recall; `scripts/build-rule-embeddings.mjs` records the comparison

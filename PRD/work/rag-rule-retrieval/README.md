@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # rag-rule-retrieval
 
@@ -28,7 +28,7 @@ See `GRAPH-RUN.md`.
 | [B](slice-b-fix-the-query.md) | Step 2 / REQ-178 | Stop drowning the question in card text | done |
 | [C](slice-c-clean-the-corpus.md) | Step 3 / REQ-179 | Clean the junk out of the rule index | done |
 | [D](slice-d-scryfall-keywords.md) | Step 4 / REQ-180 | Use the keyword list Scryfall already gives us | done |
-| [E](slice-e-pick-rules-by-meaning.md) | Step 5 / REQ-181 | Pick rules by meaning, not word overlap | planned |
+| [E](slice-e-pick-rules-by-meaning.md) | Step 5 / REQ-181 | Pick rules by meaning, not word overlap | done |
 
 Sequential, A → B → C → D → E (dependency-forced; see `GAMEPLAN.md`).
 

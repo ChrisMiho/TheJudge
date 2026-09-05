@@ -156,3 +156,59 @@ export function runBenchmark(): BenchmarkScoreResult {
   const pollutionText = buildPollutionText(cardDetailIndex);
   return scoreBenchmark(corpus, ruleIndex, pollutionText);
 }
+
+/**
+ * REQ-181 (E9): re-measures the shipped semantic path's recall@5 on the same
+ * committed benchmark, using a caller-supplied embed function (the `local`
+ * provider in production tooling) so this module has no direct dependency on
+ * `@huggingface/transformers` — it stays a thin scorer over whatever vector
+ * the caller produces. Not part of the offline regression-guard test:
+ * embedding 312 queries (156 x clean/polluted) takes real (if fast, ~2ms
+ * each) compute, and re-measurement is a one-time, human-triggered check
+ * (`npm run benchmark:rag-retrieval -- --semantic`), not a per-PR gate.
+ */
+export async function scoreBenchmarkSemantic(
+  corpus: BenchmarkCorpus,
+  ruleIndex: GameRulesRuleIndexEntry[],
+  pollutionText: string,
+  embed: (text: string) => Promise<number[] | null>
+): Promise<BenchmarkScoreResult> {
+  const cleanRanks: number[] = [];
+  const pollutedRanks: number[] = [];
+
+  for (const item of corpus.items) {
+    const clean = buildQueryTokensFromParts({ questionText: item.question, oracleText: "" });
+    const cleanVector = await embed(item.question);
+    const cleanHits = retrieveRulesForQuery(
+      clean.tokens,
+      clean.queryRuleIds,
+      ruleIndex,
+      new Set(),
+      5,
+      undefined,
+      cleanVector
+    ).map((rule) => rule.ruleId);
+    cleanRanks.push(rankOf(cleanHits, item.expectedRuleId));
+
+    const polluted = buildQueryTokensFromParts({ questionText: item.question, oracleText: pollutionText });
+    const pollutedQuestion = `${item.question} ${pollutionText}`;
+    const pollutedVector = await embed(pollutedQuestion);
+    const pollutedHits = retrieveRulesForQuery(
+      polluted.tokens,
+      polluted.queryRuleIds,
+      ruleIndex,
+      new Set(),
+      5,
+      undefined,
+      pollutedVector
+    ).map((rule) => rule.ruleId);
+    pollutedRanks.push(rankOf(pollutedHits, item.expectedRuleId));
+  }
+
+  return {
+    n: corpus.items.length,
+    k: 5,
+    clean: { recall5: recallAt5(cleanRanks), mrr: meanReciprocalRank(cleanRanks) },
+    polluted: { recall5: recallAt5(pollutedRanks), mrr: meanReciprocalRank(pollutedRanks) }
+  };
+}

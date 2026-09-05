@@ -7,13 +7,16 @@ import {
   buildQueryTokens,
   buildQueryTokensFromParts,
   collectCuratedRuleIds,
+  cosineSimilarity,
   loadGameRulesKeywordVocabulary,
+  loadGameRulesRuleEmbeddings,
   loadGameRulesRuleIndex,
   loadGameRulesTokenStats,
   retrieveSupplementalRules,
   retrieveSupplementalRulesWithDebug,
   retrieveRulesForQuery,
   retrieveRulesForQueryWithDebug,
+  type GameRulesRuleEmbeddings,
   type GameRulesRuleIndexEntry,
   type RetrievedGameRule,
   type ScoringResources
@@ -61,7 +64,8 @@ function makeContext(overrides: Partial<PromptContext> = {}): PromptContext {
 function makeResources(N: number, df: Record<string, number>, keywords: string[] = []): ScoringResources {
   return {
     tokenStats: { N, df: new Map(Object.entries(df)) },
-    keywordVocabulary: new Set(keywords)
+    keywordVocabulary: new Set(keywords),
+    ruleEmbeddings: null
   };
 }
 
@@ -604,6 +608,7 @@ describe("Backend - Game Rules", () => {
           new Set(),
           5,
           resources,
+          null,
           query.queryText
         )
       ).toEqual(retrieveSupplementalRulesWithDebug(context, index, new Set(), 5, resources));
@@ -758,6 +763,180 @@ describe("Backend - Game Rules", () => {
       expect(vocab.size).toBe(0);
       expect(spy).toHaveBeenCalledOnce();
       spy.mockRestore();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Semantic retrieval (REQ-181)
+  // ---------------------------------------------------------------------------
+
+  describe("loadGameRulesRuleEmbeddings", () => {
+    function writeEmbeddingsArtifact(dir: string, ruleIds: string[], dims: number, vectors: number[][]) {
+      const filePath = join(dir, "embeddings.json");
+      const flat = vectors.flat();
+      const vectorsBase64 = Buffer.from(Float32Array.from(flat).buffer).toString("base64");
+      writeFileSync(filePath, JSON.stringify({ model: "test-model", dims, ruleIds, vectorsBase64 }), "utf8");
+      return filePath;
+    }
+
+    it("decodes a base64 float32 artifact back into per-rule vectors", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = writeEmbeddingsArtifact(dir, ["100.1", "100.2"], 3, [
+        [1, 2, 3],
+        [4, 5, 6]
+      ]);
+      const embeddings = loadGameRulesRuleEmbeddings(filePath);
+      expect(embeddings?.ruleIds).toEqual(["100.1", "100.2"]);
+      expect(embeddings?.vectors[0]).toEqual([1, 2, 3]);
+      expect(embeddings?.vectors[1]).toEqual([4, 5, 6]);
+    });
+
+    it("returns null and warns when the file is missing", () => {
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings("/tmp/does-not-exist-embeddings-abc123.json")).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+
+    it("returns null and warns when the byte length does not match ruleIds x dims", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = join(dir, "bad.json");
+      writeFileSync(
+        filePath,
+        JSON.stringify({ model: "test-model", dims: 3, ruleIds: ["100.1", "100.2"], vectorsBase64: Buffer.from([1, 2, 3, 4]).toString("base64") }),
+        "utf8"
+      );
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings(filePath)).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+
+    it("returns null and warns on malformed JSON", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = join(dir, "bad.json");
+      writeFileSync(filePath, "{ not valid json", "utf8");
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings(filePath)).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+  });
+
+  describe("cosineSimilarity", () => {
+    it("is 1 for identical vectors and 0 for orthogonal vectors", () => {
+      expect(cosineSimilarity([1, 0, 0], [1, 0, 0])).toBeCloseTo(1, 10);
+      expect(cosineSimilarity([1, 0, 0], [0, 1, 0])).toBeCloseTo(0, 10);
+    });
+
+    it("is 0 (never NaN/throw) for a zero vector", () => {
+      expect(cosineSimilarity([0, 0, 0], [1, 2, 3])).toBe(0);
+    });
+  });
+
+  describe("semantic-primary ranking with lexical fallback (REQ-181)", () => {
+    const semanticIndex: GameRulesRuleIndexEntry[] = [
+      makeEntry({ ruleId: "702.2b", sectionTitle: "Deathtouch", text: "702.2b Deathtouch damage rule.", searchText: "702.2b deathtouch", parentRuleIds: ["702.2", "702"] }),
+      makeEntry({ ruleId: "100.1", sectionTitle: "General", text: "100.1. General rule about the game.", searchText: "100.1 general game", parentRuleIds: ["100"] })
+    ];
+    // A unit vector aligned with axis 0; 702.2b's committed vector is
+    // identical (cosine 1), 100.1's is orthogonal (cosine 0).
+    const embeddings: GameRulesRuleEmbeddings = {
+      model: "test-model",
+      dims: 3,
+      ruleIds: ["702.2b", "100.1"],
+      vectors: [
+        [1, 0, 0],
+        [0, 1, 0]
+      ]
+    };
+    const semanticResources: ScoringResources = {
+      tokenStats: { N: 2, df: new Map([["deathtouch", 1]]) },
+      keywordVocabulary: new Set(),
+      ruleEmbeddings: embeddings
+    };
+
+    it("ranks by cosine similarity when a query vector and committed embeddings are both present", () => {
+      const context = makeContext({ finalQuestion: "What kills a creature outright?" });
+      const result = retrieveSupplementalRules(context, semanticIndex, new Set(), 5, semanticResources, [1, 0, 0]);
+      expect(result[0]!.ruleId).toBe("702.2b");
+    });
+
+    it("merges the exact-rule-id boost into semantic ranking (a cited rule number still pulls that rule)", () => {
+      // The query vector is closer to 100.1 by cosine (~0.71 vs 0 at 702.2b),
+      // but the question also cites "702.2b" by number — the merged +100
+      // exact-id boost must outrank 100.1's cosine-only ~71-point score.
+      const context = makeContext({ finalQuestion: "What does rule 702.2b say?" });
+      const result = retrieveSupplementalRules(context, semanticIndex, new Set(), 5, semanticResources, [0, 1, 1]);
+      expect(result[0]!.ruleId).toBe("702.2b");
+    });
+
+    it("excludes by rule-number prefix under semantic ranking too (REQ-179 dedup applies regardless of scoring path)", () => {
+      const context = makeContext({ finalQuestion: "What kills a creature outright?" });
+      const result = retrieveSupplementalRules(
+        context,
+        semanticIndex,
+        new Set(["702.2"]),
+        5,
+        semanticResources,
+        [1, 0, 0]
+      );
+      expect(result.map((r) => r.ruleId)).not.toContain("702.2b");
+    });
+
+    it("caps results at max under semantic ranking", () => {
+      const manyEntries = Array.from({ length: 10 }, (_, i) =>
+        makeEntry({ ruleId: `900.${i}`, searchText: `900.${i}`, parentRuleIds: ["900"] })
+      );
+      const manyEmbeddings: GameRulesRuleEmbeddings = {
+        model: "test-model",
+        dims: 2,
+        ruleIds: manyEntries.map((e) => e.ruleId),
+        vectors: manyEntries.map(() => [1, 0])
+      };
+      const resources: ScoringResources = {
+        tokenStats: { N: 10, df: new Map() },
+        keywordVocabulary: new Set(),
+        ruleEmbeddings: manyEmbeddings
+      };
+      const context = makeContext({ finalQuestion: "anything" });
+      const result = retrieveSupplementalRules(context, manyEntries, new Set(), 5, resources, [1, 0]);
+      expect(result).toHaveLength(5);
+    });
+
+    it("falls back to lexical retrieval when no query vector is supplied (EMBEDDING_PROVIDER=mock)", () => {
+      const context = makeContext({ finalQuestion: "What does rule 100.1 say?" });
+      const result = retrieveSupplementalRules(context, semanticIndex, new Set(), 5, semanticResources, null);
+      // Lexical path: exact-rule-id boost on "100.1" plus token overlap wins,
+      // proving cosine scoring never ran with a null vector.
+      expect(result[0]!.ruleId).toBe("100.1");
+    });
+
+    it("falls back to lexical retrieval when the committed embeddings artifact is absent", () => {
+      const context = makeContext({ finalQuestion: "What does rule 100.1 say?" });
+      const resourcesNoEmbeddings: ScoringResources = {
+        tokenStats: { N: 2, df: new Map() },
+        keywordVocabulary: new Set(),
+        ruleEmbeddings: null
+      };
+      const result = retrieveSupplementalRules(context, semanticIndex, new Set(), 5, resourcesNoEmbeddings, [1, 0, 0]);
+      expect(result[0]!.ruleId).toBe("100.1");
+    });
+
+    it("falls back to lexical retrieval when the query vector's dimensionality does not match the committed artifact", () => {
+      const context = makeContext({ finalQuestion: "What does rule 100.1 say?" });
+      const result = retrieveSupplementalRules(context, semanticIndex, new Set(), 5, semanticResources, [1, 0]);
+      expect(result[0]!.ruleId).toBe("100.1");
+    });
+
+    it("skips an index entry with no committed vector rather than crashing", () => {
+      const indexWithGap: GameRulesRuleIndexEntry[] = [
+        ...semanticIndex,
+        makeEntry({ ruleId: "999.1", searchText: "999.1", parentRuleIds: ["999"] })
+      ];
+      const context = makeContext({ finalQuestion: "anything" });
+      const result = retrieveSupplementalRules(context, indexWithGap, new Set(), 5, semanticResources, [1, 0, 0]);
+      expect(result.map((r) => r.ruleId)).not.toContain("999.1");
     });
   });
 });

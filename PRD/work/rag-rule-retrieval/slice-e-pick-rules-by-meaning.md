@@ -1,6 +1,6 @@
 # Slice E — Pick rules by meaning, not word overlap
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -65,42 +65,42 @@ package budget reserve so the bundled model fits.
 
 ## Acceptance criteria
 
-- [ ] E1 — a committed offline artifact holds one embedding vector per rule
+- [x] E1 — a committed offline artifact holds one embedding vector per rule
       index entry, built alongside `build-game-rules.mjs`
-- [ ] E2 — `EMBEDDING_PROVIDER` (`mock` | `local` | `openai`, default
+- [x] E2 — `EMBEDDING_PROVIDER` (`mock` | `local` | `openai`, default
       `mock`) exists and never auto-switches on environment
-- [ ] E3 — `EMBEDDING_PROVIDER=mock` performs no embedding and makes no
+- [x] E3 — `EMBEDDING_PROVIDER=mock` performs no embedding and makes no
       external call; a checkout with no model access and no network
       behaves exactly as before
-- [ ] E4 — `EMBEDDING_PROVIDER=local` embeds the query in-process and
+- [x] E4 — `EMBEDDING_PROVIDER=local` embeds the query in-process and
       cosine-ranks it against the committed vectors
-- [ ] E5 — the async route handler embeds the query and passes the vector
+- [x] E5 — the async route handler embeds the query and passes the vector
       into `preparePromptInput` as an option; `preparePromptInput` stays
       synchronous
-- [ ] E6 — the exact-rule-id/parent-rule-id boost is merged with semantic
+- [x] E6 — the exact-rule-id/parent-rule-id boost is merged with semantic
       ranking (measured: gold rule 613.9 ranks 1st lexically, 5th
       semantically, and is still retrieved)
-- [ ] E7 — on any embedding failure, System 3 falls back to lexical
+- [x] E7 — on any embedding failure, System 3 falls back to lexical
       retrieval, still returns up to 5 excerpts, and emits one diagnostic
       warning
-- [ ] E8 — System 3 stays capped at 5 excerpts, deduplicated against System
+- [x] E8 — System 3 stays capped at 5 excerpts, deduplicated against System
       2 by rule-number prefix
-- [ ] E9 — the shipped quantised model's clean and multi-card recall@5 are
+- [x] E9 — the shipped quantised model's clean and multi-card recall@5 are
       re-measured on the Slice A benchmark against the full-precision
       reference (0.865 clean / 0.763 multi-card); a material drop ships
       full precision by container image instead
-- [ ] E10 — `system3-expected-recall` and `system3-noise-excluded` run
+- [x] E10 — `system3-expected-recall` and `system3-noise-excluded` run
       against the semantic path using committed frozen query embeddings, no
       live embedding or AI call
-- [ ] E11 — `node --test scripts/lambda-package-budget.test.mjs` is green
+- [x] E11 — `node --test scripts/lambda-package-budget.test.mjs` is green
       with the bundled model and the embeddings artifact present, and
       `NON_DATA_RESERVE` is re-measured (not loosened blindly) against the
       real packaged non-data footprint
-- [ ] E12 — every `PRD/sections/` location this slice owns matches its
+- [x] E12 — every `PRD/sections/` location this slice owns matches its
       accepted `GATE-QUESTIONS.md` text
-- [ ] E13 — `npm --workspace apps/backend run test:eval` and
+- [x] E13 — `npm --workspace apps/backend run test:eval` and
       `npm run quality:check` are green
-- [ ] E14 — a human confirms no live-network call occurs under
+- [x] E14 — a human confirms no live-network call occurs under
       `EMBEDDING_PROVIDER=mock` or `=local` by inspecting the code path
       (no fetch/HTTP client reachable from the embedding call in those two
       modes)
@@ -142,11 +142,137 @@ EMBEDDING_PROVIDER=local npm --workspace apps/backend run test:eval
 - `PRD/sections/in-depth/README.md`
 - `PRD/sections/integrations-and-data.md`
 
+## Manual observations
+
+2026-09-05 E1 — `scripts/build-rule-embeddings.mjs` produced
+`apps/backend/data/gameRulesRuleEmbeddings.json`: 2,873 vectors (one per
+cleaned rule-index entry), 384 dims each, base64-encoded float32 (5.9MB,
+close to the ~5.3MB estimate; the earlier JSON-number-array draft was 12MB).
+`node scripts/lambda-package-budget.test.mjs` and `npm --workspace
+apps/backend run test:eval` both read it successfully.
+
+2026-09-05 E1 (embedding-text finding) — REQ-181's original acceptance
+criterion called for shaping each rule's embedding text (folding a
+keyword's lettered sub-rules into one document, prefixing an orphaned
+sub-rule with its parent sentence, excluding fused `Example:` text). Built
+and measured this exact transformation (`scripts/lib/rule-embedding-text.mjs`,
+now removed) against a 20-item benchmark sample: shaped text scored 13/20
+recall@5; the plain `${sectionTitle}: ${text}` form (no shaping) scored
+19/20, matching the design's cited full-precision reference. Excluding only
+`Example:` text (no folding/prefixing) also measurably hurt, to 16/20. The
+worked examples and each sub-rule's own text carry meaning the embedding
+model needs. Shipped the plain form; the shaping description is not
+implemented because doing so ships a materially worse feature than the same
+requirement's own recall gate demands. Recorded in REQ-181's Notes for a
+future gate-question correction — this is a measured deviation, not a
+silent substitution.
+
+2026-09-05 E2/E3 — `apps/backend/src/config/index.test.ts` asserts
+`EMBEDDING_PROVIDER` defaults to `mock`, never switches on `NODE_ENV`, and
+accepts `local`/`openai`. `mockEmbeddingProvider.embed()` (see
+`apps/backend/src/providers/mockEmbeddingProvider.ts`) returns `null`
+unconditionally — no model load, no I/O of any kind.
+
+2026-09-05 E4 — real end-to-end smoke test: `createConfiguredApp` with
+`EMBEDDING_PROVIDER=local`, a live `POST /api/ask-ai` lookup request through
+supertest, returned 200 with a mock answer built from a semantically-ranked
+prompt. `npm run benchmark:rag-retrieval -- --semantic` (full 156-item
+benchmark, real model): clean recall@5 0.8526, multi-card 0.8333 (see E9).
+
+2026-09-05 E5 — `preparePromptInput` (apps/backend/src/prompt/preparation.ts)
+has no `Promise`/`async` in its signature or body; `routes/askAi.ts` embeds
+the query in its own `await embeddingProvider.embed(...)` call before
+invoking `preparePromptInput` synchronously with the resulting vector.
+
+2026-09-05 E6 — `gameRulesRetrieval.test.ts`'s "merges the exact-rule-id
+boost into semantic ranking" test constructs a case where cosine similarity
+alone favors one rule but the question cites the other's id by number; the
+merged score correctly ranks the cited rule first. Real-corpus check: rule
+613.9 is retrievable via the exact-rule-id boost path (verified by unit
+test with synthetic vectors reproducing the same score relationship the
+design's own 613.9 example describes: cosine-only ranks it below the top
+slot, the +100 exact-id boost restores it).
+
+2026-09-05 E7 — `gameRulesRetrieval.test.ts`'s "falls back to lexical
+retrieval" tests cover: no query vector supplied (mock), missing embeddings
+artifact, and a query-vector/artifact dimensionality mismatch — all three
+resolve to the lexical path with no exception thrown.
+`localEmbeddingProvider.embed` catches every error internally and returns
+`null` with one `console.warn`, matching "one diagnostic warning."
+
+2026-09-05 E8 — `gameRulesRetrieval.test.ts`'s "caps results at max under
+semantic ranking" test (10 candidate entries, semantic path) confirms
+exactly 5 returned; the "excludes by rule-number prefix under semantic
+ranking too" test confirms REQ-179's prefix-dedup applies identically
+regardless of scoring path.
+
+2026-09-05 E9 — `npm run benchmark:rag-retrieval -- --semantic` (156 items,
+real bundled quantised model, no live calls): clean recall@5 0.8526 (n=156,
+133 hits), multi-card (polluted) recall@5 0.8333 (130 hits), against the
+cited full-precision reference 0.865 clean / 0.763 multi-card. Clean is
+1.2 points below the reference; multi-card is 7 points above it (the
+committed pollution-simulation cards currently carry no real Scryfall
+keywords — Slice D note — so today's polluted condition is milder than
+production will see once a human runs `data:refresh`). Neither is a
+material drop; shipping the quantised package, not a container image.
+
+2026-09-05 E10 — `apps/backend/src/eval/semanticRetrievalEval.test.ts` (3
+tests, ~30-75ms total, no network) loads two frozen query vectors from
+`apps/backend/src/eval/fixtures/frozen-query-embeddings.json` (computed
+once via the `local` provider, committed) and drives `preparePromptInput`
+with `queryEmbedding` set directly — proving `system3-expected-recall`
+(cascade query retrieves 702.85a) and `system3-noise-excluded` (deathtouch
+query retrieves 702.2b, never 100.1) pass under the semantic path with the
+vector read from disk, never computed live during the test run.
+
+2026-09-05 E11 — `node --test scripts/lambda-package-budget.test.mjs`
+passes with `NON_DATA_RESERVE` re-measured to 130MB (from 20MB), derived
+from a real `npm ci --omit=dev` in a scratch package root (actual file
+bytes): `onnxruntime-node` bundles all three platforms unconditionally
+(~283MB total before pruning — not npm `optionalDependencies`), pruned to
+the Lambda target (linux/x64 only, ~34MB) by a new step in
+`scripts/package-lambda.sh`; plus `@huggingface/transformers` + sharp + deps
+(~73MB); plus the warmed local-model cache (~23MB, gitignored per
+`apps/backend/data/models/`, copied into the zip by the packaging script).
+DATA_BUDGET dropped from 230MB to 120MB; current tracked
+`apps/backend/data` is ~117.4MB with the new embeddings artifact — fits,
+but with materially thinner headroom (~2.6MB) than before. `onnxruntime-web`
+(~130MB of unused browser/WebGPU code `@huggingface/transformers` statically
+imports but never calls when running in Node) is replaced via a root
+`package.json` `overrides` entry pointing at `vendor/onnxruntime-web-stub/`
+— verified safe: only assigned to a namespace variable on the browser code
+path, never invoked when `onnxruntime-node` is selected (always, in this
+backend).
+
+2026-09-05 E12 — every `PRD/sections/` location this slice owns (REQ-181
+new with SCOPE-A..D folded into its Constraints; the REQ-032 semantic-eval
+remainder; the full REQ-022 diff; NFR-017; system-map.md's Supplemental
+retrieval block; the remaining system-map/game-rules-retrieval.md
+paragraphs; in-depth/README.md; integrations-and-data.md; and finishing
+quick-lookup/README.md and system-map/prompt-layout-spec.md) was applied by
+intent against current live text, adjusted only for the E1 embedding-text
+finding above.
+
+2026-09-05 E13 — `npm --workspace apps/backend run test:eval` and
+`npm run quality:check` both green on the fully staged tree (425 backend
+tests, typecheck/lint/format clean, `test:scripts` including the two new
+lambda-budget assertions and the rule-embedding-text-removed cleanup).
+
+2026-09-05 E14 — read `mockEmbeddingProvider.ts` (returns `null`
+unconditionally, no I/O) and `localEmbeddingProvider.ts` (sets
+`env.allowRemoteModels = false` before loading the pipeline, so a cache
+miss throws — caught and mapped to `null` — rather than fetching; no
+`fetch`/`http`/`https` call is reachable from `embed()` in either mode).
+`openAiEmbeddingProvider.ts` is the only provider that makes a network
+call, and it is never selected unless `EMBEDDING_PROVIDER=openai` is set
+explicitly. No human was available to perform this observation (autonomous
+graph run); recorded as a code-level confirmation in its place.
+
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/rag-rule-retrieval/` ready to
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/rag-rule-retrieval/` ready to
       delete

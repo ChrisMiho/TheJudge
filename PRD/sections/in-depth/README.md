@@ -21,8 +21,8 @@
   REQ-028, REQ-029, REQ-030, REQ-031, REQ-032, REQ-033, REQ-045, REQ-056, REQ-058,
   REQ-061, REQ-069, REQ-070, REQ-093, REQ-094, REQ-095, REQ-100, REQ-106,
   REQ-110, REQ-121, REQ-130, REQ-132, REQ-136, REQ-137, REQ-138, REQ-139,
-  REQ-144, FLOW-001, FLOW-002, FLOW-003, FLOW-004, FLOW-005, FLOW-015, NFR-001,
-  NFR-002, NFR-006, NFR-009
+  REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, FLOW-001, FLOW-002, FLOW-003,
+  FLOW-004, FLOW-005, FLOW-015, NFR-001, NFR-002, NFR-006, NFR-009
 - Consumed but owned elsewhere (cited, not re-specified here): the shared
   answered-conversation workspace, View Context overlay, history drawer,
   suite-wide card-detail popup, Menu rail (DEC-122), suite shell, and shared
@@ -327,9 +327,14 @@ the game-mode request drives them. (DEC-020, DEC-010)
   omitted only when the artifact is missing/empty, with a warning logged.
   (DEC-030, DEC-045, REQ-022)
 - Built: `ADDITIONAL RELEVANT RULE EXCERPTS` adds up to 5 supplemental rules
-  scored per DEC-046 (IDF-weighted lexical scoring with question and keyword
-  boosts, deduplicated against the System 2 selection), omitted when nothing
-  scores above 0. (DEC-032, DEC-046, REQ-022)
+  scored per DEC-046 — semantic-primary ranking (cosine over the committed
+  per-rule embeddings) when the embedding-provider seam is active, with the
+  exact-rule-id boost merged and IDF-weighted lexical scoring retained as the
+  mock/offline default and the fallback on any embedding failure (REQ-181), from
+  a query built from the question plus each submitted card's name, type line,
+  and keywords rather than its full oracle text (REQ-178), deduplicated against
+  the System 2 selection by rule-number prefix (REQ-179) — omitted when nothing
+  scores above 0. (DEC-032, DEC-046, REQ-022, REQ-178, REQ-179, REQ-181)
 - Built: `OFFICIAL RULINGS` carries published WotC Oracle rulings for submitted
   cards. Retrieval relevance (System 2 selection and System 3 recall) is verified
   by the eval harness against labeled expected outcomes, not structural checks
@@ -464,7 +469,10 @@ outcome-validated, not product truth.
   the flat baseline is no longer assembled. (DEC-045, REQ-022)
 - **DEC-032's flat +1-per-shared-word supplemental scoring — closed door.**
   DEC-046 replaced it with IDF-weighted relevance scoring, question/keyword boosts,
-  and an improved tie-break. (DEC-046)
+  and an improved tie-break. REQ-181 then made ranking semantic-primary, keeping
+  that IDF scorer as the mock/offline default, the exact-rule-id boost, and the
+  failure fallback — so the lexical path is demoted, never removed. (DEC-046,
+  REQ-181)
 - **Phase zone defaults wider than 2 zones — closed door.** DEC-035 trimmed
   phase-defaulted zones to 2 per phase and excludes empty defaulted zones from the
   payload and LLM context. (DEC-035)

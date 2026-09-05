@@ -11,7 +11,8 @@ describe("Backend - Providers", () => {
         debugLoggingEnabled: false,
         payloadLoggingEnabled: false,
         askAiProvider: "mock",
-        comboEnrichmentEnabled: true
+        comboEnrichmentEnabled: true,
+        embeddingProvider: "mock"
       });
 
       const response = await provider.generateAnswer(preparePromptInput(createAskAiRequest()));
@@ -35,6 +36,7 @@ describe("Backend - Providers", () => {
           payloadLoggingEnabled: false,
           askAiProvider: "openai",
           comboEnrichmentEnabled: true,
+          embeddingProvider: "mock",
           openAiApiKey: "sk-test",
           openAiModel: "gpt-4.1-mini",
           openAiTimeoutMs: 15000,
@@ -65,6 +67,7 @@ describe("Backend - Providers", () => {
           payloadLoggingEnabled: false,
           askAiProvider: "openai",
           comboEnrichmentEnabled: true,
+          embeddingProvider: "mock",
           openAiApiKey: "sk-test",
           openAiModel: "gpt-4.1-mini",
           openAiTimeoutMs: 15000,
@@ -96,6 +99,7 @@ describe("Backend - Providers", () => {
           payloadLoggingEnabled: false,
           askAiProvider: "openai",
           comboEnrichmentEnabled: true,
+          embeddingProvider: "mock",
           openAiApiKey: "sk-test",
           openAiModel: "gpt-4.1-mini",
           openAiTimeoutMs: 15000,

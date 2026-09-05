@@ -148,10 +148,92 @@ export function loadGameRulesKeywordVocabulary(filePath: string): Set<string> {
   }
 }
 
+/**
+ * REQ-181: the committed per-rule embeddings artifact — one 384-dimension
+ * vector per `gameRulesRuleIndex.json` entry, built offline by
+ * `scripts/build-rule-embeddings.mjs`. A missing or malformed artifact
+ * degrades to `null`, which disables the semantic path entirely (SCOPE-D
+ * lexical fallback).
+ */
+export type GameRulesRuleEmbeddings = {
+  model: string;
+  dims: number;
+  ruleIds: string[];
+  vectors: number[][];
+};
+
+const ruleEmbeddingsCache = new Map<string, GameRulesRuleEmbeddings | null>();
+
+/** On-disk shape: `vectorsBase64` is a base64-encoded Float32Array buffer —
+ * ~5.9MB for 2,873 x 384 floats, versus ~12MB as JSON number-array text.
+ * NFR-017's deploy budget is why this is base64/binary rather than arrays. */
+type RuleEmbeddingsArtifactOnDisk = {
+  model: string;
+  dims: number;
+  ruleIds: string[];
+  vectorsBase64: string;
+};
+
+function isValidEmbeddingsArtifactOnDisk(value: unknown): value is RuleEmbeddingsArtifactOnDisk {
+  if (typeof value !== "object" || value === null) return false;
+  const candidate = value as Partial<RuleEmbeddingsArtifactOnDisk>;
+  if (
+    typeof candidate.model !== "string" ||
+    typeof candidate.dims !== "number" ||
+    candidate.dims <= 0 ||
+    !Array.isArray(candidate.ruleIds) ||
+    typeof candidate.vectorsBase64 !== "string"
+  ) {
+    return false;
+  }
+  const expectedFloatCount = candidate.ruleIds.length * candidate.dims;
+  const decodedByteLength = Buffer.from(candidate.vectorsBase64, "base64").byteLength;
+  return decodedByteLength === expectedFloatCount * Float32Array.BYTES_PER_ELEMENT;
+}
+
+export function loadGameRulesRuleEmbeddings(filePath: string): GameRulesRuleEmbeddings | null {
+  const cached = ruleEmbeddingsCache.get(filePath);
+  if (cached !== undefined) return cached;
+
+  if (!existsSync(filePath)) {
+    warnOnce(filePath, `Rule embeddings artifact missing; System 3 falls back to lexical retrieval: ${filePath}`);
+    ruleEmbeddingsCache.set(filePath, null);
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(readFileSync(filePath, "utf8")) as unknown;
+    if (!isValidEmbeddingsArtifactOnDisk(parsed)) {
+      warnOnce(filePath, `Rule embeddings artifact has an unexpected shape; System 3 falls back to lexical retrieval: ${filePath}`);
+      ruleEmbeddingsCache.set(filePath, null);
+      return null;
+    }
+    const buffer = Buffer.from(parsed.vectorsBase64, "base64");
+    const floats = new Float32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / Float32Array.BYTES_PER_ELEMENT);
+    const vectors: number[][] = [];
+    for (let i = 0; i < parsed.ruleIds.length; i++) {
+      vectors.push(Array.from(floats.subarray(i * parsed.dims, (i + 1) * parsed.dims)));
+    }
+    const embeddings: GameRulesRuleEmbeddings = {
+      model: parsed.model,
+      dims: parsed.dims,
+      ruleIds: parsed.ruleIds,
+      vectors
+    };
+    ruleEmbeddingsCache.set(filePath, embeddings);
+    return embeddings;
+  } catch (error) {
+    warnOnce(filePath, `Rule embeddings artifact could not be parsed; System 3 falls back to lexical retrieval: ${filePath}`, error);
+    ruleEmbeddingsCache.set(filePath, null);
+    return null;
+  }
+}
+
 /** Scoring resources used by System 3 retrieval. */
 export type ScoringResources = {
   tokenStats: GameRulesTokenStats | null;
   keywordVocabulary: Set<string>;
+  ruleEmbeddings: GameRulesRuleEmbeddings | null;
 };
 
 let defaultResources: ScoringResources | null = null;
@@ -161,7 +243,8 @@ function getDefaultScoringResources(): ScoringResources {
   const dataDir = resolve(dirname(fileURLToPath(import.meta.url)), "../data");
   defaultResources = {
     tokenStats: loadGameRulesTokenStats(resolve(dataDir, "gameRulesTokenStats.json")),
-    keywordVocabulary: loadGameRulesKeywordVocabulary(resolve(dataDir, "gameRulesKeywordVocabulary.json"))
+    keywordVocabulary: loadGameRulesKeywordVocabulary(resolve(dataDir, "gameRulesKeywordVocabulary.json")),
+    ruleEmbeddings: loadGameRulesRuleEmbeddings(resolve(dataDir, "gameRulesRuleEmbeddings.json"))
   };
   return defaultResources;
 }
@@ -333,16 +416,70 @@ function scoreEntry(
   return { score, topTokenIdf };
 }
 
+/** Cosine similarity between two equal-length vectors, in [-1, 1]. */
+export function cosineSimilarity(a: readonly number[], b: readonly number[]): number {
+  let dot = 0;
+  let normA = 0;
+  let normB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i]! * b[i]!;
+    normA += a[i]! * a[i]!;
+    normB += b[i]! * b[i]!;
+  }
+  const denominator = Math.sqrt(normA) * Math.sqrt(normB);
+  return denominator === 0 ? 0 : dot / denominator;
+}
+
+/**
+ * REQ-181: semantic-primary scoring — cosine similarity against the
+ * committed rule embedding, scaled to sit on the same rough scale as the
+ * lexical scorer, with the exact-rule-id/parent-rule-id boost merged in
+ * unchanged so a cited rule number still pulls that rule even when semantic
+ * similarity misses it (SCOPE-D).
+ */
+function scoreEntrySemantic(
+  entry: GameRulesRuleIndexEntry,
+  queryVector: readonly number[],
+  entryVector: readonly number[],
+  queryRuleIds: ReadonlySet<string>
+): number {
+  let score = cosineSimilarity(queryVector, entryVector) * 100;
+
+  if (queryRuleIds.has(entry.ruleId)) {
+    score += SCORE_EXACT_RULE_ID;
+  }
+
+  for (const parentId of entry.parentRuleIds) {
+    if (queryRuleIds.has(parentId)) {
+      score += SCORE_PARENT_RULE_ID;
+      break;
+    }
+  }
+
+  return score;
+}
+
 function scoreIndex(
   tokens: QueryToken[],
   queryRuleIds: string[],
   index: GameRulesRuleIndexEntry[],
   excludeRuleIds: Set<string>,
-  resources: ScoringResources
-): { scored: ScoredEntry[]; excludedCuratedRuleCount: number } {
+  resources: ScoringResources,
+  queryVector: readonly number[] | null = null
+): { scored: ScoredEntry[]; excludedCuratedRuleCount: number; usedSemantic: boolean } {
   const N = resources.tokenStats?.N ?? index.length;
   const df = resources.tokenStats?.df ?? null;
   const queryRuleIdSet = new Set(queryRuleIds);
+
+  // SCOPE-D: semantic-primary only when a query vector was actually embedded
+  // AND the committed rule-embeddings artifact loaded; any other condition
+  // (mock provider, embedding failure, missing/malformed artifact) is the
+  // lexical path — never a thrown error, never a worse-than-before result.
+  const embeddings = resources.ruleEmbeddings;
+  const useSemantic = queryVector !== null && embeddings !== null && queryVector.length === embeddings.dims;
+  const embeddingByRuleId = useSemantic
+    ? new Map(embeddings!.ruleIds.map((ruleId, vectorIndex) => [ruleId, embeddings!.vectors[vectorIndex]!]))
+    : null;
 
   const scored: ScoredEntry[] = [];
   let excludedCuratedRuleCount = 0;
@@ -356,6 +493,17 @@ function scoreIndex(
       excludedCuratedRuleCount++;
       continue;
     }
+
+    if (useSemantic) {
+      const entryVector = embeddingByRuleId!.get(entry.ruleId);
+      if (!entryVector) continue; // no committed vector for this entry — cannot rank it semantically
+      const score = scoreEntrySemantic(entry, queryVector!, entryVector, queryRuleIdSet);
+      if (score > 0) {
+        scored.push({ entry, score, topTokenIdf: 0 });
+      }
+      continue;
+    }
+
     const { score, topTokenIdf } = scoreEntry(entry, tokens, queryRuleIdSet, N, df);
     if (score > 0) {
       scored.push({ entry, score, topTokenIdf });
@@ -368,7 +516,7 @@ function scoreIndex(
     return parseFloat(a.entry.ruleId) - parseFloat(b.entry.ruleId);
   });
 
-  return { scored, excludedCuratedRuleCount };
+  return { scored, excludedCuratedRuleCount, usedSemantic: useSemantic };
 }
 
 function toRetrievedGameRule(scored: ScoredEntry): RetrievedGameRule {
@@ -403,6 +551,7 @@ export function retrieveRulesForQueryWithDebug(
   excludeRuleIds: Set<string>,
   max = 5,
   resources: ScoringResources = getDefaultScoringResources(),
+  queryVector: readonly number[] | null = null,
   queryText = queryTokens.map((token) => token.token).join(" ")
 ): SupplementalRulesWithDebug {
   if (index.length === 0) {
@@ -426,7 +575,8 @@ export function retrieveRulesForQueryWithDebug(
     queryRuleIds,
     index,
     excludeRuleIds,
-    resources
+    resources,
+    queryVector
   );
   const selected = scored.slice(0, max).map(toRetrievedGameRule);
   const runnerUp = scored.slice(max, max + 10).map(toRetrievedGameRule);
@@ -452,10 +602,11 @@ export function retrieveRulesForQuery(
   index: GameRulesRuleIndexEntry[],
   excludeRuleIds: Set<string>,
   max = 5,
-  resources: ScoringResources = getDefaultScoringResources()
+  resources: ScoringResources = getDefaultScoringResources(),
+  queryVector: readonly number[] | null = null
 ): RetrievedGameRule[] {
   if (index.length === 0) return [];
-  const { scored } = scoreIndex(queryTokens, queryRuleIds, index, excludeRuleIds, resources);
+  const { scored } = scoreIndex(queryTokens, queryRuleIds, index, excludeRuleIds, resources, queryVector);
   return scored.slice(0, max).map(toRetrievedGameRule);
 }
 
@@ -464,7 +615,8 @@ export function retrieveSupplementalRulesWithDebug(
   index: GameRulesRuleIndexEntry[],
   excludeRuleIds: Set<string>,
   max = 5,
-  resources: ScoringResources = getDefaultScoringResources()
+  resources: ScoringResources = getDefaultScoringResources(),
+  queryVector: readonly number[] | null = null
 ): SupplementalRulesWithDebug {
   const query = buildQueryTokens(context, resources.keywordVocabulary);
   return retrieveRulesForQueryWithDebug(
@@ -474,6 +626,7 @@ export function retrieveSupplementalRulesWithDebug(
     excludeRuleIds,
     max,
     resources,
+    queryVector,
     query.queryText
   );
 }
@@ -483,8 +636,9 @@ export function retrieveSupplementalRules(
   index: GameRulesRuleIndexEntry[],
   excludeRuleIds: Set<string>,
   max = 5,
-  resources: ScoringResources = getDefaultScoringResources()
+  resources: ScoringResources = getDefaultScoringResources(),
+  queryVector: readonly number[] | null = null
 ): RetrievedGameRule[] {
   const query = buildQueryTokens(context, resources.keywordVocabulary);
-  return retrieveRulesForQuery(query.tokens, query.queryRuleIds, index, excludeRuleIds, max, resources);
+  return retrieveRulesForQuery(query.tokens, query.queryRuleIds, index, excludeRuleIds, max, resources, queryVector);
 }

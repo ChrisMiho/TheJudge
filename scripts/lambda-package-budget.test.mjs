@@ -40,17 +40,47 @@ import test from "node:test"
  * everything else. It is deliberately not set to the exact current size: an
  * artifact that grows a little should be allowed to, and only a change that
  * genuinely threatens the deploy should fail.
+ *
+ * REQ-181 re-measurement (2026-09-05): the bundled `local` embedding provider
+ * (`Xenova/all-MiniLM-L6-v2` via `@huggingface/transformers`) adds a real
+ * ONNX runtime to production `node_modules`, not a few KB. Measured on a
+ * fresh `npm ci --omit=dev` in a scratch package root (actual file bytes,
+ * `find -type f | stat`, not disk-block `du`):
+ *
+ *     onnxruntime-node (all 3 bundled platforms)   210 MB
+ *       -> pruned to the Lambda target (linux/x64)  34 MB  (scripts/package-lambda.sh)
+ *     @huggingface/transformers + sharp + deps      73 MB
+ *     warmed local-model cache (quantised .onnx +
+ *       tokenizer, apps/backend/data/models/,
+ *       gitignored — REQ-181/NFR-017 constraint —
+ *       but copied into the zip by the packaging
+ *       script once warmed)                         23 MB
+ *     pre-existing production deps + code            0.5 MB (unchanged)
+ *     -------------------------------------------
+ *     total non-data                               ~130 MB
+ *
+ * `onnxruntime-node` ships all three platforms' native binaries bundled
+ * directly in its published tarball (not npm `optionalDependencies`), so an
+ * un-pruned `npm ci` on any OS pulls all three; `scripts/package-lambda.sh`
+ * removes the two the Lambda runtime never uses before zipping.
+ *
+ * The reserve below is re-based on that real measurement, not loosened
+ * blindly: it grew from 20MB to 130MB because the real non-data footprint
+ * grew, and the guardrail is re-armed against that larger, real number —
+ * still comfortably inside the 250MB quota with the current committed data.
  */
 /** AWS Lambda's deployment-package size quota, unzipped. */
 const LAMBDA_UNZIPPED_QUOTA = 250 * 1024 * 1024
 
 /**
  * Reserved for node_modules, compiled code, and the package manifests — the
- * non-data part of the package. Generous relative to the ~4MB actually
- * observed, because those inputs are not what this test tracks; it exists to
+ * non-data part of the package, including the warmed local-embedding-model
+ * cache the packaging script copies into the zip. Re-measured for REQ-181
+ * (see the file header); re-measure again whenever a dependency contributing
+ * meaningfully to this reserve changes, the same way this test exists to
  * catch a runaway *data* artifact, not to pin dependency size to the byte.
  */
-const NON_DATA_RESERVE = 20 * 1024 * 1024
+const NON_DATA_RESERVE = 130 * 1024 * 1024
 
 const DATA_BUDGET = LAMBDA_UNZIPPED_QUOTA - NON_DATA_RESERVE
 
@@ -106,7 +136,8 @@ test("the committed data artifacts leave room for a deployable Lambda package", 
     `apps/backend/data contributes ${(total / 1048576).toFixed(1)}MB to the unzipped package, over the ` +
       `${(DATA_BUDGET / 1048576).toFixed(1)}MB budget that keeps the total package under Lambda's ` +
       `${(LAMBDA_UNZIPPED_QUOTA / 1048576).toFixed(0)}MB unzipped deployment-package quota ` +
-      `(reserving ${(NON_DATA_RESERVE / 1048576).toFixed(0)}MB for node_modules + code). ` +
+      `(reserving ${(NON_DATA_RESERVE / 1048576).toFixed(0)}MB for node_modules + code, including the bundled ` +
+      `local semantic-embedding model and ONNX runtime, REQ-181). ` +
       `Largest: ${largest}. Raise MIN_VARIANT_POPULARITY in ` +
       `scripts/build-commander-spellbook-combos.mjs and re-run with --trim-committed, as an emergency valve.`
   )
