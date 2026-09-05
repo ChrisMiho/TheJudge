@@ -47,7 +47,7 @@
 ## Intentional constraints
 - duplicate-card blocking is a temporary product constraint, not a gameplay rule
 - stack size is capped at 10 cards to reduce token use and abuse risk
-- the product does not implement a deterministic rules engine or full board-state simulator
+- the product does not implement a deterministic rules engine or full board-state simulator (canonical rule: `goals-and-non-goals.md` Scope Notes, below)
 - answer wire format stays a plain markdown string; schema-enforced answer shapes are out of scope (DEC-123)
 - runtime metadata syncing is out of scope
 - camera scanning is out of the **core product loop**, but is a scoped, optional, frontend-only input feature (DEC-050)
@@ -64,6 +64,7 @@
 - official judge-grade rulings
 - deterministic rules engine behavior
 - full board-state modeling
+  (canonical rule: `goals-and-non-goals.md` Scope Notes, below)
 - controller selection
 - mode selection
 - multiplayer sync
@@ -82,5 +83,5 @@
 - automated answer-quality gating in `npm run quality:check`: combo enrichment's effect on answers is measured by an opt-in, human-reviewed live-provider A/B that never blocks a build, and a general answer-quality baseline across the whole fixture corpus stays separate scope (DEC-161)
 
 ## Scope Notes
-TheJudge is an **MTG assistant with a suite of features** that help players — not an official judge or a deterministic/gameplay-accurate rules engine. **In-Depth Question** (the staged game-context + Ask AI feature, internally `mtg-assistant`) is the primary feature; Quick Question and other tools sit alongside it (`DEC-094`).
+**Canonical rule — assistant, not a rules engine.** TheJudge is an **MTG assistant with a suite of features** that help players — not an official judge or a deterministic/gameplay-accurate rules engine. It never implements legality validation, deterministic rules simulation, board-state logic, or format enforcement in the core product. **In-Depth Question** (the staged game-context + Ask AI feature, internally `mtg-assistant`) is the primary feature; Quick Question and other tools sit alongside it (`DEC-094`). This is the single authoritative statement of the assistant-not-a-rules-engine rule; echoed in `overview.md`, `problem-statement.md`, `instructions/technical-design-rules.md`, `instructions/agent-working-rules.md`, `integrations-and-data.md`, REQ-094, REQ-081, REQ-083, `in-depth/README.md`, `quick-lookup/README.md`, `user-flows.md`, `system-map/prompt-assembly.md`, `system-map/game-rules-retrieval.md`, `life-tracker/README.md`, and root `README.md` (enumerate by grep before amending — see `instructions/writing-rules.md`, grep-before-amend). Retired index rows: DEC-001, DEC-002, DEC-013.
 Some constraints are temporary and intentionally narrow.

@@ -39,9 +39,11 @@ When creating or closing non-section markdown under `PRD/`, also read `instructi
 ## Scope Discipline
 
 - The product remains an MTG assistant suite (an assistant with player-help features, not an official judge or rules engine) unless decisions explicitly expand scope.
+  (canonical rule: `sections/goals-and-non-goals.md` Scope Notes)
 - Do not pull historical or future roadmap ideas into current work unless promoted into the relevant feature spec and its cited `REQ`/`FLOW` entries.
 - Do not optimize for long-term architecture at the cost of shipping the current slice.
 - Preserve stack ordering, contract stability, and “assistant not judge” framing.
+  (canonical rule: `sections/goals-and-non-goals.md` Scope Notes)
 - Active execution context: `PRD/README.md` plus the relevant `sections/` files for the task.
 
 ## Retrieval Discipline

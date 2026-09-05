@@ -1,6 +1,6 @@
 # TheJudge
 
-TheJudge is an MTG assistant with a suite of features that help players — not an official judge or a deterministic rules engine.
+TheJudge is an MTG assistant with a suite of features that help players — not an official judge or a deterministic rules engine (canonical rule: `PRD/sections/goals-and-non-goals.md` Scope Notes).
 Its primary feature, **MTG Assistant**, helps players build staged game context, ask a question, and receive an AI-generated explanation through a backend API. Other features (card scanning, personalization, and planned tools such as Trade Balancer) sit alongside it.
 
 ## Start Here

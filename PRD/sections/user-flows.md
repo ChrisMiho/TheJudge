@@ -265,7 +265,7 @@
   - selecting a second topic before submitting swaps the locked pill without touching any text already typed in the textarea (REQ-091)
   - if a later answer arrives while the reader is farther than 64px from the bottom, the log preserves reading position and shows New response; activating it scrolls to and places keyboard focus on the newest assistant message without clearing any composer draft (REQ-098)
 - Notes:
-  - Quick Lookup carries no zones, stack, phase, or multi-card setup (DEC-107); it is not a full Comprehensive Rules browser and not official judge authority (DEC-002 / DEC-013)
+  - Quick Lookup carries no zones, stack, phase, or multi-card setup (DEC-107); it is not a full Comprehensive Rules browser and not official judge authority (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-002 / DEC-013)
   - reuses existing search, scan, core-topics, and the shared conversation workspace; when a card is attached the conversation is frozen on it, otherwise there is no frozen context object; follow-ups are text-only in v1
   - shares the main flow's conversation and text limits; Quick Lookup defines no separate limit policy
   - no answer-seeded second-pass retrieval in v1 (deferred, tracked as Q-004); the model still surfaces relevant verbatim rules from the first-pass provided set
@@ -299,7 +299,7 @@
   - the skull at life ≤ 0 is a visual death cue only; the player card remains and life can still be adjusted back up
   - old saves that still carry a removed `dayNightEnabled` flag load; the flag is ignored and the header control remains available
 - Notes:
-  - the tracker is a life/counter tracker, not a rules engine or board/zone tracker (DEC-013); it does not replace the staged zone / Ask AI flow, only seeds player-facing context into it
+  - the tracker is a life/counter tracker, not a rules engine or board/zone tracker (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-013); it does not replace the staged zone / Ask AI flow, only seeds player-facing context into it
   - deferred surfaces: game history, mana counter, dice & misc, per-player theming, saved profiles, reset-with-winner; Planechase / Archenemy / Bounty are out of scope
   - UI direction is driven by the reference photos under the refinement package's `references/`
 

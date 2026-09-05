@@ -47,7 +47,7 @@ context), and the same provider boundary (mock by default, OpenAI live; canonica
 plain-text answer. The answer opens the shared chat workspace, where the game
 context is frozen and the player can ask text follow-ups that carry the whole
 conversation forward. It is an assistant, not a rules engine — it validates no
-legality, simulates no board state, and enforces no format (DEC-002, DEC-013).
+legality, simulates no board state, and enforces no format (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-002 / DEC-013).
 It is the largest and most entangled destination in the suite: it originates the
 staged flow, the game-mode request contract, the conversation thread, and the
 game-context UI, and it consumes shared chrome, the scan input path, and the

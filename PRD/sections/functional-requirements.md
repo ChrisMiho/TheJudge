@@ -1860,7 +1860,7 @@
   - display names are editable from Game Setup via the tracker's Edit names disclosure; In-Depth continues to use the shared `PlayerRosterEditor` (REQ-015)
   - game-wide day/night designation tracking is always available in the tracker header (REQ-111 / DEC-132)
 - Constraints:
-  - presentation/tracking only; not a rules engine, no board/zone tracking, no elimination logic (DEC-013)
+  - presentation/tracking only; not a rules engine, no board/zone tracking, no elimination logic (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-013)
   - decorative motion stays CSS-only and reduced-motion-aware (DEC-079, NFR-006)
   - tracker Game Setup does not reuse `PlayerRosterEditor`; shared seed/data contracts are unchanged
 - Dependencies:
@@ -1915,7 +1915,7 @@
   - eval fixtures/goldens are updated only for this intentional prompt change
 - Constraints:
   - additive amendment to DEC-021/DEC-027; do not restructure existing GameContext fields
-  - captured numbers only; no legality/board-state/rules simulation (DEC-013)
+  - captured numbers only; no legality/board-state/rules simulation (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-013)
 - Dependencies:
   - DEC-102
   - REQ-015

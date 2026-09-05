@@ -371,6 +371,7 @@ The backend must not add:
 - commander-specific validation
 - legality engine logic
 - board-state simulation logic
+  (canonical rule: `goals-and-non-goals.md` Scope Notes)
 
 WotC rulings prompt enrichment must:
 - be omitted entirely when no submitted card has matching WotC rulings

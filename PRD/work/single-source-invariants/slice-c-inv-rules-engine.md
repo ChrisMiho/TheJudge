@@ -1,6 +1,6 @@
 # Slice C — INV-RULES-ENGINE: one canonical home for "assistant, not a rules engine"
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -50,33 +50,40 @@ re-edit it. Run Slice A first.
 
 ## Acceptance criteria
 
-- [ ] C1 — `goals-and-non-goals.md` Scope Notes (~85) carries the full
+- [x] C1 — `goals-and-non-goals.md` Scope Notes (~85) carries the full
       canonical assistant-not-rules-engine rule text, the echoed-in list of
       the other homes, and the retired DEC-001/DEC-002/DEC-013 note; related
       lines (~50, ~65, ~66) are updated per the diff
-- [ ] C2 — `overview.md` Product Positioning (~23-24) and Current Product
+- [x] C2 — `overview.md` Product Positioning (~23-24) and Current Product
       Status (~39) each append the canonical pointer
-- [ ] C3 — `problem-statement.md` (~31, ~32) appends the canonical pointer
-- [ ] C4 — `technical-design-rules.md` Forbidden Design Drift (~32-35)
+- [x] C3 — `problem-statement.md` (~31, ~32) appends the canonical pointer
+- [x] C4 — `technical-design-rules.md` Forbidden Design Drift (~32-35)
       appends one pointer to the group
-- [ ] C5 — `agent-working-rules.md` (~41, ~44) each append the canonical
+- [x] C5 — `agent-working-rules.md` (~41, ~44) each append the canonical
       pointer
-- [ ] C6 — `integrations-and-data.md` backend must-not-add list (~370-373)
+- [x] C6 — `integrations-and-data.md` backend must-not-add list (~370-373)
       appends one pointer to the group
-- [ ] C7 — `functional-requirements.md` REQ-081 (~1863) and REQ-083 (~1918)
+- [x] C7 — `functional-requirements.md` REQ-081 (~1863) and REQ-083 (~1918)
       each repoint their DEC-013 citation to the canonical home
-- [ ] C8 — `functional-requirements.md` REQ-094 (~2195) is verified to
+- [x] C8 — `functional-requirements.md` REQ-094 (~2195) is verified to
       already carry the dual pointer written by Slice A (no re-edit)
-- [ ] C9 — `in-depth/README.md` (~49-50) appends the canonical pointer
-- [ ] C10 — `quick-lookup/README.md` (~34) appends the canonical pointer
-- [ ] C11 — `user-flows.md` (~268 Quick-Lookup note, ~302 life-tracker note)
+
+### Verification observation: 2026-09-04 C8 — REQ-094 dual pointer
+
+Confirmed `functional-requirements.md:2195` already reads "...or a second
+product-facing endpoint (one-endpoint rule canonical: NFR-004; rules-engine
+rule canonical: `goals-and-non-goals.md` Scope Notes)", written by Slice A.
+Not re-edited by this slice.
+- [x] C9 — `in-depth/README.md` (~49-50) appends the canonical pointer
+- [x] C10 — `quick-lookup/README.md` (~34) appends the canonical pointer
+- [x] C11 — `user-flows.md` (~268 Quick-Lookup note, ~302 life-tracker note)
       each repoint their DEC-002/DEC-013 citation to the canonical home
-- [ ] C12 — `system-map/prompt-assembly.md` (~92) and
+- [x] C12 — `system-map/prompt-assembly.md` (~92) and
       `system-map/game-rules-retrieval.md` (~46, ~89) each append the
       canonical pointer
-- [ ] C13 — `life-tracker/README.md` (~44) appends the canonical pointer
-- [ ] C14 — root `README.md` (~3) appends the canonical pointer
-- [ ] C15 — re-grep the rules-engine pattern family and `grep -rniE
+- [x] C13 — `life-tracker/README.md` (~44) appends the canonical pointer
+- [x] C14 — root `README.md` (~3) appends the canonical pointer
+- [x] C15 — re-grep the rules-engine pattern family and `grep -rniE
       'DEC-001|DEC-002|DEC-013'` across `PRD/` and root `README.md`; every
       returned rule-stating line is the canonical home or a listed pointer
       above; the out-of-scope per-feature clauses
@@ -84,6 +91,28 @@ re-edit it. Run Slice A first.
       `decisions.md` index rows are unchanged; no unlisted rule-stating home
       remains (manual check — no test command applies to this docs-only
       slice)
+
+### Re-grep observation: 2026-09-04 C15 — rules-engine + DEC-001/002/013 families
+
+Re-ran both Verification-block patterns after C1–C14 landed. Every
+non-canonical hit is either an already-edited pointer, a bulleted item that
+is part of a group whose pointer sits on the following continuation line
+(`technical-design-rules.md:31-33`, `goals-and-non-goals.md:65`,
+`integrations-and-data.md:373`, `overview.md:23`, `agent-working-rules.md:41`
+— confirmed each group's pointer line is present immediately after), a
+retired `decisions.md` index row (DEC-001, DEC-002, DEC-013, and the DEC-080/
+DEC-094/DEC-101 rows that cite them as history), or a bare Backed-by/
+traceability citation (`system-map.md:125,139`, `in-depth/README.md:9-10,290`).
+One additional per-feature scope clause surfaced by the fresh DEC-013 grep
+that was not in the original amendment set — `functional-requirements.md:1893`
+("counters are captured values only; no automatic rules resolution beyond the
+explicit commander-damage→life convenience (DEC-013)") — classified out of
+scope: it is a single requirement's own blast-radius promise about counter
+automation, not a restatement of the assistant-not-a-rules-engine identity
+rule, structurally the same class as the already-excluded
+`functional-requirements.md:238,252,1735,1820,2218` per-feature clauses; left
+unchanged. The out-of-scope per-feature clauses and `decisions.md` index rows
+are otherwise confirmed unchanged. No unlisted rule-stating home remains.
 
 ## Verification
 

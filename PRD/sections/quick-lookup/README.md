@@ -31,7 +31,7 @@ provider boundary (mock by default, OpenAI live; canonical rule: `integrations-a
 or names the missing piece for a partial one. Off-domain questions get an
 in-character "I couldn't find that in the rules" reply rather than a chatbot
 answer. It carries no zones, stack, phase, or other game-state setup, and it is
-not a full rules browser or a judge authority.
+not a full rules browser or a judge authority (canonical rule: `goals-and-non-goals.md` Scope Notes).
 
 ## How it works
 

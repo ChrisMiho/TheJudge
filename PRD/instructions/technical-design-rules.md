@@ -32,6 +32,7 @@ Do not propose or implement:
 - legality validation
 - board-state simulation
 - full gameplay-rules target/controller/mode simulation for the core product
+  (canonical rule: `PRD/sections/goals-and-non-goals.md` Scope Notes)
 - product-facing endpoints beyond the answer endpoint and the one read-only card-detail retrieval route (REQ-175; canonical rule: NFR-004)
 - microservices
 - runtime metadata refresh/sync

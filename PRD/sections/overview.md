@@ -23,6 +23,8 @@ This product is not:
 - a deterministic rules engine
 - a full board-state simulator
 
+(canonical rule: `goals-and-non-goals.md` Scope Notes)
+
 ## Current Product Status
 The primary MTG Assistant loop is considered validated (past MVP):
 
@@ -36,7 +38,7 @@ MTG Assistant intentionally keeps context structured but lightweight:
 - selected cards grouped by zone, with ordered stack positioning when stack is populated
 - per-card context fields (caster, context targets, optional notes, optional mana spent with fallback for stack cards)
 - optional user question
-- no full legality validation
+- no full legality validation (canonical rule: `goals-and-non-goals.md` Scope Notes)
 
 Beyond MTG Assistant, the suite includes a shipped standalone **Card Trade Balancer**: a frontend-only, ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via the feature-portal Menu (DEC-087, DEC-088, DEC-095). It adds no backend endpoint or prompt/contract change.
 
