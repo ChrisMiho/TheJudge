@@ -37,3 +37,11 @@ handled by the feature-spec consolidation and are out of scope.
   router index current", while `PRD/README.md` and `instructions/requirement-format.md`
   say the decision log is retired and no new `DEC-###` should be authored — a
   concrete cross-doc contradiction to fold into the audit.
+
+## Prior run
+- `PRD/instructions/receipts/codebase-duplication-audit-2026-08-23.md` — a
+  de-duplication audit of the same shape but over the code corpus, not PRD
+  product-truth. Related method, different target; context only, decides nothing.
+- `PRD/instructions/receipts/image-first-cards-2026-09-05.md` — the run whose D5
+  gate near-miss (cited above) motivated this idea. Origin evidence, not a prior
+  run against this ground.
