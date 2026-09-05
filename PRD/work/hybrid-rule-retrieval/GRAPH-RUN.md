@@ -6,7 +6,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] `rm -rf` is denied in every session."; graph tier: nohup true → "[graph-boundary] `nohup` is denied while a graph run holds the lock")`
 - Autonomous base: `origin/thejudge-auto/hybrid-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-173655/`
-- Current node: `gate-review` (build half; resolving the answered define gate)
+- Current node: `gate-qc` (build half re-check, attempt 1)
 - Next action: `/graph-implement PRD/work/hybrid-rule-retrieval/` (the `/loop graph-implement` build loop is driving)
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 3 | define (attempt 2) | opus | ok | `0 → 34` | one block added to `GATE-QUESTIONS.md`: `## system-map/prompt-layout-spec.md — the prompt anatomy spec` (row 8 + `Backed by:` line, REQ-182 wording); 16 `## ` headings now (15 stable-id/spec blocks + `## Blocker questions`); 16-term amendment-set re-grep found no further uncovered assertion; 21 `Current:` fences script-verified, 0 mismatches; brief's spec list now names six files; `STATUS.refined`, board row under `## refined`; no `PRD/sections/` or code edits (`git diff --stat` empty); 30 tool calls, no subagents; commit `f13f8d2` pushed | 2026-09-05 |
 | 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 35` | PASS, no findings: 21/21 `Current:` excerpts byte-identical by script (incl. the new `prompt-layout-spec.md` block); REQ-182/183/184 unused, REQ-181 highest live; 13-term amendment-set re-grep leaves no uncovered assertion; measurements reproduced once each (`test:eval` semantic 9/12 / lexical 12/12; benchmark 0.5833 lexical, 0.8526/0.8333 semantic; budget 118.095 MB of 120 MB); hybrid gates are measured thresholds with baselines; `STATUS.refined` unchanged, nothing committed; 28 tool calls, no subagents. Driver discarded the benchmark's regenerated `scoredAt` timestamps in `results.json`/`semantic-results.json` (`git checkout --`, timestamp-only) → stop at PASS: docs PR + `owner-action` park | 2026-09-05 |
 | — | driver-resume | — | ok | `n/a (driver)` | build half (`/loop graph-implement`, tick 1, 2026-09-05): `git fetch origin`; no stop sentinel; no lock held; ready-spec scan found `hybrid-rule-retrieval` at `STATUS.owner-action` with 15/15 `- Verdict:` slots answered (14 accept, 1 edit on NFR-017), docs PR #195 MERGED 2026-09-05T19:11:26Z at `c0aa52c`, no code built; base `thejudge-auto/hybrid-rule-retrieval` fast-forwarded to `origin/main` (`c0aa52c`); claim commit `b41ec8c` (`STATUS.active`, README `status: active`, board row under `## active`); lock taken (`npm run graph:preflight -- --take-lock --slug hybrid-rule-retrieval --run-id graph-20260905-191535`, pid 13714); graph canary `nohup true` denied | 2026-09-05 |
+| — | gate-review | sonnet | ok | `0 → 24` | applied 14 accept / 1 edit / 0 reject inside `GATE-QUESTIONS.md` (NFR-017 gained one `- Notes:` bullet recording the CUDA-runtime CI rejection and PR #194's fix; `git show 334f377 -- GATE-QUESTIONS.md` +7 lines); `git diff -- PRD/sections/` empty; `## Gate verdicts` written (15 rows), `## Open gate` resolved 2026-09-05; `STATUS.active → STATUS.refined`, README `status: refined`, board row under `## refined`; 12 tool calls, no subagents, 0 denials; commit `334f377` (local, not pushed) | 2026-09-05 |
 
 ## Gate verdicts
 
@@ -231,6 +232,29 @@ Commit with explicit paths only (`git add PRD/work/hybrid-rule-retrieval PRD/wor
 Do not push. Do not dispatch subagents. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file. Never run `npm run data:refresh` or any Scryfall refresh.
 
 Report back, in this order: the verdict split (accept / edit / reject counts); for the edit, the exact text you added to the proposal; `git diff --stat` of `GATE-QUESTIONS.md` for your commit and confirmation that `git diff -- PRD/sections/` is empty; the package state after the node (marker, README status line, board heading); the commit hash; the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
+
+### gate-qc (build half, attempt 1)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 4 (`gate-qc`), attempt 1 of the build half, graph run `graph-20260905-191535` driven by `graph-implement` (the spec-forming half, run `graph-20260905-173655`, already passed gate-qc on this brief on 2026-09-05 at commit `f13f8d2`; this is the re-check after the owner's verdicts were applied by `graph-gate-review`, commit `334f377`, which added one Notes bullet to the NFR-017 block of `GATE-QUESTIONS.md`). Invoke the `thejudge-quality-check` skill with the Skill tool (skill name `thejudge-quality-check`) on the package `PRD/work/hybrid-rule-retrieval/`, and follow its `## Mode` section for an orchestrator that is controlling: read `PRD/instructions/preparation-contract.md`, emit an explicit PASS or FAIL verdict with the complete findings, and return it to the driver, which records it in the package README's `## Preparation gate` section. Read `.claude/skills/thejudge-quality-check/SKILL.md`, `PRD/instructions/technical-design-rules.md`, `PRD/instructions/plain-language-standard.md`, and `PRD/instructions/graph-workflow-contract.md` (`## The two runs`, `## Propose / apply / close`) before acting.
+
+What to check, beyond the skill's own checklist:
+1. `DESIGN-BRIEF.md` against the current-state feature specs it touches (`PRD/sections/quick-lookup/README.md`, `PRD/sections/in-depth/README.md`, `PRD/sections/system-map/game-rules-retrieval.md`, `PRD/sections/system-map/prompt-layout-spec.md`, `PRD/sections/system-map.md`, `PRD/sections/integrations-and-data.md`, `PRD/sections/non-functional-requirements.md`, `PRD/sections/functional-requirements.md`) and the `REQ`/`NFR` entries it cites: no contradictions, current vocabulary, technical-design-rules respected, scope implementable without hidden assumptions, no user-visible screen change.
+2. `GATE-QUESTIONS.md` as finalized by the owner: all 15 `- Verdict:` slots read accept or edit (none blank, none reject); the NFR-017 block's owner edit (the added Notes bullet about the CUDA runtime download on the linux/x64 CI runner and PR #194's fix in `scripts/package-lambda.sh`) is consistent with the brief, with the live NFR-017 text, and with what `scripts/package-lambda.sh` on this checkout actually does (read it; confirm `ONNXRUNTIME_NODE_INSTALL_CUDA=skip` and the unzipped-size measurement exist). Verify every `Current:` block byte-for-byte against the live `PRD/sections/` file by script, not by eye — `main` moved since the spec-forming gate-qc (PRs #193, #194, #195 merged), so drift is possible. Confirm REQ-182, REQ-183, REQ-184 are still unused in live `PRD/sections/` and are the next free numbers.
+3. Quantitative targets: reproduce once each `npm --workspace apps/backend run test:eval` (brief expects the semantic path at 9 of 12 labelled checks, lexical 12/12) and `node --test scripts/lambda-package-budget.test.mjs` (brief records 118.095 MB of 120 MB data; PR #194 may have changed what this test measures — report the current figure beside the brief's, and treat a changed figure as a finding only if the brief's gates no longer hold). Do not run `npm run benchmark:rag-retrieval` in either mode: both were reproduced at the spec-forming gate-qc on the same corpus and they rewrite tracked result files.
+4. Package state: `STATUS.refined` is the only marker, `README.md` reads `status: refined`, the board row sits under `## refined`, `README.md` carries `## Autonomous metadata`, and `GRAPH-RUN.md` `## Open gate` reads resolved.
+
+Verdict handling: on PASS, change nothing (leave `STATUS.refined`; do not write `GAMEPLAN.md`, slice docs, or code; do not edit the README, the driver writes the gate section). On FAIL, set `status: refining` in `README.md`, replace the marker with `STATUS.refining`, move the board row under `## refining`, commit with explicit paths only (`git add PRD/work/hybrid-rule-retrieval PRD/work/STATUS.md`, never `git add -A`, `--all`, or `.`) with the trailer lines
+   Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+   Claude-Session: https://claude.ai/code/session_01HTYnaUSGyYNRwK4J1ggRW9
+Do not push. Never edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `PRD/sections/`, code, or `GRAPH-RUN.md`.
+
+Constraints: tool-call cap 60 for this node, counting every call. Do not dispatch subagents; a helper's calls charge this node's own budget and a prior gate-qc exhausted its cap that way. Run each measurement command once. Never run `npm run data:refresh` or any Scryfall refresh. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file.
+
+Report back, in this order: the one-word verdict (PASS or FAIL); the complete findings list, or `none`; the `Current:` block verification result (count checked, count identical); the NFR-017 edit consistency result; each reproduced measurement with the brief's value beside it; the package state after the node; the commit hash if you committed; the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
 
 ## Instruction ledger
 
