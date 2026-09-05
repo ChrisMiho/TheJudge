@@ -8,9 +8,9 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
+- [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. Gate answered: all five decision blocks (INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND) verdict `accept`. Docs PR #187 merged to `main`. Mapped into five lettered slices (A–E). Next: `/thejudge-implement-all PRD/work/single-source-invariants/`.
 
-- [single-source-invariants](single-source-invariants/) — de-duplicate cross-cutting product-truth invariants (rules asserted in 3+ files, e.g. "one main endpoint") into one canonical home each + a grep-before-amend guardrail; bounded corpus hygiene, not an ID-system rewrite. Gate answered: all five decision blocks (INV-ENDPOINT, INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG, GUARD-GREP-BEFORE-AMEND) verdict `accept`. Docs PR #187 merged to `main`. Next: `/graph-implement PRD/work/single-source-invariants/` (resumes at `gate-qc`).
+## refined
 
 ## refining
 

@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # single-source-invariants
 
@@ -50,6 +50,34 @@ into NFR-004's echoed-in list. Every canonical home's echoed-in list updated to
 carry its new pointers (NFR-004 gains `PRD/README.md`; the rules-engine home
 gains `quick-lookup/README.md`). Decision-log family re-verified clean: the only
 live contradiction is the already-captured root `README.md:163`. `STATUS.refined`.
+
+Map-out complete (2026-09-04, `graph-20260904-220341`): `GAMEPLAN.md` and five
+lettered slices written (A–E, one per accepted gate block: INV-ENDPOINT,
+INV-MOCK-FIRST, INV-RULES-ENGINE, INV-DECISION-LOG,
+GUARD-GREP-BEFORE-AMEND), each with a `.criteria.json`. `STATUS.active`. Next:
+implementation (`/thejudge-implement-all PRD/work/single-source-invariants/`
+in direct mode; the graph build half continues per its own contract in
+orchestrated mode).
+
+## Slice table
+
+| Slice | Doc | Invariant | Canonical home | Depends on |
+| --- | --- | --- | --- | --- |
+| A | `slice-a-inv-endpoint.md` | INV-ENDPOINT | `non-functional-requirements.md` NFR-004 | none |
+| B | `slice-b-inv-mock-first.md` | INV-MOCK-FIRST | `integrations-and-data.md:16` | none |
+| C | `slice-c-inv-rules-engine.md` | INV-RULES-ENGINE | `goals-and-non-goals.md:85` Scope Notes | A (shared line, see Sequencing note in `GAMEPLAN.md`) |
+| D | `slice-d-inv-decision-log.md` | INV-DECISION-LOG | `doc-lifecycle.md` (unedited; fixes root README contradictions) | none |
+| E | `slice-e-guard-grep-before-amend.md` | GUARD-GREP-BEFORE-AMEND | `writing-rules.md` (new subsection) | none |
+
+Recommended implementation order: A, B, C, D, E (letter order) in one
+sequential session — see `GAMEPLAN.md` Sequencing note for why this package
+should not fan out across parallel worktrees.
+
+## Implementation map
+
+- Full architecture, sequencing rationale, and files-touched union: `GAMEPLAN.md`
+- Per-invariant proposed diffs (source of intent for every edit): `GATE-QUESTIONS.md`
+- Grep-derived amendment sets and scope-boundary tests: `DESIGN-BRIEF.md`
 
 ## Autonomous metadata
 

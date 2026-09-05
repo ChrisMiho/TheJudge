@@ -1,0 +1,24 @@
+{
+  "slug": "single-source-invariants",
+  "slice": "E",
+  "criteria": [
+    {
+      "id": "E1",
+      "statement": "writing-rules.md carries the new Cross-cutting invariants (grep before amend) subsection naming the image-first-cards D5 near-miss, the grep-before-amend rule, the invariant-vs-scope-clause distinction, and the re-grep-to-refresh requirement",
+      "value": false,
+      "evidence": { "paths": ["PRD/instructions/writing-rules.md"] }
+    },
+    {
+      "id": "E2",
+      "statement": "requirement-format.md carries the cross-reference bullet to writing-rules.md's new subsection",
+      "value": false,
+      "evidence": { "paths": ["PRD/instructions/requirement-format.md"] }
+    },
+    {
+      "id": "E3",
+      "statement": "A fresh re-grep of PRD/instructions/ for grep-before-amend phrasing shows the rule stated once in writing-rules.md with exactly one cross-reference in requirement-format.md, not duplicated elsewhere",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

@@ -8,8 +8,8 @@
 - Build-half canary: `denied — graph tier armed (nohup true), 2026-09-04 run two`; run-state degraded at take-lock (`.graph-run-state.json` absent until first node dispatch), so cap enforcement arms once run-state is written per node
 - Autonomous base: `origin/thejudge-auto/single-source-invariants`
 - Staging: none — resume of an existing `STATUS.ideation` package, no new intake staged
-- Current node: `plan` (gate-qc PASS on build-half re-check; proceeding to slice the deliverable)
-- Next action: `/graph-implement PRD/work/single-source-invariants/` — `plan → build → review → land → close`
+- Current node: `build` (plan emitted 5 slices / 43 criteria; applying the finalized proposal to `PRD/sections/` + root/PRD README + guardrail in a worktree)
+- Next action: `/graph-implement PRD/work/single-source-invariants/` — `build → review → land → close`
 
 ## Node ledger
 
@@ -27,6 +27,7 @@
 
 | — | gate-review | sonnet | ok | `1 → 17` | run two, build half. Applied 5 accept / 0 edit / 0 reject inside `GATE-QUESTIONS.md` (no diff change — all accept); wrote `## Gate verdicts`; resolved `## Open gate`; restored `STATUS.owner-action → STATUS.refined`, README `status:`, board row. No `PRD/sections/` edits | 2026-09-04 |
 | 4 | gate-qc | sonnet | ok | `1 → 26` | run two build-half re-check (PASS). Independent full-corpus `grep -rniE` of all four families + `DEC-010` sweep (9 live hits: 3 in-scope CLASS-A rule-statements, 6 out-of-scope). Every amendment-set home in `GATE-QUESTIONS.md` resolves to its cited live file:line; no unlisted rule-stating home; guardrail anchors (`writing-rules.md ## Editing Rules`, `requirement-format.md ## Formatting Rules`) present. `STATUS.refined` holds; no `PRD/sections/` edits | 2026-09-04 |
+| 5 | plan | sonnet | ok | `1 → 33` | 5 slices A–E (one per accepted gate block), 43 acceptance criteria total (A 13, B 9, C 15, D 3, E 3); all evidence path-based or dated manual re-grep (docs-only). `GAMEPLAN.md` + `slice-{a..e}-*.md` + `slice-{a..e}.criteria.json` written; `STATUS.active`; scope-clean (`git status`: only work-folder + board). Sequencing: A→C share `functional-requirements.md` REQ-094 line (A writes, C verifies) — sequential, no fan-out | 2026-09-04 |
 
 Entry point: resume of a `STATUS.ideation` package with no prior ledger. Per the
 entry-point table, `STATUS.ideation` enters at `define`; `shape` (node 2) is
