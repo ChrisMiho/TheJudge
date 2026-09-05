@@ -1,21 +1,21 @@
 {
   "id": "quick-lookup-card",
-  "description": "Lookup mode uses attached card oracle text to retrieve a rule absent from the question.",
+  "description": "Lookup mode resolves the attached card's real Scryfall keyword list (REQ-180) through the committed cardDetailByOracleId.json artifact, by this card's real oracle id, to retrieve a rule absent from the question — the production path, not an inline fixture shortcut. South Wind Avatar's real keyword list is exactly [\"Deathtouch\"] (review loop 1, D4) — a multi-keyword card (e.g. Questing Beast's Vigilance/Haste/Deathtouch) crowds 702.2b out of the lexical top-5 with unrelated keyword-ability rules, which is a real production ranking behavior, not a fixture bug; this fixture is picked to isolate the one keyword under test.",
   "request": {
     "mode": "lookup",
     "question": "What does this ability do?",
     "cards": [
       {
-        "cardId": "fixture-questing-beast",
-        "name": "Questing Beast",
+        "cardId": "003e5dc6-8b26-4a0a-a50b-5f0806a7bacd",
+        "name": "South Wind Avatar",
         "oracleText": "Deathtouch",
         "imageUrl": "",
-        "manaCost": "{2}{G}{G}",
+        "manaCost": "{3}{B}",
         "manaValue": 4,
-        "typeLine": "Legendary Creature — Beast",
-        "colors": ["G"],
-        "supertypes": ["Legendary"],
-        "subtypes": ["Beast"]
+        "typeLine": "Creature — Snake Spirit Avatar",
+        "colors": ["B"],
+        "supertypes": [],
+        "subtypes": ["Snake", "Spirit", "Avatar"]
       }
     ]
   },

@@ -16,7 +16,16 @@ const manifestPath = path.resolve("../../apps/backend/data/gameRulesTopicManifes
 const artifactPath = path.resolve("../../apps/backend/data/gameRulesByTopic.json");
 const indexPath = path.resolve("../../apps/backend/data/gameRulesRuleIndex.json");
 
+// Mirrors the real Comprehensive Rules shape (REQ-179): a table of contents
+// listing every section, ending in bare "Glossary" then "Credits" lines,
+// followed by the real numbered rule text, followed by the trailing real
+// Glossary section (definitions, not numbered rules).
 const crIndexFixture = [
+  "Contents",
+  "100. General",
+  "405. Stack",
+  "Glossary",
+  "Credits",
   "1. Game Concepts",
   "100. General",
   "100.1. These Magic rules apply to any Magic game with two or more players.",
@@ -149,7 +158,10 @@ describe("game rules build policy", () => {
     const entries = parseRuleIndex(crIndexFixture);
     const ids = entries.map((e: { ruleId: string }) => e.ruleId);
 
-    expect(ids).toContain("100");
+    // REQ-179: a bare section heading with no rule content of its own (just
+    // "100. General") is omitted as heading-only — its real content lives in
+    // its child rules, asserted below.
+    expect(ids).not.toContain("100");
     expect(ids).toContain("100.1");
     expect(ids).toContain("100.1a");
     expect(ids).toContain("405.1");

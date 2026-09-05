@@ -244,7 +244,7 @@ controlling`: the predicate attests which orchestrator is running.
 | 3 | `define` | `thejudge-refinement` | opus | 150 | `gate-qc` |
 | 4 | `gate-qc` | `thejudge-quality-check` | sonnet | 60 | `plan` on PASS, `define` on FAIL — except a fourth FAIL, which parks at `owner-action` |
 | 5 | `plan` | `thejudge-map-out` | sonnet | 120 | `build` |
-| 6 | `build` | `thejudge-implement-all` | sonnet | 600 | `review` |
+| 6 | `build` | `thejudge-implement-all` | sonnet | 1200 | `review` |
 | 7 | `review` | no-write reviewer subagent | opus | 120 | `land` on approval, `build` on Critical/Important |
 | 8 | `land` | human (PR merge) | — | — | `close` |
 | 9 | `close` | `thejudge-cleanup` | sonnet | 120 | run complete |

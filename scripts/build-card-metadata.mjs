@@ -140,6 +140,15 @@ export function getTypeLine(card) {
   return "";
 }
 
+// REQ-180: Scryfall's `keywords` array is card-level (not per-face), listing
+// every keyword ability/action/counter the card has, e.g. ["Deathtouch",
+// "Trample"]. Used only server-side to feed System 3's retrieval query — the
+// up-front frontend card list never carries it.
+export function getKeywords(card) {
+  if (!Array.isArray(card?.keywords)) return [];
+  return card.keywords.map((keyword) => String(keyword).trim()).filter((keyword) => keyword.length > 0);
+}
+
 export function getColors(card) {
   if (Array.isArray(card?.colors) && card.colors.length > 0) {
     return sortColors(card.colors.map((color) => String(color)));

@@ -529,6 +529,34 @@ function checkSystem3NoiseExcluded(
   };
 }
 
+/**
+ * REQ-032/E10 (review loop 1): the labeled System 3 relevance checks in
+ * isolation, so the eval harness can run them a second time against
+ * `supplementalRules` retrieved via the semantic path (a frozen query
+ * embedding) without re-running the full structural checklist or touching
+ * any golden file — those stay pinned to the lexical path's context/prompt
+ * text. Also the single implementation `evaluateScenario` below calls, so
+ * the lexical and semantic checks can never diverge in what they assert.
+ */
+export function evaluateSystem3RelevanceChecks(
+  supplementalRules: RetrievedGameRule[],
+  expected?: EvaluationFixtureExpected
+): EvaluationCheckResult[] {
+  if (!expected || (!expected.expectedSupplementalRuleIds && !expected.forbiddenSupplementalRuleIds)) {
+    return [];
+  }
+
+  const retrievedRuleIds = new Set(supplementalRules.map((rule) => rule.ruleId));
+  const checks: EvaluationCheckResult[] = [];
+  if (expected.expectedSupplementalRuleIds) {
+    checks.push(checkSystem3ExpectedRecall(retrievedRuleIds, expected.expectedSupplementalRuleIds));
+  }
+  if (expected.forbiddenSupplementalRuleIds) {
+    checks.push(checkSystem3NoiseExcluded(retrievedRuleIds, expected.forbiddenSupplementalRuleIds));
+  }
+  return checks;
+}
+
 export function evaluateScenario(
   fixture: EvaluationFixture,
   context: PromptInputContext,
@@ -580,15 +608,7 @@ export function evaluateScenario(
       const selectedTopicIds = new Set(relevance.selectedTopics.map((topic) => topic.id));
       checks.push(checkSystem2ConditionalSelection(selectedTopicIds, expected.expectedSystem2TopicIds));
     }
-    if (expected.expectedSupplementalRuleIds || expected.forbiddenSupplementalRuleIds) {
-      const retrievedRuleIds = new Set(relevance.supplementalRules.map((rule) => rule.ruleId));
-      if (expected.expectedSupplementalRuleIds) {
-        checks.push(checkSystem3ExpectedRecall(retrievedRuleIds, expected.expectedSupplementalRuleIds));
-      }
-      if (expected.forbiddenSupplementalRuleIds) {
-        checks.push(checkSystem3NoiseExcluded(retrievedRuleIds, expected.forbiddenSupplementalRuleIds));
-      }
-    }
+    checks.push(...evaluateSystem3RelevanceChecks(relevance.supplementalRules, expected));
   }
 
   const score = checks.filter((check) => check.passed).length;

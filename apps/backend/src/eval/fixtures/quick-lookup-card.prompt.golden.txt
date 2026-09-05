@@ -71,19 +71,19 @@ Use these additional official rule excerpts as reference. They do not override t
 701.8b. 701.8b The only ways a permanent can be destroyed are as a result of an effect that uses the word “destroy” or as a result of the state-based actions that check for lethal damage (see rule 704.5g) or damage from a source with deathtouch (see rule 704.5h). If a permanent is put into its owner’s graveyard for any other reason, it hasn’t been “destroyed.”
 
 CARD (looked up)
-name: Questing Beast
-manaCost: {2}{G}{G}
+name: South Wind Avatar
+manaCost: {3}{B}
 manaValue: 4
-typeLine: Legendary Creature — Beast
-colors: G
-supertypes: Legendary
-subtypes: Beast
+typeLine: Creature — Snake Spirit Avatar
+colors: B
+supertypes: (none)
+subtypes: Snake, Spirit, Avatar
 oracleText: Deathtouch
 
 OFFICIAL RULINGS (WotC reference)
 Use these published Oracle rulings as reference for how each card works. They do not override the user's stack order, zones, or stated game state.
 
-Questing Beast
+South Wind Avatar
 - 2019-10-04: Combat damage can't be prevented.
 
 QUESTION

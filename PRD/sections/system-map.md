@@ -85,9 +85,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Supplemental retrieval (System 3)
 
 - Status: shipped
-- Summary: Scores up to 5 supplemental rule excerpts per request with IDF weighting, question/keyword boosts, and rule-id tie-break; deduplicated against the System 2 selection.
-- Lives in: `apps/backend/src/gameRulesRetrieval.ts`, `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`
-- Backed by: DEC-032, DEC-046
+- Summary: Selects up to 5 supplemental rule excerpts per request. The query is the player's question plus a compact per-card signal (name, type line, keywords), not raw card oracle text. Ranking is semantic-primary — cosine over committed per-rule embeddings — with the exact-rule-id boost merged in and lexical IDF scoring retained as the mock/offline default and the failure fallback; deduplicated against the System 2 selection by rule-number prefix.
+- Lives in: `apps/backend/src/gameRulesRetrieval.ts`, `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`, the committed per-rule embeddings artifact
+- Backed by: DEC-032, DEC-046, REQ-178, REQ-179, REQ-180, REQ-181
 
 ## Provider boundary
 
@@ -490,9 +490,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Retrieval relevance report
 
 - Status: shipped
-- Summary: Digestible before/after report (System 2 topics, System 3 top-5 with scores, recall hit/miss) for tuning review; shares scoring logic with the harness so report output cannot drift.
-- Lives in: `scripts/retrieval-relevance-report.mjs`, `apps/backend/src/eval/contextEvaluationHarness.ts` (`buildRelevanceReport`)
-- Backed by: DEC-047, REQ-032
+- Summary: Digestible before/after report (System 2 topics, System 3 top-5 with scores, recall hit/miss) for tuning review. It models production retrieval the same way the eval harness does — same card-detail resolution, same query construction — and a parity test asserts the two return the same per-scenario verdict, so report output cannot drift from the gate (REQ-177). Before REQ-177 the claim was aspirational and untrue: after REQ-176 moved card-text resolution server-side, the report passed no card-detail index and reported three false scenario failures.
+- Lives in: `scripts/retrieval-relevance-report.mjs`, `apps/backend/src/eval/retrievalReportInputs.ts`, `apps/backend/src/eval/contextEvaluationHarness.ts` (`buildRelevanceReport`)
+- Backed by: DEC-047, REQ-032, REQ-177
 
 ## AWS production deployment
 

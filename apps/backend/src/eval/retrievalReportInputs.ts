@@ -16,8 +16,9 @@ import { collectCuratedRuleIds, retrieveSupplementalRulesWithDebug } from "../ga
 import type { GameRulesRuleIndexEntry, RetrievedGameRule } from "../gameRulesRetrieval.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import { selectGameRulesTopics } from "../gameRulesTopicSelection.js";
-import { buildPromptContext } from "../prompt/context.js";
+import { buildPromptContext, type CardDetailIndex } from "../prompt/context.js";
 import { preparePromptInput } from "../prompt/preparation.js";
+import { cardDetailIndexFromRequest } from "./fixtureCardDetail.js";
 import type { AskAiRequest, GameAskAiRequest } from "../types/index.js";
 
 export type LabeledFixture = {
@@ -39,8 +40,12 @@ export type RetrievalReportDeps = {
 };
 
 /** Game-mode path: the direct selection the report has always used. */
-function buildGameRelevance(request: GameAskAiRequest, deps: RetrievalReportDeps) {
-  const context = buildPromptContext(request);
+function buildGameRelevance(
+  request: GameAskAiRequest,
+  deps: RetrievalReportDeps,
+  cardDetailIndex: CardDetailIndex
+) {
+  const context = buildPromptContext(request, cardDetailIndex);
   const selectedTopics = selectGameRulesTopics(context, deps.gameRulesTopics);
   const curatedRuleIds = collectCuratedRuleIds(selectedTopics);
   const { selected } = retrieveSupplementalRulesWithDebug(context, deps.gameRulesRuleIndex, curatedRuleIds);
@@ -52,10 +57,15 @@ function buildGameRelevance(request: GameAskAiRequest, deps: RetrievalReportDeps
  * debug on, then reconstruct the same {selectedTopics, supplementalRules} shape
  * from the debug block — the reconstruction the eval harness uses.
  */
-function buildLookupRelevance(request: AskAiRequest, deps: RetrievalReportDeps) {
+function buildLookupRelevance(
+  request: AskAiRequest,
+  deps: RetrievalReportDeps,
+  cardDetailIndex: CardDetailIndex
+) {
   const prepared = preparePromptInput(request, {
     gameRulesTopics: deps.gameRulesTopics,
     gameRulesRuleIndex: deps.gameRulesRuleIndex,
+    cardDetailIndex,
     collectEnrichmentDebug: true
   });
   const topicIds = new Set(prepared.enrichmentDebug?.curatedGameRules.topicIds ?? []);
@@ -84,10 +94,11 @@ export function buildRetrievalReportInputs(
   deps: RetrievalReportDeps
 ): RetrievalReportInput[] {
   return fixtures.map((fixture) => {
+    const cardDetailIndex = cardDetailIndexFromRequest(fixture.request);
     const { selectedTopics, supplementalRules } =
       fixture.request.mode === "lookup"
-        ? buildLookupRelevance(fixture.request, deps)
-        : buildGameRelevance(fixture.request as GameAskAiRequest, deps);
+        ? buildLookupRelevance(fixture.request, deps, cardDetailIndex)
+        : buildGameRelevance(fixture.request as GameAskAiRequest, deps, cardDetailIndex);
     return {
       fixtureId: fixture.id,
       selectedTopics,

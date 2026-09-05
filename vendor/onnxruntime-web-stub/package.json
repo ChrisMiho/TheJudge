@@ -1,0 +1,15 @@
+{
+  "name": "onnxruntime-web",
+  "version": "0.0.0-stub",
+  "private": true,
+  "type": "module",
+  "main": "./index.js",
+  "exports": {
+    ".": "./index.js",
+    "./webgpu": "./index.js",
+    "./wasm": "./index.js",
+    "./all": "./index.js",
+    "./webgl": "./index.js",
+    "./jspi": "./index.js"
+  }
+}

@@ -7,13 +7,16 @@ import {
   buildQueryTokens,
   buildQueryTokensFromParts,
   collectCuratedRuleIds,
+  cosineSimilarity,
   loadGameRulesKeywordVocabulary,
+  loadGameRulesRuleEmbeddings,
   loadGameRulesRuleIndex,
   loadGameRulesTokenStats,
   retrieveSupplementalRules,
   retrieveSupplementalRulesWithDebug,
   retrieveRulesForQuery,
   retrieveRulesForQueryWithDebug,
+  type GameRulesRuleEmbeddings,
   type GameRulesRuleIndexEntry,
   type RetrievedGameRule,
   type ScoringResources
@@ -61,11 +64,17 @@ function makeContext(overrides: Partial<PromptContext> = {}): PromptContext {
 function makeResources(N: number, df: Record<string, number>, keywords: string[] = []): ScoringResources {
   return {
     tokenStats: { N, df: new Map(Object.entries(df)) },
-    keywordVocabulary: new Set(keywords)
+    keywordVocabulary: new Set(keywords),
+    ruleEmbeddings: null
   };
 }
 
-function battlefieldCard(oracleText: string, name = "Test Card", typeLine = "Creature") {
+function battlefieldCard(
+  oracleText: string,
+  name = "Test Card",
+  typeLine = "Creature",
+  keywords: string[] = []
+) {
   return {
     zoneId: "battlefield" as const,
     items: [
@@ -74,6 +83,7 @@ function battlefieldCard(oracleText: string, name = "Test Card", typeLine = "Cre
         name,
         oracleText,
         typeLine,
+        keywords,
         imageUrl: "",
         manaCost: "",
         manaValue: 0,
@@ -214,6 +224,32 @@ describe("Backend - Game Rules", () => {
       expect(result.every((r) => r.ruleId !== "405.1")).toBe(true);
       const ruleIds = result.map((r) => r.ruleId);
       expect(ruleIds).not.toContain("405.1");
+    });
+
+    it("excludes by rule-number prefix (REQ-179): a curated parent rule also excludes its own lettered sub-rules", () => {
+      const index = [
+        makeEntry({
+          ruleId: "603.1a",
+          sectionTitle: "Triggers",
+          text: "603.1a A lettered sub-rule of 603.1.",
+          searchText: "603.1a lettered sub-rule triggers",
+          parentRuleIds: ["603.1", "603"]
+        }),
+        makeEntry({
+          ruleId: "405.1",
+          sectionTitle: "The Stack",
+          text: "405.1. The stack.",
+          searchText: "405.1 stack",
+          parentRuleIds: ["405"]
+        })
+      ];
+      const context = makeContext({ finalQuestion: "What does rule 603.1a say about triggers and the stack?" });
+      // Only the exact parent id "603.1" is curated (as System 2 would pass),
+      // never the lettered child "603.1a" itself — the old exact-id-only
+      // exclusion would have let 603.1a reappear as a supplemental excerpt.
+      const excludeRuleIds = new Set(["603.1"]);
+      const result = retrieveSupplementalRules(context, index, excludeRuleIds);
+      expect(result.map((r) => r.ruleId)).not.toContain("603.1a");
     });
 
     it("caps results at max", () => {
@@ -382,7 +418,7 @@ describe("Backend - Game Rules", () => {
   // ---------------------------------------------------------------------------
 
   describe("buildQueryText", () => {
-    it("includes oracle text and typeLine for non-stack zone items", () => {
+    it("includes name and typeLine, and a keyword-vocabulary match from oracle text, for non-stack zone items (REQ-178)", () => {
       const context = makeContext({
         populatedZones: [
           {
@@ -411,11 +447,9 @@ describe("Backend - Game Rules", () => {
       const queryText = buildQueryText(context);
       expect(queryText).toContain("Rhystic Study");
       expect(queryText).toContain("Enchantment");
-      expect(queryText).toContain("Whenever a player casts a spell");
-      expect(queryText).toContain("Tax effect");
     });
 
-    it("includes contextNotes only when present on non-stack items", () => {
+    it("never includes a card's full oracle text or contextNotes (REQ-178: only name, type line, and keyword-vocabulary matches)", () => {
       const context = makeContext({
         populatedZones: [
           {
@@ -426,6 +460,7 @@ describe("Backend - Game Rules", () => {
                 name: "Lightning Bolt",
                 oracleText: "Lightning Bolt deals 3 damage to any target.",
                 typeLine: "Instant",
+                contextNotes: "Burn spell reminder",
                 imageUrl: "",
                 manaCost: "{R}",
                 manaValue: 1,
@@ -441,8 +476,27 @@ describe("Backend - Game Rules", () => {
 
       const queryText = buildQueryText(context);
       expect(queryText).toContain("Lightning Bolt");
-      expect(queryText).toContain("Lightning Bolt deals 3 damage");
       expect(queryText).toContain("Instant");
+      // The full oracle sentence and the context note are card-text pollution
+      // (measured to drop supplemental recall@5 from 0.577 to 0.026, REQ-178)
+      // and must never reach the retrieval query.
+      expect(queryText).not.toContain("deals 3 damage");
+      expect(queryText).not.toContain("Burn spell reminder");
+    });
+
+    it("never includes turn phase or zone ids (REQ-178)", () => {
+      const context = makeContext({
+        gameContext: {
+          playerCount: 2,
+          players: [],
+          turnPhase: "combat",
+          selectedZones: ["battlefield"]
+        }
+      });
+
+      const queryText = buildQueryText(context);
+      expect(queryText).not.toContain("combat");
+      expect(queryText).not.toContain("battlefield");
     });
   });
 
@@ -451,17 +505,21 @@ describe("Backend - Game Rules", () => {
   // ---------------------------------------------------------------------------
 
   describe("buildQueryTokens", () => {
-    it("tags question tokens as question source and flags vocabulary keywords", () => {
+    it("tags question tokens as question source, and only keyword-vocabulary oracle terms survive into the query (REQ-178)", () => {
       const context = makeContext({
         finalQuestion: "Does cascade trigger here",
-        populatedZones: [battlefieldCard("flying creature")]
+        populatedZones: [battlefieldCard("flying creature with cascade")]
       });
       const { tokens } = buildQueryTokens(context, new Set(["cascade"]));
       const cascade = tokens.find((t) => t.token === "cascade");
       const flying = tokens.find((t) => t.token === "flying");
 
+      // "cascade" is both the question's own token and a keyword found in the
+      // card's oracle text; the compact per-card signal carries only the
+      // keyword-vocabulary match, not the rest of the oracle sentence, so
+      // "flying" (not in the vocabulary) never enters the query at all.
       expect(cascade).toMatchObject({ source: "question", isKeyword: true });
-      expect(flying).toMatchObject({ source: "oracle", isKeyword: false });
+      expect(flying).toBeUndefined();
     });
 
     it("dedupes a token across sources, preferring question provenance", () => {
@@ -550,6 +608,7 @@ describe("Backend - Game Rules", () => {
           new Set(),
           5,
           resources,
+          null,
           query.queryText
         )
       ).toEqual(retrieveSupplementalRulesWithDebug(context, index, new Set(), 5, resources));
@@ -561,32 +620,34 @@ describe("Backend - Game Rules", () => {
   // ---------------------------------------------------------------------------
 
   describe("retrieveSupplementalRules — IDF scoring", () => {
-    it("ranks a question keyword above oracle-sourced noise", () => {
+    it("never surfaces oracle-text noise a card's full oracle text used to flood the query with (REQ-178)", () => {
       const index = [
         makeEntry({ ruleId: "702.85", sectionTitle: "Cascade", text: "702.85. Cascade.", searchText: "702.85 cascade", parentRuleIds: ["702"] }),
         makeEntry({ ruleId: "100.1", sectionTitle: "General", text: "100.1. General.", searchText: "100.1 resolve", parentRuleIds: ["100"] })
       ];
       const context = makeContext({
         finalQuestion: "How does cascade work",
+        // Before REQ-178, this card's full oracle text ("resolve") leaked into
+        // the query and let it match 100.1's searchText, exactly the flood
+        // this requirement removes: "resolve" is not a keyword, so it must
+        // never reach the query via the compact per-card signal.
         populatedZones: [battlefieldCard("resolve")]
       });
       const resources = makeResources(3432, { cascade: 4, resolve: 100 }, ["cascade"]);
       const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
 
       expect(result[0]!.ruleId).toBe("702.85");
-      const cascadeScore = result.find((r) => r.ruleId === "702.85")!.score;
-      const noiseScore = result.find((r) => r.ruleId === "100.1")!.score;
-      expect(cascadeScore).toBeGreaterThan(noiseScore);
+      expect(result.find((r) => r.ruleId === "100.1")).toBeUndefined();
     });
 
-    it("boosts a keyword found in oracle text above generic low-IDF rules", () => {
+    it("boosts a card's real keyword (REQ-180) above generic low-IDF rules", () => {
       const index = [
         makeEntry({ ruleId: "702.2", sectionTitle: "Deathtouch", text: "702.2. Deathtouch.", searchText: "702.2 deathtouch lethal damage", parentRuleIds: ["702"] }),
         makeEntry({ ruleId: "100.6", sectionTitle: "General", text: "100.6. General.", searchText: "100.6 general rules game", parentRuleIds: ["100"] })
       ];
       const context = makeContext({
         finalQuestion: "What about damage rules",
-        populatedZones: [battlefieldCard("Deathtouch")]
+        populatedZones: [battlefieldCard("Some other reminder text", "Test Card", "Creature", ["Deathtouch"])]
       });
       const resources = makeResources(3432, { deathtouch: 9, damage: 179, rules: 50 }, ["deathtouch"]);
       const result = retrieveSupplementalRules(context, index, new Set(), 5, resources);
@@ -702,6 +763,180 @@ describe("Backend - Game Rules", () => {
       expect(vocab.size).toBe(0);
       expect(spy).toHaveBeenCalledOnce();
       spy.mockRestore();
+    });
+  });
+
+  // ---------------------------------------------------------------------------
+  // Semantic retrieval (REQ-181)
+  // ---------------------------------------------------------------------------
+
+  describe("loadGameRulesRuleEmbeddings", () => {
+    function writeEmbeddingsArtifact(dir: string, ruleIds: string[], dims: number, vectors: number[][]) {
+      const filePath = join(dir, "embeddings.json");
+      const flat = vectors.flat();
+      const vectorsBase64 = Buffer.from(Float32Array.from(flat).buffer).toString("base64");
+      writeFileSync(filePath, JSON.stringify({ model: "test-model", dims, ruleIds, vectorsBase64 }), "utf8");
+      return filePath;
+    }
+
+    it("decodes a base64 float32 artifact back into per-rule vectors", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = writeEmbeddingsArtifact(dir, ["100.1", "100.2"], 3, [
+        [1, 2, 3],
+        [4, 5, 6]
+      ]);
+      const embeddings = loadGameRulesRuleEmbeddings(filePath);
+      expect(embeddings?.ruleIds).toEqual(["100.1", "100.2"]);
+      expect(embeddings?.vectors[0]).toEqual([1, 2, 3]);
+      expect(embeddings?.vectors[1]).toEqual([4, 5, 6]);
+    });
+
+    it("returns null and warns when the file is missing", () => {
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings("/tmp/does-not-exist-embeddings-abc123.json")).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+
+    it("returns null and warns when the byte length does not match ruleIds x dims", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = join(dir, "bad.json");
+      writeFileSync(
+        filePath,
+        JSON.stringify({ model: "test-model", dims: 3, ruleIds: ["100.1", "100.2"], vectorsBase64: Buffer.from([1, 2, 3, 4]).toString("base64") }),
+        "utf8"
+      );
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings(filePath)).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+
+    it("returns null and warns on malformed JSON", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = join(dir, "bad.json");
+      writeFileSync(filePath, "{ not valid json", "utf8");
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings(filePath)).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+  });
+
+  describe("cosineSimilarity", () => {
+    it("is 1 for identical vectors and 0 for orthogonal vectors", () => {
+      expect(cosineSimilarity([1, 0, 0], [1, 0, 0])).toBeCloseTo(1, 10);
+      expect(cosineSimilarity([1, 0, 0], [0, 1, 0])).toBeCloseTo(0, 10);
+    });
+
+    it("is 0 (never NaN/throw) for a zero vector", () => {
+      expect(cosineSimilarity([0, 0, 0], [1, 2, 3])).toBe(0);
+    });
+  });
+
+  describe("semantic-primary ranking with lexical fallback (REQ-181)", () => {
+    const semanticIndex: GameRulesRuleIndexEntry[] = [
+      makeEntry({ ruleId: "702.2b", sectionTitle: "Deathtouch", text: "702.2b Deathtouch damage rule.", searchText: "702.2b deathtouch", parentRuleIds: ["702.2", "702"] }),
+      makeEntry({ ruleId: "100.1", sectionTitle: "General", text: "100.1. General rule about the game.", searchText: "100.1 general game", parentRuleIds: ["100"] })
+    ];
+    // A unit vector aligned with axis 0; 702.2b's committed vector is
+    // identical (cosine 1), 100.1's is orthogonal (cosine 0).
+    const embeddings: GameRulesRuleEmbeddings = {
+      model: "test-model",
+      dims: 3,
+      ruleIds: ["702.2b", "100.1"],
+      vectors: [
+        [1, 0, 0],
+        [0, 1, 0]
+      ]
+    };
+    const semanticResources: ScoringResources = {
+      tokenStats: { N: 2, df: new Map([["deathtouch", 1]]) },
+      keywordVocabulary: new Set(),
+      ruleEmbeddings: embeddings
+    };
+
+    it("ranks by cosine similarity when a query vector and committed embeddings are both present", () => {
+      const context = makeContext({ finalQuestion: "What kills a creature outright?" });
+      const result = retrieveSupplementalRules(context, semanticIndex, new Set(), 5, semanticResources, [1, 0, 0]);
+      expect(result[0]!.ruleId).toBe("702.2b");
+    });
+
+    it("merges the exact-rule-id boost into semantic ranking (a cited rule number still pulls that rule)", () => {
+      // The query vector is closer to 100.1 by cosine (~0.71 vs 0 at 702.2b),
+      // but the question also cites "702.2b" by number — the merged +100
+      // exact-id boost must outrank 100.1's cosine-only ~71-point score.
+      const context = makeContext({ finalQuestion: "What does rule 702.2b say?" });
+      const result = retrieveSupplementalRules(context, semanticIndex, new Set(), 5, semanticResources, [0, 1, 1]);
+      expect(result[0]!.ruleId).toBe("702.2b");
+    });
+
+    it("excludes by rule-number prefix under semantic ranking too (REQ-179 dedup applies regardless of scoring path)", () => {
+      const context = makeContext({ finalQuestion: "What kills a creature outright?" });
+      const result = retrieveSupplementalRules(
+        context,
+        semanticIndex,
+        new Set(["702.2"]),
+        5,
+        semanticResources,
+        [1, 0, 0]
+      );
+      expect(result.map((r) => r.ruleId)).not.toContain("702.2b");
+    });
+
+    it("caps results at max under semantic ranking", () => {
+      const manyEntries = Array.from({ length: 10 }, (_, i) =>
+        makeEntry({ ruleId: `900.${i}`, searchText: `900.${i}`, parentRuleIds: ["900"] })
+      );
+      const manyEmbeddings: GameRulesRuleEmbeddings = {
+        model: "test-model",
+        dims: 2,
+        ruleIds: manyEntries.map((e) => e.ruleId),
+        vectors: manyEntries.map(() => [1, 0])
+      };
+      const resources: ScoringResources = {
+        tokenStats: { N: 10, df: new Map() },
+        keywordVocabulary: new Set(),
+        ruleEmbeddings: manyEmbeddings
+      };
+      const context = makeContext({ finalQuestion: "anything" });
+      const result = retrieveSupplementalRules(context, manyEntries, new Set(), 5, resources, [1, 0]);
+      expect(result).toHaveLength(5);
+    });
+
+    it("falls back to lexical retrieval when no query vector is supplied (EMBEDDING_PROVIDER=mock)", () => {
+      const context = makeContext({ finalQuestion: "What does rule 100.1 say?" });
+      const result = retrieveSupplementalRules(context, semanticIndex, new Set(), 5, semanticResources, null);
+      // Lexical path: exact-rule-id boost on "100.1" plus token overlap wins,
+      // proving cosine scoring never ran with a null vector.
+      expect(result[0]!.ruleId).toBe("100.1");
+    });
+
+    it("falls back to lexical retrieval when the committed embeddings artifact is absent", () => {
+      const context = makeContext({ finalQuestion: "What does rule 100.1 say?" });
+      const resourcesNoEmbeddings: ScoringResources = {
+        tokenStats: { N: 2, df: new Map() },
+        keywordVocabulary: new Set(),
+        ruleEmbeddings: null
+      };
+      const result = retrieveSupplementalRules(context, semanticIndex, new Set(), 5, resourcesNoEmbeddings, [1, 0, 0]);
+      expect(result[0]!.ruleId).toBe("100.1");
+    });
+
+    it("falls back to lexical retrieval when the query vector's dimensionality does not match the committed artifact", () => {
+      const context = makeContext({ finalQuestion: "What does rule 100.1 say?" });
+      const result = retrieveSupplementalRules(context, semanticIndex, new Set(), 5, semanticResources, [1, 0]);
+      expect(result[0]!.ruleId).toBe("100.1");
+    });
+
+    it("skips an index entry with no committed vector rather than crashing", () => {
+      const indexWithGap: GameRulesRuleIndexEntry[] = [
+        ...semanticIndex,
+        makeEntry({ ruleId: "999.1", searchText: "999.1", parentRuleIds: ["999"] })
+      ];
+      const context = makeContext({ finalQuestion: "anything" });
+      const result = retrieveSupplementalRules(context, indexWithGap, new Set(), 5, semanticResources, [1, 0, 0]);
+      expect(result.map((r) => r.ruleId)).not.toContain("999.1");
     });
   });
 });

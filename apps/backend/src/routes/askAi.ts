@@ -5,13 +5,15 @@ import {
   createValidationError
 } from "../errors.js";
 import { resolveCorrelationId, type AppLogger } from "../logging.js";
-import { preparePromptInput } from "../prompt/preparation.js";
+import { buildRetrievalQueryText, preparePromptInput } from "../prompt/preparation.js";
 import type { CardDetailIndex } from "../prompt/context.js";
 import type { RulingEntry } from "../cardRulings.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { ComboCatalog } from "../commanderSpellbook/catalog.js";
 import type { AskAiProvider } from "../providers/askAiProvider.js";
+import type { EmbeddingProvider } from "../providers/embeddingProvider.js";
+import { mockEmbeddingProvider } from "../providers/mockEmbeddingProvider.js";
 import type { AskAiRequest } from "../types/index.js";
 import { askAiRequestSchema } from "../validation/askAiRequest.js";
 import { toValidationErrorMessage } from "../app/errorHandler.js";
@@ -28,6 +30,13 @@ export type AskAiRouteDeps = {
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
   comboCatalog?: ComboCatalog;
   collectEnrichmentDebug?: boolean;
+  /**
+   * REQ-181: always present — `createApp` defaults this to
+   * `mockEmbeddingProvider` when no real provider is configured, it is never
+   * `undefined` in practice. Under `EMBEDDING_PROVIDER=mock` (the default)
+   * `embed()` always resolves to `null`, so System 3 stays lexical-only.
+   */
+  embeddingProvider?: EmbeddingProvider;
 };
 
 export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
@@ -41,7 +50,8 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
     gameRulesTopics,
     gameRulesRuleIndex,
     comboCatalog,
-    collectEnrichmentDebug
+    collectEnrichmentDebug,
+    embeddingProvider
   } = deps;
 
   app.post("/api/ask-ai", async (req: Request, res: Response, next: NextFunction) => {
@@ -79,6 +89,22 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
         throw createProviderUnavailableError("Miho is working on it", "forced fail query parameter");
       }
 
+      // REQ-181: the one async step in prompt preparation. Embedding happens
+      // here, before the otherwise-synchronous `preparePromptInput`, so the
+      // vector is passed in as an option rather than making prompt assembly
+      // itself async. `embeddingProvider` is always present (`createApp`
+      // defaults it to `mockEmbeddingProvider`), so skip building the
+      // retrieval query text — wasted work, since `mockEmbeddingProvider`
+      // always resolves to `null` — when that's the provider in play. Any
+      // real-provider embedding failure also resolves to `null` (never
+      // throws) — either way System 3 falls back to lexical retrieval with
+      // no change in behavior or latency shape.
+      let queryEmbedding: number[] | null = null;
+      if (embeddingProvider && embeddingProvider !== mockEmbeddingProvider) {
+        const queryText = buildRetrievalQueryText(askAiRequest, { cardDetailIndex });
+        queryEmbedding = await embeddingProvider.embed(queryText);
+      }
+
       logger.info("ask_ai.prompt_context_build_started", { correlationId });
       const promptBuildStartedAt = Date.now();
       const preparedPrompt = preparePromptInput(askAiRequest, {
@@ -87,7 +113,8 @@ export function registerAskAiRoute(app: Express, deps: AskAiRouteDeps): void {
         gameRulesTopics,
         gameRulesRuleIndex,
         comboCatalog,
-        collectEnrichmentDebug
+        collectEnrichmentDebug,
+        queryEmbedding
       });
       const diagnostics = preparedPrompt.diagnostics;
       logger.info("ask_ai.prompt_context_build_completed", {

@@ -32,6 +32,7 @@
       ],
       "supertypes": [],
       "subtypes": [],
+      "keywords": [],
       "caster": "Player 1",
       "targets": [],
       "manaSpent": 1,
@@ -51,6 +52,7 @@
       ],
       "supertypes": [],
       "subtypes": [],
+      "keywords": [],
       "caster": "Player 2",
       "targets": [
         {

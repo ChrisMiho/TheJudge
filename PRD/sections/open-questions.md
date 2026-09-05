@@ -9,6 +9,7 @@
   - Scryfall per-card `keywords` added to the committed card-metadata pipeline and unioned at query time
   - Generated from CR keyword ability rules (702.x) during `build-game-rules.mjs`
 - Recommended next step: Ship manual vocabulary in the first implementation slice; revisit after labeled-recall metrics show gaps. Do not block implementation on vocabulary derivation strategy.
+- Answered (2026-09-05, RAG retrieval gameplan): option two. Per-card Scryfall `keywords` are added to the committed backend card-detail artifact and unioned at query time to form the System 3 keyword signal (REQ-180). The hand-curated static vocabulary is retained only for detecting a keyword named in the question text, no longer for inferring a card's keywords from its oracle text. The trigger Q-001 named — labelled recall metrics showing gaps — is produced by the committed retrieval benchmark and the repaired relevance report (REQ-177); the two labelled deathtouch fixtures missing their expected rule `702.2b` are the gap. Option three (generating the vocabulary from Comprehensive Rules 702.x) is not taken: it describes what a keyword means, not which cards carry it, and is better suited to the deferred mechanic-definition corpus than to the retrieval query signal.
 
 ### Q-002
 - Question: Should the scanner surface a progressive debug outline that intensifies as a card approaches a scan match (proximity-driven feedback), rather than a binary debug toggle?

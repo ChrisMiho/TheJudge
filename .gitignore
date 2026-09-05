@@ -75,3 +75,4 @@ output/cardhash-build/
 /*.jpeg
 
 .vitest-reports/
+apps/backend/data/models/

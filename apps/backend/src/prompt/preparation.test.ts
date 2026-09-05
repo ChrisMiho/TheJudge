@@ -22,7 +22,11 @@ function cardDetailIndexFrom(
       manaValue: card.manaValue ?? 0,
       colors: card.colors ?? [],
       supertypes: card.supertypes ?? [],
-      subtypes: card.subtypes ?? []
+      subtypes: card.subtypes ?? [],
+      // REQ-180: System 3's per-card keyword signal comes from this field,
+      // not from tokenizing oracleText — fixtures that want a card to drive
+      // retrieval must carry it explicitly.
+      keywords: card.keywords ?? []
     });
   }
   return index;
@@ -66,10 +70,10 @@ describe("Backend - Ask AI", () => {
       expect(prepared.promptText).not.toContain("CARD (looked up)");
     });
 
-    it("scores supplemental rules from attached-card oracle text and includes its rulings", () => {
+    it("scores supplemental rules from an attached card's keywords and includes its rulings (REQ-180)", () => {
       const request: LookupAskAiRequest = {
         mode: "lookup",
-        question: "What does this ability do?",
+        question: "What does this thing do?",
         cards: [
           {
             cardId: "questing-beast",
@@ -81,7 +85,8 @@ describe("Backend - Ask AI", () => {
             typeLine: "Legendary Creature — Beast",
             colors: ["G"],
             supertypes: ["Legendary"],
-            subtypes: ["Beast"]
+            subtypes: ["Beast"],
+            keywords: ["Deathtouch"]
           }
         ]
       };
@@ -119,6 +124,9 @@ describe("Backend - Ask AI", () => {
             colors: ["G"],
             supertypes: ["Legendary"],
             subtypes: ["Beast"]
+            // No `keywords` here on purpose: the retrieval hit below must come
+            // from the second card, proving the query is built from every
+            // attached card, not only the first.
           },
           {
             cardId: "snapcaster-mage",
@@ -130,7 +138,10 @@ describe("Backend - Ask AI", () => {
             typeLine: "Creature — Human Wizard",
             colors: ["U"],
             supertypes: [],
-            subtypes: ["Human", "Wizard"]
+            subtypes: ["Human", "Wizard"],
+            // Synthetic for this test only — proves the second card's keyword
+            // signal reaches the query, not a claim about the real card.
+            keywords: ["Deathtouch"]
           }
         ]
       };
@@ -150,8 +161,9 @@ describe("Backend - Ask AI", () => {
         { cardId: "questing-beast", name: "Questing Beast" },
         { cardId: "snapcaster-mage", name: "Snapcaster Mage" }
       ]);
-      // A rule id retrievable only through the second card's oracle text still
-      // shows the System 3 query was built from every attached card, not one.
+      // A rule id retrievable only through the second card's keyword signal
+      // (REQ-180) still shows the System 3 query was built from every
+      // attached card, not one.
       expect(prepared.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId)).toContain("702.2");
       expect(prepared.promptText).toContain("name: Questing Beast");
       expect(prepared.promptText).toContain("name: Snapcaster Mage");
