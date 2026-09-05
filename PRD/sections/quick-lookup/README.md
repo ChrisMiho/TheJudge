@@ -13,7 +13,7 @@
   REQ-075, REQ-079, REQ-091, REQ-092, REQ-094, REQ-095, REQ-097, REQ-098,
   REQ-011, REQ-022, REQ-024, REQ-030, REQ-105, REQ-109, REQ-110, REQ-121,
   REQ-129, REQ-132, REQ-134, REQ-141, REQ-167, REQ-178, REQ-179, REQ-180,
-  REQ-181, FLOW-006, FLOW-011, FLOW-023, NFR-001
+  REQ-181, REQ-182, REQ-184, FLOW-006, FLOW-011, FLOW-023, NFR-001
 
 ## What it is
 
@@ -260,24 +260,24 @@ both providers. (DEC-020, REQ-072)
 
 ### Retrieval
 
-- Built: System 3 supplemental rules retrieval (DEC-046) is semantic-primary
-  when the embedding-provider seam is active (REQ-181) — the query embedding is
-  cosine-ranked against the committed per-rule embeddings, with the
-  exact-rule-id boost merged in — over a rule index with the source document's
+- Built: System 3 supplemental rules retrieval (DEC-046) is hybrid-ranked when
+  the embedding-provider seam is active (REQ-182) — the query embedding is
+  cosine-ranked against the committed per-rule embeddings and blended with the
+  IDF keyword score, both normalised per query, with the exact-rule-id boost
+  merged into the blended score — over a rule index with the source document's
   table of contents and heading-only entries stripped (REQ-179), excluding by
   rule-number prefix the curated rule numbers the always-on core topics already
   carry, and returning a small capped set of the best-ranked rules. IDF-scored
-  keyword retrieval is retained as the mock/offline default and the fallback on
-  any embedding failure, so those settings are never worse than the prior
-  lexical behaviour. Under the `local` provider, semantic ranking measures
-  better overall but worse on exactly this lookup-mode query shape — a card
-  name, type line, and one keyword, with no combat context — where two of
-  eight labelled fixtures lose their expected rule from the top five; a
-  hybrid lexical-plus-semantic blend is the tracked follow-up before `local`
-  becomes the default (REQ-181's notes). For lookup the query is built from the question tokens always, plus
+  keyword retrieval alone is retained as the mock/offline default and the
+  fallback on any embedding failure, so those settings are never worse than the
+  prior lexical behaviour. The blend exists for exactly this screen's query
+  shape: semantic-only ranking measured better overall but worse on a card
+  name, type line, and one keyword with no combat context, where three of eight
+  labelled fixtures lost their expected rule from the top five (REQ-181,
+  REQ-182). For lookup the query is built from the question tokens always, plus
   each attached card's name, type line, and keywords — not its oracle text
-  (REQ-167, REQ-178). (DEC-046, REQ-022, REQ-178, REQ-179, REQ-181, DEC-107,
-  REQ-167)
+  (REQ-167, REQ-178). (DEC-046, REQ-022, REQ-178, REQ-179, REQ-181, REQ-182,
+  DEC-107, REQ-167)
 - Built: the always-on core game-rules topics are a fixed curated set
   (stack-and-priority, targets, zones, triggered-ability basics), not the
   state-gated selector the game flow uses — lookup carries no game state to gate
@@ -327,12 +327,13 @@ as the current shipped configuration, not product truth.
   ending with assistant, per-message cap — shared with the main flow, not a
   Quick-Lookup-specific policy. (REQ-072, REQ-075)
 - Retrieval: System 3 returns a small capped best-ranked set (top 5), curated
-  core-topic rule numbers excluded by prefix; ranking is semantic-primary
-  (cosine over the committed per-rule embeddings) with the exact-rule-id boost
-  merged and lexical IDF scoring retained as the mock/offline default and
-  failure fallback (REQ-181); the query is the question tokens always, plus each
-  attached card's name, type line, and keywords (REQ-167, REQ-178). (DEC-046,
-  REQ-022, REQ-178, REQ-181, REQ-167)
+  core-topic rule numbers excluded by prefix; ranking is a hybrid blend of
+  normalised cosine over the committed per-rule embeddings and normalised
+  lexical IDF overlap, with the exact-rule-id boost merged into the blended
+  score, and lexical scoring alone retained as the mock/offline default and
+  failure fallback (REQ-181, REQ-182); the query is the question tokens always,
+  plus each attached card's name, type line, and keywords (REQ-167, REQ-178).
+  (DEC-046, REQ-022, REQ-178, REQ-181, REQ-182, REQ-167)
 - Card attach cap: the pre-submit card-attach strip accepts at most 5 cards
   (REQ-167); an add attempted past the cap is blocked with a stated limit
   message. (REQ-167, `QuickLookupApp.tsx`)

@@ -4269,3 +4269,24 @@
   - the alternatives were measured, not assumed: moving the model to S3 frees the 22.59 MB warmed model cache, which sits inside the 130 MB non-data reserve and is gitignored, so it is absent from the 118.095 MB data figure entirely
   - measured at build, 2026-09-05: a fixed int8 scale assuming the theoretical ±1 unit-vector bound (127 per unit magnitude) measurably regressed benchmark recall@5 (0.8974 -> 0.8910 clean), because this model's real component values only reach about ±0.27, wasting most of int8's precision. Scaling instead by the corpus's own largest `|component|` (computed at build time and committed on the artifact as `int8Scale`, so the loader dequantises with the exact value the build used) uses the full int8 range and reproduces REQ-182's recorded recall exactly (0.8974 clean / 0.8910 polluted). Shipped artifact: 1.442 MB, `int8Scale` ≈ 467.13 (≈ 127 / 0.2719)
   - re-measured at build, 2026-09-05, with the corrected scale: tracked `apps/backend/data` is 113.887 MB against the 120 MB budget — 6.113 MB headroom, matching the design brief's predicted figure exactly
+
+### REQ-184
+- Title: Semantic rule retrieval is the deployed default
+- Priority: high
+- Description: Once the hybrid blend (REQ-182) clears its gates, the deployed backend runs System 3 with the semantic path on. The unset default stays `mock` so a plain checkout with no model access behaves exactly as before; the deploy sets `EMBEDDING_PROVIDER=local` explicitly, the same split the AI provider already uses.
+- Acceptance Criteria:
+  - `EMBEDDING_PROVIDER` unset still resolves to `mock`; it never auto-switches on `NODE_ENV` or deploy target (REQ-181, unchanged)
+  - the deployed Lambda's environment sets `EMBEDDING_PROVIDER=local` explicitly, and the deploy configuration records it where the equivalent `ASK_AI_PROVIDER` setting is recorded
+  - the deploy fails, rather than silently degrading, when the packaged model cache is absent: the packaging script already refuses without `apps/backend/data/models/Xenova/all-MiniLM-L6-v2/onnx/model_quantized.onnx`, and that refusal is asserted
+  - a local `npm run dev` with no warmed model cache and no network still answers, using lexical retrieval, with the single diagnostic warning REQ-181 requires
+  - this requirement does not land before REQ-182's gates pass and REQ-032's semantic checks gate `npm run test:eval`
+- Constraints:
+  - the canonical mock-first rule is preserved, not broken: the *unset* default remains the offline-safe one, and the live setting is opt-in per environment (`integrations-and-data.md`, Tech Stack)
+  - no per-request external call is introduced: `local` embeds in-process from the packaged model (REQ-181)
+- Dependencies:
+  - REQ-182 (the blend that makes this safe)
+  - REQ-181 (the provider seam and its mock-first default)
+  - REQ-032 (the eval gating that guards it)
+- Notes:
+  - measured 2026-09-05: in a checkout whose model cache was empty, `npm run benchmark:rag-retrieval -- --semantic` returned the lexical numbers labelled `method=semantic-local` with no failure — the reason the *unset* default must stay `mock` rather than flipping repo-wide
+  - measured at build, 2026-09-05: `scripts/package-lambda.sh`'s model-cache refusal was written to assert existing intent but did not actually fire — a best-effort warm attempt swallowed its own failure (`|| true`) with no follow-up check, so a package built with a cold cache and no network would have shipped silently missing the model. Added an explicit post-warm check that refuses (exit 1) when the model file is still absent, and `scripts/package-lambda.test.mjs` proves it — offline, via a scratch repo and a no-op `npx` shim, no real network call
