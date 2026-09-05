@@ -5,7 +5,7 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "`rm -rf` is denied in every session"; graph tier: nohup true → "`nohup` is denied while a graph run holds the lock")`
 - Autonomous base: `origin/thejudge-auto/rag-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-061805/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/rag-rule-retrieval/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | 1 | preflight | haiku | ok | `0 → 5` | branch `thejudge-auto/rag-rule-retrieval` pushed at `ad4930f` (tree `clean`, no stash); lock `.worktrees/.graph-run.lock` runId `graph-20260905-061805`; canary denied both tiers; `Profile: unverified` | 2026-09-05 |
 | 2 | shape | sonnet | ok | `0 → 44` | package `PRD/work/rag-rule-retrieval/` created (`IDEA.md` with 13 `## Prior run` receipts, `README.md`, `STATUS.ideation`, board row); 26 intake files copied verbatim into `intake/` (`diff -rq` zero drift) from `.worktrees/.graph-intake/graph-20260905-061805/`, staging deleted; commit `d6b8d84` | 2026-09-05 |
 | — | driver-bookkeeping | — | ok | `n/a (driver)` | owner's cleanup: `git rm` of `PRD/work/probe-slow-load-vs-rag/`, `PRD/work/probe-prompt-data-optimization/`, four `PRD/work/promptRefinement*.md` — every file first confirmed byte-identical under `intake/` (`cmp`); ledger moved into package; `## Autonomous metadata` written; commit `d6b8d84` | 2026-09-05 |
+| 3 | define | opus | ok | `0 → 73` | `STATUS.refined`; `DESIGN-BRIEF.md` (5-step gameplan REQ-177..181, 10 assumptions, intake dispositions) + `GATE-QUESTIONS.md` (24 slots: 5 new REQ, 4 SCOPE decisions, 8 amended IDs incl. NFR-017 Lambda-budget finding, 7 amended specs; 32 Current blocks verified verbatim); 0 blocker questions; commit `797086a` | 2026-09-05 |
 
 ## Open gate
 
@@ -88,6 +89,28 @@ Known hazards, from the repository record, that this proposal must handle:
 Status duties: on start set `status: refining`, `STATUS.refining`, board row under `## refining` (remove the `## ideation` row — a board move is remove-plus-add); on completion set `status: refined`, `STATUS.refined`, board row under `## refined`. Exactly one `STATUS.*` at any time. Commit with explicit paths (`git add PRD/work/rag-rule-retrieval PRD/work/STATUS.md`; never `-A`, `--all`, or `.`). Do not push. Never edit `PRD/sections/`, code, `GRAPH-RUN.md`, any other `PRD/work/` folder, or any `thejudge-*` skill. Do not dispatch subagents. If you write any prompt of your own, copy the `Working directory:` line above into it unchanged.
 
 Return: the commit hash, the list of stable-ID slots in `GATE-QUESTIONS.md`, any `## Blocker questions` entries, the material assumptions list, and the final `STATUS.*` marker.
+
+### gate-qc (attempt 1)
+
+graph is controlling. You are node 4 (`gate-qc`) of graph run `graph-20260905-061805`, dispatched by `graph-kickoff`. Delegate: `thejudge-quality-check`. Package: `PRD/work/rag-rule-retrieval/` on branch `thejudge-auto/rag-rule-retrieval`. Attempt 1.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+Read `.claude/skills/thejudge-quality-check/SKILL.md` in full and run its orchestrated (`graph is controlling`) mode; read `PRD/instructions/preparation-contract.md`. Grade `PRD/work/rag-rule-retrieval/DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` against the skill's checklist and emit an explicit PASS or FAIL.
+
+Checks that matter most for this package, beyond the checklist:
+- Every `Current:` block in `GATE-QUESTIONS.md` matches the live `PRD/sections/` file verbatim — re-read each live file now; a stale or paraphrased Current block is a FAIL finding.
+- Every new stable ID is unused on the live `functional-requirements.md` / `non-functional-requirements.md` / flow lists; every amended ID exists there.
+- The cross-cutting amendment set is complete: grep `PRD/sections/` yourself for every location asserting System 3 (the supplemental Comprehensive-Rules excerpt retrieval) is keyword/IDF/lexical scored — `system-map/game-rules-retrieval.md`, `system-map/prompt-assembly.md`, `system-map/prompt-layout-spec.md`, `system-map.md`, `quick-lookup/README.md`, `in-depth/README.md`, `integrations-and-data.md`, `functional-requirements.md`, `open-questions.md` — and confirm each is either amended in the proposal or has a stated reason it needs no change. Derived feature specs and their authoritative REQs must not contradict.
+- The dangling citations of `PRD/work/prompt-context-refinement/RAG-DEFERRED.md` in `functional-requirements.md` and `non-functional-requirements.md` are resolved by the proposal.
+- `technical-design-rules.md` constraints hold (one endpoint, no rules engine, mock-default provider, no per-request external call added by default) and REQ-032's no-external-call eval constraint is honored.
+- Every gate block carries the three plain-language lines (What this decides · In plain terms · What happens if you say no) with cited IDs inlined and technical terms defined, then a complete diff, then `- Verdict:` / `- Reason:` slots.
+- The brief names a measurement gate for each build step (benchmark, command, number) and the disposition of every intake item.
+- Any user-visible surface change has a `screen-layout.md` row or an explicit reason it needs none.
+
+Status duties: on PASS leave `STATUS.refined` and the board row under `## refined`; on FAIL set `status: refining`, `STATUS.refining`, and move the board row to `## refining` (remove-plus-add). Exactly one `STATUS.*`. Commit any status change with explicit paths (`git add PRD/work/rag-rule-retrieval PRD/work/STATUS.md`; never `-A`, `--all`, or `.`). Do not push. Fix nothing in the brief or the proposal yourself — return every issue. Never edit `PRD/sections/`, code, `GRAPH-RUN.md`, the package `README.md`, any other `PRD/work/` folder, or any `thejudge-*` skill. Do not dispatch subagents. If you write any prompt of your own, copy the `Working directory:` line above into it unchanged.
+
+Return: PASS or FAIL first, then the complete numbered finding list (each with the file, the line or block, what is wrong, and what would resolve it), the commit hash if a status change was committed, and the final `STATUS.*` marker.
 
 ## Instruction ledger
 
