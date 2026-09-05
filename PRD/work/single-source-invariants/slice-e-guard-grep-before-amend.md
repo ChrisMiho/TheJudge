@@ -1,6 +1,6 @@
 # Slice E — GUARD-GREP-BEFORE-AMEND: the grep-before-amend guardrail
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -34,17 +34,31 @@ rule's canonical home.
 
 ## Acceptance criteria
 
-- [ ] E1 — `writing-rules.md` carries the new "Cross-cutting invariants (grep
+- [x] E1 — `writing-rules.md` carries the new "Cross-cutting invariants (grep
       before amend)" subsection, naming the image-first-cards D5 near-miss,
       the grep-before-amend rule, the invariant-vs-scope-clause distinction,
       and the re-grep-to-refresh requirement
-- [ ] E2 — `requirement-format.md` carries the cross-reference bullet to
+- [x] E2 — `requirement-format.md` carries the cross-reference bullet to
       `writing-rules.md`'s new subsection
-- [ ] E3 — re-grep `PRD/instructions/` for "grep-before-amend" / "grep before
+- [x] E3 — re-grep `PRD/instructions/` for "grep-before-amend" / "grep before
       amend" and confirm the rule is stated once (in `writing-rules.md`) with
       exactly one cross-reference (in `requirement-format.md`), not
       duplicated as independent text elsewhere (manual check — no test
       command applies to this docs-only slice)
+
+### Re-grep observation: 2026-09-04 E3 — grep-before-amend / cross-cutting invariant family
+
+Re-ran the Verification block pattern across `PRD/instructions/*.md` after
+E1–E2 landed. The rule is stated once, in `writing-rules.md`'s new
+"Cross-cutting invariants (grep before amend)" subsection (naming the
+image-first-cards D5 near-miss, the grep-before-amend requirement, the
+invariant-vs-scope-clause distinction, and the re-grep-to-refresh step), with
+exactly one cross-reference bullet in `requirement-format.md`'s Formatting
+Rules pointing back at it. No other instruction file states or duplicates
+the rule independently. No `thejudge-*` skill file was touched by this
+slice — the skill-side pointer (referencing this rule from
+`thejudge-refinement` and gate-authoring) remains a noted, non-blocking
+follow-up per `GATE-QUESTIONS.md`.
 
 ## Verification
 
@@ -59,12 +73,13 @@ grep -rniE 'grep[- ]before[- ]amend|cross-cutting invariant' PRD/instructions/*.
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas — N/A,
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas — N/A,
       this package is documentation-only; no test or lint target covers
-      `PRD/`
-- [ ] Public contract unchanged unless slice scoped a change — unchanged;
+      `PRD/`; `npm run quality:check` run and green (436/436) after every
+      slice
+- [x] Public contract unchanged unless slice scoped a change — unchanged;
       no code, no API, no data contract touched by any slice in this package
-- [ ] No secrets committed
+- [x] No secrets committed
 - [ ] Durable outcomes promoted; `PRD/work/single-source-invariants/` ready
-      to delete
+      to delete — pending `thejudge-cleanup` after this PR merges

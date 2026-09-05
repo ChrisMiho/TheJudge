@@ -45,3 +45,21 @@ Do not renumber IDs unless there is a compelling editorial reason.
 - if the decision changes scope or behavior, then update affected section files to match
 - when splitting broad stories, separate guardrail/process work from remediation/refactor work when feasible
 - when backlog order matters, encode the order via explicit dependency lines in story docs
+
+## Cross-cutting invariants (grep before amend)
+
+A **cross-cutting invariant** is a product rule asserted *as a rule* in 3+ files
+(for example: one main product-facing endpoint; mock-first local default;
+assistant-not-a-rules-engine). Each has one **canonical home** carrying the full
+rule text and an explicit "echoed in" list of every other place it appears.
+
+- Before writing or amending a cross-cutting invariant, enumerate its full
+  amendment set by `grep` across `PRD/` and `README.md`. **Never enumerate it
+  from memory** — a memory-listed set went stale and cited a retired decision as
+  the live rule (image-first-cards D5, 2026-09-04).
+- Amend the canonical home, then re-grep and refresh its "echoed in" list so a
+  drifted or newly added pointer is caught.
+- Fold only invariant *assertions* (the rule stated as a rule). A per-feature
+  scope clause ("this feature changes no product-facing endpoint") references an
+  invariant but is not a restatement of it — leave those in place.
+- A pointer cites the canonical home, never a retired `DEC-###`, as the live rule.
