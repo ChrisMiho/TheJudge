@@ -234,7 +234,7 @@ export const NODE_CALL_CAPS = Object.freeze({
   define: 150,
   "gate-qc": 60,
   plan: 120,
-  build: 600,
+  build: 1200,
   review: 120,
   land: null,
   close: 120

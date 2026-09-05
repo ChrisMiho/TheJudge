@@ -342,8 +342,8 @@ single source for each.
   - no hybrid lexical-plus-semantic fusion score was ever measured; this requirement merges the exact-rule-id boost with semantic ranking rather than claiming a measured fusion result
 ```
 
-- Verdict: accept
-- Reason:
+- Verdict: edit
+- Reason: edit (owner, 2026-09-05 at land): embedding text stays plain `sectionTitle: text` as applied — measured 19/20 vs 13/20 recall@5 for the accepted shaping on a 20-question sample; the never-worse note in this block is softened per the owner's decision to state the measured lookup-mode exceptions under `local`.
 
 ---
 
@@ -475,8 +475,8 @@ Proposed: added to REQ-181's `Constraints` list.
   - lexical retrieval is retained and never removed: it is the retrieval path under `EMBEDDING_PROVIDER=mock` (the default, which must run with no model access — canonical mock-first rule, `integrations-and-data.md` Tech Stack), it supplies the exact-rule-id and parent-rule-id boost merged into semantic ranking, and it is the fallback on any embedding failure. System 3 is therefore never worse than its prior lexical-only behaviour under any provider setting or failure mode
 ```
 
-- Verdict: accept
-- Reason:
+- Verdict: edit
+- Reason: edit (owner, 2026-09-05 at land): keep lexical retained and never removed; soften the never-worse claim — true under `mock` and every fallback, not under `local` for short lookup-mode questions (two of eight labelled fixtures), measured 2026-09-05.
 
 ---
 
@@ -550,8 +550,8 @@ Proposed:
   - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-181; the section's placement, five-excerpt cap, and System 2 deduplication are unchanged
 ```
 
-- Verdict: accept
-- Reason:
+- Verdict: edit
+- Reason: edit (owner, 2026-09-05 at land): same softening of the never-worse claim as SCOPE-D; the semantic-primary mechanism stands.
 
 ---
 
@@ -622,8 +622,8 @@ Proposed:
   - the report/harness parity criterion exists because the two diverged in practice: after REQ-176 moved card-text resolution server-side, the report stopped passing a card-detail index and reported three false scenario failures while the gate stayed green
 ```
 
-- Verdict: accept
-- Reason:
+- Verdict: edit
+- Reason: edit (owner, 2026-09-05 at land): `test:eval` remains the gate for the lexical path and runs the two semantic checks in report mode until a hybrid lexical-plus-semantic blend lands, then they gate.
 
 ---
 
@@ -1102,8 +1102,8 @@ Proposed:
   in the question text.
 ```
 
-- Verdict: accept
-- Reason:
+- Verdict: edit
+- Reason: edit (owner, 2026-09-05 at land): soften the never-worse sentences (near the explainer's lines 31 and 118 as applied) to state the measured lookup-mode exceptions under `local`.
 
 ---
 
@@ -1271,8 +1271,8 @@ Proposed:
   REQ-022, REQ-178, REQ-181, REQ-167)
 ```
 
-- Verdict: accept
-- Reason:
+- Verdict: edit
+- Reason: edit (owner, 2026-09-05 at land): soften the never-worse shipped-fact wording the same way.
 
 ---
 
