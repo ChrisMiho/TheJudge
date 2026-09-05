@@ -30,6 +30,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
+import { pathToFileURL } from "node:url";
 import { format as prettierFormat } from "prettier";
 import { LOCAL_MODEL_CACHE_DIR, LOCAL_MODEL_ID } from "../apps/backend/src/providers/localEmbeddingProvider.ts";
 
@@ -41,6 +42,37 @@ export function buildEmbeddingText(entry) {
 const indexPath = path.resolve("apps/backend/data/gameRulesRuleIndex.json");
 const outputPath = path.resolve("apps/backend/data/gameRulesRuleEmbeddings.json");
 const EMBEDDING_DIMS = 384;
+/** REQ-183: the shipped encoding. Named once so the hash-skip check below
+ * also rebuilds when this changes (an encoding change is a legitimate
+ * rebuild reason on its own, not only a rule-index change). */
+const ENCODING = "int8-base64";
+/**
+ * REQ-183: the int8 scale factor is computed at build time from the actual
+ * data, not assumed at a fixed 127-per-unit-magnitude. Measured 2026-09-05:
+ * every component of a unit (L2-normalised) vector is bounded by ±1 in
+ * theory, but this model's components only ever reach about ±0.27 in
+ * practice — a fixed scale of 127 (assuming the full ±1 range) would use
+ * only ~70 of the 255 signed int8 levels, wasting most of int8's precision
+ * and measurably regressing benchmark recall@5 (0.8974 -> 0.8910 clean,
+ * observed). Scaling instead by the corpus's own largest |component| uses
+ * the full int8 range and reproduces the pre-quantisation recall. The scale
+ * is committed on the artifact (`int8Scale`) so the loader dequantises with
+ * the exact value this build used, never a hardcoded guess.
+ */
+export function computeInt8Scale(values) {
+  let maxAbs = 0;
+  for (const value of values) {
+    const abs = Math.abs(value);
+    if (abs > maxAbs) maxAbs = abs;
+  }
+  return maxAbs > 0 ? 127 / maxAbs : 1;
+}
+
+/** REQ-183: quantise one float32 component to a signed int8 using the given scale, clamped to the valid range. */
+export function quantizeToInt8(value, scale) {
+  const scaled = Math.round(value * scale);
+  return Math.max(-128, Math.min(127, scaled));
+}
 
 function ensureParentDirectory(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
@@ -79,8 +111,8 @@ async function main() {
   if (fs.existsSync(outputPath)) {
     try {
       const existing = JSON.parse(fs.readFileSync(outputPath, "utf8"));
-      if (existing.ruleIndexHash === ruleIndexHash) {
-        console.log(`Rule index unchanged (sha256 ${ruleIndexHash.slice(0, 12)}...); skipping rebuild: ${outputPath}`);
+      if (existing.ruleIndexHash === ruleIndexHash && existing.encoding === ENCODING) {
+        console.log(`Rule index unchanged (sha256 ${ruleIndexHash.slice(0, 12)}...) and encoding already ${ENCODING}; skipping rebuild: ${outputPath}`);
         return;
       }
     } catch {
@@ -113,16 +145,21 @@ async function main() {
     console.log(`Embedded ${Math.min(i + batchSize, embeddingTexts.length)}/${embeddingTexts.length}`);
   }
 
-  // Base64-encoded raw float32 bytes: lossless (unlike the earlier
-  // 6-decimal-JSON-text approach) and much smaller — 384 floats/rule x
-  // 2,873 rules x 4 bytes = ~4.4MB raw, ~5.9MB base64, versus ~12MB as JSON
-  // number-array text. NFR-017's deploy budget is the reason this matters.
-  const vectorsBase64 = Buffer.from(Float32Array.from(allValues).buffer).toString("base64");
+  // REQ-183: base64-encoded signed int8 bytes — one byte per component
+  // instead of four. 384 dims/rule x 2,873 rules x 1 byte = ~1.05MB raw,
+  // ~1.44MB base64, versus ~4.4MB raw / ~5.9MB base64 for float32-base64.
+  // NFR-017's deploy budget is why this matters; retrieval quality is
+  // re-measured after this change (REQ-183 acceptance), not assumed.
+  const int8Scale = computeInt8Scale(allValues);
+  const vectorsBase64 = Buffer.from(Int8Array.from(allValues, (value) => quantizeToInt8(value, int8Scale)).buffer).toString(
+    "base64"
+  );
 
   const artifact = {
     model: LOCAL_MODEL_ID,
     dims: EMBEDDING_DIMS,
-    encoding: "float32-base64",
+    encoding: ENCODING,
+    int8Scale,
     generatedAt: new Date().toISOString(),
     ruleIndexHash,
     ruleIds,
@@ -138,7 +175,13 @@ async function main() {
   console.log(`Wrote: ${outputPath}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+// REQ-183: guarded so importing this module's pure functions for testing
+// (`scripts/build-rule-embeddings.test.mjs`) never triggers a rebuild as a
+// side effect — matches the established pattern in `build-game-rules.mjs`.
+const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : "";
+if (import.meta.url === invokedPath) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

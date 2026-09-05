@@ -164,12 +164,32 @@ export type GameRulesRuleEmbeddings = {
 
 const ruleEmbeddingsCache = new Map<string, GameRulesRuleEmbeddings | null>();
 
-/** On-disk shape: `vectorsBase64` is a base64-encoded Float32Array buffer —
- * ~5.9MB for 2,873 x 384 floats, versus ~12MB as JSON number-array text.
- * NFR-017's deploy budget is why this is base64/binary rather than arrays. */
+/**
+ * REQ-183: the shipped vector number format, named on the artifact itself
+ * rather than assumed, so an older or differently-encoded artifact is
+ * detected rather than misread. `float32-base64` (one 4-byte IEEE-754 float
+ * per component) is REQ-181's original, lossless format; `int8-base64`
+ * (REQ-183, one signed byte per component, scaled by the artifact's own
+ * `int8Scale`) is the shipped format — ~1.44MB for 2,873 x 384 components,
+ * versus ~5.9MB for float32-base64 and ~12MB as JSON number-array text.
+ * NFR-017's deploy budget is why this is compact base64/binary rather than
+ * JSON arrays. `int8Scale` is computed at build time from the corpus's own
+ * largest |component| (`scripts/build-rule-embeddings.mjs`'s
+ * `computeInt8Scale`), not a hardcoded guess — a fixed scale assuming the
+ * theoretical ±1 unit-vector bound measurably regressed benchmark recall@5
+ * (0.8974 -> 0.8910 clean), because this model's real components only ever
+ * reach about ±0.27, wasting most of int8's precision.
+ */
+const BYTES_PER_COMPONENT: Record<string, number> = {
+  "float32-base64": Float32Array.BYTES_PER_ELEMENT,
+  "int8-base64": Int8Array.BYTES_PER_ELEMENT
+};
+
 type RuleEmbeddingsArtifactOnDisk = {
   model: string;
   dims: number;
+  encoding: string;
+  int8Scale?: number;
   ruleIds: string[];
   vectorsBase64: string;
 };
@@ -181,14 +201,47 @@ function isValidEmbeddingsArtifactOnDisk(value: unknown): value is RuleEmbedding
     typeof candidate.model !== "string" ||
     typeof candidate.dims !== "number" ||
     candidate.dims <= 0 ||
+    typeof candidate.encoding !== "string" ||
     !Array.isArray(candidate.ruleIds) ||
     typeof candidate.vectorsBase64 !== "string"
   ) {
     return false;
   }
-  const expectedFloatCount = candidate.ruleIds.length * candidate.dims;
+  const bytesPerComponent = BYTES_PER_COMPONENT[candidate.encoding];
+  if (bytesPerComponent === undefined) return false; // unrecognised encoding
+  if (candidate.encoding === "int8-base64" && !(typeof candidate.int8Scale === "number" && candidate.int8Scale > 0)) {
+    return false; // int8-base64 requires a positive dequantisation scale
+  }
+  const expectedComponentCount = candidate.ruleIds.length * candidate.dims;
   const decodedByteLength = Buffer.from(candidate.vectorsBase64, "base64").byteLength;
-  return decodedByteLength === expectedFloatCount * Float32Array.BYTES_PER_ELEMENT;
+  return decodedByteLength === expectedComponentCount * bytesPerComponent;
+}
+
+function decodeVectors(parsed: RuleEmbeddingsArtifactOnDisk): number[][] {
+  const buffer = Buffer.from(parsed.vectorsBase64, "base64");
+  const vectors: number[][] = [];
+
+  if (parsed.encoding === "int8-base64") {
+    const scale = parsed.int8Scale!; // validated positive by isValidEmbeddingsArtifactOnDisk
+    const int8 = new Int8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength);
+    for (let i = 0; i < parsed.ruleIds.length; i++) {
+      const start = i * parsed.dims;
+      const vector = new Array<number>(parsed.dims);
+      for (let d = 0; d < parsed.dims; d++) {
+        vector[d] = int8[start + d]! / scale;
+      }
+      vectors.push(vector);
+    }
+    return vectors;
+  }
+
+  // "float32-base64" — the only other recognised encoding (isValidEmbeddingsArtifactOnDisk
+  // already rejected anything else).
+  const floats = new Float32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / Float32Array.BYTES_PER_ELEMENT);
+  for (let i = 0; i < parsed.ruleIds.length; i++) {
+    vectors.push(Array.from(floats.subarray(i * parsed.dims, (i + 1) * parsed.dims)));
+  }
+  return vectors;
 }
 
 export function loadGameRulesRuleEmbeddings(filePath: string): GameRulesRuleEmbeddings | null {
@@ -204,21 +257,18 @@ export function loadGameRulesRuleEmbeddings(filePath: string): GameRulesRuleEmbe
   try {
     const parsed = JSON.parse(readFileSync(filePath, "utf8")) as unknown;
     if (!isValidEmbeddingsArtifactOnDisk(parsed)) {
-      warnOnce(filePath, `Rule embeddings artifact has an unexpected shape; System 3 falls back to lexical retrieval: ${filePath}`);
+      warnOnce(
+        filePath,
+        `Rule embeddings artifact has an unexpected shape or unrecognised encoding; System 3 falls back to lexical retrieval: ${filePath}`
+      );
       ruleEmbeddingsCache.set(filePath, null);
       return null;
-    }
-    const buffer = Buffer.from(parsed.vectorsBase64, "base64");
-    const floats = new Float32Array(buffer.buffer, buffer.byteOffset, buffer.byteLength / Float32Array.BYTES_PER_ELEMENT);
-    const vectors: number[][] = [];
-    for (let i = 0; i < parsed.ruleIds.length; i++) {
-      vectors.push(Array.from(floats.subarray(i * parsed.dims, (i + 1) * parsed.dims)));
     }
     const embeddings: GameRulesRuleEmbeddings = {
       model: parsed.model,
       dims: parsed.dims,
       ruleIds: parsed.ruleIds,
-      vectors
+      vectors: decodeVectors(parsed)
     };
     ruleEmbeddingsCache.set(filePath, embeddings);
     return embeddings;

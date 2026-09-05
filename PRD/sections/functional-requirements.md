@@ -4243,3 +4243,29 @@
   - owner decision, 2026-09-05: keep the 12/12 gate and the `[0.50, 0.70]` band; add the cross-reference boost above instead of relaxing either. Sized by measurement: the largest gap between `701.8b`'s blended score and its closest full-pool competitor, across the whole accepted alpha band, was 0.078 (at alpha 0.70). `SCORE_CROSS_REFERENCE = 10` clears that with a wide margin while staying an order of magnitude below the exact-rule-id boost (100) and half the parent-rule-id boost (20) — preserving the intended hierarchy (exact > parent > cross-reference) rather than acting as an equally-absolute override.
   - measured at build, 2026-09-05, with the cross-reference boost in place (`npm run test:eval`, `npm run benchmark:rag-retrieval -- --semantic`, full candidate list): all 12 fixture checks pass at every alpha tested — 0.50, 0.55, 0.60, 0.65, 0.70. Benchmark clean/polluted recall@5 and MRR per alpha (unaffected by the boost — none of the 156 benchmark questions cites a rule number, so the boost never fires there): 0.8526/0.6649 clean, 0.8205/0.6392 polluted at 0.50; 0.8782/0.6918, 0.8718/0.6615 at 0.55; 0.8974/0.7139, 0.8910/0.6928 at 0.60; 0.8974/0.7188, 0.9038/0.7042 at 0.65; 0.9167/0.7353, 0.9038/0.7188 at 0.70. `alpha = 0.60` is chosen: the first value in the sweep where both clean and polluted recall clear the accepted floors (0.8526 / 0.8333) with real headroom.
   - the prior state this replaces: `gameRulesRetrieval.ts` chose `scoreEntrySemantic` or `scoreEntry` for the whole index with no blend, which is why REQ-181's notes recorded that no fusion score had been measured
+
+### REQ-183
+- Title: Rule-embedding vectors ship in a compact number format
+- Priority: high
+- Description: The committed per-rule embeddings artifact stores each vector component in a compact number format instead of full 32-bit floats, so the deploy package's data budget (NFR-017) regains real headroom without dropping any player-visible content and without adding a runtime dependency.
+- Acceptance Criteria:
+  - the artifact's `encoding` field names the shipped format and the loader reads that field rather than assuming a format, so an older or newer artifact is detected rather than misread
+  - the committed artifact is measurably smaller: from the 2026-09-05 measurement of 5.650 MB (`float32-base64`, 2873 vectors x 384 dims), an int8 encoding lands at about 1.442 MB and a float16 encoding at about 2.845 MB
+  - tracked `apps/backend/data` total drops from the 2026-09-05 measurement of 118.095 MB, and the new figure and headroom are recorded in NFR-017
+  - retrieval quality is re-measured after the format change and does not regress: benchmark clean recall@5 at or above the value REQ-182 records, polluted recall@5 likewise, and all 12 labelled fixture checks still pass
+  - the vector-loading path degrades exactly as REQ-181 already requires: a missing, malformed, or unrecognised-encoding artifact disables the semantic path with one diagnostic warning and System 3 falls back to lexical retrieval
+  - `node --test scripts/lambda-package-budget.test.mjs` passes with the new artifact and the budget test's recorded figures are updated in the same change
+- Constraints:
+  - no new dependency, no new external service, and no runtime fetch: the vectors stay committed, loaded in-process, and cosine-searched with no vector database (REQ-181)
+  - the combo corpus is not trimmed: `MIN_VARIANT_POPULARITY` stays at 0 and remains the emergency valve NFR-017 describes, not a routine lever, because trimming it removes combos players see in answers (REQ-093)
+  - the local embedding model is not moved to S3 or fetched at cold start; that would add a runtime external integration and relieves the non-data reserve rather than the constrained data budget
+- Dependencies:
+  - NFR-017 (the deploy package budget this relieves)
+  - REQ-181 (the embeddings artifact whose format this changes)
+  - REQ-182 (the retrieval quality this must not regress)
+  - REQ-093 (the full combo corpus this deliberately leaves alone)
+- Notes:
+  - measured 2026-09-05 from the artifact itself: `encoding: "float32-base64"`, 2873 rule ids, 384 dimensions, 4 bytes per value, 4.208 MB raw and 5.611 MB base64 inside a 5.650 MB file; component values ranged -0.2719 to 0.2584, a narrow range well suited to int8 quantisation
+  - the alternatives were measured, not assumed: moving the model to S3 frees the 22.59 MB warmed model cache, which sits inside the 130 MB non-data reserve and is gitignored, so it is absent from the 118.095 MB data figure entirely
+  - measured at build, 2026-09-05: a fixed int8 scale assuming the theoretical ±1 unit-vector bound (127 per unit magnitude) measurably regressed benchmark recall@5 (0.8974 -> 0.8910 clean), because this model's real component values only reach about ±0.27, wasting most of int8's precision. Scaling instead by the corpus's own largest `|component|` (computed at build time and committed on the artifact as `int8Scale`, so the loader dequantises with the exact value the build used) uses the full int8 range and reproduces REQ-182's recorded recall exactly (0.8974 clean / 0.8910 polluted). Shipped artifact: 1.442 MB, `int8Scale` ≈ 467.13 (≈ 127 / 0.2719)
+  - re-measured at build, 2026-09-05, with the corrected scale: tracked `apps/backend/data` is 113.887 MB against the 120 MB budget — 6.113 MB headroom, matching the design brief's predicted figure exactly

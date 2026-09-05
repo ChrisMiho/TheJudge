@@ -772,15 +772,27 @@ describe("Backend - Game Rules", () => {
   // ---------------------------------------------------------------------------
 
   describe("loadGameRulesRuleEmbeddings", () => {
-    function writeEmbeddingsArtifact(dir: string, ruleIds: string[], dims: number, vectors: number[][]) {
+    function writeEmbeddingsArtifact(
+      dir: string,
+      ruleIds: string[],
+      dims: number,
+      vectors: number[][],
+      encoding: "float32-base64" | "int8-base64" = "float32-base64",
+      int8Scale?: number
+    ) {
       const filePath = join(dir, "embeddings.json");
       const flat = vectors.flat();
-      const vectorsBase64 = Buffer.from(Float32Array.from(flat).buffer).toString("base64");
-      writeFileSync(filePath, JSON.stringify({ model: "test-model", dims, ruleIds, vectorsBase64 }), "utf8");
+      const vectorsBase64 =
+        encoding === "int8-base64"
+          ? Buffer.from(Int8Array.from(flat).buffer).toString("base64")
+          : Buffer.from(Float32Array.from(flat).buffer).toString("base64");
+      const artifact: Record<string, unknown> = { model: "test-model", dims, encoding, ruleIds, vectorsBase64 };
+      if (encoding === "int8-base64") artifact.int8Scale = int8Scale ?? 127;
+      writeFileSync(filePath, JSON.stringify(artifact), "utf8");
       return filePath;
     }
 
-    it("decodes a base64 float32 artifact back into per-rule vectors", () => {
+    it("decodes a base64 float32-base64 artifact back into per-rule vectors", () => {
       const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
       const filePath = writeEmbeddingsArtifact(dir, ["100.1", "100.2"], 3, [
         [1, 2, 3],
@@ -792,6 +804,27 @@ describe("Backend - Game Rules", () => {
       expect(embeddings?.vectors[1]).toEqual([4, 5, 6]);
     });
 
+    it("decodes a base64 int8-base64 artifact back into per-rule vectors, scaled by 127 (REQ-183)", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      // 127 -> 1.0, -127 -> ~-1.0, 0 -> 0 — the same scale build-rule-embeddings.mjs uses.
+      const filePath = writeEmbeddingsArtifact(
+        dir,
+        ["100.1", "100.2"],
+        3,
+        [
+          [127, -127, 0],
+          [64, -64, 32]
+        ],
+        "int8-base64"
+      );
+      const embeddings = loadGameRulesRuleEmbeddings(filePath);
+      expect(embeddings?.ruleIds).toEqual(["100.1", "100.2"]);
+      expect(embeddings?.vectors[0]![0]).toBeCloseTo(1, 5);
+      expect(embeddings?.vectors[0]![1]).toBeCloseTo(-1, 2);
+      expect(embeddings?.vectors[0]![2]).toBe(0);
+      expect(embeddings?.vectors[1]![0]).toBeCloseTo(64 / 127, 10);
+    });
+
     it("returns null and warns when the file is missing", () => {
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
       expect(loadGameRulesRuleEmbeddings("/tmp/does-not-exist-embeddings-abc123.json")).toBeNull();
@@ -799,12 +832,77 @@ describe("Backend - Game Rules", () => {
       spy.mockRestore();
     });
 
-    it("returns null and warns when the byte length does not match ruleIds x dims", () => {
+    it("returns null and warns when the byte length does not match ruleIds x dims for the declared encoding", () => {
       const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
       const filePath = join(dir, "bad.json");
       writeFileSync(
         filePath,
-        JSON.stringify({ model: "test-model", dims: 3, ruleIds: ["100.1", "100.2"], vectorsBase64: Buffer.from([1, 2, 3, 4]).toString("base64") }),
+        JSON.stringify({
+          model: "test-model",
+          dims: 3,
+          encoding: "float32-base64",
+          ruleIds: ["100.1", "100.2"],
+          vectorsBase64: Buffer.from([1, 2, 3, 4]).toString("base64")
+        }),
+        "utf8"
+      );
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings(filePath)).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+
+    it("returns null and warns on an unrecognised encoding (REQ-183: detected, not misread)", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = join(dir, "bad.json");
+      writeFileSync(
+        filePath,
+        JSON.stringify({
+          model: "test-model",
+          dims: 3,
+          encoding: "float64-base64",
+          ruleIds: ["100.1"],
+          vectorsBase64: Buffer.from(Float32Array.from([1, 2, 3]).buffer).toString("base64")
+        }),
+        "utf8"
+      );
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings(filePath)).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+
+    it("returns null and warns when an int8-base64 artifact has no positive int8Scale", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = join(dir, "bad.json");
+      writeFileSync(
+        filePath,
+        JSON.stringify({
+          model: "test-model",
+          dims: 3,
+          encoding: "int8-base64",
+          ruleIds: ["100.1"],
+          vectorsBase64: Buffer.from(Int8Array.from([1, 2, 3]).buffer).toString("base64")
+        }),
+        "utf8"
+      );
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings(filePath)).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+
+    it("returns null and warns when the encoding field is missing (an older or malformed artifact)", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = join(dir, "bad.json");
+      writeFileSync(
+        filePath,
+        JSON.stringify({
+          model: "test-model",
+          dims: 3,
+          ruleIds: ["100.1"],
+          vectorsBase64: Buffer.from(Float32Array.from([1, 2, 3]).buffer).toString("base64")
+        }),
         "utf8"
       );
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
