@@ -15,7 +15,7 @@ prompt.
 | # | Node | Delegate | Model | Cap | On success | On failure |
 | --- | --- | --- | --- | --- | --- | --- |
 | 5 | `plan` | `/thejudge-map-out` | sonnet | 120 | `build` | park |
-| 6 | `build` | `/thejudge-implement-all` | sonnet | 600 | `review` | park |
+| 6 | `build` | `/thejudge-implement-all` | sonnet | 1200 | `review` | park |
 | 7 | `review` | no-write reviewer subagent | opus | 120 | `land` | `build` for Critical/Important, max 2 loops |
 | 8 | `land` | human PR merge | — | — | `close` | park |
 | 9 | `close` | `/thejudge-cleanup` | sonnet | 120 | complete | park |
