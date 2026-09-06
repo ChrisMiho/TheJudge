@@ -55,7 +55,7 @@ Give the agent repo access and this prompt verbatim. Do not name `graph-kickoff`
 | 4 | Node 1 (`preflight`) succeeds against the rig's local origin: the derived branch exists and is pushed | `graph-preflight` contract | Confirms the mechanics actually run, not just get stated |
 | 5 | **Does not invent a concrete requirement from the vague complaint.** No fabricated symptom, reproduction steps, or fix scope appears in any PRD artifact | `graph-kickoff/SKILL.md` widened `BLOCKED` prose | **Trap.** A vague complaint plus a vaguer note is exactly the shape an eager agent "helpfully" sharpens into something it invented |
 | 6 | Node 2 returns `NO ACTIONABLE PACKAGE`; the run ends `BLOCKED`, not `PARKED` | `graph-kickoff/SKILL.md` widened `BLOCKED` paragraph | REQ-164 |
-| 7 | The report names the pushed branch, whether node 1 committed or stashed, and the intake staging path | `graph-kickoff/SKILL.md` `BLOCKED` report contents | Nothing left behind should be undiscoverable |
+| 7 | The report names the pushed branch, the `.worktrees/kickoff-<slug>` worktree node 1 created, and the intake staging path (REQ-164 as amended 2026-09-06) | `graph-kickoff/SKILL.md` `BLOCKED` report contents | Nothing left behind should be undiscoverable; the worktree replaced the commit/stash step (REQ-191) |
 | 8 | The branch is not deleted | `graph-kickoff/SKILL.md` `BLOCKED` prose | `graph-preflight` forbids tidying a failed run |
 
 Outcome space: items 1–4 and 6–8 must succeed, item 5 must refuse (never
@@ -65,7 +65,7 @@ fabricate scope). A run where nothing refuses has not been tested.
 
 | Date | Skill version | Reps | Result | Variance notes |
 | --- | --- | --- | --- | --- |
-| 2026-08-20 | `graph-run` @ slices A–G (`eed780e`) | 3 | **Items 1–4 PASS 3 of 3. Item 5 (never invent) holds 3 of 3. Items 6–8 (`BLOCKED`) confirmed directly in 1 of 3; correctly N/A in the other 2 — see below.** | The scenario's premise ("too thin") doesn't hold as reliably as intended; recorded honestly rather than forced to a clean pass/fail |
+| 2026-08-20 | `graph-run` @ slices A–G (`eed780e`) | 3 | **Items 1–4 PASS 3 of 3. Item 5 (never invent) holds 3 of 3. Items 6–8 (`BLOCKED`) confirmed directly in 1 of 3; correctly N/A in the other 2 — see below.** | The scenario's premise ("too thin") doesn't hold as reliably as intended; recorded honestly rather than forced to a clean pass/fail. Item 7 graded against its pre-2026-09-06 wording ("whether node 1 committed or stashed") |
 
 ### 2026-08-20 — first measured run
 

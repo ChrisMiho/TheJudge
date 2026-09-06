@@ -483,7 +483,7 @@
 - Main Flow:
   1. Owner invokes `graph-kickoff` with a short request and one or more file paths, or with markdown pasted in the same message.
   2. The door reads the intake material and proposes a slug, honoring a slug the material proposes ahead of deriving one from the request text.
-  3. The door writes each intake item verbatim into `.worktrees/.graph-intake/<run-id>/` before dispatching node 1 — an ignored path node 1 cannot stash — and records any document the material cites as a citation without fetching it.
+  3. The door writes each intake item verbatim into `.worktrees/.graph-intake/<run-id>/` under the launch root before dispatching node 1 — an ignored path the kickoff worktree's nodes read by absolute path (REQ-191) — and records any document the material cites as a citation without fetching it.
   4. Node 1 (`preflight`) creates and pushes `thejudge-auto/<slug>`.
   5. Node 2 (`shape`) reads the staged intake and writes `IDEA.md`, adding `## Prior run` lines for any receipt matches. Once `thejudge-kickoff` has created `PRD/work/<slug>/`, node 2 copies the staged intake into `intake/`, commits it on the branch, and deletes the staging copy.
   6. Node 3 (`define`) runs refinement, which reads the full intake as evidence and decides nothing from it that the owner has not seen.
@@ -494,7 +494,7 @@
   - intake cites a large source document → the citation is recorded and the source is not fetched
   - a supplied path does not exist or cannot be read → the door reports it before node 1 and does not start the run on partial material
   - intake is large → it is copied whole and read by node 2 within its existing tool-call cap; no size gate refuses it, and staging outside the working tree keeps it clear of node 1's file-count and changed-line thresholds
-  - the handed-in source file is itself untracked → node 1 stashes it off the checkout or auto-commits it, and the run reads the copy the door staged at launch instead
+  - the handed-in source file is itself untracked → it exists only in the launch checkout, which the run never touches (REQ-191); the run reads the copy the door staged at launch instead
   - intake proposes a slug the owner disagrees with → `--branch` overrides the branch, and the owner amends the slug before resuming from the `define` gate
 - Notes:
   - the failure this closes is recorded: `receipts/graph-run-boundary-enforcement-2026-08-20.md` states that its six findings came from an untracked document outside the repository that cleanup could neither update nor retire

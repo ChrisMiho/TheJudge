@@ -1,6 +1,6 @@
 # Slice E — apply product truth, rewrite the fixtures, smoke, ship
 
-## Status: planned
+## Status: in-progress
 
 ## Goal
 
