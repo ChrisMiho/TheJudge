@@ -8,8 +8,8 @@ import {
   redirectFunctionCode
 } from "./cloudfront-custom-domain.mjs"
 
-const APEX = "mtgjude.gg"
-const WWW = "www.mtgjude.gg"
+const APEX = "mtgjudge.gg"
+const WWW = "www.mtgjudge.gg"
 const CERT = "arn:aws:acm:us-east-1:123456789012:certificate/abc"
 const FUNCTION = "arn:aws:cloudfront::123456789012:function/thejudge-redirect-to-apex"
 const CUSTOM_DOMAIN = { domains: [APEX, WWW], certificateArn: CERT, redirectFunctionArn: FUNCTION }
@@ -128,16 +128,16 @@ test("the redirect function sends www and the raw CloudFront hostname to the ape
 
   const www = handler(viewerRequest(WWW, "/quick", { card: { value: "Sol Ring" } }))
   assert.equal(www.statusCode, 301)
-  assert.equal(www.headers.location.value, "https://mtgjude.gg/quick?card=Sol%20Ring")
+  assert.equal(www.headers.location.value, "https://mtgjudge.gg/quick?card=Sol%20Ring")
 
   const cloudfront = handler(viewerRequest("d36yuv4ycof5gd.cloudfront.net"))
   assert.equal(cloudfront.statusCode, 301)
-  assert.equal(cloudfront.headers.location.value, "https://mtgjude.gg/")
+  assert.equal(cloudfront.headers.location.value, "https://mtgjudge.gg/")
 
   const multi = handler(
     viewerRequest(WWW, "/", { tag: { value: "a", multiValue: [{ value: "a" }, { value: "b" }] } })
   )
-  assert.equal(multi.headers.location.value, "https://mtgjude.gg/?tag=a&tag=b")
+  assert.equal(multi.headers.location.value, "https://mtgjudge.gg/?tag=a&tag=b")
 })
 
 test("the redirect function stays inside the cloudfront-js-2.0 dialect", () => {

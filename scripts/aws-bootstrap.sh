@@ -26,7 +26,7 @@ distribution_comment="${AWS_CLOUDFRONT_COMMENT:-$app_name-web}"
 # when the domain was registered through Route 53). Set FRONTEND_DOMAIN= (empty)
 # to run without a custom domain — the app then stays on the CloudFront
 # hostname. (DEC-084)
-frontend_domain="${FRONTEND_DOMAIN-mtgjude.gg}"
+frontend_domain="${FRONTEND_DOMAIN-mtgjudge.gg}"
 tmp_dir="$repo_root/.tmp/aws-bootstrap"
 
 aws_file_uri() {

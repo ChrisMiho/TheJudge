@@ -2,7 +2,7 @@
 
 How TheJudge is deployed to AWS: a serverless, scale-to-zero backend plus a
 static frontend behind a CDN, deployed from GitHub Actions with no static AWS
-keys. Players reach the app at **https://mtgjude.gg**, a custom domain on the
+keys. Players reach the app at **https://mtgjudge.gg**, a custom domain on the
 CloudFront distribution (DEC-084); the API stays on its AWS-provided Lambda
 Function URL.
 
@@ -12,13 +12,13 @@ See also: [operations.md](./operations.md) (day-2 runbook) and
 ## Architecture
 
 ```
-Browser  https://mtgjude.gg
+Browser  https://mtgjudge.gg
   |
   v
-Route 53 hosted zone  mtgjude.gg                 <-- A + AAAA alias records
+Route 53 hosted zone  mtgjudge.gg                 <-- A + AAAA alias records
   |                                                  for apex and www
   v
-CloudFront (aliases mtgjude.gg + www, ACM cert)   <-- PriceClass_100, OAC
+CloudFront (aliases mtgjudge.gg + www, ACM cert)   <-- PriceClass_100, OAC
   |  viewer-request fn: host != apex -> 301 apex     403/404 -> index.html
   |  static SPA
   v
@@ -58,7 +58,7 @@ GitHub push to main
 
 The frontend bucket is private and readable only by CloudFront, so the domain
 points at the distribution, never at the bucket. `scripts/aws-bootstrap.sh`
-attaches it in five idempotent steps (`FRONTEND_DOMAIN`, default `mtgjude.gg`;
+attaches it in five idempotent steps (`FRONTEND_DOMAIN`, default `mtgjudge.gg`;
 set it empty to skip):
 
 1. An ACM certificate covering the apex **and** `www.`, requested in
@@ -69,7 +69,7 @@ set it empty to skip):
 3. The redirect CloudFront Function (`thejudge-redirect-to-apex`,
    cloudfront-js-2.0) created or updated and published. Its source comes from
    `scripts/lib/cloudfront-custom-domain.mjs`: any host other than the apex
-   gets a `301` to `https://mtgjude.gg` with the path and query kept.
+   gets a `301` to `https://mtgjudge.gg` with the path and query kept.
 4. Both aliases, the certificate and the function set on the distribution —
    the transform lives in the same module (unit-tested), the update is
    ETag-guarded, and a distribution that already has all three is left alone.
@@ -77,7 +77,7 @@ set it empty to skip):
    distribution.
 
 The backend allows exactly **one** browser origin (`FRONTEND_ORIGIN` → CORS),
-which is why exactly one name runs the app: `www.mtgjude.gg` and the old
+which is why exactly one name runs the app: `www.mtgjudge.gg` and the old
 `*.cloudfront.net` URL both redirect to the apex instead of serving it.
 Nothing stores the domain a second time: `scripts/aws-deploy.sh` reads the
 apex alias (never the `www.` one) back off the live distribution on every
@@ -112,7 +112,12 @@ The bootstrap is idempotent and run once, locally, with admin credentials.
   only account-scoped value the workflow needs; it is never committed. See
   [secrets.md](./secrets.md).
 - The OpenAI API key on hand (stored in SSM, never in Git — see below).
-- A Route 53 hosted zone for the custom domain (`mtgjude.gg`, registered
+- `VITE_FEEDBACK_FORMSPREE_ID` exported in the shell. The bootstrap ends by
+  calling `scripts/aws-deploy.sh`, which builds the frontend and requires this
+  value (a GitHub repository variable in CI); without it the AWS resources are
+  provisioned but that final frontend build/sync aborts. Read it once with
+  `gh variable get VITE_FEEDBACK_FORMSPREE_ID` and `export` it before running.
+- A Route 53 hosted zone for the custom domain (`mtgjudge.gg`, registered
   through Route 53 on 2026-09-05, which created the zone). The bootstrap
   fails early with a clear message if the zone is missing; run it with
   `FRONTEND_DOMAIN=` (empty) to stay on the CloudFront hostname instead.
@@ -149,11 +154,11 @@ The bootstrap is idempotent and run once, locally, with admin credentials.
    (`thejudge-github-deploy`), and the custom domain on the distribution (ACM
    certificate, Route 53 validation + alias records — see "Custom domain"
    above). The Lambda env is set to `ASK_AI_PROVIDER=openai` and
-   `FRONTEND_ORIGIN=https://mtgjude.gg`; the key from step 1 is already
+   `FRONTEND_ORIGIN=https://mtgjudge.gg`; the key from step 1 is already
    readable, so the first cold start comes up live.
 
    Tunable env overrides: `AWS_REGION` (default `us-east-1`), `APP_NAME`,
-   `FRONTEND_DOMAIN` (default `mtgjude.gg`, empty to skip), `RESERVED_CONCURRENCY`,
+   `FRONTEND_DOMAIN` (default `mtgjudge.gg`, empty to skip), `RESERVED_CONCURRENCY`,
    `BUDGET_LIMIT_USD`, `NOTIFICATION_EMAIL`, `OPENAI_MODEL`,
    `OPENAI_API_KEY_SSM_PARAM`. If `NOTIFICATION_EMAIL` is unset the budget step
    is skipped with a printed manual fallback.
@@ -185,7 +190,7 @@ appropriate yet.
 
 ## Where the URLs come from
 
-- **Frontend:** `https://mtgjude.gg`, the alias on the CloudFront
+- **Frontend:** `https://mtgjudge.gg`, the alias on the CloudFront
   distribution (DEC-084). The underlying distribution hostname,
   `https://<dist>.cloudfront.net`, still resolves and is what the Route 53
   alias records point at. Find both with:
@@ -198,8 +203,8 @@ Both `aws-bootstrap.sh` and `aws-deploy.sh` print these on completion.
 
 ### Live URLs
 
-- **Frontend:** https://mtgjude.gg (domain attached 2026-09-05;
-  https://www.mtgjude.gg and the first-deploy URL
+- **Frontend:** https://mtgjudge.gg (domain attached 2026-09-05;
+  https://www.mtgjudge.gg and the first-deploy URL
   https://d36yuv4ycof5gd.cloudfront.net both redirect to it)
 - **API:** https://24yhnhknx5sc24cvtb7szdz76q0uruif.lambda-url.us-east-1.on.aws
 
