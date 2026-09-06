@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
-
 | Package | Notes |
 | --- | --- |
-| [graph-workflow-branching](./graph-workflow-branching/) | Part 1 of the graph-workflow fix (manual package, branch `fix/graph-workflow-branching`): mapped 2026-09-06 into slices A–E (A/B/C parallel-ready, D after A, E last); next `thejudge-implement`. Evidence in `probe-graph-workflow-audit/` |
+| [graph-workflow-branching](./graph-workflow-branching/) | Part 1 of the graph-workflow fix (manual package, branch `fix/graph-workflow-branching`): slices A–E done 2026-09-06, quality gate green; next `thejudge-cleanup`, then PR 1 to `main`. Evidence in `probe-graph-workflow-audit/` |
+
+## active
 
 ## refined
 

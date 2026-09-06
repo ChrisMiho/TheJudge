@@ -40,10 +40,9 @@ work.
 
 **Why this is its own loop, not the graph.** The graph
 (`graph-kickoff`/`graph-implement`) is a *feature engine*: product-truth gates, an
-evolving base→main PR merged last, and `graph-preflight`'s base→main guard that
-refuses a fresh run while any `thejudge-auto/*`→main PR is open. That guard assumes
-each package depends on the previous one. Code-health targets are independent and
-behavior-preserving, so this loop **does not use `graph-preflight`** — it runs its
+evolving base→main PR merged last, and a per-package kickoff worktree with its
+own lock. Code-health targets are independent and behavior-preserving, and they
+need none of that, so this loop **does not use `graph-preflight`** — it runs its
 own tiny preflight and opens many independent PRs a night without blocking itself.
 
 ## Before the first tick (once per night)
@@ -173,4 +172,4 @@ agent still walks into because the surface signal looks safe:
 - **Skipping the dedup step.** Without the exclusion set the loop re-audits and
   re-fixes the same hotspot every tick, opening duplicate PRs.
 - **Reaching for `graph-preflight`.** This loop is standalone; it never uses the
-  graph's preflight, lock, or base→main guard.
+  graph's preflight, lock, or kickoff worktree.

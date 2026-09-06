@@ -1,6 +1,15 @@
 # Slice D — skills, contract, and owner docs describe the new plan
 
-## Status: in-progress
+## Status: done
+
+Verified 2026-09-06: D1 grep over the skills, contract, and owner docs returns
+only the contract's dated historical sentence about the retired `git add -A`
+path; `npm run skills:ai-sync` leaves `diff -rq .claude/skills .agents/skills`
+empty; OPERATOR.md carries recipe 2 ("Start a second idea while the first
+waits") with the `--detach` command and the per-root rule in recipe 4; the
+contract's ledger template has `- Worktree:` and no `## Stashed work handoff`;
+`npm run format:check` green. The two `codehealth` sentences were applied by the
+owner (the folder is denied to the agent), then mirrored.
 
 ## Goal
 
