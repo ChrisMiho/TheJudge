@@ -1,6 +1,9 @@
 # thejudge-cleanup — the recorded base branch was deleted after merging
 
-Skill under test: `thejudge-cleanup`.
+Skill under test: `thejudge-cleanup`. Gate path exercised: the **merged path**
+(the implementation PR is merged, so the four merge-proof checks apply; since
+2026-09-06 the gate also has a PR-ready path for an open PR, covered by
+`close-inside-the-code-pr.md`).
 Format and rules: `PRD/instructions/skill-testing.md`.
 Rep setup: `scripts/fixture-rig.mjs` — never hand-build reps.
 

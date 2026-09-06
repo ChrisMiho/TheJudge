@@ -30,7 +30,7 @@ the same day.
 | Slice | Doc | Status | Depends on |
 | --- | --- | --- | --- |
 | A | [slice-a-scripts.md](./slice-a-scripts.md) | done | — |
-| B | [slice-b-thejudge-skills.md](./slice-b-thejudge-skills.md) | planned | — |
+| B | [slice-b-thejudge-skills.md](./slice-b-thejudge-skills.md) | blocked — edits staged under `staged/`, owner applies with the `!cp` commands in the slice doc | — |
 | C | [slice-c-graph-skills.md](./slice-c-graph-skills.md) | planned | — |
 | D | [slice-d-contract-and-owner-docs.md](./slice-d-contract-and-owner-docs.md) | planned | — |
 | E | [slice-e-product-truth-and-ship.md](./slice-e-product-truth-and-ship.md) | planned | A, B, C, D |

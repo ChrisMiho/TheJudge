@@ -1,6 +1,10 @@
 # thejudge-cleanup — `gh` returns HTTP 5xx during the merge proof
 
-Skill under test: `thejudge-cleanup`.
+Skill under test: `thejudge-cleanup`. Gate path exercised: the **merged path**
+(the implementation PR is merged and its branch tip is an ancestor of
+`origin/main`, so with `gh` down the path is decided by git and the merge-proof
+outage fallback applies; the PR-ready path's outage rule is graded in
+`close-inside-the-code-pr.md`).
 Format and rules: `PRD/instructions/skill-testing.md`.
 Rep setup: `scripts/fixture-rig.mjs` — never hand-build reps.
 

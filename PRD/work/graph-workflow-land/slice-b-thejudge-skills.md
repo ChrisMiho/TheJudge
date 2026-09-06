@@ -1,6 +1,31 @@
 # Slice B — `thejudge-*` skills: in-place build, pre-merge cleanup
 
-## Status: planned
+## Status: blocked
+
+### Handoff
+- Done: every edit is written and prettier-clean, but in **staged copies** —
+  `PRD/work/graph-workflow-land/staged/thejudge-implement-all/{SKILL,reference}.md`
+  and `staged/thejudge-cleanup/SKILL.md` — because this session's permission
+  settings deny the Edit, Write, and `cp` tools inside `.claude/skills/thejudge-*/`
+  (reads work). The four fixture edits and the new
+  `close-inside-the-code-pr.md` fixture are applied directly (they live under
+  `PRD/instructions/`). Diff size staged vs canonical: cleanup 107 lines,
+  implement-all SKILL 32, reference 10.
+- Next: the owner runs these four commands from this session (they run in the
+  worktree), then the agent verifies B1–B5 and marks the slice `done`:
+
+  ```
+  !cp PRD/work/graph-workflow-land/staged/thejudge-implement-all/SKILL.md .claude/skills/thejudge-implement-all/SKILL.md
+  !cp PRD/work/graph-workflow-land/staged/thejudge-implement-all/reference.md .claude/skills/thejudge-implement-all/reference.md
+  !cp PRD/work/graph-workflow-land/staged/thejudge-cleanup/SKILL.md .claude/skills/thejudge-cleanup/SKILL.md
+  !npm run skills:ai-sync
+  ```
+
+  Absolute form of the first, if the session's cwd differs:
+  `cp /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/graph-workflow-land/PRD/work/graph-workflow-land/staged/thejudge-cleanup/SKILL.md /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/graph-workflow-land/.claude/skills/thejudge-cleanup/SKILL.md`
+  (and likewise for the other two).
+- Stopped because: the target directories are denied to the agent's tools;
+  routing around a permission deny with a different tool is not done here.
 
 ## Goal
 
