@@ -14,6 +14,10 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| Package | Notes |
+| --- | --- |
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Answer-quality baseline for Ask AI, seeded from the six worked-solution gold cases |
+
 ## owner-action
 
 ## deferred
@@ -28,7 +32,6 @@ matching heading above — the `thejudge-*` skills only look inside `PRD/work/`.
 
 | Package | Stage when parked |
 | --- | --- |
-| [ai-answer-quality-baseline](../ideasForLater/ai-answer-quality-baseline/) | ideation |
 | [card-collection-manager](../ideasForLater/card-collection-manager/) | ideation |
 | [context-ai-photo-card-id](../ideasForLater/context-ai-photo-card-id/) | refining |
 | [graph-workflow](../ideasForLater/graph-workflow/) | unregistered (braindump + spine plan, no `STATUS.*`) |
