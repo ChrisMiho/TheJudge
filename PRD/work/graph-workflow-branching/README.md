@@ -24,8 +24,8 @@ make the hook's protected-path rule reach inside worktrees, add
 | Slice | Doc | Objective | Depends on | Status |
 | --- | --- | --- | --- | --- |
 | A | `slice-a-preflight-worktree.md` | Preflight branches from `origin/main` into `.worktrees/kickoff-<slug>`; auto-commit, stash, guard removed | parallel-ready | done |
-| B | `slice-b-hook-worktree-paths.md` | Protected-path rule reaches inside worktrees | parallel-ready | planned |
-| C | `slice-c-graph-prune.md` | `npm run graph:prune` | parallel-ready | planned |
+| B | `slice-b-hook-worktree-paths.md` | Protected-path rule reaches inside worktrees | parallel-ready | done |
+| C | `slice-c-graph-prune.md` | `npm run graph:prune` | parallel-ready | done |
 | D | `slice-d-skills-contract-docs.md` | Skills, contract, owner docs describe the new plan | A | planned |
 | E | `slice-e-product-truth-and-ship.md` | Apply the seven gate blocks, rewrite fixtures, live smoke, ship gates | A, B, C, D | planned |
 

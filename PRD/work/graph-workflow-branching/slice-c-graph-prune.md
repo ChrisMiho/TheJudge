@@ -1,6 +1,8 @@
 # Slice C — `npm run graph:prune`
 
-## Status: planned
+## Status: done
+
+Verified 2026-09-06: `npm run test:scripts` 464/464 (21 new in `scripts/graph-prune.test.mjs`, covering every `classifyLeftovers` branch, the codehealth exclusion, the outside-root report, the live-lock intake keep, `-work`/`-cleanup` slug derivation, the control-file removal guard, and a source scan for `push`/`--force`/`-D`); `npm run graph:prune` from this linked worktree exited 0 with `git worktree list` and `git branch --list 'thejudge-auto/*'` byte-identical before and after; it printed `keep branch thejudge-auto/ai-answer-quality-baseline — package still on main: the build half's base` and the summary `graph-prune: 9 to delete, 5 kept, 2 reported (dry run: nothing changed; pass --apply to delete)` (the two reports are the `.claude/worktrees/*` trees); C4 grep empty; prettier and eslint clean on both new files. Intake folders and the lock are read cwd-relative like preflight, so from this linked worktree the main checkout's six stale `.worktrees/.graph-intake/*` folders are listed only when the command runs from the main root.
 
 ## Goal
 
