@@ -1,6 +1,13 @@
 # Slice C — Lambda vector budget
 
-## Status: planned
+## Status: done
+
+2026-09-05 C7 — observed `MIN_VARIANT_POPULARITY` unchanged at 0 in
+`scripts/build-commander-spellbook-combos.mjs` (not touched by this slice's
+diff), and no new package.json dependency or external service added: this
+slice's only production-code changes are `scripts/build-rule-embeddings.mjs`
+and `apps/backend/src/gameRulesRetrieval.ts`, both re-encoding logic with no
+new imports beyond node builtins.
 
 ## Goal
 
@@ -43,26 +50,26 @@ not reopened here.
 
 ## Acceptance criteria
 
-- [ ] C1 — the artifact's `encoding` field names the shipped format, and the
+- [x] C1 — the artifact's `encoding` field names the shipped format, and the
       loader reads that field rather than assuming one
-- [ ] C2 — the committed artifact is measurably smaller: from 5.650 MB
+- [x] C2 — the committed artifact is measurably smaller: from 5.650 MB
       (`float32-base64`) to about 1.442 MB (int8)
-- [ ] C3 — tracked `apps/backend/data` total drops from the 2026-09-05
+- [x] C3 — tracked `apps/backend/data` total drops from the 2026-09-05
       measurement of 118.095 MB; the new figure and headroom are recorded in
       NFR-017
-- [ ] C4 — retrieval quality does not regress after the format change:
+- [x] C4 — retrieval quality does not regress after the format change:
       benchmark clean recall@5 at or above the value REQ-182 records, polluted
       recall@5 likewise, and all 12 labelled fixture checks still pass
-- [ ] C5 — the vector-loading path degrades exactly as REQ-181 requires: a
+- [x] C5 — the vector-loading path degrades exactly as REQ-181 requires: a
       missing, malformed, or unrecognised-encoding artifact disables the
       semantic path with one diagnostic warning and System 3 falls back to
       lexical retrieval
-- [ ] C6 — `node --test scripts/lambda-package-budget.test.mjs` passes with the
+- [x] C6 — `node --test scripts/lambda-package-budget.test.mjs` passes with the
       new artifact, and the test's recorded figures are updated in the same
       change
-- [ ] C7 — `MIN_VARIANT_POPULARITY` stays at 0 (the combo corpus is not
+- [x] C7 — `MIN_VARIANT_POPULARITY` stays at 0 (the combo corpus is not
       trimmed) and no new dependency or external service is introduced
-- [ ] C8 — the REQ-183 and NFR-017 documentation blocks are applied by intent,
+- [x] C8 — the REQ-183 and NFR-017 documentation blocks are applied by intent,
       matching the finalized `GATE-QUESTIONS.md` diff (including the owner's
       CI/CUDA edit), in `PRD/sections/functional-requirements.md` and
       `PRD/sections/non-functional-requirements.md`

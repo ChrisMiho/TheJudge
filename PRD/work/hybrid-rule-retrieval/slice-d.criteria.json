@@ -5,13 +5,13 @@
     {
       "id": "D1",
       "statement": "NFR-002 defines cold-start model readiness (wall-clock, process start to first System 3 query embedding, packaged on-disk cache, no network call) and requires it to stay a small enough share of the 3-second answer target",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/non-functional-requirements.md"] }
     },
     {
       "id": "D2",
       "statement": "NFR-002's Notes record the 2026-09-05 local measurement (181.2 ms cold-start model readiness; 1.05 ms steady-state) and require the deployed figure to be read from the Lambda function's own cold-start log line",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/non-functional-requirements.md"] }
     }
   ]

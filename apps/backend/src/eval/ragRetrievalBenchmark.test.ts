@@ -10,7 +10,9 @@ import {
   RULE_INDEX_PATH,
   buildPollutionText,
   loadBenchmarkCorpus,
-  scoreBenchmark
+  scoreBenchmark,
+  scoreBenchmarkSemantic,
+  EmbedderUnavailableError
 } from "./ragRetrievalBenchmark.js";
 
 const currentDir = dirname(fileURLToPath(import.meta.url));
@@ -67,5 +69,45 @@ describe("Backend - Eval - RAG retrieval benchmark (REQ-177)", () => {
     const baseline = loadStep1Baseline();
 
     expect(result.clean.recall5).toBeGreaterThanOrEqual(baseline.clean.recall5);
+  });
+
+  describe("scoreBenchmarkSemantic (REQ-177: no silent lexical-under-semantic-label)", () => {
+    // Measured 2026-09-05: before this guard, an unavailable embedder (e.g. an
+    // unwarmed model cache) made `embed()` return `null`, which
+    // `retrieveRulesForQuery` silently scored lexically — so the benchmark
+    // printed the *lexical* numbers under `method=semantic-local` with no
+    // failure at all. This proves that path now throws instead.
+    it("throws EmbedderUnavailableError the moment embed() returns null, rather than silently scoring lexically", async () => {
+      const corpus = loadBenchmarkCorpus(BENCHMARK_PATH);
+      const ruleIndex = loadGameRulesRuleIndex(RULE_INDEX_PATH);
+
+      await expect(
+        scoreBenchmarkSemantic(
+          { generatedAt: corpus.generatedAt, items: corpus.items.slice(0, 1) },
+          ruleIndex,
+          "",
+          async () => null
+        )
+      ).rejects.toBeInstanceOf(EmbedderUnavailableError);
+    });
+
+    it("scores normally when the embedder returns a real vector for every query", async () => {
+      const corpus = loadBenchmarkCorpus(BENCHMARK_PATH);
+      const ruleIndex = loadGameRulesRuleIndex(RULE_INDEX_PATH);
+      const dims = 4;
+      const fakeVector = Array.from({ length: dims }, (_, i) => (i === 0 ? 1 : 0));
+
+      const result = await scoreBenchmarkSemantic(
+        { generatedAt: corpus.generatedAt, items: corpus.items.slice(0, 2) },
+        ruleIndex,
+        "",
+        async () => fakeVector
+      );
+
+      expect(result.n).toBe(2);
+      expect(result.k).toBe(5);
+      expect(Number.isFinite(result.clean.recall5)).toBe(true);
+      expect(Number.isFinite(result.polluted.recall5)).toBe(true);
+    });
   });
 });

@@ -12,17 +12,28 @@ rm -rf "$package_root"
 rm -f "$artifact_path"
 mkdir -p "$package_root/apps/backend" "$artifact_dir"
 
-# REQ-181: the local embedding model (bundled, not fetched at request time —
-# SCOPE-B) must already be cached before this copy, or the package ships
-# without it and the `local` provider fails on every cold start. Warm it once
-# here if it is not already warm from a prior `npm run data:build`. Uses the
-# dedicated cache-warm script, not `npm run data:build-rule-embeddings` —
-# that script's job is rebuilding the committed `gameRulesRuleEmbeddings.json`
-# artifact, a tracked file this deploy-time step must never rewrite (review
-# loop 1, cheap finding #8).
-if [ ! -f "$repo_root/apps/backend/data/models/Xenova/all-MiniLM-L6-v2/onnx/model_quantized.onnx" ]; then
+# REQ-181/REQ-184: the local embedding model (bundled, not fetched at request
+# time — SCOPE-B) must already be cached before this copy, or the package
+# ships without it. Warm it once here if it is not already warm from a prior
+# `npm run data:build`. Uses the dedicated cache-warm script, not
+# `npm run data:build-rule-embeddings` — that script's job is rebuilding the
+# committed `gameRulesRuleEmbeddings.json` artifact, a tracked file this
+# deploy-time step must never rewrite (review loop 1, cheap finding #8).
+model_cache_file="$repo_root/apps/backend/data/models/Xenova/all-MiniLM-L6-v2/onnx/model_quantized.onnx"
+if [ ! -f "$model_cache_file" ]; then
   echo "Warming local embedding model cache..." >&2
   (cd "$repo_root" && npx tsx scripts/warm-embedding-model-cache.mjs >&2) || true
+fi
+
+# REQ-184: EMBEDDING_PROVIDER=local is now the deployed default (the unset
+# checkout default stays mock), so a package built without the model cache
+# would ship a Lambda that silently falls back to lexical retrieval on every
+# cold start — the same class of measurement/deploy-integrity bug REQ-177
+# fixed for the benchmark, but at deploy time. Refuse rather than silently
+# degrade: the best-effort warm above is not allowed to be the only guard.
+if [ ! -f "$model_cache_file" ]; then
+  echo "Local embedding model cache is still missing after the warm attempt ($model_cache_file); refusing to build a Lambda package that would silently degrade EMBEDDING_PROVIDER=local to lexical retrieval on every cold start (REQ-184). Run: node scripts/warm-embedding-model-cache.mjs" >&2
+  exit 1
 fi
 
 cp "$repo_root/package.json" "$package_root/package.json"

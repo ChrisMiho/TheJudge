@@ -1,6 +1,6 @@
 # Slice D — cold-start measurement
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -42,6 +42,18 @@ the already-measured cost against the existing under-3-second answer target.
 Manual: read `PRD/sections/non-functional-requirements.md`'s NFR-002 section
 and confirm the new constraint and notes bullet are present and match the
 finalized `GATE-QUESTIONS.md` diff.
+
+**2026-09-05 observation (D1, D2):** read `PRD/sections/non-functional-requirements.md`
+NFR-002 in the `implement-hybrid-rule-retrieval` worktree. The new `- Constraints:`
+bullet defines cold-start model readiness exactly as GATE-QUESTIONS.md specifies
+(wall-clock, process start to first System 3 query embedding, packaged
+on-disk cache, no network call) and requires it to stay a small enough share
+of the 3-second target. The new `- Notes:` bullet records the full 2026-09-05
+measurement (181.2 ms cold-start model readiness; 1.05 ms steady-state; the
+5.65 MB/2.04 MB artifact-parse figures) and requires the deployed figure to be
+read from the Lambda function's own cold-start log line rather than assumed.
+Both bullets are byte-identical to the finalized `GATE-QUESTIONS.md` diff. D1
+and D2 confirmed true.
 
 ## Files touched
 
