@@ -1,6 +1,8 @@
 # Slice B — the protected-path rule reaches inside worktrees
 
-## Status: planned
+## Status: done
+
+Verified 2026-09-06: `npm run test:scripts` 464/464 (428 at the start of the slice; 15 new here, the rest from slice C landing in the same worktree), `scripts/protected-write-guard.test.mjs` included and green; `repoRelativeWritePath` covered for the seven forms in B1 plus an absolute-inside-worktree path, a sibling root sharing the prefix (`/repo-two`), and `.worktrees/.graph-run.lock` (not a worktree, untouched); the hook denies `Edit` and `echo x > …` on `.claude/skills/thejudge-map-out/SKILL.md` in all four forms (relative, `/repo/…`, `.worktrees/kickoff-x/…`, `.worktrees/implement-x/…`) with the lock and allows all four without it, and the kickoff denial names the worktree; `git diff --stat` is `graph-boundary-hook.mjs | 1 +` (the `root,` line) and `boundary-rules.mjs | 43 ++-` (import, the function, the rule, the `root` field on `callContext`); eslint clean on the four files; prettier was not applied wholesale because these files predate the repo's `printWidth: 120` and a `--write` reflowed 28 unrelated hunks — the new hunks are prettier-formatted and the per-file prettier deviation count is unchanged from `HEAD`.
 
 ## Goal
 

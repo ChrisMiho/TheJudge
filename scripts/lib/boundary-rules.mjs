@@ -11,6 +11,8 @@
  * decision is a function of the tool call and the run state the caller read.
  */
 
+import path from "node:path"
+
 import { PROTECTED_PATH_PATTERNS, isProtectedPath } from "./protected-paths.mjs"
 
 /**
@@ -978,6 +980,35 @@ function matchesPath(candidate, target) {
 }
 
 /**
+ * A written path as the protected set sees it: repo-relative, POSIX, with one
+ * leading `.worktrees/<dir>/` removed.
+ *
+ * `isProtectedPath()` anchors its patterns at the repo root. Nodes 2–4 work
+ * inside a kickoff worktree and the build half always has, so a write to
+ * `.worktrees/kickoff-x/CLAUDE.md` — or to the same file by absolute path —
+ * used to pass the rule that exists to refuse it. Exactly one segment comes
+ * off: this repository never nests a worktree inside another, and a second
+ * strip would only widen what the rule matches.
+ *
+ * Returns `{ path, worktree }`, where `worktree` is the stripped directory name
+ * or `null`. An absolute path outside `root` comes back as it came: it names
+ * nothing in this repository, and the rule has nothing to say about it.
+ */
+export function repoRelativeWritePath(candidate, root) {
+  let normalized = normalizePathText(candidate)
+  if (typeof root === "string" && root !== "" && path.isAbsolute(normalized)) {
+    const relative = path.relative(root, normalized)
+    const outside =
+      relative === "" || relative === ".." || relative.startsWith(`..${path.sep}`) || path.isAbsolute(relative)
+    if (outside) return { path: normalized, worktree: null }
+    normalized = relative.split(path.sep).join("/")
+  }
+  const match = /^\.worktrees\/([^/]+)\/(.+)$/.exec(normalized)
+  if (match === null) return { path: normalized, worktree: null }
+  return { path: match[2], worktree: match[1] }
+}
+
+/**
  * The tiers, as one table.
  *
  * Tier membership is a field on the rule, not logic split between the hook and
@@ -1065,9 +1096,10 @@ export const RULES = Object.freeze([
     tier: "graph",
     evaluate: (context) => {
       for (const candidate of writtenPaths(context)) {
-        const normalized = normalizePathText(candidate)
+        const { path: normalized, worktree } = repoRelativeWritePath(candidate, context.root)
         if (isProtectedPath(normalized)) {
-          return `Writing \`${normalized}\` is denied while a graph run holds the lock: a run may not edit its own enforcer or its own instructions.`
+          const through = worktree === null ? "" : ` (reached through worktree \`.worktrees/${worktree}/\`)`
+          return `Writing \`${normalized}\`${through} is denied while a graph run holds the lock: a run may not edit its own enforcer or its own instructions.`
         }
       }
       return null
@@ -1285,7 +1317,11 @@ export function callContext({
   observedEvidence = null,
   lockRunId = null,
   release = null,
-  priorDenials = null
+  priorDenials = null,
+  // The repository root the hook resolved (`projectRoot()`), so an absolute
+  // written path can be made repo-relative. The one environment read in this
+  // module, and only as a fallback for a caller that passed nothing.
+  root = process.cwd()
 } = {}) {
   const isBash = toolName === "Bash"
   const normalized = isBash
@@ -1297,6 +1333,7 @@ export function callContext({
     trailingAmpersand: normalized.trailingAmpersand,
     backgrounded: normalized.backgrounded,
     paths: isBash ? [] : toolInputPaths(toolInput),
+    root,
     runActive: Boolean(runActive),
     stopRequested: Boolean(stopRequested),
     runState,
