@@ -12,13 +12,14 @@ Do not rename package folders to encode status.
 
 | Package | Notes |
 | --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Brief + 10-block proposal written at the `define` gate; awaiting quality-check |
 
 ## refining
 
 ## ideation
 
 ## owner-action
+
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Brief + 10-block proposal written at the `define` gate; awaiting quality-check |
 
 ## deferred
 

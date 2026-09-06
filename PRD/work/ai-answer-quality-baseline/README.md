@@ -1,5 +1,5 @@
 ---
-status: refined
+status: owner-action
 ---
 
 # ai-answer-quality-baseline
@@ -24,3 +24,9 @@ approved proposal alongside the code.
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/ai-answer-quality-baseline
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/ai-answer-quality-baseline/DESIGN-BRIEF.md`
+- Findings: none (attempt 1, 2026-09-06: 4 of 4 `Current:` excerpts byte-identical to live `PRD/sections/`; REQ-185–190 unused and the next free numbers after REQ-184; heading hygiene clean — 11 top-level headings, ten stable-id blocks plus `## Blocker questions`, the `## Eval harness` excerpts fenced; amendment-set re-grep leaves no uncovered live assertion; offline measurements reproduced: 6 worked-solution cases, 31 fixtures / 10 labelled / 0 with an answer key, four hard-coded cap-of-5 call sites in `preparation.ts`, `eval:worked-solutions` 6/6 under `EMBEDDING_PROVIDER=local`; cost figure labelled an estimate with no numeric target; no screen change; package state `refined`).
