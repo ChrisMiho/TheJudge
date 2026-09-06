@@ -6,7 +6,8 @@ are byte-identical to the live section files at `8d29ce4` (checked by script).
 New entries append after REQ-192 in `PRD/sections/functional-requirements.md`.
 
 The verdict slots are answered at PR review (see `DESIGN-BRIEF.md`,
-`## Assumptions`): the PR diff is the applied proposal.
+`## Deviation from the refinement skill`): the PR diff is the applied proposal.
+Reworked after quality check 1 (FAIL, 14 findings) on 2026-09-06.
 
 ## REQ-193 — the build half works in one folder on one branch
 
@@ -39,13 +40,14 @@ Proposed (new entry, appended after REQ-192):
 - Description: `graph-implement` claims an approved spec by cutting `thejudge-auto/<slug>-work` from `origin/main` into `.worktrees/implement-<slug>` and pushing it. Every build-half node — gate resolution, `gate-qc`, `plan`, `build`, `review`, `close` — works in that folder on that branch, and the driver's own commits (ledger rows, package `README.md` sections, the `STATUS.*` marker, the `PRD/work/STATUS.md` board row) go to the same branch between nodes. The launch checkout is never switched, committed to, or stashed by the build half — REQ-191's rule, extended.
 - Acceptance Criteria:
   - a spec is ready (REQ-171) only when, in addition, no `thejudge-auto/<slug>-work` branch exists locally or on `origin` and no `.worktrees/implement-<slug>` exists; when either exists the spec is already claimed, and the loop resumes it from the `STATUS.*` marker inside that worktree or leaves it alone when its package folder is gone and its code PR is open
-  - ready-detection reads `PRD/work/*/` on `origin/main` (`git ls-tree`) after `git fetch origin`; the launch checkout's `main` is not pulled or read
-  - the claim runs `git fetch origin` and `git worktree add .worktrees/implement-<slug> -b thejudge-auto/<slug>-work origin/main`, then commits `STATUS.active`, the package README's `## Autonomous metadata` rewritten to `- Autonomous base: origin/main`, and the ledger header's `- Worktree: <root>/.worktrees/implement-<slug>` and `- Autonomous base: origin/main` lines as the branch's first commit, and pushes with `git push -u origin thejudge-auto/<slug>-work` from inside the worktree
+  - ready-detection reads `origin/main` after `git fetch origin` with forms the profile allows — `git show origin/main:PRD/work/` for the package list, `git show origin/main:PRD/work/<slug>/` for the marker, `git show origin/main:PRD/work/<slug>/GATE-QUESTIONS.md` for the slots; the launch checkout's `main` is not pulled or read, and no `git ls-tree` (not in the profile) is issued
+  - the claim runs `git fetch origin` and `git worktree add .worktrees/implement-<slug> -b thejudge-auto/<slug>-work origin/main`, then commits `STATUS.active`, the package README's `## Autonomous metadata` rewritten to `- Autonomous base: origin/main`, and the ledger header's `- Worktree: <root>/.worktrees/implement-<slug>` and `- Autonomous base: origin/main` lines as the branch's first commit, and pushes with `git push -u origin thejudge-auto/<slug>-work` from inside the worktree; the branch is the claim, and `STATUS.active` is the marker a resume reads inside it (REQ-171)
+  - the autonomous base is defined in the contract as the branch the package's next PR targets: node 1's `thejudge-auto/<slug>` while the docs PR is open, `main` once it has merged and the build half has claimed the spec; `thejudge-implement-fanout` and `thejudge-cleanup` read the recorded value unchanged
   - the kickoff worktree is removed at claim as REQ-191 states; the local `thejudge-auto/<slug>` branch is neither deleted nor used again by the build half (REQ-194)
   - every build-half dispatch carries `Working directory: <root>/.worktrees/implement-<slug>` on its own line; the driver runs its own commits as `cd <that path> && git add <paths> && git commit …` and pushes with `git push -u origin thejudge-auto/<slug>-work` — forms `.claude/graph-profile.json` allows; no `git -C` form is used by either graph driver
-  - `thejudge-implement-all`, under `graph is controlling`, works in place when the dispatch's `Working directory:` names `.worktrees/implement-<slug>` already checked out on the shared branch: no second worktree, no contributor branch; its fetch, rebase onto `origin/thejudge-auto/<slug>-work`, commit, and push-without-force loop is unchanged, and its code PR targets the recorded autonomous base (`main`); direct invocation is unchanged
+  - `thejudge-implement-all`, under `graph is controlling`, works in place when the dispatch's `Working directory:` names `.worktrees/implement-<slug>` already checked out on the shared branch: no second worktree, no contributor branch; the dispatch names the shared branch `thejudge-auto/<slug>-work` explicitly and the skill blocks when that name is missing or differs from the worktree's checked-out branch (its "shared branch equals the recorded base" guard no longer fires once the base is `main`); its fetch, rebase onto `origin/thejudge-auto/<slug>-work`, commit, and push-without-force loop is unchanged, and its code PR targets the recorded autonomous base (`main`); direct invocation is unchanged
   - the driver writes nothing to the branch while a node is running, so the two writers alternate and the code PR never conflicts on `GRAPH-RUN.md`, the package `README.md`, the `STATUS.*` marker, or `PRD/work/STATUS.md`
-  - `graph-implement/reference.md`'s "the base is frozen once `build` opens the PR" rule and every `land`/`close` reconcile step are removed; the node 6 return-side assertion becomes "every path `build` wrote lies inside `.worktrees/implement-<slug>/`"
+  - `graph-implement/reference.md`'s "the base is frozen once `build` opens the PR" rule and every `land`/`close` reconcile step are removed; the node 6 return-side assertion becomes: the launch checkout's `git status --porcelain` is captured before `build` and must be identical after it, and every path the node reports lies under `.worktrees/implement-<slug>/` — a write to the launch checkout (the 2026-09-05 mirror failure) fails the node and parks
   - a resume reads `GRAPH-RUN.md` at `.worktrees/implement-<slug>/PRD/work/<slug>/GRAPH-RUN.md` under the launch root; a missing build worktree on resume ends the run `BLOCKED` naming it, as the kickoff worktree already does
 - Constraints:
   - the lock, run state, counters, and evidence log stay at the launch root; the hook, its tiers, and every rule are unchanged
@@ -92,17 +94,19 @@ Proposed (new entry, appended after REQ-193):
 - Description: The build half branches from `origin/main` and opens its code PR `thejudge-auto/<slug>-work → main`. `thejudge-cleanup` (`close`) runs on that branch before the owner merges, so the receipt, the `PRD/work/<slug>/` deletion, the board-row strip, and the `system-map.md` flip land in the same merge as the code. The docs branch `thejudge-auto/<slug>` is finished when the docs PR merges; GitHub's `delete_branch_on_merge` stays on, nothing re-creates the branch, and no third base→main PR exists.
 - Acceptance Criteria:
   - the node table reads 8 `close` (`thejudge-cleanup`, sonnet, cap 120, advances to `land`) and 9 `land` (human PR merge, no cap, run complete); node names, models, and per-name caps are unchanged
-  - `close` runs in `.worktrees/implement-<slug>` on `thejudge-auto/<slug>-work` after `review` approves and before any merge, and passes an autonomous PR-ready gate: (1) the current checkout is that worktree on that branch and `HEAD` equals `origin/thejudge-auto/<slug>-work` after a fetch; (2) the code PR located by its `thejudge-auto:v1:registered:<slug>` marker is open, its head is that branch, and its base is the recorded autonomous base (`main`), verified with `gh pr view` — when the API is unreachable (HTTP 5xx or no network) the node records that the PR state was not verified, proves the tip is pushed with `git ls-remote --heads origin`, and continues, because an outage is not evidence about the work; (3) the package is `ship-ready` with every criterion `true`; (4) every runtime-cleanup criterion is recorded passing
-  - `close` writes the receipt with `Status: shipped` and a `- PR:` line naming the code PR, folds the ledger into `## Graph run`, flips `system-map.md`, deletes with `git rm -r PRD/work/<slug>/`, strips the board row, runs `npm run quality:check`, commits on the branch, and pushes without force; it removes no worktree and no branch
+  - `thejudge-cleanup`'s autonomous gate chooses its path by the implementation PR's state, located by the `thejudge-auto:v1:registered:<slug>` marker: a **merged** PR takes the existing four merge-proof checks unchanged (a direct `thejudge-implement-all` package is cleaned up after the owner merges, and lives here); an **open** PR takes the new PR-ready gate: (1) the current checkout is `.worktrees/implement-<slug>` on `thejudge-auto/<slug>-work` and `HEAD` equals `origin/thejudge-auto/<slug>-work` after a fetch; (2) the PR's head is that branch and its base is the recorded autonomous base (`main`), verified with `gh pr view`; (3) the package is `ship-ready` with every criterion `true`; (4) every runtime-cleanup criterion is recorded passing; when the PR state is unknown (HTTP 5xx or no network) the path is decided by git — tip an ancestor of `origin/main` means merged, otherwise open with the PR state recorded as not verified and the tip proven pushed by `git ls-remote --heads origin` — because an outage is not evidence about the work
+  - under `graph is controlling` only the open-PR path is valid: `close` runs in `.worktrees/implement-<slug>` after `review` approves and before any merge, and a merged PR at `close` fails the node with that evidence
+  - on the open-PR path `close` writes the receipt with `Status: shipped` and a `- PR:` line naming the code PR, folds the ledger into `## Graph run`, flips `system-map.md`, deletes with `git rm -r PRD/work/<slug>/`, strips the board row, runs `npm run quality:check`, commits on the branch, and pushes without force; it removes no worktree and no branch
   - after `close` returns `ok`, the driver appends the `close` row to the receipt's `### Node ledger`, records `land` as awaiting the owner's merge of the PR URL, commits and pushes that, releases the lock, and ends `COMPLETE`; the contract's `COMPLETE` row reads "every dispatched node `ok` through `close`; the code PR is open carrying the receipt and the package deletion; `land` is the owner's merge"
+  - a resume that finds `.worktrees/implement-<slug>` with no `PRD/work/<slug>/` inside it is post-`close`: it reads the receipt's `### Node ledger` in that worktree, appends the `close` row if missing (evidence: the receipt commit and the PR URL from the registration marker), pushes, releases the lock, and ends `COMPLETE` — the one state where the ledger is read from the receipt
   - after the owner merges, nothing resumes: `PRD/work/<slug>/` is absent from `origin/main`, and `.worktrees/implement-<slug>`, `thejudge-auto/<slug>-work`, and `thejudge-auto/<slug>` are merged leftovers `npm run graph:prune` lists
   - `npm run graph:prune` no longer keeps a merged `thejudge-auto/<slug>` branch because its package is still on `main` (REQ-192)
   - the repository setting `delete_branch_on_merge` stays `true`, and no skill, script, or instruction depends on a branch surviving its own merge
   - `OPERATOR.md` recipe 6 says the code PR is the one merge that lands a package and that no separate base→main hop exists; recipe 7 drops its reminder
-  - `thejudge-cleanup`'s fixture `deleted-base-branch.md` is retired in place (its scenario cannot arise when the recorded base is `origin/main`) and `gh-outage-during-merge-proof.md` is regraded to the PR-ready gate
+  - `thejudge-cleanup`'s fixtures `deleted-base-branch.md`, `gh-outage-during-merge-proof.md`, and `promote-once-at-close.md` seed a merged PR, so they exercise the unchanged merged path and keep their grading keys (each gains one line naming its path); a new fixture `close-inside-the-code-pr.md` seeds an open PR in a build worktree and grades the PR-ready path, authored unmeasured with its three-rep run owed
 - Constraints:
   - `gh pr merge` and `gh pr close` stay denied; `land` is the owner's merge and is never automated
-  - `thejudge-cleanup`'s direct mode is unchanged: a manual package already writes its receipt on the feature branch before the PR, and autonomous packages now match it
+  - `thejudge-cleanup`'s direct mode and its merged-PR gate are unchanged: a direct `thejudge-implement-all` package is still cleaned up after the merge, and a manual package still writes its receipt on the feature branch before the PR
   - no fifth terminal state; a package whose code PR is closed unmerged stays claimed (folder on `main`, branch present) until the owner removes the branch and worktree
   - the node 7 reviewer grades the code before `close`'s docs-only bookkeeping commits; those are reviewed by the owner in the PR
 - Dependencies:
@@ -127,10 +131,11 @@ a second PR into `main`, cleanup inside it.
 **In plain terms:** REQ-171 already says the loop "branches off fresh `main`"
 and "opens a code PR into `main`", but it also says that PR "grows from the
 same PR the spec was merged on", which is the old three-PR picture, and it
-reads the queue from local `main`. Four bullets change: ready also means "not
-yet claimed" (no `-work` branch or build worktree); the worktree and branch are
-named; the code PR is its own second PR with cleanup inside it; and deleting
-the work folder happens inside that PR.
+reads the queue from local `main`. Five bullets change: ready also means "not
+yet claimed" (no `-work` branch or build worktree); the claim is the branch,
+with `STATUS.active` as its first commit rather than the claim itself; the
+worktree and branch are named; the code PR is its own second PR with cleanup
+inside it; and deleting the work folder happens inside that PR.
 
 **What happens if you say no:** the requirement keeps describing a PR that
 "grows from" the docs PR, which the skill has never done and which REQ-194 now
@@ -158,6 +163,18 @@ Proposed:
 
 ```markdown
   - a spec is "ready" when its `PRD/work/<slug>/` folder is on `origin/main` at `STATUS.refined` with every `GATE-QUESTIONS.md` verdict slot answered (no blank), and no `thejudge-auto/<slug>-work` branch or `.worktrees/implement-<slug>` exists (REQ-193) — this state is the queue and needs no bespoke ready-file
+```
+
+Current:
+
+```markdown
+  - on picking up a ready spec, `graph-implement` sets `STATUS.active` as the single claim point, so a second loop iteration or a loop restart never double-picks the same spec — the transition is the idempotency guard (never double-build, never miss)
+```
+
+Proposed:
+
+```markdown
+  - on picking up a ready spec, `graph-implement` claims it by creating and pushing `thejudge-auto/<slug>-work` in `.worktrees/implement-<slug>` (REQ-193); `STATUS.active` is that branch's first commit and the marker a resume reads inside the worktree, so a second loop iteration or a loop restart sees the branch and never double-picks the same spec (never double-build, never miss)
 ```
 
 Current:
@@ -291,18 +308,33 @@ Proposed:
 
 ## FLOW-021 — the bug-report flow ends at the code PR merge
 
-**What this decides:** two lines of the "owner reports a bug" flow that name
-where the run stops and what the owner's last touch is.
+**What this decides:** three lines of the "owner reports a bug" flow that name
+how the owner approves, where the run stops, and what the owner's last touch is.
 
-**In plain terms:** the flow says the run "stops at node 8 (`land`) for the
-owner to merge" and that the owner's only touch is "the merge at node 8". With
-`close` now node 8 and `land` node 9, and with cleanup inside the code PR, the
-run ends with the code PR open and the owner's merge lands the fix, the receipt,
-and the folder deletion together. Steps 3 and 6 of this flow are stale from
-earlier packages and are left alone here.
+**In plain terms:** the flow says the owner "resolves the gate with
+`/graph-gate-review` and resumes with `/graph-implement`", that the run "stops
+at node 8 (`land`) for the owner to merge", and that the owner's only touch is
+"the merge at node 8". Approval is answer-then-merge today (you answer the
+verdict slots in the docs PR and merge it; the build loop applies them), and
+with `close` now node 8 and `land` node 9, the run ends with the code PR open
+and your merge lands the fix, the receipt, and the folder deletion together.
+Steps 3 and 6 of this flow are stale from earlier packages and are left alone
+here.
 
-**What happens if you say no:** the flow points the owner at a node number that
-now means cleanup.
+**What happens if you say no:** the flow keeps describing a live resume command
+you no longer run and points at a node number that now means cleanup.
+
+Current:
+
+```markdown
+  7. Owner resolves the gate with `/graph-gate-review PRD/work/<slug>/` and resumes with `/graph-implement PRD/work/<slug>/`.
+```
+
+Proposed:
+
+```markdown
+  7. Owner answers the verdict slots in `GATE-QUESTIONS.md` in the docs PR and merges it; the `graph-implement` loop claims the spec, dispatches `graph-gate-review` to apply the verdicts, and continues.
+```
 
 Current:
 

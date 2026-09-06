@@ -1,4 +1,4 @@
-status: refined
+status: refining
 
 # graph-workflow-land
 
@@ -17,4 +17,6 @@ findings 2 and 7. Manual package (`OPERATOR.md` recipe 9), branch
 - `GATE-QUESTIONS.md` — the proposed product truth: REQ-193, REQ-194 new; REQ-171, REQ-191, REQ-192, REQ-164, FLOW-021, FLOW-022 amended; verdict slots answered at PR review
 
 Refined 2026-09-06 without a live owner approval: the session brief delegated
-both decisions (see `DESIGN-BRIEF.md`, `## Assumptions`).
+both decisions (see `DESIGN-BRIEF.md`, `## Deviation from the refinement
+skill`). Quality check 1 (fresh-context read-only reviewer) returned FAIL with
+14 findings; the brief and proposal were reworked the same day and re-checked.
