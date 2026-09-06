@@ -22,6 +22,7 @@ import {
   isRunActive,
   normalizeCommand,
   parseRunState,
+  repoRelativeWritePath,
   splitSegments,
   stripWrappers,
   tokenize
@@ -506,6 +507,71 @@ test("a heredoc still resolves its own write target", () => {
   })
   assert.equal(result.decision, "deny")
   assert.equal(result.rule, "protected-path-write")
+})
+
+test("a written path is made repo-relative before the protected set sees it", () => {
+  // `isProtectedPath()` anchors at the repo root. Nodes 2–4 work inside a
+  // kickoff worktree and the build half always has, so a write the rule was
+  // meant to refuse arrived as `.worktrees/<dir>/…` or as an absolute path and
+  // slipped past. Exactly one worktree segment comes off: this repo never nests
+  // a worktree inside another, so a second strip would only widen the match.
+  const root = "/repo"
+  const cases = [
+    ["relative", "CLAUDE.md", "CLAUDE.md", null],
+    ["./-prefixed", "./CLAUDE.md", "CLAUDE.md", null],
+    ["absolute under the root", "/repo/CLAUDE.md", "CLAUDE.md", null],
+    ["absolute outside the root", "/elsewhere/CLAUDE.md", "/elsewhere/CLAUDE.md", null],
+    ["absolute, a sibling that shares the root's prefix", "/repo-two/CLAUDE.md", "/repo-two/CLAUDE.md", null],
+    ["inside the kickoff worktree", ".worktrees/kickoff-x/CLAUDE.md", "CLAUDE.md", "kickoff-x"],
+    ["inside the implement worktree", ".worktrees/implement-x/CLAUDE.md", "CLAUDE.md", "implement-x"],
+    ["absolute inside a worktree", "/repo/.worktrees/kickoff-x/CLAUDE.md", "CLAUDE.md", "kickoff-x"],
+    ["nested worktrees, one segment stripped", ".worktrees/a/.worktrees/b/CLAUDE.md", ".worktrees/b/CLAUDE.md", "a"],
+    [
+      "a run record under .worktrees/ is not a worktree",
+      ".worktrees/.graph-run.lock",
+      ".worktrees/.graph-run.lock",
+      null
+    ]
+  ]
+  for (const [name, candidate, expectedPath, expectedWorktree] of cases) {
+    const result = repoRelativeWritePath(candidate, root)
+    assert.equal(result.path, expectedPath, `path for ${name}: ${candidate}`)
+    assert.equal(result.worktree, expectedWorktree, `worktree for ${name}: ${candidate}`)
+  }
+})
+
+test("the protected-path rule denies every form of a write into a worktree", () => {
+  const target = ".claude/skills/thejudge-map-out/SKILL.md"
+  const forms = [target, `/repo/${target}`, `.worktrees/kickoff-x/${target}`, `.worktrees/implement-x/${target}`]
+  for (const file_path of forms) {
+    const denied = classifyToolCall({ toolName: "Edit", toolInput: { file_path }, runActive: true, root: "/repo" })
+    assert.equal(denied.rule, "protected-path-write", `expected a deny for: ${file_path}`)
+    assert.match(
+      denied.reason,
+      /`\.claude\/skills\/thejudge-map-out\/SKILL\.md`/,
+      "the reason names the repo-relative path"
+    )
+
+    const allowed = classifyToolCall({ toolName: "Edit", toolInput: { file_path }, runActive: false, root: "/repo" })
+    assert.equal(allowed.decision, "allow", `wrongly denied without a lock: ${file_path}`)
+  }
+
+  const kickoff = classifyToolCall({
+    toolName: "Bash",
+    toolInput: { command: `echo x > .worktrees/kickoff-x/${target}` },
+    runActive: true,
+    root: "/repo"
+  })
+  assert.equal(kickoff.rule, "protected-path-write")
+  assert.match(kickoff.reason, /kickoff-x/, "a stripped worktree is named in the reason")
+
+  const elsewhere = classifyToolCall({
+    toolName: "Edit",
+    toolInput: { file_path: `/elsewhere/${target}` },
+    runActive: true,
+    root: "/repo"
+  })
+  assert.equal(elsewhere.decision, "allow", "a path outside the root names nothing in this repository")
 })
 
 test("an unterminated heredoc is body all the way down", () => {

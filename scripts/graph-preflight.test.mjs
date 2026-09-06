@@ -8,20 +8,19 @@ import { fileURLToPath } from "node:url"
 
 import {
   CANARY_COMMAND,
-  DEFAULT_THRESHOLDS,
+  DEFAULT_BASE,
+  FETCH_COMMAND,
   LOCK_PATH,
   PROFILE_SENTINEL_ENV,
-  SECRET_PATTERNS,
   STOP_PATH,
   GRAPH_BRANCH_PREFIX,
   classifyCanary,
+  classifyCheckoutShape,
   classifyGraphCanary,
   classifyHeartbeat,
+  classifyInPlaceTree,
   classifyLock,
-  classifyPendingBaseToMain,
   classifyStopSentinel,
-  classifyWorkingTree,
-  collectEntries,
   defaultRunId,
   findBranchCollision,
   formatFailureReport,
@@ -33,401 +32,158 @@ import {
   parseCommandArgs,
   parseLockFile,
   parseRefValue,
-  parseThresholdValue,
   planActions,
   readProfileSentinel,
   resolveBase,
   takeLock
 } from "./graph-preflight.mjs"
+import * as preflight from "./graph-preflight.mjs"
 import { GRAPH_CANARY_COMMAND, classifyToolCall, isRunActive } from "./lib/boundary-rules.mjs"
 
-test("graph-preflight - classifier - clean tree needs no resolution", () => {
-  const result = classifyWorkingTree([])
-  assert.equal(result.action, "clean")
-  assert.equal(result.fileCount, 0)
-  assert.equal(result.changedLines, 0)
+// --- REQ-191: a fresh run never mutates the launch checkout. From a root
+// checkout it works in a kickoff worktree; from a linked worktree it works in
+// place on a clean tree. The auto-commit / stash resolution is gone. ---
+
+test("graph-preflight - shape - a root checkout is one whose git dir is the common dir", () => {
+  assert.equal(classifyCheckoutShape({ gitDir: "/repo/.git\n", gitCommonDir: "/repo/.git" }), "root")
+  assert.equal(classifyCheckoutShape({ gitDir: ".git", gitCommonDir: ".git" }), "root")
 })
 
-test("graph-preflight - classifier - small change is committed", () => {
-  const result = classifyWorkingTree([
-    { path: "PRD/sections/overview.md", changedLines: 12 },
-    { path: "PRD/sections/personas.md", changedLines: 3 }
-  ])
-  assert.equal(result.action, "commit")
-  assert.equal(result.fileCount, 2)
-  assert.equal(result.changedLines, 15)
-})
-
-test("graph-preflight - classifier - too many files is stashed", () => {
-  const entries = Array.from({ length: 11 }, (_, i) => ({
-    path: `PRD/sections/file-${i}.md`,
-    changedLines: 1
-  }))
-  const result = classifyWorkingTree(entries)
-  assert.equal(result.action, "stash")
-  assert.match(result.reason, /file count/)
-})
-
-test("graph-preflight - classifier - too many lines is stashed", () => {
-  const result = classifyWorkingTree([{ path: "PRD/sections/functional-requirements.md", changedLines: 201 }])
-  assert.equal(result.action, "stash")
-  assert.match(result.reason, /changed lines/)
-})
-
-test("graph-preflight - classifier - secrets are blocked, never auto-committed", () => {
-  const result = classifyWorkingTree([{ path: ".secrets/openai-dev.env", changedLines: 1 }])
-  assert.equal(result.action, "blocked")
-  assert.match(result.reason, /secret/i)
-})
-
-test("graph-preflight - classifier - secret detection survives a small-change tree", () => {
-  const result = classifyWorkingTree([
-    { path: "PRD/sections/overview.md", changedLines: 2 },
-    { path: "apps/backend/.env", changedLines: 1 }
-  ])
-  assert.equal(result.action, "blocked")
-})
-
-test("graph-preflight - classifier - live 2026-08-14 checkout state stashes", () => {
-  // Measured from the real repo: 13 tracked files, 574 insertions + 183
-  // deletions, plus 4 untracked files under PRD/work/.
-  const entries = [
-    { path: "PRD/sections/decisions/combo-retrieval.md", changedLines: 3 },
-    { path: "PRD/sections/functional-requirements.md", changedLines: 29 },
-    { path: "PRD/sections/integrations-and-data.md", changedLines: 8 },
-    { path: "PRD/sections/user-flows.md", changedLines: 1 },
-    { path: "PRD/work/commander-spellbook-combos/DESIGN-BRIEF.md", changedLines: 68 },
-    { path: "PRD/work/commander-spellbook-combos/GAMEPLAN.md", changedLines: 189 },
-    { path: "PRD/work/commander-spellbook-combos/README.md", changedLines: 86 },
-    { path: "PRD/work/commander-spellbook-combos/slice-a-corpus-build-pipeline.md", changedLines: 120 },
-    { path: "PRD/work/commander-spellbook-combos/slice-b-catalog-loader-and-config.md", changedLines: 57 },
-    { path: "PRD/work/commander-spellbook-combos/slice-c-intent-and-matching.md", changedLines: 30 },
-    { path: "PRD/work/commander-spellbook-combos/slice-d-prompt-integration.md", changedLines: 77 },
-    { path: "PRD/work/commander-spellbook-combos/slice-e-eval-fixtures-and-goldens.md", changedLines: 28 },
-    { path: "PRD/work/commander-spellbook-combos/slice-f-answer-quality-comparison.md", changedLines: 61 }
-  ]
-  const result = classifyWorkingTree(entries)
-  assert.equal(result.action, "stash")
-  assert.equal(result.fileCount, 13)
-})
-
-test("graph-preflight - classifier - thresholds are overridable", () => {
-  const entries = [{ path: "a.md", changedLines: 500 }]
-  const result = classifyWorkingTree(entries, { maxFiles: 10, maxLines: 1000 })
-  assert.equal(result.action, "commit")
-})
-
-test("graph-preflight - defaults - documented thresholds are stable", () => {
-  assert.deepEqual(DEFAULT_THRESHOLDS, { maxFiles: 10, maxLines: 200 })
-  assert.ok(SECRET_PATTERNS.length > 0)
-})
-
-test("graph-preflight - collect - merges tracked numstat and untracked files", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat") {
-      return "2\t1\tPRD/sections/overview.md\n5\t0\tPRD/sections/personas.md\n"
-    }
-    if (args.join(" ") === "diff --numstat --cached") {
-      return ""
-    }
-    if (args.join(" ") === "ls-files --others --exclude-standard") {
-      return "PRD/work/adhoc/notes.md\n"
-    }
-    throw new Error(`unexpected git call: ${args.join(" ")}`)
-  }
-
-  const entries = collectEntries(fakeGit)
-  assert.equal(entries.length, 3)
-  assert.equal(entries[0].changedLines, 3)
-  assert.equal(entries[1].changedLines, 5)
-  assert.equal(entries[2].path, "PRD/work/adhoc/notes.md")
-})
-
-test("graph-preflight - collect - binary numstat dashes count as zero lines", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat") {
-      return "-\t-\tapps/frontend/public/logo.png\n"
-    }
-    return ""
-  }
-  const entries = collectEntries(fakeGit)
-  assert.equal(entries.length, 1)
-  assert.equal(entries[0].changedLines, 0)
-})
-
-test("graph-preflight - plan - commit path stages and commits", () => {
-  const commands = planActions(
-    { action: "commit", files: ["a.md"], fileCount: 1, changedLines: 4, reason: "small" },
-    { branch: "feature/graph-demo", runId: "graph-20260814-1" }
+test("graph-preflight - shape - a linked worktree has a git dir under the common dir's worktrees folder", () => {
+  assert.equal(
+    classifyCheckoutShape({
+      gitDir: "/repo/.git/worktrees/session-b",
+      gitCommonDir: "/repo/.git"
+    }),
+    "linked-worktree"
   )
-  assert.ok(commands.some((c) => c.startsWith("git add -A")))
-  assert.ok(commands.some((c) => c.includes("git commit")))
-  assert.ok(commands.some((c) => c.includes("git switch -c feature/graph-demo")))
-  assert.ok(commands.some((c) => c.includes("git push -u origin feature/graph-demo")))
 })
 
-test("graph-preflight - plan - stash happens before the branch is created", () => {
-  const commands = planActions(
-    { action: "stash", files: [], fileCount: 13, changedLines: 757, reason: "too big" },
-    { branch: "feature/graph-demo", runId: "graph-20260814-1" }
+test("graph-preflight - in-place - a clean tree may proceed", () => {
+  const tree = classifyInPlaceTree("")
+  assert.equal(tree.clean, true)
+  assert.deepEqual(tree.paths, [])
+})
+
+test("graph-preflight - in-place - a dirty tree is refused and every path is named", () => {
+  const tree = classifyInPlaceTree(" M scripts/dev.mjs\n?? notes.md\nA  PRD/work/x/IDEA.md\n")
+  assert.equal(tree.clean, false)
+  assert.deepEqual(tree.paths, ["scripts/dev.mjs", "notes.md", "PRD/work/x/IDEA.md"])
+  assert.match(tree.reason, /refusing to run in place/)
+  assert.match(tree.reason, /notes\.md/)
+  assert.match(tree.reason, /never resolves them for you/)
+})
+
+test("graph-preflight - plan - a root checkout fetches, adds the kickoff worktree, and pushes from inside it", () => {
+  assert.deepEqual(
+    planActions({ shape: "root", branch: "thejudge-auto/card-fix", slug: "card-fix", base: DEFAULT_BASE }),
+    [
+      "git fetch origin",
+      "git worktree add .worktrees/kickoff-card-fix -b thejudge-auto/card-fix origin/main",
+      "git -C .worktrees/kickoff-card-fix push -u origin thejudge-auto/card-fix"
+    ]
   )
-  const stashIndex = commands.findIndex((c) => c.includes("git stash push"))
-  const branchIndex = commands.findIndex((c) => c.includes("git switch -c"))
-  assert.ok(stashIndex !== -1, "expected a stash command")
-  assert.ok(stashIndex < branchIndex, "stash must precede branch creation")
-  assert.ok(commands.some((c) => c.includes("graph-preflight/graph-20260814-1")))
 })
 
-test("graph-preflight - plan - stash uses -u so untracked work travels with it", () => {
-  const commands = planActions(
-    { action: "stash", files: [], fileCount: 13, changedLines: 757, reason: "too big" },
-    { branch: "feature/x", runId: "r1" }
+test("graph-preflight - plan - a linked worktree switches in place and pushes", () => {
+  assert.deepEqual(
+    planActions({ shape: "linked-worktree", branch: "thejudge-auto/card-fix", slug: "card-fix", base: DEFAULT_BASE }),
+    [
+      "git fetch origin",
+      "git switch -c thejudge-auto/card-fix origin/main",
+      "git push -u origin thejudge-auto/card-fix"
+    ]
   )
-  assert.ok(commands.some((c) => c.includes("git stash push -u")))
 })
 
-test("graph-preflight - plan - blocked produces no git commands at all", () => {
-  const commands = planActions(
-    { action: "blocked", files: [".secrets/x.env"], fileCount: 1, changedLines: 1, reason: "secret" },
-    { branch: "feature/x", runId: "r1" }
-  )
-  assert.deepEqual(commands, [])
-})
-
-test("graph-preflight - plan - clean tree still creates and pushes the branch", () => {
-  const commands = planActions(
-    { action: "clean", files: [], fileCount: 0, changedLines: 0, reason: "clean" },
-    { branch: "feature/x", runId: "r1" }
-  )
-  assert.ok(commands.some((c) => c.includes("git switch -c feature/x")))
-  assert.ok(!commands.some((c) => c.includes("git stash")))
-  assert.ok(!commands.some((c) => c.includes("git commit")))
-})
-
-// --- Fix: Important #1 — partially-staged files must not be double-counted ---
-
-test("graph-preflight - collect - a file staged and unstaged merges into one entry with combined lines", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat") {
-      return "3\t1\tPRD/sections/overview.md\n"
-    }
-    if (args.join(" ") === "diff --numstat --cached") {
-      return "2\t0\tPRD/sections/overview.md\n"
-    }
-    if (args.join(" ") === "ls-files --others --exclude-standard") {
-      return ""
-    }
-    throw new Error(`unexpected git call: ${args.join(" ")}`)
-  }
-
-  const entries = collectEntries(fakeGit)
-  assert.equal(entries.length, 1, "one physical file must produce one entry")
-  assert.equal(entries[0].path, "PRD/sections/overview.md")
-  assert.equal(entries[0].changedLines, 6)
-})
-
-test("graph-preflight - collect - deduping a partially-staged file keeps fileCount accurate for the threshold", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat") {
-      return "3\t1\tPRD/sections/overview.md\n1\t1\tPRD/sections/personas.md\n"
-    }
-    if (args.join(" ") === "diff --numstat --cached") {
-      return "2\t0\tPRD/sections/overview.md\n"
-    }
-    return ""
-  }
-
-  const entries = collectEntries(fakeGit)
-  const result = classifyWorkingTree(entries)
-  assert.equal(result.fileCount, 2, "the double-counted path must not inflate fileCount")
-})
-
-// --- Fix: Important #2 — the real-execution tokenizer had zero coverage ---
-
-test("graph-preflight - parseCommandArgs - a quoted commit message tokenizes as one argument", () => {
-  const args = parseCommandArgs('git commit -m "a b c"')
-  assert.deepEqual(args, ["commit", "-m", "a b c"])
-})
-
-test("graph-preflight - parseCommandArgs - a stash command produced by planActions round-trips", () => {
-  const commands = planActions(
-    { action: "stash", files: [], fileCount: 1, changedLines: 1, reason: "x" },
-    { branch: "feature/x", runId: "r1" }
-  )
-  const stashCommand = commands.find((c) => c.includes("git stash push"))
-  const args = parseCommandArgs(stashCommand)
-  assert.deepEqual(args, ["stash", "push", "-u", "-m", "graph-preflight/r1"])
-})
-
-// --- Fix: Important #3 — renamed paths must be normalized and checked on both ends ---
-
-test("graph-preflight - collect - rename with common suffix normalizes to real source and destination paths", () => {
-  // The exact string reproduced by review: `git mv config/creds.env .secrets/creds.env`.
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat --cached") {
-      return "0\t0\t{config => .secrets}/creds.env\n"
-    }
-    return ""
-  }
-  const entries = collectEntries(fakeGit)
-  assert.equal(entries.length, 1)
-  assert.equal(entries[0].path, ".secrets/creds.env")
-  assert.deepEqual(entries[0].renamedFrom, ["config/creds.env"])
-})
-
-test("graph-preflight - collect - rename with common prefix only normalizes to real source and destination paths", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat") {
-      return "0\t0\tconfig/{creds.env => creds.env.bak}\n"
-    }
-    return ""
-  }
-  const entries = collectEntries(fakeGit)
-  assert.equal(entries.length, 1)
-  assert.equal(entries[0].path, "config/creds.env.bak")
-  assert.deepEqual(entries[0].renamedFrom, ["config/creds.env"])
-})
-
-test("graph-preflight - collect - rename with common prefix and suffix normalizes to real source and destination paths", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat") {
-      return "0\t0\tconfig/{old => .secrets}/creds.env\n"
-    }
-    return ""
-  }
-  const entries = collectEntries(fakeGit)
-  assert.equal(entries.length, 1)
-  assert.equal(entries[0].path, "config/.secrets/creds.env")
-  assert.deepEqual(entries[0].renamedFrom, ["config/old/creds.env"])
-})
-
-test("graph-preflight - collect - bare rename with no common prefix or suffix normalizes to real source and destination paths", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat") {
-      return "0\t0\tconfig.env => .secrets\n"
-    }
-    return ""
-  }
-  const entries = collectEntries(fakeGit)
-  assert.equal(entries.length, 1)
-  assert.equal(entries[0].path, ".secrets")
-  assert.deepEqual(entries[0].renamedFrom, ["config.env"])
-})
-
-test("graph-preflight - collect+classify - a file renamed into .secrets is blocked, using the exact reproduced git output", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat --cached") {
-      return "0\t0\t{config => .secrets}/creds.env\n"
-    }
-    return ""
-  }
-  const entries = collectEntries(fakeGit)
-  const result = classifyWorkingTree(entries)
-  assert.equal(result.action, "blocked")
-  assert.match(result.reason, /secret/i)
-})
-
-test("graph-preflight - classifier - a file renamed OUT of .secrets is blocked too (source path is checked)", () => {
-  const entries = [{ path: "config/creds.env", changedLines: 0, renamedFrom: ".secrets/creds.env" }]
-  const result = classifyWorkingTree(entries)
-  assert.equal(result.action, "blocked")
-  assert.match(result.reason, /secret/i)
-})
-
-// --- Fix: Critical #3 — the auto-commit must land on the new branch, never on
-// the pre-existing one (which may be `main`). The old commit-path test asserted
-// only that the four commands were present, never their order, which is how the
-// wrong order shipped. Every action now pins its full ordered output. ---
-
-const PLAN_OPTIONS = {
-  branch: "feature/graph-demo",
-  runId: "graph-20260814-093000",
-  base: "main"
-}
-
-function classificationFor(action) {
-  return {
-    action,
-    files: ["a.md"],
-    fileCount: 1,
-    changedLines: 4,
-    reason: `test ${action}`
-  }
-}
-
-test("graph-preflight - plan - clean action emits its exact ordered command list", () => {
-  assert.deepEqual(planActions(classificationFor("clean"), PLAN_OPTIONS), [
-    "git fetch origin",
-    "git switch -c feature/graph-demo main",
-    "git push -u origin feature/graph-demo"
-  ])
-})
-
-test("graph-preflight - plan - commit action branches BEFORE staging so the commit cannot land on the pre-existing branch", () => {
-  assert.deepEqual(planActions(classificationFor("commit"), PLAN_OPTIONS), [
-    "git fetch origin",
-    "git switch -c feature/graph-demo main",
-    "git add -A",
-    'git commit -m "chore(graph): auto-commit working tree before graph run"',
-    "git push -u origin feature/graph-demo"
-  ])
-})
-
-test("graph-preflight - plan - stash action keeps stash BEFORE the branch switch", () => {
-  assert.deepEqual(planActions(classificationFor("stash"), PLAN_OPTIONS), [
-    "git fetch origin",
-    'git stash push -u -m "graph-preflight/graph-20260814-093000"',
-    "git switch -c feature/graph-demo main",
-    "git push -u origin feature/graph-demo"
-  ])
-})
-
-test("graph-preflight - plan - blocked action emits its exact (empty) command list", () => {
-  assert.deepEqual(planActions(classificationFor("blocked"), PLAN_OPTIONS), [])
-})
-
-// --- Fix: Important #7 — explicit base start point and a fetch before push ---
-
-test("graph-preflight - plan - the fetch is always the first command", () => {
-  for (const action of ["clean", "commit", "stash"]) {
-    const commands = planActions(classificationFor(action), PLAN_OPTIONS)
-    assert.equal(commands[0], "git fetch origin", `${action} must fetch first`)
-    assert.ok(
-      commands.indexOf("git fetch origin") < commands.findIndex((c) => c.startsWith("git push")),
-      `${action} must fetch before pushing`
-    )
+test("graph-preflight - plan - the fetch is always first and precedes the push", () => {
+  for (const shape of ["root", "linked-worktree"]) {
+    const commands = planActions({ shape, branch: "b", slug: "s", base: DEFAULT_BASE })
+    assert.equal(commands[0], FETCH_COMMAND)
+    assert.ok(commands.indexOf(FETCH_COMMAND) < commands.findIndex((c) => c.includes("push")))
   }
 })
 
-test("graph-preflight - plan - the resolved base is passed to git switch -c as the start point", () => {
-  const commands = planActions(classificationFor("clean"), {
-    ...PLAN_OPTIONS,
-    base: "origin/feature/spine"
+test("graph-preflight - plan - an explicit base is the start point in both shapes", () => {
+  const root = planActions({ shape: "root", branch: "b", slug: "s", base: "origin/feature/spine" })
+  const inPlace = planActions({ shape: "linked-worktree", branch: "b", slug: "s", base: "origin/feature/spine" })
+  assert.ok(root[1].endsWith(" origin/feature/spine"))
+  assert.equal(inPlace[1], "git switch -c b origin/feature/spine")
+})
+
+test("graph-preflight - plan - never stages, commits, stashes, or switches the launch checkout on the root path", () => {
+  const commands = planActions({ shape: "root", branch: "b", slug: "s", base: DEFAULT_BASE })
+  for (const forbidden of ["git add", "git commit", "git stash", "git switch"]) {
+    assert.ok(!commands.some((c) => c.startsWith(forbidden)), `${forbidden} must not appear`)
+  }
+})
+
+test("graph-preflight - plan - every planned command round-trips through parseCommandArgs", () => {
+  for (const shape of ["root", "linked-worktree"]) {
+    for (const command of planActions({ shape, branch: "thejudge-auto/x", slug: "x", base: DEFAULT_BASE })) {
+      const args = parseCommandArgs(command)
+      assert.equal(`git ${args.join(" ")}`, command)
+    }
+  }
+})
+
+test("graph-preflight - resolveBase - the default is origin/main, never the current branch", () => {
+  assert.equal(DEFAULT_BASE, "origin/main")
+  assert.equal(resolveBase(null), "origin/main")
+  assert.equal(resolveBase(undefined), "origin/main")
+  assert.equal(resolveBase(""), "origin/main")
+})
+
+test("graph-preflight - resolveBase - an explicit base wins", () => {
+  assert.equal(resolveBase("origin/feature/x"), "origin/feature/x")
+})
+
+test("graph-preflight - retired - the working-tree classifier, thresholds, secret gate, and base-to-main guard no longer exist", () => {
+  for (const name of [
+    "classifyWorkingTree",
+    "collectEntries",
+    "parseThresholdValue",
+    "DEFAULT_THRESHOLDS",
+    "SECRET_PATTERNS",
+    "classifyPendingBaseToMain",
+    "OPEN_BASE_TO_MAIN_PRS_COMMAND"
+  ]) {
+    assert.equal(typeof preflight[name], "undefined", `${name} must be gone`)
+  }
+})
+
+test("graph-preflight - formatFailureReport - names what ran and what did not, with no stash recovery", () => {
+  const report = formatFailureReport({
+    failedCommand: "git worktree add .worktrees/kickoff-x -b feature/x origin/main",
+    executed: ["git fetch origin"],
+    remaining: ["git -C .worktrees/kickoff-x push -u origin feature/x"]
   })
-  assert.ok(commands.includes("git switch -c feature/graph-demo origin/feature/spine"))
+  assert.match(report, /FAILED at: git worktree add/)
+  assert.match(report, /commands that ran:\n {2}git fetch origin/)
+  assert.match(report, /commands that did NOT run:\n {2}git -C/)
+  assert.ok(!report.includes("stash"))
+  assert.match(formatFailureReport({ failedCommand: "git fetch origin", executed: [], remaining: [] }), /\(none\)/)
 })
 
-test("graph-preflight - resolveBase - an explicit base wins without consulting git", () => {
-  const base = resolveBase(() => {
-    throw new Error("git must not be called when --base is supplied")
-  }, "origin/feature/x")
-  assert.equal(base, "origin/feature/x")
+test("graph-preflight - parseArgs - omitting --base leaves null so resolveBase supplies origin/main", () => {
+  const options = parseArgs(["--branch", "feature/x", "--slug", "x"])
+  assert.equal(options.base, null)
+  assert.equal(resolveBase(options.base), "origin/main")
+  assert.equal(options.slug, "x")
 })
 
-test("graph-preflight - resolveBase - with no explicit base the current branch is resolved and recordable", () => {
-  const base = resolveBase((args) => {
-    assert.deepEqual(args, ["rev-parse", "--abbrev-ref", "HEAD"])
-    return "feature/enhancement-bangers\n"
-  }, null)
-  assert.equal(base, "feature/enhancement-bangers")
+test("graph-preflight - parseArgs - threshold flags are no longer recognised", () => {
+  const options = parseArgs(["--branch", "feature/x", "--slug", "x", "--max-files", "50"])
+  assert.equal("thresholds" in options, false)
 })
 
-test("graph-preflight - resolveBase - a detached HEAD resolves to its commit sha", () => {
-  const base = resolveBase((args) => {
-    if (args.includes("--abbrev-ref")) return "HEAD\n"
-    return "0123456789abcdef\n"
-  }, null)
-  assert.equal(base, "0123456789abcdef")
+test("graph-preflight - the profile allows no git stash command", () => {
+  const { allow } = graphProfile().permissions
+  assert.deepEqual(
+    allow.filter((rule) => rule.includes("git stash")),
+    [],
+    "preflight no longer stashes, so the allow rules for it are dead weight"
+  )
 })
 
 test("graph-preflight - findBranchCollision - reports an existing local or remote branch", () => {
@@ -449,63 +205,6 @@ test("graph-preflight - findBranchCollision - reports an existing local or remot
   assert.equal(free, null)
 })
 
-// --- Fix: Important #8 — a malformed threshold flag must not fail open ---
-
-test("graph-preflight - parseThresholdValue - an absent flag returns null so the default applies", () => {
-  assert.equal(parseThresholdValue(null, "--max-files"), null)
-  assert.equal(parseThresholdValue(undefined, "--max-files"), null)
-})
-
-test("graph-preflight - parseThresholdValue - a positive integer parses", () => {
-  assert.equal(parseThresholdValue("25", "--max-files"), 25)
-})
-
-test("graph-preflight - parseThresholdValue - a non-numeric value throws instead of disabling the threshold", () => {
-  assert.throws(() => parseThresholdValue("abc", "--max-files"), /--max-files must be a positive integer/)
-})
-
-test("graph-preflight - parseThresholdValue - zero, negatives, fractions, and a missing value all throw", () => {
-  for (const raw of ["0", "-1", "1.5", "", " ", "Infinity"]) {
-    assert.throws(
-      () => parseThresholdValue(raw, "--max-lines"),
-      /--max-lines must be a positive integer/,
-      `expected ${JSON.stringify(raw)} to be rejected`
-    )
-  }
-})
-
-// --- Fix: Important #9 — a mid-sequence failure must tell the user where the
-// stash went, not die with a stack trace ---
-
-test("graph-preflight - formatFailureReport - names what ran, what did not, and the stash recovery command", () => {
-  const report = formatFailureReport({
-    failedCommand: "git switch -c feature/x main",
-    executed: ["git fetch origin", 'git stash push -u -m "graph-preflight/r1"'],
-    remaining: ["git push -u origin feature/x"],
-    stashed: true,
-    runId: "r1"
-  })
-  assert.match(report, /FAILED at: git switch -c feature\/x main/)
-  assert.match(report, /commands that ran:/)
-  assert.match(report, /git stash push -u -m "graph-preflight\/r1"/)
-  assert.match(report, /commands that did NOT run:/)
-  assert.match(report, /git push -u origin feature\/x/)
-  assert.match(report, /git stash list \| grep graph-preflight\/r1/)
-  assert.match(report, /git stash apply <ref>/)
-})
-
-test("graph-preflight - formatFailureReport - no stash means no stash-recovery instructions", () => {
-  const report = formatFailureReport({
-    failedCommand: "git fetch origin",
-    executed: [],
-    remaining: ["git switch -c feature/x main"],
-    stashed: false,
-    runId: "r1"
-  })
-  assert.ok(!report.includes("git stash list"))
-  assert.match(report, /commands that ran:\n {2}\(none\)/)
-})
-
 // --- Fix: Important #9b — two same-day runs must not share a run id ---
 
 test("graph-preflight - defaultRunId - includes a time component so same-day runs differ", () => {
@@ -515,19 +214,6 @@ test("graph-preflight - defaultRunId - includes a time component so same-day run
   assert.equal(evening, "graph-20260814-210517")
   assert.notEqual(morning, evening)
   assert.match(defaultRunId(), /^graph-\d{8}-\d{6}$/)
-})
-
-// --- Hardening #2 — `--base` must validate as strictly as the threshold flags.
-// It decides the autonomous base every later PR targets, so a missing value is
-// an error, never a silent fall back to whatever branch HEAD happened to be. ---
-
-test("graph-preflight - parseArgs - omitting --base entirely still resolves from HEAD later", () => {
-  const options = parseArgs(["--branch", "feature/x"])
-  assert.equal(options.base, null, "an absent --base must stay null so resolveBase falls back")
-  assert.equal(
-    resolveBase(() => "feature/current\n", options.base),
-    "feature/current"
-  )
 })
 
 test("graph-preflight - parseArgs - --base as the final token throws instead of silently falling back", () => {
@@ -618,116 +304,9 @@ test("graph-preflight - parseArgs - a rejected branch never reaches planActions 
   assert.throws(() => parseArgs(["--branch", "feature/x; rm -rf /"]), /--branch must be a valid git ref name/)
 })
 
-// --- Hardening #4 — a literal brace outside the rename marker must not
-// mis-parse. These paths feed the secret gate, so a mis-parse weakens it. ---
-
-test("graph-preflight - collect - a literal-brace path segment after the rename marker parses correctly", () => {
-  // `git mv "config/{legacy}/creds.env" ".secrets/{legacy}/creds.env"`.
-  // Greedy captures used to yield newPath `.secrets}/{legacy/creds.env`, which
-  // the `.secrets/` secret pattern no longer matches.
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat --cached") {
-      return "0\t0\t{config => .secrets}/{legacy}/creds.env\n"
-    }
-    return ""
-  }
-  const entries = collectEntries(fakeGit)
-  assert.equal(entries.length, 1)
-  assert.equal(entries[0].path, ".secrets/{legacy}/creds.env")
-  assert.deepEqual(entries[0].renamedFrom, ["config/{legacy}/creds.env"])
-})
-
-test("graph-preflight - collect+classify - a literal-brace rename into .secrets is still blocked", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat --cached") {
-      return "0\t0\t{config => .secrets}/{legacy}/creds.env\n"
-    }
-    return ""
-  }
-  const result = classifyWorkingTree(collectEntries(fakeGit))
-  assert.equal(result.action, "blocked")
-  assert.match(result.reason, /secret/i)
-})
-
-test("graph-preflight - collect - a literal brace before the rename marker parses correctly", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat") {
-      return "0\t0\tdocs/{legacy}/{old => new}/notes.md\n"
-    }
-    return ""
-  }
-  const entries = collectEntries(fakeGit)
-  assert.equal(entries[0].path, "docs/{legacy}/new/notes.md")
-  assert.deepEqual(entries[0].renamedFrom, ["docs/{legacy}/old/notes.md"])
-})
-
-// --- Hardening #5 — two entries collapsing onto one destination can carry two
-// different source paths. Both feed the secret gate, so keep every one. ---
-
-test("graph-preflight - collect - two renames onto one destination keep BOTH source paths", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat") {
-      return "1\t0\t{config => vendor}/creds.env\n"
-    }
-    if (args.join(" ") === "diff --numstat --cached") {
-      return "2\t0\t{.secrets => vendor}/creds.env\n"
-    }
-    return ""
-  }
-  const entries = collectEntries(fakeGit)
-  assert.equal(entries.length, 1, "one destination path must produce one entry")
-  assert.equal(entries[0].path, "vendor/creds.env")
-  assert.deepEqual(entries[0].renamedFrom, ["config/creds.env", ".secrets/creds.env"])
-})
-
-test("graph-preflight - classifier - a second source path is still checked for secrets", () => {
-  const result = classifyWorkingTree([
-    { path: "vendor/creds.env", changedLines: 3, renamedFrom: ["config/creds.env", ".secrets/creds.env"] }
-  ])
-  assert.equal(result.action, "blocked")
-  assert.match(result.reason, /\.secrets\/creds\.env/)
-})
-
-test("graph-preflight - classifier - a legacy single-string renamedFrom is still honoured", () => {
-  const result = classifyWorkingTree([{ path: "config/creds.env", changedLines: 0, renamedFrom: ".secrets/x.env" }])
-  assert.equal(result.action, "blocked")
-})
-
-test("graph-preflight - collect - merging never duplicates an identical source path", () => {
-  const fakeGit = (args) => {
-    if (args.join(" ") === "diff --numstat") {
-      return "1\t0\t{config => vendor}/creds.env\n"
-    }
-    if (args.join(" ") === "diff --numstat --cached") {
-      return "2\t0\t{config => vendor}/creds.env\n"
-    }
-    return ""
-  }
-  const entries = collectEntries(fakeGit)
-  assert.deepEqual(entries[0].renamedFrom, ["config/creds.env"])
-  assert.equal(entries[0].changedLines, 3)
-})
-
-// --- Hardening #6 — an explicit `null` thresholds argument skips the default
-// parameter and used to throw a TypeError. Treat it as "use the defaults". ---
-
-test("graph-preflight - classifier - an explicit null thresholds argument uses the defaults", () => {
-  const entries = [{ path: "a.md", changedLines: 201 }]
-  assert.equal(classifyWorkingTree(entries, null).action, "stash")
-  assert.equal(classifyWorkingTree([{ path: "a.md", changedLines: 4 }], null).action, "commit")
-})
-
-test("graph-preflight - classifier - a partial thresholds object fills the missing bound from the defaults", () => {
-  // `{ maxFiles: 50 }` used to leave `maxLines` undefined, and every `>`
-  // comparison against undefined is false — the line threshold failed open.
-  const result = classifyWorkingTree([{ path: "a.md", changedLines: 500 }], { maxFiles: 50 })
-  assert.equal(result.action, "stash")
-  assert.match(result.reason, /changed lines/)
-})
-
-// --- Hardening #8 — `git stash push -u` sweeps untracked paths. A
-// `node_modules` *symlink* is not a directory, so the `node_modules/` pattern
-// never matched it and a real run swept the toolchain into a stash. ---
+// --- The `node_modules` *symlink* case: preflight no longer stashes, but the
+// repository's ignore rules still decide what an in-place run sees as dirty. A
+// symlink is not a directory, so the `node_modules/` pattern used to miss it. ---
 
 test("graph-preflight - gitignore - a node_modules symlink is ignored, not swept as untracked", () => {
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..")
@@ -815,7 +394,7 @@ test("graph-preflight - lock - a live holder refuses and names slug, run id, and
   assert.match(result.message, /slug graph-workflow/)
   assert.match(result.message, /run id graph-20260818-120000/)
   assert.match(result.message, /pid 4242/)
-  assert.match(result.message, /Refusing: two runs cannot share one launch checkout/)
+  assert.match(result.message, /Refusing: two runs cannot share one root/)
 })
 
 test("graph-preflight - lock - a dead holder is reported stale, never silently stolen", () => {
@@ -865,9 +444,18 @@ test("graph-preflight - lock - isPidAlive treats EPERM as alive", () => {
     throw error
   }
   assert.equal(isPidAlive(4242, esrch), false)
-  assert.equal(isPidAlive(4242, () => undefined), true)
-  assert.equal(isPidAlive(0, () => undefined), false)
-  assert.equal(isPidAlive(-1, () => undefined), false)
+  assert.equal(
+    isPidAlive(4242, () => undefined),
+    true
+  )
+  assert.equal(
+    isPidAlive(0, () => undefined),
+    false
+  )
+  assert.equal(
+    isPidAlive(-1, () => undefined),
+    false
+  )
 })
 
 test("graph-preflight - lock - the record round-trips through the classifier", () => {
@@ -918,10 +506,7 @@ test("graph-preflight - lock - release is stated by reference, not re-enumerated
   ]) {
     const text = fs.readFileSync(fileURLToPath(new URL(file, import.meta.url)), "utf8")
     const enumerated = text.match(/`PROMPTED`/g) ?? []
-    assert.ok(
-      enumerated.length <= 1,
-      `${file} enumerates terminal states instead of pointing at the contract's table`
-    )
+    assert.ok(enumerated.length <= 1, `${file} enumerates terminal states instead of pointing at the contract's table`)
   }
 })
 
@@ -996,9 +581,7 @@ test("graph-preflight - lock - two worktree roots each hold their own lock witho
 })
 
 function graphProfile() {
-  return JSON.parse(
-    fs.readFileSync(fileURLToPath(new URL("../.claude/graph-profile.json", import.meta.url)), "utf8")
-  )
+  return JSON.parse(fs.readFileSync(fileURLToPath(new URL("../.claude/graph-profile.json", import.meta.url)), "utf8"))
 }
 
 test("graph-profile - merge and pull are allowed", () => {
@@ -1285,60 +868,6 @@ test("an undenied graph canary blocks the run", () => {
   assert.match(blocked.message, /graph tier is disarmed/)
 })
 
-// ---------------------------------------------------------------------------
-// base→main guard — a fresh run refuses to start while a prior package's
-// base→main PR is still open, so the queue never branches off a stale main.
-// ---------------------------------------------------------------------------
-
-const NEW_BRANCH = "thejudge-auto/overnight-run-tuning"
-
-test("graph-preflight - base-to-main guard - blocks on another slug's open PR", () => {
-  const guard = classifyPendingBaseToMain({
-    openPRs: [{ headRefName: "thejudge-auto/user-feedback-spec", url: "https://x/1" }],
-    newBranch: NEW_BRANCH
-  })
-  assert.equal(guard.block, true)
-  assert.match(guard.reason, /thejudge-auto\/user-feedback-spec/)
-  assert.match(guard.reason, /https:\/\/x\/1/, "the message must name the PR to merge")
-})
-
-test("graph-preflight - base-to-main guard - allows when only this branch's PR is open", () => {
-  // Run two's own base→main PR is legitimately open; it must not block itself.
-  const guard = classifyPendingBaseToMain({
-    openPRs: [{ headRefName: NEW_BRANCH, url: "https://x/own" }],
-    newBranch: NEW_BRANCH
-  })
-  assert.equal(guard.block, false)
-  assert.equal(guard.reason, null)
-})
-
-test("graph-preflight - base-to-main guard - allows on an empty PR list", () => {
-  const guard = classifyPendingBaseToMain({ openPRs: [], newBranch: NEW_BRANCH })
-  assert.equal(guard.block, false)
-})
-
-test("graph-preflight - base-to-main guard - ignores non-graph heads", () => {
-  // A human's feature PR into main is not the queue's concern.
-  const guard = classifyPendingBaseToMain({
-    openPRs: [
-      { headRefName: "feature/some-work", url: "https://x/2" },
-      { headRefName: "main-line-experiment", url: "https://x/3" }
-    ],
-    newBranch: NEW_BRANCH
-  })
-  assert.equal(guard.block, false)
-})
-
-test("graph-preflight - base-to-main guard - fails closed when the list is unavailable", () => {
-  // The guard's whole job is safety, so an unverifiable state refuses rather
-  // than assuming the queue is clear.
-  for (const bad of [null, undefined, "not-an-array", 42]) {
-    const guard = classifyPendingBaseToMain({ openPRs: bad, newBranch: NEW_BRANCH })
-    assert.equal(guard.block, true, `openPRs=${JSON.stringify(bad)} must fail closed`)
-    assert.match(guard.reason, /could not verify/)
-  }
-})
-
-test("graph-preflight - base-to-main guard - the branch prefix is the graph convention", () => {
+test("graph-preflight - the branch prefix is the graph convention", () => {
   assert.equal(GRAPH_BRANCH_PREFIX, "thejudge-auto/")
 })

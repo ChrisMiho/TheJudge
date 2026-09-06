@@ -90,3 +90,19 @@ test("graph-digest - formatDigest - is pure: same inputs give the same string", 
   }
   assert.equal(formatDigest(args), formatDigest(args))
 })
+
+test("graph-digest - owns the read-only pending-PR query since the base→main guard retired", async () => {
+  const { OPEN_BASE_TO_MAIN_PRS_COMMAND } = await import("./graph-digest.mjs")
+  assert.deepEqual(OPEN_BASE_TO_MAIN_PRS_COMMAND, [
+    "pr",
+    "list",
+    "--base",
+    "main",
+    "--state",
+    "open",
+    "--json",
+    "headRefName,url"
+  ])
+  // Read-only by construction: no mutating gh verb appears.
+  assert.ok(!OPEN_BASE_TO_MAIN_PRS_COMMAND.some((token) => ["merge", "close", "create", "edit"].includes(token)))
+})

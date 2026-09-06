@@ -353,6 +353,54 @@ test("the graph tier denies file-tool writes to the protected set", () => {
   assert.equal(tool("Write", { file_path: "PRD/README.md" }, LIVE_LOCK).decision, "allow")
 })
 
+// The rule reaches inside a worktree. Before 2026-09-06 a write to
+// `.worktrees/kickoff-x/<protected>` — or to the same file by absolute path —
+// passed `isProtectedPath()`, whose patterns anchor at the repo root, so the
+// build half was never actually protected inside its own worktree. The root is
+// pinned to `/repo` so the absolute form is a fixed string, not the tmpdir.
+const PROTECTED_SKILL = ".claude/skills/thejudge-map-out/SKILL.md"
+const PROTECTED_SKILL_FORMS = [
+  ["relative", PROTECTED_SKILL],
+  ["absolute under the root", `/repo/${PROTECTED_SKILL}`],
+  ["inside the kickoff worktree", `.worktrees/kickoff-x/${PROTECTED_SKILL}`],
+  ["inside the implement worktree", `.worktrees/implement-x/${PROTECTED_SKILL}`]
+]
+
+function pinnedRoot(io) {
+  return { ...io, environment: { CLAUDE_PROJECT_DIR: "/repo" } }
+}
+
+for (const [name, target] of PROTECTED_SKILL_FORMS) {
+  test(`graph tier denies a file-tool write to a lifecycle skill, ${name}, with a lock present`, () => {
+    const denied = tool("Edit", { file_path: target, old_string: "a", new_string: "b" }, pinnedRoot(LIVE_LOCK))
+    assert.equal(denied.decision, "deny", `expected a deny for: ${target}`)
+    assert.equal(denied.rule, "protected-path-write")
+    assert.equal(denied.runActive, true)
+    assert.match(denied.reason, /`\.claude\/skills\/thejudge-map-out\/SKILL\.md`/)
+  })
+
+  test(`graph tier denies a Bash redirection into a lifecycle skill, ${name}, with a lock present`, () => {
+    const denied = bash(`echo x > ${target}`, pinnedRoot(LIVE_LOCK))
+    assert.equal(denied.decision, "deny", `expected a deny for: echo x > ${target}`)
+    assert.equal(denied.rule, "protected-path-write")
+    assert.equal(denied.runActive, true)
+  })
+
+  test(`graph tier allows both writes to a lifecycle skill, ${name}, with no lock`, () => {
+    const edit = tool("Edit", { file_path: target, old_string: "a", new_string: "b" }, pinnedRoot(NO_LOCK))
+    assert.equal(edit.decision, "allow", `wrongly denied without a lock: ${target}`)
+    assert.equal(edit.runActive, false)
+    const redirect = bash(`echo x > ${target}`, pinnedRoot(NO_LOCK))
+    assert.equal(redirect.decision, "allow", `wrongly denied without a lock: echo x > ${target}`)
+  })
+}
+
+test("a denial inside a worktree names the worktree it reached through", () => {
+  const denied = bash(`echo x > .worktrees/kickoff-x/${PROTECTED_SKILL}`, pinnedRoot(LIVE_LOCK))
+  assert.equal(denied.rule, "protected-path-write")
+  assert.match(denied.reason, /kickoff-x/)
+})
+
 test("the universal tier fires in both lock states", () => {
   for (const [name, command, rule] of DENIED_UNIVERSAL) {
     for (const [state, lock] of [["no lock", NO_LOCK], ["lock present", LIVE_LOCK]]) {

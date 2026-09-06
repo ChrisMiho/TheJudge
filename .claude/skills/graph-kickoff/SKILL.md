@@ -35,12 +35,22 @@ Node 2 can return `NO ACTIONABLE PACKAGE` when the request cannot be turned into
 package. The run ends `BLOCKED`, not `PARKED`: no package folder exists yet for a
 gate to park against. See the contract's `## Terminal states`.
 
-**Running ideas in parallel.** To shape several ideas at once, launch each as its
-own session rooted in its **own git worktree** — never fan several ideas out inside
-one root. Isolation is structural: each root holds its own lock and control plane
-(`$CLAUDE_PROJECT_DIR` resolves them per-root), so parallel formers never collide
-and the boundary hook needs no change. `graph-preflight`'s `## Per-idea worktree
-isolation` section has the exact `git worktree add` command.
+**Where the run works.** Node 1 creates `.worktrees/kickoff-<slug>` on the run
+branch, cut from `origin/main`, and nodes 2–4 work **there**, never in the
+launch checkout (REQ-191). The driver passes
+`Working directory: <root>/.worktrees/kickoff-<slug>` to every node, runs its own
+ledger commits with `git -C <that path>`, and records the path in the ledger
+header as `- Worktree: <absolute path>`. The lock and every control file stay
+at the session root, as the build half's `implement-<slug>` worktree already
+works. The owner's checkout is never switched, committed to, or stashed.
+
+**Running ideas in parallel.** One after another needs nothing: a parked run
+holds no lock and the checkout was never touched, so `/graph-kickoff` runs
+again while the first idea's docs PR waits. Two at the same moment need two
+sessions rooted in two checkouts — `graph-preflight`'s `## Running two ideas at
+once` has the `git worktree add --detach` recipe. Never fan several ideas out
+inside one root: the hook counts every session's tool calls in a root against
+the live node's cap.
 
 ## Intake
 
@@ -49,16 +59,15 @@ same message: `/graph-kickoff "<request>" [paths...]`. A supplied path that does
 not exist or cannot be read is reported **before node 1** — the run does not start
 on partial material.
 
-Write each accepted item **verbatim** into `.worktrees/.graph-intake/<run-id>/`
-before node 1 is dispatched, using the run id minted above.
+Write each accepted item **verbatim** into `<root>/.worktrees/.graph-intake/<run-id>/`
+before node 1 is dispatched, using the run id minted above, and pass that
+staging path to node 2 as an **absolute** path.
 
-**Why outside the working tree:** node 1 resolves the working tree before the
-branch exists. `classifyWorkingTree` in `scripts/graph-preflight.mjs` stashes a
-tree over 10 files or 200 changed lines, and stashes with `git stash push -u`.
-Intake written into the package up front would be stashed off before the branch
-exists, leaving node 2 an empty folder. `.worktrees/` is gitignored and
-`git stash push -u` spares ignored paths, which is why staging lives there. Intake
-is copied, never referenced in place, and carries no size gate.
+**Why outside the working tree:** nodes 2–4 run in `.worktrees/kickoff-<slug>`,
+a different checkout from the launch tree, so a file left in the launch tree is
+not visible to the run at all. `.worktrees/` is gitignored, and the staging
+folder lives under the launch root, which is why node 2 needs the absolute
+path. Intake is copied, never referenced in place, and carries no size gate.
 
 Read `PRD/instructions/graph-workflow-contract.md` and [reference.md](reference.md)
 in full before acting. Their node table, ledger schema, gate rules, and boundaries
@@ -72,26 +81,32 @@ reads the same authority; this skill points to it rather than restating it.
 Run the ordered `## Pre-dispatch sequence` (contract) before **every** node
 dispatch. Then, for nodes 1–4:
 
-1. Read `PRD/work/<slug>/GRAPH-RUN.md` if it exists. Resume at `Current node`.
-   With no ledger but a supplied package path in the spec-forming half, enter at
-   the node matching the package's current `STATUS.*` marker using the entry-point
-   table in [reference.md](reference.md), and create the ledger there.
+1. Read the ledger if it exists and resume at `Current node`. The ledger lives
+   in the kickoff worktree — `.worktrees/kickoff-<slug>/PRD/work/<slug>/GRAPH-RUN.md`
+   under the launch root (`kickoffWorktreePath(slug)`) — because the package
+   exists only on the run branch. Pass that same path to
+   `scripts/graph-ledger-check.mjs`. **A missing kickoff worktree on resume ends
+   the run `BLOCKED`, naming it** — never re-create it silently. With no ledger
+   but a supplied package path in the spec-forming half, enter at the node
+   matching the package's current `STATUS.*` marker using the entry-point table
+   in [reference.md](reference.md), and create the ledger there.
 
    **A resume takes the lock before it does anything else.** It never re-runs the
-   branch and stash work, so nothing along that path arms the graph tier. Run
-   `graph-preflight --take-lock --slug <slug> --run-id <id>`, then issue
-   `GRAPH_CANARY_COMMAND` and require a deny. Start at `preflight` for a genuinely
-   fresh run, and for a resumed package whose README has no `## Autonomous
-   metadata`: run `preflight` first with a supplied `--branch <name>` to record
-   the base, then enter at the status-matched node.
+   branch work, so nothing along that path arms the graph tier. Run
+   `graph-preflight --take-lock --slug <slug> --run-id <id>` at the launch root,
+   then issue `GRAPH_CANARY_COMMAND` and require a deny. Start at `preflight` for
+   a genuinely fresh run, and for a resumed package whose README has no
+   `## Autonomous metadata`: run `preflight` first with a supplied `--branch
+   <name>` to record the base, then enter at the status-matched node.
 2. State `graph is controlling` before every node handoff. Without that predicate
    the delegated skill runs in its normal interactive mode and stops to ask the
    user questions.
 3. Dispatch the node's delegate as a subagent using the model from the node table
    (contract). Pass the package path, the run ID, the controlling predicate, and
-   an absolute `Working directory:` line on its own line. Require the node to copy
-   that same line, unchanged, into every prompt it writes — constraining a parent
-   does not constrain its children.
+   an absolute `Working directory:` line on its own line — the launch root for
+   node 1, the kickoff worktree (`worktree:` from node 1's output) for nodes
+   2–4. Require the node to copy that same line, unchanged, into every prompt it
+   writes — constraining a parent does not constrain its children.
 4. Record the outcome in the ledger before starting the next node — evidence is a
    command, path, PR URL, or artifact URL, never a bare claim.
 5. On `ok`, advance. On `failed`, apply the node's retry rule from the contract
@@ -127,12 +142,13 @@ stops. To stop, the run:
 1. Publishes the proposal to the base branch — `DESIGN-BRIEF.md`,
    `GATE-QUESTIONS.md` (when refinement proposed product-truth changes), the
    package `README.md` (with `## Autonomous metadata` and `## Preparation gate`),
-   and the ledger — committed and pushed to `origin/<autonomous base>`. No
-   `PRD/sections/` edits are published here: refinement wrote none, and `build`
-   applies them by intent later.
-2. Opens the **docs-only base→main PR**: `gh pr create --base main --head
-   thejudge-auto/<slug>`. This *creates* a PR; it never merges one, so no boundary
-   is crossed. Record its URL in the ledger. It is the PR the implementation grows
+   and the ledger — committed in the kickoff worktree and pushed to
+   `origin/<autonomous base>`. No `PRD/sections/` edits are published here:
+   refinement wrote none, and `build` applies them by intent later.
+2. Opens the **docs-only base→main PR** from the kickoff worktree: `gh pr create
+   --base main --head thejudge-auto/<slug>` (`gh` resolves the repository from
+   any checkout). This *creates* a PR; it never merges one, so no boundary is
+   crossed. Record its URL in the ledger. It is the PR the implementation grows
    into and the owner merges last. The `--body` opens with the PR-body
    plain-language block from `PRD/instructions/plain-language-standard.md` — *What
    this is · What you need to do · What it changes* — so the owner sees, at the top
@@ -146,7 +162,9 @@ stops. To stop, the run:
    `GATE-QUESTIONS.md`), "review the docs PR, then merge to build". **The owner
    builds it by answering the verdict slots in the PR and merging to `main`;
    `graph-implement` (the background build loop) picks it up from there** — this is
-   the answer-then-merge approval model. End.
+   the answer-then-merge approval model. The kickoff worktree **stays** through
+   the park (the owner may answer `GATE-QUESTIONS.md` there and `graph-gate-review`
+   runs there); `graph-implement` removes it at claim time. Report its path. End.
 
 ## Package sections the driver owns
 
@@ -179,8 +197,9 @@ The contract is the single authority for the machinery this skill and
 
 ## Next step
 
-Report the terminal state, the branch, the PR URL, and the ledger path, then the
-exact next step from the contract's `## Terminal states`. On the normal stop
+Report the terminal state, the branch, the kickoff worktree path, the PR URL,
+and the ledger path, then the exact next step from the contract's `## Terminal
+states`. On the normal stop
 (gate-qc PASS → `owner-action`), the next step is the owner answering
 `GATE-QUESTIONS.md` and merging the PR; `graph-implement` builds it.
 

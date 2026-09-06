@@ -3703,7 +3703,7 @@
 - Acceptance Criteria:
   - the door proposes a kebab-case slug before dispatching node 1
   - the derived branch is `thejudge-auto/<slug>`, matching the convention already in the repository's merge history
-  - `graph-preflight` receives that branch as its required `--branch` argument, and its own contract is otherwise unchanged
+  - `graph-preflight` receives that branch as its required `--branch` argument and the slug as `--slug` (REQ-191); the branch is created in `.worktrees/kickoff-<slug>` off `origin/main`
   - node 2 receives the proposed slug and uses it rather than proposing a second name
   - a slug proposed by intake material is honored ahead of derivation from the request text
   - an explicitly supplied `--branch` overrides the derived branch without changing the slug node 2 receives
@@ -3735,8 +3735,8 @@
   - `thejudge-cleanup` writes an `## Intake` section into the receipt naming each intake file and its stated origin, before deleting `PRD/work/<slug>/`
 - Constraints:
   - intake is copied, never referenced in place: a pointer to untracked material outside the repository is the recorded failure this closes
-  - intake is never staged inside the git working tree before node 1. `scripts/graph-preflight.mjs` counts untracked files (`git ls-files --others --exclude-standard`) and resolves an oversized tree with `git stash push -u`, which would sweep the intake off before the branch exists. `.worktrees/` is gitignored, and `git stash push -u` does not touch ignored paths
-  - no size gate is placed on intake, because a gate would refuse exactly the thorough handoff document this accepts. Staging outside the working tree is what makes that hold: node 1's file-count and changed-line thresholds never see the intake
+  - intake is never staged inside the launch checkout's working tree before node 1. Nodes 2–4 run in `.worktrees/kickoff-<slug>` (REQ-191), a different checkout, so a file left in the launch tree is not visible to the run at all. `.worktrees/` is gitignored, and the driver passes the staging path as an absolute path under the launch root
+  - no size gate is placed on intake, because a gate would refuse exactly the thorough handoff document this accepts. Staging under the ignored `.worktrees/` root is what makes that hold: nothing in preflight counts or resolves the launch tree any more
   - intake citations are never followed transitively; transitive following is unbounded
   - `docs/whatIsGraph/` is not committed by this work — sweeping untracked working material into the repository stays the owner's call
 - Dependencies:
@@ -3747,7 +3747,7 @@
   - the recorded failure is specific: `receipts/graph-run-boundary-enforcement-2026-08-20.md` states that all six of that package's findings came from `docs/whatIsGraph/graph-hardening-handoff.md`, that the promotion checklist expected the file marked closed or retired, and that cleanup could do neither because the file is untracked and outside the repository
   - that same document is the worked example of correct intake shape: it declares itself kickoff-and-refinement input, states that nothing in it is a decision, and proposes its own slug
   - "evidence, not authority" is a contract rule and not an enforced one. Nothing prevents refinement adopting an intake claim wholesale; what catches it is the `define` gate parking on the resulting `PRD/sections/` diff
-  - node 1 sweeps the intake *source* as well, so the staged copy is the only one the run is guaranteed to read. A handed-in path that is itself untracked — `docs/whatIsGraph/graph-hardening-handoff.md` is one, at 276 lines — is stashed off the checkout when the tree exceeds the thresholds, and auto-committed as `chore(graph): auto-commit working tree before graph run` when it does not. The door takes its copy at launch, before either happens
+  - the staged copy is the only one the run is guaranteed to read. A handed-in path that is itself untracked — `docs/whatIsGraph/graph-hardening-handoff.md` is one, at 276 lines — exists only in the launch checkout, not in the kickoff worktree the nodes run in. The door takes its copy at launch, so the run reads it from `.worktrees/.graph-intake/<run-id>/` regardless
 
 ### REQ-163
 - Title: Prior shipped runs are linked from the receipts corpus
@@ -3778,7 +3778,7 @@
   - `graph-kickoff` handles `NO ACTIONABLE PACKAGE` returned by node 2 as a named edge in the contract and in the skill
   - the run terminates at `BLOCKED`, reporting what was tried, what exists, what does not, and the recovery action
   - the recovery action names re-invoking the door with a fuller description or with intake material, **and** an explicit `--branch`, because a fuller description of the same thing derives the same slug and `graph-preflight` exits 2 on the collision with the branch node 1 already pushed
-  - the report names the `thejudge-auto/<slug>` branch node 1 created and pushed, whether node 1 auto-committed or stashed the working tree, and the staging path holding any intake, so a retry loses no work and re-pastes no material
+  - the report names the `thejudge-auto/<slug>` branch node 1 created and pushed, the `.worktrees/kickoff-<slug>` worktree it created (REQ-191), and the staging path holding any intake, so a retry loses no work and re-pastes no material; `npm run graph:prune` (REQ-192) lists both once the branch is merged or abandoned
   - the concurrency lock is released, as every terminal state requires
   - no fifth terminal state is added
   - the terminal-state definition (now in `graph-workflow-contract.md`) is amended so `BLOCKED` also covers a request too thin to package, not only an external condition
@@ -3787,7 +3787,7 @@
 - Constraints:
   - the outcome is `BLOCKED` rather than `PARKED`: `PARKED` means the run resumes from a recorded gate, and a thin request produces no artifact to resume from — recovery is a new run, not a resumption
   - the mechanical form of the same point: parking needs a package folder for `## Open gate`, a `STATUS.*` marker, and a board row, and none of the three exists on this path. `thejudge-kickoff` returns `NO ACTIONABLE PACKAGE` without creating them, and intake stays staged outside the working tree until node 2 has created the package folder, so the intake path does not create one either
-  - the run does not delete the branch it left behind. `graph-preflight`'s contract forbids tidying a failed run, and node 1 may have auto-committed real working-tree changes onto that branch
+  - the run does not delete the branch or the kickoff worktree it left behind. `graph-preflight`'s contract forbids tidying a failed run; the owner removes them deliberately with `npm run graph:prune --apply` (REQ-192) or by hand
   - the door never invents scope to make a thin request actionable
 - Dependencies:
   - REQ-160
@@ -3918,7 +3918,7 @@
 - Acceptance Criteria:
   - two `graph-kickoff` ideas, each launched as its own session in its own worktree, proceed at the same time without either refusing on the other's lock — because each root holds its own `.worktrees/.graph-run.lock`
   - each idea's worktree is created under the repo-local `.worktrees/` root, off one shared base branch, and each writes only its own `PRD/work/<slug>/` folder
-  - `graph-preflight` provides the worktree path and creation command (`kickoffWorktreePath` / `kickoffWorktreeCommand`), and running inside a fresh worktree does not auto-commit or stash the launch checkout on behalf of a per-idea run; the launch checkout is left untouched
+  - `graph-preflight` creates the per-idea worktree itself (`kickoffWorktreePath` names it; the `git worktree add … origin/main` step is a planned preflight command, REQ-191) when run from a root checkout, and works in place — clean tree required — when the session is already rooted in a linked worktree; in both shapes the launch checkout is never committed to, stashed, or switched
   - the boundary hook is unchanged: the graph tier still arms on the presence of the per-root lock, and `classifyLock()` stale/corrupt/held behavior is preserved as-is
   - the shared-working-directory hazard is closed structurally: no two runs share a working tree, commit to the same checkout, or rewrite the same `GRAPH-RUN.md`
   - `graph-implement` runs in its own root as a single background loop; it and any `graph-kickoff` sessions never contend because each root is isolated
@@ -4290,3 +4290,56 @@
 - Notes:
   - measured 2026-09-05: in a checkout whose model cache was empty, `npm run benchmark:rag-retrieval -- --semantic` returned the lexical numbers labelled `method=semantic-local` with no failure — the reason the *unset* default must stay `mock` rather than flipping repo-wide
   - measured at build, 2026-09-05: `scripts/package-lambda.sh`'s model-cache refusal was written to assert existing intent but did not actually fire — a best-effort warm attempt swallowed its own failure (`|| true`) with no follow-up check, so a package built with a cold cache and no network would have shipped silently missing the model. Added an explicit post-warm check that refuses (exit 1) when the model file is still absent, and `scripts/package-lambda.test.mjs` proves it — offline, via a scratch repo and a no-op `npx` shim, no real network call
+
+### REQ-191
+- Title: Spec-forming runs work in a kickoff worktree off `origin/main` and never mutate the launch checkout
+- Priority: high
+- Description: `graph-preflight` (node 1) creates `.worktrees/kickoff-<slug>` as a git worktree on a new `thejudge-auto/<slug>` branch cut from `origin/main`, and every later spec-forming node (2–4) works inside it. The launch checkout — the directory the owner's session is rooted in — is never switched, committed to, or stashed by a graph run, so the owner stays on `main` and a second idea can start while the first waits at its gate.
+- Acceptance Criteria:
+  - from a root checkout, preflight's planned commands are `git fetch origin`, the branch-collision check, `git worktree add .worktrees/kickoff-<slug> -b thejudge-auto/<slug> origin/main` (or the explicit `--base`), and `git -C .worktrees/kickoff-<slug> push -u origin thejudge-auto/<slug>`; it prints the absolute worktree path and `base: origin/main`
+  - the branch start point defaults to `origin/main`, never to the current branch; `--base <ref>` remains an explicit override and is reported as one
+  - preflight never runs `git switch`, `git add`, `git commit`, or `git stash` against the launch checkout; the working-tree classification, its file/line thresholds, the secret gate, and the auto-commit message are removed from `scripts/graph-preflight.mjs`
+  - preflight refuses when `.worktrees/kickoff-<slug>` already exists, naming it
+  - `--slug <slug>` is required on the fresh-run path, as it already is with `--take-lock`; it names the worktree
+  - a session already rooted in a linked worktree runs preflight in place: it requires a clean tree (`git status --porcelain` empty, else exit 1 naming the dirty paths), then `git switch -c thejudge-auto/<slug> origin/main` — from a branch or a detached HEAD — and push
+  - the base→main guard (`classifyPendingBaseToMain`) is removed from the script, its tests, and every skill and instruction that describes it; a fresh run starts while another package's base→main PR is open
+  - `graph-kickoff` dispatches nodes 2–4 with an absolute `Working directory:` line naming the kickoff worktree, runs its own ledger commits there, stages intake at the root's `.worktrees/.graph-intake/<run-id>/` and passes that absolute path, and opens the docs PR from the worktree branch
+  - the ledger header carries `- Worktree: <absolute path>`; `graph-kickoff` resumes a slug by reading `.worktrees/kickoff-<slug>/PRD/work/<slug>/GRAPH-RUN.md` under the launch root and passes that path to `scripts/graph-ledger-check.mjs`; a missing worktree on resume ends the run `BLOCKED` naming it
+  - the concurrency lock, run state, counters, and evidence log stay at the launch root; the hook's `protected-path-write` rule matches a written path after making it relative to the project root and stripping a leading `.worktrees/<dir>/` segment, so the relative, absolute, `.worktrees/kickoff-<slug>/…`, and `.worktrees/implement-<slug>/…` forms of a protected path are all denied while the lock is held and all allowed without it — asserted by tests for each form
+  - at the `owner-action` park the worktree stays and the report names its path; `graph-implement` removes it at claim time with `git worktree remove` (never `--force`) when the tree is clean, parks naming the worktree otherwise, and never deletes the local `thejudge-auto/<slug>` branch, which the build half still records as its autonomous base
+  - `OPERATOR.md` carries a recipe for starting a second idea while the first waits, and states that two runs *at the same time* need two sessions rooted in two checkouts (`git worktree add --detach .worktrees/session-<name> origin/main`, then launch the session there) because the hook counts every session's tool calls in one root against the live node's cap
+- Constraints:
+  - worktrees never escape the repo-local `.worktrees/` root; `.claude/worktrees/` (the harness's own feature) is not used by graph runs
+  - the lock record, filename, keying, and `classifyLock()` behavior are unchanged; the hook's tiers and every other rule are unchanged
+  - no `thejudge-*` skill changes; the retirement touches `graph-*` skills, scripts, the contract, the two `graph-kickoff` skill fixtures, and owner docs only
+  - a dirty in-place worktree is refused, never resolved on the owner's behalf
+  - the local base branch's re-creation after GitHub's delete-on-merge is not decided here; the build half keeps re-creating it from the local branch exactly as today
+- Dependencies:
+  - REQ-160
+  - REQ-161
+  - REQ-170
+  - REQ-171
+- Notes:
+  - this closes the 2026-09-06 audit's findings 1, 4, 5, and 6 (`PRD/work/probe-graph-workflow-audit/`): every branch, sync, and parallel symptom traced to the launch checkout doubling as the driver's working branch
+  - the build half already works this way — node 6 in `.worktrees/implement-<slug>` with the lock at the root. The first quality check of this package found that the protected-path rule never reached inside that worktree either (`isProtectedPath` is anchored to the repository root), which is why the rule is made worktree-aware here rather than left as a stated limit
+  - the guard's original failure (`user-feedback-spec`, PR #107, a run branched off a `main` missing the prior package) cannot recur once every run starts from `origin/main`
+
+### REQ-192
+- Title: `graph:prune` lists local run leftovers and removes them only with `--apply`
+- Priority: medium
+- Description: `npm run graph:prune` reports local branches, worktrees, and intake staging folders left behind by finished graph runs, and deletes the safe subset only when invoked with `--apply`.
+- Acceptance Criteria:
+  - without `--apply` the command prints every candidate with the reason it qualifies or is kept, and changes nothing
+  - candidates are: local `thejudge-auto/*` branches whose tip is an ancestor of `origin/main` and whose package folder `PRD/work/<slug>/` (slug = the name after the prefix, with any `-work` / `-cleanup` suffix removed) no longer exists on `origin/main`; worktrees under `.worktrees/` (excluding `.worktrees/.codehealth/`, which the codehealth loop manages) whose branch is merged into `origin/main` and whose `git status --porcelain` is empty; `.worktrees/.graph-intake/<run-id>/` folders whose run id does not match the live `.worktrees/.graph-run.lock`
+  - a merged `thejudge-auto/<slug>` branch whose `PRD/work/<slug>/` still exists on `origin/main` is reported as kept ("package still on main: the build half's base"), never deleted
+  - with `--apply` it deletes branches with `git branch -d` (never `-D`), worktrees with `git worktree remove` (never `--force`), and staging folders with a filesystem remove; anything that fails is reported and skipped
+  - it never deletes a remote ref, never runs `git push`, and never removes `.worktrees/.graph-run.lock`, `.worktrees/.graph-stop`, `.worktrees/.graph-run-state.json`, `.worktrees/.graph-node-calls.json`, `.worktrees/.graph-evidence.jsonl`, or `.worktrees/.graph-denials.jsonl`
+  - worktrees outside `.worktrees/` are reported as out-of-root and never removed
+  - the classification is a pure, tested function over the observed branch list, worktree list, and lock; I/O lives in `main()`
+- Constraints:
+  - the command fetches first so "merged" is judged against a fresh `origin/main`
+  - no `thejudge-*` skill invokes it; it is an owner command, listed in `OPERATOR.md`
+- Dependencies:
+  - REQ-191
+- Notes:
+  - a run does not prune its own leftovers because a failed run's branch is evidence (`graph-preflight`'s "never tidy a failed run" rule); pruning is the owner's deliberate act

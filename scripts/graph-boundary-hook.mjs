@@ -414,6 +414,7 @@ export function decide(rawPayload, io = {}) {
   const verdict = classifyToolCall({
     toolName: payload.tool_name,
     toolInput: payload.tool_input,
+    root,
     runActive,
     stopRequested: readStopSentinel(root, read),
     runState,

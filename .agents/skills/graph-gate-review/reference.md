@@ -43,7 +43,7 @@ check can stand in for the judgment: a script can detect that `PRD/sections/`
 changed, but only the owner can say whether the product truth written there is
 the product they want.
 
-Everything below the product layer stays unattended — branching, stashing,
+Everything below the product layer stays unattended — branching, worktrees,
 slicing, commits, PR plumbing. The trade is deliberate and narrow.
 
 ## Restating in product terms first

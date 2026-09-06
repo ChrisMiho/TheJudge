@@ -33,7 +33,7 @@ can't resolve, it stops and writes the question down rather than guessing.
 **Your touch points:** one, up front — the **define gate**. The run drives to the
 point where it has written the proposed product truth, opens a docs-only pull
 request, and parks waiting for you. It does **not** write any code yet. You
-review the gate next (recipe 4).
+review the gate next (recipe 5).
 
 **Done when:** the run reports `PARKED` with a `GATE-QUESTIONS.md` file waiting
 and a docs PR open. That's your cue to review the gate.
@@ -42,9 +42,44 @@ and a docs PR open. That's your cue to review the gate.
 > `/graph-preflight` yourself — the run dispatches it as its own first step. A
 > separate preflight is only for the resume edge cases the skill handles for you.
 
+> The run never touches your checkout. It works in its own folder,
+> `.worktrees/kickoff-<slug>`, branched from `origin/main`, and you stay on
+> whatever branch you were on with whatever you had uncommitted.
+
 ---
 
-## 2. File a bug or add scope
+## 2. Start a second idea while the first waits
+
+**You want to:** kick off idea B while idea A's docs PR is still waiting for your
+answers.
+
+**Do:** `/graph-kickoff "<idea B>"` — the same command, from the same terminal.
+Nothing to set up. A parked run holds no lock and left your checkout alone, so
+the next run is not refused and does not branch off anything stale.
+
+**You'll be asked:** nothing.
+
+**Your touch points:** the same one as recipe 1, once per idea.
+
+**Done when:** idea B parks with its own docs PR. Answer and merge the two PRs
+in any order.
+
+> **Two runs at the same moment** (idea A still executing, not parked) need two
+> sessions in two checkouts, because the safety hook charges every tool call in
+> one folder to the run that holds that folder's lock. Make a throwaway checkout
+> and start the second session there:
+>
+> ```
+> git worktree add --detach .worktrees/session-<name> origin/main
+> cd .worktrees/session-<name> && claude --settings .claude/graph-profile.json
+> ```
+>
+> Inside it, `/graph-kickoff` works in place. When both are done,
+> `npm run graph:prune` lists the throwaway checkout for removal.
+
+---
+
+## 3. File a bug or add scope
 
 **You want to:** feed new bug reports or scope requests into work that's already
 underway, or start a standalone fix.
@@ -72,13 +107,13 @@ land as dated held entries, `REFUSE`s stay as the table row and nothing else.
 
 ---
 
-## 3. Run overnight or unattended
+## 4. Run overnight or unattended
 
 **You want to:** let a run work while you're away, safely, with a way to stop it.
 
 **Do:** launch the session with the protective permission profile —
 `claude --settings .claude/graph-profile.json` — then start your run inside it
-(recipe 1 or 6). To repeat work on a schedule, wrap it with `/loop`.
+(recipe 1 or 7). To repeat work on a schedule, wrap it with `/loop`.
 
 **Overnight code-health:** `/loop codehealth` is a ready-made overnight loop that
 opens one behavior-preserving code-health PR per target and never merges. It uses
@@ -103,9 +138,15 @@ cleared to run). Each one names the exact next step in its report.
 > Without it the guardrails are inert. See `PRD/work/adhoc/PROGRESS.md` for the
 > morning digest (`npm run graph:digest`) that lists anything waiting on you.
 
+> **One session per folder while a run is executing.** The hook counts every
+> tool call in a folder against the running node's budget and applies the run's
+> rules to any session in that folder, so an ordinary session opened in the same
+> checkout gets denied and eats the run's budget. Work in another checkout
+> (recipe 2) until the run parks or finishes.
+
 ---
 
-## 4. Review a gate
+## 5. Review a gate
 
 **You want to:** approve, edit, or reject the product truth a parked run
 proposed, so it can carry on.
@@ -123,7 +164,10 @@ another file to decode an ID.
 a `reject` removes that item entirely (and its ID is retired, never reused).
 
 **Done when:** the skill reports the verdict counts, marks the gate resolved, and
-hands you back `/graph-implement PRD/work/<slug>/` to resume (recipe 6).
+hands you back `/graph-implement PRD/work/<slug>/` to resume (recipe 7).
+
+> The file lives in the run's own folder, `.worktrees/kickoff-<slug>/PRD/work/<slug>/`,
+> until you merge the docs PR. Answer it there, or on GitHub in the PR.
 
 > It refuses an unanswered file — every block needs a verdict before it will
 > resolve the gate. That's what keeps the resume a single command with nothing
@@ -131,7 +175,7 @@ hands you back `/graph-implement PRD/work/<slug>/` to resume (recipe 6).
 
 ---
 
-## 5. The base→main merge — do not skip this
+## 6. The base→main merge — do not skip this
 
 **You want to:** actually get finished work onto `main`. **This is the step that's
 been missed twice.** A run does **not** put its work on `main` by itself.
@@ -143,9 +187,10 @@ been missed twice.** A run does **not** put its work on `main` by itself.
 
 **Your touch points:** one — clicking merge on that PR.
 
-**Done when:** `main` contains the work. Until you merge it, the next fresh run
-branches off a `main` that's missing this package — and the system now refuses to
-start a new run while a prior base→main PR is still open, precisely to stop that.
+**Done when:** `main` contains the work. Until you merge it, `main` is missing
+this package. A new run is not blocked by that — every run branches from
+`origin/main` as it stands — so an unmerged PR only delays when the work lands,
+never what the next run starts from.
 
 > A run marks itself `COMPLETE` once its work merges into its own base branch
 > (`thejudge-auto/<slug>`). That is **not** `main`. The last hop to `main` is
@@ -153,7 +198,7 @@ start a new run while a prior base→main PR is still open, precisely to stop th
 
 ---
 
-## 6. Resume a parked run
+## 7. Resume a parked run
 
 **You want to:** pick a run back up after you've reviewed its gate or cleared
 whatever it was waiting on.
@@ -164,18 +209,18 @@ whatever it was waiting on.
 re-enters at the right step.
 
 **Your touch points:** none — this just restarts the machine. Your decision
-already happened at the gate (recipe 4).
+already happened at the gate (recipe 5).
 
 **Done when:** the run advances to its next end state — usually driving on to
 write and land the code, then reporting `COMPLETE`. Remember the base→main merge
-is still yours afterward (recipe 5).
+is still yours afterward (recipe 6).
 
-> If you stopped it with the `.worktrees/.graph-stop` file (recipe 3), delete that
+> If you stopped it with the `.worktrees/.graph-stop` file (recipe 4), delete that
 > file first — a run refuses to resume while the stop switch is set.
 
 ---
 
-## 7. Audit a corpus
+## 8. Audit a corpus
 
 **You want to:** score every item in a body of docs against one question and get
 a single report back — not ship a feature, and not a decision per section.
@@ -199,7 +244,7 @@ contested item sorted to the top) plus a finding doc per section. You merge it.
 
 ---
 
-## 8. Run a manual package
+## 9. Run a manual package
 
 **You want to:** do work the automated runs aren't allowed to touch — chiefly
 editing the skills or instruction files themselves (like the docs-refactor's
@@ -232,6 +277,7 @@ under `PRD/instructions/receipts/`. You merge it.
 | A gate waiting on you | `## Open gate` in that run's `GRAPH-RUN.md` |
 | The board of active packages | `PRD/work/STATUS.md` |
 | What a finished run produced | `PRD/instructions/receipts/<slug>-<date>.md` |
+| Leftover branches, run folders, and staging from finished runs | `npm run graph:prune` (lists only; add `--apply` to delete the safe ones) |
 
 ## Related
 
