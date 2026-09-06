@@ -1,6 +1,15 @@
 # Slice E — apply product truth, rewrite the fixtures, smoke, ship
 
-## Status: in-progress
+## Status: done
+
+Verified 2026-09-06: `check-applied.mjs` reports `10/10 applied` (8 amendment
+excerpts gone and replaced, 2 new entries present — the E1 wording said 8/8 for
+the excerpts alone); REQ-191 and REQ-192 present once each at
+`functional-requirements.md:4294` and `:4327`, appended after REQ-184 (REQ-185–190
+stay reserved for the answer-quality package to insert before them); both
+fixtures rewritten, the first re-run scoped 3 of 3 (owner's choice), the second
+recorded as deferred; `## Smoke` in the README records both shapes and the prune
+listing; `npm run quality:check` exit 0 (464 script tests, coverage 92%).
 
 ## Goal
 
@@ -70,8 +79,8 @@ npm run quality:check
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/<slug>/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change (no API, endpoint, or UI change; the graph CLI gained `--slug` as required and lost the threshold flags, per REQ-191)
+- [x] No secrets committed
+- [x] Durable outcomes promoted (REQ-191, REQ-192, and the five amendments applied); `PRD/work/<slug>/` ready to delete once slice D's two owner-applied `codehealth` sentences land

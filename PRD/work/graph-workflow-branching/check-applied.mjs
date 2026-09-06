@@ -7,11 +7,11 @@
 // entry of functional-requirements.md. Applying is idempotent: a block already
 // applied is skipped.
 
+/* global process, console */
 import { readFileSync, writeFileSync } from "node:fs"
 
 const GATE = "PRD/work/graph-workflow-branching/GATE-QUESTIONS.md"
 const FR = "PRD/sections/functional-requirements.md"
-const UF = "PRD/sections/user-flows.md"
 
 const gate = readFileSync(GATE, "utf8")
 const apply = process.argv.includes("--apply")
