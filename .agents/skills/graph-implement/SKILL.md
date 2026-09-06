@@ -52,7 +52,7 @@ Each tick:
    `git show origin/main:PRD/work/` lists the packages,
    `git show origin/main:PRD/work/<slug>/` lists the marker, and
    `git show origin/main:PRD/work/<slug>/GATE-QUESTIONS.md` gives the slots.
-   (`git ls-tree` is not in the profile; `git show` is.)
+   (git's tree-listing subcommand is not in the profile; `git show` is.)
 2. **Find a ready spec.** A spec is *ready to build* when, on `origin/main`, its
    `STATUS.refined` marker is present, every `GATE-QUESTIONS.md` verdict slot is
    answered (no blank), no code has been built for it yet, **and it is not

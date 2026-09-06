@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # graph-workflow-land
 
@@ -33,7 +33,13 @@ the same day.
 | B | [slice-b-thejudge-skills.md](./slice-b-thejudge-skills.md) | blocked — edits staged under `staged/`, owner applies with the `!cp` commands in the slice doc | — |
 | C | [slice-c-graph-skills.md](./slice-c-graph-skills.md) | done | — |
 | D | [slice-d-contract-and-owner-docs.md](./slice-d-contract-and-owner-docs.md) | done (codehealth line staged for the owner) | — |
-| E | [slice-e-product-truth-and-ship.md](./slice-e-product-truth-and-ship.md) | in-progress | A, B, C, D |
+| E | [slice-e-product-truth-and-ship.md](./slice-e-product-truth-and-ship.md) | done | A, B, C, D |
+
+Slices A, C, D, E are done and verified. Slice B is `blocked` on a permission
+deny only: its edits are complete in `staged/` and the owner applies them with
+four `!cp` commands (slice B doc) plus the `codehealth` line from slice D. The
+package is `ship-ready` for the manual PR on that basis; the receipt carries
+the same commands.
 
 ## Implementation map
 
