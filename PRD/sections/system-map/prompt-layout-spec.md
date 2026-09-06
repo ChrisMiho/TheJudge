@@ -1,6 +1,6 @@
 # Prompt layout spec
 
-Backed by: DEC-025, DEC-042, REQ-169, DEC-107, REQ-074, REQ-178, REQ-181
+Backed by: DEC-025, DEC-042, REQ-169, DEC-107, REQ-074, REQ-178, REQ-181, REQ-182
 
 ## Purpose
 
@@ -33,7 +33,7 @@ that path's actual position, not an invented one.
 | 5 | `PHASE GUIDANCE` | A short note on what's relevant to check during the current turn phase / combat step. Game mode only. |
 | 6 | `ZONE: <name>` (one heading per populated zone) | The ordered stack (bottom to top) plus any other zone with cards, each card's full metadata. Game mode only. |
 | 7 | `GAME RULES (reference)` | Curated core-rules excerpts (System 2) — state-gated by submitted zones/cards in game mode, a fixed always-on set in lookup mode. |
-| 8 | `ADDITIONAL RELEVANT RULE EXCERPTS` | Supplemental rule excerpts (System 3), ranked by meaning against committed per-rule embeddings with a keyword-overlap fallback, from a query built from the question plus each attached card's name, type line, and keywords — not its full oracle text (REQ-167, REQ-178, REQ-181). |
+| 8 | `ADDITIONAL RELEVANT RULE EXCERPTS` | Supplemental rule excerpts (System 3), ranked by a hybrid blend of normalised cosine against committed per-rule embeddings and normalised keyword-overlap score, with the exact-rule-id boost merged into the blended score and keyword-overlap scoring alone retained as the mock/offline default and the failure fallback, from a query built from the question plus each attached card's name, type line, and keywords — not its full oracle text (REQ-167, REQ-178, REQ-181, REQ-182). |
 | 9 | `CARD (looked up)` | Full metadata (name, mana cost, type line, oracle text, etc.) for every card attached to a lookup question — one heading, one block per attached card, up to 5 (REQ-167). Lookup mode only. |
 | 10 | `OFFICIAL RULINGS (WotC reference)` | Published Oracle rulings (System 1) for the submitted cards (game mode) or every attached card (lookup mode, REQ-167). |
 | 11 | `COMMANDER SPELLBOOK COMBO CONTEXT — COMMUNITY-SOURCED` | Community-sourced combo candidates matched against the submitted or attached cards, only when the question expresses explicit combo intent (DEC-116, REQ-094 amended by REQ-167). |

@@ -369,7 +369,7 @@
   - supplemental section omitted when index missing, empty, or no rules score above 0
   - eval fixtures assert labeled supplemental recall per REQ-032
   - the System 3 retrieval query is built from the player's question plus a compact per-card signal — name, type line, and keyword list — not from raw concatenated card oracle text (REQ-178)
-  - System 3 scoring is semantic-primary when the embedding-provider seam is active (REQ-181): the query embedding is cosine-ranked against the committed rule embeddings with the exact-rule-id and parent-rule-id boost merged in. Lexical scoring is retained as the mock/offline default and as the fallback on any embedding failure, so those settings are never worse than the prior lexical-only behaviour; under `local`, measured 2026-09-05 on the 156-pair benchmark, semantic ranking is better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) and worse on short lookup-mode questions where the query is a card name, type line, and one keyword (two of eight labelled fixtures lose rule 702.2b from the top five) — a hybrid lexical-plus-semantic blend is the tracked follow-up before `local` becomes the default
+  - System 3 scoring is a hybrid of meaning and word overlap when the embedding-provider seam is active (REQ-182): the query embedding is cosine-ranked against the committed rule embeddings and blended with the lexical IDF score, both normalised per query, with the exact-rule-id and parent-rule-id boost merged into the blended score. Lexical scoring alone is retained as the mock/offline default and as the fallback on any embedding failure, so those settings are never worse than the prior lexical-only behaviour. The blend exists because semantic-only ranking, measured 2026-09-05, was better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) but lost an expected rule on short lookup-mode questions in three of eight labelled fixtures (REQ-181, REQ-182)
 - Constraints:
   - prompt-only and backend-only; no `AskAiRequest`, Zod schema, or frontend changes
   - no paraphrased rule text
@@ -384,6 +384,7 @@
   - REQ-178 (retrieval query construction)
   - REQ-179 (rule-index hygiene and prefix-based curated exclusion)
   - REQ-181 (semantic retrieval mechanism: embeddings artifact, provider seam, runtime query-embed, lexical fallback)
+  - REQ-182 (the hybrid blend that is now System 3's shipped ranking)
 - Notes:
   - supersedes REQ-022 acceptance criteria that required all curated topics on every request
   - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-181; the section's placement, five-excerpt cap, and System 2 deduplication are unchanged
@@ -588,9 +589,10 @@
   - a digestible before/after relevance report is available for tuning review (one table per scenario: System 2 topics selected, System 3 top-5 with scores, recall hit/miss); may be a script output or harness report artifact
   - the relevance report and the eval harness model production retrieval identically — same card-detail resolution, same query construction — and a test asserts they return the same per-scenario recall verdict for every labelled fixture, failing the pull request when they diverge (REQ-177)
   - a committed offline benchmark of labelled question-to-rule pairs records recall@5 and MRR under clean and card-polluted queries, and is the standing measure retrieval changes are judged against (REQ-177)
-  - `system3-expected-recall` and `system3-noise-excluded` also run against the semantic retrieval path (REQ-181) using committed frozen query embeddings, so the eval measures semantic retrieval with no live embedding call and no live AI call; they run in report mode there — printed per fixture, not failing the run — until a hybrid lexical-plus-semantic blend lands, at which point they gate (2026-09-05 owner decision: measured semantic-only ranking is worse than lexical on short lookup-mode questions, so it cannot gate yet)
+  - `system3-expected-recall` and `system3-noise-excluded` also run against the semantic retrieval path (REQ-181/REQ-182) using committed frozen query embeddings, so the eval measures semantic retrieval with no live embedding call and no live AI call; they gate there — a failing check fails the run — from the moment the hybrid lexical-plus-semantic blend (REQ-182) clears its recall gates. Before that blend, semantic-only ranking measured 9 of 12 labelled checks against lexical's 12 of 12 (2026-09-05), which is why the checks ran in report mode until then
+  - the labelled fixture set includes one lookup-mode fixture for a multi-keyword card (a card whose committed Scryfall keyword list carries two or more keywords), with its expected supplemental rule ids hand-labelled and its frozen query embedding committed by `npm run eval:build-frozen-query-embeddings`
   - existing structural checks (section presence, ordering, budget) remain unchanged
-  - `npm run test:eval` remains the automated regression gate for the lexical retrieval path; the semantic-path checks above are report-only until the hybrid blend lands
+  - `npm run test:eval` is the automated regression gate for both retrieval paths: the lexical path always, and the semantic path from REQ-182 onward
 - Constraints:
   - no live AI provider calls in relevance checks, and no live embedding calls — the semantic path is evaluated via committed frozen query embeddings so the eval stays offline and deterministic
   - expected rule IDs are human-labeled ground truth, not inferred from current scorer output
@@ -603,6 +605,7 @@
 - Notes:
   - replaces reliance on manual multi-file `prompt:preview` review as the sole relevance verification path
   - the report/harness parity criterion exists because the two diverged in practice: after REQ-176 moved card-text resolution server-side, the report stopped passing a card-detail index and reported three false scenario failures while the gate stayed green
+  - measured 2026-09-05 before the hybrid blend: under the semantic path the labelled fixtures scored `cascade-keyword` 2/2, `combat-deathtouch` 2/2, `counterspell-stack` 1/1, `quick-lookup-card` 0/1, `quick-lookup-multi-card` 0/1, `quick-lookup-no-card` 1/1, `state-based-actions` 1/2, `upkeep-trigger` 2/2 — three fixtures failing, not the two recorded in REQ-181's earlier note
 
 ### REQ-033
 - Title: Live response-size diagnostic logs
@@ -4082,7 +4085,7 @@
   - an automated test asserts the report and the harness return the same per-scenario System 3 recall verdict for every fixture carrying an `expected` block, and fails the pull request when they diverge; it runs in `quality:check`
   - before/after evidence is recorded: at the time of writing the report reports 3 of 9 labelled scenarios failing (`counterspell-stack`, `quick-lookup-card`, `quick-lookup-multi-card`) while the harness reports all passing; after this change every labelled scenario returns one verdict from both
   - a committed retrieval benchmark harness scores the labelled question-to-rule corpus (156 pairs: 150 synthetic grounded in real CR text plus 6 gold worked-solution cases) for recall@5 and MRR, under both a clean query and a query polluted with attached-card text, and writes a machine-readable result file
-  - the benchmark runs offline and deterministically — no live AI provider call and no live embedding call — consistent with REQ-032's no-live-call constraint
+  - the benchmark runs offline and deterministically — no live AI provider call and no live embedding call — consistent with REQ-032's no-live-call constraint; a run asked for the semantic or hybrid path fails loudly when the embedder is unavailable rather than reporting the lexical result under a semantic label, mirroring the eval harness's `usedSemantic` assertion (REQ-181)
   - the benchmark's current lexical result is recorded as the committed baseline that later retrieval changes are measured against; every subsequent retrieval requirement states its gate relative to a recorded baseline, never to a number derived by proportion
 - Constraints:
   - measurement-only: no change to System 3 query construction, scoring, corpus, or output; the prompt text produced for every existing fixture is byte-identical before and after
@@ -4096,6 +4099,7 @@
   - located in code: `apps/backend/src/eval/retrievalReportInputs.ts` calls `buildPromptContext(request)` and `preparePromptInput(request, …)` with no `cardDetailIndex`, while `apps/backend/src/eval/contextEvaluationHarness.test.ts` builds one per fixture (`cardDetailIndexFromRequest`)
   - this is Step 1 of the RAG gameplan; Steps 2–5 (REQ-178, REQ-179, REQ-180, REQ-181) each state their gate against the baseline this requirement records
   - the benchmark corpus and scoring logic originate from a throwaway harness on `origin/explore/semantic-rule-retrieval` (`PRD/work/combo-context-validation/harness/rag/`); committing it in-repo is the point of this requirement
+  - measured 2026-09-05: in a checkout with an unwarmed model cache (`apps/backend/data/models/` empty), `npm run benchmark:rag-retrieval -- --semantic` printed clean recall@5 0.5833 — the lexical figure — labelled `method=semantic-local`, and wrote it to `semantic-results.json` with no failure. After `node scripts/warm-embedding-model-cache.mjs` the same command returned the true semantic 0.8526. The guard above exists because of that observed silent substitution
 
 ### REQ-178
 - Title: System 3 retrieval query is built from the question plus a compact card signal
@@ -4194,7 +4198,7 @@
   - semantic retrieval scope is the Comprehensive Rules corpus only; cards, WotC rulings, and Commander Spellbook combos remain exact-id keyed lookups and are never embedded or semantically searched under this requirement
   - the shipped semantic provider is a small embedding model bundled in the answer process and run in-process (`all-MiniLM-L6-v2`, 384 dimensions, quantised), not a hosted service and not a per-request external call; System 3's no-per-request-external-call posture is preserved by this choice rather than reversed, and only `EMBEDDING_PROVIDER=openai` would add such a call, which is never the default. A dedicated always-on inference host is out of scope
   - no vector database and no new storage service: the rule vectors are loaded in-process alongside the rule index and cosine-searched directly. A hosted vector store would only be justified if semantic search later spanned cards, rulings, and combos (over 150,000 vectors), which the corpus-scope constraint above excludes
-  - lexical retrieval is retained and never removed: it is the retrieval path under `EMBEDDING_PROVIDER=mock` (the default, which must run with no model access — canonical mock-first rule, `integrations-and-data.md` Tech Stack), under an `openai` provider failure, and under any embedding failure, it supplies the exact-rule-id and parent-rule-id boost merged into semantic ranking — so those settings are never worse than System 3's prior lexical-only behaviour. Under `local`, measured 2026-09-05 on the 156-pair benchmark, semantic ranking is better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) and worse on short lookup-mode questions where the query is a card name, type line, and one keyword (two of eight labelled fixtures lose rule 702.2b from the top five); a hybrid lexical-plus-semantic blend is the tracked follow-up before `local` becomes the default
+  - lexical retrieval is retained and never removed: it is the retrieval path under `EMBEDDING_PROVIDER=mock` (the default, which must run with no model access — canonical mock-first rule, `integrations-and-data.md` Tech Stack), under an `openai` provider failure, and under any embedding failure, it supplies the exact-rule-id and parent-rule-id boost merged into ranking — so those settings are never worse than System 3's prior lexical-only behaviour. Under `local`, semantic-only ranking measured 2026-09-05 on the 156-pair benchmark was better overall (recall@5 0.85 vs 0.58 clean, 0.83 vs 0.53 with cards) and worse on short lookup-mode questions where the query is a card name, type line, and one keyword (three of eight labelled fixtures lost an expected rule from the top five, scoring 9 of 12 checks against lexical's 12 of 12). REQ-182 replaces that either/or switch with a blended score that keeps both, and is what makes `local` safe as a deployed default (REQ-184)
 - Dependencies:
   - REQ-177 (the committed benchmark this is gated on)
   - REQ-178 (the query-construction fix this inherits — a semantic query built from polluted input inherits the same flood)
@@ -4207,5 +4211,82 @@
 - Notes:
   - this is Step 5 of the RAG gameplan, the end state
   - the parked mechanic-definition corpus idea reuses this machinery but is a different feature — a new corpus and a new prompt section — and is not built here
-  - no hybrid lexical-plus-semantic fusion score was ever measured; this requirement merges the exact-rule-id boost with semantic ranking rather than claiming a measured fusion result
+  - no hybrid lexical-plus-semantic fusion score was measured for this requirement; it merges the exact-rule-id boost with semantic ranking rather than claiming a measured fusion result. REQ-182 measured one afterwards and ships it
   - the embedding-text shaping described in early drafts of this requirement was measured, not assumed, and dropped when it measurably hurt recall; `scripts/build-rule-embeddings.mjs` records the comparison
+
+### REQ-182
+- Title: Hybrid lexical-plus-semantic scoring for System 3
+- Priority: high
+- Description: System 3 ranks supplemental rule excerpts by one blended score that combines semantic similarity and lexical word overlap, rather than switching wholly between the two scorers. The blend keeps the semantic gain on ordinary questions while keeping the exact rule on short lookup-mode questions, where a card name, type line, and one keyword carries too little text for cosine ranking alone.
+- Acceptance Criteria:
+  - under `EMBEDDING_PROVIDER=local`, each candidate rule's score is `alpha * (cosine / max_cosine) + (1 - alpha) * (lexical / max_lexical)`, where both component scores are min-max normalised per query against that query's own highest component score; the exact-rule-id and parent-rule-id boost is merged into the blended score exactly as REQ-181 merges it into the semantic score, and a cross-reference boost (a candidate rule whose own text cites a rule number the question cites) is merged in the same way, on top of — never instead of — the exact-rule-id and parent-rule-id boosts, and matched only against the question's cited ids, never oracle-sourced text (owner decision, 2026-09-05, added at build after the plain formula alone could not clear the 12/12 gate below within the accepted alpha band)
+  - `alpha` is a single named constant tuned at implementation within the measured band `[0.50, 0.70]`; the chosen value and the full sweep behind it are recorded in this requirement's notes, never left as an unexplained magic number
+  - the cross-reference boost is a single named constant, measured to be smaller than the exact-rule-id boost, and its value and sizing rationale are recorded in this requirement's notes
+  - the blend is scored over the full candidate list, not over a truncated top-N of either ranking
+  - under `EMBEDDING_PROVIDER=mock`, and on any embedding failure, scoring is byte-identical to the prior lexical-only path — measured on the committed benchmark (REQ-177) as clean recall@5 0.5833 / MRR 0.4249 and polluted recall@5 0.5256 / MRR 0.3872, the values recorded on 2026-09-05
+  - all 12 labelled fixture checks pass under the semantic path (`system3-expected-recall` and `system3-noise-excluded` across the eight labelled fixtures), against the 2026-09-05 baselines of 9/12 semantic-only and 12/12 lexical-only
+  - measured on the committed benchmark (REQ-177), clean recall@5 is at or above the 2026-09-05 semantic-only baseline of 0.8526 and polluted recall@5 at or above 0.8333
+  - clean and polluted MRR are recorded alongside recall in the same run and reported in this requirement's notes; they are not a gate
+  - System 3 remains capped at 5 excerpts, still deduplicated against the curated System 2 selection by rule-number prefix (REQ-179), and the prompt's section placement is unchanged
+- Constraints:
+  - backend and prompt-internal only; no `AskAiRequest` change, no Zod schema change, no frontend change, no new endpoint, no new dependency
+  - no change to the committed embeddings artifact's contents or to query construction (REQ-178); this requirement changes only how two existing scores are combined, plus the one additional boost term above
+  - NFR-002's under-3-second answer target holds; blending adds arithmetic over the already-scored candidate list and no additional model call
+- Dependencies:
+  - REQ-181 (the semantic path and the provider seam this blends with)
+  - REQ-177 (the committed benchmark this is gated against)
+  - REQ-032 (the labelled fixture checks this is gated against)
+  - REQ-022 (the System 3 enrichment behaviour this serves)
+- Notes:
+  - measured 2026-09-05 in a throwaway probe over the shipped rankings, before implementation: on the 156-pair benchmark, linear blends scored clean/polluted recall@5 of 0.8526/0.8205 at alpha 0.50, 0.8654/0.8333 at 0.52, 0.8718/0.8590 at 0.55, 0.8974/0.8846 at 0.60, 0.9167/0.9038 at 0.70; reciprocal rank fusion peaked lower (0.8910/0.8910 at k=10 weighted 1:2) and is not the shipped form. That probe could only fuse the top 15 candidates per ranking (all the enrichment debug object exposed) and scored 12/12 fixture checks at alpha 0.50/0.52 there — a conservative, not-representative measurement.
+  - measured at build, 2026-09-05, over the real full candidate list (no boost yet): all 12 fixture checks failed to clear at every alpha from 0.50 to 0.70 — `state-based-actions` always lost one of its three expected rules (`701.8b`), scoring 11/12 everywhere in the band. `701.8b`'s text cites rule `704.5g` (which the question cites directly) but the plain blend has no mechanism to reward that: three other rules always outscored it (`704.5h`, `510.3a`, `702.2b`, depending on alpha). The crossover where `701.8b` would win on the plain formula alone solves to alpha ≈ 0.4787 — below the accepted 0.50 floor.
+  - owner decision, 2026-09-05: keep the 12/12 gate and the `[0.50, 0.70]` band; add the cross-reference boost above instead of relaxing either. Sized by measurement: the largest gap between `701.8b`'s blended score and its closest full-pool competitor, across the whole accepted alpha band, was 0.078 (at alpha 0.70). `SCORE_CROSS_REFERENCE = 10` clears that with a wide margin while staying an order of magnitude below the exact-rule-id boost (100) and half the parent-rule-id boost (20) — preserving the intended hierarchy (exact > parent > cross-reference) rather than acting as an equally-absolute override.
+  - measured at build, 2026-09-05, with the cross-reference boost in place (`npm run test:eval`, `npm run benchmark:rag-retrieval -- --semantic`, full candidate list): all 12 fixture checks pass at every alpha tested — 0.50, 0.55, 0.60, 0.65, 0.70. Benchmark clean/polluted recall@5 and MRR per alpha (unaffected by the boost — none of the 156 benchmark questions cites a rule number, so the boost never fires there): 0.8526/0.6649 clean, 0.8205/0.6392 polluted at 0.50; 0.8782/0.6918, 0.8718/0.6615 at 0.55; 0.8974/0.7139, 0.8910/0.6928 at 0.60; 0.8974/0.7188, 0.9038/0.7042 at 0.65; 0.9167/0.7353, 0.9038/0.7188 at 0.70. `alpha = 0.60` is chosen: the first value in the sweep where both clean and polluted recall clear the accepted floors (0.8526 / 0.8333) with real headroom. This sweep predates REQ-183's int8 re-encoding; the shipped artifact's committed `semantic-results.json` records clean/polluted recall@5 unchanged (0.8974/0.8910) with MRR 0.7107/0.6931 — a sub-0.001 shift from int8 quantisation reordering within an unchanged top-5, not a recall regression.
+  - the prior state this replaces: `gameRulesRetrieval.ts` chose `scoreEntrySemantic` or `scoreEntry` for the whole index with no blend, which is why REQ-181's notes recorded that no fusion score had been measured
+
+### REQ-183
+- Title: Rule-embedding vectors ship in a compact number format
+- Priority: high
+- Description: The committed per-rule embeddings artifact stores each vector component in a compact number format instead of full 32-bit floats, so the deploy package's data budget (NFR-017) regains real headroom without dropping any player-visible content and without adding a runtime dependency.
+- Acceptance Criteria:
+  - the artifact's `encoding` field names the shipped format and the loader reads that field rather than assuming a format, so an older or newer artifact is detected rather than misread
+  - the committed artifact is measurably smaller: from the 2026-09-05 measurement of 5.650 MB (`float32-base64`, 2873 vectors x 384 dims), an int8 encoding lands at about 1.442 MB and a float16 encoding at about 2.845 MB
+  - tracked `apps/backend/data` total drops from the 2026-09-05 measurement of 118.095 MB, and the new figure and headroom are recorded in NFR-017
+  - retrieval quality is re-measured after the format change and does not regress: benchmark clean recall@5 at or above the value REQ-182 records, polluted recall@5 likewise, and all 12 labelled fixture checks still pass
+  - the vector-loading path degrades exactly as REQ-181 already requires: a missing, malformed, or unrecognised-encoding artifact disables the semantic path with one diagnostic warning and System 3 falls back to lexical retrieval
+  - `node --test scripts/lambda-package-budget.test.mjs` passes with the new artifact and the budget test's recorded figures are updated in the same change
+- Constraints:
+  - no new dependency, no new external service, and no runtime fetch: the vectors stay committed, loaded in-process, and cosine-searched with no vector database (REQ-181)
+  - the combo corpus is not trimmed: `MIN_VARIANT_POPULARITY` stays at 0 and remains the emergency valve NFR-017 describes, not a routine lever, because trimming it removes combos players see in answers (REQ-093)
+  - the local embedding model is not moved to S3 or fetched at cold start; that would add a runtime external integration and relieves the non-data reserve rather than the constrained data budget
+- Dependencies:
+  - NFR-017 (the deploy package budget this relieves)
+  - REQ-181 (the embeddings artifact whose format this changes)
+  - REQ-182 (the retrieval quality this must not regress)
+  - REQ-093 (the full combo corpus this deliberately leaves alone)
+- Notes:
+  - measured 2026-09-05 from the artifact itself: `encoding: "float32-base64"`, 2873 rule ids, 384 dimensions, 4 bytes per value, 4.208 MB raw and 5.611 MB base64 inside a 5.650 MB file; component values ranged -0.2719 to 0.2584, a narrow range well suited to int8 quantisation
+  - the alternatives were measured, not assumed: moving the model to S3 frees the 22.59 MB warmed model cache, which sits inside the 130 MB non-data reserve and is gitignored, so it is absent from the 118.095 MB data figure entirely
+  - measured at build, 2026-09-05: a fixed int8 scale assuming the theoretical ±1 unit-vector bound (127 per unit magnitude) measurably regressed benchmark recall@5 (0.8974 -> 0.8910 clean), because this model's real component values only reach about ±0.27, wasting most of int8's precision. Scaling instead by the corpus's own largest `|component|` (computed at build time and committed on the artifact as `int8Scale`, so the loader dequantises with the exact value the build used) uses the full int8 range and reproduces REQ-182's recorded recall exactly (0.8974 clean / 0.8910 polluted). Shipped artifact: 1.442 MB, `int8Scale` ≈ 467.13 (≈ 127 / 0.2719)
+  - re-measured at build, 2026-09-05, with the corrected scale: tracked `apps/backend/data` is 113.887 MB against the 120 MB budget — 6.113 MB headroom, matching the design brief's predicted figure exactly
+
+### REQ-184
+- Title: Semantic rule retrieval is the deployed default
+- Priority: high
+- Description: Once the hybrid blend (REQ-182) clears its gates, the deployed backend runs System 3 with the semantic path on. The unset default stays `mock` so a plain checkout with no model access behaves exactly as before; the deploy sets `EMBEDDING_PROVIDER=local` explicitly, the same split the AI provider already uses.
+- Acceptance Criteria:
+  - `EMBEDDING_PROVIDER` unset still resolves to `mock`; it never auto-switches on `NODE_ENV` or deploy target (REQ-181, unchanged)
+  - the deployed Lambda's environment sets `EMBEDDING_PROVIDER=local` explicitly, and the deploy configuration records it where the equivalent `ASK_AI_PROVIDER` setting is recorded
+  - the deploy fails, rather than silently degrading, when the packaged model cache is absent: the packaging script already refuses without `apps/backend/data/models/Xenova/all-MiniLM-L6-v2/onnx/model_quantized.onnx`, and that refusal is asserted
+  - a local `npm run dev` with no warmed model cache and no network still answers, using lexical retrieval, with the single diagnostic warning REQ-181 requires
+  - this requirement does not land before REQ-182's gates pass and REQ-032's semantic checks gate `npm run test:eval`
+- Constraints:
+  - the canonical mock-first rule is preserved, not broken: the *unset* default remains the offline-safe one, and the live setting is opt-in per environment (`integrations-and-data.md`, Tech Stack)
+  - no per-request external call is introduced: `local` embeds in-process from the packaged model (REQ-181)
+- Dependencies:
+  - REQ-182 (the blend that makes this safe)
+  - REQ-181 (the provider seam and its mock-first default)
+  - REQ-032 (the eval gating that guards it)
+- Notes:
+  - measured 2026-09-05: in a checkout whose model cache was empty, `npm run benchmark:rag-retrieval -- --semantic` returned the lexical numbers labelled `method=semantic-local` with no failure — the reason the *unset* default must stay `mock` rather than flipping repo-wide
+  - measured at build, 2026-09-05: `scripts/package-lambda.sh`'s model-cache refusal was written to assert existing intent but did not actually fire — a best-effort warm attempt swallowed its own failure (`|| true`) with no follow-up check, so a package built with a cold cache and no network would have shipped silently missing the model. Added an explicit post-warm check that refuses (exit 1) when the model file is still absent, and `scripts/package-lambda.test.mjs` proves it — offline, via a scratch repo and a no-op `npx` shim, no real network call

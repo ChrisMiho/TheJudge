@@ -327,14 +327,16 @@ the game-mode request drives them. (DEC-020, DEC-010)
   omitted only when the artifact is missing/empty, with a warning logged.
   (DEC-030, DEC-045, REQ-022)
 - Built: `ADDITIONAL RELEVANT RULE EXCERPTS` adds up to 5 supplemental rules
-  scored per DEC-046 — semantic-primary ranking (cosine over the committed
-  per-rule embeddings) when the embedding-provider seam is active, with the
-  exact-rule-id boost merged and IDF-weighted lexical scoring retained as the
-  mock/offline default and the fallback on any embedding failure (REQ-181), from
-  a query built from the question plus each submitted card's name, type line,
-  and keywords rather than its full oracle text (REQ-178), deduplicated against
-  the System 2 selection by rule-number prefix (REQ-179) — omitted when nothing
-  scores above 0. (DEC-032, DEC-046, REQ-022, REQ-178, REQ-179, REQ-181)
+  scored per DEC-046 — hybrid ranking (normalised cosine over the committed
+  per-rule embeddings blended with the normalised IDF-weighted lexical score)
+  when the embedding-provider seam is active, with the exact-rule-id boost
+  merged into the blended score and lexical scoring alone retained as the
+  mock/offline default and the fallback on any embedding failure (REQ-181,
+  REQ-182), from a query built from the question plus each submitted card's
+  name, type line, and keywords rather than its full oracle text (REQ-178),
+  deduplicated against the System 2 selection by rule-number prefix (REQ-179) —
+  omitted when nothing scores above 0. (DEC-032, DEC-046, REQ-022, REQ-178,
+  REQ-179, REQ-181, REQ-182)
 - Built: `OFFICIAL RULINGS` carries published WotC Oracle rulings for submitted
   cards. Retrieval relevance (System 2 selection and System 3 recall) is verified
   by the eval harness against labeled expected outcomes, not structural checks
@@ -471,8 +473,9 @@ outcome-validated, not product truth.
   DEC-046 replaced it with IDF-weighted relevance scoring, question/keyword boosts,
   and an improved tie-break. REQ-181 then made ranking semantic-primary, keeping
   that IDF scorer as the mock/offline default, the exact-rule-id boost, and the
-  failure fallback — so the lexical path is demoted, never removed. (DEC-046,
-  REQ-181)
+  failure fallback; REQ-182 then blended the two into one score rather than
+  choosing between them — so the lexical path is blended in, never removed.
+  (DEC-046, REQ-181, REQ-182)
 - **Phase zone defaults wider than 2 zones — closed door.** DEC-035 trimmed
   phase-defaulted zones to 2 per phase and excludes empty defaulted zones from the
   payload and LLM context. (DEC-035)

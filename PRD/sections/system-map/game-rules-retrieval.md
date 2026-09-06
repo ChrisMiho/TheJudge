@@ -22,20 +22,21 @@ System 3 is supplemental retrieval. It builds a query from the user's question p
 compact per-card signal — each submitted or attached card's name, type line, and
 keyword list — deliberately not the cards' full oracle text, which floods the query and
 was measured to drop recall@5 from 0.577 to 0.026 on a labelled benchmark. It then
-ranks official rule excerpts and selects at most five. Ranking is semantic-primary:
-when the embedding-provider seam is active the query is embedded and cosine-ranked
-against a committed per-rule embedding vector, with the exact rule-ID and parent
-rule-ID boost merged in so a cited rule number (for example "rule 613.9") is still
-pulled even when semantic similarity misses it. The IDF-weighted lexical scorer is
-retained as the mock/offline default, as the source of the exact-rule-ID boost, and as
-the fallback whenever query embedding fails — so those settings are never worse than
-System 3's earlier lexical-only behaviour. Under the `local` provider, measured
-2026-09-05 on the 156-pair benchmark, semantic ranking is better overall (recall@5 0.85
-vs 0.58 clean, 0.83 vs 0.53 with cards) and worse on short lookup-mode questions where
-the query is a card name, type line, and one keyword (two of eight labelled fixtures
-lose rule 702.2b from the top five); a hybrid lexical-plus-semantic blend is the tracked
-follow-up before `local` becomes the default. Ties prefer the highest matching signal, then ascending
-rule ID. Before output is selected, System 3 excludes rule IDs already selected by
+ranks official rule excerpts and selects at most five. Ranking is hybrid: when the
+embedding-provider seam is active the query is embedded and cosine-ranked against a
+committed per-rule embedding vector, that cosine score and the IDF-weighted lexical
+score are each normalised against the query's own top score, and the two are blended by
+a single tuned weight, with the exact rule-ID and parent rule-ID boost merged into the
+blended score so a cited rule number (for example "rule 613.9") is still pulled even
+when semantic similarity misses it. The IDF-weighted lexical scorer alone is retained as
+the mock/offline default, as the source of the exact-rule-ID boost, and as the fallback
+whenever query embedding fails — so those settings are never worse than System 3's
+earlier lexical-only behaviour. The blend exists because semantic-only ranking, measured
+2026-09-05 on the 156-pair benchmark, was better overall (recall@5 0.85 vs 0.58 clean,
+0.83 vs 0.53 with cards) but lost an expected rule on short lookup-mode questions — a
+card name, type line, and one keyword — in three of eight labelled fixtures, scoring 9
+of 12 checks against lexical's 12 of 12 (REQ-182). Ties prefer the highest matching
+signal, then ascending rule ID. Before output is selected, System 3 excludes rule IDs already selected by
 System 2 — by rule-number prefix, so a curated parent rule also excludes its lettered
 sub-rules — and the prompt does not print the same rule in both `GAME RULES (reference)`
 and `ADDITIONAL RELEVANT RULE EXCERPTS`.
@@ -118,13 +119,13 @@ reference material and simply omits `OFFICIAL RULINGS`.
 - System 3 is deduplicated against the System 2 selection, so the same rule ID never
   appears once as curated baseline and again as supplemental retrieval.
 - System 3 is capped at five supplemental excerpts per request.
-- System 3 ranking is semantic-primary (cosine over committed rule embeddings) with the
-  exact-rule-ID boost merged in and lexical retained as the mock/offline default and the
-  failure fallback; those settings are never worse than the prior lexical-only behaviour
-  (REQ-181). Under the `local` provider, semantic ranking measures better overall but
-  worse on short lookup-mode questions (a card name, type line, and one keyword) — see
-  REQ-181's notes; a hybrid lexical-plus-semantic blend is the tracked follow-up before
-  `local` becomes the default.
+- System 3 ranking is a hybrid blend (normalised cosine over committed rule embeddings
+  plus normalised lexical IDF overlap) with the exact-rule-ID boost merged in and
+  lexical alone retained as the mock/offline default and the failure fallback; those
+  settings are never worse than the prior lexical-only behaviour (REQ-181, REQ-182).
+  Semantic-only ranking measured better overall but worse on short lookup-mode questions
+  (a card name, type line, and one keyword), which is what the blend exists to fix — see
+  REQ-182's notes for the measured sweep.
 - The shipped semantic path uses a bundled local model, so System 3 keeps its "no
   per-request external call" posture; only `EMBEDDING_PROVIDER=openai` would add a
   per-request call, and that is never the default.

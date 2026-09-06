@@ -42,7 +42,11 @@ const fixtureRulings = new Map([
   ["eval-oracle-a", [{ publishedAt: "2020-01-10", comment: "Its ability triggers once per turn." }]],
   ["eval-oracle-b", [{ publishedAt: "2020-01-24", comment: "You may name a card that is not in your library." }]],
   ["eval-oracle-c", [{ publishedAt: "2020-02-05", comment: "It returns only creature cards." }]],
-  ["eval-oracle-d", [{ publishedAt: "2020-02-11", comment: "Its trigger uses the stack." }]]
+  ["eval-oracle-d", [{ publishedAt: "2020-02-11", comment: "Its trigger uses the stack." }]],
+  // REQ-032 (Slice B): quick-lookup-multi-keyword-card.fixture.json attaches
+  // Questing Beast by its real oracle id — same lookup-card-enrichment
+  // requirement above.
+  ["b685757b-521e-4353-a233-97052359723d", [{ publishedAt: "2019-10-04", comment: "Vigilance means the creature doesn't tap when it attacks." }]]
 ]);
 
 // REQ-181/E10 (review loop 1): one frozen query embedding per labeled
@@ -235,41 +239,23 @@ describe("Backend - Eval", () => {
       // 30s keeps slow CI runners clear of the timeout without loosening it suite-wide.
     }, 30000);
 
-    // REQ-032/REQ-181 (E10, review loop 1): `system3-expected-recall` and
+    // REQ-032/REQ-181/REQ-182 (Slice B): `system3-expected-recall` and
     // `system3-noise-excluded` above only ever exercise the lexical path
     // (every golden fixture is evaluated with `queryEmbedding: null`). This
     // test runs the same two checks against the semantic path instead —
     // frozen query embeddings, committed offline, no live embedding call
     // here — so a real, committed change to `gameRulesRuleEmbeddings.json`
-    // or the semantic scorer is caught the same way a lexical regression is.
+    // or the hybrid scorer is caught the same way a lexical regression is.
     //
-    // What's a hard assertion here vs. a measured, reported number, and why:
-    // E10's acceptance criterion (slice-e.criteria.json) is that these checks
-    // *run against the semantic path* using committed frozen embeddings, with
-    // no live call — a mechanism claim. This test hard-asserts that mechanism:
-    // the committed embeddings artifact loads, every labelled fixture has a
-    // correctly-dimensioned frozen vector, and `usedSemantic` (gameRulesRetrieval.ts's
-    // `scoreIndex` gate) is genuinely true for each one — so a silent fallback
-    // to lexical would fail loudly, not pass by accident.
-    //
-    // Full per-fixture recall is reported, not hard-gated, for a measured
-    // reason: 3 of 8 labelled fixtures do not reach 100% recall under pure
-    // cosine-similarity ranking — quick-lookup-card/quick-lookup-multi-card
-    // (702.2b ranks 6th, just outside top-5, behind sibling sub-rule 702.2a —
-    // both are topically "deathtouch," and the lookup-mode query is only
-    // name + type line + keywords, no combat context, per `buildRetrievalQueryText`)
-    // and state-based-actions (701.8b is missed because it only mentions
-    // "704.5g" *inside its own rule text* — a cross-reference pure embedding
-    // similarity doesn't capture, unlike lexical's literal token-overlap
-    // scoring). This is consistent with REQ-181's own committed benchmark note
-    // (build-rule-embeddings.mjs): the shipped plain-text embedding format was
-    // measured at 19/20 recall@5, i.e. adjacent/cross-referenced sub-rules are
-    // a known, already-accepted ~5% miss band for this design — not a wiring
-    // bug, and not something this loop's findings authorized fixing (REQ-181's
-    // embedding-text shaping and the human-labeled `expectedSupplementalRuleIds`
-    // ground truth are both explicitly hands-off; see functional-requirements.md
-    // and the review notes for this loop). Reported here, and in the slice
-    // notes, for an owner decision rather than silently forced to pass.
+    // This gates (a failing check fails the run) from the moment the hybrid
+    // blend (REQ-182) cleared its own recall gates. Before that, semantic-only
+    // ranking measured 9 of 12 labelled checks against lexical's 12 of 12
+    // (2026-09-05), which is why these checks ran in report-only mode until
+    // then — see REQ-032's amendment in `functional-requirements.md` for the
+    // full history. With the hybrid blend (and its cross-reference boost,
+    // added at build 2026-09-05 — see REQ-182's Notes) in place, all 12
+    // original labelled checks pass, plus the 2 new checks the
+    // multi-keyword-card fixture below adds.
     it("validates System 3 relevance under the semantic path (frozen query embeddings)", async () => {
       const ruleEmbeddings = loadGameRulesRuleEmbeddings(ruleEmbeddingsPath);
       expect(ruleEmbeddings, "committed gameRulesRuleEmbeddings.json must load for this test to prove anything").not.toBeNull();
@@ -318,12 +304,13 @@ describe("Backend - Eval", () => {
         []
       );
 
-      // Measured, reported (not hard-gated — see the comment above this
-      // test): the real per-fixture recall/noise-exclusion verdict under the
-      // semantic path.
       const checklistReport = buildChecklistReport(results);
       // eslint-disable-next-line no-console
       console.log(`Semantic-path relevance report:\n${checklistReport}`);
+
+      // REQ-032 (Slice B): hard gate, same pattern as the golden-scenario
+      // test above — a failing check fails the run.
+      expect(results.every((result) => result.passed), `Semantic-path relevance report:\n${checklistReport}`).toBe(true);
     });
 
     it("detects ordering and guardrail regressions", () => {
