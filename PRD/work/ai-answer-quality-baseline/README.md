@@ -13,3 +13,7 @@ Captured by `thejudge-kickoff` under `graph is controlling` (run
 after the hybrid-rule-retrieval shipment (PRs #197, #199). See `IDEA.md` for
 the framing, prior-run receipts, and non-goals, and `intake/` for the staged
 idea and the driver's measurement context note this package was seeded from.
+
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/ai-answer-quality-baseline
