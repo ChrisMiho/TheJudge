@@ -75,8 +75,11 @@ in `formatFailureReport`, the contract's `## Stashed work handoff` section, the
 `--slug` becomes required on the fresh-run path (it names the worktree); it
 already is on `--take-lock`.
 
-**The lock and every control file stay at the root**, the shape the build
-half already uses for `.worktrees/implement-<slug>`.
+**The lock and every control file stay at the session root**, the shape the
+build half already uses for `.worktrees/implement-<slug>`. In the two-session
+shape below the root *is* the session's linked worktree
+(`graph-boundary-hook.mjs:71`, `$CLAUDE_PROJECT_DIR`), so each session holds
+its own lock.
 
 **Hook fix (closes a pre-existing gap).** The first quality check found that
 the hook's `protected-path-write` rule (`scripts/lib/boundary-rules.mjs:1064`)
@@ -149,7 +152,8 @@ Owner decision (2026-09-06): include, dry-run by default.
   and is kept, reported as "kept: package still on main" (`git branch -d`
   only);
 - worktrees under `.worktrees/` whose branch is merged and whose tree is clean
-  (`git worktree remove`, no `--force`);
+  (`git worktree remove`, no `--force`), excluding the codehealth loop's own
+  `.worktrees/.codehealth/` tree, which that loop manages itself;
 - `.worktrees/.graph-intake/<run-id>/` folders whose run id is not in a live
   lock.
 
@@ -222,7 +226,10 @@ Scripts: `scripts/graph-preflight.mjs` (+test), `scripts/graph-digest.mjs`
 `graph-boundary-hook.test.mjs`, `package.json` (`graph:prune`),
 `.claude/graph-profile.json` (drop the two `git stash` allows).
 Skills (both trees via `npm run skills:ai-sync`): `graph-preflight`,
-`graph-kickoff`, `graph-implement` (+reference), `codehealth` (two sentences).
+`graph-kickoff`, `graph-implement` (+reference), `codehealth` (two sentences),
+`graph-gate-review/reference.md:46` (one word, "stashing"). Stale comments in
+`scripts/fixture-rig.mjs:141-144` and `fixture-rig.test.mjs:127` that justify a
+design choice by the stash: reworded, code unchanged.
 Docs: `PRD/instructions/graph-workflow-contract.md` — `## Overall flow` step 2
 (line 48), `## The two runs` guard sentence (139–140), the ledger header and
 example row (474–489, add `Worktree:`, drop `stash`), `## Stashed work

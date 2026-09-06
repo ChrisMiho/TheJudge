@@ -13,7 +13,7 @@ Do not rename package folders to encode status.
 | Package | Notes |
 | --- | --- |
 | [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Define gate answered and applied 2026-09-06 (6 edit / 4 accept); docs PR #200 awaits owner merge, then `graph-implement` resumes at `gate-qc` |
-| [graph-workflow-branching](./graph-workflow-branching/) | Part 1 of the graph-workflow fix (manual package, branch `fix/graph-workflow-branching`): brief + 5-block proposal written 2026-09-06; next `thejudge-quality-check`. Evidence in `probe-graph-workflow-audit/` |
+| [graph-workflow-branching](./graph-workflow-branching/) | Part 1 of the graph-workflow fix (manual package, branch `fix/graph-workflow-branching`): brief + 7-block proposal, quality-check PASS 2026-09-06 (one loop); next `thejudge-map-out`. Evidence in `probe-graph-workflow-audit/` |
 
 ## refining
 

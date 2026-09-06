@@ -11,7 +11,8 @@ starts even when another idea's docs PR is open, and the owner has a one-page
 runbook for running two ideas at once plus a clean set of local leftovers.
 Non-goals: the single-writer-per-branch fix for land conflicts and the fate of
 the base branch under GitHub's delete-on-merge setting are part 2, a separate
-package; no change to the boundary hook, the lock, or the node table.
+package; no change to the lock or the node table (the brief later added one
+hook fix: the protected-path rule was found not to reach inside worktrees).
 
 Evidence: `PRD/work/probe-graph-workflow-audit/FINDINGS-graph-workflow-gaps.md`
 (findings 1, 4, 5, 6, 8; 2026-09-06 read-only audit).
