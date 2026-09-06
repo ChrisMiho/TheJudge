@@ -6,8 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| [hybrid-rule-retrieval](hybrid-rule-retrieval/) | Hybrid lexical+semantic rule retrieval, semantic eval gating, Lambda budget relief, cold-start latency measurement — making `EMBEDDING_PROVIDER=local` safe to default |
-
 ## active
 
 ## refined
