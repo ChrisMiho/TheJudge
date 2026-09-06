@@ -1,0 +1,36 @@
+{
+  "slug": "graph-workflow-land",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "git -C survives in graph-*/SKILL.md only at graph-preflight line 52 (script-run)",
+      "value": false,
+      "evidence": { "command": "grep .*git -C.*graph-\\*" }
+    },
+    {
+      "id": "C2",
+      "statement": "no land → close sequence remains in graph-implement SKILL or reference",
+      "value": false,
+      "evidence": { "command": "grep .*land.*close.*graph-implement" }
+    },
+    {
+      "id": "C3",
+      "statement": "graph-implement SKILL names the claim as branch + worktree with the marker left refined, and COMPLETE at close",
+      "value": false,
+      "evidence": { "paths": [".claude/skills/graph-implement/SKILL.md"] }
+    },
+    {
+      "id": "C4",
+      "statement": "build-loop-ready-detection.md item 6 observes the -work branch and worktree",
+      "value": false,
+      "evidence": { "paths": ["PRD/instructions/skill-fixtures/graph-implement/build-loop-ready-detection.md"] }
+    },
+    {
+      "id": "C5",
+      "statement": "diff -rq .claude/skills .agents/skills prints nothing after npm run skills:ai-sync",
+      "value": false,
+      "evidence": { "command": "diff -rq \\.claude/skills \\.agents/skills" }
+    }
+  ]
+}
