@@ -1,6 +1,8 @@
 # Slice A — preflight branches from origin/main into a kickoff worktree
 
-## Status: planned
+## Status: done
+
+Verified 2026-09-06: `npm run test:scripts` 428/428; dry run from this linked worktree printed the in-place plan and refused the dirty tree (exit 1); dry run spawned with the main checkout as cwd printed the three-command worktree plan, `base: origin/main (default)`, and `worktree: …/.worktrees/kickoff-slice-a-probe`, exit 0, no `gh` call; A4 grep empty; profile `git stash` allows removed by the owner (the file is denied to the agent), denies at 146–148 kept.
 
 ## Goal
 

@@ -11,7 +11,21 @@ import { existsSync, readFileSync, readdirSync } from "node:fs"
 import path from "node:path"
 import { pathToFileURL } from "node:url"
 
-import { GRAPH_BRANCH_PREFIX, OPEN_BASE_TO_MAIN_PRS_COMMAND } from "./graph-preflight.mjs"
+import { GRAPH_BRANCH_PREFIX } from "./graph-preflight.mjs"
+
+// The read-only query behind `## Pending base→main PRs`. It lived in
+// `graph-preflight.mjs` while preflight's base→main guard used it; the guard
+// retired on 2026-09-06 (REQ-191) and the digest is now its only reader.
+export const OPEN_BASE_TO_MAIN_PRS_COMMAND = [
+  "pr",
+  "list",
+  "--base",
+  "main",
+  "--state",
+  "open",
+  "--json",
+  "headRefName,url"
+]
 
 export const WORK_DIR = "PRD/work"
 export const RECEIPTS_DIR = "PRD/instructions/receipts"
@@ -87,7 +101,11 @@ export function formatDigest({ packages = [], receipts = [], pendingBaseToMainPR
     lines.push("  (no graph run ledgers found under PRD/work/*/GRAPH-RUN.md)")
   } else {
     for (const pkg of packages) {
-      const state = pkg.parked ? "PARKED — needs you" : pkg.currentNode ? `running (at \`${pkg.currentNode}\`)` : "state unknown"
+      const state = pkg.parked
+        ? "PARKED — needs you"
+        : pkg.currentNode
+          ? `running (at \`${pkg.currentNode}\`)`
+          : "state unknown"
       lines.push(`- ${pkg.slug ?? "<unknown>"}: ${state}`)
       if (pkg.gateSummary) lines.push(`    gate: ${pkg.gateSummary}`)
       if (pkg.questionsFile) lines.push(`    answer: ${pkg.questionsFile}`)
@@ -159,7 +177,7 @@ function gatherPendingPRs(runGh) {
     return prs.filter((pr) => typeof pr?.headRefName === "string" && pr.headRefName.startsWith(GRAPH_BRANCH_PREFIX))
   } catch {
     // gh missing, unauthenticated, or offline: the digest still prints the rest
-    // rather than erroring. The preflight guard, not the digest, is the gate.
+    // rather than erroring. The list is information for the owner, not a gate.
     return []
   }
 }

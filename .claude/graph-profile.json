@@ -17,8 +17,6 @@
       "Bash(git rebase*)",
       "Bash(git merge *)",
       "Bash(git pull *)",
-      "Bash(git stash push*)",
-      "Bash(git stash list*)",
       "Bash(git worktree add .worktrees/*)",
       "Bash(git worktree add \".worktrees/*)",
       "Bash(git worktree list*)",

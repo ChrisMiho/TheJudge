@@ -1,16 +1,18 @@
-// Deterministic working-tree resolution for autonomous graph runs.
+// Deterministic checkout preparation for autonomous graph runs.
 //
-// The graph workflow may auto-commit or auto-stash a dirty launch checkout
-// (user decision, 2026-08-14). That is a destructive operation, so the
-// decision lives here as a pure, tested function rather than as agent prose.
+// A fresh run never mutates the launch checkout. From a root checkout it
+// creates `.worktrees/kickoff-<slug>` on a new branch cut from `origin/main`
+// and every later node works there (REQ-191). From a session already rooted in
+// a linked worktree it works in place, on a clean tree only. The working-tree
+// resolution step that existed until 2026-09-06 is gone with the reason for
+// it: nothing in a run touches the owner's tree any more.
 
 import { execFileSync } from "node:child_process"
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
-
-import { CANARY_COMMAND, GRAPH_CANARY_COMMAND } from "./lib/boundary-rules.mjs"
+import path from "node:path"
 import { pathToFileURL } from "node:url"
 
-export const DEFAULT_THRESHOLDS = { maxFiles: 10, maxLines: 200 }
+import { CANARY_COMMAND, GRAPH_CANARY_COMMAND } from "./lib/boundary-rules.mjs"
 
 // `.claude/graph-profile.json` sets this in its `env` block, so it is present
 // only in a session actually launched with `--settings <that file>`. It is the
@@ -25,22 +27,27 @@ export const DEFAULT_THRESHOLDS = { maxFiles: 10, maxLines: 200 }
 // as a rule at all.
 export const PROFILE_SENTINEL_ENV = "THEJUDGE_GRAPH_PROFILE"
 
-// Two graph runs launched against one checkout both commit to it, both rewrite
-// `GRAPH-RUN.md`, and both publish before `build`. That is the same
-// shared-working-directory hazard that produced the 2026-08-17 leak, except
-// with no isolation between them at all. One run at a time.
-//
-// The path sits under `.worktrees/`, which `.gitignore` already covers, so the
-// lock is never committed and never travels with a branch.
+// Two graph runs launched against one root both take this lock, and the
+// second refuses. The path sits under `.worktrees/`, which `.gitignore`
+// already covers, so the lock is never committed and never travels with a
+// branch. Concurrency across roots is structural: a session rooted in another
+// checkout has its own `.worktrees/` and its own lock.
 export const LOCK_PATH = ".worktrees/.graph-run.lock"
 
 // The owner's kill switch. Its presence means a run was asked to halt, so a new
 // run must not start on top of it — otherwise throwing the switch stops one run
 // and the next invocation quietly starts another.
-//
-// It sits under `.worktrees/` alongside the lock, which `.gitignore` already
-// covers, so it never travels with a branch.
 export const STOP_PATH = ".worktrees/.graph-stop"
+
+// Every autonomous base branch is `thejudge-auto/<slug>`. The digest and the
+// prune command reason about exactly those branches.
+export const GRAPH_BRANCH_PREFIX = "thejudge-auto/"
+
+// The start point of every fresh run. It is `origin/main` and not the current
+// branch: a checkout left on a previous run's base used to seed the next run
+// from that stale base, with only a line in the dispatch prompt standing in
+// the way (2026-09-06 audit, finding 1).
+export const DEFAULT_BASE = "origin/main"
 
 /**
  * What the ledger's `Profile:` field should say, from observation alone.
@@ -57,236 +64,97 @@ export function readProfileSentinel(env = process.env) {
   }
 }
 
-export const SECRET_PATTERNS = [/(^|\/)\.secrets\//, /(^|\/)\.env($|\.)/, /\.pem$/, /\.key$/, /(^|\/)id_rsa($|\.)/]
-
-// An entry's rename sources are normalized to a list: one destination path can
-// collect more than one source when a staged and an unstaged rename collapse
-// onto it. A bare string is still accepted so hand-built entries keep working.
-function renameSources(entry) {
-  if (entry.renamedFrom === undefined || entry.renamedFrom === null) return []
-  return Array.isArray(entry.renamedFrom) ? entry.renamedFrom : [entry.renamedFrom]
-}
-
-export function classifyWorkingTree(entries, thresholds) {
-  // A default parameter only fires for `undefined`, so an explicit `null` used
-  // to reach the comparisons as a TypeError. Spreading also backfills a partial
-  // object: a missing bound would otherwise compare against `undefined`, which
-  // is false for every `>` — a threshold that silently fails open.
-  const limits = { ...DEFAULT_THRESHOLDS, ...(thresholds ?? {}) }
-
-  const files = entries.map((entry) => entry.path)
-  const fileCount = entries.length
-  const changedLines = entries.reduce((total, entry) => total + entry.changedLines, 0)
-
-  const base = { files, fileCount, changedLines }
-
-  if (fileCount === 0) {
-    return { ...base, action: "clean", reason: "working tree is clean" }
-  }
-
-  // A renamed entry's `path` is only the destination. Check every source too —
-  // a file moving *out of* a secret-bearing location is equally sensitive.
-  const secretCandidates = entries.flatMap((entry) => [entry.path, ...renameSources(entry)])
-  const secret = secretCandidates.find((path) => SECRET_PATTERNS.some((pattern) => pattern.test(path)))
-  if (secret) {
-    return {
-      ...base,
-      action: "blocked",
-      reason: `refusing to auto-resolve a working tree containing a secret-bearing path: ${secret}`
-    }
-  }
-
-  if (fileCount > limits.maxFiles) {
-    return {
-      ...base,
-      action: "stash",
-      reason: `file count ${fileCount} exceeds ${limits.maxFiles}`
-    }
-  }
-
-  if (changedLines > limits.maxLines) {
-    return {
-      ...base,
-      action: "stash",
-      reason: `changed lines ${changedLines} exceeds ${limits.maxLines}`
-    }
-  }
-
-  return {
-    ...base,
-    action: "commit",
-    reason: `${fileCount} file(s), ${changedLines} changed line(s) is within auto-commit thresholds`
-  }
-}
-
-const AUTO_COMMIT_MESSAGE = "chore(graph): auto-commit working tree before graph run"
-
-// `git diff --numstat` compacts a rename into one line instead of reporting
-// the source and destination paths plainly. It can appear as:
-//   {old => new}/suffix        (empty common prefix)
-//   prefix/{old => new}        (empty common suffix)
-//   prefix/{old => new}/suffix (both a common prefix and suffix)
-//   old => new                 (no common prefix or suffix at all)
-// Expand any of these back into real paths so downstream consumers (the
-// secret check in particular) never see the compact/braced form.
-//
-// The two inner captures exclude braces so a *literal* `{` or `}` elsewhere in
-// the path cannot be swallowed. With greedy `(.*)` captures,
-// `{config => .secrets}/{legacy}/creds.env` parsed as new path
-// `.secrets}/{legacy/creds.env`, which the `.secrets/` secret pattern no longer
-// matches — a mis-parse that silently weakens the secret gate.
-function normalizeRenamePath(rawPath) {
-  const braceMatch = rawPath.match(/^(.*)\{([^{}]*) => ([^{}]*)\}(.*)$/)
-  if (braceMatch) {
-    const [, prefix, oldPart, newPart, suffix] = braceMatch
-    return {
-      oldPath: `${prefix}${oldPart}${suffix}`,
-      newPath: `${prefix}${newPart}${suffix}`
-    }
-  }
-  const bareMatch = rawPath.match(/^(.*) => (.*)$/)
-  if (bareMatch) {
-    const [, oldPath, newPath] = bareMatch
-    return { oldPath, newPath }
-  }
-  return null
-}
-
-// A file with both staged and unstaged hunks appears once in each numstat
-// call. Merge those back into a single entry per physical path so fileCount
-// — which directly feeds the maxFiles threshold — isn't inflated.
-//
-// Two entries collapsing onto one destination can carry two *different* source
-// paths (a staged rename and an unstaged one). Keeping only the first would
-// hide the second from the secret check, so every source is preserved.
-function mergeByPath(entries) {
-  const merged = new Map()
-  for (const entry of entries) {
-    const existing = merged.get(entry.path)
-    if (existing) {
-      existing.changedLines += entry.changedLines
-      for (const source of renameSources(entry)) {
-        if (!existing.sources.includes(source)) existing.sources.push(source)
-      }
-    } else {
-      merged.set(entry.path, {
-        path: entry.path,
-        changedLines: entry.changedLines,
-        sources: renameSources(entry)
-      })
-    }
-  }
-  return [...merged.values()].map(({ path, changedLines, sources }) =>
-    sources.length > 0 ? { path, changedLines, renamedFrom: sources } : { path, changedLines }
-  )
-}
-
-export function collectEntries(runGit) {
-  const entries = []
-
-  for (const args of [
-    ["diff", "--numstat"],
-    ["diff", "--numstat", "--cached"]
-  ]) {
-    const output = runGit(args)
-    for (const line of output.split("\n")) {
-      if (!line.trim()) continue
-      const [insertions, deletions, rawPath] = line.split("\t")
-      if (!rawPath) continue
-      // Binary files report "-" for both counts.
-      const added = insertions === "-" ? 0 : Number(insertions)
-      const removed = deletions === "-" ? 0 : Number(deletions)
-      const changedLines = added + removed
-      const rename = normalizeRenamePath(rawPath)
-      if (rename) {
-        entries.push({
-          path: rename.newPath,
-          changedLines,
-          renamedFrom: rename.oldPath
-        })
-      } else {
-        entries.push({ path: rawPath, changedLines })
-      }
-    }
-  }
-
-  const untracked = runGit(["ls-files", "--others", "--exclude-standard"])
-  for (const line of untracked.split("\n")) {
-    if (!line.trim()) continue
-    entries.push({ path: line.trim(), changedLines: 0 })
-  }
-
-  return mergeByPath(entries)
-}
-
 export const FETCH_COMMAND = "git fetch origin"
 
-export function planActions(classification, { branch, runId, base }) {
-  if (classification.action === "blocked") return []
+/**
+ * The worktree a spec-forming run works in, under the already-ignored
+ * `.worktrees/` root.
+ */
+export function kickoffWorktreePath(slug) {
+  return `.worktrees/kickoff-${slug}`
+}
 
-  // Fetch first, always. A branch-name collision then surfaces before any
-  // local mutation instead of as a push rejection after the working tree has
-  // already been stashed or committed.
+/**
+ * The command that creates the kickoff worktree on a fresh branch off the base.
+ *
+ * This is a planned preflight command, not an instruction for the owner. Until
+ * 2026-09-06 the skill told the owner to run it by hand and then node 1 refused
+ * the branch it had just created as a collision.
+ */
+export function kickoffWorktreeCommand(slug, base = DEFAULT_BASE) {
+  return `git worktree add ${kickoffWorktreePath(slug)} -b ${GRAPH_BRANCH_PREFIX}${slug} ${base}`
+}
+
+/**
+ * Which of the two checkout shapes preflight is running in.
+ *
+ * A root checkout's git dir is the common dir. A linked worktree's git dir is a
+ * file under `<common>/worktrees/<name>`, so the two differ. Pure over the two
+ * resolved paths so the decision is tested without a repository.
+ */
+export function classifyCheckoutShape({ gitDir, gitCommonDir }) {
+  const normalize = (value) => path.resolve(String(value ?? "").trim())
+  return normalize(gitDir) === normalize(gitCommonDir) ? "root" : "linked-worktree"
+}
+
+/**
+ * Whether an in-place run may proceed: only on a clean tree.
+ *
+ * `git status --porcelain` output, one entry per line. A dirty in-place tree is
+ * refused, never resolved on the owner's behalf — the resolution step that used
+ * to do that is retired (REQ-191).
+ */
+export function classifyInPlaceTree(porcelainOutput) {
+  const paths = String(porcelainOutput ?? "")
+    .split("\n")
+    .map((line) => line.trimEnd())
+    .filter((line) => line !== "")
+    .map((line) => line.slice(3))
+  if (paths.length === 0) return { clean: true, paths: [], reason: "working tree is clean" }
+  return {
+    clean: false,
+    paths,
+    reason:
+      `refusing to run in place on a dirty worktree (${paths.length} path(s)): ` +
+      paths.join(", ") +
+      ". Commit or discard the changes yourself, then retry; preflight never resolves them for you."
+  }
+}
+
+/**
+ * The exact git commands a run executes, in order.
+ *
+ * Root shape: fetch, add the kickoff worktree on the new branch, push from
+ * inside it. In-place shape: fetch, switch to the new branch, push. The fetch is
+ * always first so a branch-name collision surfaces before any mutation.
+ */
+export function planActions({ shape, branch, slug, base }) {
   const commands = [FETCH_COMMAND]
-
-  // The two resolutions are mirror images and their order is load-bearing.
-  // A stash must be taken *before* the branch exists, so the stash entry
-  // belongs to the checkout the work was done in. An auto-commit must land
-  // *after* the branch exists, or it lands on whatever branch HEAD was on —
-  // which may be `main`, leaving a silent unpushed commit there.
-  // `git switch -c` keeps uncommitted changes in the working tree *when the
-  // switch succeeds*, so committing afterwards commits the same tree. That
-  // holds when the start point's tree matches HEAD for the dirty paths — the
-  // default, since the start point is usually the current branch. With an
-  // explicit `--base` that diverges on a dirty path, git refuses the switch
-  // rather than overwriting it; the command fails, `formatFailureReport` names
-  // it, and the auto-commit never runs. Refusal is the safe outcome, not a
-  // guarantee that the changes always travel.
-  if (classification.action === "stash") {
-    commands.push(`git stash push -u -m ${JSON.stringify(`graph-preflight/${runId}`)}`)
+  if (shape === "linked-worktree") {
+    commands.push(`git switch -c ${branch} ${base}`)
+    commands.push(`git push -u origin ${branch}`)
+    return commands
   }
-
-  commands.push(base ? `git switch -c ${branch} ${base}` : `git switch -c ${branch}`)
-
-  if (classification.action === "commit") {
-    commands.push("git add -A")
-    commands.push(`git commit -m ${JSON.stringify(AUTO_COMMIT_MESSAGE)}`)
-  }
-
-  commands.push(`git push -u origin ${branch}`)
-
+  const worktree = kickoffWorktreePath(slug)
+  commands.push(`git worktree add ${worktree} -b ${branch} ${base}`)
+  commands.push(`git -C ${worktree} push -u origin ${branch}`)
   return commands
 }
 
-// Two graph runs on the same day must not share a run id: the stash message
-// `graph-preflight/<run-id>` is the documented way a user finds their own
-// uncommitted work again.
+// Two graph runs on the same day must not share a run id: it keys the lock,
+// the intake staging folder, and every ledger row.
 export function defaultRunId(now = new Date()) {
   const iso = now.toISOString()
   return `graph-${iso.slice(0, 10).replace(/-/g, "")}-${iso.slice(11, 19).replace(/:/g, "")}`
 }
 
-// `Number("abc")` is `NaN`, and every `>` comparison against `NaN` is false —
-// a malformed threshold flag would silently disable both safety thresholds and
-// classify any tree of any size as `commit`. Fail loudly instead.
-export function parseThresholdValue(raw, flagName) {
-  if (raw === null || raw === undefined) return null
-  const value = Number(raw)
-  if (!Number.isInteger(value) || value <= 0) {
-    throw new Error(`graph-preflight: ${flagName} must be a positive integer, got ${JSON.stringify(raw)}`)
-  }
-  return value
-}
-
-// `branch`, `base`, and `runId` are interpolated into the command strings
-// `planActions` builds, and `parseCommandArgs` re-tokenizes those strings on
-// whitespace before they reach real, destructive git commands. A value carrying
+// `branch`, `base`, `slug`, and `runId` are interpolated into the command
+// strings `planActions` builds, and `parseCommandArgs` re-tokenizes those
+// strings on whitespace before they reach real git commands. A value carrying
 // whitespace, a quote, or a shell metacharacter mis-tokenizes into extra
-// arguments, so every one is validated here at parse time. The allowlist is
-// deliberately narrower than `git check-ref-format`: it accepts the branch
-// names, remote-qualified refs, run ids, and shas this script actually
-// produces, and nothing that could split a command. A leading `-` is rejected
-// too, so `--base --dry-run` is an error rather than a base named `--dry-run`.
+// arguments, so every one is validated here at parse time. A leading `-` is
+// rejected too, so `--base --dry-run` is an error rather than a base named
+// `--dry-run`.
 const REF_VALUE_PATTERN = /^[A-Za-z0-9_][A-Za-z0-9._/-]*$/
 
 /**
@@ -317,12 +185,10 @@ export function parseRefValue(raw, flagName) {
 }
 
 // The created branch becomes the autonomous base every later PR targets, so
-// its start point is explicit and reported rather than "whatever HEAD was".
-export function resolveBase(runGit, explicitBase) {
-  if (explicitBase) return explicitBase
-  const current = runGit(["rev-parse", "--abbrev-ref", "HEAD"]).trim()
-  if (current && current !== "HEAD") return current
-  return runGit(["rev-parse", "HEAD"]).trim()
+// its start point is explicit and reported. Without `--base` it is
+// `origin/main`; the current branch is never consulted.
+export function resolveBase(explicitBase) {
+  return explicitBase || DEFAULT_BASE
 }
 
 export function findBranchCollision(runGit, branch) {
@@ -337,19 +203,12 @@ export function findBranchCollision(runGit, branch) {
   return null
 }
 
-export function formatFailureReport({ failedCommand, executed, remaining, stashed, runId }) {
+export function formatFailureReport({ failedCommand, executed, remaining }) {
   const lines = [`graph-preflight: FAILED at: ${failedCommand}`]
   lines.push("commands that ran:")
   lines.push(...(executed.length ? executed.map((c) => `  ${c}`) : ["  (none)"]))
   lines.push("commands that did NOT run:")
   lines.push(...(remaining.length ? remaining.map((c) => `  ${c}`) : ["  (none)"]))
-  if (stashed) {
-    lines.push(
-      "your uncommitted work was stashed and has NOT been restored. Recover it with:",
-      `  git stash list | grep graph-preflight/${runId}`,
-      "  git stash apply <ref>"
-    )
-  }
   lines.push("graph-preflight does not roll back. Resolve the repository state manually before re-running.")
   return lines.join("\n")
 }
@@ -365,8 +224,7 @@ export function parseArgs(argv) {
   // Every ref-shaped flag is validated identically: absent means "use the
   // caller's default", but present-and-malformed is always an error. `--base`
   // in particular decides the autonomous base every later PR targets, so it
-  // must never fall back silently to the current branch while the run reports
-  // "(resolved from the current HEAD)".
+  // must never fall back silently.
   const runIdArg = parseRefValue(get("--run-id"), "--run-id")
   return {
     branch: parseRefValue(get("--branch"), "--branch"),
@@ -374,21 +232,13 @@ export function parseArgs(argv) {
     runId: runIdArg ?? defaultRunId(),
     dryRun: argv.includes("--dry-run"),
     // A resume re-enters at the node its ledger records and never re-runs the
-    // branch/stash work, so it needs a way to take the lock and nothing else.
-    // Without one, nothing arms the graph tier for the rest of a resumed run.
+    // branch work, so it needs a way to take the lock and nothing else.
     takeLockOnly: argv.includes("--take-lock"),
     slug: parseRefValue(get("--slug"), "--slug"),
     // The lock names a process a later run tests for liveness, and this script
-    // is not it: node exits the moment it returns, so a lock carrying
-    // `process.pid` reads `stale` to the very next run. The driver's session
-    // outlives the run, so the driver passes its own pid. `process.ppid` is the
-    // fallback and is barely better — the invoking shell is short-lived too —
-    // which is why this is a flag rather than a guess.
-    pid: parsePidValue(get("--pid")),
-    thresholds: {
-      maxFiles: parseThresholdValue(get("--max-files"), "--max-files") ?? DEFAULT_THRESHOLDS.maxFiles,
-      maxLines: parseThresholdValue(get("--max-lines"), "--max-lines") ?? DEFAULT_THRESHOLDS.maxLines
-    }
+    // is not it: node exits the moment it returns. The driver's session outlives
+    // the run, so the driver passes its own pid.
+    pid: parsePidValue(get("--pid"))
   }
 }
 
@@ -447,9 +297,7 @@ export function classifyLock({ contents, isAlive = isPidAlive }) {
     }
   }
 
-  const who =
-    `slug ${holder.slug ?? "<unknown>"}, run id ${holder.runId ?? "<unknown>"}, ` +
-    `pid ${holder.pid}`
+  const who = `slug ${holder.slug ?? "<unknown>"}, run id ${holder.runId ?? "<unknown>"}, ` + `pid ${holder.pid}`
 
   if (isAlive(holder.pid)) {
     return {
@@ -458,7 +306,7 @@ export function classifyLock({ contents, isAlive = isPidAlive }) {
       message:
         `graph run lock at ${LOCK_PATH} is held by ${who}` +
         `${holder.startedAt ? `, started ${holder.startedAt}` : ""}. ` +
-        `Refusing: two runs cannot share one launch checkout. Wait for that run ` +
+        `Refusing: two runs cannot share one root. Wait for that run ` +
         `to reach a terminal state, which releases the lock.`
     }
   }
@@ -490,77 +338,6 @@ export function classifyStopSentinel({ present }) {
       `${STOP_PATH}. A run was asked to halt, and starting another would undo ` +
       `that. Confirm the halted run finished, then remove it to resume: ` +
       `rm ${STOP_PATH}`
-  }
-}
-
-// Every autonomous base branch is `thejudge-auto/<slug>`, so a PR from a head
-// under this prefix into `main` is a package's base→main hop — the merge nothing
-// in the run performs and nothing reminded the owner to open (until run one now
-// opens it). The guard below reasons about exactly those PRs.
-export const GRAPH_BRANCH_PREFIX = "thejudge-auto/"
-
-// The read-only query whose parsed output feeds the guard. Read-only: `gh pr
-// list` never mutates, so it is safe on the fresh-run path and in a dry run.
-export const OPEN_BASE_TO_MAIN_PRS_COMMAND = [
-  "pr",
-  "list",
-  "--base",
-  "main",
-  "--state",
-  "open",
-  "--json",
-  "headRefName,url"
-]
-
-/**
- * Whether a *fresh* run must refuse to start because a prior package's base→main
- * PR is still open.
- *
- * Pure over the parsed PR list, so the whole decision — including the
- * fail-closed branch — is tested without a `gh` process. A run that branches off
- * a `main` a prior package has not reached parks at the wrong base; that is what
- * happened to `user-feedback-spec` (PR #107), which is the failure this prevents.
- *
- * Fail closed: if the list could not be obtained or parsed (`openPRs` is not an
- * array), refuse rather than assume the queue is clear. The guard's entire job
- * is safety, so an unverifiable state is a block, not a pass.
- *
- * The resume path (`--take-lock`) never calls this: run two's own base→main PR
- * is legitimately open, and it shares this run's `newBranch`, so it is excluded
- * here too.
- */
-export function classifyPendingBaseToMain({ openPRs, newBranch }) {
-  if (!Array.isArray(openPRs)) {
-    return {
-      block: true,
-      reason:
-        `graph-preflight: could not verify open base→main PRs (gh unavailable or ` +
-        `returned unparseable output). Refusing the fresh run — restore gh access, ` +
-        `or merge any pending base→main PR, then retry.`
-    }
-  }
-
-  const pending = openPRs.filter(
-    (pr) =>
-      pr &&
-      typeof pr.headRefName === "string" &&
-      pr.headRefName.startsWith(GRAPH_BRANCH_PREFIX) &&
-      pr.headRefName !== newBranch
-  )
-
-  if (pending.length === 0) {
-    return { block: false, reason: null }
-  }
-
-  const list = pending.map((pr) => `  ${pr.headRefName} → main (${pr.url ?? "<no url>"})`).join("\n")
-  return {
-    block: true,
-    reason:
-      `graph-preflight: refusing to start a fresh run while a prior package's ` +
-      `base→main PR is still open:\n${list}\n` +
-      `Merge it into main first, then retry. A fresh run branched off a main that ` +
-      `lacks the prior package parks at the wrong base (this happened to ` +
-      `user-feedback-spec, PR #107).`
   }
 }
 
@@ -629,15 +406,6 @@ export function classifyCanary({ denied, response, workspaceTrusted = true }) {
 }
 
 /**
- * Whether the hook was still firing during the node that just finished.
- *
- * Read-only over the counter file, whose sole writer is the hook. That is what
- * makes the heartbeat evidence: the driver cannot manufacture its own proof.
- *
- * A node that made tool calls while the counter stood still means the hook
- * stopped firing mid-run, which the canary at run start cannot catch.
- */
-/**
  * The graph-tier canary's verdict.
  *
  * Separate from `classifyCanary` because it answers a different question and is
@@ -667,13 +435,16 @@ export function classifyGraphCanary({ denied, response }) {
   }
 }
 
-export function classifyHeartbeat({
-  node,
-  before,
-  after,
-  runStatePresent = true,
-  toolCallsMade = true
-}) {
+/**
+ * Whether the hook was still firing during the node that just finished.
+ *
+ * Read-only over the counter file, whose sole writer is the hook. That is what
+ * makes the heartbeat evidence: the driver cannot manufacture its own proof.
+ *
+ * A node that made tool calls while the counter stood still means the hook
+ * stopped firing mid-run, which the canary at run start cannot catch.
+ */
+export function classifyHeartbeat({ node, before, after, runStatePresent = true, toolCallsMade = true }) {
   if (!runStatePresent) {
     return {
       state: "degraded",
@@ -726,9 +497,8 @@ export function lockRecord({ slug, runId, pid, now }) {
  * Until 2026-08-24 nothing called this or `classifyLock`: both were tested pure
  * functions with no caller, and the skill asked the agent to write the file by
  * hand. On the first attempt of run `graph-20260823-170119` the agent forgot and
- * still reported success, so the hook's entire graph tier — tool-call caps,
- * protected-path blocking, criteria evidence, stop-sentinel protection — stayed
- * inert for the whole run while the canary still reported green.
+ * still reported success, so the hook's entire graph tier stayed inert for the
+ * whole run while the canary still reported green.
  *
  * A guardrail that depends on an agent remembering is not a guardrail, so the
  * script takes it.
@@ -748,7 +518,7 @@ export function takeLock({ slug, runId, pid = process.pid, now = new Date().toIS
 
   if (contents !== null) {
     const decision = classifyLock({ contents, isAlive: io.isAlive ?? isPidAlive })
-    // `held`, `stale`, and `unreadable` all refuse. A stale lock is reported
+    // `held`, `stale`, and `corrupt` all refuse. A stale lock is reported
     // with its reclaim command, never silently stolen.
     return { taken: false, state: decision.state, message: decision.message }
   }
@@ -757,31 +527,6 @@ export function takeLock({ slug, runId, pid = process.pid, now = new Date().toIS
   ensure(".worktrees", { recursive: true })
   write(LOCK_PATH, record, "utf8")
   return { taken: true, state: "taken", record }
-}
-
-/**
- * The worktree a parallel spec-forming idea runs in, under the already-ignored
- * `.worktrees/` root.
- */
-export function kickoffWorktreePath(slug) {
-  return `.worktrees/kickoff-${slug}`
-}
-
-/**
- * The command that creates a per-idea worktree off a shared base, so each idea's
- * `graph-kickoff` session roots in its own checkout.
- *
- * Concurrency is structural, not re-keyed: `takeLock` writes `LOCK_PATH`
- * relative to the process's working directory, and the boundary hook resolves its
- * control files relative to `$CLAUDE_PROJECT_DIR`. When a session launches inside
- * this worktree, both resolve to the worktree's own `.worktrees/`, so two ideas in
- * two worktrees each hold their own lock and never collide — with no change to the
- * lock record, `classifyLock`, or the hook. Fanning several ideas out inside one
- * root is the only shape that would force a hook run-identity rework, and it is
- * deliberately not the model.
- */
-export function kickoffWorktreeCommand(slug, base = "origin/main") {
-  return `git worktree add ${kickoffWorktreePath(slug)} -b ${GRAPH_BRANCH_PREFIX}${slug} ${base}`
 }
 
 function main(argv) {
@@ -801,8 +546,14 @@ function main(argv) {
     return process.exit(2)
   }
 
-  if (options.takeLockOnly && !options.slug) {
-    console.error("graph-preflight: --take-lock requires --slug <slug> so the lock names its package")
+  // The slug names the lock's package and, on a fresh run, the kickoff
+  // worktree. Both paths need it.
+  if (!options.slug) {
+    console.error(
+      options.takeLockOnly
+        ? "graph-preflight: --take-lock requires --slug <slug> so the lock names its package"
+        : "graph-preflight: --slug <slug> is required; it names the kickoff worktree and the lock's package"
+    )
     return process.exit(2)
   }
 
@@ -814,32 +565,12 @@ function main(argv) {
     return process.exit(2)
   }
 
-  // base→main guard: a fresh run refuses to start while a prior package's
-  // base→main PR is still open, so the queue never branches off a stale `main`.
-  // Fresh runs only — a resume (`--take-lock`) has its own base→main PR open by
-  // design. The `gh pr list` query is read-only, so this runs in a dry run too:
-  // surfacing the block early is the point. A gh failure fails closed.
-  if (!options.takeLockOnly) {
-    const runGh = (args) => execFileSync("gh", args, { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 })
-    let openPRs
-    try {
-      openPRs = JSON.parse(runGh(OPEN_BASE_TO_MAIN_PRS_COMMAND))
-    } catch {
-      openPRs = null // unavailable or unparseable → classifyPendingBaseToMain blocks
-    }
-    const guard = classifyPendingBaseToMain({ openPRs, newBranch: options.branch })
-    if (guard.block) {
-      console.error(guard.reason)
-      return process.exit(2)
-    }
-  }
-
   // The lock comes before any mutation, and before the branch work, so a second
-  // run refuses rather than sharing the launch checkout. `--take-lock` stops
-  // here: a resume needs the tier armed and nothing else done.
+  // run in this root refuses rather than sharing it. `--take-lock` stops here: a
+  // resume needs the tier armed and nothing else done.
   if (!options.dryRun) {
     const lockPid = options.pid ?? process.ppid
-    const lock = takeLock({ slug: options.slug ?? options.branch, runId: options.runId, pid: lockPid })
+    const lock = takeLock({ slug: options.slug, runId: options.runId, pid: lockPid })
     if (!lock.taken) {
       console.error(lock.message)
       return process.exit(2)
@@ -863,10 +594,13 @@ function main(argv) {
 
   const runGit = (args) => execFileSync("git", args, { encoding: "utf8", maxBuffer: 10 * 1024 * 1024 })
 
-  const base = resolveBase(runGit, options.base)
-  const entries = collectEntries(runGit)
-  const classification = classifyWorkingTree(entries, options.thresholds)
-  const commands = planActions(classification, { ...options, base })
+  const shape = classifyCheckoutShape({
+    gitDir: runGit(["rev-parse", "--git-dir"]),
+    gitCommonDir: runGit(["rev-parse", "--git-common-dir"])
+  })
+  const base = resolveBase(options.base)
+  const worktree = shape === "root" ? kickoffWorktreePath(options.slug) : null
+  const commands = planActions({ shape, branch: options.branch, slug: options.slug, base })
 
   const sentinel = readProfileSentinel()
   console.log(`profile sentinel: ${sentinel.present ? "present" : "absent"}`)
@@ -876,19 +610,35 @@ function main(argv) {
   // issues it, then classifies the result with `classifyCanary()`.
   console.log(`canary command: ${CANARY_COMMAND}`)
   console.log("canary: pending — issue it as a Bash tool call and require a deny")
-  console.log(`action: ${classification.action}`)
-  console.log(`reason: ${classification.reason}`)
-  console.log(`files: ${classification.fileCount}`)
-  console.log(`changed lines: ${classification.changedLines}`)
+  console.log(`shape: ${shape}${shape === "root" ? " (nodes work in the kickoff worktree)" : " (nodes work in place)"}`)
   console.log(`run id: ${options.runId}`)
-  console.log(`base: ${base}${options.base ? "" : " (resolved from the current HEAD)"}`)
+  console.log(`base: ${base}${options.base ? " (explicit --base)" : " (default)"}`)
+  if (worktree) console.log(`worktree: ${path.resolve(worktree)}`)
+
+  // An in-place run needs a clean tree. Refused, never resolved: the owner's
+  // uncommitted work is theirs to commit or discard.
+  if (shape === "linked-worktree") {
+    const tree = classifyInPlaceTree(runGit(["status", "--porcelain"]))
+    console.log(`tree: ${tree.clean ? "clean" : "dirty"}`)
+    if (!tree.clean) {
+      console.error(`graph-preflight: ${tree.reason}`)
+      return process.exit(1)
+    }
+  }
+
+  // A kickoff worktree that already exists is a prior run's, and adopting it
+  // would make two runs share a working tree — the hazard this layout exists
+  // to remove.
+  if (worktree && existsSync(worktree)) {
+    console.error(
+      `graph-preflight: ${worktree} already exists. A prior run for this slug left it behind; ` +
+        `inspect it, then remove it (\`npm run graph:prune\`, or \`git worktree remove ${worktree}\`) or pick a different --slug.`
+    )
+    return process.exit(2)
+  }
+
   console.log("planned commands:")
   for (const command of commands) console.log(`  ${command}`)
-
-  if (classification.action === "blocked") {
-    console.error("graph-preflight: blocked — resolve the listed paths manually before a graph run")
-    return process.exit(1)
-  }
 
   if (options.dryRun) {
     console.log("dry run: no commands executed")
@@ -901,15 +651,7 @@ function main(argv) {
     try {
       execFileSync("git", parseCommandArgs(command), { stdio: "inherit" })
     } catch (error) {
-      console.error(
-        formatFailureReport({
-          failedCommand: command,
-          executed,
-          remaining,
-          stashed: executed.some((c) => c.includes("git stash push")),
-          runId: options.runId
-        })
-      )
+      console.error(formatFailureReport({ failedCommand: command, executed, remaining }))
       console.error(`underlying error: ${error.message}`)
       return process.exit(1)
     }
@@ -927,9 +669,7 @@ function main(argv) {
           formatFailureReport({
             failedCommand: `${command} (branch-name collision check)`,
             executed,
-            remaining,
-            stashed: false,
-            runId: options.runId
+            remaining
           })
         )
         return process.exit(2)
@@ -937,6 +677,7 @@ function main(argv) {
     }
   }
 
+  if (worktree) console.log(`worktree: ${path.resolve(worktree)} on ${options.branch}`)
   console.log("graph-preflight: complete")
   return undefined
 }
