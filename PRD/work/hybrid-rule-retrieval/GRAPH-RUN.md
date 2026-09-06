@@ -6,8 +6,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] `rm -rf` is denied in every session."; graph tier: nohup true → "[graph-boundary] `nohup` is denied while a graph run holds the lock")`
 - Autonomous base: `origin/thejudge-auto/hybrid-rule-retrieval`
 - Staging: `.worktrees/.graph-intake/graph-20260905-173655/`
-- Current node: `land` (parked — the owner merges PR #197)
-- Next action: merge PR #197, then `/graph-implement PRD/work/hybrid-rule-retrieval/` (records `land` ok, runs `close`)
+- Current node: `close`
+- Next action: `/graph-implement PRD/work/hybrid-rule-retrieval/` (driving `close`, then the base→main PR)
 
 ## Node ledger
 
@@ -33,6 +33,7 @@
 | 6 | build (attempt 3, review loop 1) | sonnet | ok | `0 → 80` (one stream-watchdog stall at 47, resumed in place; 0 denials) | head `bf74140` pushed to `thejudge-auto/hybrid-rule-retrieval-work` (PR #197, MERGEABLE; static/backend SUCCESS, frontend shards pending at record time); `b45d85d..bf74140` 6 files +215/−7. Critical A1 resolved: both lookup call sites in `apps/backend/src/prompt/preparation.ts` now pass `query.questionRuleIds`; new `preparation.test.ts` cases (frozen query embedding, no live model) prove a lookup question citing 704.5g surfaces 701.8b, debug and non-debug lookup paths agree (REQ-177 parity), mock path untouched. Important A10/E7 resolved: `system-map.md:90` ends `REQ-182, REQ-183, REQ-184` (driver confirmed). Both Minors taken: REQ-182 Notes flag the sweep MRR as pre-int8 and record shipped 0.7107/0.6931; NFR-002 bullet names the 1.442 MB post-REQ-183 size. Re-verified by builder: `gameRulesRetrieval` 65/65, `test:eval` 14/14, typecheck clean, `quality:check` exit 0; criteria 33/33 unchanged; worktree clean; PR body gained `## Review loop 1`; 79 self-reported calls | 2026-09-05 |
 | 7 | review (attempt 2) | opus | ok — APPROVE | `0 → 43` | fresh no-write reviewer (Explore type), 38 self-reported calls, no subagents, 0 denials. All four loop-1 resolutions confirmed with evidence (`preparation.ts:231`/`:275` pass `query.questionRuleIds`; `preparation.test.ts:189-295` proves 704.5g → 701.8b under a frozen embedding, debug/non-debug parity, mock path untouched; `system-map.md:90` ends REQ-184; REQ-182 Notes carry the shipped MRR 0.7107/0.6931; NFR-002 names 1.442 MB). 33/33 criteria met; cross-reference boost verified on both game and Quick Lookup paths, question-cited ids only, `SCORE_CROSS_REFERENCE = 10` < parent 20 < exact 100, semantic branch only. Three Minors, no action: C6's second clause (budget test has no data figure to update), REQ-182's 12/12-of-eight baseline sentence (dated, still true), a pre-existing REQ-181 warn-once nuance. Commands green: `test:eval` 14/14, `gameRulesRetrieval` 65/65, `preparation` 6/6, `ragRetrievalBenchmark` 5/5, budget test 2/2, typecheck; data 113.887 MB; artifact 1.442 MB | 2026-09-05 |
 | 8 | land | — | parked | `n/a (human)` | awaiting the owner's merge of PR #197 https://github.com/ChrisMiho/TheJudge/pull/197 (`thejudge-auto/hybrid-rule-retrieval-work` → `thejudge-auto/hybrid-rule-retrieval`, head `bf74140`, MERGEABLE, all eight checks SUCCESS/SKIPPED). Package on the PR head is `ship-ready`; locally the driver set `STATUS.owner-action` and moved the board row for the park (restored to `ship-ready` at land ok). Lock released with `{"runId":"graph-20260905-191535","state":"PARKED"}`; run-state deleted | 2026-09-05 |
+| 8 | land | — | ok | `n/a (human)` | owner merged PR #197 at `3f0705c` (2026-09-06T07:32:05Z) and their own PR #198 (domain typo, into `main`) a few seconds later. Driver resume (`/loop graph-implement` session, 2026-09-06): the launch checkout was on `main` carrying another session's uncommitted `flag-incorrect-ruling` kickoff, so the driver added a dedicated worktree `.worktrees/close-hybrid-rule-retrieval` on the local base branch (`a034e30`) and merged `origin/thejudge-auto/hybrid-rule-retrieval` (`3f0705c`) into it — two conflicts (`PRD/work/STATUS.md`, package `README.md`) resolved by intent to the merged PR's `ship-ready` state, `STATUS.owner-action` removed, `STATUS.ship-ready` the only marker; merge commit `11f1c57`; implement worktree clean at `bf74140`, contained in HEAD. Lock re-taken with the same run id (pid 70883); graph canary `nohup true` denied. `origin/main` (`ef9eae8`, PRs #196/#198) is not yet an ancestor of the base — merged at the base→main step after close | 2026-09-06 |
 
 ## Gate verdicts
 
@@ -55,6 +56,10 @@
 | `system-map/prompt-layout-spec.md` | accept | — |
 
 ## Open gate
+
+- None. The `land` gate was resolved 2026-09-06: the owner merged PR #197 at `3f0705c`. The record of that gate follows.
+
+### Prior gate (resolved 2026-09-06): land
 
 Parked 2026-09-05 at `land` (`owner-action`). Gate: node 8 is the human PR merge; the driver never merges.
 
@@ -525,6 +530,27 @@ Severity rule, from the contract: flag only gaps affecting correctness or these 
 
 Report back, in this order: the one-line verdict, `APPROVE` or `RETURN TO BUILD`; the four loop-1 resolutions, each confirmed or not with evidence; per-criterion results A1–E7 (one line each with the evidence path or command); the findings list, each with severity, criterion id, file and line, observed versus required; the commands you ran and their results; the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
 
+### close
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/close-hybrid-rule-retrieval
+
+You are node 9 (`close`) of graph run `graph-20260905-191535`, the build half driven by `graph-implement`. Invoke the `thejudge-cleanup` skill with the Skill tool (skill name `thejudge-cleanup`) on the package `PRD/work/hybrid-rule-retrieval/`, and follow its `## Mode` section for an orchestrator that is controlling: read `PRD/instructions/graph-workflow-contract.md` (`## Propose / apply / close`, `## The ledger outlives the run`), apply every gate as a park rather than a question, and never use the force override. Read `.claude/skills/thejudge-cleanup/SKILL.md` in full (including `### Graph run in the receipt`), `PRD/instructions/doc-lifecycle.md`, `PRD/instructions/workflow-reference.md`, and `PRD/instructions/plain-language-standard.md` before acting.
+
+Where things are: work only inside the worktree named on the `Working directory:` line above, which is checked out on the package's autonomous base `thejudge-auto/hybrid-rule-retrieval` at merge commit `11f1c57` (it contains `origin/thejudge-auto/hybrid-rule-retrieval` at `3f0705c`, the merge of the code PR #197, head `bf74140`). The implementation worktree is `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-hybrid-rule-retrieval` on branch `thejudge-auto/hybrid-rule-retrieval-implement-agent` (clean at `bf74140`, fully merged); reference it by that absolute path. The repository root checkout `/Users/chrismiho/Coding/Projects/TheJudge` is on `main` and holds another session's uncommitted work — never read it as package state, never write to it, never run git commands that change it.
+
+What to verify (the skill's gates): `STATUS.ship-ready` is the only marker and the README reads `status: ship-ready`; every slice A–E is `done` with its `slice-<letter>.criteria.json` fully `true` (33/33); the autonomous merge-proof gate — the README's `## Autonomous metadata` base matches `origin/thejudge-auto/hybrid-rule-retrieval`, PR #197 is merged into that base (`gh pr view 197`), the implementation worktree is clean and its head is an ancestor of HEAD; and durable truth is present — all 15 `GATE-QUESTIONS.md` blocks (REQ-182/183/184 new; REQ-022/032/177/181, NFR-002/017, `system-map.md`, `system-map/game-rules-retrieval.md`, `system-map/prompt-layout-spec.md`, `quick-lookup/README.md`, `in-depth/README.md`, `integrations-and-data.md` amended) already applied to `PRD/sections/` by `build`. Promote nothing that is already there; if a block is genuinely missing, apply that one by intent exactly once and say so.
+
+What to write: the receipt `PRD/instructions/receipts/hybrid-rule-retrieval-2026-09-06.md`, before any delete, opening with the plain-language block (a `What happened` line and a `What it means for you` line, product terms first — a player asking Ask AI now gets rule excerpts chosen by a blend of meaning and word overlap with a nudge for rules citing a number they typed, the semantic checks gate the build, the deploy default is the local model, the Lambda budget regained headroom), then date, slug, status `shipped`, actions, files created/updated/deleted, verification results with the measured numbers (fixtures 14/14, benchmark recall@5 0.8974/0.8910, Lambda data 113.887 MB of 120, cold start 181.2 ms), `## Graph run` carrying this package's `GRAPH-RUN.md` `## Node ledger` and `## Instruction ledger` tables verbatim (both ledgers, every row, unsummarised) plus the run ids and terminal state, and `## Intake` naming each file under `intake/` and its stated origin from `intake/MANIFEST.md`. Then flip the `PRD/sections/system-map.md` entry for this work to shipped if it carries a planned/partial marker (only if one exists; do not invent one), remove the package's row from every section of `PRD/work/STATUS.md`, and delete `PRD/work/hybrid-rule-retrieval/` with `git rm -r`. Update `PRD/README.md` only if navigation changed.
+
+Commit in the worktree with explicit paths only (`git add PRD/instructions/receipts/hybrid-rule-retrieval-2026-09-06.md PRD/work/STATUS.md PRD/sections/system-map.md` plus the `git rm -r` already staged; never `git add -A`, `--all`, or `.`) as `cleanup(hybrid-rule-retrieval): receipt, durable truth confirmed, package folder removed`, with the trailer lines
+   Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>
+   Claude-Session: https://claude.ai/code/session_01HTYnaUSGyYNRwK4J1ggRW9
+Do not push; the driver pushes the base and opens the base→main PR. Do not remove any worktree and do not touch any stash (a scratch stash named `slice-b-eval-gating.md B1 evidence note` exists; leave it). Never merge or close a PR. Never touch the lock, the stop sentinel, or any `.worktrees/.graph-*` file. No subagents. Never run `npm run data:refresh`. Tool-call cap 120 for this node, counting every call.
+
+Report back, in this order: `ok` or `failed`; each gate with its evidence; the receipt path and its section list; whether any product truth had to be promoted (expect none); the commit hash; `git status --porcelain` of the worktree (expect empty); the tool-call count. Copy the `Working directory:` line above, unchanged, into every prompt you write.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -533,3 +559,4 @@ Report back, in this order: the one-line verdict, `APPROVE` or `RETURN TO BUILD`
 | "graph-implement" (the owner's `/loop graph-implement` launch, 2026-09-05) | answered-once | driver-resume | — (a request to run the build loop; every product decision stays with the owner's recorded verdicts and the gates) |
 | "i cant accept 11/12, i realize its a good start, but id rather we keep refining how to make things better, is there a reason we cant hit 12/12, is it the data? do we need to redownload the latest rules?" | answered-once | build (owner-action park) | — (the owner's answer to the slice A gate: 11/12 rejected; driver investigated and reported the miss is a missing cross-reference signal, not stale rules data) |
 | "this enhancement sounds like what we need, lets do it, do you need anything approved from me?" | answered-once | build (owner-action park) | — (the owner chose the cross-reference boost; recorded as the gate Decision, applied only to slice A's REQ-182 amendment, not as a standing rule) |
+| "merged 197 and 198" | answered-once | land | — (the owner's merge report; the driver confirmed both merges with `gh pr view` and recorded `land` ok) |
