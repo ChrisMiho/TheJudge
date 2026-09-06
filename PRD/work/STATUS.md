@@ -10,6 +10,10 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| Package | Notes |
+| --- | --- |
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Define gate answered and applied 2026-09-06 (6 edit / 4 accept); docs PR #200 awaits owner merge, then `graph-implement` resumes at `gate-qc` |
+
 ## refining
 
 ## ideation
@@ -28,7 +32,6 @@ matching heading above — the `thejudge-*` skills only look inside `PRD/work/`.
 
 | Package | Stage when parked |
 | --- | --- |
-| [ai-answer-quality-baseline](../ideasForLater/ai-answer-quality-baseline/) | ideation |
 | [card-collection-manager](../ideasForLater/card-collection-manager/) | ideation |
 | [context-ai-photo-card-id](../ideasForLater/context-ai-photo-card-id/) | refining |
 | [graph-workflow](../ideasForLater/graph-workflow/) | unregistered (braindump + spine plan, no `STATUS.*`) |
