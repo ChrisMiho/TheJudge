@@ -47,6 +47,8 @@ Read from the owner's answered `GATE-QUESTIONS.md` on 2026-09-06 and applied ins
 
 Blocker questions: none were asked, none to answer.
 
+Considered and deferred by the owner on 2026-09-06, after the verdicts: RulesGuru (`rulesguru.org`, ~7,000 judge-reviewed, CR-cited community questions with a public API) as a tier-3 source. Not official, some answers reportedly wrong, and its terms ask permission for machine-learning use. Skipped for now; if the set later needs it, admit cases only after a human confirms the cited rule text supports the answer, store both texts, and report tier 3 separately. No proposal change.
+
 ## Dispatch prompts
 
 ### preflight
