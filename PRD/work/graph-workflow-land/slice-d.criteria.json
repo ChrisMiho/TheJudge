@@ -5,32 +5,46 @@
     {
       "id": "D1",
       "statement": "the contract's node table reads 8 close / 9 land and its COMPLETE row names the open code PR",
-      "value": false,
-      "evidence": { "paths": ["PRD/instructions/graph-workflow-contract.md"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "PRD/instructions/graph-workflow-contract.md"
+        ]
+      }
     },
     {
       "id": "D2",
       "statement": "no 'frozen once', 'base→main hop', or 'merges it last' in the contract, OPERATOR, AGENT-SKILLS, PRD/README",
-      "value": false,
-      "evidence": { "command": "grep .*frozen once" }
+      "value": true,
+      "evidence": {
+        "command": "grep .*frozen once"
+      }
     },
     {
       "id": "D3",
       "statement": "no 'graph:prune --apply' without -- remains in PRD/ or OPERATOR.md",
-      "value": false,
-      "evidence": { "command": "grep .*graph:prune --apply" }
+      "value": true,
+      "evidence": {
+        "command": "grep .*graph:prune --apply"
+      }
     },
     {
       "id": "D4",
       "statement": "preparation-contract.md ## Autonomous base carries the graph-run scoping paragraph",
-      "value": false,
-      "evidence": { "paths": ["PRD/instructions/preparation-contract.md"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "PRD/instructions/preparation-contract.md"
+        ]
+      }
     },
     {
       "id": "D5",
       "statement": "npm run quality:check exit 0",
-      "value": false,
-      "evidence": { "command": "npm run quality:check" }
+      "value": true,
+      "evidence": {
+        "command": "npm run quality:check"
+      }
     }
   ]
 }

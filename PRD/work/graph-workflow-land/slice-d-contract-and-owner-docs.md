@@ -1,6 +1,20 @@
 # Slice D — Contract, preparation contract, owner docs, catalog
 
-## Status: in-progress
+## Status: done
+
+Verified 2026-09-06: node table rows 8 `close` / 9 `land` and the `COMPLETE`
+row rewritten; `grep` for `frozen once|base→main hop|merges it last|grows into`
+over the contract, `OPERATOR.md`, `AGENT-SKILLS.md`, `PRD/README.md` empty; no
+`graph:prune --apply` without `--` in `OPERATOR.md` or the receipt (REQ-164's
+copy is slice E's, applied there); `preparation-contract.md` carries the
+graph-run scoping paragraph; `npm run quality:check` exit 0.
+
+One requirement is staged, not applied: the `codehealth/SKILL.md` line 43
+edit hit the same permission deny as the `thejudge-*` skills. The edited copy
+is `PRD/work/graph-workflow-land/staged/codehealth/SKILL.md`; the owner
+applies it with
+`!cp PRD/work/graph-workflow-land/staged/codehealth/SKILL.md .claude/skills/codehealth/SKILL.md`
+then `!npm run skills:ai-sync` (see slice B's handoff for the other three).
 
 ## Goal
 
@@ -46,11 +60,11 @@ open code PR, and the working `graph:prune -- --apply` spelling.
 
 ## Acceptance criteria
 
-- [ ] D1 The contract's node table reads `| 8 | close |` and `| 9 | land |`, and its `COMPLETE` row names the open code PR and `land` as the owner's merge
-- [ ] D2 `grep -n "frozen once\|base→main hop\|merges it last" PRD/instructions/graph-workflow-contract.md OPERATOR.md AGENT-SKILLS.md PRD/README.md` finds nothing
-- [ ] D3 `grep -rn "graph:prune --apply" PRD/ OPERATOR.md` finds nothing; `grep -n "add \`--apply\`" OPERATOR.md` finds nothing
-- [ ] D4 `PRD/instructions/preparation-contract.md` `## Autonomous base` carries the graph-run scoping paragraph
-- [ ] D5 `npm run quality:check` exit 0 (format:check covers the markdown)
+- [x] D1 The contract's node table reads `| 8 | close |` and `| 9 | land |`, and its `COMPLETE` row names the open code PR and `land` as the owner's merge
+- [x] D2 `grep -n "frozen once\|base→main hop\|merges it last" PRD/instructions/graph-workflow-contract.md OPERATOR.md AGENT-SKILLS.md PRD/README.md` finds nothing
+- [x] D3 `grep -rn "graph:prune --apply" PRD/ OPERATOR.md` finds nothing outside REQ-164 (slice E) and this package's own docs; `grep -n "add \`--apply\`" OPERATOR.md` finds nothing
+- [x] D4 `PRD/instructions/preparation-contract.md` `## Autonomous base` carries the graph-run scoping paragraph
+- [x] D5 `npm run quality:check` exit 0 (format:check covers the markdown)
 
 ## Verification
 

@@ -175,26 +175,32 @@ hands you back `/graph-implement PRD/work/<slug>/` to resume (recipe 7).
 
 ---
 
-## 6. The base→main merge — do not skip this
+## 6. Merge the code PR — the one merge that lands a package
 
-**You want to:** actually get finished work onto `main`. **This is the step that's
-been missed twice.** A run does **not** put its work on `main` by itself.
+**You want to:** actually get finished work onto `main`. A run does **not** put
+its work on `main` by itself.
 
-**Do:** open the pull request titled `thejudge-auto/<slug> → main` on GitHub and
-**merge it.** The run already created this PR for you — it just can't merge it.
+**Do:** open the pull request from `thejudge-auto/<slug>-work` into `main` on
+GitHub and **merge it.** The run created it, wrote the receipt into it, and
+deleted the work folder inside it, then reported `COMPLETE` — it just can't
+merge it.
 
 **You'll be asked:** nothing. This is a plain GitHub merge you perform.
 
 **Your touch points:** one — clicking merge on that PR.
 
-**Done when:** `main` contains the work. Until you merge it, `main` is missing
-this package. A new run is not blocked by that — every run branches from
-`origin/main` as it stands — so an unmerged PR only delays when the work lands,
-never what the next run starts from.
+**Done when:** `main` contains the code, the applied product truth, the receipt
+under `PRD/instructions/receipts/`, and no `PRD/work/<slug>/` folder. There is
+nothing after this merge: no second "base to main" PR, no cleanup to run. A
+package costs exactly two merges — the docs PR you answered (recipe 5) and this
+one. A new run is not blocked by an unmerged PR — every run branches from
+`origin/main` as it stands — so it only delays when the work lands, never what
+the next run starts from.
 
-> A run marks itself `COMPLETE` once its work merges into its own base branch
-> (`thejudge-auto/<slug>`). That is **not** `main`. The last hop to `main` is
-> always yours, and nothing in the run reminds you. Make it a habit.
+> The docs branch `thejudge-auto/<slug>` GitHub deleted when you merged the
+> docs PR is finished; nothing re-creates it. What is left on your machine after
+> this merge — the build folder `.worktrees/implement-<slug>` and both local
+> branches — is what `npm run graph:prune` lists.
 
 ---
 
@@ -212,8 +218,8 @@ re-enters at the right step.
 already happened at the gate (recipe 5).
 
 **Done when:** the run advances to its next end state — usually driving on to
-write and land the code, then reporting `COMPLETE`. Remember the base→main merge
-is still yours afterward (recipe 6).
+write the code, write the receipt, and open the code PR, then reporting
+`COMPLETE`. Your merge of that PR (recipe 6) is the last step.
 
 > If you stopped it with the `.worktrees/.graph-stop` file (recipe 4), delete that
 > file first — a run refuses to resume while the stop switch is set.
@@ -273,11 +279,11 @@ under `PRD/instructions/receipts/`. You merge it.
 
 | You want to see… | Look at |
 | --- | --- |
-| Live progress of the current run | `PRD/work/<slug>/GRAPH-RUN.md` (the ledger) |
+| Live progress of the current run | the ledger `GRAPH-RUN.md` inside the run's own folder: `.worktrees/kickoff-<slug>/PRD/work/<slug>/` while the spec is being formed, `.worktrees/implement-<slug>/PRD/work/<slug>/` while it is being built (your checkout's copy only updates when a PR merges); `npm run graph:digest` reads both |
 | A gate waiting on you | `## Open gate` in that run's `GRAPH-RUN.md` |
 | The board of active packages | `PRD/work/STATUS.md` |
 | What a finished run produced | `PRD/instructions/receipts/<slug>-<date>.md` |
-| Leftover branches, run folders, and staging from finished runs | `npm run graph:prune` (lists only; add `--apply` to delete the safe ones) |
+| Leftover branches, run folders, and staging from finished runs | `npm run graph:prune` (lists only; run `npm run graph:prune -- --apply` to delete the safe ones — the `--` is what makes npm pass the flag through) |
 
 ## Related
 

@@ -32,8 +32,8 @@ the same day.
 | A | [slice-a-scripts.md](./slice-a-scripts.md) | done | — |
 | B | [slice-b-thejudge-skills.md](./slice-b-thejudge-skills.md) | blocked — edits staged under `staged/`, owner applies with the `!cp` commands in the slice doc | — |
 | C | [slice-c-graph-skills.md](./slice-c-graph-skills.md) | done | — |
-| D | [slice-d-contract-and-owner-docs.md](./slice-d-contract-and-owner-docs.md) | in-progress | — |
-| E | [slice-e-product-truth-and-ship.md](./slice-e-product-truth-and-ship.md) | planned | A, B, C, D |
+| D | [slice-d-contract-and-owner-docs.md](./slice-d-contract-and-owner-docs.md) | done (codehealth line staged for the owner) | — |
+| E | [slice-e-product-truth-and-ship.md](./slice-e-product-truth-and-ship.md) | in-progress | A, B, C, D |
 
 ## Implementation map
 
