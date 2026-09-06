@@ -77,7 +77,7 @@ frontend_origin="https://$cloudfront_domain"
 
 aws lambda update-function-configuration \
   --function-name "$lambda_name" \
-  --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=openai,DEBUG_LOGGING=false,LOG_PAYLOADS=false,OPENAI_MODEL=$openai_model,OPENAI_TIMEOUT_MS=$openai_timeout_ms,OPENAI_MAX_RETRIES=$openai_max_retries,OPENAI_API_KEY_SSM_PARAM=$openai_api_key_ssm_param,FRONTEND_ORIGIN=$frontend_origin}" \
+  --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=openai,EMBEDDING_PROVIDER=local,DEBUG_LOGGING=false,LOG_PAYLOADS=false,OPENAI_MODEL=$openai_model,OPENAI_TIMEOUT_MS=$openai_timeout_ms,OPENAI_MAX_RETRIES=$openai_max_retries,OPENAI_API_KEY_SSM_PARAM=$openai_api_key_ssm_param,FRONTEND_ORIGIN=$frontend_origin}" \
   --region "$aws_region" \
   >/dev/null
 

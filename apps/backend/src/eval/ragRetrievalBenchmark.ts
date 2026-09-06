@@ -196,6 +196,28 @@ export function runBenchmark(): BenchmarkScoreResult {
 }
 
 /**
+ * REQ-177: thrown when a run asked for the semantic (or hybrid) benchmark
+ * path cannot actually embed a query — the embedder is unavailable (an
+ * unwarmed model cache, a load failure, etc.) and `embed()` returned `null`.
+ * Measured 2026-09-05: without this guard, `scoreBenchmarkSemantic` silently
+ * passed a `null` query vector into `retrieveRulesForQuery`, which falls back
+ * to lexical scoring — so the caller printed and recorded the *lexical*
+ * numbers under the label `method=semantic-local`, with no failure at all.
+ * This mirrors the eval harness's `usedSemantic` hard assertion
+ * (`contextEvaluationHarness.test.ts`), which already fails loudly on the
+ * same condition.
+ */
+export class EmbedderUnavailableError extends Error {
+  constructor(question: string) {
+    super(
+      `[ragRetrievalBenchmark] embedder unavailable while scoring the semantic/hybrid benchmark path (embed() returned null for: "${question}"). ` +
+        "Refusing to silently report a lexical result under a semantic label — warm the model cache first: node scripts/warm-embedding-model-cache.mjs"
+    );
+    this.name = "EmbedderUnavailableError";
+  }
+}
+
+/**
  * REQ-181 (E9): re-measures the shipped semantic path's recall@5 on the same
  * committed benchmark, using a caller-supplied embed function (the `local`
  * provider in production tooling) so this module has no direct dependency on
@@ -204,6 +226,12 @@ export function runBenchmark(): BenchmarkScoreResult {
  * embedding 312 queries (156 x clean/polluted) takes real (if fast, ~2ms
  * each) compute, and re-measurement is a one-time, human-triggered check
  * (`npm run benchmark:rag-retrieval -- --semantic`), not a per-PR gate.
+ *
+ * REQ-177: fails loudly (`EmbedderUnavailableError`) the moment `embed()`
+ * returns `null` for any query, rather than continuing with a `null` vector
+ * — which `retrieveRulesForQuery` would silently score lexically — so a cold
+ * or broken embedder can never again produce a number this benchmark reports
+ * as semantic.
  */
 export async function scoreBenchmarkSemantic(
   corpus: BenchmarkCorpus,
@@ -217,6 +245,7 @@ export async function scoreBenchmarkSemantic(
   for (const item of corpus.items) {
     const clean = buildQueryTokensFromParts({ questionText: item.question, oracleText: "" });
     const cleanVector = await embed(item.question);
+    if (cleanVector === null) throw new EmbedderUnavailableError(item.question);
     const cleanHits = retrieveRulesForQuery(
       clean.tokens,
       clean.queryRuleIds,
@@ -224,13 +253,15 @@ export async function scoreBenchmarkSemantic(
       new Set(),
       5,
       undefined,
-      cleanVector
+      cleanVector,
+      clean.questionRuleIds
     ).map((rule) => rule.ruleId);
     cleanRanks.push(rankOf(cleanHits, item.expectedRuleId));
 
     const polluted = buildQueryTokensFromParts({ questionText: item.question, oracleText: pollutionText });
     const pollutedQuestion = `${item.question} ${pollutionText}`;
     const pollutedVector = await embed(pollutedQuestion);
+    if (pollutedVector === null) throw new EmbedderUnavailableError(pollutedQuestion);
     const pollutedHits = retrieveRulesForQuery(
       polluted.tokens,
       polluted.queryRuleIds,
@@ -238,7 +269,8 @@ export async function scoreBenchmarkSemantic(
       new Set(),
       5,
       undefined,
-      pollutedVector
+      pollutedVector,
+      polluted.questionRuleIds
     ).map((rule) => rule.ruleId);
     pollutedRanks.push(rankOf(pollutedHits, item.expectedRuleId));
   }

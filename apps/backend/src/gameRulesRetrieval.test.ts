@@ -8,6 +8,7 @@ import {
   buildQueryTokensFromParts,
   collectCuratedRuleIds,
   cosineSimilarity,
+  HYBRID_BLEND_ALPHA,
   loadGameRulesKeywordVocabulary,
   loadGameRulesRuleEmbeddings,
   loadGameRulesRuleIndex,
@@ -771,15 +772,27 @@ describe("Backend - Game Rules", () => {
   // ---------------------------------------------------------------------------
 
   describe("loadGameRulesRuleEmbeddings", () => {
-    function writeEmbeddingsArtifact(dir: string, ruleIds: string[], dims: number, vectors: number[][]) {
+    function writeEmbeddingsArtifact(
+      dir: string,
+      ruleIds: string[],
+      dims: number,
+      vectors: number[][],
+      encoding: "float32-base64" | "int8-base64" = "float32-base64",
+      int8Scale?: number
+    ) {
       const filePath = join(dir, "embeddings.json");
       const flat = vectors.flat();
-      const vectorsBase64 = Buffer.from(Float32Array.from(flat).buffer).toString("base64");
-      writeFileSync(filePath, JSON.stringify({ model: "test-model", dims, ruleIds, vectorsBase64 }), "utf8");
+      const vectorsBase64 =
+        encoding === "int8-base64"
+          ? Buffer.from(Int8Array.from(flat).buffer).toString("base64")
+          : Buffer.from(Float32Array.from(flat).buffer).toString("base64");
+      const artifact: Record<string, unknown> = { model: "test-model", dims, encoding, ruleIds, vectorsBase64 };
+      if (encoding === "int8-base64") artifact.int8Scale = int8Scale ?? 127;
+      writeFileSync(filePath, JSON.stringify(artifact), "utf8");
       return filePath;
     }
 
-    it("decodes a base64 float32 artifact back into per-rule vectors", () => {
+    it("decodes a base64 float32-base64 artifact back into per-rule vectors", () => {
       const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
       const filePath = writeEmbeddingsArtifact(dir, ["100.1", "100.2"], 3, [
         [1, 2, 3],
@@ -791,6 +804,27 @@ describe("Backend - Game Rules", () => {
       expect(embeddings?.vectors[1]).toEqual([4, 5, 6]);
     });
 
+    it("decodes a base64 int8-base64 artifact back into per-rule vectors, scaled by 127 (REQ-183)", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      // 127 -> 1.0, -127 -> ~-1.0, 0 -> 0 — the same scale build-rule-embeddings.mjs uses.
+      const filePath = writeEmbeddingsArtifact(
+        dir,
+        ["100.1", "100.2"],
+        3,
+        [
+          [127, -127, 0],
+          [64, -64, 32]
+        ],
+        "int8-base64"
+      );
+      const embeddings = loadGameRulesRuleEmbeddings(filePath);
+      expect(embeddings?.ruleIds).toEqual(["100.1", "100.2"]);
+      expect(embeddings?.vectors[0]![0]).toBeCloseTo(1, 5);
+      expect(embeddings?.vectors[0]![1]).toBeCloseTo(-1, 2);
+      expect(embeddings?.vectors[0]![2]).toBe(0);
+      expect(embeddings?.vectors[1]![0]).toBeCloseTo(64 / 127, 10);
+    });
+
     it("returns null and warns when the file is missing", () => {
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
       expect(loadGameRulesRuleEmbeddings("/tmp/does-not-exist-embeddings-abc123.json")).toBeNull();
@@ -798,12 +832,77 @@ describe("Backend - Game Rules", () => {
       spy.mockRestore();
     });
 
-    it("returns null and warns when the byte length does not match ruleIds x dims", () => {
+    it("returns null and warns when the byte length does not match ruleIds x dims for the declared encoding", () => {
       const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
       const filePath = join(dir, "bad.json");
       writeFileSync(
         filePath,
-        JSON.stringify({ model: "test-model", dims: 3, ruleIds: ["100.1", "100.2"], vectorsBase64: Buffer.from([1, 2, 3, 4]).toString("base64") }),
+        JSON.stringify({
+          model: "test-model",
+          dims: 3,
+          encoding: "float32-base64",
+          ruleIds: ["100.1", "100.2"],
+          vectorsBase64: Buffer.from([1, 2, 3, 4]).toString("base64")
+        }),
+        "utf8"
+      );
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings(filePath)).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+
+    it("returns null and warns on an unrecognised encoding (REQ-183: detected, not misread)", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = join(dir, "bad.json");
+      writeFileSync(
+        filePath,
+        JSON.stringify({
+          model: "test-model",
+          dims: 3,
+          encoding: "float64-base64",
+          ruleIds: ["100.1"],
+          vectorsBase64: Buffer.from(Float32Array.from([1, 2, 3]).buffer).toString("base64")
+        }),
+        "utf8"
+      );
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings(filePath)).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+
+    it("returns null and warns when an int8-base64 artifact has no positive int8Scale", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = join(dir, "bad.json");
+      writeFileSync(
+        filePath,
+        JSON.stringify({
+          model: "test-model",
+          dims: 3,
+          encoding: "int8-base64",
+          ruleIds: ["100.1"],
+          vectorsBase64: Buffer.from(Int8Array.from([1, 2, 3]).buffer).toString("base64")
+        }),
+        "utf8"
+      );
+      const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
+      expect(loadGameRulesRuleEmbeddings(filePath)).toBeNull();
+      expect(spy).toHaveBeenCalledOnce();
+      spy.mockRestore();
+    });
+
+    it("returns null and warns when the encoding field is missing (an older or malformed artifact)", () => {
+      const dir = mkdtempSync(join(tmpdir(), "rule-embeddings-test-"));
+      const filePath = join(dir, "bad.json");
+      writeFileSync(
+        filePath,
+        JSON.stringify({
+          model: "test-model",
+          dims: 3,
+          ruleIds: ["100.1"],
+          vectorsBase64: Buffer.from(Float32Array.from([1, 2, 3]).buffer).toString("base64")
+        }),
         "utf8"
       );
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
@@ -937,6 +1036,208 @@ describe("Backend - Game Rules", () => {
       const context = makeContext({ finalQuestion: "anything" });
       const result = retrieveSupplementalRules(context, indexWithGap, new Set(), 5, semanticResources, [1, 0, 0]);
       expect(result.map((r) => r.ruleId)).not.toContain("999.1");
+    });
+  });
+
+  describe("hybrid lexical-plus-semantic blend (REQ-182)", () => {
+    // Three entries, each isolating one blend component:
+    //  - "cosine-only": aligned with the query vector (cosine 1), no lexical
+    //    token overlap at all.
+    //  - "lexical-only": zero cosine similarity (orthogonal vector), but every
+    //    query token appears in its searchText.
+    //  - "700.1" (cited by rule number): orthogonal vector, no token overlap,
+    //    but the question cites its exact rule id — proving the boost is
+    //    merged into the blended score, not lost by normalization.
+    const cosineOnly = makeEntry({ ruleId: "601.2", searchText: "601.2 unrelated wording only", parentRuleIds: ["601"] });
+    const lexicalOnly = makeEntry({ ruleId: "602.3", searchText: "602.3 trigger ability window", parentRuleIds: ["602"] });
+    const citedById = makeEntry({ ruleId: "700.1", searchText: "700.1 unrelated wording only too", parentRuleIds: ["700"] });
+    const blendIndex: GameRulesRuleIndexEntry[] = [cosineOnly, lexicalOnly, citedById];
+
+    const blendEmbeddings: GameRulesRuleEmbeddings = {
+      model: "test-model",
+      dims: 2,
+      ruleIds: ["601.2", "602.3", "700.1"],
+      vectors: [
+        [1, 0], // cosineOnly: identical to the query vector below
+        [0, 1], // lexicalOnly: orthogonal
+        [0, 1] // citedById: orthogonal too — only the id boost should carry it
+      ]
+    };
+    const blendResources: ScoringResources = {
+      tokenStats: { N: 3, df: new Map([["trigger", 1], ["ability", 1], ["window", 1]]) },
+      keywordVocabulary: new Set(),
+      ruleEmbeddings: blendEmbeddings
+    };
+
+    it("ranks the cosine-favoured candidate first when alpha weights cosine more heavily than lexical", () => {
+      // "trigger ability window" only overlaps lexicalOnly's searchText, so at
+      // any alpha > 0 the cosine-only entry's normalised cosine (1.0) beats
+      // the cosine-only entry's normalised lexical contribution (0), while
+      // lexicalOnly gets 0 cosine + full normalised lexical. HYBRID_BLEND_ALPHA
+      // is measured at 0.6 (> 0.5), so cosine's weight dominates here.
+      expect(HYBRID_BLEND_ALPHA).toBeGreaterThan(0.5);
+      const context = makeContext({ finalQuestion: "trigger ability window" });
+      const result = retrieveSupplementalRules(context, blendIndex, new Set(), 5, blendResources, [1, 0]);
+      expect(result[0]!.ruleId).toBe("601.2");
+      expect(result.map((r) => r.ruleId)).toContain("602.3");
+    });
+
+    it("merges the exact-rule-id boost into the blended score even with zero cosine and zero lexical overlap", () => {
+      const context = makeContext({ finalQuestion: "What does rule 700.1 say?" });
+      const result = retrieveSupplementalRules(context, blendIndex, new Set(), 5, blendResources, [1, 0]);
+      // citedById has 0 cosine (orthogonal to [1,0]) and no lexical token
+      // overlap ("rule", "700.1", "say" vs its unrelated searchText), so
+      // without the boost it would score 0 and never appear; the +100 exact
+      // rule-id boost, merged in after blending, must still put it first.
+      expect(result[0]!.ruleId).toBe("700.1");
+    });
+
+    it("computes the exact normalised blend value for a known cosine/lexical pair", () => {
+      // Direct arithmetic check of A1's formula: with only two scoring
+      // candidates, cosineOnly's normalised cosine is 1 (it IS the max) and
+      // its normalised lexical is 0 (no token overlap at all); lexicalOnly's
+      // normalised cosine is 0 (orthogonal) and its normalised lexical is 1
+      // (it IS the max, by construction — every query token hits it).
+      const context = makeContext({ finalQuestion: "trigger ability window" });
+      const result = retrieveSupplementalRulesWithDebug(
+        context,
+        [cosineOnly, lexicalOnly],
+        new Set(),
+        5,
+        {
+          tokenStats: blendResources.tokenStats,
+          keywordVocabulary: blendResources.keywordVocabulary,
+          ruleEmbeddings: { ...blendEmbeddings, ruleIds: ["601.2", "602.3"], vectors: [[1, 0], [0, 1]] }
+        },
+        [1, 0]
+      );
+      const scoreById = new Map(result.debug.selected.map((r) => [r.ruleId, r.score]));
+      expect(scoreById.get("601.2")).toBeCloseTo(HYBRID_BLEND_ALPHA, 10);
+      expect(scoreById.get("602.3")).toBeCloseTo(1 - HYBRID_BLEND_ALPHA, 10);
+    });
+
+    it("buildQueryTokensFromParts' questionRuleIds excludes rule numbers mentioned only in oracle-sourced text", () => {
+      const result = buildQueryTokensFromParts({
+        questionText: "What kills a creature outright?",
+        oracleText: "some card citing rule 704.5g in its name"
+      });
+      // The combined set (used by the exact/parent-id boost) still includes it.
+      expect(result.queryRuleIds).toContain("704.5g");
+      // The question-only set (used by the cross-reference boost) does not.
+      expect(result.questionRuleIds).not.toContain("704.5g");
+    });
+  });
+
+  describe("cross-reference boost (REQ-182, owner decision 2026-09-05)", () => {
+    // A candidate ("701.8b") whose own rule text cites another rule number
+    // ("704.5g"); a decoy with no citation at all. Both have 0 cosine
+    // (orthogonal to the query vector) and 0 lexical overlap (no tokens
+    // supplied), so without any boost both score exactly 0 and are dropped.
+    const crossRefEntry = makeEntry({
+      ruleId: "701.8b",
+      text: "701.8b A permanent is destroyed by state-based actions that check for lethal damage (see rule 704.5g).",
+      searchText: "701.8b unrelated wording that shares no tokens with the query",
+      parentRuleIds: ["701.8", "701"]
+    });
+    const decoyEntry = makeEntry({
+      ruleId: "999.9",
+      text: "999.9 unrelated rule text with no citations at all.",
+      searchText: "999.9 also shares no tokens",
+      parentRuleIds: ["999"]
+    });
+    const crossRefEmbeddings: GameRulesRuleEmbeddings = {
+      model: "test-model",
+      dims: 2,
+      ruleIds: ["701.8b", "999.9"],
+      vectors: [
+        [0, 1],
+        [0, 1]
+      ]
+    };
+    const crossRefResources: ScoringResources = {
+      tokenStats: { N: 2, df: new Map() },
+      keywordVocabulary: new Set(),
+      ruleEmbeddings: crossRefEmbeddings
+    };
+    const noOverlapTokens: ReturnType<typeof buildQueryTokensFromParts>["tokens"] = [];
+    const queryVector = [1, 0];
+
+    it("boosts a candidate whose text cites a rule number the question cites", () => {
+      const withoutQuestionCitation = retrieveRulesForQuery(
+        noOverlapTokens,
+        [],
+        [crossRefEntry, decoyEntry],
+        new Set(),
+        5,
+        crossRefResources,
+        queryVector,
+        []
+      );
+      expect(withoutQuestionCitation).toHaveLength(0);
+
+      const withQuestionCitation = retrieveRulesForQuery(
+        noOverlapTokens,
+        [],
+        [crossRefEntry, decoyEntry],
+        new Set(),
+        5,
+        crossRefResources,
+        queryVector,
+        ["704.5g"]
+      );
+      expect(withQuestionCitation.map((r) => r.ruleId)).toEqual(["701.8b"]);
+    });
+
+    it("never triggers from queryRuleIds alone (oracle-sourced ids) — only questionRuleIds", () => {
+      // queryRuleIds carries "704.5g" (as if only an attached card's compact
+      // signal mentioned it), but questionRuleIds — the question-only set —
+      // is empty. The cross-reference boost must not fire.
+      const result = retrieveRulesForQuery(
+        noOverlapTokens,
+        ["704.5g"],
+        [crossRefEntry, decoyEntry],
+        new Set(),
+        5,
+        crossRefResources,
+        queryVector,
+        []
+      );
+      expect(result).toHaveLength(0);
+    });
+
+    it("does not award a rule an extra boost for citing its own number", () => {
+      const selfCiting = makeEntry({
+        ruleId: "704.5g",
+        text: "704.5g If a creature has lethal damage marked on it (see rule 704.5g), it is destroyed.",
+        searchText: "704.5g unrelated searchtext",
+        parentRuleIds: ["704.5", "704"]
+      });
+      const embeddings: GameRulesRuleEmbeddings = {
+        model: "test-model",
+        dims: 2,
+        ruleIds: ["704.5g"],
+        vectors: [[0, 1]]
+      };
+      const resources: ScoringResources = {
+        tokenStats: { N: 1, df: new Map() },
+        keywordVocabulary: new Set(),
+        ruleEmbeddings: embeddings
+      };
+      const result = retrieveRulesForQueryWithDebug(
+        noOverlapTokens,
+        ["704.5g"],
+        [selfCiting],
+        new Set(),
+        5,
+        resources,
+        queryVector,
+        "question text",
+        ["704.5g"]
+      );
+      // Exact-rule-id boost (100) applies once; if the rule's citation of its
+      // own number in its own text also counted as a cross-reference, the
+      // score would be 110 (100 + SCORE_CROSS_REFERENCE) instead of 100.
+      expect(result.selected[0]!.score).toBeCloseTo(100, 10);
     });
   });
 });

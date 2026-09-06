@@ -1,11 +1,16 @@
+import { readFileSync } from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import type { GameRulesTopic } from "../gameRules.js";
-import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
+import { loadGameRulesTopics, type GameRulesTopic } from "../gameRules.js";
+import { loadGameRulesRuleIndex, type GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { CardDetailEntry } from "../cardDetail.js";
 import type { LookupAskAiRequest } from "../types/index.js";
 import { ALWAYS_ON_TOPIC_IDS } from "../gameRulesTopicSelection.js";
 import { preparePromptInput } from "./preparation.js";
 import type { CardDetailIndex } from "./context.js";
+
+const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
 /** REQ-176: System 3 now scores query tokens off the server-resolved descriptive
  * block, not the request card — build a synthetic per-test index so these
@@ -168,6 +173,124 @@ describe("Backend - Ask AI", () => {
       expect(prepared.promptText).toContain("name: Questing Beast");
       expect(prepared.promptText).toContain("name: Snapcaster Mage");
       expect(prepared.promptText.match(/CARD \(looked up\)/g)).toHaveLength(1);
+    });
+  });
+
+  // REQ-182 (review loop 1, Critical A1): lookup mode's two preparePromptInput
+  // call sites (collectEnrichmentDebug true and false) passed only eight
+  // positional arguments to retrieveRulesForQueryWithDebug/retrieveRulesForQuery,
+  // so the ninth/eighth parameter (questionRuleIds) always defaulted to `[]`
+  // and the cross-reference boost never fired for a lookup-mode question — only
+  // the game-mode path (retrieveSupplementalRules(WithDebug), which already
+  // passes query.questionRuleIds) got the boost. Uses the real committed rule
+  // index/embeddings artifact (not the small synthetic index the other tests in
+  // this file use) because the cross-reference relationship under test —
+  // 701.8b's own text cites rule 704.5g — only exists in the real corpus. The
+  // query embedding is a committed frozen vector (no live embedding call at
+  // test time, same convention as the eval harness's frozen-query-embeddings.json).
+  describe("preparePromptInput lookup mode — cross-reference boost (REQ-182, review loop 1)", () => {
+    const realGameRulesTopics: GameRulesTopic[] = loadGameRulesTopics(
+      path.resolve(currentDir, "../../data/gameRulesByTopic.json")
+    );
+    const realRuleIndex: GameRulesRuleIndexEntry[] = loadGameRulesRuleIndex(
+      path.resolve(currentDir, "../../data/gameRulesRuleIndex.json")
+    );
+    const frozen = JSON.parse(
+      readFileSync(path.join(currentDir, "preparation.crossReferenceQueryEmbedding.json"), "utf8")
+    ) as { question: string; vector: number[] };
+
+    // `usedSemantic` rides through `enrichmentDebug.supplemental` at runtime
+    // (preparation.ts passes the debug object through by reference) but isn't
+    // part of the zod-derived `EnrichmentDebug` type, so it's read back via an
+    // explicit cast — same pattern as contextEvaluationHarness.test.ts.
+    function usedSemanticOf(prepared: ReturnType<typeof preparePromptInput>): boolean {
+      const supplementalDebug = prepared.enrichmentDebug?.supplemental as unknown as { usedSemantic?: boolean } | undefined;
+      return supplementalDebug?.usedSemantic ?? false;
+    }
+
+    const request: LookupAskAiRequest = {
+      mode: "lookup",
+      question: frozen.question,
+      cards: [
+        {
+          // Questing Beast's real oracle id: its committed Scryfall keywords
+          // (Vigilance, Haste, Deathtouch — cardDetailByOracleId.json) are what
+          // crowd 701.8b out of the top 5 on cosine/lexical alone; the
+          // cross-reference boost (the question cites 704.5g, which 701.8b's
+          // own text cites) is what recovers it.
+          cardId: "b685757b-521e-4353-a233-97052359723d",
+          name: "Questing Beast",
+          oracleText: "Vigilance, deathtouch, haste",
+          imageUrl: "",
+          manaCost: "{2}{G}{G}",
+          manaValue: 4,
+          typeLine: "Legendary Creature — Beast",
+          colors: ["G"],
+          supertypes: ["Legendary"],
+          subtypes: ["Beast"]
+        }
+      ]
+    };
+
+    it("promotes a rule whose text cites a rule number the lookup-mode question cites (701.8b, cited rule 704.5g)", () => {
+      const prepared = preparePromptInput(request, {
+        gameRulesTopics: realGameRulesTopics,
+        gameRulesRuleIndex: realRuleIndex,
+        collectEnrichmentDebug: true,
+        queryEmbedding: frozen.vector
+      });
+
+      expect(usedSemanticOf(prepared)).toBe(true);
+      expect(prepared.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId)).toContain("701.8b");
+    });
+
+    it("returns the same selected rules from both the debug and non-debug lookup entry points", () => {
+      // retrieveRulesForQuery (the non-debug path, used when collectEnrichmentDebug
+      // is false) is the second call site review loop 1 flagged — both must wire
+      // questionRuleIds, or the report (retrievalReportInputs.ts, which always
+      // goes through the debug path) and a live non-debug request could disagree.
+      const withDebug = preparePromptInput(request, {
+        gameRulesTopics: realGameRulesTopics,
+        gameRulesRuleIndex: realRuleIndex,
+        collectEnrichmentDebug: true,
+        queryEmbedding: frozen.vector
+      });
+      const withoutDebug = preparePromptInput(request, {
+        gameRulesTopics: realGameRulesTopics,
+        gameRulesRuleIndex: realRuleIndex,
+        collectEnrichmentDebug: false,
+        queryEmbedding: frozen.vector
+      });
+
+      expect(withoutDebug.promptText).toBe(withDebug.promptText);
+      expect(withoutDebug.promptText).toContain("701.8b");
+    });
+
+    it("stays byte-identical on the mock/lexical path (EMBEDDING_PROVIDER=mock): no cross-reference boost, no live vector", () => {
+      const first = preparePromptInput(request, {
+        gameRulesTopics: realGameRulesTopics,
+        gameRulesRuleIndex: realRuleIndex,
+        collectEnrichmentDebug: true,
+        queryEmbedding: null
+      });
+      const second = preparePromptInput(request, {
+        gameRulesTopics: realGameRulesTopics,
+        gameRulesRuleIndex: realRuleIndex,
+        collectEnrichmentDebug: true,
+        queryEmbedding: null
+      });
+
+      // The lexical path never reaches the hybrid branch (usedSemantic is
+      // false), so passing questionRuleIds through is a no-op there — this is
+      // the byte-identical-under-mock guarantee (REQ-182 acceptance/A4),
+      // re-proven for the lookup call sites this fix touched.
+      expect(usedSemanticOf(first)).toBe(false);
+      expect(first.promptText).toBe(second.promptText);
+      expect(first.enrichmentDebug?.supplemental.selected).toEqual(second.enrichmentDebug?.supplemental.selected);
+      // The lexical result is a genuinely different ranking (no embedding to
+      // rank by) — 701.8b is not among its top 5, proving the two paths are
+      // actually independent, not coincidentally identical.
+      expect(first.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId)).not.toContain("701.8b");
     });
   });
 });
