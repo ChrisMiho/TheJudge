@@ -1,6 +1,11 @@
 # Slice C — `graph-*` skills: claim is the branch, one worktree, `close` before `land`
 
-## Status: planned
+## Status: done
+
+Verified 2026-09-06: `grep -rn "git -C" .claude/skills/graph-*/SKILL.md` →
+only `graph-preflight/SKILL.md:52` (script-run); no `land → close` sequence in
+`graph-implement/*.md`; `npm run skills:ai-sync` then
+`diff -rq .claude/skills .agents/skills` empty; `npm run quality:check` exit 0.
 
 ## Goal
 
@@ -49,11 +54,11 @@ no `git -C` in any agent-run command.
 
 ## Acceptance criteria
 
-- [ ] C1 `grep -rn "git -C" .claude/skills/graph-*/SKILL.md` finds only `graph-preflight/SKILL.md` line 52
-- [ ] C2 `grep -n "land → close\|land\` → \`close" .claude/skills/graph-implement/SKILL.md .claude/skills/graph-implement/reference.md` finds nothing
-- [ ] C3 `.claude/skills/graph-implement/SKILL.md` names the claim as the branch + worktree with the marker left `refined`, and the `COMPLETE` end at `close`
-- [ ] C4 `PRD/instructions/skill-fixtures/graph-implement/build-loop-ready-detection.md` item 6 observes the `-work` branch and worktree, not `STATUS.active` on `main`
-- [ ] C5 `diff -rq .claude/skills .agents/skills` prints nothing after `npm run skills:ai-sync`
+- [x] C1 `grep -rn "git -C" .claude/skills/graph-*/SKILL.md` finds only `graph-preflight/SKILL.md` line 52
+- [x] C2 `grep -n "land → close\|land\` → \`close" .claude/skills/graph-implement/SKILL.md .claude/skills/graph-implement/reference.md` finds nothing
+- [x] C3 `.claude/skills/graph-implement/SKILL.md` names the claim as the branch + worktree with the marker left `refined`, and the `COMPLETE` end at `close`
+- [x] C4 `PRD/instructions/skill-fixtures/graph-implement/build-loop-ready-detection.md` item 6 observes the `-work` branch and worktree, not `STATUS.active` on `main`
+- [x] C5 `diff -rq .claude/skills .agents/skills` prints nothing after `npm run skills:ai-sync`
 
 ## Verification
 

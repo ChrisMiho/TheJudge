@@ -1,6 +1,6 @@
 # Slice D — Contract, preparation contract, owner docs, catalog
 
-## Status: planned
+## Status: in-progress
 
 ## Goal
 

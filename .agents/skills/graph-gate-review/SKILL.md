@@ -21,11 +21,14 @@ from the finalized proposal (see `PRD/instructions/graph-workflow-contract.md`,
 `## Propose / apply / close`).
 
 This is the owner-facing half of the `define` gate. The gate exists because
-node 8 (`land`) was otherwise the first human touch, so code would exist against
-product truth nobody had read. The owner does the reading and deciding **in the
-questions file, on their own schedule**; this skill reads that answered file and
-applies it. It runs either when the owner invokes it directly or when run two
-dispatches it on resume.
+`land` (node 9, the owner's merge of the code PR) was otherwise the first human
+touch, so code would exist against product truth nobody had read. The owner does
+the reading and deciding **in the questions file, on their own schedule**; this
+skill reads that answered file and applies it. It runs either when the owner
+invokes it directly or when `graph-implement` dispatches it after claiming the
+spec — in that case in the build worktree the dispatch's `Working directory:`
+names (`.worktrees/implement-<slug>`, on `thejudge-auto/<slug>-work`), where the
+finalized proposal is committed alongside the rest of the build (REQ-193).
 
 Read `PRD/instructions/graph-workflow-contract.md` before acting.
 

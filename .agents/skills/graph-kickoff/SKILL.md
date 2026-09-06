@@ -39,8 +39,10 @@ gate to park against. See the contract's `## Terminal states`.
 branch, cut from `origin/main`, and nodes 2–4 work **there**, never in the
 launch checkout (REQ-191). The driver passes
 `Working directory: <root>/.worktrees/kickoff-<slug>` to every node, runs its own
-ledger commits with `git -C <that path>`, and records the path in the ledger
-header as `- Worktree: <absolute path>`. The lock and every control file stay
+ledger commits as `cd <that path> && git add <paths> && git commit …` (the forms
+`.claude/graph-profile.json` allows; git's `-C <path>` flag is not one of them),
+and records
+the path in the ledger header as `- Worktree: <absolute path>`. The lock and every control file stay
 at the session root, as the build half's `implement-<slug>` worktree already
 works. The owner's checkout is never switched, committed to, or stashed.
 
@@ -145,17 +147,18 @@ stops. To stop, the run:
    and the ledger — committed in the kickoff worktree and pushed to
    `origin/<autonomous base>`. No `PRD/sections/` edits are published here:
    refinement wrote none, and `build` applies them by intent later.
-2. Opens the **docs-only base→main PR** from the kickoff worktree: `gh pr create
+2. Opens the **docs-only PR into `main`** from the kickoff worktree: `gh pr create
    --base main --head thejudge-auto/<slug>` (`gh` resolves the repository from
    any checkout). This *creates* a PR; it never merges one, so no boundary is
-   crossed. Record its URL in the ledger. It is the PR the implementation grows
-   into and the owner merges last. The `--body` opens with the PR-body
-   plain-language block from `PRD/instructions/plain-language-standard.md` — *What
-   this is · What you need to do · What it changes* — so the owner sees, at the top
-   of the PR, that this is a docs-only design PR, that their action is to answer
-   `GATE-QUESTIONS.md` and hold the PR open (not merge yet), and what product truth
-   it proposes; the design brief, the proposal, and the ledger stay in the body
-   below it.
+   crossed. Record its URL in the ledger. The owner answers the verdict slots in
+   it and **merges it — that merge is the build signal**; the build half then
+   cuts its own branch from `origin/main` and opens a second, code PR
+   (REQ-194). The `--body` opens with the PR-body plain-language block from
+   `PRD/instructions/plain-language-standard.md` — *What this is · What you need
+   to do · What it changes* — so the owner sees, at the top of the PR, that this
+   is a docs-only design PR, that their action is to answer `GATE-QUESTIONS.md`
+   and then merge, and what product truth it proposes; the design brief, the
+   proposal, and the ledger stay in the body below it.
 3. Parks at `owner-action`: set the marker, update the board row, and write under
    `## Open gate` either "answer `GATE-QUESTIONS.md`, then merge to build" (with
    the file path) or, when refinement proposed no product truth (no
@@ -173,8 +176,10 @@ two package `README.md` sections that skill would otherwise produce, using the
 exact section shapes in `PRD/instructions/graph-workflow-contract.md`:
 
 - `## Autonomous metadata` / `- Autonomous base: origin/<branch>` — the branch
-  node 1 created and pushed. Write it as soon as both that branch and the package
-  README exist.
+  the package's next PR targets. In this half that is the branch node 1 created
+  and pushed; write it as soon as both that branch and the package README exist.
+  Once the docs PR has merged and `graph-implement` claims the spec, the build
+  half rewrites it to `origin/main` (REQ-193).
 - `## Preparation gate` — rewritten with the latest verdict after every `gate-qc`
   node. The build half's `plan` node reads it and cannot self-certify a PASS.
 
