@@ -18,6 +18,10 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| Package | Notes |
+| --- | --- |
+| [graph-workflow-land](./graph-workflow-land/) | Graph-workflow fix part 2: one writer per branch, base-branch fate under delete-on-merge (audit findings 2 and 7); manual package on `fix/graph-workflow-land` |
+
 ## owner-action
 
 ## deferred
