@@ -1,4 +1,4 @@
-status: ideation
+status: refined
 
 # graph-workflow-land
 
@@ -13,3 +13,8 @@ findings 2 and 7. Manual package (`OPERATOR.md` recipe 9), branch
 `fix/graph-workflow-land` off `origin/main` in `.worktrees/graph-workflow-land`.
 
 - `IDEA.md` — problem, outcome, non-goals
+- `DESIGN-BRIEF.md` — the design record: decisions D1–D9, amendment set by grep, verification plan
+- `GATE-QUESTIONS.md` — the proposed product truth: REQ-193, REQ-194 new; REQ-171, REQ-191, REQ-192, REQ-164, FLOW-021, FLOW-022 amended; verdict slots answered at PR review
+
+Refined 2026-09-06 without a live owner approval: the session brief delegated
+both decisions (see `DESIGN-BRIEF.md`, `## Assumptions`).
