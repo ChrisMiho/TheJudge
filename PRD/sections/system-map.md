@@ -497,15 +497,15 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## AWS production deployment
 
 - Status: shipped
-- Summary: Runs the live OpenAI-backed app on a low-cost AWS serverless stack using AWS-provided URLs, automated quality-gated deploys, backend-only secret loading, and explicit cost/scale guardrails.
+- Summary: Runs the live OpenAI-backed app on a low-cost AWS serverless stack at `https://mtgjudge.gg` (the API on its AWS-provided Function URL), with automated quality-gated deploys, backend-only secret loading, and explicit cost/scale guardrails.
 - Lives in: `.github/workflows/quality-check.yml` (`deploy` job), `scripts/aws-{bootstrap,deploy}.sh`, `scripts/package-lambda.sh`, `apps/backend/src/lambda.ts`, `docs/aws/`
 - Backed by: DEC-084, GOAL-003, NFR-003, NFR-004, REQ-165, REQ-166, NFR-017
 
 ### Serverless hosting
 
 - Status: shipped
-- Summary: Serves the static frontend from a private S3 origin through CloudFront and the backend from Lambda through a public Function URL, without a custom domain. The Lambda deploy artifact is staged in a private S3 bucket rather than uploaded inline, raising the effective package ceiling to Lambda's 250MB unzipped quota.
-- Lives in: `scripts/aws-bootstrap.sh`, `scripts/aws-deploy.sh`, `apps/backend/src/lambda.ts`, `scripts/lambda-package-budget.test.mjs`
+- Summary: Serves the static frontend from a private S3 origin through CloudFront on the custom domain `mtgjudge.gg` (ACM certificate, Route 53 alias records, attached by the bootstrap) and the backend from Lambda through a public Function URL. The backend's single allowed browser origin is derived from the distribution's live alias on every deploy. The Lambda deploy artifact is staged in a private S3 bucket rather than uploaded inline, raising the effective package ceiling to Lambda's 250MB unzipped quota.
+- Lives in: `scripts/aws-bootstrap.sh`, `scripts/aws-deploy.sh`, `scripts/lib/cloudfront-custom-domain.mjs`, `scripts/frontend-origin-source.test.mjs`, `apps/backend/src/lambda.ts`, `scripts/lambda-package-budget.test.mjs`
 - Backed by: DEC-084, NFR-004, REQ-165, REQ-166, NFR-017
 
 ### Production secrets and deployment identity
