@@ -10,13 +10,13 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| Package | Notes |
+| --- | --- |
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Brief + 10-block proposal written at the `define` gate; awaiting quality-check |
+
 ## refining
 
 ## ideation
-
-| Package | Notes |
-| --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Answer-quality baseline for Ask AI, seeded from the six worked-solution gold cases |
 
 ## owner-action
 
