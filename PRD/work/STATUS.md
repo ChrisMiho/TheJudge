@@ -8,12 +8,15 @@ Do not rename package folders to encode status.
 
 ## active
 
+| Package | Notes |
+| --- | --- |
+| [graph-workflow-branching](./graph-workflow-branching/) | Part 1 of the graph-workflow fix (manual package, branch `fix/graph-workflow-branching`): mapped 2026-09-06 into slices A–E (A/B/C parallel-ready, D after A, E last); next `thejudge-implement`. Evidence in `probe-graph-workflow-audit/` |
+
 ## refined
 
 | Package | Notes |
 | --- | --- |
 | [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Define gate answered and applied 2026-09-06 (6 edit / 4 accept); docs PR #200 awaits owner merge, then `graph-implement` resumes at `gate-qc` |
-| [graph-workflow-branching](./graph-workflow-branching/) | Part 1 of the graph-workflow fix (manual package, branch `fix/graph-workflow-branching`): brief + 7-block proposal, quality-check PASS 2026-09-06 (one loop); next `thejudge-map-out`. Evidence in `probe-graph-workflow-audit/` |
 
 ## refining
 

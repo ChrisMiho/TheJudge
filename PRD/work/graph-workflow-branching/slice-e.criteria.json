@@ -1,0 +1,36 @@
+{
+  "slug": "graph-workflow-branching",
+  "slice": "E",
+  "criteria": [
+    {
+      "id": "E1",
+      "statement": "every Current excerpt is gone from its live file and every Proposed block is present",
+      "value": false,
+      "evidence": { "command": "check-applied\\.mjs" }
+    },
+    {
+      "id": "E2",
+      "statement": "REQ-191 and REQ-192 exist once each in functional-requirements.md",
+      "value": false,
+      "evidence": { "command": "grep .*functional-requirements\\.md", "paths": ["PRD/sections/functional-requirements.md"] }
+    },
+    {
+      "id": "E3",
+      "statement": "both graph-kickoff fixtures are rewritten and re-run with a dated measured run",
+      "value": false,
+      "evidence": { "paths": ["PRD/instructions/skill-fixtures/graph-kickoff/single-door-and-thin-request.md"] }
+    },
+    {
+      "id": "E4",
+      "statement": "the README Smoke section records both preflight shapes and the prune result",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "E5",
+      "statement": "quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    }
+  ]
+}

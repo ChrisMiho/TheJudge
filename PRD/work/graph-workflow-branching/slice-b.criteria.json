@@ -1,0 +1,30 @@
+{
+  "slug": "graph-workflow-branching",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "repoRelativeWritePath is covered for every path form",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts", "paths": ["scripts/lib/boundary-rules.test.mjs"] }
+    },
+    {
+      "id": "B2",
+      "statement": "the hook denies all four protected-path forms with the lock and allows them without",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts", "paths": ["scripts/graph-boundary-hook.test.mjs"] }
+    },
+    {
+      "id": "B3",
+      "statement": "test:scripts passes including the protected-write guard",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    },
+    {
+      "id": "B4",
+      "statement": "the hook diff is limited to the rule, the function, and root plumbing",
+      "value": false,
+      "evidence": { "command": "git diff --stat.*boundary-rules\\.mjs" }
+    }
+  ]
+}

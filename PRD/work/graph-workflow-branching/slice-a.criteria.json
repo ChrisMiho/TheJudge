@@ -1,0 +1,36 @@
+{
+  "slug": "graph-workflow-branching",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "test:scripts passes with the rewritten preflight tests",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts" }
+    },
+    {
+      "id": "A2",
+      "statement": "graph-digest tests pass with the moved constant",
+      "value": false,
+      "evidence": { "command": "npm run test:scripts", "paths": ["scripts/graph-digest.test.mjs"] }
+    },
+    {
+      "id": "A3",
+      "statement": "dry run from the root prints the worktree plan and base: origin/main",
+      "value": false,
+      "evidence": { "command": "graph:preflight.*--dry-run" }
+    },
+    {
+      "id": "A4",
+      "statement": "no stash, auto-commit, guard, or threshold code remains in the preflight script",
+      "value": false,
+      "evidence": { "command": "grep .*scripts/graph-preflight\\.mjs" }
+    },
+    {
+      "id": "A5",
+      "statement": "the profile carries no git stash allow rule",
+      "value": false,
+      "evidence": { "command": "grep .*graph-profile\\.json", "paths": [".claude/graph-profile.json"] }
+    }
+  ]
+}
