@@ -1,4 +1,4 @@
-status: ship-ready
+status: owner-action
 
 # hybrid-rule-retrieval
 

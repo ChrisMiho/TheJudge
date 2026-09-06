@@ -6,8 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| [hybrid-rule-retrieval](hybrid-rule-retrieval/) | Hybrid lexical+semantic rule retrieval, semantic eval gating, Lambda budget relief, cold-start latency measurement — making `EMBEDDING_PROVIDER=local` safe to default |
-
 ## active
 
 ## refined
@@ -17,6 +15,8 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
+
+| [hybrid-rule-retrieval](hybrid-rule-retrieval/) | Hybrid lexical+semantic rule retrieval, semantic eval gating, Lambda budget relief, cold-start latency measurement — making `EMBEDDING_PROVIDER=local` safe to default. Built and reviewed (APPROVE); parked at `land` — owner merges PR #197, then `/graph-implement PRD/work/hybrid-rule-retrieval/` runs close |
 
 ## deferred
 
