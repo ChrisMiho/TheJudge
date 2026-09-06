@@ -1,6 +1,11 @@
 # Slice A — Scripts: prune keep rule, write scope, digest
 
-## Status: planned
+## Status: done
+
+Verified 2026-09-06: `npm run test:scripts` 464/464; `npm run quality:check`
+exit 0; `grep` for `KEEP_PACKAGE_ON_MAIN|packageSlug|parsePackagesOnMain|ls-tree`
+in `scripts/graph-prune.mjs` empty; `npm run graph:digest` prints
+`## PRs waiting on you` and the two-root empty message.
 
 ## Goal
 
@@ -31,11 +36,11 @@ worktree alone, and the digest sees ledgers inside worktrees.
 
 ## Acceptance criteria
 
-- [ ] A1 `npm run test:scripts` passes with the new prune, ledger-check, and digest tests
-- [ ] A2 `scripts/graph-prune.mjs` contains no `KEEP_PACKAGE_ON_MAIN`, `packageSlug`, `parsePackagesOnMain`, or `ls-tree`
-- [ ] A3 `buildWriteScope("demo")` deep-equals `[".worktrees/implement-demo/"]` (asserted in `graph-ledger-check.test.mjs`)
-- [ ] A4 `scripts/graph-digest.mjs` lists a ledger found under `.worktrees/<dir>/PRD/work/<slug>/GRAPH-RUN.md` (asserted in `graph-digest.test.mjs`) and prints `## PRs waiting on you`
-- [ ] A5 `npm run quality:check` exit 0
+- [x] A1 `npm run test:scripts` passes with the new prune, ledger-check, and digest tests
+- [x] A2 `scripts/graph-prune.mjs` contains no `KEEP_PACKAGE_ON_MAIN`, `packageSlug`, `parsePackagesOnMain`, or `ls-tree`
+- [x] A3 `buildWriteScope("demo")` deep-equals `[".worktrees/implement-demo/"]` (asserted in `graph-ledger-check.test.mjs`)
+- [x] A4 `scripts/graph-digest.mjs` lists a ledger found under `.worktrees/<dir>/PRD/work/<slug>/GRAPH-RUN.md` (asserted in `graph-digest.test.mjs`) and prints `## PRs waiting on you`
+- [x] A5 `npm run quality:check` exit 0
 
 ## Verification
 

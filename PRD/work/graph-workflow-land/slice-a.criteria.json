@@ -5,32 +5,46 @@
     {
       "id": "A1",
       "statement": "npm run test:scripts passes with the new prune, ledger-check, and digest tests",
-      "value": false,
-      "evidence": { "command": "npm run test:scripts" }
+      "value": true,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
     },
     {
       "id": "A2",
       "statement": "scripts/graph-prune.mjs contains no KEEP_PACKAGE_ON_MAIN, packageSlug, parsePackagesOnMain, or ls-tree",
-      "value": false,
-      "evidence": { "command": "grep .*KEEP_PACKAGE_ON_MAIN.*graph-prune\\.mjs" }
+      "value": true,
+      "evidence": {
+        "command": "grep .*KEEP_PACKAGE_ON_MAIN.*graph-prune\\.mjs"
+      }
     },
     {
       "id": "A3",
       "statement": "buildWriteScope(\"demo\") deep-equals [\".worktrees/implement-demo/\"]",
-      "value": false,
-      "evidence": { "paths": ["scripts/graph-ledger-check.test.mjs"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "scripts/graph-ledger-check.test.mjs"
+        ]
+      }
     },
     {
       "id": "A4",
       "statement": "graph-digest lists a ledger under .worktrees/<dir>/PRD/work/<slug>/GRAPH-RUN.md and prints ## PRs waiting on you",
-      "value": false,
-      "evidence": { "paths": ["scripts/graph-digest.test.mjs"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "scripts/graph-digest.test.mjs"
+        ]
+      }
     },
     {
       "id": "A5",
       "statement": "npm run quality:check exit 0",
-      "value": false,
-      "evidence": { "command": "npm run quality:check" }
+      "value": true,
+      "evidence": {
+        "command": "npm run quality:check"
+      }
     }
   ]
 }

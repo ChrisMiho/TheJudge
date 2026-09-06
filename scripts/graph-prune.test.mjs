@@ -5,14 +5,11 @@ import { readFileSync } from "node:fs"
 import {
   CONTROL_FILE_PREFIX,
   INTAKE_DIR,
-  KEEP_PACKAGE_ON_MAIN,
   NEVER_REMOVE_BASENAMES,
   REPORT_OUTSIDE_ROOT,
   classifyLeftovers,
   formatReport,
   intakeRemovalPath,
-  packageSlug,
-  parsePackagesOnMain,
   parseWorktreeList
 } from "./graph-prune.mjs"
 
@@ -26,71 +23,47 @@ function only(items, kind) {
 
 // --- branches ---------------------------------------------------------------
 
-test("graph-prune - classifyLeftovers - a merged branch whose package left main is deleted", () => {
+test("graph-prune - classifyLeftovers - a merged branch is deleted", () => {
   const items = classifyLeftovers({
-    branches: [{ name: `${PREFIX}image-first-cards`, merged: true }],
-    packagesOnMain: ["some-other-package"]
+    branches: [{ name: `${PREFIX}image-first-cards`, merged: true }]
   })
   const item = only(items, "branch")
   assert.equal(item.action, "delete")
   assert.equal(item.name, `${PREFIX}image-first-cards`)
-  assert.match(item.reason, /merged into origin\/main/)
+  assert.equal(item.reason, "merged into origin/main")
 })
 
-test("graph-prune - classifyLeftovers - a merged branch whose package is still on main is kept as the build half's base", () => {
+test("graph-prune - classifyLeftovers - a merged docs branch whose package is still on main is deletable (REQ-194)", () => {
+  // The build half cuts `-work` from origin/main, never from the docs branch,
+  // so a docs branch is finished the moment its PR merges — whether or not the
+  // package folder is still waiting to be built on main.
   const items = classifyLeftovers({
-    branches: [{ name: `${PREFIX}ai-answer-quality-baseline`, merged: true }],
-    packagesOnMain: ["ai-answer-quality-baseline"]
+    branches: [{ name: `${PREFIX}ai-answer-quality-baseline`, merged: true }]
   })
   const item = only(items, "branch")
-  assert.equal(item.action, "keep")
-  assert.equal(item.reason, KEEP_PACKAGE_ON_MAIN)
-  assert.equal(item.reason, "package still on main: the build half's base")
+  assert.equal(item.action, "delete")
+  assert.equal(item.reason, "merged into origin/main")
 })
 
-test("graph-prune - classifyLeftovers - an unmerged branch is kept even when its package is gone", () => {
+test("graph-prune - classifyLeftovers - an unmerged branch is kept", () => {
   const items = classifyLeftovers({
-    branches: [{ name: `${PREFIX}abandoned-idea`, merged: false }],
-    packagesOnMain: []
+    branches: [{ name: `${PREFIX}abandoned-idea`, merged: false }]
   })
   const item = only(items, "branch")
   assert.equal(item.action, "keep")
   assert.match(item.reason, /not merged/)
 })
 
-test("graph-prune - packageSlug - strips the prefix and a trailing -work or -cleanup", () => {
-  assert.equal(packageSlug(`${PREFIX}image-first-cards`), "image-first-cards")
-  assert.equal(packageSlug(`${PREFIX}image-first-cards-work`), "image-first-cards")
-  assert.equal(packageSlug(`${PREFIX}image-first-cards-cleanup`), "image-first-cards")
-  // Only one suffix comes off, and only at the end.
-  assert.equal(packageSlug(`${PREFIX}work-in-progress`), "work-in-progress")
-  assert.equal(packageSlug(`${PREFIX}cleanup-tool-work`), "cleanup-tool")
-})
-
-test("graph-prune - classifyLeftovers - the -work and -cleanup branches follow their package's fate", () => {
-  const stillOnMain = classifyLeftovers({
+test("graph-prune - classifyLeftovers - the -work branch follows the same merged/unmerged rule", () => {
+  const items = classifyLeftovers({
     branches: [
       { name: `${PREFIX}single-source-invariants-work`, merged: true },
-      { name: `${PREFIX}single-source-invariants-cleanup`, merged: true }
-    ],
-    packagesOnMain: ["single-source-invariants"]
+      { name: `${PREFIX}in-flight-build-work`, merged: false }
+    ]
   })
   assert.deepEqual(
-    stillOnMain.map((item) => item.action),
-    ["keep", "keep"]
-  )
-  assert.ok(stillOnMain.every((item) => item.reason === KEEP_PACKAGE_ON_MAIN))
-
-  const shipped = classifyLeftovers({
-    branches: [
-      { name: `${PREFIX}single-source-invariants-work`, merged: true },
-      { name: `${PREFIX}single-source-invariants-cleanup`, merged: true }
-    ],
-    packagesOnMain: []
-  })
-  assert.deepEqual(
-    shipped.map((item) => item.action),
-    ["delete", "delete"]
+    items.map((item) => item.action),
+    ["delete", "keep"]
   )
 })
 
@@ -206,8 +179,7 @@ test("graph-prune - classifyLeftovers - is pure and empty inputs yield no items"
     branches: [{ name: `${PREFIX}a`, merged: true }],
     worktrees: [{ path: ".worktrees/a", branch: `${PREFIX}a`, merged: true, clean: true }],
     intakeDirs: ["graph-1"],
-    lock: null,
-    packagesOnMain: []
+    lock: null
   }
   assert.deepEqual(classifyLeftovers(args), classifyLeftovers(args))
 })
@@ -265,29 +237,19 @@ test("graph-prune - parseWorktreeList - reads the porcelain format, main worktre
   assert.deepEqual(parseWorktreeList(""), [])
 })
 
-test("graph-prune - parsePackagesOnMain - keeps tree entries only", () => {
-  const lsTree = [
-    "100644 blob 1111\tPRD/work/STATUS.md",
-    "040000 tree 2222\tPRD/work/ai-answer-quality-baseline",
-    "040000 tree 3333\tPRD/work/graph-workflow-branching"
-  ].join("\n")
-  assert.deepEqual(parsePackagesOnMain(lsTree), ["ai-answer-quality-baseline", "graph-workflow-branching"])
-})
-
 // --- report -----------------------------------------------------------------
 
 test("graph-prune - formatReport - one line per item and a dry-run summary", () => {
   const items = classifyLeftovers({
     branches: [
       { name: `${PREFIX}gone`, merged: true },
-      { name: `${PREFIX}queued`, merged: true }
+      { name: `${PREFIX}in-flight`, merged: false }
     ],
-    worktrees: [{ path: ".claude/worktrees/x", branch: "fix/x", merged: true, clean: true }],
-    packagesOnMain: ["queued"]
+    worktrees: [{ path: ".claude/worktrees/x", branch: "fix/x", merged: true, clean: true }]
   })
   const out = formatReport(items)
-  assert.match(out, new RegExp(`^delete branch ${PREFIX}gone — `, "m"))
-  assert.match(out, new RegExp(`^keep branch ${PREFIX}queued — package still on main: the build half's base$`, "m"))
+  assert.match(out, new RegExp(`^delete branch ${PREFIX}gone — merged into origin/main$`, "m"))
+  assert.match(out, new RegExp(`^keep branch ${PREFIX}in-flight — not merged into origin/main$`, "m"))
   assert.match(out, /^report worktree \.claude\/worktrees\/x — outside the \.worktrees root; not removed$/m)
   assert.match(
     out,

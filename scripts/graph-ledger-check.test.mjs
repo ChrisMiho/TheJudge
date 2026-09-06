@@ -219,14 +219,14 @@ test("graph-ledger-check - a node-6 return wholly in scope advances", () => {
     [
       ".worktrees/implement-demo/scripts/thing.mjs",
       ".worktrees/implement-demo/apps/frontend/src/App.tsx",
-      "PRD/work/demo/README.md",
-      "./PRD/work/demo/slice-a.md"
+      ".worktrees/implement-demo/PRD/work/demo/README.md",
+      "./.worktrees/implement-demo/PRD/work/demo/slice-a.md"
     ],
     "demo"
   )
   assert.equal(result.outcome, "ok")
   assert.deepEqual(result.outside, [])
-  assert.deepEqual(buildWriteScope("demo"), [".worktrees/implement-demo/", "PRD/work/demo/"])
+  assert.deepEqual(buildWriteScope("demo"), [".worktrees/implement-demo/"])
 })
 
 test("graph-ledger-check - a node-6 return with one out-of-scope path parks and names it", () => {
@@ -234,13 +234,22 @@ test("graph-ledger-check - a node-6 return with one out-of-scope path parks and 
     [
       ".worktrees/implement-demo/scripts/thing.mjs",
       "PRD/sections/decisions/card-collection.md",
-      "PRD/work/demo/README.md"
+      ".worktrees/implement-demo/PRD/work/demo/README.md"
     ],
     "demo"
   )
   assert.equal(result.outcome, "park")
   assert.deepEqual(result.outside, ["PRD/sections/decisions/card-collection.md"])
   assert.match(result.evidence, /PRD\/sections\/decisions\/card-collection\.md/)
+})
+
+test("graph-ledger-check - a launch-checkout write to the package folder is out of scope (REQ-193)", () => {
+  // The 2026-09-05 mirror failure: slice status written to the launch checkout's
+  // PRD/work/<slug>/ instead of the PR head. The package lives inside the build
+  // worktree now, so the bare path is a write outside the branch.
+  const result = classifyBuildWrites(["PRD/work/demo/README.md", "PRD/work/STATUS.md"], "demo")
+  assert.equal(result.outcome, "park")
+  assert.deepEqual(result.outside, ["PRD/work/demo/README.md", "PRD/work/STATUS.md"])
 })
 
 test("graph-ledger-check - another package's worktree is out of scope", () => {

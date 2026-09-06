@@ -214,9 +214,10 @@ export const RUN_STATE_PATH = ".worktrees/.graph-run-state.json"
  * so this is never a third loop limit — the contract's three-FAIL and
  * two-return caps stay the only bound on how many dispatches happen.
  *
- * `land` is `null`: node 8 is a human PR merge and the driver never dispatches
- * it, so it has no budget to spend. The basis for every other number is recorded
- * in the slice doc, not asserted here.
+ * `land` is `null`: node 9 is a human PR merge and the driver never dispatches
+ * it, so it has no budget to spend (`close` is node 8 and runs before it, REQ-194).
+ * The basis for every other number is recorded in the slice doc, not asserted
+ * here.
  */
 /**
  * Calls a node may still make after its cap, so it can park.

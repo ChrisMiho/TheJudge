@@ -244,16 +244,22 @@ export function checkLedger(markdown) {
 /**
  * Node 6's return-side write scope.
  *
- * A `build` node may write inside its own worktree or its own work package,
- * and nowhere else. This is the production counterpart of the fixture rig's
- * before/after snapshot — that check asserts the invoking checkout is
- * byte-unchanged, which a real run is supposed to violate, so the allowed set
- * replaces it rather than being reused by name.
+ * A `build` node may write inside its own build worktree and nowhere else
+ * (REQ-193). The work package lives inside that worktree, so a bare
+ * `PRD/work/<slug>/…` path — a write to the launch checkout — is out of scope:
+ * that is the 2026-09-05 mirror failure, where the builder wrote slice status
+ * to the launch checkout instead of the PR head. Paths are launch-root-relative;
+ * the driver strips the launch root from absolute paths before calling this.
+ *
+ * This is the production counterpart of the fixture rig's before/after
+ * snapshot — that check asserts the invoking checkout is byte-unchanged, which
+ * a real run is supposed to violate, so the allowed set replaces it rather than
+ * being reused by name.
  *
  * Pure, so a simulated node-6 return is a fixture rather than a live run.
  */
 export function buildWriteScope(slug) {
-  return [`.worktrees/implement-${slug}/`, `PRD/work/${slug}/`]
+  return [`.worktrees/implement-${slug}/`]
 }
 
 export function classifyBuildWrites(paths, slug) {

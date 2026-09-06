@@ -29,7 +29,7 @@ the same day.
 
 | Slice | Doc | Status | Depends on |
 | --- | --- | --- | --- |
-| A | [slice-a-scripts.md](./slice-a-scripts.md) | planned | — |
+| A | [slice-a-scripts.md](./slice-a-scripts.md) | done | — |
 | B | [slice-b-thejudge-skills.md](./slice-b-thejudge-skills.md) | planned | — |
 | C | [slice-c-graph-skills.md](./slice-c-graph-skills.md) | planned | — |
 | D | [slice-d-contract-and-owner-docs.md](./slice-d-contract-and-owner-docs.md) | planned | — |
