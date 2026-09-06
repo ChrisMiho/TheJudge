@@ -23,8 +23,9 @@ and every package keeps costing a third pull request you have to remember to
 merge.
 
 - Slug: `graph-workflow-land`
-- Status: refining (quality checks 1–3 FAIL with 14, 12, and 16 findings;
-  each reworked below) → refined on the deviation stated next
+- Status: refined (quality checks 1–3 FAIL with 14, 12, and 16 findings, each
+  reworked; quality check 4 PASS with 14 non-blocking notes, folded in) on the
+  deviation stated next
 - Source: `PRD/work/probe-graph-workflow-audit/FINDINGS-graph-workflow-gaps.md`,
   findings 2 and 7; prior run
   `PRD/instructions/receipts/graph-workflow-branching-2026-09-06.md` (part 1)
@@ -78,11 +79,16 @@ git fetch origin
 git worktree add .worktrees/implement-<slug> -b thejudge-auto/<slug>-work origin/main
 ```
 
-then commits the claim as the branch's first commit — `STATUS.active`, the
-package README's `## Autonomous metadata` rewritten to
-`- Autonomous base: origin/main`, the ledger header's `- Worktree:` and
-`- Autonomous base:` lines — and pushes with
+then commits the claim as the branch's first commit — the package README's
+`## Autonomous metadata` rewritten to `- Autonomous base: origin/main`, and the
+ledger header's `- Worktree:` and `- Autonomous base:` lines — and pushes with
 `cd .worktrees/implement-<slug> && git push -u origin thejudge-auto/<slug>-work`.
+The claim commit does **not** touch the `STATUS.*` marker: the marker stays
+`refined` (as merged from `main`) until `plan` sets `active`, exactly as the
+entry-point table expects, so a resume at any point between claim and `plan`
+enters at gate resolution or `gate-qc` and never skips the owner's verdicts.
+(Today the claim writes `STATUS.active` and `graph-gate-review` flips it back;
+a resume inside that window would route to `plan` with the verdicts unapplied.)
 
 Every build-half node — gate resolution (`graph-gate-review`), `gate-qc`,
 `plan`, `build`, `review`, `close` — is dispatched with
@@ -233,31 +239,34 @@ its three-rep run is owed and is the owner's call).
 
 A spec is ready (REQ-171) only when, in addition, no `thejudge-auto/<slug>-work`
 branch exists locally or on `origin` and no `.worktrees/implement-<slug>`
-exists. Either existing means the spec is claimed: the loop resumes it from the
-`STATUS.*` marker inside that worktree (entry-point table), or, when the package
-folder is gone there, finishes per D3's post-`close` rule or leaves it alone if
-the code PR is open. A branch that exists on `origin` with no local worktree
-(claimed from another root, or a worktree removed by hand) is not a dead end:
-the loop re-creates the worktree from the remote branch with the one allowed
-form that also creates the local branch —
+exists. The branch check is `git branch --list thejudge-auto/<slug>-work` plus
+`git ls-remote --heads origin thejudge-auto/<slug>-work` (both allowed). Either
+existing means the spec is claimed, and the loop does exactly one of three
+things: the worktree holds `PRD/work/<slug>/` → resume from the `STATUS.*`
+marker inside it (entry-point table); the worktree holds no package folder and
+the receipt's `### Node ledger` lacks the `close` row → finish per D3's
+post-`close` rule; the receipt already carries the `close` row → nothing to do,
+the code PR is the owner's. A branch that exists on `origin` with no local
+worktree (claimed from another root, or a worktree removed by hand) is not a
+dead end: the loop re-creates the worktree with
 `git worktree add .worktrees/implement-<slug> -b thejudge-auto/<slug>-work origin/thejudge-auto/<slug>-work`
-(the profile has no bare `git branch <new> <start>` rule, and
-`worktree.guessRemote` is unset, so the no-`-b` form fails) — and resumes.
-`BLOCKED` is reserved for a path that exists but is not a usable worktree.
-REQ-171's "`STATUS.active` is the single claim point" sentence is amended: the
-branch is the claim; `STATUS.active` is its first commit and the marker a
-resume reads inside the worktree. That marker is then **restored to
-`STATUS.refined` by `graph-gate-review`** before `gate-qc`, exactly as today
-(the entry-point table sends `refined` to `gate-qc`), so a `refined` marker in
-a claimed worktree is the normal state between claim and `plan`, not
-corruption. The `graph-implement` fixture `build-loop-ready-detection.md`
-(unmeasured) is rewritten to this shape: preconditions read `origin/main`; item
-2 and its "no code" rationale add the no-branch/no-worktree condition; item 3
-("claims by writing `STATUS.active`") becomes "claims by creating and pushing
-the `-work` branch and worktree, with `STATUS.active` as its first commit";
-item 6's observable becomes "the `-work` branch and worktree exist" rather
-than "`STATUS.active` on `main`"; and the rationale paragraph names the branch
-as the claim.
+— the one allowed form that also creates the local tracking branch (the profile
+has no bare `git branch <new> <start>` rule, and the no-`-b` form would check
+out a detached HEAD, not the branch) — and resumes. `BLOCKED` is reserved for a
+path that exists but is not a usable worktree. REQ-171's "`STATUS.active` is
+the single claim point" sentence is amended: the branch is the claim; the
+marker inside the worktree stays `refined` until `plan` (D1). The
+`graph-implement/reference.md` paragraph "if `## Autonomous metadata` is
+missing, run `graph-preflight` first" is removed for the build half: the claim
+writes that section, and a `graph-preflight` run here would create a kickoff
+branch and worktree this design forbids. The `graph-implement` fixture
+`build-loop-ready-detection.md` (unmeasured) is rewritten to this shape:
+preconditions read `origin/main`; item 2 and its "no code" rationale add the
+no-branch/no-worktree condition; item 3 ("claims by writing `STATUS.active`")
+becomes "claims by creating and pushing the `-work` branch and worktree, and
+leaves the marker `refined`"; item 6's observable becomes "the `-work` branch
+and worktree exist" rather than "`STATUS.active` on `main`"; and the rationale
+paragraph names the branch as the claim.
 
 Ready-detection reads `origin/main` without touching the launch checkout, using
 forms the profile allows: `git show origin/main:PRD/work/` lists the packages,
@@ -269,15 +278,19 @@ forms the profile allows: `git show origin/main:PRD/work/` lists the packages,
 
 `scripts/graph-prune.mjs` drops the "package still on main: the build half's
 base" keep rule: every local `thejudge-auto/*` branch merged into `origin/main`
-is deletable. With it go its only consumers — `packageSlug`, `packagesOnMain`,
-`parsePackagesOnMain`, `KEEP_PACKAGE_ON_MAIN`, and the `git ls-tree` call —
-because nothing reads the package slug once the keep rule is gone (dead code is
-removed, not kept). The test file loses the seven `packagesOnMain` inputs, the
-two `KEEP_PACKAGE_ON_MAIN` assertions (lines 47 and 82), the `packageSlug`,
-`parsePackagesOnMain`, and "the `-work` and `-cleanup` branches follow their
-package's fate" tests (the last one's premise is the keep rule), and the three
-matching imports (lines 8, 14, 15), and gains one test asserting a merged docs
-branch whose package is still on `main` is deletable. `graph-implement`'s
+is deletable. With it go `packageSlug`, `packagesOnMain`,
+`parsePackagesOnMain`, `KEEP_PACKAGE_ON_MAIN`, and the `git ls-tree` call:
+their only other reader is `classifyBranch`'s delete reason ("merged into
+origin/main; package `<slug>` is gone from main"), which becomes false for a
+docs branch whose package is still on `main`, so that reason becomes
+"merged into origin/main" alone (dead code is removed, not kept). The test file
+loses the seven `packagesOnMain` inputs, the two `KEEP_PACKAGE_ON_MAIN`
+assertions (lines 47 and 82), the `packageSlug`, `parsePackagesOnMain`, and
+"the `-work` and `-cleanup` branches follow their package's fate" tests (the
+last one's premise is the keep rule), the `formatReport` test's `queued`
+keep-line and its `1 kept` count (lines 279–297, reworded to the new reason),
+and the three matching imports (lines 8, 14, 15), and gains one test asserting
+a merged docs branch whose package is still on `main` is deletable. `graph-implement`'s
 claim step still removes only the kickoff worktree; the local docs branch is
 left for prune.
 
@@ -294,9 +307,11 @@ scans `.worktrees/*/PRD/work/*/GRAPH-RUN.md` as well as `PRD/work/*/`, preferrin
 a worktree copy for the same slug, so the morning digest sees in-flight runs;
 its `## Pending base→main PRs` heading becomes `## PRs waiting on you` (docs PRs
 and code PRs are both `thejudge-auto/*` → `main`), and its file-header comment,
-the two test *names* that say "base→main" (lines 70 and 94), and the "no graph
+the two test *names* that say "base→main" (lines 70 and 94), the "no graph
 run ledgers found under `PRD/work/*/GRAPH-RUN.md`" message (line 101, which
-must name both scan roots) follow. `codehealth`'s
+must name both scan roots), and the identifiers `OPEN_BASE_TO_MAIN_PRS_COMMAND`
+and `pendingBaseToMainPRs` (renamed `OPEN_GRAPH_PRS_COMMAND` and
+`pendingGraphPRs`; no sweep term catches them) follow. `codehealth`'s
 description of the graph ("an evolving base→main PR merged last") is corrected
 too. The repo's own `.claude/settings.json` denies nothing (it carries only the
 hook), so the edit is attempted directly; part 1 observed a denial on that path
@@ -340,7 +355,9 @@ In:
   `close`" resume, abolished). Reference: node table, entry-point table +
   post-`close` row + remote-branch-no-worktree row, §Publishing before build,
   §The base is frozen — removed, §Worktree and branch shape, §Node 8, §Node 6
-  return-side assertion.
+  return-side assertion, and the paragraph under the entry-point table ("if
+  `## Autonomous metadata` is missing, run `graph-preflight` first") — removed
+  for the build half, since the claim writes the section.
 - `scripts/graph-ledger-check.mjs` `buildWriteScope` / `classifyBuildWrites`
   (+ `graph-ledger-check.test.mjs`).
 - `PRD/instructions/preparation-contract.md` `## Autonomous base`: one scoping
@@ -348,8 +365,10 @@ In:
 - `PRD/instructions/skill-fixtures/graph-implement/build-loop-ready-detection.md`:
   rewritten to the branch-is-the-claim shape (unmeasured before and after).
 - `graph-kickoff` SKILL (line 42 `git -C`; step 2's "grows into / merges it
-  last"; "Package sections the driver owns" base definition) and reference
-  (node-4 note).
+  last" and its PR-body instruction "hold the PR open (not merge yet)" at lines
+  155–156, which contradicts answer-then-merge and step 3 of the same skill;
+  "Package sections the driver owns" base definition) and reference (node-4
+  note).
 - `graph-preflight` SKILL line 212.
 - `graph-gate-review` SKILL: the "node 8" pointer, plus one sentence that under
   dispatch by `graph-implement` it runs in the build worktree the dispatch's
@@ -404,14 +423,15 @@ terms.
 | --- | --- |
 | base branch / base→main hop / "grows into, merges it last" | contract §Overall flow 7, §The two runs (two paragraphs), §Boundaries "The one merge that matters"; `graph-kickoff/SKILL.md` step 2; `graph-kickoff/reference.md` node-4 note; `graph-implement/SKILL.md` "Resolving the gate" last paragraph, "Claim it" step 3; `graph-implement/reference.md` §Publishing before build, §The base is frozen, §Worktree and branch shape, §Node 8; `OPERATOR.md` recipes 6–7; `AGENT-SKILLS.md` graph rows; `PRD/README.md` line 130; `scripts/graph-digest.mjs` heading + test; `codehealth/SKILL.md` line 43 (denied — owner); REQ-171, REQ-191 |
 | autonomous base = node 1's branch / never `main` | `preparation-contract.md` `## Autonomous base` (canonical; scoping paragraph added); contract §Autonomous metadata; `graph-kickoff/SKILL.md` "Package sections the driver owns"; readers needing no change: `thejudge-implement-fanout/SKILL.md` line 24, `thejudge-cleanup/SKILL.md` `## Reads` 1 |
-| `STATUS.active` is the single claim point | REQ-171 bullet 2; `graph-implement/SKILL.md` "Claim it"; fixture `graph-implement/build-loop-ready-detection.md` (rationale, preconditions, items 2, 3, 6 — rewritten) |
+| `STATUS.active` is the single claim point | REQ-171 bullet 2; `graph-implement/SKILL.md` "Claim it"; `graph-implement/reference.md` entry-point table (a `refined` marker in a claimed worktree enters at gate resolution) and the "run `graph-preflight` first" paragraph beneath it; fixture `graph-implement/build-loop-ready-detection.md` (rationale, preconditions, items 2, 3, 6 — rewritten) |
+| docs PR "hold open, do not merge yet" | `graph-kickoff/SKILL.md` lines 155–156 (PR-body instruction) |
 | node 8 = land / node 9 = close, and every `… → land → close` sequence | contract §Overall flow 7, §Propose/apply/close, node table, §Boundaries; `graph-implement/SKILL.md` lines 17, 122 (sequences), `## Loop` item 3, `## Next step` lines 187–189 (the park-at-`land`-then-`close` resume); `graph-implement/reference.md` (table, §Node 8); `graph-gate-review/SKILL.md` line 24; `thejudge-cleanup/SKILL.md` line 141; `scripts/lib/boundary-rules.mjs` comment + `boundary-rules.test.mjs` message; FLOW-021 step 8 + edge case; FLOW-022 step 8 |
 | merge-proof gate (kept as the merged path; pre-merge path added) | `thejudge-cleanup/SKILL.md` (4 places); fixtures `deleted-base-branch.md`, `gh-outage-during-merge-proof.md`, `promote-once-at-close.md` (path note each), `intake-in-the-receipt.md` (2 pointer lines); new `close-inside-the-code-pr.md` |
-| prune keep rule | `scripts/graph-prune.mjs` (`KEEP_PACKAGE_ON_MAIN`, `classifyBranch`, `packageSlug`, `packagesOnMain`, `parsePackagesOnMain`, the `ls-tree` call), `graph-prune.test.mjs` (7 `packagesOnMain` inputs, 3 `KEEP_PACKAGE_ON_MAIN` assertions, the `packageSlug` and `parsePackagesOnMain` tests, imports at lines 8/14/15); REQ-192; `graph-implement/SKILL.md` "Claim it" |
+| prune keep rule | `scripts/graph-prune.mjs` (`KEEP_PACKAGE_ON_MAIN`, `classifyBranch`, `packageSlug`, `packagesOnMain`, `parsePackagesOnMain`, the `ls-tree` call), `graph-prune.test.mjs` (7 `packagesOnMain` inputs, 2 `KEEP_PACKAGE_ON_MAIN` assertions at 47/82, the `packageSlug`, `parsePackagesOnMain`, and `-work`/`-cleanup` tests, the `formatReport` test's keep line and count at 279–297, imports at lines 8/14/15); REQ-192; `graph-implement/SKILL.md` "Claim it" |
 | `graph:prune --apply` | part-1 receipt lines 17 and 83; REQ-164; `OPERATOR.md` line 280 |
 | `git -C` (agent-run) | `graph-kickoff/SKILL.md` line 42; `graph-implement/SKILL.md` line 57; `graph-preflight/SKILL.md` line 212 |
 | write scope of node 6 | `scripts/graph-ledger-check.mjs` `buildWriteScope`/`classifyBuildWrites` + test; contract §Instruction ledger lines 558–560; `graph-implement/SKILL.md` `## Loop` item 3; `graph-implement/reference.md` §Node 6 return-side assertion; `thejudge-implement-all/SKILL.md` `## Mode` |
-| cleanup removes the implement worktree | `thejudge-implement-all/SKILL.md` `## Completion gate` line 99; `thejudge-cleanup/SKILL.md` `### Delete mechanism` |
+| cleanup removes the implement worktree | `thejudge-implement-all/SKILL.md` `## Completion gate` line 90; `thejudge-cleanup/SKILL.md` `### Delete mechanism` |
 | ledger `Outcome` vocabulary vs `land` | contract §Ledger, node table row 9, §Terminal states `COMPLETE`; `thejudge-cleanup/SKILL.md` `### Graph run in the receipt` (the summary line) |
 | implement-all worktree ownership | `thejudge-implement-all/SKILL.md` lines 48, 105; `reference.md` preflight 3–7 |
 

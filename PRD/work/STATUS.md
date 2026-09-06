@@ -13,12 +13,9 @@ Do not rename package folders to encode status.
 | Package | Notes |
 | --- | --- |
 | [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Define gate answered and applied 2026-09-06 (6 edit / 4 accept); docs PR #200 awaits owner merge, then `graph-implement` resumes at `gate-qc` |
+| [graph-workflow-land](./graph-workflow-land/) | Graph-workflow fix part 2: one writer per branch, `close` before `land`, two PRs per package (audit findings 2 and 7); QC 4 PASS 2026-09-06 after three reworked FAILs; manual package on `fix/graph-workflow-land` |
 
 ## refining
-
-| Package | Notes |
-| --- | --- |
-| [graph-workflow-land](./graph-workflow-land/) | Graph-workflow fix part 2: one writer per branch, `close` before `land`, two PRs per package (audit findings 2 and 7); QC 1–3 FAIL 2026-09-06, each reworked; manual package on `fix/graph-workflow-land` |
 
 ## ideation
 

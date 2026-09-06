@@ -1,11 +1,11 @@
-status: refining
+status: refined
 
 # graph-workflow-land
 
 Part 2 of the graph-workflow fix: one writer per branch so `land` never
 conflicts, and a decision on the base branch's fate under GitHub's
 delete-branch-on-merge setting so a package costs two PRs, not three. Also
-corrects three `npm run graph:prune --apply` mentions to the working
+corrects four `npm run graph:prune --apply` mentions to the working
 `npm run graph:prune -- --apply` form.
 
 Source: `PRD/work/probe-graph-workflow-audit/FINDINGS-graph-workflow-gaps.md`,
@@ -18,6 +18,7 @@ findings 2 and 7. Manual package (`OPERATOR.md` recipe 9), branch
 
 Refined 2026-09-06 without a live owner approval: the session brief delegated
 both decisions (see `DESIGN-BRIEF.md`, `## Deviation from the refinement
-skill`). Quality checks 1–3 (fresh-context read-only reviewers) returned FAIL
-with 14, 12, and 16 findings; the brief and proposal were reworked after each
-the same day and re-checked.
+skill, stated as one`). Quality checks 1–3 (fresh-context read-only reviewers)
+returned FAIL with 14, 12, and 16 findings; the brief and proposal were
+reworked after each the same day. Quality check 4 returned PASS with 14
+non-blocking notes, folded in before the status moved to `refined`.

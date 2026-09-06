@@ -6,7 +6,8 @@ are byte-identical to the live section files at `8d29ce4` (checked by script).
 New entries append after REQ-192 in `PRD/sections/functional-requirements.md`.
 
 The verdict slots are answered at PR review (see `DESIGN-BRIEF.md`,
-`## Deviation from the refinement skill`): the PR diff is the applied proposal.
+`## Deviation from the refinement skill, stated as one`): the PR diff is the
+applied proposal.
 Reworked after quality checks 1–3 (FAIL with 14, 12, and 16 findings) on
 2026-09-06.
 
@@ -40,9 +41,9 @@ Proposed (new entry, appended after REQ-192):
 - Priority: high
 - Description: `graph-implement` claims an approved spec by cutting `thejudge-auto/<slug>-work` from `origin/main` into `.worktrees/implement-<slug>` and pushing it. Every build-half node — gate resolution, `gate-qc`, `plan`, `build`, `review`, `close` — works in that folder on that branch, and the driver's own commits (ledger rows, package `README.md` sections, the `STATUS.*` marker, the `PRD/work/STATUS.md` board row) go to the same branch between nodes. The launch checkout is never switched, committed to, or stashed by the build half — REQ-191's rule, extended.
 - Acceptance Criteria:
-  - a spec is ready (REQ-171) only when, in addition, no `thejudge-auto/<slug>-work` branch exists locally or on `origin` and no `.worktrees/implement-<slug>` exists; when either exists the spec is already claimed, and the loop resumes it from the `STATUS.*` marker inside that worktree or leaves it alone when its package folder is gone and its code PR is open
+  - a spec is ready (REQ-171) only when, in addition, no `thejudge-auto/<slug>-work` branch exists locally (`git branch --list`) or on `origin` (`git ls-remote --heads origin`) and no `.worktrees/implement-<slug>` exists; when either exists the spec is already claimed, and the loop does one of three things: the worktree holds `PRD/work/<slug>/` → resume from the `STATUS.*` marker inside it; no package folder and the receipt's `### Node ledger` lacks the `close` row → finish per REQ-194's post-`close` rule; the `close` row is present → nothing, the code PR is the owner's
   - ready-detection reads `origin/main` after `git fetch origin` with forms the profile allows — `git show origin/main:PRD/work/` for the package list, `git show origin/main:PRD/work/<slug>/` for the marker, `git show origin/main:PRD/work/<slug>/GATE-QUESTIONS.md` for the slots; the launch checkout's `main` is not pulled or read, and no `git ls-tree` (not in the profile) is issued
-  - the claim runs `git fetch origin` and `git worktree add .worktrees/implement-<slug> -b thejudge-auto/<slug>-work origin/main`, then commits `STATUS.active`, the package README's `## Autonomous metadata` rewritten to `- Autonomous base: origin/main`, and the ledger header's `- Worktree: <root>/.worktrees/implement-<slug>` and `- Autonomous base: origin/main` lines as the branch's first commit, and pushes with `git push -u origin thejudge-auto/<slug>-work` from inside the worktree; the branch is the claim, and the `STATUS.*` marker inside it is what a resume reads (REQ-171) — `graph-gate-review` restores `STATUS.refined` right after, as today, so a `refined` marker in a claimed worktree is the normal state between claim and `plan`
+  - the claim runs `git fetch origin` and `git worktree add .worktrees/implement-<slug> -b thejudge-auto/<slug>-work origin/main`, then commits the package README's `## Autonomous metadata` rewritten to `- Autonomous base: origin/main` and the ledger header's `- Worktree: <root>/.worktrees/implement-<slug>` and `- Autonomous base: origin/main` lines as the branch's first commit, and pushes with `git push -u origin thejudge-auto/<slug>-work` from inside the worktree; the branch is the claim, and the claim commit leaves the `STATUS.*` marker at `refined` — `plan` sets `active`, as the entry-point table already expects — so a resume between claim and `plan` enters at gate resolution or `gate-qc` and never skips the owner's verdicts (REQ-171)
   - the autonomous base is defined in the contract as the branch the package's next PR targets: node 1's `thejudge-auto/<slug>` while the docs PR is open, `main` once it has merged and the build half has claimed the spec; `preparation-contract.md` `## Autonomous base` (the canonical home, "never defaults to `main`") gains a paragraph scoping that rule to `thejudge-prepare`'s choice of a base and naming the graph claim's one rewrite as a recorded value, not a default; `thejudge-implement-fanout` and `thejudge-cleanup` read the recorded value unchanged
   - the kickoff worktree is handled before anything is created: a clean `.worktrees/kickoff-<slug>` is removed as REQ-191 states, a dirty one is reported by path and the spec is skipped unclaimed (no branch, no worktree, nothing pushed) so the next tick claims cleanly once the owner has committed or discarded it; the local `thejudge-auto/<slug>` branch is neither deleted nor used again by the build half (REQ-194)
   - every build-half dispatch carries `Working directory: <root>/.worktrees/implement-<slug>` on its own line; the driver runs its own commits as `cd <that path> && git add <paths> && git commit …` and pushes with `git push -u origin thejudge-auto/<slug>-work` — forms `.claude/graph-profile.json` allows; no `git -C` form is used by either graph driver
@@ -94,7 +95,7 @@ Proposed (new entry, appended after REQ-193):
 - Priority: high
 - Description: The build half branches from `origin/main` and opens its code PR `thejudge-auto/<slug>-work → main`. `thejudge-cleanup` (`close`) runs on that branch before the owner merges, so the receipt, the `PRD/work/<slug>/` deletion, the board-row strip, and the `system-map.md` flip land in the same merge as the code. The docs branch `thejudge-auto/<slug>` is finished when the docs PR merges; GitHub's `delete_branch_on_merge` stays on, nothing re-creates the branch, and no third base→main PR exists.
 - Acceptance Criteria:
-  - the node table reads 8 `close` (`thejudge-cleanup`, sonnet, cap 120, advances to `land`) and 9 `land` (human PR merge, no cap, outside the run's ledger — the package is on `main` when the owner merges); node names, models, and per-name caps are unchanged
+  - the node table reads 8 `close` (`thejudge-cleanup`, sonnet, cap 120, advances to `land`) and 9 `land` (human PR merge, no cap, advances to "run complete — outside the run's ledger; the package is on `main` when the owner merges"); node names, models, and per-name caps are unchanged
   - `thejudge-cleanup`'s autonomous gate chooses its path by the implementation PR's state, located by the `thejudge-auto:v1:registered:<slug>` marker: a **merged** PR takes the existing four merge-proof checks unchanged (a direct `thejudge-implement-all` package is cleaned up after the owner merges, and lives here); an **open** PR takes the new PR-ready gate: (1) the current checkout is `.worktrees/implement-<slug>` on `thejudge-auto/<slug>-work` and `HEAD` equals `origin/thejudge-auto/<slug>-work` after a fetch; (2) the PR's head is that branch and its base is the recorded autonomous base (`main`), verified with `gh pr view`; (3) the package is `ship-ready` with every criterion `true`; (4) every runtime-cleanup criterion is recorded passing; when the PR state is unknown (HTTP 5xx or no network) the path is decided by git — tip an ancestor of `origin/main` means merged, otherwise open with the PR state recorded as not verified and the tip proven pushed by `git ls-remote --heads origin` — because an outage is not evidence about the work
   - under `graph is controlling` only the open-PR path is valid: `close` runs in `.worktrees/implement-<slug>` after `review` approves and before any merge, and a merged PR at `close` fails the node with that evidence
   - on the open-PR path `close` writes the receipt with `Status: shipped` and a `- PR:` line naming the code PR, folds the ledger into `## Graph run`, flips `system-map.md`, deletes with `git rm -r PRD/work/<slug>/`, strips the board row, runs `npm run quality:check`, commits on the branch, and pushes without force; it removes no worktree and no branch
@@ -134,9 +135,10 @@ and "opens a code PR into `main`", but it also says that PR "grows from the
 same PR the spec was merged on", which is the old three-PR picture, and it
 reads the queue from local `main`. Five bullets change: ready also means "not
 yet claimed" (no `-work` branch or build worktree); the claim is the branch,
-with `STATUS.active` as its first commit rather than the claim itself; the
-worktree and branch are named; the code PR is its own second PR with cleanup
-inside it; and deleting the work folder happens inside that PR.
+and the status marker is left at `refined` until planning rather than flipped
+to `active` at claim; the worktree and branch are named; the code PR is its
+own second PR with cleanup inside it; and deleting the work folder happens
+inside that PR.
 
 **What happens if you say no:** the requirement keeps describing a PR that
 "grows from" the docs PR, which the skill has never done and which REQ-194 now
@@ -163,7 +165,7 @@ Current:
 Proposed:
 
 ```markdown
-  - a spec is "ready" when its `PRD/work/<slug>/` folder is on `origin/main` at `STATUS.refined` with every `GATE-QUESTIONS.md` verdict slot answered (no blank), and no `thejudge-auto/<slug>-work` branch or `.worktrees/implement-<slug>` exists (REQ-193) — this state is the queue and needs no bespoke ready-file
+  - a spec is "ready" when its `PRD/work/<slug>/` folder is on `origin/main` at `STATUS.refined` with every `GATE-QUESTIONS.md` verdict slot answered (no blank) and no built code, and no `thejudge-auto/<slug>-work` branch or `.worktrees/implement-<slug>` exists (REQ-193) — this state is the queue and needs no bespoke ready-file
 ```
 
 Current:
@@ -175,7 +177,7 @@ Current:
 Proposed:
 
 ```markdown
-  - on picking up a ready spec, `graph-implement` claims it by creating and pushing `thejudge-auto/<slug>-work` in `.worktrees/implement-<slug>` (REQ-193); `STATUS.active` is that branch's first commit and the marker a resume reads inside the worktree, so a second loop iteration or a loop restart sees the branch and never double-picks the same spec (never double-build, never miss)
+  - on picking up a ready spec, `graph-implement` claims it by creating and pushing `thejudge-auto/<slug>-work` in `.worktrees/implement-<slug>` (REQ-193); the branch is the claim, so a second loop iteration or a loop restart sees it and never double-picks the same spec (never double-build, never miss); the `STATUS.*` marker inside the worktree stays `refined` until `plan` sets `active`, so a resume before `plan` still enters at gate resolution or `gate-qc`
 ```
 
 Current:
