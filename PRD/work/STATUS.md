@@ -18,7 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Notes |
 | --- | --- |
-| [graph-workflow-land](./graph-workflow-land/) | Graph-workflow fix part 2: one writer per branch, `close` before `land`, two PRs per package (audit findings 2 and 7); QC 1 FAIL 2026-09-06, reworked; manual package on `fix/graph-workflow-land` |
+| [graph-workflow-land](./graph-workflow-land/) | Graph-workflow fix part 2: one writer per branch, `close` before `land`, two PRs per package (audit findings 2 and 7); QC 1–3 FAIL 2026-09-06, each reworked; manual package on `fix/graph-workflow-land` |
 
 ## ideation
 

@@ -23,8 +23,8 @@ and every package keeps costing a third pull request you have to remember to
 merge.
 
 - Slug: `graph-workflow-land`
-- Status: refining (quality check 1 FAIL, 14 findings, reworked below) →
-  refined on the deviation stated next
+- Status: refining (quality checks 1–3 FAIL with 14, 12, and 16 findings;
+  each reworked below) → refined on the deviation stated next
 - Source: `PRD/work/probe-graph-workflow-audit/FINDINGS-graph-workflow-gaps.md`,
   findings 2 and 7; prior run
   `PRD/instructions/receipts/graph-workflow-branching-2026-09-06.md` (part 1)
@@ -108,8 +108,14 @@ shows), and every path the node reports lies under `.worktrees/implement-<slug>/
 The rule is executable code, not only prose: `buildWriteScope(slug)` in
 `scripts/graph-ledger-check.mjs` returns the two-prefix pair today and drops
 `PRD/work/<slug>/`, with its tests in `graph-ledger-check.test.mjs` updated to
-the single prefix; `graph-implement/SKILL.md` `## Loop` item 3 and
-`reference.md` §Node 6 return-side assertion say the same thing in prose.
+the single prefix; the contract's §Instruction ledger paragraph "Node 6 carries
+the return-side half", `graph-implement/SKILL.md` `## Loop` item 3, and
+`reference.md` §Node 6 return-side assertion say the same thing in prose. Paths
+are compared launch-root-relative: the `build` dispatch requires the node to
+report every written path relative to the launch root or absolute, and the
+driver strips the launch root from absolute paths before `classifyBuildWrites`,
+so a correct build reporting `.worktrees/implement-<slug>/PRD/work/<slug>/…`
+passes and a bare `PRD/work/<slug>/…` (a launch-checkout write) parks.
 
 Claim ordering: the kickoff worktree is dealt with **before** anything is
 created. A clean `.worktrees/kickoff-<slug>` is removed; a dirty one is reported
@@ -161,9 +167,11 @@ branch — it is standing in the worktree it would be removing.
 After `close` returns `ok`, the driver appends the `close` row to the receipt's
 `### Node ledger` (the ledger file is gone; the receipt is its durable home —
 today's receipts already carry this row "written by the driver after the fact"),
-writes the receipt's `## Graph run` summary line as
-`Terminal state: COMPLETE — land: the owner's merge of <PR URL>`, commits,
-pushes, releases the lock, and ends **`COMPLETE`**. `land` gets **no ledger
+commits, pushes, releases the lock, and ends **`COMPLETE`**. The receipt's
+`## Graph run` summary line is written by `close` itself, on the PR-ready path,
+as `Terminal state: COMPLETE — land: the owner's merge of <PR URL>` (cleanup
+knows the URL from its own check 2, and under graph control the run is complete
+the moment `close` returns `ok`); the driver adds only the `close` row. `land` gets **no ledger
 row**: the ledger's `Outcome` vocabulary is `ok` / `failed` / `parked` and none
 of them is true of a merge that has not happened; the node table's row 9 says
 "human (PR merge); outside the run's ledger — the package is on `main` when the
@@ -230,18 +238,26 @@ exists. Either existing means the spec is claimed: the loop resumes it from the
 folder is gone there, finishes per D3's post-`close` rule or leaves it alone if
 the code PR is open. A branch that exists on `origin` with no local worktree
 (claimed from another root, or a worktree removed by hand) is not a dead end:
-the loop re-creates the worktree from the remote branch
-(`git worktree add .worktrees/implement-<slug> thejudge-auto/<slug>-work`,
-creating the tracking branch first when only the remote exists) and resumes.
+the loop re-creates the worktree from the remote branch with the one allowed
+form that also creates the local branch —
+`git worktree add .worktrees/implement-<slug> -b thejudge-auto/<slug>-work origin/thejudge-auto/<slug>-work`
+(the profile has no bare `git branch <new> <start>` rule, and
+`worktree.guessRemote` is unset, so the no-`-b` form fails) — and resumes.
 `BLOCKED` is reserved for a path that exists but is not a usable worktree.
 REQ-171's "`STATUS.active` is the single claim point" sentence is amended: the
 branch is the claim; `STATUS.active` is its first commit and the marker a
-resume reads inside the worktree. The `graph-implement` fixture
-`build-loop-ready-detection.md` (unmeasured) is rewritten to this shape:
-preconditions read `origin/main`, item 2 adds the no-branch/no-worktree
-condition, item 6's observable becomes "the `-work` branch and worktree exist"
-rather than "`STATUS.active` on `main`", and the rationale paragraph names the
-branch as the claim.
+resume reads inside the worktree. That marker is then **restored to
+`STATUS.refined` by `graph-gate-review`** before `gate-qc`, exactly as today
+(the entry-point table sends `refined` to `gate-qc`), so a `refined` marker in
+a claimed worktree is the normal state between claim and `plan`, not
+corruption. The `graph-implement` fixture `build-loop-ready-detection.md`
+(unmeasured) is rewritten to this shape: preconditions read `origin/main`; item
+2 and its "no code" rationale add the no-branch/no-worktree condition; item 3
+("claims by writing `STATUS.active`") becomes "claims by creating and pushing
+the `-work` branch and worktree, with `STATUS.active` as its first commit";
+item 6's observable becomes "the `-work` branch and worktree exist" rather
+than "`STATUS.active` on `main`"; and the rationale paragraph names the branch
+as the claim.
 
 Ready-detection reads `origin/main` without touching the launch checkout, using
 forms the profile allows: `git show origin/main:PRD/work/` lists the packages,
@@ -257,10 +273,11 @@ is deletable. With it go its only consumers — `packageSlug`, `packagesOnMain`,
 `parsePackagesOnMain`, `KEEP_PACKAGE_ON_MAIN`, and the `git ls-tree` call —
 because nothing reads the package slug once the keep rule is gone (dead code is
 removed, not kept). The test file loses the seven `packagesOnMain` inputs, the
-three `KEEP_PACKAGE_ON_MAIN` assertions, the `packageSlug` and
-`parsePackagesOnMain` tests, and the three matching imports, and gains one
-test asserting a merged docs branch whose package is still on `main` is
-deletable. `graph-implement`'s
+two `KEEP_PACKAGE_ON_MAIN` assertions (lines 47 and 82), the `packageSlug`,
+`parsePackagesOnMain`, and "the `-work` and `-cleanup` branches follow their
+package's fate" tests (the last one's premise is the keep rule), and the three
+matching imports (lines 8, 14, 15), and gains one test asserting a merged docs
+branch whose package is still on `main` is deletable. `graph-implement`'s
 claim step still removes only the kickoff worktree; the local docs branch is
 left for prune.
 
@@ -276,8 +293,10 @@ checkout's `PRD/work/`, which no run writes any more). `npm run graph:digest`
 scans `.worktrees/*/PRD/work/*/GRAPH-RUN.md` as well as `PRD/work/*/`, preferring
 a worktree copy for the same slug, so the morning digest sees in-flight runs;
 its `## Pending base→main PRs` heading becomes `## PRs waiting on you` (docs PRs
-and code PRs are both `thejudge-auto/*` → `main`), and its file-header comment
-and the two test regexes that say "base→main" follow. `codehealth`'s
+and code PRs are both `thejudge-auto/*` → `main`), and its file-header comment,
+the two test *names* that say "base→main" (lines 70 and 94), and the "no graph
+run ledgers found under `PRD/work/*/GRAPH-RUN.md`" message (line 101, which
+must name both scan roots) follow. `codehealth`'s
 description of the graph ("an evolving base→main PR merged last") is corrected
 too. The repo's own `.claude/settings.json` denies nothing (it carries only the
 hook), so the edit is attempted directly; part 1 observed a denial on that path
@@ -312,12 +331,16 @@ profile is not edited.
 
 In:
 
-- `graph-implement` SKILL (`## The build loop` items 1–4 including "Claim it";
-  `## Resolving the gate` last paragraph; `## Loop` item 3 — node 8/9 wording
-  and the node 6 assertion; the `git -C` at line 57) and reference (node table,
-  entry-point table + post-`close` row + remote-branch-no-worktree row,
-  §Publishing before build, §The base is frozen — removed, §Worktree and branch
-  shape, §Node 8, §Node 6 return-side assertion).
+- `graph-implement` SKILL: every `plan → build → review → land → close`
+  sequence (`## Goal and inputs` line 17, `## Resolving the gate` first bullet
+  line 122); `## The build loop` items 1–4 including "Claim it" and the
+  `git -C` at line 57; `## Resolving the gate` last paragraph; `## Loop` item 3
+  (node 8/9 wording and the node 6 assertion); `## Next step` lines 187–189
+  (the "parks at `land`, a later run records `land` as `ok` and continues to
+  `close`" resume, abolished). Reference: node table, entry-point table +
+  post-`close` row + remote-branch-no-worktree row, §Publishing before build,
+  §The base is frozen — removed, §Worktree and branch shape, §Node 8, §Node 6
+  return-side assertion.
 - `scripts/graph-ledger-check.mjs` `buildWriteScope` / `classifyBuildWrites`
   (+ `graph-ledger-check.test.mjs`).
 - `PRD/instructions/preparation-contract.md` `## Autonomous base`: one scoping
@@ -332,16 +355,21 @@ In:
   dispatch by `graph-implement` it runs in the build worktree the dispatch's
   `Working directory:` names.
 - `thejudge-implement-all` SKILL: `## Mode`, `## Inputs`, `## Workflow
-  contract` item 1, `## Common mistakes` "Sharing one local branch across
-  worktrees"; reference `### Preflight` steps 3–7 (guard wording, in-place
-  worktree, baseline at the shared tip, launch-checkout sentence).
+  contract` item 1, `## Completion gate` ("cleanup removes the worktree and its
+  captures" — true only on the merged path now), `## Common mistakes` "Sharing
+  one local branch across worktrees"; reference `### Preflight` steps 3–7
+  (guard wording, in-place worktree, baseline at the shared tip,
+  launch-checkout sentence).
 - `thejudge-cleanup` SKILL: `## Mode`, `## Reads` 6, `## Writes` (`- PR:` line),
   `### Delete mechanism`, `## Gates` bullet, the gate section (two paths), the
   "node 9's delete" comment; fixtures per D4.
 - `PRD/instructions/graph-workflow-contract.md`: §Overall flow 5–7,
   §Propose/apply/close, §The two runs (both PR paragraphs), node table,
-  §Autonomous metadata, §Ledger (`Worktree`), §Boundaries "The one merge that
-  matters", §The ledger outlives the run, §Terminal states `COMPLETE`.
+  §Autonomous metadata (the section text at line 314; its fenced example shape
+  at line 321 is unchanged), §Ledger (`Worktree`), §Instruction ledger's "Node 6
+  carries the return-side half" paragraph (lines 558–560, the contract's own
+  copy of the write scope), §Boundaries "The one merge that matters", §The
+  ledger outlives the run, §Terminal states `COMPLETE`.
 - `OPERATOR.md` recipes 6–7 and the "Where to look" table (ledger location and
   the `-- --apply` spelling); `AGENT-SKILLS.md` graph rows; `PRD/README.md`
   line 130.
@@ -365,22 +393,25 @@ New: REQ-193 (one folder, one branch, writers in turns), REQ-194 (two PRs;
 `close` before `land`; base branch retired from the build half). Amended:
 REQ-171 (five bullets incl. the claim point), REQ-191, REQ-192, REQ-164,
 FLOW-021 (steps 7–8, one edge case), FLOW-022. The amendment set was enumerated
-by grep, then re-enumerated after quality check 1 added `single claim point`,
-`Autonomous base`, and `git -C` (agent-run only) to the terms.
+by grep, then re-enumerated after quality checks 1–3 added `single claim
+point`, `Autonomous base`, `git -C` (agent-run only), `buildWriteScope`,
+`PRD/work/<slug>/` as a write prefix, and every `land → close` sequence to the
+terms.
 
-## Amendment set (by grep, 2026-09-06, re-run after QC 1)
+## Amendment set (by grep, 2026-09-06, re-run after QC 1–3)
 
 | Rule being changed | Homes found |
 | --- | --- |
 | base branch / base→main hop / "grows into, merges it last" | contract §Overall flow 7, §The two runs (two paragraphs), §Boundaries "The one merge that matters"; `graph-kickoff/SKILL.md` step 2; `graph-kickoff/reference.md` node-4 note; `graph-implement/SKILL.md` "Resolving the gate" last paragraph, "Claim it" step 3; `graph-implement/reference.md` §Publishing before build, §The base is frozen, §Worktree and branch shape, §Node 8; `OPERATOR.md` recipes 6–7; `AGENT-SKILLS.md` graph rows; `PRD/README.md` line 130; `scripts/graph-digest.mjs` heading + test; `codehealth/SKILL.md` line 43 (denied — owner); REQ-171, REQ-191 |
 | autonomous base = node 1's branch / never `main` | `preparation-contract.md` `## Autonomous base` (canonical; scoping paragraph added); contract §Autonomous metadata; `graph-kickoff/SKILL.md` "Package sections the driver owns"; readers needing no change: `thejudge-implement-fanout/SKILL.md` line 24, `thejudge-cleanup/SKILL.md` `## Reads` 1 |
 | `STATUS.active` is the single claim point | REQ-171 bullet 2; `graph-implement/SKILL.md` "Claim it"; fixture `graph-implement/build-loop-ready-detection.md` (rationale, preconditions, items 2, 3, 6 — rewritten) |
-| node 8 = land / node 9 = close | contract §Overall flow 7, §Propose/apply/close, node table, §Boundaries; `graph-implement/SKILL.md` loop step 3; `graph-implement/reference.md` (table, §Node 8); `graph-gate-review/SKILL.md` line 24; `thejudge-cleanup/SKILL.md` line 141; `scripts/lib/boundary-rules.mjs` comment + `boundary-rules.test.mjs` message; FLOW-021 step 8 + edge case; FLOW-022 step 8 |
+| node 8 = land / node 9 = close, and every `… → land → close` sequence | contract §Overall flow 7, §Propose/apply/close, node table, §Boundaries; `graph-implement/SKILL.md` lines 17, 122 (sequences), `## Loop` item 3, `## Next step` lines 187–189 (the park-at-`land`-then-`close` resume); `graph-implement/reference.md` (table, §Node 8); `graph-gate-review/SKILL.md` line 24; `thejudge-cleanup/SKILL.md` line 141; `scripts/lib/boundary-rules.mjs` comment + `boundary-rules.test.mjs` message; FLOW-021 step 8 + edge case; FLOW-022 step 8 |
 | merge-proof gate (kept as the merged path; pre-merge path added) | `thejudge-cleanup/SKILL.md` (4 places); fixtures `deleted-base-branch.md`, `gh-outage-during-merge-proof.md`, `promote-once-at-close.md` (path note each), `intake-in-the-receipt.md` (2 pointer lines); new `close-inside-the-code-pr.md` |
 | prune keep rule | `scripts/graph-prune.mjs` (`KEEP_PACKAGE_ON_MAIN`, `classifyBranch`, `packageSlug`, `packagesOnMain`, `parsePackagesOnMain`, the `ls-tree` call), `graph-prune.test.mjs` (7 `packagesOnMain` inputs, 3 `KEEP_PACKAGE_ON_MAIN` assertions, the `packageSlug` and `parsePackagesOnMain` tests, imports at lines 8/14/15); REQ-192; `graph-implement/SKILL.md` "Claim it" |
 | `graph:prune --apply` | part-1 receipt lines 17 and 83; REQ-164; `OPERATOR.md` line 280 |
 | `git -C` (agent-run) | `graph-kickoff/SKILL.md` line 42; `graph-implement/SKILL.md` line 57; `graph-preflight/SKILL.md` line 212 |
-| write scope of node 6 | `scripts/graph-ledger-check.mjs` `buildWriteScope`/`classifyBuildWrites` + test; `graph-implement/SKILL.md` `## Loop` item 3; `graph-implement/reference.md` §Node 6 return-side assertion; `thejudge-implement-all/SKILL.md` `## Mode` |
+| write scope of node 6 | `scripts/graph-ledger-check.mjs` `buildWriteScope`/`classifyBuildWrites` + test; contract §Instruction ledger lines 558–560; `graph-implement/SKILL.md` `## Loop` item 3; `graph-implement/reference.md` §Node 6 return-side assertion; `thejudge-implement-all/SKILL.md` `## Mode` |
+| cleanup removes the implement worktree | `thejudge-implement-all/SKILL.md` `## Completion gate` line 99; `thejudge-cleanup/SKILL.md` `### Delete mechanism` |
 | ledger `Outcome` vocabulary vs `land` | contract §Ledger, node table row 9, §Terminal states `COMPLETE`; `thejudge-cleanup/SKILL.md` `### Graph run in the receipt` (the summary line) |
 | implement-all worktree ownership | `thejudge-implement-all/SKILL.md` lines 48, 105; `reference.md` preflight 3–7 |
 
@@ -393,13 +424,17 @@ by grep, then re-enumerated after quality check 1 added `single claim point`,
 - Grep sweeps after build, each with its allowed survivors named so the check
   is decidable: `frozen once` — none anywhere outside receipts; `base→main` —
   survivors are history only: `PRD/instructions/receipts/`,
-  `PRD/ideasForLater/`, `docs/`, `PRD/work/probe-graph-workflow-audit/`, the
-  digest constant's history comment (lines 16–18), REQ-171's Notes sentence
-  about the retired guard, REQ-191's "the base→main guard … is removed"
-  criterion, and `codehealth/SKILL.md` only if its edit was denied; every other
-  hit is a defect. `node 8 (\`land\`)` / `node 9 (\`close\`)` — none.
-  `graph:prune --apply` and "add `--apply`" — none without `--`. `git -C` in
-  `.claude/skills/graph-*/SKILL.md` — none. `ls-tree` in any skill file — none.
+  `PRD/ideasForLater/`, `docs/`, `PRD/work/probe-graph-workflow-audit/`, other
+  packages' run ledgers `PRD/work/*/GRAPH-RUN.md` (records of runs already
+  made), the digest constant's history comment (lines 16–18), REQ-171's Notes
+  sentence about the retired guard, REQ-191's "the base→main guard … is
+  removed" criterion, and `codehealth/SKILL.md` only if its edit was denied;
+  every other hit is a defect. `node 8 (\`land\`)` / `node 9 (\`close\`)` —
+  none. `graph:prune --apply` and "add `--apply`" — none without `--`. `git -C`
+  in `.claude/skills/graph-*/SKILL.md` — none except `graph-preflight/SKILL.md`
+  line 52, which quotes a command the script runs through `execFileSync`.
+  `ls-tree` in any skill file — none. `PRD/work/<slug>/` as an allowed write
+  prefix (`buildWriteScope`, contract, skills) — none.
 - Local rehearsal, no push: `git worktree add .worktrees/implement-smoke -b
   thejudge-auto/smoke-land-work origin/main` from the launch root, a commit via
   `cd … && git commit`, `git show origin/main:PRD/work/` for ready-detection,

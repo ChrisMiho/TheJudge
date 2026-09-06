@@ -18,5 +18,6 @@ findings 2 and 7. Manual package (`OPERATOR.md` recipe 9), branch
 
 Refined 2026-09-06 without a live owner approval: the session brief delegated
 both decisions (see `DESIGN-BRIEF.md`, `## Deviation from the refinement
-skill`). Quality check 1 (fresh-context read-only reviewer) returned FAIL with
-14 findings; the brief and proposal were reworked the same day and re-checked.
+skill`). Quality checks 1–3 (fresh-context read-only reviewers) returned FAIL
+with 14, 12, and 16 findings; the brief and proposal were reworked after each
+the same day and re-checked.
