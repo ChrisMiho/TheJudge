@@ -12,14 +12,13 @@ Do not rename package folders to encode status.
 
 | Package | Notes |
 | --- | --- |
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Define gate answered and applied 2026-09-06 (6 edit / 4 accept); docs PR #200 awaits owner merge, then `graph-implement` resumes at `gate-qc` |
 
 ## refining
 
 ## ideation
 
 ## owner-action
-
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Brief + 10-block proposal written at the `define` gate; awaiting quality-check |
 
 ## deferred
 

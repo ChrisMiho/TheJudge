@@ -5,8 +5,8 @@
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] rm -rf is denied in every session."; graph tier: nohup true → "[graph-boundary] nohup is denied while a graph run holds the lock: a detached command outlives the run that started it.")`
 - Autonomous base: `origin/thejudge-auto/ai-answer-quality-baseline`
 - Staging: `.worktrees/.graph-intake/graph-20260906-092312/` (IDEA.md, README.md — copied verbatim from `PRD/ideasForLater/ai-answer-quality-baseline/`; `answer-quality-context.md` — the driver's measurement note from the hybrid-rule-retrieval session)
-- Current node: `owner-action` (parked after gate-qc PASS — spec-forming half complete)
-- Next action: owner answers `PRD/work/ai-answer-quality-baseline/GATE-QUESTIONS.md` and merges the docs PR; `graph-implement` builds it
+- Current node: `gate-qc` (define gate resolved 2026-09-06 by `graph-gate-review`; package restored to `refined`)
+- Next action: owner merges the docs PR #200; `/graph-implement PRD/work/ai-answer-quality-baseline/` resumes at `gate-qc`
 
 ## Node ledger
 
@@ -26,6 +26,26 @@
 - **PR:** https://github.com/ChrisMiho/TheJudge/pull/200 (docs-only, `thejudge-auto/ai-answer-quality-baseline` → `main`; opened 2026-09-06, not merged).
 - **Resume:** `/loop graph-implement` (the build loop) picks the package up from `main` after the merge. Manual equivalent: `/graph-implement PRD/work/ai-answer-quality-baseline/`.
 - Parked 2026-09-06 at `owner-action`; run `graph-20260906-092312` released its lock with state `PARKED`.
+- **Resolved 2026-09-06** by `graph-gate-review`: 10 of 10 verdicts read from the answered `GATE-QUESTIONS.md` — 6 `edit`, 4 `accept`, 0 `reject`; every `edit` applied inside that ID's proposed diff in `GATE-QUESTIONS.md`, nothing written to `PRD/sections/`; `STATUS.refined` restored. See `## Gate verdicts`.
+
+## Gate verdicts
+
+Read from the owner's answered `GATE-QUESTIONS.md` on 2026-09-06 and applied inside each ID's proposed diff there. The owner reshaped the instrument into a multi-model bake-off over a tiered, all-official gold set; the full reasons are the `- Reason:` lines in `GATE-QUESTIONS.md`.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-185` | edit | "Keep the six CR cases but define the gold set as tiers, all official, so it can grow past six without inventing an answer. Tier 1: a Comprehensive Rules `Example:` line verbatim (277 in the committed CR text, six used). Tier 2: a WotC card ruling verbatim with a hand-authored, human-reviewed question. No tier 3: community articles pick questions, never answers. At least the six named cases; seed with roughly a dozen more hard cases from tiers 1 and 2. Combos stay out." |
+| `REQ-186` | edit | "The judge must be stronger than every contestant and never one of them: default `gpt-5`, own setting `ANSWER_QUALITY_JUDGE_MODEL`, artifact flags a judge that matches any answer model. Add a second judge job: after scoring each answer alone, see all answers to one question side by side, labels hidden and order shuffled, and rank them." |
+| `REQ-187` | accept | — |
+| `REQ-188` | edit | "The answer model is a list of legs: first-ship lineup `gpt-4.1-mini`, `gpt-4.1`, `gpt-5-mini`, `gpt-5-nano`; judge `gpt-5`. Dry run checks model access. Record wall-clock latency per call so the bake-off cannot crown a model the 3-second target cannot use. Lineup differences are a model comparison, not incomparable. Provider sends only model and prompt; a reasoning-effort setting is a follow-up package. Re-derive the cost note for the lineup." |
+| `REQ-189` | edit | "The per-leg unit is model × cap. Per case per leg add latency in ms and the blind rank; headline count per model per cap." |
+| `REQ-190` | edit | "Generalize leg to model × cap; each cap value is answered by every model. Note that tier-2 ruling cases are not known to be retrieval-saturated, so the cap experiment gains recall signal as the set grows." |
+| `NFR-018` | accept | — |
+| `SYSTEM-MAP-EVAL-HARNESS` | edit | "Wording only in the appended sub-entry: each model in a configured lineup; a judge model stronger than every contestant, scoring alone and ranking blind side by side." |
+| `GOALS-ANSWER-QUALITY-NON-GOAL` | accept | — |
+| `REQ-146` | accept | — |
+
+Blocker questions: none were asked, none to answer.
 
 ## Dispatch prompts
 
