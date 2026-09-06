@@ -66,6 +66,7 @@ fabricate scope). A run where nothing refuses has not been tested.
 | Date | Skill version | Reps | Result | Variance notes |
 | --- | --- | --- | --- | --- |
 | 2026-08-20 | `graph-run` @ slices A–G (`eed780e`) | 3 | **Items 1–4 PASS 3 of 3. Item 5 (never invent) holds 3 of 3. Items 6–8 (`BLOCKED`) confirmed directly in 1 of 3; correctly N/A in the other 2 — see below.** | The scenario's premise ("too thin") doesn't hold as reliably as intended; recorded honestly rather than forced to a clean pass/fail. Item 7 graded against its pre-2026-09-06 wording ("whether node 1 committed or stashed") |
+| 2026-09-06 | `graph-kickoff` @ `graph-workflow-branching` (`7cd5895`) | 0 — **re-run deferred** | Item 7's wording changed with REQ-191 (the report names the kickoff worktree, not a commit/stash). Not re-measured: the owner chose a scoped re-run of `untouched-checkout-and-gate.md` only, which exercised the same node-1 mechanics (worktree created and pushed) 3 of 3. | Re-run this fixture in full when its scenario is sharpened per the 2026-08-20 note. |
 
 ### 2026-08-20 — first measured run
 
