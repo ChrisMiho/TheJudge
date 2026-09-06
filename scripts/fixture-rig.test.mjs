@@ -124,7 +124,7 @@ test("fixture-rig - node_modules is a real directory, never a symlink", () => {
     assert.ok(stat.isDirectory() && !stat.isSymbolicLink())
 
     // A symlink of that name is what `.gitignore`'s `node_modules/` misses, so
-    // `stash -u` sweeps it up and the toolchain breaks at the build node.
+    // it reads as untracked and an in-place run would refuse the dirty tree.
     const other = repLayout(root, 2)
     fs.mkdirSync(other.clone, { recursive: true })
     fs.symlinkSync(layout.nodeModules, other.nodeModules)

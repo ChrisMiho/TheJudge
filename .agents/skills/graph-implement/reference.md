@@ -96,6 +96,9 @@ a driver push to the base after the head forked makes both branches edit
 - Worktree path: `.worktrees/implement-<slug>`, owned by `thejudge-implement-all`.
 - Refuse any worktree outside the repo-local `.worktrees/` root.
 - One worktree per package, not per slice.
+- The spec-forming half's `.worktrees/kickoff-<slug>` is removed at claim time
+  (clean tree only, `git worktree remove`, no `--force`); the local base branch
+  is kept (see `SKILL.md`, "Claim it").
 - Dispatch `build` with an explicit shared branch `thejudge-auto/<slug>-work` — a
   distinct head from the autonomous base, so the `-work` → base PR shows the whole
   deliverable and a PR cannot go from a branch into itself.

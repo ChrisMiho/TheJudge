@@ -44,12 +44,14 @@ pull request, unattended except at the gates below.
    and stages any supplied documents as evidence. `thejudge-prepare` no
    longer serves as an entry point for new work, though it keeps its own
    skill, contract, and predicate (DEC-167).
-2. **Preflight.** `graph-preflight` (node 1) readies the checkout before any
-   other node runs: one branch, one concurrency lock, an auto-commit-or-stash
-   resolution of whatever was dirty. This automates, for autonomous runs, the
-   worktree and branch ownership DEC-154 established for the agent-workflow
-   lifecycle generally; DEC-163 is the layer that chains that lifecycle's
-   phases end to end with no human between steps.
+2. **Preflight.** `graph-preflight` (node 1) readies the run's own checkout
+   before any other node runs: one branch cut from `origin/main`, checked out
+   in `.worktrees/kickoff-<slug>`, one concurrency lock at the session root.
+   The owner's launch checkout is never switched, committed to, or stashed
+   (REQ-191); nodes 2–4 work in the kickoff worktree. This automates, for
+   autonomous runs, the worktree and branch ownership DEC-154 established for
+   the agent-workflow lifecycle generally; DEC-163 is the layer that chains
+   that lifecycle's phases end to end with no human between steps.
 3. **Refine (propose).** `thejudge-kickoff` (node 2) names the package and
    `thejudge-refinement` (node 3) writes the design brief and *records the
    proposed* `PRD/sections/` truth **in `GATE-QUESTIONS.md` (the work folder)**.
@@ -135,9 +137,9 @@ carrying the design brief, the proposal (`GATE-QUESTIONS.md`), and the ledger �
 create` opens a PR and never merges one, so it crosses no boundary; the merge
 stays the owner's. That PR is the same
 one the implementation later grows into, and the owner merges it last — this is
-the base→main hop that used to be an unremembered manual step. `graph-preflight`
-refuses to start the *next* fresh run while it is still open (its base→main
-guard).
+the base→main hop that used to be an unremembered manual step. It does **not**
+block the next idea: a fresh run starts from `origin/main` in its own kickoff
+worktree, so a second `graph-kickoff` runs while this PR waits for the owner.
 
 **`GATE-QUESTIONS.md`** carries one `## <STABLE-ID>` block per new stable ID. Each
 block opens with the plain-language block `PRD/instructions/plain-language-standard.md`
@@ -478,7 +480,8 @@ documentation changes:
 - Profile: `unverified` | `<path> (stated by the user at launch)`
 - Canary: `denied — hook live (<command>)` | `allowed — BLOCKED (<reason>)`
 - Autonomous base: `origin/<branch>`
-- Staging: `.worktrees/.graph-intake/<run-id>/`
+- Worktree: `<absolute path>/.worktrees/kickoff-<slug>`
+- Staging: `<absolute path>/.worktrees/.graph-intake/<run-id>/`
 - Current node: `<node>`
 - Next action: `/graph-implement PRD/work/<slug>/` (or `/graph-kickoff` in the spec-forming half)
 
@@ -486,7 +489,7 @@ documentation changes:
 
 | # | Node | Model | Outcome | Heartbeat | Evidence | Date |
 | --- | --- | --- | --- | --- | --- | --- |
-| 1 | preflight | haiku | ok | `0 → 14` | branch `<branch>` pushed; stash `graph-preflight/<run-id>` | <date> |
+| 1 | preflight | haiku | ok | `0 → 14` | branch `<branch>` pushed from `.worktrees/kickoff-<slug>`; launch checkout untouched | <date> |
 
 ## Open gate
 
@@ -574,18 +577,9 @@ path and attributes it to the user. Never write a profile path the run did not
 observe: a later run reads this field and would otherwise believe the deny list
 was active when it may never have been loaded.
 
-## Stashed work handoff
-
-When `graph-preflight` stashes, it records the stash under `## Open gate` in
-the ledger and in the package README, naming the exact restore command:
-
-```text
-git stash list | grep graph-preflight/<run-id>
-git stash apply <ref>
-```
-
-A graph run never drops, pops, or reorders any stash. The preflight stash
-contains the user's uncommitted work and must be restored manually.
+`Worktree` is the kickoff worktree node 1 created; the ledger itself lives at
+`<Worktree>/PRD/work/<slug>/GRAPH-RUN.md`, and a resume reads it there. A
+resume that finds the worktree missing ends `BLOCKED` naming it.
 
 ## Human gates
 
@@ -600,8 +594,8 @@ A gate parks rather than asks. To park, the driver:
 Gate triggers: a genuine decision blocker under the three-condition test in
 `preparation-contract.md`; a fourth `gate-qc` FAIL; a `build` blocker; a
 `review` finding rated Critical that the run cannot resolve from confirmed
-decisions and tests; a third `review`-to-`build` loop; any `blocked`
-preflight classification; or a user instruction that would waive that
+decisions and tests; a third `review`-to-`build` loop; a dirty in-place
+checkout that preflight refused; or a user instruction that would waive that
 three-condition test, per the rule below.
 
 ### No pre-authorization of product decisions
@@ -618,7 +612,7 @@ pre-resolves product decisions inside a delegated dispatch.
   pre-satisfied by user phrasing. An instruction that would waive it is refused:
   the run parks and names the instruction it refused.
 - A user asking for autonomy is asking not to be interrupted by **mechanics** —
-  branching, stashing, sequencing, commits, PR plumbing. It is not authorization
+  branching, worktrees, sequencing, commits, PR plumbing. It is not authorization
   to decide product behavior on their behalf.
 
 Refusal under this rule is recorded, never silent. The driver quotes the refused
@@ -754,13 +748,9 @@ checkout, and `git add -A PRD/` during an unrelated cleanup is what turned that
 contamination into a commit. Path-scoped `git add <path>` stays broadly
 allowed: this narrows the wildcard, not the operation.
 
-One `git add -A` survives, and it is stated rather than hidden. Node 1's
-auto-commit path in `scripts/graph-preflight.mjs` runs `git add -A` through
-`execFileSync`, so the Bash deny never sees it. That is deliberate — auto-commit
-exists to capture a whole dirty tree — and it is bounded by a tested
-classification (at or below 10 changed files and 200 changed lines), a
-`--dry-run` preview of every planned command, and a secret gate that blocks
-before any of it. It is not the ad-hoc cleanup that caused the leak. No other
+No script runs `git add -A` any more. Until 2026-09-06 node 1's auto-commit
+path did, through `execFileSync`, bounded by a tested classification; that path
+retired with the rest of the launch-checkout resolution (REQ-191), and no
 script may add one.
 
 **Merging and pulling are allowed; merging into the trunk is not.** A run may
@@ -877,9 +867,12 @@ never silently stolen; an unparseable lock stops the run rather than reading as
 absent. The decision is `classifyLock()` in `scripts/graph-preflight.mjs`, a
 tested pure function.
 
-Two runs against one launch checkout both commit to it, both rewrite
-`GRAPH-RUN.md`, and both publish before `build` — the shared-working-directory
-hazard of 2026-08-17 with no isolation between them.
+Two runs in one root would share the hook's control plane — one run state, one
+counter, one evidence log — so the second run's calls would be charged to the
+first run's node and denied on its rules. The lock keeps one run per root; a
+second run at the same moment belongs in a second session rooted in a second
+checkout (`graph-preflight`, `## Running two ideas at once`). Runs that follow
+one another need nothing: a parked run holds no lock.
 
 The run releases the lock on every state in the `## Terminal states` table below.
 That table is the definitive list and lives in this contract alone: a release path

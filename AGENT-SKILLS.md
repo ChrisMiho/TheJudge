@@ -92,7 +92,7 @@ is the only graph-specific behavior they carry.
 
 | Skill | When | Writes | Delegates to |
 | --- | --- | --- | --- |
-| `graph-preflight` | Before an autonomous run, to guarantee a clean freshly branched checkout | Auto-commit or stash, new pushed branch, handoff record | `scripts/graph-preflight.mjs` |
+| `graph-preflight` | Before an autonomous run, to cut the run branch off `origin/main` in its own kickoff worktree without touching the owner's checkout | `.worktrees/kickoff-<slug>` on a new pushed branch, the concurrency lock, handoff record | `scripts/graph-preflight.mjs` |
 | `graph-kickoff` | Starting a fresh idea through the spec-forming half (nodes 1–4), stopping at gate-qc PASS with a docs proposal PR | `PRD/work/<slug>/GRAPH-RUN.md` ledger, package README `## Autonomous metadata` and `## Preparation gate`, status transitions, gate parks | `graph-preflight`, the boundary hook (`scripts/graph-boundary-hook.mjs`, always on), then `thejudge-kickoff`, `-refinement`, `-quality-check` — plus a docs-only base→main PR |
 | `graph-gate-review` | After a run parks at the `define` gate, to walk the recorded proposal one stable ID at a time | `GRAPH-RUN.md`'s `## Gate verdicts` and resolved `## Open gate`, the restored `STATUS.*` marker and board row, and finalized verdicts inside `GATE-QUESTIONS.md` — never `PRD/sections/` | nothing; it never dispatches and never advances a node |
 | `graph-implement` | A single background loop that builds each approved-and-merged spec (nodes 5–9), one at a time | Code PR per spec, `GRAPH-RUN.md` ledger, status transitions, gate parks | `graph-gate-review`, then `thejudge-map-out`, `-implement-all`, `-cleanup` — plus a no-write reviewer subagent at node 7 |
@@ -141,8 +141,8 @@ lifecycle and not an investigation skill. It opens one behavior-preserving
 code-health PR per target (dead, duplicate, or unsafe/bad code), tests each locally,
 and **never merges**; a target that would change game behavior parks in a morning
 digest. It runs its **own** preflight and deliberately does **not** use
-`graph-preflight` — so independent targets never block each other the way the graph's
-base→main guard would. It reuses `.claude/graph-profile.json` as its static rails and
+`graph-preflight` — it needs no per-package kickoff worktree or lock. It reuses
+`.claude/graph-profile.json` as its static rails and
 delegates target ranking to `thejudge-investigate` / `thejudge-sweep`.
 
 | Skill | When | Writes | Entry point |

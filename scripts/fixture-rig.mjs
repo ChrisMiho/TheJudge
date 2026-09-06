@@ -138,10 +138,11 @@ export function createRep(layout, { seedRepo, run = git } = {}) {
     run(["init", "-q", layout.clone])
     run(["remote", "add", "origin", layout.origin], layout.clone)
   }
-  // A symlink here is swept up by `git stash push -u`: `.gitignore`'s
-  // `node_modules/` has a trailing slash, so it matches a directory but not a
-  // symlink of the same name. That broke the toolchain and blocked every run at
-  // the `build` node. A real directory, always.
+  // A symlink here reads as untracked: `.gitignore`'s `node_modules/` has a
+  // trailing slash, so it matches a directory but not a symlink of the same
+  // name. When preflight still swept untracked paths that broke the toolchain
+  // and blocked every run at the `build` node; a dirty-tree check would refuse
+  // it today. A real directory, always.
   mkdirSync(layout.nodeModules, { recursive: true })
   return layout
 }

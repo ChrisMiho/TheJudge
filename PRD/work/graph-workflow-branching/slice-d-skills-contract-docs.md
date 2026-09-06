@@ -1,6 +1,6 @@
 # Slice D — skills, contract, and owner docs describe the new plan
 
-## Status: planned
+## Status: in-progress
 
 ## Goal
 

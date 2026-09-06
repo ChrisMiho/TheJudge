@@ -51,6 +51,15 @@ Each tick:
    point, and commit that transition. This is the idempotency guard: a second tick,
    or a loop restart, sees `STATUS.active` (not `refined`) and never double-picks
    the same spec. Never double-build, never miss.
+
+   **Then remove the kickoff worktree, and only the worktree.** The spec-forming
+   half left `.worktrees/kickoff-<slug>` behind (REQ-191). Its docs PR is merged,
+   so when `git -C .worktrees/kickoff-<slug> status --porcelain` is empty run
+   `git worktree remove .worktrees/kickoff-<slug>` (never `--force`); when it is
+   dirty, park this slug naming the worktree and move on. **Never delete the local
+   `thejudge-auto/<slug>` branch here**: it is the autonomous base this half
+   publishes to and PRs against, and with GitHub's delete-on-merge the local copy
+   may be the only one left. Its fate is decided elsewhere, not at claim.
 4. **Build it.** Branch off fresh `main` in the spec's own worktree, then run the
    build half — `graph-gate-review` (finalize verdicts) → re-enter at `gate-qc` →
    `plan → build → review` — and open the code PR that grows from the spec PR the

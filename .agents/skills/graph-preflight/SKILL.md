@@ -1,18 +1,20 @@
 ---
 name: graph-preflight
 description: >-
-  Use before an autonomous graph run to guarantee a clean, freshly branched
-  local checkout — resolving uncommitted work by auto-commit or stash and
-  publishing the branch that worktrees and pull requests will target.
+  Use before an autonomous graph run to ready the checkout without touching
+  the owner's work — creating the run's branch off origin/main in its own
+  kickoff worktree (or in place when the session is already rooted in a
+  worktree), pushing it, and taking the concurrency lock.
 ---
 
 # Graph Preflight
 
 ## Goal
 
-Leave the repository in exactly one state: a freshly created local branch,
-pushed to `origin`, with no uncommitted work — and a recorded account of what
-happened to anything that was uncommitted.
+Leave the repository in exactly one state: a freshly created branch cut from
+`origin/main`, pushed to `origin`, checked out in a worktree the run owns —
+and the owner's launch checkout untouched. Nothing here commits, stashes, or
+switches the owner's tree (REQ-191).
 
 Read `PRD/instructions/graph-workflow-contract.md` before acting.
 
@@ -20,14 +22,54 @@ Read `PRD/instructions/graph-workflow-contract.md` before acting.
 
 - `--branch <name>` (required). Never infer it, never reuse the current branch,
   never default to `main`.
-- `--base <ref>` (optional; defaults to the current branch). The new branch
-  becomes the autonomous base every later PR targets, so report the resolved
-  `base:` line the script prints, not the flag you passed.
-- `--run-id <id>` (optional; defaults to `graph-<YYYYMMDD>-<HHMMSS>` in UTC,
-  which is unique per run so two same-day runs cannot share a stash message).
+- `--slug <slug>` (required). Names the kickoff worktree
+  (`.worktrees/kickoff-<slug>`) and the package the lock records.
+- `--base <ref>` (optional; defaults to `origin/main`). The new branch becomes
+  the autonomous base every later PR targets, so report the `base:` line the
+  script prints. The current branch is never consulted.
+- `--run-id <id>` (optional; defaults to `graph-<YYYYMMDD>-<HHMMSS>` in UTC).
   Choose one id and pass that same `--run-id` to both the dry run and the real
-  run — the default is timestamped to the second, so omitting it gives the two
-  invocations different ids.
+  run.
+- `--pid <pid>` — the driver session's own long-lived pid, so the lock does
+  not read stale to the next run.
+
+## The two checkout shapes
+
+The script decides which shape it is in from
+`git rev-parse --git-dir` versus `--git-common-dir`
+(`classifyCheckoutShape()`), and prints `shape:`.
+
+**Root checkout** (the normal case — the owner's session is rooted in the
+repository): preflight creates `.worktrees/kickoff-<slug>` as a git worktree
+on the new branch, cut from the base, and pushes from inside it. Every later
+spec-forming node works in that worktree; the launch checkout stays on
+whatever it was on, with whatever it had uncommitted. The planned commands are
+exactly:
+
+```
+git fetch origin
+git worktree add .worktrees/kickoff-<slug> -b thejudge-auto/<slug> origin/main
+git -C .worktrees/kickoff-<slug> push -u origin thejudge-auto/<slug>
+```
+
+The script prints `worktree: <absolute path>`. That path is what the driver
+writes into the ledger's `- Worktree:` line and into every node's
+`Working directory:` line. An existing `.worktrees/kickoff-<slug>` is refused
+(exit 2) — a prior run's leftover; `npm run graph:prune` lists it.
+
+**Linked worktree** (the session is already rooted in a worktree — the
+two-sessions shape below): preflight works in place. It requires a clean tree
+(`git status --porcelain` empty) and otherwise exits 1 naming every dirty
+path (`classifyInPlaceTree()`); it never resolves them for the owner. Then:
+
+```
+git fetch origin
+git switch -c thejudge-auto/<slug> origin/main
+git push -u origin thejudge-auto/<slug>
+```
+
+`git switch -c` works from a branch or from a detached HEAD, so a throwaway
+session worktree created with `--detach` needs no branch of its own.
 
 ## The liveness canary
 
@@ -63,8 +105,7 @@ means the hook is live while the tier is disarmed, which is what a missing or
 unparseable lock looks like from the inside.
 
 The canary targets a non-existent path under `.worktrees/`. If it ever executes
-it removes nothing, prints nothing, and exits 0 — a failed proof costs nothing
-beyond the failed proof.
+it removes nothing, prints nothing, and exits 0.
 
 An allowed canary is **not** a warning to note and continue past. Report the
 `BLOCKED` message verbatim and stop: the run has no enforcer and node 2 must not
@@ -87,14 +128,13 @@ to get past this — a halted run is the owner's to resume.
 
 ## Concurrency lock
 
-Take the lock **first**, before the dry run and before any mutation. Two graph
-runs against one launch checkout both commit to it, both rewrite `GRAPH-RUN.md`,
-and both publish before `build` — the same shared-working-directory hazard that
-produced the 2026-08-17 leak, with no isolation between them at all.
-
-The lock is `.worktrees/.graph-run.lock`, a JSON record holding the slug, run
-id, PID, and start time. It lives under `.worktrees/`, which `.gitignore`
-already covers, so it never travels with a branch.
+Take the lock **first**, before the dry run and before any mutation. The lock
+is `.worktrees/.graph-run.lock` under the **session root** — the directory the
+session is rooted in, which the boundary hook reads as `$CLAUDE_PROJECT_DIR`.
+It stays at the root while the nodes work in the kickoff worktree, exactly as
+the build half's `implement-<slug>` worktree already works. It lives under
+`.worktrees/`, which `.gitignore` already covers, so it never travels with a
+branch.
 
 **The script takes the lock itself.** Until 2026-08-24 it did not: `takeLock()`
 and `classifyLock()` had no callers at all, and this section asked the agent to
@@ -110,7 +150,7 @@ tested pure function — do not re-derive the decision by judgment:
 | `free` | no lock file | take it and continue |
 | `held` | the recorded PID is alive | **refuse**, and relay the message — it names the holding slug, run id, and PID |
 | `stale` | the recorded PID is not running | report it stale and relay the stated `rm` reclaim command. Never reclaim silently |
-| `corrupt` | the lock exists but does not parse | stop. A garbled lock read as absent is how two runs end up sharing a checkout |
+| `corrupt` | the lock exists but does not parse | stop. A garbled lock read as absent is how two runs end up sharing a root |
 
 A stale lock is reported, never silently stolen: a run that reclaims without
 saying so is indistinguishable from one that never contended.
@@ -118,13 +158,13 @@ saying so is indistinguishable from one that never contended.
 ### Resuming a parked run
 
 A resume re-enters at the node its ledger records and never re-runs the branch
-and stash work, so nothing along that path takes the lock. Before 2026-08-24 no
-step existed for it even in principle, and a resumed run advanced with the graph
+work, so nothing along that path takes the lock. Before 2026-08-24 no step
+existed for it even in principle, and a resumed run advanced with the graph
 tier switched off for its whole length.
 
 Run `graph-preflight --take-lock --slug <slug> --run-id <id>` at re-entry. It
 takes the lock, names the graph canary, and does nothing else — no fetch, no
-branch, no stash. `--branch` is not required there.
+branch. `--branch` is not required there.
 
 Release is the graph driver's, not this skill's — see the contract's
 `## Terminal states` table (`PRD/instructions/graph-workflow-contract.md`), which
@@ -133,68 +173,47 @@ declared terminal state: write `.worktrees/.graph-run-release.json` in the exact
 shape that section gives — `runId` and `state`, in its own tool call — then delete
 the lock. The hook denies the deletion without that record.
 
-## Per-idea worktree isolation (parallel spec-forming)
+## Running two ideas at once
 
-To shape several ideas at once, each idea runs as **its own session rooted in its
-own git worktree** — not several ideas fanned out inside one root. Concurrency is
-**structural, not re-keyed**: `takeLock` writes the lock relative to the working
-directory and the boundary hook resolves its control files relative to
-`$CLAUDE_PROJECT_DIR`, so two ideas in two worktrees each read and hold their own
-`.worktrees/.graph-run.lock`. Nothing about the lock record, `classifyLock`, or the
-hook changes.
+**One idea after another** needs nothing special: a parked run holds no lock
+and the launch checkout was never touched, so the owner runs `/graph-kickoff`
+again while the first idea's docs PR waits.
 
-Create a per-idea worktree and launch the idea's session there:
+**Two ideas at the same moment** need two sessions rooted in two checkouts,
+because the hook counts every session's tool calls in one root against the
+live node's cap and applies the run's denies to any session in that root.
+Create a throwaway session worktree and launch the second session there:
 
 ```
-git worktree add .worktrees/kickoff-<slug> -b thejudge-auto/<slug> origin/main
-# then launch graph-kickoff with that worktree as the session root
+git worktree add --detach .worktrees/session-<name> origin/main
+# launch the second session with that directory as its root, then /graph-kickoff
 ```
 
-`kickoffWorktreePath(slug)` and `kickoffWorktreeCommand(slug, base)` in
-`scripts/graph-preflight.mjs` are the canonical path and command. Because the
-session roots in a **fresh** worktree, its launch checkout is clean, so preflight's
-auto-commit/stash never touches the main checkout on a per-idea run — the launch
-checkout is left untouched. Fanning N ideas out inside one root is the only shape
-that would force a hook run-identity rework, and it is deliberately not the model.
-
-## base→main guard (fresh runs only)
-
-A fresh run refuses to start while a prior package's base→main PR is still open,
-so the overnight queue never branches off a `main` that a prior package has not
-reached — the failure that parked `user-feedback-spec` (PR #107) at the wrong
-base.
-
-The script runs the read-only query `gh pr list --base main --state open --json
-headRefName,url` and passes the parsed list to `classifyPendingBaseToMain()` in
-`scripts/graph-preflight.mjs` — the tested pure function is the authority; do not
-re-derive the decision in prose. It **blocks** when any open PR's head is a
-`thejudge-auto/*` branch other than the one this run is creating, and **fails
-closed** (blocks) when the list cannot be obtained or parsed. On a block, the
-script exits 2 naming the PR to merge first; relay that and stop.
-
-This runs on the fresh-run path only, in the dry run and the real run alike. The
-resume path (`--take-lock`, no `--branch`) skips it: run two's own base→main PR
-is legitimately open. It is the enforcement half of run one (`graph-kickoff`)
-opening that PR — see `graph-workflow-contract.md`, `## The two runs`.
+Inside it, preflight sees a linked worktree and works in place from the
+detached HEAD (the in-place shape above). `--detach` is deliberate: a hand-made
+`-b thejudge-auto/<slug>` would collide with the branch preflight creates.
+Concurrency is structural, not re-keyed: each root holds its own
+`.worktrees/.graph-run.lock`, and nothing about the lock record,
+`classifyLock`, or the hook changes.
 
 ## Procedure
 
-1. Run `npm run graph:preflight -- --branch <name> --run-id <id> --dry-run`
-   first. Report the classification, the resolved base, the planned commands,
-   and the two `profile sentinel:` / `Profile:` lines the script prints first —
-   they are what the graph driver records in the ledger, and they are an
-   observation, never a restatement of what the user said at launch.
-2. If the action is `blocked`, stop. Report the offending paths. Never
-   hand-resolve a secret-bearing path to get past this.
+1. Run `npm run graph:preflight -- --branch <name> --slug <slug> --run-id <id> --pid <pid> --dry-run`
+   first. Report the `shape:` line, the resolved `base:` line, the `worktree:`
+   line (root shape), the planned commands, and the two `profile sentinel:` /
+   `Profile:` lines the script prints — they are what the graph driver records
+   in the ledger, and they are an observation, never a restatement of what the
+   user said at launch.
+2. If the script exits 1 (dirty in-place tree) or 2 (stop sentinel, lock held,
+   branch collision, existing kickoff worktree), stop and relay its message
+   verbatim. Never hand-resolve anything to get past it.
 3. Otherwise re-run the identical command without `--dry-run`, passing the same
-   explicit `--run-id`. With `--run-id` omitted the two invocations generate
-   different timestamped ids, so the stash name previewed in step 1 is not the
-   one that lands — and the handoff record would name a stash that does not
-   exist.
-4. Confirm the end state with `git status --porcelain` (empty) and
-   `git branch --show-current` (the requested branch).
-5. When the action was `stash`, record the stash reference and the exact
-   restore commands from the contract's "Stashed work handoff" section.
+   explicit `--run-id`.
+4. Confirm the end state. Root shape: `git -C .worktrees/kickoff-<slug> branch
+   --show-current` is the requested branch, `git ls-remote --heads origin
+   <branch>` shows it pushed, and `git branch --show-current` at the root is
+   **unchanged**. In-place shape: `git status --porcelain` empty and
+   `git branch --show-current` is the requested branch.
 
 ## When the real run fails
 
@@ -204,13 +223,12 @@ where it stopped. Do not retry it and do not improvise a repair.
 - Exit code 2 with a branch-name collision comes from the check that runs after
   `git fetch origin` and before any mutation: nothing changed. Pick a different
   `--branch` and start over.
-- Exit code 1 during execution prints which commands ran, which did not, and —
-  when a stash was taken — the `git stash list | grep graph-preflight/<run-id>`
-  and `git stash apply <ref>` recovery lines. Relay that report verbatim,
-  including those recovery lines, and stop.
+- Exit code 1 during execution prints which commands ran and which did not.
+  Relay that report verbatim and stop. A half-created kickoff worktree is left
+  for the owner to inspect; `npm run graph:prune` will list it.
 
-Never drop, pop, re-stash, `git reset`, or force-push to tidy a failed run. An
-interrupted resolution is a gate for the user, not a state to clean up.
+Never `git reset`, remove a worktree, or force-push to tidy a failed run. An
+interrupted run is a gate for the user, not a state to clean up.
 
 ## Profile sentinel
 
@@ -228,18 +246,18 @@ report it as proof that a boundary was enforced.
 
 ## Boundaries
 
-The classification thresholds live in `scripts/graph-preflight.mjs` and are
-covered by `scripts/graph-preflight.test.mjs`. Do not reimplement the
-commit-versus-stash decision in prose, override it by judgment, or pass
-`--max-files`/`--max-lines` to force a different branch of the logic.
+The checkout-shape and clean-tree decisions live in `scripts/graph-preflight.mjs`
+and are covered by `scripts/graph-preflight.test.mjs`. Do not reimplement them
+in prose or override them by judgment.
 
-Never drop, pop, or clear a stash. Never force-push.
+Never commit, stash, or switch the launch checkout. Never force-push. Never
+create a worktree outside the repo-local `.worktrees/` root.
 
 ## Next step
 
-Report the branch, the classification, and the stash reference if one exists,
-then continue the run with the graph driver for the half in progress — the
-spec-forming half continues under `graph-kickoff`, the build half under
+Report the shape, the branch, the worktree path (root shape), and the lock
+record, then continue the run with the graph driver for the half in progress —
+the spec-forming half continues under `graph-kickoff`, the build half under
 `graph-implement`:
 
 `/graph-implement PRD/work/<slug>/`
