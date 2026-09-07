@@ -12,18 +12,17 @@ nothing re-creates it. `npm run graph:prune -- --apply` (note the `--`) is the
 working spelling everywhere.
 
 **What it means for you:** after this merges, a package is: answer and merge the
-docs PR, then merge the code PR. Nothing follows. Three of the skill files this
-package changes sit in folders the agent's tools are denied — the edits are
-finished in `PRD/work/graph-workflow-land/staged/` and you apply them with the
-four commands under `## Notes for the owner`; until then the package folder
-stays and this receipt reads `partial`.
+docs PR, then merge the code PR. Nothing follows. Four of the skill files this
+package changes sit in folders the agent's tools are denied; the agent staged
+the finished edits inside the package and you applied them with four `cp`
+commands plus `npm run skills:ai-sync` in the same session, after which the
+agent verified them and closed the package.
 
 - Date: 2026-09-06
 - Slug: `graph-workflow-land`
-- Status: partial — slices A, C, D, E shipped; slice B's edits are complete but
-  staged, pending the owner's `!cp` (see below). Flips to shipped when the
-  staged copies are applied, `npm run skills:ai-sync` runs clean, and the
-  package folder is deleted
+- Status: shipped — slices A–E done; slice B's four skill files were applied by
+  the owner from the package's `staged/` copies (byte-identical on
+  verification), then the package folder was deleted
 - Branch: `fix/graph-workflow-land` from `origin/main` (`8d29ce4`), built in
   `.worktrees/graph-workflow-land`; manual package (`OPERATOR.md` recipe 9), no
   graph run, no intake
@@ -51,21 +50,22 @@ checks (14, 12, 16 findings, then PASS); every finding is recorded in the brief.
 | Slice | What shipped |
 | --- | --- |
 | A | `scripts/graph-prune.mjs`: keep rule, `packageSlug`, `parsePackagesOnMain`, `packagesOnMain`, and the `ls-tree` call removed; any merged branch deletes with reason `merged into origin/main`. `scripts/graph-ledger-check.mjs`: `buildWriteScope` is `[".worktrees/implement-<slug>/"]`; a bare `PRD/work/<slug>/…` path parks. `scripts/graph-digest.mjs`: scans `.worktrees/*/PRD/work/*/GRAPH-RUN.md` too (`preferWorktreeLedgers`, worktree copy wins, printed `[in .worktrees/<dir>]`), heading `## PRs waiting on you`, `OPEN_GRAPH_PRS_COMMAND` / `pendingGraphPRs`. `boundary-rules.mjs` comment + test message → node 9. Tests updated; 464/464 |
-| B | **Staged, not applied** (permission deny on `.claude/skills/thejudge-*/`): `thejudge-implement-all/SKILL.md` (`## Mode` in-place rule + explicit-shared-branch block, `## Inputs`, workflow item 1, completion gate, common mistakes), `thejudge-implement-all/reference.md` (preflight 3–7), `thejudge-cleanup/SKILL.md` (mode; reads 6–7; `- PR:` line; summary line written by `close`; delete mechanism per path; `### Autonomous gate: merged path and PR-ready path` with `#### Merged path` unchanged and `#### PR-ready path` new; node 8). Applied directly: path-note lines in `deleted-base-branch.md`, `gh-outage-during-merge-proof.md`, `promote-once-at-close.md`; two pointer rewordings in `intake-in-the-receipt.md`; new fixture `close-inside-the-code-pr.md` (unmeasured) |
+| B | Applied by the owner from `staged/` (the agent's tools are denied inside `.claude/skills/thejudge-*/`; `diff -q` confirmed each copy identical): `thejudge-implement-all/SKILL.md` (`## Mode` in-place rule + explicit-shared-branch block, `## Inputs`, workflow item 1, completion gate, common mistakes), `thejudge-implement-all/reference.md` (preflight 3–7), `thejudge-cleanup/SKILL.md` (mode; reads 6–7; `- PR:` line; summary line written by `close`; delete mechanism per path; `### Autonomous gate: merged path and PR-ready path` with `#### Merged path` unchanged and `#### PR-ready path` new; node 8). Applied directly: path-note lines in `deleted-base-branch.md`, `gh-outage-during-merge-proof.md`, `promote-once-at-close.md`; two pointer rewordings in `intake-in-the-receipt.md`; new fixture `close-inside-the-code-pr.md` (unmeasured) |
 | C | `graph-implement/SKILL.md`: sequences read `… → close → land`; build loop items 1–4 rewritten (`git show origin/main:…` queue, ready adds no-branch/no-worktree, kickoff worktree first with dirty → skip unclaimed, claim = `git worktree add … -b … origin/main` + first commit + push, marker left `refined`, every node in the worktree, driver commits between nodes); `## Loop` item 3 (node 8 `close`, node 9 never dispatched, porcelain + root-relative write check); `## Resolving the gate` (gate-review in the build worktree; second PR); `## Next step` (`COMPLETE` at `close`, post-`close` resume). `graph-implement/reference.md`: node table, entry-point table with post-`close` and remote-branch rows, "run `graph-preflight` first" removed, node 6 assertion, publish-before-build, "base is frozen" section removed, worktree shape, `## Node 9 (land)`. `graph-kickoff/SKILL.md`: `cd && git` wording, docs PR "answer and merge — that merge is the build signal", base definition for both halves; `reference.md` node-4 note. `graph-preflight/SKILL.md` line 212 `cd && git`. `graph-gate-review/SKILL.md`: node 9, runs in the build worktree when dispatched. Fixture `build-loop-ready-detection.md` rewritten. Both skill trees synced |
-| D | `graph-workflow-contract.md`: §Overall flow 5 and 7, §Propose/apply/close, §The two runs (both PR paragraphs), node table rows 7–9, §Autonomous metadata (base = the branch the next PR targets), §Ledger header lines, §Instruction ledger write-scope paragraph, §Boundaries "the one merge", §The ledger outlives the run (summary line + `close` row), `COMPLETE` row. `preparation-contract.md` `## Autonomous base` scoping paragraph. `OPERATOR.md` recipe 6 rewritten ("Merge the code PR"), recipe 7 reminder dropped, "Where to look" ledger row + `-- --apply`. `AGENT-SKILLS.md` graph rows. `PRD/README.md` line 130. Part-1 receipt lines 17 and 83 `-- --apply`. `codehealth/SKILL.md` line 43 **staged** (same deny) |
+| D | `graph-workflow-contract.md`: §Overall flow 5 and 7, §Propose/apply/close, §The two runs (both PR paragraphs), node table rows 7–9, §Autonomous metadata (base = the branch the next PR targets), §Ledger header lines, §Instruction ledger write-scope paragraph, §Boundaries "the one merge", §The ledger outlives the run (summary line + `close` row), `COMPLETE` row. `preparation-contract.md` `## Autonomous base` scoping paragraph. `OPERATOR.md` recipe 6 rewritten ("Merge the code PR"), recipe 7 reminder dropped, "Where to look" ledger row + `-- --apply`. `AGENT-SKILLS.md` graph rows. `PRD/README.md` line 130. Part-1 receipt lines 17 and 83 `-- --apply`. `codehealth/SKILL.md` line 43 applied by the owner from `staged/` (same deny) |
 | E | Product truth applied by intent from `GATE-QUESTIONS.md` (13 `Current:` excerpts byte-verified immediately before): REQ-193, REQ-194 new; REQ-171 (5 bullets), REQ-191 (2), REQ-192 (2), REQ-164 (1) amended in `functional-requirements.md`; FLOW-021 steps 7–8 + one edge case and FLOW-022 step 8 in `user-flows.md`. Sweeps run with named survivors (table in the slice doc). Claim rehearsal run locally, nothing pushed (transcript in the slice doc) |
 
 ## Files
 
-Created: `scripts/` — none new; `PRD/instructions/skill-fixtures/thejudge-cleanup/close-inside-the-code-pr.md`;
-`PRD/work/graph-workflow-land/staged/{thejudge-implement-all/SKILL.md,thejudge-implement-all/reference.md,thejudge-cleanup/SKILL.md,codehealth/SKILL.md}` (to be applied and then deleted with the folder); this receipt.
+Created: `PRD/instructions/skill-fixtures/thejudge-cleanup/close-inside-the-code-pr.md`; this receipt.
 
 Updated: `scripts/graph-prune.mjs` (+test), `scripts/graph-ledger-check.mjs`
 (+test), `scripts/graph-digest.mjs` (+test), `scripts/lib/boundary-rules.mjs`
 (+test); `.claude/skills/graph-implement/{SKILL,reference}.md`,
 `.claude/skills/graph-kickoff/{SKILL,reference}.md`,
-`.claude/skills/graph-preflight/SKILL.md`, `.claude/skills/graph-gate-review/SKILL.md`
+`.claude/skills/graph-preflight/SKILL.md`, `.claude/skills/graph-gate-review/SKILL.md`,
+`.claude/skills/thejudge-implement-all/{SKILL,reference}.md`,
+`.claude/skills/thejudge-cleanup/SKILL.md`, `.claude/skills/codehealth/SKILL.md`
 and their `.agents/skills/` mirrors; `PRD/instructions/skill-fixtures/graph-implement/build-loop-ready-detection.md`;
 four fixtures under `PRD/instructions/skill-fixtures/thejudge-cleanup/`;
 `PRD/instructions/graph-workflow-contract.md`, `PRD/instructions/preparation-contract.md`,
@@ -74,8 +74,8 @@ four fixtures under `PRD/instructions/skill-fixtures/thejudge-cleanup/`;
 `PRD/sections/functional-requirements.md`, `PRD/sections/user-flows.md`,
 `PRD/work/STATUS.md`.
 
-Deleted: nothing yet — `PRD/work/graph-workflow-land/` is deleted once the
-staged copies are applied (see below).
+Deleted: `PRD/work/graph-workflow-land/` (this cleanup), including the
+`staged/` copies once applied.
 
 ## Verification
 
@@ -108,21 +108,12 @@ staged copies are applied (see below).
 
 ## Notes for the owner
 
-1. **Apply the staged skill edits** (the agent's tools are denied in these
-   folders; the edits are complete). Run from this session's terminal in the
-   worktree, then tell the agent to finish:
-
-   ```
-   !cp PRD/work/graph-workflow-land/staged/thejudge-implement-all/SKILL.md .claude/skills/thejudge-implement-all/SKILL.md
-   !cp PRD/work/graph-workflow-land/staged/thejudge-implement-all/reference.md .claude/skills/thejudge-implement-all/reference.md
-   !cp PRD/work/graph-workflow-land/staged/thejudge-cleanup/SKILL.md .claude/skills/thejudge-cleanup/SKILL.md
-   !cp PRD/work/graph-workflow-land/staged/codehealth/SKILL.md .claude/skills/codehealth/SKILL.md
-   !npm run skills:ai-sync
-   ```
-
-   The agent then verifies B1–B5, marks slice B done, deletes
-   `PRD/work/graph-workflow-land/`, strips the board row, sets this receipt to
-   `shipped`, and pushes.
+1. Done in-session on 2026-09-06: the four staged skill files were applied
+   with `cp` and `npm run skills:ai-sync`, verified byte-identical, and
+   committed as slice B. Recorded here because the same deny will meet the
+   next manual package that edits a `thejudge-*` or `codehealth` skill: stage
+   the edits inside the package, hand the owner the `cp` commands, verify with
+   `diff -q`.
 2. Delete the never-pushed local rehearsal branch:
    `git branch -D thejudge-auto/smoke-land-work` (from any checkout of this
    repo).

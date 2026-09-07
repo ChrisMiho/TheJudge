@@ -6,10 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| Package | Notes |
-| --- | --- |
-| [graph-workflow-land](./graph-workflow-land/) | Graph-workflow fix part 2: one writer per branch, `close` before `land`, two PRs per package (audit findings 2 and 7); slices A, C, D, E done 2026-09-06, B staged for the owner's `!cp`; manual package on `fix/graph-workflow-land` |
-
 ## active
 
 ## refined
