@@ -18,7 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Notes |
 | --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Parked 2026-09-07 by `graph-implement` (run `graph-20260907-032104`) at the build gate: slices A–D done and pushed, slice E wired, applied, and gated green except E9/E10 — the owner's first live run (≈ $2.56, `npm run eval:answer-quality -- --confirm-live-calls`) and read-through. PR #203 open into `main`. Owner steps: `GRAPH-RUN.md` `## Open gate` and `slice-e-integrate-and-apply.md` `## Owner steps for E9 and E10`; then `/loop graph-implement` resumes at `build` → `review` → `close` |
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Parked 2026-09-07 by `graph-implement` (run `graph-20260907-032104`) at the build gate: slices A–D done and pushed, slice E wired, applied, and gated green except E10 — the owner's read-through of the first live run (run 2026-09-07 under the local embedder at the owner's clearance, $0.69, `results.json` committed; E9 done). PR #203 open into `main`. Owner steps: `GRAPH-RUN.md` `## Open gate` and `slice-e-integrate-and-apply.md` `## Owner steps for E9 and E10`; then `/loop graph-implement` resumes at `build` → `review` → `close` |
 
 ## deferred
 

@@ -6,12 +6,13 @@
 - Done: E1–E8 all true and verified (the plan/estimate, the regression
   guard, the worked-solutions README, all four `PRD/sections/` amendments,
   `npm run quality:check` green). Wiring is complete and committed.
-- Next: the owner runs the first live pass and reads the record. Exact
-  steps are in `## Owner steps for E9 and E10` below.
-- Stopped because: E9 (the first live run) and E10 (the human read-through)
-  are the two criteria this build node cannot earn — they require a paid
-  provider call and a human's own reading, neither of which this node is
-  authorized to do.
+- Done 2026-09-07 (E9): the first live run, cleared by the owner in session
+  and executed by the driver — see `## First live run` below. `results.json`
+  now holds real data (`embeddingProvider: local`, `gitCommit: 549b12c`).
+- Next: the owner reads the record (E10). Exact steps are in
+  `## Owner steps for E9 and E10` below; only steps 4–6 remain.
+- Stopped because: E10 (the human read-through) is the one criterion this
+  build cannot earn — it requires a person's own reading.
 
 ## Goal
 
@@ -144,6 +145,49 @@ needs a person — then this package is ready to ship.
    real data) and `E10`'s `"value"` to `true` (you read the record and wrote
    the dated conclusion above). Then this slice, and the package, are ready
    for `thejudge-cleanup` / the graph's `close` step.
+
+## First live run
+
+2026-09-07, cleared by the owner in session ("i added plenty of credits to the
+account, we are cleared for testing") and executed by the graph driver from the
+build worktree. Two runs were made; the second is the committed baseline.
+
+- **Run 1, `EMBEDDING_PROVIDER` unset (mock embedder), 06:47 UTC** — 324
+  calls, $0.67 actual. Kept for comparison under
+  `output/answer-quality-mock-embeddings-2026-09-07/` (gitignored), with its
+  scorecard as `results.mock-embeddings.json` there. Not the baseline: the
+  deployed app runs the local embedder (REQ-184), and the eval script does
+  not set `EMBEDDING_PROVIDER` itself, so this run held retrieval fixed to the
+  wrong provider. The committed artifact records the provider (REQ-188), which
+  is exactly what made the mismatch visible.
+- **Run 2, `EMBEDDING_PROVIDER=local`, 08:03 UTC — the baseline** — 324
+  calls, $0.69 actual (estimate was $2.56; gpt-5's reasoning output was far
+  smaller than the character-count guess), no undetermined answers, judge
+  never matched an answer model. Fully-correct counts of 18, cap 5 / cap 10:
+  gpt-4.1-mini 16 / 15, gpt-4.1 14 / 17, gpt-5-mini 15 / 16, gpt-5-nano 14 /
+  15. Mean answer latency: gpt-4.1 3.7–3.9 s, gpt-4.1-mini 5.8–6.1 s,
+  gpt-5-mini 19–20 s, gpt-5-nano 30–31 s (max 59 s). Mean blind rank (1 is
+  best): gpt-5-mini 1.6–2.2, gpt-4.1 2.3–2.6, gpt-4.1-mini 2.5–2.8, gpt-5-nano
+  2.9–3.0.
+- **Deployed model, confirmed from the Lambda's environment the same night:
+  `OPENAI_MODEL=gpt-4.1`** (`scripts/aws-deploy.sh` sets it), not the code
+  default `gpt-4.1-mini` the brief calls the baseline. Read the gpt-4.1 rows as
+  today's product.
+- **Retrieval observations from the transcripts.** The gold rule reached the
+  prompt in 64 of 72 rule-backed answer prompts at each cap; the two cases it
+  never reached at either cap were `combat-damage-assignment-order-multiple-blockers`
+  (510.1c) and `sensei-top-leaves-battlefield-ability-on-stack` (113.7a).
+  On the combat case every model except gpt-4.1 at cap 10 answered from the
+  pre-2024 damage-assignment-order rule, confidently — memorized rules winning
+  when the current one is not attached. Tier-2 ruling cases were all answered
+  correctly by every model at both caps except one gpt-5-nano miss.
+- **Found the same night, not by the run:** production had been on lexical
+  fallback since the 2026-09-06 deploy (the package kept the linux/x64
+  onnxruntime binding on an arm64 Lambda); fix in PR #204. So run 2 measures
+  the retrieval players get after #204 deploys, and run 1 is closer to what
+  they had before it.
+- The two E9/E10 owner steps became: E9 earned by this record; E10 remains
+  the owner's read-through (steps 4–6 above).
 
 ## Verification
 
