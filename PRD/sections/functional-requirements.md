@@ -4316,6 +4316,65 @@
   - the same six original cases are already the gold half of REQ-177's 156-pair retrieval benchmark (150 synthetic pairs plus these 6), so the answer instrument and the retrieval benchmark share their ground truth rather than maintaining two sets
   - eighteen cases across two tiers is still a small seed. It is honest signal on hard cases rather than broad signal on easy ones, and the two-tier entry bar above is what keeps it honest as it grows; tier-1 and tier-2 scores are reported with their tier so the two are never pooled without saying so
 
+### REQ-188
+- Title: Answer-quality runs are on demand, confirmation-gated, and never a build gate
+- Priority: medium
+- Description: The answer-quality baseline is an explicitly invoked command, never scheduled and never wired into any automated gate. It answers every gold case once per model in a configured answer-model lineup and once per excerpt cap, through the production prompt path, so the product's current prompt and retrieval are held fixed while only the model varies. It refuses to contact the provider without an explicit confirmation flag, and records enough run metadata that two runs are comparable, are a deliberate model comparison, or are reported as incomparable.
+- Acceptance Criteria:
+  - the run is invoked as `npm run eval:answer-quality`; with no confirmation flag it prints the plan and the estimated cost, makes no network call, and exits 0
+  - it contacts the provider only with an explicit `--confirm-live-calls` flag, mirroring the gate `scripts/compare-combo-answer-quality.mjs` already ships (REQ-146)
+  - the answer models are a lineup, given as a repeatable `--model` option; the first-ship lineup is `gpt-4.1-mini` (the code default and the baseline), `gpt-4.1`, `gpt-5-mini`, and `gpt-5-nano`. Every gold case is answered once per model per excerpt cap (REQ-190) through the same `preparePromptInput` path, so prompt, retrieval, and cap are identical across models. The judge model (REQ-186) is never in the lineup
+  - the run never reads `OPENAI_MODEL`: `scripts/eval-answer-quality.mjs`'s `parseArgs` takes only CLI arguments, so a stray environment value can never silently swap a contestant
+  - with the confirmation flag but without `ASK_AI_PROVIDER=openai` and `OPENAI_API_KEY`, it fails with an actionable message naming what is missing, not a stack trace from inside the provider factory
+  - before its first paid call, the live run verifies the org has access to every model in the lineup and to the judge model with a single models-list request (`client.models.list()`, never a completion), and fails with an actionable message naming any model that is not available; the dry run performs the same check when a key is present and skips it entirely (no network call at all) when none is
+  - wall-clock latency per call is recorded in the artifact (REQ-189), so the bake-off cannot crown a model the 3-second answer target (NFR-002) cannot use; latency is recorded and reported, never a pass or fail
+  - the mock-first default is preserved: `ASK_AI_PROVIDER` unset stays `mock`, and a checkout with no key and no network can still run the dry plan (canonical mock-first rule, `integrations-and-data.md` Tech Stack)
+  - it is never added to `npm run quality:check`, `npm test`, `npm run test:eval`, `npm run coverage:check`, or `npm run test:scripts`, and never asserted against a golden; a regression-guard test (added in Slice E) asserts the command appears in none of those scripts
+  - provider calls are made sequentially, not concurrently, so a run stays inside the provider's per-minute token limit
+  - every run records, in the artifact (REQ-189): gold-set case ids, tiers, and count, the answer-model lineup, judge model id, rubric revision, `ASK_AI_PROVIDER`, `EMBEDDING_PROVIDER`, model and excerpt cap per leg, git commit, UTC timestamp, per-call prompt characters, per-call input and output token usage, per-call wall-clock latency, and the run's total token usage and cost
+  - the run tooling reports two runs as **incomparable** when their gold set, judge model, rubric revision, or `EMBEDDING_PROVIDER` differ, rather than presenting a misleading delta. Two runs whose answer-model lineups differ are reported as a **model comparison** — the shared models compared, the unshared ones listed — never as incomparable, because a deliberate bake-off is this instrument's first intended use
+  - **no numeric quality target is set by this requirement.** The first live run's scores, token usage, and dollar cost are the recorded baseline that later runs are judged against, in the same way REQ-177 records a retrieval baseline rather than deriving one
+- Constraints:
+  - never auto-score, auto-gate, or fail a build on model answer content (REQ-146, `goals-and-non-goals.md`)
+  - no scheduled or automatic invocation of any kind
+  - no secret is committed; credentials are read from the environment as today
+  - no new dependency: the run uses the already-present `openai` package and existing backend modules
+  - no `AskAiRequest`, Zod schema, route, endpoint, provider-selection, or frontend change
+  - no reasoning-effort, verbosity, or other per-model request parameter is added to the provider call: `openAiResponsesProvider.ts` sends model and prompt only, so gpt-5-family models run at their default reasoning effort in this run. A reasoning-effort setting is a follow-up package, opened only if a gpt-5-family model wins on correctness and its recorded latency misses NFR-002 — never a change made inside this requirement
+- Dependencies:
+  - REQ-186 (the judging it invokes)
+  - REQ-189 (the artifact it writes)
+  - REQ-190 (the excerpt-cap legs it runs)
+  - NFR-018 (the non-gating validation track this belongs to)
+- Notes:
+  - measured 2026-09-07, offline, over the actual 18-case gold set (REQ-185) through the real `preparePromptInput` path (lexical, no live embedding call): the dry run's own cost estimator (`scripts/eval-answer-quality.mjs`'s `estimateCost`) reports 144 answer calls, 144 lone judge calls, and 36 side-by-side ranking calls (324 total) for the four-model lineup at both excerpt caps, at an estimated cost of roughly $2.50 — using the same four-characters-per-token estimate and published list prices this requirement's cost note always used (`gpt-4.1-mini` $0.40/$1.60, `gpt-4.1` $2.00/$8.00, `gpt-5-mini` $0.25/$2.00, `gpt-5-nano` $0.05/$0.40, judge `gpt-5` $1.25/$10.00 per million input/output tokens), because the gpt-5 family bills reasoning tokens as output and the judge makes the most calls. This is an estimate, not a measurement, and re-derives automatically as the gold set or prompt sizes change; the first live run's own recorded usage supersedes it
+  - the code default when `OPENAI_MODEL` is unset is `gpt-4.1-mini` (`apps/backend/src/providers/createAskAiProvider.ts`); the run itself never reads that variable
+
+### REQ-190
+- Title: The System 3 excerpt cap is a parameter of the answer-quality run
+- Priority: medium
+- Description: An answer-quality run may answer the same gold case at more than one System 3 supplemental-excerpt cap, for every answer model in the lineup (REQ-188), and score the legs side by side, so the effect of attaching more rule excerpts on the *answer* can be observed. Production retrieval is unchanged: System 3 stays capped at five excerpts (REQ-181, REQ-182, `system-map/game-rules-retrieval.md`).
+- Acceptance Criteria:
+  - the run accepts a repeatable `--excerpt-cap` option, defaulting to `[5, 10]`; each cap value is one leg per answer model, and every gold case is answered once per model per cap in the same run
+  - `apps/backend/src/prompt/preparation.ts` exports one named constant, `DEFAULT_SUPPLEMENTAL_RULE_CAP` (value `5`), used at all four call sites that used to hard-code the literal `5`; `PreparePromptInputOptions.supplementalRuleCap` is an optional override (default: the constant) threaded to the same `retrieveRulesForQueryWithDebug` / `retrieveSupplementalRulesWithDebug` `max` parameter production already uses
+  - with no override, the assembled prompt is byte-identical to the prompt production has always produced, for every gold case — proven for all six originally-committed cases against the real committed rule index and topics (`preparation.test.ts`, REQ-190 describe block)
+  - a larger cap reuses the identical production ranking rather than re-ranking: `retrieveRulesForQueryWithDebug` already returns `runnerUp` as ranks 6–15 of the same scored list, so a cap-10 call's top 5 stays identical to the cap-5 call's, and slots 6–10 are drawn from that same `runnerUp` list — proven directly, not assumed, in `preparation.test.ts`
+  - the run artifact records the model and cap per leg and reports the headline correctness count per model per cap (REQ-189)
+  - the deployed cap stays 5. Changing it requires a recorded run showing a larger cap scored better, and an amendment to REQ-182 and `system-map/game-rules-retrieval.md` — never a change made inside this requirement
+- Constraints:
+  - no change to System 3 query construction (REQ-178), scoring or blending (REQ-182), the committed corpus or embeddings (REQ-181, REQ-183), or the System 2 deduplication (REQ-179)
+  - NFR-002's under-three-second answer target is untouched: the larger cap exists only inside an offline evaluation run and never in a request a player makes
+  - the judge is not told which cap or which model produced an answer (REQ-186)
+- Dependencies:
+  - REQ-182 (the hybrid ranking whose top-N the legs slice)
+  - REQ-181 (the five-excerpt cap and the retrieval seam)
+  - REQ-188 (the run that executes the legs)
+  - REQ-032 (the retrieval measurement this deliberately does not replace)
+- Notes:
+  - measured 2026-09-07 (build): `preparation.ts` lines 228, 272, 317, and 355 each held the literal `5` passed as the retrieval `max` argument; all four now read `options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP`. `npm --workspace apps/backend run typecheck` and the full `preparation.test.ts` suite (14 tests, including the new REQ-190 describe block) pass; `npm run eval:worked-solutions` still reports the same six originally-committed cases as hits at the default cap, over the grown 18-case set
+  - the design brief's earlier measurement (2026-09-06, six committed CR cases only) found the expected rule inside the top 5 for 6 of 6 cases, stable through caps 6, 8, 10, and 15 — so on that seed set a larger cap cannot add a missing rule, and the experiment measures whether extra, lower-confidence excerpts *distract* the model, not whether they improve recall. That saturation measurement covers only the original six CR cases; the twelve cases REQ-185 added (nine more tier 1, three tier 2) are not known to be similarly saturated — measured 2026-09-07, `npm run eval:worked-solutions` misses on the grown set are concentrated in the newer cases (one tier-1, all three tier-2) — so the cap experiment gains recall signal alongside the distraction signal as the set grows, exactly as this requirement anticipated
+  - the driver's context note (`PRD/work/ai-answer-quality-baseline/intake/answer-quality-context.md`) records benchmark recall by depth on 2026-09-06 as top-5 89.7%, top-6 89.7%, top-7 90.4%, top-8 91.0%, top-10 94.2%, with 9 of 156 never reaching the top 10, and excerpts averaging about 70 tokens. Cited as the evidence that the question is worth asking; not adopted as a measurement of this repository's product truth
+
 ### REQ-191
 - Title: Spec-forming runs work in a kickoff worktree off `origin/main` and never mutate the launch checkout
 - Priority: high

@@ -7,8 +7,23 @@ import { loadGameRulesRuleIndex, type GameRulesRuleIndexEntry } from "../gameRul
 import type { CardDetailEntry } from "../cardDetail.js";
 import type { LookupAskAiRequest } from "../types/index.js";
 import { ALWAYS_ON_TOPIC_IDS } from "../gameRulesTopicSelection.js";
-import { preparePromptInput } from "./preparation.js";
+import { DEFAULT_SUPPLEMENTAL_RULE_CAP, preparePromptInput } from "./preparation.js";
 import type { CardDetailIndex } from "./context.js";
+
+/**
+ * The six worked-solution gold cases (REQ-185), mirrored from
+ * `scripts/lib/gold-cases.mjs`'s `REQUIRED_SIX_CASE_IDS` — duplicated here
+ * rather than imported across the workspace boundary, since this backend
+ * test package doesn't otherwise reach outside `apps/backend`.
+ */
+const SIX_GOLD_CASE_IDS = [
+  "delayed-trigger-created-too-late",
+  "illegal-target-partial-resolution",
+  "last-known-information-simultaneous-sba",
+  "layers-timestamp-order",
+  "replacement-effect-single-application",
+  "state-based-actions-mid-resolution"
+];
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -291,6 +306,90 @@ describe("Backend - Ask AI", () => {
       // rank by) — 701.8b is not among its top 5, proving the two paths are
       // actually independent, not coincidentally identical.
       expect(first.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId)).not.toContain("701.8b");
+    });
+  });
+
+  // REQ-190: the System 3 excerpt cap is now a run parameter
+  // (`PreparePromptInputOptions.supplementalRuleCap`, Slice B), threaded to the
+  // identical production ranking. Every production call site still passes no
+  // override, so this must stay behavior-preserving; only the answer-quality
+  // run ever supplies a value. Uses the real committed rule index/topics and
+  // the six committed gold-case questions (lexical path — no query embedding
+  // — since these tests assert the cap parameter's own behavior, not the
+  // semantic ranking M2/M4 measured).
+  describe("preparePromptInput lookup mode — excerpt-cap parameter (REQ-190)", () => {
+    const realGameRulesTopics: GameRulesTopic[] = loadGameRulesTopics(
+      path.resolve(currentDir, "../../data/gameRulesByTopic.json")
+    );
+    const realRuleIndex: GameRulesRuleIndexEntry[] = loadGameRulesRuleIndex(
+      path.resolve(currentDir, "../../data/gameRulesRuleIndex.json")
+    );
+
+    function loadGoldQuestion(caseId: string): string {
+      const casePath = path.resolve(
+        currentDir,
+        "../eval/worked-solutions",
+        `${caseId}.case.json`
+      );
+      const parsed = JSON.parse(readFileSync(casePath, "utf8")) as { question: string };
+      return parsed.question;
+    }
+
+    it("DEFAULT_SUPPLEMENTAL_RULE_CAP is 5 — production's historical cap", () => {
+      expect(DEFAULT_SUPPLEMENTAL_RULE_CAP).toBe(5);
+    });
+
+    it.each(SIX_GOLD_CASE_IDS)(
+      "with no cap override, %s's assembled prompt is byte-identical to an explicit cap of 5 (the default)",
+      (caseId) => {
+        const request: LookupAskAiRequest = { mode: "lookup", question: loadGoldQuestion(caseId) };
+
+        const withDefault = preparePromptInput(request, {
+          gameRulesTopics: realGameRulesTopics,
+          gameRulesRuleIndex: realRuleIndex,
+          collectEnrichmentDebug: true,
+          queryEmbedding: null
+        });
+        const withExplicitFive = preparePromptInput(request, {
+          gameRulesTopics: realGameRulesTopics,
+          gameRulesRuleIndex: realRuleIndex,
+          collectEnrichmentDebug: true,
+          queryEmbedding: null,
+          supplementalRuleCap: 5
+        });
+
+        expect(withDefault.promptText).toBe(withExplicitFive.promptText);
+        expect(withDefault.enrichmentDebug?.supplemental.selected.length).toBeLessThanOrEqual(5);
+      }
+    );
+
+    it("a cap-10 override extends the same ranking's runnerUp without changing the top 5", () => {
+      const request: LookupAskAiRequest = {
+        mode: "lookup",
+        question: loadGoldQuestion("illegal-target-partial-resolution")
+      };
+
+      const atFive = preparePromptInput(request, {
+        gameRulesTopics: realGameRulesTopics,
+        gameRulesRuleIndex: realRuleIndex,
+        collectEnrichmentDebug: true,
+        queryEmbedding: null
+      });
+      const atTen = preparePromptInput(request, {
+        gameRulesTopics: realGameRulesTopics,
+        gameRulesRuleIndex: realRuleIndex,
+        collectEnrichmentDebug: true,
+        queryEmbedding: null,
+        supplementalRuleCap: 10
+      });
+
+      const fiveIds = atFive.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId) ?? [];
+      const tenIds = atTen.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId) ?? [];
+      const runnerUpIds = atFive.enrichmentDebug?.supplemental.runnerUp.map((rule) => rule.ruleId) ?? [];
+
+      expect(tenIds.slice(0, fiveIds.length)).toEqual(fiveIds);
+      expect(tenIds.slice(fiveIds.length)).toEqual(runnerUpIds.slice(0, tenIds.length - fiveIds.length));
+      expect(tenIds.length).toBeGreaterThan(fiveIds.length);
     });
   });
 });

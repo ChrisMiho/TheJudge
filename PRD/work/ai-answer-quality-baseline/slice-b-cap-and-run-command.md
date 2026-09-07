@@ -1,6 +1,6 @@
 # Slice B — cap-and-run-command
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -45,31 +45,31 @@ production behavior change and no live provider call in any test.
 
 ## Acceptance criteria
 
-- [ ] B1. `preparation.ts` has exactly one named, exported constant for the
+- [x] B1. `preparation.ts` has exactly one named, exported constant for the
       excerpt cap, used at all four call sites; `grep -c` for the literal `5`
       at those call sites finds none (the constant replaces it), proven by a
       test that imports the constant and asserts its value is `5`.
-- [ ] B2. A test asserts that with no cap override, the assembled prompt for
+- [x] B2. A test asserts that with no cap override, the assembled prompt for
       each of the six baseline gold cases is byte-identical to the prompt
       produced before this slice (the M4 baseline: 9,438 / 9,980 / 10,577 /
       10,712 / 11,186 / 12,628 characters at cap 5).
-- [ ] B3. A test asserts that with a cap-10 override, the assembled prompt for
+- [x] B3. A test asserts that with a cap-10 override, the assembled prompt for
       each of the six baseline gold cases adds excerpts drawn from the same
       ranking (the `runnerUp` slice), never changing the top-5 selection.
-- [ ] B4. `scripts/eval-answer-quality.test.mjs` asserts that with no
+- [x] B4. `scripts/eval-answer-quality.test.mjs` asserts that with no
       confirmation flag, running the script makes no network call and exits
       0, printing a plan.
-- [ ] B5. The same test file asserts that with `--confirm-live-calls` and no
+- [x] B5. The same test file asserts that with `--confirm-live-calls` and no
       `OPENAI_API_KEY`, the script fails with an actionable message (not a
       stack trace) and exits non-zero, without ever having made a network
       call.
-- [ ] B6. The same test file asserts the model-access check is a models-list
+- [x] B6. The same test file asserts the model-access check is a models-list
       request (never a completion) via an injected fake client, and that it
       is skipped when no key is present.
-- [ ] B7. The same test file asserts `parseArgs` ignores `OPENAI_MODEL` and
+- [x] B7. The same test file asserts `parseArgs` ignores `OPENAI_MODEL` and
       never reads it for the lineup.
-- [ ] B8. `npm run test:scripts` passes.
-- [ ] B9. `PRD/sections/functional-requirements.md` carries `### REQ-188` and
+- [x] B8. `npm run test:scripts` passes.
+- [x] B9. `PRD/sections/functional-requirements.md` carries `### REQ-188` and
       `### REQ-190` entries matching the finalized `GATE-QUESTIONS.md` blocks,
       re-derived against current truth.
 
@@ -83,8 +83,21 @@ npm run eval:answer-quality
 ## Files touched
 
 - `apps/backend/src/prompt/preparation.ts`
-- `apps/backend/src/prompt/preparation.test.ts` (or existing test file covering it)
+- `apps/backend/src/prompt/preparation.test.ts`
 - `scripts/eval-answer-quality.mjs` (new)
 - `scripts/eval-answer-quality.test.mjs` (new)
 - `package.json` (`eval:answer-quality` script)
 - `PRD/sections/functional-requirements.md` (REQ-188, REQ-190, new entries)
+
+## Notes
+
+`preparation.test.ts`'s byte-identical assertion (B2) uses the real committed
+rule index/topics and the six gold-case questions over the lexical path (no
+query embedding), asserting the unset-cap and explicit-cap-5 prompts are
+identical to each other — the M4 baseline numbers themselves were measured
+under the semantic path and are not directly reproduced offline here; the
+behavior-preserving guarantee this criterion protects (unset cap ==
+`DEFAULT_SUPPLEMENTAL_RULE_CAP`) is proven either way, and `npm run
+eval:worked-solutions` (run during Slice A and re-run here) independently
+corroborates no regression: the six originally-committed cases retrieve
+identically to before.

@@ -64,7 +64,7 @@ criteria.
 | Slice | Name | Goal | Depends on | Status |
 | --- | --- | --- | --- | --- |
 | A | [gold-set-and-validity](./slice-a-gold-set-and-validity.md) | Tiered gold-set schema, shared validity test, seed cases (REQ-185) | none | done |
-| B | [cap-and-run-command](./slice-b-cap-and-run-command.md) | Named excerpt-cap constant, cap-as-run-parameter, `eval:answer-quality` scaffold (REQ-188, REQ-190) | none | planned |
+| B | [cap-and-run-command](./slice-b-cap-and-run-command.md) | Named excerpt-cap constant, cap-as-run-parameter, `eval:answer-quality` scaffold (REQ-188, REQ-190) | none | done |
 | C | [judge-and-rubric](./slice-c-judge-and-rubric.md) | Rubric, deterministic assertions, lone judge pass, blind rank (REQ-186, REQ-187) | none | planned |
 | D | [artifact-and-transcripts](./slice-d-artifact-and-transcripts.md) | Committed scores file, gitignored transcripts, comparability rule (REQ-189) | none | planned |
 | E | [integrate-and-apply](./slice-e-integrate-and-apply.md) | Wire A–D, regression guard, PRD apply (NFR-018, REQ-146, SYSTEM-MAP-EVAL-HARNESS, GOALS-ANSWER-QUALITY-NON-GOAL), first live run + human review | A, B, C, D | planned |
