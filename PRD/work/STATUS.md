@@ -10,15 +10,15 @@ Do not rename package folders to encode status.
 
 ## refined
 
-| Package | Notes |
-| --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Define gate answered and applied 2026-09-06 (6 edit / 4 accept); docs PR #200 awaits owner merge, then `graph-implement` resumes at `gate-qc` |
-
 ## refining
 
 ## ideation
 
 ## owner-action
+
+| Package | Notes |
+| --- | --- |
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Parked 2026-09-07 by `graph-implement` (run `graph-20260907-032104`) at the build gate: slices A–D done and pushed, slice E wired, applied, and gated green except E9/E10 — the owner's first live run (≈ $2.56, `npm run eval:answer-quality -- --confirm-live-calls`) and read-through. PR #203 open into `main`. Owner steps: `GRAPH-RUN.md` `## Open gate` and `slice-e-integrate-and-apply.md` `## Owner steps for E9 and E10`; then `/loop graph-implement` resumes at `build` → `review` → `close` |
 
 ## deferred
 

@@ -1,5 +1,6 @@
 {
   "id": "last-known-information-simultaneous-sba",
+  "tier": 1,
   "question": "My 1/1 creature with undying has a +1/+1 counter on it. A spell puts three -1/-1 counters on it at once. The counters cancel down to two -1/-1 counters left over, so the creature dies from having 0 or less toughness. Does undying trigger, since the creature technically still had a +1/+1 counter on it before all this happened?",
   "expectedSupplementalRuleIds": ["704.8"],
   "workedSolution": "You control Young Wolf, a 1/1 creature with undying, and it has a +1/+1 counter on it. A spell puts three -1/-1 counters on Young Wolf. Before state-based actions are performed, Young Wolf has one +1/+1 counter and three -1/-1 counters on it. After state-based actions are performed, Young Wolf is in the graveyard. When it was last on the battlefield, it had a +1/+1 counter on it, so undying will not trigger.",

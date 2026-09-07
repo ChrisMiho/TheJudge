@@ -1,0 +1,83 @@
+{
+  "slug": "ai-answer-quality-baseline",
+  "slice": "E",
+  "criteria": [
+    {
+      "id": "E1",
+      "statement": "npm run eval:answer-quality with no flag prints the plan and cost estimate, no network call, exits 0",
+      "value": true,
+      "evidence": {
+        "command": "npm run eval:answer-quality"
+      }
+    },
+    {
+      "id": "E2",
+      "statement": "A test asserts eval:answer-quality appears in no gate script",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/eval-answer-quality\\.test\\.mjs",
+        "paths": ["scripts/eval-answer-quality.test.mjs", "package.json"]
+      }
+    },
+    {
+      "id": "E3",
+      "statement": "worked-solutions README describes both the retrieval check and the answer-quality run",
+      "value": true,
+      "evidence": {
+        "paths": ["apps/backend/src/eval/worked-solutions/README.md"]
+      }
+    },
+    {
+      "id": "E4",
+      "statement": "PRD/sections/non-functional-requirements.md NFR-018 matches the finalized GATE-QUESTIONS.md replacement",
+      "value": true,
+      "evidence": {
+        "paths": ["PRD/sections/non-functional-requirements.md"]
+      }
+    },
+    {
+      "id": "E5",
+      "statement": "PRD/sections/functional-requirements.md REQ-146 carries the finalized replacement",
+      "value": true,
+      "evidence": {
+        "paths": ["PRD/sections/functional-requirements.md"]
+      }
+    },
+    {
+      "id": "E6",
+      "statement": "PRD/sections/system-map.md Eval harness carries the amended summary and the new Answer-quality baseline sub-entry",
+      "value": true,
+      "evidence": {
+        "paths": ["PRD/sections/system-map.md"]
+      }
+    },
+    {
+      "id": "E7",
+      "statement": "PRD/sections/goals-and-non-goals.md carries the finalized replacement non-goal bullet",
+      "value": true,
+      "evidence": {
+        "paths": ["PRD/sections/goals-and-non-goals.md"]
+      }
+    },
+    {
+      "id": "E8",
+      "statement": "npm run quality:check exits 0",
+      "value": true,
+      "evidence": {
+        "command": "npm run quality:check"
+      }
+    },
+    {
+      "id": "E9",
+      "statement": "The first owner-confirmed live run crossed every lineup model with both caps and recorded actual usage/latency/cost as the baseline",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "E10",
+      "statement": "A human read the full written record for at least one case per model and recorded a dated conclusion",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

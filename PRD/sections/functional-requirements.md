@@ -3484,14 +3484,15 @@
 - Constraints:
   - never auto-score, auto-gate, or fail CI on model answer content
   - do not add a product-facing endpoint, request field, or user-visible surface
-  - do not grow this into a general-purpose LLM evaluation framework; a broad answer-quality baseline across all fixtures remains separate scope
+  - do not grow this into a general-purpose LLM evaluation framework; the broad answer-quality baseline is its own instrument over the committed worked-solution gold set (NFR-018, REQ-185 through REQ-190) and the two are kept separate — this requirement stays a two-leg combo A/B over curated combo scenarios
 - Dependencies:
   - DEC-161
   - REQ-093
   - REQ-094
   - REQ-095
+  - REQ-188 (the answer-quality baseline whose non-gating, confirmation-gated posture this shares)
 - Notes:
-  - the existing `prompt:preview` tooling extracts assembled prompt text from the mock provider and therefore cannot observe answer quality; this is the first path in TheJudge that inspects real provider answers
+  - the existing `prompt:preview` tooling extracts assembled prompt text from the mock provider and therefore cannot observe answer quality; this was the first path in TheJudge that inspects real provider answers, and the answer-quality baseline (REQ-188) is the second — both are explicitly invoked, confirmation-gated, human-reviewed, and outside every build gate
   - the comparison exists to answer whether combo enrichment earned its place, which is otherwise unfalsifiable
   - planned path is `scripts/compare-combo-answer-quality.mjs`, gated behind an explicit `--confirm-live-calls` flag, writing to gitignored `output/combo-answer-quality/` alongside the existing `output/prompt-preview/` and `output/retrieval-relevance-report.txt` convention
   - the runtime config flag is `COMBO_ENRICHMENT_ENABLED` (backend env, enabled by default), read where prompt assembly consults the catalog rather than latched at module load, so one script process can answer both legs without a second process or a contract change
@@ -4290,6 +4291,171 @@
 - Notes:
   - measured 2026-09-05: in a checkout whose model cache was empty, `npm run benchmark:rag-retrieval -- --semantic` returned the lexical numbers labelled `method=semantic-local` with no failure — the reason the *unset* default must stay `mock` rather than flipping repo-wide
   - measured at build, 2026-09-05: `scripts/package-lambda.sh`'s model-cache refusal was written to assert existing intent but did not actually fire — a best-effort warm attempt swallowed its own failure (`|| true`) with no follow-up check, so a package built with a cold cache and no network would have shipped silently missing the model. Added an explicit post-warm check that refuses (exit 1) when the model file is still absent, and `scripts/package-lambda.test.mjs` proves it — offline, via a scratch repo and a no-op `npx` shim, no real network call
+
+### REQ-185
+- Title: Answer-quality gold set
+- Priority: medium
+- Description: The answer-quality baseline (NFR-018) grades model answers against a committed gold set of rules questions that each carry a published, citable, official correct answer. The set is tiered by where that answer comes from, and every tier is official: tier 1 is a Comprehensive Rules worked example (an `Example:` line) verbatim; tier 2 is a WotC card ruling verbatim, paired with a hand-authored, human-reviewed question. The set is seeded by the six worked-solution cases already committed under `apps/backend/src/eval/worked-solutions/`, whose `workedSolution` field is the Comprehensive Rules' own worked example text verbatim (all tier 1), plus twelve hand-picked hard cases from tiers 1 and 2, chosen from topics players commonly get wrong. No case may enter the set with a hand-authored answer key.
+- Acceptance Criteria:
+  - the gold set contains at least the six `apps/backend/src/eval/worked-solutions/*.case.json` cases at first ship: `delayed-trigger-created-too-late` (603.7a), `illegal-target-partial-resolution` (608.2b), `last-known-information-simultaneous-sba` (704.8), `layers-timestamp-order` (613.9), `replacement-effect-single-application` (614.5), `state-based-actions-mid-resolution` (704.4) — all tier 1 — plus a first-ship seed of twelve additional hard cases: nine tier 1 (`trample-must-assign-lethal-first` 702.19b, `trample-over-planeswalkers-assignment` 702.19c, `combat-damage-assignment-order-multiple-blockers` 510.1c, `mana-ability-remains-mana-ability` 605.2, `regenerate-too-late-after-destroy-resolves` 614.4, `token-created-by-name-uses-oracle-card` 111.11, `copy-does-not-copy-etb-choices` 707.6, `copy-effect-modification-becomes-copiable` 707.9b, `damage-does-not-destroy-sba-does` 120.5) and three tier 2 (`panharmonicon-controller-not-entering-permanent`, `sensei-top-leaves-battlefield-ability-on-stack`, `restoration-angel-blink-resets-counters`), for 18 cases total — each hand-picked from a topic players commonly get wrong, so the first baseline is not six data points; every case records its `tier`
+  - **tier 1** — the reference answer is a Comprehensive Rules `Example:` line verbatim, cited by rule id, read from the committed flat rule index `apps/backend/data/gameRulesRuleIndex.json` (built by `scripts/build-game-rules.mjs` from the gitignored raw CR download `apps/backend/data/cr/source.txt`, which is never committed — `.gitignore`, `integrations-and-data.md` Game Rules Data Strategy). That committed index carries 277 `Example:` lines across 215 rule entries (measured 2026-09-07) and fifteen are used at first ship, so this is the concrete growth path, and authoring a tier-1 case needs no download and no network call — every tier-1 case cites this file as its `source.committedDataPath`
+  - **tier 2** — the reference answer is a WotC card ruling verbatim from `apps/backend/data/cardRulingsByOracleId.json` (76,605 rulings over 19,542 cards, measured 2026-09-06), cited by card name, oracle id, and ruling date; the question is hand-authored and reviewed by a human before commit. A tier-2 case tests whether the model honours the ruling the prompt already attaches for that card (`cardRulings.ts`), which is the failure a player actually sees at the table
+  - a gold case is valid only when it carries a non-empty `question`, a non-empty `workedSolution` (the reference answer), a `tier` of 1 or 2, a `source` block naming publisher, licensing, and the citation the tier requires (rule id for tier 1; card name, oracle id, and ruling date for tier 2), a non-empty `whyHard`, and at least one `expectedSupplementalRuleIds` entry; `scripts/lib/gold-cases.mjs` asserts all of these for every case and both `npm run eval:worked-solutions` and the answer-quality run read cases through this one shared loader, so a malformed case fails loudly rather than scoring as a miss
+  - the ten labelled eval fixtures (`cascade-keyword`, `combat-deathtouch`, `counterspell-stack`, `quick-lookup-card`, `quick-lookup-multi-card`, `quick-lookup-multi-keyword-card`, `quick-lookup-no-card`, `quick-lookup-off-domain`, `state-based-actions`, `upkeep-trigger`) are recorded as **needing an answer key** and are not in the gold set; measured 2026-09-06, every one of them carries only retrieval labels (`expectedSystem2TopicIds`, `expectedSupplementalRuleIds`, `forbiddenSupplementalRuleIds`) and no answer of any kind
+  - the set grows only through tier 1 or tier 2, under the same licensing resolution NFR-018 already required; there is no tier 3. Community sources — "common mistakes" articles, judge blogs, forums — may choose which questions enter and are cited in the case as why it matters, never as its answer. An answer written by a contributor or an agent is never ground truth. Commander Spellbook combos are excluded: they are community-curated, not official, and REQ-146 already inspects real answers on combo scenarios
+  - `apps/backend/src/eval/worked-solutions/README.md` describes both uses of the set — the retrieval check and the answer-quality run — applied in Slice E of the `ai-answer-quality-baseline` package
+- Constraints:
+  - the gold cases remain committed evaluation data; they never enter a live prompt, never reach a real player, and add no runtime dependency or external call (NFR-018)
+  - the retrieval check `npm run eval:worked-solutions` keeps working unchanged over the same files; the answer-quality run is a second reader of the same data, not a replacement
+  - no case is added, edited, or removed to make a score look better
+- Dependencies:
+  - NFR-018 (the worked-solutions validation track this extends)
+  - REQ-186 (the judge that grades against these cases)
+  - REQ-032 (the labelled fixtures recorded here as needing an answer key)
+- Notes:
+  - measured 2026-09-07: the gold set holds 18 cases (6 pre-existing plus 12 seeded at build), all tier 1 or tier 2, each carrying a `workedSolution`, a `tier`, a `source` block with the citation its tier requires, a non-empty `whyHard`, and at least one expected rule id; `npm run eval:worked-solutions` reports 14/18 retrieved at the production cap of five — the four misses (three tier-2 card-ruling cases and one tier-1 combat-damage case) are expected and recorded, not corrected, since REQ-190 notes tier-2 cases are not known to be retrieval-saturated and a miss here is a concrete signal for tuning, never a build failure; 31 eval fixtures exist, 10 carry an `expected` block, and 0 carry an answer; the committed rule index `apps/backend/data/gameRulesRuleIndex.json` holds 277 `Example:` lines across 215 of its 2,873 rule entries and the committed rulings index holds 76,605 rulings over 19,542 cards — the two official pools the tiers draw from, both already committed and both already served in production
+  - the same six original cases are already the gold half of REQ-177's 156-pair retrieval benchmark (150 synthetic pairs plus these 6), so the answer instrument and the retrieval benchmark share their ground truth rather than maintaining two sets
+  - eighteen cases across two tiers is still a small seed. It is honest signal on hard cases rather than broad signal on easy ones, and the two-tier entry bar above is what keeps it honest as it grows; tier-1 and tier-2 scores are reported with their tier so the two are never pooled without saying so
+
+### REQ-186
+- Title: Answer-quality judging is grounded, layered, and human-confirmed
+- Priority: medium
+- Description: Each answer produced by an answer-quality run is scored by four layers in order — deterministic assertions, a reference-grounded model judge that scores each answer alone, a blind side-by-side ranking pass across every answer to the same question, and a human review pass over the written record. The model judge is given the gold case's published worked solution as the reference answer and asked only whether the model's answer agrees with it; it is never asked to rule on Magic rules from its own knowledge. The judge model is stronger than every answer model in the run and is never one of them.
+- Acceptance Criteria:
+  - layer 1, deterministic and free: for each gold case the run records whether the answer names the gold rule id, whether it is non-empty, and its length (`apps/backend/src/eval/answer-quality/assertions.ts`); these need no model call and are computed identically on every run
+  - layer 2, the lone model judge: one call per answer, carrying the question, the assembled prompt's supplemental rule ids, the model's answer, the case's `workedSolution` as the reference answer, and the rubric (REQ-187); it returns a score per axis plus a one-paragraph rationale (`apps/backend/src/eval/answer-quality/judge.ts`, `judgeAnswerAlone`)
+  - the judge is instructed that the reference answer is authoritative and that its task is agreement, not independent adjudication; a judge call that errors, or whose response cannot be parsed into four in-range axis scores plus a rationale, returns an explicit `undetermined` rather than guessing, and `undetermined` is reported, never silently counted as a pass or a fail
+  - the judge model is selected by its own explicit setting, `ANSWER_QUALITY_JUDGE_MODEL` (`resolveJudgeModel`), recorded in the run artifact, and defaults to `gpt-5` when unset — mirroring the explicit-selection seam `ASK_AI_PROVIDER` and `EMBEDDING_PROVIDER` already use, so a judge change is visible in the artifact rather than invisible in a score. It never defaults to an answer model, and `judgeMatchesAnswerModel` flags any run whose judge model id matches an answer model id
+  - layer 2b, the blind ranking (`judgeBlindRanking`): for each gold case at each excerpt cap, after every answer has been scored alone, one further judge call sees all answers to that question side by side — model labels hidden (anonymous `Answer A/B/C/...` labels) and presentation order shuffled per case — together with the reference answer and the rubric, and ranks them by agreement with the reference; the harness (never the judge) knows the label-to-model mapping, so the rank is always recoverable per real model id (REQ-189). Side-by-side ranking is more reliable than lone scores and is what makes the model comparison (REQ-188) trustworthy
+  - the rubric text carries a revision identifier (REQ-187's `RUBRIC_REVISION`), recorded in the run artifact; two runs are comparable only when their judge model and rubric revision match, and the run tooling says so explicitly when they do not
+  - layer 3, the human pass: the run writes the full per-case record (prompt, answer, reference answer, assertions, judge scores, judge rationale) for review, and only the dated human-reviewed conclusion becomes durable project history — matching REQ-146's posture for the combo answer-quality comparison
+  - the judge call is evaluation tooling only: `apps/backend/src/eval/answer-quality/judge.ts` does not import `AskAiProvider`, does not build an `AskAiRequest`, and does not touch any product code path — it uses the same minimal Responses-API client shape (`{ responses: { create(...) } }`) `openAiResponsesProvider.ts` already depends on, with an injectable client so no test ever makes a network call
+- Constraints:
+  - never auto-gate or fail a build on a judge score (REQ-188)
+  - no new dependency: the judge uses the `openai` package the backend already depends on, and reads credentials from the environment; no key is ever committed
+  - the judge never sees which excerpt-cap leg or which answer model produced an answer, in the lone scoring or in the side-by-side ranking, so neither the cap comparison (REQ-190) nor the model comparison (REQ-188) is biased by a label or by position
+  - a judge failure (provider error, malformed response) is recorded as `undetermined` for that case; the run continues and reports how many cases were undetermined
+- Dependencies:
+  - REQ-185 (the gold cases and their reference answers)
+  - REQ-187 (the rubric the judge scores against)
+  - REQ-188 (the command that runs it and its cost posture)
+  - REQ-146 (the human-reviewed, never-gating precedent this follows)
+- Notes:
+  - the alternatives considered and rejected: a model judge alone drifts, so a judge swap would read as a quality change; a human pass alone does not scale past six cases and yields no comparable number; assertions alone cannot see hedging, grounding, or readability
+  - grounding the judge in the published worked solution is what makes a model judge defensible here. It is only possible because every gold case already carries that text (REQ-185), and it is the reason the gold set may never accept a hand-authored answer key
+  - every provider call is stateless, so a "fresh session" between answerer and judge is guaranteed by construction and is not the concern; the concern is shared weights, which is why the judge is a different and stronger model. The judge prompt carries the question, answer, reference, rule ids, and rubric — not the 10k-character assembled prompt — so a stronger judge costs little per call
+  - measured 2026-09-07 (build): `judge.test.ts` (15 tests) proves the lone pass sends question/ruleIds/answer/workedSolution/rubric to the client and parses four in-range axis scores plus a rationale, records `undetermined` on a client error and on every malformed-response shape tried (out-of-range score, missing field, non-JSON prose), and that the blind-ranking pass never includes a real model id in the prompt it sends and correctly maps an arbitrary shuffle permutation's labels back to the right model id
+
+### REQ-187
+- Title: Answer-quality scoring axes
+- Priority: medium
+- Description: An answer-quality run scores each answer on four axes, each 0–2, against the gold case's published worked solution. Correctness is the run's single headline figure; the other three axes are diagnostic and explain movement rather than defining it.
+- Acceptance Criteria:
+  - **Correctness (0–2)** — 2: reaches the same outcome as the published worked solution; 1: partially right, or right with a material error or omission; 0: reaches a different outcome. This is the only axis that produces the headline figure
+  - **Grounding (0–2)** — 2: the answer's reasoning uses the supplemental rule excerpts the prompt actually attached and names the gold rule id; 1: uses them without naming the rule, or names it without using it; 0: neither
+  - **Calibration (0–2)** — 2: as definite as the published solution is, and no more; 1: over-hedged or mildly overconfident; 0: refuses a question the reference answers, or states a firm answer the reference does not support
+  - **Readability (0–2)** — 2: a player at a table can act on it as written; 1: correct but needs re-reading; 0: unusable at a table
+  - the headline figure a run reports is the count of gold cases scoring Correctness 2, out of the gold-set size, per excerpt-cap leg — for example `4/6 fully correct at cap 5, 3/6 at cap 10` (`apps/backend/src/eval/answer-quality/rubric.ts`, `countFullyCorrect`)
+  - the deterministic assertion `namesGoldRuleId` (REQ-186 layer 1) is recorded per case alongside the axes and is not folded into any axis score
+  - no axis for WotC card-ruling citation is defined: at first ship the gold set's tier-2 cases (REQ-185) are scored by the same four axes as tier 1; a card-ruling-specific axis may be added once enough tier-2 signal exists to justify one, as an amendment to this requirement with a rubric-revision bump
+  - the four axis names, their 0/1/2 definitions, and the rubric revision identifier live in one committed rubric file (`apps/backend/src/eval/answer-quality/rubric.ts`) and are the exact text sent to the judge (`formatRubricForJudge`); the run artifact records that revision (REQ-186)
+- Constraints:
+  - no axis is ever combined into a single weighted quality score; a weighted composite hides which axis moved and invites tuning the weights instead of the product
+  - no numeric pass threshold is set on any axis (REQ-188); the first run's scores are the recorded baseline
+  - axes are added or changed only by amending this requirement and bumping the rubric revision, so a score change and a rubric change are never confused
+- Dependencies:
+  - REQ-186 (the judge that applies these axes)
+  - REQ-185 (the reference answers they are scored against)
+  - REQ-189 (the artifact that records them)
+- Notes:
+  - the intake's candidate axes were rules correctness, use of supplied context, citation of WotC rulings/CR, hedging vs. overconfidence, and length/readability (`PRD/work/ai-answer-quality-baseline/intake/IDEA.md`). Four survive as the axes above; the WotC-ruling axis is dropped for the measured reason recorded in the criteria
+  - the deliberate choice of a 0–2 scale over a wider one: with six cases, a finer scale invents precision the sample cannot support, and a coarse scale is what a human reviewer can confirm or overturn on the third layer
+  - the rubric revision at first ship is `2026-09-07.1` (`RUBRIC_REVISION`)
+
+### REQ-188
+- Title: Answer-quality runs are on demand, confirmation-gated, and never a build gate
+- Priority: medium
+- Description: The answer-quality baseline is an explicitly invoked command, never scheduled and never wired into any automated gate. It answers every gold case once per model in a configured answer-model lineup and once per excerpt cap, through the production prompt path, so the product's current prompt and retrieval are held fixed while only the model varies. It refuses to contact the provider without an explicit confirmation flag, and records enough run metadata that two runs are comparable, are a deliberate model comparison, or are reported as incomparable.
+- Acceptance Criteria:
+  - the run is invoked as `npm run eval:answer-quality`; with no confirmation flag it prints the plan and the estimated cost, makes no network call, and exits 0
+  - it contacts the provider only with an explicit `--confirm-live-calls` flag, mirroring the gate `scripts/compare-combo-answer-quality.mjs` already ships (REQ-146)
+  - the answer models are a lineup, given as a repeatable `--model` option; the first-ship lineup is `gpt-4.1-mini` (the code default and the baseline), `gpt-4.1`, `gpt-5-mini`, and `gpt-5-nano`. Every gold case is answered once per model per excerpt cap (REQ-190) through the same `preparePromptInput` path, so prompt, retrieval, and cap are identical across models. The judge model (REQ-186) is never in the lineup
+  - the run never reads `OPENAI_MODEL`: `scripts/eval-answer-quality.mjs`'s `parseArgs` takes only CLI arguments, so a stray environment value can never silently swap a contestant
+  - with the confirmation flag but without `ASK_AI_PROVIDER=openai` and `OPENAI_API_KEY`, it fails with an actionable message naming what is missing, not a stack trace from inside the provider factory
+  - before its first paid call, the live run verifies the org has access to every model in the lineup and to the judge model with a single models-list request (`client.models.list()`, never a completion), and fails with an actionable message naming any model that is not available; the dry run performs the same check when a key is present and skips it entirely (no network call at all) when none is
+  - wall-clock latency per call is recorded in the artifact (REQ-189), so the bake-off cannot crown a model the 3-second answer target (NFR-002) cannot use; latency is recorded and reported, never a pass or fail
+  - the mock-first default is preserved: `ASK_AI_PROVIDER` unset stays `mock`, and a checkout with no key and no network can still run the dry plan (canonical mock-first rule, `integrations-and-data.md` Tech Stack)
+  - it is never added to `npm run quality:check`, `npm test`, `npm run test:eval`, `npm run coverage:check`, or `npm run test:scripts`, and never asserted against a golden; a regression-guard test (added in Slice E) asserts the command appears in none of those scripts
+  - provider calls are made sequentially, not concurrently, so a run stays inside the provider's per-minute token limit
+  - every run records, in the artifact (REQ-189): gold-set case ids, tiers, and count, the answer-model lineup, judge model id, rubric revision, `ASK_AI_PROVIDER`, `EMBEDDING_PROVIDER`, model and excerpt cap per leg, git commit, UTC timestamp, per-call prompt characters, per-call input and output token usage, per-call wall-clock latency, and the run's total token usage and cost
+  - the run tooling reports two runs as **incomparable** when their gold set, judge model, rubric revision, or `EMBEDDING_PROVIDER` differ, rather than presenting a misleading delta. Two runs whose answer-model lineups differ are reported as a **model comparison** — the shared models compared, the unshared ones listed — never as incomparable, because a deliberate bake-off is this instrument's first intended use
+  - **no numeric quality target is set by this requirement.** The first live run's scores, token usage, and dollar cost are the recorded baseline that later runs are judged against, in the same way REQ-177 records a retrieval baseline rather than deriving one
+- Constraints:
+  - never auto-score, auto-gate, or fail a build on model answer content (REQ-146, `goals-and-non-goals.md`)
+  - no scheduled or automatic invocation of any kind
+  - no secret is committed; credentials are read from the environment as today
+  - no new dependency: the run uses the already-present `openai` package and existing backend modules
+  - no `AskAiRequest`, Zod schema, route, endpoint, provider-selection, or frontend change
+  - no reasoning-effort, verbosity, or other per-model request parameter is added to the provider call: `openAiResponsesProvider.ts` sends model and prompt only, so gpt-5-family models run at their default reasoning effort in this run. A reasoning-effort setting is a follow-up package, opened only if a gpt-5-family model wins on correctness and its recorded latency misses NFR-002 — never a change made inside this requirement
+- Dependencies:
+  - REQ-186 (the judging it invokes)
+  - REQ-189 (the artifact it writes)
+  - REQ-190 (the excerpt-cap legs it runs)
+  - NFR-018 (the non-gating validation track this belongs to)
+- Notes:
+  - measured 2026-09-07, offline, over the actual 18-case gold set (REQ-185) through the real `preparePromptInput` path (lexical, no live embedding call): the dry run's own cost estimator (`scripts/eval-answer-quality.mjs`'s `estimateCost`) reports 144 answer calls, 144 lone judge calls, and 36 side-by-side ranking calls (324 total) for the four-model lineup at both excerpt caps, at an estimated cost of roughly $2.50 — using the same four-characters-per-token estimate and published list prices this requirement's cost note always used (`gpt-4.1-mini` $0.40/$1.60, `gpt-4.1` $2.00/$8.00, `gpt-5-mini` $0.25/$2.00, `gpt-5-nano` $0.05/$0.40, judge `gpt-5` $1.25/$10.00 per million input/output tokens), because the gpt-5 family bills reasoning tokens as output and the judge makes the most calls. This is an estimate, not a measurement, and re-derives automatically as the gold set or prompt sizes change; the first live run's own recorded usage supersedes it
+  - the code default when `OPENAI_MODEL` is unset is `gpt-4.1-mini` (`apps/backend/src/providers/createAskAiProvider.ts`); the run itself never reads that variable
+
+### REQ-189
+- Title: Answer-quality run artifact
+- Priority: medium
+- Description: An answer-quality run writes a small committed machine-readable scores file and a gitignored human-readable transcript set. The committed file carries scores and run metadata only — no model prose — so two runs diff cleanly and no run output can become a brittle golden.
+- Acceptance Criteria:
+  - the committed file is `apps/backend/src/eval/answer-quality/results.json`, alongside and shaped after the existing committed retrieval results (`apps/backend/src/eval/benchmark/results.json`, `semantic-results.json`), which commit only counts, scores, a timestamp, and a method label. Its writer/reader live in `apps/backend/src/eval/answer-quality/artifact.ts`
+  - it carries: the run metadata REQ-188 requires (gold-set case ids, tier-1/tier-2 counts, the answer-model lineup, judge model id, whether the judge matches an answer model, rubric revision, `ASK_AI_PROVIDER`, `EMBEDDING_PROVIDER`, git commit, UTC timestamp, total input/output token usage, total cost); per leg — a leg is one answer model at one excerpt cap — the model id, the excerpt cap, the case count, and the headline count of cases scoring Correctness 2; per case per leg, the four axis scores (or an `undetermined` flag in place of them), the `namesGoldRuleId` assertion, prompt characters, input/output token usage, wall-clock latency in milliseconds, and the blind rank from REQ-186's side-by-side pass
+  - it carries **no** model prose: `assertNoProse` recursively rejects an `answer`, `answerText`, `rationale`, `promptText`, `prompt`, or `workedSolution` field anywhere in the record, and `writeResultsFile` throws rather than writing when one is present
+  - the full transcripts — assembled prompt, model answer, reference worked solution, assertions, axis scores, and judge rationale per case per leg (`writeTranscript`), plus the side-by-side ranking rationale per case per cap (`writeRankingTranscript`) — are written to `output/answer-quality/`, which is gitignored, following the existing `output/prompt-preview/`, `output/retrieval-relevance-report.txt`, and `output/combo-answer-quality/` convention
+  - no committed artifact is asserted against a stored answer, a stored score, or a golden of any kind; `artifact.test.ts` asserts the results file round-trips and is complete (`validateResultsShape`), never that its values equal a previous run's
+  - a dry run writes nothing: a fresh output directory with no writer call stays empty
+  - the committed results file is replaced, not appended, by each recorded run (`writeResultsFile` overwrites); run-to-run history is the file's git history, so a comparison of two runs is a git diff
+  - the run tooling reports two runs (`compareRuns`) as **incomparable** when their gold set, judge model, rubric revision, or `EMBEDDING_PROVIDER` differ, and as a **model comparison** (shared models compared, unshared ones listed) — never incomparable — when only the answer-model lineup differs
+- Constraints:
+  - the committed file must stay small enough to review in a pull request diff by eye
+  - it is evaluation data and tooling; it never becomes runtime prompt context and adds no runtime dependency or external call
+  - only the dated human-reviewed conclusion becomes durable project history (REQ-186, REQ-146)
+- Dependencies:
+  - REQ-187 (the axes it records)
+  - REQ-188 (the run metadata it records)
+  - REQ-177 (the committed-benchmark-result convention it follows)
+- Notes:
+  - measured 2026-09-05: `apps/backend/src/eval/benchmark/results.json` and `semantic-results.json` are numeric-only files carrying `n`, `k`, per-condition `recall5` and `mrr`, `scoredAt`, and `method` — the shape this follows. `.gitignore` already excludes `output/prompt-preview/`, `output/retrieval-relevance-report.txt`, and `output/combo-answer-quality/`; `output/answer-quality/` joins them (measured 2026-09-07: `git check-ignore -v output/answer-quality/example.json` matches the new `.gitignore` line)
+  - the split exists because model prose is the part that changes every run for reasons unrelated to quality; keeping it out of git is what makes the committed record diffable rather than noisy
+  - measured 2026-09-07 (build): `artifact.test.ts` (15 tests) proves the round-trip, the no-prose guard (including a refusal test with a leaked `rationale` field), the replace-not-append behavior, both transcript writers, and every branch of `compareRuns` (identical lineup, model comparison, and each of the four incomparable reasons). Before the first live run, the committed `results.json` is a valid, structurally-complete placeholder (empty gold set, empty lineup, zero totals) — Slice E's first live run replaces it wholesale
+
+### REQ-190
+- Title: The System 3 excerpt cap is a parameter of the answer-quality run
+- Priority: medium
+- Description: An answer-quality run may answer the same gold case at more than one System 3 supplemental-excerpt cap, for every answer model in the lineup (REQ-188), and score the legs side by side, so the effect of attaching more rule excerpts on the *answer* can be observed. Production retrieval is unchanged: System 3 stays capped at five excerpts (REQ-181, REQ-182, `system-map/game-rules-retrieval.md`).
+- Acceptance Criteria:
+  - the run accepts a repeatable `--excerpt-cap` option, defaulting to `[5, 10]`; each cap value is one leg per answer model, and every gold case is answered once per model per cap in the same run
+  - `apps/backend/src/prompt/preparation.ts` exports one named constant, `DEFAULT_SUPPLEMENTAL_RULE_CAP` (value `5`), used at all four call sites that used to hard-code the literal `5`; `PreparePromptInputOptions.supplementalRuleCap` is an optional override (default: the constant) threaded to the same `retrieveRulesForQueryWithDebug` / `retrieveSupplementalRulesWithDebug` `max` parameter production already uses
+  - with no override, the assembled prompt is byte-identical to the prompt production has always produced, for every gold case — proven for all six originally-committed cases against the real committed rule index and topics (`preparation.test.ts`, REQ-190 describe block)
+  - a larger cap reuses the identical production ranking rather than re-ranking: `retrieveRulesForQueryWithDebug` already returns `runnerUp` as ranks 6–15 of the same scored list, so a cap-10 call's top 5 stays identical to the cap-5 call's, and slots 6–10 are drawn from that same `runnerUp` list — proven directly, not assumed, in `preparation.test.ts`
+  - the run artifact records the model and cap per leg and reports the headline correctness count per model per cap (REQ-189)
+  - the deployed cap stays 5. Changing it requires a recorded run showing a larger cap scored better, and an amendment to REQ-182 and `system-map/game-rules-retrieval.md` — never a change made inside this requirement
+- Constraints:
+  - no change to System 3 query construction (REQ-178), scoring or blending (REQ-182), the committed corpus or embeddings (REQ-181, REQ-183), or the System 2 deduplication (REQ-179)
+  - NFR-002's under-three-second answer target is untouched: the larger cap exists only inside an offline evaluation run and never in a request a player makes
+  - the judge is not told which cap or which model produced an answer (REQ-186)
+- Dependencies:
+  - REQ-182 (the hybrid ranking whose top-N the legs slice)
+  - REQ-181 (the five-excerpt cap and the retrieval seam)
+  - REQ-188 (the run that executes the legs)
+  - REQ-032 (the retrieval measurement this deliberately does not replace)
+- Notes:
+  - measured 2026-09-07 (build): `preparation.ts` lines 228, 272, 317, and 355 each held the literal `5` passed as the retrieval `max` argument; all four now read `options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP`. `npm --workspace apps/backend run typecheck` and the full `preparation.test.ts` suite (14 tests, including the new REQ-190 describe block) pass; `npm run eval:worked-solutions` still reports the same six originally-committed cases as hits at the default cap, over the grown 18-case set
+  - the design brief's earlier measurement (2026-09-06, six committed CR cases only) found the expected rule inside the top 5 for 6 of 6 cases, stable through caps 6, 8, 10, and 15 — so on that seed set a larger cap cannot add a missing rule, and the experiment measures whether extra, lower-confidence excerpts *distract* the model, not whether they improve recall. That saturation measurement covers only the original six CR cases; the twelve cases REQ-185 added (nine more tier 1, three tier 2) are not known to be similarly saturated — measured 2026-09-07, `npm run eval:worked-solutions` misses on the grown set are concentrated in the newer cases (one tier-1, all three tier-2) — so the cap experiment gains recall signal alongside the distraction signal as the set grows, exactly as this requirement anticipated
+  - the driver's context note (`PRD/work/ai-answer-quality-baseline/intake/answer-quality-context.md`) records benchmark recall by depth on 2026-09-06 as top-5 89.7%, top-6 89.7%, top-7 90.4%, top-8 91.0%, top-10 94.2%, with 9 of 156 never reaching the top 10, and excerpts averaging about 70 tokens. Cited as the evidence that the question is worth asking; not adopted as a measurement of this repository's product truth
 
 ### REQ-191
 - Title: Spec-forming runs work in a kickoff worktree off `origin/main` and never mutate the launch checkout

@@ -1,0 +1,80 @@
+{
+  "slug": "ai-answer-quality-baseline",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "preparation.ts has one named, exported excerpt-cap constant used at all four call sites, value 5",
+      "value": true,
+      "evidence": {
+        "command": "npm run test:scripts",
+        "paths": ["apps/backend/src/prompt/preparation.ts"]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "With no cap override the assembled prompt stays byte-identical to the M4 cap-5 baseline for the six gold cases",
+      "value": true,
+      "evidence": {
+        "command": "npm --prefix apps/backend run test|npm run test:scripts"
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "With a cap-10 override the assembled prompt adds excerpts from the same ranking (runnerUp) without changing the top-5",
+      "value": true,
+      "evidence": {
+        "command": "npm --prefix apps/backend run test|npm run test:scripts"
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "eval-answer-quality.test.mjs proves the dry run makes no network call and exits 0",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/eval-answer-quality\\.test\\.mjs",
+        "paths": ["scripts/eval-answer-quality.mjs", "scripts/eval-answer-quality.test.mjs"]
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "With --confirm-live-calls and no OPENAI_API_KEY the script fails with an actionable message, no network call made",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/eval-answer-quality\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "B6",
+      "statement": "The model-access check is a models-list request via an injected fake client and is skipped with no key",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/eval-answer-quality\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "B7",
+      "statement": "parseArgs never reads OPENAI_MODEL for the lineup",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/eval-answer-quality\\.test\\.mjs"
+      }
+    },
+    {
+      "id": "B8",
+      "statement": "npm run test:scripts passes",
+      "value": true,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "B9",
+      "statement": "PRD/sections/functional-requirements.md carries REQ-188 and REQ-190 entries matching the finalized GATE-QUESTIONS.md blocks",
+      "value": true,
+      "evidence": {
+        "paths": ["PRD/sections/functional-requirements.md"]
+      }
+    }
+  ]
+}

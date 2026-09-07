@@ -18,12 +18,15 @@
 //   npm run eval:worked-solutions
 //   npm run eval:worked-solutions -- --output output/worked-solutions-report.txt
 
-import { readdir, readFile, writeFile, mkdir } from "node:fs/promises";
+import { writeFile, mkdir } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
+import { CASES_DIR, loadGoldCases } from "./lib/gold-cases.mjs";
+
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
-export const CASES_DIR = join(repoRoot, "apps/backend/src/eval/worked-solutions");
+
+export { CASES_DIR };
 
 export function parseArgs(argv) {
   const getFlag = (name) => {
@@ -34,18 +37,13 @@ export function parseArgs(argv) {
   return { outputPath: outputPath ? resolve(repoRoot, outputPath) : undefined };
 }
 
-/** Reads every `*.case.json` file in the worked-solutions directory. */
+/**
+ * Reads every `*.case.json` file in the worked-solutions directory through
+ * the shared gold-case loader (REQ-185), so this retrieval check and the
+ * answer-quality run never diverge into separate readers of the same files.
+ */
 export async function loadCases(casesDir = CASES_DIR) {
-  const fileNames = (await readdir(casesDir)).filter((name) => name.endsWith(".case.json")).sort();
-  const cases = [];
-  for (const fileName of fileNames) {
-    const parsed = JSON.parse(await readFile(join(casesDir, fileName), "utf8"));
-    if (typeof parsed.id !== "string" || typeof parsed.question !== "string") {
-      throw new Error(`Malformed worked-solutions case ${fileName}: needs at least id and question.`);
-    }
-    cases.push(parsed);
-  }
-  return cases;
+  return loadGoldCases(casesDir);
 }
 
 /** One case's retrieval-recall result. */

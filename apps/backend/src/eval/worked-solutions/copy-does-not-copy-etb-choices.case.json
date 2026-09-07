@@ -1,0 +1,19 @@
+{
+  "id": "copy-does-not-copy-etb-choices",
+  "tier": 1,
+  "question": "A creature has an ability that says 'as this creature enters, choose a creature type.' Later, something enters the battlefield as a copy of that creature. Does the copy automatically get the same creature type that was already chosen for the original, since it's copying that permanent?",
+  "expectedSupplementalRuleIds": ["707.6"],
+  "workedSolution": "A Clone enters the battlefield as a copy of Adaptive Automaton. Adaptive Automaton reads, in part, “As this creature enters, choose a creature type.” The Clone won’t copy the creature type choice of the Automaton; rather, the controller of the Clone will get to make a new choice.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "707.6",
+    "sectionTitle": "Copying Objects",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "Copy effects copy the printed/copiable characteristics of a permanent, and players extend that to mean every choice ever made for it comes along too. Choices made 'as this enters' are not part of the copiable values, so a copy gets to make its own fresh choice instead of inheriting the original's."
+}

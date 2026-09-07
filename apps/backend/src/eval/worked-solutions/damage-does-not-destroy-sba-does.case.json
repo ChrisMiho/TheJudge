@@ -1,0 +1,19 @@
+{
+  "id": "damage-does-not-destroy-sba-does",
+  "tier": 1,
+  "question": "I cast a burn spell that deals 3 damage to a 2/2 creature. Does that spell destroy the creature directly, the moment the damage is dealt, or does something else actually put it in the graveyard?",
+  "expectedSupplementalRuleIds": ["120.5"],
+  "workedSolution": "A player casts Lightning Bolt, an instant that says “Lightning Bolt deals 3 damage to any target,” targeting a 2/2 creature. After Lightning Bolt deals 3 damage to that creature, the creature is destroyed as a state-based action. Neither Lightning Bolt nor the damage dealt by Lightning Bolt destroyed that creature.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "120.5",
+    "sectionTitle": "Damage",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "It feels natural to say the burn spell \"killed\" the creature, and most players describe it that way at the table. Mechanically, damage and destruction are separate events: the spell only marks damage, and it's a state-based action -- checked afterward, with no one needing to do anything -- that actually destroys a creature with lethal damage marked on it. The distinction matters whenever something cares about how a permanent left the battlefield."
+}

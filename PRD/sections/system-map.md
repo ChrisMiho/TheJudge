@@ -469,9 +469,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Eval harness
 
 - Status: shipped
-- Summary: Context-evaluation harness with fixtures, golden comparisons, and labeled retrieval-relevance checks over prompt assembly and retrieval.
+- Summary: Context-evaluation harness with fixtures, golden comparisons, labeled retrieval-relevance checks over prompt assembly and retrieval, and an on-demand answer-quality baseline that scores the model's final answer against published worked solutions.
 - Lives in: `apps/backend/src/eval/`
-- Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032
+- Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032, NFR-018, REQ-185
 
 ### Context evaluation harness
 
@@ -492,6 +492,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Status: shipped
 - Summary: Digestible before/after report (System 2 topics, System 3 top-5 with scores, recall hit/miss) for tuning review. It models production retrieval the same way the eval harness does — same card-detail resolution, same query construction — and a parity test asserts the two return the same per-scenario verdict, so report output cannot drift from the gate (REQ-177). Before REQ-177 the claim was aspirational and untrue: after REQ-176 moved card-text resolution server-side, the report passed no card-detail index and reported three false scenario failures.
 - Lives in: `scripts/retrieval-relevance-report.mjs`, `apps/backend/src/eval/retrievalReportInputs.ts`, `apps/backend/src/eval/contextEvaluationHarness.ts` (`buildRelevanceReport`)
+
+### Answer-quality baseline
+
+- Status: planned
+- Summary: On-demand, confirmation-gated run that asks each model in a configured lineup every gold case and scores the returned answer against that case's published solution — deterministic assertions, a reference-grounded judge model stronger than every contestant, scoring alone and ranking blind side by side over four 0–2 axes, then a human review pass. Never in `quality:check`, never asserted against a golden, never a build gate. Answers each case once per System 3 excerpt cap so the deployed five-excerpt limit can be compared against a larger one on the same questions; production stays at five. Writes a small committed scores file and gitignored transcripts.
+- Lives in: `apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/answer-quality/`, `scripts/eval-answer-quality.mjs`
+- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190
 - Backed by: DEC-047, REQ-032, REQ-177
 
 ## AWS production deployment
