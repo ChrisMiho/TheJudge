@@ -14,6 +14,10 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| Package | Note |
+| --- | --- |
+| [weekly-data-refresh-pr](weekly-data-refresh-pr/) | Weekly one-command local script: refresh Magic-data artifacts (`data:refresh`), open a PR to `main` to keep Trade Balancer prices fresh |
+
 ## owner-action
 
 ## deferred
