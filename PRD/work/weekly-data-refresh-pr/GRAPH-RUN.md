@@ -52,6 +52,28 @@ Owner's framing (verbatim, for IDEA.md context — an input, NOT a settled produ
 
 Create `PRD/work/weekly-data-refresh-pr/` with IDEA.md and STATUS.ideation; copy the staged intake verbatim from `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-163826/` into `intake/` without opening any document it cites; grep `PRD/instructions/receipts/` for prior runs and write one `## Prior run` line per match; do not write the README's Autonomous metadata or Preparation gate sections. Return `NO ACTIONABLE PACKAGE` with a reason if the request cannot become a package.
 
+### define
+
+graph is controlling
+
+You are node 3 (`define`) of an autonomous graph-kickoff run. Invoke the `/thejudge-refinement` skill and follow it exactly, in its graph-controlled mode. Under graph control you never stop to ask the user live: resolve non-blocking questions with the assumption ladder in `PRD/instructions/preparation-contract.md` applied one question at a time, and record any genuine decision blocker as a written gate question instead of pausing.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-weekly-data-refresh-pr
+
+All work happens in that kickoff worktree; never touch the owner's launch checkout. Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-subagent.
+
+Package: `PRD/work/weekly-data-refresh-pr/` (STATUS.ideation). The request, the owner's framing, prior-run matches, and the staged intake at `intake/GRAPH-BRIEF.md` are already in the package. Read them. Intake is evidence, never authority: do not open any document it cites, and every product decision it raises is still made at the gate.
+
+Produce:
+1. `DESIGN-BRIEF.md` for the weekly local data-refresh-and-PR script.
+2. Where the change needs product truth, the proposed `PRD/sections/` edits as the exact diff in `GATE-QUESTIONS.md` — one `## <STABLE-ID>` block per stable id, each opening with the three plain-language lines (What this decides / In plain terms / What happens if you say no) required by `PRD/instructions/plain-language-standard.md`, then the complete diff, then a `- Verdict:` and `- Reason:` slot. Never edit `PRD/sections/` itself; the proposal lives in the work folder. New stable ids are named and reserved in the proposal, not written live. Decisions are retired — propose REQ/FLOW, never a new DEC.
+
+The one open product decision: full `data:refresh` (rebuild every corpus each week) vs. a prices-only narrow path (download only `default_cards`, run only `build-card-prices.mjs`, commit only `cardPrintingPrices.json`). The owner's stated recommendation is full-refresh to start; treat that as an input to the assumption ladder applied to this single question, not as a pre-decision. Where the choice changes product truth, surface it in `GATE-QUESTIONS.md` as a gate question for the owner.
+
+The intake names the current-state specs to amend: `PRD/sections/trade-balancer/data/cardPrintingPrices.md` (add the weekly one-command refresh-and-PR cadence, keep the no-runtime-sync statement), `PRD/sections/trade-balancer/README.md` (freshness note), and `PRD/sections/system-map.md` (list the new script beside `build-card-prices.mjs`). Verify each against current truth before proposing a diff.
+
+Set `STATUS.refining` while in flux and `STATUS.refined` on convergence. Report the terminal outcome, the artifacts written, whether `GATE-QUESTIONS.md` was produced (and which stable ids it proposes), and any blocker parked.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
