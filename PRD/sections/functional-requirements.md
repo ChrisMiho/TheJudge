@@ -4405,6 +4405,32 @@
   - measured 2026-09-07, offline, over the actual 18-case gold set (REQ-185) through the real `preparePromptInput` path (lexical, no live embedding call): the dry run's own cost estimator (`scripts/eval-answer-quality.mjs`'s `estimateCost`) reports 144 answer calls, 144 lone judge calls, and 36 side-by-side ranking calls (324 total) for the four-model lineup at both excerpt caps, at an estimated cost of roughly $2.50 — using the same four-characters-per-token estimate and published list prices this requirement's cost note always used (`gpt-4.1-mini` $0.40/$1.60, `gpt-4.1` $2.00/$8.00, `gpt-5-mini` $0.25/$2.00, `gpt-5-nano` $0.05/$0.40, judge `gpt-5` $1.25/$10.00 per million input/output tokens), because the gpt-5 family bills reasoning tokens as output and the judge makes the most calls. This is an estimate, not a measurement, and re-derives automatically as the gold set or prompt sizes change; the first live run's own recorded usage supersedes it
   - the code default when `OPENAI_MODEL` is unset is `gpt-4.1-mini` (`apps/backend/src/providers/createAskAiProvider.ts`); the run itself never reads that variable
 
+### REQ-189
+- Title: Answer-quality run artifact
+- Priority: medium
+- Description: An answer-quality run writes a small committed machine-readable scores file and a gitignored human-readable transcript set. The committed file carries scores and run metadata only — no model prose — so two runs diff cleanly and no run output can become a brittle golden.
+- Acceptance Criteria:
+  - the committed file is `apps/backend/src/eval/answer-quality/results.json`, alongside and shaped after the existing committed retrieval results (`apps/backend/src/eval/benchmark/results.json`, `semantic-results.json`), which commit only counts, scores, a timestamp, and a method label. Its writer/reader live in `apps/backend/src/eval/answer-quality/artifact.ts`
+  - it carries: the run metadata REQ-188 requires (gold-set case ids, tier-1/tier-2 counts, the answer-model lineup, judge model id, whether the judge matches an answer model, rubric revision, `ASK_AI_PROVIDER`, `EMBEDDING_PROVIDER`, git commit, UTC timestamp, total input/output token usage, total cost); per leg — a leg is one answer model at one excerpt cap — the model id, the excerpt cap, the case count, and the headline count of cases scoring Correctness 2; per case per leg, the four axis scores (or an `undetermined` flag in place of them), the `namesGoldRuleId` assertion, prompt characters, input/output token usage, wall-clock latency in milliseconds, and the blind rank from REQ-186's side-by-side pass
+  - it carries **no** model prose: `assertNoProse` recursively rejects an `answer`, `answerText`, `rationale`, `promptText`, `prompt`, or `workedSolution` field anywhere in the record, and `writeResultsFile` throws rather than writing when one is present
+  - the full transcripts — assembled prompt, model answer, reference worked solution, assertions, axis scores, and judge rationale per case per leg (`writeTranscript`), plus the side-by-side ranking rationale per case per cap (`writeRankingTranscript`) — are written to `output/answer-quality/`, which is gitignored, following the existing `output/prompt-preview/`, `output/retrieval-relevance-report.txt`, and `output/combo-answer-quality/` convention
+  - no committed artifact is asserted against a stored answer, a stored score, or a golden of any kind; `artifact.test.ts` asserts the results file round-trips and is complete (`validateResultsShape`), never that its values equal a previous run's
+  - a dry run writes nothing: a fresh output directory with no writer call stays empty
+  - the committed results file is replaced, not appended, by each recorded run (`writeResultsFile` overwrites); run-to-run history is the file's git history, so a comparison of two runs is a git diff
+  - the run tooling reports two runs (`compareRuns`) as **incomparable** when their gold set, judge model, rubric revision, or `EMBEDDING_PROVIDER` differ, and as a **model comparison** (shared models compared, unshared ones listed) — never incomparable — when only the answer-model lineup differs
+- Constraints:
+  - the committed file must stay small enough to review in a pull request diff by eye
+  - it is evaluation data and tooling; it never becomes runtime prompt context and adds no runtime dependency or external call
+  - only the dated human-reviewed conclusion becomes durable project history (REQ-186, REQ-146)
+- Dependencies:
+  - REQ-187 (the axes it records)
+  - REQ-188 (the run metadata it records)
+  - REQ-177 (the committed-benchmark-result convention it follows)
+- Notes:
+  - measured 2026-09-05: `apps/backend/src/eval/benchmark/results.json` and `semantic-results.json` are numeric-only files carrying `n`, `k`, per-condition `recall5` and `mrr`, `scoredAt`, and `method` — the shape this follows. `.gitignore` already excludes `output/prompt-preview/`, `output/retrieval-relevance-report.txt`, and `output/combo-answer-quality/`; `output/answer-quality/` joins them (measured 2026-09-07: `git check-ignore -v output/answer-quality/example.json` matches the new `.gitignore` line)
+  - the split exists because model prose is the part that changes every run for reasons unrelated to quality; keeping it out of git is what makes the committed record diffable rather than noisy
+  - measured 2026-09-07 (build): `artifact.test.ts` (15 tests) proves the round-trip, the no-prose guard (including a refusal test with a leaked `rationale` field), the replace-not-append behavior, both transcript writers, and every branch of `compareRuns` (identical lineup, model comparison, and each of the four incomparable reasons). Before the first live run, the committed `results.json` is a valid, structurally-complete placeholder (empty gold set, empty lineup, zero totals) — Slice E's first live run replaces it wholesale
+
 ### REQ-190
 - Title: The System 3 excerpt cap is a parameter of the answer-quality run
 - Priority: medium

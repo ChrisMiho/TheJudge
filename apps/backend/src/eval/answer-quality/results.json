@@ -1,0 +1,20 @@
+{
+  "runMetadata": {
+    "goldSetCaseIds": [],
+    "goldSetTier1Count": 0,
+    "goldSetTier2Count": 0,
+    "answerModelLineup": [],
+    "judgeModel": "",
+    "judgeMatchesAnswerModel": false,
+    "rubricRevision": "",
+    "askAiProvider": "",
+    "embeddingProvider": "",
+    "gitCommit": "",
+    "generatedAt": "",
+    "totalInputTokens": 0,
+    "totalOutputTokens": 0,
+    "totalCostUsd": 0
+  },
+  "legs": [],
+  "caseLegScores": []
+}

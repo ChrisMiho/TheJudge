@@ -1,6 +1,6 @@
 # Slice D — artifact-and-transcripts
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -39,26 +39,26 @@ gitignored folder — never asserted byte-for-byte against a stored answer.
 
 ## Acceptance criteria
 
-- [ ] D1. A writer module (`apps/backend/src/eval/answer-quality/artifact.ts`)
+- [x] D1. A writer module (`apps/backend/src/eval/answer-quality/artifact.ts`)
       round-trips a constructed run record through `results.json` and a test
       asserts every required field listed in Requirement 1 is present after
       reading it back.
-- [ ] D2. The same test asserts the file contains no model prose (no answer
+- [x] D2. The same test asserts the file contains no model prose (no answer
       text, no judge rationale, no prompt text) — only scores and metadata.
-- [ ] D3. A test asserts the writer places full transcripts (prompt, answer,
+- [x] D3. A test asserts the writer places full transcripts (prompt, answer,
       reference, assertions, axis scores, rationale, ranking rationale) under
       `output/answer-quality/` and that a dry run writes nothing there or to
       the committed file.
-- [ ] D4. `.gitignore` gains an `output/answer-quality/` entry; a test (or the
-      existing gitignore-pattern test, if one exists) asserts the pattern
-      matches paths under that folder.
-- [ ] D5. A test asserts two run records differing only in `EMBEDDING_PROVIDER`,
+- [x] D4. `.gitignore` gains an `output/answer-quality/` entry; a test asserts
+      the pattern matches paths under that folder, proven both by
+      `artifact.test.ts` (spawning `git check-ignore`) and directly at build.
+- [x] D5. A test asserts two run records differing only in `EMBEDDING_PROVIDER`,
       gold-set case ids, judge model, or rubric revision are reported
       `incomparable`, and two run records differing only in answer-model
       lineup are reported a `modelComparison` naming the shared and unshared
       models — never `incomparable`.
-- [ ] D6. `npm run test:scripts` and the backend test suite pass.
-- [ ] D7. `PRD/sections/functional-requirements.md` carries a `### REQ-189`
+- [x] D6. `npm run test:scripts` and the backend test suite pass.
+- [x] D7. `PRD/sections/functional-requirements.md` carries a `### REQ-189`
       entry matching the finalized `GATE-QUESTIONS.md` block, re-derived
       against current truth.
 
@@ -72,7 +72,9 @@ git check-ignore -v output/answer-quality/example.json
 
 ## Files touched
 
-- `apps/backend/src/eval/answer-quality/results.json` (new, committed)
+- `apps/backend/src/eval/answer-quality/results.json` (new, committed —
+  a structurally valid placeholder: empty gold set, empty lineup, zero
+  totals, until Slice E's first live run replaces it wholesale)
 - `apps/backend/src/eval/answer-quality/artifact.ts` (new)
 - `apps/backend/src/eval/answer-quality/artifact.test.ts` (new)
 - `.gitignore`
