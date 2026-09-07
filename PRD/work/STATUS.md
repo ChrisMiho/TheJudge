@@ -10,11 +10,11 @@ Do not rename package folders to encode status.
 
 ## refined
 
+## refining
+
 | Package | Notes |
 | --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Define gate answered and applied 2026-09-06 (6 edit / 4 accept); docs PR #200 awaits owner merge, then `graph-implement` resumes at `gate-qc` |
-
-## refining
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | gate-qc (build half, attempt 1) FAILed 2026-09-07: DESIGN-BRIEF.md contradicts the finalized, owner-edited GATE-QUESTIONS.md on gold-set size, the answer-model lineup, the judge default, and the cost estimate; REQ-185's tier-1 source (`apps/backend/data/cr/source.txt`) is also mischaracterized as committed when it is gitignored and absent from this checkout |
 
 ## ideation
 

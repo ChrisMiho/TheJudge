@@ -1,5 +1,5 @@
 ---
-status: refined
+status: refining
 ---
 
 # ai-answer-quality-baseline
