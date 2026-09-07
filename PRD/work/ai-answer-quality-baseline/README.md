@@ -23,7 +23,7 @@ approved proposal alongside the code.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/ai-answer-quality-baseline
+- Autonomous base: origin/main
 
 ## Preparation gate
 
