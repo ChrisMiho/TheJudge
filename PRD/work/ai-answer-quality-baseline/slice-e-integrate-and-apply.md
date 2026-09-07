@@ -154,7 +154,7 @@ build worktree. Two runs were made; the second is the committed baseline.
 
 - **Run 1, `EMBEDDING_PROVIDER` unset (mock embedder), 06:47 UTC** — 324
   calls, $0.67 actual. Kept for comparison under
-  `output/answer-quality-mock-embeddings-2026-09-07/` (gitignored), with its
+  `output/answer-quality/mock-embeddings-2026-09-07/` (gitignored), with its
   scorecard as `results.mock-embeddings.json` there. Not the baseline: the
   deployed app runs the local embedder (REQ-184), and the eval script does
   not set `EMBEDDING_PROVIDER` itself, so this run held retrieval fixed to the
