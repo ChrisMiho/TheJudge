@@ -5,7 +5,7 @@
     {
       "id": "C1",
       "statement": "Rubric module exports four axes with a revision id; no code path weights them into one composite",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["apps/backend/src/eval/answer-quality/rubric.ts"]
       }
@@ -13,7 +13,7 @@
     {
       "id": "C2",
       "statement": "assertions.test.ts proves namesGoldRuleId, non-empty, and length are computed correctly",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["apps/backend/src/eval/answer-quality/assertions.ts", "apps/backend/src/eval/answer-quality/assertions.test.ts"],
         "command": "npm --prefix apps/backend run test"
@@ -22,7 +22,7 @@
     {
       "id": "C3",
       "statement": "judge.test.ts proves the lone-judge call sends question/ruleIds/answer/workedSolution/rubric to a fake client and parses four axis scores",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["apps/backend/src/eval/answer-quality/judge.ts", "apps/backend/src/eval/answer-quality/judge.test.ts"],
         "command": "npm --prefix apps/backend run test"
@@ -31,7 +31,7 @@
     {
       "id": "C4",
       "statement": "A malformed or erroring fake-client response is recorded as undetermined, never a numeric score",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --prefix apps/backend run test"
       }
@@ -39,7 +39,7 @@
     {
       "id": "C5",
       "statement": "The blind-ranking function hides model identity and shuffles order before the call, then maps rank back correctly",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --prefix apps/backend run test"
       }
@@ -47,7 +47,7 @@
     {
       "id": "C6",
       "statement": "Judge model defaults to gpt-5, honors ANSWER_QUALITY_JUDGE_MODEL, and a lineup-match is flagged",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --prefix apps/backend run test"
       }
@@ -55,7 +55,7 @@
     {
       "id": "C7",
       "statement": "npm run test:scripts and the backend test suite pass with no live provider call made by any test",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts|npm --prefix apps/backend run test"
       }
@@ -63,7 +63,7 @@
     {
       "id": "C8",
       "statement": "PRD/sections/functional-requirements.md carries REQ-186 and REQ-187 entries matching the finalized GATE-QUESTIONS.md blocks",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["PRD/sections/functional-requirements.md"]
       }

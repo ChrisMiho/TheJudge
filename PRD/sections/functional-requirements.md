@@ -4316,6 +4316,61 @@
   - the same six original cases are already the gold half of REQ-177's 156-pair retrieval benchmark (150 synthetic pairs plus these 6), so the answer instrument and the retrieval benchmark share their ground truth rather than maintaining two sets
   - eighteen cases across two tiers is still a small seed. It is honest signal on hard cases rather than broad signal on easy ones, and the two-tier entry bar above is what keeps it honest as it grows; tier-1 and tier-2 scores are reported with their tier so the two are never pooled without saying so
 
+### REQ-186
+- Title: Answer-quality judging is grounded, layered, and human-confirmed
+- Priority: medium
+- Description: Each answer produced by an answer-quality run is scored by four layers in order — deterministic assertions, a reference-grounded model judge that scores each answer alone, a blind side-by-side ranking pass across every answer to the same question, and a human review pass over the written record. The model judge is given the gold case's published worked solution as the reference answer and asked only whether the model's answer agrees with it; it is never asked to rule on Magic rules from its own knowledge. The judge model is stronger than every answer model in the run and is never one of them.
+- Acceptance Criteria:
+  - layer 1, deterministic and free: for each gold case the run records whether the answer names the gold rule id, whether it is non-empty, and its length (`apps/backend/src/eval/answer-quality/assertions.ts`); these need no model call and are computed identically on every run
+  - layer 2, the lone model judge: one call per answer, carrying the question, the assembled prompt's supplemental rule ids, the model's answer, the case's `workedSolution` as the reference answer, and the rubric (REQ-187); it returns a score per axis plus a one-paragraph rationale (`apps/backend/src/eval/answer-quality/judge.ts`, `judgeAnswerAlone`)
+  - the judge is instructed that the reference answer is authoritative and that its task is agreement, not independent adjudication; a judge call that errors, or whose response cannot be parsed into four in-range axis scores plus a rationale, returns an explicit `undetermined` rather than guessing, and `undetermined` is reported, never silently counted as a pass or a fail
+  - the judge model is selected by its own explicit setting, `ANSWER_QUALITY_JUDGE_MODEL` (`resolveJudgeModel`), recorded in the run artifact, and defaults to `gpt-5` when unset — mirroring the explicit-selection seam `ASK_AI_PROVIDER` and `EMBEDDING_PROVIDER` already use, so a judge change is visible in the artifact rather than invisible in a score. It never defaults to an answer model, and `judgeMatchesAnswerModel` flags any run whose judge model id matches an answer model id
+  - layer 2b, the blind ranking (`judgeBlindRanking`): for each gold case at each excerpt cap, after every answer has been scored alone, one further judge call sees all answers to that question side by side — model labels hidden (anonymous `Answer A/B/C/...` labels) and presentation order shuffled per case — together with the reference answer and the rubric, and ranks them by agreement with the reference; the harness (never the judge) knows the label-to-model mapping, so the rank is always recoverable per real model id (REQ-189). Side-by-side ranking is more reliable than lone scores and is what makes the model comparison (REQ-188) trustworthy
+  - the rubric text carries a revision identifier (REQ-187's `RUBRIC_REVISION`), recorded in the run artifact; two runs are comparable only when their judge model and rubric revision match, and the run tooling says so explicitly when they do not
+  - layer 3, the human pass: the run writes the full per-case record (prompt, answer, reference answer, assertions, judge scores, judge rationale) for review, and only the dated human-reviewed conclusion becomes durable project history — matching REQ-146's posture for the combo answer-quality comparison
+  - the judge call is evaluation tooling only: `apps/backend/src/eval/answer-quality/judge.ts` does not import `AskAiProvider`, does not build an `AskAiRequest`, and does not touch any product code path — it uses the same minimal Responses-API client shape (`{ responses: { create(...) } }`) `openAiResponsesProvider.ts` already depends on, with an injectable client so no test ever makes a network call
+- Constraints:
+  - never auto-gate or fail a build on a judge score (REQ-188)
+  - no new dependency: the judge uses the `openai` package the backend already depends on, and reads credentials from the environment; no key is ever committed
+  - the judge never sees which excerpt-cap leg or which answer model produced an answer, in the lone scoring or in the side-by-side ranking, so neither the cap comparison (REQ-190) nor the model comparison (REQ-188) is biased by a label or by position
+  - a judge failure (provider error, malformed response) is recorded as `undetermined` for that case; the run continues and reports how many cases were undetermined
+- Dependencies:
+  - REQ-185 (the gold cases and their reference answers)
+  - REQ-187 (the rubric the judge scores against)
+  - REQ-188 (the command that runs it and its cost posture)
+  - REQ-146 (the human-reviewed, never-gating precedent this follows)
+- Notes:
+  - the alternatives considered and rejected: a model judge alone drifts, so a judge swap would read as a quality change; a human pass alone does not scale past six cases and yields no comparable number; assertions alone cannot see hedging, grounding, or readability
+  - grounding the judge in the published worked solution is what makes a model judge defensible here. It is only possible because every gold case already carries that text (REQ-185), and it is the reason the gold set may never accept a hand-authored answer key
+  - every provider call is stateless, so a "fresh session" between answerer and judge is guaranteed by construction and is not the concern; the concern is shared weights, which is why the judge is a different and stronger model. The judge prompt carries the question, answer, reference, rule ids, and rubric — not the 10k-character assembled prompt — so a stronger judge costs little per call
+  - measured 2026-09-07 (build): `judge.test.ts` (15 tests) proves the lone pass sends question/ruleIds/answer/workedSolution/rubric to the client and parses four in-range axis scores plus a rationale, records `undetermined` on a client error and on every malformed-response shape tried (out-of-range score, missing field, non-JSON prose), and that the blind-ranking pass never includes a real model id in the prompt it sends and correctly maps an arbitrary shuffle permutation's labels back to the right model id
+
+### REQ-187
+- Title: Answer-quality scoring axes
+- Priority: medium
+- Description: An answer-quality run scores each answer on four axes, each 0–2, against the gold case's published worked solution. Correctness is the run's single headline figure; the other three axes are diagnostic and explain movement rather than defining it.
+- Acceptance Criteria:
+  - **Correctness (0–2)** — 2: reaches the same outcome as the published worked solution; 1: partially right, or right with a material error or omission; 0: reaches a different outcome. This is the only axis that produces the headline figure
+  - **Grounding (0–2)** — 2: the answer's reasoning uses the supplemental rule excerpts the prompt actually attached and names the gold rule id; 1: uses them without naming the rule, or names it without using it; 0: neither
+  - **Calibration (0–2)** — 2: as definite as the published solution is, and no more; 1: over-hedged or mildly overconfident; 0: refuses a question the reference answers, or states a firm answer the reference does not support
+  - **Readability (0–2)** — 2: a player at a table can act on it as written; 1: correct but needs re-reading; 0: unusable at a table
+  - the headline figure a run reports is the count of gold cases scoring Correctness 2, out of the gold-set size, per excerpt-cap leg — for example `4/6 fully correct at cap 5, 3/6 at cap 10` (`apps/backend/src/eval/answer-quality/rubric.ts`, `countFullyCorrect`)
+  - the deterministic assertion `namesGoldRuleId` (REQ-186 layer 1) is recorded per case alongside the axes and is not folded into any axis score
+  - no axis for WotC card-ruling citation is defined: at first ship the gold set's tier-2 cases (REQ-185) are scored by the same four axes as tier 1; a card-ruling-specific axis may be added once enough tier-2 signal exists to justify one, as an amendment to this requirement with a rubric-revision bump
+  - the four axis names, their 0/1/2 definitions, and the rubric revision identifier live in one committed rubric file (`apps/backend/src/eval/answer-quality/rubric.ts`) and are the exact text sent to the judge (`formatRubricForJudge`); the run artifact records that revision (REQ-186)
+- Constraints:
+  - no axis is ever combined into a single weighted quality score; a weighted composite hides which axis moved and invites tuning the weights instead of the product
+  - no numeric pass threshold is set on any axis (REQ-188); the first run's scores are the recorded baseline
+  - axes are added or changed only by amending this requirement and bumping the rubric revision, so a score change and a rubric change are never confused
+- Dependencies:
+  - REQ-186 (the judge that applies these axes)
+  - REQ-185 (the reference answers they are scored against)
+  - REQ-189 (the artifact that records them)
+- Notes:
+  - the intake's candidate axes were rules correctness, use of supplied context, citation of WotC rulings/CR, hedging vs. overconfidence, and length/readability (`PRD/work/ai-answer-quality-baseline/intake/IDEA.md`). Four survive as the axes above; the WotC-ruling axis is dropped for the measured reason recorded in the criteria
+  - the deliberate choice of a 0–2 scale over a wider one: with six cases, a finer scale invents precision the sample cannot support, and a coarse scale is what a human reviewer can confirm or overturn on the third layer
+  - the rubric revision at first ship is `2026-09-07.1` (`RUBRIC_REVISION`)
+
 ### REQ-188
 - Title: Answer-quality runs are on demand, confirmation-gated, and never a build gate
 - Priority: medium

@@ -1,6 +1,6 @@
 # Slice C — judge-and-rubric
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -47,32 +47,31 @@ always stronger than every contestant and never one of them.
 
 ## Acceptance criteria
 
-- [ ] C1. The rubric module exports the four axes, their 0/1/2 text, and a
+- [x] C1. The rubric module exports the four axes, their 0/1/2 text, and a
       revision identifier; a test asserts no code path combines the axes into
       a single weighted score.
-- [ ] C2. `assertions.test.ts` asserts `namesGoldRuleId` correctly detects
+- [x] C2. `assertions.test.ts` asserts `namesGoldRuleId` correctly detects
       presence/absence of the gold rule id in sample answer text, and that
       non-empty/length are computed correctly.
-- [ ] C3. `judge.test.ts` asserts the lone-judge function sends the question,
+- [x] C3. `judge.test.ts` asserts the lone-judge function sends the question,
       rule ids, answer, `workedSolution`, and rubric text to an injected fake
       client and parses back four axis scores plus a rationale, with no real
       network call.
-- [ ] C4. The same test asserts a malformed or erroring fake-client response
+- [x] C4. The same test asserts a malformed or erroring fake-client response
       is recorded as `undetermined`, never as a numeric score.
-- [ ] C5. `judge.test.ts` asserts the blind-ranking function hides model
+- [x] C5. `judge.test.ts` asserts the blind-ranking function hides model
       identity and shuffles order before the call, and maps the returned rank
       back to the correct model afterward (order is recoverable by the
       harness, never disclosed to the judge).
-- [ ] C6. A test asserts the judge model defaults to `gpt-5` when
+- [x] C6. A test asserts the judge model defaults to `gpt-5` when
       `ANSWER_QUALITY_JUDGE_MODEL` is unset, honors the env var when set, and
-      that a mismatch (judge id equals a lineup model id) is flagged by the
-      module's returned metadata.
-- [ ] C7. `npm run test:scripts` and the backend test suite covering these new
+      that a mismatch (judge id equals a lineup model id) is flagged.
+- [x] C7. `npm run test:scripts` and the backend test suite covering these new
       files both pass, with zero live provider calls made by any test (proven
       by the fake client never receiving a real API key or making an HTTP
       call — enforced by using an injected client with no network access in
       the test harness).
-- [ ] C8. `PRD/sections/functional-requirements.md` carries `### REQ-186` and
+- [x] C8. `PRD/sections/functional-requirements.md` carries `### REQ-186` and
       `### REQ-187` entries matching the finalized `GATE-QUESTIONS.md` blocks,
       re-derived against current truth.
 
@@ -86,8 +85,23 @@ npm --prefix apps/backend run test
 ## Files touched
 
 - `apps/backend/src/eval/answer-quality/rubric.ts` (new)
+- `apps/backend/src/eval/answer-quality/rubric.test.ts` (new)
 - `apps/backend/src/eval/answer-quality/assertions.ts` (new)
 - `apps/backend/src/eval/answer-quality/assertions.test.ts` (new)
 - `apps/backend/src/eval/answer-quality/judge.ts` (new)
 - `apps/backend/src/eval/answer-quality/judge.test.ts` (new)
 - `PRD/sections/functional-requirements.md` (REQ-186, REQ-187, new entries)
+
+## Notes
+
+C6's "flagged by the module's returned metadata" is implemented as a
+standalone pure function, `judgeMatchesAnswerModel(judgeModel, lineupModelIds)`,
+rather than a field attached to every judge call's return value — Slice E's
+wiring calls it once per run (not once per call) to compute the artifact's
+mismatch flag, which is the natural place for a run-level fact like this to
+live. `DEFAULT_JUDGE_MODEL` / `resolveJudgeModel` currently exist in both
+`scripts/eval-answer-quality.mjs` (Slice B, for the dry-run plan) and
+`apps/backend/src/eval/answer-quality/judge.ts` (this slice, same value,
+independently testable). Slice E's end-to-end wiring consolidates
+`eval-answer-quality.mjs` to import the judge module's copy instead of
+keeping its own, per `technical-design-rules.md`'s reuse-before-creating rule.
