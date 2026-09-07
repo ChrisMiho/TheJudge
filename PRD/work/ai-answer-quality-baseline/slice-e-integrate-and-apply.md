@@ -7,10 +7,16 @@
   guard, the worked-solutions README, all four `PRD/sections/` amendments,
   `npm run quality:check` green). Wiring is complete and committed.
 - Done 2026-09-07 (E9): the first live run, cleared by the owner in session
-  and executed by the driver — see `## First live run` below. `results.json`
-  now holds real data (`embeddingProvider: local`, `gitCommit: 549b12c`).
-- Next: the owner reads the record (E10). Exact steps are in
-  `## Owner steps for E9 and E10` below; only steps 4–6 remain.
+  and executed by the driver — see `## First live run` below.
+- Done 2026-09-07, later (instrument corrected, run 3): the first two runs
+  asked tier-2 cases without their card and never embedded the question, so
+  both ranked lexically under a `local` label. Fixed in
+  `scripts/eval-answer-quality.mjs` and re-run; `results.json` now holds run
+  3 (`embeddingProvider: local`, semantic for all 18 cases, `gitCommit:
+  b3f860f`). See `## Third live run — instrument corrected`.
+- Next: the owner reads the record (E10) from run 3's transcripts under
+  `output/answer-quality/`. Exact steps are in `## Owner steps for E9 and
+  E10` below; only steps 4–6 remain.
 - Stopped because: E10 (the human read-through) is the one criterion this
   build cannot earn — it requires a person's own reading.
 
@@ -183,11 +189,91 @@ build worktree. Two runs were made; the second is the committed baseline.
   correctly by every model at both caps except one gpt-5-nano miss.
 - **Found the same night, not by the run:** production had been on lexical
   fallback since the 2026-09-06 deploy (the package kept the linux/x64
-  onnxruntime binding on an arm64 Lambda); fix in PR #204. So run 2 measures
-  the retrieval players get after #204 deploys, and run 1 is closer to what
-  they had before it.
+  onnxruntime binding on an arm64 Lambda); fix in PR #204.
+- **Corrected later the same day (see the next section):** the claim that
+  run 2 measured the retrieval players get after #204 was wrong. The script
+  passed no query embedding to `preparePromptInput`, so runs 1 and 2 both
+  ranked lexically whatever `EMBEDDING_PROVIDER` said, and it attached no
+  card, so the three tier-2 prompts carried no oracle text and no ruling.
+  Runs 1 and 2 are the same instrument twice; their transcripts stay under
+  `output/answer-quality/mock-embeddings-2026-09-07/` and
+  `output/answer-quality/local-label-lexical-2026-09-07/` (gitignored, with
+  each scorecard beside them) as a record of what a bare, lexical prompt
+  produces.
 - The two E9/E10 owner steps became: E9 earned by this record; E10 remains
   the owner's read-through (steps 4–6 above).
+
+## Third live run — instrument corrected
+
+2026-09-07, 09:48 UTC, from the build worktree at `b3f860f` plus the
+uncommitted fix, under the owner's standing clearance for this package's
+paid runs. 324 calls, $0.63 actual (413k input / 270k output tokens), no
+undetermined answers, judge `gpt-5` never in the lineup.
+
+**What changed in the instrument** (`scripts/eval-answer-quality.mjs`):
+
+- A tier-2 case is asked with its cited card attached by oracle id
+  (`buildCaseRequest`), and `preparePromptInput` receives the committed
+  card-detail and card-rulings indexes, so the prompt carries the card's
+  oracle text and rulings exactly as a player's lookup does. Verified
+  offline before the run: all three tier-2 prompts contain the cited ruling
+  verbatim (Panharmonicon 9 rulings attached, Restoration Angel 3, Sensei's
+  Divining Top 2).
+- The question is embedded once per case from the same retrieval query text
+  the route handler embeds (`buildRetrievalQueryText`), by
+  `EMBEDDING_PROVIDER` — now defaulting to `local`, the deployed provider.
+  A real provider that returns no vector, or a pass System 3 reports as
+  lexical, aborts the run (`assertQueryEmbedded`, `describeRetrieval`) so
+  the recorded label is always what ranked the excerpts.
+- Each transcript records `cards` and a `retrieval` block (`usedSemantic`,
+  the rule ids attached, `goldRuleInPrompt`); each committed per-case record
+  carries `goldRuleInPrompt`. REQ-185/188/189 amended to say so.
+- A fresh worktree has no model cache (`apps/backend/data/models/` is
+  gitignored); it was copied from the main checkout for this run.
+
+**Fully correct (Correctness 2) of 18, cap 5 / cap 10:** gpt-4.1-mini 17 /
+15, gpt-4.1 16 / 18, gpt-5-mini 17 / 18, gpt-5-nano 15 / 13. Mean answer
+latency: gpt-4.1 3.4–3.5 s, gpt-4.1-mini 4.3–5.5 s, gpt-5-mini 13.5–20.7 s
+(max 66 s), gpt-5-nano 22.9–27.7 s (max 56 s). Mean blind rank (1 is best):
+gpt-4.1 1.8 at both caps, gpt-5-mini 1.9, gpt-4.1-mini 2.7–2.9, gpt-5-nano
+3.3–3.6.
+
+**Retrieval, now measured per prompt instead of read off by hand.** With
+semantic ranking the gold rule reached the prompt for 14 of 18 cases at cap
+5 and 16 of 18 at cap 10. The two cases that cap 10 adds are exactly the
+two the lexical runs never reached at any cap: 510.1c
+(`combat-damage-assignment-order-multiple-blockers`, rank 7) and 113.7a
+(`sensei-top-leaves-battlefield-ability-on-stack`). The handoff's "check
+whether the tokenizer drops 4/3-style tokens" follow-up is closed: the
+misses were the instrument's lexical shortcut, not the corpus. The two
+cases never reached at either cap are the other two tier-2 cases
+(Panharmonicon 603.2, Restoration Angel 400.7) — and both were answered
+fully correctly by every model at both caps, because the attached ruling
+answers them; the tier-2 test now measures what it was designed to.
+
+**The combat-damage case is the cap story in one row.** At cap 5 (510.1c
+absent) gpt-4.1 scored 1 and gpt-5-mini 0, both reasoning from the
+pre-2024 lethal-first rule; at cap 10 (510.1c attached) every model scored 2
+and gpt-4.1's answer cites 510.1c by number. Cap 10 also cost gpt-4.1-mini
+and gpt-5-nano cases elsewhere (17→15, 15→13), so the distraction effect is
+real for the smaller models and absent for gpt-4.1 and gpt-5-mini.
+
+**Read against production (`OPENAI_MODEL=gpt-4.1`, cap 5):** today's
+product is the gpt-4.1 cap-5 row, 16/18 at 3.4 s. The same model at cap 10
+is 18/18 at 3.5 s. That is the measurement the excerpt-cap follow-up package
+needs (REQ-190's "changing the deployed cap requires a recorded run showing
+a larger cap scored better").
+
+Summary of the three runs, for the record:
+
+| Run | Embedder label | What actually ranked | Tier-2 card attached | gpt-4.1 cap 5 / 10 | Cost |
+| --- | --- | --- | --- | --- | --- |
+| 1, 06:47 UTC | mock | lexical | no | 14 / 17 (lexical) | $0.67 |
+| 2, 08:03 UTC | local | lexical (no query embedding passed) | no | 14 / 17 | $0.69 |
+| 3, 09:48 UTC | local | semantic, all 18 cases | yes | 16 / 18 | $0.63 |
+
+Run 3 is the committed baseline. Runs 1 and 2 compare with each other
+(same instrument), not with run 3.
 
 ## Verification
 
@@ -200,14 +286,21 @@ npm run eval:answer-quality
 
 ## Files touched
 
-- `scripts/eval-answer-quality.mjs` (wired end to end)
-- `scripts/eval-answer-quality.test.mjs` (regression-guard assertion added)
+- `scripts/eval-answer-quality.mjs` (wired end to end; then corrected —
+  cards attached, question embedded, fallback refused)
+- `scripts/eval-answer-quality.test.mjs` (regression-guard assertion added;
+  `buildCaseRequest`, `assertQueryEmbedded`, `describeRetrieval`, and the
+  `local` default tested)
+- `apps/backend/src/eval/answer-quality/artifact.ts` (transcript `cards` +
+  `retrieval`, per-case `goldRuleInPrompt`)
 - `apps/backend/src/eval/worked-solutions/README.md`
 - `PRD/sections/non-functional-requirements.md` (NFR-018, amended)
-- `PRD/sections/functional-requirements.md` (REQ-146, amended)
+- `PRD/sections/functional-requirements.md` (REQ-146, amended; REQ-185,
+  REQ-188, REQ-189, REQ-190 amended after run 3)
 - `PRD/sections/system-map.md` (`## Eval harness`, amended)
 - `PRD/sections/goals-and-non-goals.md` (amended)
-- `apps/backend/src/eval/answer-quality/results.json` (first recorded run)
+- `apps/backend/src/eval/answer-quality/results.json` (run 3, the corrected
+  instrument's first run)
 
 ## Ship gates
 

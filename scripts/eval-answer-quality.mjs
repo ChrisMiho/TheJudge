@@ -3,7 +3,13 @@
 // Bake-off: every gold case (scripts/lib/gold-cases.mjs, REQ-185) answered
 // once per model in the answer-model lineup and once per excerpt cap,
 // through the production preparePromptInput path
-// (apps/backend/src/prompt/preparation.ts), scored alone by the judge
+// (apps/backend/src/prompt/preparation.ts) with the same inputs a player's
+// lookup gets -- the committed card-detail and card-rulings indexes, a
+// tier-2 case's cited card attached (buildCaseRequest), and the question
+// embedded by the configured EMBEDDING_PROVIDER (default `local`, what
+// production runs) so System 3 ranks semantically, never silently lexically
+// (assertQueryEmbedded / describeRetrieval refuse to record a run whose
+// embedder fell back) -- scored alone by the judge
 // (apps/backend/src/eval/answer-quality/judge.ts) and, once every model has
 // answered a case at a cap, ranked blind, then written to the committed
 // artifact (apps/backend/src/eval/answer-quality/artifact.ts). Argument
@@ -42,6 +48,8 @@ export const CONFIRM_FLAG = "--confirm-live-calls";
 export const DEFAULT_OUTPUT_DIR = "output/answer-quality";
 export const DEFAULT_LINEUP = ["gpt-4.1-mini", "gpt-4.1", "gpt-5-mini", "gpt-5-nano"];
 export const DEFAULT_EXCERPT_CAPS = [5, 10];
+/** What the deployed app runs (REQ-184); an explicit `EMBEDDING_PROVIDER` always wins. */
+export const DEFAULT_EMBEDDING_PROVIDER = "local";
 // Deliberately duplicated from apps/backend/src/eval/answer-quality/judge.ts
 // (same value, same env var, independently tested there): this plain .mjs
 // script's dry-run path must resolve the judge model synchronously under
@@ -151,8 +159,100 @@ export function resolveRunEnv({ processEnv, confirmed, loadLocalEnv = loadLocalO
   const providerUnset = !env.ASK_AI_PROVIDER || env.ASK_AI_PROVIDER.trim() === "";
   const resolved = { ...env };
   if (confirmed && hasKey && providerUnset) resolved.ASK_AI_PROVIDER = "openai";
+  // The deployed app embeds every question with the bundled local model
+  // (REQ-184), so that is this run's default too: the instrument measures
+  // the retrieval players get, unless the owner explicitly asks otherwise.
+  if (!resolved.EMBEDDING_PROVIDER || resolved.EMBEDDING_PROVIDER.trim() === "")
+    resolved.EMBEDDING_PROVIDER = DEFAULT_EMBEDDING_PROVIDER;
   Object.defineProperty(resolved, "__localEnvSources", { value: sources, enumerable: false });
   return resolved;
+}
+
+/**
+ * The request a gold case is asked as (REQ-185). A tier-2 case tests whether
+ * the model honours the ruling the prompt attaches for its card, so it is
+ * asked the way a player's lookup asks it: with the cited card attached, by
+ * oracle id -- the key both the card-detail index (oracle text, type line)
+ * and the card-rulings index resolve by -- so the prompt carries that card's
+ * oracle text and every published ruling. A tier-1 case is the bare question.
+ */
+export function buildCaseRequest(caseEntry) {
+  const request = { mode: "lookup", question: caseEntry.question };
+  if (caseEntry.tier === 2) {
+    request.cards = [{ cardId: caseEntry.source.oracleId, name: caseEntry.source.cardName }];
+  }
+  return request;
+}
+
+/**
+ * A real embedder returns `null` on failure and production quietly falls
+ * back to lexical retrieval; an instrument must not. Refuses to continue a
+ * run whose artifact would be labelled with a provider that never ran.
+ */
+export function assertQueryEmbedded({ mode, vector, caseId }) {
+  if (mode === "mock" || Array.isArray(vector)) return;
+  throw new Error(
+    `EMBEDDING_PROVIDER=${mode} returned no embedding for gold case ${caseId}, so System 3 would silently run lexical retrieval under a "${mode}" label. Refusing to record that. For local, warm the model cache first: node scripts/warm-embedding-model-cache.mjs (apps/backend/data/models/ is gitignored, so a fresh worktree has none).`
+  );
+}
+
+/**
+ * What System 3 actually did for one prepared prompt, from the production
+ * enrichment debug block: whether the pass ran semantic (REQ-182) or fell
+ * back to lexical, which rule excerpts reached the prompt, and whether any
+ * of the case's expected rule ids was among them. `requireSemantic` turns
+ * an unexpected lexical pass into a refusal (the embedder ran, but the
+ * committed embeddings artifact did not match the rule index, say).
+ */
+export function describeRetrieval(supplemental, expectedRuleIds, { requireSemantic = false, caseId = "" } = {}) {
+  const selectedRuleIds = (supplemental?.selected ?? []).map((rule) => rule.ruleId);
+  const usedSemantic = Boolean(supplemental?.usedSemantic);
+  if (requireSemantic && !usedSemantic) {
+    throw new Error(
+      `System 3 ran lexical retrieval for gold case ${caseId} although the question was embedded -- the committed rule embeddings artifact is missing, malformed, or does not match gameRulesRuleIndex.json. Refusing to record a semantic-labelled run.`
+    );
+  }
+  return {
+    usedSemantic,
+    selectedRuleIds,
+    goldRuleInPrompt: expectedRuleIds.some((ruleId) => selectedRuleIds.includes(ruleId))
+  };
+}
+
+/**
+ * The production prompt inputs (`createConfiguredApp.ts` loads the same
+ * four files): curated topics, the flat rule index, and -- what the first
+ * two runs lacked -- the card-detail and card-rulings indexes an attached
+ * card resolves through. TypeScript imports, so lazy (the `measurePromptChars`
+ * pattern) and only ever evaluated under tsx.
+ */
+async function loadPromptResources() {
+  const { loadGameRulesTopics } = await import("../apps/backend/src/gameRules.ts");
+  const { loadGameRulesRuleIndex } = await import("../apps/backend/src/gameRulesRetrieval.ts");
+  const { loadCardRulingsIndex } = await import("../apps/backend/src/cardRulings.ts");
+  const { loadCardDetailIndex } = await import("../apps/backend/src/cardDetail.ts");
+  const { join } = await import("node:path");
+  const dataDir = join(repoRoot, "apps/backend/data");
+  return {
+    gameRulesTopics: loadGameRulesTopics(join(dataDir, "gameRulesByTopic.json")),
+    gameRulesRuleIndex: loadGameRulesRuleIndex(join(dataDir, "gameRulesRuleIndex.json")),
+    cardRulingsIndex: loadCardRulingsIndex(join(dataDir, "cardRulingsByOracleId.json")),
+    cardDetailIndex: loadCardDetailIndex(join(dataDir, "cardDetailByOracleId.json"))
+  };
+}
+
+/**
+ * The query embedder the run uses, selected exactly as the server selects
+ * it (`createEmbeddingProvider`): `local` is the bundled MiniLM model, in
+ * process, no network; `openai` is the hosted embedder; `mock` embeds
+ * nothing and leaves System 3 lexical.
+ */
+async function buildEmbedder(env) {
+  const mode = env.EMBEDDING_PROVIDER;
+  if (mode === "mock") return { mode, embed: async () => null };
+  const { createEmbeddingProvider } = await import("../apps/backend/src/providers/createEmbeddingProvider.ts");
+  const provider = createEmbeddingProvider({ embeddingProvider: mode, openAiApiKey: env.OPENAI_API_KEY });
+  return { mode, embed: (text) => provider.embed(text) };
 }
 
 /**
@@ -182,21 +282,13 @@ async function defaultBuildClient(env) {
  */
 export async function measurePromptChars(goldCases, excerptCaps) {
   const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
-  const { loadGameRulesTopics } = await import("../apps/backend/src/gameRules.ts");
-  const { loadGameRulesRuleIndex } = await import("../apps/backend/src/gameRulesRetrieval.ts");
-  const { join } = await import("node:path");
-
-  const gameRulesTopics = loadGameRulesTopics(join(repoRoot, "apps/backend/data/gameRulesByTopic.json"));
-  const gameRulesRuleIndex = loadGameRulesRuleIndex(join(repoRoot, "apps/backend/data/gameRulesRuleIndex.json"));
+  const resources = await loadPromptResources();
 
   const result = {};
   for (const cap of excerptCaps) {
     let total = 0;
     for (const caseEntry of goldCases) {
-      const prepared = preparePromptInput(
-        { mode: "lookup", question: caseEntry.question },
-        { gameRulesTopics, gameRulesRuleIndex, supplementalRuleCap: cap }
-      );
+      const prepared = preparePromptInput(buildCaseRequest(caseEntry), { ...resources, supplementalRuleCap: cap });
       total += prepared.promptText.length;
     }
     result[cap] = goldCases.length > 0 ? total / goldCases.length : 0;
@@ -339,19 +431,30 @@ async function resolveGitCommit(repoRootPath) {
  * `--confirm-live-calls` run (Slice E's E9), never by any automated test.
  */
 export async function runLiveEvaluation({ client, judgeModel, models, excerptCaps, goldCases, outputDir, resultsPath, env, log }) {
-  const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
-  const { loadGameRulesTopics } = await import("../apps/backend/src/gameRules.ts");
-  const { loadGameRulesRuleIndex } = await import("../apps/backend/src/gameRulesRetrieval.ts");
+  const { preparePromptInput, buildRetrievalQueryText } = await import("../apps/backend/src/prompt/preparation.ts");
   const { computeDeterministicAssertions } = await import("../apps/backend/src/eval/answer-quality/assertions.ts");
   const { judgeAnswerAlone, judgeBlindRanking } = await import("../apps/backend/src/eval/answer-quality/judge.ts");
   const { RUBRIC_REVISION } = await import("../apps/backend/src/eval/answer-quality/rubric.ts");
   const { writeResultsFile, writeTranscript, writeRankingTranscript } = await import(
     "../apps/backend/src/eval/answer-quality/artifact.ts"
   );
-  const { join } = await import("node:path");
+  const resources = await loadPromptResources();
+  const embedder = await buildEmbedder(env);
 
-  const gameRulesTopics = loadGameRulesTopics(join(repoRoot, "apps/backend/data/gameRulesByTopic.json"));
-  const gameRulesRuleIndex = loadGameRulesRuleIndex(join(repoRoot, "apps/backend/data/gameRulesRuleIndex.json"));
+  // One embedding per gold case, exactly as the route handler embeds the
+  // retrieval query text (question plus each attached card's compact
+  // signal) before `preparePromptInput`; shared by every cap and model, so
+  // every leg of a case ranks from the identical vector.
+  const queryEmbeddingByCaseId = new Map();
+  for (const caseEntry of goldCases) {
+    const request = buildCaseRequest(caseEntry);
+    const vector = await embedder.embed(
+      buildRetrievalQueryText(request, { cardDetailIndex: resources.cardDetailIndex })
+    );
+    assertQueryEmbedded({ mode: embedder.mode, vector, caseId: caseEntry.id });
+    queryEmbeddingByCaseId.set(caseEntry.id, vector);
+  }
+  log?.(`Embedded ${goldCases.length} gold-case queries with EMBEDDING_PROVIDER=${embedder.mode}.`);
 
   const caseLegScores = [];
 
@@ -359,11 +462,22 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
     for (const caseEntry of goldCases) {
       const perModelRecord = new Map();
       const answersForRanking = [];
+      const request = buildCaseRequest(caseEntry);
 
       for (const model of models) {
-        const prepared = preparePromptInput(
-          { mode: "lookup", question: caseEntry.question },
-          { gameRulesTopics, gameRulesRuleIndex, supplementalRuleCap: cap }
+        const prepared = preparePromptInput(request, {
+          ...resources,
+          supplementalRuleCap: cap,
+          queryEmbedding: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
+          collectEnrichmentDebug: true
+        });
+        const retrieval = describeRetrieval(
+          prepared.enrichmentDebug?.supplemental,
+          caseEntry.expectedSupplementalRuleIds,
+          {
+            requireSemantic: embedder.mode !== "mock",
+            caseId: caseEntry.id
+          }
         );
 
         const startedAt = Date.now();
@@ -394,6 +508,7 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
           undetermined: judgeResult.undetermined,
           scores: judgeResult.undetermined ? undefined : judgeResult.scores,
           namesGoldRuleId: assertions.namesGoldRuleId,
+          goldRuleInPrompt: retrieval.goldRuleInPrompt,
           promptChars: prepared.promptText.length,
           inputTokens,
           outputTokens,
@@ -410,6 +525,8 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
             model,
             excerptCap: cap,
             question: caseEntry.question,
+            cards: request.cards ?? [],
+            retrieval,
             promptText: prepared.promptText,
             answerText,
             workedSolution: caseEntry.workedSolution,
@@ -459,7 +576,7 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
     judgeModel,
     rubricRevision: RUBRIC_REVISION,
     askAiProvider: env.ASK_AI_PROVIDER ?? "",
-    embeddingProvider: env.EMBEDDING_PROVIDER ?? "mock",
+    embeddingProvider: embedder.mode,
     gitCommit: await resolveGitCommit(repoRoot),
     generatedAt: new Date().toISOString(),
     caseLegScores
@@ -470,14 +587,15 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
   return results;
 }
 
-export function describePlan({ models, excerptCaps, outputDir, goldCaseCount, estimate }) {
+export function describePlan({ models, excerptCaps, outputDir, goldCaseCount, estimate, embeddingProvider }) {
   return [
     "Answer-quality baseline plan (no provider request has been made):",
     "",
-    `  Gold cases: ${goldCaseCount}`,
+    `  Gold cases: ${goldCaseCount} (tier-2 cases are asked with their cited card attached, as a player's lookup is)`,
     `  Answer-model lineup: ${models.join(", ")}`,
     `  Judge model: ${estimate.judgeModel}`,
     `  Excerpt caps: ${excerptCaps.join(", ")}`,
+    `  Embedding provider: ${embeddingProvider ?? DEFAULT_EMBEDDING_PROVIDER} (the live run embeds each question with it; the estimate below is lexical)`,
     `  Output: ${outputDir}/ (transcripts, gitignored) plus the committed`,
     "    apps/backend/src/eval/answer-quality/results.json",
     "",
@@ -532,7 +650,14 @@ export async function run(options = {}) {
       goldCaseCount: goldCases.length,
       avgPromptCharsByCap
     });
-    log(describePlan({ ...parsed, goldCaseCount: goldCases.length, estimate }) + accessNote);
+    log(
+      describePlan({
+        ...parsed,
+        goldCaseCount: goldCases.length,
+        estimate,
+        embeddingProvider: env.EMBEDDING_PROVIDER
+      }) + accessNote
+    );
     return { ran: false, goldCaseCount: goldCases.length, accessChecked: hasKey };
   }
 

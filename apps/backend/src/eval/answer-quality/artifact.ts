@@ -49,6 +49,8 @@ export type CaseLegScore = {
   /** Present only when `undetermined` is false. */
   scores?: AxisScores;
   namesGoldRuleId: boolean;
+  /** Whether one of the case's expected rule ids was among the System 3 excerpts the prompt carried (from the enrichment debug block). */
+  goldRuleInPrompt?: boolean;
   promptChars: number;
   inputTokens: number;
   outputTokens: number;
@@ -128,6 +130,10 @@ export type FullTranscript = {
   model: string;
   excerptCap: number;
   question: string;
+  /** The cards attached to the lookup (a tier-2 case's cited card, by oracle id); empty for a bare question. */
+  cards?: Array<{ cardId: string; name: string }>;
+  /** What System 3 did for this prompt: semantic or lexical, which excerpts it attached, whether a gold rule was among them. */
+  retrieval?: { usedSemantic: boolean; selectedRuleIds: string[]; goldRuleInPrompt: boolean };
   promptText: string;
   answerText: string;
   workedSolution: string;

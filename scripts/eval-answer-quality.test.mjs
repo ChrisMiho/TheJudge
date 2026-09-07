@@ -10,9 +10,12 @@ import {
   DEFAULT_JUDGE_MODEL,
   DEFAULT_LINEUP,
   assertLiveProviderConfigured,
+  assertQueryEmbedded,
+  buildCaseRequest,
   buildRunArtifact,
   checkModelAccess,
   computeCallCostUsd,
+  describeRetrieval,
   estimateCost,
   parseArgs,
   resolveJudgeModel,
@@ -363,6 +366,73 @@ test("a confirmed run with a key from the local env files and no exported provid
   assert.deepEqual(client.calls, ["list"], "the models-list access check runs once before any completion");
   assert.equal(handedOff, true);
   assert.equal(result.ran, true);
+});
+
+test("buildCaseRequest asks a tier-1 case bare and attaches a tier-2 case's cited card the way a player's lookup does (REQ-185)", () => {
+  const tier1 = { id: "t1", tier: 1, question: "Does trample need lethal first?", source: { ruleId: "702.19b" } };
+  assert.deepEqual(buildCaseRequest(tier1), { mode: "lookup", question: "Does trample need lethal first?" });
+
+  const tier2 = {
+    id: "t2",
+    tier: 2,
+    question: "Does Panharmonicon double it?",
+    source: { cardName: "Panharmonicon", oracleId: "76678885-3674-443d-b9a2-2a460cf6aac0" }
+  };
+  assert.deepEqual(buildCaseRequest(tier2), {
+    mode: "lookup",
+    question: "Does Panharmonicon double it?",
+    // cardId is the oracle id: the key both the rulings index and the card-detail index resolve by.
+    cards: [{ cardId: "76678885-3674-443d-b9a2-2a460cf6aac0", name: "Panharmonicon" }]
+  });
+});
+
+test("resolveRunEnv defaults EMBEDDING_PROVIDER to local (what production runs) and never overrides an explicit value", () => {
+  const defaulted = resolveRunEnv({ processEnv: {}, confirmed: true, loadLocalEnv: noLocalEnv });
+  assert.equal(defaulted.EMBEDDING_PROVIDER, "local");
+
+  const dry = resolveRunEnv({ processEnv: {}, confirmed: false, loadLocalEnv: noLocalEnv });
+  assert.equal(dry.EMBEDDING_PROVIDER, "local");
+
+  const explicit = resolveRunEnv({
+    processEnv: { EMBEDDING_PROVIDER: "mock" },
+    confirmed: true,
+    loadLocalEnv: noLocalEnv
+  });
+  assert.equal(explicit.EMBEDDING_PROVIDER, "mock");
+});
+
+test("assertQueryEmbedded refuses a run whose real embedder fell back, and accepts null only under mock", () => {
+  assert.doesNotThrow(() => assertQueryEmbedded({ mode: "mock", vector: null, caseId: "c" }));
+  assert.doesNotThrow(() => assertQueryEmbedded({ mode: "local", vector: [0.1, 0.2], caseId: "c" }));
+  assert.throws(
+    () => assertQueryEmbedded({ mode: "local", vector: null, caseId: "trample-must-assign-lethal-first" }),
+    /EMBEDDING_PROVIDER=local.*trample-must-assign-lethal-first.*warm-embedding-model-cache/s
+  );
+});
+
+test("describeRetrieval records whether the pass ran semantic and whether a gold rule reached the prompt", () => {
+  const supplemental = {
+    usedSemantic: true,
+    selected: [
+      { ruleId: "702.19b", sectionTitle: "Trample", score: 0.9 },
+      { ruleId: "510.1a", sectionTitle: "Combat Damage Step", score: 0.5 }
+    ]
+  };
+  assert.deepEqual(describeRetrieval(supplemental, ["702.19b"]), {
+    usedSemantic: true,
+    selectedRuleIds: ["702.19b", "510.1a"],
+    goldRuleInPrompt: true
+  });
+  assert.deepEqual(describeRetrieval({ usedSemantic: false, selected: [] }, ["510.1c"]), {
+    usedSemantic: false,
+    selectedRuleIds: [],
+    goldRuleInPrompt: false
+  });
+  // A caller with a real embedder can refuse to label a lexical pass as semantic.
+  assert.throws(
+    () => describeRetrieval({ usedSemantic: false, selected: [] }, ["510.1c"], { requireSemantic: true, caseId: "x" }),
+    /lexical.*x/s
+  );
 });
 
 test("REGRESSION GUARD: eval:answer-quality is never wired into any gate script (REQ-188)", () => {

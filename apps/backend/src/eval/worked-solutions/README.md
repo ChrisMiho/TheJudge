@@ -50,7 +50,10 @@ rule the worked solution comes from -- actually appears in the System 3
 supplemental-retrieval top 5 that a live prompt would receive. This reuses
 the same labeled-relevance mechanism (REQ-032 / DEC-047) the existing eval
 harness already established for `expectedSupplementalRuleIds`, applied to
-real hard cases instead of hand-authored ones.
+real hard cases instead of hand-authored ones. This check asks the bare
+question and ranks lexically (no query embedding, no card attached), so its
+misses are an upper bound; the answer-quality run below measures retrieval
+the way production does and records it per transcript.
 
 A hit means: if a player asked this exact question, the prompt actually sent
 to the model would contain the rule text needed to answer it correctly. A
@@ -66,7 +69,12 @@ signal this repository had, since nothing inspected the answer itself).
 Asks a configured lineup of live models (`gpt-4.1-mini`, `gpt-4.1`,
 `gpt-5-mini`, `gpt-5-nano` by default) every case in this set, once per
 model and once per System 3 excerpt cap (5 and 10), through the identical
-`preparePromptInput` path. A judge model stronger than every contestant
+`preparePromptInput` path with the inputs a player's lookup gets: the
+committed card-detail and card-rulings indexes, a tier-2 case's cited card
+attached by oracle id (so its oracle text and rulings are in the prompt),
+and the question embedded by `EMBEDDING_PROVIDER` (default `local`, what
+production runs; the run refuses to record a run whose embedder silently
+fell back to lexical). A judge model stronger than every contestant
 (default `gpt-5`, under `ANSWER_QUALITY_JUDGE_MODEL`) scores each answer
 alone against the case's published `workedSolution` on four 0-2 axes
 (Correctness, Grounding, Calibration, Readability), then ranks every answer
