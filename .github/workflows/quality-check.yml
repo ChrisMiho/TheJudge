@@ -17,6 +17,16 @@ concurrency:
 permissions:
   contents: read
 
+# onnxruntime-node's postinstall (`node ./script/install`) downloads the CUDA
+# build of the runtime from nuget.org on linux/x64 unless told to skip — a
+# multi-hundred-MB fetch no job here ever loads (the tests and the Lambda use
+# the CPU runtime bundled in the package). On 2026-09-07 one shard's `npm ci`
+# failed on a connect timeout to that download (run 34151131811). The same skip
+# `scripts/package-lambda.sh` has always set for the deploy package now applies
+# to every `npm ci` in this workflow.
+env:
+  ONNXRUNTIME_NODE_INSTALL_CUDA: skip
+
 jobs:
   static:
     name: static
