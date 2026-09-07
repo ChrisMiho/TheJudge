@@ -36,6 +36,11 @@ if [ ! -f "$model_cache_file" ]; then
   exit 1
 fi
 
+# The function's CPU architecture: scripts/aws-bootstrap.sh creates thejudge-api
+# with `--architectures arm64`. Both native-module steps below key off this one
+# value. Override only if the function's architecture changes there.
+LAMBDA_ARCH="${LAMBDA_ARCH:-arm64}"
+
 cp "$repo_root/package.json" "$package_root/package.json"
 cp "$repo_root/package-lock.json" "$package_root/package-lock.json"
 cp "$repo_root/apps/backend/package.json" "$package_root/apps/backend/package.json"
@@ -51,9 +56,21 @@ cp -R "$repo_root/apps/backend/data" "$package_root/apps/backend/data"
   # though the budget test passed: the 130MB non-data reserve was measured on
   # macOS, where that download never happens. Both spellings are set because
   # the installer reads the npm config form and the plain env form.
+  #
+  # REQ-184: install for the *function's* platform, not the machine running
+  # this script. `sharp` (imported by @huggingface/transformers at module load)
+  # ships its native build as optional dependencies keyed by os/cpu/libc, and
+  # npm picks the ones matching the installing host — linux/x64 on the deploy
+  # runner, darwin/arm64 on a laptop — so until 2026-09-07 no package ever
+  # carried sharp's linux-arm64 build and every cold start fell back to lexical
+  # retrieval with only a WARN, even after the onnxruntime binding was fixed.
+  # `--libc=glibc` is required alongside `--os`/`--cpu`: without it a macOS
+  # host satisfies neither glibc nor musl and npm installs no sharp build at
+  # all (measured 2026-09-07). The function is nodejs24.x on Amazon Linux 2023,
+  # which is glibc.
   ONNXRUNTIME_NODE_INSTALL_CUDA=skip \
   npm_config_onnxruntime_node_install_cuda=skip \
-  npm ci --omit=dev --workspace apps/backend --include-workspace-root=false >&2
+  npm ci --omit=dev --os=linux --cpu="$LAMBDA_ARCH" --libc=glibc --workspace apps/backend --include-workspace-root=false >&2
 
   # REQ-181/NFR-017: `onnxruntime-node` bundles every platform's native
   # binaries directly in its published package (not npm optionalDependencies),
@@ -69,8 +86,12 @@ cp -R "$repo_root/apps/backend/data" "$package_root/apps/backend/data"
   # The pruner refuses to package when the arm64 binding is absent, so this
   # can never again fail silently. Override LAMBDA_ARCH only if the function's
   # architecture changes in aws-bootstrap.sh.
-  LAMBDA_ARCH="${LAMBDA_ARCH:-arm64}" \
-  node "$repo_root/scripts/lib/prune-onnxruntime-platforms.mjs" "node_modules" linux "${LAMBDA_ARCH:-arm64}"
+  node "$repo_root/scripts/lib/prune-onnxruntime-platforms.mjs" "node_modules" linux "$LAMBDA_ARCH"
+
+  # REQ-184: the second native module the local embedder needs. Refuses (exit
+  # 1) when `npm ci` above did not produce sharp's linux/<arch> build, so this
+  # can never again fail silently either.
+  node "$repo_root/scripts/lib/assert-sharp-platform-binding.mjs" "node_modules" linux "$LAMBDA_ARCH"
 
   # NFR-017: measure what will actually be uploaded, in real file bytes (what
   # AWS counts), and refuse to build an artifact that Lambda will reject. The
