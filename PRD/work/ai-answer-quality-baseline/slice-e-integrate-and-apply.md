@@ -293,6 +293,13 @@ npm run eval:answer-quality
   `local` default tested)
 - `apps/backend/src/eval/answer-quality/artifact.ts` (transcript `cards` +
   `retrieval`, per-case `goldRuleInPrompt`)
+- `scripts/lib/prompt-fidelity.mjs` (new: the shared request/embedding
+  helpers both instruments use), `scripts/eval-worked-solutions.mjs` +
+  test (the retrieval check gained the same fidelity: card attached,
+  question embedded, semantic/lexical labelled per line; still 14/18 at
+  cap 5, now measured the way production ranks). The run command formats
+  `results.json` with the repo's prettier config so a recorded run never
+  fails `format:check`.
 - `apps/backend/src/eval/worked-solutions/README.md`
 - `PRD/sections/non-functional-requirements.md` (NFR-018, amended)
 - `PRD/sections/functional-requirements.md` (REQ-146, amended; REQ-185,

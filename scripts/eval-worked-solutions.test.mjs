@@ -87,4 +87,21 @@ test("formatReport names every case's hit/miss status and a summary count", () =
   assert.match(report, /\[MISS\] miss-case -- expected \["704\.4"\], missing \["704\.4"\]/);
   assert.match(report, /Summary: 1\/2 cases retrieved their expected rule\./);
   assert.match(report, /Informational only\. Not a build gate/);
+  assert.doesNotMatch(report, /Embedding provider/);
+});
+
+test("formatReport names the embedding provider and which ranking produced each result, when the run records it", () => {
+  const tier2 = { id: "sensei", tier: 2, expectedSupplementalRuleIds: ["113.7a"] };
+  const results = [
+    evaluateCaseRecall(tier2, new Set(["113.7a", "603.2"]), { usedSemantic: true }),
+    evaluateCaseRecall({ id: "bare", expectedSupplementalRuleIds: ["510.1c"] }, new Set(), { usedSemantic: false })
+  ];
+  assert.equal(results[0].usedSemantic, true);
+  assert.equal(results[0].passed, true);
+
+  const report = formatReport(results, { generatedAt: "2026-09-07T00:00:00.000Z", embeddingProvider: "local" });
+
+  assert.match(report, /Embedding provider: local \(1\/2 cases ranked semantically\)/);
+  assert.match(report, /\[HIT \] sensei \(semantic\)/);
+  assert.match(report, /\[MISS\] bare \(lexical\)/);
 });

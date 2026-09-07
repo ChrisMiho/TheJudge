@@ -17,6 +17,7 @@ import {
   computeCallCostUsd,
   describeRetrieval,
   estimateCost,
+  formatCommittedJson,
   parseArgs,
   resolveJudgeModel,
   resolveRunEnv,
@@ -408,6 +409,15 @@ test("assertQueryEmbedded refuses a run whose real embedder fell back, and accep
     () => assertQueryEmbedded({ mode: "local", vector: null, caseId: "trample-must-assign-lethal-first" }),
     /EMBEDDING_PROVIDER=local.*trample-must-assign-lethal-first.*warm-embedding-model-cache/s
   );
+});
+
+test("formatCommittedJson shapes the scorecard the way the repo's format:check expects (short arrays on one line)", async () => {
+  const raw = `${JSON.stringify({ runMetadata: { answerModelLineup: ["gpt-4.1-mini", "gpt-4.1"] }, legs: [] }, null, 2)}\n`;
+  assert.match(raw, /\[\n\s+"gpt-4\.1-mini",\n/);
+  const repoRootForTests = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  const formatted = await formatCommittedJson(raw, resolve(repoRootForTests, "apps/backend/src/eval/answer-quality/results.json"));
+  assert.match(formatted, /"answerModelLineup": \["gpt-4\.1-mini", "gpt-4\.1"\]/);
+  assert.deepEqual(JSON.parse(formatted), JSON.parse(raw));
 });
 
 test("describeRetrieval records whether the pass ran semantic and whether a gold rule reached the prompt", () => {

@@ -50,10 +50,14 @@ rule the worked solution comes from -- actually appears in the System 3
 supplemental-retrieval top 5 that a live prompt would receive. This reuses
 the same labeled-relevance mechanism (REQ-032 / DEC-047) the existing eval
 harness already established for `expectedSupplementalRuleIds`, applied to
-real hard cases instead of hand-authored ones. This check asks the bare
-question and ranks lexically (no query embedding, no card attached), so its
-misses are an upper bound; the answer-quality run below measures retrieval
-the way production does and records it per transcript.
+real hard cases instead of hand-authored ones. The request is built the way
+a player's lookup builds it (`scripts/lib/prompt-fidelity.mjs`): a tier-2
+case's cited card attached by oracle id, the committed card-detail and
+rulings indexes supplied, and the question embedded by `EMBEDDING_PROVIDER`
+(default `local`, what production runs). Each line says whether semantic or
+lexical ranking produced it, and the check refuses to report a run whose
+embedder silently fell back. `EMBEDDING_PROVIDER=mock` gives a deliberately
+lexical pass for comparison.
 
 A hit means: if a player asked this exact question, the prompt actually sent
 to the model would contain the rule text needed to answer it correctly. A
