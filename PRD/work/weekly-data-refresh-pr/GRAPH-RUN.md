@@ -29,7 +29,7 @@
   on `thejudge-auto/weekly-data-refresh-pr`; docs PR URL recorded below.
 - Resume: after the owner answers and merges, `graph-implement` picks up the
   approved spec from `origin/main` and builds it (code PR into `main`).
-- Docs PR: <recorded after `gh pr create`>
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/209 (docs-only, base `main`, head `thejudge-auto/weekly-data-refresh-pr`)
 
 ## Dispatch prompts
 
