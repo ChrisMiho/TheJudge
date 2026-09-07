@@ -8,6 +8,10 @@ Do not rename package folders to encode status.
 
 ## active
 
+| Package | Notes |
+| --- | --- |
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Build gate resolved 2026-09-07 by `/loop graph-implement` (run `graph-20260907-032104`): all five slices `done`, 41/41 criteria `true` (E9 the owner-cleared live run, E10 the owner's read-through of run 3), instrument corrected and re-run (semantic retrieval, tier-2 cards attached). PR #203 open into `main`. Re-entered at `build` to confirm, then `review` → `close`; the owner merges after `close` |
+
 ## refined
 
 ## refining
@@ -15,10 +19,6 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
-
-| Package | Notes |
-| --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Parked 2026-09-07 by `graph-implement` (run `graph-20260907-032104`) at the build gate: slices A–D done and pushed, slice E wired, applied, and gated green except E10 — the owner's read-through of the first live run (run 2026-09-07 under the local embedder at the owner's clearance, $0.69, `results.json` committed; E9 done). PR #203 open into `main`. Owner steps: `GRAPH-RUN.md` `## Open gate` and `slice-e-integrate-and-apply.md` `## Owner steps for E9 and E10`; then `/loop graph-implement` resumes at `build` → `review` → `close` |
 
 ## deferred
 
