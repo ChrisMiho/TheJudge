@@ -27,7 +27,7 @@ agent verified them and closed the package.
   `.worktrees/graph-workflow-land`; manual package (`OPERATOR.md` recipe 9), no
   graph run, no intake
 - PR: opened from this branch into `main`; the owner merges
-- Evidence: `PRD/work/probe-graph-workflow-audit/FINDINGS-graph-workflow-gaps.md`
+- Evidence: `PRD/work/probe-graph-workflow-audit/FINDINGS-graph-workflow-gaps.md` (probe folder removed from `main` on 2026-09-07 once every finding had shipped; read it at `git show 93ad4c6:PRD/work/probe-graph-workflow-audit/FINDINGS-graph-workflow-gaps.md`)
   (the 2026-09-06 audit, findings 2 and 7); part 1 is
   `graph-workflow-branching-2026-09-06.md` (PR #201)
 

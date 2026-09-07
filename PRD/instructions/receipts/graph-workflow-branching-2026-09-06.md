@@ -23,7 +23,7 @@ nine merged run branches and six stale staging folders gone, run
 - Branch: `fix/graph-workflow-branching` from `origin/main` (`cbab6fb`), built
   in `.worktrees/graph-workflow-fix`; manual package (`OPERATOR.md` recipe 9),
   no graph run, no intake
-- Evidence: `PRD/work/probe-graph-workflow-audit/FINDINGS-graph-workflow-gaps.md`
+- Evidence: `PRD/work/probe-graph-workflow-audit/FINDINGS-graph-workflow-gaps.md` (probe folder removed from `main` on 2026-09-07 once every finding had shipped — #201, #202, `graph:prune`; read it at `git show 93ad4c6:PRD/work/probe-graph-workflow-audit/FINDINGS-graph-workflow-gaps.md`)
   (the 2026-09-06 read-only audit; kept for part 2, findings 2 and 7)
 
 ## Actions taken
