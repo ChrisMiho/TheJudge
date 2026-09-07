@@ -1,0 +1,64 @@
+{
+  "slug": "ai-answer-quality-baseline",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "artifact.ts round-trips a run record through results.json and every required field is present after reading it back",
+      "value": false,
+      "evidence": {
+        "paths": ["apps/backend/src/eval/answer-quality/artifact.ts", "apps/backend/src/eval/answer-quality/artifact.test.ts"],
+        "command": "npm --prefix apps/backend run test"
+      }
+    },
+    {
+      "id": "D2",
+      "statement": "The committed file contains no model prose, only scores and metadata",
+      "value": false,
+      "evidence": {
+        "command": "npm --prefix apps/backend run test"
+      }
+    },
+    {
+      "id": "D3",
+      "statement": "Full transcripts are written under output/answer-quality/ and a dry run writes nothing",
+      "value": false,
+      "evidence": {
+        "command": "npm --prefix apps/backend run test"
+      }
+    },
+    {
+      "id": "D4",
+      "statement": ".gitignore gains an output/answer-quality/ entry that matches paths under that folder",
+      "value": false,
+      "evidence": {
+        "paths": [".gitignore"],
+        "command": "git check-ignore"
+      }
+    },
+    {
+      "id": "D5",
+      "statement": "Comparability rule: gold-set/judge/rubric/EMBEDDING_PROVIDER differences report incomparable; lineup-only differences report a model comparison",
+      "value": false,
+      "evidence": {
+        "command": "npm --prefix apps/backend run test"
+      }
+    },
+    {
+      "id": "D6",
+      "statement": "npm run test:scripts and the backend test suite pass",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts|npm --prefix apps/backend run test"
+      }
+    },
+    {
+      "id": "D7",
+      "statement": "PRD/sections/functional-requirements.md carries a REQ-189 entry matching the finalized GATE-QUESTIONS.md block",
+      "value": false,
+      "evidence": {
+        "paths": ["PRD/sections/functional-requirements.md"]
+      }
+    }
+  ]
+}

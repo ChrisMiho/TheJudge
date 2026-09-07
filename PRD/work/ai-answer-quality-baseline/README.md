@@ -1,5 +1,5 @@
 ---
-status: refined
+status: active
 ---
 
 # ai-answer-quality-baseline
@@ -53,3 +53,41 @@ download. The owner's verdict and reason lines are untouched.
   6. Judge mechanism: the judge section (`DESIGN-BRIEF.md:192-205`) names three layers and never the blind side-by-side ranking REQ-186's edit added.
   7. Provenance inside the finalized proposal: REQ-185's diff and `- Reason:` call `apps/backend/data/cr/source.txt` committed CR text; it is gitignored (`.gitignore:47`; `integrations-and-data.md:255`), absent in this worktree, written by `scripts/refresh-scryfall-data.mjs` and read by `scripts/build-game-rules.mjs`. The 277 `Example:` count reproduces in the launch checkout only (driver, 2026-09-07).
   Passed: provider `openAiResponsesProvider.ts` sends only `model` and `input`, so the lineup and judge are addressable by model id; `cardRulingsByOracleId.json` 19,542 cards / 76,605 rulings; four cap-of-5 sites in `preparation.ts` (228/272/317/355); `eval:worked-solutions` 6/6 under `EMBEDDING_PROVIDER=local`; 4/4 `Current:` excerpts byte-identical to live `PRD/sections/` at `787ca5f`; REQ-185–190 unused; heading hygiene clean; 16-term amendment-set grep leaves no uncovered assertion; no screen change. Package state `refining`.
+
+Mapped out 2026-09-07 (node 5, build half, `plan`) under `graph is controlling`.
+Five slices, sequential only where E depends on A–D landing first (see table
+below); no browser-observable risk (no screen change), so no Playwright
+criteria.
+
+## Slices
+
+| Slice | Name | Goal | Depends on | Status |
+| --- | --- | --- | --- | --- |
+| A | [gold-set-and-validity](./slice-a-gold-set-and-validity.md) | Tiered gold-set schema, shared validity test, seed cases (REQ-185) | none | planned |
+| B | [cap-and-run-command](./slice-b-cap-and-run-command.md) | Named excerpt-cap constant, cap-as-run-parameter, `eval:answer-quality` scaffold (REQ-188, REQ-190) | none | planned |
+| C | [judge-and-rubric](./slice-c-judge-and-rubric.md) | Rubric, deterministic assertions, lone judge pass, blind rank (REQ-186, REQ-187) | none | planned |
+| D | [artifact-and-transcripts](./slice-d-artifact-and-transcripts.md) | Committed scores file, gitignored transcripts, comparability rule (REQ-189) | none | planned |
+| E | [integrate-and-apply](./slice-e-integrate-and-apply.md) | Wire A–D, regression guard, PRD apply (NFR-018, REQ-146, SYSTEM-MAP-EVAL-HARNESS, GOALS-ANSWER-QUALITY-NON-GOAL), first live run + human review | A, B, C, D | planned |
+
+## Implementation map
+
+- `scripts/lib/gold-cases.mjs`, `scripts/lib/gold-cases.test.mjs` — shared
+  gold-case loader/validator (Slice A)
+- `apps/backend/src/eval/worked-solutions/*.case.json`,
+  `apps/backend/src/eval/worked-solutions/README.md` — the gold set itself
+  (Slice A, README finished in Slice E)
+- `apps/backend/src/prompt/preparation.ts` — named excerpt-cap constant and
+  optional cap override (Slice B)
+- `scripts/eval-answer-quality.mjs`, `scripts/eval-answer-quality.test.mjs`,
+  `package.json` (`eval:answer-quality`) — the run command (Slice B,
+  wired end to end in Slice E)
+- `apps/backend/src/eval/answer-quality/rubric.ts`, `assertions.ts`,
+  `judge.ts` (+ tests) — the rubric and judge (Slice C)
+- `apps/backend/src/eval/answer-quality/artifact.ts`,
+  `apps/backend/src/eval/answer-quality/results.json`, `.gitignore` — the
+  artifact and gitignored transcripts (Slice D)
+- `PRD/sections/functional-requirements.md` (REQ-185/186/187/188/189/190 new,
+  REQ-146 amended), `PRD/sections/non-functional-requirements.md` (NFR-018
+  amended), `PRD/sections/system-map.md` (`## Eval harness` amended),
+  `PRD/sections/goals-and-non-goals.md` (amended) — applied by intent, one
+  slice per new block, amendments in Slice E

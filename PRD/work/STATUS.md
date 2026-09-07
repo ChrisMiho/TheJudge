@@ -8,11 +8,11 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 | Package | Notes |
 | --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Brief reconciled 2026-09-07 with the finalized, owner-edited GATE-QUESTIONS.md (six `edit`, four `accept`): the instrument is a multi-model bake-off over a tiered, all-official gold set, judged by a stronger model that scores alone then ranks blind. Non-goals, judge section, assumptions, M3 cost, measurement plan, and gold-set section rewritten to follow it; REQ-185's tier-1 provenance corrected to the committed rule index `apps/backend/data/gameRulesRuleIndex.json` (277 `Example:` lines), the gitignored raw CR download being neither committed nor read by a run. Verdicts untouched. Awaiting gate-qc re-grade |
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Mapped out 2026-09-07 (node 5, build half, `plan`): five slices — gold-set-and-validity (A), cap-and-run-command (B), judge-and-rubric (C), artifact-and-transcripts (D), integrate-and-apply (E, sequential on A–D). Quality-check PASSed 2026-09-07 (attempt 2). Next: `build` implements the slices, applying REQ-185–190 and the four amendments to `PRD/sections/` alongside the code |
+
+## refined
 
 ## refining
 
