@@ -10,11 +10,11 @@ Do not rename package folders to encode status.
 
 ## refined
 
-## refining
-
 | Package | Notes |
 | --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | gate-qc (build half, attempt 1) FAILed 2026-09-07: DESIGN-BRIEF.md contradicts the finalized, owner-edited GATE-QUESTIONS.md on gold-set size, the answer-model lineup, the judge default, and the cost estimate; REQ-185's tier-1 source (`apps/backend/data/cr/source.txt`) is also mischaracterized as committed when it is gitignored and absent from this checkout |
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Brief reconciled 2026-09-07 with the finalized, owner-edited GATE-QUESTIONS.md (six `edit`, four `accept`): the instrument is a multi-model bake-off over a tiered, all-official gold set, judged by a stronger model that scores alone then ranks blind. Non-goals, judge section, assumptions, M3 cost, measurement plan, and gold-set section rewritten to follow it; REQ-185's tier-1 provenance corrected to the committed rule index `apps/backend/data/gameRulesRuleIndex.json` (277 `Example:` lines), the gitignored raw CR download being neither committed nor read by a run. Verdicts untouched. Awaiting gate-qc re-grade |
+
+## refining
 
 ## ideation
 

@@ -1,5 +1,5 @@
 ---
-status: refining
+status: refined
 ---
 
 # ai-answer-quality-baseline
@@ -15,11 +15,25 @@ the framing, prior-run receipts, and non-goals, and `intake/` for the staged
 idea and the driver's measurement context note this package was seeded from.
 
 Refined 2026-09-06 under `graph is controlling` (node 3, `define`). The design
-record is `DESIGN-BRIEF.md`; the proposed product truth is `GATE-QUESTIONS.md`
-(ten blocks: REQ-185 through REQ-190 new, NFR-018 / REQ-146 /
+record is `DESIGN-BRIEF.md`; the product truth is `GATE-QUESTIONS.md` (ten
+blocks: REQ-185 through REQ-190 new, NFR-018 / REQ-146 /
 `system-map.md` `## Eval harness` / `goals-and-non-goals.md` amended; no blocker
-questions). Nothing was written to `PRD/sections/` — implementation applies the
+questions). The owner answered every block on 2026-09-06 — six `edit`, four
+`accept`, no rejections — and `graph-gate-review` applied each edit inside that
+block's diff. Nothing was written to `PRD/sections/` — implementation applies the
 approved proposal alongside the code.
+
+Re-refined 2026-09-07 (node 3, build half, attempt 1) to reconcile the brief with
+that finalized proposal after gate-qc FAILed it on seven findings. The instrument
+the brief now describes is the one the owner approved: a **multi-model bake-off**
+(`gpt-4.1-mini`, `gpt-4.1`, `gpt-5-mini`, `gpt-5-nano`) over a **tiered,
+all-official gold set** of at least the six committed cases plus roughly a dozen
+seeds, judged by a **stronger model** (`gpt-5` by default) that scores each answer
+alone and then ranks all answers to a question blind. Finding 7 was a factual
+correction inside REQ-185's diff: tier-1 text comes from the committed rule index
+`apps/backend/data/gameRulesRuleIndex.json` (277 `Example:` lines across 215
+entries, re-measured 2026-09-07 in this worktree), not from the gitignored raw CR
+download. The owner's verdict and reason lines are untouched.
 
 ## Autonomous metadata
 
