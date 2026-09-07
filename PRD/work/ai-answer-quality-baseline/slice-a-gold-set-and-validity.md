@@ -1,6 +1,6 @@
 # Slice A — gold-set-and-validity
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -43,32 +43,32 @@ inventing an answer key.
 
 ## Acceptance criteria
 
-- [ ] A1. `scripts/lib/gold-cases.mjs` exports a validator that rejects a case
+- [x] A1. `scripts/lib/gold-cases.mjs` exports a validator that rejects a case
       missing any of: non-empty `question`, non-empty `workedSolution`, `tier`
       of `1` or `2`, a `source` block with the tier-appropriate citation, at
       least one `expectedSupplementalRuleIds` entry — proven by
       `scripts/lib/gold-cases.test.mjs` asserting each field's absence fails
       loudly (throws or returns an explicit invalid result), never silently
       scoring as a miss.
-- [ ] A2. The same test asserts every committed `*.case.json` file under
+- [x] A2. The same test asserts every committed `*.case.json` file under
       `apps/backend/src/eval/worked-solutions/` parses and passes the
       validator.
-- [ ] A3. The same test asserts the gold set holds at least the six named
+- [x] A3. The same test asserts the gold set holds at least the six named
       cases: `delayed-trigger-created-too-late`,
       `illegal-target-partial-resolution`,
       `last-known-information-simultaneous-sba`, `layers-timestamp-order`,
       `replacement-effect-single-application`,
       `state-based-actions-mid-resolution` — each carrying `tier: 1`.
-- [ ] A4. The gold set holds at least 18 cases total (the six named plus at
+- [x] A4. The gold set holds at least 18 cases total (the six named plus at
       least a dozen new tier-1/tier-2 seeds), each with a non-empty
       `whyHard` noting the common-mistake topic it targets; asserted by the
       same test file.
-- [ ] A5. `npm run eval:worked-solutions` still exits 0 and reports every
+- [x] A5. `npm run eval:worked-solutions` still exits 0 and reports every
       case's expected rule id retrieved (or, for a new case where retrieval
       genuinely misses, the miss is visible in its report — this criterion
       only proves the command runs over the grown set without erroring).
-- [ ] A6. `npm run test:scripts` passes, including `gold-cases.test.mjs`.
-- [ ] A7. `PRD/sections/functional-requirements.md` carries a `### REQ-185`
+- [x] A6. `npm run test:scripts` passes, including `gold-cases.test.mjs`.
+- [x] A7. `PRD/sections/functional-requirements.md` carries a `### REQ-185`
       entry matching the finalized `GATE-QUESTIONS.md` REQ-185 block's
       decision (title, description, acceptance criteria, constraints,
       dependencies, notes), re-derived against current truth.

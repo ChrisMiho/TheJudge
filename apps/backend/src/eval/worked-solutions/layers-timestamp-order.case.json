@@ -1,5 +1,6 @@
 {
   "id": "layers-timestamp-order",
+  "tier": 1,
   "question": "My creature is enchanted by an Aura that says the creature is white. A separate effect on the battlefield says white creatures get +1/+1. Does my creature actually get the +1/+1, even though it wasn't white to begin with?",
   "expectedSupplementalRuleIds": ["613.9"],
   "workedSolution": "One effect reads, “White creatures get +1/+1,” and another reads, “Enchanted creature is white.” The enchanted creature gets +1/+1 from the first effect, regardless of its previous color.",

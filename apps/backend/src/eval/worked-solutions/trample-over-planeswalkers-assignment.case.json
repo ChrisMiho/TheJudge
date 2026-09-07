@@ -1,0 +1,19 @@
+{
+  "id": "trample-over-planeswalkers-assignment",
+  "tier": 1,
+  "question": "My 7/7 creature with trample over planeswalkers is attacking a planeswalker that has three loyalty counters, and it's also blocked by a 1/1 creature that doesn't have any abilities. Once I've assigned lethal damage to the blocker and enough damage to remove the planeswalker, can I send the rest of the damage at the planeswalker's controller instead?",
+  "expectedSupplementalRuleIds": ["702.19c"],
+  "workedSolution": "A player controls a planeswalker with three loyalty counters that is being attacked by a 1/1 with no abilities and a 7/7 with trample over planeswalkers. The active player could assign 1 damage from the first attacker and 2 damage from the second to the planeswalker and 5 damage to the defending player from the creature with trample over planeswalkers.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "702.19c",
+    "sectionTitle": "Trample",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "Trample over planeswalkers is a newer variant of an already-confusing rule, and players routinely assume every point beyond the planeswalker's loyalty must first be \"wasted\" the way it would against a normal blocker's controller -- the rule instead lets the attacker route the true excess to the player once every blocker and the planeswalker itself have their required damage assigned."
+}

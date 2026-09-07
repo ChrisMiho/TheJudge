@@ -1,0 +1,19 @@
+{
+  "id": "trample-must-assign-lethal-first",
+  "tier": 1,
+  "question": "My 6/6 creature with trample is blocked by a 2/2 creature that has protection from my creature's color, so all the damage from my creature to that blocker will be prevented anyway. Can I assign all 6 damage to the defending player instead, since the blocker's damage does nothing?",
+  "expectedSupplementalRuleIds": ["702.19b"],
+  "workedSolution": "A 6/6 green creature with trample is blocked by a 2/2 creature with protection from green. The attacking creature’s controller must assign at least 2 damage to the blocker, even though that damage will be prevented by the blocker’s protection ability. The attacking creature’s controller can divide the rest of the damage as they choose between the blocking creature and the defending player.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "702.19b",
+    "sectionTitle": "Trample",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "Players commonly assume a trampling attacker can route all damage past a blocker whose damage will be prevented, but the assignment rule counts damage as \"assigned\" before prevention is checked -- lethal damage (or the blocker's full toughness, when it's protected from the attacker so nothing is ever \"lethal\") must still be assigned to the blocker first, even though that damage accomplishes nothing."
+}

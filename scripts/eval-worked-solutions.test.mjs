@@ -22,10 +22,27 @@ test("parseArgs resolves an optional --output path against the repo root", () =>
   assert.ok(path.isAbsolute(resolved));
 });
 
-test("loadCases reads every *.case.json file, sorted, and rejects a malformed one", async () => {
+function validCase(overrides = {}) {
+  return {
+    id: "sample",
+    tier: 1,
+    question: "Sample question?",
+    workedSolution: "Sample worked solution text.",
+    expectedSupplementalRuleIds: ["100.1"],
+    whyHard: "Sample reason this is hard.",
+    source: {
+      publisher: "Wizards of the Coast",
+      license: "Reproduced under the Wizards of the Coast Fan Content Policy.",
+      ruleId: "100.1"
+    },
+    ...overrides
+  };
+}
+
+test("loadCases reads every *.case.json file, sorted, and rejects a malformed one (via the shared gold-cases validator, REQ-185)", async () => {
   const dir = makeTempCasesDir([
-    { id: "b", question: "Second?" },
-    { id: "a", question: "First?" }
+    validCase({ id: "b" }),
+    validCase({ id: "a" })
   ]);
 
   const cases = await loadCases(dir);
@@ -36,7 +53,7 @@ test("loadCases reads every *.case.json file, sorted, and rejects a malformed on
   );
 
   fs.writeFileSync(path.join(dir, "z-bad.case.json"), JSON.stringify({ id: "bad" }), "utf8");
-  await assert.rejects(() => loadCases(dir), /needs at least id and question/);
+  await assert.rejects(() => loadCases(dir), /Invalid gold case\(s\)/);
 });
 
 test("evaluateCaseRecall reports a hit only when every expected rule id was retrieved", () => {
