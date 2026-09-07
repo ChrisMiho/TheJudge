@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/weekly-data-refresh-pr` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-weekly-data-refresh-pr`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-163826/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half in flight; stop at gate-qc PASS with docs PR)
+- Current node: `owner-action` (gate-qc PASS — spec-forming half complete)
+- Next action: owner answers the `- Verdict:` slot in `GATE-QUESTIONS.md`, then merges the docs PR into `main`; `graph-implement` builds it from there
 
 ## Node ledger
 
@@ -16,10 +16,20 @@
 | 1 | preflight | haiku | ok | degraded (no run state) | branch `thejudge-auto/weekly-data-refresh-pr` cut from `origin/main` (b20ea13), pushed from `.worktrees/kickoff-weekly-data-refresh-pr`; lock held (runId graph-20260907-163826, pid 10773); launch checkout untouched | 2026-09-07 |
 | 2 | shape | sonnet | ok | degraded (no run state) | `PRD/work/weekly-data-refresh-pr/` created (STATUS.ideation) with IDEA.md, intake/GRAPH-BRIEF.md verbatim, 3 prior-run matches; committed 0b59ec5 and pushed; launch checkout untouched | 2026-09-07 |
 | 3 | define | opus | ok | `0 → 31` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written (1 proposed id REQ-195; full-refresh chosen via assumption ladder, flip-to-prices-only left as owner edit); STATUS.refined; PRD/sections untouched; no blocker | 2026-09-07 |
+| 4 | gate-qc | sonnet | ok | `0 → 19` | PASS — DESIGN-BRIEF verified against PRD truth (DEC-087/088/162, REQ-066/093/145, NFR-013) and all four proposed diffs matched current-state byte-for-byte; no drift; STATUS stays refined for build | 2026-09-07 |
 
 ## Open gate
 
-- None
+- Parked at `owner-action` on gate-qc PASS (spec-forming half complete).
+- Question: answer the `- Verdict:` slot for REQ-195 in
+  `PRD/work/weekly-data-refresh-pr/GATE-QUESTIONS.md` (accept = full refresh as
+  written; edit = flip to prices-only or amend; reject = drop the cadence), then
+  merge the docs PR into `main`. That merge is the build signal.
+- Evidence: gate-qc PASS (node 4); DESIGN-BRIEF.md + GATE-QUESTIONS.md published
+  on `thejudge-auto/weekly-data-refresh-pr`; docs PR URL recorded below.
+- Resume: after the owner answers and merges, `graph-implement` picks up the
+  approved spec from `origin/main` and builds it (code PR into `main`).
+- Docs PR: <recorded after `gh pr create`>
 
 ## Dispatch prompts
 
