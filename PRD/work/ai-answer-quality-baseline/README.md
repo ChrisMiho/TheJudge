@@ -1,5 +1,5 @@
 ---
-status: active
+status: owner-action
 ---
 
 # ai-answer-quality-baseline
