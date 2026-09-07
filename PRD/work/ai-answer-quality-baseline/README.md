@@ -41,9 +41,10 @@ download. The owner's verdict and reason lines are untouched.
 
 ## Preparation gate
 
-- Quality-check: FAIL
+- Quality-check: PASS
 - Checked artifact: `PRD/work/ai-answer-quality-baseline/DESIGN-BRIEF.md`
-- Findings: (build half, attempt 1, 2026-09-07 — re-grade after the owner's six edits were applied inside `GATE-QUESTIONS.md`; the spec-forming attempt on 2026-09-06 had PASSed the pre-edit brief)
+- Findings: none (build half, attempt 2, 2026-09-07, at `2de4800`: all seven attempt-1 findings closed — gold set `DESIGN-BRIEF.md:373`, model swap `:18-21`, judge default A9 `:426` and `:330`, M3 `:151-199` re-derived with every input shown and labelled an estimate with no numeric cost target, measurement plan `:463-520`, four judge layers `:305-316`, provenance now the committed `gameRulesRuleIndex.json` with 277 `Example:` occurrences across 215 entries reproduced; `git diff fe4435a..2de4800` on `GATE-QUESTIONS.md` is two provenance lines inside REQ-185, verdict and reason lines byte-identical; 4/4 `Current:` excerpts byte-identical to live `PRD/sections/`, which is itself unchanged from `787ca5f`; REQ-185–190 unused; heading hygiene clean; 16-term amendment-set grep unchanged from attempt 1; technical-design-rules hold, no screen change; package `refined`. One non-blocking note: `DESIGN-BRIEF.md:208` cites the `preparation.ts` cap-of-5 sites at 223/267/313/351 while the live lines are 228/272/317/355 — supporting evidence only, build greps for the literal.)
+- Prior result: FAIL (build half, attempt 1, 2026-09-07 — re-grade after the owner's six edits were applied inside `GATE-QUESTIONS.md`; the spec-forming attempt on 2026-09-06 had PASSed the pre-edit brief). The seven findings, kept for the record:
   1. Gold-set size: `DESIGN-BRIEF.md:47` (non-goals) says six gold cases and one rubric; finalized REQ-185 requires at least the six named cases plus roughly a dozen tier-1/tier-2 seeds.
   2. Model swap: `DESIGN-BRIEF.md:11-13` and `:41-42` promise no provider or model swap and that the answer model stays what `OPENAI_MODEL` selects; finalized REQ-188 defines a four-model lineup (`gpt-4.1-mini`, `gpt-4.1`, `gpt-5-mini`, `gpt-5-nano`) for the eval run.
   3. Judge default: assumption A9 (`DESIGN-BRIEF.md:245`) defaults the judge to `OPENAI_MODEL`; finalized REQ-186 defaults it to `gpt-5` under `ANSWER_QUALITY_JUDGE_MODEL` and forbids it matching any answer model.
