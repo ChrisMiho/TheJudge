@@ -1,10 +1,15 @@
 // Housekeeping for finished graph runs (REQ-192).
 //
-// A run leaves three things on the owner's machine: its autonomous base branch
-// (`GRAPH_BRANCH_PREFIX`), a worktree under `.worktrees/`, and an intake
-// staging folder. Nothing cleans them up: a run never prunes its own leftovers
-// because a failed run's branch is evidence. Pruning is the owner's deliberate
-// act, so this command lists by default and deletes only with `--apply`.
+// A run leaves three things on the owner's machine: its branches
+// (`GRAPH_BRANCH_PREFIX` — the docs branch and the build half's `-work` branch),
+// a worktree under `.worktrees/`, and an intake staging folder. Nothing cleans
+// them up: a run never prunes its own leftovers because a failed run's branch
+// is evidence. Pruning is the owner's deliberate act, so this command lists by
+// default and deletes only with `--apply`.
+//
+// Any branch merged into `origin/main` is deletable, including a docs branch
+// whose package is still on `main` awaiting build: the build half cuts its
+// `-work` branch from `origin/main`, never from the docs branch (REQ-194).
 //
 // Shape matches `graph-preflight.mjs`: the decision is a pure, tested function
 // over the observed branch list, worktree list, intake folders, and lock;
@@ -28,8 +33,6 @@ export const CODEHEALTH_WORKTREE = ".worktrees/.codehealth"
 // One staging folder per run id, created by the intake step of a kickoff.
 export const INTAKE_DIR = ".worktrees/.graph-intake"
 
-export const WORK_DIR = "PRD/work"
-
 // The ref "merged" is judged against. The fetch in `main()` keeps it fresh.
 export const MERGE_TARGET = "origin/main"
 
@@ -47,18 +50,7 @@ export const NEVER_REMOVE_BASENAMES = Object.freeze([
 ])
 export const CONTROL_FILE_PREFIX = ".graph-"
 
-export const KEEP_PACKAGE_ON_MAIN = "package still on main: the build half's base"
 export const REPORT_OUTSIDE_ROOT = "outside the .worktrees root; not removed"
-
-/**
- * The package a branch belongs to: the name after the prefix, minus a trailing
- * `-work` or `-cleanup` (the build half's and the cleanup step's branches share
- * the docs branch's package).
- */
-export function packageSlug(branch) {
-  const name = branch.startsWith(GRAPH_BRANCH_PREFIX) ? branch.slice(GRAPH_BRANCH_PREFIX.length) : branch
-  return name.replace(/-(?:work|cleanup)$/, "")
-}
 
 function toPosix(value) {
   return String(value).split(path.sep).join("/")
@@ -77,15 +69,10 @@ function relativeToRoot(worktreePath, root) {
   return toPosix(path.relative(root, worktreePath))
 }
 
-function classifyBranch({ name, merged }, packagesOnMain) {
+function classifyBranch({ name, merged }) {
   const item = { kind: "branch", name }
   if (!merged) return { ...item, action: "keep", reason: `not merged into ${MERGE_TARGET}` }
-  if (packagesOnMain.has(packageSlug(name))) return { ...item, action: "keep", reason: KEEP_PACKAGE_ON_MAIN }
-  return {
-    ...item,
-    action: "delete",
-    reason: `merged into ${MERGE_TARGET}; package ${packageSlug(name)} is gone from main`
-  }
+  return { ...item, action: "delete", reason: `merged into ${MERGE_TARGET}` }
 }
 
 function classifyWorktree({ path: worktreePath, branch, merged, clean }, root) {
@@ -113,27 +100,18 @@ function classifyIntakeDir(runId, lock) {
  * Every leftover with its verdict, as a pure function of what was observed.
  *
  * - `branches`: `[{ name, merged }]` for each local branch under the prefix,
- *   `merged` meaning its tip is an ancestor of `origin/main`.
+ *   `merged` meaning its tip is an ancestor of `origin/main`. A merged branch
+ *   is deletable whether or not its package is still on `main`.
  * - `worktrees`: `[{ path, branch, merged, clean }]` for each linked worktree;
  *   `branch` is null when detached.
  * - `intakeDirs`: run ids found under `.worktrees/.graph-intake/`.
  * - `lock`: the parsed live lock, or null.
- * - `packagesOnMain`: package folder names present under `PRD/work/` on
- *   `origin/main`.
  * - `root`: the main checkout's absolute path, so worktree paths can be judged
  *   against `.worktrees/`; omit when the paths are already root-relative.
  */
-export function classifyLeftovers({
-  branches = [],
-  worktrees = [],
-  intakeDirs = [],
-  lock = null,
-  packagesOnMain = [],
-  root = null
-} = {}) {
-  const onMain = new Set(packagesOnMain)
+export function classifyLeftovers({ branches = [], worktrees = [], intakeDirs = [], lock = null, root = null } = {}) {
   return [
-    ...branches.map((branch) => classifyBranch(branch, onMain)),
+    ...branches.map((branch) => classifyBranch(branch)),
     ...worktrees.map((worktree) => classifyWorktree(worktree, root)),
     ...intakeDirs.map((runId) => classifyIntakeDir(runId, lock))
   ]
@@ -173,15 +151,6 @@ export function parseWorktreeList(text) {
       return entry
     })
     .filter((entry) => entry.path !== null)
-}
-
-/** `git ls-tree origin/main PRD/work/` reduced to the package folder names. */
-export function parsePackagesOnMain(text) {
-  return String(text ?? "")
-    .split("\n")
-    .map((line) => line.match(/^\S+\s+tree\s+\S+\t(.+)$/))
-    .filter(Boolean)
-    .map((match) => path.posix.basename(match[1]))
 }
 
 /** The printed report: one line per item, then the summary. */
@@ -297,7 +266,6 @@ function main(argv) {
     worktrees,
     intakeDirs: gatherIntakeDirs(),
     lock: gatherLock(),
-    packagesOnMain: parsePackagesOnMain(runGit(["ls-tree", MERGE_TARGET, `${WORK_DIR}/`])),
     root
   })
 

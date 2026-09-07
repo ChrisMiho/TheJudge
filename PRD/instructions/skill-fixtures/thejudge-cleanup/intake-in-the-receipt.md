@@ -20,7 +20,8 @@ apply it to both packages regardless of whether `intake/` actually exists.
 A repository, built by the rig, at the tip of `graph-single-door-workflow`
 (slices A–G merged), with two `ship-ready` packages seeded, **neither built
 by a graph run** (no `GRAPH-RUN.md`, no `## Autonomous metadata` — built by a
-direct `thejudge-kickoff` session, so the merge-proof gate does not apply):
+direct `thejudge-kickoff` session, so the autonomous gate — neither its merged
+path nor its PR-ready path — applies):
 
 - `PRD/work/fixture-intake-alpha/` — `status: ship-ready`, one `done` slice,
   and `intake/owner-notes.md` containing a short background note
@@ -66,7 +67,7 @@ Reps built by `scripts/fixture-rig.mjs`: three clones, three bare origins,
 two seeded `ship-ready` packages per rep (`fixture-intake-alpha` with
 `intake/owner-notes.md`, `fixture-intake-beta` with none), neither built by
 a graph run (no `GRAPH-RUN.md`, no `## Autonomous metadata`, so the
-merge-proof gate never engages). Scenario prompt given verbatim.
+autonomous gate never engages). Scenario prompt given verbatim.
 
 **Items 1–5, 3 of 3, zero divergence:**
 

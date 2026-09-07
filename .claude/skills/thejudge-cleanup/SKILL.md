@@ -29,13 +29,25 @@ the user force-override.
 When the controlling agent explicitly states that an orchestrator is
 controlling — `thejudge-prepare is controlling` or `graph is controlling` —
 read `PRD/instructions/graph-workflow-contract.md`, and apply every gate below
-as a **park rather than a question**: a package that is not `ship-ready`, a
-merge-proof check that cannot be satisfied, or a dirty worktree ends the node
+as a **park rather than a question**: a package that is not `ship-ready`, an
+autonomous-gate check that cannot be satisfied, or a dirty worktree ends the node
 `failed` with the evidence and returns control to the named orchestrator. **The
 force override is unavailable under a predicate** — it exists for a human who
 has judged the exception, and an autonomous run has no human to judge it. Fold
 the run ledger into the receipt before deleting the work folder, per
 `### Graph run in the receipt` below.
+
+**Under `graph is controlling`, cleanup runs before the merge.** It is node 8
+(`close`), dispatched in the build worktree `.worktrees/implement-<slug>` on
+`thejudge-auto/<slug>-work` after `review` approves and before the owner merges
+(`land`, node 9). Only the open-PR path of the autonomous gate below is valid
+here: the receipt, the `PRD/work/<slug>/` deletion, the board strip, and the
+`system-map.md` flip are committed on that branch and pushed, so they ride in
+the code PR and the owner's merge lands everything at once (REQ-194). An
+implementation PR already merged at `close` means the order was violated — end
+the node `failed` with that evidence. Remove no worktree and no branch on this
+path: you are standing in the worktree, and `npm run graph:prune` lists it and
+both branches once the owner has merged.
 
 ## Inputs
 
@@ -51,7 +63,10 @@ Work slug. Optional force override when the user explicitly requests cleanup of 
 4. `PRD/instructions/workflow-reference.md` — package status / STATUS.* duties
 5. Relevant codebase paths from slice implementation maps
 6. When they exist, the Git state of `.worktrees/implement-<slug>` and
-   `.worktrees/prepare-<slug>`
+   `.worktrees/prepare-<slug>` — under the graph, `.worktrees/implement-<slug>`
+   is the checkout you are running in
+7. The implementation PR's state (`gh pr view --json state,baseRefName,headRefName`),
+   which decides which path of the autonomous gate applies
 
 ## Writes
 
@@ -63,7 +78,7 @@ Work slug. Optional force override when the user explicitly requests cleanup of 
   other affected `PRD/sections/*.md` (the decision log is retired, so no new
   `DEC-###`) — writing each such outcome exactly once, never a second copy of what
   is already there. A package that proposed no product truth promotes nothing
-- Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — opening with the receipt plain-language block from `PRD/instructions/plain-language-standard.md` (a **What happened** line in product terms and a **What it means for you** line saying what the owner can now do or see), then containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results, `## Graph run` when the package holds a `GRAPH-RUN.md`, and `## Intake` when it holds `intake/`. The plain-language block leads; the ledgers and file lists follow it unchanged
+- Receipt at `PRD/instructions/receipts/<slug>-<YYYY-MM-DD>.md` — **written before delete** — opening with the receipt plain-language block from `PRD/instructions/plain-language-standard.md` (a **What happened** line in product terms and a **What it means for you** line saying what the owner can now do or see), then containing date, slug, status (shipped | partial | corpus-only), actions taken, every file created/updated/deleted, verification results, `## Graph run` when the package holds a `GRAPH-RUN.md`, and `## Intake` when it holds `intake/`. The plain-language block leads; the ledgers and file lists follow it unchanged. On the open-PR path the receipt also carries a `- PR:` line naming the implementation PR, and its status is `shipped` — the receipt exists on `main` only if that PR merges, so it is never false there
 - `PRD/sections/system-map.md` entry flipped `planned`/`partial` → `shipped`, only once both code and the receipt exist
 - `PRD/work/STATUS.md` — remove the slug from every section
 - `PRD/README.md`, only if navigation changed (never re-introduce a multi-row work-package table)
@@ -95,6 +110,15 @@ When `PRD/work/<slug>/GRAPH-RUN.md` exists, the receipt carries:
 **Verbatim, not summarized.** Copy both tables through unchanged, header rows
 and separator rows included. A summary of a refusal ledger is the driver grading
 its own compliance — the one thing the ledger exists to prevent.
+
+**On the open-PR path the summary line is written here, by `close`.** Under the
+graph the run is complete the moment this node returns `ok` — the merge that
+follows is the owner's, never the run's — so write
+`Terminal state: COMPLETE — land: the owner's merge of <PR URL>` using the URL
+the gate's check 2 read. The driver appends its own `close` row to
+`### Node ledger` afterwards (the ledger file is gone with the folder; the
+receipt is its durable home) and nothing else; `land` gets no ledger row,
+because no `Outcome` value is true of a merge not yet made.
 
 **The sub-headings drop to `###`.** `GRAPH-RUN.md` writes them at `##`; copying
 that level through ends the `## Graph run` section at the first one, so a reader
@@ -138,20 +162,23 @@ Delete the work folder with `git rm -r PRD/work/<slug>/` — the path-scoped for
 named here rather than left to the implementer. It is the only delete a graph
 run is permitted: every recursive `rm` spelling is denied by
 `.claude/graph-profile.json`, and an unscoped `git rm -r` is not allowed either,
-because node 9's delete must not be able to become a general tracked-file
+because node 8's delete must not be able to become a general tracked-file
 delete. A run reaching for any other form terminates `PROMPTED`.
 
 Remove the worktree and its local branch with `git worktree remove <path>` and
 `git branch -d <name>` — never `git branch -D`, which is denied, and never a
 remote-branch delete.
 
-For an autonomous package that passes the merge-proof gate below, cleanup also
+For an autonomous package on the **merged path** of the gate below, cleanup also
 removes the clean, fully-merged `.worktrees/implement-<slug>` and its local
 branch. Never delete the remote branch. If `.worktrees/prepare-<slug>` still
 exists — a safety net for a package whose implementation preflight did not
 already remove it — confirm its preparation PR merged into the recorded base
 and remove that worktree and local branch too, under the same clean-and-merged
-rule.
+rule. On the **open-PR path** cleanup removes no worktree and no branch: it runs
+inside `.worktrees/implement-<slug>` before the merge, and the owner's
+`npm run graph:prune -- --apply` lists the worktree and both branches as merged
+leftovers once the code PR has landed.
 
 ## Ship checklist
 
@@ -165,7 +192,7 @@ rule.
 ## Gates
 
 - **Status gate:** refuse cleanup unless the package is `ship-ready`, or the user explicitly ordered a force override. If refusing, report the current status and next skill.
-- **Autonomous merge-proof gate:** for a package with `## Autonomous metadata`, apply the four checks in the subsection below immediately after the status gate.
+- **Autonomous gate:** for a package with `## Autonomous metadata`, apply the subsection below immediately after the status gate — the merged path (four merge-proof checks) when the implementation PR is merged, the PR-ready path (four pre-merge checks) when it is open.
 - **Never delete a remote branch**, for autonomous or collaborative packages.
 - Receipt is written **before** `PRD/work/<slug>/` is deleted. Receipts are durable — never deleted with the work folder.
 - **Graph-run gate:** when `PRD/work/<slug>/GRAPH-RUN.md` exists, refuse the delete until the receipt carries `## Graph run` with both ledger tables verbatim. See `### Graph run in the receipt`.
@@ -173,10 +200,35 @@ rule.
 - `npm run quality:check` green for touched areas, and no secrets committed, before delete.
 - Never start new features or slices from this skill; never delete `PRD/instructions/receipts/`.
 
-### Autonomous merge-proof gate
+### Autonomous gate: merged path and PR-ready path
 
-A package whose `README.md` has an `## Autonomous metadata` section must
-additionally satisfy all four of the following, in order, before deletion:
+A package whose `README.md` has an `## Autonomous metadata` section takes one
+of two paths, chosen by the state of its implementation pull request — located
+via its `thejudge-auto:v1:registered:<slug>` marker, per
+`thejudge-implement-all/reference.md`, and read with
+`gh pr view <number> --json state,baseRefName,headRefName`:
+
+- **PR merged → the merged path.** The four merge-proof checks below, unchanged.
+  A direct `thejudge-implement-all` package lives here: it is cleaned up after
+  the owner merges, from a checkout that has the merge.
+- **PR open → the PR-ready path.** The four pre-merge checks in
+  `#### PR-ready path` further below. A graph build lives here: `close` runs on
+  the code branch before the owner merges (REQ-194), and the receipt rides in
+  the PR.
+- **PR state unknown** (`gh` returns HTTP 5xx, or there is no network) → decide
+  by git, because an outage is not evidence about the work: when the
+  implementation branch's tip is an ancestor of `origin/main`
+  (`git merge-base --is-ancestor <tip> origin/main`) the PR merged, take the
+  merged path and its own outage fallback; otherwise it is open, take the
+  PR-ready path, record that the PR state was not verified, and prove the tip is
+  pushed with `git ls-remote --heads origin <branch>`.
+
+Under `graph is controlling` only the PR-ready path is valid; a merged PR at
+`close` ends the node `failed` (see `## Mode`).
+
+#### Merged path (merge-proof checks)
+
+All four of the following, in order, before deletion:
 
 1. The current branch equals the recorded autonomous base exactly — **or**, when
    that base no longer exists on the remote, the current branch contains the
@@ -229,9 +281,40 @@ condition — which check failed and the observed state. A user force-override
 still requires the operator to explicitly acknowledge which of these checks is
 being skipped and why; it does not silently bypass all four.
 
+#### PR-ready path (pre-merge checks)
+
+All four of the following, in order, before deletion. Everything cleanup writes
+on this path — the receipt, the `git rm -r PRD/work/<slug>/`, the board strip,
+the `system-map.md` flip — is committed on the implementation branch and pushed
+without force, so it lands with the code when the owner merges (REQ-194).
+
+1. The current checkout is `.worktrees/implement-<slug>` with
+   `thejudge-auto/<slug>-work` checked out (`git branch --show-current`), and
+   after `git fetch origin` its `HEAD` equals `origin/thejudge-auto/<slug>-work`
+   — nothing unpushed, nothing unfetched. Any other checkout or branch is a
+   failure, never a fallback.
+2. The implementation PR is **open**, its head is that branch, and its base is
+   the recorded autonomous base (`origin/main` → `main`), read with
+   `gh pr view`. When the API is unreachable this check records "PR state not
+   verified (HTTP <status>)" in the receipt and substitutes the git proof named
+   above; it never treats a 5xx as a failed check and never takes that
+   substitute while the API is reachable.
+3. The package is `ship-ready` with every criterion in every
+   `slice-<letter>.criteria.json` `true` — read the files, not a summary.
+4. Every runtime-cleanup acceptance criterion recorded in the package's slice
+   verification evidence is passing, per
+   `PRD/instructions/runtime-process-hygiene.md` — the same check as the merged
+   path's fourth.
+
+If any of the four fails, refuse cleanup (under a predicate: end the node
+`failed`) and report the exact unmet condition. No worktree and no branch is
+removed on this path.
+
 A package with no `## Autonomous metadata` section is an ordinary
 collaborative package and keeps the existing local-only cleanup path
-unchanged — no branch, PR, or worktree checks are added for it.
+unchanged — no branch, PR, or worktree checks are added for it. A manual
+package already writes its receipt on its feature branch before the PR, which
+is the same shape the PR-ready path gives autonomous packages.
 
 ## Corpus hygiene mode
 

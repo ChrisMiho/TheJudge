@@ -209,7 +209,7 @@ Concurrency is structural, not re-keyed: each root holds its own
    verbatim. Never hand-resolve anything to get past it.
 3. Otherwise re-run the identical command without `--dry-run`, passing the same
    explicit `--run-id`.
-4. Confirm the end state. Root shape: `git -C .worktrees/kickoff-<slug> branch
+4. Confirm the end state. Root shape: `cd .worktrees/kickoff-<slug> && git branch
    --show-current` is the requested branch, `git ls-remote --heads origin
    <branch>` shows it pushed, and `git branch --show-current` at the root is
    **unchanged**. In-place shape: `git status --porcelain` empty and

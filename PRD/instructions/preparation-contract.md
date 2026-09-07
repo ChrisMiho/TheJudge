@@ -46,6 +46,14 @@ Downstream autonomous skills — `thejudge-implement-all`,
 value, and block if it is missing, unavailable, or contradicted by a supplied
 branch or PR.
 
+The "never defaults to `main`" rule above binds `thejudge-prepare`'s choice of a
+base. A graph run records the value differently, and rewrites it once: the
+spec-forming half records node 1's `thejudge-auto/<slug>` branch, and when the
+owner has merged the docs PR and `graph-implement` claims the spec, the build
+half rewrites it to `origin/main` — the branch the package's next PR now
+targets. That is a recorded value the downstream skills inherit like any other,
+not a default (REQ-193; `graph-workflow-contract.md`, `## Autonomous metadata`).
+
 ## One-package candidate selection and `NO ACTIONABLE PACKAGE`
 
 Produce exactly one `PRD/work/<slug>/` package per invocation.

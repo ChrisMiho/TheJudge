@@ -39,9 +39,9 @@ work.
   either the spec or the code to paper over it.
 
 **Why this is its own loop, not the graph.** The graph
-(`graph-kickoff`/`graph-implement`) is a *feature engine*: product-truth gates, an
-evolving base→main PR merged last, and a per-package kickoff worktree with its
-own lock. Code-health targets are independent and behavior-preserving, and they
+(`graph-kickoff`/`graph-implement`) is a *feature engine*: product-truth gates, a
+docs PR the owner answers and merges followed by a code PR into `main`, and a
+per-package worktree with its own lock. Code-health targets are independent and behavior-preserving, and they
 need none of that, so this loop **does not use `graph-preflight`** — it runs its
 own tiny preflight and opens many independent PRs a night without blocking itself.
 

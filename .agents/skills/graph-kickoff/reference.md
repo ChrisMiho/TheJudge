@@ -19,8 +19,9 @@ predicate `graph is controlling` must appear in the dispatch prompt — the
 | 4 | `gate-qc` | `/thejudge-quality-check` | sonnet | 60 | **stop at PASS** (docs PR + `owner-action`) | `define`, max 3 loops; a 4th FAIL parks |
 
 At `gate-qc` PASS the run does not advance to `plan` — it publishes the proposal,
-opens the docs-only base→main PR, and parks at `owner-action`. The build half
-(`graph-implement`) resumes from there once the owner answers and merges.
+opens the docs-only PR into `main`, and parks at `owner-action`. The build half
+(`graph-implement`) picks the spec up once the owner answers and merges that PR,
+in its own worktree cut from `origin/main` (REQ-193).
 
 ## Entry point with no ledger (spec-forming half)
 

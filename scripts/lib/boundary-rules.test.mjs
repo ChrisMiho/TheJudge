@@ -215,7 +215,7 @@ test("every node in the contract's table carries a cap value", () => {
   for (const node of NODES) {
     const cap = capForNode(node)
     if (node === "land") {
-      assert.equal(cap, null, "node 8 is a human PR merge and is never dispatched")
+      assert.equal(cap, null, "node 9 (land) is a human PR merge and is never dispatched")
       continue
     }
     assert.ok(Number.isInteger(cap) && cap > 0, `${node} needs a positive integer cap`)

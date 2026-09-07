@@ -30,14 +30,30 @@ asking for one, and treat every stop as a park reported to the named
 orchestrator instead of a question to a user: a blocked slice, an unresolvable
 gate failure, or a rebase conflict whose intent is not derivable ends the node
 `failed` with the evidence, and never waits for an answer nobody is there to
-give. Write only inside `.worktrees/implement-<slug>/` and `PRD/work/<slug>/` —
-node 6's write scope is asserted on return. Carry the dispatch prompt's absolute
-`Working directory:` line, unchanged, into every prompt this skill writes.
-Merging and closing the PR stay human in both modes.
+give. Write only inside `.worktrees/implement-<slug>/` — the work package lives
+there too, so a bare `PRD/work/<slug>/` path is a write to the launch checkout
+and out of scope; node 6's write scope is asserted on return (REQ-193). Carry
+the dispatch prompt's absolute `Working directory:` line, unchanged, into every
+prompt this skill writes. Merging and closing the PR stay human in both modes.
+
+**Work in place under the graph.** The graph driver creates the build worktree
+at claim: `.worktrees/implement-<slug>` checked out on the shared branch
+`thejudge-auto/<slug>-work`, cut from `origin/main` and already pushed
+(REQ-193). When the dispatch's `Working directory:` names that worktree and it
+is checked out on the shared branch, work there — no second worktree, no
+contributor branch. The dispatch must name the shared branch explicitly and it
+must equal the worktree's checked-out branch (`git branch --show-current`);
+block and report when the name is missing or differs. The recorded autonomous
+base is `origin/main` here, so the "shared branch equals the recorded base"
+guard in `reference.md` never fires — this explicit check replaces it. The
+fetch, rebase onto `origin/thejudge-auto/<slug>-work`, commit, and
+push-without-force loop and the PR lifecycle are unchanged; the PR base is the
+recorded autonomous base (`main`). Direct invocation still creates its own
+worktree and contributor branch as described below.
 
 ## Inputs
 
-Work slug or `PRD/work/<slug>/` path. Optional shared remote branch or PR number; otherwise use `thejudge-auto/<slug>` targeting the package's recorded autonomous base (the `## Autonomous metadata` section in its `README.md`). Block before worktree creation if the package has no recorded base and no compatible supplied branch/PR resolves one, or if the resolved shared branch equals the recorded autonomous base — a PR cannot target its own head, so supply a distinct branch such as `<base>-work`.
+Work slug or `PRD/work/<slug>/` path. Optional shared remote branch or PR number; otherwise use `thejudge-auto/<slug>` targeting the package's recorded autonomous base (the `## Autonomous metadata` section in its `README.md`). Block before worktree creation if the package has no recorded base and no compatible supplied branch/PR resolves one, or if the resolved shared branch equals the recorded autonomous base — a PR cannot target its own head, so supply a distinct branch such as `<base>-work`. Under `graph is controlling` the shared branch is always supplied — `thejudge-auto/<slug>-work`, the branch the driver's build worktree is already on — and a dispatch that omits it blocks (see `## Mode`).
 
 ## Reads
 
@@ -45,7 +61,7 @@ Read the work-package `README.md` — including its `## Autonomous metadata` sec
 
 ## Workflow contract
 
-1. Create a unique contributor branch in a new worktree; never edit the launch checkout.
+1. Create a unique contributor branch in a new worktree; never edit the launch checkout. Under `graph is controlling`, work in place in the driver's build worktree on the shared branch instead (`## Mode`) — the launch checkout is still never edited.
 2. Join an existing shared remote branch or start from the latest fetched recorded autonomous base.
 3. Implement dependency-ready slices sequentially with no implementation subagents or pauses between green slices.
 4. Join an existing PR before implementation; otherwise create it after the first push. Publish one milestone commit per slice.
@@ -87,7 +103,7 @@ Read the work-package `README.md` — including its `## Autonomous metadata` sec
 
 ## Completion gate
 
-Use the race-safe READY loop in `reference.md`; never infer readiness from this work package alone. Retain and report the worktree path, and name the capture output path while the worktree still exists — cleanup removes the worktree and its captures with it.
+Use the race-safe READY loop in `reference.md`; never infer readiness from this work package alone. Retain and report the worktree path, and name the capture output path while the worktree still exists — a post-merge cleanup removes the worktree and its captures with it, and under the graph the owner's `npm run graph:prune -- --apply` does after the code PR merges (cleanup runs before the merge there and removes nothing, REQ-194).
 
 ## Quick reference
 
@@ -102,7 +118,7 @@ Use the race-safe READY loop in `reference.md`; never infer readiness from this 
 ## Common mistakes
 
 - Stopping after one slice: this skill owns all remaining slices.
-- Sharing one local branch across worktrees: use unique contributors pushing to one remote branch.
+- Sharing one local branch across worktrees: use unique contributors pushing to one remote branch. (Under the graph there is one worktree and one branch, and the driver and this skill write it in turns — the driver only between nodes — so nothing is shared across worktrees there.)
 - Trusting pre-rebase tests or posting routine comments: reverify; let commits show progress.
 - Merging into the recorded autonomous base or running cleanup: both remain human-controlled.
 

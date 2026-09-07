@@ -7,18 +7,19 @@ mirrors the subset this skill runs; when they disagree, the contract wins.
 
 ## Node dispatch (build half)
 
-Every node except node 8 (`land`) runs as a subagent with an explicit model
-override; `land` is a human PR merge the driver parks for and never dispatches.
-The controlling predicate `graph is controlling` must appear in every dispatch
-prompt.
+Every node except node 9 (`land`) runs as a subagent with an explicit model
+override; `land` is the owner merging the code PR, after the run has already
+ended `COMPLETE` at `close`, and the driver never dispatches it. The controlling
+predicate `graph is controlling` must appear in every dispatch prompt, and every
+build-half dispatch carries `Working directory: <root>/.worktrees/implement-<slug>`.
 
 | # | Node | Delegate | Model | Cap | On success | On failure |
 | --- | --- | --- | --- | --- | --- | --- |
 | 5 | `plan` | `/thejudge-map-out` | sonnet | 120 | `build` | park |
 | 6 | `build` | `/thejudge-implement-all` | sonnet | 1200 | `review` | park |
-| 7 | `review` | no-write reviewer subagent | opus | 120 | `land` | `build` for Critical/Important, max 2 loops |
-| 8 | `land` | human PR merge | — | — | `close` | park |
-| 9 | `close` | `/thejudge-cleanup` | sonnet | 120 | complete | park |
+| 7 | `review` | no-write reviewer subagent | opus | 120 | `close` | `build` for Critical/Important, max 2 loops |
+| 8 | `close` | `/thejudge-cleanup` (PR-ready path, on the code branch, before the merge) | sonnet | 120 | `land` — the run ends `COMPLETE` with the code PR open | park |
+| 9 | `land` | human PR merge | — | — | run complete — outside the run's ledger; the package is on `main` when the owner merges | — |
 
 Gate resolution runs before node 5: dispatch `graph-gate-review` on an answered
 `GATE-QUESTIONS.md`, then re-enter at `gate-qc` (node 4) so an owner edit is
@@ -26,18 +27,24 @@ re-graded, then continue to `plan`.
 
 ## Entry point (build half)
 
-A supplied package path resuming the build half enters at the node matching its
-`STATUS.*` marker:
+A supplied package path resuming the build half enters at the node matching the
+`STATUS.*` marker **inside the build worktree** `.worktrees/implement-<slug>`
+(the launch checkout's copy is whatever the docs merge left and is never read):
 
-| Existing marker | Enter at |
+| State in `.worktrees/implement-<slug>` | Enter at |
 | --- | --- |
 | `STATUS.owner-action` | resolve an answered `GATE-QUESTIONS.md` via `graph-gate-review`, then re-enter at `gate-qc`; a blank answer slot re-parks. Any non-`define` gate parks again unless its recorded `## Open gate` is resolved |
-| `STATUS.refined` | `gate-qc` |
+| `STATUS.refined` | gate resolution when `## Gate verdicts` is absent from the ledger (the claim leaves the marker `refined`), else `gate-qc` |
 | `STATUS.active` | `build`, or `plan` when `GAMEPLAN.md` is absent |
 | `STATUS.ship-ready` | `close` |
+| no `PRD/work/<slug>/` at all | post-`close`: read the receipt's `### Node ledger`; append the `close` row if missing, push, release the lock, `COMPLETE`; if present, nothing — the code PR is the owner's |
+| `thejudge-auto/<slug>-work` on `origin`, no local worktree | re-create it: `git worktree add .worktrees/implement-<slug> -b thejudge-auto/<slug>-work origin/thejudge-auto/<slug>-work`, then read the marker as above |
+| the path exists but is not a usable worktree | `BLOCKED`, naming it |
 
-A package still needs a recorded autonomous base. If `## Autonomous metadata` is
-missing, run `graph-preflight` first with a supplied `--branch <name>`.
+The autonomous base is written by the claim itself (`- Autonomous base:
+origin/main`), so a build-half package never lacks one; `graph-preflight` is
+never run in this half — it would cut a kickoff branch and worktree this design
+forbids.
 
 ## Node 7 dispatch shape
 
@@ -60,11 +67,18 @@ immediately (the contract's `## Human gates` bar), without waiting for the cap.
 
 ## Node 6 return-side assertion
 
-Every path `build` wrote must lie inside `.worktrees/implement-<slug>/` or
-`PRD/work/<slug>/`. A write outside that set fails the node and parks, naming the
-offending paths. It is the production counterpart of the fixture rig's
-before/after snapshot — a real run is supposed to change the repository, so the
-scope set replaces "byte-unchanged".
+Two checks, both required (REQ-193). The launch checkout's
+`git status --porcelain`, captured before `build` was dispatched, must be
+identical after it returns — the launch checkout is on `main` and any write
+there shows. And every path `build` reports, made launch-root-relative (absolute
+paths have the root stripped), must lie inside `.worktrees/implement-<slug>/`
+(`buildWriteScope` / `classifyBuildWrites` in `scripts/graph-ledger-check.mjs`).
+The work package lives inside that worktree, so a bare `PRD/work/<slug>/…` path
+is a write to the launch checkout — the 2026-09-05 failure where slice status
+landed in the launch checkout instead of the PR head. A write outside the scope
+fails the node and parks, naming the offending paths. It is the production
+counterpart of the fixture rig's before/after snapshot — a real run is supposed
+to change the repository, so the scope set replaces "byte-unchanged".
 
 `plan` requires a recorded quality-check PASS in the package README's
 `## Preparation gate` section and cannot self-certify one. The driver writes that
@@ -72,43 +86,48 @@ section after every `gate-qc` node.
 
 ## Publishing before `build`
 
-`thejudge-implement-all` blocks when the launch checkout has relevant modified or
-untracked inputs, and requires the GAMEPLAN, slice docs, and baseline to exist
-unchanged at the remote start point. Before dispatching `build`, commit and push
-to `origin/<autonomous base>`:
+`thejudge-implement-all` requires the GAMEPLAN, slice docs, and baseline to exist
+unchanged at the remote start point — `origin/thejudge-auto/<slug>-work`'s tip.
+Before dispatching `build`, commit in the build worktree and push the shared
+branch:
 
 - `GRAPH-RUN.md`, the package `README.md` (including `## Autonomous metadata` and
   `## Preparation gate`), `DESIGN-BRIEF.md`, `GAMEPLAN.md`, every `slice-*.md`, the
   `STATUS.*` marker, and the `PRD/work/STATUS.md` board row.
 
-Then confirm `git status --porcelain` is empty.
-
-### The base is frozen once `build` opens the PR
-
-This publish is the **last** driver push to `origin/<autonomous base>`. From the
-moment `build` opens the `-work` → base PR, the driver commits its ledger and
-status updates locally only, and pushes nothing to the base until the PR merges —
-a driver push to the base after the head forked makes both branches edit
-`GRAPH-RUN.md` and the PR conflicts on it. Reconcile at `land`/`close` instead.
+Then confirm `git status --porcelain` is empty in the worktree. This is an
+ordinary between-nodes driver commit, not a last push: the driver keeps
+committing to the same branch between every later node. There is no frozen
+base and no reconcile step — the builder and the driver write one branch in
+turns, so nothing ever conflicts (REQ-193).
 
 ## Worktree and branch shape
 
-- Worktree path: `.worktrees/implement-<slug>`, owned by `thejudge-implement-all`.
+- Worktree path: `.worktrees/implement-<slug>`, **created by the driver at claim**
+  on `thejudge-auto/<slug>-work` cut from `origin/main`; `thejudge-implement-all`
+  works in it in place under `graph is controlling` (no second worktree, no
+  contributor branch).
 - Refuse any worktree outside the repo-local `.worktrees/` root.
-- One worktree per package, not per slice.
-- The spec-forming half's `.worktrees/kickoff-<slug>` is removed at claim time
-  (clean tree only, `git worktree remove`, no `--force`); the local base branch
-  is kept (see `SKILL.md`, "Claim it").
-- Dispatch `build` with an explicit shared branch `thejudge-auto/<slug>-work` — a
-  distinct head from the autonomous base, so the `-work` → base PR shows the whole
-  deliverable and a PR cannot go from a branch into itself.
+- One worktree per package, not per slice; one branch per package.
+- The spec-forming half's `.worktrees/kickoff-<slug>` is removed before the claim
+  (clean tree only, `git worktree remove`, no `--force`; dirty → report and skip
+  the spec unclaimed); the local `thejudge-auto/<slug>` docs branch is left for
+  `npm run graph:prune` (see `SKILL.md`, "Claim it").
+- Dispatch `build` naming the shared branch `thejudge-auto/<slug>-work`
+  explicitly; the skill blocks when it is missing or differs from the worktree's
+  checked-out branch. The code PR is `thejudge-auto/<slug>-work → main`.
+- Driver commits: `cd <root>/.worktrees/implement-<slug> && git add <paths> &&
+  git commit …`, then `git push -u origin thejudge-auto/<slug>-work` — the forms
+  `.claude/graph-profile.json` allows. Never `git -C`, which it does not.
 
-## Node 8 (`land`) and model rationale
+## Node 9 (`land`) and model rationale
 
-Node 8 is never dispatched — `human PR merge` is not a phase skill. On reaching
-`land`, the driver parks with the PR URL and the resume command. A later
-`/graph-implement PRD/work/<slug>/` checks whether the PR is merged; if so it
-records `land` as `ok` and continues to `close`.
+Node 9 is never dispatched — `human PR merge` is not a phase skill — and it
+comes **after** the run has ended: node 8 (`close`) writes the receipt and
+deletes the package on the code branch, the driver ends `COMPLETE` with the PR
+open, and the owner's merge is what puts the package on `main`. No ledger row
+is written for `land`; the receipt's `Terminal state:` line names the merge as
+the owner's.
 
 `define` and `review` take opus because their output is judgment the run cannot
 recover from. Everything else is bounded, verifiable work. To change a node's

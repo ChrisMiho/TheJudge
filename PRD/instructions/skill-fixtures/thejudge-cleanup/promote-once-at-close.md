@@ -6,6 +6,9 @@ unapplied, and never assumes refinement pre-wrote `PRD/sections/` or writes a
 second copy of what is already there).
 Format and rules: `PRD/instructions/skill-testing.md`.
 Rep setup: `scripts/fixture-rig.mjs` — never hand-build reps.
+Gate path exercised: the **merged path** (the implementation PR merged into the
+recorded base; the pre-merge PR-ready path is graded in
+`close-inside-the-code-pr.md`).
 
 ## Why this scenario exists
 

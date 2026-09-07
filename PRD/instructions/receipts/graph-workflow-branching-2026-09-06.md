@@ -14,7 +14,7 @@ for your answers, from the same terminal, and stay on `main`. For two ideas at
 the same moment, open a second session in a throwaway checkout (`OPERATOR.md`
 recipe 2). One session per folder while a run is executing. When you want the
 nine merged run branches and six stale staging folders gone, run
-`npm run graph:prune --apply` from the repo root.
+`npm run graph:prune -- --apply` from the repo root.
 
 - Date: 2026-09-06
 - Slug: `graph-workflow-branching`
@@ -80,7 +80,7 @@ Deleted: `PRD/work/graph-workflow-branching/` (this cleanup).
 
 - Delete `thejudge-auto/smoke-20260906` on GitHub (remote deletion is denied
   to a run).
-- `npm run graph:prune --apply` from the repo root when ready.
+- `npm run graph:prune -- --apply` from the repo root when ready.
 - Part 2 package: one writer per branch (the `land` conflicts) and the base
   branch's fate under `delete_branch_on_merge` — findings 2 and 7 in the probe
   folder.

@@ -1,10 +1,15 @@
 // The morning digest: one read-only command that summarizes what the night's
-// graph run(s) did, and which base→main PRs still need merging to reach `main`.
+// graph run(s) did, and which graph PRs are waiting on the owner — a docs PR to
+// answer and merge, or a code PR to merge into `main`.
 //
 // The queue spans multiple packages, so no single run can summarize the others —
-// this reads every ledger at once. It is strictly read-only: it reads files and
-// issues one read-only `gh pr list`, and prints. The decision logic is pure
-// (`parseLedger`, `formatDigest`) so the whole shape is tested without a run.
+// this reads every ledger at once: under the launch checkout's `PRD/work/` and
+// inside every linked worktree under `.worktrees/`, because a run writes its
+// ledger in its own worktree (REQ-191, REQ-193) and the launch checkout sees it
+// only after a merge. It is strictly read-only: it reads files and issues one
+// read-only `gh pr list`, and prints. The decision logic is pure (`parseLedger`,
+// `preferWorktreeLedgers`, `formatDigest`) so the whole shape is tested without
+// a run.
 
 import { execFileSync } from "node:child_process"
 import { existsSync, readFileSync, readdirSync } from "node:fs"
@@ -13,10 +18,11 @@ import { pathToFileURL } from "node:url"
 
 import { GRAPH_BRANCH_PREFIX } from "./graph-preflight.mjs"
 
-// The read-only query behind `## Pending base→main PRs`. It lived in
+// The read-only query behind `## PRs waiting on you`. It lived in
 // `graph-preflight.mjs` while preflight's base→main guard used it; the guard
-// retired on 2026-09-06 (REQ-191) and the digest is now its only reader.
-export const OPEN_BASE_TO_MAIN_PRS_COMMAND = [
+// retired on 2026-09-06 (REQ-191) and the digest is now its only reader. Both
+// halves' PRs match: the docs PR and the code PR are `thejudge-auto/*` → `main`.
+export const OPEN_GRAPH_PRS_COMMAND = [
   "pr",
   "list",
   "--base",
@@ -29,6 +35,9 @@ export const OPEN_BASE_TO_MAIN_PRS_COMMAND = [
 
 export const WORK_DIR = "PRD/work"
 export const RECEIPTS_DIR = "PRD/instructions/receipts"
+
+// Linked worktrees live here; a run's ledger is at `<root>/PRD/work/<slug>/`.
+export const WORKTREES_ROOT = ".worktrees"
 
 // The body of a `## <heading>` section, up to the next `## ` heading or the end
 // of the document. Plain string slicing rather than a regex, so a stray `##`
@@ -87,18 +96,38 @@ export function parseLedger(markdown, slugFallback = null) {
 }
 
 /**
+ * One list of ledgers from the launch checkout's `PRD/work/` and from every
+ * linked worktree's `PRD/work/`. A run writes its ledger in its worktree
+ * (`.worktrees/kickoff-<slug>` in the spec-forming half, `.worktrees/implement-<slug>`
+ * in the build half), so the worktree copy is the live one and wins for a slug
+ * present in both; the launch checkout's copy is what the last merge left.
+ *
+ * `worktreePackages` entries carry `worktree`: the `.worktrees/<dir>` they came
+ * from, printed beside the run so the owner knows where to look.
+ */
+export function preferWorktreeLedgers(mainPackages = [], worktreePackages = []) {
+  const bySlug = new Map()
+  for (const pkg of mainPackages) bySlug.set(pkg.slug, pkg)
+  for (const pkg of worktreePackages) bySlug.set(pkg.slug, pkg)
+  return [...bySlug.values()]
+}
+
+/**
  * The printed digest, as a pure function of already-gathered inputs.
  *
- * `packages` are `parseLedger` results, `receipts` are file names (newest
- * first), `pendingBaseToMainPRs` are `{ headRefName, url }` PRs from a
- * `thejudge-auto/*` head into `main`.
+ * `packages` are `parseLedger` results (optionally carrying `worktree`),
+ * `receipts` are file names (newest first), `pendingGraphPRs` are
+ * `{ headRefName, url }` PRs from a `thejudge-auto/*` head into `main` — the
+ * docs PR the owner answers and merges, or the code PR the owner merges.
  */
-export function formatDigest({ packages = [], receipts = [], pendingBaseToMainPRs = [], now = new Date() } = {}) {
+export function formatDigest({ packages = [], receipts = [], pendingGraphPRs = [], now = new Date() } = {}) {
   const lines = [`Graph digest — ${now.toISOString().slice(0, 10)}`, ""]
 
   lines.push("## Runs")
   if (packages.length === 0) {
-    lines.push("  (no graph run ledgers found under PRD/work/*/GRAPH-RUN.md)")
+    lines.push(
+      `  (no graph run ledgers found under ${WORK_DIR}/*/GRAPH-RUN.md or ${WORKTREES_ROOT}/*/${WORK_DIR}/*/GRAPH-RUN.md)`
+    )
   } else {
     for (const pkg of packages) {
       const state = pkg.parked
@@ -106,7 +135,8 @@ export function formatDigest({ packages = [], receipts = [], pendingBaseToMainPR
         : pkg.currentNode
           ? `running (at \`${pkg.currentNode}\`)`
           : "state unknown"
-      lines.push(`- ${pkg.slug ?? "<unknown>"}: ${state}`)
+      const where = pkg.worktree ? ` [in ${pkg.worktree}]` : ""
+      lines.push(`- ${pkg.slug ?? "<unknown>"}: ${state}${where}`)
       if (pkg.gateSummary) lines.push(`    gate: ${pkg.gateSummary}`)
       if (pkg.questionsFile) lines.push(`    answer: ${pkg.questionsFile}`)
       if (pkg.resumeCommand) lines.push(`    resume: ${pkg.resumeCommand}`)
@@ -114,12 +144,12 @@ export function formatDigest({ packages = [], receipts = [], pendingBaseToMainPR
   }
   lines.push("")
 
-  lines.push("## Pending base→main PRs")
-  if (pendingBaseToMainPRs.length === 0) {
-    lines.push("  none — main is current")
+  lines.push("## PRs waiting on you")
+  if (pendingGraphPRs.length === 0) {
+    lines.push("  none — nothing to answer or merge")
   } else {
-    for (const pr of pendingBaseToMainPRs) {
-      lines.push(`- ${pr.headRefName} → main (${pr.url ?? "<no url>"}) — merge to reach main`)
+    for (const pr of pendingGraphPRs) {
+      lines.push(`- ${pr.headRefName} → main (${pr.url ?? "<no url>"}) — answer and merge, or merge`)
     }
   }
   lines.push("")
@@ -134,26 +164,46 @@ export function formatDigest({ packages = [], receipts = [], pendingBaseToMainPR
   return lines.join("\n")
 }
 
-function gatherPackages(read = readFileSync, listDir = readdirSync, exists = existsSync) {
+function gatherLedgersUnder(workDir, { read, listDir, exists, worktree = null }) {
   const packages = []
   let entries
   try {
-    entries = listDir(WORK_DIR, { withFileTypes: true })
+    entries = listDir(workDir, { withFileTypes: true })
   } catch {
     return packages
   }
   for (const entry of entries) {
     if (!entry.isDirectory()) continue
-    const ledgerPath = path.join(WORK_DIR, entry.name, "GRAPH-RUN.md")
+    const ledgerPath = path.join(workDir, entry.name, "GRAPH-RUN.md")
     if (!exists(ledgerPath)) continue
     try {
-      packages.push(parseLedger(read(ledgerPath, "utf8"), entry.name))
+      const parsed = parseLedger(read(ledgerPath, "utf8"), entry.name)
+      packages.push(worktree ? { ...parsed, worktree } : parsed)
     } catch {
       // An unreadable or malformed ledger is skipped, never fatal — the digest
       // reports what it can rather than failing the whole morning summary.
     }
   }
   return packages
+}
+
+function listWorktreeDirs(listDir) {
+  try {
+    return listDir(WORKTREES_ROOT, { withFileTypes: true })
+      .filter((entry) => entry.isDirectory() && !entry.name.startsWith("."))
+      .map((entry) => entry.name)
+  } catch {
+    return []
+  }
+}
+
+function gatherPackages(read = readFileSync, listDir = readdirSync, exists = existsSync) {
+  const io = { read, listDir, exists }
+  const inWorktrees = listWorktreeDirs(listDir).flatMap((dir) => {
+    const worktree = path.posix.join(WORKTREES_ROOT, dir)
+    return gatherLedgersUnder(path.join(WORKTREES_ROOT, dir, WORK_DIR), { ...io, worktree })
+  })
+  return preferWorktreeLedgers(gatherLedgersUnder(WORK_DIR, io), inWorktrees)
 }
 
 function gatherReceipts(listDir = readdirSync, limit = 5) {
@@ -172,7 +222,7 @@ function gatherReceipts(listDir = readdirSync, limit = 5) {
 
 function gatherPendingPRs(runGh) {
   try {
-    const prs = JSON.parse(runGh(OPEN_BASE_TO_MAIN_PRS_COMMAND))
+    const prs = JSON.parse(runGh(OPEN_GRAPH_PRS_COMMAND))
     if (!Array.isArray(prs)) return []
     return prs.filter((pr) => typeof pr?.headRefName === "string" && pr.headRefName.startsWith(GRAPH_BRANCH_PREFIX))
   } catch {
@@ -188,7 +238,7 @@ function main() {
     formatDigest({
       packages: gatherPackages(),
       receipts: gatherReceipts(),
-      pendingBaseToMainPRs: gatherPendingPRs(runGh)
+      pendingGraphPRs: gatherPendingPRs(runGh)
     })
   )
 }

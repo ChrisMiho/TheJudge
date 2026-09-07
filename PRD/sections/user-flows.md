@@ -461,15 +461,15 @@
   4. Node 2 (`shape`) receives the proposed slug, searches `PRD/instructions/receipts/` for slug and keyword matches, and writes `IDEA.md` with one `## Prior run` line per match.
   5. Node 3 (`define`) runs refinement, which reads those prior-run lines as input alongside `PRD/sections/`.
   6. The driver diffs `PRD/sections/`. A non-empty diff parks at `owner-action` with the complete diff and the new stable IDs; an empty diff advances straight to `gate-qc`.
-  7. Owner resolves the gate with `/graph-gate-review PRD/work/<slug>/` and resumes with `/graph-implement PRD/work/<slug>/`.
-  8. The run continues through `gate-qc`, `plan`, `build`, and `review` unattended, and stops at node 8 (`land`) for the owner to merge.
+  7. Owner answers the verdict slots in `GATE-QUESTIONS.md` in the docs PR and merges it; the `graph-implement` loop claims the spec, dispatches `graph-gate-review` to apply the verdicts, and continues.
+  8. The run continues through `gate-qc`, `plan`, `build`, `review`, and `close` unattended in `.worktrees/implement-<slug>` (REQ-193), ends `COMPLETE` with the code PR `thejudge-auto/<slug>-work → main` open, and the owner's merge (`land`, node 9) puts the fix, the receipt, and the package's deletion on `main` in one step (REQ-194).
 - Edge Cases:
   - description too thin to package → node 2 returns `NO ACTIONABLE PACKAGE`, the run ends at `BLOCKED` naming what it needs, and no package folder is created. The report names the `thejudge-auto/<slug>` branch node 1 already pushed, and the retry supplies an explicit `--branch` so it does not hit `graph-preflight`'s exit-code-2 collision with it
   - no receipt matches → no `## Prior run` section is written and the run continues without interruption
   - an irrelevant receipt matches → refinement reads it as input and discards it; the cost is a read, not a wrong decision
   - an `active` package already covers the same code → the owner uses `thejudge-amend` instead, so one branch touches those files rather than two
   - the derived branch name collides → `graph-preflight`'s existing exit-code-2 condition fires and the door reports it with the derived name
-  - refinement changes no product truth → the `define` gate never parks, and the owner's only touch is the merge at node 8
+  - refinement changes no product truth → the `define` gate never parks, and the owner's only touches are merging the docs PR and then the code PR (`land`, node 9)
 - Notes:
   - the owner never classifies the report as a bug. The same door and the same nodes handle an idea, an observation, and a defect
   - prior-run matches are input to refinement, never scope; scope is still decided at the `define` gate
@@ -488,7 +488,7 @@
   5. Node 2 (`shape`) reads the staged intake and writes `IDEA.md`, adding `## Prior run` lines for any receipt matches. Once `thejudge-kickoff` has created `PRD/work/<slug>/`, node 2 copies the staged intake into `intake/`, commits it on the branch, and deletes the staging copy.
   6. Node 3 (`define`) runs refinement, which reads the full intake as evidence and decides nothing from it that the owner has not seen.
   7. The `define` gate parks on any resulting `PRD/sections/` diff, and the owner walks it one stable ID at a time.
-  8. The run continues unattended to node 8, and `thejudge-cleanup` later folds an `## Intake` section into the receipt naming each intake file and its stated origin.
+  8. The run continues unattended through `close` (node 8), where `thejudge-cleanup` folds an `## Intake` section into the receipt naming each intake file and its stated origin, inside the code PR; the owner's merge (`land`, node 9) lands it (REQ-194).
 - Edge Cases:
   - intake states a conclusion as settled → it is still evidence, and any product truth it produces parks at the `define` gate for the owner
   - intake cites a large source document → the citation is recorded and the source is not fetched

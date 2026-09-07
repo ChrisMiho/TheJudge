@@ -14,8 +14,8 @@ The run is split into two owner-triggered halves, each with its own driver skill
 
 - **`graph-kickoff`** drives the spec-forming half (`preflight → shape → define →
   gate-qc`) and is the entry point for new work — the single intake door.
-- **`graph-implement`** drives the build half (`plan → build → review → land →
-  close`) as a background loop over approved specs.
+- **`graph-implement`** drives the build half (`plan → build → review → close →
+  land`) as a background loop over approved specs.
 
 `graph-run` retired into these two; its name survives only in historical receipts.
 `thejudge-prepare` no longer serves as an entry point, though it keeps its own
@@ -68,8 +68,12 @@ pull request, unattended except at the gates below.
    because no script can judge whether the product truth proposed there is the
    product the owner wants (DEC-164). The trade is made off the terminal, in the
    file.
-5. **Build (apply).** Once quality-checked and sliced, `thejudge-implement-all`
-   (node 6) implements sequentially inside `.worktrees/implement-<slug>/`, and
+5. **Build (apply).** Once the owner has answered the proposal and merged the docs
+   PR, `graph-implement` claims the spec by cutting `thejudge-auto/<slug>-work`
+   from `origin/main` into `.worktrees/implement-<slug>` — one folder and one
+   branch for the whole build half, which the driver and the builder write in
+   turns (REQ-193). `thejudge-implement-all` (node 6) implements sequentially
+   inside that worktree, opens the code PR `thejudge-auto/<slug>-work → main`, and
    *applies the approved proposal*: it writes the real `PRD/sections/` truth **by
    intent** (re-derived from the approved `GATE-QUESTIONS.md` diff and
    `DESIGN-BRIEF.md` against current truth) **together with the code**, in the
@@ -78,12 +82,16 @@ pull request, unattended except at the gates below.
 6. **Review.** A fresh-context, no-write reviewer subagent (node 7) grades
    the slice against its own stated acceptance criteria and can loop the run
    back to `build` on a Critical or Important finding, up to twice (DEC-166).
-7. **Merge.** `land` (node 8) is the owner merging the pull request by
+7. **Close, then merge.** `thejudge-cleanup` (node 8, `close`) runs on the code
+   branch **before** the merge: it folds the run's ledger into a receipt, deletes
+   the package, and commits both on `thejudge-auto/<slug>-work`, so they ride in
+   the code PR; durable `PRD/sections/` truth is already applied by build, so
+   cleanup promotes it **once** and never re-writes it. The run ends `COMPLETE`
+   with the PR open. `land` (node 9) is the owner merging that pull request by
    hand — the one merge in this workflow that stays human and is never
-   automated. `thejudge-cleanup` (node 9, `close`) then folds the run's ledger
-   into a receipt and deletes the package; durable `PRD/sections/` truth is
-   already applied by build, so cleanup promotes it **once** and never re-writes
-   it.
+   automated — and it puts the code, the truth, the receipt, and the deletion on
+   `main` in one step. A package costs two PRs: the docs PR and this one
+   (REQ-194).
 
 ## Propose / apply / close
 
@@ -101,10 +109,11 @@ three roles:
   writes the real `PRD/sections/` edits **by intent against current truth** — it
   re-derives the edit rather than blind-replaying a possibly-stale frozen patch —
   **together with the code**, in the slice's PR.
-- **Close (`thejudge-cleanup`, node 9).** Promotion already happened at apply, so
+- **Close (`thejudge-cleanup`, node 8).** Promotion already happened at apply, so
   cleanup writes durable truth **once** (or confirms it is present), never assumes
   refinement pre-wrote `PRD/sections/`, folds the ledger into the receipt, and
-  deletes the work folder.
+  deletes the work folder — on the code branch, before the owner's merge
+  (`land`, node 9), so the receipt and the deletion land with the code (REQ-194).
 
 **The gate signal is the proposal's existence, not a `PRD/sections/` diff.** Since
 refinement no longer writes `PRD/sections/`, a live diff after `define` is always
@@ -135,11 +144,17 @@ run one opens it with `gh pr create --base main --head thejudge-auto/<slug>`,
 carrying the design brief, the proposal (`GATE-QUESTIONS.md`), and the ledger — no
 `PRD/sections/` edits, which apply only at `build`. `gh pr
 create` opens a PR and never merges one, so it crosses no boundary; the merge
-stays the owner's. That PR is the same
-one the implementation later grows into, and the owner merges it last — this is
-the base→main hop that used to be an unremembered manual step. It does **not**
-block the next idea: a fresh run starts from `origin/main` in its own kickoff
-worktree, so a second `graph-kickoff` runs while this PR waits for the owner.
+stays the owner's. The owner answers the verdict slots in that PR and **merges
+it — that merge is the build signal**. Nothing is built on top of it afterwards:
+the build half cuts `thejudge-auto/<slug>-work` from `origin/main` and opens a
+second, code PR into `main` that carries the code, the applied truth, the
+receipt, and the package's deletion, so a package costs two merges and there is
+no separate base-to-main hop to remember (REQ-194). The docs branch
+`thejudge-auto/<slug>` is finished when its PR merges; GitHub's
+delete-branch-on-merge removing it is expected, and nothing re-creates it. It
+does **not** block the next idea: a fresh run starts from `origin/main` in its
+own kickoff worktree, so a second `graph-kickoff` runs while this PR waits for
+the owner.
 
 **`GATE-QUESTIONS.md`** carries one `## <STABLE-ID>` block per new stable ID. Each
 block opens with the plain-language block `PRD/instructions/plain-language-standard.md`
@@ -167,7 +182,9 @@ once took in the terminal, now made on their own schedule.
 resuming an `owner-action` park whose questions file is fully answered, the driver
 dispatches `graph-gate-review` to apply the verdicts (restoring `STATUS.refined`),
 then re-enters at `gate-qc` via the entry-point table — so an owner edit is
-re-graded — and continues `plan → build → review → land → close`. A questions file
+re-graded — and continues `plan → build → review → close`, every node in
+`.worktrees/implement-<slug>` on `thejudge-auto/<slug>-work` (REQ-193); it ends
+`COMPLETE` with the code PR open, and `land` is the owner's merge. A questions file
 with any blank slot re-parks at `owner-action`, so run two stays a single owner
 command. When run one wrote no questions file, run two resolves the empty gate and
 proceeds the same way. (Slice B makes `graph-implement` a background loop that
@@ -247,9 +264,9 @@ controlling`: the predicate attests which orchestrator is running.
 | 4 | `gate-qc` | `thejudge-quality-check` | sonnet | 60 | `plan` on PASS, `define` on FAIL — except a fourth FAIL, which parks at `owner-action` |
 | 5 | `plan` | `thejudge-map-out` | sonnet | 120 | `build` |
 | 6 | `build` | `thejudge-implement-all` | sonnet | 1200 | `review` |
-| 7 | `review` | no-write reviewer subagent | opus | 120 | `land` on approval, `build` on Critical/Important |
-| 8 | `land` | human (PR merge) | — | — | `close` |
-| 9 | `close` | `thejudge-cleanup` | sonnet | 120 | run complete |
+| 7 | `review` | no-write reviewer subagent | opus | 120 | `close` on approval, `build` on Critical/Important |
+| 8 | `close` | `thejudge-cleanup` (on the code branch, before the merge) | sonnet | 120 | `land` — the run ends `COMPLETE` with the code PR open |
+| 9 | `land` | human (PR merge) | — | — | run complete — outside the run's ledger; the package is on `main` when the owner merges |
 
 `Cap` is the tool-call budget for **one dispatch** of that node. The hook counts
 every tool call against `<run id>/<node>/<attempt>` and denies once the cap is
@@ -313,9 +330,14 @@ not delegate to `thejudge-prepare`.
 
 ## Autonomous metadata
 
-the graph driver records the branch that node 1 (`preflight`) created and pushed in
+The autonomous base is **the branch the package's next PR targets**. In the
+spec-forming half that is the branch node 1 (`preflight`) created and pushed;
+once the docs PR has merged and the build half has claimed the spec, it is
+`main`, and `graph-implement` rewrites the value to `origin/main` as the first
+commit on `thejudge-auto/<slug>-work` (REQ-193). The graph driver records it in
 the package `README.md`, using the exact section shape from
-`preparation-contract.md`:
+`preparation-contract.md` (whose "never defaults to `main`" rule binds
+`thejudge-prepare`'s choice of a base, not this recorded rewrite):
 
 ```markdown
 ## Autonomous metadata
@@ -479,8 +501,8 @@ documentation changes:
 - Run ID: `graph-<YYYYMMDD>-<HHMMSS>`
 - Profile: `unverified` | `<path> (stated by the user at launch)`
 - Canary: `denied — hook live (<command>)` | `allowed — BLOCKED (<reason>)`
-- Autonomous base: `origin/<branch>`
-- Worktree: `<absolute path>/.worktrees/kickoff-<slug>`
+- Autonomous base: `origin/<branch>` (rewritten to `origin/main` by the build half's claim)
+- Worktree: `<absolute path>/.worktrees/kickoff-<slug>` (rewritten to `<absolute path>/.worktrees/implement-<slug>` by the build half's claim)
 - Staging: `<absolute path>/.worktrees/.graph-intake/<run-id>/`
 - Current node: `<node>`
 - Next action: `/graph-implement PRD/work/<slug>/` (or `/graph-kickoff` in the spec-forming half)
@@ -555,13 +577,18 @@ prompt the node itself writes — constraining a parent does not constrain its
 children, and a node fanning out to its own subagents is where the 2026-08-17
 leak got through.
 
-Node 6 (`build`) carries the return-side half: every path it wrote must lie
-inside `.worktrees/implement-<slug>/` or `PRD/work/<slug>/`, and a write outside
-that set fails the node and parks with the offending paths as evidence. The
-fixture rig's before/after snapshot does not port to production — it asserts the
-invoking checkout is byte-unchanged, which a real run is supposed to violate —
-so the write-scope assertion is its production equivalent rather than the same
-check under a new name.
+Node 6 (`build`) carries the return-side half: the launch checkout's
+`git status --porcelain`, captured before the dispatch, must be identical after
+it, and every path the node wrote — made launch-root-relative — must lie inside
+`.worktrees/implement-<slug>/` (`buildWriteScope` in
+`scripts/graph-ledger-check.mjs`). The work package lives inside that worktree,
+so a bare `PRD/work/<slug>/…` path is a write to the launch checkout (the
+2026-09-05 failure) and a write outside the set fails the node and parks with
+the offending paths as evidence (REQ-193). The fixture rig's before/after
+snapshot does not port to production — it asserts the invoking checkout is
+byte-unchanged, which a real run is supposed to violate — so the write-scope
+assertion is its production equivalent rather than the same check under a new
+name.
 
 **Its stated limit.** Both inputs are written by the graph driver itself. A driver
 that pre-authorizes and then paraphrases its own dispatch prompt passes this
@@ -784,9 +811,10 @@ stays visible for the owner to unwind. The guarantee is "cannot be published and
 cannot be hidden", not "cannot be made". `scripts/graph-preflight.test.mjs`
 asserts each of these rules, including the false-positive check.
 
-The one merge that matters is still human. Node 8 (`land`) is the owner merging
-the pull request; `gh pr merge` and `gh pr close` stay denied, and nothing here
-changes that.
+The one merge that matters is still human. Node 9 (`land`) is the owner merging
+the code pull request, after `close` (node 8) has already written the receipt
+and deleted the package on that branch; `gh pr merge` and `gh pr close` stay
+denied, and nothing here changes that.
 
 **Two boundaries no permission rule can express — and why the hook exists.**
 `nohup` is stripped as a wrapper before Bash rules are matched, so the
@@ -852,6 +880,15 @@ grading its own compliance. Without this, the proof that a run refused a
 pre-authorization survives exactly until the run succeeds — cleanup deletes the
 folder the ledger lives in.
 
+Cleanup runs before the merge (node 8), so it is also where the run's terminal
+state is written: the receipt's `## Graph run` summary line reads
+`Terminal state: COMPLETE — land: the owner's merge of <PR URL>`. After it
+returns `ok`, the driver appends the `close` row to the receipt's
+`### Node ledger` — the one write the ledger's own file can no longer take —
+commits it on the code branch, and ends `COMPLETE`. `land` gets no ledger row:
+the `Outcome` vocabulary (`ok` / `failed` / `parked`) has no value that is true
+of a merge not yet made, and the merge is recorded by GitHub (REQ-194).
+
 Cleanup also writes an `## Intake` section naming each staged intake file and
 its stated origin, so anything the graph driver copied into
 `PRD/work/<slug>/intake/` is not lost when the folder is deleted (DEC-167).
@@ -888,7 +925,7 @@ it.
 
 | State | Required result | Exact next step |
 | --- | --- | --- |
-| `COMPLETE` | Every node `ok` through `close`; package `ship-ready` or cleaned up; ledger closed | None — the run is finished |
+| `COMPLETE` | Every dispatched node `ok` through `close`; the code PR `thejudge-auto/<slug>-work → main` is open carrying the receipt and the package deletion; `land` is the owner's merge, recorded by GitHub | None from the run — the owner merges the code PR, and `npm run graph:prune` lists the worktree and branches afterwards |
 | `PARKED` | `STATUS.owner-action`, board row updated, `## Open gate` names the question, evidence, and resume command | Resolve the gate, then `/graph-implement PRD/work/<slug>/` (or `/graph-kickoff` in the spec-forming half) |
 | `BLOCKED` | Safe branch and commit preserved; exact failure, what exists, what does not, and recovery action | Fix the external condition, then retry |
 | `PROMPTED` | The denied or unlisted command written verbatim under `## Open gate`, with the node it arose at; `STATUS.owner-action`, board row updated | Run the command yourself, or add the rule to `.claude/graph-profile.json`, then resume |
