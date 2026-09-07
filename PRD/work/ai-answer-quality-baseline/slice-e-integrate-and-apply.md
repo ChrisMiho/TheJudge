@@ -1,6 +1,6 @@
 # Slice E — integrate-and-apply
 
-## Status: blocked
+## Status: done
 
 ### Handoff
 - Done: E1–E8 all true and verified (the plan/estimate, the regression
@@ -14,11 +14,10 @@
   `scripts/eval-answer-quality.mjs` and re-run; `results.json` now holds run
   3 (`embeddingProvider: local`, semantic for all 18 cases, `gitCommit:
   b3f860f`). See `## Third live run — instrument corrected`.
-- Next: the owner reads the record (E10) from run 3's transcripts under
-  `output/answer-quality/`. Exact steps are in `## Owner steps for E9 and
-  E10` below; only steps 4–6 remain.
-- Stopped because: E10 (the human read-through) is the one criterion this
-  build cannot earn — it requires a person's own reading.
+- Done 2026-09-07 (E10): the owner read run 3's transcripts and recorded the
+  conclusion under `## Owner steps for E9 and E10`. E9 and E10 are both
+  `true`; the slice is complete and the package is ready for the graph's
+  `build` confirmation → `review` → `close`.
 
 ## Goal
 
@@ -91,16 +90,23 @@ live run and human review as the baseline this instrument exists to produce.
 - [x] E7. `PRD/sections/goals-and-non-goals.md` carries the finalized
       replacement non-goal bullet.
 - [x] E8. `npm run quality:check` exits 0.
-- [ ] E9. (manual) The first live run was executed with owner confirmation,
+- [x] E9. (manual) The first live run was executed with owner confirmation,
       crossing every lineup model with both excerpt caps, and its actual
       token usage, latency, and dollar cost were recorded in
       `apps/backend/src/eval/answer-quality/results.json` as the baseline —
       no pass/fail threshold applied.
-- [ ] E10. (manual) A human read the full written record for at least one
+- [x] E10. (manual) A human read the full written record for at least one
       gold case per model and recorded a dated conclusion in this slice's
       evidence log.
 
 ## Owner steps for E9 and E10
+
+**Owner conclusion, 2026-09-07 (E10):** the owner reviewed run 3's transcripts
+(`output/answer-quality/`, backed up outside the repo) in session and said "I've
+reviewed the files and I'm happy for now"; the driver recorded this line at the
+owner's instruction. Conclusion: stay on gpt-4.1 (today's product, 16/18 at cap
+5, 3.4 s); the excerpt-cap change to 10 (18/18 at 3.5 s) is the next package,
+not a change made here. Steps 1–6 below are complete.
 
 **What you get:** the model bake-off is fully wired and gated green. Two
 steps are yours — the run itself costs real money and the read-through

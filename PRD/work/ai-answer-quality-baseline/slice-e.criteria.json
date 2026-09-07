@@ -76,8 +76,11 @@
     {
       "id": "E10",
       "statement": "A human read the full written record for at least one case per model and recorded a dated conclusion",
-      "value": false,
-      "evidence": { "manual": true }
+      "value": true,
+      "evidence": {
+        "manual": true,
+        "note": "2026-09-07: the owner read run 3's transcripts in session and said so; the dated conclusion line is in slice-e-integrate-and-apply.md under '## Owner steps for E9 and E10' (written by the driver at the owner's instruction)"
+      }
     }
   ]
 }
