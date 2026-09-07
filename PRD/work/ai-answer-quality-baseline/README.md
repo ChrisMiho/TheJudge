@@ -1,5 +1,5 @@
 ---
-status: active
+status: ship-ready
 ---
 
 # ai-answer-quality-baseline
@@ -62,12 +62,24 @@ criteria.
 Built 2026-09-07 (node 6, build half, `build`) under `graph is controlling`.
 Slices A–D done (all criteria true, `npm run quality:check` green after
 each). Slice E's wiring, regression guard, README, and all four
-`PRD/sections/` amendments are done and gated green (E1–E8 true); it is
+`PRD/sections/` amendments are done and gated green (E1–E8 true); it was
 `blocked` on the two criteria only a human can earn — E9 (the first live,
 owner-confirmed run) and E10 (a human reading the written record) — because
-this node makes no paid provider call of any kind. See
+that build node made no paid provider call of any kind. See
 `slice-e-integrate-and-apply.md`'s "Owner steps for E9 and E10" for the
-exact command, cost estimate, and what to read.
+exact command, cost estimate, and what was read.
+
+Confirmed ship-ready 2026-09-07 (node 6, build half, attempt 2) under
+`graph is controlling`. This was a confirmation pass, not a build: the owner
+cleared and the driver ran the live bake-off, corrected the instrument (tier-2
+cases now asked with their card attached, the question embedded by the local
+provider, silent fallback refused), re-ran it, and read the record. E9 and
+E10 both read `true` in `slice-e.criteria.json`, so all five slices are
+`done` and 41/41 criteria are `true`. Verification gates re-run clean on this
+head: `npm run test:scripts` (506/506), `npm --prefix apps/backend run test`
+(494/494), `npm run quality:check`, `npm run eval:answer-quality` (dry plan,
+no network call), `npm run eval:worked-solutions` (18 cases, informational).
+No code, tests, gold cases, or `PRD/sections/` text changed in this pass.
 
 ## Slices
 
@@ -77,7 +89,7 @@ exact command, cost estimate, and what to read.
 | B | [cap-and-run-command](./slice-b-cap-and-run-command.md) | Named excerpt-cap constant, cap-as-run-parameter, `eval:answer-quality` scaffold (REQ-188, REQ-190) | none | done |
 | C | [judge-and-rubric](./slice-c-judge-and-rubric.md) | Rubric, deterministic assertions, lone judge pass, blind rank (REQ-186, REQ-187) | none | done |
 | D | [artifact-and-transcripts](./slice-d-artifact-and-transcripts.md) | Committed scores file, gitignored transcripts, comparability rule (REQ-189) | none | done |
-| E | [integrate-and-apply](./slice-e-integrate-and-apply.md) | Wire A–D, regression guard, PRD apply (NFR-018, REQ-146, SYSTEM-MAP-EVAL-HARNESS, GOALS-ANSWER-QUALITY-NON-GOAL), first live run + human review | A, B, C, D | blocked (E1–E8 done; E9/E10 await the owner — see slice doc's "Owner steps") |
+| E | [integrate-and-apply](./slice-e-integrate-and-apply.md) | Wire A–D, regression guard, PRD apply (NFR-018, REQ-146, SYSTEM-MAP-EVAL-HARNESS, GOALS-ANSWER-QUALITY-NON-GOAL), first live run + human review | A, B, C, D | done (10/10 criteria true — E9 and E10 earned by the owner's live run and read-through) |
 
 ## Implementation map
 
