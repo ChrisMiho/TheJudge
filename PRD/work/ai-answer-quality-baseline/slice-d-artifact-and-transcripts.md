@@ -79,3 +79,13 @@ git check-ignore -v output/answer-quality/example.json
 - `apps/backend/src/eval/answer-quality/artifact.test.ts` (new)
 - `.gitignore`
 - `PRD/sections/functional-requirements.md` (REQ-189, new entry)
+
+## Notes
+
+2026-09-07 (review loop 1): `writeRankingTranscript`'s `RankingTranscript`
+gained an optional `rationale` field (`judge.ts`'s `judgeBlindRanking` now
+requires one on the determined branch, closing REQ-189's "side-by-side
+ranking rationale per case per cap" gap). The committed ranking transcripts
+under `output/answer-quality/` from run 3 (gitignored, `gitCommit b3f860f`)
+predate this change and carry no rationale field. The next recorded run
+carries it.

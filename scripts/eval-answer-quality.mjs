@@ -492,7 +492,8 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
           excerptCap: cap,
           ranks: rankingResult.undetermined ? {} : rankingResult.ranks,
           undetermined: rankingResult.undetermined,
-          reason: rankingResult.undetermined ? rankingResult.reason : undefined
+          reason: rankingResult.undetermined ? rankingResult.reason : undefined,
+          rationale: rankingResult.undetermined ? undefined : rankingResult.rationale
         },
         outputDir
       );

@@ -1,6 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, mkdtempSync, readdirSync, rmSync } from "node:fs";
-import { readdir } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -152,15 +152,24 @@ describe("Backend - Eval - Answer quality - artifact (REQ-189)", () => {
       expect(files).toContain("case-a--gpt-4.1-mini--cap5.json");
     });
 
-    it("writes a per-case-per-cap ranking transcript", async () => {
+    it("writes a per-case-per-cap ranking transcript, including its rationale", async () => {
       const dir = makeTempDir();
       const filePath = await writeRankingTranscript(
-        { caseId: "case-a", excerptCap: 5, ranks: { "gpt-4.1-mini": 1, "gpt-4.1": 2 }, undetermined: false },
+        {
+          caseId: "case-a",
+          excerptCap: 5,
+          ranks: { "gpt-4.1-mini": 1, "gpt-4.1": 2 },
+          undetermined: false,
+          rationale: "gpt-4.1-mini stayed closer to the reference's wording."
+        },
         dir
       );
       expect(existsSync(filePath)).toBe(true);
       const files = readdirSync(dir);
       expect(files).toContain("case-a--cap5--ranking.json");
+
+      const written = JSON.parse(await readFile(filePath, "utf8"));
+      expect(written.rationale).toBe("gpt-4.1-mini stayed closer to the reference's wording.");
     });
 
     it("a fresh directory with no writer call stays empty (the dry-run posture)", async () => {

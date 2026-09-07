@@ -149,6 +149,7 @@ export type RankingTranscript = {
   ranks: Record<string, number>;
   undetermined: boolean;
   reason?: string;
+  rationale?: string;
 };
 
 function transcriptFileName(caseId: string, model: string, excerptCap: number): string {

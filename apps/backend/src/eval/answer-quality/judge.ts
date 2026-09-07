@@ -160,7 +160,7 @@ export type BlindRankingInput = {
 };
 
 export type BlindRankingResult =
-  | { undetermined: false; ranks: Record<string, number>; rationale?: string }
+  | { undetermined: false; ranks: Record<string, number>; rationale: string }
   | { undetermined: true; reason: string };
 
 function defaultShuffleIndices(length: number): number[] {
@@ -190,18 +190,24 @@ function buildRankingPrompt(params: {
     `Question: ${params.question}`,
     `Reference answer (published, authoritative): ${params.workedSolution}`,
     "",
+    formatRubricForJudge(),
+    "",
     "Answers to rank, by agreement with the reference (best to worst):",
     ...params.labeledAnswers.map(({ label, answerText }) => `Answer ${label}: ${answerText}`),
     "",
     'Respond with ONLY a JSON object, no prose outside it, no code fence, in the exact shape:',
-    `{"ranks": {${params.labeledAnswers.map(({ label }) => `"${label}": <integer rank, 1 = best>`).join(", ")}}}`
+    `{"ranks": {${params.labeledAnswers.map(({ label }) => `"${label}": <integer rank, 1 = best>`).join(", ")}}, "rationale": "one paragraph explaining the ranking"}`
   ].join("\n");
 }
 
-function parseRankingResponse(text: string, expectedLabels: readonly string[]): Record<string, number> | null {
+function parseRankingResponse(
+  text: string,
+  expectedLabels: readonly string[]
+): { ranks: Record<string, number>; rationale: string } | null {
   const parsed = extractJsonObject(text);
   if (!parsed || typeof parsed !== "object") return null;
-  const ranks = (parsed as Record<string, unknown>).ranks;
+  const record = parsed as Record<string, unknown>;
+  const ranks = record.ranks;
   if (!ranks || typeof ranks !== "object") return null;
 
   const ranksRecord = ranks as Record<string, unknown>;
@@ -211,7 +217,8 @@ function parseRankingResponse(text: string, expectedLabels: readonly string[]): 
     if (typeof value !== "number" || !Number.isInteger(value) || value < 1) return null;
     result[label] = value;
   }
-  return result;
+  if (typeof record.rationale !== "string" || record.rationale.trim().length === 0) return null;
+  return { ranks: result, rationale: record.rationale };
 }
 
 /**
@@ -251,15 +258,15 @@ export async function judgeBlindRanking(input: BlindRankingInput): Promise<Blind
     };
   }
 
-  const parsedRanks = parseRankingResponse(responseText, labels);
-  if (!parsedRanks) {
+  const parsedResponse = parseRankingResponse(responseText, labels);
+  if (!parsedResponse) {
     return { undetermined: true, reason: "judge ranking response was not valid ranked JSON" };
   }
 
   const ranks: Record<string, number> = {};
-  for (const [label, rank] of Object.entries(parsedRanks)) {
+  for (const [label, rank] of Object.entries(parsedResponse.ranks)) {
     const modelId = labelToModelId.get(label);
     if (modelId) ranks[modelId] = rank;
   }
-  return { undetermined: false, ranks };
+  return { undetermined: false, ranks, rationale: parsedResponse.rationale };
 }

@@ -111,3 +111,9 @@ forcing the dry-run path through a TypeScript dynamic import would break its
 "no loader needed" property (the same constraint `measurePromptChars`
 already documents). Both copies carry an identical comment cross-referencing
 the other.
+
+2026-09-07 (review loop 1): `buildRankingPrompt` now includes
+`formatRubricForJudge()`'s text, closing the gap where REQ-186's layer-2b
+bullet said the ranking call sees the rubric but the prompt never carried
+it. This changes no axis and no score scale, so `RUBRIC_REVISION` in
+`rubric.ts` stays `2026-09-07.1` — unchanged.
