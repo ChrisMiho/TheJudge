@@ -6,10 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| Package | Notes |
-| --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Confirmed ship-ready 2026-09-07 by `/loop graph-implement` (run `graph-20260907-032104`, build attempt 2): all five slices `done`, 41/41 criteria `true` (E9 the owner-cleared live run, E10 the owner's read-through of run 3), instrument corrected and re-run (semantic retrieval, tier-2 cards attached). Verification gates re-run green on this head. PR #203 open into `main`, retitled `[READY]`. Next is `review` → `close`; the owner merges after `close` |
-
 ## active
 
 ## refined
