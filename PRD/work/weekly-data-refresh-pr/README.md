@@ -1,4 +1,4 @@
-status: ideation
+status: refined
 
 # Weekly data-refresh-and-PR script
 

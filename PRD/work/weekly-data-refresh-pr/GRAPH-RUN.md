@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/weekly-data-refresh-pr` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-weekly-data-refresh-pr`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-163826/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half in flight; stop at gate-qc PASS with docs PR)
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | degraded (no run state) | branch `thejudge-auto/weekly-data-refresh-pr` cut from `origin/main` (b20ea13), pushed from `.worktrees/kickoff-weekly-data-refresh-pr`; lock held (runId graph-20260907-163826, pid 10773); launch checkout untouched | 2026-09-07 |
 | 2 | shape | sonnet | ok | degraded (no run state) | `PRD/work/weekly-data-refresh-pr/` created (STATUS.ideation) with IDEA.md, intake/GRAPH-BRIEF.md verbatim, 3 prior-run matches; committed 0b59ec5 and pushed; launch checkout untouched | 2026-09-07 |
+| 3 | define | opus | ok | `0 → 31` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written (1 proposed id REQ-195; full-refresh chosen via assumption ladder, flip-to-prices-only left as owner edit); STATUS.refined; PRD/sections untouched; no blocker | 2026-09-07 |
 
 ## Open gate
 
@@ -73,6 +74,18 @@ The one open product decision: full `data:refresh` (rebuild every corpus each we
 The intake names the current-state specs to amend: `PRD/sections/trade-balancer/data/cardPrintingPrices.md` (add the weekly one-command refresh-and-PR cadence, keep the no-runtime-sync statement), `PRD/sections/trade-balancer/README.md` (freshness note), and `PRD/sections/system-map.md` (list the new script beside `build-card-prices.mjs`). Verify each against current truth before proposing a diff.
 
 Set `STATUS.refining` while in flux and `STATUS.refined` on convergence. Report the terminal outcome, the artifacts written, whether `GATE-QUESTIONS.md` was produced (and which stable ids it proposes), and any blocker parked.
+
+### gate-qc
+
+graph is controlling
+
+You are node 4 (`gate-qc`) of an autonomous graph-kickoff run. Invoke the `/thejudge-quality-check` skill and follow it exactly, in its graph-controlled mode. Produce a PASS or FAIL report only — never a GAMEPLAN or slice docs. On FAIL set `STATUS.refining`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-weekly-data-refresh-pr
+
+All work happens in that kickoff worktree; never touch the owner's launch checkout. Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-subagent.
+
+Validate `PRD/work/weekly-data-refresh-pr/DESIGN-BRIEF.md` for PRD alignment and agent-readiness. The proposed product truth is in `GATE-QUESTIONS.md` (one id, REQ-195); check the design brief and the proposal are internally consistent, that the proposed diffs match current-state truth in the named `PRD/sections/` files, and that the brief is buildable into slices without a live user. Report the PASS/FAIL verdict and the complete findings list.
 
 ## Instruction ledger
 
