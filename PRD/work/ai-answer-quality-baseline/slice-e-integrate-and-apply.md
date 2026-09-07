@@ -99,13 +99,16 @@ live run and human review as the baseline this instrument exists to produce.
 steps are yours — the run itself costs real money and the read-through
 needs a person — then this package is ready to ship.
 
-1. **Make sure a live OpenAI key is configured** for `ASK_AI_PROVIDER=openai`
-   (e.g. `.secrets/openai-dev.env`, the same file `npm run
-   openai:verify-credentials` reads) with access to `gpt-4.1-mini`,
-   `gpt-4.1`, `gpt-5-mini`, `gpt-5-nano`, and the judge `gpt-5` (or set
-   `ANSWER_QUALITY_JUDGE_MODEL` to a judge your key can reach). The command
-   checks access up front and fails naming any model it can't reach, before
-   spending anything.
+1. **Make sure a live OpenAI key is in `.secrets/openai-dev.env`** (the
+   same file `npm run openai:verify-credentials` reads; the command loads it
+   itself, from a linked worktree's main checkout too, so nothing is exported
+   by hand — `scripts/lib/local-openai-env.mjs`) with access to
+   `gpt-4.1-mini`, `gpt-4.1`, `gpt-5-mini`, `gpt-5-nano`, and the judge
+   `gpt-5` (or set `ANSWER_QUALITY_JUDGE_MODEL` to a judge your key can
+   reach). `--confirm-live-calls` is the consent that selects the `openai`
+   provider when `ASK_AI_PROVIDER` is unset; an explicit `mock` still refuses.
+   The command checks access up front and fails naming any model it can't
+   reach, before spending anything.
 2. **Run the live bake-off:**
    ```bash
    npm run eval:answer-quality -- --confirm-live-calls

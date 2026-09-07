@@ -34,6 +34,7 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { loadGoldCases } from "./lib/gold-cases.mjs";
+import { loadLocalOpenAiEnv } from "./lib/local-openai-env.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
@@ -129,6 +130,29 @@ export function assertLiveProviderConfigured(env) {
   if (!env.OPENAI_API_KEY?.trim()) {
     throw new Error("ASK_AI_PROVIDER=openai also requires OPENAI_API_KEY. Set it and re-run.");
   }
+}
+
+/**
+ * The environment a run sees: the process environment, filled in from the
+ * local env files the way `npm run openai:verify-credentials` already does
+ * (`scripts/lib/local-openai-env.mjs`; the process environment always wins),
+ * so the owner runs the command with nothing exported by hand.
+ *
+ * `--confirm-live-calls` is the explicit consent to a live provider, so when
+ * that flag is present, a key is available, and `ASK_AI_PROVIDER` is unset,
+ * the run selects `openai`. It never overrides a value that is set: an
+ * explicit `ASK_AI_PROVIDER=mock` still refuses, through the same guard, and
+ * the mock-first default for everything that is not this command is untouched
+ * (an unconfirmed run leaves `ASK_AI_PROVIDER` exactly as it found it).
+ */
+export function resolveRunEnv({ processEnv, confirmed, loadLocalEnv = loadLocalOpenAiEnv }) {
+  const { env, sources } = loadLocalEnv({ repoRoot, env: processEnv });
+  const hasKey = Boolean(env.OPENAI_API_KEY?.trim());
+  const providerUnset = !env.ASK_AI_PROVIDER || env.ASK_AI_PROVIDER.trim() === "";
+  const resolved = { ...env };
+  if (confirmed && hasKey && providerUnset) resolved.ASK_AI_PROVIDER = "openai";
+  Object.defineProperty(resolved, "__localEnvSources", { value: sources, enumerable: false });
+  return resolved;
 }
 
 /**
@@ -474,16 +498,18 @@ export function describePlan({ models, excerptCaps, outputDir, goldCaseCount, es
 export async function run(options = {}) {
   const {
     argv = process.argv.slice(2),
-    env = process.env,
+    env: processEnv = process.env,
     log = console.log,
     loadCases = loadGoldCases,
     measureChars = measurePromptChars,
     buildClient = defaultBuildClient,
     client: injectedClient,
-    runEvaluation = runLiveEvaluation
+    runEvaluation = runLiveEvaluation,
+    loadLocalEnv = loadLocalOpenAiEnv
   } = options;
 
   const parsed = parseArgs(argv);
+  const env = resolveRunEnv({ processEnv, confirmed: parsed.confirmed, loadLocalEnv });
   const judgeModel = resolveJudgeModel(env);
   const goldCases = await loadCases();
   const hasKey = Boolean(env.OPENAI_API_KEY?.trim());

@@ -386,12 +386,20 @@ on *published* worked solutions. They are recorded as **needing an answer key**.
 without generating one. The mock-first posture is preserved exactly as
 `integrations-and-data.md` requires:
 
-- The default stays mock. `ASK_AI_PROVIDER` unset means no live call is possible.
+- The default stays mock. `ASK_AI_PROVIDER` unset means no live call is possible
+  without the confirmation flag.
 - The command makes no network call without `--confirm-live-calls`; without it
   it prints the plan and the cost estimate and exits.
-- With the flag but without `ASK_AI_PROVIDER=openai` and `OPENAI_API_KEY`, it
-  fails with an actionable message naming what is missing, rather than a stack
-  trace — the same guard `scripts/compare-combo-answer-quality.mjs` already ships.
+- The key loads the way `npm run openai:verify-credentials` already loads it:
+  from `.secrets/openai-dev.env` (a linked worktree falls back to the main
+  checkout's copy), never overriding an exported value, so the owner exports
+  nothing by hand (added 2026-09-07 when the first live run stopped on an unset
+  environment). The flag is the consent that selects `openai` when the provider
+  is unset; an explicit `mock` still refuses.
+- With the flag but no key anywhere, or with the provider set to anything but
+  `openai`, it fails with an actionable message naming what is missing, rather
+  than a stack trace — the same guard `scripts/compare-combo-answer-quality.mjs`
+  already ships.
   `OPENAI_MODEL` is **not** required and is **not** read: the lineup option names
   the answer models, so a stray environment value cannot silently swap a
   contestant (finalized REQ-188).

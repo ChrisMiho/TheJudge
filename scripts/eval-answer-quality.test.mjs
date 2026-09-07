@@ -16,8 +16,14 @@ import {
   estimateCost,
   parseArgs,
   resolveJudgeModel,
+  resolveRunEnv,
   run
 } from "./eval-answer-quality.mjs";
+
+// The real loader reads the developer's `.secrets/openai-dev.env`; every test
+// injects this stand-in so the suite never sees a real key, and the tests that
+// pass `env: {}` really do run keyless.
+const noLocalEnv = ({ env }) => ({ env: { ...env }, sources: [] });
 
 // Never depends on the real preparePromptInput TS import: every test injects
 // a fixed measureChars, so this file runs under plain `node --test`, no
@@ -71,6 +77,7 @@ test("resolveJudgeModel defaults to gpt-5 and honors ANSWER_QUALITY_JUDGE_MODEL"
 test("run with no confirmation flag and no OPENAI_API_KEY prints a plan, makes no network call, and exits without error", async () => {
   const logs = [];
   const result = await run({
+    loadLocalEnv: noLocalEnv,
     argv: [],
     env: {},
     log: (line) => logs.push(line),
@@ -90,6 +97,7 @@ test("run with --confirm-live-calls and no OPENAI_API_KEY fails with an actionab
   await assert.rejects(
     () =>
       run({
+        loadLocalEnv: noLocalEnv,
         argv: [CONFIRM_FLAG],
         env: {},
         log: () => {},
@@ -105,6 +113,7 @@ test("run with --confirm-live-calls, ASK_AI_PROVIDER set but no OPENAI_API_KEY s
   await assert.rejects(
     () =>
       run({
+        loadLocalEnv: noLocalEnv,
         argv: [CONFIRM_FLAG],
         env: { ASK_AI_PROVIDER: "openai" },
         log: () => {},
@@ -124,6 +133,7 @@ test("the dry run performs the model-access check (a models-list request, never 
   const client = fakeAccessClient([...DEFAULT_LINEUP, DEFAULT_JUDGE_MODEL]);
   const logs = [];
   const result = await run({
+    loadLocalEnv: noLocalEnv,
     argv: [],
     env: { OPENAI_API_KEY: "sk-test" },
     log: (line) => logs.push(line),
@@ -140,6 +150,7 @@ test("the dry run performs the model-access check (a models-list request, never 
 test("the dry run skips the model-access check entirely when no key is present", async () => {
   const client = fakeAccessClient(DEFAULT_LINEUP);
   const result = await run({
+    loadLocalEnv: noLocalEnv,
     argv: [],
     env: {},
     log: () => {},
@@ -163,6 +174,7 @@ test("a live run fails naming any lineup or judge model the credentials cannot a
   await assert.rejects(
     () =>
       run({
+        loadLocalEnv: noLocalEnv,
         argv: [CONFIRM_FLAG],
         env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
         measureChars: fakeMeasureChars,
@@ -186,6 +198,7 @@ test("a live run with full model access reports access verified, then hands off 
   };
 
   const result = await run({
+    loadLocalEnv: noLocalEnv,
     argv: [CONFIRM_FLAG],
     env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
     log: (line) => logs.push(line),
@@ -297,6 +310,59 @@ test("buildRunArtifact aggregates per-leg headline counts, tier counts, judge-mi
   for (const record of artifact.caseLegScores) {
     assert.equal("costUsd" in record, false);
   }
+});
+
+test("resolveRunEnv fills the key from the local env files, and the confirm flag selects openai only when the provider is unset", () => {
+  const fromFiles = ({ env }) => ({
+    env: { ...env, OPENAI_API_KEY: env.OPENAI_API_KEY ?? "sk-from-file" },
+    sources: ["/repo/.secrets/openai-dev.env"]
+  });
+
+  // Confirmed, key from the file, provider unset → openai is selected.
+  const confirmed = resolveRunEnv({ processEnv: {}, confirmed: true, loadLocalEnv: fromFiles });
+  assert.equal(confirmed.OPENAI_API_KEY, "sk-from-file");
+  assert.equal(confirmed.ASK_AI_PROVIDER, "openai");
+  assert.doesNotThrow(() => assertLiveProviderConfigured(confirmed));
+
+  // Unconfirmed → the provider is left exactly as found (mock-first default untouched).
+  const dry = resolveRunEnv({ processEnv: {}, confirmed: false, loadLocalEnv: fromFiles });
+  assert.equal(dry.ASK_AI_PROVIDER, undefined);
+
+  // An explicit mock still refuses, even with a key and the flag.
+  const mock = resolveRunEnv({ processEnv: { ASK_AI_PROVIDER: "mock" }, confirmed: true, loadLocalEnv: fromFiles });
+  assert.equal(mock.ASK_AI_PROVIDER, "mock");
+  assert.throws(() => assertLiveProviderConfigured(mock), /ASK_AI_PROVIDER/);
+
+  // The process environment wins over the file.
+  const exported = resolveRunEnv({ processEnv: { OPENAI_API_KEY: "sk-exported" }, confirmed: true, loadLocalEnv: fromFiles });
+  assert.equal(exported.OPENAI_API_KEY, "sk-exported");
+
+  // No key anywhere → nothing is selected, and the guard still names what is missing.
+  const keyless = resolveRunEnv({ processEnv: {}, confirmed: true, loadLocalEnv: noLocalEnv });
+  assert.equal(keyless.ASK_AI_PROVIDER, undefined);
+  assert.throws(() => assertLiveProviderConfigured(keyless), /ASK_AI_PROVIDER/);
+});
+
+test("a confirmed run with a key from the local env files and no exported provider passes the guard and reaches the access check", async () => {
+  const client = fakeAccessClient([...DEFAULT_LINEUP, DEFAULT_JUDGE_MODEL]);
+  const fromFiles = ({ env }) => ({ env: { ...env, OPENAI_API_KEY: "sk-from-file" }, sources: ["/repo/.secrets/openai-dev.env"] });
+  let handedOff = false;
+  const result = await run({
+    loadLocalEnv: fromFiles,
+    argv: [CONFIRM_FLAG],
+    env: {},
+    log: () => {},
+    measureChars: fakeMeasureChars,
+    client,
+    runEvaluation: async (params) => {
+      handedOff = true;
+      assert.equal(params.env.ASK_AI_PROVIDER, "openai");
+      return { runMetadata: {}, legs: [], caseLegScores: [] };
+    }
+  });
+  assert.deepEqual(client.calls, ["list"], "the models-list access check runs once before any completion");
+  assert.equal(handedOff, true);
+  assert.equal(result.ran, true);
 });
 
 test("REGRESSION GUARD: eval:answer-quality is never wired into any gate script (REQ-188)", () => {
