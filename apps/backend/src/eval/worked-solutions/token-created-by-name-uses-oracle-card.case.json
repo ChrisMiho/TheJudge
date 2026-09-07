@@ -1,0 +1,19 @@
+{
+  "id": "token-created-by-name-uses-oracle-card",
+  "tier": 1,
+  "question": "An ability says 'create a Tarmogoyf token' and doesn't say anything else about what the token is like -- no power, toughness, color, or abilities are given. What are that token's actual characteristics?",
+  "expectedSupplementalRuleIds": ["111.11"],
+  "workedSolution": "Disa the Restless has the ability “Whenever one or more creatures you control deal combat damage to a player, create a Tarmogoyf token.” As that ability resolves, its controller creates a token with the same characteristics as the card named Tarmogoyf, as determined by the Oracle card reference.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "111.11",
+    "sectionTitle": "Tokens",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "Players expect a bare 'create a [Name] token' instruction to produce a vanilla, characteristic-less token bearing only that name, or assume the game has no way to fill in the blanks. Instead the rules point at the named card's actual Oracle text and stats, so the token is a full functional copy of that printed card even though the ability never restates its power, toughness, or abilities."
+}

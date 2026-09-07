@@ -1,5 +1,6 @@
 {
   "id": "state-based-actions-mid-resolution",
+  "tier": 1,
   "question": "I control a creature whose toughness equals my hand size. I cast a spell that reads: discard your hand, then draw seven cards. In the middle of that spell resolving, my hand is briefly empty, so the creature's toughness is 0. Does my creature die from a state-based action during that spell's resolution?",
   "expectedSupplementalRuleIds": ["704.4"],
   "workedSolution": "A player controls Maro, a creature with the ability “Maro’s power and toughness are each equal to the number of cards in your hand” and casts a spell whose effect is “Discard your hand, then draw seven cards.” Maro will temporarily have toughness 0 in the middle of the spell’s resolution but will be back up to toughness 7 when the spell finishes resolving. Thus Maro will survive when state-based actions are checked. In contrast, an ability that triggers when the player has no cards in hand goes on the stack after the spell resolves, because its trigger event happened during resolution.",

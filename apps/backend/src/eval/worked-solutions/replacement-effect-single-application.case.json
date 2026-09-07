@@ -1,5 +1,6 @@
 {
   "id": "replacement-effect-single-application",
+  "tier": 1,
   "question": "I control two permanents that each say: if a creature you control would deal damage to a permanent or player, it deals double that damage instead. My creature deals 2 damage. Does having two of these doubling effects mean it deals 8 damage, or does it double forever since each doubling effect could apply to the other's result?",
   "expectedSupplementalRuleIds": ["614.5"],
   "workedSolution": "A player controls two permanents, each with an ability that reads “If a creature you control would deal damage to a permanent or player, it deals double that damage to that permanent or player instead.” A creature that normally deals 2 damage will deal 8 damage—not just 4, and not an infinite amount.",

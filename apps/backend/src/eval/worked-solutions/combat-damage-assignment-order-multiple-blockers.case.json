@@ -1,0 +1,19 @@
+{
+  "id": "combat-damage-assignment-order-multiple-blockers",
+  "tier": 1,
+  "question": "My attacking 4/3 creature (no trample) is blocked by two creatures: a 2/3 and a 1/1. Do I have to assign damage to kill the first blocker before I can put any damage on the second, or can I split the 4 damage however I want between the two?",
+  "expectedSupplementalRuleIds": ["510.1c"],
+  "workedSolution": "An attacking Elvish Regrower (a 4/3 creature) is blocked by Vampire Spawn (a 2/3 creature) and Helpful Hunter (a 1/1 creature). Elvish Regrower’s controller can assign all 4 damage to the Hunter, 1 damage to the Spawn and 3 damage to the Hunter, 2 damage to each creature, 3 damage to the Spawn and 1 damage to the Hunter, or all 4 damage to the Spawn.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "510.1c",
+    "sectionTitle": "Combat Damage Step",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "Players confuse this with the trample rule, which does force lethal-damage-first ordering against each blocker before excess can go elsewhere. A non-trampling attacker blocked by multiple creatures has no such requirement at all -- its controller may divide its damage among the blockers in any way, including leaving one blocker completely undamaged."
+}

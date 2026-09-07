@@ -42,6 +42,15 @@ import type {
   PromptInputContext
 } from "../types/index.js";
 
+/**
+ * REQ-190: the number of System 3 supplemental-rule excerpts a prepared
+ * prompt attaches. Every production call site passes no override and gets
+ * exactly this value; the answer-quality run (REQ-188) is the only caller
+ * that ever overrides it, via `PreparePromptInputOptions.supplementalRuleCap`,
+ * so a larger cap is an experiment parameter, never a production change.
+ */
+export const DEFAULT_SUPPLEMENTAL_RULE_CAP = 5;
+
 export type PreparedPromptInput = {
   context: PromptInputContext;
   promptText: string;
@@ -65,6 +74,16 @@ export type PreparePromptInputOptions = {
    * synchronous.
    */
   queryEmbedding?: number[] | null;
+  /**
+   * REQ-190: overrides the System 3 supplemental-rule excerpt cap
+   * (default: `DEFAULT_SUPPLEMENTAL_RULE_CAP`). Every production call site
+   * leaves this unset; only the answer-quality run passes a value, so it can
+   * assemble a cap-10 prompt from the identical ranking production uses at
+   * cap 5 — `retrieveRulesForQueryWithDebug` already returns ranks 6–15 as
+   * `runnerUp`, so no scoring, query construction, corpus, or embedding
+   * behavior changes for the experiment.
+   */
+  supplementalRuleCap?: number;
 };
 
 export function preparePromptInput(request: AskAiRequest, options: PreparePromptInputOptions = {}): PreparedPromptInput {
@@ -225,7 +244,7 @@ function prepareLookupPromptInput(
       query.queryRuleIds,
       options.gameRulesRuleIndex ?? [],
       curatedRuleIds,
-      5,
+      options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
       undefined,
       options.queryEmbedding ?? null,
       query.queryText,
@@ -269,7 +288,7 @@ function prepareLookupPromptInput(
     query.queryRuleIds,
     options.gameRulesRuleIndex ?? [],
     curatedRuleIds,
-    5,
+    options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
     undefined,
     options.queryEmbedding ?? null,
     query.questionRuleIds
@@ -314,7 +333,7 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
       context,
       options.gameRulesRuleIndex ?? [],
       curatedRuleIds,
-      5,
+      options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
       undefined,
       options.queryEmbedding ?? null
     );
@@ -352,7 +371,7 @@ function prepareGamePromptInput(request: GameAskAiRequest, options: PreparePromp
     context,
     options.gameRulesRuleIndex ?? [],
     curatedRuleIds,
-    5,
+    options.supplementalRuleCap ?? DEFAULT_SUPPLEMENTAL_RULE_CAP,
     undefined,
     options.queryEmbedding ?? null
   );

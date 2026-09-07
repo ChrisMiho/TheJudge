@@ -1,5 +1,6 @@
 {
   "id": "illegal-target-partial-resolution",
+  "tier": 1,
   "question": "A spell says: destroy target nonblack creature and target land, and they can't be regenerated. The same permanent gets chosen as both targets -- a creature that's also a land -- and its color is changed to black before the spell resolves. Does the whole spell fizzle because one target became illegal, or does part of it still work?",
   "expectedSupplementalRuleIds": ["608.2b"],
   "workedSolution": "Plague Spores reads, “Destroy target nonblack creature and target land. They can’t be regenerated.” Suppose the same creature land is chosen both as the nonblack creature and as the land, and the color of the creature land is changed to black before Plague Spores resolves. Plague Spores still resolves because the black creature land is still a legal target for the “target land” part of the spell. The “destroy target nonblack creature” part of the spell won’t affect that permanent, but the “destroy target land” part of the spell will still destroy it. It can’t be regenerated.",

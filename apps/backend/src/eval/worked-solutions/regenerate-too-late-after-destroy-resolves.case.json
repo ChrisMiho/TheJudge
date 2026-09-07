@@ -1,0 +1,19 @@
+{
+  "id": "regenerate-too-late-after-destroy-resolves",
+  "tier": 1,
+  "question": "A spell that would destroy my creature is already resolving -- it's actually destroying the creature right now. Can I activate a regeneration ability in response, before the creature is actually put into the graveyard, to give it a regeneration shield in time?",
+  "expectedSupplementalRuleIds": ["614.4"],
+  "workedSolution": "A player can activate an ability to regenerate a creature in response to a spell that would destroy it. Once the spell resolves, though, it’s too late to regenerate the creature.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "614.4",
+    "sectionTitle": "Replacement Effects",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "Regeneration is a replacement effect, and replacement effects must be in place before the event they modify actually happens -- they can never reach back in time. A player can regenerate a creature only in response to the spell that would destroy it, i.e. before that spell resolves; once the destroy effect has already resolved, no regeneration shield created afterward can undo it."
+}

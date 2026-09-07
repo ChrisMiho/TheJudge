@@ -1,0 +1,19 @@
+{
+  "id": "mana-ability-remains-mana-ability",
+  "tier": 1,
+  "question": "I control a permanent with the ability '{T}: Add {G} for each creature you control,' but right now I control no creatures, so tapping it would add no mana at all. Is that still a mana ability, or does it become a regular activated ability that has to use the stack once it can't actually produce mana?",
+  "expectedSupplementalRuleIds": ["605.2"],
+  "workedSolution": "A permanent has an ability that reads “{T}: Add {G} for each creature you control.” The ability is still a mana ability even if you control no creatures or if the permanent is already tapped.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "605.2",
+    "sectionTitle": "Mana Abilities",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "Players expect whether an ability \"counts\" as a mana ability to depend on the current game state -- if it can't actually produce mana right now, surely it must use the stack like any other ability. The definition is fixed at the ability's text, not its momentary output: it never uses the stack, win or lose, whether or not it can currently produce mana."
+}

@@ -1,0 +1,2825 @@
+{
+  "runMetadata": {
+    "goldSetCaseIds": [
+      "combat-damage-assignment-order-multiple-blockers",
+      "copy-does-not-copy-etb-choices",
+      "copy-effect-modification-becomes-copiable",
+      "damage-does-not-destroy-sba-does",
+      "delayed-trigger-created-too-late",
+      "illegal-target-partial-resolution",
+      "last-known-information-simultaneous-sba",
+      "layers-timestamp-order",
+      "mana-ability-remains-mana-ability",
+      "panharmonicon-controller-not-entering-permanent",
+      "regenerate-too-late-after-destroy-resolves",
+      "replacement-effect-single-application",
+      "restoration-angel-blink-resets-counters",
+      "sensei-top-leaves-battlefield-ability-on-stack",
+      "state-based-actions-mid-resolution",
+      "token-created-by-name-uses-oracle-card",
+      "trample-must-assign-lethal-first",
+      "trample-over-planeswalkers-assignment"
+    ],
+    "goldSetTier1Count": 15,
+    "goldSetTier2Count": 3,
+    "answerModelLineup": ["gpt-4.1-mini", "gpt-4.1", "gpt-5-mini", "gpt-5-nano"],
+    "judgeModel": "gpt-5",
+    "judgeMatchesAnswerModel": false,
+    "rubricRevision": "2026-09-07.1",
+    "askAiProvider": "openai",
+    "embeddingProvider": "local",
+    "gitCommit": "b3f860f",
+    "generatedAt": "2026-09-07T09:48:33.574Z",
+    "totalInputTokens": 413248,
+    "totalOutputTokens": 269857,
+    "totalCostUsd": 0.6274841999999996
+  },
+  "legs": [
+    {
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "fullyCorrectCount": 17,
+      "caseCount": 18
+    },
+    {
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "fullyCorrectCount": 15,
+      "caseCount": 18
+    },
+    {
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "fullyCorrectCount": 16,
+      "caseCount": 18
+    },
+    {
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "fullyCorrectCount": 18,
+      "caseCount": 18
+    },
+    {
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "fullyCorrectCount": 17,
+      "caseCount": 18
+    },
+    {
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "fullyCorrectCount": 18,
+      "caseCount": 18
+    },
+    {
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "fullyCorrectCount": 15,
+      "caseCount": 18
+    },
+    {
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "fullyCorrectCount": 13,
+      "caseCount": 18
+    }
+  ],
+  "caseLegScores": [
+    {
+      "caseId": "combat-damage-assignment-order-multiple-blockers",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 11380,
+      "inputTokens": 2459,
+      "outputTokens": 362,
+      "latencyMs": 5586,
+      "blindRank": 2
+    },
+    {
+      "caseId": "combat-damage-assignment-order-multiple-blockers",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 1,
+        "grounding": 0,
+        "calibration": 1,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 11380,
+      "inputTokens": 2459,
+      "outputTokens": 357,
+      "latencyMs": 2859,
+      "blindRank": 1
+    },
+    {
+      "caseId": "combat-damage-assignment-order-multiple-blockers",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 0,
+        "grounding": 0,
+        "calibration": 0,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 11380,
+      "inputTokens": 2458,
+      "outputTokens": 2543,
+      "latencyMs": 19445,
+      "blindRank": 4
+    },
+    {
+      "caseId": "combat-damage-assignment-order-multiple-blockers",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 11380,
+      "inputTokens": 2458,
+      "outputTokens": 2954,
+      "latencyMs": 15819,
+      "blindRank": 3
+    },
+    {
+      "caseId": "copy-does-not-copy-etb-choices",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 12600,
+      "inputTokens": 2790,
+      "outputTokens": 177,
+      "latencyMs": 3556,
+      "blindRank": 3
+    },
+    {
+      "caseId": "copy-does-not-copy-etb-choices",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 12600,
+      "inputTokens": 2790,
+      "outputTokens": 254,
+      "latencyMs": 2199,
+      "blindRank": 2
+    },
+    {
+      "caseId": "copy-does-not-copy-etb-choices",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 12600,
+      "inputTokens": 2789,
+      "outputTokens": 845,
+      "latencyMs": 6216,
+      "blindRank": 1
+    },
+    {
+      "caseId": "copy-does-not-copy-etb-choices",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 12600,
+      "inputTokens": 2789,
+      "outputTokens": 2879,
+      "latencyMs": 13924,
+      "blindRank": 4
+    },
+    {
+      "caseId": "copy-effect-modification-becomes-copiable",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13446,
+      "inputTokens": 2975,
+      "outputTokens": 569,
+      "latencyMs": 8027,
+      "blindRank": 2
+    },
+    {
+      "caseId": "copy-effect-modification-becomes-copiable",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13446,
+      "inputTokens": 2975,
+      "outputTokens": 605,
+      "latencyMs": 3800,
+      "blindRank": 1
+    },
+    {
+      "caseId": "copy-effect-modification-becomes-copiable",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13446,
+      "inputTokens": 2974,
+      "outputTokens": 1587,
+      "latencyMs": 12077,
+      "blindRank": 4
+    },
+    {
+      "caseId": "copy-effect-modification-becomes-copiable",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 13446,
+      "inputTokens": 2974,
+      "outputTokens": 5230,
+      "latencyMs": 24026,
+      "blindRank": 3
+    },
+    {
+      "caseId": "damage-does-not-destroy-sba-does",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11436,
+      "inputTokens": 2534,
+      "outputTokens": 231,
+      "latencyMs": 3523,
+      "blindRank": 4
+    },
+    {
+      "caseId": "damage-does-not-destroy-sba-does",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11436,
+      "inputTokens": 2534,
+      "outputTokens": 373,
+      "latencyMs": 3112,
+      "blindRank": 3
+    },
+    {
+      "caseId": "damage-does-not-destroy-sba-does",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11436,
+      "inputTokens": 2533,
+      "outputTokens": 1542,
+      "latencyMs": 11565,
+      "blindRank": 1
+    },
+    {
+      "caseId": "damage-does-not-destroy-sba-does",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11436,
+      "inputTokens": 2533,
+      "outputTokens": 2853,
+      "latencyMs": 13010,
+      "blindRank": 2
+    },
+    {
+      "caseId": "delayed-trigger-created-too-late",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 10712,
+      "inputTokens": 2296,
+      "outputTokens": 260,
+      "latencyMs": 3691,
+      "blindRank": 4
+    },
+    {
+      "caseId": "delayed-trigger-created-too-late",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 10712,
+      "inputTokens": 2296,
+      "outputTokens": 280,
+      "latencyMs": 2942,
+      "blindRank": 2
+    },
+    {
+      "caseId": "delayed-trigger-created-too-late",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 10712,
+      "inputTokens": 2295,
+      "outputTokens": 1265,
+      "latencyMs": 11686,
+      "blindRank": 1
+    },
+    {
+      "caseId": "delayed-trigger-created-too-late",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 10712,
+      "inputTokens": 2295,
+      "outputTokens": 3798,
+      "latencyMs": 17478,
+      "blindRank": 3
+    },
+    {
+      "caseId": "illegal-target-partial-resolution",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 12628,
+      "inputTokens": 2747,
+      "outputTokens": 537,
+      "latencyMs": 11591,
+      "blindRank": 2
+    },
+    {
+      "caseId": "illegal-target-partial-resolution",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 12628,
+      "inputTokens": 2747,
+      "outputTokens": 567,
+      "latencyMs": 4638,
+      "blindRank": 3
+    },
+    {
+      "caseId": "illegal-target-partial-resolution",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 12628,
+      "inputTokens": 2746,
+      "outputTokens": 1613,
+      "latencyMs": 12091,
+      "blindRank": 1
+    },
+    {
+      "caseId": "illegal-target-partial-resolution",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 12628,
+      "inputTokens": 2746,
+      "outputTokens": 4224,
+      "latencyMs": 18300,
+      "blindRank": 4
+    },
+    {
+      "caseId": "last-known-information-simultaneous-sba",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 9438,
+      "inputTokens": 2148,
+      "outputTokens": 829,
+      "latencyMs": 10756,
+      "blindRank": 3
+    },
+    {
+      "caseId": "last-known-information-simultaneous-sba",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 9438,
+      "inputTokens": 2148,
+      "outputTokens": 820,
+      "latencyMs": 5597,
+      "blindRank": 2
+    },
+    {
+      "caseId": "last-known-information-simultaneous-sba",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 9438,
+      "inputTokens": 2147,
+      "outputTokens": 1429,
+      "latencyMs": 10461,
+      "blindRank": 1
+    },
+    {
+      "caseId": "last-known-information-simultaneous-sba",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 0,
+        "grounding": 0,
+        "calibration": 0,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 9438,
+      "inputTokens": 2147,
+      "outputTokens": 6925,
+      "latencyMs": 33028,
+      "blindRank": 4
+    },
+    {
+      "caseId": "layers-timestamp-order",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11186,
+      "inputTokens": 2548,
+      "outputTokens": 231,
+      "latencyMs": 3510,
+      "blindRank": 3
+    },
+    {
+      "caseId": "layers-timestamp-order",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11186,
+      "inputTokens": 2548,
+      "outputTokens": 266,
+      "latencyMs": 2610,
+      "blindRank": 2
+    },
+    {
+      "caseId": "layers-timestamp-order",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11186,
+      "inputTokens": 2547,
+      "outputTokens": 1543,
+      "latencyMs": 12095,
+      "blindRank": 1
+    },
+    {
+      "caseId": "layers-timestamp-order",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11186,
+      "inputTokens": 2547,
+      "outputTokens": 4149,
+      "latencyMs": 19944,
+      "blindRank": 4
+    },
+    {
+      "caseId": "mana-ability-remains-mana-ability",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11211,
+      "inputTokens": 2477,
+      "outputTokens": 142,
+      "latencyMs": 2840,
+      "blindRank": 2
+    },
+    {
+      "caseId": "mana-ability-remains-mana-ability",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11211,
+      "inputTokens": 2477,
+      "outputTokens": 213,
+      "latencyMs": 1843,
+      "blindRank": 1
+    },
+    {
+      "caseId": "mana-ability-remains-mana-ability",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11211,
+      "inputTokens": 2476,
+      "outputTokens": 1869,
+      "latencyMs": 14370,
+      "blindRank": 3
+    },
+    {
+      "caseId": "mana-ability-remains-mana-ability",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 1,
+        "grounding": 2,
+        "calibration": 0,
+        "readability": 1
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11211,
+      "inputTokens": 2476,
+      "outputTokens": 5254,
+      "latencyMs": 25953,
+      "blindRank": 4
+    },
+    {
+      "caseId": "panharmonicon-controller-not-entering-permanent",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 13448,
+      "inputTokens": 2953,
+      "outputTokens": 460,
+      "latencyMs": 5733,
+      "blindRank": 3
+    },
+    {
+      "caseId": "panharmonicon-controller-not-entering-permanent",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 13448,
+      "inputTokens": 2953,
+      "outputTokens": 342,
+      "latencyMs": 2922,
+      "blindRank": 1
+    },
+    {
+      "caseId": "panharmonicon-controller-not-entering-permanent",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 13448,
+      "inputTokens": 2952,
+      "outputTokens": 2144,
+      "latencyMs": 15529,
+      "blindRank": 2
+    },
+    {
+      "caseId": "panharmonicon-controller-not-entering-permanent",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 13448,
+      "inputTokens": 2952,
+      "outputTokens": 4856,
+      "latencyMs": 22780,
+      "blindRank": 4
+    },
+    {
+      "caseId": "regenerate-too-late-after-destroy-resolves",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 9612,
+      "inputTokens": 2092,
+      "outputTokens": 340,
+      "latencyMs": 6735,
+      "blindRank": 3
+    },
+    {
+      "caseId": "regenerate-too-late-after-destroy-resolves",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 9612,
+      "inputTokens": 2092,
+      "outputTokens": 502,
+      "latencyMs": 3421,
+      "blindRank": 2
+    },
+    {
+      "caseId": "regenerate-too-late-after-destroy-resolves",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 9612,
+      "inputTokens": 2091,
+      "outputTokens": 2472,
+      "latencyMs": 16464,
+      "blindRank": 1
+    },
+    {
+      "caseId": "regenerate-too-late-after-destroy-resolves",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 9612,
+      "inputTokens": 2091,
+      "outputTokens": 5581,
+      "latencyMs": 25926,
+      "blindRank": 4
+    },
+    {
+      "caseId": "replacement-effect-single-application",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 10577,
+      "inputTokens": 2299,
+      "outputTokens": 322,
+      "latencyMs": 3949,
+      "blindRank": 2
+    },
+    {
+      "caseId": "replacement-effect-single-application",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 10577,
+      "inputTokens": 2299,
+      "outputTokens": 395,
+      "latencyMs": 3415,
+      "blindRank": 1
+    },
+    {
+      "caseId": "replacement-effect-single-application",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 10577,
+      "inputTokens": 2298,
+      "outputTokens": 825,
+      "latencyMs": 6673,
+      "blindRank": 3
+    },
+    {
+      "caseId": "replacement-effect-single-application",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 10577,
+      "inputTokens": 2298,
+      "outputTokens": 5279,
+      "latencyMs": 29263,
+      "blindRank": 4
+    },
+    {
+      "caseId": "restoration-angel-blink-resets-counters",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": false,
+      "promptChars": 12719,
+      "inputTokens": 2856,
+      "outputTokens": 223,
+      "latencyMs": 3811,
+      "blindRank": 4
+    },
+    {
+      "caseId": "restoration-angel-blink-resets-counters",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 12719,
+      "inputTokens": 2856,
+      "outputTokens": 460,
+      "latencyMs": 4705,
+      "blindRank": 1
+    },
+    {
+      "caseId": "restoration-angel-blink-resets-counters",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": false,
+      "promptChars": 12719,
+      "inputTokens": 2855,
+      "outputTokens": 2303,
+      "latencyMs": 17062,
+      "blindRank": 3
+    },
+    {
+      "caseId": "restoration-angel-blink-resets-counters",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 12719,
+      "inputTokens": 2855,
+      "outputTokens": 3380,
+      "latencyMs": 17908,
+      "blindRank": 2
+    },
+    {
+      "caseId": "sensei-top-leaves-battlefield-ability-on-stack",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 14957,
+      "inputTokens": 3334,
+      "outputTokens": 636,
+      "latencyMs": 8044,
+      "blindRank": 3
+    },
+    {
+      "caseId": "sensei-top-leaves-battlefield-ability-on-stack",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 14957,
+      "inputTokens": 3334,
+      "outputTokens": 437,
+      "latencyMs": 4091,
+      "blindRank": 2
+    },
+    {
+      "caseId": "sensei-top-leaves-battlefield-ability-on-stack",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 14957,
+      "inputTokens": 3333,
+      "outputTokens": 3223,
+      "latencyMs": 22394,
+      "blindRank": 1
+    },
+    {
+      "caseId": "sensei-top-leaves-battlefield-ability-on-stack",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 1,
+        "grounding": 0,
+        "calibration": 0,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 14957,
+      "inputTokens": 3333,
+      "outputTokens": 6708,
+      "latencyMs": 34993,
+      "blindRank": 4
+    },
+    {
+      "caseId": "state-based-actions-mid-resolution",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 9980,
+      "inputTokens": 2187,
+      "outputTokens": 241,
+      "latencyMs": 3387,
+      "blindRank": 3
+    },
+    {
+      "caseId": "state-based-actions-mid-resolution",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 9980,
+      "inputTokens": 2187,
+      "outputTokens": 353,
+      "latencyMs": 3063,
+      "blindRank": 2
+    },
+    {
+      "caseId": "state-based-actions-mid-resolution",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 9980,
+      "inputTokens": 2186,
+      "outputTokens": 1133,
+      "latencyMs": 13017,
+      "blindRank": 1
+    },
+    {
+      "caseId": "state-based-actions-mid-resolution",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 9980,
+      "inputTokens": 2186,
+      "outputTokens": 5595,
+      "latencyMs": 32267,
+      "blindRank": 4
+    },
+    {
+      "caseId": "token-created-by-name-uses-oracle-card",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 10882,
+      "inputTokens": 2435,
+      "outputTokens": 266,
+      "latencyMs": 3413,
+      "blindRank": 2
+    },
+    {
+      "caseId": "token-created-by-name-uses-oracle-card",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 1,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 10882,
+      "inputTokens": 2435,
+      "outputTokens": 626,
+      "latencyMs": 4244,
+      "blindRank": 4
+    },
+    {
+      "caseId": "token-created-by-name-uses-oracle-card",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 10882,
+      "inputTokens": 2434,
+      "outputTokens": 2174,
+      "latencyMs": 18786,
+      "blindRank": 1
+    },
+    {
+      "caseId": "token-created-by-name-uses-oracle-card",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 10882,
+      "inputTokens": 2434,
+      "outputTokens": 5176,
+      "latencyMs": 23916,
+      "blindRank": 3
+    },
+    {
+      "caseId": "trample-must-assign-lethal-first",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11300,
+      "inputTokens": 2431,
+      "outputTokens": 269,
+      "latencyMs": 4959,
+      "blindRank": 4
+    },
+    {
+      "caseId": "trample-must-assign-lethal-first",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11300,
+      "inputTokens": 2431,
+      "outputTokens": 480,
+      "latencyMs": 2942,
+      "blindRank": 1
+    },
+    {
+      "caseId": "trample-must-assign-lethal-first",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11300,
+      "inputTokens": 2430,
+      "outputTokens": 1133,
+      "latencyMs": 10484,
+      "blindRank": 2
+    },
+    {
+      "caseId": "trample-must-assign-lethal-first",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11300,
+      "inputTokens": 2430,
+      "outputTokens": 3449,
+      "latencyMs": 18599,
+      "blindRank": 3
+    },
+    {
+      "caseId": "trample-over-planeswalkers-assignment",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 0,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11371,
+      "inputTokens": 2442,
+      "outputTokens": 352,
+      "latencyMs": 5166,
+      "blindRank": 4
+    },
+    {
+      "caseId": "trample-over-planeswalkers-assignment",
+      "model": "gpt-4.1",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11371,
+      "inputTokens": 2442,
+      "outputTokens": 470,
+      "latencyMs": 3348,
+      "blindRank": 2
+    },
+    {
+      "caseId": "trample-over-planeswalkers-assignment",
+      "model": "gpt-5-mini",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11371,
+      "inputTokens": 2441,
+      "outputTokens": 1837,
+      "latencyMs": 13069,
+      "blindRank": 3
+    },
+    {
+      "caseId": "trample-over-planeswalkers-assignment",
+      "model": "gpt-5-nano",
+      "excerptCap": 5,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11371,
+      "inputTokens": 2441,
+      "outputTokens": 5057,
+      "latencyMs": 24292,
+      "blindRank": 1
+    },
+    {
+      "caseId": "combat-damage-assignment-order-multiple-blockers",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13824,
+      "inputTokens": 3006,
+      "outputTokens": 267,
+      "latencyMs": 4288,
+      "blindRank": 1
+    },
+    {
+      "caseId": "combat-damage-assignment-order-multiple-blockers",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 13824,
+      "inputTokens": 3006,
+      "outputTokens": 320,
+      "latencyMs": 2396,
+      "blindRank": 2
+    },
+    {
+      "caseId": "combat-damage-assignment-order-multiple-blockers",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 1,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13824,
+      "inputTokens": 3005,
+      "outputTokens": 1595,
+      "latencyMs": 14266,
+      "blindRank": 3
+    },
+    {
+      "caseId": "combat-damage-assignment-order-multiple-blockers",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 13824,
+      "inputTokens": 3005,
+      "outputTokens": 6929,
+      "latencyMs": 33466,
+      "blindRank": 4
+    },
+    {
+      "caseId": "copy-does-not-copy-etb-choices",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 17922,
+      "inputTokens": 3964,
+      "outputTokens": 174,
+      "latencyMs": 2978,
+      "blindRank": 3
+    },
+    {
+      "caseId": "copy-does-not-copy-etb-choices",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 17922,
+      "inputTokens": 3964,
+      "outputTokens": 287,
+      "latencyMs": 2640,
+      "blindRank": 2
+    },
+    {
+      "caseId": "copy-does-not-copy-etb-choices",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 17922,
+      "inputTokens": 3963,
+      "outputTokens": 1441,
+      "latencyMs": 11825,
+      "blindRank": 1
+    },
+    {
+      "caseId": "copy-does-not-copy-etb-choices",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 0,
+        "grounding": 0,
+        "calibration": 0,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 17922,
+      "inputTokens": 3963,
+      "outputTokens": 4017,
+      "latencyMs": 19231,
+      "blindRank": 4
+    },
+    {
+      "caseId": "copy-effect-modification-becomes-copiable",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 16768,
+      "inputTokens": 3717,
+      "outputTokens": 677,
+      "latencyMs": 8867,
+      "blindRank": 3
+    },
+    {
+      "caseId": "copy-effect-modification-becomes-copiable",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 16768,
+      "inputTokens": 3717,
+      "outputTokens": 719,
+      "latencyMs": 5460,
+      "blindRank": 2
+    },
+    {
+      "caseId": "copy-effect-modification-becomes-copiable",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 16768,
+      "inputTokens": 3716,
+      "outputTokens": 1868,
+      "latencyMs": 13880,
+      "blindRank": 1
+    },
+    {
+      "caseId": "copy-effect-modification-becomes-copiable",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 0,
+        "grounding": 0,
+        "calibration": 0,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 16768,
+      "inputTokens": 3716,
+      "outputTokens": 5810,
+      "latencyMs": 27241,
+      "blindRank": 4
+    },
+    {
+      "caseId": "damage-does-not-destroy-sba-does",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 1,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 15353,
+      "inputTokens": 3363,
+      "outputTokens": 331,
+      "latencyMs": 3934,
+      "blindRank": 3
+    },
+    {
+      "caseId": "damage-does-not-destroy-sba-does",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 15353,
+      "inputTokens": 3363,
+      "outputTokens": 406,
+      "latencyMs": 4163,
+      "blindRank": 1
+    },
+    {
+      "caseId": "damage-does-not-destroy-sba-does",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 15353,
+      "inputTokens": 3362,
+      "outputTokens": 1482,
+      "latencyMs": 10285,
+      "blindRank": 4
+    },
+    {
+      "caseId": "damage-does-not-destroy-sba-does",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 15353,
+      "inputTokens": 3362,
+      "outputTokens": 2984,
+      "latencyMs": 14873,
+      "blindRank": 2
+    },
+    {
+      "caseId": "delayed-trigger-created-too-late",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13858,
+      "inputTokens": 2957,
+      "outputTokens": 275,
+      "latencyMs": 5077,
+      "blindRank": 3
+    },
+    {
+      "caseId": "delayed-trigger-created-too-late",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13858,
+      "inputTokens": 2957,
+      "outputTokens": 344,
+      "latencyMs": 3050,
+      "blindRank": 1
+    },
+    {
+      "caseId": "delayed-trigger-created-too-late",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13858,
+      "inputTokens": 2956,
+      "outputTokens": 1950,
+      "latencyMs": 16584,
+      "blindRank": 2
+    },
+    {
+      "caseId": "delayed-trigger-created-too-late",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13858,
+      "inputTokens": 2956,
+      "outputTokens": 3096,
+      "latencyMs": 15195,
+      "blindRank": 4
+    },
+    {
+      "caseId": "illegal-target-partial-resolution",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 14967,
+      "inputTokens": 3283,
+      "outputTokens": 680,
+      "latencyMs": 8072,
+      "blindRank": 2
+    },
+    {
+      "caseId": "illegal-target-partial-resolution",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 14967,
+      "inputTokens": 3283,
+      "outputTokens": 478,
+      "latencyMs": 3309,
+      "blindRank": 4
+    },
+    {
+      "caseId": "illegal-target-partial-resolution",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 14967,
+      "inputTokens": 3282,
+      "outputTokens": 1261,
+      "latencyMs": 10234,
+      "blindRank": 1
+    },
+    {
+      "caseId": "illegal-target-partial-resolution",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 14967,
+      "inputTokens": 3282,
+      "outputTokens": 5947,
+      "latencyMs": 30522,
+      "blindRank": 3
+    },
+    {
+      "caseId": "last-known-information-simultaneous-sba",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 0,
+        "grounding": 2,
+        "calibration": 0,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11012,
+      "inputTokens": 2536,
+      "outputTokens": 498,
+      "latencyMs": 4538,
+      "blindRank": 4
+    },
+    {
+      "caseId": "last-known-information-simultaneous-sba",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11012,
+      "inputTokens": 2536,
+      "outputTokens": 843,
+      "latencyMs": 5803,
+      "blindRank": 1
+    },
+    {
+      "caseId": "last-known-information-simultaneous-sba",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11012,
+      "inputTokens": 2535,
+      "outputTokens": 1785,
+      "latencyMs": 14189,
+      "blindRank": 2
+    },
+    {
+      "caseId": "last-known-information-simultaneous-sba",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11012,
+      "inputTokens": 2535,
+      "outputTokens": 6857,
+      "latencyMs": 38462,
+      "blindRank": 3
+    },
+    {
+      "caseId": "layers-timestamp-order",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 13173,
+      "inputTokens": 2988,
+      "outputTokens": 195,
+      "latencyMs": 2967,
+      "blindRank": 3
+    },
+    {
+      "caseId": "layers-timestamp-order",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 13173,
+      "inputTokens": 2988,
+      "outputTokens": 375,
+      "latencyMs": 3012,
+      "blindRank": 2
+    },
+    {
+      "caseId": "layers-timestamp-order",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 13173,
+      "inputTokens": 2987,
+      "outputTokens": 1205,
+      "latencyMs": 12679,
+      "blindRank": 1
+    },
+    {
+      "caseId": "layers-timestamp-order",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13173,
+      "inputTokens": 2987,
+      "outputTokens": 4539,
+      "latencyMs": 23383,
+      "blindRank": 4
+    },
+    {
+      "caseId": "mana-ability-remains-mana-ability",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 12852,
+      "inputTokens": 2841,
+      "outputTokens": 323,
+      "latencyMs": 3660,
+      "blindRank": 4
+    },
+    {
+      "caseId": "mana-ability-remains-mana-ability",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 12852,
+      "inputTokens": 2841,
+      "outputTokens": 191,
+      "latencyMs": 2009,
+      "blindRank": 1
+    },
+    {
+      "caseId": "mana-ability-remains-mana-ability",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 12852,
+      "inputTokens": 2840,
+      "outputTokens": 1547,
+      "latencyMs": 16207,
+      "blindRank": 2
+    },
+    {
+      "caseId": "mana-ability-remains-mana-ability",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 12852,
+      "inputTokens": 2840,
+      "outputTokens": 3366,
+      "latencyMs": 28579,
+      "blindRank": 3
+    },
+    {
+      "caseId": "panharmonicon-controller-not-entering-permanent",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 16587,
+      "inputTokens": 3627,
+      "outputTokens": 190,
+      "latencyMs": 3080,
+      "blindRank": 1
+    },
+    {
+      "caseId": "panharmonicon-controller-not-entering-permanent",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 16587,
+      "inputTokens": 3627,
+      "outputTokens": 310,
+      "latencyMs": 3983,
+      "blindRank": 2
+    },
+    {
+      "caseId": "panharmonicon-controller-not-entering-permanent",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 16587,
+      "inputTokens": 3626,
+      "outputTokens": 2057,
+      "latencyMs": 21613,
+      "blindRank": 4
+    },
+    {
+      "caseId": "panharmonicon-controller-not-entering-permanent",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": false,
+      "promptChars": 16587,
+      "inputTokens": 3626,
+      "outputTokens": 3696,
+      "latencyMs": 19351,
+      "blindRank": 3
+    },
+    {
+      "caseId": "regenerate-too-late-after-destroy-resolves",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13289,
+      "inputTokens": 2914,
+      "outputTokens": 213,
+      "latencyMs": 2524,
+      "blindRank": 3
+    },
+    {
+      "caseId": "regenerate-too-late-after-destroy-resolves",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13289,
+      "inputTokens": 2914,
+      "outputTokens": 303,
+      "latencyMs": 2949,
+      "blindRank": 2
+    },
+    {
+      "caseId": "regenerate-too-late-after-destroy-resolves",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 13289,
+      "inputTokens": 2913,
+      "outputTokens": 2563,
+      "latencyMs": 32921,
+      "blindRank": 1
+    },
+    {
+      "caseId": "regenerate-too-late-after-destroy-resolves",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13289,
+      "inputTokens": 2913,
+      "outputTokens": 4317,
+      "latencyMs": 23632,
+      "blindRank": 4
+    },
+    {
+      "caseId": "replacement-effect-single-application",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 15563,
+      "inputTokens": 3434,
+      "outputTokens": 347,
+      "latencyMs": 3568,
+      "blindRank": 3
+    },
+    {
+      "caseId": "replacement-effect-single-application",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 15563,
+      "inputTokens": 3434,
+      "outputTokens": 310,
+      "latencyMs": 3261,
+      "blindRank": 1
+    },
+    {
+      "caseId": "replacement-effect-single-application",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 15563,
+      "inputTokens": 3433,
+      "outputTokens": 898,
+      "latencyMs": 10201,
+      "blindRank": 2
+    },
+    {
+      "caseId": "replacement-effect-single-application",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 0,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 15563,
+      "inputTokens": 3433,
+      "outputTokens": 3267,
+      "latencyMs": 17987,
+      "blindRank": 4
+    },
+    {
+      "caseId": "restoration-angel-blink-resets-counters",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": false,
+      "promptChars": 16153,
+      "inputTokens": 3606,
+      "outputTokens": 233,
+      "latencyMs": 2955,
+      "blindRank": 1
+    },
+    {
+      "caseId": "restoration-angel-blink-resets-counters",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": false,
+      "promptChars": 16153,
+      "inputTokens": 3606,
+      "outputTokens": 429,
+      "latencyMs": 3497,
+      "blindRank": 3
+    },
+    {
+      "caseId": "restoration-angel-blink-resets-counters",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": false,
+      "promptChars": 16153,
+      "inputTokens": 3605,
+      "outputTokens": 2102,
+      "latencyMs": 21800,
+      "blindRank": 2
+    },
+    {
+      "caseId": "restoration-angel-blink-resets-counters",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": false,
+      "promptChars": 16153,
+      "inputTokens": 3605,
+      "outputTokens": 3881,
+      "latencyMs": 22375,
+      "blindRank": 4
+    },
+    {
+      "caseId": "sensei-top-leaves-battlefield-ability-on-stack",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 17561,
+      "inputTokens": 3882,
+      "outputTokens": 306,
+      "latencyMs": 3125,
+      "blindRank": 2
+    },
+    {
+      "caseId": "sensei-top-leaves-battlefield-ability-on-stack",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 17561,
+      "inputTokens": 3882,
+      "outputTokens": 468,
+      "latencyMs": 3594,
+      "blindRank": 1
+    },
+    {
+      "caseId": "sensei-top-leaves-battlefield-ability-on-stack",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 17561,
+      "inputTokens": 3881,
+      "outputTokens": 2551,
+      "latencyMs": 32607,
+      "blindRank": 3
+    },
+    {
+      "caseId": "sensei-top-leaves-battlefield-ability-on-stack",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 0,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 17561,
+      "inputTokens": 3881,
+      "outputTokens": 5913,
+      "latencyMs": 30513,
+      "blindRank": 4
+    },
+    {
+      "caseId": "state-based-actions-mid-resolution",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11704,
+      "inputTokens": 2600,
+      "outputTokens": 312,
+      "latencyMs": 3651,
+      "blindRank": 4
+    },
+    {
+      "caseId": "state-based-actions-mid-resolution",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11704,
+      "inputTokens": 2600,
+      "outputTokens": 398,
+      "latencyMs": 3910,
+      "blindRank": 1
+    },
+    {
+      "caseId": "state-based-actions-mid-resolution",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 11704,
+      "inputTokens": 2599,
+      "outputTokens": 1549,
+      "latencyMs": 25578,
+      "blindRank": 3
+    },
+    {
+      "caseId": "state-based-actions-mid-resolution",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 11704,
+      "inputTokens": 2599,
+      "outputTokens": 3094,
+      "latencyMs": 17658,
+      "blindRank": 2
+    },
+    {
+      "caseId": "token-created-by-name-uses-oracle-card",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13976,
+      "inputTokens": 3095,
+      "outputTokens": 411,
+      "latencyMs": 4209,
+      "blindRank": 3
+    },
+    {
+      "caseId": "token-created-by-name-uses-oracle-card",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 13976,
+      "inputTokens": 3095,
+      "outputTokens": 534,
+      "latencyMs": 3777,
+      "blindRank": 2
+    },
+    {
+      "caseId": "token-created-by-name-uses-oracle-card",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13976,
+      "inputTokens": 3094,
+      "outputTokens": 6274,
+      "latencyMs": 65546,
+      "blindRank": 1
+    },
+    {
+      "caseId": "token-created-by-name-uses-oracle-card",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 1,
+        "grounding": 2,
+        "calibration": 0,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 13976,
+      "inputTokens": 3094,
+      "outputTokens": 7364,
+      "latencyMs": 38084,
+      "blindRank": 4
+    },
+    {
+      "caseId": "trample-must-assign-lethal-first",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13162,
+      "inputTokens": 2842,
+      "outputTokens": 398,
+      "latencyMs": 4047,
+      "blindRank": 3
+    },
+    {
+      "caseId": "trample-must-assign-lethal-first",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13162,
+      "inputTokens": 2842,
+      "outputTokens": 463,
+      "latencyMs": 3149,
+      "blindRank": 2
+    },
+    {
+      "caseId": "trample-must-assign-lethal-first",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 13162,
+      "inputTokens": 2841,
+      "outputTokens": 1345,
+      "latencyMs": 13841,
+      "blindRank": 1
+    },
+    {
+      "caseId": "trample-must-assign-lethal-first",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 1,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 13162,
+      "inputTokens": 2841,
+      "outputTokens": 7675,
+      "latencyMs": 55607,
+      "blindRank": 4
+    },
+    {
+      "caseId": "trample-over-planeswalkers-assignment",
+      "model": "gpt-4.1-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 1,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 12389,
+      "inputTokens": 2672,
+      "outputTokens": 506,
+      "latencyMs": 5086,
+      "blindRank": 3
+    },
+    {
+      "caseId": "trample-over-planeswalkers-assignment",
+      "model": "gpt-4.1",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 12389,
+      "inputTokens": 2672,
+      "outputTokens": 436,
+      "latencyMs": 3708,
+      "blindRank": 2
+    },
+    {
+      "caseId": "trample-over-planeswalkers-assignment",
+      "model": "gpt-5-mini",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 2,
+        "grounding": 2,
+        "calibration": 2,
+        "readability": 2
+      },
+      "namesGoldRuleId": true,
+      "goldRuleInPrompt": true,
+      "promptChars": 12389,
+      "inputTokens": 2671,
+      "outputTokens": 2594,
+      "latencyMs": 27667,
+      "blindRank": 1
+    },
+    {
+      "caseId": "trample-over-planeswalkers-assignment",
+      "model": "gpt-5-nano",
+      "excerptCap": 10,
+      "undetermined": false,
+      "scores": {
+        "correctness": 1,
+        "grounding": 0,
+        "calibration": 0,
+        "readability": 2
+      },
+      "namesGoldRuleId": false,
+      "goldRuleInPrompt": true,
+      "promptChars": 12389,
+      "inputTokens": 2671,
+      "outputTokens": 8014,
+      "latencyMs": 41644,
+      "blindRank": 4
+    }
+  ]
+}

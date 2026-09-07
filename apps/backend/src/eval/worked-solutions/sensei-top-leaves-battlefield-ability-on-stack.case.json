@@ -1,0 +1,19 @@
+{
+  "id": "sensei-top-leaves-battlefield-ability-on-stack",
+  "tier": 2,
+  "question": "I activate Sensei's Divining Top's draw-a-card ability (the one that returns it to the top of my library), and then, before that ability resolves, Sensei's Divining Top gets exiled. Does the ability fizzle and do nothing since its source is gone, or does it still draw me a card?",
+  "expectedSupplementalRuleIds": ["113.7a"],
+  "workedSolution": "If Sensei's Divining Top leaves the battlefield while its second ability is on the stack, you'll draw a card and leave Sensei's Divining Top in the zone it's moved to.",
+  "source": {
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Sensei's Divining Top",
+    "oracleId": "13575cf9-65c1-4861-b21e-eb2155e07766",
+    "rulingDate": "2016-06-08",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the worked solution is the ruling's text, verbatim."
+  },
+  "whyHard": "Players intuitively expect an ability to \"fizzle\" if its source leaves the battlefield before it resolves, by analogy with a spell losing all its targets. An activated ability exists on the stack independently of its source once it's put there, so removing or destroying the source afterward doesn't stop it from resolving -- Sensei's Divining Top still draws the card even though it's no longer on the battlefield when the ability resolves."
+}

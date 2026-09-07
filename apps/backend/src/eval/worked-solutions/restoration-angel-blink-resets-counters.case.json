@@ -1,0 +1,19 @@
+{
+  "id": "restoration-angel-blink-resets-counters",
+  "tier": 2,
+  "question": "I exile my own creature with Restoration Angel's ability and return it to the battlefield. That creature had three +1/+1 counters on it and an Aura attached before it left. When it comes back, does it still have those three counters and the Aura still attached?",
+  "expectedSupplementalRuleIds": ["400.7"],
+  "workedSolution": "Once the exiled creature returns, it's considered a new object with no relation to the object that it was. Auras attached to the exiled creature will be put into their owners' graveyards. Equipment attached to the exiled creature will become unattached and remain on the battlefield. Any counters on the exiled creature will cease to exist.",
+  "source": {
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Restoration Angel",
+    "oracleId": "dfbd3afc-9905-4cff-a4f4-df08a4d0a7fa",
+    "rulingDate": "2021-03-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the worked solution is the ruling's text, verbatim."
+  },
+  "whyHard": "\"Blink\" effects read as a pause-and-resume for the same permanent, so players expect counters and attachments to survive the round trip. An object that changes zones and returns becomes a brand-new object with no memory of its former self: its +1/+1 counters cease to exist, and any Aura that was attached goes to its owner's graveyard rather than reattaching."
+}

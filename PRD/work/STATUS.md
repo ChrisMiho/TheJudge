@@ -10,10 +10,6 @@ Do not rename package folders to encode status.
 
 ## refined
 
-| Package | Notes |
-| --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Define gate answered and applied 2026-09-06 (6 edit / 4 accept); docs PR #200 awaits owner merge, then `graph-implement` resumes at `gate-qc` |
-
 ## refining
 
 ## ideation

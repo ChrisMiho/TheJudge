@@ -37,6 +37,7 @@
     "eval:build-frozen-query-embeddings": "tsx scripts/build-frozen-query-embeddings.mjs",
     "combo:answer-quality": "tsx scripts/compare-combo-answer-quality.mjs",
     "eval:worked-solutions": "tsx scripts/eval-worked-solutions.mjs",
+    "eval:answer-quality": "tsx scripts/eval-answer-quality.mjs",
     "data:scan-vectors": "tsx scripts/build-scan-vectors.mjs",
     "data:scan-fingerprints": "tsx scripts/build-card-hashes.mjs",
     "data:scan-fingerprints:fresh": "tsx scripts/build-card-hashes.mjs --fresh",

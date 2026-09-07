@@ -63,6 +63,10 @@ output/retrieval-relevance-report.txt
 # conclusion becomes durable history)
 output/combo-answer-quality/
 
+# Answer-quality baseline transcripts (developer-local; the committed scores
+# file is apps/backend/src/eval/answer-quality/results.json, REQ-189)
+output/answer-quality/
+
 # Card-scan fingerprint build logs / pid (transient; the bin ships under public/data/)
 output/cardhash-build/
 

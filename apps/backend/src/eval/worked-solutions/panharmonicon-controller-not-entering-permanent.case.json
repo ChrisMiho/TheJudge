@@ -1,0 +1,19 @@
+{
+  "id": "panharmonicon-controller-not-entering-permanent",
+  "tier": 2,
+  "question": "I control Panharmonicon, which doubles the triggers of my artifacts' and creatures' enters-the-battlefield abilities. An opponent's creature enters the battlefield and that triggers one of my other permanents' ability (one that cares about any creature entering, not just my own). Does Panharmonicon double that trigger too, even though I don't control the creature that entered?",
+  "expectedSupplementalRuleIds": ["603.2"],
+  "workedSolution": "You don't need to control the permanent entering the battlefield, only the permanent that has the triggered ability.",
+  "source": {
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Panharmonicon",
+    "oracleId": "76678885-3674-443d-b9a2-2a460cf6aac0",
+    "rulingDate": "2021-03-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the worked solution is the ruling's text, verbatim."
+  },
+  "whyHard": "Panharmonicon reads as a self-referential doubler for \"my own stuff,\" so players commonly assume both halves of the interaction -- the permanent entering and the permanent whose trigger fires -- must be under their control. Only the permanent that has the triggered ability needs to be Panharmonicon's controller's; the entering permanent can belong to anyone."
+}

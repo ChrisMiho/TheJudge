@@ -1,0 +1,19 @@
+{
+  "id": "copy-effect-modification-becomes-copiable",
+  "tier": 1,
+  "question": "An enchantment can enter the battlefield as a copy of an artifact, 'except it's an enchantment in addition to its other types.' It enters as a copy of a plain artifact creature. If something later copies that permanent, does the new copy also pick up the extra enchantment type, or only the original artifact creature's types?",
+  "expectedSupplementalRuleIds": ["707.9b"],
+  "workedSolution": "Copy Artifact is an enchantment that reads, “You may have this enchantment enter as a copy of any artifact on the battlefield, except it’s an enchantment in addition to its other types.” It enters the battlefield as a copy of Juggernaut. The copiable values of the Copy Artifact now match those of Juggernaut with one modification: its types are now artifact, creature, and enchantment.",
+  "source": {
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "707.9b",
+    "sectionTitle": "Copying Objects",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-09-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "whyHard": "Players treat an \"except\" clause on a copy effect as a one-time patch applied only at that moment, not as something that sticks. In fact a copy effect's own modification becomes part of the permanent's copiable values going forward, so anything that copies that permanent afterward inherits the modification too, not just the values of the thing originally copied."
+}

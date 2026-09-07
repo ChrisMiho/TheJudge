@@ -22,10 +22,27 @@ test("parseArgs resolves an optional --output path against the repo root", () =>
   assert.ok(path.isAbsolute(resolved));
 });
 
-test("loadCases reads every *.case.json file, sorted, and rejects a malformed one", async () => {
+function validCase(overrides = {}) {
+  return {
+    id: "sample",
+    tier: 1,
+    question: "Sample question?",
+    workedSolution: "Sample worked solution text.",
+    expectedSupplementalRuleIds: ["100.1"],
+    whyHard: "Sample reason this is hard.",
+    source: {
+      publisher: "Wizards of the Coast",
+      license: "Reproduced under the Wizards of the Coast Fan Content Policy.",
+      ruleId: "100.1"
+    },
+    ...overrides
+  };
+}
+
+test("loadCases reads every *.case.json file, sorted, and rejects a malformed one (via the shared gold-cases validator, REQ-185)", async () => {
   const dir = makeTempCasesDir([
-    { id: "b", question: "Second?" },
-    { id: "a", question: "First?" }
+    validCase({ id: "b" }),
+    validCase({ id: "a" })
   ]);
 
   const cases = await loadCases(dir);
@@ -36,7 +53,7 @@ test("loadCases reads every *.case.json file, sorted, and rejects a malformed on
   );
 
   fs.writeFileSync(path.join(dir, "z-bad.case.json"), JSON.stringify({ id: "bad" }), "utf8");
-  await assert.rejects(() => loadCases(dir), /needs at least id and question/);
+  await assert.rejects(() => loadCases(dir), /Invalid gold case\(s\)/);
 });
 
 test("evaluateCaseRecall reports a hit only when every expected rule id was retrieved", () => {
@@ -70,4 +87,21 @@ test("formatReport names every case's hit/miss status and a summary count", () =
   assert.match(report, /\[MISS\] miss-case -- expected \["704\.4"\], missing \["704\.4"\]/);
   assert.match(report, /Summary: 1\/2 cases retrieved their expected rule\./);
   assert.match(report, /Informational only\. Not a build gate/);
+  assert.doesNotMatch(report, /Embedding provider/);
+});
+
+test("formatReport names the embedding provider and which ranking produced each result, when the run records it", () => {
+  const tier2 = { id: "sensei", tier: 2, expectedSupplementalRuleIds: ["113.7a"] };
+  const results = [
+    evaluateCaseRecall(tier2, new Set(["113.7a", "603.2"]), { usedSemantic: true }),
+    evaluateCaseRecall({ id: "bare", expectedSupplementalRuleIds: ["510.1c"] }, new Set(), { usedSemantic: false })
+  ];
+  assert.equal(results[0].usedSemantic, true);
+  assert.equal(results[0].passed, true);
+
+  const report = formatReport(results, { generatedAt: "2026-09-07T00:00:00.000Z", embeddingProvider: "local" });
+
+  assert.match(report, /Embedding provider: local \(1\/2 cases ranked semantically\)/);
+  assert.match(report, /\[HIT \] sensei \(semantic\)/);
+  assert.match(report, /\[MISS\] bare \(lexical\)/);
 });

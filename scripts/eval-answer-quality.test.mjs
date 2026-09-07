@@ -1,0 +1,471 @@
+import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
+import test from "node:test";
+
+import {
+  CONFIRM_FLAG,
+  DEFAULT_EXCERPT_CAPS,
+  DEFAULT_JUDGE_MODEL,
+  DEFAULT_LINEUP,
+  assertLiveProviderConfigured,
+  assertQueryEmbedded,
+  buildCaseRequest,
+  buildRunArtifact,
+  checkModelAccess,
+  computeCallCostUsd,
+  describeRetrieval,
+  estimateCost,
+  formatCommittedJson,
+  parseArgs,
+  resolveJudgeModel,
+  resolveRunEnv,
+  run
+} from "./eval-answer-quality.mjs";
+
+// The real loader reads the developer's `.secrets/openai-dev.env`; every test
+// injects this stand-in so the suite never sees a real key, and the tests that
+// pass `env: {}` really do run keyless.
+const noLocalEnv = ({ env }) => ({ env: { ...env }, sources: [] });
+
+// Never depends on the real preparePromptInput TS import: every test injects
+// a fixed measureChars, so this file runs under plain `node --test`, no
+// TypeScript loader, and makes no network call.
+const fakeMeasureChars = async (goldCases, excerptCaps) => {
+  const result = {};
+  for (const cap of excerptCaps) result[cap] = 10000;
+  return result;
+};
+
+function fakeAccessClient(availableModelIds) {
+  const calls = [];
+  return {
+    calls,
+    models: {
+      async list() {
+        calls.push("list");
+        return { data: availableModelIds.map((id) => ({ id })) };
+      }
+    }
+  };
+}
+
+test("parseArgs defaults to the four-model lineup and both excerpt caps, ignoring OPENAI_MODEL entirely", () => {
+  const originalOpenAiModel = process.env.OPENAI_MODEL;
+  process.env.OPENAI_MODEL = "some-other-model";
+  try {
+    const parsed = parseArgs([]);
+    assert.deepEqual(parsed.models, DEFAULT_LINEUP);
+    assert.deepEqual(parsed.excerptCaps, DEFAULT_EXCERPT_CAPS);
+    assert.equal(parsed.confirmed, false);
+    assert.ok(!parsed.models.includes("some-other-model"));
+  } finally {
+    if (originalOpenAiModel === undefined) delete process.env.OPENAI_MODEL;
+    else process.env.OPENAI_MODEL = originalOpenAiModel;
+  }
+});
+
+test("parseArgs reads repeatable --model and --excerpt-cap flags and the confirm flag", () => {
+  const parsed = parseArgs(["--model", "gpt-4.1", "--model", "gpt-5-nano", "--excerpt-cap", "5", CONFIRM_FLAG]);
+  assert.deepEqual(parsed.models, ["gpt-4.1", "gpt-5-nano"]);
+  assert.deepEqual(parsed.excerptCaps, [5]);
+  assert.equal(parsed.confirmed, true);
+});
+
+test("resolveJudgeModel defaults to gpt-5 and honors ANSWER_QUALITY_JUDGE_MODEL", () => {
+  assert.equal(resolveJudgeModel({}), DEFAULT_JUDGE_MODEL);
+  assert.equal(resolveJudgeModel({ ANSWER_QUALITY_JUDGE_MODEL: "gpt-5-custom" }), "gpt-5-custom");
+});
+
+test("run with no confirmation flag and no OPENAI_API_KEY prints a plan, makes no network call, and exits without error", async () => {
+  const logs = [];
+  const result = await run({
+    loadLocalEnv: noLocalEnv,
+    argv: [],
+    env: {},
+    log: (line) => logs.push(line),
+    measureChars: fakeMeasureChars
+  });
+
+  assert.equal(result.ran, false);
+  assert.equal(result.accessChecked, false);
+  assert.equal(logs.length, 1);
+  assert.match(logs[0], /Answer-quality baseline plan/);
+  assert.match(logs[0], /Gold cases: \d+/);
+  assert.match(logs[0], /Estimated cost: \$/);
+});
+
+test("run with --confirm-live-calls and no OPENAI_API_KEY fails with an actionable message, no network call made", async () => {
+  const client = fakeAccessClient(DEFAULT_LINEUP);
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: [CONFIRM_FLAG],
+        env: {},
+        log: () => {},
+        measureChars: fakeMeasureChars,
+        client
+      }),
+    /ASK_AI_PROVIDER/
+  );
+  assert.deepEqual(client.calls, [], "the models-list request must never happen before the provider guard passes");
+});
+
+test("run with --confirm-live-calls, ASK_AI_PROVIDER set but no OPENAI_API_KEY still fails actionably", async () => {
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: [CONFIRM_FLAG],
+        env: { ASK_AI_PROVIDER: "openai" },
+        log: () => {},
+        measureChars: fakeMeasureChars
+      }),
+    /OPENAI_API_KEY/
+  );
+});
+
+test("assertLiveProviderConfigured passes only with ASK_AI_PROVIDER=openai and OPENAI_API_KEY set", () => {
+  assert.doesNotThrow(() => assertLiveProviderConfigured({ ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" }));
+  assert.throws(() => assertLiveProviderConfigured({}), /ASK_AI_PROVIDER/);
+  assert.throws(() => assertLiveProviderConfigured({ ASK_AI_PROVIDER: "openai" }), /OPENAI_API_KEY/);
+});
+
+test("the dry run performs the model-access check (a models-list request, never a completion) when a key is present", async () => {
+  const client = fakeAccessClient([...DEFAULT_LINEUP, DEFAULT_JUDGE_MODEL]);
+  const logs = [];
+  const result = await run({
+    loadLocalEnv: noLocalEnv,
+    argv: [],
+    env: { OPENAI_API_KEY: "sk-test" },
+    log: (line) => logs.push(line),
+    measureChars: fakeMeasureChars,
+    client
+  });
+
+  assert.equal(result.accessChecked, true);
+  assert.deepEqual(client.calls, ["list"]);
+  assert.match(logs[0], /Model access check passed/);
+  assert.ok(!("responses" in client), "the fake client exposes no completion method -- nothing could call one");
+});
+
+test("the dry run skips the model-access check entirely when no key is present", async () => {
+  const client = fakeAccessClient(DEFAULT_LINEUP);
+  const result = await run({
+    loadLocalEnv: noLocalEnv,
+    argv: [],
+    env: {},
+    log: () => {},
+    measureChars: fakeMeasureChars,
+    client
+  });
+
+  assert.equal(result.accessChecked, false);
+  assert.deepEqual(client.calls, [], "no key present means no network call at all, not even a models-list one");
+});
+
+test("checkModelAccess reports every missing model id from a models-list response", async () => {
+  const client = fakeAccessClient(["gpt-4.1-mini"]);
+  const result = await checkModelAccess({ client, modelIds: ["gpt-4.1-mini", "gpt-5-nano", "gpt-5"] });
+  assert.equal(result.available, false);
+  assert.deepEqual(result.missing, ["gpt-5-nano", "gpt-5"]);
+});
+
+test("a live run fails naming any lineup or judge model the credentials cannot access, before any completion", async () => {
+  const client = fakeAccessClient(["gpt-4.1-mini", "gpt-4.1"]); // missing gpt-5-mini, gpt-5-nano, and the judge
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: [CONFIRM_FLAG],
+        env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+        measureChars: fakeMeasureChars,
+        client
+      }),
+    /gpt-5-mini.*gpt-5-nano.*gpt-5|does not have access/
+  );
+});
+
+test("a live run with full model access reports access verified, then hands off to the injected evaluation runner", async () => {
+  const client = fakeAccessClient([...DEFAULT_LINEUP, DEFAULT_JUDGE_MODEL]);
+  const logs = [];
+  const fakeResults = { runMetadata: {}, legs: [], caseLegScores: [] };
+  const runEvaluation = async (params) => {
+    assert.equal(params.client, client);
+    assert.equal(params.judgeModel, DEFAULT_JUDGE_MODEL);
+    assert.deepEqual(params.models, DEFAULT_LINEUP);
+    assert.deepEqual(params.excerptCaps, DEFAULT_EXCERPT_CAPS);
+    assert.ok(params.resultsPath.endsWith("apps/backend/src/eval/answer-quality/results.json"));
+    return fakeResults;
+  };
+
+  const result = await run({
+    loadLocalEnv: noLocalEnv,
+    argv: [CONFIRM_FLAG],
+    env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+    log: (line) => logs.push(line),
+    measureChars: fakeMeasureChars,
+    client,
+    runEvaluation
+  });
+
+  assert.equal(result.ran, true);
+  assert.equal(result.accessChecked, true);
+  assert.equal(result.results, fakeResults);
+  assert.deepEqual(client.calls, ["list"]);
+  assert.match(logs[0], /Model access verified/);
+});
+
+test("estimateCost sets no numeric target and scales with lineup size, excerpt caps, and gold-case count", () => {
+  const small = estimateCost({
+    models: ["gpt-4.1-mini"],
+    judgeModel: "gpt-5",
+    excerptCaps: [5],
+    goldCaseCount: 6,
+    avgPromptCharsByCap: { 5: 10000 }
+  });
+  const large = estimateCost({
+    models: DEFAULT_LINEUP,
+    judgeModel: "gpt-5",
+    excerptCaps: [5, 10],
+    goldCaseCount: 18,
+    avgPromptCharsByCap: { 5: 10000, 10: 12600 }
+  });
+
+  assert.equal(small.answerCalls, 6);
+  assert.equal(large.answerCalls, DEFAULT_LINEUP.length * 18 * 2);
+  assert.ok(large.totalCostUsd > small.totalCostUsd);
+  assert.ok(Number.isFinite(large.totalCostUsd));
+});
+
+test("computeCallCostUsd derives cost from real token counts and a known model's price, and is zero for an unrecognized model", () => {
+  const cost = computeCallCostUsd("gpt-4.1-mini", 1_000_000, 1_000_000);
+  assert.ok(Math.abs(cost - (0.4 + 1.6)) < 1e-9);
+  assert.equal(computeCallCostUsd("not-a-real-model", 1000, 1000), 0);
+});
+
+test("buildRunArtifact aggregates per-leg headline counts, tier counts, judge-mismatch flag, and totals from raw per-call records", () => {
+  const goldCases = [
+    { id: "case-a", tier: 1 },
+    { id: "case-b", tier: 2 }
+  ];
+  const caseLegScores = [
+    {
+      caseId: "case-a",
+      model: "gpt-4.1-mini",
+      excerptCap: 5,
+      undetermined: false,
+      scores: { correctness: 2, grounding: 2, calibration: 2, readability: 2 },
+      inputTokens: 1000,
+      outputTokens: 100,
+      costUsd: 0.01
+    },
+    {
+      caseId: "case-b",
+      model: "gpt-4.1-mini",
+      excerptCap: 5,
+      undetermined: false,
+      scores: { correctness: 1, grounding: 2, calibration: 2, readability: 2 },
+      inputTokens: 1000,
+      outputTokens: 100,
+      costUsd: 0.01
+    },
+    {
+      caseId: "case-a",
+      model: "gpt-4.1-mini",
+      excerptCap: 10,
+      undetermined: true,
+      inputTokens: 1200,
+      outputTokens: 0,
+      costUsd: 0.005
+    }
+  ];
+
+  const artifact = buildRunArtifact({
+    models: ["gpt-4.1-mini"],
+    excerptCaps: [5, 10],
+    goldCases,
+    judgeModel: "gpt-4.1-mini", // deliberately mismatched, to prove the flag
+    rubricRevision: "2026-09-07.1",
+    askAiProvider: "openai",
+    embeddingProvider: "local",
+    gitCommit: "abc1234",
+    generatedAt: "2026-09-07T00:00:00.000Z",
+    caseLegScores
+  });
+
+  assert.equal(artifact.runMetadata.goldSetTier1Count, 1);
+  assert.equal(artifact.runMetadata.goldSetTier2Count, 1);
+  assert.equal(artifact.runMetadata.judgeMatchesAnswerModel, true);
+  assert.equal(artifact.runMetadata.totalInputTokens, 3200);
+  assert.equal(artifact.runMetadata.totalOutputTokens, 200);
+  assert.ok(Math.abs(artifact.runMetadata.totalCostUsd - 0.025) < 1e-9);
+
+  const legAtFive = artifact.legs.find((leg) => leg.excerptCap === 5);
+  const legAtTen = artifact.legs.find((leg) => leg.excerptCap === 10);
+  assert.equal(legAtFive.fullyCorrectCount, 1); // only case-a scored Correctness 2
+  assert.equal(legAtFive.caseCount, 2);
+  assert.equal(legAtTen.fullyCorrectCount, 0); // undetermined never counts as correct
+  assert.equal(legAtTen.caseCount, 1);
+
+  // The internal costUsd aggregation field never reaches the committed per-case-per-leg schema.
+  for (const record of artifact.caseLegScores) {
+    assert.equal("costUsd" in record, false);
+  }
+});
+
+test("resolveRunEnv fills the key from the local env files, and the confirm flag selects openai only when the provider is unset", () => {
+  const fromFiles = ({ env }) => ({
+    env: { ...env, OPENAI_API_KEY: env.OPENAI_API_KEY ?? "sk-from-file" },
+    sources: ["/repo/.secrets/openai-dev.env"]
+  });
+
+  // Confirmed, key from the file, provider unset → openai is selected.
+  const confirmed = resolveRunEnv({ processEnv: {}, confirmed: true, loadLocalEnv: fromFiles });
+  assert.equal(confirmed.OPENAI_API_KEY, "sk-from-file");
+  assert.equal(confirmed.ASK_AI_PROVIDER, "openai");
+  assert.doesNotThrow(() => assertLiveProviderConfigured(confirmed));
+
+  // Unconfirmed → the provider is left exactly as found (mock-first default untouched).
+  const dry = resolveRunEnv({ processEnv: {}, confirmed: false, loadLocalEnv: fromFiles });
+  assert.equal(dry.ASK_AI_PROVIDER, undefined);
+
+  // An explicit mock still refuses, even with a key and the flag.
+  const mock = resolveRunEnv({ processEnv: { ASK_AI_PROVIDER: "mock" }, confirmed: true, loadLocalEnv: fromFiles });
+  assert.equal(mock.ASK_AI_PROVIDER, "mock");
+  assert.throws(() => assertLiveProviderConfigured(mock), /ASK_AI_PROVIDER/);
+
+  // The process environment wins over the file.
+  const exported = resolveRunEnv({ processEnv: { OPENAI_API_KEY: "sk-exported" }, confirmed: true, loadLocalEnv: fromFiles });
+  assert.equal(exported.OPENAI_API_KEY, "sk-exported");
+
+  // No key anywhere → nothing is selected, and the guard still names what is missing.
+  const keyless = resolveRunEnv({ processEnv: {}, confirmed: true, loadLocalEnv: noLocalEnv });
+  assert.equal(keyless.ASK_AI_PROVIDER, undefined);
+  assert.throws(() => assertLiveProviderConfigured(keyless), /ASK_AI_PROVIDER/);
+});
+
+test("a confirmed run with a key from the local env files and no exported provider passes the guard and reaches the access check", async () => {
+  const client = fakeAccessClient([...DEFAULT_LINEUP, DEFAULT_JUDGE_MODEL]);
+  const fromFiles = ({ env }) => ({ env: { ...env, OPENAI_API_KEY: "sk-from-file" }, sources: ["/repo/.secrets/openai-dev.env"] });
+  let handedOff = false;
+  const result = await run({
+    loadLocalEnv: fromFiles,
+    argv: [CONFIRM_FLAG],
+    env: {},
+    log: () => {},
+    measureChars: fakeMeasureChars,
+    client,
+    runEvaluation: async (params) => {
+      handedOff = true;
+      assert.equal(params.env.ASK_AI_PROVIDER, "openai");
+      return { runMetadata: {}, legs: [], caseLegScores: [] };
+    }
+  });
+  assert.deepEqual(client.calls, ["list"], "the models-list access check runs once before any completion");
+  assert.equal(handedOff, true);
+  assert.equal(result.ran, true);
+});
+
+test("buildCaseRequest asks a tier-1 case bare and attaches a tier-2 case's cited card the way a player's lookup does (REQ-185)", () => {
+  const tier1 = { id: "t1", tier: 1, question: "Does trample need lethal first?", source: { ruleId: "702.19b" } };
+  assert.deepEqual(buildCaseRequest(tier1), { mode: "lookup", question: "Does trample need lethal first?" });
+
+  const tier2 = {
+    id: "t2",
+    tier: 2,
+    question: "Does Panharmonicon double it?",
+    source: { cardName: "Panharmonicon", oracleId: "76678885-3674-443d-b9a2-2a460cf6aac0" }
+  };
+  assert.deepEqual(buildCaseRequest(tier2), {
+    mode: "lookup",
+    question: "Does Panharmonicon double it?",
+    // cardId is the oracle id: the key both the rulings index and the card-detail index resolve by.
+    cards: [{ cardId: "76678885-3674-443d-b9a2-2a460cf6aac0", name: "Panharmonicon" }]
+  });
+});
+
+test("resolveRunEnv defaults EMBEDDING_PROVIDER to local (what production runs) and never overrides an explicit value", () => {
+  const defaulted = resolveRunEnv({ processEnv: {}, confirmed: true, loadLocalEnv: noLocalEnv });
+  assert.equal(defaulted.EMBEDDING_PROVIDER, "local");
+
+  const dry = resolveRunEnv({ processEnv: {}, confirmed: false, loadLocalEnv: noLocalEnv });
+  assert.equal(dry.EMBEDDING_PROVIDER, "local");
+
+  const explicit = resolveRunEnv({
+    processEnv: { EMBEDDING_PROVIDER: "mock" },
+    confirmed: true,
+    loadLocalEnv: noLocalEnv
+  });
+  assert.equal(explicit.EMBEDDING_PROVIDER, "mock");
+});
+
+test("assertQueryEmbedded refuses a run whose real embedder fell back, and accepts null only under mock", () => {
+  assert.doesNotThrow(() => assertQueryEmbedded({ mode: "mock", vector: null, caseId: "c" }));
+  assert.doesNotThrow(() => assertQueryEmbedded({ mode: "local", vector: [0.1, 0.2], caseId: "c" }));
+  assert.throws(
+    () => assertQueryEmbedded({ mode: "local", vector: null, caseId: "trample-must-assign-lethal-first" }),
+    /EMBEDDING_PROVIDER=local.*trample-must-assign-lethal-first.*warm-embedding-model-cache/s
+  );
+});
+
+test("formatCommittedJson shapes the scorecard the way the repo's format:check expects (short arrays on one line)", async () => {
+  const raw = `${JSON.stringify({ runMetadata: { answerModelLineup: ["gpt-4.1-mini", "gpt-4.1"] }, legs: [] }, null, 2)}\n`;
+  assert.match(raw, /\[\n\s+"gpt-4\.1-mini",\n/);
+  const repoRootForTests = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  const formatted = await formatCommittedJson(raw, resolve(repoRootForTests, "apps/backend/src/eval/answer-quality/results.json"));
+  assert.match(formatted, /"answerModelLineup": \["gpt-4\.1-mini", "gpt-4\.1"\]/);
+  assert.deepEqual(JSON.parse(formatted), JSON.parse(raw));
+});
+
+test("describeRetrieval records whether the pass ran semantic and whether a gold rule reached the prompt", () => {
+  const supplemental = {
+    usedSemantic: true,
+    selected: [
+      { ruleId: "702.19b", sectionTitle: "Trample", score: 0.9 },
+      { ruleId: "510.1a", sectionTitle: "Combat Damage Step", score: 0.5 }
+    ]
+  };
+  assert.deepEqual(describeRetrieval(supplemental, ["702.19b"]), {
+    usedSemantic: true,
+    selectedRuleIds: ["702.19b", "510.1a"],
+    goldRuleInPrompt: true
+  });
+  assert.deepEqual(describeRetrieval({ usedSemantic: false, selected: [] }, ["510.1c"]), {
+    usedSemantic: false,
+    selectedRuleIds: [],
+    goldRuleInPrompt: false
+  });
+  // A caller with a real embedder can refuse to label a lexical pass as semantic.
+  assert.throws(
+    () => describeRetrieval({ usedSemantic: false, selected: [] }, ["510.1c"], { requireSemantic: true, caseId: "x" }),
+    /lexical.*x/s
+  );
+});
+
+test("REGRESSION GUARD: eval:answer-quality is never wired into any gate script (REQ-188)", () => {
+  const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  const rootPkg = JSON.parse(readFileSync(resolve(repoRoot, "package.json"), "utf8"));
+  const backendPkg = JSON.parse(readFileSync(resolve(repoRoot, "apps/backend/package.json"), "utf8"));
+
+  const gateScripts = {
+    "package.json quality:check": rootPkg.scripts["quality:check"],
+    "package.json test": rootPkg.scripts.test,
+    "package.json coverage:check": rootPkg.scripts["coverage:check"],
+    "package.json test:scripts": rootPkg.scripts["test:scripts"],
+    "apps/backend/package.json test:eval": backendPkg.scripts["test:eval"]
+  };
+
+  for (const [scriptName, scriptCommand] of Object.entries(gateScripts)) {
+    assert.ok(scriptCommand, `expected ${scriptName} to exist`);
+    assert.ok(
+      !scriptCommand.includes("eval-answer-quality") && !scriptCommand.includes("eval:answer-quality"),
+      `${scriptName} must never invoke the answer-quality run, but reads: ${scriptCommand}`
+    );
+  }
+
+  // The command itself is registered exactly once, as its own on-demand script.
+  assert.equal(rootPkg.scripts["eval:answer-quality"], "tsx scripts/eval-answer-quality.mjs");
+});
