@@ -59,6 +59,16 @@ Five slices, sequential only where E depends on A–D landing first (see table
 below); no browser-observable risk (no screen change), so no Playwright
 criteria.
 
+Built 2026-09-07 (node 6, build half, `build`) under `graph is controlling`.
+Slices A–D done (all criteria true, `npm run quality:check` green after
+each). Slice E's wiring, regression guard, README, and all four
+`PRD/sections/` amendments are done and gated green (E1–E8 true); it is
+`blocked` on the two criteria only a human can earn — E9 (the first live,
+owner-confirmed run) and E10 (a human reading the written record) — because
+this node makes no paid provider call of any kind. See
+`slice-e-integrate-and-apply.md`'s "Owner steps for E9 and E10" for the
+exact command, cost estimate, and what to read.
+
 ## Slices
 
 | Slice | Name | Goal | Depends on | Status |
@@ -67,7 +77,7 @@ criteria.
 | B | [cap-and-run-command](./slice-b-cap-and-run-command.md) | Named excerpt-cap constant, cap-as-run-parameter, `eval:answer-quality` scaffold (REQ-188, REQ-190) | none | done |
 | C | [judge-and-rubric](./slice-c-judge-and-rubric.md) | Rubric, deterministic assertions, lone judge pass, blind rank (REQ-186, REQ-187) | none | done |
 | D | [artifact-and-transcripts](./slice-d-artifact-and-transcripts.md) | Committed scores file, gitignored transcripts, comparability rule (REQ-189) | none | done |
-| E | [integrate-and-apply](./slice-e-integrate-and-apply.md) | Wire A–D, regression guard, PRD apply (NFR-018, REQ-146, SYSTEM-MAP-EVAL-HARNESS, GOALS-ANSWER-QUALITY-NON-GOAL), first live run + human review | A, B, C, D | planned |
+| E | [integrate-and-apply](./slice-e-integrate-and-apply.md) | Wire A–D, regression guard, PRD apply (NFR-018, REQ-146, SYSTEM-MAP-EVAL-HARNESS, GOALS-ANSWER-QUALITY-NON-GOAL), first live run + human review | A, B, C, D | blocked (E1–E8 done; E9/E10 await the owner — see slice doc's "Owner steps") |
 
 ## Implementation map
 

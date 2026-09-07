@@ -34,6 +34,11 @@ export type JudgeClient = {
   };
 };
 
+// Deliberately duplicated in scripts/eval-answer-quality.mjs (same value,
+// same env var): that plain .mjs script's dry-run path must resolve the
+// judge model synchronously under plain `node --test`, with no TypeScript
+// loader, so it cannot import this module directly. This copy is what the
+// real per-call judge functions below use.
 export const DEFAULT_JUDGE_MODEL = "gpt-5";
 
 /**

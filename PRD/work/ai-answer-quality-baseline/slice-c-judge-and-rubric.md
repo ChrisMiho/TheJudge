@@ -97,11 +97,17 @@ npm --prefix apps/backend run test
 C6's "flagged by the module's returned metadata" is implemented as a
 standalone pure function, `judgeMatchesAnswerModel(judgeModel, lineupModelIds)`,
 rather than a field attached to every judge call's return value — Slice E's
-wiring calls it once per run (not once per call) to compute the artifact's
-mismatch flag, which is the natural place for a run-level fact like this to
-live. `DEFAULT_JUDGE_MODEL` / `resolveJudgeModel` currently exist in both
-`scripts/eval-answer-quality.mjs` (Slice B, for the dry-run plan) and
+wiring calls the equivalent inline check once per run (`buildRunArtifact`'s
+`models.includes(judgeModel)`) to compute the artifact's mismatch flag, the
+natural place for a run-level fact like this to live. `DEFAULT_JUDGE_MODEL` /
+`resolveJudgeModel` deliberately exist in both `scripts/eval-answer-quality.mjs`
+(a plain `.mjs` script, so its dry-run path can resolve the judge model
+synchronously under plain `node --test`, with no TypeScript loader) and
 `apps/backend/src/eval/answer-quality/judge.ts` (this slice, same value,
-independently testable). Slice E's end-to-end wiring consolidates
-`eval-answer-quality.mjs` to import the judge module's copy instead of
-keeping its own, per `technical-design-rules.md`'s reuse-before-creating rule.
+independently testable, used by the real per-call judge functions). Slice E
+does not consolidate these into one import: the module boundary here is
+plain-JS-vs-TypeScript, not an ordinary reuse-before-creating case, and
+forcing the dry-run path through a TypeScript dynamic import would break its
+"no loader needed" property (the same constraint `measurePromptChars`
+already documents). Both copies carry an identical comment cross-referencing
+the other.

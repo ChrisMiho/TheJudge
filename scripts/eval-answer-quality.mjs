@@ -3,11 +3,18 @@
 // Bake-off: every gold case (scripts/lib/gold-cases.mjs, REQ-185) answered
 // once per model in the answer-model lineup and once per excerpt cap,
 // through the production preparePromptInput path
-// (apps/backend/src/prompt/preparation.ts), then scored by the judge and
-// written to the committed artifact. This slice (B) scaffolds the command:
-// argument parsing, the dry-run plan and cost estimate, the confirmation
-// gate, and the pre-flight model-access check. The full per-model,
-// per-cap, per-case answer/score/rank loop is wired end to end in Slice E.
+// (apps/backend/src/prompt/preparation.ts), scored alone by the judge
+// (apps/backend/src/eval/answer-quality/judge.ts) and, once every model has
+// answered a case at a cap, ranked blind, then written to the committed
+// artifact (apps/backend/src/eval/answer-quality/artifact.ts). Argument
+// parsing, the dry-run plan and cost estimate, the confirmation gate, and
+// the pre-flight model-access check are always exercised (including under
+// plain `node --test`); the full live loop (`runLiveEvaluation`) is wired
+// here but, like `measurePromptChars`, isolates every TypeScript-module
+// import inside its own function body, evaluated lazily -- so it only ever
+// runs for real when this script is actually invoked via tsx with
+// --confirm-live-calls, never when this file is merely imported or its
+// other exports are unit-tested.
 //
 // Costs money once confirmed, so it refuses to contact the provider without
 // --confirm-live-calls, mirroring scripts/compare-combo-answer-quality.mjs
@@ -15,11 +22,13 @@
 //   npm run eval:answer-quality                          # dry: prints the plan
 //   npm run eval:answer-quality -- --confirm-live-calls  # live
 //
-// Run via tsx so the backend TypeScript modules resolve. The TS import that
-// measures real prompt sizes (measurePromptChars) is deliberately behind an
-// injectable option, so `node --test` can exercise every other code path --
-// argument parsing, the plan, the confirmation guard, the model-access check
-// -- without a TypeScript loader and without ever making a network call.
+// Run via tsx so the backend TypeScript modules resolve. The TS imports that
+// measure real prompt sizes (measurePromptChars) and that run the live loop
+// (runLiveEvaluation) are deliberately behind injectable options / lazy
+// dynamic imports, so `node --test` can exercise every other code path --
+// argument parsing, the plan, the confirmation guard, the model-access check,
+// the artifact-shape aggregation (buildRunArtifact) -- without a TypeScript
+// loader and without ever making a network call.
 
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -32,6 +41,12 @@ export const CONFIRM_FLAG = "--confirm-live-calls";
 export const DEFAULT_OUTPUT_DIR = "output/answer-quality";
 export const DEFAULT_LINEUP = ["gpt-4.1-mini", "gpt-4.1", "gpt-5-mini", "gpt-5-nano"];
 export const DEFAULT_EXCERPT_CAPS = [5, 10];
+// Deliberately duplicated from apps/backend/src/eval/answer-quality/judge.ts
+// (same value, same env var, independently tested there): this plain .mjs
+// script's dry-run path must resolve the judge model synchronously under
+// plain `node --test`, with no TypeScript loader -- the same constraint
+// documented on `measurePromptChars` below. The real per-call judge
+// functions use judge.ts's own copy.
 export const DEFAULT_JUDGE_MODEL = "gpt-5";
 
 /** Published list rates, USD per million tokens (re-checked before a live run; REQ-188's note). */
@@ -206,6 +221,231 @@ export function estimateCost({ models, judgeModel, excerptCaps, goldCaseCount, a
   };
 }
 
+/** The actual dollar cost of one call, from its real token counts (falls back to $0 for an unrecognized model id, never a guess). */
+export function computeCallCostUsd(model, inputTokens, outputTokens) {
+  const price = MODEL_PRICING_USD_PER_MILLION_TOKENS[model];
+  if (!price) return 0;
+  return (inputTokens * price.input + outputTokens * price.output) / 1_000_000;
+}
+
+/**
+ * Pure aggregation: turns already-computed per-call records into the
+ * committed `AnswerQualityResults` shape (REQ-189) -- per-leg headline
+ * counts and run totals. Takes plain data (never a TS type, never touches a
+ * file or the network), so it is fully unit-testable under plain `node`,
+ * independent of the live loop that produces its input.
+ */
+export function buildRunArtifact({
+  models,
+  excerptCaps,
+  goldCases,
+  judgeModel,
+  rubricRevision,
+  askAiProvider,
+  embeddingProvider,
+  gitCommit,
+  generatedAt,
+  caseLegScores
+}) {
+  const legs = [];
+  for (const model of models) {
+    for (const cap of excerptCaps) {
+      const legScores = caseLegScores.filter((record) => record.model === model && record.excerptCap === cap);
+      const fullyCorrectCount = legScores.filter(
+        (record) => !record.undetermined && record.scores?.correctness === 2
+      ).length;
+      legs.push({ model, excerptCap: cap, fullyCorrectCount, caseCount: legScores.length });
+    }
+  }
+
+  const totalInputTokens = caseLegScores.reduce((sum, record) => sum + (record.inputTokens ?? 0), 0);
+  const totalOutputTokens = caseLegScores.reduce((sum, record) => sum + (record.outputTokens ?? 0), 0);
+  const totalCostUsd = caseLegScores.reduce((sum, record) => sum + (record.costUsd ?? 0), 0);
+
+  return {
+    runMetadata: {
+      goldSetCaseIds: goldCases.map((caseEntry) => caseEntry.id),
+      goldSetTier1Count: goldCases.filter((caseEntry) => caseEntry.tier === 1).length,
+      goldSetTier2Count: goldCases.filter((caseEntry) => caseEntry.tier === 2).length,
+      answerModelLineup: models,
+      judgeModel,
+      judgeMatchesAnswerModel: models.includes(judgeModel),
+      rubricRevision,
+      askAiProvider,
+      embeddingProvider,
+      gitCommit,
+      generatedAt,
+      totalInputTokens,
+      totalOutputTokens,
+      totalCostUsd
+    },
+    legs,
+    // costUsd is this function's own internal aggregation field, not part of
+    // the committed per-case-per-leg schema (REQ-189) -- stripped here.
+    caseLegScores: caseLegScores.map((record) => {
+      const stripped = { ...record };
+      delete stripped.costUsd;
+      return stripped;
+    })
+  };
+}
+
+async function resolveGitCommit(repoRootPath) {
+  try {
+    const { execFileSync } = await import("node:child_process");
+    return execFileSync("git", ["rev-parse", "--short", "HEAD"], { cwd: repoRootPath }).toString().trim();
+  } catch {
+    return "unknown";
+  }
+}
+
+/**
+ * The full live evaluation loop (REQ-188, REQ-190, REQ-186, REQ-189): for
+ * every excerpt cap, for every gold case, for every model in the lineup --
+ * answer through the production `preparePromptInput` path, run the
+ * deterministic assertions and the lone judge pass, and write that leg's
+ * transcript; once every model has answered, run the blind side-by-side
+ * ranking pass and write its transcript; finally assemble and write the
+ * committed scorecard.
+ *
+ * Every TypeScript-module import is lazy and scoped to this function body
+ * (the `measurePromptChars` pattern), so importing this file, or unit-
+ * testing its sibling exports, never touches a TypeScript loader. This
+ * function itself is exercised for real only by an owner-confirmed
+ * `--confirm-live-calls` run (Slice E's E9), never by any automated test.
+ */
+export async function runLiveEvaluation({ client, judgeModel, models, excerptCaps, goldCases, outputDir, resultsPath, env, log }) {
+  const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
+  const { loadGameRulesTopics } = await import("../apps/backend/src/gameRules.ts");
+  const { loadGameRulesRuleIndex } = await import("../apps/backend/src/gameRulesRetrieval.ts");
+  const { computeDeterministicAssertions } = await import("../apps/backend/src/eval/answer-quality/assertions.ts");
+  const { judgeAnswerAlone, judgeBlindRanking } = await import("../apps/backend/src/eval/answer-quality/judge.ts");
+  const { RUBRIC_REVISION } = await import("../apps/backend/src/eval/answer-quality/rubric.ts");
+  const { writeResultsFile, writeTranscript, writeRankingTranscript } = await import(
+    "../apps/backend/src/eval/answer-quality/artifact.ts"
+  );
+  const { join } = await import("node:path");
+
+  const gameRulesTopics = loadGameRulesTopics(join(repoRoot, "apps/backend/data/gameRulesByTopic.json"));
+  const gameRulesRuleIndex = loadGameRulesRuleIndex(join(repoRoot, "apps/backend/data/gameRulesRuleIndex.json"));
+
+  const caseLegScores = [];
+
+  for (const cap of excerptCaps) {
+    for (const caseEntry of goldCases) {
+      const perModelRecord = new Map();
+      const answersForRanking = [];
+
+      for (const model of models) {
+        const prepared = preparePromptInput(
+          { mode: "lookup", question: caseEntry.question },
+          { gameRulesTopics, gameRulesRuleIndex, supplementalRuleCap: cap }
+        );
+
+        const startedAt = Date.now();
+        const response = await client.responses.create({ model, input: prepared.promptText });
+        const latencyMs = Date.now() - startedAt;
+        const answerText = response.output_text?.trim() ?? "";
+
+        // Real usage from the API when the client reports it; a character
+        // estimate (consistent with the dry-run plan's methodology) when it
+        // does not, so an injected fake test client never needs to fabricate it.
+        const inputTokens = response.usage?.input_tokens ?? Math.round(prepared.promptText.length / CHARS_PER_TOKEN_ESTIMATE);
+        const outputTokens = response.usage?.output_tokens ?? Math.round(answerText.length / CHARS_PER_TOKEN_ESTIMATE);
+
+        const assertions = computeDeterministicAssertions(answerText, caseEntry.expectedSupplementalRuleIds);
+        const judgeResult = await judgeAnswerAlone({
+          client,
+          judgeModel,
+          question: caseEntry.question,
+          ruleIds: caseEntry.expectedSupplementalRuleIds,
+          answerText,
+          workedSolution: caseEntry.workedSolution
+        });
+
+        const record = {
+          caseId: caseEntry.id,
+          model,
+          excerptCap: cap,
+          undetermined: judgeResult.undetermined,
+          scores: judgeResult.undetermined ? undefined : judgeResult.scores,
+          namesGoldRuleId: assertions.namesGoldRuleId,
+          promptChars: prepared.promptText.length,
+          inputTokens,
+          outputTokens,
+          latencyMs,
+          blindRank: null,
+          costUsd: computeCallCostUsd(model, inputTokens, outputTokens)
+        };
+        perModelRecord.set(model, record);
+        answersForRanking.push({ modelId: model, answerText });
+
+        await writeTranscript(
+          {
+            caseId: caseEntry.id,
+            model,
+            excerptCap: cap,
+            question: caseEntry.question,
+            promptText: prepared.promptText,
+            answerText,
+            workedSolution: caseEntry.workedSolution,
+            assertions,
+            scores: judgeResult.undetermined ? undefined : judgeResult.scores,
+            undetermined: judgeResult.undetermined,
+            rationale: judgeResult.undetermined ? undefined : judgeResult.rationale
+          },
+          outputDir
+        );
+
+        log?.(`  ${caseEntry.id} / ${model} / cap ${cap}: answered (${latencyMs}ms)`);
+      }
+
+      const rankingResult = await judgeBlindRanking({
+        client,
+        judgeModel,
+        question: caseEntry.question,
+        workedSolution: caseEntry.workedSolution,
+        answers: answersForRanking
+      });
+      if (!rankingResult.undetermined) {
+        for (const [modelId, rank] of Object.entries(rankingResult.ranks)) {
+          const record = perModelRecord.get(modelId);
+          if (record) record.blindRank = rank;
+        }
+      }
+      await writeRankingTranscript(
+        {
+          caseId: caseEntry.id,
+          excerptCap: cap,
+          ranks: rankingResult.undetermined ? {} : rankingResult.ranks,
+          undetermined: rankingResult.undetermined,
+          reason: rankingResult.undetermined ? rankingResult.reason : undefined
+        },
+        outputDir
+      );
+
+      for (const record of perModelRecord.values()) caseLegScores.push(record);
+    }
+  }
+
+  const results = buildRunArtifact({
+    models,
+    excerptCaps,
+    goldCases,
+    judgeModel,
+    rubricRevision: RUBRIC_REVISION,
+    askAiProvider: env.ASK_AI_PROVIDER ?? "",
+    embeddingProvider: env.EMBEDDING_PROVIDER ?? "mock",
+    gitCommit: await resolveGitCommit(repoRoot),
+    generatedAt: new Date().toISOString(),
+    caseLegScores
+  });
+
+  await writeResultsFile(results, resultsPath);
+  log?.(`\nWrote ${resultsPath} and transcripts to ${outputDir}/`);
+  return results;
+}
+
 export function describePlan({ models, excerptCaps, outputDir, goldCaseCount, estimate }) {
   return [
     "Answer-quality baseline plan (no provider request has been made):",
@@ -239,7 +479,8 @@ export async function run(options = {}) {
     loadCases = loadGoldCases,
     measureChars = measurePromptChars,
     buildClient = defaultBuildClient,
-    client: injectedClient
+    client: injectedClient,
+    runEvaluation = runLiveEvaluation
   } = options;
 
   const parsed = parseArgs(argv);
@@ -279,10 +520,21 @@ export async function run(options = {}) {
     );
   }
 
-  // Slice E wires the full per-model, per-cap, per-case answer/score/rank
-  // loop and the artifact writer here.
-  log("Model access verified for the full lineup and the judge model. The live evaluation loop is wired in Slice E.");
-  return { ran: false, goldCaseCount: goldCases.length, accessChecked: true };
+  log(
+    `Model access verified for the full lineup and the judge model. Running the live evaluation over ${goldCases.length} gold cases...`
+  );
+  const results = await runEvaluation({
+    client,
+    judgeModel,
+    models: parsed.models,
+    excerptCaps: parsed.excerptCaps,
+    goldCases,
+    outputDir: parsed.outputDir,
+    resultsPath: resolve(repoRoot, "apps/backend/src/eval/answer-quality/results.json"),
+    env,
+    log
+  });
+  return { ran: true, goldCaseCount: goldCases.length, accessChecked: true, results };
 }
 
 const invokedPath = process.argv[1] ? new URL(`file://${resolve(process.argv[1])}`).href : "";

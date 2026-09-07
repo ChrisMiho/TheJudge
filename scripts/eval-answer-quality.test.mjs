@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { dirname, resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
@@ -7,7 +10,9 @@ import {
   DEFAULT_JUDGE_MODEL,
   DEFAULT_LINEUP,
   assertLiveProviderConfigured,
+  buildRunArtifact,
   checkModelAccess,
+  computeCallCostUsd,
   estimateCost,
   parseArgs,
   resolveJudgeModel,
@@ -167,18 +172,31 @@ test("a live run fails naming any lineup or judge model the credentials cannot a
   );
 });
 
-test("a live run with full model access reports access verified and does not yet make any completion call (Slice E wires the loop)", async () => {
+test("a live run with full model access reports access verified, then hands off to the injected evaluation runner", async () => {
   const client = fakeAccessClient([...DEFAULT_LINEUP, DEFAULT_JUDGE_MODEL]);
   const logs = [];
+  const fakeResults = { runMetadata: {}, legs: [], caseLegScores: [] };
+  const runEvaluation = async (params) => {
+    assert.equal(params.client, client);
+    assert.equal(params.judgeModel, DEFAULT_JUDGE_MODEL);
+    assert.deepEqual(params.models, DEFAULT_LINEUP);
+    assert.deepEqual(params.excerptCaps, DEFAULT_EXCERPT_CAPS);
+    assert.ok(params.resultsPath.endsWith("apps/backend/src/eval/answer-quality/results.json"));
+    return fakeResults;
+  };
+
   const result = await run({
     argv: [CONFIRM_FLAG],
     env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
     log: (line) => logs.push(line),
     measureChars: fakeMeasureChars,
-    client
+    client,
+    runEvaluation
   });
 
+  assert.equal(result.ran, true);
   assert.equal(result.accessChecked, true);
+  assert.equal(result.results, fakeResults);
   assert.deepEqual(client.calls, ["list"]);
   assert.match(logs[0], /Model access verified/);
 });
@@ -203,4 +221,105 @@ test("estimateCost sets no numeric target and scales with lineup size, excerpt c
   assert.equal(large.answerCalls, DEFAULT_LINEUP.length * 18 * 2);
   assert.ok(large.totalCostUsd > small.totalCostUsd);
   assert.ok(Number.isFinite(large.totalCostUsd));
+});
+
+test("computeCallCostUsd derives cost from real token counts and a known model's price, and is zero for an unrecognized model", () => {
+  const cost = computeCallCostUsd("gpt-4.1-mini", 1_000_000, 1_000_000);
+  assert.ok(Math.abs(cost - (0.4 + 1.6)) < 1e-9);
+  assert.equal(computeCallCostUsd("not-a-real-model", 1000, 1000), 0);
+});
+
+test("buildRunArtifact aggregates per-leg headline counts, tier counts, judge-mismatch flag, and totals from raw per-call records", () => {
+  const goldCases = [
+    { id: "case-a", tier: 1 },
+    { id: "case-b", tier: 2 }
+  ];
+  const caseLegScores = [
+    {
+      caseId: "case-a",
+      model: "gpt-4.1-mini",
+      excerptCap: 5,
+      undetermined: false,
+      scores: { correctness: 2, grounding: 2, calibration: 2, readability: 2 },
+      inputTokens: 1000,
+      outputTokens: 100,
+      costUsd: 0.01
+    },
+    {
+      caseId: "case-b",
+      model: "gpt-4.1-mini",
+      excerptCap: 5,
+      undetermined: false,
+      scores: { correctness: 1, grounding: 2, calibration: 2, readability: 2 },
+      inputTokens: 1000,
+      outputTokens: 100,
+      costUsd: 0.01
+    },
+    {
+      caseId: "case-a",
+      model: "gpt-4.1-mini",
+      excerptCap: 10,
+      undetermined: true,
+      inputTokens: 1200,
+      outputTokens: 0,
+      costUsd: 0.005
+    }
+  ];
+
+  const artifact = buildRunArtifact({
+    models: ["gpt-4.1-mini"],
+    excerptCaps: [5, 10],
+    goldCases,
+    judgeModel: "gpt-4.1-mini", // deliberately mismatched, to prove the flag
+    rubricRevision: "2026-09-07.1",
+    askAiProvider: "openai",
+    embeddingProvider: "local",
+    gitCommit: "abc1234",
+    generatedAt: "2026-09-07T00:00:00.000Z",
+    caseLegScores
+  });
+
+  assert.equal(artifact.runMetadata.goldSetTier1Count, 1);
+  assert.equal(artifact.runMetadata.goldSetTier2Count, 1);
+  assert.equal(artifact.runMetadata.judgeMatchesAnswerModel, true);
+  assert.equal(artifact.runMetadata.totalInputTokens, 3200);
+  assert.equal(artifact.runMetadata.totalOutputTokens, 200);
+  assert.ok(Math.abs(artifact.runMetadata.totalCostUsd - 0.025) < 1e-9);
+
+  const legAtFive = artifact.legs.find((leg) => leg.excerptCap === 5);
+  const legAtTen = artifact.legs.find((leg) => leg.excerptCap === 10);
+  assert.equal(legAtFive.fullyCorrectCount, 1); // only case-a scored Correctness 2
+  assert.equal(legAtFive.caseCount, 2);
+  assert.equal(legAtTen.fullyCorrectCount, 0); // undetermined never counts as correct
+  assert.equal(legAtTen.caseCount, 1);
+
+  // The internal costUsd aggregation field never reaches the committed per-case-per-leg schema.
+  for (const record of artifact.caseLegScores) {
+    assert.equal("costUsd" in record, false);
+  }
+});
+
+test("REGRESSION GUARD: eval:answer-quality is never wired into any gate script (REQ-188)", () => {
+  const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+  const rootPkg = JSON.parse(readFileSync(resolve(repoRoot, "package.json"), "utf8"));
+  const backendPkg = JSON.parse(readFileSync(resolve(repoRoot, "apps/backend/package.json"), "utf8"));
+
+  const gateScripts = {
+    "package.json quality:check": rootPkg.scripts["quality:check"],
+    "package.json test": rootPkg.scripts.test,
+    "package.json coverage:check": rootPkg.scripts["coverage:check"],
+    "package.json test:scripts": rootPkg.scripts["test:scripts"],
+    "apps/backend/package.json test:eval": backendPkg.scripts["test:eval"]
+  };
+
+  for (const [scriptName, scriptCommand] of Object.entries(gateScripts)) {
+    assert.ok(scriptCommand, `expected ${scriptName} to exist`);
+    assert.ok(
+      !scriptCommand.includes("eval-answer-quality") && !scriptCommand.includes("eval:answer-quality"),
+      `${scriptName} must never invoke the answer-quality run, but reads: ${scriptCommand}`
+    );
+  }
+
+  // The command itself is registered exactly once, as its own on-demand script.
+  assert.equal(rootPkg.scripts["eval:answer-quality"], "tsx scripts/eval-answer-quality.mjs");
 });

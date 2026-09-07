@@ -10,7 +10,7 @@ Do not rename package folders to encode status.
 
 | Package | Notes |
 | --- | --- |
-| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Mapped out 2026-09-07 (node 5, build half, `plan`): five slices — gold-set-and-validity (A), cap-and-run-command (B), judge-and-rubric (C), artifact-and-transcripts (D), integrate-and-apply (E, sequential on A–D). Quality-check PASSed 2026-09-07 (attempt 2). Next: `build` implements the slices, applying REQ-185–190 and the four amendments to `PRD/sections/` alongside the code |
+| [ai-answer-quality-baseline](./ai-answer-quality-baseline/) | Built 2026-09-07 (node 6, build half): slices A–D done (gold set, cap parameter, judge/rubric, artifact — REQ-185–190 applied). Slice E wired end to end and gated green (E1–E8), blocked on E9/E10 (the owner's first live run and read-through — no paid call was made by this node). Next: the owner follows `slice-e-integrate-and-apply.md`'s "Owner steps", then `thejudge-cleanup` / the graph's `close` step |
 
 ## refined
 

@@ -3484,14 +3484,15 @@
 - Constraints:
   - never auto-score, auto-gate, or fail CI on model answer content
   - do not add a product-facing endpoint, request field, or user-visible surface
-  - do not grow this into a general-purpose LLM evaluation framework; a broad answer-quality baseline across all fixtures remains separate scope
+  - do not grow this into a general-purpose LLM evaluation framework; the broad answer-quality baseline is its own instrument over the committed worked-solution gold set (NFR-018, REQ-185 through REQ-190) and the two are kept separate — this requirement stays a two-leg combo A/B over curated combo scenarios
 - Dependencies:
   - DEC-161
   - REQ-093
   - REQ-094
   - REQ-095
+  - REQ-188 (the answer-quality baseline whose non-gating, confirmation-gated posture this shares)
 - Notes:
-  - the existing `prompt:preview` tooling extracts assembled prompt text from the mock provider and therefore cannot observe answer quality; this is the first path in TheJudge that inspects real provider answers
+  - the existing `prompt:preview` tooling extracts assembled prompt text from the mock provider and therefore cannot observe answer quality; this was the first path in TheJudge that inspects real provider answers, and the answer-quality baseline (REQ-188) is the second — both are explicitly invoked, confirmation-gated, human-reviewed, and outside every build gate
   - the comparison exists to answer whether combo enrichment earned its place, which is otherwise unfalsifiable
   - planned path is `scripts/compare-combo-answer-quality.mjs`, gated behind an explicit `--confirm-live-calls` flag, writing to gitignored `output/combo-answer-quality/` alongside the existing `output/prompt-preview/` and `output/retrieval-relevance-report.txt` convention
   - the runtime config flag is `COMBO_ENRICHMENT_ENABLED` (backend env, enabled by default), read where prompt assembly consults the catalog rather than latched at module load, so one script process can answer both legs without a second process or a contract change
