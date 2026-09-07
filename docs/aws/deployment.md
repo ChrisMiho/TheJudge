@@ -33,11 +33,15 @@ Lambda Function URL (https://<id>.lambda-url.us-east-1.on.aws)   auth NONE
   v
 Lambda  thejudge-api  (nodejs24.x, arm64, 512 MB, 20 s)
         handler: apps/backend/dist/lambda.handler
-        native binding: node_modules/onnxruntime-node/bin/napi-v6/linux/arm64 only
-          (scripts/package-lambda.sh keeps the function's architecture and refuses
-          to package without it — a wrong binding degrades EMBEDDING_PROVIDER=local
-          to lexical retrieval with only a WARN, which is what production did
-          2026-09-06 → 2026-09-07)
+        native bindings: node_modules/onnxruntime-node/bin/napi-v6/linux/arm64 only,
+          plus sharp's node_modules/@img/sharp-linux-arm64 + sharp-libvips-linux-arm64
+          (scripts/package-lambda.sh installs with `npm ci --os=linux --cpu=arm64
+          --libc=glibc` so npm resolves the function's platform rather than the
+          deploy runner's, keeps the function's onnxruntime binding, and refuses
+          to package without either — a missing binding degrades
+          EMBEDDING_PROVIDER=local to lexical retrieval with only a WARN, which
+          is what production did 2026-09-06 → 2026-09-07, twice: onnxruntime
+          first, then sharp on the first deploy after that fix)
         cold start: read OPENAI_API_KEY from SSM SecureString -> process.env
         -> createConfiguredApp() -> Express app (same routes as local dev)
         -> ASK_AI_PROVIDER=openai -> OpenAI Responses API
