@@ -48,7 +48,8 @@ import test from "node:test"
  * `find -type f | stat`, not disk-block `du`):
  *
  *     onnxruntime-node (all 3 bundled platforms)   210 MB
- *       -> pruned to the Lambda target (linux/x64)  34 MB  (scripts/package-lambda.sh)
+ *       -> pruned to the Lambda target (linux/arm64) 34 MB  (scripts/package-lambda.sh;
+ *          linux/x64 was kept by mistake until 2026-09-07 — same size, wrong CPU)
  *     @huggingface/transformers + sharp + deps      73 MB
  *     warmed local-model cache (quantised .onnx +
  *       tokenizer, apps/backend/data/models/,

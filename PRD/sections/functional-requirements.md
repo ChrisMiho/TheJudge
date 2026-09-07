@@ -4278,6 +4278,7 @@
   - `EMBEDDING_PROVIDER` unset still resolves to `mock`; it never auto-switches on `NODE_ENV` or deploy target (REQ-181, unchanged)
   - the deployed Lambda's environment sets `EMBEDDING_PROVIDER=local` explicitly, and the deploy configuration records it where the equivalent `ASK_AI_PROVIDER` setting is recorded
   - the deploy fails, rather than silently degrading, when the packaged model cache is absent: the packaging script already refuses without `apps/backend/data/models/Xenova/all-MiniLM-L6-v2/onnx/model_quantized.onnx`, and that refusal is asserted
+  - the deploy fails, rather than silently degrading, when the package lacks the `onnxruntime-node` native binding for the function's architecture: `thejudge-api` runs linux/arm64 (`scripts/aws-bootstrap.sh --architectures arm64`), `scripts/package-lambda.sh` keeps exactly that binding through `scripts/lib/prune-onnxruntime-platforms.mjs`, and the pruner refuses (exit 1, before deleting anything) when `linux/arm64/onnxruntime_binding.node` is absent; `scripts/lib/prune-onnxruntime-platforms.test.mjs` proves both the kept platform and the refusal
   - a local `npm run dev` with no warmed model cache and no network still answers, using lexical retrieval, with the single diagnostic warning REQ-181 requires
   - this requirement does not land before REQ-182's gates pass and REQ-032's semantic checks gate `npm run test:eval`
 - Constraints:

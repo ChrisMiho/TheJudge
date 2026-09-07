@@ -55,17 +55,22 @@ cp -R "$repo_root/apps/backend/data" "$package_root/apps/backend/data"
   npm_config_onnxruntime_node_install_cuda=skip \
   npm ci --omit=dev --workspace apps/backend --include-workspace-root=false >&2
 
-  # REQ-181/NFR-017: `onnxruntime-node` bundles all three platforms' native
+  # REQ-181/NFR-017: `onnxruntime-node` bundles every platform's native
   # binaries directly in its published package (not npm optionalDependencies),
-  # so every `npm ci` pulls Windows and macOS binaries the Lambda runtime
-  # (linux/x64) never loads — measured 2026-09-05: ~176MB of the ~283MB the
-  # package installs. Pruning them here is what makes the re-measured
-  # NON_DATA_RESERVE in scripts/lambda-package-budget.test.mjs true in the
-  # real deployed artifact, not just in the test's arithmetic.
-  onnx_platform_dir="node_modules/onnxruntime-node/bin/napi-v6"
-  if [ -d "$onnx_platform_dir" ]; then
-    rm -rf "$onnx_platform_dir/darwin" "$onnx_platform_dir/win32" "$onnx_platform_dir/linux/arm64"
-  fi
+  # so every `npm ci` pulls ~283MB of which the Lambda loads one binding.
+  # Pruning to that one is what makes the re-measured NON_DATA_RESERVE in
+  # scripts/lambda-package-budget.test.mjs true in the real deployed artifact.
+  #
+  # The binding kept must match the function's architecture:
+  # scripts/aws-bootstrap.sh creates thejudge-api with `--architectures arm64`,
+  # so the Lambda loads linux/arm64. Until 2026-09-07 this step kept linux/x64
+  # and deleted linux/arm64, and every production cold start since the local
+  # embedder shipped fell back to lexical retrieval with only a WARN (REQ-184).
+  # The pruner refuses to package when the arm64 binding is absent, so this
+  # can never again fail silently. Override LAMBDA_ARCH only if the function's
+  # architecture changes in aws-bootstrap.sh.
+  LAMBDA_ARCH="${LAMBDA_ARCH:-arm64}" \
+  node "$repo_root/scripts/lib/prune-onnxruntime-platforms.mjs" "node_modules" linux "${LAMBDA_ARCH:-arm64}"
 
   # NFR-017: measure what will actually be uploaded, in real file bytes (what
   # AWS counts), and refuse to build an artifact that Lambda will reject. The
