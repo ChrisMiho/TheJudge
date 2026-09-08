@@ -248,7 +248,7 @@ Grade the built diff on `thejudge-auto/trade-balancer-price-slim-work` (code PR 
 
 Rubric = the slices' acceptance criteria and correctness against them. Flag ONLY gaps that affect correctness or a stated requirement. A preference, a style note, or an improvement outside a slice's stated requirements is NEVER Critical or Important and never loops the run back to build — a manufactured finding spends a build loop the run cannot get back. Pay attention to the build's documented engineering calls (e.g. the price artifact shipped gzip-compressed because the Lambda 250 MB budget had <1 MB headroom; the printing picker now renders an image where before it rendered none; manual search adds a card then lets the player change printing since prices are no longer available pre-add) — judge whether each preserved the slice's stated intent, not whether you would have chosen it.
 
-Verify claims you can check read-only: run the slices' stated test commands if useful, confirm `grep -rn "cardPrintingPrices\\|loadCardPrices" apps/frontend/src apps/frontend/public` has zero hits, confirm the ten PRD/sections ids were applied.
+Verify claims you can check read-only: run the slices' stated test commands if useful, confirm a recursive grep for the old price-file and loader names (cardPrintingPrices, loadCardPrices) under apps/frontend/src and apps/frontend/public returns zero hits, confirm the ten PRD/sections ids were applied.
 
 Report a verdict: APPROVE (proceed to close), or findings each rated Critical / Important / Minor with the exact file/line and the criterion or correctness issue it violates. Only Critical or Important loop back to build. A Critical finding the run cannot resolve from confirmed decisions and tests parks immediately.
 
