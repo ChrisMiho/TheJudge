@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (build half's claim, run `graph-20260908-013519`; was `origin/thejudge-auto/weekly-data-refresh-pr`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-163826/`
-- Current node: `build` (build half, run `graph-20260908-013519`; 4 slices mapped, STATUS.active — implementing sequentially A→B→C→D)
-- Next action: `/graph-implement PRD/work/weekly-data-refresh-pr/` — build → review → close; ends COMPLETE with the code PR open for the owner to merge
+- Current node: `review` (build half, run `graph-20260908-013519`; 4 slices built, 21/21 criteria true, STATUS.ship-ready, code PR #213 open — independent review next)
+- Next action: `/graph-implement PRD/work/weekly-data-refresh-pr/` — review → close; ends COMPLETE with the code PR open for the owner to merge
 
 ## Node ledger
 
@@ -20,6 +20,7 @@
 | GR | gate-review (build half, run graph-20260908-013519) | sonnet | ok | `0 → 14` | REQ-195 accept applied (accept changes no diff); `## Gate verdicts` (1 id, 0 blockers) and resolved `## Open gate` (dated 2026-09-08, docs PR #209 merged) written; STATUS.refined restored (marker, README, PRD/work/STATUS.md board row) | 2026-09-08 |
 | 4B | gate-qc (build half, run graph-20260908-013519) | sonnet | ok (PASS) | `0 → 16` | re-grade of the gate-finalized proposal, no fan-out (14 calls). REQ-195's three proposed diffs match current PRD/sections byte-for-byte (trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, system-map.md); functional-requirements append target after REQ-194 exists, REQ-195 not already defined; cited ids (DEC-087/088/162, REQ-066/093/145, NFR-013) all match; `data:refresh`→`data:build` pipeline + build-card-prices.mjs real; new script/npm name not yet present; buildable without a live user. Findings none. STATUS unchanged (refined) | 2026-09-08 |
 | 5 | plan (build half, run graph-20260908-013519) | sonnet | ok | `0 → 39` | thejudge-map-out wrote GAMEPLAN.md + 4 slice docs (A refresh-and-PR script core; B change-detection/no-op path; C npm `data:refresh-pr` wiring; D promote REQ-195 to PRD/sections with the code) with slice-{a,b,c,d}.criteria.json (9/5/2/5 = 21 criteria, valid JSON). Verification uses injected git/gh/pipeline fakes — no slice runs the real Scryfall refresh (REQ-093/DEC-162, denied under the graph lock). STATUS.active; README slice table + implementation map; board row moved to active | 2026-09-08 |
+| 6 | build (build half, run graph-20260908-013519) | sonnet | ok | `0 → 122` | thejudge-implement-all built A→B→C→D, 21/21 criteria true. New `scripts/refresh-and-open-pr.mjs` (injectable-effects: dirty-tree refusal, branch off origin/main, pipeline runner, 11-path explicit artifact staging, dated commit, no-force push, gh pr create wrapper) + no-op/change-detection + graceful pipeline-fail; npm `data:refresh-pr` wired. Tests against injected fakes only: refresh-and-open-pr.test.mjs 19/19, quality:check 541/541 — never ran the live Scryfall refresh. REQ-195 applied to PRD/sections (functional-requirements append + trade-balancer/data/cardPrintingPrices.md + trade-balancer/README.md + system-map.md). Code PR #213 opened. STATUS.ship-ready. Return-side assertion: launch checkout byte-identical before/after, worktree clean/synced | 2026-09-08 |
 
 ## Gate verdicts
 
@@ -182,6 +183,22 @@ CRITICAL — never run the real data refresh: do NOT run `npm run data:refresh`,
 APPLY PRODUCT TRUTH AT BUILD (slice D). Together with the code, write the real PRD/sections/ edit by intent for REQ-195: append `### REQ-195` after REQ-194 in functional-requirements.md and amend trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, and system-map.md per the finalized GATE-QUESTIONS.md diff, re-derived against current truth. This is the one place durable PRD/sections truth is written.
 
 Boundaries: no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no remote-branch delete, no git add -A (stage explicit paths), no live Scryfall refresh. Commit on thejudge-auto/weekly-data-refresh-pr-work and push it; open the PR with `gh pr create --base main --head thejudge-auto/weekly-data-refresh-pr-work` (never merge it). All writes stay inside this worktree — never write into the launch checkout.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### review (build half, run graph-20260908-013519)
+
+You are the independent reviewer (node 7) for the built package. Fresh context: you did not see the build. You hold no write tools — you read, search, and run read-only commands only, and never modify the work you grade. This is a review task: produce a verdict, not an implementation plan.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr
+
+Grade the built diff on `thejudge-auto/weekly-data-refresh-pr-work` (code PR #213 → main) against each slice's OWN stated acceptance criteria — nothing else. Read `git diff origin/main...HEAD` (the full slice diff), GAMEPLAN.md, and each slice-{a,b,c,d}-*.md with its `## Acceptance criteria`, plus the matching slice-*.criteria.json. The design: a weekly one-command local script `scripts/refresh-and-open-pr.mjs` (npm `data:refresh-pr`) that runs the existing full-refresh pipeline, cuts a branch off origin/main, commits rebuilt data by explicit path, pushes, and opens a PR the owner merges; a no-op path opens no empty PR when nothing changed; graceful degradation on pipeline failure. Built with the injectable-effects pattern and unit-tested against injected git/gh/pipeline fakes.
+
+CRITICAL: do NOT run the real refresh — no `npm run data:refresh`, `data:build`, or `data:refresh-pr`, no Scryfall network call. Verify only by reading the code and running the unit test over the injected fakes (node --test scripts/refresh-and-open-pr.test.mjs).
+
+Rubric = the slices' acceptance criteria and correctness against them. Flag ONLY gaps that affect correctness or a stated requirement. A preference, a style note, or an improvement outside a slice's stated requirements is NEVER Critical or Important and never loops the run back to build — a manufactured finding spends a build loop the run cannot get back. Check especially: the script never force-pushes and never merges into main; staging is explicit-path (never add -A); the no-op path truly opens no PR when nothing changed; and REQ-195 was applied to PRD/sections (functional-requirements.md, trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, system-map.md).
+
+Report a verdict: APPROVE (proceed to close), or findings each rated Critical / Important / Minor with the exact file/line and the criterion or correctness issue it violates. Only Critical or Important loop back to build. A Critical finding the run cannot resolve parks immediately.
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 
