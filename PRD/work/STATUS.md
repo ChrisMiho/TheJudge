@@ -10,10 +10,6 @@ Do not rename package folders to encode status.
 
 ## refined
 
-| Package | Note |
-| --- | --- |
-| [trade-balancer-price-slim](trade-balancer-price-slim/) | Reshaped to the backend-move design (owner pivot): delete the ~38 MB frontend `cardPrintingPrices.json`, serve prices from a committed backend artifact via a price companion to `GET /api/cards/:oracleId`, slim `cardMetadata` as the shared index. Quality-check re-run pending, then re-park at owner-action + update docs PR #211. |
-
 ## refining
 
 ## ideation
@@ -23,6 +19,7 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | [weekly-data-refresh-pr](weekly-data-refresh-pr/) | gate-qc PASS; docs PR open into `main` (REQ-195). Answer the verdict in `GATE-QUESTIONS.md`, then merge the PR to build. |
+| [trade-balancer-price-slim](trade-balancer-price-slim/) | Reshaped to the backend-move design (owner pivot); in PR #211. Delete the ~38 MB frontend `cardPrintingPrices.json`; serve prices from a committed backend artifact via a price companion to `GET /api/cards/:oracleId`; slim `cardMetadata` as the shared index. Quality-check re-check INCOMPLETE (node cap-exhausted, re-dispatch blocked) — review the reshaped `GATE-QUESTIONS.md` (9 blocks + BLOCK-01) and answer/merge, or resume with a fresh gate-qc run. |
 
 ## deferred
 

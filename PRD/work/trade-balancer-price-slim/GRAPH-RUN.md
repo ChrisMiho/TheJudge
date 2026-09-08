@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-price-slim` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-205625/`
-- Current node: `gate-qc` (reshape re-check)
-- Next action: re-run quality-check on the reshaped brief, then re-park at `owner-action` and update docs PR #211
+- Current node: `owner-action` (reshape re-check parked — cap-exhausted, re-dispatch blocked)
+- Next action: owner reviews the reshaped design in PR #211 and either answers/merges `GATE-QUESTIONS.md` directly, or resumes with a fresh quality-check run before build
 
 ## Node ledger
 
@@ -18,14 +18,16 @@
 | 3 | define | opus | ok | `0 → 38` | DESIGN-BRIEF.md (Step-1 frontend slim, committed design; Step-2 backend move deferred) and GATE-QUESTIONS.md (2 stable-id blocks: REQ-066, NFR-013, each with plain-language lines + complete diff + verdict slot; Blocker questions: None) written; STATUS.refined; PRD/sections untouched | 2026-09-07 |
 | 4 | gate-qc | sonnet | ok (PASS) | `0 → 22` | quality-check PASS on DESIGN-BRIEF.md, findings none; verified brief premise against loadCardPrices.ts / oracleSearch.ts / build-card-prices.mjs and the REQ-066 / NFR-013 diffs against current section text; run stops here (first PASS) | 2026-09-07 |
 | 3R | define (reshape) | opus | ok | `0 → 54` | owner pivoted the design (frontend slim → backend move). DESIGN-BRIEF.md and GATE-QUESTIONS.md rewritten: prices served from a committed backend artifact via a price companion to `GET /api/cards/:oracleId`, ~38 MB frontend `cardPrintingPrices.json` deleted, slim `cardMetadata` as the shared identity index. 9 stable-id blocks (REQ-064/065/066/174/175, FLOW-009, FLOW-025 new, NFR-004/013) + Blocker BLOCK-01 (endpoint shape fork); STATUS.refined; PRD/sections untouched | 2026-09-07 |
-| 4R | gate-qc (reshape) | sonnet | pending | — | re-check of the reshaped backend-move brief | 2026-09-07 |
+| 4R | gate-qc (reshape) | sonnet | parked | static at 71 — over cap | attempt 1 exhausted its cap (71/60, 2 denials) by spawning verification sub-forks that looped; produced no verdict and wrote nothing (worktree clean, STATUS still refined). Attempt 2 re-dispatch was denied by the boundary hook (`denied-command-retry` over the prior `tool-call-cap` denial), which mandates park. Reshaped brief in PR #211; a fresh quality-check run is required. | 2026-09-07 |
 
 ## Open gate
 
-- Gate: quality-check PASS — run one (spec-forming half) stops here at `owner-action`.
-- Owner action: answer the accept/edit/reject verdict slots in `PRD/work/trade-balancer-price-slim/GATE-QUESTIONS.md` (amendments to REQ-066 and NFR-013), then merge the docs PR to `main`. That merge is the build signal.
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/211 (docs-only, base `main`, head `thejudge-auto/trade-balancer-price-slim`)
-- Resume: no `/graph-kickoff` resume needed. After the merge, the build half `graph-implement` claims the spec from `origin/main`, applies the answered proposal, and opens the code PR.
+- State: PARKED at `owner-action`. The design was reshaped to the backend move (owner pivot) and is committed on the branch / in PR #211. The reshape quality-check re-check did **not** complete — it exhausted its tool-call cap via a fan-out loop and the boundary hook blocked a re-dispatch (`denied-command-retry`), which mandates a park. No PASS/FAIL verdict exists for the reshaped design.
+- Owner action (two paths):
+  1. Review the reshaped design directly in PR #211 and, if satisfied, answer the accept/edit/reject slots in `GATE-QUESTIONS.md` (9 blocks: REQ-064/065/066/174/175, FLOW-009, FLOW-025, NFR-004/013) and answer BLOCK-01 (endpoint fork: sibling `/api/cards/:oracleId/prices` route [Option A, recommended] vs `?include=prices` on the existing route [Option B]), then merge PR #211 to `main`. The build half applies the approved proposal.
+  2. Or resume with a fresh quality-check run against the reshaped brief before merging — a new run avoids the exhausted attempt's cap and the retry guard.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/211 (docs-only, base `main`, head `thejudge-auto/trade-balancer-price-slim`) — body updated to the backend-move design.
+- Note: `## Preparation gate` reads INCOMPLETE, so the autonomous build half will not self-certify a PASS — a fresh gate-qc PASS (or the owner's explicit go-ahead) is needed before build.
 
 ## Dispatch prompts
 
