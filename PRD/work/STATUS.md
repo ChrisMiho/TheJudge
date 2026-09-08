@@ -6,10 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| Package | Note |
-| --- | --- |
-| [trade-balancer-price-slim](trade-balancer-price-slim/) | Backend-move design (owner pivot) built and ship-ready 2026-09-08. All ten stable-id blocks (REQ-064/065/066/174/175, FLOW-009, FLOW-025, NFR-004/013/014) applied to PRD/sections. Four slices done: A backend build/artifact, B backend price route, C shared cardMetadata index, D frontend balancer flow + cleanup. Code PR open for owner review/merge. Next: `thejudge-cleanup` after merge. |
-
 ## active
 
 ## refined
