@@ -1,0 +1,77 @@
+{
+  "slug": "trade-balancer-price-slim",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "scripts/build-card-metadata.mjs's slim output stores a representative-printing id (not a full imageUrl string) per card, alongside cardId, name, colors",
+      "value": false,
+      "evidence": {
+        "command": "node scripts/build-card-metadata\\.mjs|npm run data:build",
+        "paths": ["scripts/build-card-metadata.mjs"]
+      }
+    },
+    {
+      "id": "C2",
+      "statement": "A single shared frontend helper derives the Scryfall image URL from a printing id via the documented template; QuickLookupApp.tsx, MtgAssistantApp.tsx, CardPresentation.tsx, and CardSelectionPreview.tsx all import it rather than reading a literal imageUrl field off cardMetadata",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/lib/cardImage.ts",
+          "apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx",
+          "apps/frontend/src/components/CardPresentation.tsx",
+          "apps/frontend/src/components/CardSelectionPreview.tsx"
+        ]
+      }
+    },
+    {
+      "id": "C3",
+      "statement": "A test asserts the derived URL resolves correctly for a real single-faced representative printing id and a real double-faced representative printing id from the committed Scryfall source",
+      "value": false,
+      "evidence": {
+        "command": "npm test.*cardImage|vitest.*cardImage|npm test.*metadataTransformPolicy"
+      }
+    },
+    {
+      "id": "C4",
+      "statement": "scripts/build-card-metadata.mjs still passes its internal NFR-019 gzip-reduction assertion (MIN_GZIPPED_REDUCTION = 0.4) against the new slim shape",
+      "value": false,
+      "evidence": {
+        "command": "node scripts/build-card-metadata\\.mjs|npm run data:build"
+      }
+    },
+    {
+      "id": "C5",
+      "statement": "PRD/sections/non-functional-requirements.md NFR-019's recorded measured gzip figure matches the newly measured build output",
+      "value": false,
+      "evidence": {
+        "paths": ["PRD/sections/non-functional-requirements.md"]
+      }
+    },
+    {
+      "id": "C6",
+      "statement": "apps/frontend/src/lib/metadataTransformPolicy.test.ts passes with coverage for the new imageId-based shape",
+      "value": false,
+      "evidence": {
+        "command": "npm test.*metadataTransformPolicy",
+        "paths": ["apps/frontend/src/lib/metadataTransformPolicy.test.ts"]
+      }
+    },
+    {
+      "id": "C7",
+      "statement": "The frontend test suite passes for the touched files",
+      "value": false,
+      "evidence": {
+        "command": "npm test --workspace apps/frontend"
+      }
+    },
+    {
+      "id": "C8",
+      "statement": "PRD/sections/functional-requirements.md's REQ-174 block matches the GATE-QUESTIONS.md diff's + lines byte-for-byte",
+      "value": false,
+      "evidence": {
+        "paths": ["PRD/sections/functional-requirements.md"]
+      }
+    }
+  ]
+}

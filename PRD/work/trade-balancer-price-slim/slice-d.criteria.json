@@ -1,0 +1,112 @@
+{
+  "slug": "trade-balancer-price-slim",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "apps/frontend/src/lib/trade/fetchCardPrintings.ts exists and mirrors cardDetail.ts's cache/dedupe/404/retry-on-failure pattern, asserted by a new test suite for the module",
+      "value": false,
+      "evidence": {
+        "command": "npm test.*fetchCardPrintings",
+        "paths": ["apps/frontend/src/lib/trade/fetchCardPrintings.ts"]
+      }
+    },
+    {
+      "id": "D2",
+      "statement": "apps/frontend/src/lib/trade/loadCardPrices.ts and its test are deleted; grep -r loadCardPrices apps/frontend/src returns no hits",
+      "value": false,
+      "evidence": {
+        "command": "grep -rn .loadCardPrices. apps/frontend/src|rm .*loadCardPrices"
+      }
+    },
+    {
+      "id": "D3",
+      "statement": "oracleSearch.ts's search index is built from cardMetadata, not price data — oracleSearch.test.ts passes with the updated source",
+      "value": false,
+      "evidence": {
+        "command": "npm test.*oracleSearch",
+        "paths": ["apps/frontend/src/components/trade/oracleSearch.ts"]
+      }
+    },
+    {
+      "id": "D4",
+      "statement": "useTradeScan.ts's scan-preview metadata reads name/image/colors from cardMetadata (no hardcoded empty colors) — covered by TradeBalancer.scan.test.tsx",
+      "value": false,
+      "evidence": {
+        "command": "npm test.*TradeBalancer\\.scan",
+        "paths": ["apps/frontend/src/components/trade/useTradeScan.ts"]
+      }
+    },
+    {
+      "id": "D5",
+      "statement": "Adding a card to a side triggers a fetchCardPrintings call, shows a brief loading state, and caches the result for the session so re-adding the same card makes no second request — asserted by TradeBalancer.test.tsx",
+      "value": false,
+      "evidence": {
+        "command": "npm test.*TradeBalancer(?!\\.scan)"
+      }
+    },
+    {
+      "id": "D6",
+      "statement": "A printing with a null usd/usdFoil for the selected foil mode still renders the $0-plus-caution treatment (unchanged pricing.ts behavior) — asserted by an updated component test",
+      "value": false,
+      "evidence": {
+        "command": "npm test.*TradeBalancer|npm test.*pricing"
+      }
+    },
+    {
+      "id": "D7",
+      "statement": "A failed price fetch degrades the entry to $0-plus-caution with a retry affordance, and retrying re-fetches (the failed result was not cached) — asserted by a component test",
+      "value": false,
+      "evidence": {
+        "command": "npm test.*TradeBalancer|npm test.*fetchCardPrintings"
+      }
+    },
+    {
+      "id": "D8",
+      "statement": "The printing picker still disambiguates printings by set, collector number, and a working (id-derived) image, sourced from the fetched printings list — asserted by an updated component test",
+      "value": false,
+      "evidence": {
+        "command": "npm test.*TradeBalancer|npm test.*[Pp]icker"
+      }
+    },
+    {
+      "id": "D9",
+      "statement": "apps/frontend/public/data/cardPrintingPrices.json no longer exists; grep -rn cardPrintingPrices apps/frontend/src apps/frontend/public returns no hits",
+      "value": false,
+      "evidence": {
+        "command": "grep -rn .cardPrintingPrices. apps/frontend/src apps/frontend/public|rm .*cardPrintingPrices\\.json"
+      }
+    },
+    {
+      "id": "D10",
+      "statement": "The frontend test suite passes in full (regression: pricing.test.ts unchanged and green)",
+      "value": false,
+      "evidence": {
+        "command": "npm test --workspace apps/frontend"
+      }
+    },
+    {
+      "id": "D11",
+      "statement": "PRD/sections/functional-requirements.md (REQ-064, REQ-065), PRD/sections/user-flows.md (FLOW-009, FLOW-025), and PRD/sections/non-functional-requirements.md (NFR-013, NFR-014) match their GATE-QUESTIONS.md diffs' + lines byte-for-byte",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/user-flows.md",
+          "PRD/sections/non-functional-requirements.md"
+        ]
+      }
+    },
+    {
+      "id": "D12",
+      "statement": "PRD/sections/trade-balancer/README.md's Prices-and-freshness/Contract-posture bullets and PRD/sections/system-map.md's trade-balancer file list describe the backend-served price route, with no live reference remaining to cardPrintingPrices.json as a current frontend artifact",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/trade-balancer/README.md",
+          "PRD/sections/system-map.md"
+        ]
+      }
+    }
+  ]
+}
