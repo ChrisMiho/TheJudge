@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (build half's claim, run `graph-20260908-013519`; was `origin/thejudge-auto/weekly-data-refresh-pr`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-163826/`
-- Current node: `gate-review` (build half, run `graph-20260908-013519`; docs PR #209 merged — the owner's build signal; resolving the answered gate, then re-entering at gate-qc)
-- Next action: `/graph-implement PRD/work/weekly-data-refresh-pr/` — after gate-review restores `refined`, re-enter at gate-qc, then plan → build → review → close
+- Current node: `plan` (build half, run `graph-20260908-013519`; gate-qc PASS re-grade done — proceeding to map-out)
+- Next action: `/graph-implement PRD/work/weekly-data-refresh-pr/` — plan → build → review → close; ends COMPLETE with the code PR open for the owner to merge
 
 ## Node ledger
 
@@ -17,19 +17,36 @@
 | 2 | shape | sonnet | ok | degraded (no run state) | `PRD/work/weekly-data-refresh-pr/` created (STATUS.ideation) with IDEA.md, intake/GRAPH-BRIEF.md verbatim, 3 prior-run matches; committed 0b59ec5 and pushed; launch checkout untouched | 2026-09-07 |
 | 3 | define | opus | ok | `0 → 31` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written (1 proposed id REQ-195; full-refresh chosen via assumption ladder, flip-to-prices-only left as owner edit); STATUS.refined; PRD/sections untouched; no blocker | 2026-09-07 |
 | 4 | gate-qc | sonnet | ok | `0 → 19` | PASS — DESIGN-BRIEF verified against PRD truth (DEC-087/088/162, REQ-066/093/145, NFR-013) and all four proposed diffs matched current-state byte-for-byte; no drift; STATUS stays refined for build | 2026-09-07 |
+| GR | gate-review (build half, run graph-20260908-013519) | sonnet | ok | `0 → 14` | REQ-195 accept applied (accept changes no diff); `## Gate verdicts` (1 id, 0 blockers) and resolved `## Open gate` (dated 2026-09-08, docs PR #209 merged) written; STATUS.refined restored (marker, README, PRD/work/STATUS.md board row) | 2026-09-08 |
+| 4B | gate-qc (build half, run graph-20260908-013519) | sonnet | ok (PASS) | `0 → 16` | re-grade of the gate-finalized proposal, no fan-out (14 calls). REQ-195's three proposed diffs match current PRD/sections byte-for-byte (trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, system-map.md); functional-requirements append target after REQ-194 exists, REQ-195 not already defined; cited ids (DEC-087/088/162, REQ-066/093/145, NFR-013) all match; `data:refresh`→`data:build` pipeline + build-card-prices.mjs real; new script/npm name not yet present; buildable without a live user. Findings none. STATUS unchanged (refined) | 2026-09-08 |
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-195` | accept | Full refresh — keep every corpus (prices, rulings, combos, rules) current on one weekly cadence with the least new code; runtime posture unchanged. When the first refresh runs, all extracts should come up to date together, not just prices. |
+
+Blocker questions: none recorded — the full-vs-prices-only scope was resolved to
+full refresh by the assumption ladder and surfaced in REQ-195 for confirmation,
+not as a block.
 
 ## Open gate
 
-- Parked at `owner-action` on gate-qc PASS (spec-forming half complete).
-- Question: answer the `- Verdict:` slot for REQ-195 in
+- **Resolved 2026-09-08** — 1 stable id, 1 verdict (REQ-195 accept), 0 blocker
+  questions. Docs PR #209 merged into `main` — the owner's build signal. The
+  proposed diff in `GATE-QUESTIONS.md` stands unchanged (accept applies no
+  edit). Status restored to `refined`; the resumed run re-enters at `gate-qc`.
+- Prior park: parked at `owner-action` on gate-qc PASS (spec-forming half
+  complete).
+- Question that was answered: the `- Verdict:` slot for REQ-195 in
   `PRD/work/weekly-data-refresh-pr/GATE-QUESTIONS.md` (accept = full refresh as
   written; edit = flip to prices-only or amend; reject = drop the cadence), then
   merge the docs PR into `main`. That merge is the build signal.
 - Evidence: gate-qc PASS (node 4); DESIGN-BRIEF.md + GATE-QUESTIONS.md published
   on `thejudge-auto/weekly-data-refresh-pr`; docs PR URL recorded below.
-- Resume: after the owner answers and merges, `graph-implement` picks up the
-  approved spec from `origin/main` and builds it (code PR into `main`).
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/209 (docs-only, base `main`, head `thejudge-auto/weekly-data-refresh-pr`)
+- Resume: `graph-implement` picks up the approved spec from `origin/main` and
+  builds it (code PR into `main`), re-entering at `gate-qc`.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/209 (docs-only, base `main`, head `thejudge-auto/weekly-data-refresh-pr`) — merged
 
 ## Dispatch prompts
 
@@ -110,6 +127,40 @@ Package: PRD/work/weekly-data-refresh-pr/ (inside that worktree). Read GATE-QUES
 The owner's recorded answer: the single stable-id block REQ-195 = accept (the weekly one-command full refresh that opens a PR); the Blocker questions section is None (the full-vs-prices-only scope was resolved to full refresh by the assumption ladder and surfaced in REQ-195 for confirmation). Apply the accept — no diff changes. Then write `## Gate verdicts`, mark `## Open gate` resolved with the date and verdict count, and restore STATUS.refined, the README status field, and the PRD/work/STATUS.md board row to the refined position so the resumed run enters at gate-qc.
 
 Boundaries: never edit PRD/sections; never write DESIGN-BRIEF/GAMEPLAN/slice docs; never advance a node or dispatch a subagent; no merge/close/force-push, no git add -A. Committing is the driver's job.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### gate-qc (build half, run graph-20260908-013519)
+
+graph is controlling.
+
+You are node 4 (`gate-qc`) of the build half, re-grading the finalized proposal after the owner's verdict was applied (REQ-195 = accept, full refresh). Invoke `thejudge-quality-check` in graph-controlled (non-interactive) mode. Produce a PASS/FAIL report only — never a GAMEPLAN or slice docs.
+
+HARD CONSTRAINTS (a prior graph gate-qc attempt self-DoS'd by fanning out): verify YOURSELF with Read/Grep/Bash; do NOT spawn any subagents, Agents, Tasks, or forks; no sleeping/polling; stay well under 60 tool calls.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr
+
+Validate (inside that worktree) PRD/work/weekly-data-refresh-pr/DESIGN-BRIEF.md against PRD/work/weekly-data-refresh-pr/GATE-QUESTIONS.md (one id, REQ-195 accepted) for PRD alignment and agent-readiness. This design is a weekly one-command local script that reuses the existing `data:refresh` → `data:build` full-refresh pipeline (no runtime sync), cuts a branch off origin/main, commits the rebuilt data artifacts, pushes, and opens a PR the owner merges. The proposal was quality-checked to PASS in the kickoff half (ledger row 4) and the verdict is accept, so nothing changed at gate-review; confirm that still holds. Check the proposed diff for REQ-195 matches current-state truth in the named PRD/sections files byte-for-byte (trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, system-map.md), the design is internally consistent with the existing pipeline (data:refresh/data:build, build-card-prices.mjs), and the brief is buildable into slices without a live user. PRD/sections is intentionally untouched (applied at build) — do not fail the brief for that.
+
+On FAIL set STATUS.refining and list the complete findings (the run loops back to define). On PASS report PASS with findings none and do not advance yourself — the driver continues to plan.
+
+Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no spawning any agent. Leave committing to the driver.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### plan (build half, run graph-20260908-013519)
+
+graph is controlling.
+
+You are node 5 (`plan`) of the build half. Invoke `thejudge-map-out` and follow it exactly, in graph-controlled (non-interactive) mode. Produce GAMEPLAN.md and lettered slice docs with one `slice-<letter>.criteria.json` beside each, and set STATUS.active. Do NOT write code or edit PRD/sections; that is the build node's job.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr
+
+Read first (inside that worktree): PRD/work/weekly-data-refresh-pr/DESIGN-BRIEF.md, PRD/work/weekly-data-refresh-pr/GATE-QUESTIONS.md (the finalized proposal — REQ-195 accepted), and PRD/work/weekly-data-refresh-pr/README.md `## Preparation gate` (must read Quality-check: PASS — it does; do not self-certify one). This is a weekly one-command local script that reuses the existing `data:refresh` → `data:build` full-refresh pipeline (no runtime sync), cuts a branch off origin/main, commits the rebuilt data artifacts, pushes, and opens a PR the owner merges. New tooling: `scripts/refresh-and-open-pr.mjs` and an `npm run` entry (e.g. `data:refresh-pr`); neither exists yet.
+
+Slice the work for sequential single-agent implementation. Each slice's acceptance criteria must be earnable by real evidence (a command pattern, file paths, or manual). Cover: the refresh-and-PR script itself (full pipeline, branch off origin/main, explicit-path commit of rebuilt data, push, `gh pr create`); the change-detection / no-op path (a run with no data change must not open an empty PR); the npm script wiring; and applying REQ-195 to PRD/sections at build (functional-requirements append after REQ-194, plus the trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, and system-map.md diffs) together with the code. Respect the boundaries the script must honor even though it is graph-adjacent: no force-push, no merge into main, path-scoped `git add`.
+
+Boundaries: no code, no PRD/sections edit at this node, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no spawning any agent. Leave committing to the driver.
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 
