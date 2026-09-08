@@ -563,7 +563,7 @@ product truth.
 ```
 
 - Verdict: accept
-- Reason: Gate-surfaced consistency fix so NFR-014 stops naming the deleted `cardPrintingPrices.json`; a direct consequence of accepting REQ-066. Added after the owner's accept-all instruction — flagged for the owner to confirm or change before merging.
+- Reason:
 
 ---
 
