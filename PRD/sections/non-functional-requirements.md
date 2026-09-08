@@ -36,8 +36,10 @@
 - Constraints:
   - **Canonical rule — one main product-facing endpoint.** The core product
     exposes exactly one main product-facing backend endpoint (the answer
-    endpoint `POST /api/ask-ai`), plus the single read-only card-detail
-    retrieval route (`GET /api/cards/:oracleId`, REQ-175). Adding any further
+    endpoint `POST /api/ask-ai`), plus two read-only retrieval routes: the
+    card-detail route (`GET /api/cards/:oracleId`, REQ-175) and the Trade
+    Balancer price route (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175).
+    Adding any further
     product-facing endpoint requires amending this constraint. This is the
     single authoritative statement of the one-endpoint rule; the homes below
     echo it and must be updated together (enumerate by grep before amending —

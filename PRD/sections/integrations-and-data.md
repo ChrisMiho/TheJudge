@@ -151,6 +151,13 @@ Purpose:
 - back the card-detail popup and Quick Lookup pre-submit preview's on-demand fetch (FLOW-024); a known id returns the block, an unknown id returns a not-found response
 - the product's second product-facing endpoint (D5), permitted alongside `POST /api/ask-ai` by the one-endpoint rule (canonical: NFR-004)
 
+### Endpoint: `GET /api/cards/:oracleId/prices`
+Purpose:
+- serve one card's printings and prices by Scryfall `oracle_id`, read-only, from the committed `cardPrintingPricesByOracleId.json.gz` artifact (REQ-066, REQ-175), kept separate from the descriptive block so the card-detail/ask-ai path carries no price bytes
+- back the Trade Balancer's on-add fetch, cached per session (FLOW-025); a known id returns `200 { oracleId, snapshotDate, printings: CardPrintingPrice[] }`, an unknown id returns `404 { error: "card_not_found" }`
+- each `CardPrintingPrice` carries `id` (Scryfall printing id — the frontend derives the image url from it), `set`, `setName`, `collectorNumber`, `usd` (non-foil, `number | null`), `usdFoil` (`number | null`); card name is not repeated per printing — the frontend takes it from the shared `cardMetadata` index (REQ-174)
+- the product's third product-facing endpoint, permitted alongside `POST /api/ask-ai` and `GET /api/cards/:oracleId` by the one-endpoint rule (canonical: NFR-004, BLOCK-01 = A)
+
 ### Optional Endpoint: `GET /api/health`
 Purpose:
 - local development checks

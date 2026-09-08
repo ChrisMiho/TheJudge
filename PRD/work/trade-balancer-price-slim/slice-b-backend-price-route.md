@@ -1,6 +1,6 @@
 # Slice B — Backend price route
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -46,25 +46,30 @@ NFR-004) including the required echo-home sweep.
 
 ## Acceptance criteria
 
-- [ ] B1: `apps/backend/src/routes/cardPrices.test.ts` passes: known oracle id
+- [x] B1: `apps/backend/src/routes/cardPrices.test.ts` passes: known oracle id
       returns printings+prices+snapshotDate; unknown oracle id returns `404 {
       error: "card_not_found" }`; no index configured still boots and returns
       404 with no runtime network call.
-- [ ] B2: `GET /api/cards/:oracleId/prices` is registered in `createApp.ts`
+- [x] B2: `GET /api/cards/:oracleId/prices` is registered in `createApp.ts`
       after the card-detail route and before the ask-ai route; the existing
       ask-ai route test suite is unchanged and still green.
-- [ ] B3: `loadCardPrintingPricesIndex` never throws on a missing/unparseable
+- [x] B3: `loadCardPrintingPricesIndex` never throws on a missing/unparseable
       committed file — it logs once and returns an empty map, matching
       `loadCardDetailIndex`'s pattern.
-- [ ] B4: The backend test suite (`npm test` in `apps/backend`) passes in
+- [x] B4: The backend test suite (`npm test` in `apps/backend`) passes in
       full.
-- [ ] B5: `PRD/sections/functional-requirements.md`'s REQ-175 block matches
+- [x] B5: `PRD/sections/functional-requirements.md`'s REQ-175 block matches
       the `GATE-QUESTIONS.md` diff's `+` lines byte-for-byte.
-- [ ] B6: `PRD/sections/non-functional-requirements.md`'s NFR-004 canonical
+- [x] B6: `PRD/sections/non-functional-requirements.md`'s NFR-004 canonical
       block matches the `GATE-QUESTIONS.md` diff's `+` lines byte-for-byte,
       and every live NFR-004 echo home found by grep is updated to name three
-      product-facing routes, not two.
-- [ ] B7: `PRD/sections/integrations-and-data.md`'s API/endpoint section
+      product-facing routes, not two. Swept: REQ-012, REQ-072, REQ-094,
+      REQ-175 (via its own diff), `goals-and-non-goals.md`, `overview.md`
+      (unchanged — "single main backend endpoint" already excludes the
+      read-only routes by design), `instructions/technical-design-rules.md`
+      (two spots), `quick-lookup/README.md`, `in-depth/README.md`,
+      `integrations-and-data.md` (new endpoint section, B7), `PRD/README.md`.
+- [x] B7: `PRD/sections/integrations-and-data.md`'s API/endpoint section
       documents `GET /api/cards/:oracleId/prices` and its response shape.
 
 ## Verification
@@ -77,11 +82,17 @@ grep -rn "NFR-004" PRD/sections PRD/instructions PRD/README.md
 ## Files touched
 
 - `apps/backend/src/cardPrices.ts` (new)
+- `apps/backend/src/cardPrices.test.ts` (new — loader-level coverage: missing file, unparseable file, well-formed load, null-price passthrough)
 - `apps/backend/src/routes/cardPrices.ts` (new)
 - `apps/backend/src/routes/cardPrices.test.ts` (new)
 - `apps/backend/src/runtime/createConfiguredApp.ts`
 - `apps/backend/src/app/createApp.ts`
-- `PRD/sections/functional-requirements.md` (REQ-175)
+- `apps/backend/src/index.ts` (startup log: `cardPrintingPricesCardCount`)
+- `PRD/sections/functional-requirements.md` (REQ-175, plus REQ-012/REQ-072/REQ-094 NFR-004 echoes)
 - `PRD/sections/non-functional-requirements.md` (NFR-004)
 - `PRD/sections/integrations-and-data.md`
-- NFR-004 echo homes located by grep (see Requirement 5)
+- `PRD/sections/goals-and-non-goals.md` (NFR-004 echo)
+- `PRD/instructions/technical-design-rules.md` (NFR-004 echo, two spots)
+- `PRD/sections/quick-lookup/README.md` (NFR-004 echo)
+- `PRD/sections/in-depth/README.md` (NFR-004 echo)
+- `PRD/README.md` (NFR-004 echo)

@@ -73,7 +73,7 @@
 - billing
 - runtime metadata syncing
 - dependency-heavy or performance-harming animation systems, and motion that ignores `prefers-reduced-motion` (decorative CSS motion itself is in scope per DEC-079, NFR-006; this non-goal narrows the prior blanket "animation-heavy UI" exclusion)
-- arbitrary/expanding product-facing endpoints beyond the answer endpoint and the single read-only card-detail retrieval route (REQ-175; canonical rule: NFR-004)
+- arbitrary/expanding product-facing endpoints beyond the answer endpoint and the two read-only retrieval routes — card-detail (REQ-175) and the Trade Balancer price route (REQ-066/REQ-175) — (canonical rule: NFR-004)
 - grading and multi-card-per-frame detection in card scanning (DEC-053)
 - pricing and printing disambiguation remain out of the **card-scanning** feature (DEC-053), but are **in scope for the Trade Balancer** as a static-snapshot USD value aid and printing picker (DEC-087); this narrows the prior blanket pricing/printing-disambiguation exclusion — live/real-time price sync stays out of scope
 - live/real-time card price sync, price history, marketplace/transaction handling, and automated "suggest cards to balance" logic in the Trade Balancer (DEC-087)

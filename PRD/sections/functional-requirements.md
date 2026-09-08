@@ -172,7 +172,7 @@
   - submit is allowed only when at least one selected zone has a card
   - blank trimmed question uses the zone-aware fallback in request/prompt logic
 - Constraints:
-  - one main product-facing endpoint in the core product, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) — canonical rule: NFR-004
+  - one main product-facing endpoint in the core product, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) and the read-only Trade Balancer price route (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175) — canonical rule: NFR-004
 - Dependencies:
   - backend API
   - DEC-153
@@ -1693,7 +1693,7 @@
   - success `{ answer }` and error response shapes are unchanged for both modes and both `ASK_AI_PROVIDER` providers
   - `POST /api/ask-ai` route path and provider boundary are unchanged
 - Constraints:
-  - `POST /api/ask-ai` stays the one answer endpoint (canonical rule: NFR-004); a separate read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) is permitted alongside it
+  - `POST /api/ask-ai` stays the one answer endpoint (canonical rule: NFR-004); two separate read-only retrieval routes are permitted alongside it — card-detail (`GET /api/cards/:oracleId`, REQ-175) and the Trade Balancer price route (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175)
   - additive amendment to the DEC-020 frozen contract; no existing field changes meaning
 - Dependencies:
   - DEC-106
@@ -2211,7 +2211,7 @@
   - identical request context and artifact data produce the same selected variants and match annotations
 - Constraints:
   - retrieval is local and backend-only; no model call is used to decide intent, eligibility, template satisfaction, or ranking
-  - do not introduce legality validation, rules simulation, hidden-state assumptions, or a second product-facing endpoint (one-endpoint rule canonical: NFR-004; rules-engine rule canonical: `goals-and-non-goals.md` Scope Notes)
+  - do not introduce legality validation, rules simulation, hidden-state assumptions, or a further product-facing endpoint (one-endpoint rule canonical: NFR-004; rules-engine rule canonical: `goals-and-non-goals.md` Scope Notes)
 - Dependencies:
   - DEC-116
   - REQ-093
@@ -4042,22 +4042,27 @@
   - a new `scripts/build-*.mjs` trims the committed Scryfall bulk into a card-detail map keyed by Scryfall `oracle_id`, each value carrying `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`; raw Scryfall bulk stays gitignored and only the trimmed artifact is committed
   - the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; no card-detail copy is committed under `apps/frontend/public/data/` and none is downloaded up front (NFR-019)
   - a new route `GET /api/cards/:oracleId` returns one card's descriptive block by oracle id; an unknown id returns a not-found response and the descriptive block degrades to the existing empty-oracle marker
+  - a **read-only price companion** serves one card's printings and prices by oracle id, kept **separate from the descriptive block** so the card-detail/ask-ai path carries no price bytes (REQ-066). Recommended shape: a sibling route `GET /api/cards/:oracleId/prices` returning `{ oracleId, snapshotDate, printings: [{ id, set, setName, collectorNumber, usd, usdFoil }] }`; an unknown id returns a not-found response. The frontend derives each printing's image url from `id` and takes the card name from the shared `cardMetadata` index (REQ-174)
+  - the price companion is backed by the committed backend price map (REQ-066), loaded into memory at startup and served with **no runtime network call**, exactly like the card-detail map; the balancer fetches one card's prices on add and caches per session (FLOW-025)
   - the frontend loads a card's detail from `GET /api/cards/:oracleId` on first open and caches it per card for the session (FLOW-024); it never bulk-downloads the map
   - ask-ai resolves card text by reading the same backend map internally inside `POST /api/ask-ai` (REQ-176), not by calling the new route; the route and the ask-ai read share the one artifact so they cannot drift
   - `npm run data:build` includes the card-detail build; `npm run data:refresh` requires explicit human approval before any download (existing policy)
-  - the product-facing routes are exactly `POST /api/ask-ai` and `GET /api/cards/:oracleId` (`GET /api/health` remains the non-product health check); `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call
+  - the product-facing routes are `POST /api/ask-ai`, `GET /api/cards/:oracleId`, and the read-only price companion `GET /api/cards/:oracleId/prices` (`GET /api/health` remains the non-product health check); `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call. The added route amends the one-endpoint rule (NFR-004)
 - Constraints:
   - commit only the trimmed artifact, matching the existing `apps/backend/data/*.json` pattern
-  - the new route is a read-only `GET` keyed by oracle id; it is the product's second product-facing endpoint (D5), authorized by the one-endpoint rule (canonical: NFR-004)
+  - the card-detail route and the price companion are read-only `GET`s keyed by oracle id; the price companion is the product's third product-facing endpoint, authorized by amending the one-endpoint rule (canonical: NFR-004)
 - Dependencies:
   - REQ-174
   - REQ-176
   - FLOW-024
   - REQ-072
   - NFR-004
+  - REQ-066
+  - FLOW-025
 - Notes:
   - `oracle_id` is the shared join key already used by card metadata, rulings, and combos
   - D5 chose the endpoint over a lazy static frontend artifact for per-card fetch granularity (download only the card opened)
+  - prices ride a companion separate from the descriptive block because prices refresh weekly while rules text is static, and the question/RAG flow must not carry price bytes it never reads
 
 ### REQ-176
 - Title: Server-side card-text resolution for ask-ai
