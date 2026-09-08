@@ -8,7 +8,7 @@ end — the one genuine fork this run raises (the exact backend endpoint shape).
 
 > **This supersedes the earlier frontend-only-slim gate.** The decision now is:
 > do not ship the frontend slim. Move pricing to the backend and delete the
-> committed ~38 MB frontend price file. Nine requirements/flows are amended (one
+> committed ~38 MB frontend price file. Ten requirements/flows are amended (one
 > new flow, `FLOW-025`, is minted); no new `DEC` is minted (the decision log is
 > retired). One amendment (`NFR-004`) applies only if you pick the recommended
 > endpoint option in the Blocker question.
@@ -514,6 +514,52 @@ longer exists, contradicting the amended REQ-066.
    - the trade balancer is an optional top-level feature; like scanning, its data budget is scoped to users who actually use it
 +  - moving pricing to the backend (this reframing) reverses the frontend-only posture of the retired DEC-087; the freshness script's price target artifact moves to the backend map, re-pointed later by the freshness track
 +  - free-tier posture: deleting the ~38 MB first-open download removes that S3/CloudFront egress; the per-card price fetch adds only tiny reads (a handful of KB and a Lambda invocation per card added), well inside the free-tier request allowance at trade-balancer volumes. The backend price map adds ~15-20 MB (estimate; measured at build) to the Lambda bundle, kept inside the 250 MB quota by the budget test (REQ-066)
+```
+
+- Verdict:
+- Reason:
+
+---
+
+## NFR-014 — the code-splitting rule stops listing the deleted price file as a lazy-loaded artifact
+
+**What this decides:** whether NFR-014's side-note — which lists the app's
+lazy-loaded data files — keeps naming the now-deleted Trade Balancer price file.
+
+**In plain terms:** NFR-014 is the rule that each screen loads its own code on
+demand. It carries a side-note listing the app's lazy-loaded *data* files, and
+that note names `cardPrintingPrices.json` "on first Trade Balancer open." Because
+REQ-066 deletes that file and moves prices to the backend, the note would
+otherwise describe a file that no longer exists. This updates it: the scan
+fingerprint file (`cardhashes.bin`, NFR-010) still lazy-loads on first scan, but
+the Trade Balancer no longer has a lazy-loaded price artifact — its prices are
+fetched per card from the backend, and its only up-front data cost is the shared
+`cardMetadata` index (NFR-013, REQ-066). No behavior changes; this is a
+truth-correction so an authoritative requirement stops describing a deleted file.
+
+**What happens if you say no:** NFR-014 keeps naming `cardPrintingPrices.json` as
+a current lazy-loaded artifact, contradicting REQ-066 and NFR-013 in durable
+product truth.
+
+### Proposed diff — `PRD/sections/non-functional-requirements.md`, NFR-014
+
+```diff
+ ### NFR-014
+ - Title: Route-level code splitting and initial-payload posture
+ ...
+ - Constraints:
+   ...
+-  - this is a **code**-splitting posture only; it neither replaces nor weakens the existing data-artifact lazy loads (`cardhashes.bin` on first scan, NFR-010; `cardPrintingPrices.json` on first Trade Balancer open, NFR-013)
++  - this is a **code**-splitting posture only; it neither replaces nor weakens the existing data-artifact lazy load (`cardhashes.bin` on first scan, NFR-010). The Trade Balancer no longer has a lazy-loaded price artifact — its prices are fetched per card from the backend and its only up-front data cost is the shared `cardMetadata` index (NFR-013, REQ-066)
+   - the `Suspense` fallback must not flash on every destination switch: keep-alive mounting (DEC-095, preserved by DEC-157) means a destination suspends only on first visit
+   - route/lazy work must not lower any coverage threshold or delete a test to hit a timing target (NFR-012)
+ - Dependencies:
+   - DEC-157
+   - REQ-140
+   - NFR-010
+   - NFR-012
++  - NFR-013
++  - REQ-066
 ```
 
 - Verdict:
