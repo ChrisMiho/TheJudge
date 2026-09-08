@@ -11,6 +11,7 @@ import {
   DEFAULT_BASE,
   FETCH_COMMAND,
   LOCK_PATH,
+  LOCK_FRESH_MS,
   PROFILE_SENTINEL_ENV,
   STOP_PATH,
   GRAPH_BRANCH_PREFIX,
@@ -397,12 +398,48 @@ test("graph-preflight - lock - a live holder refuses and names slug, run id, and
   assert.match(result.message, /Refusing: two runs cannot share one root/)
 })
 
-test("graph-preflight - lock - a dead holder is reported stale, never silently stolen", () => {
+test("graph-preflight - lock - a dead holder past the freshness window is reported stale, never silently stolen", () => {
+  // HELD_LOCK started 2026-08-18, far past any freshness window relative to now.
   const result = classifyLock({ contents: HELD_LOCK, isAlive: () => false })
   assert.equal(result.state, "stale")
-  assert.match(result.message, /is stale/)
+  assert.match(result.message, /The lock is stale/)
   assert.match(result.message, new RegExp(`reclaim it with: rm ${LOCK_PATH.replace(".", "\\.")}`))
   assert.match(result.message, /Confirm the run really ended/)
+  // The rule that stops an autonomous run repeating the 2026-09-07 theft.
+  assert.match(result.message, /must not reclaim it/)
+})
+
+test("graph-preflight - lock - a fresh lock is held even when its recorded process has exited", () => {
+  // The 2026-09-07 collision: a preflight subagent writes the lock, then exits
+  // seconds in, so a near-simultaneous second run would otherwise read the still
+  // live run's lock as abandoned and reclaim it.
+  const started = "2026-09-07T12:00:00.000Z"
+  const fresh = JSON.stringify({
+    slug: "trade-balancer-price-slim",
+    runId: "graph-20260907-120000",
+    pid: 4242,
+    startedAt: started
+  })
+  const now = Date.parse(started) + 10 * 60 * 1000 // ten minutes on
+  const result = classifyLock({ contents: fresh, isAlive: () => false, now })
+  assert.equal(result.state, "held")
+  assert.match(result.message, /Refusing: two runs cannot share one root/)
+  assert.match(result.message, /separate checkout/)
+})
+
+test("graph-preflight - lock - the freshness window has an edge: dead-pid held just inside, stale just past", () => {
+  const started = "2026-09-07T12:00:00.000Z"
+  const contents = JSON.stringify({ slug: "x", runId: "graph-1", pid: 4242, startedAt: started })
+  const justInside = classifyLock({ contents, isAlive: () => false, now: Date.parse(started) + LOCK_FRESH_MS - 1 })
+  assert.equal(justInside.state, "held")
+  const justPast = classifyLock({ contents, isAlive: () => false, now: Date.parse(started) + LOCK_FRESH_MS + 1 })
+  assert.equal(justPast.state, "stale")
+})
+
+test("graph-preflight - lock - a dead lock with no startedAt cannot claim freshness and is stale", () => {
+  const contents = JSON.stringify({ slug: "x", runId: "graph-1", pid: 4242 })
+  const result = classifyLock({ contents, isAlive: () => false })
+  assert.equal(result.state, "stale")
 })
 
 test("graph-preflight - lock - an unreadable lock is corrupt, not free", () => {

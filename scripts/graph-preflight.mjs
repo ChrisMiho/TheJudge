@@ -275,13 +275,32 @@ export function parseLockFile(contents) {
 }
 
 /**
+ * How long after it is written a lock is treated as held no matter what its
+ * recorded process reports.
+ *
+ * The lock is written by a short-lived preflight subagent whose pid exits
+ * seconds later — long before the run that owns the lock ends. Without a
+ * freshness window a live run's lock reads "abandoned" almost immediately, so
+ * two runs launched moments apart in one root each see the other's just-written
+ * lock as stale and reclaim it. That is the 2026-09-07 collision: two
+ * `/graph-kickoff` runs in one checkout, each stealing the other's lock. The
+ * window covers a kickoff run's active phase. Its stated limit: a build run
+ * holds the lock for hours, so past the window its dead-pid lock still reads
+ * stale — the no-autonomous-reclaim rule (a running driver parks rather than
+ * reclaims) is what protects it then, not this window.
+ */
+export const LOCK_FRESH_MS = 30 * 60 * 1000
+
+/**
  * What a run should do about the lock it found — the whole decision, as a pure
  * function over the file's contents.
  *
- * A stale lock is *reported*, never silently stolen: a run that reclaims
- * without saying so is indistinguishable from one that never contended.
+ * A contended lock — held, fresh, stale, or corrupt — is always *refused*, never
+ * silently stolen: a run that reclaims without saying so is indistinguishable
+ * from one that never contended. Reclaiming a genuinely-stale lock is a human
+ * step; an autonomous driver parks and surfaces the command instead.
  */
-export function classifyLock({ contents, isAlive = isPidAlive }) {
+export function classifyLock({ contents, isAlive = isPidAlive, now = Date.now() }) {
   if (contents === null || contents === undefined) {
     return { state: "free", holder: null, message: null }
   }
@@ -311,14 +330,33 @@ export function classifyLock({ contents, isAlive = isPidAlive }) {
     }
   }
 
+  // The recorded process has exited, but that alone does not mean the run ended:
+  // the preflight subagent that writes the lock exits early in a run it does not
+  // own. A lock still inside its freshness window is treated as held so a
+  // near-simultaneous second run cannot mistake it for abandoned and reclaim it.
+  const startedMs = holder.startedAt ? Date.parse(holder.startedAt) : NaN
+  if (Number.isFinite(startedMs) && now - startedMs < LOCK_FRESH_MS) {
+    return {
+      state: "held",
+      holder,
+      message:
+        `graph run lock at ${LOCK_PATH} is held by ${who}, started ${holder.startedAt} ` +
+        `— within the freshness window, so it is treated as held even though its ` +
+        `recorded process has exited (a preflight subagent exits early in a run it ` +
+        `does not own). Refusing: two runs cannot share one root. For a concurrent ` +
+        `idea, launch it from a separate checkout.`
+    }
+  }
+
   return {
     state: "stale",
     holder,
     message:
       `graph run lock at ${LOCK_PATH} names ${who}` +
-      `${holder.startedAt ? `, started ${holder.startedAt}` : ""}, but that ` +
-      `process is not running. The lock is stale. Confirm the run really ended, ` +
-      `then reclaim it with: rm ${LOCK_PATH}`
+      `${holder.startedAt ? `, started ${holder.startedAt}` : ""}, its recorded ` +
+      `process is not running, and it is past the freshness window. The lock is ` +
+      `stale. A running graph driver must not reclaim it — park and surface this ` +
+      `instead. Confirm the run really ended, then reclaim it with: rm ${LOCK_PATH}`
   }
 }
 

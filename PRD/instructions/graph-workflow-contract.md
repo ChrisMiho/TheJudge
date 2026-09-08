@@ -898,11 +898,27 @@ its stated origin, so anything the graph driver copied into
 `graph-preflight` takes `.worktrees/.graph-run.lock` before any mutation — a
 JSON record of the slug, run id, PID, and start time, under the already-ignored
 `.worktrees/` root so it never travels with a branch. A second run refuses while
-it is held and relays a message naming the holding slug, run id, and PID. A lock
-whose PID is not running is reported **stale** with the reclaim command stated,
-never silently stolen; an unparseable lock stops the run rather than reading as
-absent. The decision is `classifyLock()` in `scripts/graph-preflight.mjs`, a
-tested pure function.
+it is held and relays a message naming the holding slug, run id, and PID. The
+decision is `classifyLock()` in `scripts/graph-preflight.mjs`, a tested pure
+function.
+
+**PID liveness alone does not decide staleness, because the lock is written by a
+short-lived preflight subagent.** That subagent's PID exits seconds into a run
+the lock outlives by minutes-to-hours, so a lock whose PID is dead is not
+necessarily abandoned. Two guards prevent a live run's lock from being read as
+stale and stolen — the 2026-09-07 collision, where two `/graph-kickoff` runs in
+one checkout each reclaimed the other's just-written lock:
+
+- **A freshness window.** A lock younger than `LOCK_FRESH_MS` (30 minutes) is
+  classified **held** regardless of PID. This covers a kickoff run's active
+  phase, so two runs launched moments apart cannot race. Its stated limit: a
+  build run holds the lock for hours, so past the window its dead-PID lock reads
+  **stale** again — the rule below, not the window, is what protects it then.
+- **No autonomous reclaim.** A running graph driver never reclaims (deletes) a
+  lock — held, fresh, stale, or corrupt. It parks and surfaces the reclaim
+  command to the owner. Reclaiming a genuinely-stale lock (`rm` the file) is a
+  human step, taken after confirming the run really ended; an unparseable lock
+  likewise stops the run rather than reading as absent.
 
 Two runs in one root would share the hook's control plane — one run state, one
 counter, one evidence log — so the second run's calls would be charged to the
