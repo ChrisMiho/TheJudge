@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
-
 | Package | Note |
 | --- | --- |
-| [weekly-data-refresh-pr](weekly-data-refresh-pr/) | Mapped 2026-09-08: gate-qc PASS re-graded, sliced A (script core) → B (change-detection/no-op) → C (npm wiring) → D (promote REQ-195 to PRD/sections, together with the code). `npm run thejudge-implement-all` picks it up next. |
+| [weekly-data-refresh-pr](weekly-data-refresh-pr/) | Built 2026-09-08: slices A (script core) → B (change-detection/no-op) → C (npm wiring) → D (promote REQ-195 to PRD/sections, together with the code) all done, every criterion true. Code PR: https://github.com/ChrisMiho/TheJudge/pull/213. Ready for `thejudge-cleanup`. |
+
+## active
 
 ## refined
 
