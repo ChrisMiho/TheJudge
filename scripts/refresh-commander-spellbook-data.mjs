@@ -15,7 +15,12 @@ const stagingDir = `${rawInputDir}.tmp`
  * in one unthrottled, sub-second request, regenerated daily.
  */
 export const BULK_EXPORT_URL = "https://json.commanderspellbook.com/variants.json.gz"
-export const SCRYFALL_REQUEST_DELAY_MS = 100
+// Pace between Scryfall search calls during template expansion. 100ms (10 req/s)
+// is Scryfall's published ceiling; sustaining the ceiling across ~200 template
+// searches reliably tripped the rate limiter, leaving templates unresolved on
+// 429s. 200ms (5 req/s) trades a few extra minutes of wall-clock — irrelevant for
+// the weekly overnight refresh — for a run that finishes without throttling.
+export const SCRYFALL_REQUEST_DELAY_MS = 200
 export const MAX_FETCH_ATTEMPTS = 6
 export const RETRY_BASE_DELAY_MS = 1000
 export const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504])
