@@ -1,215 +1,283 @@
-# DESIGN BRIEF: Trade Balancer price artifact slim (Step 1, frontend-only)
+# DESIGN BRIEF: Trade Balancer pricing moves to the backend
+
+> **Reshape note.** This brief supersedes the earlier "frontend-only slim
+> (Step 1)" design in the same folder. The owner decided against shipping the
+> frontend slim: pricing moves to the backend and the committed ~38 MB frontend
+> price file is deleted. The prior brief's Step-1/Step-2 sequencing decision is
+> retired.
 
 ## What the player gets
 
-The Trade Balancer opens fast. Today the first time a player opens it, the app
-downloads and parses one ~38 MB price file before the screen is usable — a
-multi-second stall on mobile. This shrinks that file so opening the balancer is
-quick, and nothing else about the feature changes: scan or search a card, pick
-its printing, see per-printing USD prices, foil toggle, totals, the $0-plus-
-caution state for a missing price, and the ephemeral trade all stay exactly as
-they are. This changes only how the pricing data is delivered, not what the
-feature does.
+The Trade Balancer opens fast, and nothing a player does changes. They still
+scan or search a card, pick its printing, see per-printing USD prices, toggle
+foil, read each side's total and the difference, and get the $0-plus-caution
+state when a price is missing. What changes is invisible: the balancer no longer
+downloads one giant price file up front. Instead it prices each card the moment
+it is added, by asking the backend for that one card's printings and prices —
+the same on-demand pattern the card-detail popup already uses.
+
+## Why the design changed (owner's decision)
+
+Today the first time a player opens the balancer, the browser downloads and
+parses a single ~38 MB file (`cardPrintingPrices.json`, 95,895 printings) before
+the screen is usable — a multi-second stall on mobile. The earlier package
+proposed slimming that file frontend-side. The owner chose a different fix:
+serve prices from the backend, per card, and delete the frontend file entirely.
+
+The owner's reasons, which shape the design:
+
+- **Prices refresh weekly; rules text is static.** Keeping prices on the backend
+  next to the card-detail data lets each refresh on its own cadence.
+- **The question/RAG flow must not carry price bytes it never reads.** The
+  card-detail popup and ask-ai read a card's rules block; they must not also
+  download printing prices. So prices are a **separate** field/sub-resource, not
+  merged into the rules payload.
+- **Rules are per-card, prices per-printing.** A card has one rules block but
+  several printings, each with its own price.
 
 ## Scope (committed)
 
-This package is **Step 1 only — the frontend slim**. It keeps the current
-frontend-only, no-backend-call posture (DEC-087). It slims the committed
-`cardPrintingPrices.json` in three ways, all of which reconstruct the same
-runtime data the app uses today:
+1. **Reverse the frontend-only, no-backend-call posture (the DEC-087
+   reversal).** The balancer may now make a read-only backend call to price
+   cards. This is real product truth, proposed as amendments to REQ-064,
+   REQ-065, and FLOW-009 — never a new DEC (the decision log is retired).
 
-1. **Derive `imageUrl` at load time from the printing `id`** instead of storing
-   it (the single biggest lever — ~44% of the file's value bytes plus its
-   repeated key). Scryfall composes every printing's image URL from the printing
-   id: `https://cards.scryfall.io/normal/front/<id[0]>/<id[1]>/<id>.jpg`. The
-   loader derives this per printing; the field is dropped from disk.
-2. **Reconstruct `setName`** from the set code via a compact `set → set name`
-   map emitted once by the build, instead of repeating the full set name on all
-   95,895 printings.
-3. **Reconstruct `name`** from a compact `oracle id → name` map emitted once by
-   the build, instead of repeating the card name on every printing.
+2. **Serve prices from the backend, alongside the existing card-detail route.**
+   The committed backend card-detail data (`apps/backend/data/cardDetailByOracleId.json`,
+   served by `GET /api/cards/:oracleId`, REQ-175) gains a **separate** per-oracle
+   printing-price companion. A card's printings and prices are fetched on demand
+   and carried in a field/sub-resource distinct from the rules block, so the
+   popup/ask-ai path never downloads price bytes. The exact endpoint shape is the
+   one genuine fork this run raises (see Blocker questions and Material
+   assumptions); the recommended default is a read-only sibling route
+   `GET /api/cards/:oracleId/prices`.
 
-At runtime the loader rehydrates the full `CardPrintingPrice` shape (with
-`name`, `setName`, `imageUrl`) so every consumer — the printing picker, the
-entry rows, the manual-search index, the scan flow — is unchanged.
+3. **One source extract — no fourth build.** `cardPrintingPrices.json` and
+   `cardDetailByOracleId.json` already build from the same committed
+   `apps/frontend/data/scryfall/default-cards.json`. The per-printing price/
+   identity projection is unified into the existing card-detail build
+   (`scripts/build-card-detail-by-oracle-id.mjs`), which emits both the rules map
+   and the printing-price-by-oracle map in one pass; `scripts/build-card-prices.mjs`
+   is retired. No fourth extract of `default-cards.json` is added.
+
+4. **One thin shared frontend index at the unique-card grain.** `cardMetadata.json`
+   (today `{cardId, name, imageUrl, colors}` per unique card, ~6.4 MB across
+   33,399 entries) becomes the single per-unique-card identity index used by
+   **both** the question flow and the trade balancer's search/autocomplete and
+   scan preview. Its stored full `imageUrl` string is replaced by a stored
+   representative-printing id, from which the loader derives the image URL via
+   the same Scryfall template — the same derive-from-id lever. The ~38 MB
+   `apps/frontend/public/data/cardPrintingPrices.json` is **deleted** from the
+   frontend: card identity comes from `cardMetadata`, prices from the backend.
+
+5. **Balancer flow.** The player types a name and it resolves to a card (oracle)
+   via the shared `cardMetadata` index; a scan resolves an oracle via the
+   existing scan map (`cardScanMap.json`). On card-add the balancer fetches that
+   card's printings and prices from the backend and caches them per session (the
+   FLOW-024 per-session-cache pattern the card-detail popup uses). The printing
+   picker shows every printing with per-printing `usd`/`usdFoil`.
+
+## Preserved (unchanged player-facing behavior)
+
+- A null price still renders the **$0-plus-caution** state (REQ-065). `usd` /
+  `usdFoil` arrive from the backend now; the `pricing.ts` logic (a null unit
+  price contributes $0, the caution flag surfaces separately) is untouched.
+- The printing picker still disambiguates printings by **set, collector number,
+  and a working image**; the image derives from the printing id via the Scryfall
+  template (verified for single- and double-faced printings at build).
+- **Mock-default local dev keeps working.** The backend price data is committed
+  and served in-memory with no live network call, exactly like
+  `cardDetailByOracleId.json`; `ASK_AI_PROVIDER=mock` is unaffected.
+- The **snapshot date** still reaches the UI (`Prices as of 5 June 2026`,
+  REQ-145) — the on-demand price response carries it.
+- The **freshness script's target artifact changes** (its price output moves from
+  the frontend file to the backend map). This is noted only; the re-point is a
+  later change, not resolved in this package. No Scryfall refresh runs here.
+
+## The backend price contract (recommended shape)
+
+A read-only sibling route serving one card's printings and prices by oracle id,
+mirroring the card-detail route's committed-file-in-memory posture (REQ-175):
+
+```
+GET /api/cards/:oracleId/prices
+200 → {
+  oracleId: string,
+  snapshotDate: string,          // ISO; feeds the "Prices as of <date>" line (REQ-145)
+  printings: [
+    {
+      id: string,                // Scryfall printing id (image derives from this)
+      set: string,               // set code
+      setName: string,           // full set name (small per-card payload, kept for display)
+      collectorNumber: string,
+      usd: number | null,        // non-foil; null when the source has none
+      usdFoil: number | null     // foil; null when the source has none
+    }
+  ]
+}
+404 → { error: "card_not_found" }   // degrades to the existing empty state
+```
+
+- Backed by a committed backend artifact (working name
+  `apps/backend/data/cardPrintingPricesByOracleId.json`) keyed by oracle id,
+  loaded into memory at startup and served with no runtime network call —
+  the exact pattern of `apps/backend/src/cardDetail.ts` / `loadCardDetailIndex`.
+- The frontend reconstructs each printing's **image URL** from `id` via the
+  Scryfall template `https://cards.scryfall.io/normal/front/<id[0]>/<id[1]>/<id>.jpg`
+  and takes the card **name** from `cardMetadata` (per oracle). `name` is not
+  repeated per printing on the wire.
+- Prices stay a separate concern from the rules block: the card-detail popup /
+  ask-ai read `GET /api/cards/:oracleId` and never touch this data.
+
+### Frontend fetch + per-session cache
+
+A new `fetchCardPrintings(oracleId)` module mirrors `apps/frontend/src/lib/cardDetail.ts`:
+a module-level `Map` cache for the page session, an in-flight promise dedupe, a
+404 cached as an empty/absent result, and a failed fetch dropped from the cache
+so a retry re-fetches. On card-add the balancer shows a brief in-place loading
+state; on fetch failure the entry degrades to $0-plus-caution with a retry
+affordance (mirroring FLOW-024 and the existing FLOW-009 load-failure edge).
 
 ## Decisions this run owns
 
-### Sequencing: ship Step 1, defer Step 2 (the backend lookup)
+### The endpoint shape is a genuine fork (raised as a Blocker)
 
-**Decision: commit Step 1 (frontend slim). Do not take Step 2 (a per-card
-backend price lookup) in this package.** Step 2 would reverse the feature's
-frontend-only, no-backend-call posture (DEC-087) and touch the runtime-footprint
-framing (NFR-013) — a real product-truth reversal, not an implementation detail.
-Step 2 is a fallback only *if* the slimmed file is measured and still loads too
-slowly, and that measurement does not exist yet. The conservative, reversible
-choice is to ship the frontend slim, measure the new size and first-open load
-time, and only then decide whether Step 2 is warranted. Deferring Step 2 does
-not silently decide the disputed behavior: it preserves the current, shipped
-posture. Step 2 is therefore out of scope here and is **not** raised as a gate
-blocker; it becomes a fresh decision once Step-1 numbers are in hand.
+Two clean options honor the owner's "prices separate from the rules payload"
+constraint:
 
-### `name` reconstruction source: dedupe inside the artifact, not an external fetch
+- **A — sibling read-only route `GET /api/cards/:oracleId/prices` (recommended).**
+  Cleanest separation: the popup/ask-ai path carries zero price bytes; the
+  balancer path carries zero rules text. **Cost:** it is the product's *third*
+  product-facing endpoint, so it amends NFR-004 (the canonical one-endpoint rule)
+  and its ~11 echo homes — the same authorized path REQ-175 used to add the
+  second endpoint.
+- **B — same route `GET /api/cards/:oracleId` with an opt-in prices form**
+  (a query param such as `?include=prices` populating a separate `printings`
+  key). **Benefit:** adds no new endpoint, so NFR-004 is untouched. **Cost:** a
+  query-param variant is a slightly less clean contract than a sub-resource.
 
-The intake suggested reconstructing `name` "from the oracle metadata the app
-already loads." Investigation found the Trade Balancer flow does **not** load
-`cardMetadata.json` today — the manual-search index (`oracleSearch.ts`) is built
-from the price artifact's own `name` field. Loading `cardMetadata.json` (~6.7 MB)
-into the first-open path to source names would add a second large download and
-undercut the "opens fast" goal, and its filter differs from the price artifact's
-(oracle-coverage mismatch risk). So `name` and `setName` are instead deduplicated
-into compact maps **inside the same `cardPrintingPrices.json`**, keeping a single
-fetch and no new data source. This is the smallest-reversible, no-new-external-
-fetch choice (assumption ladder rungs 4 and 6). See "Material assumptions."
+The owner named the sibling route as their own example and their reasons map to
+it most directly, so the proposal is authored against Option A. If the owner
+prefers to avoid the NFR-004 blast radius, Option B is a one-verdict switch (drop
+the NFR-004 block; REQ-175's response contract carries the query-param form).
 
-### `oracleId` stays on each printing entry
+### `setName` rides in the price response, not a new frontend map
 
-The intake floated dropping per-entry `oracleId` and rebuilding it from the
-`byOracleId` index. That saves ~17% but forces the loader to build and hold a
-reverse index at load, adding complexity for a secondary gain. It is left out of
-the committed scope; `oracleId` stays on each entry. If Step-1 measurement shows
-the slim is still short of the budget, dropping `oracleId` is the first cheap
-lever to reconsider before Step 2 — recorded as a future option, not committed.
+The picker may show the full set name. Rather than add a committed set→name map,
+the per-oracle price response carries `setName` per printing — a card's ~3
+printings per fetch is negligible bytes, and it keeps the frontend free of a new
+artifact. (Ladder rung 6: no new data contract without need.)
 
-## The slim artifact shape
+### Build unification, not a fourth extract
 
-```
-{
-  snapshotDate: string,
-  printings: {
-    [printingId]: {
-      id: string,             // = map key
-      oracleId: string,       // kept
-      set: string,            // kept (printing identity for the picker)
-      collectorNumber: string,// kept (printing identity for the picker)
-      usd: number | null,     // the point
-      usdFoil: number | null  // the point
-      // name, setName, imageUrl NO LONGER stored per printing
-    }
-  },
-  byOracleId: { [oracleId]: printingId[] },   // unchanged
-  namesByOracleId: { [oracleId]: string },    // NEW compact map (one name per oracle)
-  setNames: { [setCode]: string }             // NEW compact map (one name per set)
-}
-```
-
-Runtime `CardPrintingPrice` (in `loadCardPrices.ts`) is **unchanged** — the
-loader reconstructs `name`, `setName`, and `imageUrl` when it hands a printing to
-a consumer.
-
-## Loader / selector design
-
-- `derivePrintingImageUrl(id)` returns
-  `https://cards.scryfall.io/normal/front/${id[0]}/${id[1]}/${id}.jpg`.
-- `getPrintingPrice(printingId)` and `listPrintingsForOracle(oracleId)` rehydrate
-  each returned `CardPrintingPrice` with `name = namesByOracleId[oracleId]`,
-  `setName = setNames[set]`, and `imageUrl = derivePrintingImageUrl(id)`.
-  Rehydration is on the accessor path, so the whole 95,895-entry set is not
-  eagerly transformed — bounded CPU and memory, no jank on open (NFR-013).
-- `buildOracleSearchIndex` reads `namesByOracleId` directly for the searchable
-  name row, so manual search keeps working with names available.
-
-## Double-faced-card image case
-
-The current build's `getImageUrl` falls back to `card_faces[0].image_uris` for a
-double-faced card, because the Scryfall bulk record puts a DFC's images on the
-faces, not the top level. But the URL it retrieves is still keyed by the
-**printing id** with the `/front/` path segment — Scryfall composes a DFC's
-front-face image URL from the printing id exactly like a single-faced card. So
-the derived template resolves the front image for both normal and double-faced
-printings with no per-face branch at runtime. (The stored URLs also carried a
-`?<timestamp>` cache-buster query; the derived URL drops it and still resolves —
-Scryfall serves the image without the query string.) The implementation must
-**verify the derived URL against a real double-faced printing** as well as a
-normal one before this is considered done — a build/verification slice, not an
-assumption to ship blind.
+The price/printing projection folds into `build-card-detail-by-oracle-id.mjs`
+(one pass over `default-cards.json` emits both maps); `build-card-prices.mjs` is
+retired. The exact script boundary is a build-time detail validated by outcome
+(every priced gameplay printing present, prices display correctly), consistent
+with how REQ-066 and REQ-175 treat build-time details.
 
 ## Non-goals
 
-- **No player-facing behavior change.** Scan/search add, printing picker, per-
-  printing prices, foil toggle, $0-plus-caution for missing prices, ephemeral
-  trade, USD-only — all unchanged (DEC-087, REQ-064, REQ-065, FLOW-009).
-- **Missing-price behavior is untouched.** A null `usd`/`usdFoil` still renders
-  $0 plus the caution triangle (DEC-087 / REQ-065). Slimming never changes price
-  nullability — `usd`/`usdFoil` are the fields that stay.
-- **No backend move (Step 2).** Deferred, as decided above.
-- **Not the weekly freshness refresh.** Independent track, its own package; this
-  run does not touch it and runs no Scryfall network refresh.
-- **No new data file and no change to `cardMetadata.json`, `cardScanMap.json`,
-  or `cardhashes.bin`** — the compact maps ride inside the existing
-  `cardPrintingPrices.json` (REQ-066 constraint preserved).
-
-## Constraints preserved
-
-- The printing picker keeps enough identity to disambiguate printings visually:
-  set, collector number, and a working derived image. A rare printing with no
-  Scryfall image yields a URL that may 404; the picker/rows must keep a graceful
-  broken-image affordance, and set + collector number still disambiguate.
-- Mock-default local dev keeps working: Step 1 adds no backend call; the loader
-  still fetches the static `/data/cardPrintingPrices.json`.
-- Static committed snapshot; no runtime price fetch, no runtime sync (NFR-013,
-  DEC-088). The slim is a delivery change only.
-
-## Verification the implementation must produce
-
-- Rebuild the slim artifact and **measure the new file size and first-open load
-  time** against the ~38 MB baseline (the "opens fast" outcome).
-- Confirm the derived image URL resolves for a normal printing and a double-
-  faced printing.
-- Confirm manual search, the printing picker, the scan flow, foil toggle,
-  totals, and the $0-plus-caution state all behave identically to today.
-
-## Product truth to amend (proposed — see GATE-QUESTIONS.md)
-
-- **REQ-066** — the "per printing carries … card name, set name, image url"
-  acceptance criterion. The slim drops those three from per-printing storage and
-  reconstructs them at load; REQ-066 must record the slim shape and the compact
-  maps, and add a derived-image acceptance line covering double-faced printings.
-- **NFR-013** — the footprint/budget framing. Records that the artifact is
-  deliberately slimmed (image derived from id, name/set-name deduplicated) to
-  keep the first-open download within the mobile budget, while the frontend-only,
-  no-runtime-fetch posture (DEC-087) is unchanged.
-
-Both are amendments to existing ids; **no new REQ/FLOW id is required**, and the
-decision log is retired so no new DEC is minted. The derived, non-authoritative
-docs that must be brought into step when the amendments apply — the corpus doc
-`trade-balancer/data/cardPrintingPrices.md` (Artifact shape, Measured bounds,
-build description), the `CardPrintingPrice` shape in `integrations-and-data.md`,
-the "Adding a card" / "Prices and freshness" bullets in `trade-balancer/README.md`,
-and the `### Printing-price artifact build` entry in `system-map.md` — follow
-REQ-066/NFR-013 by their own "on conflict, the cited REQ/NFR wins" rule and are
-updated by implementation, not gated separately.
+- **Not a change to what the player can do.** Scan/search add, picker,
+  per-printing prices, foil toggle, $0-plus-caution, ephemeral trade, USD-only —
+  all unchanged (REQ-064, REQ-065, FLOW-009, REQ-145).
+- **Not the weekly freshness refresh.** Independent track; this run only notes
+  that the freshness script's price target artifact moves. No Scryfall refresh
+  runs here.
+- **No live/real-time price sync.** Prices remain a static committed snapshot,
+  now served from the backend in-memory rather than a frontend file. No runtime
+  Scryfall fetch, no scheduled refresh (NFR-013 posture, reframed not weakened).
+- **No change to scan-identity, prompt context, or the ask-ai/rules payload.**
+  Printing identity stays a pricing/display concern (DEC-053, retired-index).
 
 ## Material assumptions (assumption ladder)
 
-1. **`name`/`setName` are deduplicated into compact maps inside
-   `cardPrintingPrices.json`, not sourced from a separate `cardMetadata.json`
-   fetch.** Evidence: `oracleSearch.ts` and `useTradeScan.ts` read
-   `printing.name` from the price artifact; the trade flow does not fetch
-   `cardMetadata.json`; adding a ~6.7 MB fetch to first open fights the goal.
-   Ladder rungs 4 (smallest reversible scope) and 6 (no new external fetch).
-2. **The Scryfall URL template resolves for double-faced printings via the
-   printing id and the `/front/` segment.** Evidence: `cardMetadata.json`
-   entries already store id-keyed `.../front/<a>/<b>/<id>.jpg` URLs; the current
-   build's face fallback retrieves an id-keyed front URL. To be verified against
-   a real DFC in implementation before completion.
-3. **`oracleId` stays on each printing entry.** Ladder rung 4 — dropping it adds
-   loader complexity for a secondary gain; reconsidered only if measurement
-   demands it, before Step 2.
-4. **Step 2 (backend lookup) is deferred, not decided.** Ladder rung 5
-   (preserve user-visible behavior / posture) and rung 6 (no new endpoint
-   without authoritative scope); DEC-087 posture stands until a measured Step-1
-   result justifies revisiting it.
+1. **Endpoint shape = sibling read-only route `GET /api/cards/:oracleId/prices`.**
+   Evidence: the owner authorized the backend move and offered this exact route
+   as an example; it best honors "the RAG flow must not carry price bytes."
+   Raised as a Blocker fork because it adds a third product-facing endpoint
+   (touches NFR-004). Ladder rungs 1 (owner scope) and 6 (endpoint only with
+   authoritative scope, which the owner's decision supplies).
+2. **Backend price artifact keyed by oracle id, per-printing `{id, set, setName,
+   collectorNumber, usd, usdFoil}` + `snapshotDate`, committed under
+   `apps/backend/data/`, served in-memory with no runtime network.** Evidence:
+   this is exactly `cardDetailByOracleId.json` / `loadCardDetailIndex` (REQ-175).
+   Ladder rung 3 (established local pattern).
+3. **The price build folds into `build-card-detail-by-oracle-id.mjs`; no fourth
+   extract of `default-cards.json`.** Evidence: both current builds already
+   stream that same source; the owner asked not to write the projection twice.
+   Ladder rungs 3 and 4.
+4. **`cardMetadata` is the single shared unique-card index; its stored full
+   `imageUrl` string is replaced by a representative-printing id from which the
+   loader derives the URL.** Evidence: `cardMetadata` is already `{cardId, name,
+   imageUrl, colors}` keyed by oracle; the balancer's name/image today come from
+   the price artifact (`oracleSearch.ts`, `useTradeScan.ts`) — deleting that file
+   requires a shared identity source, and `cardMetadata` is it. The derive-from-id
+   lever matches the same Scryfall template used everywhere. NFR-019's relative
+   ≥40% gzipped gate is unaffected (only improved). To verify at build: the
+   derived URL resolves for a single-faced **and** a double-faced representative
+   printing. Ladder rungs 1, 3, 5.
+5. **Per-card fetch-on-add + per-session cache mirrors `cardDetail.ts`.** The
+   mechanism changes (a network round-trip per newly added card instead of one
+   bulk load; a new card cannot be priced fully offline). Player-facing UX mirrors
+   the established card-detail on-demand fetch: a brief loading state, retry on
+   failure, and the existing $0-plus-caution degrade. Ladder rungs 3 and 5.
+
+## Product truth to amend (proposed — see GATE-QUESTIONS.md)
+
+Nine stable-id blocks, plus one Blocker question:
+
+- **REQ-064** — drop the absolute "frontend-only; no backend/endpoint" constraint
+  (the DEC-087 reversal).
+- **REQ-065** — the "no runtime network call is made to price or list printings"
+  criterion becomes "printings and prices are fetched on card-add from the
+  backend and cached per session"; the $0-plus-caution behavior is unchanged.
+- **REQ-066** — the price artifact moves to the backend, keyed by oracle id, the
+  build folds into the card-detail build, and the ~38 MB frontend file is deleted.
+- **REQ-174** — `cardMetadata` becomes the shared unique-card index for both
+  flows; its `imageUrl` is derived at load from a stored representative-printing
+  id.
+- **REQ-175** — the backend card-detail route gains a separate read-only
+  per-oracle price companion (the recommended sibling route) and its committed
+  artifact.
+- **FLOW-009** — the trade flow's preconditions/notes reflect backend pricing on
+  card-add rather than one lazy bulk load and "no backend call."
+- **FLOW-025 (new)** — fetch a card's printings and prices on card-add and cache
+  per session.
+- **NFR-004** — a third product-facing endpoint (contingent on Option A; dropped
+  if the owner picks Option B).
+- **NFR-013** — the footprint/freshness framing is reframed: prices are served
+  from a committed backend snapshot on demand, the frontend price file is gone,
+  and the frontend up-front index is the slim shared `cardMetadata`.
+
+The derived, non-authoritative docs brought into step by implementation (not
+gated separately, per each doc's "on conflict the cited REQ/NFR wins" rule): the
+`CardPrintingPrice` shape and the API/endpoint section in `integrations-and-data.md`,
+the corpus doc `trade-balancer/data/cardPrintingPrices.md`, the "Prices and
+freshness" / "Contract posture" bullets in `trade-balancer/README.md`, the
+`### Printing-price artifact build` entry and the trade-balancer file list in
+`system-map.md`, NFR-019's recorded measured figure, and the NFR-004 echo homes
+(updated together by grep-before-amend per NFR-004's own rule).
 
 ## Where it lives (code touched by implementation)
 
-- `scripts/build-card-prices.mjs` — emit the slim per-printing entries plus the
-  `namesByOracleId` and `setNames` maps.
-- `apps/frontend/src/lib/trade/loadCardPrices.ts` — the slim artifact type, the
-  `derivePrintingImageUrl` helper, and accessor-path rehydration of
-  `name`/`setName`/`imageUrl`.
-- `apps/frontend/src/components/trade/oracleSearch.ts` — read names from
-  `namesByOracleId`.
-- Tests: `loadCardPrices.test.ts`, `pricing.test.ts`, `oracleSearch.test.ts`,
-  `TradeBalancer*.test.tsx` updated to the slim fixtures with reconstruction
-  asserted.
+- `scripts/build-card-detail-by-oracle-id.mjs` — also emit the per-oracle
+  printing-price map; `scripts/build-card-prices.mjs` retired.
+- `apps/backend/src/cardDetail.ts` / `apps/backend/src/routes/cardDetail.ts` (or a
+  sibling price module/route) — load and serve the committed price map.
+- `apps/backend/data/cardPrintingPricesByOracleId.json` — new committed artifact;
+  `apps/frontend/public/data/cardPrintingPrices.json` — deleted.
+- `scripts/build-card-metadata.mjs` — store a representative-printing id and drop
+  the full `imageUrl` string; the loader derives the URL.
+- `apps/frontend/src/lib/trade/loadCardPrices.ts` → replaced/retired by a new
+  `fetchCardPrintings(oracleId)` per-session-cache module (mirrors
+  `apps/frontend/src/lib/cardDetail.ts`); `pricing.ts` unchanged.
+- `apps/frontend/src/components/trade/oracleSearch.ts` and `useTradeScan.ts` —
+  source name/image/colors from `cardMetadata` (the shared index) instead of the
+  deleted price artifact; fetch prices on add.
+- `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx` and
+  `MtgAssistantApp.tsx` — continue reading `cardMetadata`, now with the derived
+  image URL.
+- Tests: trade loader/selector/search/scan and the two metadata consumers updated
+  to the shared-index + backend-fetch shape, with the derived image URL and the
+  $0-plus-caution degrade asserted.

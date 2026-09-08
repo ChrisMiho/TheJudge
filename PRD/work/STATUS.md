@@ -10,6 +10,10 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| Package | Note |
+| --- | --- |
+| [trade-balancer-price-slim](trade-balancer-price-slim/) | Reshaped to the backend-move design (owner pivot): delete the ~38 MB frontend `cardPrintingPrices.json`, serve prices from a committed backend artifact via a price companion to `GET /api/cards/:oracleId`, slim `cardMetadata` as the shared index. Quality-check re-run pending, then re-park at owner-action + update docs PR #211. |
+
 ## refining
 
 ## ideation
@@ -19,7 +23,6 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | [weekly-data-refresh-pr](weekly-data-refresh-pr/) | gate-qc PASS; docs PR open into `main` (REQ-195). Answer the verdict in `GATE-QUESTIONS.md`, then merge the PR to build. |
-| [trade-balancer-price-slim](trade-balancer-price-slim/) | gate-qc PASS; docs PR open into `main`. Step-1 frontend slim of the ~38 MB `cardPrintingPrices.json` (derive `imageUrl` from `id`, dedupe `name`/`setName`, frontend-only). Answer the verdict in `GATE-QUESTIONS.md` (REQ-066, NFR-013), then merge the PR to build; Step-2 backend lookup deferred. |
 
 ## deferred
 

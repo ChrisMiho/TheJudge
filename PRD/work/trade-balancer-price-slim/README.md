@@ -2,12 +2,18 @@ status: refined
 
 # Trade Balancer price artifact slim
 
-Slim the Trade Balancer's committed price artifact (`cardPrintingPrices.json`,
-~38 MB) so the balancer opens fast, by deriving `imageUrl` from the printing
-`id` and reconstructing `name`/`setName` at load time — frontend-only, with a
-backend per-card price lookup only as a fallback if the frontend slim isn't
-enough. See `IDEA.md` for problem/outcome/non-goals and the intake evidence
-this package was seeded from.
+Make the Trade Balancer open fast by moving pricing to the backend and deleting
+the committed ~38 MB frontend price file (`cardPrintingPrices.json`). Prices are
+served from a committed backend artifact on demand (one card at a time, cached
+per session, mirroring the card-detail route), card identity comes from the slim
+shared `cardMetadata` index, and player-facing behavior is unchanged. See
+`DESIGN-BRIEF.md` for the reshaped design and `GATE-QUESTIONS.md` for the
+proposed product-truth amendments.
+
+> **Reshaped 2026-09-07.** This supersedes the earlier frontend-only slim
+> (derive `imageUrl`, reconstruct `name`/`setName`, keep it frontend-only). The
+> owner decided to move pricing to the backend instead; `IDEA.md` and the intake
+> record the original framing.
 
 ## Autonomous metadata
 
@@ -15,6 +21,6 @@ this package was seeded from.
 
 ## Preparation gate
 
-- Quality-check: PASS
+- Quality-check: PENDING (superseded — re-check against the reshaped backend-move design)
 - Checked artifact: `PRD/work/trade-balancer-price-slim/DESIGN-BRIEF.md`
-- Findings: none
+- Findings: (re-check pending)

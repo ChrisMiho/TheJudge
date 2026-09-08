@@ -1,13 +1,13 @@
 # Graph run — trade-balancer-price-slim
 
-- Run ID: `graph-20260907-205625`
-- Profile: `loaded (env sentinel)` (observed by node 1 preflight)
+- Run ID: `graph-20260907-205625` (reshape run `graph-20260907-215845` — owner pivoted the design to the backend move; see the reshape rows below)
+- Profile: `loaded (env sentinel)` (observed by node 1 preflight); reshape run graph canary `denied — graph tier armed (nohup)`
 - Canary: `denied — hook live (rm -rf under .worktrees)`; graph canary `denied — graph tier armed (nohup)`
 - Autonomous base: `origin/thejudge-auto/trade-balancer-price-slim` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-205625/`
-- Current node: `owner-action`
-- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR to `main`; the build half (`graph-implement`) claims the spec from `origin/main`
+- Current node: `gate-qc` (reshape re-check)
+- Next action: re-run quality-check on the reshaped brief, then re-park at `owner-action` and update docs PR #211
 
 ## Node ledger
 
@@ -17,6 +17,8 @@
 | 2 | shape | sonnet | ok | `0 → 27` | package `PRD/work/trade-balancer-price-slim/` created (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF-size.md verbatim copy); 10 prior-run receipt matches recorded in IDEA.md; STATUS.md board row added under ideation | 2026-09-07 |
 | 3 | define | opus | ok | `0 → 38` | DESIGN-BRIEF.md (Step-1 frontend slim, committed design; Step-2 backend move deferred) and GATE-QUESTIONS.md (2 stable-id blocks: REQ-066, NFR-013, each with plain-language lines + complete diff + verdict slot; Blocker questions: None) written; STATUS.refined; PRD/sections untouched | 2026-09-07 |
 | 4 | gate-qc | sonnet | ok (PASS) | `0 → 22` | quality-check PASS on DESIGN-BRIEF.md, findings none; verified brief premise against loadCardPrices.ts / oracleSearch.ts / build-card-prices.mjs and the REQ-066 / NFR-013 diffs against current section text; run stops here (first PASS) | 2026-09-07 |
+| 3R | define (reshape) | opus | ok | `0 → 54` | owner pivoted the design (frontend slim → backend move). DESIGN-BRIEF.md and GATE-QUESTIONS.md rewritten: prices served from a committed backend artifact via a price companion to `GET /api/cards/:oracleId`, ~38 MB frontend `cardPrintingPrices.json` deleted, slim `cardMetadata` as the shared identity index. 9 stable-id blocks (REQ-064/065/066/174/175, FLOW-009, FLOW-025 new, NFR-004/013) + Blocker BLOCK-01 (endpoint shape fork); STATUS.refined; PRD/sections untouched | 2026-09-07 |
+| 4R | gate-qc (reshape) | sonnet | pending | — | re-check of the reshaped backend-move brief | 2026-09-07 |
 
 ## Open gate
 
@@ -112,8 +114,25 @@ Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no m
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 
+### define (reshape)
+
+graph is controlling.
+
+You are the `define` node of a graph-kickoff RESHAPE run (run id graph-20260907-215845). The package already has a DESIGN-BRIEF and GATE-QUESTIONS for a frontend-only slim. The owner has since decided a different design and you are rewriting both to it. Invoke the `thejudge-refinement` skill in graph-controlled mode: propose product truth in GATE-QUESTIONS.md, never edit PRD/sections.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim
+
+THE OWNER'S DECISION (supersedes the intake's ship-Step-1-first recommendation): do not ship the frontend-only slim. Move pricing to the backend and delete the committed frontend price file. Serve balancer prices from the existing card-detail backend route as a SEPARATE field/sub-resource (not merged into the rules payload); unify the price/printing trim with the existing card-detail build over the one committed Scryfall source; make a slim cardMetadata (imageUrl derived from id) the single shared unique-card index used by both flows; delete the ~38 MB frontend price file; the balancer fetches a card's printings+prices from the backend on add and caches per session; a scan resolves oracle via the existing scan map. This reverses DEC-087 and touches NFR-013; propose REQ/FLOW/NFR amendments, never a new DEC.
+
+Preserve: null price still renders the $0-plus-caution state; the printing picker still disambiguates by set, collector number, and a working image; mock-default local dev keeps working with committed backend data and no live network call; do not entangle the weekly freshness script beyond noting its price target changes. Investigate the real code (card-detail route/index, the build scripts, the trade loader/search, the scan flow) and read current PRD/sections truth before proposing.
+
+Produce (rewriting): DESIGN-BRIEF.md for the backend-move design; GATE-QUESTIONS.md with one section block per stable id (three plain-language lines, complete diff, accept/edit/reject slots) and a trailing Blocker questions section for genuine forks. Set STATUS.refining while shaping and STATUS.refined when complete. Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no Scryfall refresh. Committing left to the driver.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | Slim the Trade Balancer price artifact so the balancer opens fast — derive imageUrl from id and reconstruct name/setName, keeping it frontend-only, with a backend per-card lookup only if slimming is not enough | answered-once | shape | — |
+| Owner pivot (reshape run): move pricing to the backend and delete the frontend price file, reusing the card-detail route for prices and a slim cardMetadata as the shared index | answered-once | define (reshape) | — |
