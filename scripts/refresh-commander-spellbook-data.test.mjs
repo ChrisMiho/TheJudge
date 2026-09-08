@@ -19,8 +19,10 @@ import {
   fetchJsonWithRetry,
   parseRefreshArgs,
   parseRetryAfterMs,
+  performCommanderSpellbookRefresh,
   SCRYFALL_REQUEST_DELAY_MS
 } from "./refresh-commander-spellbook-data.mjs"
+import { combosNeedRefresh, hashTemplateSet, writeComboSourceMarker, readComboSourceMarker } from "./lib/combo-source-marker.mjs"
 
 /** Minimal stand-in for the parts of `Response` the retry loop touches. */
 function response(status, { body = {}, headers = {} } = {}) {
@@ -283,4 +285,71 @@ test("after a throttle, each retry waits at least its backoff floor and grows (n
 
 test("SCRYFALL_REQUEST_DELAY_MS stays at 200 (5 req/s pacing)", () => {
   assert.equal(SCRYFALL_REQUEST_DELAY_MS, 200)
+})
+
+// ---- Slice D: hash-gated combo reuse ----
+
+const GATE_EXPORT = Buffer.from(
+  JSON.stringify({
+    timestamp: "2026-09-08T00:00:00Z",
+    version: "6.4.0",
+    variants: [{ id: "v1", requires: [{ template: { id: 5, name: "Persist", scryfallApi: "https://api.scryfall.com/q1" } }] }]
+  })
+)
+const GATE_TEMPLATE_HASH = hashTemplateSet([{ templateId: 5, scryfallApi: "https://api.scryfall.com/q1" }])
+
+test("performCommanderSpellbookRefresh: matching hashes skip the expansion and leave raw inputs untouched", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "combo-gate-"))
+  const rawDir = path.join(dir, "raw")
+  const stageDir = path.join(dir, "stage")
+  let expandCalls = 0
+
+  const result = await performCommanderSpellbookRefresh({
+    cardIdentityHash: "CARD",
+    fetchBytes: async () => GATE_EXPORT,
+    expandTemplates: async () => {
+      expandCalls += 1
+      return { resolved: 1, unresolved: 0 }
+    },
+    readMarker: () => ({ cardIdentityHash: "CARD", templateSetHash: GATE_TEMPLATE_HASH }),
+    rawDir,
+    stageDir
+  })
+
+  assert.equal(result.skipped, true)
+  assert.equal(expandCalls, 0, "no template expansion on a skip")
+  assert.equal(fs.existsSync(rawDir), false, "raw inputs not swapped in on a skip")
+  assert.equal(fs.existsSync(stageDir), false, "staging cleaned up on a skip")
+  fs.rmSync(dir, { recursive: true, force: true })
+})
+
+test("performCommanderSpellbookRefresh: a changed hash runs the full expansion and yields marker-closing hashes", async () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), "combo-gate-"))
+  const rawDir = path.join(dir, "raw")
+  const stageDir = path.join(dir, "stage")
+  let expandCalls = 0
+
+  const result = await performCommanderSpellbookRefresh({
+    cardIdentityHash: "CARD",
+    fetchBytes: async () => GATE_EXPORT,
+    expandTemplates: async () => {
+      expandCalls += 1
+      return { resolved: 1, unresolved: 0 }
+    },
+    readMarker: () => ({ cardIdentityHash: "OLD", templateSetHash: "OLD" }),
+    rawDir,
+    stageDir
+  })
+
+  assert.equal(result.skipped, false)
+  assert.equal(expandCalls, 1, "full expansion runs on a change")
+  assert.equal(result.cardIdentityHash, "CARD")
+  assert.equal(result.templateSetHash, GATE_TEMPLATE_HASH)
+  assert.equal(fs.existsSync(path.join(rawDir, "variants.json")), true, "raw inputs swapped in on a refresh")
+
+  // Writing the marker from the refresh result closes the gate for the next run.
+  const markerPath = path.join(dir, "marker.json")
+  writeComboSourceMarker(markerPath, result)
+  assert.equal(combosNeedRefresh(readComboSourceMarker(markerPath), result), false)
+  fs.rmSync(dir, { recursive: true, force: true })
 })

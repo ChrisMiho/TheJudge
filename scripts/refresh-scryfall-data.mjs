@@ -6,7 +6,8 @@ import { Readable, Transform } from "node:stream";
 import { spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
-import { performCommanderSpellbookRefresh } from "./refresh-commander-spellbook-data.mjs";
+import { COMBO_SOURCE_MARKER_PATH, performCommanderSpellbookRefresh } from "./refresh-commander-spellbook-data.mjs";
+import { hashCardIdentityFile, writeComboSourceMarker } from "./lib/combo-source-marker.mjs";
 
 const bulkDataEndpoint = "https://api.scryfall.com/bulk-data";
 const sourceOutputPath = path.resolve("apps/frontend/data/scryfall/default-cards.json");
@@ -280,18 +281,29 @@ async function main() {
     console.warn(`Warning: skipped WotC Comprehensive Rules download. ${error.message}`);
   }
 
+  // REQ-196: the combo refresh is hash-gated. The card-identity hash — the set of
+  // oracle ids in the freshly downloaded card pool — is one half of the gate; the
+  // combo refresh computes the template-set hash and decides whether to re-run the
+  // throttle-prone Scryfall template expansion or reuse the committed artifacts.
+  const cardIdentityHash = await hashCardIdentityFile(sourceOutputPath);
+
   // DEC-162: invoking `npm run data:refresh` is itself REQ-093's explicit human
   // approval for the Commander Spellbook combo download, exactly as it already is
   // for the two downloads above — no second `--confirm-live-calls` gate here. The
   // standalone `data:refresh-combos` script keeps that flag for direct invocation.
+  let comboResult = null;
   try {
     console.log("Refreshing Commander Spellbook combo data...");
-    const { variantCount, resolvedTemplateCount, unresolvedTemplateCount } = await performCommanderSpellbookRefresh();
-    successfulDownloads += 1;
-    console.log(
-      `Commander Spellbook refresh complete: ${variantCount} variants, ` +
-        `${resolvedTemplateCount} templates resolved, ${unresolvedTemplateCount} unresolved.`
-    );
+    comboResult = await performCommanderSpellbookRefresh({ cardIdentityHash });
+    if (comboResult.skipped) {
+      console.log("Commander Spellbook combos unchanged; reused committed artifacts.");
+    } else {
+      successfulDownloads += 1;
+      console.log(
+        `Commander Spellbook refresh complete: ${comboResult.variantCount} variants, ` +
+          `${comboResult.resolvedTemplateCount} templates resolved, ${comboResult.unresolvedTemplateCount} unresolved.`
+      );
+    }
   } catch (error) {
     console.warn(`Warning: skipped Commander Spellbook combo download. ${error.message}`);
   }
@@ -303,6 +315,14 @@ async function main() {
 
   console.log("Running data transforms (npm run data:build)...");
   await runDataBuild();
+
+  // REQ-196: write the combo source marker only after a successful build, so the
+  // marker and the committed combo artifacts always agree. A build failure above
+  // throws before this line, leaving the marker untouched.
+  if (comboResult && !comboResult.skipped && comboResult.cardIdentityHash && comboResult.templateSetHash) {
+    writeComboSourceMarker(COMBO_SOURCE_MARKER_PATH, comboResult);
+    console.log(`Wrote combo source marker: ${COMBO_SOURCE_MARKER_PATH}`);
+  }
 
   if (!fs.existsSync(metadataOutputPath)) {
     throw new Error(`Expected output metadata was not found: ${metadataOutputPath}`);

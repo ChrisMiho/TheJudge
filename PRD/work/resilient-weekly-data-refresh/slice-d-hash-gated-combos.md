@@ -1,6 +1,6 @@
 # Slice D — Hash-gated combo reuse (final)
 
-## Status: planned
+## Status: done
 
 ## Goal
 

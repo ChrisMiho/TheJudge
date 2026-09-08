@@ -4605,7 +4605,13 @@
   approval the upstream Scryfall/Comprehensive-Rules/combo download requires
   (REQ-093, DEC-162). Merging the resulting pull request and deploying is what
   moves the player-visible `Prices as of <date>` freshness line (REQ-145)
-  forward.
+  forward. Fresh card prices are the headline: if the upstream card/rulings
+  bulk download fails, the run is a hard failure that opens no pull request
+  rather than a misleading one. The Commander Spellbook combo corpus — which
+  changes only when new cards release or a new combo template appears, while
+  prices change weekly — is refreshed only when the card-identity set or the
+  combo template set changed; otherwise the run reuses the committed combo
+  artifact and skips the combo rebuild (REQ-196).
 - Acceptance Criteria:
   - one npm script (`data:refresh-pr`, running `scripts/refresh-and-open-pr.mjs`)
     runs the existing refresh-and-build pipeline and reimplements no download
@@ -4618,9 +4624,15 @@
     the changed artifacts with a dated message, pushes the branch, and opens a
     pull request to `main` via `gh pr create`, printing the PR URL
   - when nothing changed, exits cleanly with no branch, no commit, and no PR
-  - preserves graceful degradation — a failed or missing upstream source keeps
-    the prior committed artifact (REQ-066) and the wrapper never commits an
-    empty or broken refresh
+  - a failed `default_cards`/`rulings` bulk download is a hard failure: the run
+    exits non-zero, cuts no branch, commits nothing, and opens no pull request
+    (never a stale or misleading one)
+  - reuses the committed Commander Spellbook combo artifact when neither the
+    card-identity set nor the combo template set changed, refreshing combos only
+    when one of them did (REQ-196); the wrapper still never commits an empty or
+    broken refresh
+  - runtime graceful degradation is unchanged — the running app still fails open
+    on a missing or malformed committed artifact (REQ-066)
   - fails clearly when `gh` is unauthenticated rather than half-completing
 - Constraints:
   - local and owner-invoked only; no CI cron and no unattended network download
@@ -4652,3 +4664,56 @@
     (`build-card-detail-by-oracle-id.mjs`, REQ-066/REQ-175), a few MB rather
     than tens, so per-refresh git-history churn is far smaller than the gate-time
     estimate assumed
+  - the original "every corpus fresh weekly" scope is amended by REQ-196: cards,
+    rulings, and rules still refresh every run, but combos are hash-gated (reused
+    unless the card-identity set or the combo template set changed) to avoid
+    re-running the throttle-prone Scryfall template expansion every week
+
+### REQ-196
+- Title: Hash-gated Commander Spellbook combo reuse in the weekly refresh
+- Priority: medium
+- Description: The weekly data refresh (REQ-195) refreshes the Commander
+  Spellbook combo corpus only when its build inputs changed, detected by two
+  content hashes stored in a committed marker: (1) a card-identity hash over the
+  sorted set of Scryfall `oracle_id`s in the freshly downloaded `default_cards`,
+  and (2) a template-set hash over the sorted set of distinct combo templates
+  (id + Scryfall query) in the variant export. Both are byproducts of data the
+  run already downloads. When both hashes match the marker, the run reuses the
+  committed combo artifacts unchanged and skips the Scryfall template expansion
+  and combo rebuild entirely; when either differs, it runs a full re-expansion of
+  every template — old and new, because existing templates gain new cards — then
+  rebuilds the combo artifacts and rewrites the marker. Volatile fields (prices,
+  popularity, the export timestamp) are excluded from both hashes, so weekly price
+  churn never triggers a rebuild. Cards, rulings, and Comprehensive Rules still
+  refresh every run; only combos are gated. Mirrors the rule-embeddings "rebuild
+  only when a content hash differs" behavior. No runtime change (NFR-013).
+- Acceptance Criteria:
+  - a committed marker records the card-identity hash and the template-set hash
+    the committed combo artifacts were built from
+  - when both hashes match the freshly downloaded inputs, the run performs no
+    Scryfall template expansion and no combo rebuild, and leaves
+    `commanderSpellbookCombos.json.gz` / `commanderSpellbookComboIndex.json.gz`
+    byte-unchanged (so nothing is staged for them)
+  - when either hash differs, the run performs a full re-expansion of every
+    template (not an incremental subset) and rewrites the marker
+  - a price-only card update (same `oracle_id` set) does not trigger a combo
+    rebuild; a new set (new `oracle_id`s) or a new template does
+  - the hashes exclude volatile fields (prices, popularity, regeneration
+    timestamp); the gate never skips on a wall-clock interval
+  - refreshing combos remains an explicit human-approved network operation
+    (REQ-093, DEC-162)
+- Constraints:
+  - touches no runtime code path; runtime combo matching is unchanged
+  - the marker is a committed sidecar; the raw export and template-expansion
+    responses stay gitignored (DEC-162)
+  - if either hash cannot be computed, treat it as changed and run the full
+    refresh — never skip on missing or unreadable inputs
+- Dependencies:
+  - REQ-195 (the weekly refresh this gates a step within)
+  - DEC-162 (Commander Spellbook bulk-export sourcing and human approval)
+- Notes:
+  - the throttle motivation: a full combo rebuild fires ~200 per-template
+    Scryfall search calls and is rate-limited; gating avoids paying that weekly
+  - the card-identity hash is the true determinant of template-expansion output
+    (the searches run against the Scryfall card pool); the template-set hash
+    covers Commander Spellbook adding a category without new cards

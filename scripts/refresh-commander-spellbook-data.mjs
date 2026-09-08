@@ -3,9 +3,21 @@ import path from "node:path"
 import { pathToFileURL } from "node:url"
 
 import { streamJsonArrayObjects } from "./lib/stream-json-array.mjs"
+import {
+  combosNeedRefresh,
+  hashCardIdentityFile,
+  hashTemplateSet,
+  readComboSourceMarker,
+  writeComboSourceMarker
+} from "./lib/combo-source-marker.mjs"
 
 const rawInputDir = path.resolve("apps/backend/data/commander-spellbook")
 const stagingDir = `${rawInputDir}.tmp`
+
+// REQ-196: committed marker recording the hashes the combo artifacts were built
+// from, and the Scryfall card pool the template expansions were resolved against.
+export const COMBO_SOURCE_MARKER_PATH = path.resolve("apps/backend/data/commanderSpellbookComboSource.meta.json")
+const defaultCardsPath = path.resolve("apps/frontend/data/scryfall/default-cards.json")
 
 /**
  * DEC-162: the bulk export replaces the paginated REST walk entirely, not just
@@ -288,21 +300,30 @@ export function describePlan() {
  * chain ungated by a second confirmation flag, exactly like the Scryfall and
  * Comprehensive Rules downloads already do there.
  */
-export async function performCommanderSpellbookRefresh() {
+export async function performCommanderSpellbookRefresh({
+  cardIdentityHash = null,
+  markerPath = COMBO_SOURCE_MARKER_PATH,
+  fetchBytes = () =>
+    fetchBufferWithRetry(BULK_EXPORT_URL, {
+      onRetry: ({ status, attempt, waitMs }) =>
+        console.warn(`HTTP ${status}; retry ${attempt}/${MAX_FETCH_ATTEMPTS - 1} in ${waitMs} ms.`)
+    }),
+  expandTemplates = downloadTemplateExpansions,
+  readMarker = readComboSourceMarker,
+  rawDir = rawInputDir,
+  stageDir = stagingDir
+} = {}) {
   // Stage the whole refresh, then swap. A failed or partial run leaves the previous
   // raw inputs — and therefore the committed artifacts — untouched.
-  fs.rmSync(stagingDir, { recursive: true, force: true })
-  ensureDirectory(stagingDir)
+  fs.rmSync(stageDir, { recursive: true, force: true })
+  ensureDirectory(stageDir)
 
-  const bytes = await fetchBufferWithRetry(BULK_EXPORT_URL, {
-    onRetry: ({ status, attempt, waitMs }) =>
-      console.warn(`HTTP ${status}; retry ${attempt}/${MAX_FETCH_ATTEMPTS - 1} in ${waitMs} ms.`)
-  })
+  const bytes = await fetchBytes()
 
   // Written as raw bytes — never converted to a JS string — because the real
   // document (~634MB decompressed, measured 2026-08-22) exceeds V8's max
   // string length. Everything downstream reads it back by streaming.
-  const variantsPath = path.join(stagingDir, "variants.json")
+  const variantsPath = path.join(stageDir, "variants.json")
   fs.writeFileSync(variantsPath, bytes)
   const { timestamp, version } = extractEnvelopeMetadata(bytes)
 
@@ -320,7 +341,33 @@ export async function performCommanderSpellbookRefresh() {
     throw new Error(`Unexpected Commander Spellbook bulk export response shape at ${BULK_EXPORT_URL}: no variants found.`)
   }
 
-  const { resolved, unresolved } = await downloadTemplateExpansions(templates, path.join(stagingDir, "template-expansions"))
+  // REQ-196: skip the throttle-prone Scryfall template expansion when neither the
+  // card pool (`cardIdentityHash`) nor the template set changed since the committed
+  // artifacts were built. The variant export download above is cheap and unthrottled;
+  // only the per-template searches are, so gating them is the whole win. On a skip we
+  // discard the staged export and leave the prior raw inputs (and committed .gz)
+  // untouched — a later `data:build` preserves or deterministically rebuilds them.
+  const templateSetHash = hashTemplateSet(templates)
+  const marker = readMarker(markerPath)
+  if (!combosNeedRefresh(marker, { cardIdentityHash, templateSetHash })) {
+    fs.rmSync(stageDir, { recursive: true, force: true })
+    console.log(
+      "Commander Spellbook combos unchanged (card-identity + template-set hashes match the marker); " +
+        "reusing committed artifacts and skipping the template expansion."
+    )
+    return {
+      skipped: true,
+      variantCount,
+      resolvedTemplateCount: null,
+      unresolvedTemplateCount: null,
+      cardIdentityHash,
+      templateSetHash,
+      exportVersion: version,
+      exportTimestamp: timestamp
+    }
+  }
+
+  const { resolved, unresolved } = await expandTemplates(templates, path.join(stageDir, "template-expansions"))
 
   const manifest = {
     // The bulk document's own timestamp/version satisfy REQ-093's snapshot
@@ -335,16 +382,25 @@ export async function performCommanderSpellbookRefresh() {
     resolvedTemplateCount: resolved,
     unresolvedTemplateCount: unresolved
   }
-  fs.writeFileSync(path.join(stagingDir, "refresh-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`)
+  fs.writeFileSync(path.join(stageDir, "refresh-manifest.json"), `${JSON.stringify(manifest, null, 2)}\n`)
 
-  fs.rmSync(rawInputDir, { recursive: true, force: true })
-  fs.renameSync(stagingDir, rawInputDir)
+  fs.rmSync(rawDir, { recursive: true, force: true })
+  fs.renameSync(stageDir, rawDir)
 
-  console.log(`Refresh complete: ${variantCount} raw variants from the bulk export into ${rawInputDir}.`)
+  console.log(`Refresh complete: ${variantCount} raw variants from the bulk export into ${rawDir}.`)
   console.log(`Templates: ${resolved} resolved, ${unresolved} unresolved.`)
   console.log("Next: node scripts/build-commander-spellbook-combos.mjs")
 
-  return { variantCount, resolvedTemplateCount: resolved, unresolvedTemplateCount: unresolved }
+  return {
+    skipped: false,
+    variantCount,
+    resolvedTemplateCount: resolved,
+    unresolvedTemplateCount: unresolved,
+    cardIdentityHash,
+    templateSetHash,
+    exportVersion: version,
+    exportTimestamp: timestamp
+  }
 }
 
 async function main() {
@@ -355,7 +411,13 @@ async function main() {
     return
   }
 
-  await performCommanderSpellbookRefresh()
+  // Standalone `data:refresh-combos`: gate on the local card pool if present.
+  const cardIdentityHash = fs.existsSync(defaultCardsPath) ? await hashCardIdentityFile(defaultCardsPath) : null
+  const result = await performCommanderSpellbookRefresh({ cardIdentityHash })
+  if (!result.skipped) {
+    writeComboSourceMarker(COMBO_SOURCE_MARKER_PATH, result)
+    console.log(`Wrote combo source marker: ${COMBO_SOURCE_MARKER_PATH}`)
+  }
 }
 
 const invokedPath = process.argv[1] ? pathToFileURL(process.argv[1]).href : ""
