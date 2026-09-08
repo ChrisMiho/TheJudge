@@ -22,13 +22,31 @@
 | 4F1 | gate-qc (run graph-20260907-232105, attempt 1) | sonnet | failed (FAIL) | `0 → 25` | clean re-check (no fan-out, 23 calls). 7 diffs verified against live PRD text, Lambda-budget/price-contract/shared-index/BLOCK-01 all confirmed against real code. One FAIL: NFR-014 (authoritative) still named the deleted `cardPrintingPrices.json` lazy-load with no gate block | 2026-09-07 |
 | 3F1 | define fix (driver, run graph-20260907-232105) | — | ok | driver-bookkeeping | grepped the full amendment set across PRD/sections (narrative docs already in the build-time-update list; FLOW-009 covered; DEC-088 retired) — NFR-014 was the one authoritative miss; added a tenth GATE-QUESTIONS block correcting line 230 | 2026-09-07 |
 | 4F2 | gate-qc (run graph-20260907-232105, attempt 2) | sonnet | ok (PASS) | `0 → 13` | re-check after the NFR-014 fix: the tenth block's diff `-` line is byte-identical to live NFR-014 line 230, `+` drops the deleted-file reference and keeps `cardhashes.bin`/NFR-010; amendment-set sweep confirms no other orphaned authoritative reference; 10 blocks, summary consistent. Findings none | 2026-09-07 |
+| GR | gate-review (build half, run graph-20260907-235620) | sonnet | ok | degraded (stale run-state left `graph-20260907-232105/driver-bookkeeping/3`, so this run's key never advanced and the 13 calls were misattributed to the finished kickoff run; the run-start canary `nohup true` denied is the binding liveness proof; run-state refreshed to this run before gate-qc) | 10/10 stable-id verdicts accept + BLOCK-01 = A applied inside GATE-QUESTIONS.md (no diff changed); `## Gate verdicts` and resolved `## Open gate` written; STATUS.refined restored (marker, README, PRD/work/STATUS.md board row) | 2026-09-08 |
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-064` | accept | — |
+| `REQ-065` | accept | — |
+| `REQ-066` | accept | — |
+| `REQ-174` | accept | — |
+| `REQ-175` | accept | — |
+| `FLOW-009` | accept | — |
+| `FLOW-025` | accept | — |
+| `NFR-004` | accept | "Required by the chosen endpoint option (BLOCK-01 = A, the sibling `/prices` route)." |
+| `NFR-013` | accept | — |
+| `NFR-014` | accept | — |
+| `BLOCK-01` | A | "Dedicated read-only route `GET /api/cards/:oracleId/prices` — cleanest contract, keeps the answer path carrying zero price bytes, mirrors the existing card-detail route. Owner's choice; the NFR-004 amendment above is accepted as its consequence." |
+
+All ten stable-id blocks accept as refinement wrote them; no proposed diff changed. BLOCK-01 resolved to Option A (the sibling read-only route), which is what the accepted REQ-175 and NFR-004 diffs were already authored for.
 
 ## Open gate
 
-- State: PARKED at `owner-action`, gate-qc PASS on the backend-move design. All ten amendment blocks (REQ-064/065/066/174/175, FLOW-009, FLOW-025, NFR-004/013/014) and BLOCK-01 are answered in `GATE-QUESTIONS.md`, pre-filled per the owner's stated decision: **accept all ten + BLOCK-01 = A** (the sibling `/api/cards/:oracleId/prices` route).
-- Owner action: review PR #211 and merge to `main`. One thing to confirm before merging: **NFR-014** was added *after* the owner's accept-all instruction (it is the gate's consistency fix for a doc naming the deleted price file), recorded as `accept` with a flag — change its verdict if you disagree, otherwise it is ready. Merging is the build signal.
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/211 (docs-only, base `main`, head `thejudge-auto/trade-balancer-price-slim`) — body updated to the backend-move design with the recorded verdicts.
-- Resume: no `/graph-kickoff` resume needed. After merge, the build half `graph-implement` claims the spec from `origin/main`, applies the answered proposal (build-time constraint: the Lambda budget test must pass with the price map, REQ-066), and opens the code PR.
+- State: RESOLVED 2026-09-07. 10 stable-id verdicts + 1 blocker verdict, all accept/A — no proposal diff changed. Gate-qc PASS on the backend-move design stands. Status restored: `STATUS.refined` (marker, README, and the `PRD/work/STATUS.md` board row under `## refined`).
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/211 (docs-only, base `main`, head `thejudge-auto/trade-balancer-price-slim`) — merged 2026-09-08, the owner's build signal.
+- Resume: `/graph-implement PRD/work/trade-balancer-price-slim/` re-enters at `gate-qc` (build-time constraint: the Lambda budget test must pass with the price map, REQ-066), then plan → build → review → close.
 
 ## Dispatch prompts
 
@@ -160,6 +178,24 @@ Package: PRD/work/trade-balancer-price-slim/ (inside that worktree). Read GATE-Q
 The owner's recorded answers: all ten stable-id blocks (REQ-064/065/066/174/175, FLOW-009, FLOW-025, NFR-004/013/014) = accept; BLOCK-01 = A (the sibling read-only route `GET /api/cards/:oracleId/prices`). Apply each verdict inside its own block only. Since every verdict is accept, no diff changes; a reject would burn its id. Then write `## Gate verdicts`, mark `## Open gate` resolved with the date and verdict count, and restore STATUS.refined, the README status field, and the PRD/work/STATUS.md board row to the refined position so the resumed run enters at gate-qc.
 
 Boundaries: never edit PRD/sections; never write DESIGN-BRIEF/GAMEPLAN/slice docs; never advance a node or dispatch a subagent; no merge/close/force-push, no git add -A. Committing is the driver's job.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### gate-qc (build half, run graph-20260907-235620)
+
+graph is controlling.
+
+You are node 4 (`gate-qc`) of the build half, re-grading the finalized proposal after the owner's verdicts were applied (all ten accept, BLOCK-01 = A). Invoke `thejudge-quality-check` in graph-controlled (non-interactive) mode. Produce a PASS/FAIL report only — never a GAMEPLAN or slice docs.
+
+HARD CONSTRAINTS (a prior gate-qc attempt self-DoS'd by fanning out): verify YOURSELF with Read/Grep/Bash; do NOT spawn any subagents, Agents, Tasks, or forks; no sleeping/polling; stay well under 60 tool calls.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-price-slim
+
+Validate (inside that worktree) PRD/work/trade-balancer-price-slim/DESIGN-BRIEF.md (backend-move design) against PRD/work/trade-balancer-price-slim/GATE-QUESTIONS.md (10 stable-id blocks + resolved BLOCK-01 = A) for PRD alignment and agent-readiness. The proposal was quality-checked to PASS in the kickoff half (ledger row 4F2) and every verdict is accept, so nothing in the proposal changed at gate-review; confirm that still holds. Spot-check the load-bearing diffs apply cleanly against current PRD/sections text; confirm the Lambda-budget acceptance criterion on REQ-066 is real (apps/backend/data ships in the zip per package-lambda.sh; the 250 MB quota is enforced by lambda-package-budget.test.mjs); confirm the price payload stays a separate sub-resource (BLOCK-01 = A, `GET /api/cards/:oracleId/prices`) so the answer path carries no price bytes; confirm cardMetadata serves both flows; confirm preserved behavior (null price renders $0-plus-caution, printing picker disambiguates, mock-default dev works); confirm NFR-014 no longer names the deleted price file. PRD/sections is intentionally untouched (applied at build) — do not fail the brief for that.
+
+On FAIL set STATUS.refining and list the complete findings (the run loops back to define). On PASS report PASS with findings none and do not advance yourself — the driver continues to plan.
+
+Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no spawning any agent. Leave committing to the driver.
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 
