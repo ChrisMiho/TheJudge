@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CardMetadataItem } from "../../../types";
 import { NO_MATCH_COPY } from "../../../lib/search";
+import { deriveCardImageUrl } from "../../../lib/cardImage";
 import { toCardDetail, toSlimMetadata, type CardFixture } from "../../../test/appTestHelpers";
 import { QuickLookupApp } from "./QuickLookupApp";
 
@@ -10,7 +11,7 @@ const lightningBolt: CardFixture = {
   cardId: "oracle-lightning-bolt",
   name: "Lightning Bolt",
   oracleText: "Lightning Bolt deals 3 damage to any target.",
-  imageUrl: "https://cards.example/lightning-bolt.jpg",
+  imageId: "lightning-bolt-fixture-id",
   manaCost: "{R}",
   manaValue: 1,
   typeLine: "Instant",
@@ -23,7 +24,7 @@ const counterspell: CardFixture = {
   cardId: "oracle-counterspell",
   name: "Counterspell",
   oracleText: "Counter target spell.",
-  imageUrl: "https://cards.example/counterspell.jpg",
+  imageId: "counterspell-fixture-id",
   manaCost: "{U}{U}",
   manaValue: 2,
   typeLine: "Instant",
@@ -37,7 +38,7 @@ function simpleCard(cardId: string, name: string): CardFixture {
     cardId,
     name,
     oracleText: `${name} oracle text.`,
-    imageUrl: `https://cards.example/${cardId}.jpg`,
+    imageId: `${cardId}-fixture-id`,
     manaCost: "{1}",
     manaValue: 1,
     typeLine: "Instant",
@@ -134,9 +135,11 @@ function cardDetailResponseFor(
 }
 
 /** REQ-176: the wire request carries only identity + image now — the
- * descriptive block is resolved server-side by cardId. */
+ * descriptive block is resolved server-side by cardId. REQ-174/Slice C: the
+ * wire's `imageUrl` is derived from `CardMetadataItem`'s `imageId`, the same
+ * way `buildLookupAskAiRequest` derives it. */
 function toWireCard(card: CardMetadataItem): { cardId: string; name: string; imageUrl?: string } {
-  return { cardId: card.cardId, name: card.name, imageUrl: card.imageUrl };
+  return { cardId: card.cardId, name: card.name, imageUrl: deriveCardImageUrl(card.imageId) };
 }
 
 function appFetchMock(

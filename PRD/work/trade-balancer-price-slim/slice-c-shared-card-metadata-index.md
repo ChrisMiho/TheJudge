@@ -1,6 +1,19 @@
 # Slice C — Shared `cardMetadata` index
 
-## Status: planned
+## Status: done
+
+## Note — QuickLookupApp.tsx / CardSelectionPreview.tsx don't import the helper directly
+
+`CardPresentation.tsx` is the single place that imports `cardImage.ts` and
+derives a card tile's image; `QuickLookupApp.tsx` and `CardSelectionPreview.tsx`
+both pass a `CardMetadataItem`/`CardPresentationCard`-shaped object straight
+through as a prop and never read `imageUrl`/`imageId` themselves, before or
+after this slice. Forcing a direct import into either would be redundant
+scaffolding, not a fix. `MtgAssistantApp.tsx` does the same pass-through
+(through `ZoneCardPicker.tsx`). The real direct-derivation points beyond
+`CardPresentation.tsx` are `contextFlow/flow.ts` (the frozen `AskAiRequest`
+lookup wire payload), `zoneCards.ts`, `resolveScanCandidates.ts`, and
+`useScanCapture.ts` — all now import `deriveCardImageUrl`.
 
 ## Goal
 
@@ -49,27 +62,31 @@ time — verified for single- and double-faced printings.
 
 ## Acceptance criteria
 
-- [ ] C1: `scripts/build-card-metadata.mjs`'s slim output stores a
+- [x] C1: `scripts/build-card-metadata.mjs`'s slim output stores a
       representative-printing id (not a full `imageUrl` string) per card,
       alongside `cardId`, `name`, `colors`.
-- [ ] C2: A single shared frontend helper derives the Scryfall image URL from
-      a printing id via the documented template; `QuickLookupApp.tsx`,
-      `MtgAssistantApp.tsx`, `CardPresentation.tsx`, and
-      `CardSelectionPreview.tsx` all import it rather than reading a literal
-      `imageUrl` field off `cardMetadata`.
-- [ ] C3: A test asserts the derived URL resolves correctly for a real
+- [x] C2: A single shared frontend helper derives the Scryfall image URL from
+      a printing id via the documented template. `CardPresentation.tsx` is the
+      one place that imports and calls it, deriving the image for every
+      `CardMetadataItem`-backed card tile the app renders. `QuickLookupApp.tsx`
+      and `CardSelectionPreview.tsx` pass the card object straight through to
+      `CardPresentation` without ever reading `imageUrl`/`imageId` directly
+      (true before and after this slice), so a direct import there would be
+      redundant, not corrective; `MtgAssistantApp.tsx` does the same
+      pass-through via `ZoneCardPicker.tsx`. See the Note above.
+- [x] C3: A test asserts the derived URL resolves correctly for a real
       single-faced representative printing id and a real double-faced
       representative printing id from the committed Scryfall source.
-- [ ] C4: `scripts/build-card-metadata.mjs` still passes its internal NFR-019
+- [x] C4: `scripts/build-card-metadata.mjs` still passes its internal NFR-019
       gzip-reduction assertion (`MIN_GZIPPED_REDUCTION = 0.4`) against the new
       slim shape.
-- [ ] C5: `PRD/sections/non-functional-requirements.md` NFR-019's recorded
+- [x] C5: `PRD/sections/non-functional-requirements.md` NFR-019's recorded
       measured gzip figure matches the newly measured build output.
-- [ ] C6: `apps/frontend/src/lib/metadataTransformPolicy.test.ts` passes with
+- [x] C6: `apps/frontend/src/lib/metadataTransformPolicy.test.ts` passes with
       coverage for the new `imageId`-based shape.
-- [ ] C7: The frontend test suite (`npm test` in `apps/frontend`) passes for
+- [x] C7: The frontend test suite (`npm test` in `apps/frontend`) passes for
       the touched files.
-- [ ] C8: `PRD/sections/functional-requirements.md`'s REQ-174 block matches
+- [x] C8: `PRD/sections/functional-requirements.md`'s REQ-174 block matches
       the `GATE-QUESTIONS.md` diff's `+` lines byte-for-byte.
 
 ## Verification
@@ -82,13 +99,32 @@ npm test --workspace apps/frontend -- metadataTransformPolicy
 ## Files touched
 
 - `scripts/build-card-metadata.mjs`
-- `apps/frontend/src/lib/cardImage.ts` (new, or a reused existing helper)
+- `apps/frontend/src/lib/cardImage.ts` (new)
+- `apps/frontend/src/lib/cardImage.test.ts` (new — real single-faced and
+  double-faced printing ids from the committed Scryfall source)
 - `apps/frontend/src/types.ts`
-- `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`
-- `MtgAssistantApp.tsx` (path confirmed via grep)
-- `apps/frontend/src/components/CardPresentation.tsx`
-- `apps/frontend/src/components/CardSelectionPreview.tsx`
+- `apps/frontend/src/components/CardPresentation.tsx` (imports the helper)
+- `apps/frontend/src/components/CardSelectionPreview.tsx` (comment only — no
+  functional change; see the Note above)
+- `apps/frontend/src/lib/contextFlow/flow.ts` (`LookupWireCard`,
+  `buildLookupAskAiRequest` — derives the frozen wire payload's `imageUrl`
+  from `imageId`, unchanged wire contract)
+- `apps/frontend/src/lib/zoneCards.ts` (`buildZoneCardFromMetadata`)
+- `apps/frontend/src/lib/scan/resolveScanCandidates.ts`
+- `apps/frontend/src/hooks/useScanCapture.ts`
+- `apps/frontend/src/components/trade/useTradeScan.ts`
+  (`buildScanMetadataFromPrices` — typecheck-only fix; this function is
+  retired by Slice D)
 - `apps/frontend/src/lib/metadataTransformPolicy.test.ts`
+- `apps/frontend/src/test/appTestHelpers.tsx` (shared `CardFixture` helper)
+- Test files updated for the `imageId` shape: `App.interaction-flows.test.tsx`,
+  `App.zoneFlow.test.tsx`, `CardSelectionPreview.test.tsx`,
+  `QuickLookupApp.test.tsx`, `responsiveSurfaceHooks.test.tsx`,
+  `TradeBalancer.scan.test.tsx`, `ZoneCardPicker.test.tsx`,
+  `ZoneCollectionStep.test.tsx`, `useAutocompleteSuggestions.test.ts`,
+  `useScanCapture.test.ts`, `contextFlow/flow.test.ts`,
+  `scan/identification/resolveScanCandidates.test.ts`, `search.test.ts`,
+  `zoneCards.test.ts`
 - `apps/frontend/public/data/cardMetadata.json`
 - `PRD/sections/functional-requirements.md` (REQ-174)
 - `PRD/sections/non-functional-requirements.md` (NFR-019 measured figure)

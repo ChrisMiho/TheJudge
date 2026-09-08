@@ -54,7 +54,12 @@ export function buildScanMetadataFromPrices(prices: CardPrices): CardMetadataIte
     metadata.push({
       cardId: oracleId,
       name: firstPrinting.name,
-      imageUrl: firstPrinting.imageUrl,
+      // REQ-174/Slice C: CardMetadataItem now stores a representative
+      // printing id, not a full url; the old price artifact's per-printing
+      // `id` is the same Scryfall printing id `imageUrl` was derived from.
+      // This whole function is retired by Slice D, which reads directly off
+      // `cardMetadata` instead of synthesizing it from the price artifact.
+      imageId: firstPrinting.id,
       colors: []
     });
   }

@@ -4015,15 +4015,18 @@
 ### REQ-174
 - Title: Image-first up-front card list
 - Priority: high
-- Description: The shared card metadata the frontend loads on entry to MTG Assistant and Quick Lookup carries only the fields a card tile renders directly — `cardId` (oracle id), `name`, `imageUrl`, and `colors` — and no longer carries the descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `supertypes`, `subtypes`), which is fetched on demand per REQ-175 / FLOW-024. `colors` stays up front because each card tile draws its identity ring from the card's colors (FLOW-001, DEC-078).
+- Description: The shared card metadata the frontend loads carries only the fields a card tile renders directly — `cardId` (oracle id), `name`, a representative image id, and `colors` — and no longer carries the descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `supertypes`, `subtypes`), which is fetched on demand per REQ-175 / FLOW-024. It is the **single per-unique-card identity index** used by MTG Assistant, Quick Lookup, **and the Trade Balancer's search/autocomplete and scan preview** (REQ-065). `colors` stays up front because each card tile draws its identity ring from the card's colors (FLOW-001, DEC-078).
 - Acceptance Criteria:
-  - `scripts/build-card-metadata.mjs` emits `apps/frontend/public/data/cardMetadata.json` records containing only `cardId`, `name`, `imageUrl`, and `colors`
+  - `scripts/build-card-metadata.mjs` emits `apps/frontend/public/data/cardMetadata.json` records containing only `cardId`, `name`, the representative printing id, and `colors`; the full `imageUrl` string is no longer stored — the loader derives it from the id via the Scryfall template `https://cards.scryfall.io/normal/front/<id[0]>/<id[1]>/<id>.jpg`
+  - the derived image url resolves for both single-faced and **double-faced** representative printings — Scryfall composes a double-faced card's front-face image url from the printing id with the `front` path segment — verified against a real double-faced card at build
+  - the Trade Balancer reads this index for its manual-search autocomplete and scan preview (card name and image), replacing its former reads of the deleted frontend price artifact
   - autocomplete, card selection, image rendering, and the color identity ring behave identically off the slimmed list at both 390×844 and 1440×900
   - no card surface renders a descriptive field (oracle text, type line, mana cost/value, sub/supertypes) directly from the up-front list; those fields arrive only via the on-demand fetch (FLOW-024)
   - the color identity ring (including silver-gray for colorless/missing colors) renders from the up-front `colors` with no detail fetch
 - Constraints:
   - do not remove `colors` from the up-front list; the tile ring depends on it
   - representative-printing selection, image selection, and card identity are unchanged
+  - NFR-019's relative first-load gate (the trimmed `cardMetadata.json` is ≥40% smaller gzipped than the prior combined artifact) still holds and is only improved by dropping the full image string; the build re-records the measured before/after figures
 - Dependencies:
   - REQ-175
   - FLOW-024
@@ -4031,8 +4034,10 @@
   - DEC-160
   - FLOW-001
   - NFR-019
+  - REQ-065
 - Notes:
   - the dominant byte-mass (oracle text, 45.4% of the file) is what this removes from first load
+  - deriving the image from a stored printing id (rather than a full URL) is the same lever used for the backend price data; the gzipped saving is modest (the shared URL prefix compresses well) but it unifies image derivation and removes a redundant per-card string
 
 ### REQ-175
 - Title: Card-detail retrieval endpoint and backend card-detail artifact

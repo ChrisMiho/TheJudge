@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { CardMetadataItem, GameContext, ZoneCardItem } from "../../types";
+import { deriveCardImageUrl } from "../cardImage";
 import {
   buildAskAiRequest,
   buildEnrichmentQueue,
@@ -345,7 +346,7 @@ describe("buildLookupAskAiRequest", () => {
   const lookupCard: CardMetadataItem = {
     cardId: "oracle-lightning-bolt",
     name: "Lightning Bolt",
-    imageUrl: "https://cards.example/lightning-bolt.jpg",
+    imageId: "lightning-bolt-fixture-id",
     colors: ["R"],
   };
 
@@ -373,7 +374,7 @@ describe("buildLookupAskAiRequest", () => {
     expect(payload).toEqual({
       mode: "lookup",
       question: "Follow up",
-      cards: [{ cardId: lookupCard.cardId, name: lookupCard.name, imageUrl: lookupCard.imageUrl }],
+      cards: [{ cardId: lookupCard.cardId, name: lookupCard.name, imageUrl: deriveCardImageUrl(lookupCard.imageId) }],
       conversationHistory
     });
     expect(payload.cards?.[0]).not.toHaveProperty("instanceId");
@@ -384,7 +385,7 @@ describe("buildLookupAskAiRequest", () => {
     const secondCard: CardMetadataItem = {
       cardId: "oracle-counterspell",
       name: "Counterspell",
-      imageUrl: "https://cards.example/counterspell.jpg",
+      imageId: "counterspell-fixture-id",
       colors: ["U"],
     };
 
@@ -394,8 +395,8 @@ describe("buildLookupAskAiRequest", () => {
       mode: "lookup",
       question: "How do these interact?",
       cards: [
-        { cardId: lookupCard.cardId, name: lookupCard.name, imageUrl: lookupCard.imageUrl },
-        { cardId: secondCard.cardId, name: secondCard.name, imageUrl: secondCard.imageUrl }
+        { cardId: lookupCard.cardId, name: lookupCard.name, imageUrl: deriveCardImageUrl(lookupCard.imageId) },
+        { cardId: secondCard.cardId, name: secondCard.name, imageUrl: deriveCardImageUrl(secondCard.imageId) }
       ]
     });
   });

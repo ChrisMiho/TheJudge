@@ -2,15 +2,19 @@ import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, ty
 import { createPortal } from "react-dom";
 import { useOutsideDismiss } from "../hooks/useOutsideDismiss";
 import { fetchCardDetail, peekCardDetail, type CardDetailBlock } from "../lib/cardDetail";
+import { deriveCardImageUrl } from "../lib/cardImage";
 import { OverlayCloseButton } from "./OverlayCloseButton";
 
 /** The identity fields every card surface needs to render a tile — image, name, and
  * the oracle id used to fetch detail on demand (REQ-175, FLOW-024). `ZoneCardItem`
- * and `CardMetadataItem` both satisfy this shape. */
+ * and the frozen lookup wire card carry a full `imageUrl`; `CardMetadataItem`
+ * (REQ-174, Slice C) instead carries `imageId`, a representative printing id this
+ * component derives the url from — both shapes satisfy this type. */
 export type CardPresentationCard = {
   cardId: string;
   name: string;
   imageUrl?: string;
+  imageId?: string;
 };
 
 type CardPresentationProps = {
@@ -220,7 +224,7 @@ export function CardPresentation({
   fallbackClassName,
   actions
 }: CardPresentationProps): JSX.Element {
-  const imageUrl = card.imageUrl?.trim();
+  const imageUrl = card.imageUrl?.trim() || deriveCardImageUrl(card.imageId) || undefined;
   const [imageFailed, setImageFailed] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const detailTriggerRef = useRef<HTMLButtonElement>(null);

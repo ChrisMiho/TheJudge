@@ -8,13 +8,13 @@ const cards: CardMetadataItem[] = [
   {
     cardId: "1",
     name: "Lightning Bolt",
-    imageUrl: "",
+    imageId: "",
     colors: ["R"],
   },
   {
     cardId: "2",
     name: "Counterspell",
-    imageUrl: "",
+    imageId: "",
     colors: ["U"],
   }
 ];

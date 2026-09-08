@@ -9,11 +9,12 @@ import {
 /** REQ-174: `cards` is the slim shape actually written to
  * `cardMetadata.json`; `fullCards` (the pre-slim descriptive block) exists
  * only so the build can measure the NFR-019 gzipped-size reduction — it is
- * never written to disk. */
+ * never written to disk. Slice C: the slim shape stores `imageId` (a
+ * representative printing id), not a full `imageUrl`. */
 type SlimTransformResultCard = {
   cardId: string;
   name: string;
-  imageUrl: string;
+  imageId: string;
   colors: string[];
 };
 
@@ -22,6 +23,7 @@ type FullTransformResultCard = {
   name: string;
   oracleText: string;
   imageUrl: string;
+  imageId: string;
   manaCost: string;
   manaValue: number;
   typeLine: string;
@@ -283,12 +285,20 @@ describe("metadata transform policy", () => {
     expect(result.stats.skippedByFilter).toBe(1);
 
     // REQ-174: `cards` (written to cardMetadata.json) carries only the
-    // up-front tile fields — no descriptive block.
+    // up-front tile fields — no descriptive block. Slice C: `imageId`, not a
+    // full `imageUrl` string.
     expect(result.cards.map((card) => card.name)).toEqual(["Brainstorm", "Lightning Bolt"]);
     for (const card of result.cards) {
-      expect(Object.keys(card).sort()).toEqual(["cardId", "colors", "imageUrl", "name"]);
+      expect(Object.keys(card).sort()).toEqual(["cardId", "colors", "imageId", "name"]);
       expect(card.name.length).toBeGreaterThan(0);
+      expect(card.imageId.length).toBeGreaterThan(0);
     }
+
+    // The chosen (winning) source card's own `id` is what's stored — for
+    // Lightning Bolt that's the higher-quality "bolt-a" printing, not the
+    // lower-quality "bolt-z" one it beat in the dedupe.
+    const lightningBoltSlim = result.cards.find((card) => card.name === "Lightning Bolt");
+    expect(lightningBoltSlim?.imageId).toBe("bolt-a");
 
     // `fullCards` (never written to disk) proves the inclusion/dedup/filter
     // pipeline and the descriptive-field derivation are still correct — it is
@@ -298,6 +308,7 @@ describe("metadata transform policy", () => {
       expect(Object.keys(card).sort()).toEqual([
         "cardId",
         "colors",
+        "imageId",
         "imageUrl",
         "manaCost",
         "manaValue",

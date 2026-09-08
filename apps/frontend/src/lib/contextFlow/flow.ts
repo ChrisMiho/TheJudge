@@ -8,6 +8,7 @@ import type {
 } from "../../types";
 import type { FlowStepId } from "./steps";
 import { CANONICAL_ZONE_ORDER } from "./phaseZoneDefaults";
+import { deriveCardImageUrl } from "../cardImage";
 
 /** Minimum fields needed by canAdvance for each step. */
 export type FlowNavigationState = {
@@ -25,8 +26,15 @@ export type ZoneAskAiPayload = {
 };
 
 /** Identity-only wire shape for an attached lookup card (REQ-176): the
- * descriptive block is resolved server-side by cardId, not sent. */
-export type LookupWireCard = Pick<CardMetadataItem, "cardId" | "name" | "imageUrl">;
+ * descriptive block is resolved server-side by cardId, not sent. This is the
+ * frozen `AskAiRequest` lookup-mode contract (DEC-020) — `imageUrl` here is a
+ * full url on the wire, unaffected by REQ-174/Slice C slimming
+ * `CardMetadataItem` to `imageId`; `buildLookupAskAiRequest` derives it. */
+export type LookupWireCard = {
+  cardId: string;
+  name: string;
+  imageUrl: string;
+};
 
 export type LookupAskAiPayload = {
   mode: "lookup";
@@ -146,16 +154,24 @@ export function buildAskAiRequest(question: string, gameContext: GameContext): Z
 
 /** REQ-167: the single optional card generalizes to a bounded (max 5) list.
  * REQ-176: the descriptive block is resolved server-side by cardId now — only
- * identity and the image (for rendering) go on the wire. */
+ * identity and the image (for rendering) go on the wire. REQ-174/Slice C:
+ * `CardMetadataItem` carries `imageId`, not a full url, so this derives the
+ * wire's `imageUrl` from it. Called from two shapes: a fresh submission
+ * passes `CardMetadataItem`-like cards (`imageId`, derived here); a follow-up
+ * re-submission passes the already-frozen `LookupWireCard[]` from
+ * `frozenContext` (already-resolved `imageUrl`, reused as-is so a follow-up
+ * cannot re-derive a stale/different url). Either way the frozen
+ * `LookupWireCard` wire shape itself is unaffected by the up-front artifact's
+ * slimming. */
 export function buildLookupAskAiRequest(
   question: string,
-  cards?: Pick<CardMetadataItem, "cardId" | "name" | "imageUrl">[] | null,
+  cards?: Array<Pick<CardMetadataItem, "cardId" | "name" | "imageId"> | LookupWireCard> | null,
   conversationHistory?: ConversationMessage[]
 ): LookupAskAiPayload {
   const wireCards = (cards ?? []).map((card) => ({
     cardId: card.cardId,
     name: card.name,
-    imageUrl: card.imageUrl
+    imageUrl: "imageUrl" in card ? card.imageUrl : deriveCardImageUrl(card.imageId)
   }));
 
   return {

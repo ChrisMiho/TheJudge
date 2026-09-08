@@ -6,6 +6,7 @@ import type { ScanCameraSurfaceProps } from "../ScanCameraSurface";
 import type { CardScanMap } from "../../lib/scan/resolveScanCandidates";
 import type { Candidate, IdentifyResult } from "../../lib/scan/types";
 import type { CardMetadataItem } from "../../types";
+import { deriveCardImageUrl } from "../../lib/cardImage";
 import {
   createCardPrices,
   loadCardPrices,
@@ -41,7 +42,8 @@ let capturedOptions: ScanCaptureOptions | null = null;
 
 const captureIdentify = vi.fn(async (): Promise<IdentifyResult> => {
   if (lockedOracleCard && capturedOptions) {
-    capturedOptions.onScanCandidateSelected(lockedOracleCard, lockedOracleCard.imageUrl);
+    // REQ-174/Slice C: CardMetadataItem carries imageId now, not imageUrl.
+    capturedOptions.onScanCandidateSelected(lockedOracleCard, deriveCardImageUrl(lockedOracleCard.imageId));
   }
   return { matched: Boolean(lockedOracleCard), was_rotated: false, candidates: frameCandidates };
 });

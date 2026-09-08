@@ -34,7 +34,7 @@ rollup. Safe sequential order for one agent: **A, B, C, D**.
 | --- | --- | --- | --- |
 | [A](slice-a-backend-price-build-and-artifact.md) | Backend price build & artifact | — | done |
 | [B](slice-b-backend-price-route.md) | Backend price route | A | done |
-| [C](slice-c-shared-card-metadata-index.md) | Shared `cardMetadata` index | — (parallel-ready with A/B; must land before D) | planned |
+| [C](slice-c-shared-card-metadata-index.md) | Shared `cardMetadata` index | — (parallel-ready with A/B; must land before D) | done |
 | [D](slice-d-frontend-balancer-flow-and-cleanup.md) | Frontend balancer flow & cleanup | A, B, C | planned |
 
 ## Implementation map

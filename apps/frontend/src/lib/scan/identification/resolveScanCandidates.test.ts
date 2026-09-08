@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import type { CardMetadataItem } from "../../../types";
+import { deriveCardImageUrl } from "../../cardImage";
 import type { Candidate } from "../types";
 import { resolveScanCandidates, resolveScanCandidatesRanked, type CardScanMap } from "../resolveScanCandidates";
 
-function makeMetadata(cardId: string, name: string, imageUrl = ""): CardMetadataItem {
+function makeMetadata(cardId: string, name: string, imageId = ""): CardMetadataItem {
   return {
     cardId,
     name,
-    imageUrl,
+    imageId,
     colors: [],
   };
 }
@@ -15,6 +16,8 @@ function makeMetadata(cardId: string, name: string, imageUrl = ""): CardMetadata
 const COUNTERSPELL_ORACLE_ID = "oracle-counterspell";
 const LIGHTNING_BOLT_ORACLE_ID = "oracle-lightning-bolt";
 
+// The scan-map's per-scanned-printing `imageUrl` is unchanged (REQ-066): a
+// separate, unaffected artifact from cardMetadata's `imageId`.
 const scanMap: CardScanMap = {
   "printing-counterspell-a": { oracleId: COUNTERSPELL_ORACLE_ID, name: "Counterspell", imageUrl: "https://img/counterspell-a.jpg" },
   "printing-counterspell-b": { oracleId: COUNTERSPELL_ORACLE_ID, name: "Counterspell", imageUrl: "https://img/counterspell-b.jpg" },
@@ -24,8 +27,8 @@ const scanMap: CardScanMap = {
 };
 
 const cardMetadata: CardMetadataItem[] = [
-  makeMetadata(COUNTERSPELL_ORACLE_ID, "Counterspell", "https://img/counterspell-oracle.jpg"),
-  makeMetadata(LIGHTNING_BOLT_ORACLE_ID, "Lightning Bolt", "https://img/lightning-bolt-oracle.jpg")
+  makeMetadata(COUNTERSPELL_ORACLE_ID, "Counterspell", "counterspell-oracle-id"),
+  makeMetadata(LIGHTNING_BOLT_ORACLE_ID, "Lightning Bolt", "lightning-bolt-oracle-id")
 ];
 
 describe("Frontend - Card Scan", () => {
@@ -35,7 +38,7 @@ describe("resolveScanCandidates", () => {
 
     const resolved = resolveScanCandidates(candidates, scanMap, cardMetadata);
 
-    expect(resolved).toEqual([makeMetadata(LIGHTNING_BOLT_ORACLE_ID, "Lightning Bolt", "https://img/lightning-bolt-oracle.jpg")]);
+    expect(resolved).toEqual([makeMetadata(LIGHTNING_BOLT_ORACLE_ID, "Lightning Bolt", "lightning-bolt-oracle-id")]);
   });
 
   it("collapses multiple printings of one oracle id to a single candidate by best distance", () => {
@@ -58,7 +61,7 @@ describe("resolveScanCandidates", () => {
 
     const resolved = resolveScanCandidates(candidates, scanMap, cardMetadata);
 
-    expect(resolved).toEqual([makeMetadata(LIGHTNING_BOLT_ORACLE_ID, "Lightning Bolt", "https://img/lightning-bolt-oracle.jpg")]);
+    expect(resolved).toEqual([makeMetadata(LIGHTNING_BOLT_ORACLE_ID, "Lightning Bolt", "lightning-bolt-oracle-id")]);
   });
 
   it("drops scan-map entries whose oracle id is missing from committed metadata", () => {
@@ -107,7 +110,7 @@ describe("resolveScanCandidatesRanked — scanImageUrl", () => {
     expect(ranked[0].scanImageUrl).toBe("https://img/counterspell-b.jpg");
   });
 
-  it("falls back to card.imageUrl when the printing image is empty", () => {
+  it("falls back to a url derived from card.imageId when the printing image is empty", () => {
     const noImageScanMap: CardScanMap = {
       "printing-no-img": { oracleId: LIGHTNING_BOLT_ORACLE_ID, name: "Lightning Bolt", imageUrl: "" }
     };
@@ -116,7 +119,7 @@ describe("resolveScanCandidatesRanked — scanImageUrl", () => {
     const ranked = resolveScanCandidatesRanked(candidates, noImageScanMap, cardMetadata);
 
     expect(ranked).toHaveLength(1);
-    expect(ranked[0].scanImageUrl).toBe("https://img/lightning-bolt-oracle.jpg");
+    expect(ranked[0].scanImageUrl).toBe(deriveCardImageUrl("lightning-bolt-oracle-id"));
   });
 });
 });
