@@ -156,6 +156,7 @@ and the balancer keeps its multi-second first-open stall on mobile.
 +  - the price/printing projection is emitted by the **existing card-detail build** (`scripts/build-card-detail-by-oracle-id.mjs`), which trims `default-cards.json` once and emits both the card-detail map and the price map; the separate `scripts/build-card-prices.mjs` is retired and no fourth extract of `default-cards.json` is added
 +  - the committed price artifact is **backend-only** (working name `apps/backend/data/cardPrintingPricesByOracleId.json`), keyed by **oracle id**; per oracle it carries the card's list of printings, each with printing id, set code, set name, collector number, `usd` (non-foil), and `usd_foil`; it records a **snapshot date**. Card name and image url are **not** stored per printing — name comes from the shared `cardMetadata` index (REQ-174) and image url is derived from the printing id (Scryfall template)
 +  - the backend loads the committed price map into memory at startup and serves one card's printings on demand (REQ-175) with **no runtime network call**, exactly like `cardDetailByOracleId.json`; the former `apps/frontend/public/data/cardPrintingPrices.json` is deleted and is no longer downloaded up front
++  - the committed backend price map keeps the Lambda deployment inside AWS's **250 MB unzipped quota**: `scripts/lambda-package-budget.test.mjs` passes with the price map bundled (the whole `apps/backend/data/` folder ships in the Lambda zip), and the build records the measured price-map size so the budget headroom stays visible
 +  - a scanned printing prices directly (its oracle resolves via the scan map, then the card's fetched printing list is matched by printing id); the manual picker lists every printing of a card from the fetched list
 +  - missing prices are stored as null/absent (consumed as $0 + caution per REQ-065)
 +  - `npm run data:build` regenerates the artifact from local inputs; `npm run data:refresh` refreshes the Scryfall bulk source (download is human-approved before it runs) then rebuilds
@@ -512,6 +513,7 @@ longer exists, contradicting the amended REQ-066.
  - Notes:
    - the trade balancer is an optional top-level feature; like scanning, its data budget is scoped to users who actually use it
 +  - moving pricing to the backend (this reframing) reverses the frontend-only posture of the retired DEC-087; the freshness script's price target artifact moves to the backend map, re-pointed later by the freshness track
++  - free-tier posture: deleting the ~38 MB first-open download removes that S3/CloudFront egress; the per-card price fetch adds only tiny reads (a handful of KB and a Lambda invocation per card added), well inside the free-tier request allowance at trade-balancer volumes. The backend price map adds ~15-20 MB (estimate; measured at build) to the Lambda bundle, kept inside the 250 MB quota by the budget test (REQ-066)
 ```
 
 - Verdict:

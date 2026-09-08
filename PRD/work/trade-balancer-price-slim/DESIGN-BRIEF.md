@@ -176,6 +176,35 @@ retired. The exact script boundary is a build-time detail validated by outcome
 (every priced gameplay printing present, prices display correctly), consistent
 with how REQ-066 and REQ-175 treat build-time details.
 
+### Data stores and who reads what
+
+Three stores, each read by exactly one path; the two backend maps feed the two
+endpoints, `cardMetadata` is read by the frontend directly (no endpoint).
+
+| Store | Where | Per-record shape | Read by | For |
+| --- | --- | --- | --- | --- |
+| `cardMetadata.json` | frontend (S3) | `{cardId, name, imageId, colors}` (was `imageUrl`; now a representative-printing id, URL derived) | MTG Assistant, Quick Lookup, **and the balancer's search/autocomplete + scan preview** | name→card resolution, card name, derived image, colour ring |
+| `cardDetailByOracleId.json` | backend Lambda (in memory) | `{oracleText, typeLine, manaCost, …}` | `GET /api/cards/:oracleId` + `POST /api/ask-ai` internal read | rules text — never prices |
+| `cardPrintingPricesByOracleId.json` (new) | backend Lambda (in memory) | per oracle → `printings:[{id, set, setName, collectorNumber, usd, usdFoil}]` + `snapshotDate` | `GET /api/cards/:oracleId/prices` (balancer, on add) | printing list + prices — never rules |
+
+`cardMetadata` slims (a full ~90-char URL becomes a short id), it does not grow;
+its role expands to a second reader. `setName` rides in the price response
+(per-printing), not in `cardMetadata` (per-card).
+
+### Deployment budget (250 MB Lambda) and free tier
+
+The whole `apps/backend/data/` folder ships inside the Lambda zip, which has AWS's
+**250 MB unzipped quota** (`scripts/lambda-package-budget.test.mjs` guards it).
+Current footprint is ~130 MB non-data (the `onnxruntime` + `sharp` + embedder
+stack for the question flow) + ~50 MB committed data ≈ **180 MB, ~70 MB
+headroom**. The trimmed price map (`imageUrl` and `name` dropped) is an estimated
+~15–20 MB — measured at build and required to keep the budget test green
+(REQ-066). Free-tier posture is net-positive: deleting the ~38 MB first-open
+download removes that S3/CloudFront egress, and the per-card fetch adds only tiny
+reads well inside the request allowance (NFR-013). If the budget ever tightened,
+the escape hatch is reading the price map from S3 at cold start instead of
+bundling it — not needed now.
+
 ## Non-goals
 
 - **Not a change to what the player can do.** Scan/search add, picker,
@@ -189,6 +218,16 @@ with how REQ-066 and REQ-175 treat build-time details.
   Scryfall fetch, no scheduled refresh (NFR-013 posture, reframed not weakened).
 - **No change to scan-identity, prompt context, or the ask-ai/rules payload.**
   Printing identity stays a pricing/display concern (DEC-053, retired-index).
+- **Not consolidating to a single backend map (deferred, future work).** The
+  owner's preferred end-state is one backend file where each card object carries
+  a `printings` array alongside its rules block, and each endpoint reads only the
+  slice it needs (the question flow ignores `printings`). This run keeps two
+  output files instead, for one reason: it leaves `cardDetailByOracleId.json` —
+  which `POST /api/ask-ai` reads internally — byte-for-byte untouched, so the RAG
+  answer path stays out of this change's blast radius. The source extract and the
+  build are already unified (one pass over `default-cards.json`), so the
+  consolidation is purely an output-file merge and can be taken later as its own
+  planned change without redoing this work. Recorded so it is not lost.
 
 ## Material assumptions (assumption ladder)
 
