@@ -8,11 +8,11 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 | Package | Note |
 | --- | --- |
-| [resilient-weekly-data-refresh](resilient-weekly-data-refresh/) | Fix broken weekly refresh: Scryfall retired `download_uri` → JSONL bulk (`jsonl_download_uri`), so card+rulings download silently skips and prices never advance. Also hash-gate combos (card-identity + template-set hashes, reuse when unchanged, full re-expansion on a change), keep 200ms pacing, harden retries, fail loud on a skipped headline download. DESIGN-BRIEF + GATE-QUESTIONS written + quality-check PASS (amend REQ-195 + integrations-and-data, reserve REQ-196). Owner accepted all 3 gate decisions. Next: map-out on build greenlight. |
+| [resilient-weekly-data-refresh](resilient-weekly-data-refresh/) | Fix broken weekly refresh (Scryfall JSONL bulk `jsonl_download_uri`), hash-gate combos (card-identity + template-set hashes, full re-expansion on change), keep 200ms pacing + harden retries, fail loud on a skipped headline download. Mapped: slices A (JSONL fix) → B (fail-loud) → C (retry harden) → D (hash gate + PRD promotion). PRD promotion at cleanup: amend REQ-195 + integrations-and-data, reserve REQ-196. Next: implement-all. |
+
+## refined
 
 ## refining
 

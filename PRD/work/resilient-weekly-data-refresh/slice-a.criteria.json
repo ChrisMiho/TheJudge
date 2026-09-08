@@ -1,0 +1,30 @@
+{
+  "slug": "resilient-weekly-data-refresh",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "createBulkDownloadTargets prefers jsonl_download_uri, falls back to download_uri, throws only when neither is present",
+      "value": false,
+      "evidence": { "command": "node --test scripts/refresh-scryfall-data.test.mjs", "paths": ["scripts/refresh-scryfall-data.mjs", "scripts/refresh-scryfall-data.test.mjs"] }
+    },
+    {
+      "id": "A2",
+      "statement": "A JSONL->array stream conversion turns a multi-line JSONL fixture into valid JSON.parse-able array output, skipping blank lines",
+      "value": false,
+      "evidence": { "command": "node --test scripts/refresh-scryfall-data.test.mjs", "paths": ["scripts/refresh-scryfall-data.mjs"] }
+    },
+    {
+      "id": "A3",
+      "statement": "scripts/refresh-scryfall-data.test.mjs passes",
+      "value": false,
+      "evidence": { "command": "node --test scripts/refresh-scryfall-data.test.mjs" }
+    },
+    {
+      "id": "A4",
+      "statement": "No test performs a live network fetch (fetch injected/mocked)",
+      "value": false,
+      "evidence": { "paths": ["scripts/refresh-scryfall-data.test.mjs"] }
+    }
+  ]
+}
