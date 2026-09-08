@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (build half's claim, run `graph-20260908-013519`; was `origin/thejudge-auto/weekly-data-refresh-pr`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-163826/`
-- Current node: `plan` (build half, run `graph-20260908-013519`; gate-qc PASS re-grade done — proceeding to map-out)
-- Next action: `/graph-implement PRD/work/weekly-data-refresh-pr/` — plan → build → review → close; ends COMPLETE with the code PR open for the owner to merge
+- Current node: `build` (build half, run `graph-20260908-013519`; 4 slices mapped, STATUS.active — implementing sequentially A→B→C→D)
+- Next action: `/graph-implement PRD/work/weekly-data-refresh-pr/` — build → review → close; ends COMPLETE with the code PR open for the owner to merge
 
 ## Node ledger
 
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 19` | PASS — DESIGN-BRIEF verified against PRD truth (DEC-087/088/162, REQ-066/093/145, NFR-013) and all four proposed diffs matched current-state byte-for-byte; no drift; STATUS stays refined for build | 2026-09-07 |
 | GR | gate-review (build half, run graph-20260908-013519) | sonnet | ok | `0 → 14` | REQ-195 accept applied (accept changes no diff); `## Gate verdicts` (1 id, 0 blockers) and resolved `## Open gate` (dated 2026-09-08, docs PR #209 merged) written; STATUS.refined restored (marker, README, PRD/work/STATUS.md board row) | 2026-09-08 |
 | 4B | gate-qc (build half, run graph-20260908-013519) | sonnet | ok (PASS) | `0 → 16` | re-grade of the gate-finalized proposal, no fan-out (14 calls). REQ-195's three proposed diffs match current PRD/sections byte-for-byte (trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, system-map.md); functional-requirements append target after REQ-194 exists, REQ-195 not already defined; cited ids (DEC-087/088/162, REQ-066/093/145, NFR-013) all match; `data:refresh`→`data:build` pipeline + build-card-prices.mjs real; new script/npm name not yet present; buildable without a live user. Findings none. STATUS unchanged (refined) | 2026-09-08 |
+| 5 | plan (build half, run graph-20260908-013519) | sonnet | ok | `0 → 39` | thejudge-map-out wrote GAMEPLAN.md + 4 slice docs (A refresh-and-PR script core; B change-detection/no-op path; C npm `data:refresh-pr` wiring; D promote REQ-195 to PRD/sections with the code) with slice-{a,b,c,d}.criteria.json (9/5/2/5 = 21 criteria, valid JSON). Verification uses injected git/gh/pipeline fakes — no slice runs the real Scryfall refresh (REQ-093/DEC-162, denied under the graph lock). STATUS.active; README slice table + implementation map; board row moved to active | 2026-09-08 |
 
 ## Gate verdicts
 
@@ -161,6 +162,26 @@ Read first (inside that worktree): PRD/work/weekly-data-refresh-pr/DESIGN-BRIEF.
 Slice the work for sequential single-agent implementation. Each slice's acceptance criteria must be earnable by real evidence (a command pattern, file paths, or manual). Cover: the refresh-and-PR script itself (full pipeline, branch off origin/main, explicit-path commit of rebuilt data, push, `gh pr create`); the change-detection / no-op path (a run with no data change must not open an empty PR); the npm script wiring; and applying REQ-195 to PRD/sections at build (functional-requirements append after REQ-194, plus the trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, and system-map.md diffs) together with the code. Respect the boundaries the script must honor even though it is graph-adjacent: no force-push, no merge into main, path-scoped `git add`.
 
 Boundaries: no code, no PRD/sections edit at this node, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no spawning any agent. Leave committing to the driver.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### build (build half, run graph-20260908-013519)
+
+graph is controlling.
+
+You are node 6 (`build`) of the build half. Invoke `thejudge-implement-all` and follow it exactly, in graph-controlled (non-interactive) mode. Implement every remaining slice (A → B → C → D, in that safe order) end to end — code, tests, verification, per-slice status — earning each slice's acceptance criteria with real evidence. When the last slice is done, set STATUS.ship-ready. Open the code PR at the end.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr
+
+Shared branch (work in place, do not create a second worktree or a contributor branch): thejudge-auto/weekly-data-refresh-pr-work. Its checked-out branch must match; the code PR is thejudge-auto/weekly-data-refresh-pr-work → main.
+
+Read PRD/work/weekly-data-refresh-pr/GAMEPLAN.md and every slice-*.md + slice-*.criteria.json first. Design: a weekly one-command local script `scripts/refresh-and-open-pr.mjs` (npm `data:refresh-pr`) that runs the existing `data:refresh` → `data:build` full-refresh pipeline, cuts a branch off origin/main, commits the rebuilt data artifacts by explicit path, pushes, and opens a PR the owner merges; a no-op path opens no empty PR when nothing changed; graceful degradation on pipeline failure. Build with the injectable-effects pattern (like scripts/graph-preflight.mjs) so it is unit-tested against injected git/gh/pipeline fakes.
+
+CRITICAL — never run the real data refresh: do NOT run `npm run data:refresh`, `npm run data:build`, `npm run data:refresh-pr`, or any Scryfall network refresh (REQ-093/DEC-162; also denied under the graph lock). Verify only via `node --test scripts/refresh-and-open-pr.test.mjs` over injected fakes, plus static checks (grep, `npm pkg get`, git diff). A criterion whose evidence is a command is earned when the command is issued — so issue the test command for real against the fakes; never the live pipeline.
+
+APPLY PRODUCT TRUTH AT BUILD (slice D). Together with the code, write the real PRD/sections/ edit by intent for REQ-195: append `### REQ-195` after REQ-194 in functional-requirements.md and amend trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, and system-map.md per the finalized GATE-QUESTIONS.md diff, re-derived against current truth. This is the one place durable PRD/sections truth is written.
+
+Boundaries: no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no remote-branch delete, no git add -A (stage explicit paths), no live Scryfall refresh. Commit on thejudge-auto/weekly-data-refresh-pr-work and push it; open the PR with `gh pr create --base main --head thejudge-auto/weekly-data-refresh-pr-work` (never merge it). All writes stay inside this worktree — never write into the launch checkout.
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 

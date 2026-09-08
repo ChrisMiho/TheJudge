@@ -8,6 +8,10 @@ Do not rename package folders to encode status.
 
 ## active
 
+| Package | Note |
+| --- | --- |
+| [weekly-data-refresh-pr](weekly-data-refresh-pr/) | Mapped 2026-09-08: gate-qc PASS re-graded, sliced A (script core) → B (change-detection/no-op) → C (npm wiring) → D (promote REQ-195 to PRD/sections, together with the code). `npm run thejudge-implement-all` picks it up next. |
+
 ## refined
 
 ## refining
@@ -18,7 +22,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [weekly-data-refresh-pr](weekly-data-refresh-pr/) | gate-qc PASS; docs PR open into `main` (REQ-195). Answer the verdict in `GATE-QUESTIONS.md`, then merge the PR to build. |
 | [trade-balancer-price-slim](trade-balancer-price-slim/) | Backend-move design (owner pivot), gate-qc PASS; in PR #211. Delete the ~38 MB frontend `cardPrintingPrices.json`; serve prices from a committed backend artifact via a price companion to `GET /api/cards/:oracleId` (BLOCK-01 = A, sibling `/prices` route); slim `cardMetadata` as the shared index; Lambda 250 MB budget test enforced. Ten gate blocks + BLOCK-01 answered (accept all + A). Review PR #211 (confirm NFR-014) and merge to build. |
 
 ## deferred

@@ -1,0 +1,18 @@
+{
+  "slug": "weekly-data-refresh-pr",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "npm pkg get scripts.data:refresh-pr prints \"node scripts/refresh-and-open-pr.mjs\"",
+      "value": false,
+      "evidence": { "command": "npm pkg get scripts\\.data:refresh-pr", "paths": ["package.json"] }
+    },
+    {
+      "id": "C2",
+      "statement": "The package.json diff adds only the new data:refresh-pr script line, no existing entry's value changed",
+      "value": false,
+      "evidence": { "command": "git diff.*package\\.json", "paths": ["package.json"] }
+    }
+  ]
+}
