@@ -4,8 +4,8 @@
   `REQ`/`NFR` wins — `PRD/sections/decisions.md` stays precedence #2, a
   historical index. Correct this file against those sources, not the other way
   around.
-- Backed by: REQ-066, REQ-175, NFR-013 (and the `CardPrintingPrice` shape in
-  `integrations-and-data.md`)
+- Backed by: REQ-066, REQ-175, NFR-013, REQ-195 (and the `CardPrintingPrice`
+  shape in `integrations-and-data.md`)
 - Feature that consumes it: `PRD/sections/trade-balancer/README.md`, via the
   read-only backend route `GET /api/cards/:oracleId/prices`
 
@@ -51,8 +51,12 @@ passes each one:
   null price as $0 plus a caution flag (REQ-065).
 - **Static snapshot, no runtime sync:** the committed file is the only source at
   runtime. There is no live price fetch, no runtime sync, and no scheduled
-  refresh. Refresh happens solely through the human-approved pipeline
-  (`data:refresh` → `data:build`) (NFR-013).
+  runtime refresh. Refresh happens solely through the human-approved pipeline
+  (`data:refresh` → `data:build`); its standing cadence is a weekly one-command
+  local script the owner runs (`npm run data:refresh-pr`), which runs that
+  pipeline and, when an artifact changed, opens a pull request to `main` the
+  owner merges — the runtime still reads only the committed artifact (DEC-088,
+  NFR-013, REQ-195).
 - The build degrades gracefully: a missing or failed source keeps the prior
   committed artifacts (both `cardDetailByOracleId.json` and this file) and does
   not break other artifact builds (REQ-066).
