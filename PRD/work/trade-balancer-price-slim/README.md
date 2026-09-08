@@ -1,4 +1,4 @@
-status: ideation
+status: refined
 
 # Trade Balancer price artifact slim
 

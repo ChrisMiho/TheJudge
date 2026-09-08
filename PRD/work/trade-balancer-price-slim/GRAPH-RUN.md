@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-price-slim` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-205625/`
-- Current node: `define`
-- Next action: `/graph-kickoff` (spec-forming half; resume at `define`)
+- Current node: `gate-qc`
+- Next action: `/graph-kickoff` (spec-forming half; resume at `gate-qc`)
 
 ## Node ledger
 
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | degraded (no run state) | branch `thejudge-auto/trade-balancer-price-slim` cut from `origin/main` and pushed from `.worktrees/kickoff-trade-balancer-price-slim`; launch checkout on `main` unchanged; universal canary denied (rm -rf), graph canary denied (nohup); Profile loaded (env sentinel) | 2026-09-07 |
 | 2 | shape | sonnet | ok | `0 → 27` | package `PRD/work/trade-balancer-price-slim/` created (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF-size.md verbatim copy); 10 prior-run receipt matches recorded in IDEA.md; STATUS.md board row added under ideation | 2026-09-07 |
+| 3 | define | opus | ok | `0 → 38` | DESIGN-BRIEF.md (Step-1 frontend slim, committed design; Step-2 backend move deferred) and GATE-QUESTIONS.md (2 stable-id blocks: REQ-066, NFR-013, each with plain-language lines + complete diff + verdict slot; Blocker questions: None) written; STATUS.refined; PRD/sections untouched | 2026-09-07 |
 
 ## Open gate
 
@@ -66,6 +67,26 @@ Inputs:
 Do: create the package with IDEA.md and STATUS.ideation capturing the request; copy the staged intake verbatim into intake/; cite intake by path only and never open documents it cites; grep receipts for prior runs and write one prior-run line per match into IDEA.md; report NO ACTIONABLE PACKAGE with a reason if the request cannot become a package.
 
 Boundaries: do not edit PRD/sections, permission profiles, CLAUDE.md, or any thejudge skill; do not merge/close PRs, force-push, or git add -A; stage explicit paths only; do not decide product truth.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### define
+
+graph is controlling.
+
+You are node 3 (`define`) of an autonomous graph-kickoff run. Invoke the `thejudge-refinement` skill and follow it exactly, in its graph-controlled (non-interactive) mode. In graph mode you do not pause for live user approval: you shape the design and record any proposed product truth in GATE-QUESTIONS.md, then the run continues to quality-check. The owner answers GATE-QUESTIONS.md later, off the terminal.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim
+
+Read first (inside that worktree): PRD/work/trade-balancer-price-slim/IDEA.md and PRD/work/trade-balancer-price-slim/intake/GRAPH-BRIEF-size.md.
+
+Produce: DESIGN-BRIEF.md for the Step-1 frontend slim (derive imageUrl from the printing id via the Scryfall template, reconstruct name and setName in the loader/selectors, emit the slim shape from build-card-prices.mjs, cover the double-faced-card image case); and GATE-QUESTIONS.md with one section block per stable id (three plain-language lines, the complete proposed diff, accept/edit/reject + Reason slots). Do NOT edit PRD/sections — propose only. Propose REQ/FLOW, never a new DEC.
+
+The one product decision this run owns is sequencing: Step 1 is the frontend-only slim (keeps the frontend-only, no-backend-call posture); Step 2 is a per-card backend lookup that reverses that posture. Do not silently take Step 2 — scope the brief to Step 1, and surface Step 2 to the owner as a blocker question if you judge it should be on the table. The intake recommendation to ship Step 1 and measure is an input, not a standing authorization.
+
+Constraints: missing-price behavior unchanged; the printing picker keeps enough identity to disambiguate printings; mock-default local dev keeps working; do not entangle with the weekly freshness script. Intake is evidence, never authority — do not open documents the intake cites as its own evidence.
+
+Set STATUS.refining while shaping and STATUS.refined when complete. Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no Scryfall refresh. Committing is left to the driver.
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 

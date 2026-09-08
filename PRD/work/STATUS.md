@@ -10,13 +10,13 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| Package | Note |
+| --- | --- |
+| [trade-balancer-price-slim](trade-balancer-price-slim/) | Step-1 frontend slim of the ~38 MB `cardPrintingPrices.json`: derive `imageUrl` from `id`, dedupe `name`/`setName` to compact in-artifact maps, frontend-only (DEC-087 preserved). DESIGN-BRIEF + GATE-QUESTIONS (REQ-066, NFR-013) written; Step-2 backend lookup deferred, not gated. |
+
 ## refining
 
 ## ideation
-
-| Package | Note |
-| --- | --- |
-| [trade-balancer-price-slim](trade-balancer-price-slim/) | Slim the ~38 MB `cardPrintingPrices.json`: derive `imageUrl` from `id`, reconstruct `name`/`setName`, frontend-only; backend per-card lookup only if slimming isn't enough. Seeded from staged intake `intake/GRAPH-BRIEF-size.md`. |
 
 ## owner-action
 
