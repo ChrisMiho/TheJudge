@@ -1,6 +1,6 @@
 # Slice B — Fail-loud on card/rulings download failure
 
-## Status: planned
+## Status: done
 
 ## Goal
 

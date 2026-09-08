@@ -230,32 +230,43 @@ function runDataBuild() {
   });
 }
 
-async function main() {
-  let successfulDownloads = 0;
+/**
+ * Download the headline Scryfall bulk sources (`default_cards`, `rulings`). These
+ * are the freshness headline of the weekly refresh, so a failure here is a HARD
+ * failure — the caller must not fall through to a build/PR that ships stale prices
+ * (fail-loud). Contrast the Comprehensive-Rules and combo steps, which stay
+ * graceful because they are not the headline. Effects are injectable for testing;
+ * defaults hit the real network.
+ */
+export async function runHeadlineBulkDownloads({
+  fetchTargets = fetchBulkDownloadTargets,
+  downloadTarget = downloadBulkTarget,
+  sizeOf = (p) => fs.statSync(p).size,
+  logger = console
+} = {}) {
+  logger.log("Fetching Scryfall bulk-data metadata...");
+  const targets = await fetchTargets();
 
-  console.log("Fetching Scryfall bulk-data metadata...");
-  try {
-    const targets = await fetchBulkDownloadTargets();
-
-    for (const target of targets) {
-      console.log(`Found ${target.label} feed (updated: ${target.updatedAt}).`);
-      if (target.estimatedSize !== null) {
-        console.log(`Estimated ${target.label} source size: ${formatBytes(target.estimatedSize)}.`);
-      }
-
-      try {
-        console.log(`Downloading ${target.label} to ${target.outputPath}...`);
-        await downloadBulkTarget(target);
-        successfulDownloads += 1;
-        const downloadedBytes = fs.statSync(target.outputPath).size;
-        console.log(`Download complete for ${target.label}: ${formatBytes(downloadedBytes)} at ${target.outputPath}.`);
-      } catch (error) {
-        console.warn(`Warning: skipped ${target.label} download. ${error.message}`);
-      }
+  let downloaded = 0;
+  for (const target of targets) {
+    logger.log(`Found ${target.label} feed (updated: ${target.updatedAt}).`);
+    if (target.estimatedSize !== null && target.estimatedSize !== undefined) {
+      logger.log(`Estimated ${target.label} source size: ${formatBytes(target.estimatedSize)}.`);
     }
-  } catch (error) {
-    console.warn(`Warning: skipped Scryfall bulk downloads. ${error.message}`);
+    logger.log(`Downloading ${target.label} to ${target.outputPath}...`);
+    // No try/catch: a failed headline download propagates and hard-fails the run.
+    await downloadTarget(target);
+    downloaded += 1;
+    logger.log(`Download complete for ${target.label}: ${formatBytes(sizeOf(target.outputPath))} at ${target.outputPath}.`);
   }
+  return downloaded;
+}
+
+async function main() {
+  // Headline card + rulings bulk: a failure here is a hard failure (fail-loud),
+  // so no try/catch — it propagates to the invocation handler, which exits
+  // non-zero, and the weekly wrapper then opens no pull request.
+  let successfulDownloads = await runHeadlineBulkDownloads();
 
   try {
     console.log("Fetching WotC Comprehensive Rules TXT target...");

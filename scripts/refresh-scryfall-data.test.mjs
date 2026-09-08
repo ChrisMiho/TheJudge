@@ -2,7 +2,13 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { Readable } from "node:stream";
 
-import { createBulkDownloadTargets, createJsonlToJsonArrayTransform } from "./refresh-scryfall-data.mjs";
+import {
+  createBulkDownloadTargets,
+  createJsonlToJsonArrayTransform,
+  runHeadlineBulkDownloads
+} from "./refresh-scryfall-data.mjs";
+
+const silent = { log() {} };
 
 // ---- createBulkDownloadTargets: URI selection (A1) ----
 
@@ -81,4 +87,54 @@ test("jsonlToJsonArray: a line split across chunks is reassembled", async () => 
   t.end();
   await collected;
   assert.deepEqual(JSON.parse(Buffer.concat(chunks).toString("utf8")), [{ a: 1 }, { b: 2 }]);
+});
+
+// ---- runHeadlineBulkDownloads: fail-loud (B) ----
+
+test("runHeadlineBulkDownloads: a failed target download rejects and does not swallow (fail-loud)", async () => {
+  const targets = [
+    { label: "default_cards", outputPath: "/x/default.json", updatedAt: "t", estimatedSize: null },
+    { label: "rulings", outputPath: "/x/rulings.json", updatedAt: "t", estimatedSize: null }
+  ];
+  await assert.rejects(
+    runHeadlineBulkDownloads({
+      fetchTargets: async () => targets,
+      downloadTarget: async (t) => {
+        if (t.label === "default_cards") throw new Error("boom");
+      },
+      sizeOf: () => 10,
+      logger: silent
+    }),
+    /boom/
+  );
+});
+
+test("runHeadlineBulkDownloads: a metadata fetch failure rejects (fail-loud)", async () => {
+  await assert.rejects(
+    runHeadlineBulkDownloads({
+      fetchTargets: async () => {
+        throw new Error("meta down");
+      },
+      logger: silent
+    }),
+    /meta down/
+  );
+});
+
+test("runHeadlineBulkDownloads: all targets succeed returns the download count", async () => {
+  const targets = [
+    { label: "default_cards", outputPath: "/x/d.json", updatedAt: "t", estimatedSize: 100 },
+    { label: "rulings", outputPath: "/x/r.json", updatedAt: "t", estimatedSize: null }
+  ];
+  let calls = 0;
+  const n = await runHeadlineBulkDownloads({
+    fetchTargets: async () => targets,
+    downloadTarget: async () => {
+      calls += 1;
+    },
+    sizeOf: () => 10,
+    logger: silent
+  });
+  assert.equal(n, 2);
+  assert.equal(calls, 2);
 });
