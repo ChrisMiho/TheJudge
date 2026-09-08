@@ -13,7 +13,9 @@ import {
   COMMITTED_ARTIFACT_PATHS,
   buildAddPathList,
   buildCommitMessage,
+  classifyChange,
   commitArtifacts,
+  deleteLocalBranch,
   formatDateStamp,
   openPullRequest,
   parseDirtyTree,
@@ -121,7 +123,18 @@ test("openPullRequest: a throwing gh runner rejects identifying PR creation as t
   )
 })
 
-// ---- commitArtifacts / pushBranch plumbing ----
+// ---- B1: change classification ----
+
+test("classifyChange: empty diff is no-op, non-empty diff is changed", () => {
+  assert.equal(classifyChange("").status, "no-op")
+  assert.equal(classifyChange("\n").status, "no-op")
+  assert.equal(classifyChange(null).status, "no-op")
+  const changed = classifyChange("apps/frontend/public/data/cardPrintingPrices.json\n")
+  assert.equal(changed.status, "changed")
+  assert.deepEqual(changed.paths, ["apps/frontend/public/data/cardPrintingPrices.json"])
+})
+
+// ---- commitArtifacts / pushBranch / deleteLocalBranch plumbing ----
 
 test("commitArtifacts: adds the explicit paths then commits with the message, no wildcard staging", () => {
   const calls = []
@@ -136,10 +149,17 @@ test("pushBranch: pushes to origin with no force flag", () => {
   assert.deepEqual(calls[0], ["push", "origin", "chore/data-refresh-2026-09-08"])
 })
 
+test("deleteLocalBranch: switches back then deletes the local-only branch", () => {
+  const calls = []
+  deleteLocalBranch({ branch: "chore/data-refresh-2026-09-08", gitRunner: (args) => calls.push(args) })
+  assert.deepEqual(calls[0], ["checkout", "-"])
+  assert.deepEqual(calls[1], ["branch", "-D", "chore/data-refresh-2026-09-08"])
+})
+
 // ---- Orchestration: refreshAndOpenPr over fully injected effects ----
 
 function makeEffects(overrides = {}) {
-  const calls = { git: [], gh: [], pipeline: [], commit: 0, push: 0, openPr: 0, order: [] }
+  const calls = { git: [], gh: [], pipeline: [], commit: 0, push: 0, openPr: 0, deleteBranch: 0, order: [] }
   const base = {
     getDirtyTreeOutput: () => "",
     gitRunner: (args) => {
@@ -149,6 +169,9 @@ function makeEffects(overrides = {}) {
     runPipelineImpl: (step) => {
       calls.pipeline.push(step)
     },
+    // Non-empty by default so the ordinary "changed" path is exercised
+    // without every test having to opt in; the no-op tests override it.
+    getArtifactDiffOutput: () => "apps/frontend/public/data/cardPrintingPrices.json\n",
     ghRunner: (args) => {
       calls.gh.push(args)
       return "https://github.com/local/thejudge/pull/1\n"
@@ -168,6 +191,11 @@ function makeEffects(overrides = {}) {
       calls.order.push("openPr")
       return "https://github.com/local/thejudge/pull/1"
     },
+    deleteBranch: (opts) => {
+      calls.deleteBranch += 1
+      calls.order.push("deleteBranch")
+      return opts
+    },
     now: FIXED_DATE,
     log: () => {},
     errorLog: () => {}
@@ -183,7 +211,21 @@ test("refreshAndOpenPr: refuses on a dirty tree and takes no git action", async 
   assert.equal(calls.pipeline.length, 0)
 })
 
-test("refreshAndOpenPr: a successful run commits, pushes, and opens the PR, in order", async () => {
+// ---- B2: no-op path ----
+
+test("refreshAndOpenPr: no-op path never calls commit/push/PR-open, and deletes the branch", async () => {
+  const { effects, calls } = makeEffects({ getArtifactDiffOutput: () => "" })
+  const result = await refreshAndOpenPr(effects)
+  assert.equal(result.status, "no-op")
+  assert.equal(calls.commit, 0)
+  assert.equal(calls.push, 0)
+  assert.equal(calls.openPr, 0)
+  assert.equal(calls.deleteBranch, 1)
+})
+
+// ---- B3: changed path, exactly once, in order ----
+
+test("refreshAndOpenPr: changed path calls commit, push, and PR-open exactly once each, in order", async () => {
   const { effects, calls } = makeEffects()
   const result = await refreshAndOpenPr(effects)
   assert.equal(result.status, "pr-opened")
@@ -191,10 +233,13 @@ test("refreshAndOpenPr: a successful run commits, pushes, and opens the PR, in o
   assert.equal(calls.commit, 1)
   assert.equal(calls.push, 1)
   assert.equal(calls.openPr, 1)
+  assert.equal(calls.deleteBranch, 0)
   assert.deepEqual(calls.order, ["commit", "push", "openPr"])
 })
 
-test("refreshAndOpenPr: a pipeline failure prevents commit/push/PR-open", async () => {
+// ---- B4: pipeline failure preserves partial state ----
+
+test("refreshAndOpenPr: a pipeline failure prevents commit/push/PR-open and leaves the branch undeleted", async () => {
   const { effects, calls } = makeEffects({
     runPipelineImpl: (step) => {
       calls.pipeline.push(step)
@@ -207,9 +252,10 @@ test("refreshAndOpenPr: a pipeline failure prevents commit/push/PR-open", async 
   assert.equal(calls.commit, 0)
   assert.equal(calls.push, 0)
   assert.equal(calls.openPr, 0)
+  assert.equal(calls.deleteBranch, 0)
 })
 
-test("refreshAndOpenPr: a throwing gh runner still commits and pushes, then surfaces the PR error", async () => {
+test("refreshAndOpenPr: a throwing gh runner on the changed path still commits and pushes, then surfaces the PR error", async () => {
   const { effects, calls } = makeEffects({
     openPr: () => {
       calls.openPr += 1

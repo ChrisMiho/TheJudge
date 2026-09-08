@@ -5,32 +5,54 @@
     {
       "id": "B1",
       "statement": "Change classification: an empty diff over the explicit path list returns no-op, a non-empty diff returns changed",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "B2",
       "statement": "On the no-op path the injected commit/push/PR-open functions are never called and the local branch is deleted",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "B3",
       "statement": "On the changed path the injected commit/push/PR-open functions are each called exactly once, in order",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "B4",
       "statement": "A pipeline failure prevents any commit/push/PR-open call and leaves the local branch undeleted",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "B5",
       "statement": "node --test scripts/refresh-and-open-pr.test.mjs passes covering B1-B4, with no real refresh/build/git-network call",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs" }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs"
+      }
     }
   ]
 }

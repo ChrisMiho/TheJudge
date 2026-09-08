@@ -182,25 +182,53 @@ export function openPullRequest({ branch, base = DEFAULT_PR_BASE, title = buildP
 }
 
 /**
+ * "no-op" vs "changed" from a `git diff --name-only` (or equivalent) run
+ * restricted to the explicit committed-artifact path list — pure over that
+ * output, never invokes git itself.
+ */
+export function classifyChange(diffOutput) {
+  const paths = String(diffOutput ?? "")
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean)
+  return paths.length === 0 ? { status: "no-op", paths: [] } : { status: "changed", paths }
+}
+
+/**
+ * Cleans up the local-only branch cut in step 2 when nothing changed, so a
+ * no-op run leaves nothing dangling on disk. Switches back to the branch
+ * that was checked out before this run's branch cut (`git checkout -`, the
+ * previously-checked-out ref) before deleting, since the current branch
+ * cannot be deleted.
+ */
+export function deleteLocalBranch({ branch, previousRef = "-", gitRunner }) {
+  gitRunner(["checkout", previousRef])
+  gitRunner(["branch", "-D", branch])
+}
+
+/**
  * The whole run, over injected effects — no real git, gh, or pipeline call
  * unless the caller passes the real implementations (only `main()` does
  * that). Returns a result object describing the outcome rather than calling
  * `process.exit` itself, so it is testable as a plain async function.
  *
- * Control flow so far: dirty-tree refusal -> branch cut -> pipeline ->
- * commit -> push -> open PR. A pipeline failure stops before any git
- * mutation beyond the already-cut local branch — no commit, push, or PR —
- * so the partial state is left in place to inspect. Change detection and the
- * no-op path are wired in by a later slice.
+ * Control flow: dirty-tree refusal -> branch cut -> pipeline -> change
+ * classification -> no-op (delete branch, no commit/push/PR) or changed
+ * (commit, push, open PR). A pipeline failure stops before any git mutation
+ * beyond the already-cut local branch — no commit, push, PR, or branch
+ * delete — so the partial state is left in place to inspect (a weekly run
+ * that found nothing new never opens an empty pull request).
  */
 export async function refreshAndOpenPr({
   getDirtyTreeOutput = defaultGetDirtyTreeOutput,
   gitRunner = defaultGitRunner,
   runPipelineImpl = defaultRunPipelineStep,
+  getArtifactDiffOutput = defaultGetArtifactDiffOutput,
   ghRunner = defaultGhRunner,
   commit = commitArtifacts,
   push = pushBranch,
   openPr = openPullRequest,
+  deleteBranch = deleteLocalBranch,
   now = new Date(),
   log = console.log,
   errorLog = console.error
@@ -218,11 +246,19 @@ export async function refreshAndOpenPr({
     runPipeline(runPipelineImpl)
   } catch (error) {
     // Partial state preserved on purpose: the branch stays, nothing is
-    // staged, committed, pushed, or opened — matches the "keep partial
-    // state" pattern in `refresh-commander-spellbook-data.mjs`'s
+    // staged, committed, pushed, opened, or deleted — matches the "keep
+    // partial state" pattern in `refresh-commander-spellbook-data.mjs`'s
     // `main().catch()`.
     errorLog(`pipeline failed, leaving branch ${branch} in place for inspection: ${error.message}`)
     return { status: "pipeline-failed", branch, error }
+  }
+
+  const change = classifyChange(getArtifactDiffOutput(buildAddPathList()))
+
+  if (change.status === "no-op") {
+    deleteBranch({ branch, gitRunner })
+    log("no changes; nothing to refresh")
+    return { status: "no-op", branch }
   }
 
   const message = buildCommitMessage(now)
@@ -256,6 +292,10 @@ function defaultGitRunner(args) {
 
 function defaultRunPipelineStep(step) {
   execFileSync("npm", ["run", step], { stdio: "inherit" })
+}
+
+function defaultGetArtifactDiffOutput(paths) {
+  return execFileSync("git", ["diff", "--name-only", "--", ...paths], { encoding: "utf8" })
 }
 
 function defaultGhRunner(args) {

@@ -1,6 +1,6 @@
 # Slice B — Change-detection and no-op path
 
-## Status: planned
+## Status: done
 
 ## Goal
 
