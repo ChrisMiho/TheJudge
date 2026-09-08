@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (build half's claim, run `graph-20260907-235620`; was `origin/thejudge-auto/trade-balancer-price-slim`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-price-slim`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-205625/`
-- Current node: `gate-review` (build half, run `graph-20260907-235620`; docs PR #211 merged 2026-09-08 — the owner's build signal; resolving the answered gate, then re-entering at gate-qc)
-- Next action: `/graph-implement PRD/work/trade-balancer-price-slim/` — after gate-review restores `refined`, re-enter at gate-qc, then plan → build → review → close
+- Current node: `plan` (build half, run `graph-20260907-235620`; gate resolved + gate-qc PASS re-grade done — proceeding to map-out)
+- Next action: `/graph-implement PRD/work/trade-balancer-price-slim/` — plan → build → review → close; ends COMPLETE with the code PR open for the owner to merge
 
 ## Node ledger
 
@@ -23,6 +23,7 @@
 | 3F1 | define fix (driver, run graph-20260907-232105) | — | ok | driver-bookkeeping | grepped the full amendment set across PRD/sections (narrative docs already in the build-time-update list; FLOW-009 covered; DEC-088 retired) — NFR-014 was the one authoritative miss; added a tenth GATE-QUESTIONS block correcting line 230 | 2026-09-07 |
 | 4F2 | gate-qc (run graph-20260907-232105, attempt 2) | sonnet | ok (PASS) | `0 → 13` | re-check after the NFR-014 fix: the tenth block's diff `-` line is byte-identical to live NFR-014 line 230, `+` drops the deleted-file reference and keeps `cardhashes.bin`/NFR-010; amendment-set sweep confirms no other orphaned authoritative reference; 10 blocks, summary consistent. Findings none | 2026-09-07 |
 | GR | gate-review (build half, run graph-20260907-235620) | sonnet | ok | degraded (stale run-state left `graph-20260907-232105/driver-bookkeeping/3`, so this run's key never advanced and the 13 calls were misattributed to the finished kickoff run; the run-start canary `nohup true` denied is the binding liveness proof; run-state refreshed to this run before gate-qc) | 10/10 stable-id verdicts accept + BLOCK-01 = A applied inside GATE-QUESTIONS.md (no diff changed); `## Gate verdicts` and resolved `## Open gate` written; STATUS.refined restored (marker, README, PRD/work/STATUS.md board row) | 2026-09-08 |
+| 4 | gate-qc (build half, run graph-20260907-235620) | sonnet | ok (PASS) | `3 → 20` | re-grade of the gate-finalized proposal; verified without fan-out (15 calls). All 10 diffs' `-` lines match live PRD/sections byte-for-byte; Lambda-budget criterion real (package-lambda.sh copies apps/backend/data, lambda-package-budget.test.mjs enforces 250 MB); BLOCK-01 = A keeps price a separate sub-resource; cardMetadata serves both flows; preserved behavior grounded in real code (PrintingPicker.tsx, pricing.ts, cardDetail.ts loadCardDetailIndex); NFR-014 drops the deleted-file reference. Findings none. STATUS unchanged (refined) | 2026-09-08 |
 
 ## Gate verdicts
 
@@ -196,6 +197,22 @@ Validate (inside that worktree) PRD/work/trade-balancer-price-slim/DESIGN-BRIEF.
 On FAIL set STATUS.refining and list the complete findings (the run loops back to define). On PASS report PASS with findings none and do not advance yourself — the driver continues to plan.
 
 Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no spawning any agent. Leave committing to the driver.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### plan (build half, run graph-20260907-235620)
+
+graph is controlling.
+
+You are node 5 (`plan`) of the build half. Invoke `thejudge-map-out` and follow it exactly, in graph-controlled (non-interactive) mode. Produce GAMEPLAN.md and lettered slice docs with one `slice-<letter>.criteria.json` beside each, and set STATUS.active. Do NOT write code or edit PRD/sections; that is the build node's job.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-price-slim
+
+Read first (inside that worktree): PRD/work/trade-balancer-price-slim/DESIGN-BRIEF.md, PRD/work/trade-balancer-price-slim/GATE-QUESTIONS.md (the finalized proposal — 10 stable-id blocks + BLOCK-01 = A, all accept), and PRD/work/trade-balancer-price-slim/README.md `## Preparation gate` (must read Quality-check: PASS — it does; do not self-certify one). This is a backend-move design: prices served from a committed backend artifact via a new sibling read-only route `GET /api/cards/:oracleId/prices`, the ~38 MB frontend `cardPrintingPrices.json` deleted, a slim `cardMetadata` made the single shared unique-card identity index for both flows, and the Trade Balancer fetching a card's printings+prices from the backend on add (cached per session).
+
+Slice the work for sequential single-agent implementation. Each slice's acceptance criteria must be earnable by real evidence (a command pattern, file paths, or manual) — the build node earns them. Make the Lambda 250 MB budget test (lambda-package-budget.test.mjs, run after the price artifact ships in the zip) a criterion, and cover: the new backend price route + committed price artifact; the slim cardMetadata shared index with imageUrl derived from id; the frontend price-file deletion and the balancer's on-add fetch+cache; preserved behavior (null price → $0-plus-caution, printing picker disambiguation, mock-default dev with no network call); and the PRD/sections apply-by-intent for all ten accepted ids written together with the code.
+
+Boundaries: no code, no PRD/sections edit at this node, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no spawning any agent. Leave committing to the driver.
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 

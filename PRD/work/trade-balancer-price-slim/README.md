@@ -21,6 +21,6 @@ proposed product-truth amendments.
 
 ## Preparation gate
 
-- Quality-check: PASS (backend-move design, run graph-20260907-232105; a first re-check FAIL surfaced the NFR-014 deleted-file contradiction, fixed by a tenth gate block, then PASS on re-check)
+- Quality-check: PASS (build-half re-grade, run graph-20260907-235620, of the gate-finalized proposal — all ten verdicts accept, BLOCK-01 = A, nothing changed since the kickoff-half PASS; every load-bearing diff re-verified byte-for-byte against live PRD/sections and the cited code)
 - Checked artifact: `PRD/work/trade-balancer-price-slim/DESIGN-BRIEF.md`
 - Findings: none
