@@ -5,56 +5,99 @@
     {
       "id": "A1",
       "statement": "Dirty-tree classifier: empty porcelain output proceeds, non-empty output refuses with a reason",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs", "scripts/refresh-and-open-pr.test.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs",
+          "scripts/refresh-and-open-pr.test.mjs"
+        ]
+      }
     },
     {
       "id": "A2",
       "statement": "Branch-plan function fetches origin before creating the branch, starting from origin/main",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "A3",
       "statement": "Pipeline runner invokes data:refresh before data:build and never calls data:build after a data:refresh failure",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "A4",
       "statement": "The explicit git-add path list contains exactly the eleven documented paths and the file contains no git add -A / --all / . form",
-      "value": false,
-      "evidence": { "command": "grep -n.*(-A|--all).*scripts/refresh-and-open-pr\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "grep -n.*(-A|--all).*scripts/refresh-and-open-pr\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "A5",
       "statement": "The commit-message function's output contains the run date in YYYY-MM-DD form",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "A6",
       "statement": "The push command never carries a force flag anywhere in the file",
-      "value": false,
-      "evidence": { "command": "grep -n.*force.*scripts/refresh-and-open-pr\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "grep -n.*force.*scripts/refresh-and-open-pr\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "A7",
       "statement": "The PR-open function returns the URL its injected gh runner's stdout provides",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "A8",
       "statement": "An injected gh runner that throws makes the PR-open function reject with an error identifying PR creation as the failed step",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs", "paths": ["scripts/refresh-and-open-pr.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.mjs"
+        ]
+      }
     },
     {
       "id": "A9",
       "statement": "node --test scripts/refresh-and-open-pr.test.mjs passes and never invokes a real refresh/build/git-network operation",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs" }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr\\.test\\.mjs"
+      }
     }
   ]
 }

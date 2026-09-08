@@ -1,6 +1,6 @@
 # Slice A — Refresh-and-PR script core
 
-## Status: planned
+## Status: done
 
 ## Goal
 

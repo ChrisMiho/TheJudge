@@ -18,7 +18,7 @@ See `IDEA.md` for the request, owner's framing, and prior-run matches.
 
 | Slice | Title | Status | Depends on |
 | --- | --- | --- | --- |
-| A | Refresh-and-PR script core (branch, pipeline, commit, push, PR) | planned | none |
+| A | Refresh-and-PR script core (branch, pipeline, commit, push, PR) | done | none |
 | B | Change-detection and no-op path | planned | A |
 | C | npm script wiring | planned | A |
 | D | Promote REQ-195 into PRD/sections, together with the code | planned | A, B, C |
