@@ -4,21 +4,21 @@
   "criteria": [
     {
       "id": "A1",
-      "statement": "scripts/build-card-detail-by-oracle-id.mjs emits both apps/backend/data/cardDetailByOracleId.json and apps/backend/data/cardPrintingPricesByOracleId.json from one pass over default-cards.json",
-      "value": false,
+      "statement": "scripts/build-card-detail-by-oracle-id.mjs emits both apps/backend/data/cardDetailByOracleId.json and apps/backend/data/cardPrintingPricesByOracleId.json.gz from one pass over default-cards.json (committed gzip-compressed, not .json, to fit the Lambda 250 MB budget with the measured ~6 MB of remaining headroom -- see slice-a.md Note)",
+      "value": true,
       "evidence": {
         "command": "npm run data:build|node scripts/build-card-detail-by-oracle-id\\.mjs",
         "paths": [
           "scripts/build-card-detail-by-oracle-id.mjs",
           "apps/backend/data/cardDetailByOracleId.json",
-          "apps/backend/data/cardPrintingPricesByOracleId.json"
+          "apps/backend/data/cardPrintingPricesByOracleId.json.gz"
         ]
       }
     },
     {
       "id": "A2",
       "statement": "scripts/build-card-prices.mjs no longer exists and root package.json's data:build script no longer references it",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "rm .*build-card-prices\\.mjs|git rm .*build-card-prices\\.mjs",
         "paths": ["scripts/build-card-prices.mjs", "package.json"]
@@ -26,17 +26,17 @@
     },
     {
       "id": "A3",
-      "statement": "apps/backend/data/cardPrintingPricesByOracleId.json is keyed by oracle id, each entry's printings array carries id/set/setName/collectorNumber/usd/usdFoil, a top-level snapshotDate is present, and a missing price is stored as null",
-      "value": false,
+      "statement": "apps/backend/data/cardPrintingPricesByOracleId.json.gz is keyed by oracle id (byOracleId), each entry's printings array carries id/set/setName/collectorNumber/usd/usdFoil, a top-level snapshotDate is present, and a missing price is stored as null",
+      "value": true,
       "evidence": {
         "command": "node --test.*build-card-detail-by-oracle-id\\.test\\.mjs",
-        "paths": ["apps/backend/data/cardPrintingPricesByOracleId.json"]
+        "paths": ["apps/backend/data/cardPrintingPricesByOracleId.json.gz"]
       }
     },
     {
       "id": "A4",
       "statement": "node --test scripts/build-card-detail-by-oracle-id.test.mjs passes, including coverage for a priced printing, a null-price printing, and the snapshot date",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "node --test.*build-card-detail-by-oracle-id\\.test\\.mjs"
       }
@@ -44,7 +44,7 @@
     {
       "id": "A5",
       "statement": "npm run test:scripts passes (full scripts suite green after retiring build-card-prices.mjs)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -52,7 +52,7 @@
     {
       "id": "A6",
       "statement": "node --test scripts/lambda-package-budget.test.mjs passes with the new price artifact committed under apps/backend/data/",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "node --test.*lambda-package-budget\\.test\\.mjs|npm run test:scripts"
       }
@@ -60,7 +60,7 @@
     {
       "id": "A7",
       "statement": "PRD/sections/functional-requirements.md's REQ-066 block matches the GATE-QUESTIONS.md REQ-066 diff's + lines byte-for-byte",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",
@@ -71,7 +71,7 @@
     {
       "id": "A8",
       "statement": "PRD/sections/system-map.md's Printing-price artifact build entry describes the unified build (one pass, backend artifact, build-card-prices.mjs retired)",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["PRD/sections/system-map.md"]
       }

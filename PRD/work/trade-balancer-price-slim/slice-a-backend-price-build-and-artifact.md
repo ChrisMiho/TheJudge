@@ -1,6 +1,22 @@
 # Slice A — Backend price build & artifact
 
-## Status: planned
+## Status: done
+
+## Note — committed artifact is gzip-compressed (`.json.gz`, not `.json`)
+
+Measured at build: the committed `apps/backend/data/` total before this slice
+was 113.9 MB against the Lambda budget's 120 MB ceiling (250 MB unzipped quota
+minus the 130 MB non-data reserve) — about 6 MB of headroom, not the ~70 MB the
+design brief assumed (its "~50 MB committed data" figure was stale; the
+Commander Spellbook combo artifacts alone are now ~79 MB). The raw price map
+(readable shape, matching the wire response 1:1) is ~15.6 MB — it would blow
+the budget outright. Gzip-compressing it (mirroring the two existing
+`commanderSpellbookCombos*.json.gz` artifacts already committed in the same
+directory, decompressed once at backend startup) lands it at ~4.6 MB, for a
+new total of ~118.5 MB — comfortably inside the 120 MB ceiling. REQ-066's diff
+calls the path a "working name," so the committed artifact is
+`apps/backend/data/cardPrintingPricesByOracleId.json.gz`; every slice A/B
+reference below and the criteria file's evidence paths use that real name.
 
 ## Goal
 
@@ -48,26 +64,26 @@ keep the Lambda 250 MB package budget green with the new artifact bundled.
 
 ## Acceptance criteria
 
-- [ ] A1: `scripts/build-card-detail-by-oracle-id.mjs` emits both
+- [x] A1: `scripts/build-card-detail-by-oracle-id.mjs` emits both
       `apps/backend/data/cardDetailByOracleId.json` and
-      `apps/backend/data/cardPrintingPricesByOracleId.json` from one pass over
+      `apps/backend/data/cardPrintingPricesByOracleId.json.gz` from one pass over
       `default-cards.json`.
-- [ ] A2: `scripts/build-card-prices.mjs` no longer exists, and root
+- [x] A2: `scripts/build-card-prices.mjs` no longer exists, and root
       `package.json`'s `data:build` script no longer references it.
-- [ ] A3: `apps/backend/data/cardPrintingPricesByOracleId.json` is keyed by
-      oracle id; each entry's `printings` array carries `id, set, setName,
+- [x] A3: `apps/backend/data/cardPrintingPricesByOracleId.json.gz` is keyed by
+      oracle id (`byOracleId`); each entry's `printings` array carries `id, set, setName,
       collectorNumber, usd, usdFoil`; a top-level `snapshotDate` is present; a
       printing with no source price stores `usd`/`usdFoil` as `null`.
-- [ ] A4: `node --test scripts/build-card-detail-by-oracle-id.test.mjs` passes,
+- [x] A4: `node --test scripts/build-card-detail-by-oracle-id.test.mjs` passes,
       including new coverage for a priced printing, a null-price printing, and
       the snapshot date.
-- [ ] A5: `npm run test:scripts` passes (full scripts suite green after
+- [x] A5: `npm run test:scripts` passes (full scripts suite green after
       retiring `build-card-prices.mjs`).
-- [ ] A6: `node --test scripts/lambda-package-budget.test.mjs` passes with the
+- [x] A6: `node --test scripts/lambda-package-budget.test.mjs` passes with the
       new price artifact committed under `apps/backend/data/`.
-- [ ] A7: `PRD/sections/functional-requirements.md`'s REQ-066 block matches
+- [x] A7: `PRD/sections/functional-requirements.md`'s REQ-066 block matches
       the `GATE-QUESTIONS.md` REQ-066 diff's `+` lines byte-for-byte.
-- [ ] A8: `PRD/sections/system-map.md`'s `### Printing-price artifact build`
+- [x] A8: `PRD/sections/system-map.md`'s `### Printing-price artifact build`
       entry describes the unified build.
 
 ## Verification
@@ -85,7 +101,10 @@ node --test scripts/lambda-package-budget.test.mjs
 - `scripts/build-card-detail-by-oracle-id.test.mjs`
 - `scripts/build-card-prices.mjs` (deleted)
 - `package.json`
-- `apps/backend/data/cardPrintingPricesByOracleId.json` (new)
-- `scripts/lambda-package-budget.test.mjs` (header comment only, if stale)
+- `apps/backend/data/cardPrintingPricesByOracleId.json.gz` (new; gzip-compressed, see the Note above)
 - `PRD/sections/functional-requirements.md` (REQ-066)
 - `PRD/sections/system-map.md`
+
+`scripts/lambda-package-budget.test.mjs` was not touched — its header comment
+documents the non-data reserve measurement, not the committed-data total, and
+stays accurate as written; the test itself measures tracked files at run time.

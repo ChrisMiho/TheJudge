@@ -1505,27 +1505,30 @@
 ### REQ-066
 - Title: Printing-level price data artifact
 - Priority: high
-- Description: Add a build step that emits a committed, printing-level USD price artifact from the existing Scryfall bulk source, covering every paper printing with its non-foil and foil price plus the fields needed to identify, display, and list printings, so the trade balancer can price scanned and manually chosen printings with no runtime network calls (DEC-088).
+- Description: Emit a committed, **backend** printing-level USD price artifact from the existing Scryfall bulk source, keyed by oracle id, so the trade balancer can price scanned and manually chosen printings by fetching one card's printings on demand from the backend (REQ-175, FLOW-025). The projection is unified into the existing card-detail build, and the former ~38 MB frontend price file is removed (reverses the frontend-only posture of the retired DEC-087/DEC-088).
 - Acceptance Criteria:
-  - a build script (alongside `data:build` / `data:refresh`) emits a committed printing-level price artifact under `apps/frontend/public/data/` from the local Scryfall bulk source
-  - per printing the artifact carries at least: printing id, oracle id, card name, set code, set name, collector number, image url, `usd` (non-foil), and `usd_foil`
-  - entries are **indexable by oracle id** (to list a card's printings for the manual picker) and resolvable **by printing id** (so a scanned printing prices directly)
-  - missing prices are stored as null/absent (consumed as $0 + caution per REQ-065); the artifact records a **snapshot date**
-  - the artifact is **lazy-loaded only when the Trade Balancer is first opened**; app startup and the MTG Assistant flow are unaffected for users who never open it
+  - the price/printing projection is emitted by the **existing card-detail build** (`scripts/build-card-detail-by-oracle-id.mjs`), which trims `default-cards.json` once and emits both the card-detail map and the price map; the separate `scripts/build-card-prices.mjs` is retired and no fourth extract of `default-cards.json` is added
+  - the committed price artifact is **backend-only** (working name `apps/backend/data/cardPrintingPricesByOracleId.json`), keyed by **oracle id**; per oracle it carries the card's list of printings, each with printing id, set code, set name, collector number, `usd` (non-foil), and `usd_foil`; it records a **snapshot date**. Card name and image url are **not** stored per printing — name comes from the shared `cardMetadata` index (REQ-174) and image url is derived from the printing id (Scryfall template)
+  - the backend loads the committed price map into memory at startup and serves one card's printings on demand (REQ-175) with **no runtime network call**, exactly like `cardDetailByOracleId.json`; the former `apps/frontend/public/data/cardPrintingPrices.json` is deleted and is no longer downloaded up front
+  - the committed backend price map keeps the Lambda deployment inside AWS's **250 MB unzipped quota**: `scripts/lambda-package-budget.test.mjs` passes with the price map bundled (the whole `apps/backend/data/` folder ships in the Lambda zip), and the build records the measured price-map size so the budget headroom stays visible
+  - a scanned printing prices directly (its oracle resolves via the scan map, then the card's fetched printing list is matched by printing id); the manual picker lists every printing of a card from the fetched list
+  - missing prices are stored as null/absent (consumed as $0 + caution per REQ-065)
   - `npm run data:build` regenerates the artifact from local inputs; `npm run data:refresh` refreshes the Scryfall bulk source (download is human-approved before it runs) then rebuilds
   - the build degrades gracefully: a missing/failed source keeps the prior committed artifact and does not break other artifact builds
 - Constraints:
-  - static committed snapshot; no runtime price fetch and no runtime metadata/library sync (DEC-012 posture)
+  - static committed snapshot: no live/real-time price sync and no scheduled refresh; the on-demand backend read serves the committed snapshot in memory and makes no external call (DEC-012 posture)
   - raw downloaded bulk data remains gitignored and is not committed; only the trimmed price artifact is committed
-  - no change to `cardMetadata.json`, `cardScanMap.json`, `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, the provider boundary, or any endpoint
+  - no change to `cardScanMap.json`, `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, or the provider boundary; `cardMetadata.json` is slimmed and reused as the shared identity index per REQ-174; the backend gains the read-only price route per REQ-175
 - Dependencies:
-  - DEC-088
   - DEC-012
   - REQ-065
   - NFR-013
+  - REQ-174
+  - REQ-175
   - data pipeline (`scripts/`)
 - Notes:
   - source-bulk choice and the exact filter/field set are build-time details validated by outcome (every priced gameplay printing present, prices display correctly); `all-cards` (every language) is unnecessary because prices are per printing
+  - the freshness script's price **target artifact** changes from the deleted frontend file to the backend map; re-pointing it is a later change tracked by the freshness track, not resolved here
 
 ### REQ-067
 - Title: Feature portal — top-level app navigation

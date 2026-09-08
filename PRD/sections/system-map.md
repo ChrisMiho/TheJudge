@@ -448,9 +448,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Printing-price artifact build
 
 - Status: shipped
-- Summary: Offline build that emits the committed, printing-level USD price artifact from the Scryfall bulk source for the Trade Balancer — per printing `usd`/`usd_foil` plus set/collector/image, indexable by oracle and printing id, with a snapshot date; static snapshot, human-approved refresh, lazy-loaded on first Trade Balancer open.
-- Lives in: `scripts/build-card-prices.mjs` → `apps/frontend/public/data/cardPrintingPrices.json` (wired into `npm run data:build`); lazy runtime loader `apps/frontend/src/lib/trade/loadCardPrices.ts`
-- Backed by: DEC-088, REQ-066, NFR-013
+- Summary: The printing-price projection is unified into the existing card-detail build — one pass over the Scryfall bulk source emits both the card-detail map and a backend printing-price map for the Trade Balancer (per oracle id, every qualifying printing's `usd`/`usd_foil` plus set/collector, with a top-level snapshot date; card name and image are not repeated per printing). The separate `build-card-prices.mjs` script is retired. Committed gzip-compressed to keep the Lambda package inside its 250 MB unzipped quota (`scripts/lambda-package-budget.test.mjs`), decompressed once at backend startup, mirroring the existing Commander Spellbook gzip artifacts in the same directory. Static snapshot, human-approved refresh, served on demand by the backend with no runtime network call.
+- Lives in: `scripts/build-card-detail-by-oracle-id.mjs` → `apps/backend/data/cardDetailByOracleId.json` + `apps/backend/data/cardPrintingPricesByOracleId.json.gz` (wired into `npm run data:build`)
+- Backed by: REQ-066, REQ-175, NFR-013
 
 ### Commander Spellbook combo artifact build
 
