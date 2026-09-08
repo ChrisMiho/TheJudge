@@ -21,6 +21,6 @@ proposed product-truth amendments.
 
 ## Preparation gate
 
-- Quality-check: INCOMPLETE — the reshape re-check did not finish. Attempt 1 exhausted its tool-call cap (71/60) by spawning verification sub-forks that looped, and the boundary hook blocked a re-dispatch under the denied-command-retry rule. No PASS/FAIL verdict was produced. (The pre-reshape frontend-slim design did pass gate-qc; that verdict does not carry to this design.)
+- Quality-check: PASS (backend-move design, run graph-20260907-232105; a first re-check FAIL surfaced the NFR-014 deleted-file contradiction, fixed by a tenth gate block, then PASS on re-check)
 - Checked artifact: `PRD/work/trade-balancer-price-slim/DESIGN-BRIEF.md`
-- Findings: none produced — a fresh quality-check run is required before build.
+- Findings: none

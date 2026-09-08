@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-price-slim` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-205625/`
-- Current node: `owner-action` (reshape re-check parked — cap-exhausted, re-dispatch blocked)
-- Next action: owner reviews the reshaped design in PR #211 and either answers/merges `GATE-QUESTIONS.md` directly, or resumes with a fresh quality-check run before build
+- Current node: `owner-action` (gate-qc PASS on the backend-move design; verdicts recorded per the owner's decision — ready to merge)
+- Next action: owner reviews PR #211 (verdicts pre-filled: accept all ten + BLOCK-01 = A; confirm NFR-014, the block added after the accept-all) and merges to `main`; the build half (`graph-implement`) claims the spec and applies the proposal
 
 ## Node ledger
 
@@ -19,15 +19,16 @@
 | 4 | gate-qc | sonnet | ok (PASS) | `0 → 22` | quality-check PASS on DESIGN-BRIEF.md, findings none; verified brief premise against loadCardPrices.ts / oracleSearch.ts / build-card-prices.mjs and the REQ-066 / NFR-013 diffs against current section text; run stops here (first PASS) | 2026-09-07 |
 | 3R | define (reshape) | opus | ok | `0 → 54` | owner pivoted the design (frontend slim → backend move). DESIGN-BRIEF.md and GATE-QUESTIONS.md rewritten: prices served from a committed backend artifact via a price companion to `GET /api/cards/:oracleId`, ~38 MB frontend `cardPrintingPrices.json` deleted, slim `cardMetadata` as the shared identity index. 9 stable-id blocks (REQ-064/065/066/174/175, FLOW-009, FLOW-025 new, NFR-004/013) + Blocker BLOCK-01 (endpoint shape fork); STATUS.refined; PRD/sections untouched | 2026-09-07 |
 | 4R | gate-qc (reshape) | sonnet | parked | static at 71 — over cap | attempt 1 exhausted its cap (71/60, 2 denials) by spawning verification sub-forks that looped; produced no verdict and wrote nothing (worktree clean, STATUS still refined). Attempt 2 re-dispatch was denied by the boundary hook (`denied-command-retry` over the prior `tool-call-cap` denial), which mandates park. Reshaped brief in PR #211; a fresh quality-check run is required. | 2026-09-07 |
+| 4F1 | gate-qc (run graph-20260907-232105, attempt 1) | sonnet | failed (FAIL) | `0 → 25` | clean re-check (no fan-out, 23 calls). 7 diffs verified against live PRD text, Lambda-budget/price-contract/shared-index/BLOCK-01 all confirmed against real code. One FAIL: NFR-014 (authoritative) still named the deleted `cardPrintingPrices.json` lazy-load with no gate block | 2026-09-07 |
+| 3F1 | define fix (driver, run graph-20260907-232105) | — | ok | driver-bookkeeping | grepped the full amendment set across PRD/sections (narrative docs already in the build-time-update list; FLOW-009 covered; DEC-088 retired) — NFR-014 was the one authoritative miss; added a tenth GATE-QUESTIONS block correcting line 230 | 2026-09-07 |
+| 4F2 | gate-qc (run graph-20260907-232105, attempt 2) | sonnet | ok (PASS) | `0 → 13` | re-check after the NFR-014 fix: the tenth block's diff `-` line is byte-identical to live NFR-014 line 230, `+` drops the deleted-file reference and keeps `cardhashes.bin`/NFR-010; amendment-set sweep confirms no other orphaned authoritative reference; 10 blocks, summary consistent. Findings none | 2026-09-07 |
 
 ## Open gate
 
-- State: PARKED at `owner-action`. The design was reshaped to the backend move (owner pivot) and is committed on the branch / in PR #211. The reshape quality-check re-check did **not** complete — it exhausted its tool-call cap via a fan-out loop and the boundary hook blocked a re-dispatch (`denied-command-retry`), which mandates a park. No PASS/FAIL verdict exists for the reshaped design.
-- Owner action (two paths):
-  1. Review the reshaped design directly in PR #211 and, if satisfied, answer the accept/edit/reject slots in `GATE-QUESTIONS.md` (9 blocks: REQ-064/065/066/174/175, FLOW-009, FLOW-025, NFR-004/013) and answer BLOCK-01 (endpoint fork: sibling `/api/cards/:oracleId/prices` route [Option A, recommended] vs `?include=prices` on the existing route [Option B]), then merge PR #211 to `main`. The build half applies the approved proposal.
-  2. Or resume with a fresh quality-check run against the reshaped brief before merging — a new run avoids the exhausted attempt's cap and the retry guard.
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/211 (docs-only, base `main`, head `thejudge-auto/trade-balancer-price-slim`) — body updated to the backend-move design.
-- Note: `## Preparation gate` reads INCOMPLETE, so the autonomous build half will not self-certify a PASS — a fresh gate-qc PASS (or the owner's explicit go-ahead) is needed before build.
+- State: PARKED at `owner-action`, gate-qc PASS on the backend-move design. All ten amendment blocks (REQ-064/065/066/174/175, FLOW-009, FLOW-025, NFR-004/013/014) and BLOCK-01 are answered in `GATE-QUESTIONS.md`, pre-filled per the owner's stated decision: **accept all ten + BLOCK-01 = A** (the sibling `/api/cards/:oracleId/prices` route).
+- Owner action: review PR #211 and merge to `main`. One thing to confirm before merging: **NFR-014** was added *after* the owner's accept-all instruction (it is the gate's consistency fix for a doc naming the deleted price file), recorded as `accept` with a flag — change its verdict if you disagree, otherwise it is ready. Merging is the build signal.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/211 (docs-only, base `main`, head `thejudge-auto/trade-balancer-price-slim`) — body updated to the backend-move design with the recorded verdicts.
+- Resume: no `/graph-kickoff` resume needed. After merge, the build half `graph-implement` claims the spec from `origin/main`, applies the answered proposal (build-time constraint: the Lambda budget test must pass with the price map, REQ-066), and opens the code PR.
 
 ## Dispatch prompts
 
@@ -129,6 +130,20 @@ THE OWNER'S DECISION (supersedes the intake's ship-Step-1-first recommendation):
 Preserve: null price still renders the $0-plus-caution state; the printing picker still disambiguates by set, collector number, and a working image; mock-default local dev keeps working with committed backend data and no live network call; do not entangle the weekly freshness script beyond noting its price target changes. Investigate the real code (card-detail route/index, the build scripts, the trade loader/search, the scan flow) and read current PRD/sections truth before proposing.
 
 Produce (rewriting): DESIGN-BRIEF.md for the backend-move design; GATE-QUESTIONS.md with one section block per stable id (three plain-language lines, complete diff, accept/edit/reject slots) and a trailing Blocker questions section for genuine forks. Set STATUS.refining while shaping and STATUS.refined when complete. Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no Scryfall refresh. Committing left to the driver.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### gate-qc (run graph-20260907-232105)
+
+graph is controlling.
+
+You are the `gate-qc` node of graph-kickoff run graph-20260907-232105 (a clean re-check of the reshaped backend-move design). Invoke `thejudge-quality-check` in graph-controlled (non-interactive) mode. Produce a PASS/FAIL report only.
+
+HARD CONSTRAINTS (a prior attempt self-DoS'd by fanning out): verify YOURSELF with Read/Grep/Bash; do NOT spawn any subagents, Agents, Tasks, or forks; no sleeping/polling; stay well under 60 tool calls.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim
+
+Validate DESIGN-BRIEF.md (backend-move design) and GATE-QUESTIONS.md (10 stable-id blocks + BLOCK-01) for PRD alignment and agent-readiness. Spot-check that the load-bearing diffs apply cleanly against current PRD/sections text; confirm the Lambda-budget acceptance criterion on REQ-066 is real (apps/backend/data ships in the zip per package-lambda.sh; the 250 MB quota is enforced by lambda-package-budget.test.mjs); confirm the price payload is controlled and the committed map trimmed; confirm cardMetadata serves both flows; confirm preserved behavior and that BLOCK-01 scopes NFR-004 (Option B drops it); confirm the one-backend-file consolidation is framed as deferred non-goal. On FAIL set STATUS.refining and list findings; on PASS report PASS findings none and do not advance. Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no spawning any agent. Attempt 2 re-dispatched the same skill focused on closing the NFR-014 finding after the tenth block was added.
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 

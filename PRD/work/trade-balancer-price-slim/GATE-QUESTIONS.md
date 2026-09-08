@@ -62,7 +62,7 @@ proceed — the multi-second first-open stall on mobile stays.
 
 *(The acceptance-criteria list is unchanged and elided above for brevity.)*
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -112,7 +112,7 @@ backend move cannot happen and the up-front bulk file stays.
 +  - FLOW-025
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -180,7 +180,7 @@ and the balancer keeps its multi-second first-open stall on mobile.
 +  - the freshness script's price **target artifact** changes from the deleted frontend file to the backend map; re-pointing it is a later change tracked by the freshness track, not resolved here
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -242,7 +242,7 @@ removed.
 +  - deriving the image from a stored printing id (rather than a full URL) is the same lever used for the backend price data; the gzipped saving is modest (the shared URL prefix compresses well) but it unifies image derivation and removes a redundant per-card string
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -308,7 +308,7 @@ balancer cannot fetch prices and the reshape cannot proceed.
 +  - prices ride a companion separate from the descriptive block because prices refresh weekly while rules text is static, and the question/RAG flow must not carry price bytes it never reads
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -363,7 +363,7 @@ requirements above.
 
 *(Elided steps/edge cases are unchanged.)*
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -406,7 +406,7 @@ flow to back REQ-065/REQ-175, leaving the mechanism undocumented.
 +  - prices are a static committed snapshot served in memory; the on-demand read makes no external network call (NFR-013)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -461,8 +461,8 @@ apply).
    - no runtime metadata sync tooling
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Required by the chosen endpoint option (BLOCK-01 = A, the sibling `/prices` route).
 
 ---
 
@@ -516,7 +516,7 @@ longer exists, contradicting the amended REQ-066.
 +  - free-tier posture: deleting the ~38 MB first-open download removes that S3/CloudFront egress; the per-card price fetch adds only tiny reads (a handful of KB and a Lambda invocation per card added), well inside the free-tier request allowance at trade-balancer volumes. The backend price map adds ~15-20 MB (estimate; measured at build) to the Lambda bundle, kept inside the 250 MB quota by the budget test (REQ-066)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -562,8 +562,8 @@ product truth.
 +  - REQ-066
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Gate-surfaced consistency fix so NFR-014 stops naming the deleted `cardPrintingPrices.json`; a direct consequence of accepting REQ-066. Added after the owner's accept-all instruction — flagged for the owner to confirm or change before merging.
 
 ---
 
@@ -600,5 +600,5 @@ for it. If you prefer to avoid the NFR-004 change, pick Option B — then reject
 the NFR-004 block and read REQ-175's price companion as served from the existing
 route under the opt-in parameter (a one-line change to that block).
 
-- Verdict (A / B):
-- Reason:
+- Verdict (A / B): A
+- Reason: Dedicated read-only route `GET /api/cards/:oracleId/prices` — cleanest contract, keeps the answer path carrying zero price bytes, mirrors the existing card-detail route. Owner's choice; the NFR-004 amendment above is accepted as its consequence.
