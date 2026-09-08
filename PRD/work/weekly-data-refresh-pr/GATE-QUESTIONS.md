@@ -163,8 +163,11 @@ and opens a PR by hand again. No standing cadence exists.
 +- Backed by: DEC-088, REQ-066, NFR-013, REQ-195
 ```
 
-- Verdict: <accept | edit | reject>
-- Reason:
+- Verdict: accept
+- Reason: Full refresh — keep every corpus (prices, rulings, combos, rules) current
+  on one weekly cadence with the least new code; runtime posture unchanged. When
+  the first refresh runs, all extracts should come up to date together, not just
+  prices.
 
 ## Blocker questions
 
