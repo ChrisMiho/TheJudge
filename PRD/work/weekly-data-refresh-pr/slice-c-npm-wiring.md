@@ -1,6 +1,6 @@
 # Slice C — npm script wiring
 
-## Status: planned
+## Status: done
 
 ## Goal
 

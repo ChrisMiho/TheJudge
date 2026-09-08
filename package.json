@@ -28,6 +28,7 @@
     "data:build": "node scripts/build-card-metadata.mjs && node scripts/build-card-detail-by-oracle-id.mjs && node scripts/build-card-rulings.mjs && node scripts/build-game-rules.mjs && tsx scripts/build-rule-embeddings.mjs && node scripts/build-card-prices.mjs && node scripts/build-commander-spellbook-combos.mjs",
     "data:refresh": "node scripts/refresh-scryfall-data.mjs",
     "data:refresh-combos": "node scripts/refresh-commander-spellbook-data.mjs",
+    "data:refresh-pr": "node scripts/refresh-and-open-pr.mjs",
     "openai:verify-credentials": "node scripts/openai-verify-credentials.mjs",
     "prompt:preview": "node scripts/prompt-preview.mjs",
     "prompt:preview:all": "node scripts/prompt-preview.mjs --all-fixtures",
