@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (build half's claim, run `graph-20260907-235620`; was `origin/thejudge-auto/trade-balancer-price-slim`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-price-slim`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-205625/`
-- Current node: `owner-action` (gate-qc PASS on the backend-move design; verdicts recorded per the owner's decision — ready to merge)
-- Next action: owner reviews PR #211 (verdicts pre-filled: accept all ten + BLOCK-01 = A; confirm NFR-014, the block added after the accept-all) and merges to `main`; the build half (`graph-implement`) claims the spec and applies the proposal
+- Current node: `gate-review` (build half, run `graph-20260907-235620`; docs PR #211 merged 2026-09-08 — the owner's build signal; resolving the answered gate, then re-entering at gate-qc)
+- Next action: `/graph-implement PRD/work/trade-balancer-price-slim/` — after gate-review restores `refined`, re-enter at gate-qc, then plan → build → review → close
 
 ## Node ledger
 
@@ -144,6 +144,22 @@ HARD CONSTRAINTS (a prior attempt self-DoS'd by fanning out): verify YOURSELF wi
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim
 
 Validate DESIGN-BRIEF.md (backend-move design) and GATE-QUESTIONS.md (10 stable-id blocks + BLOCK-01) for PRD alignment and agent-readiness. Spot-check that the load-bearing diffs apply cleanly against current PRD/sections text; confirm the Lambda-budget acceptance criterion on REQ-066 is real (apps/backend/data ships in the zip per package-lambda.sh; the 250 MB quota is enforced by lambda-package-budget.test.mjs); confirm the price payload is controlled and the committed map trimmed; confirm cardMetadata serves both flows; confirm preserved behavior and that BLOCK-01 scopes NFR-004 (Option B drops it); confirm the one-backend-file consolidation is framed as deferred non-goal. On FAIL set STATUS.refining and list findings; on PASS report PASS findings none and do not advance. Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no spawning any agent. Attempt 2 re-dispatched the same skill focused on closing the NFR-014 finding after the tenth block was added.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### gate-review
+
+graph is controlling.
+
+You are gate resolution for the build half of the graph run (run id graph-20260907-235620). The docs PR #211 has merged — the owner's build signal. Invoke the `graph-gate-review` skill and follow it exactly. It applies the owner's recorded accept/edit/reject verdicts inside GATE-QUESTIONS.md, records `## Gate verdicts`, resolves the gate, and restores the lifecycle status. It never edits PRD/sections and never drives a node.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-price-slim
+
+Package: PRD/work/trade-balancer-price-slim/ (inside that worktree). Read GATE-QUESTIONS.md for the owner's answers and GRAPH-RUN.md `## Open gate` for the parked state.
+
+The owner's recorded answers: all ten stable-id blocks (REQ-064/065/066/174/175, FLOW-009, FLOW-025, NFR-004/013/014) = accept; BLOCK-01 = A (the sibling read-only route `GET /api/cards/:oracleId/prices`). Apply each verdict inside its own block only. Since every verdict is accept, no diff changes; a reject would burn its id. Then write `## Gate verdicts`, mark `## Open gate` resolved with the date and verdict count, and restore STATUS.refined, the README status field, and the PRD/work/STATUS.md board row to the refined position so the resumed run enters at gate-qc.
+
+Boundaries: never edit PRD/sections; never write DESIGN-BRIEF/GAMEPLAN/slice docs; never advance a node or dispatch a subagent; no merge/close/force-push, no git add -A. Committing is the driver's job.
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 
