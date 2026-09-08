@@ -17,7 +17,7 @@ proposed product-truth amendments.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/trade-balancer-price-slim
+- Autonomous base: origin/main
 
 ## Preparation gate
 

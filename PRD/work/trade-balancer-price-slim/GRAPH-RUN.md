@@ -3,8 +3,8 @@
 - Run ID: `graph-20260907-205625` (reshape run `graph-20260907-215845` — owner pivoted the design to the backend move; see the reshape rows below)
 - Profile: `loaded (env sentinel)` (observed by node 1 preflight); reshape run graph canary `denied — graph tier armed (nohup)`
 - Canary: `denied — hook live (rm -rf under .worktrees)`; graph canary `denied — graph tier armed (nohup)`
-- Autonomous base: `origin/thejudge-auto/trade-balancer-price-slim` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim`
+- Autonomous base: `origin/main` (build half's claim, run `graph-20260907-235620`; was `origin/thejudge-auto/trade-balancer-price-slim`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-price-slim`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-205625/`
 - Current node: `owner-action` (gate-qc PASS on the backend-move design; verdicts recorded per the owner's decision — ready to merge)
 - Next action: owner reviews PR #211 (verdicts pre-filled: accept all ten + BLOCK-01 = A; confirm NFR-014, the block added after the accept-all) and merges to `main`; the build half (`graph-implement`) claims the spec and applies the proposal
