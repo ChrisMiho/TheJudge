@@ -3,8 +3,8 @@
 - Run ID: `graph-20260907-163826`
 - Profile: `loaded (env sentinel)` (reported by node 1)
 - Canary: `denied — hook live (rm -rf, universal tier; nohup, graph tier)`
-- Autonomous base: `origin/thejudge-auto/weekly-data-refresh-pr` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-weekly-data-refresh-pr`
+- Autonomous base: `origin/main` (build half's claim, run `graph-20260908-013519`; was `origin/thejudge-auto/weekly-data-refresh-pr`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-163826/`
 - Current node: `owner-action` (gate-qc PASS — spec-forming half complete)
 - Next action: owner answers the `- Verdict:` slot in `GATE-QUESTIONS.md`, then merges the docs PR into `main`; `graph-implement` builds it from there
