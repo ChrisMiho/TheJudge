@@ -99,7 +99,11 @@ export async function fetchJsonWithRetry(url, options = {}) {
     }
 
     const retryAfterMs = parseRetryAfterMs(response.headers?.get?.("retry-after"))
-    const waitMs = retryAfterMs ?? backoffDelayMs(attempt, baseDelayMs, random)
+    // Floor every retry at the backoff, so a throttle (even a `Retry-After: 0`
+    // or a bodiless 429) triggers a real back-off instead of an instant retry
+    // that immediately re-throttles and burns the attempt budget. A larger
+    // `Retry-After` still wins.
+    const waitMs = Math.max(retryAfterMs ?? 0, backoffDelayMs(attempt, baseDelayMs, random))
     onRetry({ url, status: response.status, attempt, waitMs })
     await sleepImpl(waitMs)
   }
@@ -130,7 +134,11 @@ export async function fetchBufferWithRetry(url, options = {}) {
     }
 
     const retryAfterMs = parseRetryAfterMs(response.headers?.get?.("retry-after"))
-    const waitMs = retryAfterMs ?? backoffDelayMs(attempt, baseDelayMs, random)
+    // Floor every retry at the backoff, so a throttle (even a `Retry-After: 0`
+    // or a bodiless 429) triggers a real back-off instead of an instant retry
+    // that immediately re-throttles and burns the attempt budget. A larger
+    // `Retry-After` still wins.
+    const waitMs = Math.max(retryAfterMs ?? 0, backoffDelayMs(attempt, baseDelayMs, random))
     onRetry({ url, status: response.status, attempt, waitMs })
     await sleepImpl(waitMs)
   }

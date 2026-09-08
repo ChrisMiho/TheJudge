@@ -18,7 +18,8 @@ import {
   fetchBufferWithRetry,
   fetchJsonWithRetry,
   parseRefreshArgs,
-  parseRetryAfterMs
+  parseRetryAfterMs,
+  SCRYFALL_REQUEST_DELAY_MS
 } from "./refresh-commander-spellbook-data.mjs"
 
 /** Minimal stand-in for the parts of `Response` the retry loop touches. */
@@ -247,4 +248,39 @@ test("a template Scryfall rejects outright (a 404, a query it no longer accepts)
   assert.equal(resolved, 1)
   assert.ok(fs.existsSync(path.join(dir, "000002.json")), "the good template's expansion is still written")
   assert.ok(!fs.existsSync(path.join(dir, "000001.json")), "the bad template writes nothing")
+})
+
+// ---- Slice C: retry backoff floor (a Retry-After: 0 must not cause an instant retry) ----
+
+test("a Retry-After of 0 waits at least the backoff floor, never ~0ms", async () => {
+  const { waits, sleep } = recordingSleep()
+  let calls = 0
+  await fetchJsonWithRetry("https://example.test/variants/", {
+    fetchImpl: async () => (calls++ === 0 ? response(429, { headers: { "Retry-After": "0" } }) : response(200)),
+    sleepImpl: sleep,
+    baseDelayMs: 1000,
+    random: () => 0
+  })
+  assert.deepEqual(waits, [500], "attempt-1 backoff floor with random 0 is 500ms")
+})
+
+test("after a throttle, each retry waits at least its backoff floor and grows (never ~0)", async () => {
+  const { waits, sleep } = recordingSleep()
+  let calls = 0
+  await fetchJsonWithRetry("https://example.test/variants/", {
+    fetchImpl: async () => (calls++ < 3 ? response(429, { headers: { "Retry-After": "0" } }) : response(200)),
+    sleepImpl: sleep,
+    baseDelayMs: 1000,
+    random: () => 0,
+    maxAttempts: 6
+  })
+  assert.deepEqual(waits, [500, 1000, 2000])
+  assert.ok(
+    waits.every((w) => w >= 500),
+    "no retry waits below the backoff floor"
+  )
+})
+
+test("SCRYFALL_REQUEST_DELAY_MS stays at 200 (5 req/s pacing)", () => {
+  assert.equal(SCRYFALL_REQUEST_DELAY_MS, 200)
 })

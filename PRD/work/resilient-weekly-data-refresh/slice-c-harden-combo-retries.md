@@ -1,6 +1,6 @@
 # Slice C — Harden combo retry backoff (keep 200ms pacing)
 
-## Status: planned
+## Status: done
 
 ## Goal
 

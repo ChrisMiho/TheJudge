@@ -5,26 +5,42 @@
     {
       "id": "C1",
       "statement": "A Retry-After of 0 results in a retry wait at/above the backoff floor, never ~0ms",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-commander-spellbook-data.test.mjs", "paths": ["scripts/refresh-commander-spellbook-data.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-commander-spellbook-data.test.mjs",
+        "paths": [
+          "scripts/refresh-commander-spellbook-data.mjs"
+        ]
+      }
     },
     {
       "id": "C2",
       "statement": "After a throttle, subsequent retries each wait at least the backoff floor for their attempt",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-commander-spellbook-data.test.mjs", "paths": ["scripts/refresh-commander-spellbook-data.mjs"] }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-commander-spellbook-data.test.mjs",
+        "paths": [
+          "scripts/refresh-commander-spellbook-data.mjs"
+        ]
+      }
     },
     {
       "id": "C3",
       "statement": "SCRYFALL_REQUEST_DELAY_MS remains 200 (pacing unchanged)",
-      "value": false,
-      "evidence": { "paths": ["scripts/refresh-commander-spellbook-data.mjs"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "scripts/refresh-commander-spellbook-data.mjs"
+        ]
+      }
     },
     {
       "id": "C4",
       "statement": "refresh-commander-spellbook-data.test.mjs passes",
-      "value": false,
-      "evidence": { "command": "node --test scripts/refresh-commander-spellbook-data.test.mjs" }
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-commander-spellbook-data.test.mjs"
+      }
     }
   ]
 }
