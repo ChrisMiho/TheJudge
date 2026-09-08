@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (build half's claim, run `graph-20260907-235620`; was `origin/thejudge-auto/trade-balancer-price-slim`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-price-slim`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-205625/`
-- Current node: `review` (build half, run `graph-20260907-235620`; 4 slices built, 35/35 criteria true, STATUS.ship-ready, code PR #212 open — independent review next)
-- Next action: `/graph-implement PRD/work/trade-balancer-price-slim/` — review → close; ends COMPLETE with the code PR open for the owner to merge
+- Current node: `close` (build half, run `graph-20260907-235620`; review APPROVEd — cleanup writes the receipt and deletes the package on the branch, before the owner's merge)
+- Next action: `/graph-implement PRD/work/trade-balancer-price-slim/` — close, then ends COMPLETE with code PR #212 open for the owner to merge (land)
 
 ## Node ledger
 
@@ -26,6 +26,7 @@
 | 4 | gate-qc (build half, run graph-20260907-235620) | sonnet | ok (PASS) | `3 → 20` | re-grade of the gate-finalized proposal; verified without fan-out (15 calls). All 10 diffs' `-` lines match live PRD/sections byte-for-byte; Lambda-budget criterion real (package-lambda.sh copies apps/backend/data, lambda-package-budget.test.mjs enforces 250 MB); BLOCK-01 = A keeps price a separate sub-resource; cardMetadata serves both flows; preserved behavior grounded in real code (PrintingPicker.tsx, pricing.ts, cardDetail.ts loadCardDetailIndex); NFR-014 drops the deleted-file reference. Findings none. STATUS unchanged (refined) | 2026-09-08 |
 | 5 | plan (build half, run graph-20260907-235620) | sonnet | ok | `0 → 67` | thejudge-map-out wrote GAMEPLAN.md + 4 slice docs (A backend build/artifact→REQ-066; B backend route `GET /api/cards/:oracleId/prices`→REQ-175/NFR-004; C shared cardMetadata index→REQ-174; D frontend balancer flow + 38 MB file delete→REQ-064/065, FLOW-009/025, NFR-013/014) with slice-{a,b,c,d}.criteria.json (8/7/8/12 = 35 criteria, all valid JSON); Lambda 250 MB budget test a criterion; STATUS.active set; README slice table + implementation map; board row moved to active | 2026-09-08 |
 | 6 | build (build half, run graph-20260907-235620) | sonnet | ok | `0 → 427` | thejudge-implement-all built A→B→C→D, 35/35 criteria true. Tests: backend 503/503, frontend 1317/1317, test:scripts 528/528, build-card-detail 11/11, lambda-package-budget 2/2, tsc clean, quality:check green each slice. Price artifact committed gzipped (`cardPrintingPricesByOracleId.json.gz`) — Lambda budget had <1 MB headroom, not the brief's assumed ~70 MB. PRD/sections applied for 10 ids (functional-requirements REQ-064/065/066/174/175; user-flows FLOW-009/025; non-functional NFR-004/013/014) + NFR-004 echo sweep + derived docs. Code PR #212 opened (base main, head thejudge-auto/trade-balancer-price-slim-work). STATUS.ship-ready. Return-side assertion: launch checkout byte-identical before/after (no leak), worktree clean/synced | 2026-09-08 |
+| 7 | review (build half, run graph-20260907-235620) | opus | ok (APPROVE) | `0 → 39` | fresh-context no-write reviewer (Plan agent, no Edit/Write) graded PR #212 against each slice's acceptance criteria. Zero Critical/Important. Re-verified read-only: grep gates 0 hits (cardPrintingPrices/loadCardPrices gone, build-card-prices.mjs deleted, 38 MB frontend file deleted); tests re-run green (backend 503, frontend 1317, scripts 528, lambda-budget 2, build-card-detail 11); artifact shape + route order + fail-open loader + fetch-cache dedupe confirmed; all 70 `+` product-truth lines present byte-for-byte across the 3 sections; 3 documented engineering calls each preserve slice intent. One Minor non-blocking note ("second endpoint" wording is correct, not stale — no action). Verdict: proceed to close | 2026-09-08 |
 
 ## Gate verdicts
 
@@ -251,6 +252,27 @@ Rubric = the slices' acceptance criteria and correctness against them. Flag ONLY
 Verify claims you can check read-only: run the slices' stated test commands if useful, confirm a recursive grep for the old price-file and loader names (cardPrintingPrices, loadCardPrices) under apps/frontend/src and apps/frontend/public returns zero hits, confirm the ten PRD/sections ids were applied.
 
 Report a verdict: APPROVE (proceed to close), or findings each rated Critical / Important / Minor with the exact file/line and the criterion or correctness issue it violates. Only Critical or Important loop back to build. A Critical finding the run cannot resolve from confirmed decisions and tests parks immediately.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### close (build half, run graph-20260907-235620)
+
+graph is controlling.
+
+You are node 8 (`close`) of the build half. Invoke `thejudge-cleanup` and follow it exactly, in graph-controlled (non-interactive) mode, on the PR-ready path — this runs on the code branch `thejudge-auto/trade-balancer-price-slim-work` BEFORE the owner's merge, so the receipt and the package deletion ride in code PR #212.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-price-slim
+
+The package PRD/work/trade-balancer-price-slim/ is STATUS.ship-ready: 4 slices built, 35/35 criteria true, independent review APPROVEd, code PR #212 (base main, head thejudge-auto/trade-balancer-price-slim-work) open and mergeable.
+
+Do:
+- Verify slice completion and that durable PRD/sections truth was applied at build for all ten ids (REQ-064/065/066/174/175, FLOW-009, FLOW-025, NFR-004/013/014). It IS present (build applied it) — promote only any leftover, never re-write what is already there.
+- Fold this run's `## Node ledger` and `## Instruction ledger` from GRAPH-RUN.md VERBATIM into a `## Graph run` section of the durable receipt at PRD/instructions/receipts/trade-balancer-price-slim-<date>.md. Refuse the package delete if a ledger exists and that section does not.
+- Write an `## Intake` section naming each staged intake file and its stated origin.
+- Write the terminal-state summary line: `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/212`, and a `- PR:` line with that URL.
+- Delete PRD/work/trade-balancer-price-slim/ and update PRD/work/STATUS.md (remove the ship-ready row).
+
+Boundaries: no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push (leave PR #212 open — the owner merges it), no remote-branch delete, no git add -A. Commit the receipt and the deletion on thejudge-auto/trade-balancer-price-slim-work; leave the push to the driver, or push the branch (never main).
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 
