@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (build half's claim, run `graph-20260908-013519`; was `origin/thejudge-auto/weekly-data-refresh-pr`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-163826/`
-- Current node: `owner-action` (gate-qc PASS — spec-forming half complete)
-- Next action: owner answers the `- Verdict:` slot in `GATE-QUESTIONS.md`, then merges the docs PR into `main`; `graph-implement` builds it from there
+- Current node: `gate-review` (build half, run `graph-20260908-013519`; docs PR #209 merged — the owner's build signal; resolving the answered gate, then re-entering at gate-qc)
+- Next action: `/graph-implement PRD/work/weekly-data-refresh-pr/` — after gate-review restores `refined`, re-enter at gate-qc, then plan → build → review → close
 
 ## Node ledger
 
@@ -96,6 +96,22 @@ Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-
 All work happens in that kickoff worktree; never touch the owner's launch checkout. Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-subagent.
 
 Validate `PRD/work/weekly-data-refresh-pr/DESIGN-BRIEF.md` for PRD alignment and agent-readiness. The proposed product truth is in `GATE-QUESTIONS.md` (one id, REQ-195); check the design brief and the proposal are internally consistent, that the proposed diffs match current-state truth in the named `PRD/sections/` files, and that the brief is buildable into slices without a live user. Report the PASS/FAIL verdict and the complete findings list.
+
+### gate-review (build half, run graph-20260908-013519)
+
+graph is controlling.
+
+You are gate resolution for the build half of the graph run (run id graph-20260908-013519). The docs PR #209 has merged — the owner's build signal. Invoke the `graph-gate-review` skill and follow it exactly. It applies the owner's recorded accept/edit/reject verdict inside GATE-QUESTIONS.md, records `## Gate verdicts`, resolves the gate, and restores the lifecycle status. It never edits PRD/sections and never drives a node.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr
+
+Package: PRD/work/weekly-data-refresh-pr/ (inside that worktree). Read GATE-QUESTIONS.md for the owner's answer and GRAPH-RUN.md `## Open gate` for the parked state.
+
+The owner's recorded answer: the single stable-id block REQ-195 = accept (the weekly one-command full refresh that opens a PR); the Blocker questions section is None (the full-vs-prices-only scope was resolved to full refresh by the assumption ladder and surfaced in REQ-195 for confirmation). Apply the accept — no diff changes. Then write `## Gate verdicts`, mark `## Open gate` resolved with the date and verdict count, and restore STATUS.refined, the README status field, and the PRD/work/STATUS.md board row to the refined position so the resumed run enters at gate-qc.
+
+Boundaries: never edit PRD/sections; never write DESIGN-BRIEF/GAMEPLAN/slice docs; never advance a node or dispatch a subagent; no merge/close/force-push, no git add -A. Committing is the driver's job.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 
 ## Instruction ledger
 
