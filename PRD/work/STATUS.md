@@ -14,6 +14,10 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| Package | Note |
+| --- | --- |
+| [trade-balancer-price-slim](trade-balancer-price-slim/) | Slim the ~38 MB `cardPrintingPrices.json`: derive `imageUrl` from `id`, reconstruct `name`/`setName`, frontend-only; backend per-card lookup only if slimming isn't enough. Seeded from staged intake `intake/GRAPH-BRIEF-size.md`. |
+
 ## owner-action
 
 | Package | Note |
