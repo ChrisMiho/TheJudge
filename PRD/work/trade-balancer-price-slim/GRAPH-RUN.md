@@ -22,7 +22,7 @@
 
 - Gate: quality-check PASS — run one (spec-forming half) stops here at `owner-action`.
 - Owner action: answer the accept/edit/reject verdict slots in `PRD/work/trade-balancer-price-slim/GATE-QUESTIONS.md` (amendments to REQ-066 and NFR-013), then merge the docs PR to `main`. That merge is the build signal.
-- Docs PR: (opened after this commit — URL recorded in the next commit and the run report)
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/211 (docs-only, base `main`, head `thejudge-auto/trade-balancer-price-slim`)
 - Resume: no `/graph-kickoff` resume needed. After the merge, the build half `graph-implement` claims the spec from `origin/main`, applies the answered proposal, and opens the code PR.
 
 ## Dispatch prompts
