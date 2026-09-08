@@ -13,10 +13,16 @@ const outputPath = path.resolve("apps/frontend/public/data/cardMetadata.json");
  * Owner-recalibrated 2026-09-04: the original 80% figure was derived from
  * raw-byte proportions but stamped onto a gzipped gate; the removed
  * descriptive text compresses well while the kept `cardId`/`imageUrl`
- * barely do, so raw drops ~87% but gzipped only ~48% against the live
+ * barely did, so raw drops ~87% but gzipped only ~48% against the live
  * 33,399-card corpus. The floor is set to >= 40% gzipped reduction — below
  * the measured ~48% with headroom for corpus-refresh drift, while still
- * failing on a first-load regression. */
+ * failing on a first-load regression.
+ * Re-measured for REQ-174/Slice C (trade-balancer-price-slim): the slim
+ * shape now stores a representative-printing id (`imageId`) instead of the
+ * full `imageUrl` string, which compresses further — gzipped reduction is
+ * now ~57% against the same live corpus. The floor stays >= 40%; it was not
+ * raised, since the gate exists to catch a first-load regression, not to
+ * pin the exact current ratio. */
 export const MIN_GZIPPED_REDUCTION = 0.4;
 
 export function gzippedByteLength(value) {
@@ -283,6 +289,15 @@ export function buildOutputCard(card) {
     name: card.name.trim(),
     oracleText: getOracleText(card),
     imageUrl: getImageUrl(card),
+    // REQ-174 (Slice C): the representative printing's own Scryfall id. The
+    // slim shape stores this instead of `imageUrl` — the loader derives the
+    // image url from it (`apps/frontend/src/lib/cardImage.ts`), the same
+    // Scryfall CDN template Slice A's price artifact and Slice D's printing
+    // picker use. The `front` path segment composes identically from the id
+    // for a single-faced card and a double-faced card's front face, so no
+    // face-specific branching is needed here (unlike `getImageUrl`, which
+    // falls back to `card_faces[0]` only to find a URL to read).
+    imageId: typeof card.id === "string" ? card.id : "",
     manaCost: getManaCost(card),
     manaValue: getManaValue(card),
     typeLine,
@@ -294,12 +309,14 @@ export function buildOutputCard(card) {
 
 /** REQ-174: the up-front artifact carries only what a card tile renders
  * directly. The descriptive block is fetched on demand by oracle id instead
- * (REQ-175, FLOW-024, Slice A's `cardDetailByOracleId.json`). */
+ * (REQ-175, FLOW-024, Slice A's `cardDetailByOracleId.json`). The full
+ * `imageUrl` string is dropped in favor of the shorter representative
+ * printing id (Slice C); the loader derives the url from it. */
 export function toSlimCard(outputCard) {
   return {
     cardId: outputCard.cardId,
     name: outputCard.name,
-    imageUrl: outputCard.imageUrl,
+    imageId: outputCard.imageId,
     colors: outputCard.colors
   };
 }

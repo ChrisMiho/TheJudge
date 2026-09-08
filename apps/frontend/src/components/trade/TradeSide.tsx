@@ -1,11 +1,11 @@
 import { useState } from "react";
 
 import { NO_MATCH_COPY } from "../../lib/search";
-import type { CardPrices, CardPrintingPrice } from "../../lib/trade/loadCardPrices";
+import type { CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
 import { formatUsd, sideTotal, type TradeEntry, type TradeSideId } from "../../lib/trade/pricing";
+import type { CardMetadataItem } from "../../types";
 import { ScanCameraSurface } from "../ScanCameraSurface";
-import { PrintingPicker } from "./PrintingPicker";
-import { TradeEntryRow } from "./TradeEntryRow";
+import { TradeEntryRow, type TradeEntryPricingMeta } from "./TradeEntryRow";
 import type { TradeScan } from "./useTradeScan";
 import {
   MIN_TRADE_SEARCH_LENGTH,
@@ -16,47 +16,51 @@ import {
 export type TradeSideProps = {
   sideId: TradeSideId;
   entries: TradeEntry[];
-  prices: CardPrices | null;
+  cardMetadata: CardMetadataItem[];
   searchIndex: OracleSearchEntry[];
-  isPricesLoading: boolean;
+  isMetadataLoading: boolean;
+  isSearchDisabled: boolean;
+  entryMetaById: Record<string, TradeEntryPricingMeta>;
   scan: TradeScan;
-  onAddPrinting: (sideId: TradeSideId, printing: CardPrintingPrice) => void;
+  onAddByOracle: (sideId: TradeSideId, oracleId: string, name: string, preferredPrintingId?: string) => void;
   onToggleFoil: (sideId: TradeSideId, instanceId: string) => void;
   onQuantityChange: (sideId: TradeSideId, instanceId: string, quantity: number) => void;
   onRemove: (sideId: TradeSideId, instanceId: string) => void;
   onChangePrinting: (sideId: TradeSideId, instanceId: string, printing: CardPrintingPrice) => void;
+  onRetryPricing: (instanceId: string) => void;
 };
 
 export function TradeSide({
   sideId,
   entries,
-  prices,
   searchIndex,
-  isPricesLoading,
+  isMetadataLoading,
+  isSearchDisabled,
+  entryMetaById,
   scan,
-  onAddPrinting,
+  onAddByOracle,
   onToggleFoil,
   onQuantityChange,
   onRemove,
-  onChangePrinting
+  onChangePrinting,
+  onRetryPricing
 }: TradeSideProps): JSX.Element {
   const [query, setQuery] = useState("");
-  const [pendingCard, setPendingCard] = useState<OracleSearchEntry | null>(null);
   const sideLabel = `Side ${sideId}`;
   const total = sideTotal(entries);
   const isScanOpen = scan.activeSideId === sideId;
   const scanNotice = scan.notice?.sideId === sideId ? scan.notice.message : null;
-  const isInputDisabled = isPricesLoading || prices === null;
-  const suggestions = pendingCard ? [] : searchOracleIndex(searchIndex, query);
-  const showSuggestionPanel =
-    pendingCard === null && query.trim().length >= MIN_TRADE_SEARCH_LENGTH;
-  const pendingPrintings = pendingCard
-    ? prices?.listPrintingsForOracle(pendingCard.oracleId) ?? []
-    : [];
+  const isInputDisabled = isSearchDisabled;
+  const suggestions = searchOracleIndex(searchIndex, query);
+  const showSuggestionPanel = query.trim().length >= MIN_TRADE_SEARCH_LENGTH;
 
-  function addPrinting(printing: CardPrintingPrice): void {
-    onAddPrinting(sideId, printing);
-    setPendingCard(null);
+  // REQ-065/FLOW-025: the card is added immediately on selection — its printings
+  // and prices are not known yet (no bulk artifact to pick a printing from up
+  // front); the balancer fetches them on add and the entry shows a brief loading
+  // state while they resolve. The existing "Change printing" affordance on the
+  // resolved entry is how the player picks a different printing than the default.
+  function addByOracle(oracleId: string, name: string): void {
+    onAddByOracle(sideId, oracleId, name);
     setQuery("");
   }
 
@@ -117,14 +121,11 @@ export function TradeSide({
                 aria-label={`${sideLabel} card search`}
                 value={query}
                 disabled={isInputDisabled}
-                onChange={(event) => {
-                  setQuery(event.target.value);
-                  setPendingCard(null);
-                }}
+                onChange={(event) => setQuery(event.target.value)}
                 className="w-full rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm font-normal normal-case tracking-normal text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
                 placeholder={
-                  isPricesLoading
-                    ? "Loading prices…"
+                  isMetadataLoading
+                    ? "Loading card list…"
                     : `Type at least ${MIN_TRADE_SEARCH_LENGTH} characters`
                 }
               />
@@ -157,28 +158,16 @@ export function TradeSide({
                 <li key={suggestion.oracleId}>
                   <button
                     type="button"
-                    onClick={() => setPendingCard(suggestion)}
-                    className="flex min-h-11 w-full items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-700 hover:text-accent-soft"
+                    onClick={() => addByOracle(suggestion.oracleId, suggestion.name)}
+                    className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-700 hover:text-accent-soft"
                   >
-                    <span>{suggestion.name}</span>
-                    <span className="text-xs text-zinc-400">
-                      {`${suggestion.printingCount} printing${suggestion.printingCount === 1 ? "" : "s"}`}
-                    </span>
+                    {suggestion.name}
                   </button>
                 </li>
               ))}
             </ul>
           )}
         </div>
-      )}
-
-      {!isScanOpen && pendingCard && (
-        <PrintingPicker
-          cardName={pendingCard.name}
-          printings={pendingPrintings}
-          onSelect={addPrinting}
-          onCancel={() => setPendingCard(null)}
-        />
       )}
 
       {entries.length === 0 ? (
@@ -189,8 +178,8 @@ export function TradeSide({
             <TradeEntryRow
               key={entry.instanceId}
               entry={entry}
+              meta={entryMetaById[entry.instanceId]}
               sideLabel={sideLabel}
-              prices={prices}
               onToggleFoil={(instanceId) => onToggleFoil(sideId, instanceId)}
               onQuantityChange={(instanceId, quantity) =>
                 onQuantityChange(sideId, instanceId, quantity)
@@ -199,6 +188,7 @@ export function TradeSide({
               onChangePrinting={(instanceId, printing) =>
                 onChangePrinting(sideId, instanceId, printing)
               }
+              onRetryPricing={onRetryPricing}
             />
           ))}
         </ul>

@@ -51,7 +51,7 @@ function makeCard(cardId: string, name: string): CardMetadataItem {
   return {
     cardId,
     name,
-    imageUrl: "",
+    imageId: "",
     colors: [],
   };
 }

@@ -1,4 +1,4 @@
-import type { CardPrintingPrice } from "./loadCardPrices";
+import type { CardPrintingPrice } from "./fetchCardPrintings";
 
 export type TradeSideId = "A" | "B";
 

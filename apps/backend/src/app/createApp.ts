@@ -6,6 +6,7 @@ import { mockAskAiProvider } from "../providers/mockAskAiProvider.js";
 import { mockEmbeddingProvider } from "../providers/mockEmbeddingProvider.js";
 import type { RulingEntry } from "../cardRulings.js";
 import type { CardDetailEntry } from "../cardDetail.js";
+import type { CardPrintingPricesEntry } from "../cardPrices.js";
 import type { GameRulesTopic } from "../gameRules.js";
 import type { GameRulesRuleIndexEntry } from "../gameRulesRetrieval.js";
 import type { ComboCatalog } from "../commanderSpellbook/catalog.js";
@@ -13,6 +14,7 @@ import type { AskAiProvider } from "../providers/askAiProvider.js";
 import type { EmbeddingProvider } from "../providers/embeddingProvider.js";
 import { registerAskAiRoute } from "../routes/askAi.js";
 import { registerCardDetailRoute } from "../routes/cardDetail.js";
+import { registerCardPricesRoute } from "../routes/cardPrices.js";
 import { registerHealthRoute } from "../routes/health.js";
 
 export type AppOptions = {
@@ -25,6 +27,7 @@ export type AppOptions = {
   logger?: AppLogger;
   cardRulingsIndex?: Map<string, RulingEntry[]>;
   cardDetailIndex?: Map<string, CardDetailEntry>;
+  cardPrintingPricesIndex?: Map<string, CardPrintingPricesEntry>;
   gameRulesTopics?: GameRulesTopic[];
   gameRulesRuleIndex?: GameRulesRuleIndexEntry[];
   comboCatalog?: ComboCatalog;
@@ -39,12 +42,14 @@ export function createApp(options: AppOptions = {}) {
   const isPayloadLoggingEnabled = options.payloadLoggingEnabled ?? false;
   const logger = options.logger ?? createAppLogger(isDebug);
   const cardDetailIndex = options.cardDetailIndex ?? new Map<string, CardDetailEntry>();
+  const cardPrintingPricesIndex = options.cardPrintingPricesIndex ?? new Map<string, CardPrintingPricesEntry>();
 
   app.use(cors(options.frontendOrigin ? { origin: options.frontendOrigin } : undefined));
   app.use(express.json());
 
   registerHealthRoute(app);
   registerCardDetailRoute(app, { cardDetailIndex });
+  registerCardPricesRoute(app, { cardPrintingPricesIndex });
   registerAskAiRoute(app, {
     askAiProvider,
     askAiProviderMode: options.askAiProviderMode,

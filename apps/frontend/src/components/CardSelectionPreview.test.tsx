@@ -39,7 +39,7 @@ function makeCard(overrides: Partial<CardMetadataItem> = {}): CardMetadataItem {
     cardId: "opt",
     name: "Opt",
     oracleText: "Scry 1. Draw a card.",
-    imageUrl: "https://img.example/opt.jpg",
+    imageId: "opt-fixture-id",
     manaCost: "{U}",
     manaValue: 1,
     typeLine: "Instant",
@@ -101,7 +101,7 @@ describe("Frontend - MTG Assistant", () => {
     it("still renders the shared text-first fallback, carrying the name, when no image exists", () => {
       render(
         <CardSelectionPreview
-          card={makeCard({ imageUrl: "" })}
+          card={makeCard({ imageId: "" })}
           action={
             <button type="button" aria-label="Remove Opt">
               Remove card

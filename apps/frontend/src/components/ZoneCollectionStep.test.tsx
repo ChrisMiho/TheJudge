@@ -212,7 +212,7 @@ describe("ZoneCollectionStep scan focus", () => {
     const opt: CardMetadataItem = {
       cardId: "opt",
       name: "Opt",
-      imageUrl: "https://img.example/opt.jpg",
+      imageId: "opt-fixture-id",
       colors: [],
     };
 

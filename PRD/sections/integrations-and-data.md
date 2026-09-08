@@ -67,17 +67,14 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `role: "user" | "assistant"`
 - `content: string`
 
-### CardPrintingPrice (Trade Balancer, frontend-only)
-- `printingId: string` — Scryfall printing id
-- `oracleId: string` — oracle identity the printing belongs to
-- `name: string`
+### CardPrintingPrice (Trade Balancer, backend-served on demand)
+- `id: string` — Scryfall printing id; the frontend derives the image url from it (`lib/cardImage.ts`)
 - `set: string` — set code
 - `setName: string`
 - `collectorNumber: string`
-- `imageUrl: string`
 - `usd: number | null` — non-foil USD market price (null when unavailable)
 - `usdFoil: number | null` — foil USD market price (null when unavailable)
-- committed static artifact (DEC-088); not part of `AskAiRequest` or any prompt/response contract. A trade entry references one `CardPrintingPrice` plus a `foil: boolean` and `quantity: number` (≥ 1).
+- served by the read-only route `GET /api/cards/:oracleId/prices` (REQ-066, REQ-175) from a committed backend artifact, loaded into memory at startup with no runtime network call; not part of `AskAiRequest` or any prompt/response contract. No `oracleId` or `name` per printing — the caller supplies the oracle id and takes the card name from the shared `cardMetadata` index (REQ-174). A trade entry references one `CardPrintingPrice` plus a `foil: boolean` and `quantity: number` (≥ 1).
 
 ### AskAiRequest
 - `question: string`
@@ -150,6 +147,13 @@ Purpose:
 - serve one card's descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`) by Scryfall `oracle_id`, read-only, from the committed `cardDetailByOracleId.json` artifact (REQ-175)
 - back the card-detail popup and Quick Lookup pre-submit preview's on-demand fetch (FLOW-024); a known id returns the block, an unknown id returns a not-found response
 - the product's second product-facing endpoint (D5), permitted alongside `POST /api/ask-ai` by the one-endpoint rule (canonical: NFR-004)
+
+### Endpoint: `GET /api/cards/:oracleId/prices`
+Purpose:
+- serve one card's printings and prices by Scryfall `oracle_id`, read-only, from the committed `cardPrintingPricesByOracleId.json.gz` artifact (REQ-066, REQ-175), kept separate from the descriptive block so the card-detail/ask-ai path carries no price bytes
+- back the Trade Balancer's on-add fetch, cached per session (FLOW-025); a known id returns `200 { oracleId, snapshotDate, printings: CardPrintingPrice[] }`, an unknown id returns `404 { error: "card_not_found" }`
+- each `CardPrintingPrice` carries `id` (Scryfall printing id — the frontend derives the image url from it), `set`, `setName`, `collectorNumber`, `usd` (non-foil, `number | null`), `usdFoil` (`number | null`); card name is not repeated per printing — the frontend takes it from the shared `cardMetadata` index (REQ-174)
+- the product's third product-facing endpoint, permitted alongside `POST /api/ask-ai` and `GET /api/cards/:oracleId` by the one-endpoint rule (canonical: NFR-004, BLOCK-01 = A)
 
 ### Optional Endpoint: `GET /api/health`
 Purpose:
@@ -309,14 +313,14 @@ involve the backend, `POST /api/ask-ai`, or any prompt assembly.
 
 ## Trade Balancer Data Strategy
 
-The Trade Balancer (DEC-087) is an optional, standalone, frontend-only, ephemeral feature; it does not involve the backend, `POST /api/ask-ai`, or any prompt assembly.
+The Trade Balancer is an optional, standalone, ephemeral feature outside the Decrypt-Stack core loop. It makes no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or `POST /api/ask-ai` — its only backend traffic is the read-only price route `GET /api/cards/:oracleId/prices` (REQ-066, REQ-175), which the question/RAG flow never touches.
 
-- pricing uses a committed, printing-level static price artifact under `apps/frontend/public/data/` (e.g. `cardPrintingPrices.json`), built offline from the Scryfall bulk source by a new build script alongside `data:build` / `data:refresh` (DEC-088, REQ-066)
-- per printing the artifact carries at least: printing id, oracle id, card name, set code, set name, collector number, image url, `usd` (non-foil), and `usd_foil`; entries are indexable by oracle id (list a card's printings for the manual picker) and by printing id (a scanned printing prices directly)
+- pricing uses a committed, printing-level static price artifact, backend-only under `apps/backend/data/` (`cardPrintingPricesByOracleId.json.gz`), built in the same pass as the card-detail build (`scripts/build-card-detail-by-oracle-id.mjs`, unified — no separate build script) alongside `data:build` / `data:refresh` (REQ-066)
+- per printing the artifact carries: printing id, set code, set name, collector number, `usd` (non-foil), and `usd_foil` — no card name or image url per printing (name comes from the shared `cardMetadata` index, REQ-174; image derives from the printing id); entries are indexable by oracle id (list a card's printings for the manual picker) and matched by printing id (a scanned printing prices directly)
 - missing `usd`/`usd_foil` values are stored as null/absent and consumed as a $0 contribution with a distinct color and caution-triangle indicator in the UI (REQ-065)
 - the artifact records a snapshot date; prices are a static build-time snapshot with **no runtime price fetch and no runtime sync** — refreshed only via the human-approved `data:refresh` then `data:build` (DEC-012 posture, NFR-013)
-- the artifact is lazy-loaded only when the Trade Balancer is first opened; users who never open it pay no startup cost (NFR-013)
-- raw downloaded bulk data remains gitignored; only the trimmed price artifact is committed
+- there is no up-front frontend download: a card's printings and prices are fetched from the backend only when that card is added to a trade side, cached per session (FLOW-025); users who never open the balancer pay no startup cost, and the balancer's only up-front frontend cost is the shared `cardMetadata` index (NFR-013)
+- raw downloaded bulk data remains gitignored; only the trimmed, gzip-compressed price artifact is committed
 - a side total is `Σ qty × (foil ? usd_foil : usd)`; USD only (EUR/tix/etched-foil and grading/condition out of scope for v1)
 - input reuses the existing scan resolver (DEC-053, REQ-036) and manual card search (DEC-012); the chosen printing is a pricing/display layer only and is never pushed into prompt context, rulings lookup, or the Decrypt-Stack request payload
 

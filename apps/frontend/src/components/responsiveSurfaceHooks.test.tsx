@@ -16,7 +16,7 @@ const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
 const cardWithoutImage: CardMetadataItem = {
   cardId: "opt",
   name: "Opt",
-  imageUrl: "",
+  imageId: "",
   colors: ["U"],
 };
 

@@ -3,6 +3,7 @@
 // (cardScanMap.json). Pure, decode-free, no network. (REQ-036, DEC-053.)
 
 import type { CardMetadataItem } from "../../types";
+import { deriveCardImageUrl } from "../cardImage";
 import type { Candidate } from "./types";
 
 /** One entry of the build-time printing-id -> oracle-id scan map. */
@@ -51,7 +52,11 @@ export function resolveScanCandidatesRanked(
     if (!metadataItem) continue;
 
     seenOracleIds.add(scanEntry.oracleId);
-    const scanImageUrl = scanEntry.imageUrl || metadataItem.imageUrl;
+    // REQ-174/Slice C: `cardScanMap.json`'s per-scanned-printing `imageUrl` is
+    // unchanged (REQ-066 constraint); the metadata fallback derives from the
+    // representative printing's `imageId` now that `CardMetadataItem` no
+    // longer stores a full url.
+    const scanImageUrl = scanEntry.imageUrl || deriveCardImageUrl(metadataItem.imageId);
     resolved.push({ card: metadataItem, distance: candidate.distance, scanImageUrl });
   }
 

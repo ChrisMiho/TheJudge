@@ -56,11 +56,11 @@ function makeZoneCard(cardId: string, name: string, overrides: Partial<ZoneCardI
   };
 }
 
-function makeMetadataCard(name: string, imageUrl: string): CardMetadataItem {
+function makeMetadataCard(name: string, imageId: string): CardMetadataItem {
   return {
     cardId: name.toLowerCase(),
     name,
-    imageUrl,
+    imageId,
     colors: [],
   };
 }
@@ -316,7 +316,7 @@ describe("ZoneCardPicker card grid", () => {
         activeSuggestionIndex={-1}
         onSuggestionHover={() => undefined}
         onSuggestionSelect={() => undefined}
-        selectedCard={makeMetadataCard("Opt", "https://img.example/opt.jpg")}
+        selectedCard={makeMetadataCard("Opt", "opt-fixture-id")}
         addButtonLabel="Add card"
         onAddSelectedCard={() => undefined}
         onRemoveCard={() => undefined}

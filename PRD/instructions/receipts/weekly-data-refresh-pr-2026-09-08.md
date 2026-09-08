@@ -195,3 +195,27 @@ Terminal state: COMPLETE — land: the owner's merge of https://github.com/Chris
 - `intake/GRAPH-BRIEF.md` — origin: staged verbatim from
   `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-163826/`
   at node 2 (`shape`), per `GRAPH-RUN.md`'s ledger row for that node.
+
+## Post-slim reconcile (2026-09-08, after PR #212 merged)
+
+This branch was built against pre-slim `main`, so its wrapper and PRD docs
+described the Trade Balancer price artifact as the frontend
+`apps/frontend/public/data/cardPrintingPrices.json` built by
+`scripts/build-card-prices.mjs`. The `trade-balancer-price-slim` work (PR #212)
+merged first and retired both. `main` was merged into this branch and the work
+re-pointed at the slim's reality — the sections above (`## Durable truth
+confirmed`, `## Slices`) record the pre-reconcile content:
+
+- `scripts/refresh-and-open-pr.mjs` — `COMMITTED_ARTIFACT_PATHS` swaps the
+  deleted frontend `cardPrintingPrices.json` for the slim's committed gzip
+  `apps/backend/data/cardPrintingPricesByOracleId.json.gz` (still 11 paths);
+  header comment corrected (six build steps, not seven; no dangling GAMEPLAN
+  reference).
+- `scripts/refresh-and-open-pr.test.mjs` — the three example-diff fixtures use
+  the new backend path; 19/19 still pass.
+- Four merge conflicts resolved favoring the slim's mechanism text with the
+  weekly-refresh cadence + REQ-195 folded in: `system-map.md`,
+  `trade-balancer/README.md`, `trade-balancer/data/cardPrintingPrices.md`, and
+  `PRD/work/STATUS.md` (owner-action table emptied — both rows shipped).
+- REQ-195's stale Notes (retired `build-card-prices.mjs`, the ~38 MB frontend
+  file) amended to name the backend gzip artifact.

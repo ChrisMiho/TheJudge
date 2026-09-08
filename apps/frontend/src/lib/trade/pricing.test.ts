@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import type { CardPrintingPrice } from "./loadCardPrices";
+import type { CardPrintingPrice } from "./fetchCardPrintings";
 import {
   difference,
   entryContribution,
@@ -11,15 +11,16 @@ import {
   type TradeEntry
 } from "./pricing";
 
+// REQ-066/REQ-175 (Slice A/B): the backend price route no longer carries
+// oracleId/name/imageUrl per printing (the caller already knows the oracle
+// id; name comes from cardMetadata; image derives from `id`) — the fixture
+// below carries only the fields pricing.ts's functions actually read.
 function printing(overrides: Partial<CardPrintingPrice> = {}): CardPrintingPrice {
   return {
     id: "printing-bolt",
-    oracleId: "oracle-bolt",
-    name: "Lightning Bolt",
     set: "2ed",
     setName: "Unlimited Edition",
     collectorNumber: "162",
-    imageUrl: "https://example.test/bolt.jpg",
     usd: 3.5,
     usdFoil: 12.75,
     ...overrides

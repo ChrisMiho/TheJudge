@@ -19,11 +19,13 @@
 import { execFileSync } from "node:child_process"
 import { pathToFileURL } from "node:url"
 
-// The explicit set of committed data artifacts `npm run data:build`'s seven
-// steps write, as documented in `PRD/work/weekly-data-refresh-pr/GAMEPLAN.md`
-// ("Explicit committed-artifact path list") — hard-coded here, never derived
-// by globbing or by parsing the `data:build` npm script string, so a future
-// build step cannot silently widen what this script stages.
+// The explicit set of committed data artifacts `npm run data:build`'s build
+// steps write (REQ-195: stage only the changed committed artifacts) — hard-coded
+// here, never derived by globbing or by parsing the `data:build` npm script
+// string, so a future build step cannot silently widen what this script stages.
+// The Trade Balancer price map is the gzip `cardPrintingPricesByOracleId.json.gz`
+// emitted by `build-card-detail-by-oracle-id.mjs` (REQ-066/REQ-175), not the
+// retired frontend `cardPrintingPrices.json`.
 export const COMMITTED_ARTIFACT_PATHS = [
   "apps/frontend/public/data/cardMetadata.json",
   "apps/backend/data/cardDetailByOracleId.json",
@@ -33,7 +35,7 @@ export const COMMITTED_ARTIFACT_PATHS = [
   "apps/backend/data/gameRulesTokenStats.json",
   "apps/frontend/public/data/gameRulesCoreTopics.json",
   "apps/backend/data/gameRulesRuleEmbeddings.json",
-  "apps/frontend/public/data/cardPrintingPrices.json",
+  "apps/backend/data/cardPrintingPricesByOracleId.json.gz",
   "apps/backend/data/commanderSpellbookCombos.json.gz",
   "apps/backend/data/commanderSpellbookComboIndex.json.gz"
 ]

@@ -129,9 +129,9 @@ test("classifyChange: empty diff is no-op, non-empty diff is changed", () => {
   assert.equal(classifyChange("").status, "no-op")
   assert.equal(classifyChange("\n").status, "no-op")
   assert.equal(classifyChange(null).status, "no-op")
-  const changed = classifyChange("apps/frontend/public/data/cardPrintingPrices.json\n")
+  const changed = classifyChange("apps/backend/data/cardPrintingPricesByOracleId.json.gz\n")
   assert.equal(changed.status, "changed")
-  assert.deepEqual(changed.paths, ["apps/frontend/public/data/cardPrintingPrices.json"])
+  assert.deepEqual(changed.paths, ["apps/backend/data/cardPrintingPricesByOracleId.json.gz"])
 })
 
 // ---- commitArtifacts / pushBranch / deleteLocalBranch plumbing ----
@@ -171,7 +171,7 @@ function makeEffects(overrides = {}) {
     },
     // Non-empty by default so the ordinary "changed" path is exercised
     // without every test having to opt in; the no-op tests override it.
-    getArtifactDiffOutput: () => "apps/frontend/public/data/cardPrintingPrices.json\n",
+    getArtifactDiffOutput: () => "apps/backend/data/cardPrintingPricesByOracleId.json.gz\n",
     ghRunner: (args) => {
       calls.gh.push(args)
       return "https://github.com/local/thejudge/pull/1\n"

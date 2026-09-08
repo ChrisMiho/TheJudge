@@ -47,6 +47,7 @@ runtime.app.listen(runtime.config.port, () => {
     askAiProvider: runtime.config.askAiProvider,
     cardRulingsCardCount: runtime.cardRulingsCardCount,
     cardDetailCardCount: runtime.cardDetailCardCount,
+    cardPrintingPricesCardCount: runtime.cardPrintingPricesCardCount,
     gameRulesTopicCount: runtime.gameRulesTopicCount,
     gameRulesRuleCount: runtime.gameRulesRuleCount,
     debugLoggingEnabled: runtime.config.debugLoggingEnabled,
