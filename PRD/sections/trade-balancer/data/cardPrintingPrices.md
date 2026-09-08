@@ -4,8 +4,8 @@
   `DEC`/`REQ`/`NFR` wins — `PRD/sections/decisions.md` stays precedence #1 and
   Read-First #1. Correct this file against those sources, not the other way
   around.
-- Backed by: DEC-088, REQ-066, NFR-013 (and the `CardPrintingPrice` shape in
-  `integrations-and-data.md`)
+- Backed by: DEC-088, REQ-066, NFR-013, REQ-195 (and the `CardPrintingPrice`
+  shape in `integrations-and-data.md`)
 - Feature that consumes it: `PRD/sections/trade-balancer/README.md`
 
 This is a **corpus doc**, not a behavior doc. It records the committed price
@@ -44,8 +44,12 @@ passes each one:
   plus a caution flag (DEC-087/REQ-065).
 - **Static snapshot, no runtime sync:** the committed file is the only source at
   runtime. There is no live price fetch, no runtime sync, and no scheduled
-  refresh. Refresh happens solely through the human-approved pipeline
-  (`data:refresh` → `data:build`) (DEC-088, NFR-013).
+  runtime refresh. Refresh happens solely through the human-approved pipeline
+  (`data:refresh` → `data:build`); its standing cadence is a weekly one-command
+  local script the owner runs (`npm run data:refresh-pr`), which runs that
+  pipeline and, when an artifact changed, opens a pull request to `main` the
+  owner merges — the runtime still reads only the committed file (DEC-088,
+  NFR-013, REQ-195).
 - The build degrades gracefully: a missing or failed source keeps the prior
   committed artifact and does not break other artifact builds (REQ-066).
 - **Do not rebuild to read this doc.** These figures are read from the committed

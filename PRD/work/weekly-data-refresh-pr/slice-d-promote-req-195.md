@@ -1,6 +1,17 @@
 # Slice D — Promote REQ-195 into PRD/sections, together with the code
 
-## Status: planned
+## Status: done
+
+### D5 manual observation (2026-09-08)
+
+Compared the script path and npm script name written into all four
+`PRD/sections/` edits against the real implementation from slices A and C:
+`scripts/refresh-and-open-pr.mjs` (the file created in slice A) and
+`data:refresh-pr` (the `package.json` entry added in slice C, value
+`node scripts/refresh-and-open-pr.mjs`). Both names match exactly what
+slice A and slice C actually implemented — no drift from the proposed
+names in `GATE-QUESTIONS.md`, so the PRD edits use them verbatim. D5
+confirmed true.
 
 ## Goal
 

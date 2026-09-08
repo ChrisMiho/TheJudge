@@ -21,7 +21,7 @@ See `IDEA.md` for the request, owner's framing, and prior-run matches.
 | A | Refresh-and-PR script core (branch, pipeline, commit, push, PR) | done | none |
 | B | Change-detection and no-op path | done | A |
 | C | npm script wiring | done | A |
-| D | Promote REQ-195 into PRD/sections, together with the code | planned | A, B, C |
+| D | Promote REQ-195 into PRD/sections, together with the code | done | A, B, C |
 
 See `GAMEPLAN.md` for architecture, the explicit committed-artifact path list,
 and the verification checklist. Every slice is unit-tested against injected

@@ -448,9 +448,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ### Printing-price artifact build
 
 - Status: shipped
-- Summary: Offline build that emits the committed, printing-level USD price artifact from the Scryfall bulk source for the Trade Balancer — per printing `usd`/`usd_foil` plus set/collector/image, indexable by oracle and printing id, with a snapshot date; static snapshot, human-approved refresh, lazy-loaded on first Trade Balancer open.
-- Lives in: `scripts/build-card-prices.mjs` → `apps/frontend/public/data/cardPrintingPrices.json` (wired into `npm run data:build`); lazy runtime loader `apps/frontend/src/lib/trade/loadCardPrices.ts`
-- Backed by: DEC-088, REQ-066, NFR-013
+- Summary: Offline build that emits the committed, printing-level USD price artifact from the Scryfall bulk source for the Trade Balancer — per printing `usd`/`usd_foil` plus set/collector/image, indexable by oracle and printing id, with a snapshot date; static snapshot, human-approved refresh with a weekly one-command refresh-and-PR cadence, lazy-loaded on first Trade Balancer open.
+- Lives in: `scripts/build-card-prices.mjs` → `apps/frontend/public/data/cardPrintingPrices.json` (wired into `npm run data:build`); weekly refresh-and-PR wrapper `scripts/refresh-and-open-pr.mjs` (wired as `npm run data:refresh-pr`, runs the `data:refresh` → `data:build` pipeline then opens a pull request to `main`); lazy runtime loader `apps/frontend/src/lib/trade/loadCardPrices.ts`
+- Backed by: DEC-088, REQ-066, NFR-013, REQ-195
 
 ### Commander Spellbook combo artifact build
 

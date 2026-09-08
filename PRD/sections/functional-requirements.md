@@ -4575,3 +4575,62 @@
   - closes the 2026-09-06 audit's finding 7. Evidence: `gh api repos/ChrisMiho/TheJudge` → `delete_branch_on_merge: true`; `git log --first-parent origin/main` triplets #184/#185/#186, #187/#188/#189, #190/#191/#192, #195/#197/#199; the hybrid receipt's driver-bookkeeping row "GitHub had deleted the branch after PR #195 merged; re-created"
   - single-source-invariants (#188 `-work` → `main`, then #189 for cleanup) is the half-step precedent: it built from `main` but ran cleanup after the merge, so it still needed the third PR
   - the receipt says `shipped` before the merge because it exists on `main` only if the PR merges; on an abandoned branch it is never read
+
+### REQ-195
+- Title: Weekly one-command local data refresh that opens a pull request
+- Priority: medium
+- Description: A single local command the owner runs on a weekly cadence
+  refreshes the committed Magic-data artifacts through the existing
+  human-approved pipeline (`npm run data:refresh` then `npm run data:build`),
+  and when any committed artifact changed, cuts a branch off `origin/main`,
+  commits the refreshed artifacts, pushes, and opens a pull request to `main`
+  for the owner to merge. The runtime posture is unchanged: no live fetch, no
+  runtime sync, and no scheduled runtime refresh — the running app reads only
+  the committed artifact (DEC-087, DEC-088, NFR-013). The command is
+  owner-invoked and local, never a CI cron; the owner running it is the human
+  approval the upstream Scryfall/Comprehensive-Rules/combo download requires
+  (REQ-093, DEC-162). Merging the resulting pull request and deploying is what
+  moves the player-visible `Prices as of <date>` freshness line (REQ-145)
+  forward.
+- Acceptance Criteria:
+  - one npm script (`data:refresh-pr`, running `scripts/refresh-and-open-pr.mjs`)
+    runs the existing refresh-and-build pipeline and reimplements no download
+    or transform
+  - refuses to run on a dirty working tree, so unrelated changes are never
+    committed into the refresh
+  - fetches `origin` and creates a branch off `origin/main` (`chore/data-refresh-<YYYY-MM-DD>`);
+    never commits to or pushes `main` directly
+  - when the refresh changed at least one committed artifact, stages and commits
+    the changed artifacts with a dated message, pushes the branch, and opens a
+    pull request to `main` via `gh pr create`, printing the PR URL
+  - when nothing changed, exits cleanly with no branch, no commit, and no PR
+  - preserves graceful degradation — a failed or missing upstream source keeps
+    the prior committed artifact (REQ-066) and the wrapper never commits an
+    empty or broken refresh
+  - fails clearly when `gh` is unauthenticated rather than half-completing
+- Constraints:
+  - local and owner-invoked only; no CI cron and no unattended network download
+    (the REQ-093 / DEC-162 human-approval posture is unchanged)
+  - touches no runtime code path and no provider boundary; mock-default local
+    dev is unaffected
+  - never pushes to `main`; trunk is reached only by a pull request the owner
+    merges
+  - introduces no runtime sync; the DEC-087 / DEC-088 / NFR-013 "no live fetch,
+    no scheduled refresh" posture stands
+- Dependencies:
+  - REQ-066 (the artifact build and its graceful degradation, wrapped here)
+  - REQ-093 (human-approved upstream download)
+  - REQ-145 (the freshness line that advances when the refresh merges)
+  - NFR-013 (static-snapshot, no-runtime-sync posture)
+- Notes:
+  - scope choice made at the gate: full refresh (run the existing
+    `data:refresh` → `data:build` pipeline and commit whatever committed
+    artifacts it changed — least new code, every corpus fresh weekly) vs.
+    prices-only (download only `default_cards`, run only
+    `build-card-prices.mjs`, commit only `cardPrintingPrices.json` — smaller git
+    churn, more new code, drops rulings/combos/rules from the cadence). Written
+    for full refresh
+  - `cardPrintingPrices.json` is ~38 MB single-line JSON committed whole each
+    refresh, so cadence and the prices-only option both bear on git-history size
+  - slimming the price artifact or moving pricing to a backend endpoint reverses
+    DEC-087 and is tracked separately, out of scope here

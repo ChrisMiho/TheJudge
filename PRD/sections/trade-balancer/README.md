@@ -6,8 +6,8 @@
   one-line summary, no longer an override. The cited `REQ`/`FLOW` remain the
   granular backing; keep this file correct in step with them as behavior changes,
   editing in place — never by recording a new decision.
-- Backed by: DEC-087, DEC-088, REQ-064, REQ-065, REQ-066, REQ-145, FLOW-009,
-  NFR-013, NFR-001
+- Backed by: DEC-087, DEC-088, REQ-064, REQ-065, REQ-066, REQ-145, REQ-195,
+  FLOW-009, NFR-013, NFR-001
 - Corpus: the printing price artifact this feature loads is documented
   separately in `data/cardPrintingPrices.md` — its contents are a `data/`
   concern and are not inlined here.
@@ -88,8 +88,13 @@ and changes nothing about it.
 ### Prices and freshness
 
 - Built: prices come from a committed, lazy-loaded printing price snapshot —
-  there is no live or real-time lookup and no runtime sync. The artifact is
-  documented in `data/cardPrintingPrices.md`. (DEC-088, REQ-066, NFR-013)
+  there is no live or real-time lookup and no runtime sync. The snapshot is
+  refreshed on a weekly cadence by a one-command local script the owner runs
+  (`npm run data:refresh-pr`), which opens a pull request to `main`; merging it
+  and deploying moves the `Prices as of <date>` line forward. The frozen-contract
+  posture is unchanged — the runtime reads only the committed snapshot. The
+  artifact is documented in `data/cardPrintingPrices.md`. (DEC-088, REQ-066,
+  REQ-145, NFR-013, REQ-195)
 - Built: the UI surfaces the snapshot date as **date-level copy**
   (`Prices as of 5 June 2026`), formatted from the artifact's ISO `snapshotDate`
   with no raw `T`, milliseconds, or `Z` suffix, so it cannot read as a live
