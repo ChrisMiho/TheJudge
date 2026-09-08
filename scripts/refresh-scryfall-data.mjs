@@ -1,7 +1,8 @@
 import fs from "node:fs";
 import path from "node:path";
+import zlib from "node:zlib";
 import { pipeline } from "node:stream/promises";
-import { Readable } from "node:stream";
+import { Readable, Transform } from "node:stream";
 import { spawn } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
@@ -77,16 +78,66 @@ export function createBulkDownloadTargets(payload) {
 
   return bulkDownloadConfigs.map((config) => {
     const record = records.find((entry) => entry?.type === config.type);
-    if (!record?.download_uri) {
+    // Scryfall retired the plain-JSON `download_uri` in favor of a gzipped JSONL
+    // export exposed as `jsonl_download_uri`. Prefer the JSONL URL; fall back to a
+    // legacy `download_uri` only if a record still carries one (forward-safe).
+    const downloadUrl = record?.jsonl_download_uri ?? record?.download_uri;
+    if (!downloadUrl) {
       throw new Error(`Could not find ${config.type} download URI from Scryfall.`);
     }
 
     return {
       ...config,
-      downloadUrl: record.download_uri,
+      downloadUrl,
+      isJsonlGz: Boolean(record.jsonl_download_uri),
       updatedAt: record.updated_at ?? "unknown",
-      estimatedSize: typeof record.size === "number" ? record.size : null
+      estimatedSize:
+        typeof record.compressed_size === "number"
+          ? record.compressed_size
+          : typeof record.size === "number"
+            ? record.size
+            : null
     };
+  });
+}
+
+/**
+ * Scryfall's `jsonl_download_uri` serves a gzip-compressed JSONL document (one card
+ * object per line), served as `application/gzip` with no `Content-Encoding`, so
+ * `fetch` yields raw gzip bytes. The downstream builders still consume a single JSON
+ * **array** at `default-cards.json` / `rulings.json`, so this transform streams the
+ * decompressed JSONL and rewrites it as an array — `[obj,obj,...]` — line by line,
+ * never holding the whole ~600MB document as one string. Blank lines are skipped;
+ * empty input yields `[]`.
+ */
+export function createJsonlToJsonArrayTransform() {
+  let leftover = "";
+  let started = false;
+
+  const emitLine = (line) => {
+    const trimmed = line.trim();
+    if (trimmed === "") return "";
+    const chunk = (started ? "," : "[") + trimmed;
+    started = true;
+    return chunk;
+  };
+
+  return new Transform({
+    transform(chunk, _enc, cb) {
+      leftover += chunk.toString("utf8");
+      let out = "";
+      let nl;
+      while ((nl = leftover.indexOf("\n")) !== -1) {
+        out += emitLine(leftover.slice(0, nl));
+        leftover = leftover.slice(nl + 1);
+      }
+      cb(null, out);
+    },
+    flush(cb) {
+      let out = emitLine(leftover);
+      out += started ? "]" : "[]";
+      cb(null, out);
+    }
   });
 }
 
@@ -101,14 +152,26 @@ async function fetchBulkDownloadTargets() {
 }
 
 async function downloadBulkTarget(target) {
-  const { downloadUrl, label, outputPath, tempPath } = target;
+  const { downloadUrl, label, outputPath, tempPath, isJsonlGz } = target;
   const response = await fetch(downloadUrl, createScryfallRequestOptions());
   if (!response.ok || !response.body) {
     throw new Error(`Could not download ${label}: ${response.status} ${response.statusText}`);
   }
 
   ensureParentDirectory(outputPath);
-  await pipeline(Readable.fromWeb(response.body), fs.createWriteStream(tempPath));
+  const source = Readable.fromWeb(response.body);
+  if (isJsonlGz) {
+    // gzip JSONL → decompress → rewrite as the JSON array the builders consume.
+    await pipeline(
+      source,
+      zlib.createGunzip(),
+      createJsonlToJsonArrayTransform(),
+      fs.createWriteStream(tempPath)
+    );
+  } else {
+    // Legacy plain-JSON `download_uri` (already an array): passthrough.
+    await pipeline(source, fs.createWriteStream(tempPath));
+  }
   fs.renameSync(tempPath, outputPath);
 }
 

@@ -1,6 +1,6 @@
 # Slice A — Scryfall JSONL bulk download fix
 
-## Status: planned
+## Status: done
 
 ## Goal
 
