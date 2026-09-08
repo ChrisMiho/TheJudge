@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-price-slim` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-205625/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half; resume at `gate-qc`)
+- Current node: `owner-action`
+- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR to `main`; the build half (`graph-implement`) claims the spec from `origin/main`
 
 ## Node ledger
 
@@ -16,10 +16,14 @@
 | 1 | preflight | haiku | ok | degraded (no run state) | branch `thejudge-auto/trade-balancer-price-slim` cut from `origin/main` and pushed from `.worktrees/kickoff-trade-balancer-price-slim`; launch checkout on `main` unchanged; universal canary denied (rm -rf), graph canary denied (nohup); Profile loaded (env sentinel) | 2026-09-07 |
 | 2 | shape | sonnet | ok | `0 → 27` | package `PRD/work/trade-balancer-price-slim/` created (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF-size.md verbatim copy); 10 prior-run receipt matches recorded in IDEA.md; STATUS.md board row added under ideation | 2026-09-07 |
 | 3 | define | opus | ok | `0 → 38` | DESIGN-BRIEF.md (Step-1 frontend slim, committed design; Step-2 backend move deferred) and GATE-QUESTIONS.md (2 stable-id blocks: REQ-066, NFR-013, each with plain-language lines + complete diff + verdict slot; Blocker questions: None) written; STATUS.refined; PRD/sections untouched | 2026-09-07 |
+| 4 | gate-qc | sonnet | ok (PASS) | `0 → 22` | quality-check PASS on DESIGN-BRIEF.md, findings none; verified brief premise against loadCardPrices.ts / oracleSearch.ts / build-card-prices.mjs and the REQ-066 / NFR-013 diffs against current section text; run stops here (first PASS) | 2026-09-07 |
 
 ## Open gate
 
-- None
+- Gate: quality-check PASS — run one (spec-forming half) stops here at `owner-action`.
+- Owner action: answer the accept/edit/reject verdict slots in `PRD/work/trade-balancer-price-slim/GATE-QUESTIONS.md` (amendments to REQ-066 and NFR-013), then merge the docs PR to `main`. That merge is the build signal.
+- Docs PR: (opened after this commit — URL recorded in the next commit and the run report)
+- Resume: no `/graph-kickoff` resume needed. After the merge, the build half `graph-implement` claims the spec from `origin/main`, applies the answered proposal, and opens the code PR.
 
 ## Dispatch prompts
 
@@ -87,6 +91,24 @@ The one product decision this run owns is sequencing: Step 1 is the frontend-onl
 Constraints: missing-price behavior unchanged; the printing picker keeps enough identity to disambiguate printings; mock-default local dev keeps working; do not entangle with the weekly freshness script. Intake is evidence, never authority — do not open documents the intake cites as its own evidence.
 
 Set STATUS.refining while shaping and STATUS.refined when complete. Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A, no Scryfall refresh. Committing is left to the driver.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### gate-qc
+
+graph is controlling.
+
+You are node 4 (`gate-qc`) of an autonomous graph-kickoff run. Invoke the `thejudge-quality-check` skill and follow it exactly, in graph-controlled (non-interactive) mode. Produce a PASS/FAIL report only — never a GAMEPLAN or slice docs.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-price-slim
+
+Validate (inside that worktree): PRD/work/trade-balancer-price-slim/DESIGN-BRIEF.md for PRD alignment and agent-readiness. The proposed product-truth changes live in GATE-QUESTIONS.md (amendments to REQ-066 and NFR-013) — treat that as the proposal the brief is checked against; PRD/sections is intentionally untouched (applied at build), so do not fail the brief for PRD/sections being unedited.
+
+Judge whether the brief is aligned with current product truth and ready to slice: the frontend-slim design (derive imageUrl from the printing id, reconstruct name/setName, emit the slim shape from build-card-prices.mjs), the preserved constraints (missing-price state unchanged, printing picker still disambiguates, mock-default dev works, double-faced-card image covered), and the Step-2 deferral being explicit rather than silent.
+
+On FAIL: set STATUS.refining and list the complete findings (the run loops back to define). On PASS: report PASS with findings none — do not advance further yourself; the driver stops the run at PASS with the docs PR.
+
+Boundaries: no PRD/sections edit, no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push, no git add -A. Leave committing to the driver.
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 

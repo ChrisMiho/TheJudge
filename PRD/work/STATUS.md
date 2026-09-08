@@ -10,10 +10,6 @@ Do not rename package folders to encode status.
 
 ## refined
 
-| Package | Note |
-| --- | --- |
-| [trade-balancer-price-slim](trade-balancer-price-slim/) | Step-1 frontend slim of the ~38 MB `cardPrintingPrices.json`: derive `imageUrl` from `id`, dedupe `name`/`setName` to compact in-artifact maps, frontend-only (DEC-087 preserved). DESIGN-BRIEF + GATE-QUESTIONS (REQ-066, NFR-013) written; Step-2 backend lookup deferred, not gated. |
-
 ## refining
 
 ## ideation
@@ -23,6 +19,7 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | [weekly-data-refresh-pr](weekly-data-refresh-pr/) | gate-qc PASS; docs PR open into `main` (REQ-195). Answer the verdict in `GATE-QUESTIONS.md`, then merge the PR to build. |
+| [trade-balancer-price-slim](trade-balancer-price-slim/) | gate-qc PASS; docs PR open into `main`. Step-1 frontend slim of the ~38 MB `cardPrintingPrices.json` (derive `imageUrl` from `id`, dedupe `name`/`setName`, frontend-only). Answer the verdict in `GATE-QUESTIONS.md` (REQ-066, NFR-013), then merge the PR to build; Step-2 backend lookup deferred. |
 
 ## deferred
 

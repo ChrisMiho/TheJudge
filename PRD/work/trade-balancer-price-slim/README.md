@@ -12,3 +12,9 @@ this package was seeded from.
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/trade-balancer-price-slim
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/trade-balancer-price-slim/DESIGN-BRIEF.md`
+- Findings: none
