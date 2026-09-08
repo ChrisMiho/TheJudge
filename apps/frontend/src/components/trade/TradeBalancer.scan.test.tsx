@@ -6,22 +6,14 @@ import type { ScanCameraSurfaceProps } from "../ScanCameraSurface";
 import type { CardScanMap } from "../../lib/scan/resolveScanCandidates";
 import type { Candidate, IdentifyResult } from "../../lib/scan/types";
 import type { CardMetadataItem } from "../../types";
-import {
-  createCardPrices,
-  loadCardPrices,
-  type CardPrintingPriceArtifact
-} from "../../lib/trade/loadCardPrices";
+import { clearCardPrintingsCache, type CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
 import { loadScanMap } from "../../lib/scan/loadScanMap";
 import { TradeBalancer } from "./TradeBalancer";
 import { SCAN_CAMERA_UNAVAILABLE_COPY } from "./useTradeScan";
 
-// The 38 MB price artifact, the scan map, the hash DB, and the camera are all
-// mocked: this suite makes no network call and opens no camera.
-vi.mock("../../lib/trade/loadCardPrices", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("../../lib/trade/loadCardPrices")>();
-  return { ...actual, loadCardPrices: vi.fn() };
-});
-
+// The card list, the scan map, the hash DB, and the camera are all mocked:
+// this suite makes no network call and opens no camera. Card prices are
+// mocked at the fetch layer, one oracle id at a time (FLOW-025).
 vi.mock("../../lib/scan/loadScanMap", () => ({ loadScanMap: vi.fn() }));
 
 /**
@@ -41,7 +33,7 @@ let capturedOptions: ScanCaptureOptions | null = null;
 
 const captureIdentify = vi.fn(async (): Promise<IdentifyResult> => {
   if (lockedOracleCard && capturedOptions) {
-    capturedOptions.onScanCandidateSelected(lockedOracleCard, lockedOracleCard.imageUrl);
+    capturedOptions.onScanCandidateSelected(lockedOracleCard, "");
   }
   return { matched: Boolean(lockedOracleCard), was_rotated: false, candidates: frameCandidates };
 });
@@ -86,50 +78,30 @@ vi.mock("../ScanCameraSurface", () => ({
   )
 }));
 
-const artifact: CardPrintingPriceArtifact = {
-  snapshotDate: "2026-06-05",
-  printings: {
-    "bolt-2ed": {
-      id: "bolt-2ed",
-      oracleId: "oracle-bolt",
-      name: "Lightning Bolt",
-      set: "2ed",
-      setName: "Unlimited Edition",
-      collectorNumber: "162",
-      imageUrl: "https://example.test/bolt-2ed.jpg",
-      usd: 10,
-      usdFoil: null
-    },
-    "bolt-m10": {
-      id: "bolt-m10",
-      oracleId: "oracle-bolt",
-      name: "Lightning Bolt",
-      set: "m10",
-      setName: "Magic 2010",
-      collectorNumber: "146",
-      imageUrl: "https://example.test/bolt-m10.jpg",
-      usd: 4,
-      usdFoil: 25
-    },
-    "lotus-lea": {
-      id: "lotus-lea",
-      oracleId: "oracle-lotus",
-      name: "Black Lotus",
-      set: "lea",
-      setName: "Limited Edition Alpha",
-      collectorNumber: "232",
-      imageUrl: "https://example.test/lotus-lea.jpg",
-      usd: 30,
-      usdFoil: null
-    }
+const cardMetadata: CardMetadataItem[] = [
+  { cardId: "oracle-bolt", name: "Lightning Bolt", imageId: "bolt-2ed", colors: ["R"] },
+  { cardId: "oracle-lotus", name: "Black Lotus", imageId: "lotus-lea", colors: [] }
+];
+
+// Printing order matters: with no scanned-printing match, the balancer
+// defaults to the first printing the backend returns (FLOW-025).
+const pricesByOracle: Record<string, { snapshotDate: string; printings: CardPrintingPrice[] }> = {
+  "oracle-bolt": {
+    snapshotDate: "2026-06-05",
+    printings: [
+      { id: "bolt-2ed", set: "2ed", setName: "Unlimited Edition", collectorNumber: "162", usd: 10, usdFoil: null },
+      { id: "bolt-m10", set: "m10", setName: "Magic 2010", collectorNumber: "146", usd: 4, usdFoil: 25 }
+    ]
   },
-  byOracleId: {
-    "oracle-bolt": ["bolt-2ed", "bolt-m10"],
-    "oracle-lotus": ["lotus-lea"]
+  "oracle-lotus": {
+    snapshotDate: "2026-06-05",
+    printings: [
+      { id: "lotus-lea", set: "lea", setName: "Limited Edition Alpha", collectorNumber: "232", usd: 30, usdFoil: null }
+    ]
   }
 };
 
-/** `bolt-promo` is scannable but absent from the price artifact (fallback path). */
+/** `bolt-promo` is a scannable printing id absent from the price fixture (fallback path). */
 const scanMap: CardScanMap = {
   "bolt-2ed": { oracleId: "oracle-bolt", name: "Lightning Bolt", imageUrl: "s/bolt-2ed.jpg" },
   "bolt-m10": { oracleId: "oracle-bolt", name: "Lightning Bolt", imageUrl: "s/bolt-m10.jpg" },
@@ -137,7 +109,32 @@ const scanMap: CardScanMap = {
   "lotus-lea": { oracleId: "oracle-lotus", name: "Black Lotus", imageUrl: "s/lotus-lea.jpg" }
 };
 
-const loadCardPricesMock = vi.mocked(loadCardPrices);
+function jsonResponse(payload: unknown, status = 200): Response {
+  return {
+    ok: status >= 200 && status < 300,
+    status,
+    statusText: status === 200 ? "OK" : "Error",
+    json: async () => payload
+  } as unknown as Response;
+}
+
+function makeFetchMock(): ReturnType<typeof vi.fn> {
+  return vi.fn((input: RequestInfo | URL) => {
+    const url = String(input);
+    if (url.includes("/data/cardMetadata.json")) {
+      return Promise.resolve(jsonResponse(cardMetadata));
+    }
+    const match = url.match(/\/api\/cards\/([^/]+)\/prices$/);
+    if (match) {
+      const oracleId = decodeURIComponent(match[1]);
+      const entry = pricesByOracle[oracleId];
+      if (!entry) return Promise.resolve(jsonResponse({ error: "card_not_found" }, 404));
+      return Promise.resolve(jsonResponse({ oracleId, ...entry }));
+    }
+    return Promise.reject(new Error(`Unhandled fetch in test: ${url}`));
+  });
+}
+
 const loadScanMapMock = vi.mocked(loadScanMap);
 
 function side(sideId: "A" | "B"): HTMLElement {
@@ -169,7 +166,8 @@ async function openScan(
   });
 }
 
-/** Drives one identify frame that locks on `oracleId` with the given candidates. */
+/** Drives one identify frame that locks on `oracleId` with the given candidates,
+ * then waits for that entry's price fetch to resolve (FLOW-025). */
 async function scanFrame(
   user: ReturnType<typeof userEvent.setup>,
   sideId: "A" | "B",
@@ -184,12 +182,16 @@ async function scanFrame(
   await user.click(within(side(sideId)).getByRole("button", { name: "Test scan frame" }));
   lockedOracleCard = null;
   frameCandidates = [];
+  await waitFor(() => {
+    expect(within(side(sideId)).queryByText("Loading price…")).not.toBeInTheDocument();
+  });
 }
 
 describe("Frontend - Trade", () => {
   describe("TradeBalancer scan input", () => {
     beforeEach(() => {
-      loadCardPricesMock.mockResolvedValue(createCardPrices(artifact));
+      clearCardPrintingsCache();
+      vi.stubGlobal("fetch", makeFetchMock());
       loadScanMapMock.mockResolvedValue(scanMap);
     });
 
@@ -197,10 +199,11 @@ describe("Frontend - Trade", () => {
       lockedOracleCard = null;
       frameCandidates = [];
       capturedOptions = null;
+      vi.unstubAllGlobals();
       vi.clearAllMocks();
     });
 
-    it("adds an entry defaulting to the scanned printing, priced from the artifact", async () => {
+    it("adds an entry defaulting to the scanned printing, priced from the fetched list", async () => {
       const user = userEvent.setup();
       await renderBalancer();
 
@@ -276,7 +279,7 @@ describe("Frontend - Trade", () => {
       expect(sideTotalText("B")).toBe("$10.00");
     });
 
-    it("falls back to another printing when the scanned printing is not in the artifact", async () => {
+    it("falls back to another printing when the scanned printing is not in the fetched list", async () => {
       const user = userEvent.setup();
       await renderBalancer();
 
@@ -309,9 +312,11 @@ describe("Frontend - Trade", () => {
       expect(search).not.toBeDisabled();
       await user.type(search, "Light");
       await user.click(within(side("A")).getByRole("button", { name: /^Lightning Bolt/ }));
-      await user.click(within(side("A")).getByRole("button", { name: /Magic 2010/ }));
+      await waitFor(() => {
+        expect(within(side("A")).queryByText("Loading price…")).not.toBeInTheDocument();
+      });
 
-      expect(sideTotalText("A")).toBe("$4.00");
+      expect(sideTotalText("A")).toBe("$10.00");
     });
   });
 });

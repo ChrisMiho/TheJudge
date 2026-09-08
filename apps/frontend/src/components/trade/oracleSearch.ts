@@ -1,5 +1,5 @@
 import { levenshteinDistance, normalize } from "../../lib/search";
-import type { CardPrices } from "../../lib/trade/loadCardPrices";
+import type { CardMetadataItem } from "../../types";
 
 export const MIN_TRADE_SEARCH_LENGTH = 3;
 const MAX_TYPO_DISTANCE = 2;
@@ -9,32 +9,21 @@ export interface OracleSearchEntry {
   oracleId: string;
   name: string;
   normalizedName: string;
-  printingCount: number;
 }
 
 /**
- * Collapses the printing-price artifact into one searchable row per oracle card,
- * so manual entry resolves a card by name before the printing is chosen.
+ * REQ-065/REQ-174 (Slice D): search over the shared `cardMetadata` index
+ * instead of the (now backend-only, per-card-fetched) price artifact —
+ * manual search no longer needs price data at all, just name/oracle-id
+ * identity, which `cardMetadata` already carries at the unique-card grain
+ * (one row per oracle id).
  */
-export function buildOracleSearchIndex(prices: CardPrices): OracleSearchEntry[] {
-  const index: OracleSearchEntry[] = [];
-
-  for (const [oracleId, printingIds] of Object.entries(prices.byOracleId)) {
-    const firstPrinting = printingIds
-      .map((printingId) => prices.printings[printingId] ?? null)
-      .find((printing) => printing !== null);
-
-    if (!firstPrinting) continue;
-
-    index.push({
-      oracleId,
-      name: firstPrinting.name,
-      normalizedName: normalize(firstPrinting.name),
-      printingCount: printingIds.length
-    });
-  }
-
-  return index;
+export function buildOracleSearchIndex(cardMetadata: CardMetadataItem[]): OracleSearchEntry[] {
+  return cardMetadata.map((card) => ({
+    oracleId: card.cardId,
+    name: card.name,
+    normalizedName: normalize(card.name)
+  }));
 }
 
 function matchTier(normalizedName: string, normalizedQuery: string): number | null {

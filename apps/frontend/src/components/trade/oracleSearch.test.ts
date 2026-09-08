@@ -1,59 +1,33 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  createCardPrices,
-  type CardPrintingPriceArtifact
-} from "../../lib/trade/loadCardPrices";
+import type { CardMetadataItem } from "../../types";
 import { buildOracleSearchIndex, searchOracleIndex } from "./oracleSearch";
 
-function printing(
-  id: string,
-  oracleId: string,
-  name: string
-): CardPrintingPriceArtifact["printings"][string] {
-  return {
-    id,
-    oracleId,
-    name,
-    set: "tst",
-    setName: "Test Set",
-    collectorNumber: "1",
-    imageUrl: `https://example.test/${id}.jpg`,
-    usd: 1,
-    usdFoil: 2
-  };
+function card(cardId: string, name: string): CardMetadataItem {
+  return { cardId, name, imageId: `${cardId}-img`, colors: [] };
 }
 
-const prices = createCardPrices({
-  snapshotDate: "2026-06-05",
-  printings: {
-    "bolt-a": printing("bolt-a", "oracle-bolt", "Lightning Bolt"),
-    "bolt-b": printing("bolt-b", "oracle-bolt", "Lightning Bolt"),
-    "helix-a": printing("helix-a", "oracle-helix", "Lightning Helix"),
-    "lotus-a": printing("lotus-a", "oracle-lotus", "Black Lotus"),
-    "ghost-a": printing("ghost-a", "oracle-ghost", "Ghost Card")
-  },
-  byOracleId: {
-    "oracle-bolt": ["bolt-a", "bolt-b"],
-    "oracle-helix": ["helix-a"],
-    "oracle-lotus": ["lotus-a"],
-    "oracle-missing": ["not-in-artifact"]
-  }
-});
+const cardMetadata: CardMetadataItem[] = [
+  card("oracle-bolt", "Lightning Bolt"),
+  card("oracle-helix", "Lightning Helix"),
+  card("oracle-lotus", "Black Lotus"),
+  card("oracle-ghost", "Ghost Card")
+];
 
-const index = buildOracleSearchIndex(prices);
+const index = buildOracleSearchIndex(cardMetadata);
 
 describe("Frontend - Trade", () => {
   describe("buildOracleSearchIndex", () => {
-    it("collapses printings into one row per oracle card with a printing count", () => {
+    it("builds one searchable row per card in cardMetadata, no price data needed", () => {
       expect(index.map((entry) => entry.oracleId).sort()).toEqual([
         "oracle-bolt",
+        "oracle-ghost",
         "oracle-helix",
         "oracle-lotus"
       ]);
       expect(index.find((entry) => entry.oracleId === "oracle-bolt")).toMatchObject({
         name: "Lightning Bolt",
-        printingCount: 2
+        normalizedName: "lightning bolt"
       });
     });
   });

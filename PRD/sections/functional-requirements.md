@@ -172,7 +172,7 @@
   - submit is allowed only when at least one selected zone has a card
   - blank trimmed question uses the zone-aware fallback in request/prompt logic
 - Constraints:
-  - one main product-facing endpoint in the core product, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) — canonical rule: NFR-004
+  - one main product-facing endpoint in the core product, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) and the read-only Trade Balancer price route (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175) — canonical rule: NFR-004
 - Dependencies:
   - backend API
   - DEC-153
@@ -1453,7 +1453,7 @@
 ### REQ-064
 - Title: Two-sided trade balancer screen
 - Priority: high
-- Description: The app must provide a standalone Trade Balancer view where two traders each build a list of cards and the app shows each side's total USD value and the live difference between the two sides, so players can see whether a trade is balanced and by how much. Frontend-only and ephemeral; no backend, endpoint, or contract change (DEC-087).
+- Description: The app must provide a standalone Trade Balancer view where two traders each build a list of cards and the app shows each side's total USD value and the live difference between the two sides, so players can see whether a trade is balanced and by how much. Ephemeral; it prices cards through a read-only backend price fetch (REQ-066, REQ-175) and makes no change to the AI answer/prompt contract (reverses the frontend-only posture of the retired DEC-087).
 - Acceptance Criteria:
   - the view presents two sides (**Side A** and **Side B**), each an ordered list of card entries
   - each side shows a running **total** = `Σ qty × (foil ? usdFoil : usd)` across its entries, updating live as entries are added, removed, re-priced, foil-toggled, or quantity-changed
@@ -1463,16 +1463,16 @@
   - the view is reachable from the top-level navigation menu (REQ-067) and the MTG Assistant flow is unaffected
   - the trade state is **ephemeral**: no history, no persistence across reload, no marketplace/transaction handling, and no automated balancing suggestions
 - Constraints:
-  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint
+  - the AI answer path stays frozen: no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or `POST /api/ask-ai`. The balancer prices cards only through a read-only backend price fetch (REQ-175); printing identity is never pushed into any prompt, rulings, or answer payload
   - USD only (Scryfall `usd` / `usd_foil`); EUR, tix, etched-foil, and grading/condition are out of scope for v1
   - mobile-first, touch-friendly layout (NFR-001)
 - Dependencies:
-  - DEC-087
   - REQ-065
   - REQ-066
   - REQ-067
   - NFR-013
   - FLOW-009
+  - REQ-175
 - Notes:
   - a trade side is a value list, not the stack: the duplicate-block (REQ-009/FLOW-004) and 10-card cap (REQ-010) do not apply
 
@@ -1488,44 +1488,48 @@
   - **quantity/multiples:** the same card (or printing) may appear multiple times on a side, via repeated adds and/or a per-entry quantity control; each unit counts toward the side total; the stack duplicate-block does not apply
   - **missing price:** when the selected foil mode has no price for the chosen printing, the entry's contribution defaults to **$0**, the entry's price is rendered in a **distinct color** from priced entries, and the entry shows a **caution-triangle** indicator communicating that the value is unknown
   - each entry can be **removed** from its side
-  - the printing shown and priced uses the price artifact (REQ-066); no runtime network call is made to price or list printings
+  - a card's printings and prices are fetched from the backend when the card is added and cached per session (REQ-066, REQ-175, FLOW-025); the entry shows a brief in-place loading state while it resolves. The card's name and image come from the shared local `cardMetadata` index (REQ-174). If the price fetch fails, the entry degrades to the $0-plus-caution treatment with a retry affordance rather than a broken row
 - Constraints:
   - printing selection is a pricing/display layer only; it is never pushed into prompt context, rulings lookup, or the Decrypt-Stack request payload, and does not change the DEC-053 oracle-level scan-identity model
   - USD only; foil handling is non-foil vs `usd_foil` (etched-foil out of scope for v1)
 - Dependencies:
-  - DEC-087
-  - DEC-088
   - REQ-066
   - REQ-036
   - REQ-064
   - FLOW-009
+  - REQ-174
+  - REQ-175
+  - FLOW-025
 - Notes:
   - reuses the existing scan resolver (REQ-036) and manual search (REQ-002/REQ-003) as input; the printing pick and pricing are the new layer
 
 ### REQ-066
 - Title: Printing-level price data artifact
 - Priority: high
-- Description: Add a build step that emits a committed, printing-level USD price artifact from the existing Scryfall bulk source, covering every paper printing with its non-foil and foil price plus the fields needed to identify, display, and list printings, so the trade balancer can price scanned and manually chosen printings with no runtime network calls (DEC-088).
+- Description: Emit a committed, **backend** printing-level USD price artifact from the existing Scryfall bulk source, keyed by oracle id, so the trade balancer can price scanned and manually chosen printings by fetching one card's printings on demand from the backend (REQ-175, FLOW-025). The projection is unified into the existing card-detail build, and the former ~38 MB frontend price file is removed (reverses the frontend-only posture of the retired DEC-087/DEC-088).
 - Acceptance Criteria:
-  - a build script (alongside `data:build` / `data:refresh`) emits a committed printing-level price artifact under `apps/frontend/public/data/` from the local Scryfall bulk source
-  - per printing the artifact carries at least: printing id, oracle id, card name, set code, set name, collector number, image url, `usd` (non-foil), and `usd_foil`
-  - entries are **indexable by oracle id** (to list a card's printings for the manual picker) and resolvable **by printing id** (so a scanned printing prices directly)
-  - missing prices are stored as null/absent (consumed as $0 + caution per REQ-065); the artifact records a **snapshot date**
-  - the artifact is **lazy-loaded only when the Trade Balancer is first opened**; app startup and the MTG Assistant flow are unaffected for users who never open it
+  - the price/printing projection is emitted by the **existing card-detail build** (`scripts/build-card-detail-by-oracle-id.mjs`), which trims `default-cards.json` once and emits both the card-detail map and the price map; the separate `scripts/build-card-prices.mjs` is retired and no fourth extract of `default-cards.json` is added
+  - the committed price artifact is **backend-only** (working name `apps/backend/data/cardPrintingPricesByOracleId.json`), keyed by **oracle id**; per oracle it carries the card's list of printings, each with printing id, set code, set name, collector number, `usd` (non-foil), and `usd_foil`; it records a **snapshot date**. Card name and image url are **not** stored per printing — name comes from the shared `cardMetadata` index (REQ-174) and image url is derived from the printing id (Scryfall template)
+  - the backend loads the committed price map into memory at startup and serves one card's printings on demand (REQ-175) with **no runtime network call**, exactly like `cardDetailByOracleId.json`; the former `apps/frontend/public/data/cardPrintingPrices.json` is deleted and is no longer downloaded up front
+  - the committed backend price map keeps the Lambda deployment inside AWS's **250 MB unzipped quota**: `scripts/lambda-package-budget.test.mjs` passes with the price map bundled (the whole `apps/backend/data/` folder ships in the Lambda zip), and the build records the measured price-map size so the budget headroom stays visible
+  - a scanned printing prices directly (its oracle resolves via the scan map, then the card's fetched printing list is matched by printing id); the manual picker lists every printing of a card from the fetched list
+  - missing prices are stored as null/absent (consumed as $0 + caution per REQ-065)
   - `npm run data:build` regenerates the artifact from local inputs; `npm run data:refresh` refreshes the Scryfall bulk source (download is human-approved before it runs) then rebuilds
   - the build degrades gracefully: a missing/failed source keeps the prior committed artifact and does not break other artifact builds
 - Constraints:
-  - static committed snapshot; no runtime price fetch and no runtime metadata/library sync (DEC-012 posture)
+  - static committed snapshot: no live/real-time price sync and no scheduled refresh; the on-demand backend read serves the committed snapshot in memory and makes no external call (DEC-012 posture)
   - raw downloaded bulk data remains gitignored and is not committed; only the trimmed price artifact is committed
-  - no change to `cardMetadata.json`, `cardScanMap.json`, `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, the provider boundary, or any endpoint
+  - no change to `cardScanMap.json`, `cardhashes.bin`, the scan recipe/identify/lock boundary, `AskAiRequest`, prompt assembly, or the provider boundary; `cardMetadata.json` is slimmed and reused as the shared identity index per REQ-174; the backend gains the read-only price route per REQ-175
 - Dependencies:
-  - DEC-088
   - DEC-012
   - REQ-065
   - NFR-013
+  - REQ-174
+  - REQ-175
   - data pipeline (`scripts/`)
 - Notes:
   - source-bulk choice and the exact filter/field set are build-time details validated by outcome (every priced gameplay printing present, prices display correctly); `all-cards` (every language) is unnecessary because prices are per printing
+  - the freshness script's price **target artifact** changes from the deleted frontend file to the backend map; re-pointing it is a later change tracked by the freshness track, not resolved here
 
 ### REQ-067
 - Title: Feature portal — top-level app navigation
@@ -1690,7 +1694,7 @@
   - success `{ answer }` and error response shapes are unchanged for both modes and both `ASK_AI_PROVIDER` providers
   - `POST /api/ask-ai` route path and provider boundary are unchanged
 - Constraints:
-  - `POST /api/ask-ai` stays the one answer endpoint (canonical rule: NFR-004); a separate read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) is permitted alongside it
+  - `POST /api/ask-ai` stays the one answer endpoint (canonical rule: NFR-004); two separate read-only retrieval routes are permitted alongside it — card-detail (`GET /api/cards/:oracleId`, REQ-175) and the Trade Balancer price route (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175)
   - additive amendment to the DEC-020 frozen contract; no existing field changes meaning
 - Dependencies:
   - DEC-106
@@ -2208,7 +2212,7 @@
   - identical request context and artifact data produce the same selected variants and match annotations
 - Constraints:
   - retrieval is local and backend-only; no model call is used to decide intent, eligibility, template satisfaction, or ranking
-  - do not introduce legality validation, rules simulation, hidden-state assumptions, or a second product-facing endpoint (one-endpoint rule canonical: NFR-004; rules-engine rule canonical: `goals-and-non-goals.md` Scope Notes)
+  - do not introduce legality validation, rules simulation, hidden-state assumptions, or a further product-facing endpoint (one-endpoint rule canonical: NFR-004; rules-engine rule canonical: `goals-and-non-goals.md` Scope Notes)
 - Dependencies:
   - DEC-116
   - REQ-093
@@ -4012,15 +4016,18 @@
 ### REQ-174
 - Title: Image-first up-front card list
 - Priority: high
-- Description: The shared card metadata the frontend loads on entry to MTG Assistant and Quick Lookup carries only the fields a card tile renders directly — `cardId` (oracle id), `name`, `imageUrl`, and `colors` — and no longer carries the descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `supertypes`, `subtypes`), which is fetched on demand per REQ-175 / FLOW-024. `colors` stays up front because each card tile draws its identity ring from the card's colors (FLOW-001, DEC-078).
+- Description: The shared card metadata the frontend loads carries only the fields a card tile renders directly — `cardId` (oracle id), `name`, a representative image id, and `colors` — and no longer carries the descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `supertypes`, `subtypes`), which is fetched on demand per REQ-175 / FLOW-024. It is the **single per-unique-card identity index** used by MTG Assistant, Quick Lookup, **and the Trade Balancer's search/autocomplete and scan preview** (REQ-065). `colors` stays up front because each card tile draws its identity ring from the card's colors (FLOW-001, DEC-078).
 - Acceptance Criteria:
-  - `scripts/build-card-metadata.mjs` emits `apps/frontend/public/data/cardMetadata.json` records containing only `cardId`, `name`, `imageUrl`, and `colors`
+  - `scripts/build-card-metadata.mjs` emits `apps/frontend/public/data/cardMetadata.json` records containing only `cardId`, `name`, the representative printing id, and `colors`; the full `imageUrl` string is no longer stored — the loader derives it from the id via the Scryfall template `https://cards.scryfall.io/normal/front/<id[0]>/<id[1]>/<id>.jpg`
+  - the derived image url resolves for both single-faced and **double-faced** representative printings — Scryfall composes a double-faced card's front-face image url from the printing id with the `front` path segment — verified against a real double-faced card at build
+  - the Trade Balancer reads this index for its manual-search autocomplete and scan preview (card name and image), replacing its former reads of the deleted frontend price artifact
   - autocomplete, card selection, image rendering, and the color identity ring behave identically off the slimmed list at both 390×844 and 1440×900
   - no card surface renders a descriptive field (oracle text, type line, mana cost/value, sub/supertypes) directly from the up-front list; those fields arrive only via the on-demand fetch (FLOW-024)
   - the color identity ring (including silver-gray for colorless/missing colors) renders from the up-front `colors` with no detail fetch
 - Constraints:
   - do not remove `colors` from the up-front list; the tile ring depends on it
   - representative-printing selection, image selection, and card identity are unchanged
+  - NFR-019's relative first-load gate (the trimmed `cardMetadata.json` is ≥40% smaller gzipped than the prior combined artifact) still holds and is only improved by dropping the full image string; the build re-records the measured before/after figures
 - Dependencies:
   - REQ-175
   - FLOW-024
@@ -4028,8 +4035,10 @@
   - DEC-160
   - FLOW-001
   - NFR-019
+  - REQ-065
 - Notes:
   - the dominant byte-mass (oracle text, 45.4% of the file) is what this removes from first load
+  - deriving the image from a stored printing id (rather than a full URL) is the same lever used for the backend price data; the gzipped saving is modest (the shared URL prefix compresses well) but it unifies image derivation and removes a redundant per-card string
 
 ### REQ-175
 - Title: Card-detail retrieval endpoint and backend card-detail artifact
@@ -4039,22 +4048,27 @@
   - a new `scripts/build-*.mjs` trims the committed Scryfall bulk into a card-detail map keyed by Scryfall `oracle_id`, each value carrying `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`; raw Scryfall bulk stays gitignored and only the trimmed artifact is committed
   - the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; no card-detail copy is committed under `apps/frontend/public/data/` and none is downloaded up front (NFR-019)
   - a new route `GET /api/cards/:oracleId` returns one card's descriptive block by oracle id; an unknown id returns a not-found response and the descriptive block degrades to the existing empty-oracle marker
+  - a **read-only price companion** serves one card's printings and prices by oracle id, kept **separate from the descriptive block** so the card-detail/ask-ai path carries no price bytes (REQ-066). Recommended shape: a sibling route `GET /api/cards/:oracleId/prices` returning `{ oracleId, snapshotDate, printings: [{ id, set, setName, collectorNumber, usd, usdFoil }] }`; an unknown id returns a not-found response. The frontend derives each printing's image url from `id` and takes the card name from the shared `cardMetadata` index (REQ-174)
+  - the price companion is backed by the committed backend price map (REQ-066), loaded into memory at startup and served with **no runtime network call**, exactly like the card-detail map; the balancer fetches one card's prices on add and caches per session (FLOW-025)
   - the frontend loads a card's detail from `GET /api/cards/:oracleId` on first open and caches it per card for the session (FLOW-024); it never bulk-downloads the map
   - ask-ai resolves card text by reading the same backend map internally inside `POST /api/ask-ai` (REQ-176), not by calling the new route; the route and the ask-ai read share the one artifact so they cannot drift
   - `npm run data:build` includes the card-detail build; `npm run data:refresh` requires explicit human approval before any download (existing policy)
-  - the product-facing routes are exactly `POST /api/ask-ai` and `GET /api/cards/:oracleId` (`GET /api/health` remains the non-product health check); `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call
+  - the product-facing routes are `POST /api/ask-ai`, `GET /api/cards/:oracleId`, and the read-only price companion `GET /api/cards/:oracleId/prices` (`GET /api/health` remains the non-product health check); `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call. The added route amends the one-endpoint rule (NFR-004)
 - Constraints:
   - commit only the trimmed artifact, matching the existing `apps/backend/data/*.json` pattern
-  - the new route is a read-only `GET` keyed by oracle id; it is the product's second product-facing endpoint (D5), authorized by the one-endpoint rule (canonical: NFR-004)
+  - the card-detail route and the price companion are read-only `GET`s keyed by oracle id; the price companion is the product's third product-facing endpoint, authorized by amending the one-endpoint rule (canonical: NFR-004)
 - Dependencies:
   - REQ-174
   - REQ-176
   - FLOW-024
   - REQ-072
   - NFR-004
+  - REQ-066
+  - FLOW-025
 - Notes:
   - `oracle_id` is the shared join key already used by card metadata, rulings, and combos
   - D5 chose the endpoint over a lazy static frontend artifact for per-card fetch granularity (download only the card opened)
+  - prices ride a companion separate from the descriptive block because prices refresh weekly while rules text is static, and the question/RAG flow must not carry price bytes it never reads
 
 ### REQ-176
 - Title: Server-side card-text resolution for ask-ai

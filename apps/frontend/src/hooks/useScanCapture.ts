@@ -22,6 +22,7 @@ import type {
 } from "../lib/scan/acquisitionDiagnostics";
 import type { Candidate, HashDb, IdentifyResult, RgbImage } from "../lib/scan/types";
 import type { ScanCameraStatus } from "../components/ScanCameraSurface";
+import { deriveCardImageUrl } from "../lib/cardImage";
 import type { CardMetadataItem } from "../types";
 
 export const LOW_CONFIDENCE_ESCALATION_COUNT = 3;
@@ -401,7 +402,7 @@ export function useScanCapture({
         const lockedEntry = ranked.find((entry) => entry.card.cardId === state.cardId);
         const locked = lockedEntry?.card ?? null;
         if (locked) {
-          const scanImageUrl = lockedEntry?.scanImageUrl ?? locked.imageUrl;
+          const scanImageUrl = lockedEntry?.scanImageUrl ?? deriveCardImageUrl(locked.imageId);
           const outcome = onSelectRef.current(locked, scanImageUrl);
           resetScanState();
           if (outcome && outcome.added === false) {
@@ -461,7 +462,7 @@ export function useScanCapture({
 
   const acceptCandidate = useCallback(
     (card: CardMetadataItem): void => {
-      onSelectRef.current(card, card.imageUrl);
+      onSelectRef.current(card, deriveCardImageUrl(card.imageId));
       resetScanState();
     },
     [resetScanState]

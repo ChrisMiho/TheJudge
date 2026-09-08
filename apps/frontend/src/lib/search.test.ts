@@ -6,19 +6,19 @@ const sampleCards: CardMetadataItem[] = [
   {
     cardId: "1",
     name: "Lightning Bolt",
-    imageUrl: "",
+    imageId: "",
     colors: ["R"],
   },
   {
     cardId: "2",
     name: "Counterspell",
-    imageUrl: "",
+    imageId: "",
     colors: ["U"],
   },
   {
     cardId: "3",
     name: "Brainstorm",
-    imageUrl: "",
+    imageId: "",
     colors: ["U"],
   }
 ];
@@ -59,25 +59,25 @@ describe("search helpers", () => {
       {
         cardId: "exact",
         name: "Bolt",
-        imageUrl: "",
+        imageId: "",
         colors: [],
       },
       {
         cardId: "prefix",
         name: "Boltergeist",
-        imageUrl: "",
+        imageId: "",
         colors: [],
       },
       {
         cardId: "substring",
         name: "Firebolt Mage",
-        imageUrl: "",
+        imageId: "",
         colors: [],
       },
       {
         cardId: "typo",
         name: "Brolt",
-        imageUrl: "",
+        imageId: "",
         colors: [],
       }
     ];
@@ -94,19 +94,19 @@ describe("search helpers", () => {
       {
         cardId: "c",
         name: "Zolt",
-        imageUrl: "",
+        imageId: "",
         colors: [],
       },
       {
         cardId: "a",
         name: "Bolo",
-        imageUrl: "",
+        imageId: "",
         colors: [],
       },
       {
         cardId: "b",
         name: "Bott",
-        imageUrl: "",
+        imageId: "",
         colors: [],
       }
     ];
@@ -127,7 +127,7 @@ describe("search helpers", () => {
     const largeSet = Array.from({ length: 20 }, (_, index) => ({
       cardId: String(index),
       name: `Card Name ${index}`,
-      imageUrl: "",
+      imageId: "",
       colors: [],
     }));
 

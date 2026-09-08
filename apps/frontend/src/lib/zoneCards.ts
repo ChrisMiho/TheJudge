@@ -1,4 +1,5 @@
 import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
+import { deriveCardImageUrl } from "./cardImage";
 import { DUPLICATE_CARD_MESSAGE, MAX_STACK_SIZE, STACK_LIMIT_MESSAGE } from "./stackLimits";
 
 // Stable per-card identity used as the React key and removal handle. This is a
@@ -32,7 +33,9 @@ export function buildZoneCardFromMetadata(card: CardMetadataItem, scanImageUrl?:
     instanceId: createInstanceId(),
     cardId: card.cardId,
     name: card.name,
-    imageUrl: scanImageUrl ?? card.imageUrl,
+    // REQ-174/Slice C: `card.imageUrl` no longer exists on `CardMetadataItem`
+    // (slimmed to `imageId`); derive the full url the same way everywhere.
+    imageUrl: scanImageUrl ?? deriveCardImageUrl(card.imageId),
     colors: card.colors
   };
 }

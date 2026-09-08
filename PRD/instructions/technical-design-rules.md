@@ -9,7 +9,7 @@ These rules govern how agents may propose architecture or implementation details
 - React + Vite + TypeScript frontend
 - Tailwind CSS for styling
 - local static metadata file for card search
-- one main backend endpoint, plus the read-only card-detail retrieval route (`GET /api/cards/:oracleId`, REQ-175) — canonical rule: NFR-004
+- one main backend endpoint, plus two read-only retrieval routes: card-detail (`GET /api/cards/:oracleId`, REQ-175) and the Trade Balancer price route (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175) — canonical rule: NFR-004
 - Node.js + TypeScript backend
 - Express or Fastify
 - backend provider boundary with explicit `ASK_AI_PROVIDER` selection, mock-first local baseline before live mode (canonical rule: `integrations-and-data.md`)
@@ -33,7 +33,7 @@ Do not propose or implement:
 - board-state simulation
 - full gameplay-rules target/controller/mode simulation for the core product
   (canonical rule: `PRD/sections/goals-and-non-goals.md` Scope Notes)
-- product-facing endpoints beyond the answer endpoint and the one read-only card-detail retrieval route (REQ-175; canonical rule: NFR-004)
+- product-facing endpoints beyond the answer endpoint and the two read-only retrieval routes (card-detail, REQ-175; Trade Balancer prices, REQ-066/REQ-175; canonical rule: NFR-004)
 - microservices
 - runtime metadata refresh/sync
 - billing/auth/account systems in the core product

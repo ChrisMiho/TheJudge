@@ -10,11 +10,15 @@ export type PlayerLabel =
 
 /** REQ-174: the up-front artifact carries only what a card tile renders
  * directly — the descriptive block (oracle text, mana, type, sub/supertypes)
- * is fetched on demand by oracle id instead (REQ-175, FLOW-024). */
+ * is fetched on demand by oracle id instead (REQ-175, FLOW-024). It is the
+ * single per-unique-card identity index used by MTG Assistant, Quick Lookup,
+ * and the Trade Balancer's search/autocomplete and scan preview (REQ-065).
+ * `imageId` is a representative Scryfall printing id, not a full image url —
+ * derive the url with `deriveCardImageUrl` (`lib/cardImage.ts`). */
 export type CardMetadataItem = {
   cardId: string;
   name: string;
-  imageUrl: string;
+  imageId: string;
   colors: string[];
 };
 

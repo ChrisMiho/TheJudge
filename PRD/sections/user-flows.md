@@ -191,12 +191,13 @@
 - Trigger: User opens the Trade Balancer from the top-level navigation menu (FLOW-010) to compare the value of two lists of cards
 - Preconditions:
   - app is loaded
-  - the printing-level price artifact loads on first open (lazy-loaded, REQ-066)
+  - the shared local card index (`cardMetadata`, REQ-174) is available for search and identity; a card's prices are fetched from the backend when it is added (REQ-066, REQ-175, FLOW-025)
 - Main Flow:
   1. The Trade Balancer opens with two sides (**Side A** and **Side B**), each an empty card list, and a running total per side plus the difference between them.
   2. For a side, the user adds a card by **scanning** or by **manual search**:
      - Scan: the existing engine identifies the card and the **scanned printing** becomes the entry's default printing; the user can change the printing if it is wrong (DEC-070, REQ-065).
      - Manual search: the user finds the card by name and then **chooses the correct printing** from that card's printing list; that printing's price applies (DEC-012, REQ-065).
+     - On add, the balancer fetches that card's printings and prices from the backend, caching them for the session, and shows a brief in-place loading state while they resolve (FLOW-025).
   3. The added entry shows its printing (set/collector/image), its USD price, a **foil toggle** (non-foil ↔ `usd_foil`), and a **quantity** control; the same card may be added multiple times or carry a quantity ≥ 1.
   4. Each side total updates live as `Σ qty × (foil ? usdFoil : usd)`, and the difference between the two sides updates with an amount and which side is higher (or equal).
   5. The user adds cards to the other side the same way, adjusts foil/quantity, and removes entries as needed until the difference reflects the trade.
@@ -207,9 +208,9 @@
   - toggling foil on an entry with no `usd_foil` (or off with no `usd`) applies the $0 + caution treatment for that mode
   - a scanned printing that resolves but is the wrong print is corrected by changing the printing on the entry, not by re-scanning
   - if scanning is unavailable (no camera/permission), manual search remains the full input path (DEC-050 fallback)
-  - if the price artifact fails to load, the view surfaces the reason and entries show the $0 + caution treatment rather than a broken screen
+  - if a card's price fetch fails, that entry degrades to the $0 + caution treatment with a retry affordance rather than a broken screen (mirrors the card-detail on-demand fetch, FLOW-024)
 - Notes:
-  - the trade balancer is a standalone, frontend-only, ephemeral feature outside the Decrypt-Stack core loop; it makes no backend call and no `AskAiRequest`/prompt change (DEC-087)
+  - the trade balancer is a standalone, ephemeral feature outside the Decrypt-Stack core loop; it makes a read-only backend price fetch (REQ-175) but no `AskAiRequest`/prompt change (reverses the frontend-only posture of the retired DEC-087)
   - printing selection is a pricing/display layer only and does not change scan oracle-level identity, prompt context, or rulings (DEC-053, DEC-087)
   - prices are a static build-time snapshot; the UI may show the snapshot date (DEC-088, NFR-013)
 
@@ -542,3 +543,21 @@
   - once a card's detail is fetched this session, reopening it resolves from the in-memory cache with no repeat request
 - Notes:
   - the descriptive block is fetched on demand, never carried in the up-front list (REQ-174), and comes from the `GET /api/cards/:oracleId` endpoint, not a static artifact (D5); this is the read path REQ-128's popup uses
+
+### FLOW-025
+- Name: Fetch a card's printings and prices on demand
+- Trigger: a player adds a card to a trade side (by scan or manual search) and the balancer needs that card's printings and prices
+- Preconditions:
+  - the card's oracle id is resolved (via the shared `cardMetadata` index for search, or the scan map for a scan)
+  - the read-only price route is available (REQ-175)
+- Main Flow:
+  1. The balancer requests that one card's printings and prices from the backend by oracle id (recommended: `GET /api/cards/:oracleId/prices`), showing a brief in-place loading state on the entry.
+  2. The response carries the card's printings (printing id, set, set name, collector number, non-foil and foil USD) and the snapshot date; the balancer derives each printing's image url from its id and takes the card name from the shared `cardMetadata` index.
+  3. On success the entry shows its chosen printing, its price, the foil toggle, and quantity; the printing picker lists every printing. The result is cached for the session, so re-adding or re-opening the same card resolves from cache with no repeat request.
+- Edge Cases:
+  - if the fetch fails, the entry degrades to the $0-plus-caution treatment with a retry affordance; the failed result is not cached, so a retry re-fetches (mirrors FLOW-024)
+  - an unknown/not-found oracle id resolves to no printings and the entry shows the scan-unpriced/$0-plus-caution treatment; no prices are invented
+  - a printing with a null `usd`/`usdFoil` for the selected foil mode is kept and priced at $0 with the caution flag (REQ-065)
+- Notes:
+  - this mirrors the card-detail on-demand fetch (FLOW-024) and its per-session cache; prices ride a companion separate from the descriptive block so the question/RAG flow carries no price bytes (REQ-175)
+  - prices are a static committed snapshot served in memory; the on-demand read makes no external network call (NFR-013)

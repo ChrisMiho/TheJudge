@@ -18,7 +18,7 @@ export const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf
 export type CardFixture = CardMetadataItem & Partial<CardDetailBlock>;
 
 export function toSlimMetadata(card: CardFixture): CardMetadataItem {
-  return { cardId: card.cardId, name: card.name, imageUrl: card.imageUrl, colors: card.colors };
+  return { cardId: card.cardId, name: card.name, imageId: card.imageId, colors: card.colors };
 }
 
 export function toCardDetail(card: CardFixture): CardDetailBlock {
@@ -38,7 +38,7 @@ export const baseCardMetadataFixture: CardFixture[] = [
     cardId: "opt",
     name: "Opt",
     oracleText: "Scry 1, then draw a card.",
-    imageUrl: "",
+    imageId: "",
     manaCost: "{U}",
     manaValue: 1,
     typeLine: "Instant",
@@ -50,7 +50,7 @@ export const baseCardMetadataFixture: CardFixture[] = [
     cardId: "counterspell",
     name: "Counterspell",
     oracleText: "Counter target spell.",
-    imageUrl: "",
+    imageId: "",
     manaCost: "{U}{U}",
     manaValue: 2,
     typeLine: "Instant",
@@ -62,7 +62,9 @@ export const baseCardMetadataFixture: CardFixture[] = [
     cardId: "lightning-bolt",
     name: "Lightning Bolt",
     oracleText: "Lightning Bolt deals 3 damage to any target.",
-    imageUrl: "https://example.com/lightning-bolt.jpg",
+    // REQ-174/Slice C: a representative printing id, not a full url; the
+    // component derives `https://cards.scryfall.io/normal/front/l/b/lightning-bolt-fixture-id.jpg`.
+    imageId: "lightning-bolt-fixture-id",
     manaCost: "{R}",
     manaValue: 1,
     typeLine: "Instant",
@@ -161,7 +163,7 @@ export function createStackItem(name: string, index: number): CardFixture {
     cardId: `card-${index}`,
     name,
     oracleText: `${name} oracle text.`,
-    imageUrl: "",
+    imageId: "",
     manaCost: "{1}",
     manaValue: 1,
     typeLine: "Instant",

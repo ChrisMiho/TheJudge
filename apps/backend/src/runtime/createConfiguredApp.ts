@@ -2,6 +2,7 @@ import { resolve } from "node:path";
 import { createApp } from "../app/createApp.js";
 import { loadCardRulingsIndex } from "../cardRulings.js";
 import { loadCardDetailIndex } from "../cardDetail.js";
+import { loadCardPrintingPricesIndex } from "../cardPrices.js";
 import { loadComboCatalog, type ComboCatalog } from "../commanderSpellbook/catalog.js";
 import { readServerConfig } from "../config/index.js";
 import { loadGameRulesTopics } from "../gameRules.js";
@@ -15,6 +16,7 @@ export type RuntimeApp = {
   config: ReturnType<typeof readServerConfig>;
   cardRulingsCardCount: number;
   cardDetailCardCount: number;
+  cardPrintingPricesCardCount: number;
   gameRulesTopicCount: number;
   gameRulesRuleCount: number;
   comboVariantCount: number;
@@ -26,6 +28,8 @@ export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = p
   const cardRulingsIndex = loadCardRulingsIndex(cardRulingsPath);
   const cardDetailPath = resolve(repoRoot, "apps/backend/data/cardDetailByOracleId.json");
   const cardDetailIndex = loadCardDetailIndex(cardDetailPath);
+  const cardPrintingPricesPath = resolve(repoRoot, "apps/backend/data/cardPrintingPricesByOracleId.json.gz");
+  const cardPrintingPricesIndex = loadCardPrintingPricesIndex(cardPrintingPricesPath);
   const gameRulesPath = resolve(repoRoot, "apps/backend/data/gameRulesByTopic.json");
   const gameRulesTopics = loadGameRulesTopics(gameRulesPath);
   const gameRulesRuleIndexPath = resolve(repoRoot, "apps/backend/data/gameRulesRuleIndex.json");
@@ -51,6 +55,7 @@ export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = p
       embeddingProvider: createEmbeddingProvider(config),
       cardRulingsIndex,
       cardDetailIndex,
+      cardPrintingPricesIndex,
       gameRulesTopics,
       gameRulesRuleIndex,
       comboCatalog,
@@ -60,6 +65,7 @@ export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = p
     config,
     cardRulingsCardCount: cardRulingsIndex.size,
     cardDetailCardCount: cardDetailIndex.size,
+    cardPrintingPricesCardCount: cardPrintingPricesIndex.size,
     gameRulesTopicCount: gameRulesTopics.length,
     gameRulesRuleCount: gameRulesRuleIndex.length,
     comboVariantCount: comboCatalog?.variantCount ?? 0
