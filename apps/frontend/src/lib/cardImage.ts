@@ -9,10 +9,10 @@
  * The `front` path segment composes identically from the id for a
  * single-faced card and for a double-faced card's front face — Scryfall does
  * not need a separate back-face id to resolve the front image, so no
- * card-shape branching belongs here. The backend price artifact
- * (`cardPrintingPricesByOracleId.json.gz`, Slice A) and the Trade Balancer's
- * printing picker (Slice D) derive each printing's image the same way, from
- * the printing id the price route returns.
+ * card-shape branching belongs here. The backend price route's committed
+ * artifact (Slice A) and the Trade Balancer's printing picker (Slice D)
+ * derive each printing's image the same way, from the printing id the price
+ * route returns.
  */
 export function deriveCardImageUrl(printingId: string | undefined | null): string {
   const trimmed = printingId?.trim() ?? "";

@@ -202,22 +202,25 @@
 
 ### NFR-013
 - Title: Trade-price data footprint and freshness
-- Description: The printing-level price artifact (REQ-066) must not cost users who never open the Trade Balancer, and its static-snapshot nature must be honest and clearly bounded.
+- Description: The printing-level price data (REQ-066) must not cost users who never open the Trade Balancer, and its static-snapshot nature must be honest and clearly bounded. Prices are served from a committed backend artifact on demand (REQ-175), not downloaded up front.
 - Constraints:
-  - the price artifact is lazy-loaded only when the Trade Balancer is first opened; app startup and the MTG Assistant flow are unaffected for users who never open it (mirrors the NFR-010 scan-artifact posture)
+  - there is no up-front price download: the ~38 MB frontend price file is removed, and a card's prices are fetched from the backend only when that card is added, cached per session (FLOW-025). App startup and the MTG Assistant flow are unaffected, and the balancer's only up-front frontend cost is the slim shared `cardMetadata` index (REQ-174)
   - prices are a static build-time snapshot: no runtime price fetch, no runtime sync, and no automated/scheduled refresh; the committed snapshot is refreshed only through the human-approved data pipeline (`data:refresh` then `data:build`)
+  - "no runtime price fetch" means no live/external price lookup; the on-demand backend read serves the committed snapshot from memory with no external network call, exactly like the card-detail route (REQ-175)
   - the artifact records a snapshot date, and the UI may surface it so users understand prices are point-in-time, not live
-  - artifact size, lazy-load time, and lookup latency should stay within a mobile-friendly budget; loading and pricing must not block or jank the trade UI
+  - per-card fetch and pricing must stay within a mobile-friendly budget and must not block or jank the trade UI; the on-demand fetch shows a brief in-place loading state and degrades to $0-plus-caution with retry on failure (FLOW-025)
   - USD-only price fields (`usd`, `usd_foil`); no live market integration
 - Dependencies:
-  - DEC-087
-  - DEC-088
   - REQ-066
   - NFR-001
   - NFR-004
   - NFR-010
+  - REQ-175
+  - FLOW-025
 - Notes:
   - the trade balancer is an optional top-level feature; like scanning, its data budget is scoped to users who actually use it
+  - moving pricing to the backend (this reframing) reverses the frontend-only posture of the retired DEC-087; the freshness script's price target artifact moves to the backend map, re-pointed later by the freshness track
+  - free-tier posture: deleting the ~38 MB first-open download removes that S3/CloudFront egress; the per-card price fetch adds only tiny reads (a handful of KB and a Lambda invocation per card added), well inside the free-tier request allowance at trade-balancer volumes. The backend price map adds ~15-20 MB (estimate; measured at build) to the Lambda bundle, kept inside the 250 MB quota by the budget test (REQ-066)
 
 ### NFR-014
 - Title: Route-level code splitting and initial-payload posture
@@ -229,7 +232,7 @@
   - the scan surface is the known shared case, and it is **larger than `src/lib/scan/**`**: `src/hooks/useScanCapture.ts` is imported by Quick Question, In-Depth, and the trade destination, and `src/components/ScanCameraSurface.tsx` by Quick Question and trade. Chunk membership is determined by measured import-graph reachability from more than one destination, not by directory name — a group scoped to `src/lib/scan/**` alone leaves the heavier shared scan UI and capture-hook layer duplicated or hoisted
   - `react`, `react-dom`, `react/jsx-runtime` (a distinct module id emitted by the automatic JSX transform), and `react-router` are grouped into a `vendor` chunk so framework code caches independently of feature code
   - adding a destination must not require touching the chunking configuration for the common case — route-level splitting follows from the registry entry, not from per-feature build config
-  - this is a **code**-splitting posture only; it neither replaces nor weakens the existing data-artifact lazy loads (`cardhashes.bin` on first scan, NFR-010; `cardPrintingPrices.json` on first Trade Balancer open, NFR-013)
+  - this is a **code**-splitting posture only; it neither replaces nor weakens the existing data-artifact lazy load (`cardhashes.bin` on first scan, NFR-010). The Trade Balancer no longer has a lazy-loaded price artifact — its prices are fetched per card from the backend and its only up-front data cost is the shared `cardMetadata` index (NFR-013, REQ-066)
   - the `Suspense` fallback must not flash on every destination switch: keep-alive mounting (DEC-095, preserved by DEC-157) means a destination suspends only on first visit
   - route/lazy work must not lower any coverage threshold or delete a test to hit a timing target (NFR-012)
 - Dependencies:
@@ -238,6 +241,7 @@
   - NFR-010
   - NFR-012
   - NFR-013
+  - REQ-066
 - Notes:
   - route boundaries additionally give the test suite natural split lines, which matters against NFR-012's measured headroom: at 1227 frontend cases the 3-shard gate runs 1m58s against a 2m00s target, and roughly 100 additional cases exhaust 3 shards. Net-new route tests that cross that line are handled by the sanctioned one-line shard-matrix bump, not by trimming tests.
 

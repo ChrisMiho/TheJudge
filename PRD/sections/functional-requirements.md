@@ -1453,7 +1453,7 @@
 ### REQ-064
 - Title: Two-sided trade balancer screen
 - Priority: high
-- Description: The app must provide a standalone Trade Balancer view where two traders each build a list of cards and the app shows each side's total USD value and the live difference between the two sides, so players can see whether a trade is balanced and by how much. Frontend-only and ephemeral; no backend, endpoint, or contract change (DEC-087).
+- Description: The app must provide a standalone Trade Balancer view where two traders each build a list of cards and the app shows each side's total USD value and the live difference between the two sides, so players can see whether a trade is balanced and by how much. Ephemeral; it prices cards through a read-only backend price fetch (REQ-066, REQ-175) and makes no change to the AI answer/prompt contract (reverses the frontend-only posture of the retired DEC-087).
 - Acceptance Criteria:
   - the view presents two sides (**Side A** and **Side B**), each an ordered list of card entries
   - each side shows a running **total** = `Σ qty × (foil ? usdFoil : usd)` across its entries, updating live as entries are added, removed, re-priced, foil-toggled, or quantity-changed
@@ -1463,16 +1463,16 @@
   - the view is reachable from the top-level navigation menu (REQ-067) and the MTG Assistant flow is unaffected
   - the trade state is **ephemeral**: no history, no persistence across reload, no marketplace/transaction handling, and no automated balancing suggestions
 - Constraints:
-  - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, `POST /api/ask-ai`, or any product-facing endpoint
+  - the AI answer path stays frozen: no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or `POST /api/ask-ai`. The balancer prices cards only through a read-only backend price fetch (REQ-175); printing identity is never pushed into any prompt, rulings, or answer payload
   - USD only (Scryfall `usd` / `usd_foil`); EUR, tix, etched-foil, and grading/condition are out of scope for v1
   - mobile-first, touch-friendly layout (NFR-001)
 - Dependencies:
-  - DEC-087
   - REQ-065
   - REQ-066
   - REQ-067
   - NFR-013
   - FLOW-009
+  - REQ-175
 - Notes:
   - a trade side is a value list, not the stack: the duplicate-block (REQ-009/FLOW-004) and 10-card cap (REQ-010) do not apply
 
@@ -1488,17 +1488,18 @@
   - **quantity/multiples:** the same card (or printing) may appear multiple times on a side, via repeated adds and/or a per-entry quantity control; each unit counts toward the side total; the stack duplicate-block does not apply
   - **missing price:** when the selected foil mode has no price for the chosen printing, the entry's contribution defaults to **$0**, the entry's price is rendered in a **distinct color** from priced entries, and the entry shows a **caution-triangle** indicator communicating that the value is unknown
   - each entry can be **removed** from its side
-  - the printing shown and priced uses the price artifact (REQ-066); no runtime network call is made to price or list printings
+  - a card's printings and prices are fetched from the backend when the card is added and cached per session (REQ-066, REQ-175, FLOW-025); the entry shows a brief in-place loading state while it resolves. The card's name and image come from the shared local `cardMetadata` index (REQ-174). If the price fetch fails, the entry degrades to the $0-plus-caution treatment with a retry affordance rather than a broken row
 - Constraints:
   - printing selection is a pricing/display layer only; it is never pushed into prompt context, rulings lookup, or the Decrypt-Stack request payload, and does not change the DEC-053 oracle-level scan-identity model
   - USD only; foil handling is non-foil vs `usd_foil` (etched-foil out of scope for v1)
 - Dependencies:
-  - DEC-087
-  - DEC-088
   - REQ-066
   - REQ-036
   - REQ-064
   - FLOW-009
+  - REQ-174
+  - REQ-175
+  - FLOW-025
 - Notes:
   - reuses the existing scan resolver (REQ-036) and manual search (REQ-002/REQ-003) as input; the printing pick and pricing are the new layer
 

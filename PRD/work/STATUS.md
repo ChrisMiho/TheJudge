@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
-
 | Package | Note |
 | --- | --- |
-| [trade-balancer-price-slim](trade-balancer-price-slim/) | Backend-move design (owner pivot), gate-qc PASS, mapped out 2026-09-08. Gate resolved 2026-09-07: all ten stable-id blocks (REQ-064/065/066/174/175, FLOW-009, FLOW-025, NFR-004/013/014) accept, BLOCK-01 = A (sibling read-only route `GET /api/cards/:oracleId/prices`). Docs PR #211 merged — the build signal. Four slices (A backend build/artifact, B backend route, C shared cardMetadata index, D frontend balancer flow + cleanup); safe order A, B, C, D. Resumes at implement. |
+| [trade-balancer-price-slim](trade-balancer-price-slim/) | Backend-move design (owner pivot) built and ship-ready 2026-09-08. All ten stable-id blocks (REQ-064/065/066/174/175, FLOW-009, FLOW-025, NFR-004/013/014) applied to PRD/sections. Four slices done: A backend build/artifact, B backend price route, C shared cardMetadata index, D frontend balancer flow + cleanup. Code PR open for owner review/merge. Next: `thejudge-cleanup` after merge. |
+
+## active
 
 ## refined
 

@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # Trade Balancer price artifact slim
 
@@ -35,13 +35,14 @@ rollup. Safe sequential order for one agent: **A, B, C, D**.
 | [A](slice-a-backend-price-build-and-artifact.md) | Backend price build & artifact | — | done |
 | [B](slice-b-backend-price-route.md) | Backend price route | A | done |
 | [C](slice-c-shared-card-metadata-index.md) | Shared `cardMetadata` index | — (parallel-ready with A/B; must land before D) | done |
-| [D](slice-d-frontend-balancer-flow-and-cleanup.md) | Frontend balancer flow & cleanup | A, B, C | planned |
+| [D](slice-d-frontend-balancer-flow-and-cleanup.md) | Frontend balancer flow & cleanup | A, B, C | done |
 
 ## Implementation map
 
 - **Backend build** — `scripts/build-card-detail-by-oracle-id.mjs` (extended);
-  `scripts/build-card-prices.mjs` (retired); new artifact
-  `apps/backend/data/cardPrintingPricesByOracleId.json`.
+  `scripts/build-card-prices.mjs` (retired); new gzip-compressed artifact
+  `apps/backend/data/cardPrintingPricesByOracleId.json.gz` (compressed to fit
+  the Lambda 250 MB budget — see slice-a.md's Note).
 - **Backend route** — `apps/backend/src/cardPrices.ts` (new loader),
   `apps/backend/src/routes/cardPrices.ts` (new route), wired into
   `apps/backend/src/runtime/createConfiguredApp.ts` and
