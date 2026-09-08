@@ -1,12 +1,5 @@
 [
   {
-    "ruleId": "616",
-    "sectionTitle": "Interaction of Replacement and/or Prevention Effects",
-    "text": "616. Interaction of Replacement and/or Prevention Effects\n\n7. Additional Rules",
-    "searchText": "616 interaction of replacement and/or prevention effects 616. interaction of replacement and/or prevention effects\n\n7. additional rules",
-    "parentRuleIds": []
-  },
-  {
     "ruleId": "100.1",
     "sectionTitle": "General",
     "text": "100.1. These Magic rules apply to any Magic game with two or more players, including two-player games and multiplayer games.",
@@ -1708,6 +1701,13 @@
     "parentRuleIds": ["111.10", "111"]
   },
   {
+    "ruleId": "111.10w",
+    "sectionTitle": "Tokens",
+    "text": "111.10w A Vibranium token is a colorless Vibranium artifact token with indestructible and “{T}: Add {C}. This mana can’t be spent to cast a nonartifact spell.”",
+    "searchText": "111.10w tokens 111.10w a vibranium token is a colorless vibranium artifact token with indestructible and “{t}: add {c}. this mana can’t be spent to cast a nonartifact spell.”",
+    "parentRuleIds": ["111.10", "111"]
+  },
+  {
     "ruleId": "111.11",
     "sectionTitle": "Tokens",
     "text": "111.11. If an effect instructs a player to create a token by name, doesn’t define any other characteristics for that token, and the name is not one of the types in the list of predefined tokens above, that player uses the card with that name in the Oracle card reference to determine the characteristics of that token.\nExample: Disa the Restless has the ability “Whenever one or more creatures you control deal combat damage to a player, create a Tarmogoyf token.” As that ability resolves, its controller creates a token with the same characteristics as the card named Tarmogoyf, as determined by the Oracle card reference.",
@@ -3283,6 +3283,13 @@
     "parentRuleIds": ["122.1", "122"]
   },
   {
+    "ruleId": "122.1j",
+    "sectionTitle": "Counters",
+    "text": "122.1j A hone counter on an Equipment gives +1/+0 to any creature that Equipment is attached to.",
+    "searchText": "122.1j counters 122.1j a hone counter on an equipment gives +1/+0 to any creature that equipment is attached to.",
+    "parentRuleIds": ["122.1", "122"]
+  },
+  {
     "ruleId": "122.2",
     "sectionTitle": "Counters",
     "text": "122.2. Counters on an object are not retained if that object moves from one zone to another. The counters are not “removed”; they simply cease to exist. See rule 400.7.",
@@ -3523,8 +3530,8 @@
   {
     "ruleId": "123.9",
     "sectionTitle": "Stickers",
-    "text": "123.9. An art sticker on a permanent has no effect on game play other than to act as a marker that other spells and abilities can identify.\n\n2. Parts of a Card",
-    "searchText": "123.9 stickers 123.9. an art sticker on a permanent has no effect on game play other than to act as a marker that other spells and abilities can identify.\n\n2. parts of a card",
+    "text": "123.9. An art sticker on a permanent has no effect on game play other than to act as a marker that other spells and abilities can identify.\n \n2. Parts of a Card",
+    "searchText": "123.9 stickers 123.9. an art sticker on a permanent has no effect on game play other than to act as a marker that other spells and abilities can identify.\n \n2. parts of a card",
     "parentRuleIds": ["123"]
   },
   {
@@ -3943,15 +3950,15 @@
   {
     "ruleId": "205.3g",
     "sectionTitle": "Type Line",
-    "text": "205.3g Artifacts have their own unique set of subtypes; these subtypes are called artifact types. The artifact types are Attraction (see rule 717), Blood, Bobblehead, Book, Clue, Contraption, Equipment (see rule 301.5), Food, Fortification (see rule 301.6), Gold, Incubator, Infinity, Junk, Lander, Map, Mutagen, Powerstone, Spacecraft, Stone, Treasure, and Vehicle (see rule 301.7).",
-    "searchText": "205.3g type line 205.3g artifacts have their own unique set of subtypes; these subtypes are called artifact types. the artifact types are attraction (see rule 717), blood, bobblehead, book, clue, contraption, equipment (see rule 301.5), food, fortification (see rule 301.6), gold, incubator, infinity, junk, lander, map, mutagen, powerstone, spacecraft, stone, treasure, and vehicle (see rule 301.7).",
+    "text": "205.3g Artifacts have their own unique set of subtypes; these subtypes are called artifact types. The artifact types are Attraction (see rule 717), Blood, Bobblehead, Book, Clue, Contraption, Equipment (see rule 301.5), Food, Fortification (see rule 301.6), Gold, Incubator, Infinity, Junk, Lander, Map, Mutagen, Powerstone, Spacecraft, Stone, Treasure, Vehicle (see rule 301.7), and Vibranium.",
+    "searchText": "205.3g type line 205.3g artifacts have their own unique set of subtypes; these subtypes are called artifact types. the artifact types are attraction (see rule 717), blood, bobblehead, book, clue, contraption, equipment (see rule 301.5), food, fortification (see rule 301.6), gold, incubator, infinity, junk, lander, map, mutagen, powerstone, spacecraft, stone, treasure, vehicle (see rule 301.7), and vibranium.",
     "parentRuleIds": ["205.3", "205"]
   },
   {
     "ruleId": "205.3h",
     "sectionTitle": "Type Line",
-    "text": "205.3h Enchantments have their own unique set of subtypes; these subtypes are called enchantment types. The enchantment types are Aura (see rule 303.4), Background, Cartouche, Case (see rule 719), Class (see rule 716), Curse, Role (see rule 303.7), Room, Rune, Saga (see rule 714), Shard, and Shrine.",
-    "searchText": "205.3h type line 205.3h enchantments have their own unique set of subtypes; these subtypes are called enchantment types. the enchantment types are aura (see rule 303.4), background, cartouche, case (see rule 719), class (see rule 716), curse, role (see rule 303.7), room, rune, saga (see rule 714), shard, and shrine.",
+    "text": "205.3h Enchantments have their own unique set of subtypes; these subtypes are called enchantment types. The enchantment types are Aura (see rule 303.4), Background, Cartouche, Case (see rule 719), Class (see rule 716), Curse, Plan, Role (see rule 303.7), Room, Rune, Saga (see rule 714), Shard, and Shrine.",
+    "searchText": "205.3h type line 205.3h enchantments have their own unique set of subtypes; these subtypes are called enchantment types. the enchantment types are aura (see rule 303.4), background, cartouche, case (see rule 719), class (see rule 716), curse, plan, role (see rule 303.7), room, rune, saga (see rule 714), shard, and shrine.",
     "parentRuleIds": ["205.3", "205"]
   },
   {
@@ -3978,8 +3985,8 @@
   {
     "ruleId": "205.3m",
     "sectionTitle": "Type Line",
-    "text": "205.3m Creatures and kindreds share their lists of subtypes; these subtypes are called creature types. One creature type is two words long: Time Lord. All other creature types are one word long: Advisor, Aetherborn, Alien, Ally, Angel, Antelope, Ape, Archer, Archon, Armadillo, Army, Artificer, Assassin, Assembly-Worker, Astartes, Atog, Aurochs, Avatar, Azra, Badger, Balloon, Barbarian, Bard, Basilisk, Bat, Bear, Beast, Beaver, Beeble, Beholder, Berserker, Bird, Bison, Blinkmoth, Boar, Bringer, Brushwagg, Camarid, Camel, Capybara, Caribou, Carrier, Cat, Centaur, Child, Chimera, Citizen, Cleric, Clown, Cockatrice, Construct, Coward, Coyote, Crab, Crocodile, C’tan, Custodes, Cyberman, Cyclops, Dalek, Dauthi, Demigod, Demon, Deserter, Detective, Devil, Dinosaur, Djinn, Doctor, Dog, Dragon, Drake, Dreadnought, Drix, Drone, Druid, Dryad, Dwarf, Echidna, Efreet, Egg, Elder, Eldrazi, Elemental, Elephant, Elf, Elk, Employee, Eye, Faerie, Ferret, Fish, Flagbearer, Fox, Fractal, Frog, Fungus, Gamer, Gargoyle, Germ, Giant, Giraffe, Gith, Glimmer, Gnoll, Gnome, Goat, Goblin, God, Golem, Gorgon, Graveborn, Gremlin, Griffin, Guest, Hag, Halfling, Hamster, Harpy, Hedgehog, Hellion, Hero, Hippo, Hippogriff, Homarid, Homunculus, Horror, Horse, Human, Hydra, Hyena, Illusion, Imp, Incarnation, Inkling, Inquisitor, Insect, Jackal, Jellyfish, Juggernaut, Kangaroo, Kavu, Kirin, Kithkin, Knight, Kobold, Kor, Kraken, Llama, Lamia, Lammasu, Leech, Lemur, Leviathan, Lhurgoyf, Licid, Lizard, Lobster, Manticore, Masticore, Mercenary, Merfolk, Metathran, Minion, Minotaur, Mite, Mole, Monger, Mongoose, Monk, Monkey, Moogle, Moonfolk, Mount, Mouse, Mutant, Myr, Mystic, Nautilus, Necron, Nephilim, Nightmare, Nightstalker, Ninja, Noble, Noggle, Nomad, Nymph, Octopus, Ogre, Ooze, Orb, Orc, Orgg, Otter, Ouphe, Ox, Oyster, Pangolin, Peasant, Pegasus, Pentavite, Performer, Pest, Phelddagrif, Phoenix, Phyrexian, Pilot, Pincher, Pirate, Plant, Platypus, Porcupine, Possum, Praetor, Primarch, Prism, Processor, Qu, Rabbit, Raccoon, Ranger, Rat, Rebel, Reflection, Rhino, Rigger, Robot, Rogue, Sable, Salamander, Samurai, Sand, Saproling, Satyr, Scarecrow, Scientist, Scion, Scorpion, Scout, Sculpture, Seal, Serf, Serpent, Servo, Shade, Shaman, Shapeshifter, Shark, Sheep, Siren, Skeleton, Skunk, Slith, Sliver, Sloth, Slug, Snail, Snake, Soldier, Soltari, Sorcerer, Spawn, Specter, Spellshaper, Sphinx, Spider, Spike, Spirit, Splinter, Sponge, Squid, Squirrel, Starfish, Surrakar, Survivor, Symbiote, Synth, Tentacle, Tetravite, Thalakos, Thopter, Thrull, Tiefling, Toy, Treefolk, Trilobite, Triskelavite, Troll, Turtle, Tyranid, Unicorn, Utrom, Vampire, Varmint, Vedalken, Villain, Volver, Wall, Walrus, Warlock, Warrior, Weasel, Weird, Werewolf, Whale, Wizard, Wolf, Wolverine, Wombat, Worm, Wraith, Wurm, Yeti, Zombie, and Zubera.",
-    "searchText": "205.3m type line 205.3m creatures and kindreds share their lists of subtypes; these subtypes are called creature types. one creature type is two words long: time lord. all other creature types are one word long: advisor, aetherborn, alien, ally, angel, antelope, ape, archer, archon, armadillo, army, artificer, assassin, assembly-worker, astartes, atog, aurochs, avatar, azra, badger, balloon, barbarian, bard, basilisk, bat, bear, beast, beaver, beeble, beholder, berserker, bird, bison, blinkmoth, boar, bringer, brushwagg, camarid, camel, capybara, caribou, carrier, cat, centaur, child, chimera, citizen, cleric, clown, cockatrice, construct, coward, coyote, crab, crocodile, c’tan, custodes, cyberman, cyclops, dalek, dauthi, demigod, demon, deserter, detective, devil, dinosaur, djinn, doctor, dog, dragon, drake, dreadnought, drix, drone, druid, dryad, dwarf, echidna, efreet, egg, elder, eldrazi, elemental, elephant, elf, elk, employee, eye, faerie, ferret, fish, flagbearer, fox, fractal, frog, fungus, gamer, gargoyle, germ, giant, giraffe, gith, glimmer, gnoll, gnome, goat, goblin, god, golem, gorgon, graveborn, gremlin, griffin, guest, hag, halfling, hamster, harpy, hedgehog, hellion, hero, hippo, hippogriff, homarid, homunculus, horror, horse, human, hydra, hyena, illusion, imp, incarnation, inkling, inquisitor, insect, jackal, jellyfish, juggernaut, kangaroo, kavu, kirin, kithkin, knight, kobold, kor, kraken, llama, lamia, lammasu, leech, lemur, leviathan, lhurgoyf, licid, lizard, lobster, manticore, masticore, mercenary, merfolk, metathran, minion, minotaur, mite, mole, monger, mongoose, monk, monkey, moogle, moonfolk, mount, mouse, mutant, myr, mystic, nautilus, necron, nephilim, nightmare, nightstalker, ninja, noble, noggle, nomad, nymph, octopus, ogre, ooze, orb, orc, orgg, otter, ouphe, ox, oyster, pangolin, peasant, pegasus, pentavite, performer, pest, phelddagrif, phoenix, phyrexian, pilot, pincher, pirate, plant, platypus, porcupine, possum, praetor, primarch, prism, processor, qu, rabbit, raccoon, ranger, rat, rebel, reflection, rhino, rigger, robot, rogue, sable, salamander, samurai, sand, saproling, satyr, scarecrow, scientist, scion, scorpion, scout, sculpture, seal, serf, serpent, servo, shade, shaman, shapeshifter, shark, sheep, siren, skeleton, skunk, slith, sliver, sloth, slug, snail, snake, soldier, soltari, sorcerer, spawn, specter, spellshaper, sphinx, spider, spike, spirit, splinter, sponge, squid, squirrel, starfish, surrakar, survivor, symbiote, synth, tentacle, tetravite, thalakos, thopter, thrull, tiefling, toy, treefolk, trilobite, triskelavite, troll, turtle, tyranid, unicorn, utrom, vampire, varmint, vedalken, villain, volver, wall, walrus, warlock, warrior, weasel, weird, werewolf, whale, wizard, wolf, wolverine, wombat, worm, wraith, wurm, yeti, zombie, and zubera.",
+    "text": "205.3m Creatures and kindreds share their lists of subtypes; these subtypes are called creature types. One creature type is two words long: Time Lord. All other creature types are one word long: Advisor, Aetherborn, Alien, Ally, Angel, Antelope, Ape, Archer, Archon, Armadillo, Army, Artificer, Assassin, Assembly-Worker, Astartes, Atog, Aurochs, Avatar, Azra, Badger, Balloon, Barbarian, Bard, Basilisk, Bat, Bear, Beast, Beaver, Beeble, Beholder, Berserker, Bird, Bison, Blinkmoth, Boar, Bringer, Brushwagg, Camarid, Camel, Capybara, Caribou, Carrier, Cat, Centaur, Child, Chimera, Citizen, Cleric, Clown, Cockatrice, Construct, Coward, Coyote, Crab, Crocodile, C’tan, Custodes, Cyberman, Cyclops, Dalek, Dauthi, Demigod, Demon, Deserter, Detective, Devil, Dinosaur, Djinn, Doctor, Dog, Dragon, Drake, Dreadnought, Drix, Drone, Druid, Dryad, Dwarf, Echidna, Efreet, Egg, Elder, Eldrazi, Elemental, Elephant, Elf, Elk, Employee, Eternal, Eye, Faerie, Ferret, Fish, Flagbearer, Fox, Fractal, Frog, Fungus, Gamer, Gamma, Gargoyle, Germ, Giant, Giraffe, Gith, Glimmer, Gnoll, Gnome, Goat, Goblin, God, Golem, Gorgon, Graveborn, Gremlin, Griffin, Guest, Hag, Halfling, Hamster, Harpy, Hedgehog, Hellion, Hero, Hippo, Hippogriff, Homarid, Homunculus, Horror, Horse, Human, Hydra, Hyena, Illusion, Imp, Incarnation, Inhuman, Inkling, Inquisitor, Insect, Jackal, Jellyfish, Juggernaut, Kangaroo, Kavu, Kirin, Kithkin, Knight, Kobold, Kor, Kraken, Kree, Llama, Lamia, Lammasu, Leech, Lemur, Leviathan, Lhurgoyf, Licid, Lizard, Lobster, Manticore, Masticore, Mercenary, Merfolk, Metathran, Minion, Minotaur, Mite, Mole, Monger, Mongoose, Monk, Monkey, Moogle, Moonfolk, Mount, Mouse, Mutant, Myr, Mystic, Nautilus, Necron, Nephilim, Nightmare, Nightstalker, Ninja, Noble, Noggle, Nomad, Nymph, Octopus, Ogre, Ooze, Orb, Orc, Orgg, Otter, Ouphe, Ox, Oyster, Pangolin, Peasant, Pegasus, Pentavite, Performer, Pest, Phelddagrif, Phoenix, Phyrexian, Pilot, Pincher, Pirate, Plant, Platypus, Porcupine, Possum, Praetor, Primarch, Prism, Processor, Qu, Rabbit, Raccoon, Ranger, Rat, Rebel, Reflection, Rhino, Rigger, Robot, Rogue, Sable, Salamander, Samurai, Sand, Saproling, Satyr, Scarecrow, Scientist, Scion, Scorpion, Scout, Sculpture, Seal, Serf, Serpent, Servo, Shade, Shaman, Shapeshifter, Shark, Sheep, Shi’ar, Siren, Skeleton, Skrull, Skunk, Slith, Sliver, Sloth, Slug, Snail, Snake, Soldier, Soltari, Sorcerer, Spawn, Specter, Spellshaper, Sphinx, Spider, Spike, Spirit, Splinter, Sponge, Spy, Squid, Squirrel, Starfish, Surrakar, Survivor, Symbiote, Synth, Tentacle, Tetravite, Thalakos, Thopter, Thrull, Tiefling, Toy, Treefolk, Trilobite, Triskelavite, Troll, Turtle, Tyranid, Unicorn, Utrom, Vampire, Varmint, Vedalken, Villain, Volver, Wall, Walrus, Warlock, Warrior, Weasel, Weird, Werewolf, Whale, Wizard, Wolf, Wolverine, Wombat, Worm, Wraith, Wurm, Yeti, Zombie, and Zubera.",
+    "searchText": "205.3m type line 205.3m creatures and kindreds share their lists of subtypes; these subtypes are called creature types. one creature type is two words long: time lord. all other creature types are one word long: advisor, aetherborn, alien, ally, angel, antelope, ape, archer, archon, armadillo, army, artificer, assassin, assembly-worker, astartes, atog, aurochs, avatar, azra, badger, balloon, barbarian, bard, basilisk, bat, bear, beast, beaver, beeble, beholder, berserker, bird, bison, blinkmoth, boar, bringer, brushwagg, camarid, camel, capybara, caribou, carrier, cat, centaur, child, chimera, citizen, cleric, clown, cockatrice, construct, coward, coyote, crab, crocodile, c’tan, custodes, cyberman, cyclops, dalek, dauthi, demigod, demon, deserter, detective, devil, dinosaur, djinn, doctor, dog, dragon, drake, dreadnought, drix, drone, druid, dryad, dwarf, echidna, efreet, egg, elder, eldrazi, elemental, elephant, elf, elk, employee, eternal, eye, faerie, ferret, fish, flagbearer, fox, fractal, frog, fungus, gamer, gamma, gargoyle, germ, giant, giraffe, gith, glimmer, gnoll, gnome, goat, goblin, god, golem, gorgon, graveborn, gremlin, griffin, guest, hag, halfling, hamster, harpy, hedgehog, hellion, hero, hippo, hippogriff, homarid, homunculus, horror, horse, human, hydra, hyena, illusion, imp, incarnation, inhuman, inkling, inquisitor, insect, jackal, jellyfish, juggernaut, kangaroo, kavu, kirin, kithkin, knight, kobold, kor, kraken, kree, llama, lamia, lammasu, leech, lemur, leviathan, lhurgoyf, licid, lizard, lobster, manticore, masticore, mercenary, merfolk, metathran, minion, minotaur, mite, mole, monger, mongoose, monk, monkey, moogle, moonfolk, mount, mouse, mutant, myr, mystic, nautilus, necron, nephilim, nightmare, nightstalker, ninja, noble, noggle, nomad, nymph, octopus, ogre, ooze, orb, orc, orgg, otter, ouphe, ox, oyster, pangolin, peasant, pegasus, pentavite, performer, pest, phelddagrif, phoenix, phyrexian, pilot, pincher, pirate, plant, platypus, porcupine, possum, praetor, primarch, prism, processor, qu, rabbit, raccoon, ranger, rat, rebel, reflection, rhino, rigger, robot, rogue, sable, salamander, samurai, sand, saproling, satyr, scarecrow, scientist, scion, scorpion, scout, sculpture, seal, serf, serpent, servo, shade, shaman, shapeshifter, shark, sheep, shi’ar, siren, skeleton, skrull, skunk, slith, sliver, sloth, slug, snail, snake, soldier, soltari, sorcerer, spawn, specter, spellshaper, sphinx, spider, spike, spirit, splinter, sponge, spy, squid, squirrel, starfish, surrakar, survivor, symbiote, synth, tentacle, tetravite, thalakos, thopter, thrull, tiefling, toy, treefolk, trilobite, triskelavite, troll, turtle, tyranid, unicorn, utrom, vampire, varmint, vedalken, villain, volver, wall, walrus, warlock, warrior, weasel, weird, werewolf, whale, wizard, wolf, wolverine, wombat, worm, wraith, wurm, yeti, zombie, and zubera.",
     "parentRuleIds": ["205.3", "205"]
   },
   {
@@ -4342,8 +4349,8 @@
   {
     "ruleId": "213.1g",
     "sectionTitle": "Information Below the Text Box",
-    "text": "213.1g Legal text (the fine print at the bottom or bottom-right of the card) lists the trademark and copyright information.\n\n3. Card Types",
-    "searchText": "213.1g information below the text box 213.1g legal text (the fine print at the bottom or bottom-right of the card) lists the trademark and copyright information.\n\n3. card types",
+    "text": "213.1g Legal text (the fine print at the bottom or bottom-right of the card) lists the trademark and copyright information.\n \n3. Card Types",
+    "searchText": "213.1g information below the text box 213.1g legal text (the fine print at the bottom or bottom-right of the card) lists the trademark and copyright information.\n \n3. card types",
     "parentRuleIds": ["213.1", "213"]
   },
   {
@@ -5126,100 +5133,107 @@
   {
     "ruleId": "310.7",
     "sectionTitle": "Battles",
-    "text": "310.7. If a battle’s defense is 0 and it isn’t the source of an ability which has triggered but not yet left the stack, it’s put into its owner’s graveyard. (This is a state-based action. See rule 704.)",
-    "searchText": "310.7 battles 310.7. if a battle’s defense is 0 and it isn’t the source of an ability which has triggered but not yet left the stack, it’s put into its owner’s graveyard. (this is a state-based action. see rule 704.)",
+    "text": "310.7. If a Siege battle’s defense is 0 and it isn’t the source of an ability which has triggered but not yet left the stack, it’s put into its owner’s graveyard. (This is a state-based action. See rule 704.)",
+    "searchText": "310.7 battles 310.7. if a siege battle’s defense is 0 and it isn’t the source of an ability which has triggered but not yet left the stack, it’s put into its owner’s graveyard. (this is a state-based action. see rule 704.)",
     "parentRuleIds": ["310"]
   },
   {
     "ruleId": "310.8",
     "sectionTitle": "Battles",
-    "text": "310.8. Each battle has a player designated as its protector.",
-    "searchText": "310.8 battles 310.8. each battle has a player designated as its protector.",
+    "text": "310.8. If a non-Siege battle’s defense is 0, it’s put into its owner’s graveyard. (This is a state-based action. See rule 704.)",
+    "searchText": "310.8 battles 310.8. if a non-siege battle’s defense is 0, it’s put into its owner’s graveyard. (this is a state-based action. see rule 704.)",
     "parentRuleIds": ["310"]
-  },
-  {
-    "ruleId": "310.8a",
-    "sectionTitle": "Battles",
-    "text": "310.8a As a battle enters the battlefield, its controller chooses a player to be its protector. Which players may be chosen as its protector are determined by its battle type (see rule 310.11). If it has no battle types, its controller becomes its protector.",
-    "searchText": "310.8a battles 310.8a as a battle enters the battlefield, its controller chooses a player to be its protector. which players may be chosen as its protector are determined by its battle type (see rule 310.11). if it has no battle types, its controller becomes its protector.",
-    "parentRuleIds": ["310.8", "310"]
-  },
-  {
-    "ruleId": "310.8b",
-    "sectionTitle": "Battles",
-    "text": "310.8b A battle’s protector can never attack it. A battle can be attacked by any attacking player for whom its protector is a defending player. Notably, a Siege battle can be attacked by its own controller.",
-    "searchText": "310.8b battles 310.8b a battle’s protector can never attack it. a battle can be attacked by any attacking player for whom its protector is a defending player. notably, a siege battle can be attacked by its own controller.",
-    "parentRuleIds": ["310.8", "310"]
-  },
-  {
-    "ruleId": "310.8c",
-    "sectionTitle": "Battles",
-    "text": "310.8c A battle’s protector may block creatures attacking that battle with creatures they control. Creatures controlled by other players can’t block those attackers.",
-    "searchText": "310.8c battles 310.8c a battle’s protector may block creatures attacking that battle with creatures they control. creatures controlled by other players can’t block those attackers.",
-    "parentRuleIds": ["310.8", "310"]
-  },
-  {
-    "ruleId": "310.8d",
-    "sectionTitle": "Battles",
-    "text": "310.8d If a battle’s protector is a different player than its controller, all rules and effects that refer to the “defending player” relative to a battle that is being attacked refer to that battle’s protector rather than its controller. See rule 508.5.",
-    "searchText": "310.8d battles 310.8d if a battle’s protector is a different player than its controller, all rules and effects that refer to the “defending player” relative to a battle that is being attacked refer to that battle’s protector rather than its controller. see rule 508.5.",
-    "parentRuleIds": ["310.8", "310"]
-  },
-  {
-    "ruleId": "310.8e",
-    "sectionTitle": "Battles",
-    "text": "310.8e If a rule or effect refers to the player who protects a battle, it means the player who is that battle’s protector.",
-    "searchText": "310.8e battles 310.8e if a rule or effect refers to the player who protects a battle, it means the player who is that battle’s protector.",
-    "parentRuleIds": ["310.8", "310"]
-  },
-  {
-    "ruleId": "310.8f",
-    "sectionTitle": "Battles",
-    "text": "310.8f A battle can have only one protector at a time. A battle’s protector stops being its protector if another player becomes its protector.",
-    "searchText": "310.8f battles 310.8f a battle can have only one protector at a time. a battle’s protector stops being its protector if another player becomes its protector.",
-    "parentRuleIds": ["310.8", "310"]
-  },
-  {
-    "ruleId": "310.8g",
-    "sectionTitle": "Battles",
-    "text": "310.8g A battle’s protector doesn’t change if it stops being a battle or it becomes a copy of another battle.",
-    "searchText": "310.8g battles 310.8g a battle’s protector doesn’t change if it stops being a battle or it becomes a copy of another battle.",
-    "parentRuleIds": ["310.8", "310"]
   },
   {
     "ruleId": "310.9",
     "sectionTitle": "Battles",
-    "text": "310.9. A battle can’t be attached to players or permanents, even if it is also an Aura, Equipment, or Fortification. If a battle is somehow attached to a permanent, it becomes unattached. This is a state-based action (see rule 704).",
-    "searchText": "310.9 battles 310.9. a battle can’t be attached to players or permanents, even if it is also an aura, equipment, or fortification. if a battle is somehow attached to a permanent, it becomes unattached. this is a state-based action (see rule 704).",
+    "text": "310.9. Each battle has a player designated as its protector.",
+    "searchText": "310.9 battles 310.9. each battle has a player designated as its protector.",
     "parentRuleIds": ["310"]
+  },
+  {
+    "ruleId": "310.9a",
+    "sectionTitle": "Battles",
+    "text": "310.9a As a battle enters the battlefield, its controller chooses a player to be its protector. Which players may be chosen as its protector are determined by its battle type (see rule 310.12). If it has no battle types, only its controller can be its protector.",
+    "searchText": "310.9a battles 310.9a as a battle enters the battlefield, its controller chooses a player to be its protector. which players may be chosen as its protector are determined by its battle type (see rule 310.12). if it has no battle types, only its controller can be its protector.",
+    "parentRuleIds": ["310.9", "310"]
+  },
+  {
+    "ruleId": "310.9b",
+    "sectionTitle": "Battles",
+    "text": "310.9b A battle’s protector can never attack it. A battle can be attacked by any attacking player for whom its protector is a defending player. Notably, a Siege battle can be attacked by its own controller.",
+    "searchText": "310.9b battles 310.9b a battle’s protector can never attack it. a battle can be attacked by any attacking player for whom its protector is a defending player. notably, a siege battle can be attacked by its own controller.",
+    "parentRuleIds": ["310.9", "310"]
+  },
+  {
+    "ruleId": "310.9c",
+    "sectionTitle": "Battles",
+    "text": "310.9c A battle’s protector may block creatures attacking that battle with creatures they control. Creatures controlled by other players can’t block those attackers.",
+    "searchText": "310.9c battles 310.9c a battle’s protector may block creatures attacking that battle with creatures they control. creatures controlled by other players can’t block those attackers.",
+    "parentRuleIds": ["310.9", "310"]
+  },
+  {
+    "ruleId": "310.9d",
+    "sectionTitle": "Battles",
+    "text": "310.9d If a battle’s protector is a different player than its controller, all rules and effects that refer to the “defending player” relative to a battle that is being attacked refer to that battle’s protector rather than its controller. See rule 508.5.",
+    "searchText": "310.9d battles 310.9d if a battle’s protector is a different player than its controller, all rules and effects that refer to the “defending player” relative to a battle that is being attacked refer to that battle’s protector rather than its controller. see rule 508.5.",
+    "parentRuleIds": ["310.9", "310"]
+  },
+  {
+    "ruleId": "310.9e",
+    "sectionTitle": "Battles",
+    "text": "310.9e If a rule or effect refers to the player who protects a battle, it means the player who is that battle’s protector.",
+    "searchText": "310.9e battles 310.9e if a rule or effect refers to the player who protects a battle, it means the player who is that battle’s protector.",
+    "parentRuleIds": ["310.9", "310"]
+  },
+  {
+    "ruleId": "310.9f",
+    "sectionTitle": "Battles",
+    "text": "310.9f A battle can have only one protector at a time. A battle’s protector stops being its protector if another player becomes its protector.",
+    "searchText": "310.9f battles 310.9f a battle can have only one protector at a time. a battle’s protector stops being its protector if another player becomes its protector.",
+    "parentRuleIds": ["310.9", "310"]
+  },
+  {
+    "ruleId": "310.9g",
+    "sectionTitle": "Battles",
+    "text": "310.9g A battle’s protector doesn’t change if it stops being a battle or it becomes a copy of another battle.",
+    "searchText": "310.9g battles 310.9g a battle’s protector doesn’t change if it stops being a battle or it becomes a copy of another battle.",
+    "parentRuleIds": ["310.9", "310"]
   },
   {
     "ruleId": "310.10",
     "sectionTitle": "Battles",
-    "text": "310.10. If a battle that isn’t being attacked has no player designated as its protector, or its protector is a player who can’t be its protector based on its battle type, its controller chooses an appropriate player to be its protector. If no player can be chosen this way, the battle is put into its owner’s graveyard. This is a state-based action (see rule 704).",
-    "searchText": "310.10 battles 310.10. if a battle that isn’t being attacked has no player designated as its protector, or its protector is a player who can’t be its protector based on its battle type, its controller chooses an appropriate player to be its protector. if no player can be chosen this way, the battle is put into its owner’s graveyard. this is a state-based action (see rule 704).",
+    "text": "310.10. A battle can’t be attached to players or permanents, even if it is also an Aura, Equipment, or Fortification. If a battle is somehow attached to a permanent, it becomes unattached. This is a state-based action (see rule 704).",
+    "searchText": "310.10 battles 310.10. a battle can’t be attached to players or permanents, even if it is also an aura, equipment, or fortification. if a battle is somehow attached to a permanent, it becomes unattached. this is a state-based action (see rule 704).",
     "parentRuleIds": ["310"]
   },
   {
     "ruleId": "310.11",
     "sectionTitle": "Battles",
-    "text": "310.11. All currently existing battles have the subtype Siege. Sieges are subject to special rules.",
-    "searchText": "310.11 battles 310.11. all currently existing battles have the subtype siege. sieges are subject to special rules.",
+    "text": "310.11. If a battle that isn’t being attacked has no player designated as its protector, or its protector is a player who can’t be its protector, its controller chooses an appropriate player to be its protector. If no player can be chosen this way, the battle is put into its owner’s graveyard. This is a state-based action (see rule 704).",
+    "searchText": "310.11 battles 310.11. if a battle that isn’t being attacked has no player designated as its protector, or its protector is a player who can’t be its protector, its controller chooses an appropriate player to be its protector. if no player can be chosen this way, the battle is put into its owner’s graveyard. this is a state-based action (see rule 704).",
     "parentRuleIds": ["310"]
   },
   {
-    "ruleId": "310.11a",
+    "ruleId": "310.12",
     "sectionTitle": "Battles",
-    "text": "310.11a As a Siege enters the battlefield, its controller must choose its protector from among their opponents. Only an opponent of a Siege’s controller can be its protector.",
-    "searchText": "310.11a battles 310.11a as a siege enters the battlefield, its controller must choose its protector from among their opponents. only an opponent of a siege’s controller can be its protector.",
-    "parentRuleIds": ["310.11", "310"]
+    "text": "310.12. Some battles have the subtype Siege. Sieges are subject to special rules.",
+    "searchText": "310.12 battles 310.12. some battles have the subtype siege. sieges are subject to special rules.",
+    "parentRuleIds": ["310"]
   },
   {
-    "ruleId": "310.11b",
+    "ruleId": "310.12a",
     "sectionTitle": "Battles",
-    "text": "310.11b Sieges have the intrinsic ability “When the last defense counter is removed from this permanent, exile it, then you may cast it transformed without paying its mana cost.”",
-    "searchText": "310.11b battles 310.11b sieges have the intrinsic ability “when the last defense counter is removed from this permanent, exile it, then you may cast it transformed without paying its mana cost.”",
-    "parentRuleIds": ["310.11", "310"]
+    "text": "310.12a As a Siege enters the battlefield, its controller must choose its protector from among their opponents. Only an opponent of a Siege’s controller can be its protector.",
+    "searchText": "310.12a battles 310.12a as a siege enters the battlefield, its controller must choose its protector from among their opponents. only an opponent of a siege’s controller can be its protector.",
+    "parentRuleIds": ["310.12", "310"]
+  },
+  {
+    "ruleId": "310.12b",
+    "sectionTitle": "Battles",
+    "text": "310.12b Sieges have the intrinsic ability “When the last defense counter is removed from this permanent, exile it, then you may cast it transformed without paying its mana cost.”",
+    "searchText": "310.12b battles 310.12b sieges have the intrinsic ability “when the last defense counter is removed from this permanent, exile it, then you may cast it transformed without paying its mana cost.”",
+    "parentRuleIds": ["310.12", "310"]
   },
   {
     "ruleId": "311.1",
@@ -5476,8 +5490,8 @@
   {
     "ruleId": "315.7",
     "sectionTitle": "Conspiracies",
-    "text": "315.7. At any time, you may look at a face-down conspiracy card you control. You can’t look at face-down conspiracy cards controlled by other players.\n\n4. Zones",
-    "searchText": "315.7 conspiracies 315.7. at any time, you may look at a face-down conspiracy card you control. you can’t look at face-down conspiracy cards controlled by other players.\n\n4. zones",
+    "text": "315.7. At any time, you may look at a face-down conspiracy card you control. You can’t look at face-down conspiracy cards controlled by other players.\n \n4. Zones",
+    "searchText": "315.7 conspiracies 315.7. at any time, you may look at a face-down conspiracy card you control. you can’t look at face-down conspiracy cards controlled by other players.\n \n4. zones",
     "parentRuleIds": ["315"]
   },
   {
@@ -6022,8 +6036,8 @@
   {
     "ruleId": "408.3",
     "sectionTitle": "Command",
-    "text": "408.3. In the Planechase, Vanguard, Commander, Archenemy, and Conspiracy Draft casual variants, nontraditional Magic cards and/or specially designated cards start the game in the command zone. Each variant has its own rules regarding such cards. See section 9, “Casual Variants.”\n\n\n5. Turn Structure",
-    "searchText": "408.3 command 408.3. in the planechase, vanguard, commander, archenemy, and conspiracy draft casual variants, nontraditional magic cards and/or specially designated cards start the game in the command zone. each variant has its own rules regarding such cards. see section 9, “casual variants.”\n\n\n5. turn structure",
+    "text": "408.3. In the Planechase, Vanguard, Commander, Archenemy, and Conspiracy Draft casual variants, nontraditional Magic cards and/or specially designated cards start the game in the command zone. Each variant has its own rules regarding such cards. See section 9, “Casual Variants.”\n\n \n5. Turn Structure",
+    "searchText": "408.3 command 408.3. in the planechase, vanguard, commander, archenemy, and conspiracy draft casual variants, nontraditional magic cards and/or specially designated cards start the game in the command zone. each variant has its own rules regarding such cards. see section 9, “casual variants.”\n\n \n5. turn structure",
     "parentRuleIds": ["408"]
   },
   {
@@ -6225,8 +6239,8 @@
   {
     "ruleId": "505.1b",
     "sectionTitle": "Main Phase",
-    "text": "505.1b In card text, phrases such as “first main phase,” “second main phase,” and so on count the number of main phases that have occurred only in the current turn unless that text specifies otherwise.",
-    "searchText": "505.1b main phase 505.1b in card text, phrases such as “first main phase,” “second main phase,” and so on count the number of main phases that have occurred only in the current turn unless that text specifies otherwise.",
+    "text": "505.1b Phrases such as “first main phase,” “second main phase,” and so on count the number of main phases that have occurred only in the current turn unless that text specifies otherwise.",
+    "searchText": "505.1b main phase 505.1b phrases such as “first main phase,” “second main phase,” and so on count the number of main phases that have occurred only in the current turn unless that text specifies otherwise.",
     "parentRuleIds": ["505.1", "505"]
   },
   {
@@ -6365,8 +6379,8 @@
   {
     "ruleId": "506.4",
     "sectionTitle": "Combat Phase",
-    "text": "506.4. A permanent is removed from combat if it leaves the battlefield, if its controller changes, if it phases out, if an effect specifically removes it from combat, if it’s a planeswalker that’s being attacked and stops being a planeswalker, if it’s a battle that’s being attacked and stops being a battle, or if it’s an attacking or blocking creature that regenerates (see rule 701.19), stops being a creature, or becomes a battle. A creature that’s removed from combat stops being an attacking, blocking, blocked, and/or unblocked creature. A planeswalker or battle that’s removed from combat stops being attacked.",
-    "searchText": "506.4 combat phase 506.4. a permanent is removed from combat if it leaves the battlefield, if its controller changes, if it phases out, if an effect specifically removes it from combat, if it’s a planeswalker that’s being attacked and stops being a planeswalker, if it’s a battle that’s being attacked and stops being a battle, or if it’s an attacking or blocking creature that regenerates (see rule 701.19), stops being a creature, or becomes a battle. a creature that’s removed from combat stops being an attacking, blocking, blocked, and/or unblocked creature. a planeswalker or battle that’s removed from combat stops being attacked.",
+    "text": "506.4. A permanent is removed from combat if it leaves the battlefield, if its controller or protector changes, if it phases out, if an effect specifically removes it from combat, if it’s a planeswalker that’s being attacked and stops being a planeswalker, if it’s a battle that’s being attacked and stops being a battle, or if it’s an attacking or blocking creature that regenerates (see rule 701.19), stops being a creature, or becomes a battle. A creature that’s removed from combat stops being an attacking, blocking, blocked, and/or unblocked creature. A planeswalker or battle that’s removed from combat stops being attacked.",
+    "searchText": "506.4 combat phase 506.4. a permanent is removed from combat if it leaves the battlefield, if its controller or protector changes, if it phases out, if an effect specifically removes it from combat, if it’s a planeswalker that’s being attacked and stops being a planeswalker, if it’s a battle that’s being attacked and stops being a battle, or if it’s an attacking or blocking creature that regenerates (see rule 701.19), stops being a creature, or becomes a battle. a creature that’s removed from combat stops being an attacking, blocking, blocked, and/or unblocked creature. a planeswalker or battle that’s removed from combat stops being attacked.",
     "parentRuleIds": ["506"]
   },
   {
@@ -7058,8 +7072,8 @@
   {
     "ruleId": "514.3a",
     "sectionTitle": "Cleanup Step",
-    "text": "514.3a At this point, the game checks to see if any state-based actions would be performed and/or any triggered abilities are waiting to be put onto the stack (including those that trigger “at the beginning of the next cleanup step”). If so, those state-based actions are performed, then those triggered abilities are put on the stack, then the active player gets priority. Players may cast spells and activate abilities. Once the stack is empty and all players pass in succession, another cleanup step begins.\n\n\n6. Spells, Abilities, and Effects",
-    "searchText": "514.3a cleanup step 514.3a at this point, the game checks to see if any state-based actions would be performed and/or any triggered abilities are waiting to be put onto the stack (including those that trigger “at the beginning of the next cleanup step”). if so, those state-based actions are performed, then those triggered abilities are put on the stack, then the active player gets priority. players may cast spells and activate abilities. once the stack is empty and all players pass in succession, another cleanup step begins.\n\n\n6. spells, abilities, and effects",
+    "text": "514.3a At this point, the game checks to see if any state-based actions would be performed and/or any triggered abilities are waiting to be put onto the stack (including those that trigger “at the beginning of the next cleanup step”). If so, those state-based actions are performed, then those triggered abilities are put on the stack, then the active player gets priority. Players may cast spells and activate abilities. Once the stack is empty and all players pass in succession, another cleanup step begins.\n\n \n6. Spells, Abilities, and Effects",
+    "searchText": "514.3a cleanup step 514.3a at this point, the game checks to see if any state-based actions would be performed and/or any triggered abilities are waiting to be put onto the stack (including those that trigger “at the beginning of the next cleanup step”). if so, those state-based actions are performed, then those triggered abilities are put on the stack, then the active player gets priority. players may cast spells and activate abilities. once the stack is empty and all players pass in succession, another cleanup step begins.\n\n \n6. spells, abilities, and effects",
     "parentRuleIds": ["514.3", "514"]
   },
   {
@@ -7205,43 +7219,50 @@
   {
     "ruleId": "601.5",
     "sectionTitle": "Casting Spells",
-    "text": "601.5. If a player is no longer allowed to cast a spell after completing its proposal (see rules 601.2a–d), the casting of the spell is illegal and the game returns to the moment before the casting of that spell was proposed (see rule 733, “Handling Illegal Actions”). It doesn’t matter if a rule or effect would make the casting of the spell illegal while determining and paying that spell’s costs (see rules 601.2f–h) or any time after the spell has been cast.",
-    "searchText": "601.5 casting spells 601.5. if a player is no longer allowed to cast a spell after completing its proposal (see rules 601.2a–d), the casting of the spell is illegal and the game returns to the moment before the casting of that spell was proposed (see rule 733, “handling illegal actions”). it doesn’t matter if a rule or effect would make the casting of the spell illegal while determining and paying that spell’s costs (see rules 601.2f–h) or any time after the spell has been cast.",
+    "text": "601.5. While announcing the choices of any targets and/or the division or distribution of any effects as described in rules 601.2c–d, some options may be available to a player only if other choices are made later in spellcasting process. In that case, the spell’s controller may consider any other choices to be made during that process, including the choice of any objects that may be used to pay costs for that spell.",
+    "searchText": "601.5 casting spells 601.5. while announcing the choices of any targets and/or the division or distribution of any effects as described in rules 601.2c–d, some options may be available to a player only if other choices are made later in spellcasting process. in that case, the spell’s controller may consider any other choices to be made during that process, including the choice of any objects that may be used to pay costs for that spell.",
     "parentRuleIds": ["601"]
-  },
-  {
-    "ruleId": "601.5a",
-    "sectionTitle": "Casting Spells",
-    "text": "601.5a Once a player has begun casting a spell that had flash because certain conditions were met or that could be cast as though it had flash because certain conditions were met (see 601.3d), they may continue to cast that spell as though it had flash even if those conditions stop being met.",
-    "searchText": "601.5a casting spells 601.5a once a player has begun casting a spell that had flash because certain conditions were met or that could be cast as though it had flash because certain conditions were met (see 601.3d), they may continue to cast that spell as though it had flash even if those conditions stop being met.",
-    "parentRuleIds": ["601.5", "601"]
   },
   {
     "ruleId": "601.6",
     "sectionTitle": "Casting Spells",
-    "text": "601.6. Some spells specify that one of their controller’s opponents does something the controller would normally do while it’s being cast, such as choose a mode or choose targets. In these cases, the opponent does so when the spell’s controller normally would do so.",
-    "searchText": "601.6 casting spells 601.6. some spells specify that one of their controller’s opponents does something the controller would normally do while it’s being cast, such as choose a mode or choose targets. in these cases, the opponent does so when the spell’s controller normally would do so.",
+    "text": "601.6. If a player is no longer allowed to cast a spell after completing its proposal (see rules 601.2a–d), the casting of the spell is illegal and the game returns to the moment before the casting of that spell was proposed (see rule 733, “Handling Illegal Actions”). It doesn’t matter if a rule or effect would make the casting of the spell illegal while determining and paying that spell’s costs (see rules 601.2f–h) or any time after the spell has been cast.",
+    "searchText": "601.6 casting spells 601.6. if a player is no longer allowed to cast a spell after completing its proposal (see rules 601.2a–d), the casting of the spell is illegal and the game returns to the moment before the casting of that spell was proposed (see rule 733, “handling illegal actions”). it doesn’t matter if a rule or effect would make the casting of the spell illegal while determining and paying that spell’s costs (see rules 601.2f–h) or any time after the spell has been cast.",
     "parentRuleIds": ["601"]
   },
   {
     "ruleId": "601.6a",
     "sectionTitle": "Casting Spells",
-    "text": "601.6a If there is more than one opponent who could make such a choice, the spell’s controller decides which of those opponents will make the choice.",
-    "searchText": "601.6a casting spells 601.6a if there is more than one opponent who could make such a choice, the spell’s controller decides which of those opponents will make the choice.",
-    "parentRuleIds": ["601.6", "601"]
-  },
-  {
-    "ruleId": "601.6b",
-    "sectionTitle": "Casting Spells",
-    "text": "601.6b If the spell instructs its controller and another player to do something at the same time as the spell is being cast, the spell’s controller goes first, then the other player. This is an exception to rule 101.4.",
-    "searchText": "601.6b casting spells 601.6b if the spell instructs its controller and another player to do something at the same time as the spell is being cast, the spell’s controller goes first, then the other player. this is an exception to rule 101.4.",
+    "text": "601.6a Once a player has begun casting a spell that had flash because certain conditions were met or that could be cast as though it had flash because certain conditions were met (see 601.3d), they may continue to cast that spell as though it had flash even if those conditions stop being met.",
+    "searchText": "601.6a casting spells 601.6a once a player has begun casting a spell that had flash because certain conditions were met or that could be cast as though it had flash because certain conditions were met (see 601.3d), they may continue to cast that spell as though it had flash even if those conditions stop being met.",
     "parentRuleIds": ["601.6", "601"]
   },
   {
     "ruleId": "601.7",
     "sectionTitle": "Casting Spells",
-    "text": "601.7. Casting a spell that alters costs won’t affect spells and abilities that are already on the stack.",
-    "searchText": "601.7 casting spells 601.7. casting a spell that alters costs won’t affect spells and abilities that are already on the stack.",
+    "text": "601.7. Some spells specify that one of their controller’s opponents does something the controller would normally do while it’s being cast, such as choose a mode or choose targets. In these cases, the opponent does so when the spell’s controller normally would do so.",
+    "searchText": "601.7 casting spells 601.7. some spells specify that one of their controller’s opponents does something the controller would normally do while it’s being cast, such as choose a mode or choose targets. in these cases, the opponent does so when the spell’s controller normally would do so.",
+    "parentRuleIds": ["601"]
+  },
+  {
+    "ruleId": "601.7a",
+    "sectionTitle": "Casting Spells",
+    "text": "601.7a If there is more than one opponent who could make such a choice, the spell’s controller decides which of those opponents will make the choice.",
+    "searchText": "601.7a casting spells 601.7a if there is more than one opponent who could make such a choice, the spell’s controller decides which of those opponents will make the choice.",
+    "parentRuleIds": ["601.7", "601"]
+  },
+  {
+    "ruleId": "601.7b",
+    "sectionTitle": "Casting Spells",
+    "text": "601.7b If the spell instructs its controller and another player to do something at the same time as the spell is being cast, the spell’s controller goes first, then the other player. This is an exception to rule 101.4.",
+    "searchText": "601.7b casting spells 601.7b if the spell instructs its controller and another player to do something at the same time as the spell is being cast, the spell’s controller goes first, then the other player. this is an exception to rule 101.4.",
+    "parentRuleIds": ["601.7", "601"]
+  },
+  {
+    "ruleId": "601.8",
+    "sectionTitle": "Casting Spells",
+    "text": "601.8. Casting a spell that alters costs won’t affect spells and abilities that are already on the stack.",
+    "searchText": "601.8 casting spells 601.8. casting a spell that alters costs won’t affect spells and abilities that are already on the stack.",
     "parentRuleIds": ["601"]
   },
   {
@@ -7702,8 +7723,8 @@
   {
     "ruleId": "603.12a",
     "sectionTitle": "Handling Triggered Abilities",
-    "text": "603.12a Normally, if the trigger event or events occur multiple times during the resolution of the spell or ability that created it, the reflexive triggered ability will trigger once for each of those times. However, if a resolving spell or ability includes a choice to pay a cost “any number of times” and creates a triggered ability that triggers “when [a player] pays [that cost] one or more times,” paying that cost one or more times causes the reflexive triggered ability to trigger only once.",
-    "searchText": "603.12a handling triggered abilities 603.12a normally, if the trigger event or events occur multiple times during the resolution of the spell or ability that created it, the reflexive triggered ability will trigger once for each of those times. however, if a resolving spell or ability includes a choice to pay a cost “any number of times” and creates a triggered ability that triggers “when [a player] pays [that cost] one or more times,” paying that cost one or more times causes the reflexive triggered ability to trigger only once.",
+    "text": "603.12a Normally, if the trigger event or events occur multiple times during the resolution of the spell or ability that created it, the reflexive triggered ability will trigger once for each of those times. However, if a resolving spell or ability includes a choice to pay a cost multiple times and creates a triggered ability that triggers when that payment is made, paying that cost one or more times causes the reflexive triggered ability to trigger only once.",
+    "searchText": "603.12a handling triggered abilities 603.12a normally, if the trigger event or events occur multiple times during the resolution of the spell or ability that created it, the reflexive triggered ability will trigger once for each of those times. however, if a resolving spell or ability includes a choice to pay a cost multiple times and creates a triggered ability that triggers when that payment is made, paying that cost one or more times causes the reflexive triggered ability to trigger only once.",
     "parentRuleIds": ["603.12", "603"]
   },
   {
@@ -7772,8 +7793,8 @@
   {
     "ruleId": "605.1a",
     "sectionTitle": "Mana Abilities",
-    "text": "605.1a An activated ability is a mana ability if it meets all of the following criteria: it doesn’t require a target (see rule 115.6), it could add mana to a player’s mana pool when it resolves, and it’s not a loyalty ability. (See rule 606, “Loyalty Abilities.”)",
-    "searchText": "605.1a mana abilities 605.1a an activated ability is a mana ability if it meets all of the following criteria: it doesn’t require a target (see rule 115.6), it could add mana to a player’s mana pool when it resolves, and it’s not a loyalty ability. (see rule 606, “loyalty abilities.”)",
+    "text": "605.1a An activated ability is a mana ability if it meets all of the following criteria: it doesn’t require a target (see rule 115.6), it could add mana to a player’s mana pool when it resolves, it’s not a loyalty ability (see rule 606, “Loyalty Abilities”), and its cost and effect don’t move any card to or from a library. Do not take into account replacement effects that may apply, other than self-replacement effects, when evaluating these criteria.",
+    "searchText": "605.1a mana abilities 605.1a an activated ability is a mana ability if it meets all of the following criteria: it doesn’t require a target (see rule 115.6), it could add mana to a player’s mana pool when it resolves, it’s not a loyalty ability (see rule 606, “loyalty abilities”), and its cost and effect don’t move any card to or from a library. do not take into account replacement effects that may apply, other than self-replacement effects, when evaluating these criteria.",
     "parentRuleIds": ["605.1", "605"]
   },
   {
@@ -9291,8 +9312,8 @@
   {
     "ruleId": "616.2",
     "sectionTitle": "Interaction of Replacement and/or Prevention Effects",
-    "text": "616.2. A replacement or prevention effect can become applicable to an event as the result of another replacement or prevention effect that modifies the event.\nExample: One effect reads “If you would gain life, draw that many cards instead,” and another reads “If you would draw a card, return a card from your graveyard to your hand instead.” Both effects combine (regardless of the order they came into existence): Instead of gaining 1 life, the player puts a card from their graveyard into their hand.\n\n\n7. Additional Rules",
-    "searchText": "616.2 interaction of replacement and/or prevention effects 616.2. a replacement or prevention effect can become applicable to an event as the result of another replacement or prevention effect that modifies the event.\nexample: one effect reads “if you would gain life, draw that many cards instead,” and another reads “if you would draw a card, return a card from your graveyard to your hand instead.” both effects combine (regardless of the order they came into existence): instead of gaining 1 life, the player puts a card from their graveyard into their hand.\n\n\n7. additional rules",
+    "text": "616.2. A replacement or prevention effect can become applicable to an event as the result of another replacement or prevention effect that modifies the event.\nExample: One effect reads “If you would gain life, draw that many cards instead,” and another reads “If you would draw a card, return a card from your graveyard to your hand instead.” Both effects combine (regardless of the order they came into existence): Instead of gaining 1 life, the player puts a card from their graveyard into their hand.\n\n \n7. Additional Rules",
+    "searchText": "616.2 interaction of replacement and/or prevention effects 616.2. a replacement or prevention effect can become applicable to an event as the result of another replacement or prevention effect that modifies the event.\nexample: one effect reads “if you would gain life, draw that many cards instead,” and another reads “if you would draw a card, return a card from your graveyard to your hand instead.” both effects combine (regardless of the order they came into existence): instead of gaining 1 life, the player puts a card from their graveyard into their hand.\n\n \n7. additional rules",
     "parentRuleIds": ["616"]
   },
   {
@@ -9524,6 +9545,13 @@
     "sectionTitle": "General",
     "text": "700.14. Some abilities trigger “Whenever you expend N.” A player expends N if they pay a cost to cast a spell and the amount of mana that player spent this turn to cast spells prior to paying that cost was less than N and became at least N after paying that cost.\nExample: A player casts Bark-Knuckle Boxer, which costs {1}{G} and reads “Whenever you expend 4, this creature gains indestructible until end of turn.” After it resolves, that player casts Divination, a spell that costs {2}{U}. Prior to paying the cost to cast Divination, that player has spent two mana to cast spells this turn. After paying the cost, they have spent five mana to cast spells this turn. Since they have now spent at least four mana to cast spells this turn, Bark-Knuckle Boxer’s ability triggers.",
     "searchText": "700.14 general 700.14. some abilities trigger “whenever you expend n.” a player expends n if they pay a cost to cast a spell and the amount of mana that player spent this turn to cast spells prior to paying that cost was less than n and became at least n after paying that cost.\nexample: a player casts bark-knuckle boxer, which costs {1}{g} and reads “whenever you expend 4, this creature gains indestructible until end of turn.” after it resolves, that player casts divination, a spell that costs {2}{u}. prior to paying the cost to cast divination, that player has spent two mana to cast spells this turn. after paying the cost, they have spent five mana to cast spells this turn. since they have now spent at least four mana to cast spells this turn, bark-knuckle boxer’s ability triggers.",
+    "parentRuleIds": ["700"]
+  },
+  {
+    "ruleId": "700.16",
+    "sectionTitle": "General",
+    "text": "700.16. Some cards refer to worthy creatures. A creature is worthy if it’s legendary, isn’t a Villain, and is red and/or white.",
+    "searchText": "700.16 general 700.16. some cards refer to worthy creatures. a creature is worthy if it’s legendary, isn’t a villain, and is red and/or white.",
     "parentRuleIds": ["700"]
   },
   {
@@ -10593,8 +10621,8 @@
   {
     "ruleId": "701.44c",
     "sectionTitle": "Keyword Actions",
-    "text": "701.44c If a permanent changes zones before an effect causes it to explore, its last known information is used to determine which object explored and who controlled it.",
-    "searchText": "701.44c keyword actions 701.44c if a permanent changes zones before an effect causes it to explore, its last known information is used to determine which object explored and who controlled it.",
+    "text": "701.44c If a permanent is no longer on the battlefield as an effect instructs it to explore, its last known information is used to determine which object explored and who controlled it.",
+    "searchText": "701.44c keyword actions 701.44c if a permanent is no longer on the battlefield as an effect instructs it to explore, its last known information is used to determine which object explored and who controlled it.",
     "parentRuleIds": ["701.44", "701"]
   },
   {
@@ -10691,29 +10719,36 @@
   {
     "ruleId": "701.50b",
     "sectionTitle": "Keyword Actions",
-    "text": "701.50b A permanent “connives” after the process described in rule 701.50a is complete, even if some or all of those actions were impossible.",
-    "searchText": "701.50b keyword actions 701.50b a permanent “connives” after the process described in rule 701.50a is complete, even if some or all of those actions were impossible.",
+    "text": "701.50b If a permanent is no longer on the battlefield as an effect instructs it to connive, its last known information is used to determine which object connived and who controlled it.",
+    "searchText": "701.50b keyword actions 701.50b if a permanent is no longer on the battlefield as an effect instructs it to connive, its last known information is used to determine which object connived and who controlled it.",
     "parentRuleIds": ["701.50", "701"]
   },
   {
     "ruleId": "701.50c",
     "sectionTitle": "Keyword Actions",
-    "text": "701.50c If a permanent changes zones before an effect causes it to connive, its last known information is used to determine which object connived and who controlled it.",
-    "searchText": "701.50c keyword actions 701.50c if a permanent changes zones before an effect causes it to connive, its last known information is used to determine which object connived and who controlled it.",
+    "text": "701.50c If multiple permanents are instructed to connive at the same time, the first player in APNAP order who controls (or, in the case of a permanent no longer on the battlefield, last controlled; see rule 701.50b) one or more of those permanents chooses one of them and it connives. Then this process is repeated for each remaining instruction to connive.",
+    "searchText": "701.50c keyword actions 701.50c if multiple permanents are instructed to connive at the same time, the first player in apnap order who controls (or, in the case of a permanent no longer on the battlefield, last controlled; see rule 701.50b) one or more of those permanents chooses one of them and it connives. then this process is repeated for each remaining instruction to connive.",
     "parentRuleIds": ["701.50", "701"]
   },
   {
     "ruleId": "701.50d",
     "sectionTitle": "Keyword Actions",
-    "text": "701.50d If multiple permanents are instructed to connive at the same time, the first player in APNAP order who controls (or, in the case of a permanent no longer on the battlefield, last controlled; see rule 701.50c) one or more of those permanents chooses one of them and it connives. Then this process is repeated for each remaining instruction to connive.",
-    "searchText": "701.50d keyword actions 701.50d if multiple permanents are instructed to connive at the same time, the first player in apnap order who controls (or, in the case of a permanent no longer on the battlefield, last controlled; see rule 701.50c) one or more of those permanents chooses one of them and it connives. then this process is repeated for each remaining instruction to connive.",
+    "text": "701.50d Connive N is a variant of connive. To have a permanent connive N, the permanent’s controller draws N cards, discards N cards, then puts a number of +1/+1 counters on the permanent equal to the number of nonland cards discarded this way.",
+    "searchText": "701.50d keyword actions 701.50d connive n is a variant of connive. to have a permanent connive n, the permanent’s controller draws n cards, discards n cards, then puts a number of +1/+1 counters on the permanent equal to the number of nonland cards discarded this way.",
     "parentRuleIds": ["701.50", "701"]
   },
   {
     "ruleId": "701.50e",
     "sectionTitle": "Keyword Actions",
-    "text": "701.50e Connive N is a variant of connive. The permanent’s controller draws N cards, discards N cards, then puts a number of +1/+1 counters on the permanent equal to the number of nonland cards discarded this way.",
-    "searchText": "701.50e keyword actions 701.50e connive n is a variant of connive. the permanent’s controller draws n cards, discards n cards, then puts a number of +1/+1 counters on the permanent equal to the number of nonland cards discarded this way.",
+    "text": "701.50e If a permanent would connive 0, no connive event occurs. Abilities that trigger whenever a permanent connives won’t trigger.",
+    "searchText": "701.50e keyword actions 701.50e if a permanent would connive 0, no connive event occurs. abilities that trigger whenever a permanent connives won’t trigger.",
+    "parentRuleIds": ["701.50", "701"]
+  },
+  {
+    "ruleId": "701.50f",
+    "sectionTitle": "Keyword Actions",
+    "text": "701.50f A permanent “connives” after the process described in either rule 701.50a or 701.50d is complete, even if some or all of those actions were impossible.",
+    "searchText": "701.50f keyword actions 701.50f a permanent “connives” after the process described in either rule 701.50a or 701.50d is complete, even if some or all of those actions were impossible.",
     "parentRuleIds": ["701.50", "701"]
   },
   {
@@ -11081,6 +11116,20 @@
     "parentRuleIds": ["701.68", "701"]
   },
   {
+    "ruleId": "701.69a",
+    "sectionTitle": "Keyword Actions",
+    "text": "701.69a To heal damage already dealt to a permanent, remove that marked damage from that permanent. If an effect states that damage already dealt to a permanent “is healed,” that permanent’s controller removes all marked damage from that permanent.",
+    "searchText": "701.69a keyword actions 701.69a to heal damage already dealt to a permanent, remove that marked damage from that permanent. if an effect states that damage already dealt to a permanent “is healed,” that permanent’s controller removes all marked damage from that permanent.",
+    "parentRuleIds": ["701.69", "701"]
+  },
+  {
+    "ruleId": "701.70a",
+    "sectionTitle": "Keyword Actions",
+    "text": "701.70a “Recruit” means “Draw a card, then discard a card. If you discarded a nonland card this way, create a 1/1 white Human Soldier creature token.”",
+    "searchText": "701.70a keyword actions 701.70a “recruit” means “draw a card, then discard a card. if you discarded a nonland card this way, create a 1/1 white human soldier creature token.”",
+    "parentRuleIds": ["701.70", "701"]
+  },
+  {
     "ruleId": "702.1",
     "sectionTitle": "Keyword Abilities",
     "text": "702.1. Most abilities describe exactly what they do in the card’s rules text. Some, though, are very common or would require too much space to define on the card. In these cases, the object lists only the name of the ability as a “keyword”; sometimes reminder text summarizes the game rule.",
@@ -11146,8 +11195,8 @@
   {
     "ruleId": "702.2e",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.2e If an object changes zones before an effect causes it to deal damage, its last known information is used to determine whether it had deathtouch.",
-    "searchText": "702.2e keyword abilities 702.2e if an object changes zones before an effect causes it to deal damage, its last known information is used to determine whether it had deathtouch.",
+    "text": "702.2e If an object is no longer in the zone it’s expected to be in as an effect causes it to deal damage, its last known information is used to determine whether it had deathtouch.",
+    "searchText": "702.2e keyword abilities 702.2e if an object is no longer in the zone it’s expected to be in as an effect causes it to deal damage, its last known information is used to determine whether it had deathtouch.",
     "parentRuleIds": ["702.2", "702"]
   },
   {
@@ -11517,8 +11566,8 @@
   {
     "ruleId": "702.15c",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.15c If an object changes zones before an effect causes it to deal damage, its last known information is used to determine whether it had lifelink.",
-    "searchText": "702.15c keyword abilities 702.15c if an object changes zones before an effect causes it to deal damage, its last known information is used to determine whether it had lifelink.",
+    "text": "702.15c If an object is no longer in the zone it’s expected to be in as an effect causes it to deal damage, its last known information is used to determine whether it had lifelink.",
+    "searchText": "702.15c keyword abilities 702.15c if an object is no longer in the zone it’s expected to be in as an effect causes it to deal damage, its last known information is used to determine whether it had lifelink.",
     "parentRuleIds": ["702.15", "702"]
   },
   {
@@ -12560,8 +12609,8 @@
   {
     "ruleId": "702.54b",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.54b “Bloodthirst X” is a special form of bloodthirst. “Bloodthirst X” means “This permanent enters with X +1/+1 counters on it, where X is the total damage your opponents have been dealt this turn.”",
-    "searchText": "702.54b keyword abilities 702.54b “bloodthirst x” is a special form of bloodthirst. “bloodthirst x” means “this permanent enters with x +1/+1 counters on it, where x is the total damage your opponents have been dealt this turn.”",
+    "text": "702.54b “Bloodthirst X” is a variant of the bloodthirst ability. “Bloodthirst X” means “This permanent enters with X +1/+1 counters on it, where X is the total damage your opponents have been dealt this turn.”",
+    "searchText": "702.54b keyword abilities 702.54b “bloodthirst x” is a variant of the bloodthirst ability. “bloodthirst x” means “this permanent enters with x +1/+1 counters on it, where x is the total damage your opponents have been dealt this turn.”",
     "parentRuleIds": ["702.54", "702"]
   },
   {
@@ -12609,8 +12658,8 @@
   {
     "ruleId": "702.57a",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.57a A forecast ability is a special kind of activated ability that can be activated only from a player’s hand. It’s written “Forecast — [Activated ability].”",
-    "searchText": "702.57a keyword abilities 702.57a a forecast ability is a special kind of activated ability that can be activated only from a player’s hand. it’s written “forecast — [activated ability].”",
+    "text": "702.57a A forecast ability is an activated ability that can be activated only from a player’s hand. It’s written “Forecast — [Activated ability].”",
+    "searchText": "702.57a keyword abilities 702.57a a forecast ability is an activated ability that can be activated only from a player’s hand. it’s written “forecast — [activated ability].”",
     "parentRuleIds": ["702.57", "702"]
   },
   {
@@ -12952,8 +13001,8 @@
   {
     "ruleId": "702.80b",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.80b If an object changes zones before an effect causes it to deal damage, its last known information is used to determine whether it had wither.",
-    "searchText": "702.80b keyword abilities 702.80b if an object changes zones before an effect causes it to deal damage, its last known information is used to determine whether it had wither.",
+    "text": "702.80b If an object is no longer in the zone it’s expected to be in as an effect causes it to deal damage, its last known information is used to determine whether it had wither.",
+    "searchText": "702.80b keyword abilities 702.80b if an object is no longer in the zone it’s expected to be in as an effect causes it to deal damage, its last known information is used to determine whether it had wither.",
     "parentRuleIds": ["702.80", "702"]
   },
   {
@@ -13134,8 +13183,8 @@
   {
     "ruleId": "702.90d",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.90d If an object changes zones before an effect causes it to deal damage, its last known information is used to determine whether it had infect.",
-    "searchText": "702.90d keyword abilities 702.90d if an object changes zones before an effect causes it to deal damage, its last known information is used to determine whether it had infect.",
+    "text": "702.90d If an object is no longer in the zone it’s expected to be in as an effect causes it to deal damage, its last known information is used to determine whether it had infect.",
+    "searchText": "702.90d keyword abilities 702.90d if an object is no longer in the zone it’s expected to be in as an effect causes it to deal damage, its last known information is used to determine whether it had infect.",
     "parentRuleIds": ["702.90", "702"]
   },
   {
@@ -13694,15 +13743,22 @@
   {
     "ruleId": "702.122c",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.122c If an effect states that a creature “can’t crew Vehicles,” that creature can’t be tapped to pay the crew cost of a Vehicle.",
-    "searchText": "702.122c keyword abilities 702.122c if an effect states that a creature “can’t crew vehicles,” that creature can’t be tapped to pay the crew cost of a vehicle.",
+    "text": "702.122c A Vehicle is “crewed by” a creature if that creature was tapped to pay the cost to activate that Vehicle’s crew ability.",
+    "searchText": "702.122c keyword abilities 702.122c a vehicle is “crewed by” a creature if that creature was tapped to pay the cost to activate that vehicle’s crew ability.",
     "parentRuleIds": ["702.122", "702"]
   },
   {
     "ruleId": "702.122d",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.122d Some Vehicles have abilities that trigger when they become crewed. “Whenever [this Vehicle] becomes crewed” means “Whenever a crew ability of [this Vehicle] resolves.” If that ability has an intervening “if” clause that refers to information about the creatures that crewed it, it means only creatures that were tapped to pay the cost of the crew ability that caused it to trigger.",
-    "searchText": "702.122d keyword abilities 702.122d some vehicles have abilities that trigger when they become crewed. “whenever [this vehicle] becomes crewed” means “whenever a crew ability of [this vehicle] resolves.” if that ability has an intervening “if” clause that refers to information about the creatures that crewed it, it means only creatures that were tapped to pay the cost of the crew ability that caused it to trigger.",
+    "text": "702.122d If an effect states that a creature “can’t crew Vehicles,” that creature can’t be tapped to pay the crew cost of a Vehicle.",
+    "searchText": "702.122d keyword abilities 702.122d if an effect states that a creature “can’t crew vehicles,” that creature can’t be tapped to pay the crew cost of a vehicle.",
+    "parentRuleIds": ["702.122", "702"]
+  },
+  {
+    "ruleId": "702.122e",
+    "sectionTitle": "Keyword Abilities",
+    "text": "702.122e Some Vehicles have abilities that trigger when they become crewed. “Whenever [this Vehicle] becomes crewed” means “Whenever a crew ability of [this Vehicle] resolves.” If that ability has an intervening “if” clause that refers to information about the creatures that crewed it, it means only creatures that were tapped to pay the cost of the crew ability that caused it to trigger.",
+    "searchText": "702.122e keyword abilities 702.122e some vehicles have abilities that trigger when they become crewed. “whenever [this vehicle] becomes crewed” means “whenever a crew ability of [this vehicle] resolves.” if that ability has an intervening “if” clause that refers to information about the creatures that crewed it, it means only creatures that were tapped to pay the cost of the crew ability that caused it to trigger.",
     "parentRuleIds": ["702.122", "702"]
   },
   {
@@ -14100,8 +14156,8 @@
   {
     "ruleId": "702.142a",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.142a A boast ability is a special kind of activated ability. “Boast — [Cost]: [Effect]” means “[Cost]: [Effect]. Activate only if this creature attacked this turn and only once each turn.”",
-    "searchText": "702.142a keyword abilities 702.142a a boast ability is a special kind of activated ability. “boast — [cost]: [effect]” means “[cost]: [effect]. activate only if this creature attacked this turn and only once each turn.”",
+    "text": "702.142a Boast is a keyword that adds additional rules to the activated ability that follows it. “Boast — [Cost]: [Effect]” means “[Cost]: [Effect]. Activate only if this creature attacked this turn and only once each turn.”",
+    "searchText": "702.142a keyword abilities 702.142a boast is a keyword that adds additional rules to the activated ability that follows it. “boast — [cost]: [effect]” means “[cost]: [effect]. activate only if this creature attacked this turn and only once each turn.”",
     "parentRuleIds": ["702.142", "702"]
   },
   {
@@ -14828,8 +14884,8 @@
   {
     "ruleId": "702.177a",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.177a An exhaust ability is a special kind of activated ability. “Exhaust — [Cost]: [Effect]” means “[Cost]: [Effect]. Activate only once.”",
-    "searchText": "702.177a keyword abilities 702.177a an exhaust ability is a special kind of activated ability. “exhaust — [cost]: [effect]” means “[cost]: [effect]. activate only once.”",
+    "text": "702.177a Exhaust is a keyword that adds additional rules to the activated ability that follows it. “Exhaust — [Cost]: [Effect]” means “[Cost]: [Effect]. Activate only once.”",
+    "searchText": "702.177a keyword abilities 702.177a exhaust is a keyword that adds additional rules to the activated ability that follows it. “exhaust — [cost]: [effect]” means “[cost]: [effect]. activate only once.”",
     "parentRuleIds": ["702.177", "702"]
   },
   {
@@ -14842,8 +14898,8 @@
   {
     "ruleId": "702.178a",
     "sectionTitle": "Keyword Abilities",
-    "text": "702.178a A max speed ability is a special kind of static ability. “Max speed — [Ability]” means “As long as your speed is 4, this object has ‘[Ability].’” See rule 702.179, “Start Your Engines!”",
-    "searchText": "702.178a keyword abilities 702.178a a max speed ability is a special kind of static ability. “max speed — [ability]” means “as long as your speed is 4, this object has ‘[ability].’” see rule 702.179, “start your engines!”",
+    "text": "702.178a A max speed ability is a static ability. “Max speed — [Ability]” means “As long as your speed is 4, this object has ‘[Ability].’” See rule 702.179, “Start Your Engines!”",
+    "searchText": "702.178a keyword abilities 702.178a a max speed ability is a static ability. “max speed — [ability]” means “as long as your speed is 4, this object has ‘[ability].’” see rule 702.179, “start your engines!”",
     "parentRuleIds": ["702.178", "702"]
   },
   {
@@ -15069,6 +15125,62 @@
     "text": "702.192a Paradigm represents two spell abilities, one of which creates a delayed triggered ability. Paradigm means “If this is the first time a spell you control with this spell’s name has resolved this game, at the beginning of each of your precombat main phases for the rest of the game, create a copy of this object in exile. You may cast the copy without paying its mana cost” and “Exile this spell.” See rule 707.10.",
     "searchText": "702.192a keyword abilities 702.192a paradigm represents two spell abilities, one of which creates a delayed triggered ability. paradigm means “if this is the first time a spell you control with this spell’s name has resolved this game, at the beginning of each of your precombat main phases for the rest of the game, create a copy of this object in exile. you may cast the copy without paying its mana cost” and “exile this spell.” see rule 707.10.",
     "parentRuleIds": ["702.192", "702"]
+  },
+  {
+    "ruleId": "702.193a",
+    "sectionTitle": "Keyword Abilities",
+    "text": "702.193a Power-up is a keyword that adds additional rules to the activated ability that follows it. “Power-up — [Cost]: [Effect]” means “[Cost]: [Effect]. If this permanent entered this turn, this ability’s cost is reduced by this permanent’s mana cost. Activate this ability only once.”",
+    "searchText": "702.193a keyword abilities 702.193a power-up is a keyword that adds additional rules to the activated ability that follows it. “power-up — [cost]: [effect]” means “[cost]: [effect]. if this permanent entered this turn, this ability’s cost is reduced by this permanent’s mana cost. activate this ability only once.”",
+    "parentRuleIds": ["702.193", "702"]
+  },
+  {
+    "ruleId": "702.193b",
+    "sectionTitle": "Keyword Abilities",
+    "text": "702.193b Generic mana in the permanent’s mana cost reduces generic mana in the cost to activate its power-up ability. Colored and colorless mana in the permanent’s mana cost reduces mana of the same type, and any excess reduces that much generic mana. (See rule 118.7.)",
+    "searchText": "702.193b keyword abilities 702.193b generic mana in the permanent’s mana cost reduces generic mana in the cost to activate its power-up ability. colored and colorless mana in the permanent’s mana cost reduces mana of the same type, and any excess reduces that much generic mana. (see rule 118.7.)",
+    "parentRuleIds": ["702.193", "702"]
+  },
+  {
+    "ruleId": "702.194a",
+    "sectionTitle": "Keyword Abilities",
+    "text": "702.194a Teamwork represents a static ability that functions while the spell with teamwork is on the stack. “Teamwork N” means “As an additional cost to cast this spell, you may tap any number of creatures you control with total power N or more.” Paying a spell’s teamwork cost follows the rules for paying additional costs in rules 601.2b and 601.2f–h.",
+    "searchText": "702.194a keyword abilities 702.194a teamwork represents a static ability that functions while the spell with teamwork is on the stack. “teamwork n” means “as an additional cost to cast this spell, you may tap any number of creatures you control with total power n or more.” paying a spell’s teamwork cost follows the rules for paying additional costs in rules 601.2b and 601.2f–h.",
+    "parentRuleIds": ["702.194", "702"]
+  },
+  {
+    "ruleId": "702.194b",
+    "sectionTitle": "Keyword Abilities",
+    "text": "702.194b Abilities may refer to a spell cast “using teamwork” or similar. Such phrases refer to whether the player who cast the spell declared the intention to pay the spell’s teamwork cost as they cast that spell.",
+    "searchText": "702.194b keyword abilities 702.194b abilities may refer to a spell cast “using teamwork” or similar. such phrases refer to whether the player who cast the spell declared the intention to pay the spell’s teamwork cost as they cast that spell.",
+    "parentRuleIds": ["702.194", "702"]
+  },
+  {
+    "ruleId": "702.194c",
+    "sectionTitle": "Keyword Abilities",
+    "text": "702.194c If part of a spell’s ability has its effect only if teamwork was used to cast it, and that part of the ability includes any targets, the spell’s controller chooses those targets only if teamwork was used to cast that spell. Otherwise, the spell is cast as if it did not have those targets. See rule 601.2c.",
+    "searchText": "702.194c keyword abilities 702.194c if part of a spell’s ability has its effect only if teamwork was used to cast it, and that part of the ability includes any targets, the spell’s controller chooses those targets only if teamwork was used to cast that spell. otherwise, the spell is cast as if it did not have those targets. see rule 601.2c.",
+    "parentRuleIds": ["702.194", "702"]
+  },
+  {
+    "ruleId": "702.195a",
+    "sectionTitle": "Keyword Abilities",
+    "text": "702.195a Storied is a static ability. It means “Any time you control three or more permanents that are artifacts, Sagas, and/or legendary and you don’t have an enduring story, you have an enduring story for the rest of the game.”",
+    "searchText": "702.195a keyword abilities 702.195a storied is a static ability. it means “any time you control three or more permanents that are artifacts, sagas, and/or legendary and you don’t have an enduring story, you have an enduring story for the rest of the game.”",
+    "parentRuleIds": ["702.195", "702"]
+  },
+  {
+    "ruleId": "702.195b",
+    "sectionTitle": "Keyword Abilities",
+    "text": "702.195b Enduring story is a designation that has no rules meaning other than to act as a marker that other rules and effects can identify. Any number of players may have the enduring story designation at the same time.",
+    "searchText": "702.195b keyword abilities 702.195b enduring story is a designation that has no rules meaning other than to act as a marker that other rules and effects can identify. any number of players may have the enduring story designation at the same time.",
+    "parentRuleIds": ["702.195", "702"]
+  },
+  {
+    "ruleId": "702.195c",
+    "sectionTitle": "Keyword Abilities",
+    "text": "702.195c After a player gets an enduring story, continuous effects are reapplied before the game checks to see if the game state or preceding events have matched any trigger conditions.",
+    "searchText": "702.195c keyword abilities 702.195c after a player gets an enduring story, continuous effects are reapplied before the game checks to see if the game state or preceding events have matched any trigger conditions.",
+    "parentRuleIds": ["702.195", "702"]
   },
   {
     "ruleId": "703.1",
@@ -15388,36 +15500,36 @@
   {
     "ruleId": "704.5v",
     "sectionTitle": "State-Based Actions",
-    "text": "704.5v If a battle has defense 0 and it isn’t the source of an ability that has triggered but not yet left the stack, it’s put into its owner’s graveyard.",
-    "searchText": "704.5v state-based actions 704.5v if a battle has defense 0 and it isn’t the source of an ability that has triggered but not yet left the stack, it’s put into its owner’s graveyard.",
+    "text": "704.5v If a Siege battle has defense 0 and it isn’t the source of an ability that has triggered but not yet left the stack, it’s put into its owner’s graveyard.",
+    "searchText": "704.5v state-based actions 704.5v if a siege battle has defense 0 and it isn’t the source of an ability that has triggered but not yet left the stack, it’s put into its owner’s graveyard.",
     "parentRuleIds": ["704.5", "704"]
   },
   {
     "ruleId": "704.5w",
     "sectionTitle": "State-Based Actions",
-    "text": "704.5w If a battle has no player in the game designated as its protector and no attacking creatures are currently attacking that battle, that battle’s controller chooses an appropriate player to be its protector based on its battle type. If no player can be chosen this way, the battle is put into its owner’s graveyard. See rule 310, “Battles.”",
-    "searchText": "704.5w state-based actions 704.5w if a battle has no player in the game designated as its protector and no attacking creatures are currently attacking that battle, that battle’s controller chooses an appropriate player to be its protector based on its battle type. if no player can be chosen this way, the battle is put into its owner’s graveyard. see rule 310, “battles.”",
+    "text": "704.5w If a non-Siege battle has defense 0, it’s put into its owner’s graveyard.",
+    "searchText": "704.5w state-based actions 704.5w if a non-siege battle has defense 0, it’s put into its owner’s graveyard.",
     "parentRuleIds": ["704.5", "704"]
   },
   {
     "ruleId": "704.5x",
     "sectionTitle": "State-Based Actions",
-    "text": "704.5x If a Siege’s controller is also its designated protector, that player chooses an opponent to become its protector. If no player can be chosen this way, the battle is put into its owner’s graveyard. See rule 310, “Battles.”",
-    "searchText": "704.5x state-based actions 704.5x if a siege’s controller is also its designated protector, that player chooses an opponent to become its protector. if no player can be chosen this way, the battle is put into its owner’s graveyard. see rule 310, “battles.”",
+    "text": "704.5x If a battle has no player in the game designated as its protector and no attacking creatures are currently attacking that battle, that battle’s controller chooses an appropriate player to be its protector based on its battle type. If the battle has no battle type, its controller must be chosen. If no player can be chosen this way, the battle is put into its owner’s graveyard. See rule 310, “Battles.”",
+    "searchText": "704.5x state-based actions 704.5x if a battle has no player in the game designated as its protector and no attacking creatures are currently attacking that battle, that battle’s controller chooses an appropriate player to be its protector based on its battle type. if the battle has no battle type, its controller must be chosen. if no player can be chosen this way, the battle is put into its owner’s graveyard. see rule 310, “battles.”",
     "parentRuleIds": ["704.5", "704"]
   },
   {
     "ruleId": "704.5y",
     "sectionTitle": "State-Based Actions",
-    "text": "704.5y If a permanent has more than one Role controlled by the same player attached to it, each of those Roles except the one with the most recent timestamp is put into its owner’s graveyard.",
-    "searchText": "704.5y state-based actions 704.5y if a permanent has more than one role controlled by the same player attached to it, each of those roles except the one with the most recent timestamp is put into its owner’s graveyard.",
+    "text": "704.5y If a battle’s protector is a player who can’t be its protector, that battle’s controller chooses an appropriate player to become its protector. If no player can be chosen this way, the battle is put into its owner’s graveyard. See rule 310, “Battles.”",
+    "searchText": "704.5y state-based actions 704.5y if a battle’s protector is a player who can’t be its protector, that battle’s controller chooses an appropriate player to become its protector. if no player can be chosen this way, the battle is put into its owner’s graveyard. see rule 310, “battles.”",
     "parentRuleIds": ["704.5", "704"]
   },
   {
     "ruleId": "704.5z",
     "sectionTitle": "State-Based Actions",
-    "text": "704.5z If a player controls a permanent with start your engines! and that player has no speed, that player’s speed becomes 1. See rule 702.179, “Start Your Engines!”",
-    "searchText": "704.5z state-based actions 704.5z if a player controls a permanent with start your engines! and that player has no speed, that player’s speed becomes 1. see rule 702.179, “start your engines!”",
+    "text": "704.5z If a permanent has more than one Role controlled by the same player attached to it, each of those Roles except the one with the most recent timestamp is put into its owner’s graveyard.\n\n704.5aa If a player controls a permanent with start your engines! and that player has no speed, that player’s speed becomes 1. See rule 702.179, “Start Your Engines!”",
+    "searchText": "704.5z state-based actions 704.5z if a permanent has more than one role controlled by the same player attached to it, each of those roles except the one with the most recent timestamp is put into its owner’s graveyard.\n\n704.5aa if a player controls a permanent with start your engines! and that player has no speed, that player’s speed becomes 1. see rule 702.179, “start your engines!”",
     "parentRuleIds": ["704.5", "704"]
   },
   {
@@ -15841,6 +15953,13 @@
     "parentRuleIds": ["707"]
   },
   {
+    "ruleId": "707.12a",
+    "sectionTitle": "Copying Objects",
+    "text": "707.12a An effect that creates multiple copies and says a player “may cast” those objects allows that player to choose individually, for each of those objects, whether or not to cast it.",
+    "searchText": "707.12a copying objects 707.12a an effect that creates multiple copies and says a player “may cast” those objects allows that player to choose individually, for each of those objects, whether or not to cast it.",
+    "parentRuleIds": ["707.12", "707"]
+  },
+  {
     "ruleId": "707.13",
     "sectionTitle": "Copying Objects",
     "text": "707.13. One card (Garth One-Eye) instructs a player to create a copy of a card defined by name rather than by indicating an object to be copied. To do so, the player uses the Oracle card reference to determine the characteristics of the copy and creates the copy outside of the game.",
@@ -15878,8 +15997,8 @@
   {
     "ruleId": "708.2b",
     "sectionTitle": "Face-Down Spells and Permanents",
-    "text": "708.2b A face-down permanent can’t be turned face-down. If a spell or ability attempts to turn a face-down permanent face down, nothing happens and that effect doesn’t change any of its characteristics or their copiable values.",
-    "searchText": "708.2b face-down spells and permanents 708.2b a face-down permanent can’t be turned face-down. if a spell or ability attempts to turn a face-down permanent face down, nothing happens and that effect doesn’t change any of its characteristics or their copiable values.",
+    "text": "708.2b A face-down permanent can’t be turned face down. If a spell or ability attempts to turn a face-down permanent face down, nothing happens and that effect doesn’t change any of its characteristics or their copiable values.",
+    "searchText": "708.2b face-down spells and permanents 708.2b a face-down permanent can’t be turned face down. if a spell or ability attempts to turn a face-down permanent face down, nothing happens and that effect doesn’t change any of its characteristics or their copiable values.",
     "parentRuleIds": ["708.2", "708"]
   },
   {
@@ -16557,8 +16676,8 @@
   {
     "ruleId": "712.16",
     "sectionTitle": "Double-Faced Cards",
-    "text": "712.16. Melded permanents and other double-faced permanents can’t be turned face down. If a spell or ability tries to turn a double-faced permanent face down, nothing happens.",
-    "searchText": "712.16 double-faced cards 712.16. melded permanents and other double-faced permanents can’t be turned face down. if a spell or ability tries to turn a double-faced permanent face down, nothing happens.",
+    "text": "712.16. Melded permanents and other double-faced permanents can’t be turned face down. If a spell or ability tries to turn a double-faced permanent face down, nothing happens and that effect doesn’t change any of its characteristics or their copiable values.",
+    "searchText": "712.16 double-faced cards 712.16. melded permanents and other double-faced permanents can’t be turned face down. if a spell or ability tries to turn a double-faced permanent face down, nothing happens and that effect doesn’t change any of its characteristics or their copiable values.",
     "parentRuleIds": ["712"]
   },
   {
@@ -17271,8 +17390,8 @@
   {
     "ruleId": "722.3a",
     "sectionTitle": "Preparation Cards",
-    "text": "722.3a Some spells and abilities cause a permanent with a prepare spell to become prepared or state that a permanent enters prepared. If that permanent has the alternative characteristics of a prepare spell, this gives the permanent the “prepared” designation. Prepared is a designation that acts as a marker which rules and effects can identify. A permanent can’t gain this designation unless it has a prepare spell, Additionally, a permanent can’t gain this designation if the permanent already has it.",
-    "searchText": "722.3a preparation cards 722.3a some spells and abilities cause a permanent with a prepare spell to become prepared or state that a permanent enters prepared. if that permanent has the alternative characteristics of a prepare spell, this gives the permanent the “prepared” designation. prepared is a designation that acts as a marker which rules and effects can identify. a permanent can’t gain this designation unless it has a prepare spell, additionally, a permanent can’t gain this designation if the permanent already has it.",
+    "text": "722.3a Some spells and abilities cause a permanent with a prepare spell to become prepared or state that a permanent enters prepared. If that permanent has the alternative characteristics of a prepare spell, this gives the permanent the “prepared” designation. Prepared is a designation that acts as a marker which rules and effects can identify. A permanent can’t gain this designation unless it has a prepare spell. Additionally, a permanent can’t gain this designation if the permanent already has it.",
+    "searchText": "722.3a preparation cards 722.3a some spells and abilities cause a permanent with a prepare spell to become prepared or state that a permanent enters prepared. if that permanent has the alternative characteristics of a prepare spell, this gives the permanent the “prepared” designation. prepared is a designation that acts as a marker which rules and effects can identify. a permanent can’t gain this designation unless it has a prepare spell. additionally, a permanent can’t gain this designation if the permanent already has it.",
     "parentRuleIds": ["722.3", "722"]
   },
   {
@@ -17845,8 +17964,8 @@
   {
     "ruleId": "730.2j",
     "sectionTitle": "Merging with Permanents",
-    "text": "730.2j A face-up merged permanent that contains a double-faced component can’t be turned face down.",
-    "searchText": "730.2j merging with permanents 730.2j a face-up merged permanent that contains a double-faced component can’t be turned face down.",
+    "text": "730.2j A face-up merged permanent that contains a double-faced component can’t be turned face down. If a spell or ability tries to turn a face-up merged permanent that contains a double-faced component face down, nothing happens and that effect doesn’t change any of its characteristics or their copiable values.",
+    "searchText": "730.2j merging with permanents 730.2j a face-up merged permanent that contains a double-faced component can’t be turned face down. if a spell or ability tries to turn a face-up merged permanent that contains a double-faced component face down, nothing happens and that effect doesn’t change any of its characteristics or their copiable values.",
     "parentRuleIds": ["730.2", "730"]
   },
   {
@@ -18027,8 +18146,8 @@
   {
     "ruleId": "733.2",
     "sectionTitle": "Handling Illegal Actions",
-    "text": "733.2. When reversing illegal spells and abilities, the player who had priority retains it and may take another action or pass. The player may redo the reversed action in a legal way or take any other action allowed by the rules.\n\n8. Multiplayer Rules",
-    "searchText": "733.2 handling illegal actions 733.2. when reversing illegal spells and abilities, the player who had priority retains it and may take another action or pass. the player may redo the reversed action in a legal way or take any other action allowed by the rules.\n\n8. multiplayer rules",
+    "text": "733.2. When reversing illegal spells and abilities, the player who had priority retains it and may take another action or pass. The player may redo the reversed action in a legal way or take any other action allowed by the rules.\n \n8. Multiplayer Rules",
+    "searchText": "733.2 handling illegal actions 733.2. when reversing illegal spells and abilities, the player who had priority retains it and may take another action or pass. the player may redo the reversed action in a legal way or take any other action allowed by the rules.\n \n8. multiplayer rules",
     "parentRuleIds": ["733"]
   },
   {
@@ -18118,8 +18237,8 @@
   {
     "ruleId": "800.4i",
     "sectionTitle": "General",
-    "text": "800.4i If an effect requires information about a specific player, the effect uses the current information about that player if they are still in the game; otherwise, the effect uses the last known information about that player before they left the game. If an effect requires information from the game about actions players have taken, the effect can find actions that were taken by a player who has left the game.",
-    "searchText": "800.4i general 800.4i if an effect requires information about a specific player, the effect uses the current information about that player if they are still in the game; otherwise, the effect uses the last known information about that player before they left the game. if an effect requires information from the game about actions players have taken, the effect can find actions that were taken by a player who has left the game.",
+    "text": "800.4i If an effect requires information about a specific player, the effect uses the current information about that player if they are still in the game; otherwise, the effect uses the last known information about that player before they left the game. If an effect requires information from the game about actions players have taken, the effect can find actions that were taken by a player who has left the game. If an effect requires information from the game about actions players have taken during their “last turn,” it can find the actions that were taken by a player who has left the game only until that player’s next turn after leaving the game would have begun.",
+    "searchText": "800.4i general 800.4i if an effect requires information about a specific player, the effect uses the current information about that player if they are still in the game; otherwise, the effect uses the last known information about that player before they left the game. if an effect requires information from the game about actions players have taken, the effect can find actions that were taken by a player who has left the game. if an effect requires information from the game about actions players have taken during their “last turn,” it can find the actions that were taken by a player who has left the game only until that player’s next turn after leaving the game would have begun.",
     "parentRuleIds": ["800.4", "800"]
   },
   {
@@ -19224,8 +19343,8 @@
   {
     "ruleId": "811.5",
     "sectionTitle": "Alternating Teams Variant",
-    "text": "811.5. In the Alternating Teams variant, a team’s resources (cards in hand, mana, and so on) are not shared. Teammates can’t review each other’s hands unless they are sitting next to each other. Teammates may discuss strategies at any time. Teammates can’t manipulate each other’s cards or permanents.\n\n\n9. Casual Variants",
-    "searchText": "811.5 alternating teams variant 811.5. in the alternating teams variant, a team’s resources (cards in hand, mana, and so on) are not shared. teammates can’t review each other’s hands unless they are sitting next to each other. teammates may discuss strategies at any time. teammates can’t manipulate each other’s cards or permanents.\n\n\n9. casual variants",
+    "text": "811.5. In the Alternating Teams variant, a team’s resources (cards in hand, mana, and so on) are not shared. Teammates can’t review each other’s hands unless they are sitting next to each other. Teammates may discuss strategies at any time. Teammates can’t manipulate each other’s cards or permanents.\n\n \n9. Casual Variants",
+    "searchText": "811.5 alternating teams variant 811.5. in the alternating teams variant, a team’s resources (cards in hand, mana, and so on) are not shared. teammates can’t review each other’s hands unless they are sitting next to each other. teammates may discuss strategies at any time. teammates can’t manipulate each other’s cards or permanents.\n\n \n9. casual variants",
     "parentRuleIds": ["811"]
   },
   {
