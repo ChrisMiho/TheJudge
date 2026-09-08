@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (build half's claim, run `graph-20260908-013519`; was `origin/thejudge-auto/weekly-data-refresh-pr`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260907-163826/`
-- Current node: `review` (build half, run `graph-20260908-013519`; 4 slices built, 21/21 criteria true, STATUS.ship-ready, code PR #213 open — independent review next)
-- Next action: `/graph-implement PRD/work/weekly-data-refresh-pr/` — review → close; ends COMPLETE with the code PR open for the owner to merge
+- Current node: `close` (build half, run `graph-20260908-013519`; review APPROVEd — cleanup writes the receipt and deletes the package on the branch, before the owner's merge)
+- Next action: `/graph-implement PRD/work/weekly-data-refresh-pr/` — close, then ends COMPLETE with code PR #213 open for the owner to merge (land)
 
 ## Node ledger
 
@@ -21,6 +21,7 @@
 | 4B | gate-qc (build half, run graph-20260908-013519) | sonnet | ok (PASS) | `0 → 16` | re-grade of the gate-finalized proposal, no fan-out (14 calls). REQ-195's three proposed diffs match current PRD/sections byte-for-byte (trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, system-map.md); functional-requirements append target after REQ-194 exists, REQ-195 not already defined; cited ids (DEC-087/088/162, REQ-066/093/145, NFR-013) all match; `data:refresh`→`data:build` pipeline + build-card-prices.mjs real; new script/npm name not yet present; buildable without a live user. Findings none. STATUS unchanged (refined) | 2026-09-08 |
 | 5 | plan (build half, run graph-20260908-013519) | sonnet | ok | `0 → 39` | thejudge-map-out wrote GAMEPLAN.md + 4 slice docs (A refresh-and-PR script core; B change-detection/no-op path; C npm `data:refresh-pr` wiring; D promote REQ-195 to PRD/sections with the code) with slice-{a,b,c,d}.criteria.json (9/5/2/5 = 21 criteria, valid JSON). Verification uses injected git/gh/pipeline fakes — no slice runs the real Scryfall refresh (REQ-093/DEC-162, denied under the graph lock). STATUS.active; README slice table + implementation map; board row moved to active | 2026-09-08 |
 | 6 | build (build half, run graph-20260908-013519) | sonnet | ok | `0 → 122` | thejudge-implement-all built A→B→C→D, 21/21 criteria true. New `scripts/refresh-and-open-pr.mjs` (injectable-effects: dirty-tree refusal, branch off origin/main, pipeline runner, 11-path explicit artifact staging, dated commit, no-force push, gh pr create wrapper) + no-op/change-detection + graceful pipeline-fail; npm `data:refresh-pr` wired. Tests against injected fakes only: refresh-and-open-pr.test.mjs 19/19, quality:check 541/541 — never ran the live Scryfall refresh. REQ-195 applied to PRD/sections (functional-requirements append + trade-balancer/data/cardPrintingPrices.md + trade-balancer/README.md + system-map.md). Code PR #213 opened. STATUS.ship-ready. Return-side assertion: launch checkout byte-identical before/after, worktree clean/synced | 2026-09-08 |
+| 7 | review (build half, run graph-20260908-013519) | opus | ok (APPROVE) | `0 → 17` | fresh-context no-write reviewer (Plan agent, no Edit/Write) graded PR #213 against each slice's acceptance criteria; 21/21 satisfied. Ran refresh-and-open-pr.test.mjs 19/19 over injected fakes (never the live pipeline/git/gh/Scryfall). Confirmed: no force-push, no merge into main (only gh pr create --base main), explicit-path `git add --` over the 11-path constant, no-op path opens no PR + deletes the local-only branch, pipeline failure degrades before any commit/push/PR; REQ-195 applied in all four PRD/sections locations. One Minor non-blocking note (`git checkout -` in deleteLocalBranch, outside stated requirements). Verdict: proceed to close | 2026-09-08 |
 
 ## Gate verdicts
 
@@ -199,6 +200,27 @@ CRITICAL: do NOT run the real refresh — no `npm run data:refresh`, `data:build
 Rubric = the slices' acceptance criteria and correctness against them. Flag ONLY gaps that affect correctness or a stated requirement. A preference, a style note, or an improvement outside a slice's stated requirements is NEVER Critical or Important and never loops the run back to build — a manufactured finding spends a build loop the run cannot get back. Check especially: the script never force-pushes and never merges into main; staging is explicit-path (never add -A); the no-op path truly opens no PR when nothing changed; and REQ-195 was applied to PRD/sections (functional-requirements.md, trade-balancer/data/cardPrintingPrices.md, trade-balancer/README.md, system-map.md).
 
 Report a verdict: APPROVE (proceed to close), or findings each rated Critical / Important / Minor with the exact file/line and the criterion or correctness issue it violates. Only Critical or Important loop back to build. A Critical finding the run cannot resolve parks immediately.
+
+Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
+
+### close (build half, run graph-20260908-013519)
+
+graph is controlling.
+
+You are node 8 (`close`) of the build half. Invoke `thejudge-cleanup` and follow it exactly, in graph-controlled (non-interactive) mode, on the PR-ready path — this runs on the code branch `thejudge-auto/weekly-data-refresh-pr-work` BEFORE the owner's merge, so the receipt and the package deletion ride in code PR #213.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-weekly-data-refresh-pr
+
+The package PRD/work/weekly-data-refresh-pr/ is STATUS.ship-ready: 4 slices built, 21/21 criteria true, independent review APPROVEd, code PR #213 (base main, head thejudge-auto/weekly-data-refresh-pr-work) open and mergeable.
+
+Do:
+- Verify slice completion and that durable PRD/sections truth was applied at build for REQ-195 (functional-requirements.md new REQ-195; trade-balancer/data/cardPrintingPrices.md; trade-balancer/README.md; system-map.md). It IS present (build applied it) — promote only any leftover, never re-write what is already there.
+- Fold this run's `## Node ledger` and `## Instruction ledger` from GRAPH-RUN.md VERBATIM into a `## Graph run` section of the durable receipt at PRD/instructions/receipts/weekly-data-refresh-pr-<date>.md. Refuse the package delete if a ledger exists and that section does not.
+- Write an `## Intake` section naming each staged intake file and its stated origin.
+- Write the terminal-state summary line: `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/213`, and a `- PR:` line with that URL.
+- Delete PRD/work/weekly-data-refresh-pr/ and update PRD/work/STATUS.md (remove the ship-ready row).
+
+Boundaries: no profile/CLAUDE.md/thejudge-skill edit, no merge/close/force-push (leave PR #213 open — the owner merges it), no remote-branch delete, no git add -A. Commit the receipt and the deletion on thejudge-auto/weekly-data-refresh-pr-work; leave the push to the driver, or push the branch (never main).
 
 Copy the `Working directory:` line above, unchanged, into any prompt you write for a sub-step.
 
