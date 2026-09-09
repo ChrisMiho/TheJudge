@@ -101,14 +101,19 @@ the scanned printing id, and "Change printing" still corrects it.
 One pure helper in `apps/frontend/src/lib/trade/pricing.ts` (where the other
 pure selectors live):
 
-- non-foil price missing, foil price present → foil on
-- foil price missing, non-foil price present → foil off
-- otherwise → keep the entry's current toggle (a new entry starts off)
+- `usd` present → foil off (non-foil)
+- `usd` null and `usd_foil` present → foil on
+- neither present → foil off (the `$0` plus caution case)
 
-Applied wherever an entry receives a printing: the fetch-resolve path in
-`loadPricingForEntry`, `handleChangePrinting`, and retry. The player can still
-toggle into a mode with no price — that stays `$0` plus the caution triangle,
-unchanged.
+The mode is re-derived from the new printing's prices **every time** an entry
+receives a printing — picked before an add, resolved from a scan, changed via
+"Change printing", or re-fetched on retry — and the entry's current toggle is
+never carried over. A player who toggled foil and then changes to a printing
+with a non-foil price lands back on non-foil (owner's gate edit on REQ-065 and
+the trade-balancer README block). Applied in the fetch-resolve path in
+`loadPricingForEntry`, `handleChangePrinting`, and retry. After that, the player
+can still toggle into a mode with no price — that stays `$0` plus the caution
+triangle, unchanged, until the entry next receives a printing.
 
 ### The picker becomes a box
 
@@ -150,7 +155,7 @@ behavior, 6 no new dependency/endpoint/data contract.
 | A3 | Newest-first is a build-time sort with no new emitted field | 6 | `build-card-detail-by-oracle-id.mjs:219` already sorts; `buildPriceEntry` fixes the emitted field set; REQ-066 constrains the artifact's fields, not its order |
 | A4 | Missing/unparseable `released_at` sorts last; printing id is the final tiebreak | 5 | a committed artifact must rebuild byte-identically from the same source — an unstable sort would churn the diff every refresh |
 | A5 | The foil helper lives in `lib/trade/pricing.ts` | 3 | that module is already the home of the pure price selectors (`sideTotal`, `difference`, `formatUsd`); the component holds only state |
-| A6 | Foil auto-select never overrides a toggle the player already moved | 5 | preserves current user-visible behavior: only the *initial* mode for a printing changes |
+| A6 | Foil mode is re-derived from the printing's prices every time an entry receives a printing, overriding any toggle the player moved; a manual toggle only persists until the next printing change | 1 (the owner's own gate decision — above the ladder; it becomes live `PRD/sections/` truth when `build` applies the proposal) | the owner's `edit` verdict on the REQ-065 and trade-balancer README gate blocks (`GATE-QUESTIONS.md`, `## Gate verdicts` in `GRAPH-RUN.md`): non-foil when `usd` exists, foil only when `usd` is null and `usd_foil` is not, no keep-current-mode clause |
 | A7 | A failed pre-add printings fetch falls back to today's add-then-degrade path | 5 | REQ-065's constraint that manual search "stays fully functional" as the permanent fallback; the existing retry affordance is already built (`TradeBalancer.tsx:227-231`) |
 | A8 | The warm-up call adds no endpoint | 6 | `/api/health` already exists (`apps/backend/src/routes/health.ts:4`; `integrations-and-data.md:158`); REQ-063's constraint (`functional-requirements.md:1437`) forbids *adding* a health endpoint and a runtime provider-mode fetch, and scopes to the mock-mode banner's own signal — this is neither |
 | A9 | The picker's scroll cap (~40vh, ~5-6 rows) and filter threshold (>8 printings) are design choices, not measured requirements | 4 | `screen-layout.md`'s Trade Balancer row already requires "entry lists region-scroll" and "no page scroll for totals/primary actions"; the numbers are the smallest change that satisfies it and are surfaced for the owner in the screen-layout gate block |

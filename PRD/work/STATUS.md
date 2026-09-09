@@ -20,6 +20,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Gate-qc attempt 5 park resolved on the owner's instruction (2026-09-09): `DESIGN-BRIEF.md`'s foil section and assumption A6 rewritten to the accepted re-derive-every-time foil rule. Resuming inside `/graph-implement` at `gate-qc` attempt 6, then plan → build → review → close. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## ideation
 
@@ -27,7 +28,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | PARKED by `graph-implement` after `gate-qc` attempt 5 FAIL (the run's fourth FAIL, past the three-loop limit). The owner's accepted foil edit (mode re-derived from the new printing's prices every time, no keep-current clause) is in `GATE-QUESTIONS.md`, but `DESIGN-BRIEF.md` line 106 and assumption A6 still state the old keep-current rule. Owner action: rewrite those two brief passages on `thejudge-auto/trade-balancer-first-card-ux-work`, restore `STATUS.refined`, push, then `/graph-implement PRD/work/trade-balancer-first-card-ux/`. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 
 ## deferred
