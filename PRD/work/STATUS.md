@@ -13,11 +13,21 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| Package | Note |
+| --- | --- |
+
 ## refining
+
+| Package | Note |
+| --- | --- |
 
 ## ideation
 
 ## owner-action
+
+| Package | Note |
+| --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | **Decide + merge.** Trade Balancer: pick the printing before adding, foil starts in the mode that has a price, scrollable printing picker, wake the API on open. Quality-check PASSED (attempt 4). Twelve proposed product-truth amendments (no new IDs) await the owner's `accept / edit / reject` in `GATE-QUESTIONS.md`; answer them in the docs PR, then merge — the merge is the build signal for `/graph-implement`. Graph run `graph-20260909-213550`, kickoff worktree `.worktrees/kickoff-trade-balancer-first-card-ux` |
 
 
 ## deferred
