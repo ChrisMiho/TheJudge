@@ -63,8 +63,8 @@ shipping prices only (or trimming combos players see) to fit.
 +  - committed paths are `apps/backend/data/commanderSpellbookComboBlocks.br` (concatenated brotli 128-variant blocks) and `apps/backend/data/commanderSpellbookComboIndex.json.br` (a single minified-brotli index carrying, in one shape: `variantIds` listed once in `variantId` order as a positional dictionary, a per-block byte `[offset, length]` directory, and exact/template oracle membership as integer positions into `variantIds`), built from gitignored raw inputs under `apps/backend/data/commander-spellbook/`. Brotli is Node core `zlib` at fixed quality 11 with no dictionary (Node 22 in CI silently ignores a brotli dictionary while Node 24 on Lambda honours it), so identical raw input yields identical bytes across CI, Lambda, and local
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -95,8 +95,8 @@ named path stays out of step with the brotli the rest of this change adopts.
 +  - the backend brotli-decodes the committed price map into memory once at startup and serves one card's printings on demand (REQ-175) with **no runtime network call**, exactly like `cardDetailByOracleId.json.br`; the former `apps/frontend/public/data/cardPrintingPrices.json` is deleted and is no longer downloaded up front
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -120,8 +120,8 @@ heavier than it needs to be, eating deploy-budget headroom for nothing.
 +  - the map is committed once, backend-only, brotli-compressed under `apps/backend/data/cardDetailByOracleId.json.br` and brotli-decoded into memory once at startup; no card-detail copy is committed under `apps/frontend/public/data/` and none is downloaded up front (NFR-019)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -149,8 +149,8 @@ longer exists, and the refresh wrapper's path list (slice D) drifts from the spe
 +    (`build-card-detail-by-oracle-id.mjs`, REQ-066/REQ-175), a few MB rather
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -181,8 +181,8 @@ longer exist, so "leaves them byte-unchanged" points at nothing.
 +    byte-unchanged (so nothing is staged for them)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -209,8 +209,8 @@ longer exists.
 (The rest of the tier-2 criterion is unchanged; only the file path in its first
 clause moves.)
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -240,8 +240,8 @@ committed artifact it reads.
 +  - The lookup request carries an optional **bounded list** of cards in place of the single optional card; each entry carries only identity — `cardId` (oracle id) and `name` — and carries no zone, owner, caster, targets, or context-notes fields. The descriptive block (`oracleText`, `imageUrl`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json.br` (REQ-175, REQ-176). The per-card enrichment below is unchanged — it resolves each attached card's metadata server-side rather than from the request.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -270,8 +270,8 @@ nothing.
 +  - the card-data build writes each card's Scryfall `keywords` array into the committed backend card-detail artifact (`cardDetailByOracleId.json.br`), alongside the fields it already resolves server-side (REQ-176)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -317,8 +317,8 @@ budget gap without trimming.
 +  - re-measured again 2026-09-05 once REQ-180's committed keyword data actually landed (`cardDetailByOracleId.json.br` rebuilt with real per-card Scryfall keywords) and the committed rule-embeddings artifact gained its `ruleIndexHash` field (REQ-181/E12): tracked data is now 118.1 MB against the 120 MB budget — 1.9 MB headroom, materially less than before. This is a real, measured constraint, not a comfortable margin; the next data-artifact growth must re-check it before merging
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -403,8 +403,8 @@ in the four places above.
 (Unchanged: line naming the raw upstream **input** `variants.json.gz` — that is
 Commander Spellbook's bulk export, not a committed artifact, and stays gzip.)
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -431,8 +431,8 @@ keeps memory bounded the same way. One clause updated.
 +  bounded) feeds gated retrieval.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -532,8 +532,8 @@ exists and reports a stale on-disk size.
 +brotli-compressed) → `apps/backend/src/cardPrices.ts` (in-memory loader) →
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -561,8 +561,8 @@ longer exists.
 +- Lives in: `scripts/build-card-detail-by-oracle-id.mjs` → `apps/backend/data/cardDetailByOracleId.json.br` + `apps/backend/data/cardPrintingPricesByOracleId.json.br` (wired into `npm run data:build`); weekly refresh-and-PR wrapper `scripts/refresh-and-open-pr.mjs` (wired as `npm run data:refresh-pr`, runs the `data:refresh` → `data:build` pipeline then opens a pull request to `main`)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -595,8 +595,8 @@ The `commanderSpellbookComboSource.meta.json` hash marker keeps its `.json` name
 +- Lives in: `scripts/refresh-commander-spellbook-data.mjs` (wired into the `data:refresh` chain), `scripts/build-commander-spellbook-combos.mjs`, `scripts/lib/stream-json-array.mjs`, gitignored `apps/backend/data/commander-spellbook/`, committed `apps/backend/data/commanderSpellbookComboBlocks.br` and `apps/backend/data/commanderSpellbookComboIndex.json.br`
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -617,8 +617,8 @@ longer exist.
 +... `apps/backend/src/runtime/createConfiguredApp.ts`, `apps/backend/src/eval/fixtures/commander-spellbook-*`, `apps/backend/data/commanderSpellbookComboBlocks.br`, and `apps/backend/data/commanderSpellbookComboIndex.json.br`; the opt-in answer-quality comparison lives in `scripts/compare-combo-answer-quality.mjs` ...
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -642,8 +642,8 @@ on the encoding).
 +- Summary: Looks up per-card rulings for cards present in the game context, from the committed `apps/backend/data/cardRulingsByOracleId.json.br` map brotli-decoded into memory once at startup.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -666,8 +666,8 @@ the encoding).
 +- Summary: Builds card-metadata, card-rulings (brotli-compressed), and game-rules artifacts consumed at runtime.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -690,8 +690,8 @@ exists.
 +- System 3 data: `apps/backend/data/gameRulesKeywordVocabulary.json`, `apps/backend/data/gameRulesTokenStats.json`, the committed per-rule embeddings artifact (REQ-181), and per-card `keywords` resolved from `apps/backend/data/cardDetailByOracleId.json.br` (REQ-180)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -713,8 +713,8 @@ exists.
 +  card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json.br`
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
 
 ---
 
@@ -737,5 +737,5 @@ exists.
 +`cardDetailByOracleId.json.br` stays byte-for-byte untouched; the consolidation
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted all proposals (2026-09-09).
