@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-first-card-ux` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-first-card-ux` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260909-213550/` (one file, `GRAPH-BRIEF.md`, copied verbatim to `PRD/work/trade-balancer-first-card-ux/intake/GRAPH-BRIEF.md` in commit `14f9dfb`; staged copy deleted)
-- Current node: `define` (attempt 2 — gate-qc FAIL 1 of max 3 loops)
+- Current node: `gate-qc` (attempt 2)
 - Next action: `/graph-kickoff PRD/work/trade-balancer-first-card-ux/` (spec-forming half in progress)
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `10 → 20` | commit `14f9dfb` on `thejudge-auto/trade-balancer-first-card-ux`: `IDEA.md` (5 `## Prior run` receipt matches), `README.md` (`status: ideation`), `STATUS.ideation`, `intake/GRAPH-BRIEF.md` (byte-identical to the staged copy), `PRD/work/STATUS.md` board row under `## ideation`; staging folder emptied | 2026-09-09 |
 | 3 | define | opus | ok | `1 → 42` | commit `9863eaa`: `DESIGN-BRIEF.md` (208 lines, `## Assumptions` 11 rows), `GATE-QUESTIONS.md` (508 lines, 10 `## ` blocks: REQ-064, REQ-065, REQ-066, FLOW-009, FLOW-025, trade-balancer README, screen-layout, system-map, integrations-and-data, cardPrintingPrices.md; 10 blank `- Verdict:` slots; no new IDs; no `## Blocker questions`), `STATUS.ideation → STATUS.refined`, README `status: refined`, board row moved `## ideation → ## refined`; `git status --porcelain` empty; no `PRD/sections/` or code edits; gate signal present → continue to `gate-qc` | 2026-09-09 |
 | 4 | gate-qc | sonnet | failed | `0 → 37` | FAIL, 1 finding: `PRD/sections/overview.md:43` (price fetch "made only when a card is added") is a live backend-traffic assertion no `GATE-QUESTIONS.md` block amends; all 10 existing diffs verified verbatim against current `PRD/sections/`. Commit `b72237c`: `STATUS.refined → STATUS.refining`, board row `## refined → ## refining`. README `## Preparation gate` rewritten FAIL. Loop → `define` attempt 2 | 2026-09-09 |
+| 3 | define (attempt 2) | opus | ok | `0 → 34` | commit `9a60937`: `GATE-QUESTIONS.md` now 12 blocks (added `PRD/sections/overview.md` and `PRD/sections/non-functional-requirements.md` NFR-013 — the second surfaced by re-running the enumeration grep across `PRD/sections/`, 17 files matched, 10 already covered, non-contradicted matches recorded with reasons in `DESIGN-BRIEF.md`); 12 blank `- Verdict:` slots; 43 removed diff lines re-checked against live `PRD/sections/` text, 0 mismatches; `STATUS.refining → STATUS.refined`; board row `## refining → ## refined`; `git status --porcelain` empty | 2026-09-09 |
 
 ## Open gate
 
@@ -129,6 +130,34 @@ Commit any files you write: `cd /Users/chrismiho/Coding/Projects/TheJudge/.workt
 Your tool-call budget for this dispatch is 60; a denial at the cap is final — write nothing further and report.
 
 Report back, each on its own line: verdict (`PASS` | `FAIL`), the path of the report you wrote, the complete findings list (every issue on FAIL, or `none`), files written, commit hash, `git status --porcelain` of the worktree (expect empty), and the exact tool-call count you made.
+
+### define (attempt 2)
+
+graph is controlling.
+
+You are node 3 (`define`, attempt 2) of graph run `graph-20260909-213550`, driven by `graph-kickoff`. Quality-check (node 4) returned FAIL with one finding; your job is to close it and return the package to `STATUS.refined`. Invoke the `thejudge-refinement` skill (Skill tool, name `thejudge-refinement`) on the package `PRD/work/trade-balancer-first-card-ux/` and follow its `## Mode` section for an orchestrator-controlled run (read `PRD/instructions/preparation-contract.md`; assumption ladder applied one question at a time; no pause for a user). Do not reimplement the skill. This is a targeted repair, not a rewrite: keep `DESIGN-BRIEF.md` and the existing ten `GATE-QUESTIONS.md` blocks as they are except where the finding requires a change.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux
+
+Copy the `Working directory:` line above, unchanged and on its own line, into every prompt you write for any subagent. Every file you read or write lives under that directory (a git worktree on branch `thejudge-auto/trade-balancer-first-card-ux`). Never write to `/Users/chrismiho/Coding/Projects/TheJudge` itself.
+
+The finding (verbatim from the package README `## Preparation gate`, which you should read):
+`PRD/sections/overview.md:43` — the sentence that says prices come from a read-only backend fetch made only when a card is added — is a live assertion about the balancer's backend traffic that the 10-block amendment set in `GATE-QUESTIONS.md` does not cover; it is contradicted by the proposed REQ-064 warm-up ping and the REQ-065/FLOW-025 fetch-on-suggestion-tap change. No `overview.md` block exists in `GATE-QUESTIONS.md`.
+
+What to do:
+1. Read `PRD/sections/overview.md` around line 43 and the existing `GATE-QUESTIONS.md` blocks for REQ-064, REQ-065, and FLOW-025 so the new wording is consistent with them.
+2. Add an eleventh block `## PRD/sections/overview.md — <plain-language title>` to `GATE-QUESTIONS.md` in the same shape as the others: the three labelled lines **What this decides:** / **In plain terms:** / **What happens if you say no:** (substance of every cited REQ/FLOW inlined, technical terms defined in the same sentence), then the complete proposed diff in a fenced ```diff block whose removed lines match the current file text verbatim, then blank `- Verdict:` and `- Reason:` slots. Place it with the other file-level blocks.
+3. Since the checker found this by grepping `PRD/sections/` for live assertions about the balancer's traffic, defaults, foil, and picker, run that grep yourself once more across all of `PRD/sections/` (including `overview.md`, `goals-and-non-goals.md`, `non-functional-requirements.md`, `decisions.md`, the shared-chrome and scan READMEs) and add a block for any other assertion the eleven blocks still leave contradicted. Record what you grepped and what it matched in `DESIGN-BRIEF.md` (the methodology or `## Product-truth changes proposed` section) so the next check can see the set was enumerated, not remembered.
+4. Update `DESIGN-BRIEF.md`'s list of proposed product-truth changes and the README pointer sentence to the new block count.
+5. Replace `STATUS.refining` with `STATUS.refined` (exactly one marker), set the README top line to `status: refined`, and move the `PRD/work/STATUS.md` board row from `## refining` to `## refined` (remove the old row, add the new one).
+
+Propose, do not apply: write only inside `PRD/work/trade-balancer-first-card-ux/` and the board file. Never edit `PRD/sections/` or code. Do not edit `GRAPH-RUN.md` or the README `## Preparation gate` section — the driver owns both. Never open a document the intake cites.
+
+Commit when done: `cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux && git add <explicit paths> && git commit -m <message>`. Never `git add -A`, `git add .`, or `git -C`. Do not push.
+
+Your tool-call budget for this dispatch is 150; a denial at the cap is final — write nothing further and report.
+
+Report back, each on its own line: outcome (`ok` | `failed` | `blocker`), files written, the full list of `## ` block IDs now in `GATE-QUESTIONS.md`, the grep you ran and any additional assertions it surfaced, any blocker question verbatim, the commit hash, `git status --porcelain` of the worktree (expect empty), and the exact tool-call count you made.
 
 ## Instruction ledger
 
