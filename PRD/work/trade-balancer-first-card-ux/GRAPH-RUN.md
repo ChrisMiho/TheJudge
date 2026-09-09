@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-first-card-ux` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-first-card-ux` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260909-213550/` (one file, `GRAPH-BRIEF.md`, copied verbatim to `PRD/work/trade-balancer-first-card-ux/intake/GRAPH-BRIEF.md` in commit `14f9dfb`; staged copy deleted)
-- Current node: `define` (attempt 3 — gate-qc FAIL 2 of max 3 loops)
+- Current node: `gate-qc` (attempt 3)
 - Next action: `/graph-kickoff PRD/work/trade-balancer-first-card-ux/` (spec-forming half in progress)
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | failed | `0 → 37` | FAIL, 1 finding: `PRD/sections/overview.md:43` (price fetch "made only when a card is added") is a live backend-traffic assertion no `GATE-QUESTIONS.md` block amends; all 10 existing diffs verified verbatim against current `PRD/sections/`. Commit `b72237c`: `STATUS.refined → STATUS.refining`, board row `## refined → ## refining`. README `## Preparation gate` rewritten FAIL. Loop → `define` attempt 2 | 2026-09-09 |
 | 3 | define (attempt 2) | opus | ok | `0 → 34` | commit `9a60937`: `GATE-QUESTIONS.md` now 12 blocks (added `PRD/sections/overview.md` and `PRD/sections/non-functional-requirements.md` NFR-013 — the second surfaced by re-running the enumeration grep across `PRD/sections/`, 17 files matched, 10 already covered, non-contradicted matches recorded with reasons in `DESIGN-BRIEF.md`); 12 blank `- Verdict:` slots; 43 removed diff lines re-checked against live `PRD/sections/` text, 0 mismatches; `STATUS.refining → STATUS.refined`; board row `## refining → ## refined`; `git status --porcelain` empty | 2026-09-09 |
 | 4 | gate-qc (attempt 2) | sonnet | failed | `1 → 39` | FAIL, 2 findings, same shape as attempt 1 inside files that already have a block: `PRD/sections/trade-balancer/data/cardPrintingPrices.md:126-127` (fetched only when that card is added) and `PRD/sections/integrations-and-data.md:154` (on-add fetch) — their blocks' diffs never touch those lines. Attempt 1's `overview.md:43` finding closed. All 12 blocks' removed lines verified verbatim. Commit `37aa86b`: `STATUS.refined → STATUS.refining`, board row `## refined → ## refining`. README `## Preparation gate` rewritten FAIL (attempt 2). Loop → `define` attempt 3 (FAIL 2 of max 3 loops) | 2026-09-09 |
+| 3 | define (attempt 3) | opus | ok | `1 → 54` | commit `c6b5780`: both findings closed by extending the existing `cardPrintingPrices.md` and `integrations-and-data.md` blocks (six new hunks; four more on-add sentences in `trade-balancer/README.md` :91-94, :99, :140, :160-161 also amended); still 12 blocks, 12 blank `- Verdict:` slots; `DESIGN-BRIEF.md` gains `### How the amendment set was enumerated — line by line` (79 matched lines: 35 amended, 44 not contradicted with reasons); 54 removed + 74 context diff lines verified against live `PRD/sections/`, 0 mismatches; `STATUS.refining → STATUS.refined`; board row `## refining → ## refined`; `git status --porcelain` empty | 2026-09-09 |
 
 ## Open gate
 
@@ -179,6 +180,37 @@ Commit form if you write anything: `cd /Users/chrismiho/Coding/Projects/TheJudge
 Your tool-call budget for this dispatch is 60; a denial at the cap is final — write nothing further and report.
 
 Report back, each on its own line: verdict (`PASS` | `FAIL`), the complete findings list (every issue on FAIL, or `none`), what you verified on PASS (one line per check), files written (or none), commit hash (or none), `git status --porcelain` of the worktree (expect empty), and the exact tool-call count you made.
+
+### define (attempt 3)
+
+graph is controlling.
+
+You are node 3 (`define`, attempt 3) of graph run `graph-20260909-213550`, driven by `graph-kickoff`. Quality-check attempt 2 returned FAIL with two findings of the same shape as attempt 1's: a live sentence about when the balancer fetches prices, sitting inside a file that already has a `GATE-QUESTIONS.md` block whose diff never touches that sentence. Your job is to close the amendment set completely, line by line, and return the package to `STATUS.refined`. Invoke the `thejudge-refinement` skill (Skill tool, name `thejudge-refinement`) on the package `PRD/work/trade-balancer-first-card-ux/` and follow its `## Mode` section for an orchestrator-controlled run (read `PRD/instructions/preparation-contract.md`; assumption ladder one question at a time; no pause for a user). Do not reimplement the skill. Targeted repair, not a rewrite.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux
+
+Copy the `Working directory:` line above, unchanged and on its own line, into every prompt you write for any subagent. Every file you read or write lives under that directory (a git worktree on branch `thejudge-auto/trade-balancer-first-card-ux`). Never write to `/Users/chrismiho/Coding/Projects/TheJudge` itself.
+
+The two findings (read the package README `## Preparation gate` for the full text):
+1. `PRD/sections/trade-balancer/data/cardPrintingPrices.md:126-127` — Runtime posture says printings and prices are fetched only when that card is added to a side. The file's block only amends the Artifact shape ordering bullet.
+2. `PRD/sections/integrations-and-data.md:154` — the price endpoint's Purpose bullet says it backs the Trade Balancer's on-add fetch. The file's block amends a neighbouring bullet and the health-check and Data Strategy sections, not this one.
+
+Why attempt 2 missed them: its enumeration grep re-checked only the seven files with no block and never re-checked every matching line inside the ten files that already had one. Fix the method, not just the two lines.
+
+What to do:
+1. Run a line-level grep across all of `PRD/sections/` for the balancer's fetch timing, default printing, foil default, picker behaviour, and backend traffic. A driver grep for `on-add`, `only when … added`, `when a card is added`, `when that card is added` already hit these lines, which you must each dispose of: `overview.md:43` (blocked), `integrations-and-data.md:154` (finding 2), `integrations-and-data.md:322` (Data Strategy — confirm the existing block's diff actually replaces this line, or amend), `non-functional-requirements.md:207` (blocked), `trade-balancer/README.md:61` (blocked), `trade-balancer/README.md:91` (the retry bullet mentioning the on-add price fetch failing — confirm covered by the README block or amend), `trade-balancer/data/cardPrintingPrices.md:126-127` (finding 1). Widen the grep beyond those phrases (for example `fetch`, `printings[0]`, `first printing`, `non-foil`, `foil`, `picker`, `Change printing`, `health`) and dispose of every hit the same way.
+2. Extend the existing `GATE-QUESTIONS.md` blocks for `PRD/sections/trade-balancer/data/cardPrintingPrices.md` and `PRD/sections/integrations-and-data.md` so their diffs also replace the contradicted lines (a block's diff may carry several hunks; keep each hunk's removed lines verbatim against the current file). Update those blocks' three plain-language lines if the scope grew. Add a new block only for a file that has none.
+3. Add to `DESIGN-BRIEF.md` a line-level disposition table under `## Product-truth changes proposed`: one row per matched line (`file:line` — current wording, abbreviated — disposition: `amended in block <X>` or `not contradicted because …`). This is the record the next quality-check reads to see the set was enumerated at line level.
+4. Update the README pointer sentence if the block count changes. Replace `STATUS.refining` with `STATUS.refined` (exactly one marker), set the README top line to `status: refined`, and move the `PRD/work/STATUS.md` board row from `## refining` to `## refined` (remove the old row, add the new one).
+5. Before committing, re-run a script check that every removed line in every diff hunk matches the live `PRD/sections/` text, and report the count.
+
+Propose, do not apply: write only inside `PRD/work/trade-balancer-first-card-ux/` and the board file. Never edit `PRD/sections/` or code. Do not edit `GRAPH-RUN.md` or the README `## Preparation gate` section — the driver owns both. Never open a document the intake cites.
+
+Commit when done: `cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux && git add <explicit paths> && git commit -m <message>`. Never `git add -A`, `git add .`, or `git -C`. Do not push.
+
+Your tool-call budget for this dispatch is 150; a denial at the cap is final — write nothing further and report.
+
+Report back, each on its own line: outcome (`ok` | `failed` | `blocker`), files written, the full list of `## ` block IDs now in `GATE-QUESTIONS.md`, the disposition table row count and how many rows are amended vs not-contradicted, the removed-line verification count and mismatches, any blocker question verbatim, the commit hash, `git status --porcelain` of the worktree (expect empty), and the exact tool-call count you made.
 
 ## Instruction ledger
 
