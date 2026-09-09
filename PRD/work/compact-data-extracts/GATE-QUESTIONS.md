@@ -214,6 +214,67 @@ clause moves.)
 
 ---
 
+## REQ-167 — the multi-card lookup names the brotli card-detail file
+
+**What this decides:** the file name REQ-167 records for where the backend reads
+each attached card's rules text — `cardDetailByOracleId.json` today, `.json.br`
+proposed. File name only.
+
+**In plain terms:** REQ-167 is the Quick Question feature that lets a player
+attach several cards at once with no game state, and the backend fills in each
+card's oracle text and type line server-side rather than trusting the request.
+One acceptance line names the committed card-detail file it reads those fields
+from. That file becomes brotli and is renamed `.json.br`, so the line is updated
+to match. Nothing about the multi-card behaviour, the 5-card cap, or the
+enrichment changes. This block exists because the earlier proposal renamed the
+card-detail file but left this line naming the old name, which would then point at
+a file that no longer exists.
+
+**What happens if you say no:** REQ-167 names a card-detail file that no longer
+exists after the rename, and the multi-card lookup requirement drifts from the
+committed artifact it reads.
+
+```diff
+@@ REQ-167 Acceptance Criteria @@
+-  - The lookup request carries an optional **bounded list** of cards in place of the single optional card; each entry carries only identity — `cardId` (oracle id) and `name` — and carries no zone, owner, caster, targets, or context-notes fields. The descriptive block (`oracleText`, `imageUrl`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json` (REQ-175, REQ-176). The per-card enrichment below is unchanged — it resolves each attached card's metadata server-side rather than from the request.
++  - The lookup request carries an optional **bounded list** of cards in place of the single optional card; each entry carries only identity — `cardId` (oracle id) and `name` — and carries no zone, owner, caster, targets, or context-notes fields. The descriptive block (`oracleText`, `imageUrl`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json.br` (REQ-175, REQ-176). The per-card enrichment below is unchanged — it resolves each attached card's metadata server-side rather than from the request.
+```
+
+- Verdict:
+- Reason:
+
+---
+
+## REQ-180 — the keyword-build criterion names the brotli card-detail file
+
+**What this decides:** the file name REQ-180 records as the artifact its build
+writes per-card Scryfall keywords into — `cardDetailByOracleId.json` today,
+`.json.br` proposed. File name only.
+
+**In plain terms:** REQ-180 is the requirement that the card-data build stores
+each card's Scryfall `keywords` list inside the committed card-detail file, which
+the rule-retrieval scorer then reads to build its keyword signal. One acceptance
+line names that file as the build's output. Since the card-detail file becomes
+brotli and is renamed `.json.br`, the line is updated to match; the keyword data,
+the build, and the retrieval behaviour are unchanged. This block exists because
+the earlier proposal renamed the card-detail file but left this build-output line
+naming the old name, which would then describe a file the build no longer writes.
+
+**What happens if you say no:** REQ-180 says the build writes keywords into a file
+that no longer exists after the rename, so the build-output description points at
+nothing.
+
+```diff
+@@ REQ-180 Acceptance Criteria @@
+-  - the card-data build writes each card's Scryfall `keywords` array into the committed backend card-detail artifact (`cardDetailByOracleId.json`), alongside the fields it already resolves server-side (REQ-176)
++  - the card-data build writes each card's Scryfall `keywords` array into the committed backend card-detail artifact (`cardDetailByOracleId.json.br`), alongside the fields it already resolves server-side (REQ-176)
+```
+
+- Verdict:
+- Reason:
+
+---
+
 ## NFR-017 — record the re-measurement and add a re-encode lever to the budget hint
 
 **What this decides:** whether the deploy-budget requirement records the
@@ -227,6 +288,13 @@ today points at two levers: ship less data, or (as an emergency) raise
 encoding itself the primary lever, so the hint should say so, and the Notes should
 record that a fresh corpus measured 137.3 MB before this change and ≈25.6 MB after
 — the measurement that justified the work. The 120 MB line itself does not move.
+
+One existing NFR-017 Note (the 2026-09-05 re-measurement) names the card-detail
+file by its old `.json` name; after the rename that reference points at a file
+that no longer exists, so the file name in that dated note is updated to
+`.json.br` — the date and the measured figures are untouched, only the artifact's
+current name. If you would rather leave the historical name exactly as written,
+`reject` this one diff; the rest of the block stands on its own.
 
 **What happens if you say no:** the guardrail keeps pointing only at trimming
 combos as the size valve, and the record omits the measurement that closed the
@@ -243,25 +311,40 @@ budget gap without trimming.
 +  - re-measured 2026-09-08 against a fresh combo corpus (108,484 variants) and the committed price/rulings/card-detail artifacts: the fresh, untrimmed corpus was 137.3 MB tracked (over the 120 MB budget) under the old encoding, and ≈25.6 MB after re-encoding the committed extracts to brotli with the combo detail in 128-variant blocks (REQ-093), leaving ≈94 MB of headroom with no combo, price, or rule content dropped. The encoding change is neutral for cold start (brotli decode adds ~20 ms on the price file); slice F prints post-load process RSS to confirm the fresh corpus stays far below the 1769 MB the function now runs at (497 MB baseline, PR #221)
 ```
 
+```diff
+@@ NFR-017 Notes (existing 2026-09-05 re-measurement note) @@
+-  - re-measured again 2026-09-05 once REQ-180's committed keyword data actually landed (`cardDetailByOracleId.json` rebuilt with real per-card Scryfall keywords) and the committed rule-embeddings artifact gained its `ruleIndexHash` field (REQ-181/E12): tracked data is now 118.1 MB against the 120 MB budget — 1.9 MB headroom, materially less than before. This is a real, measured constraint, not a comfortable margin; the next data-artifact growth must re-check it before merging
++  - re-measured again 2026-09-05 once REQ-180's committed keyword data actually landed (`cardDetailByOracleId.json.br` rebuilt with real per-card Scryfall keywords) and the committed rule-embeddings artifact gained its `ruleIndexHash` field (REQ-181/E12): tracked data is now 118.1 MB against the 120 MB budget — 1.9 MB headroom, materially less than before. This is a real, measured constraint, not a comfortable margin; the next data-artifact growth must re-check it before merging
+```
+
 - Verdict:
 - Reason:
 
 ---
 
-## integrations-and-data.md — combo/price/rulings encoding and file names
+## integrations-and-data.md — combo/price/rulings/card-detail encoding and file names
 
 **What this decides:** the data-integrations section's description of how the
-committed combo, price, and rulings artifacts are stored — per-variant gzip / gzip
-/ raw today, brotli blocks / brotli / brotli proposed — and their file names.
+committed combo, price, rulings, and card-detail artifacts are stored —
+per-variant gzip / gzip / raw / raw today, brotli blocks / brotli / brotli /
+brotli proposed — and their file names. Card detail is the committed file behind
+the card-detail popup and the `GET /api/cards/:oracleId` route: one map holding
+each card's rules text and type line, served on demand.
 
 **In plain terms:** this section is the durable description of TheJudge's data
 sources and committed artifacts. It states the combo files are "concatenated
 individually-gzipped per-variant records," the price file is gzip, and the rulings
-file is raw JSON. All three change to brotli (combos in 128-variant blocks), so
-the descriptions and file names are updated to match. No source or field changes.
+and card-detail files are raw JSON. All four change to brotli (combos in
+128-variant blocks), so the descriptions and file names are updated to match. This
+section names the card-detail file in four separate places — the
+`GET /api/cards/:oracleId` endpoint purpose, the request card-shape resolution
+line, the Card Detail Data Strategy paragraph, and the Delivery Strategy zone
+line — and each is updated so none names a file that no longer exists after the
+rename. No source or field changes.
 
 **What happens if you say no:** the section describes an encoding the artifacts no
-longer use, and names files that no longer exist.
+longer use, and names files that no longer exist — including the card-detail file
+in the four places above.
 
 ```diff
 @@ Endpoint: GET /api/cards/:oracleId/prices @@
@@ -291,6 +374,30 @@ longer use, and names files that no longer exist.
 @@ Trade Balancer pricing @@
 -- raw downloaded bulk data remains gitignored; only the trimmed, gzip-compressed price artifact is committed
 +- raw downloaded bulk data remains gitignored; only the trimmed, brotli-compressed price artifact is committed
+```
+
+```diff
+@@ Request card shape (descriptive-block resolution) @@
+-- the descriptive block (`oracleText`, `manaCost`, `manaValue`, `typeLine`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields by `cardId` from `cardDetailByOracleId.json` (REQ-175, REQ-176)
++- the descriptive block (`oracleText`, `manaCost`, `manaValue`, `typeLine`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields by `cardId` from `cardDetailByOracleId.json.br` (REQ-175, REQ-176)
+```
+
+```diff
+@@ Endpoint: GET /api/cards/:oracleId — Purpose @@
+-- serve one card's descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`) by Scryfall `oracle_id`, read-only, from the committed `cardDetailByOracleId.json` artifact (REQ-175)
++- serve one card's descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`) by Scryfall `oracle_id`, read-only, from the committed `cardDetailByOracleId.json.br` artifact (REQ-175)
+```
+
+```diff
+@@ Card Detail Data Strategy @@
+-- the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; there is no frontend copy
++- the map is committed once, backend-only, brotli-compressed under `apps/backend/data/cardDetailByOracleId.json.br` and brotli-decoded into memory once at startup; there is no frontend copy
+```
+
+```diff
+@@ Delivery Strategy — populated zone sections @@
+-- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; the card-intrinsic fields are resolved server-side by `cardId` from `cardDetailByOracleId.json` (REQ-176), targets and context notes come from the request; empty oracle emits `(none) — no oracle text recorded for this card`
++- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; the card-intrinsic fields are resolved server-side by `cardId` from `cardDetailByOracleId.json.br` (REQ-176), targets and context notes come from the request; empty oracle emits `(none) — no oracle text recorded for this card`
 ```
 
 (Unchanged: line naming the raw upstream **input** `variants.json.gz` — that is
