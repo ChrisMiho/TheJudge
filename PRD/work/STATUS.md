@@ -20,7 +20,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | `gate-qc` attempt 6 FAILed: `DESIGN-BRIEF.md`'s foil section and Assumption A6 now agree with the owner's accepted rule, but `intake/GRAPH-BRIEF.md` (decision 4, line 32) still states the pre-edit rule — "otherwise keep the player's current toggle (default off)" — and its design-direction section (line 41) still names a `defaultFoilFor(printing, currentFoil)` helper signature built around carrying a current toggle forward. The package README points future readers, including map-out, at this file for "converged design direction", so the stale rule can still reach a slice. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## ideation
 
@@ -28,6 +27,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | PARKED by `graph-implement` after `gate-qc` attempt 6 FAIL (past the three-loop limit). The brief now matches the owner's accepted foil rule, but the verbatim intake brief `intake/GRAPH-BRIEF.md` (decision 4, line 32; helper signature, line 41) still states the superseded keep-current-toggle rule and the README pointer sends map-out there. Intake is verbatim evidence, so the fix is a supersession note in the README pointer (and brief), not an intake edit. Then restore `STATUS.refined`, push, `/graph-implement PRD/work/trade-balancer-first-card-ux/`. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 
 ## deferred
