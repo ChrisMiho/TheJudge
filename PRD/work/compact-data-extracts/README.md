@@ -16,7 +16,7 @@ the full fresh corpus fits the 120 MB Lambda budget without trimming. See
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/compact-data-extracts
+- Autonomous base: origin/main
 
 ## Preparation gate
 

@@ -3,8 +3,8 @@
 - Run ID: `graph-20260908-233747`
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (universal: rm -rf; graph-tier: nohup)`
-- Autonomous base: `origin/thejudge-auto/compact-data-extracts` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-compact-data-extracts`
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-compact-data-extracts`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260908-233747/`
 - Current node: `owner-action` (spec-forming half complete — gate-qc PASS, docs PR open, parked)
 - Next action: owner answers `PRD/work/compact-data-extracts/GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/compact-data-extracts/` builds it
