@@ -3,8 +3,8 @@
 - Run ID: `graph-20260909-213550`
 - Profile: `.claude/graph-profile.json (loaded — env sentinel observed by graph-preflight at node 1)`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] \`rm -rf\` is denied in every session."; graph tier: nohup true → "[graph-boundary] \`nohup\` is denied while a graph run holds the lock")`
-- Autonomous base: `origin/thejudge-auto/trade-balancer-first-card-ux` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-first-card-ux` by the build half's claim)
+- Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/trade-balancer-first-card-ux` by the build half's claim on 2026-09-09; docs PR #226 merged as `db18188`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-first-card-ux` (build half, branch `thejudge-auto/trade-balancer-first-card-ux-work` cut from `origin/main`; the kickoff worktree `.worktrees/kickoff-trade-balancer-first-card-ux` was clean and removed at claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260909-213550/` (one file, `GRAPH-BRIEF.md`, copied verbatim to `PRD/work/trade-balancer-first-card-ux/intake/GRAPH-BRIEF.md` in commit `14f9dfb`; staged copy deleted)
 - Current node: `owner-action` (PARKED after gate-qc PASS — spec-forming half complete)
 - Next action: the owner answers every `- Verdict:` slot in `PRD/work/trade-balancer-first-card-ux/GATE-QUESTIONS.md` (in the docs PR or in the kickoff worktree) and merges the docs PR into `main`; that merge is the build signal and `/graph-implement` (the background build loop) picks the spec up from there

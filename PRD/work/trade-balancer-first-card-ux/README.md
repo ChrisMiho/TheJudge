@@ -20,7 +20,7 @@ IDs are reserved.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/trade-balancer-first-card-ux
+- Autonomous base: origin/main
 
 ## Preparation gate
 
