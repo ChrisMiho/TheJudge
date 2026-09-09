@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/compact-data-extracts` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-compact-data-extracts`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260908-233747/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff` (spec-forming half; resumes at the ledger's current node)
 
 ## Node ledger
@@ -15,7 +15,8 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `degraded (no run state)` | branch `thejudge-auto/compact-data-extracts` pushed from `.worktrees/kickoff-compact-data-extracts` (remote at 86db681); canary denied (universal `rm -rf`, graph-tier `nohup`); profile loaded (env sentinel); launch checkout `git status --porcelain` empty before and after | 2026-09-08 |
 | 2 | shape | sonnet | ok | `degraded (no run state)` | commit `6a3de5f` on run branch — `PRD/work/compact-data-extracts/{IDEA.md,README.md,STATUS.ideation,intake/GRAPH-BRIEF.md}` + `PRD/work/STATUS.md` ideation row; 7 prior-run matches recorded in IDEA.md | 2026-09-08 |
-| 3 | define | opus | ok | `1 → 38` | commit `c5e8c93` on run branch — DESIGN-BRIEF.md (slices A–F) + GATE-QUESTIONS.md (16 stable-ID slots: REQ-093/066/175/195/196/185, NFR-017, integrations-and-data, in-depth/README, trade-balancer cardPrintingPrices, system-map ×5 entries, game-rules-retrieval, quick-lookup/README, trade-balancer/README); STATUS.refined; no blocker questions | 2026-09-08 |
+| 3 | define | opus | ok | `1 → 38` | commit `c5e8c93` on run branch — DESIGN-BRIEF.md (slices A–F) + GATE-QUESTIONS.md (18 stable-ID slots: REQ-093/066/175/195/196/185, NFR-017, integrations-and-data, in-depth/README, trade-balancer cardPrintingPrices, system-map ×5 entries, game-rules-retrieval, quick-lookup/README, trade-balancer/README); STATUS.refined; no blocker questions | 2026-09-08 |
+| 4 | gate-qc | sonnet | failed | `1 → 63` (cap 60 reached; verdict delivered and committed within grace) | FAIL commit `4b9a517` — STATUS.refined→refining. Amendment set incomplete: misses REQ-167 + REQ-180 (functional-requirements.md) and 4 more `integrations-and-data.md` lines that name `cardDetailByOracleId.json` without a proposed `.json.br` rename; after rename they'd describe a nonexistent file. GATE-QUESTIONS form well-formed; PRD/sections untouched. Loop 1→define | 2026-09-09 |
 
 ## Open gate
 
@@ -125,6 +126,36 @@ Report back concisely:
 - Any `## Blocker questions` you recorded
 - STATUS marker set
 - Commit hash + explicit paths committed on the run branch
+
+### gate-qc
+
+(Transcribed for the ledger: double-quoted label/section spans rendered with
+single quotes so the ledger-check does not read section labels as user
+instructions; no wording or working-directory line otherwise changed.)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-compact-data-extracts
+
+You are node 4 (`gate-qc`) of a graph-kickoff run. Invoke the `thejudge-quality-check` skill and follow it exactly. This is an autonomous graph run — do not stop to ask the user questions. Produce a PASS or FAIL report; never write a GAMEPLAN or slice docs.
+
+All file operations happen inside the kickoff worktree above, on branch `thejudge-auto/compact-data-extracts`. Never write to the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge.
+
+Validate `PRD/work/compact-data-extracts/DESIGN-BRIEF.md` for PRD alignment and agent-readiness. Also sanity-check that `PRD/work/compact-data-extracts/GATE-QUESTIONS.md` is well-formed: each `## <STABLE-ID>` block opens with the three plain-language labelled lines required by `PRD/instructions/plain-language-standard.md`, carries a COMPLETE proposed diff (not a summary), and ends with a `- Verdict:` and `- Reason:` slot. Confirm the proposed amendments cover the stable IDs the design actually touches (the amendment set should have been enumerated by grep, not from memory) and that refinement did NOT edit `PRD/sections/` directly (the proposal must live only in GATE-QUESTIONS.md).
+
+On PASS: leave STATUS as refined. On FAIL: set `STATUS.refining` and list the complete findings.
+
+Do not edit `PRD/sections/`. Commit any status/report changes on the run branch with explicit paths (never `git add -A/.`).
+
+If you dispatch any subagent yourself, copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-compact-data-extracts` unchanged into its prompt.
+
+Report back concisely:
+- Verdict: PASS or FAIL
+- Checked artifact path
+- Findings: none, or the complete issue list
+- Whether GATE-QUESTIONS.md is well-formed and whether `PRD/sections/` was left unedited
+- STATUS marker after your run
+- Commit hash + explicit paths committed on the run branch, if any
 
 ## Instruction ledger
 
