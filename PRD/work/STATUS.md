@@ -15,9 +15,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up. `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (12 amendment blocks, no new IDs) — awaiting the owner's verdicts at the `define` gate (graph run `graph-20260909-213550`) |
 
 ## refining
+
+| Package | Note |
+| --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up. `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (12 amendment blocks, no new IDs) — gate-qc attempt 2 FAILed on amendment-set completeness (`cardPrintingPrices.md`'s Runtime posture and `integrations-and-data.md`'s "on-add fetch" line left uncovered); back to `define` (graph run `graph-20260909-213550`) |
 
 ## ideation
 
