@@ -1,0 +1,63 @@
+{
+  "slug": "compact-data-extracts",
+  "slice": "F",
+  "criteria": [
+    {
+      "id": "F1",
+      "statement": "every committed artifact under apps/backend/data/ is regenerated from the 2026-09-08 raw sources using the finished slice A-E code, with the five renamed .br files present and the five old files absent",
+      "value": false,
+      "evidence": {
+        "command": "npm run data:build",
+        "paths": [
+          "apps/backend/data/commanderSpellbookComboBlocks.br",
+          "apps/backend/data/commanderSpellbookComboIndex.json.br",
+          "apps/backend/data/cardRulingsByOracleId.json.br",
+          "apps/backend/data/cardDetailByOracleId.json.br",
+          "apps/backend/data/cardPrintingPricesByOracleId.json.br"
+        ]
+      }
+    },
+    {
+      "id": "F2",
+      "statement": "node --test scripts/lambda-package-budget.test.mjs passes, and the measured committed-data total is recorded",
+      "value": false,
+      "evidence": { "command": "node --test scripts/lambda-package-budget\\.test\\.mjs" }
+    },
+    {
+      "id": "F3",
+      "statement": "post-load process RSS is measured and recorded, and stays below the 1769 MB Lambda memory ceiling with meaningful headroom",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "F4",
+      "statement": "all 20 accepted GATE-QUESTIONS.md diffs are applied verbatim to the listed PRD/sections/ files, and git diff over PRD/sections/ matches the accepted diffs with no unaccepted changes",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/non-functional-requirements.md",
+          "PRD/sections/integrations-and-data.md",
+          "PRD/sections/in-depth/README.md",
+          "PRD/sections/trade-balancer/data/cardPrintingPrices.md",
+          "PRD/sections/system-map.md",
+          "PRD/sections/system-map/game-rules-retrieval.md",
+          "PRD/sections/quick-lookup/README.md",
+          "PRD/sections/trade-balancer/README.md"
+        ]
+      }
+    },
+    {
+      "id": "F5",
+      "statement": "npm run quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "F6",
+      "statement": "npm test passes (frontend, backend, scripts workspaces)",
+      "value": false,
+      "evidence": { "command": "npm test" }
+    }
+  ]
+}

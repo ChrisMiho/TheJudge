@@ -8,11 +8,11 @@ Do not rename package folders to encode status.
 
 ## active
 
-## refined
-
 | Package | Note |
 | --- | --- |
-| [compact-data-extracts](compact-data-extracts/) | Define gate resolved 2026-09-09 — owner answered all 20 verdict slots `accept`, docs PR #224 merged into `main`. Next: `/graph-implement PRD/work/compact-data-extracts/` resumes at `gate-qc` to build it. |
+| [compact-data-extracts](compact-data-extracts/) | Mapped out 2026-09-09 — 6 slices (A-F): combo block layout, catalog loader, rulings/detail/prices brotli, file-name sweep, positional-int index, regenerate+verify+amend PRD (20 accepted diffs). Next: `/thejudge-implement-all PRD/work/compact-data-extracts/` starting at slice A. |
+
+## refined
 
 ## refining
 

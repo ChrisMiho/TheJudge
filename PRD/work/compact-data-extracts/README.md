@@ -1,12 +1,37 @@
 # compact-data-extracts
 
-status: refined
+status: active
 
 ## Summary
 
 Re-encode the committed backend data extracts (brotli, 128-combo blocks) so
 the full fresh corpus fits the 120 MB Lambda budget without trimming. See
 `IDEA.md` for problem, outcome, non-goals, intake, and prior-run matches.
+
+## Slices
+
+| Slice | Scope | Depends on | Status |
+| --- | --- | --- | --- |
+| A | Combo block layout + index directory in the build script | none | planned |
+| B | Catalog loader reads the block layout | A | planned |
+| C | Brotli for rulings / card-detail / prices, build + loader | none | planned |
+| D | File-name sweep across path lists and readers | A, B, C, E | planned |
+| E | Positional-int compact index | A, B | planned |
+| F | Regenerate, verify, amend PRD (20 accepted diffs) | A, B, C, D, E | planned |
+
+Full architecture, data flow, and risk notes: `GAMEPLAN.md`.
+
+## Implementation map
+
+- `scripts/build-commander-spellbook-combos.mjs` — slices A, E
+- `apps/backend/src/commanderSpellbook/catalog.ts` — slices B, E
+- `scripts/build-card-rulings.mjs`, `scripts/build-card-detail-by-oracle-id.mjs` — slice C
+- `apps/backend/src/cardRulings.ts`, `cardDetail.ts`, `cardPrices.ts` — slice C
+- `scripts/refresh-and-open-pr.mjs`, `createConfiguredApp.ts`, eval readers,
+  `prompt-fidelity.mjs`, `compare-combo-answer-quality.mjs`, `.gitignore`,
+  root `README.md` — slice D
+- `apps/backend/data/*` (regenerated), `PRD/sections/*` (20 accepted diffs),
+  `scripts/lambda-package-budget.test.mjs` — slice F
 
 ## Intake
 
