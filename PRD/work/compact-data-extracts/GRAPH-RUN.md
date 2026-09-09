@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/compact-data-extracts` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-compact-data-extracts`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260908-233747/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half; resumes at the ledger's current node)
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `degraded (no run state)` | commit `6a3de5f` on run branch — `PRD/work/compact-data-extracts/{IDEA.md,README.md,STATUS.ideation,intake/GRAPH-BRIEF.md}` + `PRD/work/STATUS.md` ideation row; 7 prior-run matches recorded in IDEA.md | 2026-09-08 |
 | 3 | define | opus | ok | `1 → 38` | commit `c5e8c93` on run branch — DESIGN-BRIEF.md (slices A–F) + GATE-QUESTIONS.md (18 stable-ID slots: REQ-093/066/175/195/196/185, NFR-017, integrations-and-data, in-depth/README, trade-balancer cardPrintingPrices, system-map ×5 entries, game-rules-retrieval, quick-lookup/README, trade-balancer/README); STATUS.refined; no blocker questions | 2026-09-08 |
 | 4 | gate-qc | sonnet | failed | `1 → 63` (cap 60 reached; verdict delivered and committed within grace) | FAIL commit `4b9a517` — STATUS.refined→refining. Amendment set incomplete: misses REQ-167 + REQ-180 (functional-requirements.md) and 4 more `integrations-and-data.md` lines that name `cardDetailByOracleId.json` without a proposed `.json.br` rename; after rename they'd describe a nonexistent file. GATE-QUESTIONS form well-formed; PRD/sections untouched. Loop 1→define | 2026-09-09 |
+| 3 | define | opus | ok | `1 → 30` | attempt 2 (loop 1 fix). Commit `30d47ef` — amendment set closed at 20 slots: ADDED REQ-167, REQ-180; EXTENDED integrations-and-data (all 4 card-detail lines) + NFR-017 stale-name note. Re-enumerated by grep; every before-text verbatim vs PRD/sections; PRD/sections untouched. STATUS.refined | 2026-09-09 |
 
 ## Open gate
 
@@ -156,6 +157,44 @@ Report back concisely:
 - Whether GATE-QUESTIONS.md is well-formed and whether `PRD/sections/` was left unedited
 - STATUS marker after your run
 - Commit hash + explicit paths committed on the run branch, if any
+
+### define — attempt 2
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-compact-data-extracts
+
+You are node 3 (`define`), attempt 2, of a graph-kickoff run — a loop-back after `gate-qc` FAILED. Invoke the `thejudge-refinement` skill and follow it exactly. This is an autonomous graph run — do NOT stop to ask the user live questions; record proposed product truth into `GATE-QUESTIONS.md` for the owner to answer at the gate.
+
+All file operations happen inside the kickoff worktree above, on branch `thejudge-auto/compact-data-extracts`. Never write to the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge. You do NOT edit `PRD/sections/` — the proposal lives only in `GATE-QUESTIONS.md`.
+
+Package: `PRD/work/compact-data-extracts/`. The DESIGN-BRIEF.md and GATE-QUESTIONS.md already exist from attempt 1. This attempt fixes ONE blocking defect and does not re-litigate the settled design.
+
+WHY THIS LOOPED BACK — the amendment set in `GATE-QUESTIONS.md` is incomplete. The proposal renames `cardDetailByOracleId.json` to `.json.br`, but these live `PRD/sections/` lines name that same file and were never given a slot; after the rename they would describe a file that no longer exists:
+- REQ-167 in `PRD/sections/functional-requirements.md` (~line 3853) — the backend resolving card-intrinsic fields server-side by cardId from `cardDetailByOracleId.json`.
+- REQ-180 in `PRD/sections/functional-requirements.md` (~line 4170) — the card-data build writing each card's Scryfall keywords array into `cardDetailByOracleId.json`.
+- Four lines in `PRD/sections/integrations-and-data.md` (a file you already amend for other lines) that name `cardDetailByOracleId.json` verbatim: the `GET /api/cards/:oracleId` endpoint Purpose block, the request-context resolution line, the Card Detail Data Strategy section, and the Delivery Strategy zone-rendering line.
+
+DO THIS:
+1. Re-enumerate the COMPLETE amendment set by grep — do not trust the brief's or attempt 1's coverage list. Run, from the worktree:
+   `grep -rln -E 'cardRulingsByOracleId|cardDetailByOracleId|cardPrintingPricesByOracleId|commanderSpellbookCombo' PRD/sections`
+   and also grep each renamed artifact's OLD file name (`cardDetailByOracleId.json`, `cardRulingsByOracleId.json`, `cardPrintingPricesByOracleId.json.gz`, `commanderSpellbookCombo*` file names) across `PRD/sections` to find every line whose text would go stale after the rename/re-encode. Cross-check every hit line-by-line against the existing GATE-QUESTIONS.md blocks.
+2. Add a `## <STABLE-ID>` block for every stable ID that names an affected artifact and is not already covered — at minimum REQ-167 and REQ-180 — and extend the existing `integrations-and-data.md` amendment to cover ALL four missed lines (its endpoint Purpose block, request-context resolution line, Card Detail Data Strategy section, Delivery Strategy zone line). Each new/edited block MUST carry the three plain-language labelled lines (What this decides / In plain terms — inline the substance, define terms, never a bare ID / What happens if you say no), then the COMPLETE proposed diff whose 'before' text matches current `PRD/sections/` verbatim, then `- Verdict: <accept | edit | reject>` and `- Reason:`.
+3. Leave every already-correct block as-is; do not churn the settled design or the other 18 slots' content beyond what the fix requires.
+4. Set `STATUS.refined` when the amendment set is complete.
+5. Commit on the run branch with explicit paths (never `git add -A/.`).
+
+If you find still MORE stale lines beyond the six named above, add slots for them too — the grep is authority, not this list.
+
+If you dispatch any subagent yourself, copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-compact-data-extracts` unchanged into its prompt.
+
+Report back concisely:
+- Outcome: ok / blocked (+reason)
+- The grep commands you ran and the full list of `PRD/sections` files/IDs that name an affected artifact
+- The stable-ID slots you ADDED or EXTENDED this attempt (and confirmation REQ-167, REQ-180, and all four integrations-and-data.md lines are now covered)
+- Total slot count in GATE-QUESTIONS.md now
+- STATUS marker set
+- Commit hash + explicit paths committed
 
 ## Instruction ledger
 
