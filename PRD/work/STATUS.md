@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [compact-data-extracts](compact-data-extracts/) | Spec-forming half complete (gate-qc PASS). Docs PR open into `main`. Owner: answer the 20 verdict slots in `compact-data-extracts/GATE-QUESTIONS.md`, then merge the docs PR — that merge is the build signal for `graph-implement`. |
 
 ## deferred
 
