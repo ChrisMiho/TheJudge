@@ -64,8 +64,8 @@ about four seconds to price, and the other nine blocks still stand on their own.
  - Constraints:
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Wake the backend with the existing health check when the Trade Balancer opens. Traffic is far too low for the extra invocation per open to matter.
 
 ---
 
@@ -130,8 +130,8 @@ is.
    - the frontend loads a card's detail from `GET /api/cards/:oracleId` on first open and caches it per card for the session (FLOW-024); it never bulk-downloads the map
 ```
 
-- Verdict:
-- Reason:
+- Verdict: edit
+- Reason: Pick-before-add and the scrollable picker are accepted as written. Change the foil rule to a plain default: whenever an entry receives a printing (picked before an add, resolved from a scan, changed, or re-fetched on retry), the foil toggle is set to **non-foil when that printing has a `usd` price, and foil only when `usd` is null and `usd_foil` is not**. Drop the "otherwise the entry's current mode is kept" clause — the mode is re-derived from the new printing's prices every time, so a player who toggled foil and then changes to a printing with a non-foil price lands back on non-foil. The player may still toggle into a mode with no price and get the $0-plus-caution treatment. Apply the same wording to the foil bullet in REQ-065 and to the mirrored sentence in the trade-balancer README block.
 
 ---
 
@@ -172,8 +172,8 @@ the picker's first row stays meaningless.
 +  - the committed artifact takes the newest-first order at its next rebuild (`npm run data:build`, or the weekly `npm run data:refresh-pr`, REQ-195), since the raw Scryfall bulk source is gitignored and lives only in the owner's checkout. Until that rebuild the served order is the previous one; the picker is unaffected because the player chooses the printing rather than accepting a default
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Newest printing first, always — in the artifact, on the wire, and in the picker list, with no client-side re-sort. Best experience for the player.
 
 ---
 
@@ -220,7 +220,7 @@ sequence that the other blocks change, and future work reads a stale flow.
    - toggling foil on an entry with no `usd_foil` (or off with no `usd`) applies the $0 + caution treatment for that mode
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -269,7 +269,7 @@ incompatible with picking a printing before the add.
 +  - the balancer's warm-up ping on open (REQ-064) is unrelated traffic to the existing health check and carries no card data; it exists so this fetch does not absorb the backend's cold start
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -425,8 +425,8 @@ requirements, which is the drift this run exists to fix.
 +  (REQ-065, FLOW-025).
 ```
 
-- Verdict:
-- Reason:
+- Verdict: edit
+- Reason: Accept every hunk as written except the foil-toggle bullet under "Adding a card to a side", which must carry the same rule as the REQ-065 edit: the mode is re-derived from the new printing's prices each time an entry receives a printing — non-foil when a `usd` price exists, foil only when `usd` is null and `usd_foil` is not — with no "current mode is kept" clause.
 
 ---
 
@@ -460,7 +460,7 @@ picker from unrolling the page again.
 +| Notes | DEC-087, DEC-145, REQ-145, REQ-065 |
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -492,7 +492,7 @@ behavior and future agents plan against it.
 +- Summary: Ephemeral two-sided card-value comparison. The screen opens with only the shared `cardMetadata` index in hand and fires one fire-and-forget warm-up ping at the existing `GET /api/health` so a cold backend wakes while the card list downloads (REQ-064). Each side is a list of card entries built via scan or manual search, priced by a read-only backend fetch (`GET /api/cards/:oracleId/prices`, cached per session): a scanned card is added immediately and priced on add, while a manual search fetches that card's printings when the suggestion is tapped and adds the card with the printing the player picks. Each entry resolves to a specific printing (the picked printing on search, the scanned printing on scan, changeable via the same picker either way; the picker heads with the card's printing count, lists newest release first, region-scrolls, lazy-loads row images, and filters by set above 8 printings), with a foil toggle (non-foil ↔ `usd_foil`) whose mode auto-selects from the printing's available prices, a quantity/multiples, and one-tap removal. Side total = `Σ qty × (foil ? usdFoil : usd)`; the view shows each side's total and the live difference. Missing prices, and a failed price fetch, both default to $0 with a distinct color + caution-triangle indicator; a failed fetch also carries a retry affordance, and a pre-add fetch failure adds the card in that same state rather than blocking the add. Scanning is per-side and one camera at a time; when the camera is unavailable the surface closes, manual search stays fully functional, and the reason is surfaced (DEC-050). Printing choice is a pricing/display concern only — it never reaches prompt context, rulings, or any request payload, and the AI answer path (`POST /api/ask-ai`) is untouched. The snapshot is surfaced as date-level copy (`Prices as of 5 June 2026`) formatted from the response's ISO `snapshotDate`, never the raw timestamp, so it cannot read as a live quote; an unparseable value omits the line rather than printing raw artifact data (REQ-145).
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -544,7 +544,7 @@ app in two places, and the printing order is left undocumented on the wire.
 +- there is no up-front frontend download: a card's printings and prices are fetched from the backend once per card — when its search suggestion is tapped, or when a scanned card is added — and cached per session (FLOW-025); users who never open the balancer pay no startup cost, and the balancer's only up-front frontend cost is the shared `cardMetadata` index (NFR-013)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -601,7 +601,7 @@ longer uses.
    in `apps/backend/src/routes/cardPrices.ts`; the frontend fetch/cache module
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -636,7 +636,7 @@ learns the wrong thing about the balancer's traffic.
 +Beyond MTG Assistant, the suite includes a shipped standalone **Card Trade Balancer**: an ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via the feature-portal Menu (DEC-095). Prices come from a read-only backend fetch (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175) made once per card — when the player taps its search suggestion, or when a scanned card is added (REQ-065, FLOW-025) — plus one fire-and-forget warm-up ping to the existing `GET /api/health` when the screen opens, which carries no product data and adds no endpoint (REQ-064); it makes no change to `AskAiRequest`, `GameContext`, prompt assembly, or `POST /api/ask-ai`.
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -678,5 +678,5 @@ free-tier cost note omits the one new call the balancer makes.
 +  - free-tier posture: deleting the ~38 MB first-open download removes that S3/CloudFront egress; the per-card price fetch adds only tiny reads (a handful of KB and a Lambda invocation per card looked up), plus one empty health-check invocation each time the balancer screen opens (REQ-064), well inside the free-tier request allowance at trade-balancer volumes. The backend price map adds ~15-20 MB (estimate; measured at build) to the Lambda bundle, kept inside the 250 MB quota by the budget test (REQ-066)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
