@@ -20,6 +20,7 @@
 | 3 | define | opus | ok | `1 → 30` | attempt 2 (loop 1 fix). Commit `30d47ef` — amendment set closed at 20 slots: ADDED REQ-167, REQ-180; EXTENDED integrations-and-data (all 4 card-detail lines) + NFR-017 stale-name note. Re-enumerated by grep; every before-text verbatim vs PRD/sections; PRD/sections untouched. STATUS.refined | 2026-09-09 |
 | 4 | gate-qc | sonnet | ok | `1 → 28` | attempt 2 PASS. Amendment set verified complete by reviewer's own grep — 20 slots cover every PRD/sections line that goes stale after the brotli/rename change; all before-text byte-identical; GATE-QUESTIONS well-formed; PRD/sections unedited. STATUS stays refined. Run stops here (docs PR + owner-action park) | 2026-09-09 |
 | — | gate-review | sonnet | ok | `1 → 22` | build half run `graph-20260909-003859`. All 20 owner verdicts `accept` applied inside GATE-QUESTIONS.md (no edit/reject); STATUS.owner-action→refined; README status→refined; `## Gate verdicts` table added; `## Open gate` resolved; `PRD/work/STATUS.md` board row owner-action→refined; PRD/sections untouched | 2026-09-09 |
+| 4 | gate-qc | sonnet | ok | `1 → 18` | build-half re-grade after gate resolution. PASS. Reviewer re-ran the amendment-set grep independently — 8 PRD/sections files all covered by the 20 slots; every slot's before-text byte-identical to current truth; GATE-QUESTIONS well-formed; `git diff origin/main -- PRD/sections` empty. Byte-identical to the proposal that passed at `30d47ef`/#224. STATUS stays refined; `## Preparation gate` in README already PASS | 2026-09-09 |
 
 ## Gate verdicts
 
