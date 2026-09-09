@@ -77,7 +77,7 @@ rule ids are excluded from System 3). A fixture with all three fields adds 3 to 
 
 Scenarios named `commander-spellbook-*` cover the combo-enrichment branches. They
 read a **dedicated eval corpus**, `commander-spellbook-eval-catalog.json`, not the
-production artifact at `apps/backend/data/commanderSpellbookCombos.json`. That
+production artifact at `apps/backend/data/commanderSpellbookComboBlocks.br`. That
 separation is the point: an owner-approved production corpus refresh must never
 churn a prompt golden. The harness derives oracle membership from the fixture's
 `variants` array, so the catalog cannot drift out of sync with itself.

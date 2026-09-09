@@ -47,8 +47,8 @@ let warnSpy: ReturnType<typeof vi.spyOn>;
 
 function comboPaths(root: string) {
   return {
-    detail: join(root, "apps/backend/data/commanderSpellbookCombos.json.gz"),
-    index: join(root, "apps/backend/data/commanderSpellbookComboIndex.json.gz")
+    detail: join(root, "apps/backend/data/commanderSpellbookComboBlocks.br"),
+    index: join(root, "apps/backend/data/commanderSpellbookComboIndex.json.br")
   };
 }
 

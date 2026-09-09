@@ -1,6 +1,6 @@
 {
   "id": "quick-lookup-multi-keyword-card",
-  "description": "REQ-032 (Slice B): a lookup-mode card whose real, committed Scryfall keyword list carries three entries (Vigilance, Haste, Deathtouch) — a shape no existing labelled fixture tests (quick-lookup-card and quick-lookup-multi-card deliberately use South Wind Avatar, a single-keyword card, per their own notes on why a multi-keyword card was avoided). Questing Beast's real oracle id resolves its keywords through the committed cardDetailByOracleId.json artifact (REQ-180), the production path. The question asks specifically about vigilance, so this fixture also guards against the card's other two keywords (haste, deathtouch) crowding out the one rule that actually answers the question.",
+  "description": "REQ-032 (Slice B): a lookup-mode card whose real, committed Scryfall keyword list carries three entries (Vigilance, Haste, Deathtouch) — a shape no existing labelled fixture tests (quick-lookup-card and quick-lookup-multi-card deliberately use South Wind Avatar, a single-keyword card, per their own notes on why a multi-keyword card was avoided). Questing Beast's real oracle id resolves its keywords through the committed cardDetailByOracleId.json.br artifact (REQ-180), the production path. The question asks specifically about vigilance, so this fixture also guards against the card's other two keywords (haste, deathtouch) crowding out the one rule that actually answers the question.",
   "request": {
     "mode": "lookup",
     "question": "Why doesn't this creature tap when it attacks?",

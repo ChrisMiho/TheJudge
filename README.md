@@ -45,7 +45,7 @@ Its primary feature, **MTG Assistant**, helps players build staged game context,
   - `src/validation/` Zod request schemas
   - `src/providers/` Ask AI provider boundary
   - `src/eval/` prompt/context golden regression harness
-  - `data/cardRulingsByOracleId.json` committed WotC rulings artifact for backend prompt enrichment
+  - `data/cardRulingsByOracleId.json.br` committed WotC rulings artifact for backend prompt enrichment
 - `scripts/` shared dev/data scripts (including metadata build)
 
 ## Local Setup
@@ -58,7 +58,7 @@ Its primary feature, **MTG Assistant**, helps players build staged game context,
    - agent-run refreshes require explicit human approval because they download Scryfall bulk data
 3. Build trimmed metadata:
    - `npm run data:build`
-   - this also rebuilds `apps/backend/data/cardRulingsByOracleId.json` when local rulings bulk data is present
+   - this also rebuilds `apps/backend/data/cardRulingsByOracleId.json.br` when local rulings bulk data is present
 4. Start both apps: `npm run dev` (logging defaults: see `apps/backend/src/providers/README.md` and env vars under Environment Configuration below).
 5. Optional checks:
    - frontend: `http://localhost:5173`
@@ -165,7 +165,7 @@ Quick local verification flow:
 - Empty-state artwork is bundled at `apps/frontend/public/assets/cats-homescreen.png`; keep it local/static and retain a text fallback path.
 - Provider integration boundary docs live in `apps/backend/src/providers/README.md`.
 - Search responsiveness guardrails stay frontend-local (debounced query + in-memory pre-normalized index) and must not add runtime metadata sync paths.
-- The committed rulings artifact `apps/backend/data/cardRulingsByOracleId.json` lets CI and local prompt tests run without downloading Scryfall data.
+- The committed rulings artifact `apps/backend/data/cardRulingsByOracleId.json.br` lets CI and local prompt tests run without downloading Scryfall data.
 
 ## Agent Workflow Skills
 

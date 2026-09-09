@@ -1,6 +1,6 @@
 # Slice D — File-name updates across path lists and readers
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -43,15 +43,15 @@ weekly refresh PR or points a reader at a file that no longer exists.
 
 ## Acceptance criteria
 
-- [ ] D1 — `COMMITTED_ARTIFACT_PATHS` in `refresh-and-open-pr.mjs` lists all
+- [x] D1 — `COMMITTED_ARTIFACT_PATHS` in `refresh-and-open-pr.mjs` lists all
       five renamed artifacts by their new names, and its test passes
-- [ ] D2 — `createConfiguredApp.ts` references no old artifact name
-- [ ] D3 — the four eval readers reference no old artifact name
-- [ ] D4 — `prompt-fidelity.mjs` and `compare-combo-answer-quality.mjs`
+- [x] D2 — `createConfiguredApp.ts` references no old artifact name
+- [x] D3 — the four eval readers reference no old artifact name
+- [x] D4 — `prompt-fidelity.mjs` and `compare-combo-answer-quality.mjs`
       reference no old artifact name
-- [ ] D5 — `.gitignore`, root `README.md`, and `OPERATOR.md` reference no
+- [x] D5 — `.gitignore`, root `README.md`, and `OPERATOR.md` reference no
       old artifact name
-- [ ] D6 — the design brief's enumeration grep, re-run over
+- [x] D6 — the design brief's enumeration grep, re-run over
       `scripts apps/backend/src README.md OPERATOR.md .gitignore`, finds
       zero remaining old-name hits outside this package's own docs
       (`PRD/work/compact-data-extracts/`)

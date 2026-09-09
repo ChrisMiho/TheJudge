@@ -102,7 +102,7 @@ test("every scenario card matches the committed card corpus field for field", as
   // REQ-174 slimmed the up-front `cardMetadata.json` to only the tile fields
   // (cardId, name, imageUrl, colors); the descriptive block (oracleText,
   // typeLine, manaCost, manaValue, supertypes, subtypes) now lives only in
-  // the backend `cardDetailByOracleId.json` artifact (REQ-175), keyed by the
+  // the backend `cardDetailByOracleId.json.br` artifact (REQ-175), keyed by the
   // same oracle id. So identity/tile fields validate against the frontend
   // corpus and descriptive fields validate against the backend one.
   const tileCorpus = new Map(

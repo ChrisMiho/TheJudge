@@ -260,8 +260,8 @@ export function transformCardPrintingPrices(cards, snapshotDate) {
 async function main() {
   if (!fs.existsSync(inputPath)) {
     // REQ-066: the unified build degrades gracefully — a missing source
-    // keeps both prior committed artifacts (cardDetailByOracleId.json and
-    // cardPrintingPricesByOracleId.json.gz) rather than breaking the rest of
+    // keeps both prior committed artifacts (cardDetailByOracleId.json.br and
+    // cardPrintingPricesByOracleId.json.br) rather than breaking the rest of
     // `data:build`.
     console.warn(`[build-card-detail-by-oracle-id] Source not found, keeping existing artifacts: ${inputPath}`);
     return;

@@ -73,7 +73,7 @@ export type EvaluationFixture = {
  * Build a `ComboCatalog` from the committed eval catalog fixture.
  *
  * The eval corpus is deliberately independent of
- * `apps/backend/data/commanderSpellbookCombos.json`, so refreshing the
+ * `apps/backend/data/commanderSpellbookComboBlocks.br`, so refreshing the
  * production corpus can never churn a prompt golden. Membership is derived from
  * the variants rather than duplicated in the fixture, so the two cannot drift.
  */

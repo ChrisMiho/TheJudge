@@ -10,7 +10,7 @@
     "cardName": "Restoration Angel",
     "oracleId": "dfbd3afc-9905-4cff-a4f4-df08a4d0a7fa",
     "rulingDate": "2021-03-19",
-    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
     "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
     "retrievedOn": "2026-09-07",
     "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the worked solution is the ruling's text, verbatim."

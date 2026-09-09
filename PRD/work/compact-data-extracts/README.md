@@ -15,7 +15,7 @@ the full fresh corpus fits the 120 MB Lambda budget without trimming. See
 | A | Combo block layout + index directory in the build script | none | done |
 | B | Catalog loader reads the block layout | A | done |
 | C | Brotli for rulings / card-detail / prices, build + loader | none | done |
-| D | File-name sweep across path lists and readers | A, B, C, E | planned |
+| D | File-name sweep across path lists and readers | A, B, C, E | done |
 | E | Positional-int compact index | A, B | done |
 | F | Regenerate, verify, amend PRD (20 accepted diffs) | A, B, C, D, E | planned |
 

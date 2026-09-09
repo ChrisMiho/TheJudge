@@ -97,8 +97,8 @@ export async function loadPromptResources() {
   return {
     gameRulesTopics: loadGameRulesTopics(join(dataDir, "gameRulesByTopic.json")),
     gameRulesRuleIndex: loadGameRulesRuleIndex(join(dataDir, "gameRulesRuleIndex.json")),
-    cardRulingsIndex: loadCardRulingsIndex(join(dataDir, "cardRulingsByOracleId.json")),
-    cardDetailIndex: loadCardDetailIndex(join(dataDir, "cardDetailByOracleId.json"))
+    cardRulingsIndex: loadCardRulingsIndex(join(dataDir, "cardRulingsByOracleId.json.br")),
+    cardDetailIndex: loadCardDetailIndex(join(dataDir, "cardDetailByOracleId.json.br"))
   };
 }
 

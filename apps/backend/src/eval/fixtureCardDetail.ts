@@ -6,7 +6,7 @@
 // relevance report (`retrievalReportInputs.ts`) need to resolve that index
 // from a fixture's own request data — the fixture corpus is committed with
 // card fields inline (as a real client sends them), not through the
-// production `cardDetailByOracleId.json` artifact, so an owner-approved
+// production `cardDetailByOracleId.json.br` artifact, so an owner-approved
 // Scryfall refresh can never churn a prompt golden.
 //
 // Before this module existed, the harness test built this index locally and
