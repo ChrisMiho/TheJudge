@@ -146,7 +146,7 @@ if ! aws lambda get-function --function-name "$lambda_name" --region "$aws_regio
     --handler apps/backend/dist/lambda.handler \
     --code "S3Bucket=$artifact_bucket_name,S3Key=$artifact_s3_key" \
     --timeout 20 \
-    --memory-size 512 \
+    --memory-size 1769 \
     --environment "Variables={NODE_ENV=production,ASK_AI_PROVIDER=openai,EMBEDDING_PROVIDER=local,DEBUG_LOGGING=false,LOG_PAYLOADS=false,OPENAI_MODEL=$openai_model,OPENAI_TIMEOUT_MS=$openai_timeout_ms,OPENAI_MAX_RETRIES=$openai_max_retries,OPENAI_API_KEY_SSM_PARAM=$ssm_param_name}" \
     --region "$aws_region" \
     >/dev/null
