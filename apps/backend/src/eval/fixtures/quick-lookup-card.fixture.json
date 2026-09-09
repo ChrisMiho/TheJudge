@@ -1,6 +1,6 @@
 {
   "id": "quick-lookup-card",
-  "description": "Lookup mode resolves the attached card's real Scryfall keyword list (REQ-180) through the committed cardDetailByOracleId.json artifact, by this card's real oracle id, to retrieve a rule absent from the question — the production path, not an inline fixture shortcut. South Wind Avatar's real keyword list is exactly [\"Deathtouch\"] (review loop 1, D4) — a multi-keyword card (e.g. Questing Beast's Vigilance/Haste/Deathtouch) crowds 702.2b out of the lexical top-5 with unrelated keyword-ability rules, which is a real production ranking behavior, not a fixture bug; this fixture is picked to isolate the one keyword under test.",
+  "description": "Lookup mode resolves the attached card's real Scryfall keyword list (REQ-180) through the committed cardDetailByOracleId.json.br artifact, by this card's real oracle id, to retrieve a rule absent from the question — the production path, not an inline fixture shortcut. South Wind Avatar's real keyword list is exactly [\"Deathtouch\"] (review loop 1, D4) — a multi-keyword card (e.g. Questing Beast's Vigilance/Haste/Deathtouch) crowds 702.2b out of the lexical top-5 with unrelated keyword-ability rules, which is a real production ranking behavior, not a fixture bug; this fixture is picked to isolate the one keyword under test.",
   "request": {
     "mode": "lookup",
     "question": "What does this ability do?",

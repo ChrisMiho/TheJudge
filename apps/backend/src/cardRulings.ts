@@ -1,4 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
+import { brotliDecompressSync } from "node:zlib";
 import { NON_STACK_CANONICAL_ZONE_ORDER } from "./constants.js";
 import { truncateOracleText } from "./prompt/normalization.js";
 import type { PromptContext } from "./types/index.js";
@@ -75,7 +76,7 @@ export function loadCardRulingsIndex(filePath: string): Map<string, RulingEntry[
   }
 
   try {
-    return normalizeRulingsIndex(JSON.parse(readFileSync(filePath, "utf8")));
+    return normalizeRulingsIndex(JSON.parse(brotliDecompressSync(readFileSync(filePath)).toString("utf8")));
   } catch (error) {
     warnLoadFailureOnce(filePath, `Card rulings file could not be parsed; official rulings prompt section disabled: ${filePath}`, error);
     return new Map();

@@ -2,6 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
 import { describe, expect, it, vi } from "vitest";
 import {
   collectCardsForRulings,
@@ -75,17 +76,31 @@ const context: PromptContext = {
   ]
 };
 
+function brotliBlock(buffer: Buffer): Buffer {
+  return brotliCompressSync(buffer, {
+    params: {
+      [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
+      [zlibConstants.BROTLI_PARAM_SIZE_HINT]: buffer.length
+    }
+  });
+}
+
 describe("Backend - Ask AI", () => {
   describe("card rulings", () => {
     it("loads a rulings index from a committed artifact shape", () => {
       const tempDir = mkdtempSync(join(tmpdir(), "thejudge-rulings-"));
-      const filePath = join(tempDir, "cardRulingsByOracleId.json");
+      const filePath = join(tempDir, "cardRulingsByOracleId.json.br");
       writeFileSync(
         filePath,
-        JSON.stringify({
-          "oracle-id": [{ publishedAt: "2020-04-17", comment: "Official note." }],
-          invalid: [{ publishedAt: "2020-04-17" }]
-        })
+        brotliBlock(
+          Buffer.from(
+            JSON.stringify({
+              "oracle-id": [{ publishedAt: "2020-04-17", comment: "Official note." }],
+              invalid: [{ publishedAt: "2020-04-17" }]
+            }),
+            "utf8"
+          )
+        )
       );
 
       const index = loadCardRulingsIndex(filePath);

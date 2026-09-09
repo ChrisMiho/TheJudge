@@ -105,7 +105,7 @@ introduced to build this set. See each case's `source` block for the
 specific rule id, section, and retrieval date.
 
 **Tier 2** cases are sourced from an official WotC card ruling, verbatim,
-from the committed `apps/backend/data/cardRulingsByOracleId.json`, cited by
+from the committed `apps/backend/data/cardRulingsByOracleId.json.br`, cited by
 card name, oracle id, and ruling date; the question is this project's own
 natural-language phrasing of a scenario the cited ruling directly answers,
 reviewed by a human before commit.

@@ -309,7 +309,7 @@ export function buildOutputCard(card) {
 
 /** REQ-174: the up-front artifact carries only what a card tile renders
  * directly. The descriptive block is fetched on demand by oracle id instead
- * (REQ-175, FLOW-024, Slice A's `cardDetailByOracleId.json`). The full
+ * (REQ-175, FLOW-024, Slice A's `cardDetailByOracleId.json.br`). The full
  * `imageUrl` string is dropped in favor of the shorter representative
  * printing id (Slice C); the loader derives the url from it. */
 export function toSlimCard(outputCard) {

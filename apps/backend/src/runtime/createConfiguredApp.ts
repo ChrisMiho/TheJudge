@@ -24,11 +24,11 @@ export type RuntimeApp = {
 
 export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = process.env): RuntimeApp {
   const config = readServerConfig(env);
-  const cardRulingsPath = resolve(repoRoot, "apps/backend/data/cardRulingsByOracleId.json");
+  const cardRulingsPath = resolve(repoRoot, "apps/backend/data/cardRulingsByOracleId.json.br");
   const cardRulingsIndex = loadCardRulingsIndex(cardRulingsPath);
-  const cardDetailPath = resolve(repoRoot, "apps/backend/data/cardDetailByOracleId.json");
+  const cardDetailPath = resolve(repoRoot, "apps/backend/data/cardDetailByOracleId.json.br");
   const cardDetailIndex = loadCardDetailIndex(cardDetailPath);
-  const cardPrintingPricesPath = resolve(repoRoot, "apps/backend/data/cardPrintingPricesByOracleId.json.gz");
+  const cardPrintingPricesPath = resolve(repoRoot, "apps/backend/data/cardPrintingPricesByOracleId.json.br");
   const cardPrintingPricesIndex = loadCardPrintingPricesIndex(cardPrintingPricesPath);
   const gameRulesPath = resolve(repoRoot, "apps/backend/data/gameRulesByTopic.json");
   const gameRulesTopics = loadGameRulesTopics(gameRulesPath);
@@ -40,8 +40,8 @@ export function createConfiguredApp(repoRoot: string, env: NodeJS.ProcessEnv = p
   let comboCatalog: ComboCatalog | undefined;
   if (config.comboEnrichmentEnabled) {
     comboCatalog = loadComboCatalog(
-      resolve(repoRoot, "apps/backend/data/commanderSpellbookCombos.json.gz"),
-      resolve(repoRoot, "apps/backend/data/commanderSpellbookComboIndex.json.gz")
+      resolve(repoRoot, "apps/backend/data/commanderSpellbookComboBlocks.br"),
+      resolve(repoRoot, "apps/backend/data/commanderSpellbookComboIndex.json.br")
     );
   }
 

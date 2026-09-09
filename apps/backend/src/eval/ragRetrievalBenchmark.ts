@@ -8,7 +8,7 @@
 // measures the same System 3 later steps ship against.
 //
 // No live AI call and no live embedding call: pollution text comes from the
-// already-committed `cardDetailByOracleId.json` artifact, not a network
+// already-committed `cardDetailByOracleId.json.br` artifact, not a network
 // fetch, and scoring is pure in-process lexical IDF. Corpus and methodology
 // originate from the throwaway harness on `origin/explore/semantic-rule-retrieval`
 // (`PRD/work/combo-context-validation/harness/rag/`) — committing it in-repo,
@@ -30,9 +30,9 @@ const currentDir = dirname(fileURLToPath(import.meta.url));
 
 export const BENCHMARK_PATH = resolve(currentDir, "benchmark/rag-retrieval-benchmark.json");
 export const RULE_INDEX_PATH = resolve(currentDir, "../../data/gameRulesRuleIndex.json");
-export const CARD_DETAIL_PATH = resolve(currentDir, "../../data/cardDetailByOracleId.json");
+export const CARD_DETAIL_PATH = resolve(currentDir, "../../data/cardDetailByOracleId.json.br");
 /**
- * REQ-178/REQ-180 (review loop 1, B4/D5/E9): `cardDetailByOracleId.json` is
+ * REQ-178/REQ-180 (review loop 1, B4/D5/E9): `cardDetailByOracleId.json.br` is
  * keyed by oracle id but carries no `name` field (REQ-175 kept it out of that
  * artifact). `cardMetadata.json` is keyed by the same oracle id
  * (`build-card-metadata.mjs`'s `cardId` is `oracle_id`) and does carry `name`
@@ -115,7 +115,7 @@ export function loadCardNameByOracleId(filePath: string = CARD_METADATA_PATH): M
  * measures whatever query shape is actually shipped, slice over slice, rather
  * than freezing an earlier pollution shape.
  *
- * `cardDetailByOracleId.json` carries no `name` field (REQ-175 kept it out of
+ * `cardDetailByOracleId.json.br` carries no `name` field (REQ-175 kept it out of
  * that artifact; it's keyed by oracle id, not card id) — the name component
  * is joined from the committed `cardMetadata.json` by that same oracle id
  * (review loop 1, B4/D5/E9). A card with no metadata entry (or no committed

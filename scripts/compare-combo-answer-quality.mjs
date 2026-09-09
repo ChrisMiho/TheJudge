@@ -159,8 +159,8 @@ async function buildLiveLegs(env) {
   // the prompt locally from the same modules and the same catalog the app loaded,
   // purely so the reviewer can see whether a combo section was actually supplied.
   const comboCatalog = loadComboCatalog(
-    join(repoRoot, "apps/backend/data/commanderSpellbookCombos.json.gz"),
-    join(repoRoot, "apps/backend/data/commanderSpellbookComboIndex.json.gz")
+    join(repoRoot, "apps/backend/data/commanderSpellbookComboBlocks.br"),
+    join(repoRoot, "apps/backend/data/commanderSpellbookComboIndex.json.br")
   )
 
   const start = async (comboEnrichmentEnabled) => {

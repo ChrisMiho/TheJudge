@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { gzipSync } from "node:zlib";
+import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
 import { describe, expect, it, vi } from "vitest";
 import { loadComboCatalog, type ComboCardIngredient, type ComboCatalog, type ComboVariant } from "../commanderSpellbook/catalog.js";
 import { COMBO_SECTION_HEADING } from "../commanderSpellbook/formatting.js";
@@ -11,6 +11,15 @@ import { buildMockAnswer } from "../mockAskAi.js";
 import { createGameContext, createZoneCardItem } from "../test-utils/requestBuilders.js";
 import type { GameAskAiRequest, LookupAskAiRequest } from "../types/index.js";
 import { preparePromptInput } from "./preparation.js";
+
+function brotliBlock(buffer: Buffer): Buffer {
+  return brotliCompressSync(buffer, {
+    params: {
+      [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
+      [zlibConstants.BROTLI_PARAM_SIZE_HINT]: buffer.length
+    }
+  });
+}
 
 function cardIngredient(overrides: Partial<ComboCardIngredient> & { cardId: string }): ComboCardIngredient {
   return {
@@ -319,25 +328,32 @@ describe("Backend - Ask AI", () => {
         const variants = [...filler, twoPieceCombo];
 
         const dir = mkdtempSync(join(tmpdir(), "combo-prompt-at-scale-"));
-        const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
-        const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
+        const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
+        const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
+        const blockSize = 128;
         const chunks: Buffer[] = [];
-        const detailOffsets: Record<string, [number, number]> = {};
-        const byOracleId: Record<string, string[]> = {};
+        const blocks: { offset: number; length: number }[] = [];
+        // Membership is written as integer positions into variantIds (slice E).
+        const byOracleId: Record<string, number[]> = {};
+        variants.forEach((entry, index) => {
+          for (const ingredient of entry.cardIngredients) {
+            byOracleId[ingredient.cardId] = [...(byOracleId[ingredient.cardId] ?? []), index];
+          }
+        });
         let cursor = 0;
-        for (const entry of variants) {
-          const compressed = gzipSync(Buffer.from(JSON.stringify(entry), "utf8"));
-          detailOffsets[entry.variantId] = [cursor, compressed.length];
+        for (let start = 0; start < variants.length; start += blockSize) {
+          const blockVariants = variants.slice(start, start + blockSize);
+          const ndjson = blockVariants.map((entry) => JSON.stringify(entry)).join("\n");
+          const compressed = brotliBlock(Buffer.from(ndjson, "utf8"));
+          blocks.push({ offset: cursor, length: compressed.length });
           chunks.push(compressed);
           cursor += compressed.length;
-          for (const ingredient of entry.cardIngredients) {
-            byOracleId[ingredient.cardId] = [...(byOracleId[ingredient.cardId] ?? []), entry.variantId];
-          }
         }
+        const variantIds = variants.map((entry) => entry.variantId);
         writeFileSync(detailPath, Buffer.concat(chunks));
         writeFileSync(
           indexPath,
-          gzipSync(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, detailOffsets }), "utf8"))
+          brotliBlock(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, blocks, variantIds }), "utf8"))
         );
         return loadComboCatalog(detailPath, indexPath);
       }
@@ -407,21 +423,22 @@ describe("Backend - Ask AI", () => {
         };
 
         const dir = mkdtempSync(join(tmpdir(), "combo-scenario-real-"));
-        const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
-        const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
-        const compressed = gzipSync(Buffer.from(JSON.stringify(avatarOfGrowthVariant), "utf8"));
+        const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
+        const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
+        const compressed = brotliBlock(Buffer.from(JSON.stringify(avatarOfGrowthVariant), "utf8"));
         writeFileSync(detailPath, compressed);
         writeFileSync(
           indexPath,
-          gzipSync(
+          brotliBlock(
             Buffer.from(
               JSON.stringify({
                 byOracleId: {
-                  "07db0374-3297-49c3-886d-a6bb42f7bb18": ["5702-8097"],
-                  "8a3ad2ef-8bcb-40c0-85de-f03328c2b644": ["5702-8097"]
+                  "07db0374-3297-49c3-886d-a6bb42f7bb18": [0],
+                  "8a3ad2ef-8bcb-40c0-85de-f03328c2b644": [0]
                 },
                 byTemplateOracleId: {},
-                detailOffsets: { "5702-8097": [0, compressed.length] }
+                blocks: [{ offset: 0, length: compressed.length }],
+                variantIds: ["5702-8097"]
               }),
               "utf8"
             )

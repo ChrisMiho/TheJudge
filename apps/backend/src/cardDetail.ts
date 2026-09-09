@@ -1,9 +1,10 @@
 import { existsSync, readFileSync } from "node:fs";
+import { brotliDecompressSync } from "node:zlib";
 
 /**
  * One card's descriptive block, keyed by Scryfall `oracle_id` (REQ-175). Two
  * server-side readers share this one committed artifact
- * (`apps/backend/data/cardDetailByOracleId.json`): the read-only
+ * (`apps/backend/data/cardDetailByOracleId.json.br`): the read-only
  * `GET /api/cards/:oracleId` route and ask-ai's internal server-side
  * resolution (REQ-176) — so the route and the prompt cannot drift.
  */
@@ -66,7 +67,7 @@ export function loadCardDetailIndex(filePath: string): Map<string, CardDetailEnt
   }
 
   try {
-    return normalizeCardDetailIndex(JSON.parse(readFileSync(filePath, "utf8")));
+    return normalizeCardDetailIndex(JSON.parse(brotliDecompressSync(readFileSync(filePath)).toString("utf8")));
   } catch (error) {
     warnLoadFailureOnce(filePath, `Card detail file could not be parsed: ${filePath}`, error);
     return new Map();

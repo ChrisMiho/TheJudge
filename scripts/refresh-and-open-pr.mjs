@@ -23,21 +23,21 @@ import { pathToFileURL } from "node:url"
 // steps write (REQ-195: stage only the changed committed artifacts) — hard-coded
 // here, never derived by globbing or by parsing the `data:build` npm script
 // string, so a future build step cannot silently widen what this script stages.
-// The Trade Balancer price map is the gzip `cardPrintingPricesByOracleId.json.gz`
+// The Trade Balancer price map is the brotli `cardPrintingPricesByOracleId.json.br`
 // emitted by `build-card-detail-by-oracle-id.mjs` (REQ-066/REQ-175), not the
 // retired frontend `cardPrintingPrices.json`.
 export const COMMITTED_ARTIFACT_PATHS = [
   "apps/frontend/public/data/cardMetadata.json",
-  "apps/backend/data/cardDetailByOracleId.json",
-  "apps/backend/data/cardRulingsByOracleId.json",
+  "apps/backend/data/cardDetailByOracleId.json.br",
+  "apps/backend/data/cardRulingsByOracleId.json.br",
   "apps/backend/data/gameRulesByTopic.json",
   "apps/backend/data/gameRulesRuleIndex.json",
   "apps/backend/data/gameRulesTokenStats.json",
   "apps/frontend/public/data/gameRulesCoreTopics.json",
   "apps/backend/data/gameRulesRuleEmbeddings.json",
-  "apps/backend/data/cardPrintingPricesByOracleId.json.gz",
-  "apps/backend/data/commanderSpellbookCombos.json.gz",
-  "apps/backend/data/commanderSpellbookComboIndex.json.gz"
+  "apps/backend/data/cardPrintingPricesByOracleId.json.br",
+  "apps/backend/data/commanderSpellbookComboBlocks.br",
+  "apps/backend/data/commanderSpellbookComboIndex.json.br"
 ]
 
 export const REFRESH_BRANCH_PREFIX = "chore/data-refresh-"

@@ -1,13 +1,30 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
+import zlib from "node:zlib";
 
 const inputPath = path.resolve("apps/backend/data/scryfall/rulings.json");
 const metadataPath = path.resolve("apps/frontend/public/data/cardMetadata.json");
-const outputPath = path.resolve("apps/backend/data/cardRulingsByOracleId.json");
+const outputPath = path.resolve("apps/backend/data/cardRulingsByOracleId.json.br");
 
 function ensureParentDirectory(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
+}
+
+/**
+ * Brotli-compress with the fixed, named params this repository uses
+ * everywhere: quality 11, a size hint set to the raw input length, no
+ * `dictionary` option (Node 22 in CI silently ignores a brotli dictionary
+ * while Node 24 on Lambda honours it, which would make CI and Lambda
+ * disagree).
+ */
+function brotliCompress(buffer) {
+  return zlib.brotliCompressSync(buffer, {
+    params: {
+      [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
+      [zlib.constants.BROTLI_PARAM_SIZE_HINT]: buffer.length
+    }
+  });
 }
 
 function normalizeInlineWhitespace(value) {
@@ -124,7 +141,7 @@ function validateExistingArtifact() {
     );
   }
 
-  const artifact = JSON.parse(fs.readFileSync(outputPath, "utf8"));
+  const artifact = JSON.parse(zlib.brotliDecompressSync(fs.readFileSync(outputPath)).toString("utf8"));
   if (!artifact || Array.isArray(artifact) || typeof artifact !== "object") {
     throw new Error(`Unexpected rulings artifact shape in ${outputPath}; expected an object keyed by oracle_id.`);
   }
@@ -214,7 +231,7 @@ async function main() {
   await ingestRulingsStream(state);
 
   const { rulingsByOracleId, stats } = finalizeRulingsTransformState(state);
-  const output = JSON.stringify(rulingsByOracleId);
+  const output = brotliCompress(Buffer.from(JSON.stringify(rulingsByOracleId), "utf8"));
   ensureParentDirectory(outputPath);
   fs.writeFileSync(outputPath, output);
 
@@ -224,7 +241,7 @@ async function main() {
   console.log(`Skipped missing oracle_id: ${stats.skippedMissingOracleId}`);
   console.log(`Skipped missing comment: ${stats.skippedMissingComment}`);
   console.log(`Skipped outside metadata: ${stats.skippedOutsideMetadata}`);
-  console.log(`Output bytes: ${Buffer.byteLength(output)}`);
+  console.log(`Output bytes (brotli): ${output.length}`);
   console.log(`Wrote: ${outputPath}`);
 }
 

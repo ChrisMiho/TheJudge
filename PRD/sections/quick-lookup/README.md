@@ -175,7 +175,7 @@ both providers. (DEC-020, REQ-072)
   zone, caster, owner, targets, or context-notes fields; the descriptive block
   (`oracleText`/`manaCost`/`manaValue`/`typeLine`/`colors`/`supertypes`/
   `subtypes`) is no longer sent, because the backend resolves the
-  card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json`
+  card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json.br`
   (REQ-175, REQ-176). Zero cards and exactly one card behave identically to the
   prior single-card shape. (DEC-106, DEC-053, REQ-072, REQ-167, REQ-176)
 - Built: `conversationHistory` is optional and validated identically to the game

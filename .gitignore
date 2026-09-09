@@ -49,7 +49,7 @@ apps/backend/data/cr/source.txt.tmp
 apps/backend/data/scryfall/rulings.json
 apps/backend/data/scryfall/rulings.json.tmp
 # Commander Spellbook raw refresh pages (build inputs only; the trimmed corpus
-# ships as apps/backend/data/commanderSpellbookCombo*.json)
+# ships as apps/backend/data/commanderSpellbookCombo*.br)
 apps/backend/data/commander-spellbook/
 apps/backend/data/commander-spellbook.tmp/
 

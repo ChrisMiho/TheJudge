@@ -1,9 +1,18 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { gzipSync } from "node:zlib";
+import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
 import { afterEach, describe, expect, it } from "vitest";
 import { loadCardPrintingPricesIndex } from "./cardPrices.js";
+
+function brotliBlock(buffer: Buffer): Buffer {
+  return brotliCompressSync(buffer, {
+    params: {
+      [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
+      [zlibConstants.BROTLI_PARAM_SIZE_HINT]: buffer.length
+    }
+  });
+}
 
 describe("loadCardPrintingPricesIndex", () => {
   let dir: string | undefined;
@@ -16,14 +25,14 @@ describe("loadCardPrintingPricesIndex", () => {
   });
 
   it("returns an empty map, without throwing, when the committed file is missing", () => {
-    const index = loadCardPrintingPricesIndex("/nonexistent/cardPrintingPricesByOracleId.json.gz");
+    const index = loadCardPrintingPricesIndex("/nonexistent/cardPrintingPricesByOracleId.json.br");
     expect(index.size).toBe(0);
   });
 
-  it("returns an empty map, without throwing, when the committed file is not valid gzip/JSON", () => {
+  it("returns an empty map, without throwing, when the committed file is not valid brotli/JSON", () => {
     dir = mkdtempSync(join(tmpdir(), "card-prices-test-"));
-    const filePath = join(dir, "cardPrintingPricesByOracleId.json.gz");
-    writeFileSync(filePath, "not gzip at all");
+    const filePath = join(dir, "cardPrintingPricesByOracleId.json.br");
+    writeFileSync(filePath, "not brotli at all");
 
     const index = loadCardPrintingPricesIndex(filePath);
     expect(index.size).toBe(0);
@@ -31,7 +40,7 @@ describe("loadCardPrintingPricesIndex", () => {
 
   it("loads a well-formed committed artifact into a Map keyed by oracle id, copying snapshotDate onto each entry", () => {
     dir = mkdtempSync(join(tmpdir(), "card-prices-test-"));
-    const filePath = join(dir, "cardPrintingPricesByOracleId.json.gz");
+    const filePath = join(dir, "cardPrintingPricesByOracleId.json.br");
     const artifact = {
       snapshotDate: "2026-09-08T00:00:00.000Z",
       byOracleId: {
@@ -49,7 +58,7 @@ describe("loadCardPrintingPricesIndex", () => {
         }
       }
     };
-    writeFileSync(filePath, gzipSync(Buffer.from(JSON.stringify(artifact))));
+    writeFileSync(filePath, brotliBlock(Buffer.from(JSON.stringify(artifact), "utf8")));
 
     const index = loadCardPrintingPricesIndex(filePath);
     expect(index.size).toBe(1);
@@ -60,7 +69,7 @@ describe("loadCardPrintingPricesIndex", () => {
 
   it("keeps a printing's null usd/usdFoil as null, never coerced to 0 or dropped", () => {
     dir = mkdtempSync(join(tmpdir(), "card-prices-test-"));
-    const filePath = join(dir, "cardPrintingPricesByOracleId.json.gz");
+    const filePath = join(dir, "cardPrintingPricesByOracleId.json.br");
     const artifact = {
       snapshotDate: "2026-09-08T00:00:00.000Z",
       byOracleId: {
@@ -78,7 +87,7 @@ describe("loadCardPrintingPricesIndex", () => {
         }
       }
     };
-    writeFileSync(filePath, gzipSync(Buffer.from(JSON.stringify(artifact))));
+    writeFileSync(filePath, brotliBlock(Buffer.from(JSON.stringify(artifact), "utf8")));
 
     const index = loadCardPrintingPricesIndex(filePath);
     const printing = index.get("unpriced-oracle-id")?.printings[0];

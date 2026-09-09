@@ -49,7 +49,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `targets?: ContextTarget[]`
 - `contextNotes?: string`
 - `manaSpent?: number` (prompt-facing fallback uses the server-resolved `manaValue` when omitted)
-- the descriptive block (`oracleText`, `manaCost`, `manaValue`, `typeLine`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields by `cardId` from `cardDetailByOracleId.json` (REQ-175, REQ-176)
+- the descriptive block (`oracleText`, `manaCost`, `manaValue`, `typeLine`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields by `cardId` from `cardDetailByOracleId.json.br` (REQ-175, REQ-176)
 
 ### GameContext
 - `playerCount: number`
@@ -144,13 +144,13 @@ Purpose:
 
 ### Endpoint: `GET /api/cards/:oracleId`
 Purpose:
-- serve one card's descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`) by Scryfall `oracle_id`, read-only, from the committed `cardDetailByOracleId.json` artifact (REQ-175)
+- serve one card's descriptive block (`oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`) by Scryfall `oracle_id`, read-only, from the committed `cardDetailByOracleId.json.br` artifact (REQ-175)
 - back the card-detail popup and Quick Lookup pre-submit preview's on-demand fetch (FLOW-024); a known id returns the block, an unknown id returns a not-found response
 - the product's second product-facing endpoint (D5), permitted alongside `POST /api/ask-ai` by the one-endpoint rule (canonical: NFR-004)
 
 ### Endpoint: `GET /api/cards/:oracleId/prices`
 Purpose:
-- serve one card's printings and prices by Scryfall `oracle_id`, read-only, from the committed `cardPrintingPricesByOracleId.json.gz` artifact (REQ-066, REQ-175), kept separate from the descriptive block so the card-detail/ask-ai path carries no price bytes
+- serve one card's printings and prices by Scryfall `oracle_id`, read-only, from the committed `cardPrintingPricesByOracleId.json.br` artifact (REQ-066, REQ-175), kept separate from the descriptive block so the card-detail/ask-ai path carries no price bytes
 - back the Trade Balancer's on-add fetch, cached per session (FLOW-025); a known id returns `200 { oracleId, snapshotDate, printings: CardPrintingPrice[] }`, an unknown id returns `404 { error: "card_not_found" }`
 - each `CardPrintingPrice` carries `id` (Scryfall printing id — the frontend derives the image url from it), `set`, `setName`, `collectorNumber`, `usd` (non-foil, `number | null`), `usdFoil` (`number | null`); card name is not repeated per printing — the frontend takes it from the shared `cardMetadata` index (REQ-174)
 - the product's third product-facing endpoint, permitted alongside `POST /api/ask-ai` and `GET /api/cards/:oracleId` by the one-endpoint rule (canonical: NFR-004, BLOCK-01 = A)
@@ -236,7 +236,7 @@ Purpose:
 - WotC rulings enrichment uses Scryfall bulk type `rulings`
 - raw Scryfall rulings bulk data is gitignored and must not be committed
 - Scryfall download or refresh requires explicit human approval before the command runs
-- the committed backend artifact is `apps/backend/data/cardRulingsByOracleId.json`, a trimmed map keyed by Scryfall `oracle_id`
+- the committed backend artifact is `apps/backend/data/cardRulingsByOracleId.json.br`, a brotli-compressed trimmed map keyed by Scryfall `oracle_id`, brotli-decoded into memory once at startup
 - the trimmed artifact includes only rows where `source === "wotc"` and the `oracle_id` exists in the committed card metadata `cardId` set
 - `npm run data:build` rebuilds card metadata, card rulings, and game rules from local inputs
 - `npm run data:refresh` downloads Scryfall bulk data and WotC CR source, then rebuilds local artifacts; agent-run refreshes require explicit human approval before any download command
@@ -246,7 +246,7 @@ Purpose:
 ## Card Detail Data Strategy
 - the card descriptive block is committed as a trimmed map keyed by Scryfall `oracle_id`, built by one builder from the same Scryfall bulk every other builder trims from; raw bulk stays gitignored and must not be committed
 - each value carries `oracleText`, `typeLine`, `manaCost`, `manaValue`, `colors`, `supertypes`, `subtypes`
-- the map is committed once, backend-only, under `apps/backend/data/cardDetailByOracleId.json`; there is no frontend copy
+- the map is committed once, backend-only, brotli-compressed under `apps/backend/data/cardDetailByOracleId.json.br` and brotli-decoded into memory once at startup; there is no frontend copy
 - the frontend fetches one card's block on demand from `GET /api/cards/:oracleId` (FLOW-024) and caches per card for the session; ask-ai reads the same backend map internally for server-side resolution (REQ-176)
 - the backend map additionally carries each card's Scryfall `keywords` array, used only to build the System 3 retrieval query's keyword signal; it is not part of the on-demand card block the frontend fetches and adds nothing to the up-front payload (REQ-180)
 - `GET /api/cards/:oracleId` is the product's second product-facing endpoint, authorized by D5 — the one-endpoint rule (canonical: NFR-004)
@@ -280,7 +280,7 @@ Commander Spellbook combo enrichment (DEC-116) is a backend-only prompt source l
 - source reads use Commander Spellbook's public **bulk export** (`variants.json.gz`), not its paginated REST API — the export supplies all ~106,000 reviewed variants in one unthrottled request, while a sustained cursor walk is rate-limited by upstream's load balancer with a bodiless `429` (DEC-162); only reviewed `OK` variants enter the corpus — upstream returns null steps, prerequisites, mana needed, notes, and every per-zone card-state field for `EXAMPLE` variants, so they cannot carry the context this enrichment depends on
 - cards join on Commander Spellbook `oracleId` → TheJudge `cardId` (Scryfall `oracle_id`); printing identity is excluded
 - network refresh is an explicit human-approved operation; invoking `data:refresh` is that approval, so the combo download runs in that chain beside the Scryfall and Comprehensive Rules refreshes (DEC-162). The combo refresh is hash-gated (REQ-196): the cadence compares a card-identity hash (the set of Scryfall `oracle_id`s in the fresh `default_cards`) and a template-set hash (the distinct combo templates in the variant export) to a committed marker (`apps/backend/data/commanderSpellbookComboSource.meta.json`), and reuses the committed combo artifact — skipping the Scryfall template expansion — when both match, running a full re-expansion of every template only when one changed. Volatile fields (prices, popularity, export timestamp) are excluded, so weekly price churn does not trigger it. The raw bulk export and template-expansion responses stay gitignored under `apps/backend/data/commander-spellbook/`
-- the committed backend artifacts are gzipped: `apps/backend/data/commanderSpellbookCombos.json.gz` (trimmed variant detail + source manifest, stored as concatenated individually-gzipped per-variant records) and `apps/backend/data/commanderSpellbookComboIndex.json.gz` (inverse oracle membership, template expansions, unresolved-template metadata, and a `variantId` → byte offset/length directory into the detail artifact). They measure 76.9 MB + 4.8 MB as committed, so no variant is dropped for size. The index is parsed once at first use; a detail lookup reads only that variant's byte range and gunzips only that slice, keeping resident memory bounded — which is the constraint that mattered, not load time or repository footprint (DEC-162)
+- the committed backend artifacts are brotli-compressed: `apps/backend/data/commanderSpellbookComboBlocks.br` (trimmed variant detail, stored as blocks of 128 variants in `variantId` order — records inside a block are newline-delimited JSON, each block one brotli member, the members concatenated) and `apps/backend/data/commanderSpellbookComboIndex.json.br` (a single minified-brotli index carrying inverse oracle membership, template expansions, unresolved-template metadata, `variantIds` listed once in `variantId` order as a positional dictionary, a per-block byte `[offset, length]` directory into the detail artifact, and memberships as integer positions into `variantIds`). They measure ~13.0 MB + ~2.4 MB over the fresh corpus (re-recorded at build), so no variant is dropped for size. The index is parsed once at first use; a detail lookup reads only the requested variant's block byte range and brotli-decodes that one block (~230 KB), keeping resident memory bounded — which is the constraint that mattered, not load time or repository footprint (DEC-162)
 - retained variant detail includes exact/template ingredients, quantities, starting zones, per-ingredient zone-scoped card state, per-ingredient `mustBeCommander`, produced effects, description/steps, mana needed, prerequisites, notes, popularity, and stable Commander Spellbook reference; price, image, bracket, and unrelated site payload fields are omitted
 - card state is stored zone-scoped rather than as one string: upstream exposes separate battlefield, exile, graveyard, and library state, an ingredient may permit several starting zones simultaneously, and the hand and command zones carry no state at all
 - upstream renders **camelCase** on the wire (`oracleId`, `zoneLocations`, `mustBeCommander`, `*CardState`): Django REST Framework applies `CamelCaseJSONRenderer` above the serializer, so the snake_case field names declared in upstream's Python models never reach a client. An earlier version of this line claimed the opposite; the build followed it and matched nothing against real data, so schema claims here must be verified against a real upstream response rather than against serializer source (DEC-162)
@@ -315,12 +315,12 @@ involve the backend, `POST /api/ask-ai`, or any prompt assembly.
 
 The Trade Balancer is an optional, standalone, ephemeral feature outside the Decrypt-Stack core loop. It makes no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or `POST /api/ask-ai` — its only backend traffic is the read-only price route `GET /api/cards/:oracleId/prices` (REQ-066, REQ-175), which the question/RAG flow never touches.
 
-- pricing uses a committed, printing-level static price artifact, backend-only under `apps/backend/data/` (`cardPrintingPricesByOracleId.json.gz`), built in the same pass as the card-detail build (`scripts/build-card-detail-by-oracle-id.mjs`, unified — no separate build script) alongside `data:build` / `data:refresh` (REQ-066)
+- pricing uses a committed, printing-level static price artifact, backend-only under `apps/backend/data/` (`cardPrintingPricesByOracleId.json.br`), built in the same pass as the card-detail build (`scripts/build-card-detail-by-oracle-id.mjs`, unified — no separate build script) alongside `data:build` / `data:refresh` (REQ-066)
 - per printing the artifact carries: printing id, set code, set name, collector number, `usd` (non-foil), and `usd_foil` — no card name or image url per printing (name comes from the shared `cardMetadata` index, REQ-174; image derives from the printing id); entries are indexable by oracle id (list a card's printings for the manual picker) and matched by printing id (a scanned printing prices directly)
 - missing `usd`/`usd_foil` values are stored as null/absent and consumed as a $0 contribution with a distinct color and caution-triangle indicator in the UI (REQ-065)
 - the artifact records a snapshot date; prices are a static build-time snapshot with **no runtime price fetch and no runtime sync** — refreshed only via the human-approved `data:refresh` then `data:build` (DEC-012 posture, NFR-013)
 - there is no up-front frontend download: a card's printings and prices are fetched from the backend only when that card is added to a trade side, cached per session (FLOW-025); users who never open the balancer pay no startup cost, and the balancer's only up-front frontend cost is the shared `cardMetadata` index (NFR-013)
-- raw downloaded bulk data remains gitignored; only the trimmed, gzip-compressed price artifact is committed
+- raw downloaded bulk data remains gitignored; only the trimmed, brotli-compressed price artifact is committed
 - a side total is `Σ qty × (foil ? usd_foil : usd)`; USD only (EUR/tix/etched-foil and grading/condition out of scope for v1)
 - input reuses the existing scan resolver (DEC-053, REQ-036) and manual card search (DEC-012); the chosen printing is a pricing/display layer only and is never pushed into prompt context, rulings lookup, or the Decrypt-Stack request payload
 
@@ -352,7 +352,7 @@ The backend should include:
 - `ADDITIONAL GAME STATE` section containing `gameStateNotes` content, positioned after `GENERAL GAME CONTEXT` and before `PHASE GUIDANCE`; omitted entirely when `gameStateNotes` is absent or blank after trim (DEC-043)
 - phase-specific guidance block (`PHASE GUIDANCE`) positioned between `GENERAL GAME CONTEXT` (and `ADDITIONAL GAME STATE` when present) and zone sections; always present for a valid phase submission; combat guidance varies by `combatStep` when present (DEC-036)
 - selected zones
-- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; the card-intrinsic fields are resolved server-side by `cardId` from `cardDetailByOracleId.json` (REQ-176), targets and context notes come from the request; empty oracle emits `(none) — no oracle text recorded for this card`
+- populated zone sections — each card in every populated zone (stack and non-stack) includes the full card metadata block: oracle text, mana cost/value, type line, colors, supertypes/subtypes, targets, and context notes; the card-intrinsic fields are resolved server-side by `cardId` from `cardDetailByOracleId.json.br` (REQ-176), targets and context notes come from the request; empty oracle emits `(none) — no oracle text recorded for this card`
 - ordered stack zone when populated; stack section additionally includes stack role, caster, and mana spent per item
 - non-stack sections use owner and zone item labels (`Hand 1`, `Battlefield 1`, etc.); `caster` is omitted for non-stack items
 - mana spent per stack item (fallback to `manaValue` when omitted)

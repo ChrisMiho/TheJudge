@@ -7,6 +7,7 @@ import zlib from "node:zlib"
 
 import {
   ACCEPTED_VARIANT_STATUS,
+  COMBO_BLOCK_SIZE,
   EXAMPLE_VARIANT_STATUS,
   MIN_VARIANT_POPULARITY,
   buildComboArtifacts,
@@ -14,9 +15,10 @@ import {
   partitionVariantsByStatus,
   projectIngredientState,
   readRawInputs,
-  readVariantDetail,
+  readVariantAtPosition,
   runBuild,
-  serializeVariantDetail
+  serializeVariantDetail,
+  trimCommittedArtifacts
 } from "./build-commander-spellbook-combos.mjs"
 
 const fixturesDir = path.resolve("apps/backend/src/commanderSpellbook/__fixtures__")
@@ -30,29 +32,32 @@ function makeTempDir() {
 
 function outputPaths(dir) {
   return {
-    detailPath: path.join(dir, "commanderSpellbookCombos.json.gz"),
-    indexPath: path.join(dir, "commanderSpellbookComboIndex.json.gz")
+    detailPath: path.join(dir, "commanderSpellbookComboBlocks.br"),
+    indexPath: path.join(dir, "commanderSpellbookComboIndex.json.br")
   }
 }
 
 /**
- * Test-only convenience: decompress the index (one gzip member, read whole)
- * and every variant named in its `detailOffsets` directory (each its own
- * gzip member, read by byte range) back into a `{ manifest, variants }`
- * shape, so most assertions below read exactly as they did before the
- * lazy-access storage format existed. The runtime loader (slice H) never
- * does this "read everything" reconstruction — it fetches one variant at a
- * time, on demand.
+ * Test-only convenience: decompress the index (one brotli member, read whole)
+ * and every variant named in its `variantIds` positional dictionary (each
+ * fetched from its own block by position — the array index) back into a
+ * `{ manifest, variants }` shape, so most assertions below read exactly as
+ * they did before the block-layout storage format existed. The runtime
+ * loader (slice B) never does this "read everything" reconstruction — it
+ * fetches one block at a time, on demand.
  */
 function reconstructArtifacts(paths) {
-  const index = JSON.parse(zlib.gunzipSync(fs.readFileSync(paths.indexPath)).toString("utf8"))
+  const index = JSON.parse(zlib.brotliDecompressSync(fs.readFileSync(paths.indexPath)).toString("utf8"))
   const detailBuffer = fs.readFileSync(paths.detailPath)
-  const variantIds = Object.keys(index.detailOffsets).sort((a, b) => a.localeCompare(b))
-  const variants = variantIds.map((variantId) => {
-    const [offset, length] = index.detailOffsets[variantId]
-    return readVariantDetail(detailBuffer, offset, length)
-  })
+  const variants = index.variantIds.map((variantId, position) =>
+    readVariantAtPosition(detailBuffer, index.blocks, position)
+  )
   return { detail: { manifest: index.manifest, variants }, index }
+}
+
+/** Test-only convenience: map a variantId to its byOracleId/byTemplateOracleId position. */
+function positionOf(index, variantId) {
+  return index.variantIds.indexOf(variantId)
 }
 
 async function buildFromFixture(fixtureName) {
@@ -74,56 +79,60 @@ test("build is deterministic for identical raw inputs", async () => {
   assert.ok(fs.readFileSync(first.indexPath).equals(fs.readFileSync(second.indexPath)))
 })
 
-test("the detail artifact is concatenated, individually-gzip-compressed per-variant records", async () => {
-  const { detailPath, index } = await buildFromFixture("raw-sample")
-  const detailBuffer = fs.readFileSync(detailPath)
+test("the detail artifact groups variants into 128-variant NDJSON blocks, one brotli member per block", () => {
+  const variants = Array.from({ length: 300 }, (_, index) => ({
+    variantId: `v-${String(index).padStart(4, "0")}`,
+    value: index
+  }))
 
-  const variantIds = Object.keys(index.detailOffsets)
-  assert.ok(variantIds.length >= 2, "fixture must carry more than one variant to prove members are separable")
+  const { detailBuffer, blockDirectory, positions } = serializeVariantDetail(variants)
 
-  // Each member decompresses on its own, independent of every other member's
-  // bytes — that separability is the entire point of the format, not just a
-  // whole-file round trip.
-  for (const variantId of variantIds) {
-    const [offset, length] = index.detailOffsets[variantId]
-    const member = detailBuffer.subarray(offset, offset + length)
-    const decompressed = JSON.parse(zlib.gunzipSync(member).toString("utf8"))
-    assert.equal(decompressed.variantId, variantId)
-  }
+  // 300 variants at 128/block -> 3 blocks (128, 128, 44).
+  assert.equal(blockDirectory.length, 3)
+  assert.equal(positions["v-0000"], 0)
+  assert.equal(positions["v-0299"], 299)
 
-  // The whole file is not one gzip stream wrapping a JSON array: gzipping the
-  // members separately means the file's total size cannot equal gzipping the
-  // same content as a single stream would produce, for a corpus this small
-  // where per-member header/footer overhead dominates.
-  const singleStreamEquivalent = zlib.gzipSync(
-    Buffer.from(JSON.stringify(variantIds.map((id) => index.detailOffsets[id])), "utf8")
-  )
+  // Each block decodes on its own, independent of every other block's bytes,
+  // and splits into exactly the expected number of NDJSON lines.
+  const expectedLineCounts = [128, 128, 44]
+  blockDirectory.forEach((block, blockIndex) => {
+    const member = detailBuffer.subarray(block.offset, block.offset + block.length)
+    const lines = zlib.brotliDecompressSync(member).toString("utf8").split("\n")
+    assert.equal(lines.length, expectedLineCounts[blockIndex])
+    const first = JSON.parse(lines[0])
+    assert.equal(first.variantId, `v-${String(blockIndex * COMBO_BLOCK_SIZE).padStart(4, "0")}`)
+  })
+
+  // Whole-buffer size cannot equal compressing the same content as one member
+  // for a corpus this size where cross-block boundaries still exist.
+  const singleStreamEquivalent = zlib.brotliCompressSync(Buffer.from(JSON.stringify(variants), "utf8"))
   assert.notEqual(detailBuffer.length, singleStreamEquivalent.length)
 })
 
-test("the index carries a variantId to byte-offset directory into the detail artifact", async () => {
+test("the index carries variantIds once as a positional dictionary, and a block byte-offset directory", async () => {
   const { index } = await buildFromFixture("raw-sample")
 
-  assert.deepEqual(Object.keys(index.detailOffsets).sort(), ["1000-2000", "1000-4000", "1000-5000"])
-  for (const [offset, length] of Object.values(index.detailOffsets)) {
+  assert.deepEqual(index.variantIds, ["1000-2000", "1000-4000", "1000-5000"])
+
+  assert.equal(index.blocks.length, 1)
+  for (const { offset, length } of index.blocks) {
     assert.ok(Number.isInteger(offset) && offset >= 0)
     assert.ok(Number.isInteger(length) && length > 0)
   }
 })
 
-test("serializeVariantDetail and readVariantDetail round-trip without touching other members", () => {
+test("serializeVariantDetail and readVariantAtPosition round-trip without touching other blocks", () => {
   const variants = [
     { variantId: "a", value: "first" },
     { variantId: "b", value: "second" }
   ]
-  const { detailBuffer, detailOffsets } = serializeVariantDetail(variants)
+  const { detailBuffer, blockDirectory, positions } = serializeVariantDetail(variants)
 
-  const [offsetA, lengthA] = detailOffsets.a
-  const [offsetB, lengthB] = detailOffsets.b
-  assert.deepEqual(readVariantDetail(detailBuffer, offsetA, lengthA), variants[0])
-  assert.deepEqual(readVariantDetail(detailBuffer, offsetB, lengthB), variants[1])
-  // Decompressing "a" alone must not require or consume "b"'s bytes.
-  assert.equal(offsetA + lengthA, offsetB)
+  // Both fit in one block (well under 128), but the round trip must still
+  // resolve each line correctly by position.
+  assert.equal(blockDirectory.length, 1)
+  assert.deepEqual(readVariantAtPosition(detailBuffer, blockDirectory, positions.a), variants[0])
+  assert.deepEqual(readVariantAtPosition(detailBuffer, blockDirectory, positions.b), variants[1])
 })
 
 test("the eval catalog's variant and ingredient key shape matches the real build's output", async () => {
@@ -270,8 +279,9 @@ test("a query-backed template expands to a deduplicated sorted oracle-id list", 
     "bbbbbbbb-0000-4000-8000-000000000002"
   ])
   assert.deepEqual(index.templates["12"].oracleIds, template.oracleIds)
+  assert.deepEqual(index.templates["12"].variantIds, [positionOf(index, "1000-4000")])
   for (const oracleId of template.oracleIds) {
-    assert.deepEqual(index.byTemplateOracleId[oracleId], ["1000-4000"])
+    assert.deepEqual(index.byTemplateOracleId[oracleId], [positionOf(index, "1000-4000")])
   }
 })
 
@@ -288,11 +298,14 @@ test("a template with no query and no mapping is retained as unresolved", async 
   assert.equal(index.templates["99"].unresolved, true)
 })
 
-test("the index maps each oracle id to its variants", async () => {
+test("the index maps each oracle id to its variants as integer positions, not variant-id strings", async () => {
   const { index } = await buildFromFixture("raw-sample")
 
-  assert.deepEqual(index.byOracleId["aaaaaaaa-0000-4000-8000-000000000001"], ["1000-2000"])
+  assert.deepEqual(index.byOracleId["aaaaaaaa-0000-4000-8000-000000000001"], [positionOf(index, "1000-2000")])
   assert.deepEqual(Object.keys(index.byOracleId), [...Object.keys(index.byOracleId)].sort())
+  for (const positions of Object.values(index.byOracleId)) {
+    for (const position of positions) assert.ok(Number.isInteger(position), "membership entries must be integer positions")
+  }
 })
 
 test("no image, price, or printing identity reaches either artifact", async () => {
@@ -378,7 +391,8 @@ test("absent raw inputs with no artifacts bootstrap a valid empty corpus", async
   assert.deepEqual(detail.variants, [])
   assert.deepEqual(index.byOracleId, {})
   assert.deepEqual(index.unresolvedTemplateIds, [])
-  assert.deepEqual(index.detailOffsets, {})
+  assert.deepEqual(index.variantIds, [])
+  assert.deepEqual(index.blocks, [])
   assert.equal(detail.manifest.snapshotAt, null)
 })
 
@@ -524,16 +538,17 @@ test("with no options, the default floor keeps the full corpus", () => {
   assert.equal(index.manifest.variantCount, 3)
   assert.equal(index.manifest.minPopularity, MIN_VARIANT_POPULARITY)
   assert.equal(index.manifest.belowPopularityFloorCount, 0)
-  assert.deepEqual(Object.keys(index.detailOffsets).sort(), ["1", "2", "3"])
+  assert.deepEqual([...index.variantIds].sort(), ["1", "2", "3"])
 })
 
 test("a trimmed variant leaves no trace in any derived structure", () => {
-  // Membership, the template directory, and the offset directory are all built
-  // from the same variant list, so filtering it must be complete rather than
-  // leaving an oracle id pointing at a variant the detail artifact no longer
-  // has. Exercises the emergency-valve path directly with an explicit floor:
-  // the default floor is 0 (Slice C), which filters nothing, so a real drop
-  // needs `minPopularity` passed the way `--trim-committed` would.
+  // Membership, the template directory, and the positional dictionary are
+  // all built from the same variant list, so filtering it must be complete
+  // rather than leaving an oracle id pointing at a variant the detail
+  // artifact no longer has. Exercises the emergency-valve path directly with
+  // an explicit floor: the default floor is 0 (Slice C), which filters
+  // nothing, so a real drop needs `minPopularity` passed the way
+  // `--trim-committed` would.
   const { index } = buildComboArtifacts({
     rawVariants: [popularityVariant("1", 0), popularityVariant("2", 5)],
     templateExpansions: new Map(),
@@ -541,11 +556,12 @@ test("a trimmed variant leaves no trace in any derived structure", () => {
     minPopularity: 1
   })
 
-  const referenced = new Set(Object.values(index.byOracleId).flat())
-  for (const variantId of referenced) {
-    assert.ok(index.detailOffsets[variantId], `${variantId} is referenced but has no detail record`)
+  const referencedPositions = new Set(Object.values(index.byOracleId).flat())
+  for (const position of referencedPositions) {
+    assert.ok(position < index.variantIds.length, `position ${position} is referenced but has no variantIds entry`)
   }
   assert.ok(!index.byOracleId["o-1"], "a dropped variant must not keep its oracle membership")
+  assert.ok(!index.variantIds.includes("1"), "a dropped variant must not appear in variantIds")
 })
 
 test("the floor can be switched off, and then nothing is dropped", () => {
@@ -580,4 +596,40 @@ test("a variant with no popularity field reads as unplayed, not as unknown", () 
   assert.equal(meetsPopularityFloor({ popularity: "900" }, 1), false)
   assert.equal(meetsPopularityFloor({ popularity: 1 }, 1), true)
   assert.equal(meetsPopularityFloor({ popularity: 0 }, 0), true)
+})
+
+test("--trim-committed re-blocks (filter survivors, re-serialize, rewrite) rather than splicing", async () => {
+  const outputDir = makeTempDir()
+  const paths = outputPaths(outputDir)
+
+  // Build a corpus of 5 popularity-varying variants spanning what would be
+  // one block, then trim at a floor that drops some of them.
+  const rawVariants = [
+    popularityVariant("a-1", 0),
+    popularityVariant("a-2", 5),
+    popularityVariant("a-3", 0),
+    popularityVariant("a-4", 10),
+    popularityVariant("a-5", 0)
+  ]
+  const templateExpansions = new Map()
+  const { detailBuffer, index } = buildComboArtifacts({ rawVariants, templateExpansions, snapshot: {} })
+  fs.mkdirSync(path.dirname(paths.detailPath), { recursive: true })
+  fs.writeFileSync(paths.detailPath, detailBuffer)
+  fs.writeFileSync(
+    paths.indexPath,
+    zlib.brotliCompressSync(Buffer.from(JSON.stringify(index), "utf8"))
+  )
+
+  const result = await trimCommittedArtifacts({ ...paths, minPopularity: 1 })
+
+  assert.equal(result.kept, 2)
+  assert.equal(result.dropped, 3)
+
+  const { detail, index: trimmedIndex } = reconstructArtifacts(paths)
+  assert.deepEqual(
+    detail.variants.map((v) => v.variantId).sort(),
+    ["a-2", "a-4"]
+  )
+  // Re-blocked, positions renumbered from 0 for the surviving, sorted set.
+  assert.deepEqual(trimmedIndex.variantIds, ["a-2", "a-4"])
 })

@@ -229,7 +229,7 @@ describe("Backend - Ask AI", () => {
       cards: [
         {
           // Questing Beast's real oracle id: its committed Scryfall keywords
-          // (Vigilance, Haste, Deathtouch — cardDetailByOracleId.json) are what
+          // (Vigilance, Haste, Deathtouch — cardDetailByOracleId.json.br) are what
           // crowd 701.8b out of the top 5 on cosine/lexical alone; the
           // cross-reference boost (the question cites 704.5g, which 701.8b's
           // own text cites) is what recovers it.
