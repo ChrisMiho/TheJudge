@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/trade-balancer-first-card-ux` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-first-card-ux` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260909-213550/` (one file, `GRAPH-BRIEF.md`, copied verbatim to `PRD/work/trade-balancer-first-card-ux/intake/GRAPH-BRIEF.md` in commit `14f9dfb`; staged copy deleted)
-- Current node: `gate-qc`
+- Current node: `define` (attempt 2 — gate-qc FAIL 1 of max 3 loops)
 - Next action: `/graph-kickoff PRD/work/trade-balancer-first-card-ux/` (spec-forming half in progress)
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 9` | `npm run graph:preflight -- --branch thejudge-auto/trade-balancer-first-card-ux --slug trade-balancer-first-card-ux --run-id graph-20260909-213550 --pid 66381` (dry run then real); shape `root`, base `origin/main`; `git ls-remote --heads origin thejudge-auto/trade-balancer-first-card-ux` → `fb1d9cc`; worktree `.worktrees/kickoff-trade-balancer-first-card-ux`; lock `{"slug":"trade-balancer-first-card-ux","runId":"graph-20260909-213550","pid":66381,"startedAt":"2026-09-09T21:36:56.377Z"}`; launch checkout still `main`, untouched | 2026-09-09 |
 | 2 | shape | sonnet | ok | `10 → 20` | commit `14f9dfb` on `thejudge-auto/trade-balancer-first-card-ux`: `IDEA.md` (5 `## Prior run` receipt matches), `README.md` (`status: ideation`), `STATUS.ideation`, `intake/GRAPH-BRIEF.md` (byte-identical to the staged copy), `PRD/work/STATUS.md` board row under `## ideation`; staging folder emptied | 2026-09-09 |
 | 3 | define | opus | ok | `1 → 42` | commit `9863eaa`: `DESIGN-BRIEF.md` (208 lines, `## Assumptions` 11 rows), `GATE-QUESTIONS.md` (508 lines, 10 `## ` blocks: REQ-064, REQ-065, REQ-066, FLOW-009, FLOW-025, trade-balancer README, screen-layout, system-map, integrations-and-data, cardPrintingPrices.md; 10 blank `- Verdict:` slots; no new IDs; no `## Blocker questions`), `STATUS.ideation → STATUS.refined`, README `status: refined`, board row moved `## ideation → ## refined`; `git status --porcelain` empty; no `PRD/sections/` or code edits; gate signal present → continue to `gate-qc` | 2026-09-09 |
+| 4 | gate-qc | sonnet | failed | `0 → 37` | FAIL, 1 finding: `PRD/sections/overview.md:43` (price fetch "made only when a card is added") is a live backend-traffic assertion no `GATE-QUESTIONS.md` block amends; all 10 existing diffs verified verbatim against current `PRD/sections/`. Commit `b72237c`: `STATUS.refined → STATUS.refining`, board row `## refined → ## refining`. README `## Preparation gate` rewritten FAIL. Loop → `define` attempt 2 | 2026-09-09 |
 
 ## Open gate
 
@@ -108,6 +109,26 @@ Commit when done: `cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kicko
 Boundaries: no `PRD/sections/` edits, no code edits, no `.claude/` or `CLAUDE.md` edits, no network refresh, no browser needed. Your tool-call budget for this dispatch is 150; a denial at the cap is final — write nothing further and report.
 
 Report back, each on its own line: outcome (`ok` | `failed` | `blocker`), files written, whether `GATE-QUESTIONS.md` exists and the list of `## ` block IDs it carries, any blocker question verbatim, the commit hash, `git status --porcelain` of the worktree (expect empty), and the exact tool-call count you made.
+
+### gate-qc (attempt 1)
+
+graph is controlling.
+
+You are node 4 (`gate-qc`, attempt 1) of graph run `graph-20260909-213550`, driven by `graph-kickoff`. Invoke the `thejudge-quality-check` skill (Skill tool, name `thejudge-quality-check`) on the package `PRD/work/trade-balancer-first-card-ux/` and follow its `## Mode` section for an orchestrator-controlled run: read `PRD/instructions/preparation-contract.md`, emit an explicit PASS or FAIL verdict, and return every FAIL issue to the driver. Do not self-certify a failed brief, do not fix the brief yourself, and do not create map-out artifacts. Do not reimplement the skill.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux
+
+Copy the `Working directory:` line above, unchanged and on its own line, into every prompt you write for any subagent. Every file you read or write lives under that directory (a git worktree on branch `thejudge-auto/trade-balancer-first-card-ux`). Never write to `/Users/chrismiho/Coding/Projects/TheJudge` itself.
+
+Artifact under check: `PRD/work/trade-balancer-first-card-ux/DESIGN-BRIEF.md`, together with the proposal in `PRD/work/trade-balancer-first-card-ux/GATE-QUESTIONS.md` (10 `## ` blocks, each a proposed amendment to an existing `PRD/sections/` ID or file; no new stable IDs). Refinement proposes and does not apply, so `PRD/sections/` is unchanged on this branch — check the proposed diffs against the current `PRD/sections/` text, not for a live diff. Check in particular: PRD alignment of the proposed amendments (each block's diff replaces the current text it claims to replace, and the set of amended assertions is complete — grep `PRD/sections/` for any remaining live assertion about the balancer's default printing, foil default, picker behaviour, or its backend traffic that the proposal misses); each gate block carries the three plain-language lines and a complete diff, not a summary; the brief's assumptions are evidence-backed; agent-readiness of the slice sketch (a map-out agent could slice it without asking questions); the constraints the brief names (scan path untouched, no new artifact fields, Lambda budget) are testable.
+
+Outputs the skill defines: the PASS/FAIL report written where the skill puts it. On FAIL, also replace `STATUS.refined` with `STATUS.refining` (exactly one marker) and move the `PRD/work/STATUS.md` board row from `## refined` to `## refining` (remove the old row, add the new one); on PASS leave the marker and the row as they are. Do not write the README `## Preparation gate` section — the driver records it. Do not edit `GRAPH-RUN.md`.
+
+Commit any files you write: `cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux && git add <explicit paths> && git commit -m <message>`. Never `git add -A`, `git add .`, or `git -C`. Do not push.
+
+Your tool-call budget for this dispatch is 60; a denial at the cap is final — write nothing further and report.
+
+Report back, each on its own line: verdict (`PASS` | `FAIL`), the path of the report you wrote, the complete findings list (every issue on FAIL, or `none`), files written, commit hash, `git status --porcelain` of the worktree (expect empty), and the exact tool-call count you made.
 
 ## Instruction ledger
 
