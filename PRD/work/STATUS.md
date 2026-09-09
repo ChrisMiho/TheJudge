@@ -10,11 +10,11 @@ Do not rename package folders to encode status.
 
 ## refined
 
+- [compact-data-extracts](compact-data-extracts/) — re-encode committed backend data extracts (brotli, 128-combo blocks) to fit the full fresh corpus inside the 120 MB Lambda budget without trimming
+
 ## refining
 
 ## ideation
-
-- [compact-data-extracts](compact-data-extracts/) — re-encode committed backend data extracts (brotli, 128-combo blocks) to fit the full fresh corpus inside the 120 MB Lambda budget without trimming
 
 ## owner-action
 

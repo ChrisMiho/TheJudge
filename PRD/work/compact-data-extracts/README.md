@@ -1,6 +1,6 @@
 # compact-data-extracts
 
-status: ideation
+status: refined
 
 ## Summary
 
