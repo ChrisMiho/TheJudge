@@ -1,0 +1,44 @@
+{
+  "slug": "resilient-weekly-data-refresh",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "A failed bulk card/rulings download makes main() reject/exit non-zero and skip data:build",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-scryfall-data.test.mjs",
+        "paths": [
+          "scripts/refresh-scryfall-data.mjs"
+        ]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "A data:refresh pipeline failure yields no commit, no push, no gh pr create in refresh-and-open-pr",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-and-open-pr.test.mjs",
+        "paths": [
+          "scripts/refresh-and-open-pr.test.mjs"
+        ]
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "A successful headline download still proceeds to build normally (no regression)",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-scryfall-data.test.mjs"
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "refresh-scryfall-data and refresh-and-open-pr test suites pass",
+      "value": true,
+      "evidence": {
+        "command": "node --test scripts/refresh-scryfall-data.test.mjs scripts/refresh-and-open-pr.test.mjs"
+      }
+    }
+  ]
+}
