@@ -1,6 +1,6 @@
 # compact-data-extracts
 
-status: owner-action
+status: refined
 
 ## Summary
 

@@ -10,15 +10,16 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| Package | Note |
+| --- | --- |
+| [compact-data-extracts](compact-data-extracts/) | Define gate resolved 2026-09-09 — owner answered all 20 verdict slots `accept`, docs PR #224 merged into `main`. Next: `/graph-implement PRD/work/compact-data-extracts/` resumes at `gate-qc` to build it. |
+
 ## refining
 
 ## ideation
 
 ## owner-action
 
-| Package | Note |
-| --- | --- |
-| [compact-data-extracts](compact-data-extracts/) | Spec-forming half complete (gate-qc PASS). Docs PR open into `main`. Owner: answer the 20 verdict slots in `compact-data-extracts/GATE-QUESTIONS.md`, then merge the docs PR — that merge is the build signal for `graph-implement`. |
 
 ## deferred
 

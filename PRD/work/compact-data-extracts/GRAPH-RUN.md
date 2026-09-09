@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-compact-data-extracts`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260908-233747/`
-- Current node: `owner-action` (spec-forming half complete — gate-qc PASS, docs PR open, parked)
-- Next action: owner answers `PRD/work/compact-data-extracts/GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/compact-data-extracts/` builds it
+- Current node: `gate-review` (define-gate verdicts applied — all 20 `accept`, STATUS restored to `refined`)
+- Next action: `/graph-implement PRD/work/compact-data-extracts/` resumes at `gate-qc` to build it
 
 ## Node ledger
 
@@ -19,16 +19,46 @@
 | 4 | gate-qc | sonnet | failed | `1 → 63` (cap 60 reached; verdict delivered and committed within grace) | FAIL commit `4b9a517` — STATUS.refined→refining. Amendment set incomplete: misses REQ-167 + REQ-180 (functional-requirements.md) and 4 more `integrations-and-data.md` lines that name `cardDetailByOracleId.json` without a proposed `.json.br` rename; after rename they'd describe a nonexistent file. GATE-QUESTIONS form well-formed; PRD/sections untouched. Loop 1→define | 2026-09-09 |
 | 3 | define | opus | ok | `1 → 30` | attempt 2 (loop 1 fix). Commit `30d47ef` — amendment set closed at 20 slots: ADDED REQ-167, REQ-180; EXTENDED integrations-and-data (all 4 card-detail lines) + NFR-017 stale-name note. Re-enumerated by grep; every before-text verbatim vs PRD/sections; PRD/sections untouched. STATUS.refined | 2026-09-09 |
 | 4 | gate-qc | sonnet | ok | `1 → 28` | attempt 2 PASS. Amendment set verified complete by reviewer's own grep — 20 slots cover every PRD/sections line that goes stale after the brotli/rename change; all before-text byte-identical; GATE-QUESTIONS well-formed; PRD/sections unedited. STATUS stays refined. Run stops here (docs PR + owner-action park) | 2026-09-09 |
+| — | gate-review | sonnet | ok | `1 → 22` | build half run `graph-20260909-003859`. All 20 owner verdicts `accept` applied inside GATE-QUESTIONS.md (no edit/reject); STATUS.owner-action→refined; README status→refined; `## Gate verdicts` table added; `## Open gate` resolved; `PRD/work/STATUS.md` board row owner-action→refined; PRD/sections untouched | 2026-09-09 |
+
+## Gate verdicts
+
+Owner answered all 20 stable-ID slots in `GATE-QUESTIONS.md` `accept` (2026-09-09).
+Every proposed diff stands as refinement wrote it — no `edit`/`reject` corrections
+to apply, so `GATE-QUESTIONS.md` itself needed no further changes.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-093` | accept | — |
+| `REQ-066` | accept | — |
+| `REQ-175` | accept | — |
+| `REQ-195` | accept | — |
+| `REQ-196` | accept | — |
+| `REQ-185` | accept | — |
+| `REQ-167` | accept | — |
+| `REQ-180` | accept | — |
+| `NFR-017` | accept | — |
+| `integrations-and-data.md` | accept | — |
+| `in-depth/README.md` | accept | — |
+| `trade-balancer/data/cardPrintingPrices.md` | accept | — |
+| `system-map.md` — Printing-price artifact build entry | accept | — |
+| `system-map.md` — Commander Spellbook combo artifact build entry | accept | — |
+| `system-map.md` — combo retrieval entry (Lives in) | accept | — |
+| `system-map.md` — Card rulings entry (encoding note) | accept | — |
+| `system-map.md` — Artifact builders entry (encoding note) | accept | — |
+| `system-map/game-rules-retrieval.md` | accept | — |
+| `quick-lookup/README.md` | accept | — |
+| `trade-balancer/README.md` | accept | — |
+
+No `## Blocker questions` section was present in `GATE-QUESTIONS.md` — none to answer.
 
 ## Open gate
 
-- Parked at `owner-action` after `gate-qc` PASS (spec-forming half complete).
-- Owner action: answer the verdict slots in `PRD/work/compact-data-extracts/GATE-QUESTIONS.md`
-  (20 stable-ID slots — accept / edit / reject each), then **merge the docs PR into `main`**.
-  That merge is the build signal.
-- Then `graph-implement` (the build half) claims the spec from `origin/main`, applies the
-  approved product-truth diffs, and opens the code PR. Resume: `/graph-implement PRD/work/compact-data-extracts/`.
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/224 (docs-only, base `main`, head `thejudge-auto/compact-data-extracts`).
+- **Resolved 2026-09-09** — all 20 verdicts applied (see `## Gate verdicts` above).
+  `PRD/work/compact-data-extracts/GATE-QUESTIONS.md` is the finalized proposal;
+  `PRD/sections/` remains untouched — `build` applies the finalized proposal there.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/224 (docs-only, merged into `main`).
+- STATUS restored to `refined`. Resume: `/graph-implement PRD/work/compact-data-extracts/`.
 
 ## Dispatch prompts
 
