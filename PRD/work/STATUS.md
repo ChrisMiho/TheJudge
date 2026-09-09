@@ -10,9 +10,9 @@ Do not rename package folders to encode status.
 
 ## refined
 
-- [compact-data-extracts](compact-data-extracts/) — re-encode committed backend data extracts (brotli, 128-combo blocks) to fit the full fresh corpus inside the 120 MB Lambda budget without trimming
-
 ## refining
+
+- [compact-data-extracts](compact-data-extracts/) — re-encode committed backend data extracts (brotli, 128-combo blocks) to fit the full fresh corpus inside the 120 MB Lambda budget without trimming; gate-qc FAIL, amendment set missed REQ-167/REQ-180 and four integrations-and-data.md lines naming `cardDetailByOracleId.json`
 
 ## ideation
 
