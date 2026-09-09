@@ -15,12 +15,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Owner answered all twelve `GATE-QUESTIONS.md` verdicts (10 accept, 2 edit, 0 reject) and merged the docs PR (#226). `graph-gate-review` applied the two foil-rule edits and restored `refined`; next is `gate-qc` inside `/graph-implement`. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | `gate-qc` attempt 5 FAILed: `DESIGN-BRIEF.md`'s "Foil mode follows the printing" section and Assumption A6 still describe the pre-edit keep-current-mode foil rule, contradicting the owner's accepted edit to REQ-065 and the `trade-balancer/README.md` block (mode re-derived from the new printing's prices every time, no keep-current clause). Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## ideation
 
