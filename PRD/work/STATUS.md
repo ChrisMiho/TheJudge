@@ -17,6 +17,8 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up (graph run `graph-20260909-213550`) |
+
 ## owner-action
 
 
