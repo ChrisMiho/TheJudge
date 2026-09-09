@@ -24,14 +24,27 @@
 | 4 | gate-qc (attempt 2) | sonnet | failed | `1 → 39` | FAIL, 2 findings, same shape as attempt 1 inside files that already have a block: `PRD/sections/trade-balancer/data/cardPrintingPrices.md:126-127` (fetched only when that card is added) and `PRD/sections/integrations-and-data.md:154` (on-add fetch) — their blocks' diffs never touch those lines. Attempt 1's `overview.md:43` finding closed. All 12 blocks' removed lines verified verbatim. Commit `37aa86b`: `STATUS.refined → STATUS.refining`, board row `## refined → ## refining`. README `## Preparation gate` rewritten FAIL (attempt 2). Loop → `define` attempt 3 (FAIL 2 of max 3 loops) | 2026-09-09 |
 | 3 | define (attempt 3) | opus | ok | `1 → 54` | commit `c6b5780`: both findings closed by extending the existing `cardPrintingPrices.md` and `integrations-and-data.md` blocks (six new hunks; four more on-add sentences in `trade-balancer/README.md` :91-94, :99, :140, :160-161 also amended); still 12 blocks, 12 blank `- Verdict:` slots; `DESIGN-BRIEF.md` gains `### How the amendment set was enumerated — line by line` (79 matched lines: 35 amended, 44 not contradicted with reasons); 54 removed + 74 context diff lines verified against live `PRD/sections/`, 0 mismatches; `STATUS.refining → STATUS.refined`; board row `## refining → ## refined`; `git status --porcelain` empty | 2026-09-09 |
 
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-064` | accept | Wake the backend with the existing health check when the Trade Balancer opens. Traffic is far too low for the extra invocation per open to matter. |
+| `REQ-065` | edit | Pick-before-add and the scrollable picker are accepted as written. Change the foil rule to a plain default: whenever an entry receives a printing (picked before an add, resolved from a scan, changed, or re-fetched on retry), the foil toggle is set to non-foil when that printing has a `usd` price, and foil only when `usd` is null and `usd_foil` is not. Drop the "otherwise the entry's current mode is kept" clause — the mode is re-derived from the new printing's prices every time, so a player who toggled foil and then changes to a printing with a non-foil price lands back on non-foil. The player may still toggle into a mode with no price and get the $0-plus-caution treatment. Apply the same wording to the foil bullet in REQ-065 and to the mirrored sentence in the trade-balancer README block. |
+| `REQ-066` | accept | Newest printing first, always — in the artifact, on the wire, and in the picker list, with no client-side re-sort. Best experience for the player. |
+| `FLOW-009` | accept | — |
+| `FLOW-025` | accept | — |
+| `PRD/sections/trade-balancer/README.md` | edit | Accept every hunk as written except the foil-toggle bullet under "Adding a card to a side", which must carry the same rule as the REQ-065 edit: the mode is re-derived from the new printing's prices each time an entry receives a printing — non-foil when a `usd` price exists, foil only when `usd` is null and `usd_foil` is not — with no "current mode is kept" clause. |
+| `PRD/sections/screen-layout.md` | accept | — |
+| `PRD/sections/system-map.md` | accept | — |
+| `PRD/sections/integrations-and-data.md` | accept | — |
+| `PRD/sections/trade-balancer/data/cardPrintingPrices.md` | accept | — |
+| `PRD/sections/overview.md` | accept | — |
+| `PRD/sections/non-functional-requirements.md` (NFR-013) | accept | — |
+
 ## Open gate
 
-- **State:** PARKED at `owner-action` after `gate-qc` PASS (attempt 4). The spec-forming half is complete; nothing further runs until the owner acts.
-- **What to do:** answer `GATE-QUESTIONS.md`, then merge to build. Open every `- Verdict:` slot in `PRD/work/trade-balancer-first-card-ux/GATE-QUESTIONS.md` (twelve blocks: REQ-064, REQ-065, REQ-066, FLOW-009, FLOW-025, the trade-balancer README, screen-layout, system-map, integrations-and-data, cardPrintingPrices.md, overview.md, non-functional-requirements.md NFR-013) and write `accept`, `edit`, or `reject` (with a `- Reason:` for edit and reject). Then merge the docs PR into `main`. That merge is the build signal: `/graph-implement` (the background build loop) claims the spec, applies the verdicts via `graph-gate-review`, re-runs `gate-qc`, and builds it in its own worktree.
-- **Where to answer:** in the PR on GitHub, or in the kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-trade-balancer-first-card-ux` (commit and push on `thejudge-auto/trade-balancer-first-card-ux`). The worktree stays until `graph-implement` claims the spec.
-- **Docs PR:** https://github.com/ChrisMiho/TheJudge/pull/226 (`thejudge-auto/trade-balancer-first-card-ux → main`, opened by `gh pr create` from the kickoff worktree; docs-only — 8 files, all under `PRD/work/`). Answer the verdict slots there, then merge.
-- **Evidence:** README `## Preparation gate` = PASS; `GATE-QUESTIONS.md` has 12 `## ` blocks and 12 blank `- Verdict:` slots; `PRD/sections/` untouched on this branch (`git diff origin/main..HEAD --stat -- PRD/sections/` is empty).
-- **Resume if the park is disturbed:** `/graph-kickoff PRD/work/trade-balancer-first-card-ux/` re-enters at the status-matched node; with `STATUS.owner-action` the entry table hands off to `graph-implement`.
+- **State:** RESOLVED 2026-09-09. Owner answered all twelve `- Verdict:` slots in `PRD/work/trade-balancer-first-card-ux/GATE-QUESTIONS.md` (10 accept, 2 edit, 0 reject) and merged the docs PR (#226) into `main`. `graph-gate-review` applied both `edit` verdicts inside their blocks' proposed diffs (`REQ-065` and the trade-balancer README block, both rewriting the foil-toggle `+` line to the owner's re-derived non-foil-unless-foil-only rule), recorded the verdicts above, and restored `STATUS.refined`.
+- **Resume:** `/graph-implement PRD/work/trade-balancer-first-card-ux/` — the run resumes at `gate-qc`.
 
 ## Dispatch prompts
 
@@ -290,6 +303,29 @@ Commit form if you write anything: `cd /Users/chrismiho/Coding/Projects/TheJudge
 Your tool-call budget for this dispatch is 60; a denial at the cap is final — write nothing further and report.
 
 Report back, each on its own line: verdict (`PASS` | `FAIL`), the complete findings list (every issue on FAIL, or `none`), what you verified (one line per check, with counts), files written (or none), commit hash (or none), `git status --porcelain` of the worktree (expect empty), and the exact tool-call count you made.
+
+### gate-review
+
+graph is controlling.
+
+You are the gate-resolution step (node `gate-review`, attempt 1) of graph run `graph-20260909-213550`, driven by `graph-implement` (the build half). Invoke the `graph-gate-review` skill (Skill tool, name `graph-gate-review`) on the package `PRD/work/trade-balancer-first-card-ux/` and follow its `## Procedure` exactly. Do not reimplement it.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-first-card-ux
+
+Copy the `Working directory:` line above, unchanged and on its own line, into every prompt you write for any subagent (you should not need any). Every file you read or write lives under that directory — a git worktree on branch `thejudge-auto/trade-balancer-first-card-ux-work`, cut from `origin/main` after the docs PR #226 merged. Never write to `/Users/chrismiho/Coding/Projects/TheJudge` itself.
+
+State of the gate: `GATE-QUESTIONS.md` carries 12 `## ` blocks (REQ-064, REQ-065, REQ-066, FLOW-009, FLOW-025, the trade-balancer README, screen-layout, system-map, integrations-and-data, cardPrintingPrices.md, overview.md, non-functional-requirements.md NFR-013). The owner answered every `- Verdict:` slot in the docs PR: 10 `accept`, 2 `edit` (the REQ-065 block and the trade-balancer README block), 0 `reject`. Both edit reasons replace the proposed foil rule with a plain re-derived default — non-foil whenever the printing has a `usd` price, foil only when `usd` is null and `usd_foil` is not, and no clause keeping the entry's current mode — and ask for that same wording in the REQ-065 foil bullet and in the mirrored README sentence. `## Open gate` in `GRAPH-RUN.md` records the `owner-action` park after gate-qc PASS; the marker is `STATUS.owner-action`.
+
+What to do, per the skill:
+1. Verify every slot is filled and every `edit` carries a `- Reason:`; refuse, naming the IDs, otherwise.
+2. Apply the two `edit` verdicts inside those two blocks' proposed diffs in `GATE-QUESTIONS.md` only: rewrite the affected `+` lines so they carry the owner's rule, and leave every `-` line untouched (they must still match live `PRD/sections/` text verbatim). The REQ-065 reason's request to mirror the wording in the README sentence is the README block's own `edit` — apply it there. Do not touch the `accept` blocks. Never edit `PRD/sections/`, `DESIGN-BRIEF.md`, or code.
+3. Write `## Gate verdicts` in `GRAPH-RUN.md` (one row per block, the owner's reason quoted for each edit), mark `## Open gate` resolved with the date 2026-09-09 and the verdict count, and add nothing else to the ledger — the driver owns `## Node ledger` and `## Dispatch prompts`.
+4. Restore the lifecycle position: replace `STATUS.owner-action` with `STATUS.refined` (exactly one marker), set the README top line to `status: refined`, and move the `PRD/work/STATUS.md` board row from its current section to `## refined` (remove the old row, add the new one).
+5. Commit: `cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-first-card-ux && git add <explicit paths> && git commit -m <message>`. Never `git add -A`, `git add .`, or `git -C`. Do not push.
+
+Boundaries: never dispatch a subagent or run a `thejudge-*` skill; never edit `PRD/sections/`; never retry a denied command. A denial at any cap is final — write nothing further and report.
+
+Report back, each on its own line: outcome (`ok` | `refused`), the verdict split, the exact `GATE-QUESTIONS.md` lines you changed (block and hunk), files written, the commit hash, `git status --porcelain` of the worktree (expect empty), and the exact tool-call count you made.
 
 ## Instruction ledger
 

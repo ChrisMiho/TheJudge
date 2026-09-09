@@ -15,6 +15,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Owner answered all twelve `GATE-QUESTIONS.md` verdicts (10 accept, 2 edit, 0 reject) and merged the docs PR (#226). `graph-gate-review` applied the two foil-rule edits and restored `refined`; next is `gate-qc` inside `/graph-implement`. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## refining
 
@@ -27,7 +28,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | **Decide + merge.** Trade Balancer: pick the printing before adding, foil starts in the mode that has a price, scrollable printing picker, wake the API on open. Quality-check PASSED (attempt 4). Twelve proposed product-truth amendments (no new IDs) await the owner's `accept / edit / reject` in `GATE-QUESTIONS.md`; answer them in the docs PR, then merge — the merge is the build signal for `/graph-implement`. Graph run `graph-20260909-213550`, kickoff worktree `.worktrees/kickoff-trade-balancer-first-card-ux` |
 
 
 ## deferred

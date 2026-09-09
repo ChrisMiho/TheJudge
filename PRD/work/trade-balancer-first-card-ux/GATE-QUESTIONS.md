@@ -116,7 +116,7 @@ is.
 -  - **manual search input:** the user finds a card by name via the existing local search (DEC-012), then **chooses the correct printing** from that card's printing list before it is added; the chosen printing's price applies
 -  - the **foil toggle** switches the entry's contribution between `usd` and `usd_foil`; default is non-foil
 +  - **manual search input:** the user finds a card by name via the existing local search (DEC-012); tapping a suggestion fetches that card's printing list and shows the **printing picker in place of the suggestions**, with a brief loading state, and the entry is added carrying the printing the player taps — the choice happens **before the card is added**, and the chosen printing's price applies. Cancelling returns to the search box. If that pre-add fetch fails or the card has no printings, the card is added anyway in the $0-plus-caution state with the retry affordance, so manual search stays the permanent fallback input path
-+  - the **foil toggle** switches the entry's contribution between `usd` and `usd_foil`. Whenever an entry receives a printing — picked before an add, resolved from a scan, changed, or re-fetched on retry — the mode is **auto-selected from that printing's own prices**: foil when only `usd_foil` exists, non-foil when only `usd` exists, and otherwise the entry's current mode is kept (a new entry starts non-foil). The player may still toggle into a mode with no price, which keeps the $0-plus-caution treatment below
++  - the **foil toggle** switches the entry's contribution between `usd` and `usd_foil`. Whenever an entry receives a printing — picked before an add, resolved from a scan, changed, or re-fetched on retry — the mode is **re-derived from that printing's own prices**: non-foil when the printing has a `usd` price, and foil only when `usd` is null and `usd_foil` is not (a new entry starts non-foil). The player may still toggle into a mode with no price, which keeps the $0-plus-caution treatment below
 +  - the **printing picker** — the same component used before an add and by "Change printing" — heads with the card's printing count (`N printings`, computed from the fetched list, never from a stored field), lists printings **newest release first** (REQ-066), **region-scrolls** inside a short box instead of growing the page with the card's printing count, lazy-loads its row images, offers a **set-name/set-code filter** once a card has more than eight printings, and scrolls the currently selected printing into view when it opens
    - **quantity/multiples:** the same card (or printing) may appear multiple times on a side, via repeated adds and/or a per-entry quantity control; each unit counts toward the side total; the stack duplicate-block does not apply
    - **missing price:** when the selected foil mode has no price for the chosen printing, the entry's contribution defaults to **$0**, the entry's price is rendered in a **distinct color** from priced entries, and the entry shows a **caution-triangle** indicator communicating that the value is unknown
@@ -353,11 +353,10 @@ requirements, which is the drift this run exists to fix.
 +- Built: the **foil toggle** switches an entry's contribution between `usd` and
 +  `usd_foil`. Whenever an entry receives a printing — picked before an add,
 +  resolved from a scan, changed, or re-fetched on retry — the mode is
-+  **auto-selected from that printing's prices**: foil when only the foil price
-+  exists, non-foil when only the non-foil price exists, otherwise the entry's
-+  current mode is kept (a new entry starts non-foil). The player can still
-+  toggle into a mode with no price, which keeps the $0-plus-caution treatment.
-+  (REQ-065)
++  **re-derived from that printing's own prices**: non-foil when the printing
++  has a `usd` price, and foil only when `usd` is null and `usd_foil` is not (a
++  new entry starts non-foil). The player can still toggle into a mode with no
++  price, which keeps the $0-plus-caution treatment. (REQ-065)
 @@ Missing prices, and a failed price fetch
 -- Built: if a card's on-add price fetch fails outright (not a missing price,
 -  but a failed request), the entry degrades to the same $0-plus-caution
