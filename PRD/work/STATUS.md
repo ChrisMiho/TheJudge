@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [compact-data-extracts](compact-data-extracts/) | All 6 slices (A-F) done, all 34 acceptance criteria true. Combo detail/index, rulings, card detail, and prices moved to brotli (combo blocks of 128); committed data 24.75 MB against the 120 MB Lambda budget. 20 accepted PRD diffs applied at slice F. PR open. Next: owner merge, then `/thejudge-cleanup PRD/work/compact-data-extracts/`. |
 
 ## active
 
