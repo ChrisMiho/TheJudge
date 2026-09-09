@@ -15,12 +15,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up. `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (12 amendment blocks, no new IDs) — amendment set re-enumerated at line level (79 lines disposed: 35 amended, 44 not contradicted); awaiting gate-qc attempt 3 (graph run `graph-20260909-213550`) |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up. gate-qc attempt 3 FAILed: `PRD/sections/functional-requirements.md:4052` ("the balancer fetches one card's prices on add and caches per session") is a live fetch-timing sentence no `GATE-QUESTIONS.md` block amends, same failure mode as attempts 1-2; the line-level disposition table's "not contradicted" reason for that line ignores the timing claim |
 
 ## ideation
 
