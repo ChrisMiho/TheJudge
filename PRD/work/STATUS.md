@@ -20,7 +20,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | `gate-qc` attempt 5 FAILed: `DESIGN-BRIEF.md`'s "Foil mode follows the printing" section and Assumption A6 still describe the pre-edit keep-current-mode foil rule, contradicting the owner's accepted edit to REQ-065 and the `trade-balancer/README.md` block (mode re-derived from the new printing's prices every time, no keep-current clause). Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## ideation
 
@@ -28,6 +27,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | PARKED by `graph-implement` after `gate-qc` attempt 5 FAIL (the run's fourth FAIL, past the three-loop limit). The owner's accepted foil edit (mode re-derived from the new printing's prices every time, no keep-current clause) is in `GATE-QUESTIONS.md`, but `DESIGN-BRIEF.md` line 106 and assumption A6 still state the old keep-current rule. Owner action: rewrite those two brief passages on `thejudge-auto/trade-balancer-first-card-ux-work`, restore `STATUS.refined`, push, then `/graph-implement PRD/work/trade-balancer-first-card-ux/`. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 
 ## deferred
