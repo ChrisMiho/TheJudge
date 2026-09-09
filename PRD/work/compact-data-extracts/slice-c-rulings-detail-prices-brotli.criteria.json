@@ -5,37 +5,37 @@
     {
       "id": "C1",
       "statement": "build-card-rulings.mjs writes brotli to apps/backend/data/cardRulingsByOracleId.json.br with fixed, named brotli params and no dictionary",
-      "value": false,
+      "value": true,
       "evidence": { "command": "grep -n \"BROTLI_PARAM_QUALITY|BROTLI_PARAM_SIZE_HINT\" scripts/build-card-rulings\\.mjs", "paths": ["scripts/build-card-rulings.mjs"] }
     },
     {
       "id": "C2",
       "statement": "build-card-detail-by-oracle-id.mjs writes brotli to both cardDetailByOracleId.json.br and cardPrintingPricesByOracleId.json.br",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["scripts/build-card-detail-by-oracle-id.mjs"] }
     },
     {
       "id": "C3",
       "statement": "cardRulings.ts, cardDetail.ts, cardPrices.ts decode via brotliDecompressSync once at startup with unchanged map shapes and route responses",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/backend/src/cardRulings.ts", "apps/backend/src/cardDetail.ts", "apps/backend/src/cardPrices.ts"] }
     },
     {
       "id": "C4",
       "statement": "each loader still fails open when its committed file is missing (mock-default dev boot with no data present)",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm --workspace apps/backend run test -- cardRulings cardDetail cardPrices" }
     },
     {
       "id": "C5",
       "statement": "the build's missing/failed-source degrade path preserves prior committed .br artifacts and does not break sibling builds",
-      "value": false,
+      "value": true,
       "evidence": { "command": "node --test scripts/build-card-detail-by-oracle-id\\.test\\.mjs" }
     },
     {
       "id": "C6",
       "statement": "build-card-detail-by-oracle-id test suite and backend workspace tests for cardRulings/cardDetail/cardPrices pass",
-      "value": false,
+      "value": true,
       "evidence": { "command": "node --test scripts/build-card-detail-by-oracle-id\\.test\\.mjs|npm --workspace apps/backend run test -- cardRulings cardDetail cardPrices" }
     }
   ]

@@ -33,7 +33,7 @@ const currentDir = dirname(fileURLToPath(import.meta.url));
  * REQ-176's rationale below) fall back to the fixture's own inline
  * `keywords` field.
  */
-const realCardDetailIndex = loadCardDetailIndex(resolve(currentDir, "../../data/cardDetailByOracleId.json"));
+const realCardDetailIndex = loadCardDetailIndex(resolve(currentDir, "../../data/cardDetailByOracleId.json.br"));
 
 export function cardDetailEntryFrom(card: Partial<ZoneCardItem>): CardDetailEntry {
   const real = card.cardId ? realCardDetailIndex.get(card.cardId) : undefined;

@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { gunzipSync } from "node:zlib";
+import { brotliDecompressSync } from "node:zlib";
 
 /**
  * One printing's price/identity fields (REQ-066, REQ-175). Deliberately
@@ -81,7 +81,7 @@ function normalizeCardPrintingPricesIndex(value: unknown): Map<string, CardPrint
 }
 
 /**
- * Loads the committed, gzip-compressed price map into memory at startup
+ * Loads the committed, brotli-compressed price map into memory at startup
  * (REQ-066, REQ-175) — mirroring `loadCardDetailIndex`'s fail-open posture so
  * mock-default dev boots clean with no committed file: a missing or
  * unparseable artifact logs one warning and yields an empty map rather than
@@ -97,7 +97,7 @@ export function loadCardPrintingPricesIndex(filePath: string): Map<string, CardP
   }
 
   try {
-    const parsed = JSON.parse(gunzipSync(readFileSync(filePath)).toString("utf8"));
+    const parsed = JSON.parse(brotliDecompressSync(readFileSync(filePath)).toString("utf8"));
     return normalizeCardPrintingPricesIndex(parsed);
   } catch (error) {
     warnLoadFailureOnce(filePath, `Card printing-price file could not be read: ${filePath}`, error);

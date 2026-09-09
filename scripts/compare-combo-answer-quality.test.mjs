@@ -3,6 +3,7 @@ import fs from "node:fs"
 import os from "node:os"
 import path from "node:path"
 import test from "node:test"
+import zlib from "node:zlib"
 
 import {
   CONFIRM_FLAG,
@@ -111,7 +112,7 @@ test("every scenario card matches the committed card corpus field for field", as
     ])
   )
   const detailCorpus = JSON.parse(
-    fs.readFileSync(path.resolve("apps/backend/data/cardDetailByOracleId.json"), "utf8")
+    zlib.brotliDecompressSync(fs.readFileSync(path.resolve("apps/backend/data/cardDetailByOracleId.json.br"))).toString("utf8")
   )
   const descriptiveFields = new Set(["oracleText", "typeLine", "manaCost", "manaValue", "supertypes", "subtypes"])
   // imageUrl is deliberately blank in the fixtures; owner/targets are request

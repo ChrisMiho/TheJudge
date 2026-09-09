@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL } from "node:url";
-import { gzipSync } from "node:zlib";
+import zlib from "node:zlib";
 import {
   choosePreferredCard,
   getColors,
@@ -21,19 +21,39 @@ const inputPath = path.resolve("apps/frontend/data/scryfall/default-cards.json")
 // `data:refresh`), reused here rather than re-derived, so the two artifacts
 // this file emits agree on when the corpus was captured.
 const inputMetaPath = path.resolve("apps/frontend/data/scryfall/default-cards.meta.json");
-const outputPath = path.resolve("apps/backend/data/cardDetailByOracleId.json");
+// REQ-175: committed brotli-compressed, not raw JSON — the raw shape is
+// ~12.7 MB for the current corpus; brotli takes it to a small fraction of
+// that with no change to what it holds or serves. The backend decodes it
+// once at startup.
+const outputPath = path.resolve("apps/backend/data/cardDetailByOracleId.json.br");
 // REQ-066: the price/printing projection unified into this build. Committed
-// gzip-compressed — the raw JSON (~15.6 MB for ~102k printings) would leave
+// brotli-compressed — the raw JSON (~15.6 MB for ~102k printings) would leave
 // the Lambda package's 120 MB committed-data budget with under 1 MB of
-// headroom (`scripts/lambda-package-budget.test.mjs`); gzipped it lands
-// around 4.6 MB, mirroring the existing `commanderSpellbookCombos.json.gz` /
-// `commanderSpellbookComboIndex.json.gz` committed-gzip pattern in this same
-// directory. The backend decompresses it once at startup (REQ-175), the
-// same way `apps/backend/src/commanderSpellbook/catalog.ts` already does.
-const pricesOutputPath = path.resolve("apps/backend/data/cardPrintingPricesByOracleId.json.gz");
+// headroom (`scripts/lambda-package-budget.test.mjs`); brotli lands smaller
+// still than gzip, mirroring the brotli pattern the backend data folder uses
+// across the combo blocks, combo index, rulings, and card detail. The backend
+// decompresses it once at startup (REQ-175), the same way
+// `apps/backend/src/commanderSpellbook/catalog.ts` already does for its blocks.
+const pricesOutputPath = path.resolve("apps/backend/data/cardPrintingPricesByOracleId.json.br");
 
 function ensureParentDirectory(filePath) {
   fs.mkdirSync(path.dirname(filePath), { recursive: true });
+}
+
+/**
+ * Brotli-compress with the fixed, named params this repository uses
+ * everywhere: quality 11, a size hint set to the raw input length, no
+ * `dictionary` option (Node 22 in CI silently ignores a brotli dictionary
+ * while Node 24 on Lambda honours it, which would make CI and Lambda
+ * disagree).
+ */
+function brotliCompress(buffer) {
+  return zlib.brotliCompressSync(buffer, {
+    params: {
+      [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
+      [zlib.constants.BROTLI_PARAM_SIZE_HINT]: buffer.length
+    }
+  });
 }
 
 export function buildDetailEntry(card) {
@@ -318,13 +338,13 @@ async function main() {
     }
 
     const { cardDetailByOracleId, stats } = finalizeDetailTransformState(state);
-    const detailOutput = JSON.stringify(cardDetailByOracleId);
+    const detailOutput = brotliCompress(Buffer.from(JSON.stringify(cardDetailByOracleId), "utf8"));
     ensureParentDirectory(outputPath);
     fs.writeFileSync(outputPath, detailOutput);
 
     const snapshotDate = resolveSnapshotDate(inputPath, inputMetaPath);
     const { cardPrintingPricesByOracleId, priceStats } = finalizePriceTransformState(state, snapshotDate);
-    const pricesOutput = gzipSync(Buffer.from(JSON.stringify(cardPrintingPricesByOracleId)));
+    const pricesOutput = brotliCompress(Buffer.from(JSON.stringify(cardPrintingPricesByOracleId), "utf8"));
     ensureParentDirectory(pricesOutputPath);
     fs.writeFileSync(pricesOutputPath, pricesOutput);
 
@@ -333,14 +353,14 @@ async function main() {
     console.log(`Skipped by filter: ${stats.skippedByFilter}`);
     console.log(`Skipped missing oracle_id: ${stats.skippedMissingOracleId}`);
     console.log(`Skipped duplicates: ${stats.skippedAsDuplicate}`);
-    console.log(`Detail output bytes: ${Buffer.byteLength(detailOutput)}`);
+    console.log(`Detail output bytes (brotli): ${detailOutput.length}`);
     console.log(`Wrote: ${outputPath}`);
     console.log(`Priced oracle ids: ${priceStats.oraclesWithPrintings}`);
     console.log(`Priced printings: ${priceStats.totalPrintings}`);
     console.log(`With usd: ${priceStats.withUsd}, with usdFoil: ${priceStats.withUsdFoil}`);
     console.log(`Without any price: ${priceStats.withoutAnyPrice}`);
     console.log(`Snapshot date: ${snapshotDate}`);
-    console.log(`Price output bytes (gzip): ${pricesOutput.length}`);
+    console.log(`Price output bytes (brotli): ${pricesOutput.length}`);
     console.log(`Wrote: ${pricesOutputPath}`);
   } catch (error) {
     console.warn(

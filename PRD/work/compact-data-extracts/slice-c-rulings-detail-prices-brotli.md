@@ -1,6 +1,6 @@
 # Slice C — Brotli for rulings / card detail / prices in builders and loaders
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -36,20 +36,20 @@ hold or serve.
 
 ## Acceptance criteria
 
-- [ ] C1 — `build-card-rulings.mjs` writes brotli to
+- [x] C1 — `build-card-rulings.mjs` writes brotli to
       `apps/backend/data/cardRulingsByOracleId.json.br` with the fixed,
       named brotli params (no dictionary)
-- [ ] C2 — `build-card-detail-by-oracle-id.mjs` writes brotli to both
+- [x] C2 — `build-card-detail-by-oracle-id.mjs` writes brotli to both
       `apps/backend/data/cardDetailByOracleId.json.br` and
       `apps/backend/data/cardPrintingPricesByOracleId.json.br`
-- [ ] C3 — `cardRulings.ts`, `cardDetail.ts`, `cardPrices.ts` decode via
+- [x] C3 — `cardRulings.ts`, `cardDetail.ts`, `cardPrices.ts` decode via
       `brotliDecompressSync` once at startup; exposed map shapes and route
       responses are unchanged
-- [ ] C4 — each loader still fails open when its committed file is missing
+- [x] C4 — each loader still fails open when its committed file is missing
       (mock-default dev boot with no data present)
-- [ ] C5 — the build's missing/failed-source degrade path preserves prior
+- [x] C5 — the build's missing/failed-source degrade path preserves prior
       committed `.br` artifacts and does not break sibling builds
-- [ ] C6 — `node --test scripts/build-card-detail-by-oracle-id.test.mjs` and
+- [x] C6 — `node --test scripts/build-card-detail-by-oracle-id.test.mjs` and
       the backend workspace tests for `cardRulings`, `cardDetail`,
       `cardPrices` pass
 
