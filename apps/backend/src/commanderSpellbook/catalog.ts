@@ -263,16 +263,26 @@ function assertVariant(value: unknown): ComboVariant {
   return variant;
 }
 
-function assertMembership(value: unknown, label: string): Map<string, string[]> {
+/**
+ * Membership lists are written as arrays of integer positions into the
+ * index's `variantIds` positional dictionary (slice E), not variant-id
+ * strings — the compaction that drops cold-start parsing of the index from
+ * ~47 MB to ~12 MB. Validated here as positions only; `loadComboCatalog`
+ * maps them back to variant-id strings once `variantIds` itself is known, so
+ * the `ComboCatalog` this module exposes still carries `Map<string, string[]>`
+ * — a wire-format change absorbed entirely at load, invisible to every
+ * consumer of `byOracleId` / `byTemplateOracleId`.
+ */
+function assertPositionMembership(value: unknown, label: string): Map<string, number[]> {
   if (!isRecord(value)) {
     throw new Error(`Combo index ${label} must be an object.`);
   }
-  const membership = new Map<string, string[]>();
-  for (const [oracleId, variantIds] of Object.entries(value)) {
-    if (!Array.isArray(variantIds) || variantIds.some((variantId) => typeof variantId !== "string")) {
-      throw new Error(`Combo index ${label} entry ${oracleId} must be an array of variant ids.`);
+  const membership = new Map<string, number[]>();
+  for (const [oracleId, positions] of Object.entries(value)) {
+    if (!Array.isArray(positions) || positions.some((position) => !Number.isInteger(position) || position < 0)) {
+      throw new Error(`Combo index ${label} entry ${oracleId} must be an array of non-negative integer positions.`);
     }
-    membership.set(oracleId, variantIds as string[]);
+    membership.set(oracleId, positions as number[]);
   }
   return membership;
 }
@@ -297,18 +307,12 @@ function assertBlockDirectory(value: unknown): BlockRange[] {
   });
 }
 
-function assertVariantPositions(value: unknown): Map<string, number> {
-  if (!isRecord(value)) {
-    throw new Error("Combo index variantPositions must be an object.");
+/** `variantIds`: every committed variant id, listed exactly once, in `variantId` order — a variant's array index is its position everywhere else in the index. */
+function assertVariantIds(value: unknown): string[] {
+  if (!Array.isArray(value) || value.some((variantId) => typeof variantId !== "string")) {
+    throw new Error("Combo index variantIds must be an array of strings.");
   }
-  const positions = new Map<string, number>();
-  for (const [variantId, position] of Object.entries(value)) {
-    if (!Number.isInteger(position) || (position as number) < 0) {
-      throw new Error(`Combo index variantPositions entry ${variantId} must be a non-negative integer.`);
-    }
-    positions.set(variantId, position as number);
-  }
-  return positions;
+  return value as string[];
 }
 
 function readIndexArtifact(indexPath: string): Record<string, unknown> | null {
@@ -406,12 +410,14 @@ export function loadComboCatalog(detailPath: string, indexPath: string): ComboCa
   let byOracleId: Map<string, string[]>;
   let byTemplateOracleId: Map<string, string[]>;
   let blockDirectory: BlockRange[];
+  let variantIds: string[];
   let variantPositions: Map<string, number>;
   try {
-    byOracleId = assertMembership(index.byOracleId, "byOracleId");
-    byTemplateOracleId = assertMembership(index.byTemplateOracleId, "byTemplateOracleId");
+    const byOracleIdPositions = assertPositionMembership(index.byOracleId, "byOracleId");
+    const byTemplateOracleIdPositions = assertPositionMembership(index.byTemplateOracleId, "byTemplateOracleId");
     blockDirectory = assertBlockDirectory(index.blocks);
-    variantPositions = assertVariantPositions(index.variantPositions);
+    variantIds = assertVariantIds(index.variantIds);
+    variantPositions = new Map(variantIds.map((variantId, position) => [variantId, position]));
 
     const detailSize = statSync(detailPath).size;
     for (const { offset, length } of blockDirectory) {
@@ -420,11 +426,27 @@ export function loadComboCatalog(detailPath: string, indexPath: string): ComboCa
       }
     }
     const blockCount = blockDirectory.length;
-    for (const [variantId, position] of variantPositions) {
-      if ((position >> 7) >= blockCount) {
-        throw new Error(`Combo index variantPositions entry ${variantId} has no matching block.`);
+    const positionToVariantId = (label: string) => (position: number): string => {
+      const variantId = variantIds[position];
+      if (variantId === undefined) {
+        throw new Error(`Combo index ${label} references position ${position}, outside variantIds.`);
       }
-    }
+      if (position >> 7 >= blockCount) {
+        throw new Error(`Combo index variantIds entry ${variantId} (position ${position}) has no matching block.`);
+      }
+      return variantId;
+    };
+    const toStringMembership = (positions: Map<string, number[]>, label: string): Map<string, string[]> => {
+      const membership = new Map<string, string[]>();
+      const resolve = positionToVariantId(label);
+      for (const [oracleId, positionList] of positions) {
+        membership.set(oracleId, positionList.map(resolve));
+      }
+      return membership;
+    };
+
+    byOracleId = toStringMembership(byOracleIdPositions, "byOracleId");
+    byTemplateOracleId = toStringMembership(byTemplateOracleIdPositions, "byTemplateOracleId");
   } catch (error) {
     warnOnce(
       indexPath,

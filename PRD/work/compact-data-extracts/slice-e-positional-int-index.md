@@ -1,6 +1,6 @@
 # Slice E — Positional-int compact index in build and loader
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -34,17 +34,17 @@ every weekly refresh.
 
 ## Acceptance criteria
 
-- [ ] E1 — the index writes `variantIds: string[]` once, in `variantId`
+- [x] E1 — the index writes `variantIds: string[]` once, in `variantId`
       order, with no variant id repeated elsewhere in the index
-- [ ] E2 — `byOracleId` and `byTemplateOracleId` are written as arrays of
+- [x] E2 — `byOracleId` and `byTemplateOracleId` are written as arrays of
       integer positions, not variant-id strings
-- [ ] E3 — `catalog.ts` maps positions back to variant ids at load, and
+- [x] E3 — `catalog.ts` maps positions back to variant ids at load, and
       `byOracleId` / `byTemplateOracleId` are still exposed as
       `Map<oracleId, string[]>` with byte-identical membership to
       pre-compaction output for the same fixture corpus
-- [ ] E4 — the combo matcher and every consumer of these Maps is unchanged
+- [x] E4 — the combo matcher and every consumer of these Maps is unchanged
       (no matcher-level test regression)
-- [ ] E5 — `node --test scripts/build-commander-spellbook-combos.test.mjs`
+- [x] E5 — `node --test scripts/build-commander-spellbook-combos.test.mjs`
       and the backend workspace catalog tests pass
 
 ## Verification

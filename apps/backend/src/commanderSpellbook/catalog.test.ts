@@ -63,12 +63,11 @@ function brotliBlock(buffer: Buffer): Buffer {
 function serializeDetail(variants: unknown[]): {
   buffer: Buffer;
   blocks: { offset: number; length: number }[];
-  positions: Record<string, number>;
+  variantIds: string[];
 } {
-  const positions: Record<string, number> = {};
-  variants.forEach((variant, index) => {
+  const variantIds = variants.map((variant) => {
     const variantId = (variant as { variantId?: unknown })?.variantId;
-    if (typeof variantId === "string") positions[variantId] = index;
+    return typeof variantId === "string" ? variantId : "";
   });
 
   const chunks: Buffer[] = [];
@@ -83,7 +82,7 @@ function serializeDetail(variants: unknown[]): {
     cursor += compressed.length;
   }
 
-  return { buffer: Buffer.concat(chunks), blocks, positions };
+  return { buffer: Buffer.concat(chunks), blocks, variantIds };
 }
 
 function writeArtifacts(
@@ -94,14 +93,14 @@ function writeArtifacts(
   const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
   const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
 
-  const { buffer, blocks, positions } = serializeDetail(variants);
+  const { buffer, blocks, variantIds } = serializeDetail(variants);
   writeFileSync(detailPath, buffer);
 
   const index = {
     byOracleId: {},
     byTemplateOracleId: {},
     blocks,
-    variantPositions: positions,
+    variantIds,
     ...indexOverrides
   };
   writeFileSync(indexPath, brotliBlock(Buffer.from(JSON.stringify(index), "utf8")));
@@ -112,8 +111,10 @@ function writeArtifacts(
 describe("Backend - Ask AI", () => {
   describe("Combo catalog loading", () => {
     it("loads variants and membership from valid artifacts", () => {
+      // Membership is written as integer positions into variantIds (slice E);
+      // "1000-2000" is the only variant, at position 0.
       const { detailPath, indexPath } = writeArtifacts([sampleVariant], {
-        byOracleId: { "oracle-1": ["1000-2000"], "oracle-2": ["1000-2000"] }
+        byOracleId: { "oracle-1": [0], "oracle-2": [0] }
       });
       const catalog = loadComboCatalog(detailPath, indexPath);
 
@@ -204,7 +205,7 @@ describe("Backend - Ask AI", () => {
               byOracleId: {},
               byTemplateOracleId: {},
               blocks: [{ offset: 0, length: 10 }],
-              variantPositions: { x: 0 }
+              variantIds: ["x"]
             })
           )
         )
@@ -276,7 +277,7 @@ describe("Backend - Ask AI", () => {
         ...sampleVariant,
         variantId: `v${index}`
       }));
-      const { buffer, blocks, positions } = serializeDetail(variants);
+      const { buffer, blocks, variantIds } = serializeDetail(variants);
 
       const garbage = Buffer.from("this is not brotli data at all, just garbage bytes padded out long");
       const secondBlock = blocks[1];
@@ -294,7 +295,7 @@ describe("Backend - Ask AI", () => {
       writeFileSync(
         indexPath,
         brotliBlock(
-          Buffer.from(JSON.stringify({ byOracleId: {}, byTemplateOracleId: {}, blocks: adjustedBlocks, variantPositions: positions }))
+          Buffer.from(JSON.stringify({ byOracleId: {}, byTemplateOracleId: {}, blocks: adjustedBlocks, variantIds }))
         )
       );
 
@@ -335,7 +336,7 @@ describe("Backend - Ask AI", () => {
       writeFileSync(detailPath, buffer);
       writeFileSync(
         indexPath,
-        brotliBlock(Buffer.from(JSON.stringify({ byOracleId: {}, byTemplateOracleId: {}, blocks: [], variantPositions: {} })))
+        brotliBlock(Buffer.from(JSON.stringify({ byOracleId: {}, byTemplateOracleId: {}, blocks: [], variantIds: [] })))
       );
 
       expect(loadComboCatalog(detailPath, indexPath).variantCount).toBe(0);

@@ -16,7 +16,7 @@ the full fresh corpus fits the 120 MB Lambda budget without trimming. See
 | B | Catalog loader reads the block layout | A | done |
 | C | Brotli for rulings / card-detail / prices, build + loader | none | done |
 | D | File-name sweep across path lists and readers | A, B, C, E | planned |
-| E | Positional-int compact index | A, B | planned |
+| E | Positional-int compact index | A, B | done |
 | F | Regenerate, verify, amend PRD (20 accepted diffs) | A, B, C, D, E | planned |
 
 Full architecture, data flow, and risk notes: `GAMEPLAN.md`.

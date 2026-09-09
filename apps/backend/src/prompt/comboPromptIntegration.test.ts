@@ -333,12 +333,11 @@ describe("Backend - Ask AI", () => {
         const blockSize = 128;
         const chunks: Buffer[] = [];
         const blocks: { offset: number; length: number }[] = [];
-        const variantPositions: Record<string, number> = {};
-        const byOracleId: Record<string, string[]> = {};
+        // Membership is written as integer positions into variantIds (slice E).
+        const byOracleId: Record<string, number[]> = {};
         variants.forEach((entry, index) => {
-          variantPositions[entry.variantId] = index;
           for (const ingredient of entry.cardIngredients) {
-            byOracleId[ingredient.cardId] = [...(byOracleId[ingredient.cardId] ?? []), entry.variantId];
+            byOracleId[ingredient.cardId] = [...(byOracleId[ingredient.cardId] ?? []), index];
           }
         });
         let cursor = 0;
@@ -350,10 +349,11 @@ describe("Backend - Ask AI", () => {
           chunks.push(compressed);
           cursor += compressed.length;
         }
+        const variantIds = variants.map((entry) => entry.variantId);
         writeFileSync(detailPath, Buffer.concat(chunks));
         writeFileSync(
           indexPath,
-          brotliBlock(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, blocks, variantPositions }), "utf8"))
+          brotliBlock(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, blocks, variantIds }), "utf8"))
         );
         return loadComboCatalog(detailPath, indexPath);
       }
@@ -433,12 +433,12 @@ describe("Backend - Ask AI", () => {
             Buffer.from(
               JSON.stringify({
                 byOracleId: {
-                  "07db0374-3297-49c3-886d-a6bb42f7bb18": ["5702-8097"],
-                  "8a3ad2ef-8bcb-40c0-85de-f03328c2b644": ["5702-8097"]
+                  "07db0374-3297-49c3-886d-a6bb42f7bb18": [0],
+                  "8a3ad2ef-8bcb-40c0-85de-f03328c2b644": [0]
                 },
                 byTemplateOracleId: {},
                 blocks: [{ offset: 0, length: compressed.length }],
-                variantPositions: { "5702-8097": 0 }
+                variantIds: ["5702-8097"]
               }),
               "utf8"
             )

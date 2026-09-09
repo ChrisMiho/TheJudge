@@ -698,15 +698,15 @@ describe("Backend - Ask AI", () => {
 
       const chunks: Buffer[] = [];
       const blocks: { offset: number; length: number }[] = [];
-      const variantPositions: Record<string, number> = {};
-      const byOracleId: Record<string, string[]> = {};
-      let cursor = 0;
+      // Membership is written as integer positions into variantIds (slice E),
+      // not variant-id strings.
+      const byOracleId: Record<string, number[]> = {};
       variants.forEach((entry, index) => {
-        variantPositions[entry.variantId] = index;
         for (const ingredient of entry.cardIngredients) {
-          byOracleId[ingredient.cardId] = [...(byOracleId[ingredient.cardId] ?? []), entry.variantId];
+          byOracleId[ingredient.cardId] = [...(byOracleId[ingredient.cardId] ?? []), index];
         }
       });
+      let cursor = 0;
       for (let start = 0; start < variants.length; start += AT_SCALE_BLOCK_SIZE) {
         const blockVariants = variants.slice(start, start + AT_SCALE_BLOCK_SIZE);
         const ndjson = blockVariants.map((entry) => JSON.stringify(entry)).join("\n");
@@ -715,10 +715,11 @@ describe("Backend - Ask AI", () => {
         chunks.push(compressed);
         cursor += compressed.length;
       }
+      const variantIds = variants.map((entry) => entry.variantId);
       writeFileSync(detailPath, Buffer.concat(chunks));
       writeFileSync(
         indexPath,
-        brotliBlock(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, blocks, variantPositions }), "utf8"))
+        brotliBlock(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, blocks, variantIds }), "utf8"))
       );
 
       return loadComboCatalog(detailPath, indexPath);

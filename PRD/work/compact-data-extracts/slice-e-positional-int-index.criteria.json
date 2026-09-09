@@ -5,31 +5,31 @@
     {
       "id": "E1",
       "statement": "the index writes variantIds: string[] once, in variantId order, with no variant id repeated elsewhere in the index",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["scripts/build-commander-spellbook-combos.mjs"] }
     },
     {
       "id": "E2",
       "statement": "byOracleId and byTemplateOracleId are written as arrays of integer positions, not variant-id strings",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["scripts/build-commander-spellbook-combos.mjs"] }
     },
     {
       "id": "E3",
       "statement": "catalog.ts maps positions back to variant ids at load, and byOracleId/byTemplateOracleId are still exposed as Map<oracleId, string[]> with byte-identical membership to pre-compaction output",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/backend/src/commanderSpellbook/catalog.ts"], "command": "npm --workspace apps/backend run test -- catalog" }
     },
     {
       "id": "E4",
       "statement": "the combo matcher and every consumer of these Maps is unchanged (no matcher-level test regression)",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm --workspace apps/backend run test -- matcher" }
     },
     {
       "id": "E5",
       "statement": "build-commander-spellbook-combos test suite and backend workspace catalog tests pass",
-      "value": false,
+      "value": true,
       "evidence": { "command": "node --test scripts/build-commander-spellbook-combos\\.test\\.mjs" }
     }
   ]

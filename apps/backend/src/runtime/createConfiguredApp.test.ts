@@ -68,7 +68,8 @@ beforeEach(() => {
   const paths = comboPaths(repoRoot);
   // Mirrors the build script's block-layout format: variants grouped into
   // 128-per-block NDJSON, each block brotli-compressed and concatenated, with
-  // the index carrying a block byte-offset directory and a variantId -> position map.
+  // the index carrying a block byte-offset directory and variantIds listed
+  // once as a positional dictionary; membership is integer positions into it.
   const compressed = brotliBlock(Buffer.from(JSON.stringify(sampleVariant), "utf8"));
   writeFileSync(paths.detail, compressed);
   writeFileSync(
@@ -76,10 +77,10 @@ beforeEach(() => {
     brotliBlock(
       Buffer.from(
         JSON.stringify({
-          byOracleId: { "oracle-1": ["1000-2000"] },
+          byOracleId: { "oracle-1": [0] },
           byTemplateOracleId: {},
           blocks: [{ offset: 0, length: compressed.length }],
-          variantPositions: { "1000-2000": 0 }
+          variantIds: ["1000-2000"]
         }),
         "utf8"
       )

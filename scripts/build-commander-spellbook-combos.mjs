@@ -488,10 +488,20 @@ export function assembleComboArtifacts({ variants, rejected, snapshot, minPopula
     }
   }
 
-  const toSortedMembership = (membership) => {
+  // Every committed variant id is listed exactly once, in variantId order
+  // (`variantIds` below); a variant's integer position in that array is what
+  // every other membership structure in this index carries instead of the id
+  // string itself — the positional-int compaction that drops cold-start
+  // parsing of the index from ~47 MB to ~12 MB. `variants` is already sorted
+  // by variantId (the caller's contract), so a variant's array index here is
+  // exactly the position `serializeVariantDetail` derives block/line from.
+  const positionByVariantId = new Map(variants.map((variant, index) => [variant.variantId, index]))
+  const toPosition = (variantId) => positionByVariantId.get(variantId)
+
+  const toSortedPositionMembership = (membership) => {
     const result = {}
     for (const oracleId of [...membership.keys()].sort((a, b) => a.localeCompare(b))) {
-      result[oracleId] = [...membership.get(oracleId)].sort((a, b) => a.localeCompare(b))
+      result[oracleId] = [...membership.get(oracleId)].map(toPosition).sort((a, b) => a - b)
     }
     return result
   }
@@ -505,24 +515,24 @@ export function assembleComboArtifacts({ variants, rejected, snapshot, minPopula
       scryfallApi: template.scryfallApi,
       unresolved: template.unresolved,
       oracleIds: template.oracleIds,
-      variantIds: [...template.variantIds].sort((a, b) => a.localeCompare(b))
+      variantIds: [...template.variantIds].map(toPosition).sort((a, b) => a - b)
     }
   }
 
-  const { detailBuffer, blockDirectory, positions } = serializeVariantDetail(variants)
+  const { detailBuffer, blockDirectory } = serializeVariantDetail(variants)
 
   return {
     detailBuffer,
     index: {
       manifest,
-      byOracleId: toSortedMembership(byOracleId),
-      byTemplateOracleId: toSortedMembership(byTemplateOracleId),
+      byOracleId: toSortedPositionMembership(byOracleId),
+      byTemplateOracleId: toSortedPositionMembership(byTemplateOracleId),
       templates: serializedTemplates,
       unresolvedTemplateIds: Object.values(serializedTemplates)
         .filter((template) => template.unresolved)
         .map((template) => template.templateId),
       blocks: blockDirectory,
-      variantPositions: sortedObject(positions)
+      variantIds: variants.map((variant) => variant.variantId)
     }
   }
 }
@@ -657,17 +667,16 @@ export async function trimCommittedArtifacts(options = {}) {
 
   const index = JSON.parse(zlib.brotliDecompressSync(fs.readFileSync(indexPath)).toString("utf8"))
   const detailBuffer = fs.readFileSync(detailPath)
-  const positions = index?.variantPositions ?? {}
+  const variantIds = Array.isArray(index?.variantIds) ? index.variantIds : []
   const blockDirectory = index?.blocks ?? []
 
   const kept = []
   let dropped = 0
-  for (const variantId of Object.keys(positions)) {
-    const position = positions[variantId]
+  variantIds.forEach((variantId, position) => {
     const variant = readVariantAtPosition(detailBuffer, blockDirectory, position)
     if (meetsPopularityFloor(variant, minPopularity)) kept.push(variant)
     else dropped += 1
-  }
+  })
   kept.sort((a, b) => a.variantId.localeCompare(b.variantId))
 
   const rebuilt = assembleComboArtifacts({

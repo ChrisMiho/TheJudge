@@ -39,20 +39,25 @@ function outputPaths(dir) {
 
 /**
  * Test-only convenience: decompress the index (one brotli member, read whole)
- * and every variant named in its `variantPositions` directory (each fetched
- * from its own block by position) back into a `{ manifest, variants }` shape,
- * so most assertions below read exactly as they did before the block-layout
- * storage format existed. The runtime loader (slice B) never does this "read
- * everything" reconstruction — it fetches one block at a time, on demand.
+ * and every variant named in its `variantIds` positional dictionary (each
+ * fetched from its own block by position — the array index) back into a
+ * `{ manifest, variants }` shape, so most assertions below read exactly as
+ * they did before the block-layout storage format existed. The runtime
+ * loader (slice B) never does this "read everything" reconstruction — it
+ * fetches one block at a time, on demand.
  */
 function reconstructArtifacts(paths) {
   const index = JSON.parse(zlib.brotliDecompressSync(fs.readFileSync(paths.indexPath)).toString("utf8"))
   const detailBuffer = fs.readFileSync(paths.detailPath)
-  const variantIds = Object.keys(index.variantPositions).sort((a, b) => a.localeCompare(b))
-  const variants = variantIds.map((variantId) =>
-    readVariantAtPosition(detailBuffer, index.blocks, index.variantPositions[variantId])
+  const variants = index.variantIds.map((variantId, position) =>
+    readVariantAtPosition(detailBuffer, index.blocks, position)
   )
   return { detail: { manifest: index.manifest, variants }, index }
+}
+
+/** Test-only convenience: map a variantId to its byOracleId/byTemplateOracleId position. */
+function positionOf(index, variantId) {
+  return index.variantIds.indexOf(variantId)
 }
 
 async function buildFromFixture(fixtureName) {
@@ -104,12 +109,10 @@ test("the detail artifact groups variants into 128-variant NDJSON blocks, one br
   assert.notEqual(detailBuffer.length, singleStreamEquivalent.length)
 })
 
-test("the index carries a variantId to integer-position directory, and a block byte-offset directory", async () => {
+test("the index carries variantIds once as a positional dictionary, and a block byte-offset directory", async () => {
   const { index } = await buildFromFixture("raw-sample")
 
-  assert.deepEqual(Object.keys(index.variantPositions).sort(), ["1000-2000", "1000-4000", "1000-5000"])
-  const positionsUsed = new Set(Object.values(index.variantPositions))
-  assert.deepEqual([...positionsUsed].sort((a, b) => a - b), [0, 1, 2])
+  assert.deepEqual(index.variantIds, ["1000-2000", "1000-4000", "1000-5000"])
 
   assert.equal(index.blocks.length, 1)
   for (const { offset, length } of index.blocks) {
@@ -276,8 +279,9 @@ test("a query-backed template expands to a deduplicated sorted oracle-id list", 
     "bbbbbbbb-0000-4000-8000-000000000002"
   ])
   assert.deepEqual(index.templates["12"].oracleIds, template.oracleIds)
+  assert.deepEqual(index.templates["12"].variantIds, [positionOf(index, "1000-4000")])
   for (const oracleId of template.oracleIds) {
-    assert.deepEqual(index.byTemplateOracleId[oracleId], ["1000-4000"])
+    assert.deepEqual(index.byTemplateOracleId[oracleId], [positionOf(index, "1000-4000")])
   }
 })
 
@@ -294,11 +298,14 @@ test("a template with no query and no mapping is retained as unresolved", async 
   assert.equal(index.templates["99"].unresolved, true)
 })
 
-test("the index maps each oracle id to its variants", async () => {
+test("the index maps each oracle id to its variants as integer positions, not variant-id strings", async () => {
   const { index } = await buildFromFixture("raw-sample")
 
-  assert.deepEqual(index.byOracleId["aaaaaaaa-0000-4000-8000-000000000001"], ["1000-2000"])
+  assert.deepEqual(index.byOracleId["aaaaaaaa-0000-4000-8000-000000000001"], [positionOf(index, "1000-2000")])
   assert.deepEqual(Object.keys(index.byOracleId), [...Object.keys(index.byOracleId)].sort())
+  for (const positions of Object.values(index.byOracleId)) {
+    for (const position of positions) assert.ok(Number.isInteger(position), "membership entries must be integer positions")
+  }
 })
 
 test("no image, price, or printing identity reaches either artifact", async () => {
@@ -384,7 +391,7 @@ test("absent raw inputs with no artifacts bootstrap a valid empty corpus", async
   assert.deepEqual(detail.variants, [])
   assert.deepEqual(index.byOracleId, {})
   assert.deepEqual(index.unresolvedTemplateIds, [])
-  assert.deepEqual(index.variantPositions, {})
+  assert.deepEqual(index.variantIds, [])
   assert.deepEqual(index.blocks, [])
   assert.equal(detail.manifest.snapshotAt, null)
 })
@@ -531,12 +538,12 @@ test("with no options, the default floor keeps the full corpus", () => {
   assert.equal(index.manifest.variantCount, 3)
   assert.equal(index.manifest.minPopularity, MIN_VARIANT_POPULARITY)
   assert.equal(index.manifest.belowPopularityFloorCount, 0)
-  assert.deepEqual(Object.keys(index.variantPositions).sort(), ["1", "2", "3"])
+  assert.deepEqual([...index.variantIds].sort(), ["1", "2", "3"])
 })
 
 test("a trimmed variant leaves no trace in any derived structure", () => {
-  // Membership, the template directory, and the position directory are all
-  // built from the same variant list, so filtering it must be complete
+  // Membership, the template directory, and the positional dictionary are
+  // all built from the same variant list, so filtering it must be complete
   // rather than leaving an oracle id pointing at a variant the detail
   // artifact no longer has. Exercises the emergency-valve path directly with
   // an explicit floor: the default floor is 0 (Slice C), which filters
@@ -549,11 +556,12 @@ test("a trimmed variant leaves no trace in any derived structure", () => {
     minPopularity: 1
   })
 
-  const referenced = new Set(Object.values(index.byOracleId).flat())
-  for (const variantId of referenced) {
-    assert.ok(variantId in index.variantPositions, `${variantId} is referenced but has no position entry`)
+  const referencedPositions = new Set(Object.values(index.byOracleId).flat())
+  for (const position of referencedPositions) {
+    assert.ok(position < index.variantIds.length, `position ${position} is referenced but has no variantIds entry`)
   }
   assert.ok(!index.byOracleId["o-1"], "a dropped variant must not keep its oracle membership")
+  assert.ok(!index.variantIds.includes("1"), "a dropped variant must not appear in variantIds")
 })
 
 test("the floor can be switched off, and then nothing is dropped", () => {
@@ -623,6 +631,5 @@ test("--trim-committed re-blocks (filter survivors, re-serialize, rewrite) rathe
     ["a-2", "a-4"]
   )
   // Re-blocked, positions renumbered from 0 for the surviving, sorted set.
-  assert.deepEqual(Object.keys(trimmedIndex.variantPositions).sort(), ["a-2", "a-4"])
-  assert.deepEqual(new Set(Object.values(trimmedIndex.variantPositions)), new Set([0, 1]))
+  assert.deepEqual(trimmedIndex.variantIds, ["a-2", "a-4"])
 })
