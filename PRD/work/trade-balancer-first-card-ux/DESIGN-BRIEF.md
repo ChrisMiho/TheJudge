@@ -2,7 +2,7 @@
 
 - Package: `PRD/work/trade-balancer-first-card-ux/`
 - Status: refined (proposal only — nothing in `PRD/sections/` is edited here)
-- Proposal: `GATE-QUESTIONS.md`, ten blocks, all amendments to existing IDs and
+- Proposal: `GATE-QUESTIONS.md`, twelve blocks, all amendments to existing IDs and
   existing files. **No new `REQ`/`FLOW`/`DEC` IDs are reserved.**
 
 ## What the player gets
@@ -159,7 +159,7 @@ behavior, 6 no new dependency/endpoint/data contract.
 
 ## Product-truth changes proposed
 
-Ten blocks in `GATE-QUESTIONS.md`, every one an amendment in place — the
+Twelve blocks in `GATE-QUESTIONS.md`, every one an amendment in place — the
 decision log is retired and no new IDs are minted.
 
 | Block | Why it is in the set |
@@ -174,12 +174,30 @@ decision log is retired and no new IDs are minted.
 | `PRD/sections/system-map.md` | the Trade balancer summary says "added immediately … the fetch's first result"; the artifact-build entry gains the order |
 | `PRD/sections/integrations-and-data.md` | "its only backend traffic is the read-only price route" becomes false, and the wire order becomes contract |
 | `PRD/sections/trade-balancer/data/cardPrintingPrices.md` | the artifact's `byOracleId` shape gains its ordering rule |
+| `PRD/sections/overview.md` | the product summary says prices are fetched "only when a card is added" and that the balancer's fetch is its only backend traffic |
+| `PRD/sections/non-functional-requirements.md` | NFR-013 repeats the "only when that card is added" timing, puts the loading state on the entry row, and counts the free-tier cost |
 
-The amendment set was enumerated by grepping `PRD/sections/` for every live
-assertion about printing defaults, the picker, the foil default and the
-balancer's backend traffic — not from memory. The four beyond the intake's list
-(`REQ-064`, `system-map.md`, `integrations-and-data.md`,
-`data/cardPrintingPrices.md`) came out of that grep.
+### How the amendment set was enumerated
+
+Not from memory. The set was re-enumerated on 2026-09-09 (refinement attempt 2,
+after the quality-check FAIL on `overview.md`) by grepping the whole corpus:
+
+```bash
+grep -rniE "balancer|printing|foil|only backend traffic|when a card is added|price fetch|picker" PRD/sections/ -l
+```
+
+That listed 17 files. Ten already had blocks. Of the remaining seven, each was
+read at its matching lines and judged:
+
+| File | Matched at | Verdict |
+| --- | --- | --- |
+| `overview.md` | :43 "made only when a card is added" | **contradicted → block added** |
+| `non-functional-requirements.md` | NFR-013 :207 "only when that card is added", :211 "brief in-place loading state", :223 free-tier invocation count | **contradicted → block added** |
+| `non-functional-requirements.md` | NFR-004 :36-41 one-endpoint rule; NFR-014 :235 "no lazy-loaded price artifact" | not contradicted — the warm-up adds **no endpoint** (it reuses the existing `GET /api/health`, already documented as an optional non-product endpoint) and downloads no data, so neither the one-endpoint rule nor its grep-listed echo set is amended |
+| `goals-and-non-goals.md` | :76 endpoint non-goal, :78-79 pricing/printing scope | not contradicted — same reason as NFR-004; the picker and static-snapshot posture are already in scope |
+| `scan/README.md` | :235-245 Trade Balancer section | not contradicted — it describes the scan path only, where the scanned printing stays the default and the fetch still runs on add (A11) |
+| `shared-chrome/README.md` | :56, :72, :136, :372 balancer chrome and rails | not contradicted — the picker's scroll region is inside the destination body; the containment rule lands on the `screen-layout.md` row, which already has a block |
+| `decisions.md`, `in-depth/README.md`, `quick-lookup/README.md`, `scan/data/*.md` | "printing" in scan/identity contexts | not contradicted — none makes a claim about the balancer's traffic, printing default, foil default, or picker |
 
 ## Slice sketch (for map-out)
 

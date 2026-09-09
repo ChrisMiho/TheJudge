@@ -13,9 +13,11 @@ Do not rename package folders to encode status.
 
 ## refined
 
-## refining
+| Package | Note |
+| --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up. `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (12 amendment blocks, no new IDs) — awaiting the owner's verdicts at the `define` gate (graph run `graph-20260909-213550`) |
 
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up. `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (10 amendment blocks, no new IDs) — quality-check FAIL: amendment set incomplete, `overview.md` untouched (graph run `graph-20260909-213550`) |
+## refining
 
 ## ideation
 

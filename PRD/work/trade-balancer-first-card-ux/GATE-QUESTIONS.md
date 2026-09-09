@@ -1,11 +1,11 @@
 # GATE QUESTIONS — trade-balancer-first-card-ux
 
-**Decide.** Ten product-truth changes, all edits to text that already exists —
+**Decide.** Twelve product-truth changes, all edits to text that already exists —
 no new REQ, FLOW, or DEC numbers. Answer each block's `- Verdict:` with
 `accept`, `edit`, or `reject` (a reason is required for edit and reject), then
 merge the pull request. That merge is the signal to build.
 
-All ten describe the same four player-facing changes to the Trade Balancer:
+All twelve describe the same four player-facing changes to the Trade Balancer:
 pick the printing before the card is added, start the foil toggle in whichever
 mode actually has a price, keep a long printing list inside a scrollable box,
 and wake the backend when the screen opens so the first card prices fast.
@@ -502,6 +502,83 @@ anyone noticing.
 +  order is part of the artifact contract and is echoed verbatim on the wire;
 +  `released_at` is a build-time sort key only and is **not** stored per
 +  printing, so the field set and the artifact's size are unchanged (REQ-066).
+```
+
+- Verdict:
+- Reason:
+
+---
+
+## PRD/sections/overview.md — the one-paragraph description of the balancer's backend traffic
+
+**What this decides:** the sentence in the product's front-page summary that
+tells a reader when the Trade Balancer talks to the backend.
+
+**In plain terms:** `overview.md` is the first document anyone reads about the
+whole product, and its Trade Balancer paragraph currently says prices "come from
+a read-only backend fetch … made only when a card is added". Two blocks above
+make that sentence untrue. REQ-065 and FLOW-025 move the price lookup earlier on
+the search path — it now runs the moment the player taps a suggestion, so the
+printing list is in hand before the card lands on the side (on a scan it still
+runs on add). REQ-064 adds one throwaway "are you awake?" ping to the health
+check the site already has (`GET /api/health`, the endpoint used for deployment
+and uptime checks) when the screen opens, which carries no card data and is
+ignored if it fails. The edit rewrites the one sentence to say both, and leaves
+the rest of the paragraph — ephemeral, static-snapshot USD prices, no change to
+the AI answer path — exactly as it stands.
+
+**What happens if you say no:** the product's front-page summary keeps
+describing a lookup timing the shipped app no longer has, and the next reader
+learns the wrong thing about the balancer's traffic.
+
+```diff
+--- a/PRD/sections/overview.md
++++ b/PRD/sections/overview.md
+@@ ## Current Product Status — the Trade Balancer paragraph
+-Beyond MTG Assistant, the suite includes a shipped standalone **Card Trade Balancer**: an ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via the feature-portal Menu (DEC-095). Prices come from a read-only backend fetch (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175) made only when a card is added; it makes no change to `AskAiRequest`, `GameContext`, prompt assembly, or `POST /api/ask-ai`.
++Beyond MTG Assistant, the suite includes a shipped standalone **Card Trade Balancer**: an ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via the feature-portal Menu (DEC-095). Prices come from a read-only backend fetch (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175) made once per card — when the player taps its search suggestion, or when a scanned card is added (REQ-065, FLOW-025) — plus one fire-and-forget warm-up ping to the existing `GET /api/health` when the screen opens, which carries no product data and adds no endpoint (REQ-064); it makes no change to `AskAiRequest`, `GameContext`, prompt assembly, or `POST /api/ask-ai`.
+```
+
+- Verdict:
+- Reason:
+
+---
+
+## PRD/sections/non-functional-requirements.md — NFR-013's record of when a price is fetched and what it costs
+
+**What this decides:** the budget requirement's statement of when the balancer
+fetches a card's prices, where the loading state shows, and what the traffic
+costs to run.
+
+**In plain terms:** NFR-013 is the requirement that keeps the price data from
+costing players who never open the Trade Balancer — no big file downloaded up
+front, prices fetched one card at a time from the backend. Three of its
+sentences describe timing that the blocks above change. It says prices are
+fetched "only when that card is added", which REQ-065 and FLOW-025 move to the
+suggestion tap on the search path (a scan still fetches on add). It says the
+fetch "shows a brief in-place loading state", which now shows in the printing
+picker on the search path instead of on the entry's row. And its free-tier note
+counts the running cost, which gains one empty health-check call each time the
+balancer screen opens (REQ-064) — a request with no body, not a price lookup.
+The budget itself is unchanged: still one small fetch per card, still cached for
+the session, still no up-front download.
+
+**What happens if you say no:** the requirement that governs the balancer's data
+budget describes a fetch that fires at a moment the app no longer uses, and the
+free-tier cost note omits the one new call the balancer makes.
+
+```diff
+--- a/PRD/sections/non-functional-requirements.md
++++ b/PRD/sections/non-functional-requirements.md
+@@ ### NFR-013 — Constraints
+-  - there is no up-front price download: the ~38 MB frontend price file is removed, and a card's prices are fetched from the backend only when that card is added, cached per session (FLOW-025). App startup and the MTG Assistant flow are unaffected, and the balancer's only up-front frontend cost is the slim shared `cardMetadata` index (REQ-174)
++  - there is no up-front price download: the ~38 MB frontend price file is removed, and a card's prices are fetched from the backend once per card — when its search suggestion is tapped, or when a scanned card is added — and cached per session (REQ-065, FLOW-025). App startup and the MTG Assistant flow are unaffected, and the balancer's only up-front frontend cost is the slim shared `cardMetadata` index (REQ-174); the warm-up ping on open (REQ-064) downloads no data
+@@ ### NFR-013 — Constraints (per-card budget)
+-  - per-card fetch and pricing must stay within a mobile-friendly budget and must not block or jank the trade UI; the on-demand fetch shows a brief in-place loading state and degrades to $0-plus-caution with retry on failure (FLOW-025)
++  - per-card fetch and pricing must stay within a mobile-friendly budget and must not block or jank the trade UI; the on-demand fetch shows a brief loading state — in the printing picker on the manual-search path, in place on the entry on the scan path — and degrades to $0-plus-caution with retry on failure (REQ-065, FLOW-025)
+@@ ### NFR-013 — Notes
+-  - free-tier posture: deleting the ~38 MB first-open download removes that S3/CloudFront egress; the per-card price fetch adds only tiny reads (a handful of KB and a Lambda invocation per card added), well inside the free-tier request allowance at trade-balancer volumes. The backend price map adds ~15-20 MB (estimate; measured at build) to the Lambda bundle, kept inside the 250 MB quota by the budget test (REQ-066)
++  - free-tier posture: deleting the ~38 MB first-open download removes that S3/CloudFront egress; the per-card price fetch adds only tiny reads (a handful of KB and a Lambda invocation per card looked up), plus one empty health-check invocation each time the balancer screen opens (REQ-064), well inside the free-tier request allowance at trade-balancer volumes. The backend price map adds ~15-20 MB (estimate; measured at build) to the Lambda bundle, kept inside the 250 MB quota by the budget test (REQ-066)
 ```
 
 - Verdict:

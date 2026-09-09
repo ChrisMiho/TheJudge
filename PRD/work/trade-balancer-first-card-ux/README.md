@@ -12,7 +12,7 @@ See `IDEA.md` for problem/outcome/non-goals and prior-run matches, and
 amend, slice sketch).
 
 `DESIGN-BRIEF.md` is the design record (scope, code verification, assumptions,
-slice sketch); `GATE-QUESTIONS.md` carries the ten proposed `PRD/sections/`
+slice sketch); `GATE-QUESTIONS.md` carries the twelve proposed `PRD/sections/`
 amendments awaiting the owner's verdicts. No new stable IDs are reserved.
 
 ## Autonomous metadata
