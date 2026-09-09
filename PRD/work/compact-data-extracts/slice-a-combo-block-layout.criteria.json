@@ -5,37 +5,37 @@
     {
       "id": "A1",
       "statement": "serializeVariantDetail groups variants into 128-variant NDJSON blocks in variantId order, one brotli member per block",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["scripts/build-commander-spellbook-combos.mjs"] }
     },
     {
       "id": "A2",
       "statement": "build writes apps/backend/data/commanderSpellbookComboBlocks.br as the concatenation of the brotli block members",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["scripts/build-commander-spellbook-combos.mjs", "apps/backend/data/commanderSpellbookComboBlocks.br"] }
     },
     {
       "id": "A3",
       "statement": "build writes apps/backend/data/commanderSpellbookComboIndex.json.br carrying a block directory (blocks: [{ offset, length }]) that correctly locates each block",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["scripts/build-commander-spellbook-combos.mjs", "apps/backend/data/commanderSpellbookComboIndex.json.br"] }
     },
     {
       "id": "A4",
       "statement": "--trim-committed re-blocks (filter survivors, re-serialize, rewrite) rather than splicing, and its test passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "node --test scripts/build-commander-spellbook-combos\\.test\\.mjs", "paths": ["scripts/build-commander-spellbook-combos.mjs"] }
     },
     {
       "id": "A5",
       "statement": "brotli quality and size-hint params are fixed, named constants with no dictionary option",
-      "value": false,
+      "value": true,
       "evidence": { "command": "grep -n \"BROTLI_PARAM_QUALITY|BROTLI_PARAM_SIZE_HINT\" scripts/build-commander-spellbook-combos\\.mjs", "paths": ["scripts/build-commander-spellbook-combos.mjs"] }
     },
     {
       "id": "A6",
       "statement": "node --test scripts/build-commander-spellbook-combos.test.mjs passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "node --test scripts/build-commander-spellbook-combos\\.test\\.mjs" }
     }
   ]

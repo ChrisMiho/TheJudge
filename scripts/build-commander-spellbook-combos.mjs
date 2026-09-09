@@ -2,13 +2,12 @@ import fs from "node:fs"
 import path from "node:path"
 import zlib from "node:zlib"
 import { pathToFileURL } from "node:url"
-import { format as prettierFormat } from "prettier"
 
 import { streamJsonArrayObjects } from "./lib/stream-json-array.mjs"
 
 const defaultRawInputDir = path.resolve("apps/backend/data/commander-spellbook")
-const defaultDetailPath = path.resolve("apps/backend/data/commanderSpellbookCombos.json.gz")
-const defaultIndexPath = path.resolve("apps/backend/data/commanderSpellbookComboIndex.json.gz")
+const defaultDetailPath = path.resolve("apps/backend/data/commanderSpellbookComboBlocks.br")
+const defaultIndexPath = path.resolve("apps/backend/data/commanderSpellbookComboIndex.json.br")
 
 /**
  * Variants below this deck count are left out of the committed artifacts.
@@ -33,6 +32,17 @@ export const MIN_VARIANT_POPULARITY = 0
 export const SOURCE_NAME = "Commander Spellbook"
 export const SOURCE_URL = "https://json.commanderspellbook.com/variants.json.gz"
 export const COMBO_PERMALINK_PREFIX = "https://commanderspellbook.com/combo/"
+
+/**
+ * Detail records are grouped into fixed blocks of this many variants (in
+ * `variantId` order) before brotli-compression, so the compressor sees the
+ * text neighbouring combos share instead of starting cold on every record
+ * (DEC-162's named fix for when per-variant gzip size became a problem — it
+ * has). A variant's position in the sorted variant list determines its block
+ * (`position >> 7`) and line within that block (`position & 127`) — valid
+ * because 128 === 2**7.
+ */
+export const COMBO_BLOCK_SIZE = 128
 
 /**
  * Upstream starting-zone vocabulary, verbatim from `ZoneLocation` in
@@ -313,42 +323,72 @@ export function partitionVariantsByStatus(rawVariants) {
 }
 
 /**
- * Gzip-compress each variant's JSON **individually** and concatenate the
- * compressed members into one buffer, rather than gzipping one JSON array as
- * a single stream. Gzip members are self-contained: decompressing a byte
- * slice that holds exactly one member never touches any other member's
- * bytes. That is what lets the runtime loader (slice H) fetch one variant's
- * detail via a positional file read plus a single `gunzipSync`, without ever
- * holding the other ~105k variants' bytes resident — the full detail catalog
- * measured ~868MB RSS in the DEC-162 amendment, against ~95MB RSS for the
- * index alone, and at most five variants ever enter a prompt.
- *
- * The returned `detailOffsets` (`variantId -> [offset, length]`) is what the
- * index artifact carries so the loader never has to scan the detail file to
- * find a variant.
+ * Brotli-compress one buffer with the fixed, named parameters this package
+ * uses everywhere: quality 11 (max) and a size hint set to the raw input
+ * length, no `dictionary` option. Node 22 (CI) silently ignores a brotli
+ * dictionary while Node 24 (Lambda) honours it, which would make CI and
+ * Lambda disagree — so this build never sets one.
  */
-export function serializeVariantDetail(variants) {
-  const chunks = []
-  const detailOffsets = {}
-  let cursor = 0
-  for (const variant of variants) {
-    const compressed = zlib.gzipSync(Buffer.from(JSON.stringify(variant), "utf8"))
-    detailOffsets[variant.variantId] = [cursor, compressed.length]
-    chunks.push(compressed)
-    cursor += compressed.length
-  }
-  return { detailBuffer: Buffer.concat(chunks), detailOffsets }
+export function brotliCompress(buffer) {
+  return zlib.brotliCompressSync(buffer, {
+    params: {
+      [zlib.constants.BROTLI_PARAM_QUALITY]: 11,
+      [zlib.constants.BROTLI_PARAM_SIZE_HINT]: buffer.length
+    }
+  })
 }
 
 /**
- * Decompress one variant's record from a detail buffer at its recorded
- * offset/length. Test and tooling use only: the runtime loader does the
- * equivalent read lazily from disk, one variant at a time, never from a
- * buffer holding the whole corpus.
+ * Group sorted variants (in `variantId` order) into fixed blocks of
+ * `COMBO_BLOCK_SIZE`. Records inside a block are newline-delimited JSON, one
+ * variant per line; each block is brotli-compressed as one member. Returns
+ * the concatenated buffer of all block members, the block directory
+ * (`[{ offset, length }]` byte ranges into that buffer, in block order), and
+ * each variant's integer position — its index in the given (sorted) variant
+ * list, from which block (`position >> 7`) and line (`position & 127`) are
+ * always derivable, correct after any re-block.
  */
-export function readVariantDetail(detailBuffer, offset, length) {
-  const member = detailBuffer.subarray(offset, offset + length)
-  return JSON.parse(zlib.gunzipSync(member).toString("utf8"))
+export function serializeVariantDetail(variants) {
+  const positions = {}
+  variants.forEach((variant, index) => {
+    positions[variant.variantId] = index
+  })
+
+  const chunks = []
+  const blockDirectory = []
+  let cursor = 0
+  for (let start = 0; start < variants.length; start += COMBO_BLOCK_SIZE) {
+    const blockVariants = variants.slice(start, start + COMBO_BLOCK_SIZE)
+    const ndjson = blockVariants.map((variant) => JSON.stringify(variant)).join("\n")
+    const compressed = brotliCompress(Buffer.from(ndjson, "utf8"))
+    blockDirectory.push({ offset: cursor, length: compressed.length })
+    chunks.push(compressed)
+    cursor += compressed.length
+  }
+
+  return { detailBuffer: Buffer.concat(chunks), blockDirectory, positions }
+}
+
+/**
+ * Decompress one variant's record from a detail buffer, given the block
+ * directory and the variant's integer position. Test and tooling use only:
+ * the runtime loader does the equivalent read lazily from disk, one block at
+ * a time, never from a buffer holding the whole corpus.
+ */
+export function readVariantAtPosition(detailBuffer, blockDirectory, position) {
+  const blockIndex = position >> 7
+  const lineIndex = position & 127
+  const block = blockDirectory[blockIndex]
+  if (!block) {
+    throw new Error(`No block at index ${blockIndex} for position ${position}.`)
+  }
+  const member = detailBuffer.subarray(block.offset, block.offset + block.length)
+  const lines = zlib.brotliDecompressSync(member).toString("utf8").split("\n")
+  const line = lines[lineIndex]
+  if (line === undefined) {
+    throw new Error(`No line ${lineIndex} in block ${blockIndex} for position ${position}.`)
+  }
+  return JSON.parse(line)
 }
 
 /** @param {{ rawVariants: unknown[], templateExpansions: Map<number, string[]>, snapshot: object, minPopularity?: number }} options */
@@ -399,8 +439,9 @@ export function meetsPopularityFloor(variant, minPopularity) {
  * Split out of `buildComboArtifacts` so the same assembly serves both a fresh
  * refresh and a re-emit that trims already-committed artifacts. Every derived
  * structure below — oracle and template membership, the template directory, and
- * the byte-offset directory — is computed from `variants` alone, which is what
- * makes filtering that one list a complete edit rather than a partial one.
+ * the block/position directories — is computed from `variants` alone, which is
+ * what makes filtering that one list (and re-blocking through this same path) a
+ * complete edit rather than a partial one.
  *
  * @param {{ variants: object[], rejected: number, snapshot: object }} options
  */
@@ -468,7 +509,7 @@ export function assembleComboArtifacts({ variants, rejected, snapshot, minPopula
     }
   }
 
-  const { detailBuffer, detailOffsets } = serializeVariantDetail(variants)
+  const { detailBuffer, blockDirectory, positions } = serializeVariantDetail(variants)
 
   return {
     detailBuffer,
@@ -480,7 +521,8 @@ export function assembleComboArtifacts({ variants, rejected, snapshot, minPopula
       unresolvedTemplateIds: Object.values(serializedTemplates)
         .filter((template) => template.unresolved)
         .map((template) => template.templateId),
-      detailOffsets: sortedObject(detailOffsets)
+      blocks: blockDirectory,
+      variantPositions: sortedObject(positions)
     }
   }
 }
@@ -541,46 +583,54 @@ export async function readRawInputs(rawInputDir) {
   return { snapshot, rawVariants, templateExpansions }
 }
 
-/** The index stays a single gzip-compressed JSON document — it is read whole, every time. */
-async function writeIndexArtifact(filePath, value) {
+/** The index is a single minified, brotli-compressed JSON document — it is read whole, every time. */
+function writeIndexArtifact(filePath, value) {
   ensureParentDirectory(filePath)
-  const formatted = await prettierFormat(JSON.stringify(value), { parser: "json", printWidth: 120 })
-  const compressed = zlib.gzipSync(Buffer.from(formatted, "utf8"))
+  const compressed = brotliCompress(Buffer.from(JSON.stringify(value), "utf8"))
   fs.writeFileSync(filePath, compressed)
   return compressed.length
 }
 
-/** The detail artifact is already compressed bytes (concatenated gzip members); write it verbatim. */
+/** The detail artifact is already compressed bytes (concatenated brotli block members); write it verbatim. */
 function writeDetailArtifact(filePath, detailBuffer) {
   ensureParentDirectory(filePath)
   fs.writeFileSync(filePath, detailBuffer)
   return detailBuffer.length
 }
 
-function validateExistingIndexArtifact(filePath) {
+/**
+ * Read and structurally validate an already-committed index artifact, for the
+ * "preserve what's there" path when no raw refresh has run. Returns `null`
+ * (after logging) when the file is absent; throws when present but malformed,
+ * which the caller treats as "cannot preserve, must bootstrap".
+ */
+function readExistingIndexArtifact(filePath) {
   if (!fs.existsSync(filePath)) {
     console.warn(`No existing combo index artifact found to preserve: ${filePath}`)
-    return false
+    return null
   }
-  const artifact = JSON.parse(zlib.gunzipSync(fs.readFileSync(filePath)).toString("utf8"))
+  const artifact = JSON.parse(zlib.brotliDecompressSync(fs.readFileSync(filePath)).toString("utf8"))
   if (typeof artifact !== "object" || artifact === null || Array.isArray(artifact)) {
     throw new Error(`Unexpected combo index artifact shape in ${filePath}; expected a JSON object.`)
   }
   console.log(`Preserved existing combo index artifact: ${filePath} (${formatBytes(fs.statSync(filePath).size)}).`)
-  return true
+  return artifact
 }
 
-function validateExistingDetailArtifact(filePath) {
+/**
+ * Structurally validate an already-committed detail artifact against a known
+ * block directory: every block must brotli-decode on its own. Concatenated
+ * brotli members (unlike gzip) cannot be decoded as one stream, so validation
+ * always goes block-by-block against the paired index's directory.
+ */
+function validateExistingDetailArtifact(filePath, blockDirectory) {
   if (!fs.existsSync(filePath)) {
     console.warn(`No existing combo detail artifact found to preserve: ${filePath}`)
     return false
   }
   const bytes = fs.readFileSync(filePath)
-  if (bytes.length > 0) {
-    // Decompresses every concatenated gzip member and throws on corruption.
-    // The decompressed bytes are not one JSON document — each member is its
-    // own record — so this validates well-formedness, not shape.
-    zlib.gunzipSync(bytes)
+  for (const { offset, length } of blockDirectory ?? []) {
+    zlib.brotliDecompressSync(bytes.subarray(offset, offset + length))
   }
   console.log(`Preserved existing combo detail artifact: ${filePath} (${formatBytes(bytes.length)}).`)
   return true
@@ -593,7 +643,10 @@ function validateExistingDetailArtifact(filePath) {
  * present just after `data:refresh-combos`. Applying a floor to what is already
  * committed does not: every detail record is a projected variant, so reading
  * them back and re-running the same assembly produces exactly what a refresh at
- * that floor would have produced.
+ * that floor would have produced. Blocks are fixed groups of 128 in `variantId`
+ * order, so a trim cannot splice a block in place — it filters the survivors,
+ * re-serializes the sorted list, and rewrites through the same
+ * `assembleComboArtifacts` code path a fresh build uses.
  *
  * @param {{ detailPath?: string, indexPath?: string, minPopularity?: number }} [options]
  */
@@ -602,15 +655,16 @@ export async function trimCommittedArtifacts(options = {}) {
   const indexPath = options.indexPath ?? defaultIndexPath
   const minPopularity = options.minPopularity ?? MIN_VARIANT_POPULARITY
 
-  const index = JSON.parse(zlib.gunzipSync(fs.readFileSync(indexPath)).toString("utf8"))
+  const index = JSON.parse(zlib.brotliDecompressSync(fs.readFileSync(indexPath)).toString("utf8"))
   const detailBuffer = fs.readFileSync(detailPath)
-  const offsets = index?.detailOffsets ?? {}
+  const positions = index?.variantPositions ?? {}
+  const blockDirectory = index?.blocks ?? []
 
   const kept = []
   let dropped = 0
-  for (const variantId of Object.keys(offsets)) {
-    const [offset, length] = offsets[variantId]
-    const variant = readVariantDetail(detailBuffer, offset, length)
+  for (const variantId of Object.keys(positions)) {
+    const position = positions[variantId]
+    const variant = readVariantAtPosition(detailBuffer, blockDirectory, position)
     if (meetsPopularityFloor(variant, minPopularity)) kept.push(variant)
     else dropped += 1
   }
@@ -625,7 +679,7 @@ export async function trimCommittedArtifacts(options = {}) {
   })
 
   const detailBytes = writeDetailArtifact(detailPath, rebuilt.detailBuffer)
-  const indexBytes = await writeIndexArtifact(indexPath, rebuilt.index)
+  const indexBytes = writeIndexArtifact(indexPath, rebuilt.index)
 
   console.log(`Popularity floor: ${minPopularity} deck(s)`)
   console.log(`Kept ${kept.length} variants; left out ${dropped}`)
@@ -645,10 +699,24 @@ export async function runBuild(options = {}) {
 
   if (!rawInputs) {
     console.warn(`Commander Spellbook raw inputs not found: ${rawInputDir}`)
-    const detailPresent = validateExistingDetailArtifact(detailPath)
-    const indexPresent = validateExistingIndexArtifact(indexPath)
 
-    if (detailPresent && indexPresent) {
+    let indexArtifact = null
+    try {
+      indexArtifact = readExistingIndexArtifact(indexPath)
+    } catch (error) {
+      console.warn(`Existing combo index artifact failed validation: ${indexPath}: ${error.message}`)
+    }
+
+    let detailPresent = false
+    if (indexArtifact) {
+      try {
+        detailPresent = validateExistingDetailArtifact(detailPath, indexArtifact.blocks)
+      } catch (error) {
+        console.warn(`Existing combo detail artifact failed validation: ${detailPath}: ${error.message}`)
+      }
+    }
+
+    if (detailPresent && indexArtifact) {
       return { preserved: true, variantCount: null }
     }
 
@@ -660,7 +728,7 @@ export async function runBuild(options = {}) {
       snapshot: { snapshotAt: null, license: null }
     })
     writeDetailArtifact(detailPath, detailBuffer)
-    await writeIndexArtifact(indexPath, index)
+    writeIndexArtifact(indexPath, index)
     console.log(`Wrote empty Commander Spellbook corpus placeholder: ${detailPath}, ${indexPath}`)
     return { preserved: false, variantCount: 0 }
   }
@@ -668,7 +736,7 @@ export async function runBuild(options = {}) {
   const { detailBuffer, index } = buildComboArtifacts(rawInputs)
 
   const detailBytes = writeDetailArtifact(detailPath, detailBuffer)
-  const indexBytes = await writeIndexArtifact(indexPath, index)
+  const indexBytes = writeIndexArtifact(indexPath, index)
 
   console.log(`Commander Spellbook variants: ${index.manifest.variantCount}`)
   console.log(`Rejected non-OK variants: ${index.manifest.rejectedVariantCount}`)

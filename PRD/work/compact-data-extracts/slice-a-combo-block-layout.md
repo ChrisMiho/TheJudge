@@ -1,6 +1,6 @@
 # Slice A — Combo block layout + index directory in the build script
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -39,19 +39,19 @@ whole corpus.
 
 ## Acceptance criteria
 
-- [ ] A1 — `serializeVariantDetail` groups variants into 128-variant NDJSON
+- [x] A1 — `serializeVariantDetail` groups variants into 128-variant NDJSON
       blocks in `variantId` order, one brotli member per block
-- [ ] A2 — build writes `apps/backend/data/commanderSpellbookComboBlocks.br`
+- [x] A2 — build writes `apps/backend/data/commanderSpellbookComboBlocks.br`
       as the concatenation of those brotli block members
-- [ ] A3 — build writes `apps/backend/data/commanderSpellbookComboIndex.json.br`
+- [x] A3 — build writes `apps/backend/data/commanderSpellbookComboIndex.json.br`
       carrying a block directory (`blocks: [{ offset, length }]`) that
       correctly locates each block inside the blocks file
-- [ ] A4 — `--trim-committed` re-blocks (filter survivors → re-serialize →
+- [x] A4 — `--trim-committed` re-blocks (filter survivors → re-serialize →
       rewrite) rather than splicing, and its test passes
-- [ ] A5 — brotli quality and size-hint params are fixed, named constants
+- [x] A5 — brotli quality and size-hint params are fixed, named constants
       with no `dictionary` option (grep confirms no `zlib.constants.*DICTIONARY*`
       usage and explicit `BROTLI_PARAM_QUALITY` / `BROTLI_PARAM_SIZE_HINT`)
-- [ ] A6 — `node --test scripts/build-commander-spellbook-combos.test.mjs`
+- [x] A6 — `node --test scripts/build-commander-spellbook-combos.test.mjs`
       passes
 
 ## Verification

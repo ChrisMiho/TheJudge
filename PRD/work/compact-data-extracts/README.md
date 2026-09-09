@@ -12,7 +12,7 @@ the full fresh corpus fits the 120 MB Lambda budget without trimming. See
 
 | Slice | Scope | Depends on | Status |
 | --- | --- | --- | --- |
-| A | Combo block layout + index directory in the build script | none | planned |
+| A | Combo block layout + index directory in the build script | none | done |
 | B | Catalog loader reads the block layout | A | planned |
 | C | Brotli for rulings / card-detail / prices, build + loader | none | planned |
 | D | File-name sweep across path lists and readers | A, B, C, E | planned |
