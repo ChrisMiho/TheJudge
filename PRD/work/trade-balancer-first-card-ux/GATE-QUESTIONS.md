@@ -255,8 +255,14 @@ feature does now, in prose, and it must match the requirements. Its
 "defaulting to whichever printing the on-add fetch returns first" and that the
 foil default is non-foil; both stop being true under the blocks above. It also
 says the balancer's only backend traffic is the price lookup, which the wake-up
-ping changes. The edits rewrite those bullets, add one describing the picker,
-and record the picker's size limit and the wake-up call under "Measured bounds".
+ping changes. Four more of its sentences name the old fetch moment — the retry
+bullet's "on-add price fetch", the freshness bullet's "one card at a time when
+it's added to a side", the data-footprint line's "fetched from the backend only
+on add", and the retired-alternative note's "fetched per card on add" — and each
+is corrected to the new pair of moments: the suggestion tap on a manual search,
+the add on a scan. The edits rewrite those bullets, add one describing the
+picker, and record the picker's size limit and the wake-up call under
+"Measured bounds".
 
 **What happens if you say no:** the feature's own description contradicts its
 requirements, which is the drift this run exists to fix.
@@ -322,6 +328,25 @@ requirements, which is the drift this run exists to fix.
 +  current mode is kept (a new entry starts non-foil). The player can still
 +  toggle into a mode with no price, which keeps the $0-plus-caution treatment.
 +  (REQ-065)
+@@ Missing prices, and a failed price fetch
+-- Built: if a card's on-add price fetch fails outright (not a missing price,
+-  but a failed request), the entry degrades to the same $0-plus-caution
+-  treatment with a **retry** affordance, rather than a broken row; the failed
+-  result is not cached, so retrying re-fetches. (FLOW-025)
++- Built: if a card's price fetch fails outright (not a missing price, but a
++  failed request), the entry degrades to the same $0-plus-caution treatment
++  with a **retry** affordance, rather than a broken row; the failed result is
++  not cached, so retrying re-fetches. This covers both moments the fetch runs:
++  the pre-add fetch on a manual search — where the card is added anyway, in
++  that same state, so the picker never traps the player — and the on-add fetch
++  on a scan. (REQ-065, FLOW-025)
+@@ Prices and freshness
+ - Built: prices come from a committed printing-price snapshot served by the
+-  backend on demand, one card at a time when it's added to a side, and cached
++  backend on demand, one card at a time — on a manual search when the player
++  taps that card's suggestion, on a scan when the card is added — and cached
+   for the rest of the session — there is no live or real-time lookup, no
+   runtime sync, and no up-front bulk download. The snapshot is refreshed on a
 @@ Contract posture
  - Built: **contract-frozen on the AI answer path, with one read-only backend
    fetch of its own** — no change to `AskAiRequest`, Zod schemas, `GameContext`,
@@ -349,6 +374,25 @@ requirements, which is the drift this run exists to fix.
 +  with the `cardMetadata` download and the player's typing, so the wait is
 +  hidden rather than removed. A scheduled keep-warm ping is deliberately out of
 +  scope. (REQ-064)
+@@ Measured bounds — data footprint
+ - Data footprint: no up-front price download — the balancer's only up-front
+   frontend cost is the shared `cardMetadata` index (REQ-174), the same list
+   MTG Assistant and Quick Lookup already load. A card's prices are fetched
+-  from the backend only on add; per-card fetch and pricing stay within a
++  from the backend once per card — on the suggestion tap on a manual search,
++  on add on a scan — and the warm-up ping on open (REQ-064) downloads no
++  data; per-card fetch and pricing stay within a
+   mobile-friendly budget (NFR-013). The committed backend snapshot's measured
+   figures live in `data/cardPrintingPrices.md`.
+@@ Rejected alternatives and deferred scope
+ - **A single bulk frontend price download — retired, not merely closed.** The
+   original design lazy-loaded one ~38 MB committed file on first Trade
+   Balancer open. Measured against the live corpus, that stalled first open for
+-  seconds on mobile; REQ-066 moved pricing to the backend, fetched per card on
+-  add instead (FLOW-025).
++  seconds on mobile; REQ-066 moved pricing to the backend, fetched one card at
++  a time instead — on the suggestion tap on a manual search, on add on a scan
++  (REQ-065, FLOW-025).
 ```
 
 - Verdict:
@@ -431,20 +475,26 @@ newest-first.
 
 **In plain terms:** this file lists the app's endpoints and what each feature
 sends. It says flatly that the Trade Balancer's "only backend traffic is the
-read-only price route", which the wake-up ping makes untrue, and it describes
-the price response without saying anything about the order printings arrive in.
-The edits widen the traffic sentence, note the balancer as a caller of the
-existing health check, and record the newest-first order as part of the
-response. No new endpoint is created — the health check has existed all along
-for deployment and uptime checks.
+read-only price route", which the wake-up ping makes untrue; it says the price
+route backs the balancer's "on-add fetch", which is the timing REQ-065 and
+FLOW-025 move to the suggestion tap on the search path (a scan still fetches on
+add); and it describes the price response without saying anything about the
+order printings arrive in. The edits correct the fetch-timing sentence in the
+endpoint's Purpose list and again in the Trade Balancer Data Strategy section,
+widen the traffic sentence, note the balancer as a caller of the existing health
+check, and record the newest-first order as part of the response. No new
+endpoint is created — the health check has existed all along for deployment and
+uptime checks.
 
 **What happens if you say no:** the integration record contradicts the shipped
-app, and the printing order is left undocumented on the wire.
+app in two places, and the printing order is left undocumented on the wire.
 
 ```diff
 --- a/PRD/sections/integrations-and-data.md
 +++ b/PRD/sections/integrations-and-data.md
-@@ ### Endpoint: `GET /api/cards/:oracleId/prices`
+@@ ### Endpoint: `GET /api/cards/:oracleId/prices` — Purpose
+-- back the Trade Balancer's on-add fetch, cached per session (FLOW-025); a known id returns `200 { oracleId, snapshotDate, printings: CardPrintingPrice[] }`, an unknown id returns `404 { error: "card_not_found" }`
++- back the Trade Balancer's per-card fetch — on a manual search when the player taps that card's search suggestion, before the card is added; on a scan when the card is added — cached per session (REQ-065, FLOW-025); a known id returns `200 { oracleId, snapshotDate, printings: CardPrintingPrice[] }`, an unknown id returns `404 { error: "card_not_found" }`
  - each `CardPrintingPrice` carries `id` (Scryfall printing id — the frontend derives the image url from it), `set`, `setName`, `collectorNumber`, `usd` (non-foil, `number | null`), `usdFoil` (`number | null`); card name is not repeated per printing — the frontend takes it from the shared `cardMetadata` index (REQ-174)
 +- `printings` arrives **newest release first** — the order the committed artifact was built in (`released_at` descending, then collector number, then printing id; REQ-066). The order is part of the contract and the client does not re-sort; no release-date field is carried on the wire
  - the product's third product-facing endpoint, permitted alongside `POST /api/ask-ai` and `GET /api/cards/:oracleId` by the one-endpoint rule (canonical: NFR-004, BLOCK-01 = A)
@@ -469,20 +519,25 @@ app, and the printing order is left undocumented on the wire.
 
 ---
 
-## PRD/sections/trade-balancer/data/cardPrintingPrices.md — the price file's ordering rule
+## PRD/sections/trade-balancer/data/cardPrintingPrices.md — the price file's ordering rule, and when the app reads it
 
 **What this decides:** whether the price file's own documentation records that a
-card's printings are stored newest-first.
+card's printings are stored newest-first, and when the balancer asks for them.
 
 **In plain terms:** this file documents the shape of the committed price file —
-what each field means and how big it is. It describes the per-card printing list
-without saying anything about its order, which is fine while the order is
-meaningless and wrong once the order becomes a promise the picker depends on.
-One sentence records it.
+what each field means, how big it is, and how it is served at runtime. It
+describes the per-card printing list without saying anything about its order,
+which is fine while the order is meaningless and wrong once the order becomes a
+promise the picker depends on. One sentence records it. Its "Runtime posture"
+section also states flatly that a card's printings and prices are fetched "only
+when that card is added to a side" — the timing REQ-065 and FLOW-025 move to the
+suggestion tap on the search path (a scan still fetches on add), so that
+sentence is corrected in the same breath.
 
 **What happens if you say no:** the file's own documentation omits the one
-contract the picker relies on, and a future rebuild could reorder it without
-anyone noticing.
+contract the picker relies on, a future rebuild could reorder it without anyone
+noticing, and its runtime description keeps naming a fetch moment the app no
+longer uses.
 
 ```diff
 --- a/PRD/sections/trade-balancer/data/cardPrintingPrices.md
@@ -502,6 +557,18 @@ anyone noticing.
 +  order is part of the artifact contract and is echoed verbatim on the wire;
 +  `released_at` is a build-time sort key only and is **not** stored per
 +  printing, so the field set and the artifact's size are unchanged (REQ-066).
+@@ Runtime posture
+ - **Backend-only, loaded into memory at startup, served on demand.** No
+   up-front frontend download and no lazy-loaded frontend artifact — the
+   balancer's only up-front frontend cost is the shared `cardMetadata` index
+-  (NFR-013, REQ-174). A card's printings and prices are fetched only when that
+-  card is added to a side, cached per session (FLOW-025). Loader lives in
++  (NFR-013, REQ-174). A card's printings and prices are fetched once per card
++  and cached per session (FLOW-025): on a manual search when the player taps
++  that card's suggestion, before the card is added, and on a scan when the
++  card is added (REQ-065). Loader lives in
+   `apps/backend/src/cardPrices.ts` (`loadCardPrintingPricesIndex`); the route
+   in `apps/backend/src/routes/cardPrices.ts`; the frontend fetch/cache module
 ```
 
 - Verdict:

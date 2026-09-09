@@ -169,35 +169,126 @@ decision log is retired and no new IDs are minted.
 | `REQ-066` | printing order becomes part of the artifact contract |
 | `FLOW-009` | step 2's manual-search branch and the foil edge case |
 | `FLOW-025` | the fetch now happens on suggestion tap, and its failure path |
-| `PRD/sections/trade-balancer/README.md` | the current-state feature spec's add-a-card, foil, contract-posture and measured-bounds text |
+| `PRD/sections/trade-balancer/README.md` | the current-state feature spec's add-a-card, foil, retry, freshness, contract-posture, measured-bounds and retired-alternative text — every sentence that names when the fetch runs |
 | `PRD/sections/screen-layout.md` | the Trade Balancer row gains the picker's containment rule |
 | `PRD/sections/system-map.md` | the Trade balancer summary says "added immediately … the fetch's first result"; the artifact-build entry gains the order |
-| `PRD/sections/integrations-and-data.md` | "its only backend traffic is the read-only price route" becomes false, and the wire order becomes contract |
-| `PRD/sections/trade-balancer/data/cardPrintingPrices.md` | the artifact's `byOracleId` shape gains its ordering rule |
+| `PRD/sections/integrations-and-data.md` | "its only backend traffic is the read-only price route" becomes false, the price endpoint's Purpose bullet still says "on-add fetch", and the wire order becomes contract |
+| `PRD/sections/trade-balancer/data/cardPrintingPrices.md` | the artifact's `byOracleId` shape gains its ordering rule, and its Runtime posture still says the fetch happens "only when that card is added to a side" |
 | `PRD/sections/overview.md` | the product summary says prices are fetched "only when a card is added" and that the balancer's fetch is its only backend traffic |
 | `PRD/sections/non-functional-requirements.md` | NFR-013 repeats the "only when that card is added" timing, puts the loading state on the entry row, and counts the free-tier cost |
 
-### How the amendment set was enumerated
+### How the amendment set was enumerated — line by line
 
-Not from memory. The set was re-enumerated on 2026-09-09 (refinement attempt 2,
-after the quality-check FAIL on `overview.md`) by grepping the whole corpus:
+Attempt 2 enumerated at **file** level: it re-read only the seven files that had
+no block and trusted the ten that did. Two live sentences inside blocked files
+survived that (`cardPrintingPrices.md:126-127`, `integrations-and-data.md:154`),
+which is what quality-check attempt 2 failed on. Attempt 3 replaces the method:
+every matching **line** in `PRD/sections/` is listed below and disposed of
+individually, whether or not its file already carried a block.
+
+The sweep (2026-09-09, refinement attempt 3) ran in two passes:
 
 ```bash
-grep -rniE "balancer|printing|foil|only backend traffic|when a card is added|price fetch|picker" PRD/sections/ -l
+# pass 1 — the five topics this change touches
+grep -rniE 'on-add|on add|only when .{0,30}added|when a card is added|when that card is added|when the card is added|added to a (trade )?side|printings\[0\]|first printing|first result|newest|non-foil|foil|picker|change printing|health|warm|wake|cold start|scroll|fetch' PRD/sections/
+# pass 2 — every file that names the feature at all, read at each hit
+grep -ric 'trade balancer|trade-balancer|trade side|balancer' PRD/sections/ | grep -v ':0$'
 ```
 
-That listed 17 files. Ten already had blocks. Of the remaining seven, each was
-read at its matching lines and judged:
+Pass 2 returned 14 files. Every hit in all 14 is a row below.
 
-| File | Matched at | Verdict |
+**Disposition — one row per matched line.** "Amended in block X" means a diff
+hunk in `GATE-QUESTIONS.md` block X removes or rewrites that exact line;
+verified by script against the live text (54 removed lines, 0 mismatches).
+
+| `file:line` | Current wording (abbreviated) | Disposition |
 | --- | --- | --- |
-| `overview.md` | :43 "made only when a card is added" | **contradicted → block added** |
-| `non-functional-requirements.md` | NFR-013 :207 "only when that card is added", :211 "brief in-place loading state", :223 free-tier invocation count | **contradicted → block added** |
-| `non-functional-requirements.md` | NFR-004 :36-41 one-endpoint rule; NFR-014 :235 "no lazy-loaded price artifact" | not contradicted — the warm-up adds **no endpoint** (it reuses the existing `GET /api/health`, already documented as an optional non-product endpoint) and downloads no data, so neither the one-endpoint rule nor its grep-listed echo set is amended |
-| `goals-and-non-goals.md` | :76 endpoint non-goal, :78-79 pricing/printing scope | not contradicted — same reason as NFR-004; the picker and static-snapshot posture are already in scope |
-| `scan/README.md` | :235-245 Trade Balancer section | not contradicted — it describes the scan path only, where the scanned printing stays the default and the fetch still runs on add (A11) |
-| `shared-chrome/README.md` | :56, :72, :136, :372 balancer chrome and rails | not contradicted — the picker's scroll region is inside the destination body; the containment rule lands on the `screen-layout.md` row, which already has a block |
-| `decisions.md`, `in-depth/README.md`, `quick-lookup/README.md`, `scan/data/*.md` | "printing" in scan/identity contexts | not contradicted — none makes a claim about the balancer's traffic, printing default, foil default, or picker |
+| `overview.md:13` | balancer named in a feature list | not contradicted — no claim about traffic, printing, foil, or picker |
+| `overview.md:43` | "made only when a card is added" | amended in block `PRD/sections/overview.md` |
+| `functional-requirements.md:175` | one-endpoint rule, two read-only retrieval routes | not contradicted — the warm-up adds no endpoint; `GET /api/health` already exists as a non-product endpoint |
+| `functional-requirements.md:1456` | REQ-064 description, two-sided screen | not contradicted — no traffic or timing claim |
+| `functional-requirements.md:1464` | trade state is ephemeral | not contradicted — kept as context in the REQ-064 hunk |
+| `functional-requirements.md:1466` | "prices cards only through a read-only backend price fetch" | amended in block `REQ-064` |
+| `functional-requirements.md:1482` | REQ-065 description, entry resolves to a printing | not contradicted — still true |
+| `functional-requirements.md:1485` | scan input, scanned printing is the default | not contradicted — the scan path is unchanged (A11) |
+| `functional-requirements.md:1486` | "then **chooses the correct printing** … before it is added" | amended in block `REQ-065` |
+| `functional-requirements.md:1487` | "default is non-foil" | amended in block `REQ-065` |
+| `functional-requirements.md:1491` | "fetched from the backend when the card is added" | amended in block `REQ-065` |
+| `functional-requirements.md:1512` | REQ-066 artifact field set | not contradicted — kept as context; the field set is unchanged |
+| `functional-requirements.md:1515` | "the manual picker lists every printing of a card" | amended in block `REQ-066` |
+| `functional-requirements.md:1697` | two read-only retrieval routes permitted | not contradicted — same reason as `:175` |
+| `functional-requirements.md:4023` | REQ-174 `cardMetadata` reads | not contradicted — the index and its uses are unchanged |
+| `functional-requirements.md:4051-4052` | REQ-175 price companion route shape | not contradicted — the request and response shapes are unchanged |
+| `user-flows.md:194` | "prices are fetched from the backend when it is added" | amended in block `FLOW-009` |
+| `user-flows.md:196` | FLOW-009 step 1, the screen opens | amended in block `FLOW-009` (gains the warm-up ping) |
+| `user-flows.md:198` | scan branch of step 2 | not contradicted — the scan path is unchanged (A11) |
+| `user-flows.md:199` | manual-search branch, "chooses the correct printing" | amended in block `FLOW-009` |
+| `user-flows.md:200` | "On add, the balancer fetches that card's printings" | amended in block `FLOW-009` |
+| `user-flows.md:201` | added entry shows printing, price, foil toggle, quantity | not contradicted — states no default or timing |
+| `user-flows.md:206` | missing-price $0 + caution edge case | not contradicted — kept as context; the treatment is unchanged |
+| `user-flows.md:211` | failed price fetch degrades with retry | not contradicted — states no fetch moment; the pre-add failure case is added beside it |
+| `user-flows.md:213` | "makes a read-only backend price fetch … but no `AskAiRequest`/prompt change" | not contradicted — this is a no-prompt-change claim, not an only-traffic claim; the AI path stays frozen |
+| `user-flows.md:549` | FLOW-025 trigger, "a player adds a card to a trade side" | amended in block `FLOW-025` |
+| `user-flows.md:554` | "showing a brief in-place loading state on the entry" | amended in block `FLOW-025` |
+| `user-flows.md:555` | response carries printings and snapshot date | not contradicted — kept as context; the wire response is unchanged |
+| `user-flows.md:556` | "On success the entry shows its chosen printing … the printing picker lists every printing" | amended in block `FLOW-025` |
+| `user-flows.md:558` | failed fetch degrades, not cached | not contradicted — kept as context; the pre-add case is added below it |
+| `user-flows.md:560` | null-price printing kept at $0 | not contradicted — unchanged |
+| `non-functional-requirements.md:207` | "fetched from the backend only when that card is added" | amended in block `PRD/sections/non-functional-requirements.md` |
+| `non-functional-requirements.md:208-209` | static snapshot, "no runtime price fetch" | not contradicted — the warm-up is not a price fetch and makes no external call |
+| `non-functional-requirements.md:211` | "shows a brief in-place loading state" | amended in block `PRD/sections/non-functional-requirements.md` |
+| `non-functional-requirements.md:212` | USD-only fields | not contradicted — unchanged |
+| `non-functional-requirements.md:223` | free-tier posture, per-card invocation count | amended in block `PRD/sections/non-functional-requirements.md` |
+| `integrations-and-data.md:77` | price route served from a committed artifact, no runtime network call | not contradicted — states no fetch moment and no exclusivity |
+| `integrations-and-data.md:154` | "back the Trade Balancer's **on-add** fetch, cached per session" | amended in block `PRD/sections/integrations-and-data.md` (**added attempt 3** — quality-check finding 2) |
+| `integrations-and-data.md:155` | `CardPrintingPrice` field list | not contradicted — kept as context; the field set is unchanged |
+| `integrations-and-data.md:156` | third product-facing endpoint | not contradicted — the warm-up adds no endpoint |
+| `integrations-and-data.md:158-161` | `GET /api/health` purpose list | amended in block `PRD/sections/integrations-and-data.md` (addition; the balancer joins the caller list) |
+| `integrations-and-data.md:316` | "its only backend traffic is the read-only price route" | amended in block `PRD/sections/integrations-and-data.md` |
+| `integrations-and-data.md:319` | per-printing artifact fields, "for the manual picker" | amended in block `PRD/sections/integrations-and-data.md` |
+| `integrations-and-data.md:321` | static snapshot, no runtime price fetch | not contradicted — same reason as NFR-013's `:208-209` |
+| `integrations-and-data.md:322` | "fetched from the backend only when that card is added to a trade side" | amended in block `PRD/sections/integrations-and-data.md` |
+| `integrations-and-data.md:325` | input reuses scan resolver and manual search; printing is display-only | not contradicted — unchanged |
+| `system-map.md:451` | printing-price artifact build summary | amended in block `PRD/sections/system-map.md` |
+| `system-map.md:556` | "added immediately and priced by a read-only backend fetch on add … the fetch's first result" | amended in block `PRD/sections/system-map.md` |
+| `system-map.md:557` | balancer file list (`PrintingPicker.tsx` etc.) | not contradicted — a file list, no behavior claim |
+| `screen-layout.md:217` | Phone row, "lists region-scroll" | not contradicted — kept as context; the picker rule lands on the Fit row and a new row |
+| `screen-layout.md:219` | Fit row, "entry lists region-scroll" | amended in block `PRD/sections/screen-layout.md` |
+| `screen-layout.md:220` | price-freshness row | not contradicted — unchanged |
+| `screen-layout.md:221` | Notes row, `DEC-087, DEC-145, REQ-145` | amended in block `PRD/sections/screen-layout.md` |
+| `trade-balancer/README.md:23-24` | "the moment a card is added, it fetches that one card's printings" | amended in block `PRD/sections/trade-balancer/README.md` |
+| `trade-balancer/README.md:53-56` | scan input, scanned printing is the default | not contradicted — the scan path is unchanged (A11) |
+| `trade-balancer/README.md:60-62` | "defaulting to whichever printing the on-add fetch returns first" | amended in block `PRD/sections/trade-balancer/README.md` |
+| `trade-balancer/README.md:68-69` | "the default is non-foil" | amended in block `PRD/sections/trade-balancer/README.md` |
+| `trade-balancer/README.md:83-90` | missing-price and foil-toggle $0 + caution | not contradicted — the treatment is unchanged |
+| `trade-balancer/README.md:91-94` | "if a card's **on-add** price fetch fails outright" | amended in block `PRD/sections/trade-balancer/README.md` (**added attempt 3**) |
+| `trade-balancer/README.md:99` | "one card at a time when it's added to a side" | amended in block `PRD/sections/trade-balancer/README.md` (**added attempt 3**) |
+| `trade-balancer/README.md:107-111` | snapshot date as date-level copy | not contradicted — REQ-145 behavior is unchanged |
+| `trade-balancer/README.md:116-118` | "only backend traffic is the read-only price route" | amended in block `PRD/sections/trade-balancer/README.md` |
+| `trade-balancer/README.md:125-136` | currency, quantity, freshness line, layout bounds | not contradicted — unchanged; the picker and warm-up bounds are added beneath them |
+| `trade-balancer/README.md:140` | "fetched from the backend only on add" | amended in block `PRD/sections/trade-balancer/README.md` (**added attempt 3**) |
+| `trade-balancer/README.md:160-161` | retired bulk-download alternative, "fetched per card on add instead" | amended in block `PRD/sections/trade-balancer/README.md` (**added attempt 3**) |
+| `trade-balancer/README.md:162-166` | live/real-time price sync closed door | not contradicted — the warm-up is not a price lookup and makes no external call |
+| `trade-balancer/data/cardPrintingPrices.md:53` | "no live price fetch, no runtime sync, no scheduled refresh" | not contradicted — same reason as above |
+| `trade-balancer/data/cardPrintingPrices.md:84-87` | `byOracleId` artifact shape | amended in block `PRD/sections/trade-balancer/data/cardPrintingPrices.md` |
+| `trade-balancer/data/cardPrintingPrices.md:104-105` | USD-only fields, trade entry shape | not contradicted — unchanged |
+| `trade-balancer/data/cardPrintingPrices.md:116-118` | price coverage counts | not contradicted — measured figures, unchanged |
+| `trade-balancer/data/cardPrintingPrices.md:126-127` | "fetched **only when that card is added to a side**, cached per session" | amended in block `PRD/sections/trade-balancer/data/cardPrintingPrices.md` (**added attempt 3** — quality-check finding 1) |
+| `goals-and-non-goals.md:76` | endpoint non-goal | not contradicted — the warm-up adds no endpoint and reuses the existing health check |
+| `goals-and-non-goals.md:78` | pricing and printing picker in scope for the balancer | not contradicted — already in scope |
+| `goals-and-non-goals.md:79` | live price sync / marketplace non-goals | not contradicted — none is added |
+| `scan/README.md:235-243` | scan as one of two ways to add to a trade side | not contradicted — the scan path is unchanged (A11) |
+| `scan/data/cardScanMap.md:41` | notes the balancer's corpus/behavior split | not contradicted — a comparison to this artifact's own split, no balancer behavior claim |
+| `shared-chrome/README.md:65` | "presentation only — no backend health endpoint" | not contradicted — this constrains where the **mock-mode banner** reads its signal (build-time `ASK_AI_PROVIDER`, never a health probe), not whether any feature may call `GET /api/health` |
+| `shared-chrome/README.md:56, 72, 136, 372, 408` | balancer chrome, rails, routing | not contradicted — the picker scrolls inside the destination body; containment lands on the `screen-layout.md` row |
+| `decisions.md:128-129` | DEC-087 / DEC-088 rows | not contradicted — a retired historical index; decision bodies are never amended and no new `DEC` is minted |
+
+Counts: **79 rows — 35 amended in a block, 44 not contradicted.** Six of the 35
+were added in attempt 3: `integrations-and-data.md:154` (finding 2),
+`cardPrintingPrices.md:126-127` (finding 1), and four the widened grep turned up
+in a file that already had a block — `trade-balancer/README.md:91-94`, `:99`,
+`:140`, `:160-161`. The block count is unchanged at twelve; the six new hunks
+extend blocks that already existed.
 
 ## Slice sketch (for map-out)
 
