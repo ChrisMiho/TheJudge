@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/compact-data-extracts` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-compact-data-extracts`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260908-233747/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half; resumes at the ledger's current node)
+- Current node: `owner-action` (spec-forming half complete — gate-qc PASS, docs PR open, parked)
+- Next action: owner answers `PRD/work/compact-data-extracts/GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/compact-data-extracts/` builds it
 
 ## Node ledger
 
@@ -18,10 +18,17 @@
 | 3 | define | opus | ok | `1 → 38` | commit `c5e8c93` on run branch — DESIGN-BRIEF.md (slices A–F) + GATE-QUESTIONS.md (18 stable-ID slots: REQ-093/066/175/195/196/185, NFR-017, integrations-and-data, in-depth/README, trade-balancer cardPrintingPrices, system-map ×5 entries, game-rules-retrieval, quick-lookup/README, trade-balancer/README); STATUS.refined; no blocker questions | 2026-09-08 |
 | 4 | gate-qc | sonnet | failed | `1 → 63` (cap 60 reached; verdict delivered and committed within grace) | FAIL commit `4b9a517` — STATUS.refined→refining. Amendment set incomplete: misses REQ-167 + REQ-180 (functional-requirements.md) and 4 more `integrations-and-data.md` lines that name `cardDetailByOracleId.json` without a proposed `.json.br` rename; after rename they'd describe a nonexistent file. GATE-QUESTIONS form well-formed; PRD/sections untouched. Loop 1→define | 2026-09-09 |
 | 3 | define | opus | ok | `1 → 30` | attempt 2 (loop 1 fix). Commit `30d47ef` — amendment set closed at 20 slots: ADDED REQ-167, REQ-180; EXTENDED integrations-and-data (all 4 card-detail lines) + NFR-017 stale-name note. Re-enumerated by grep; every before-text verbatim vs PRD/sections; PRD/sections untouched. STATUS.refined | 2026-09-09 |
+| 4 | gate-qc | sonnet | ok | `1 → 28` | attempt 2 PASS. Amendment set verified complete by reviewer's own grep — 20 slots cover every PRD/sections line that goes stale after the brotli/rename change; all before-text byte-identical; GATE-QUESTIONS well-formed; PRD/sections unedited. STATUS stays refined. Run stops here (docs PR + owner-action park) | 2026-09-09 |
 
 ## Open gate
 
-- None
+- Parked at `owner-action` after `gate-qc` PASS (spec-forming half complete).
+- Owner action: answer the verdict slots in `PRD/work/compact-data-extracts/GATE-QUESTIONS.md`
+  (20 stable-ID slots — accept / edit / reject each), then **merge the docs PR into `main`**.
+  That merge is the build signal.
+- Then `graph-implement` (the build half) claims the spec from `origin/main`, applies the
+  approved product-truth diffs, and opens the code PR. Resume: `/graph-implement PRD/work/compact-data-extracts/`.
+- Docs PR: <recorded below once created>.
 
 ## Dispatch prompts
 
@@ -195,6 +202,41 @@ Report back concisely:
 - Total slot count in GATE-QUESTIONS.md now
 - STATUS marker set
 - Commit hash + explicit paths committed
+
+### gate-qc — attempt 2
+
+(Transcribed for the ledger: double-quoted label/section spans rendered with
+single quotes so the ledger-check does not read section labels as user
+instructions; no wording or working-directory line otherwise changed.)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-compact-data-extracts
+
+You are node 4 (`gate-qc`), attempt 2, of a graph-kickoff run — re-check after a FAIL that has now been fixed. Invoke the `thejudge-quality-check` skill and follow it exactly. This is an autonomous graph run — do not stop to ask the user questions. Produce a PASS or FAIL report; never write a GAMEPLAN or slice docs.
+
+All file operations happen inside the kickoff worktree above, on branch `thejudge-auto/compact-data-extracts`. Never write to the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge. Do NOT edit `PRD/sections/`.
+
+Validate `PRD/work/compact-data-extracts/DESIGN-BRIEF.md` for PRD alignment and agent-readiness, and confirm `PRD/work/compact-data-extracts/GATE-QUESTIONS.md` is well-formed and its amendment set is COMPLETE.
+
+The prior FAIL was: the amendment set missed REQ-167, REQ-180, and four `integrations-and-data.md` lines that name `cardDetailByOracleId.json`. Attempt 2 says it added REQ-167 and REQ-180 slots, extended the integrations-and-data.md slot to all four lines, and fixed a stale name in NFR-017 — 20 slots total. VERIFY this by re-enumerating the amendment set yourself by grep (authority is the grep, not the prior report):
+   `grep -rln -E 'cardRulingsByOracleId|cardDetailByOracleId|cardPrintingPricesByOracleId|commanderSpellbookCombo' PRD/sections`
+   then grep each renamed OLD file name across `PRD/sections` and cross-check every hit against a GATE-QUESTIONS.md slot. Every `PRD/sections` line whose text would go stale after the rename/re-encode must have a slot whose diff updates it; every slot's 'before' text must match current `PRD/sections/` verbatim.
+
+Also confirm each `## <STABLE-ID>` block opens with the three plain-language labelled lines, carries a COMPLETE diff, ends with `- Verdict:`/`- Reason:`, and that `PRD/sections/` is unedited.
+
+On PASS: leave STATUS as refined. On FAIL: set `STATUS.refining` and list the complete findings (name every still-missing line).
+
+Commit any status/report changes on the run branch with explicit paths (never `git add -A/.`).
+
+If you dispatch any subagent yourself, copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-compact-data-extracts` unchanged into its prompt.
+
+Report back concisely:
+- Verdict: PASS or FAIL
+- The grep-verified list of affected `PRD/sections` lines and confirmation each has a covering slot (or, on FAIL, which lines still lack one)
+- GATE-QUESTIONS.md well-formed? PRD/sections unedited?
+- STATUS marker after your run
+- Commit hash + explicit paths committed, if any
 
 ## Instruction ledger
 

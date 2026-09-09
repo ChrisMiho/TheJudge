@@ -1,6 +1,6 @@
 # compact-data-extracts
 
-status: refining
+status: owner-action
 
 ## Summary
 
@@ -20,13 +20,11 @@ the full fresh corpus fits the 120 MB Lambda budget without trimming. See
 
 ## Preparation gate
 
-- Quality-check: FAIL
+- Quality-check: PASS
 - Checked artifact: `PRD/work/compact-data-extracts/DESIGN-BRIEF.md`
-- Findings: Amendment set incomplete. `GATE-QUESTIONS.md` renames
-  `cardDetailByOracleId.json` → `.json.br` but does not amend REQ-167 and
-  REQ-180 (`PRD/sections/functional-requirements.md`), nor four more lines in
-  `PRD/sections/integrations-and-data.md` (the `GET /api/cards/:oracleId`
-  Purpose block, the request-context resolution line, the Card Detail Data
-  Strategy section, and the Delivery Strategy zone-rendering line) — all name
-  the old file and would describe a nonexistent artifact after the rename.
-  Looping to `define` (loop 1 of 3) to re-enumerate the amendment set by grep.
+- Findings: none. Amendment set verified complete by the reviewer's own grep —
+  20 stable-ID slots cover every `PRD/sections` line that the brotli/rename
+  change would make stale, every slot's "before" text is byte-identical to
+  current truth, `GATE-QUESTIONS.md` is well-formed, and `PRD/sections/` is
+  unedited. (Attempt 1 FAILed on a missed amendment set — REQ-167, REQ-180, and
+  four `integrations-and-data.md` card-detail lines — fixed at define attempt 2.)

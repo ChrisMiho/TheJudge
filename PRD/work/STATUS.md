@@ -10,8 +10,6 @@ Do not rename package folders to encode status.
 
 ## refined
 
-- [compact-data-extracts](compact-data-extracts/) — re-encode committed backend data extracts (brotli, 128-combo blocks) to fit the full fresh corpus inside the 120 MB Lambda budget without trimming; amendment set completed (20 slots) — added REQ-167/REQ-180 and the four integrations-and-data.md `cardDetailByOracleId.json` lines plus the NFR-017 historical note; awaiting define gate
-
 ## refining
 
 ## ideation
@@ -20,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [compact-data-extracts](compact-data-extracts/) | Spec-forming half complete (gate-qc PASS). Docs PR open into `main`. Owner: answer the 20 verdict slots in `compact-data-extracts/GATE-QUESTIONS.md`, then merge the docs PR — that merge is the build signal for `graph-implement`. |
 
 ## deferred
 
