@@ -15,12 +15,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up. Refinement attempt 4 closed the three gate-qc findings: `functional-requirements.md:4052` ("on add") now amended in block `REQ-065`, `:4056` (route inventory / health) in block `REQ-064`, and the disposition table's completeness claim is re-cut against one quoted narrow grep — 41 hits, 41 rows, 104 rows total, 56 removed lines verified against live text with 0 mismatches. Twelve blocks, no new stable IDs; awaiting gate-qc attempt 4 |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up. gate-qc attempt 3 FAILed: `PRD/sections/functional-requirements.md:4052` ("the balancer fetches one card's prices on add and caches per session") is a live fetch-timing sentence no `GATE-QUESTIONS.md` block amends, same failure mode as attempts 1-2; the line-level disposition table's "not contradicted" reason for that line ignores the timing claim |
 
 ## ideation
 

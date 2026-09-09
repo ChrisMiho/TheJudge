@@ -13,8 +13,8 @@ amend, slice sketch).
 
 `DESIGN-BRIEF.md` is the design record (scope, code verification, assumptions,
 slice sketch, and the line-level disposition table under
-`## Product-truth changes proposed` — 79 matched `PRD/sections/` lines, 35
-amended and 44 not contradicted); `GATE-QUESTIONS.md` carries the twelve
+`## Product-truth changes proposed` — 104 matched `PRD/sections/` lines, 37
+amended, 50 not contradicted and 17 off-topic); `GATE-QUESTIONS.md` carries the twelve
 proposed `PRD/sections/` amendments awaiting the owner's verdicts. No new stable
 IDs are reserved.
 

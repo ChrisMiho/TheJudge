@@ -31,6 +31,15 @@ only backend traffic is the price lookup; that sentence has to widen for this.
 A scheduled ping that keeps the server permanently warm is a separate
 infrastructure decision and stays out.
 
+Two other places record what the health check is for, and both move with this
+block. REQ-175 is the requirement listing the app's routes, and it calls
+`GET /api/health` the non-product health check — still true, so the edit only
+names the balancer's warm-up as a caller and says plainly that the "no runtime
+network call" promise for mock-mode local development means no call out to an
+outside provider, which a knock on your own backend is not. The other is the
+health check's own entry in `integrations-and-data.md`, whose caller list the
+balancer joins.
+
 **What happens if you say no:** the first card of every session keeps taking
 about four seconds to price, and the other nine blocks still stand on their own.
 
@@ -47,6 +56,12 @@ about four seconds to price, and the other nine blocks still stand on their own.
 +  - the warm-up adds **no endpoint and no schedule**: it reuses the health check that already exists for local, deployment, and uptime checks, and a scheduled keep-warm ping stays out of scope
    - USD only (Scryfall `usd` / `usd_foil`); EUR, tix, etched-foil, and grading/condition are out of scope for v1
    - mobile-first, touch-friendly layout (NFR-001)
+@@ REQ-175 — Acceptance Criteria (the route inventory and what `GET /api/health` is)
+   - ask-ai resolves card text by reading the same backend map internally inside `POST /api/ask-ai` (REQ-176), not by calling the new route; the route and the ask-ai read share the one artifact so they cannot drift
+   - `npm run data:build` includes the card-detail build; `npm run data:refresh` requires explicit human approval before any download (existing policy)
+-  - the product-facing routes are `POST /api/ask-ai`, `GET /api/cards/:oracleId`, and the read-only price companion `GET /api/cards/:oracleId/prices` (`GET /api/health` remains the non-product health check); `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call. The added route amends the one-endpoint rule (NFR-004)
++  - the product-facing routes are `POST /api/ask-ai`, `GET /api/cards/:oracleId`, and the read-only price companion `GET /api/cards/:oracleId/prices` (`GET /api/health` remains the **non-product** health check, and stays non-product even though the Trade Balancer now pings it once when the view opens as a warm-up carrying no product data in either direction, REQ-064); `ASK_AI_PROVIDER=mock` local dev works unchanged with **no runtime network call to any external provider** — the warm-up ping is an in-app request to this same backend, is fire-and-forget, and is a no-op when no backend is running. The added route amends the one-endpoint rule (NFR-004)
+ - Constraints:
 ```
 
 - Verdict:
@@ -78,10 +93,20 @@ thousand pixels tall and pushing the other side of the trade out of reach, so
 the picker gets a scroll region, a count in its header, lazily loaded pictures,
 and a filter by set once a card has more than eight printings.
 
+One line of a different requirement moves with this block. REQ-175 is the
+requirement for the two backend routes that serve a card's text and a card's
+prices, and one of its lines records **when** the balancer asks for prices —
+today it says "on add". Moving the manual-search fetch to the suggestion tap
+makes that sentence wrong, and *when the fetch happens* is this block's subject
+rather than REQ-064's or REQ-066's, so the correction rides here. Nothing about
+the route itself changes: same request, same response, same one fetch per card
+cached for the session.
+
 **What happens if you say no:** cards keep landing on a random set, one card in
 fifteen keeps opening at $0.00 with a warning, and the picker keeps unrolling
 the page. REQ-065's existing "chooses the printing before it is added" sentence
-stays contradicted by the shipped app.
+stays contradicted by the shipped app, and REQ-175's "on add" line stays as it
+is.
 
 ```diff
 --- a/PRD/sections/functional-requirements.md
@@ -98,6 +123,11 @@ stays contradicted by the shipped app.
    - each entry can be **removed** from its side
 -  - a card's printings and prices are fetched from the backend when the card is added and cached per session (REQ-066, REQ-175, FLOW-025); the entry shows a brief in-place loading state while it resolves. The card's name and image come from the shared local `cardMetadata` index (REQ-174). If the price fetch fails, the entry degrades to the $0-plus-caution treatment with a retry affordance rather than a broken row
 +  - a card's printings and prices are fetched from the backend once per card and cached per session (REQ-066, REQ-175, FLOW-025). On a manual search that fetch runs when the suggestion is tapped, so the picker carries the loading state and the entry appears already priced from cache; on a scan it runs on add and the entry shows a brief in-place loading state while it resolves. The card's name and image come from the shared local `cardMetadata` index (REQ-174). If the price fetch fails, the entry degrades to the $0-plus-caution treatment with a retry affordance rather than a broken row
+@@ REQ-175 — Acceptance Criteria (the price companion's runtime posture)
+   - a **read-only price companion** serves one card's printings and prices by oracle id, kept **separate from the descriptive block** so the card-detail/ask-ai path carries no price bytes (REQ-066). Recommended shape: a sibling route `GET /api/cards/:oracleId/prices` returning `{ oracleId, snapshotDate, printings: [{ id, set, setName, collectorNumber, usd, usdFoil }] }`; an unknown id returns a not-found response. The frontend derives each printing's image url from `id` and takes the card name from the shared `cardMetadata` index (REQ-174)
+-  - the price companion is backed by the committed backend price map (REQ-066), loaded into memory at startup and served with **no runtime network call**, exactly like the card-detail map; the balancer fetches one card's prices on add and caches per session (FLOW-025)
++  - the price companion is backed by the committed backend price map (REQ-066), loaded into memory at startup and served with **no runtime network call**, exactly like the card-detail map; the balancer fetches one card's prices **once per card and caches them per session** — on a manual search when the suggestion is tapped, before the card is added, and on a scan when the card is added (REQ-065, FLOW-025). The request and response shapes are unchanged either way
+   - the frontend loads a card's detail from `GET /api/cards/:oracleId` on first open and caches it per card for the session (FLOW-024); it never bulk-downloads the map
 ```
 
 - Verdict:

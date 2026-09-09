@@ -152,7 +152,7 @@ behavior, 6 no new dependency/endpoint/data contract.
 | A5 | The foil helper lives in `lib/trade/pricing.ts` | 3 | that module is already the home of the pure price selectors (`sideTotal`, `difference`, `formatUsd`); the component holds only state |
 | A6 | Foil auto-select never overrides a toggle the player already moved | 5 | preserves current user-visible behavior: only the *initial* mode for a printing changes |
 | A7 | A failed pre-add printings fetch falls back to today's add-then-degrade path | 5 | REQ-065's constraint that manual search "stays fully functional" as the permanent fallback; the existing retry affordance is already built (`TradeBalancer.tsx:227-231`) |
-| A8 | The warm-up call adds no endpoint | 6 | `/api/health` already exists (`apps/backend/src/routes/health.ts:4`; `integrations-and-data.md:158`); REQ-063's constraint forbids *adding* a health endpoint and a runtime provider-mode fetch — this is neither |
+| A8 | The warm-up call adds no endpoint | 6 | `/api/health` already exists (`apps/backend/src/routes/health.ts:4`; `integrations-and-data.md:158`); REQ-063's constraint (`functional-requirements.md:1437`) forbids *adding* a health endpoint and a runtime provider-mode fetch, and scopes to the mock-mode banner's own signal — this is neither |
 | A9 | The picker's scroll cap (~40vh, ~5-6 rows) and filter threshold (>8 printings) are design choices, not measured requirements | 4 | `screen-layout.md`'s Trade Balancer row already requires "entry lists region-scroll" and "no page scroll for totals/primary actions"; the numbers are the smallest change that satisfies it and are surfaced for the owner in the screen-layout gate block |
 | A10 | The committed price artifact is **not** rebuilt in the build worktree | 4 | the Scryfall bulk source `apps/frontend/data/scryfall/default-cards.json` is gitignored and exists only in the owner's main checkout — it is absent from this worktree. The sort ships with its unit test; the served order changes when the owner's next `npm run data:refresh-pr` (REQ-195) rebuilds the artifact. Until then the picker still works, because the player picks the printing rather than accepting a default |
 | A11 | The scan path is unchanged | 5 | `TradeBalancer.scan.test.tsx` is the tested contract; the scanned printing stays the default |
@@ -164,8 +164,8 @@ decision log is retired and no new IDs are minted.
 
 | Block | Why it is in the set |
 | --- | --- |
-| `REQ-064` | the mount-time warm-up call is new balancer behavior, and REQ-064's constraint currently describes the balancer's only backend traffic |
-| `REQ-065` | manual-search add path, foil default, picker presentation |
+| `REQ-064` | the mount-time warm-up call is new balancer behavior, and REQ-064's constraint currently describes the balancer's only backend traffic; the block also carries REQ-175's route-inventory line (`functional-requirements.md:4056`), which records what `GET /api/health` is and promises "no runtime network call" in mock-mode local dev |
+| `REQ-065` | manual-search add path, foil default, picker presentation; the block also carries REQ-175's fetch-timing line (`functional-requirements.md:4052`), which still says the balancer fetches prices "on add" |
 | `REQ-066` | printing order becomes part of the artifact contract |
 | `FLOW-009` | step 2's manual-search branch and the foil edge case |
 | `FLOW-025` | the fetch now happens on suggestion tap, and its failure path |
@@ -179,33 +179,49 @@ decision log is retired and no new IDs are minted.
 
 ### How the amendment set was enumerated — line by line
 
-Attempt 2 enumerated at **file** level: it re-read only the seven files that had
-no block and trusted the ten that did. Two live sentences inside blocked files
-survived that (`cardPrintingPrices.md:126-127`, `integrations-and-data.md:154`),
-which is what quality-check attempt 2 failed on. Attempt 3 replaces the method:
-every matching **line** in `PRD/sections/` is listed below and disposed of
-individually, whether or not its file already carried a block.
+Attempt 2 enumerated at **file** level and missed live sentences inside files
+that already carried a block. Attempt 3 moved to line level but attached a
+completeness claim — "every hit in all 14 files is a row below" — to a grep so
+broad it returned 343 hits against 79 rows. The rows were right; the claim was
+not checkable. Attempt 4 keeps the rows and replaces the claim with one that a
+reader can re-run in a single command.
 
-The sweep (2026-09-09, refinement attempt 3) ran in two passes:
+**Method — one narrow grep, every hit listed.** The amendment set is defined by
+the command below. It is deliberately narrow: it names only the five things this
+change touches — when the price fetch runs, which printing comes first, which
+foil mode an entry starts in, the printing picker, and the health check the
+warm-up reuses — so that its whole hit list fits in the table. Rows that turn
+out to be unrelated passages catching a generic word are marked
+`off-topic — <passage subject>` rather than dropped.
 
 ```bash
-# pass 1 — the five topics this change touches
-grep -rniE 'on-add|on add|only when .{0,30}added|when a card is added|when that card is added|when the card is added|added to a (trade )?side|printings\[0\]|first printing|first result|newest|non-foil|foil|picker|change printing|health|warm|wake|cold start|scroll|fetch' PRD/sections/
-# pass 2 — every file that names the feature at all, read at each hit
-grep -ric 'trade balancer|trade-balancer|trade side|balancer' PRD/sections/ | grep -v ':0$'
+grep -rniE 'on add|on-add|only when (a|that) card is added|when (a|that) card is added|first printing|printings\[0\]|first result|returns first|defaults? (is|to) non-foil|non-foil by default|printing picker|change printing|health' PRD/sections/
 ```
 
-Pass 2 returned 14 files. Every hit in all 14 is a row below.
+Run from the repo root over the whole `PRD/sections/` tree on 2026-09-09, it
+returns **41 lines**, and **all 41 have a row in the table below**. That is the
+completeness claim, and it is the only one made here.
+
+The table also keeps the 79 rows from attempt 3's wider sweep, which read every
+hit of a broad topic grep across the 14 files that name the feature. Those are
+dispositions this design relies on; they add coverage beyond the claim rather
+than qualifying it. Where a row's label is a line range, the range is the diff
+hunk's span and contains the grep hit.
 
 **Disposition — one row per matched line.** "Amended in block X" means a diff
 hunk in `GATE-QUESTIONS.md` block X removes or rewrites that exact line;
-verified by script against the live text (54 removed lines, 0 mismatches).
+verified by script against the live text (56 removed lines, 0 mismatches).
 
 | `file:line` | Current wording (abbreviated) | Disposition |
 | --- | --- | --- |
 | `overview.md:13` | balancer named in a feature list | not contradicted — no claim about traffic, printing, foil, or picker |
 | `overview.md:43` | "made only when a card is added" | amended in block `PRD/sections/overview.md` |
+| `overview.md:45` | planned Commander Spellbook combo-context paragraph | off-topic — combo context; matched "on add" inside "integrati**on add**s" |
 | `functional-requirements.md:175` | one-endpoint rule, two read-only retrieval routes | not contradicted — the warm-up adds no endpoint; `GET /api/health` already exists as a non-product endpoint |
+| `functional-requirements.md:1072` | REQ-041 scan debug overlay's Capture button | off-topic — scan debug overlay; the grep matched "on add" inside "butt**on add**itionally" |
+| `functional-requirements.md:1290` | DEC-118/REQ-098 focused-conversation motion vocabulary | off-topic — chat motion; matched "on add" inside "conversati**on add**itions" |
+| `functional-requirements.md:1312` | REQ-098 shipped-baseline note | off-topic — chat motion; matched "on add" inside "moti**on add**s" |
+| `functional-requirements.md:1437` | REQ-063 constraint: "do not add a backend health/status endpoint or any runtime provider-mode fetch (explicit non-goal)" | not contradicted (**added attempt 4** — quality-check finding 3). This constrains REQ-063's **mock-mode banner**: the banner must read its mode from the build-time `ASK_AI_PROVIDER` value and never probe the server for it. The warm-up adds no endpoint — it calls `GET /api/health`, which already exists (`apps/backend/src/routes/health.ts:4`, `integrations-and-data.md:158`) — and fetches no provider mode; it sends and reads no data in either direction. Assumption A8 |
 | `functional-requirements.md:1456` | REQ-064 description, two-sided screen | not contradicted — no traffic or timing claim |
 | `functional-requirements.md:1464` | trade state is ephemeral | not contradicted — kept as context in the REQ-064 hunk |
 | `functional-requirements.md:1466` | "prices cards only through a read-only backend price fetch" | amended in block `REQ-064` |
@@ -213,12 +229,22 @@ verified by script against the live text (54 removed lines, 0 mismatches).
 | `functional-requirements.md:1485` | scan input, scanned printing is the default | not contradicted — the scan path is unchanged (A11) |
 | `functional-requirements.md:1486` | "then **chooses the correct printing** … before it is added" | amended in block `REQ-065` |
 | `functional-requirements.md:1487` | "default is non-foil" | amended in block `REQ-065` |
+| `functional-requirements.md:1489` | REQ-065 missing-price $0-plus-caution treatment | not contradicted — kept as context in the REQ-065 hunk; the treatment is unchanged, and it stays what a foil-only printing falls back to when the player toggles into the unpriced mode themselves |
 | `functional-requirements.md:1491` | "fetched from the backend when the card is added" | amended in block `REQ-065` |
 | `functional-requirements.md:1512` | REQ-066 artifact field set | not contradicted — kept as context; the field set is unchanged |
 | `functional-requirements.md:1515` | "the manual picker lists every printing of a card" | amended in block `REQ-066` |
 | `functional-requirements.md:1697` | two read-only retrieval routes permitted | not contradicted — same reason as `:175` |
+| `functional-requirements.md:2243` | combo-selection payload constraint | off-topic — combo context; matched "on add" inside "selecti**on add**s" |
+| `functional-requirements.md:2244` | combo eval fixture coverage | off-topic — combo context; matched "on add" inside "combo-secti**on add**itions" |
+| `functional-requirements.md:3122` | zone-collection card strip layout | off-topic — zone collection; matched "on add" inside "collecti**on add**ed" |
+| `functional-requirements.md:3373` | REQ-129 zone-collection add-action reachability ceiling | off-topic — zone collection layout; matched "on add" inside "collecti**on add** action" |
+| `functional-requirements.md:3934` | per-idea graph isolation publish paths | off-topic — graph workflow; matched "on add" inside "isolati**on add**s" |
 | `functional-requirements.md:4023` | REQ-174 `cardMetadata` reads | not contradicted — the index and its uses are unchanged |
-| `functional-requirements.md:4051-4052` | REQ-175 price companion route shape | not contradicted — the request and response shapes are unchanged |
+| `functional-requirements.md:4051` | REQ-175 price companion route shape and recommended wire response | not contradicted — the request and the response shape are unchanged; only *when* the fetch runs moves, and that lives on the next line |
+| `functional-requirements.md:4052` | "…the balancer fetches one card's prices **on add** and caches per session (FLOW-025)" | amended in block `REQ-065` (**added attempt 4** — quality-check finding 1). REQ-065, FLOW-009 and FLOW-025 move the manual-search fetch to the suggestion tap, so "on add" is false for that path; the hunk rewrites it to once per card, cached per session — on the suggestion tap for manual search, on add for a scan. Fetch timing is REQ-065's subject, which is why the hunk rides in that block rather than REQ-064's or REQ-066's |
+| `functional-requirements.md:4056` | route inventory; "`GET /api/health` remains the non-product health check … `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call" | amended in block `REQ-064` (**added attempt 4** — quality-check finding 2 follow-through). Health stays non-product and no route is added, so the inventory itself holds; but the warm-up makes the balancer a runtime caller of it, and the unqualified "no runtime network call" clause would read as forbidding an in-app ping. The hunk names the warm-up and scopes that clause to calls out to an external provider |
+| `functional-requirements.md:4520` | graph prune candidates, `.worktrees/.codehealth/` | off-topic — graph branch pruning; the grep matched "health" inside "code-health" |
+| `user-flows.md:150` | scan debug-overlay Capture export | off-topic — scan debug overlay; matched "on add" inside "butt**on add**itionally" |
 | `user-flows.md:194` | "prices are fetched from the backend when it is added" | amended in block `FLOW-009` |
 | `user-flows.md:196` | FLOW-009 step 1, the screen opens | amended in block `FLOW-009` (gains the warm-up ping) |
 | `user-flows.md:198` | scan branch of step 2 | not contradicted — the scan path is unchanged (A11) |
@@ -234,6 +260,7 @@ verified by script against the live text (54 removed lines, 0 mismatches).
 | `user-flows.md:556` | "On success the entry shows its chosen printing … the printing picker lists every printing" | amended in block `FLOW-025` |
 | `user-flows.md:558` | failed fetch degrades, not cached | not contradicted — kept as context; the pre-add case is added below it |
 | `user-flows.md:560` | null-price printing kept at $0 | not contradicted — unchanged |
+| `non-functional-requirements.md:200` | test-suite cost drivers | off-topic — coverage-instrumentation cost; matched "on add" inside "instrumentati**on add**s" |
 | `non-functional-requirements.md:207` | "fetched from the backend only when that card is added" | amended in block `PRD/sections/non-functional-requirements.md` |
 | `non-functional-requirements.md:208-209` | static snapshot, "no runtime price fetch" | not contradicted — the warm-up is not a price fetch and makes no external call |
 | `non-functional-requirements.md:211` | "shows a brief in-place loading state" | amended in block `PRD/sections/non-functional-requirements.md` |
@@ -249,6 +276,12 @@ verified by script against the live text (54 removed lines, 0 mismatches).
 | `integrations-and-data.md:321` | static snapshot, no runtime price fetch | not contradicted — same reason as NFR-013's `:208-209` |
 | `integrations-and-data.md:322` | "fetched from the backend only when that card is added to a trade side" | amended in block `PRD/sections/integrations-and-data.md` |
 | `integrations-and-data.md:325` | input reuses scan resolver and manual search; printing is display-only | not contradicted — unchanged |
+| `integrations-and-data.md:356` | `GameContext` stack-zone fields | off-topic — stack context; matched "on add" inside "secti**on add**itionally" |
+| `system-map.md:123` | backend service summary, "exposes health + logging" | not contradicted — the warm-up adds no route; it calls the health check this line already records as exposed |
+| `system-map.md:148` | `### Health route & logging` heading | not contradicted — the section's subject is unchanged |
+| `system-map.md:151` | "Health-check route and request/response logging" | not contradicted — the route, its response, and its logging are unchanged; only its caller list grows, and that lands on the `integrations-and-data.md` health entry |
+| `system-map.md:152` | health route file list (`routes/health.ts`, `logging.ts`) | not contradicted — a file list, no behavior claim; it is the evidence that the endpoint already exists (A8) |
+| `system-map.md:323` | hands-free scan auto-add panel summary | off-topic — scan; matched "on add" inside "this-sessi**on add**s" |
 | `system-map.md:451` | printing-price artifact build summary | amended in block `PRD/sections/system-map.md` |
 | `system-map.md:556` | "added immediately and priced by a read-only backend fetch on add … the fetch's first result" | amended in block `PRD/sections/system-map.md` |
 | `system-map.md:557` | balancer file list (`PrintingPicker.tsx` etc.) | not contradicted — a file list, no behavior claim |
@@ -258,7 +291,7 @@ verified by script against the live text (54 removed lines, 0 mismatches).
 | `screen-layout.md:221` | Notes row, `DEC-087, DEC-145, REQ-145` | amended in block `PRD/sections/screen-layout.md` |
 | `trade-balancer/README.md:23-24` | "the moment a card is added, it fetches that one card's printings" | amended in block `PRD/sections/trade-balancer/README.md` |
 | `trade-balancer/README.md:53-56` | scan input, scanned printing is the default | not contradicted — the scan path is unchanged (A11) |
-| `trade-balancer/README.md:60-62` | "defaulting to whichever printing the on-add fetch returns first" | amended in block `PRD/sections/trade-balancer/README.md` |
+| `trade-balancer/README.md:59-67` | the whole manual-search bullet — "defaulting to whichever printing the on-add fetch returns first" and "chooses the **correct printing** via the same 'Change printing' affordance" | amended in block `PRD/sections/trade-balancer/README.md` (the hunk replaces the bullet entire; range relabelled in attempt 4 to cover its real span, including line 63) |
 | `trade-balancer/README.md:68-69` | "the default is non-foil" | amended in block `PRD/sections/trade-balancer/README.md` |
 | `trade-balancer/README.md:83-90` | missing-price and foil-toggle $0 + caution | not contradicted — the treatment is unchanged |
 | `trade-balancer/README.md:91-94` | "if a card's **on-add** price fetch fails outright" | amended in block `PRD/sections/trade-balancer/README.md` (**added attempt 3**) |
@@ -277,18 +310,30 @@ verified by script against the live text (54 removed lines, 0 mismatches).
 | `goals-and-non-goals.md:76` | endpoint non-goal | not contradicted — the warm-up adds no endpoint and reuses the existing health check |
 | `goals-and-non-goals.md:78` | pricing and printing picker in scope for the balancer | not contradicted — already in scope |
 | `goals-and-non-goals.md:79` | live price sync / marketplace non-goals | not contradicted — none is added |
+| `scan/README.md:108` | this-session adds panel | off-topic — scan session panel; matched "on add" inside "this-sessi**on add**s" |
 | `scan/README.md:235-243` | scan as one of two ways to add to a trade side | not contradicted — the scan path is unchanged (A11) |
 | `scan/data/cardScanMap.md:41` | notes the balancer's corpus/behavior split | not contradicted — a comparison to this artifact's own split, no balancer behavior claim |
 | `shared-chrome/README.md:65` | "presentation only — no backend health endpoint" | not contradicted — this constrains where the **mock-mode banner** reads its signal (build-time `ASK_AI_PROVIDER`, never a health probe), not whether any feature may call `GET /api/health` |
 | `shared-chrome/README.md:56, 72, 136, 372, 408` | balancer chrome, rails, routing | not contradicted — the picker scrolls inside the destination body; containment lands on the `screen-layout.md` row |
+| `shared-chrome/README.md:465` | drawer-primitive extraction left as future code-health | off-topic — component-extraction backlog; matched "health" inside "code-health" |
+| `shared-chrome/README.md:468` | zone-collection add-action reachability note | off-topic — zone collection; matched "on add" inside "collecti**on add**-action" |
 | `decisions.md:128-129` | DEC-087 / DEC-088 rows | not contradicted — a retired historical index; decision bodies are never amended and no new `DEC` is minted |
 
-Counts: **79 rows — 35 amended in a block, 44 not contradicted.** Six of the 35
-were added in attempt 3: `integrations-and-data.md:154` (finding 2),
-`cardPrintingPrices.md:126-127` (finding 1), and four the widened grep turned up
-in a file that already had a block — `trade-balancer/README.md:91-94`, `:99`,
-`:140`, `:160-161`. The block count is unchanged at twelve; the six new hunks
-extend blocks that already existed.
+Counts: **104 rows — 37 amended in a block, 50 not contradicted, 17 off-topic.**
+All 41 hits of the command above have a row; the other 63 rows come from the
+wider attempt-3 sweep.
+
+Attempt 4 added two amendments, both to REQ-175 and both driven by the
+quality-check findings: `functional-requirements.md:4052` (the "on add" fetch
+timing, into block `REQ-065`) and `:4056` (the route inventory's health-check
+clause, into block `REQ-064`). It also added `:1437` as a reasoned
+not-contradicted row and relabelled `trade-balancer/README.md:60-62` to its
+hunk's real span `:59-67`. The block count is unchanged at **twelve** — both new
+hunks extend blocks that already existed — and no new stable ID is reserved.
+
+Verified by script (2026-09-09, attempt 4): **56 removed lines across all twelve
+blocks match the live `PRD/sections/` text verbatim, 0 mismatches**; the grep
+above returns **41 hits, 41 of which have a table row, 0 uncovered**.
 
 ## Slice sketch (for map-out)
 
