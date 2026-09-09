@@ -345,8 +345,9 @@ the game-mode request drives them. (DEC-020, DEC-010)
 ### Combo enrichment (machinery consumed)
 
 - Built: a committed, backend-only Commander Spellbook combo corpus (built from
-  the public bulk export, keyed on `oracleId` → `cardId`, gzipped per variant for
-  bounded memory) feeds gated retrieval. In `mode: "game"` without explicit combo
+  the public bulk export, keyed on `oracleId` → `cardId`, stored as brotli-
+  compressed blocks of 128 variants so a lookup decodes one block and memory stays
+  bounded) feeds gated retrieval. In `mode: "game"` without explicit combo
   intent, retrieval returns only **complete** candidates — every ingredient and
   quantity assigned to a distinct submitted card instance in a compatible starting
   zone; with explicit combo intent (a narrow detector: `combo`, `infinite`,

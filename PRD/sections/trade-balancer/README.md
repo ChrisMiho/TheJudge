@@ -175,7 +175,7 @@ Assistant core loop and changes nothing about it or the AI answer path.
   carrying both the rules block and its printings array, with each endpoint
   reading only the slice it needs. This run keeps two output files (unified
   build, separate committed artifacts and routes) so the RAG answer path's
-  `cardDetailByOracleId.json` stays byte-for-byte untouched; the consolidation
+  `cardDetailByOracleId.json.br` stays byte-for-byte untouched; the consolidation
   is a later, separately planned change.
 - **Out of scope entirely (v1):** EUR / tix / etched-foil pricing, card
   grading/condition, trade history or persistence, a marketplace or transaction

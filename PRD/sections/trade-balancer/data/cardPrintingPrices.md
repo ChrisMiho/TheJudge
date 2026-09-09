@@ -1,4 +1,4 @@
-# Printing price corpus — `cardPrintingPricesByOracleId.json.gz`
+# Printing price corpus — `cardPrintingPricesByOracleId.json.br`
 
 - Status: draft, derived, non-authoritative view. On any conflict, the cited
   `REQ`/`NFR` wins — `PRD/sections/decisions.md` stays precedence #2, a
@@ -28,7 +28,7 @@ passes each one:
   — the retired `scripts/build-card-prices.mjs` no longer exists); the upstream
   bulk is refreshed via `npm run data:refresh` (the Scryfall download is
   human-approved before it runs).
-- **Committed artifact:** `apps/backend/data/cardPrintingPricesByOracleId.json.gz`
+- **Committed artifact:** `apps/backend/data/cardPrintingPricesByOracleId.json.br`
   (backend-only; there is no frontend copy).
 - **Describes Magic, not TheJudge:** the artifact is per-printing card price and
   identity data (prices, sets, collector numbers), not TheJudge product
@@ -38,9 +38,9 @@ passes each one:
 
 - Built offline by `scripts/build-card-detail-by-oracle-id.mjs` in the same
   streaming pass over the local Scryfall bulk source that emits
-  `cardDetailByOracleId.json` — no fourth extract of the bulk file. Emitted to
-  `apps/backend/data/cardPrintingPricesByOracleId.json.gz` and committed. Raw
-  bulk input stays gitignored; only the trimmed, gzip-compressed artifact is
+  `cardDetailByOracleId.json.br` — no fourth extract of the bulk file. Emitted to
+  `apps/backend/data/cardPrintingPricesByOracleId.json.br` and committed. Raw
+  bulk input stays gitignored; only the trimmed, brotli-compressed artifact is
   committed (REQ-066).
 - A printing is kept when it passes the same inclusion filter the card-detail
   build already applies (`shouldIncludeCard`: English, paper, non-digital, a
@@ -58,17 +58,15 @@ passes each one:
   owner merges — the runtime still reads only the committed artifact (DEC-088,
   NFR-013, REQ-195).
 - The build degrades gracefully: a missing or failed source keeps the prior
-  committed artifacts (both `cardDetailByOracleId.json` and this file) and does
+  committed artifacts (both `cardDetailByOracleId.json.br` and this file) and does
   not break other artifact builds (REQ-066).
-- **Committed gzip-compressed, not raw JSON.** The raw shape is ~15.6 MB for the
-  current corpus — inside the Lambda package's committed-data budget, but with
-  under 1 MB of headroom once the other committed backend artifacts (rules
-  text, rulings, game rules, the Commander Spellbook combo corpus) are counted.
-  Gzipped it is ~4.6 MB, mirroring the existing
-  `commanderSpellbookCombos.json.gz` / `commanderSpellbookComboIndex.json.gz`
-  committed-gzip pattern already in `apps/backend/data/`; the backend
-  decompresses it once at startup (REQ-175), the same way
-  `apps/backend/src/commanderSpellbook/catalog.ts` already does. See
+- **Committed brotli-compressed, not raw JSON.** The raw shape is ~15.6 MB for the
+  current corpus. Brotli-compressed it is ~3.4 MB (re-recorded at build), mirroring
+  the brotli committed-artifact pattern the backend data folder now uses across the
+  combo blocks (`commanderSpellbookComboBlocks.br`), the combo index
+  (`commanderSpellbookComboIndex.json.br`), rulings, and card detail; the backend
+  brotli-decodes it once at startup (REQ-175), the same way
+  `apps/backend/src/commanderSpellbook/catalog.ts` already reads its blocks. See
   `scripts/lambda-package-budget.test.mjs`.
 - **Do not rebuild to read this doc.** These figures are read from the committed
   artifact; regenerating requires the human-approved Scryfall network refresh
@@ -109,10 +107,10 @@ entry references one `CardPrintingPrice` plus a `foil: boolean` and a
 
 ## Measured bounds (current committed snapshot)
 
-Read from the committed `cardPrintingPricesByOracleId.json.gz`; a future
+Read from the committed `cardPrintingPricesByOracleId.json.br`; a future
 refresh moves these.
 
-- File size on disk (gzip-compressed): ≈ 4.6 MB.
+- File size on disk (brotli-compressed): ≈ 3.4 MB (re-recorded at build).
 - `byOracleId`: 36,521 oracle ids.
 - Printings across all oracle ids: 102,565.
 - Price coverage: 82,538 printings have a `usd` price, 56,931 have a `usdFoil`
@@ -140,8 +138,8 @@ refresh moves these.
 
 `scripts/build-card-detail-by-oracle-id.mjs` (build, wired into `npm run
 data:build`, unified with the card-detail build) →
-`apps/backend/data/cardPrintingPricesByOracleId.json.gz` (committed artifact,
-gzip-compressed) → `apps/backend/src/cardPrices.ts` (in-memory loader) →
+`apps/backend/data/cardPrintingPricesByOracleId.json.br` (committed artifact,
+brotli-compressed) → `apps/backend/src/cardPrices.ts` (in-memory loader) →
 `apps/backend/src/routes/cardPrices.ts` (`GET /api/cards/:oracleId/prices`) →
 `apps/frontend/src/lib/trade/fetchCardPrintings.ts` (per-session fetch/cache).
 See `PRD/sections/system-map.md`'s `### Printing-price artifact build` entry

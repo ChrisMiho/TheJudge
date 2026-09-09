@@ -5,7 +5,7 @@
     {
       "id": "F1",
       "statement": "every committed artifact under apps/backend/data/ is regenerated from the 2026-09-08 raw sources using the finished slice A-E code, with the five renamed .br files present and the five old files absent",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run data:build",
         "paths": [
@@ -20,19 +20,19 @@
     {
       "id": "F2",
       "statement": "node --test scripts/lambda-package-budget.test.mjs passes, and the measured committed-data total is recorded",
-      "value": false,
+      "value": true,
       "evidence": { "command": "node --test scripts/lambda-package-budget\\.test\\.mjs" }
     },
     {
       "id": "F3",
       "statement": "post-load process RSS is measured and recorded, and stays below the 1769 MB Lambda memory ceiling with meaningful headroom",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "F4",
       "statement": "all 20 accepted GATE-QUESTIONS.md diffs are applied verbatim to the listed PRD/sections/ files, and git diff over PRD/sections/ matches the accepted diffs with no unaccepted changes",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",
@@ -50,13 +50,13 @@
     {
       "id": "F5",
       "statement": "npm run quality:check passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run quality:check" }
     },
     {
       "id": "F6",
       "statement": "npm test passes (frontend, backend, scripts workspaces)",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm test" }
     }
   ]

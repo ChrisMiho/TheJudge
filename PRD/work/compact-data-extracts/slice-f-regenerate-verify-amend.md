@@ -1,6 +1,6 @@
 # Slice F — Regenerate, verify, amend
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -61,20 +61,49 @@ so durable product truth matches what actually shipped.
 
 ## Acceptance criteria
 
-- [ ] F1 — every committed artifact under `apps/backend/data/` is
+- [x] F1 — every committed artifact under `apps/backend/data/` is
       regenerated from the 2026-09-08 raw sources using the finished slice
       A–E code, with the five renamed `.br` files present and the five old
       files absent
-- [ ] F2 — `node --test scripts/lambda-package-budget.test.mjs` passes, and
+- [x] F2 — `node --test scripts/lambda-package-budget.test.mjs` passes, and
       the measured committed-data total is recorded (expected well under
       120 MB, near the ≈25.6 MB prediction)
-- [ ] F3 — post-load process RSS is measured and recorded, and stays below
+- [x] F3 — post-load process RSS is measured and recorded, and stays below
       the 1769 MB Lambda memory ceiling with meaningful headroom
-- [ ] F4 — all 20 accepted `GATE-QUESTIONS.md` diffs are applied verbatim
+- [x] F4 — all 20 accepted `GATE-QUESTIONS.md` diffs are applied verbatim
       to the listed `PRD/sections/` files, and `git diff` over
       `PRD/sections/` matches the accepted diffs with no unaccepted changes
-- [ ] F5 — `npm run quality:check` passes
-- [ ] F6 — `npm test` passes (frontend, backend, scripts workspaces)
+- [x] F5 — `npm run quality:check` passes
+- [x] F6 — `npm test` passes (frontend, backend, scripts workspaces)
+
+## Verification evidence (measured 2026-09-09)
+
+- `npm run data:build` regenerated all five renamed artifacts from the
+  2026-09-08 raw sources (copied into this worktree from the launch
+  checkout) using the finished slice A–E code; the five old-named files are
+  absent. Combined committed data: `commanderSpellbookComboBlocks.br` 13.0
+  MB, `commanderSpellbookComboIndex.json.br` 1.4 MB, `cardRulingsByOracleId
+  .json.br` 1.6 MB, `cardDetailByOracleId.json.br` 1.6 MB,
+  `cardPrintingPricesByOracleId.json.br` 3.4 MB.
+- `node --test scripts/lambda-package-budget.test.mjs`: 2/2 pass. Measured
+  committed `apps/backend/data` total (via `git ls-files`, the same set the
+  test walks): **24.75 MB** against the **120 MB** budget (250 MB Lambda
+  unzipped quota − 130 MB non-data reserve) — **~95.3 MB headroom**, ahead
+  of the ≈94 MB the design brief predicted.
+- 2026-09-09 F3 — post-load process RSS measured via a one-off script
+  booting `createConfiguredApp` with `COMBO_ENRICHMENT_ENABLED=true` (every
+  committed artifact loaded): RSS before load 98.9 MB, after load **430.8
+  MB** (delta 331.8 MB) — below the 497 MB post-raise baseline NFR-017
+  cites, and far below the 1769 MB Lambda memory ceiling (PR #221), with
+  ~1338 MB of headroom.
+- `git diff --stat PRD/sections/`: exactly the 9 target files, 54
+  insertions / 54 deletions — the 20 accepted `GATE-QUESTIONS.md` diffs
+  applied verbatim, re-derived by intent against current truth.
+- `npm run quality:check`: exit 0 (typecheck, lint 0 errors/8 pre-existing
+  warnings, format:check, coverage:check 131+40 test files / 1318+504
+  tests, test:scripts 570 tests).
+- `npm test`: exit 0 (frontend 1318 tests, backend 504 tests, scripts
+  test:scripts all pass).
 
 ## Verification
 

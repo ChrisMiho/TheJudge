@@ -6,11 +6,11 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-## active
-
 | Package | Note |
 | --- | --- |
-| [compact-data-extracts](compact-data-extracts/) | Mapped out 2026-09-09 — 6 slices (A-F): combo block layout, catalog loader, rulings/detail/prices brotli, file-name sweep, positional-int index, regenerate+verify+amend PRD (20 accepted diffs). Next: `/thejudge-implement-all PRD/work/compact-data-extracts/` starting at slice A. |
+| [compact-data-extracts](compact-data-extracts/) | All 6 slices (A-F) done, all 34 acceptance criteria true. Combo detail/index, rulings, card detail, and prices moved to brotli (combo blocks of 128); committed data 24.75 MB against the 120 MB Lambda budget. 20 accepted PRD diffs applied at slice F. PR open. Next: owner merge, then `/thejudge-cleanup PRD/work/compact-data-extracts/`. |
+
+## active
 
 ## refined
 

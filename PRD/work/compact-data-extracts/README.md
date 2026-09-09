@@ -1,6 +1,6 @@
 # compact-data-extracts
 
-status: active
+status: ship-ready
 
 ## Summary
 
@@ -17,7 +17,7 @@ the full fresh corpus fits the 120 MB Lambda budget without trimming. See
 | C | Brotli for rulings / card-detail / prices, build + loader | none | done |
 | D | File-name sweep across path lists and readers | A, B, C, E | done |
 | E | Positional-int compact index | A, B | done |
-| F | Regenerate, verify, amend PRD (20 accepted diffs) | A, B, C, D, E | planned |
+| F | Regenerate, verify, amend PRD (20 accepted diffs) | A, B, C, D, E | done |
 
 Full architecture, data flow, and risk notes: `GAMEPLAN.md`.
 
