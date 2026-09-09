@@ -6,10 +6,6 @@ Do not rename package folders to encode status.
 
 ## ship-ready
 
-| Package | Note |
-| --- | --- |
-| [resilient-weekly-data-refresh](resilient-weekly-data-refresh/) | Built A–D: Scryfall JSONL bulk fix, fail-loud, hardened retries + 200ms pacing, hash-gated combos. REQ-195 amended + REQ-196 added + integrations-and-data amended (applied at build). quality:check green (569 script tests). Awaiting code-PR review/merge, then cleanup. |
-
 ## active
 
 ## refined
