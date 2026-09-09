@@ -14,6 +14,9 @@ export default tseslint.config(
       "**/coverage/**",
       ".worktrees/**",
       "**/.claude/worktrees/**",
+      // Product docs plus probe/work-package scratch tooling, never product
+      // code; prettier already ignores it (.prettierignore).
+      "PRD/**",
       "apps/frontend/data/scryfall/default-cards.json"
     ]
   },
