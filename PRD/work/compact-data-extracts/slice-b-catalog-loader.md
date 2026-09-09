@@ -1,6 +1,6 @@
 # Slice B — Catalog loader for the block layout
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -38,16 +38,16 @@ block, matching DEC-162.
 
 ## Acceptance criteria
 
-- [ ] B1 — `readVariantDetail` reads only the requested variant's block byte
+- [x] B1 — `readVariantDetail` reads only the requested variant's block byte
       range (not the whole file), brotli-decodes that one block, and
       returns the correct variant by position/line arithmetic
-- [ ] B2 — the 64-entry LRU cache and per-variant validation are preserved
+- [x] B2 — the 64-entry LRU cache and per-variant validation are preserved
       unchanged in behavior
-- [ ] B3 — the load-time structural check validates every block directory
+- [x] B3 — the load-time structural check validates every block directory
       range fits inside the blocks file
-- [ ] B4 — `byOracleId` / `byTemplateOracleId` Maps and route responses are
+- [x] B4 — `byOracleId` / `byTemplateOracleId` Maps and route responses are
       byte-identical to pre-slice output for the same fixture corpus
-- [ ] B5 — `node --test apps/backend/src/commanderSpellbook/catalog.test.ts`
+- [x] B5 — `node --test apps/backend/src/commanderSpellbook/catalog.test.ts`
       (or the workspace test runner) passes
 
 ## Verification

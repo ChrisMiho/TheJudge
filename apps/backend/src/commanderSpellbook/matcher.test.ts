@@ -1,7 +1,7 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { gzipSync } from "node:zlib";
+import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
 import { describe, expect, it } from "vitest";
 import { loadComboCatalog, type ComboCardIngredient, type ComboCatalog, type ComboTemplateIngredient, type ComboVariant } from "./catalog.js";
 import { selectComboCandidates, type ComboMatchInstance, type ComboMatchRequest } from "./matcher.js";
@@ -622,9 +622,10 @@ describe("Backend - Ask AI", () => {
      * same scale" a real corpus introduces (105,447 variants / 7,371 distinct
      * oracle ids) — a popular card can produce a candidate pool far larger
      * than any hand-sized fixture exercises, before ranking narrows it to
-     * five. This builds a REAL lazy-format catalog (gzip-per-record detail +
-     * byte-offset index, loaded through the actual `loadComboCatalog`, not
-     * the in-memory `catalogOf()` test double used elsewhere in this file)
+     * five. This builds a REAL lazy-format catalog (brotli-block detail +
+     * block/position-directory index, loaded through the actual
+     * `loadComboCatalog`, not the in-memory `catalogOf()` test double used
+     * elsewhere in this file)
      * with one oracle id shared by many variants, and proves candidate
      * resolution, quantity-aware assignment, and stable top-five ranking all
      * still hold when only a handful of that large pool are eligible.
@@ -679,28 +680,45 @@ describe("Backend - Ask AI", () => {
       return [...filler, ...winners];
     }
 
+    const AT_SCALE_BLOCK_SIZE = 128;
+
+    function brotliBlock(buffer: Buffer): Buffer {
+      return brotliCompressSync(buffer, {
+        params: {
+          [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
+          [zlibConstants.BROTLI_PARAM_SIZE_HINT]: buffer.length
+        }
+      });
+    }
+
     function loadAtScaleCatalog(variants: ComboVariant[]): ComboCatalog {
       const dir = mkdtempSync(join(tmpdir(), "combo-at-scale-"));
-      const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
-      const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
+      const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
+      const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
 
       const chunks: Buffer[] = [];
-      const detailOffsets: Record<string, [number, number]> = {};
+      const blocks: { offset: number; length: number }[] = [];
+      const variantPositions: Record<string, number> = {};
       const byOracleId: Record<string, string[]> = {};
       let cursor = 0;
-      for (const entry of variants) {
-        const compressed = gzipSync(Buffer.from(JSON.stringify(entry), "utf8"));
-        detailOffsets[entry.variantId] = [cursor, compressed.length];
-        chunks.push(compressed);
-        cursor += compressed.length;
+      variants.forEach((entry, index) => {
+        variantPositions[entry.variantId] = index;
         for (const ingredient of entry.cardIngredients) {
           byOracleId[ingredient.cardId] = [...(byOracleId[ingredient.cardId] ?? []), entry.variantId];
         }
+      });
+      for (let start = 0; start < variants.length; start += AT_SCALE_BLOCK_SIZE) {
+        const blockVariants = variants.slice(start, start + AT_SCALE_BLOCK_SIZE);
+        const ndjson = blockVariants.map((entry) => JSON.stringify(entry)).join("\n");
+        const compressed = brotliBlock(Buffer.from(ndjson, "utf8"));
+        blocks.push({ offset: cursor, length: compressed.length });
+        chunks.push(compressed);
+        cursor += compressed.length;
       }
       writeFileSync(detailPath, Buffer.concat(chunks));
       writeFileSync(
         indexPath,
-        gzipSync(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, detailOffsets }), "utf8"))
+        brotliBlock(Buffer.from(JSON.stringify({ byOracleId, byTemplateOracleId: {}, blocks, variantPositions }), "utf8"))
       );
 
       return loadComboCatalog(detailPath, indexPath);

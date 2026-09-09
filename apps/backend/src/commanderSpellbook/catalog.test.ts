@@ -1,9 +1,11 @@
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { gzipSync } from "node:zlib";
+import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
 import { describe, expect, it, vi } from "vitest";
 import { loadComboCatalog, type ComboVariant } from "./catalog.js";
+
+const COMBO_BLOCK_SIZE = 128;
 
 const sampleVariant: ComboVariant = {
   variantId: "1000-2000",
@@ -48,19 +50,40 @@ function tempDir(): string {
   return mkdtempSync(join(tmpdir(), `combo-catalog-${uniqueSuffix++}-`));
 }
 
-/** Gzip each variant individually and concatenate, mirroring the build script's format. */
-function serializeDetail(variants: unknown[]): { buffer: Buffer; offsets: Record<string, [number, number]> } {
+function brotliBlock(buffer: Buffer): Buffer {
+  return brotliCompressSync(buffer, {
+    params: {
+      [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
+      [zlibConstants.BROTLI_PARAM_SIZE_HINT]: buffer.length
+    }
+  });
+}
+
+/** Group variants into 128-per-block NDJSON, brotli-compressed, mirroring the build script's format. */
+function serializeDetail(variants: unknown[]): {
+  buffer: Buffer;
+  blocks: { offset: number; length: number }[];
+  positions: Record<string, number>;
+} {
+  const positions: Record<string, number> = {};
+  variants.forEach((variant, index) => {
+    const variantId = (variant as { variantId?: unknown })?.variantId;
+    if (typeof variantId === "string") positions[variantId] = index;
+  });
+
   const chunks: Buffer[] = [];
-  const offsets: Record<string, [number, number]> = {};
+  const blocks: { offset: number; length: number }[] = [];
   let cursor = 0;
-  for (const raw of variants) {
-    const compressed = gzipSync(Buffer.from(JSON.stringify(raw), "utf8"));
-    const variantId = (raw as { variantId?: unknown })?.variantId;
-    if (typeof variantId === "string") offsets[variantId] = [cursor, compressed.length];
+  for (let start = 0; start < variants.length; start += COMBO_BLOCK_SIZE) {
+    const blockVariants = variants.slice(start, start + COMBO_BLOCK_SIZE);
+    const ndjson = blockVariants.map((variant) => JSON.stringify(variant)).join("\n");
+    const compressed = brotliBlock(Buffer.from(ndjson, "utf8"));
+    blocks.push({ offset: cursor, length: compressed.length });
     chunks.push(compressed);
     cursor += compressed.length;
   }
-  return { buffer: Buffer.concat(chunks), offsets };
+
+  return { buffer: Buffer.concat(chunks), blocks, positions };
 }
 
 function writeArtifacts(
@@ -68,19 +91,20 @@ function writeArtifacts(
   indexOverrides: Record<string, unknown> = {}
 ): { detailPath: string; indexPath: string } {
   const dir = tempDir();
-  const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
-  const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
+  const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
+  const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
 
-  const { buffer, offsets } = serializeDetail(variants);
+  const { buffer, blocks, positions } = serializeDetail(variants);
   writeFileSync(detailPath, buffer);
 
   const index = {
     byOracleId: {},
     byTemplateOracleId: {},
-    detailOffsets: offsets,
+    blocks,
+    variantPositions: positions,
     ...indexOverrides
   };
-  writeFileSync(indexPath, gzipSync(Buffer.from(JSON.stringify(index), "utf8")));
+  writeFileSync(indexPath, brotliBlock(Buffer.from(JSON.stringify(index), "utf8")));
 
   return { detailPath, indexPath };
 }
@@ -107,10 +131,25 @@ describe("Backend - Ask AI", () => {
       expect(ingredient?.cardState).toEqual({ battlefield: "untapped", graveyard: "with three other cards" });
     });
 
+    it("reads only the requested variant's block byte range, decoding by position/line arithmetic", () => {
+      // 300 variants -> 3 blocks (128, 128, 44). Position 150 is block 1, line 22.
+      const variants = Array.from({ length: 300 }, (_, index) => ({
+        ...sampleVariant,
+        variantId: `v${index}`
+      }));
+      const { detailPath, indexPath } = writeArtifacts(variants);
+      const catalog = loadComboCatalog(detailPath, indexPath);
+
+      expect(catalog.variantCount).toBe(300);
+      expect(catalog.getVariant("v0")?.variantId).toBe("v0");
+      expect(catalog.getVariant("v150")?.variantId).toBe("v150");
+      expect(catalog.getVariant("v299")?.variantId).toBe("v299");
+    });
+
     it("returns the empty result and warns once per path when the detail artifact is absent", () => {
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const dir = tempDir();
-      const detailPath = join(dir, "missing-detail.json.gz");
+      const detailPath = join(dir, "missing-detail.br");
       const { indexPath } = writeArtifacts([sampleVariant]);
 
       expect(loadComboCatalog(detailPath, indexPath).variantCount).toBe(0);
@@ -126,7 +165,7 @@ describe("Backend - Ask AI", () => {
     it("returns the empty result and warns once per path when the index artifact is absent", () => {
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const { detailPath } = writeArtifacts([sampleVariant]);
-      const indexPath = join(tempDir(), "missing-index.json.gz");
+      const indexPath = join(tempDir(), "missing-index.br");
 
       expect(loadComboCatalog(detailPath, indexPath).variantCount).toBe(0);
       expect(spy).toHaveBeenCalledTimes(1);
@@ -136,13 +175,13 @@ describe("Backend - Ask AI", () => {
       spy.mockRestore();
     });
 
-    it("returns the empty result for an unreadable (non-gzip) index without throwing", () => {
+    it("returns the empty result for an unreadable (non-brotli) index without throwing", () => {
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const dir = tempDir();
-      const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
-      const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
+      const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
+      const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
       writeFileSync(detailPath, Buffer.from([]));
-      writeFileSync(indexPath, Buffer.from("{ not gzip"));
+      writeFileSync(indexPath, Buffer.from("{ not brotli"));
 
       expect(() => loadComboCatalog(detailPath, indexPath)).not.toThrow();
       expect(loadComboCatalog(detailPath, indexPath).variantCount).toBe(0);
@@ -151,19 +190,28 @@ describe("Backend - Ask AI", () => {
       spy.mockRestore();
     });
 
-    it("returns the empty result for an empty detail file whose index still records offsets", () => {
+    it("returns the empty result for an empty detail file whose index still records a block range", () => {
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const dir = tempDir();
-      const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
-      const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
+      const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
+      const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
       writeFileSync(detailPath, Buffer.from([]));
       writeFileSync(
         indexPath,
-        gzipSync(Buffer.from(JSON.stringify({ byOracleId: {}, byTemplateOracleId: {}, detailOffsets: { x: [0, 10] } })))
+        brotliBlock(
+          Buffer.from(
+            JSON.stringify({
+              byOracleId: {},
+              byTemplateOracleId: {},
+              blocks: [{ offset: 0, length: 10 }],
+              variantPositions: { x: 0 }
+            })
+          )
+        )
       );
 
-      // The detail file is shorter than the recorded range — caught structurally,
-      // without ever decompressing anything.
+      // The detail file is shorter than the recorded block range — caught
+      // structurally, without ever decompressing anything.
       expect(loadComboCatalog(detailPath, indexPath).variantCount).toBe(0);
       expect(spy).toHaveBeenCalledTimes(1);
 
@@ -173,10 +221,10 @@ describe("Backend - Ask AI", () => {
     it("returns the empty result for an index that is valid JSON of the wrong shape", () => {
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const dir = tempDir();
-      const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
-      const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
+      const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
+      const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
       writeFileSync(detailPath, Buffer.from([]));
-      writeFileSync(indexPath, gzipSync(Buffer.from(JSON.stringify(["not", "an", "object"]))));
+      writeFileSync(indexPath, brotliBlock(Buffer.from(JSON.stringify(["not", "an", "object"]))));
 
       expect(loadComboCatalog(detailPath, indexPath).variantCount).toBe(0);
       expect(spy).toHaveBeenCalledTimes(1);
@@ -184,7 +232,7 @@ describe("Backend - Ask AI", () => {
       spy.mockRestore();
     });
 
-    it("a corrupt single variant fails open for that variant only, leaving the rest of the catalog loadable", () => {
+    it("a corrupt single variant record fails open for that variant only, leaving the rest of the catalog loadable", () => {
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
       for (const field of ["steps", "manaNeeded", "easyPrerequisites", "notablePrerequisites", "notes"] as const) {
         const goodVariant = { ...sampleVariant, variantId: `${field}-good` };
@@ -219,31 +267,40 @@ describe("Backend - Ask AI", () => {
       spy.mockRestore();
     });
 
-    it("a corrupt variant's bytes never prevent decompressing another variant's bytes", () => {
+    it("a corrupted block's bytes never prevent decompressing another block's variants", () => {
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
-      const dir = tempDir();
-      const detailPath = join(dir, "commanderSpellbookCombos.json.gz");
-      const indexPath = join(dir, "commanderSpellbookComboIndex.json.gz");
+      // 130 variants -> block 0 (128) is untouched, block 1 (2 variants) gets
+      // its bytes replaced with garbage. Isolation is per block, not per
+      // variant, since a block is one brotli member.
+      const variants = Array.from({ length: 130 }, (_, index) => ({
+        ...sampleVariant,
+        variantId: `v${index}`
+      }));
+      const { buffer, blocks, positions } = serializeDetail(variants);
 
-      const goodCompressed = gzipSync(Buffer.from(JSON.stringify({ ...sampleVariant, variantId: "good" }), "utf8"));
-      const garbage = Buffer.from("this is not gzip data at all, just garbage bytes");
-      writeFileSync(detailPath, Buffer.concat([goodCompressed, garbage]));
+      const garbage = Buffer.from("this is not brotli data at all, just garbage bytes padded out long");
+      const secondBlock = blocks[1];
+      const corrupted = Buffer.concat([
+        buffer.subarray(0, secondBlock.offset),
+        garbage,
+        buffer.subarray(secondBlock.offset + secondBlock.length)
+      ]);
+      const adjustedBlocks = [blocks[0], { offset: secondBlock.offset, length: garbage.length }];
+
+      const dir = tempDir();
+      const detailPath = join(dir, "commanderSpellbookComboBlocks.br");
+      const indexPath = join(dir, "commanderSpellbookComboIndex.json.br");
+      writeFileSync(detailPath, corrupted);
       writeFileSync(
         indexPath,
-        gzipSync(
-          Buffer.from(
-            JSON.stringify({
-              byOracleId: {},
-              byTemplateOracleId: {},
-              detailOffsets: { good: [0, goodCompressed.length], corrupt: [goodCompressed.length, garbage.length] }
-            })
-          )
+        brotliBlock(
+          Buffer.from(JSON.stringify({ byOracleId: {}, byTemplateOracleId: {}, blocks: adjustedBlocks, variantPositions: positions }))
         )
       );
 
       const catalog = loadComboCatalog(detailPath, indexPath);
-      expect(catalog.getVariant("good")?.variantId).toBe("good");
-      expect(catalog.getVariant("corrupt")).toBeUndefined();
+      expect(catalog.getVariant("v0")?.variantId).toBe("v0"); // block 0, untouched
+      expect(catalog.getVariant("v128")).toBeUndefined(); // block 1, corrupted
       expect(spy).toHaveBeenCalledTimes(1);
 
       spy.mockRestore();
@@ -252,7 +309,7 @@ describe("Backend - Ask AI", () => {
     it("disables enrichment when the index is absent even though the detail loads", () => {
       const spy = vi.spyOn(console, "warn").mockImplementation(() => {});
       const { detailPath } = writeArtifacts([sampleVariant]);
-      const indexPath = join(tempDir(), "commanderSpellbookComboIndex.json.gz");
+      const indexPath = join(tempDir(), "commanderSpellbookComboIndex.json.br");
 
       expect(loadComboCatalog(detailPath, indexPath).variantCount).toBe(0);
       expect(spy).toHaveBeenCalledTimes(1);
@@ -276,7 +333,10 @@ describe("Backend - Ask AI", () => {
 
       const { buffer } = serializeDetail([]);
       writeFileSync(detailPath, buffer);
-      writeFileSync(indexPath, gzipSync(Buffer.from(JSON.stringify({ byOracleId: {}, byTemplateOracleId: {}, detailOffsets: {} }))));
+      writeFileSync(
+        indexPath,
+        brotliBlock(Buffer.from(JSON.stringify({ byOracleId: {}, byTemplateOracleId: {}, blocks: [], variantPositions: {} })))
+      );
 
       expect(loadComboCatalog(detailPath, indexPath).variantCount).toBe(0);
     });

@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { gzipSync } from "node:zlib";
+import { brotliCompressSync, constants as zlibConstants } from "node:zlib";
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createAskAiRequest, createZoneCardItem } from "../test-utils/requestBuilders.js";
@@ -52,23 +52,34 @@ function comboPaths(root: string) {
   };
 }
 
+function brotliBlock(buffer: Buffer): Buffer {
+  return brotliCompressSync(buffer, {
+    params: {
+      [zlibConstants.BROTLI_PARAM_QUALITY]: 11,
+      [zlibConstants.BROTLI_PARAM_SIZE_HINT]: buffer.length
+    }
+  });
+}
+
 beforeEach(() => {
   warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
   repoRoot = mkdtempSync(join(tmpdir(), "combo-runtime-"));
   mkdirSync(join(repoRoot, "apps/backend/data"), { recursive: true });
   const paths = comboPaths(repoRoot);
-  // Mirrors the build script's lazy-access format: each variant gzip-compressed
-  // individually and concatenated, with the index carrying its byte offsets.
-  const compressed = gzipSync(Buffer.from(JSON.stringify(sampleVariant), "utf8"));
+  // Mirrors the build script's block-layout format: variants grouped into
+  // 128-per-block NDJSON, each block brotli-compressed and concatenated, with
+  // the index carrying a block byte-offset directory and a variantId -> position map.
+  const compressed = brotliBlock(Buffer.from(JSON.stringify(sampleVariant), "utf8"));
   writeFileSync(paths.detail, compressed);
   writeFileSync(
     paths.index,
-    gzipSync(
+    brotliBlock(
       Buffer.from(
         JSON.stringify({
           byOracleId: { "oracle-1": ["1000-2000"] },
           byTemplateOracleId: {},
-          detailOffsets: { "1000-2000": [0, compressed.length] }
+          blocks: [{ offset: 0, length: compressed.length }],
+          variantPositions: { "1000-2000": 0 }
         }),
         "utf8"
       )

@@ -1,5 +1,5 @@
 import { closeSync, existsSync, openSync, readFileSync, readSync, statSync } from "node:fs";
-import { gunzipSync } from "node:zlib";
+import { brotliDecompressSync } from "node:zlib";
 
 /**
  * Upstream starting-zone vocabulary (`ZoneLocation` in
@@ -55,13 +55,15 @@ export type ComboCatalog = {
   byTemplateOracleId: Map<string, string[]>;
   variantCount: number;
   /**
-   * Fetches one variant's detail lazily: a positional read of its recorded
-   * byte range in the detail artifact, plus a single `gunzipSync` on just
-   * that slice — never the whole ~105k-variant detail file. `undefined` for
+   * Fetches one variant's detail lazily: a positional read of its block's
+   * byte range in the detail artifact, plus a single `brotliDecompressSync`
+   * on just that block (never the whole ~105k-variant corpus) followed by a
+   * split on newline to the one line this variant occupies. `undefined` for
    * an unknown id, or one whose bytes fail integrity validation: a corrupt
    * single record disables enrichment for that variant only, not the whole
-   * catalog, since the individually-gzipped storage format exists precisely
-   * so one variant's bytes never depend on any other's.
+   * catalog, since the block layout exists precisely so one variant's bytes
+   * never depend on any other variant's — only on the ~127 variants sharing
+   * its block.
    */
   getVariant(variantId: string): ComboVariant | undefined;
 };
@@ -275,21 +277,38 @@ function assertMembership(value: unknown, label: string): Map<string, string[]> 
   return membership;
 }
 
-type DetailOffset = readonly [offset: number, length: number];
+type BlockRange = { offset: number; length: number };
 
-function assertDetailOffsets(value: unknown): Map<string, DetailOffset> {
-  if (!isRecord(value)) {
-    throw new Error("Combo index detailOffsets must be an object.");
+function assertBlockDirectory(value: unknown): BlockRange[] {
+  if (!Array.isArray(value)) {
+    throw new Error("Combo index blocks must be an array.");
   }
-  const offsets = new Map<string, DetailOffset>();
-  for (const [variantId, entry] of Object.entries(value)) {
-    const [offset, length] = Array.isArray(entry) ? entry : [undefined, undefined];
-    if (!Number.isInteger(offset) || !Number.isInteger(length) || (offset as number) < 0 || (length as number) <= 0) {
-      throw new Error(`Combo index detailOffsets entry ${variantId} must be a [offset, length] pair.`);
+  return value.map((entry, blockIndex) => {
+    if (
+      !isRecord(entry) ||
+      !Number.isInteger(entry.offset) ||
+      !Number.isInteger(entry.length) ||
+      (entry.offset as number) < 0 ||
+      (entry.length as number) <= 0
+    ) {
+      throw new Error(`Combo index blocks[${blockIndex}] must be an { offset, length } pair.`);
     }
-    offsets.set(variantId, [offset as number, length as number]);
+    return { offset: entry.offset as number, length: entry.length as number };
+  });
+}
+
+function assertVariantPositions(value: unknown): Map<string, number> {
+  if (!isRecord(value)) {
+    throw new Error("Combo index variantPositions must be an object.");
   }
-  return offsets;
+  const positions = new Map<string, number>();
+  for (const [variantId, position] of Object.entries(value)) {
+    if (!Number.isInteger(position) || (position as number) < 0) {
+      throw new Error(`Combo index variantPositions entry ${variantId} must be a non-negative integer.`);
+    }
+    positions.set(variantId, position as number);
+  }
+  return positions;
 }
 
 function readIndexArtifact(indexPath: string): Record<string, unknown> | null {
@@ -300,7 +319,7 @@ function readIndexArtifact(indexPath: string): Record<string, unknown> | null {
 
   let parsed: unknown;
   try {
-    parsed = JSON.parse(gunzipSync(readFileSync(indexPath)).toString("utf8"));
+    parsed = JSON.parse(brotliDecompressSync(readFileSync(indexPath)).toString("utf8"));
   } catch (error) {
     warnOnce(
       indexPath,
@@ -319,35 +338,61 @@ function readIndexArtifact(indexPath: string): Record<string, unknown> | null {
 }
 
 /**
- * Read one variant's bytes from the detail artifact at its recorded byte
- * range and decompress just that gzip member. Thrown errors are the caller's
- * signal to fail open for this one variant — never propagated further.
+ * Read one variant's line from its block, given the block directory and the
+ * variant's integer position. `position >> 7` is the block index, `position &
+ * 127` the line within it (valid because the build groups variants into
+ * fixed blocks of 128 = 2**7). Reads only that block's byte range from disk,
+ * brotli-decodes just that block, and parses the one NDJSON line it needs.
  */
-function readVariantDetail(detailPath: string, [offset, length]: DetailOffset): unknown {
+function readVariantAtPosition(
+  detailPath: string,
+  blockDirectory: BlockRange[],
+  position: number,
+  blockCache: { blockIndex: number; lines: string[] } | null
+): { value: unknown; blockCache: { blockIndex: number; lines: string[] } } {
+  const blockIndex = position >> 7;
+  const lineIndex = position & 127;
+
+  if (blockCache && blockCache.blockIndex === blockIndex) {
+    return { value: JSON.parse(blockCache.lines[lineIndex]), blockCache };
+  }
+
+  const block = blockDirectory[blockIndex];
+  if (!block) {
+    throw new Error(`No block at index ${blockIndex} for position ${position}.`);
+  }
+
   const fd = openSync(detailPath, "r");
+  let buffer: Buffer;
   try {
-    const buffer = Buffer.alloc(length);
-    readSync(fd, buffer, 0, length, offset);
-    return JSON.parse(gunzipSync(buffer).toString("utf8"));
+    buffer = Buffer.alloc(block.length);
+    readSync(fd, buffer, 0, block.length, block.offset);
   } finally {
     closeSync(fd);
   }
+
+  const lines = brotliDecompressSync(buffer).toString("utf8").split("\n");
+  const nextCache = { blockIndex, lines };
+  return { value: JSON.parse(lines[lineIndex]), blockCache: nextCache };
 }
 
 /**
  * Load the committed combo artifacts, failing open on every artifact problem.
- * The index (small — oracle/template membership plus the byte-offset
- * directory) is fully validated at load time, since fully validating it costs
- * nothing. The detail artifact (the ~105k-variant corpus) is validated only
- * structurally at load time — its size must cover every offset the index
- * records — and each variant's actual bytes are decompressed and validated
- * lazily, on first fetch. A single corrupt variant record therefore disables
- * enrichment for that variant only, with one warning per process per variant;
- * a missing or structurally-broken index or detail file disables the whole
- * catalog, with one warning per process per path. Nothing here is memoized
- * across calls, so one process can build both an enrichment-enabled and an
- * enrichment-disabled app; each loaded catalog keeps its own small bounded
- * cache of recently-fetched variants (`DETAIL_CACHE_CAPACITY`).
+ * The index (small — oracle/template membership plus the block/position
+ * directories) is fully validated at load time, since fully validating it
+ * costs nothing. The detail artifact (the ~105k-variant corpus, in 128-variant
+ * blocks) is validated only structurally at load time — every block's byte
+ * range must fit inside the file — and each variant's actual bytes are
+ * decompressed and validated lazily, on first fetch. A single corrupt variant
+ * record therefore disables enrichment for that variant only, with one
+ * warning per process per variant; a missing or structurally-broken index or
+ * detail file disables the whole catalog, with one warning per process per
+ * path. Nothing here is memoized across calls, so one process can build both
+ * an enrichment-enabled and an enrichment-disabled app; each loaded catalog
+ * keeps its own small bounded cache of recently-fetched variants
+ * (`DETAIL_CACHE_CAPACITY`) plus the single most recently decoded block, since
+ * up to five combos can enter one prompt and adjacent lookups may share a
+ * block.
  */
 export function loadComboCatalog(detailPath: string, indexPath: string): ComboCatalog {
   if (!existsSync(detailPath)) {
@@ -360,16 +405,24 @@ export function loadComboCatalog(detailPath: string, indexPath: string): ComboCa
 
   let byOracleId: Map<string, string[]>;
   let byTemplateOracleId: Map<string, string[]>;
-  let detailOffsets: Map<string, DetailOffset>;
+  let blockDirectory: BlockRange[];
+  let variantPositions: Map<string, number>;
   try {
     byOracleId = assertMembership(index.byOracleId, "byOracleId");
     byTemplateOracleId = assertMembership(index.byTemplateOracleId, "byTemplateOracleId");
-    detailOffsets = assertDetailOffsets(index.detailOffsets);
+    blockDirectory = assertBlockDirectory(index.blocks);
+    variantPositions = assertVariantPositions(index.variantPositions);
 
     const detailSize = statSync(detailPath).size;
-    for (const [variantId, [offset, length]] of detailOffsets) {
-      if (offset + length > detailSize) {
-        throw new Error(`Combo detail artifact is shorter than variant ${variantId}'s recorded byte range.`);
+    for (const { offset, length } of blockDirectory) {
+      if (offset < 0 || offset + length > detailSize) {
+        throw new Error(`Combo detail artifact is shorter than a recorded block's byte range.`);
+      }
+    }
+    const blockCount = blockDirectory.length;
+    for (const [variantId, position] of variantPositions) {
+      if ((position >> 7) >= blockCount) {
+        throw new Error(`Combo index variantPositions entry ${variantId} has no matching block.`);
       }
     }
   } catch (error) {
@@ -382,16 +435,19 @@ export function loadComboCatalog(detailPath: string, indexPath: string): ComboCa
   }
 
   const cache = new BoundedVariantCache(DETAIL_CACHE_CAPACITY);
+  let blockCache: { blockIndex: number; lines: string[] } | null = null;
 
   function getVariant(variantId: string): ComboVariant | undefined {
     const cached = cache.get(variantId);
     if (cached) return cached;
 
-    const offset = detailOffsets.get(variantId);
-    if (!offset) return undefined;
+    const position = variantPositions.get(variantId);
+    if (position === undefined) return undefined;
 
     try {
-      const variant = assertVariant(readVariantDetail(detailPath, offset));
+      const read = readVariantAtPosition(detailPath, blockDirectory, position, blockCache);
+      blockCache = read.blockCache;
+      const variant = assertVariant(read.value);
       cache.set(variantId, variant);
       return variant;
     } catch (error) {
@@ -407,7 +463,7 @@ export function loadComboCatalog(detailPath: string, indexPath: string): ComboCa
   return {
     byOracleId,
     byTemplateOracleId,
-    variantCount: detailOffsets.size,
+    variantCount: variantPositions.size,
     getVariant
   };
 }

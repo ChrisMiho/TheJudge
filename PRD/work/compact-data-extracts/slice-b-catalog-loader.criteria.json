@@ -5,32 +5,49 @@
     {
       "id": "B1",
       "statement": "readVariantDetail reads only the requested variant's block byte range, brotli-decodes that one block, and returns the correct variant by position/line arithmetic",
-      "value": false,
-      "evidence": { "paths": ["apps/backend/src/commanderSpellbook/catalog.ts", "apps/backend/src/commanderSpellbook/catalog.test.ts"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "apps/backend/src/commanderSpellbook/catalog.ts",
+          "apps/backend/src/commanderSpellbook/catalog.test.ts"
+        ]
+      }
     },
     {
       "id": "B2",
       "statement": "the 64-entry LRU cache and per-variant validation are preserved unchanged in behavior",
-      "value": false,
-      "evidence": { "paths": ["apps/backend/src/commanderSpellbook/catalog.ts"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "apps/backend/src/commanderSpellbook/catalog.ts"
+        ]
+      }
     },
     {
       "id": "B3",
       "statement": "the load-time structural check validates every block directory range fits inside the blocks file",
-      "value": false,
-      "evidence": { "paths": ["apps/backend/src/commanderSpellbook/catalog.ts"] }
+      "value": true,
+      "evidence": {
+        "paths": [
+          "apps/backend/src/commanderSpellbook/catalog.ts"
+        ]
+      }
     },
     {
       "id": "B4",
       "statement": "byOracleId / byTemplateOracleId Maps and route responses are byte-identical to pre-slice output for the same fixture corpus",
-      "value": false,
-      "evidence": { "command": "npm --workspace apps/backend run test -- catalog" }
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test -- catalog"
+      }
     },
     {
       "id": "B5",
       "statement": "the backend workspace test suite for catalog.ts passes",
-      "value": false,
-      "evidence": { "command": "npm --workspace apps/backend run test -- catalog" }
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/backend run test -- catalog"
+      }
     }
   ]
 }
