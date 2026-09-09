@@ -320,3 +320,37 @@ Cost at 1769 MB and this traffic (85 invocations / 30 days): a cold start is
   threatens deploys, but the note stands.
 - `gameRulesRuleIndex.json` (2 MB → 0.2 MB brotli) was left alone: it is
   re-hashed by the embeddings build (`ruleIndexHash`) and the gain is small.
+
+## Addendum 2026-09-08 (late) — shared-dictionary per-record compression, measured and rejected
+
+The one alternative that keeps today's one-record reads *and* could recover
+cross-record savings is per-record compression against a **shared dictionary**.
+Checked and measured so refinement does not reopen it.
+
+Runtime support (`dictionary` option on `zlib.zstdCompressSync` /
+`brotliCompressSync`): Node 24 (Lambda `nodejs24.x`) honours it for both codecs;
+Node 26 (local) honours both; **Node 22 (CI `quality-check.yml`) silently
+ignores it for brotli** (output byte-identical with or without) and honours it
+for zstd. A brotli-dictionary artifact would therefore decode on Lambda and fail
+in CI.
+
+Measured on the fresh 108,484-variant corpus (`tooling/measure-dictionary.mjs`,
+`tooling/dictionary.log`; dictionary = evenly spaced sample records
+concatenated, Node has no trainer):
+
+| Layout | Total | Read one combo | Build |
+| --- | ---: | ---: | ---: |
+| per-record gzip (today) | 90.96 MB | 0.02 ms | 5 s |
+| per-record zstd19 + 70 KB dict | 43.12 MB | 0.012 ms | 132 s |
+| per-record brotli11 + 70 KB dict | 39.63 MB (scaled from 1/20) | 0.043 ms | ~210 s |
+| per-record zstd19 + 90 KB dict | 46.55 MB | 0.026 ms | 387 s |
+| per-record brotli11 + 90 KB dict | 43.94 MB (scaled) | 0.036 ms | ~212 s |
+| **blocks of 128, brotli11 (chosen)** | **12.99 MB** | 0.34 ms | 80 s |
+
+A trained dictionary would do better than a sampled one, but not the 3× needed
+to reach the block layout: the gain comes from the ~230 KB of neighbouring
+combos a block shares, which no ~100 KB dictionary can carry. The dictionary
+approach also adds an artifact that must stay byte-identical between build and
+runtime (a drift corrupts every read), and the Node 22 silent-ignore is a
+footgun. **Rejected.** The 0.3 ms per-read cost of blocks is irrelevant at five
+combos per prompt.

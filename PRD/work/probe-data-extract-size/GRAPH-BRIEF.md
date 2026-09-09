@@ -28,6 +28,13 @@ The cause: the combo detail file gzips each combo **individually**, so the
 compressor never sees the text neighbouring combos share. Everything else is
 raw JSON or single-stream gzip where brotli does 2–3× better.
 
+This is not a new discovery. The original combo build
+(`PRD/instructions/receipts/commander-spellbook-combos-2026-08-22.md`, DEC-162)
+chose per-variant gzip so a lookup could read one combo without holding the
+corpus, recorded that it forfeits cross-record compression, and named the fix
+if size ever became a problem: batch several variants per compressed member.
+Size became the problem on 2026-09-08. The block layout below is that fix.
+
 | Artifact (fresh corpus) | Today | Proposed | How |
 | --- | ---: | ---: | --- |
 | `commanderSpellbookCombos` detail | 90.96 MB | **12.99 MB** | blocks of 128 combos (existing `variantId` order), each block brotli q11; index carries the block directory |
@@ -60,6 +67,30 @@ Alternatives measured and rejected:
   ask-ai path (REQ-175) and REQ-093 forbids folding corpora together.
 - Raising `MIN_VARIANT_POPULARITY` (the emergency valve): drops combos players
   see. Rejected by the owner's stated goal ("without having to trim data").
+- Per-record compression against a **shared dictionary** (keeps today's
+  one-record reads): measured at 40–47 MB — 3× the block layout — because the
+  savings come from the ~230 KB of neighbouring combos a block shares, which
+  no dictionary can carry. Also: Node 22 (CI) silently ignores a brotli
+  dictionary while Node 24 (Lambda) honours it, and the dictionary is an
+  extra artifact that must stay byte-identical between build and runtime.
+  **Rejected** (findings addendum, `tooling/measure-dictionary.mjs`).
+
+Avenues considered and rejected without measurement (each fails on an axis
+the numbers cannot change):
+- **Range-reading blocks from S3 at runtime** (corpus outside the zip): removes
+  the package budget entirely, but adds a network hop to every combo lookup
+  and a runtime data dependency the design deliberately avoids (runtime never
+  fetches combo data — integrations-and-data, DEC-162). Not worth it for a
+  corpus that fits with ≈ 94 MB to spare.
+- **Container-image Lambda** (10 GB image limit): replaces the S3-staged zip
+  deploy (DEC-169) wholesale and worsens cold start, to solve a problem the
+  encoding change already removes.
+- **Lambda layers**: count against the same 250 MB unzipped quota. No gain.
+- **EFS**: new infrastructure and a monthly charge for a static file.
+- **SQLite or any database**: excluded by the owner; would not compress this
+  data better than blocks and adds a runtime dependency.
+- **Dropping combos to fit** (raising the popularity floor): see above; the
+  emergency valve stays in the code, unused.
 
 ## Decisions already made — do not re-litigate
 
@@ -101,8 +132,12 @@ Alternatives measured and rejected:
   (11 paths — a miss silently drops an artifact from the weekly PR),
   `apps/backend/src/runtime/createConfiguredApp.ts`, the eval readers
   (`eval/fixtureCardDetail.ts`, `eval/ragRetrievalBenchmark.ts`,
-  `eval/contextEvaluationHarness.ts`, `eval/fixtures/README.md`), `.gitignore`
-  comments, root `README.md`, `OPERATOR.md` if it names them.
+  `eval/contextEvaluationHarness.ts`, `eval/fixtures/README.md`),
+  `scripts/lib/prompt-fidelity.mjs` (loads the raw rulings + card-detail JSON
+  by name for the answer-quality scripts), `scripts/compare-combo-answer-quality.mjs`
+  (opens both combo `.json.gz` files by path), `.gitignore` comments, root
+  `README.md`, `OPERATOR.md` if it names them. The grep that enumerates the set:
+  `grep -rln -E 'cardRulingsByOracleId|cardDetailByOracleId|cardPrintingPricesByOracleId|commanderSpellbookCombo' scripts apps/backend/src README.md OPERATOR.md .gitignore`.
 - Regenerate all artifacts with the raw sources already on disk
   (`apps/backend/data/commander-spellbook/`, `apps/backend/data/scryfall/`,
   `apps/frontend/data/scryfall/`, all from the 2026-09-08 refresh) — no
@@ -111,11 +146,14 @@ Alternatives measured and rejected:
 - **Required, not optional:** positional-int index (variant ids listed once,
   memberships as integer positions, per-block lengths) — 1.38 MB brotli and,
   more importantly, 12 MB instead of 47 MB of JSON parsed at every cold start.
-  Why required: CloudWatch shows the function peaking at **491 MB of its
-  512 MB** during a cold start today with the 24 MB committed index; the
-  fresh index is 46.6 MB raw and would push the parse past the cap. The
-  compact index is what keeps the fresh corpus loadable, not only deployable.
-  `catalog.ts` maps positions back to variant ids at load (the `byOracleId` /
+  Why required: the fresh index is 46.6 MB raw, twice the committed 24 MB,
+  and it grows with every weekly refresh. Every cold start parses it whole
+  and holds the result; at 47 MB that is on the order of 100 MB more
+  resident memory and a proportionally longer first request. The function
+  now runs at 1769 MB (raised 2026-09-08, PR #221), so this is no longer an
+  out-of-memory ceiling — it is what keeps the cold start from creeping back
+  toward the 9–10 s it was at 512 MB as the corpus grows. `catalog.ts` maps
+  positions back to variant ids at load (the `byOracleId` /
   `byTemplateOracleId` Maps it exposes keep their `string[]` shape, so the
   matcher is untouched).
 
@@ -136,6 +174,8 @@ Amend in place; the decision log is retired (no new DEC).
   gzip-compressed" paragraph and the measured-bounds size.
 - `PRD/sections/system-map.md` — entries "Card rulings", "Artifact builders",
   "Printing-price artifact build", "Commander Spellbook combo artifact build".
+- `PRD/sections/quick-lookup/README.md` and `PRD/sections/trade-balancer/README.md`
+  — each names `cardDetailByOracleId.json` once; update the file name only.
 
 ## Constraints (don't rediscover)
 
@@ -146,16 +186,27 @@ Amend in place; the decision log is retired (no new DEC).
   absent (REQ-093) — the preserve/validate paths must understand the new
   layout.
 - The deploy budget test counts tracked bytes; run it in the build slice.
-- Runtime memory is the second ceiling: the Lambda is 512 MB and cold starts
-  already peak at 491 MB (CloudWatch, 2026-09-08). Cold start takes 9–10 s
-  at that size (first-invocation `Duration`), warm calls 2–4 ms. Raising
-  `--memory-size` in `scripts/aws-bootstrap.sh` (and on the live function)
-  to 1769 MB is an owner infra decision recorded alongside this brief, not a
-  slice; the build must not assume it happened, which is why the compact
-  index is required above. The build slice should print the process RSS after
-  loading every artifact so the review can compare against 512 MB.
+- Runtime memory is no longer a ceiling, but stay honest about it: the
+  Lambda runs at **1769 MB** (raised from 512 MB on 2026-09-08, PR #221;
+  `scripts/aws-bootstrap.sh` and the live function agree). Measured after
+  the raise: first-invocation `Duration` 2.4 s (was 9–10 s), 5.1 s on the
+  wire, peak memory 497 MB, warm calls 2–3 ms. The encoding change is neutral
+  for cold start (brotli decode adds ~20 ms on the price file); the smaller
+  package shaves a little off the ~2.6 s AWS spends fetching the 137 MB zip
+  onto a fresh instance. The build slice should print the process RSS after
+  loading every artifact so the review can compare against the 497 MB
+  baseline and confirm the fresh corpus stays far below 1769 MB.
+- Cold-start latency itself is **not** this build's job. It was measured and
+  addressed by the memory raise (findings addendum, 2026-09-08 evening);
+  provisioned concurrency or a warm ping remain owner options if it must go
+  away entirely. Do not add them here.
 - Determinism: identical raw input → identical bytes (brotli is deterministic
   for fixed params; keep params fixed and named).
+- Three Node versions touch these files: **22** in CI (`quality-check.yml`
+  `node-version: 22`), **24** on Lambda (`nodejs24.x`), **26** locally. Plain
+  brotli (no dictionary) is core `zlib` on all three and behaves identically;
+  the build and the budget test must pass under 22. Do not use the `dictionary`
+  option on either codec — Node 22 ignores it for brotli without an error.
 - Related but distinct, do not conflate: the meta-sidecar snapshot-date gap
   (REQ-066), eval golden regen after a Comprehensive Rules refresh, and the 25
   unresolved combo templates — all recorded in the
@@ -167,6 +218,19 @@ Amend in place; the decision log is retired (no new DEC).
 `tooling/measure-*.mjs` (the three measurement scripts; they read the committed
 files and today's raw combo export, write only to a scratch dir given as
 argv[2]) and their logs.
+
+## Two things refinement settles (not gaps, just work to do)
+
+- **One index schema.** The decisions above describe the index twice: the
+  block directory (`[offset, length]` per block, variant → block/line) and the
+  positional-int compaction (variant ids listed once, memberships as integer
+  positions, per-block lengths). They are the same artifact. The DESIGN-BRIEF
+  writes the single combined shape, and `catalog.ts` exposes the same Maps it
+  does today so the matcher is untouched.
+- **Trim re-blocks.** Blocks are fixed groups of 128 in `variantId` order, so
+  `--trim-committed` cannot splice records out in place: it filters the
+  variant list and re-runs the block serializer, then rewrites the index.
+  Same code path as a fresh build, fed the surviving variants.
 
 ## What the graph run should produce
 
