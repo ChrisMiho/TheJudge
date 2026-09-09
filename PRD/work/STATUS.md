@@ -13,11 +13,11 @@ Do not rename package folders to encode status.
 
 ## refined
 
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up. `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (10 amendment blocks, no new IDs) await the owner's verdicts (graph run `graph-20260909-213550`) |
+
 ## refining
 
 ## ideation
-
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up (graph run `graph-20260909-213550`) |
 
 ## owner-action
 
