@@ -15,7 +15,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Pick-before-add printing, foil auto-select, scrollable picker, mount-time API warm-up. Refinement attempt 4 closed the three gate-qc findings: `functional-requirements.md:4052` ("on add") now amended in block `REQ-065`, `:4056` (route inventory / health) in block `REQ-064`, and the disposition table's completeness claim is re-cut against one quoted narrow grep — 41 hits, 41 rows, 104 rows total, 56 removed lines verified against live text with 0 mismatches. Twelve blocks, no new stable IDs; awaiting gate-qc attempt 4 |
 
 ## refining
 
@@ -25,6 +24,10 @@ Do not rename package folders to encode status.
 ## ideation
 
 ## owner-action
+
+| Package | Note |
+| --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | **Decide + merge.** Trade Balancer: pick the printing before adding, foil starts in the mode that has a price, scrollable printing picker, wake the API on open. Quality-check PASSED (attempt 4). Twelve proposed product-truth amendments (no new IDs) await the owner's `accept / edit / reject` in `GATE-QUESTIONS.md`; answer them in the docs PR, then merge — the merge is the build signal for `/graph-implement`. Graph run `graph-20260909-213550`, kickoff worktree `.worktrees/kickoff-trade-balancer-first-card-ux` |
 
 
 ## deferred
