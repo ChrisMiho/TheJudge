@@ -20,7 +20,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Gate-qc attempt 5 park resolved on the owner's instruction (2026-09-09): `DESIGN-BRIEF.md`'s foil section and assumption A6 rewritten to the accepted re-derive-every-time foil rule. Resuming inside `/graph-implement` at `gate-qc` attempt 6, then plan → build → review → close. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | `gate-qc` attempt 6 FAILed: `DESIGN-BRIEF.md`'s foil section and Assumption A6 now agree with the owner's accepted rule, but `intake/GRAPH-BRIEF.md` (decision 4, line 32) still states the pre-edit rule — "otherwise keep the player's current toggle (default off)" — and its design-direction section (line 41) still names a `defaultFoilFor(printing, currentFoil)` helper signature built around carrying a current toggle forward. The package README points future readers, including map-out, at this file for "converged design direction", so the stale rule can still reach a slice. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## ideation
 
