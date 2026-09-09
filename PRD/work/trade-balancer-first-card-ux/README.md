@@ -10,3 +10,7 @@ See `IDEA.md` for problem/outcome/non-goals and prior-run matches, and
 `intake/GRAPH-BRIEF.md` for the full measured brief handed off by
 `/graph-kickoff` (evidence, converged design direction, PRD sections to
 amend, slice sketch).
+
+## Autonomous metadata
+
+- Autonomous base: origin/thejudge-auto/trade-balancer-first-card-ux
