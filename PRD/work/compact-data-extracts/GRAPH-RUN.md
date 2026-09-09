@@ -28,7 +28,7 @@
   That merge is the build signal.
 - Then `graph-implement` (the build half) claims the spec from `origin/main`, applies the
   approved product-truth diffs, and opens the code PR. Resume: `/graph-implement PRD/work/compact-data-extracts/`.
-- Docs PR: <recorded below once created>.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/224 (docs-only, base `main`, head `thejudge-auto/compact-data-extracts`).
 
 ## Dispatch prompts
 
