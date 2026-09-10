@@ -8,7 +8,7 @@
 - Build branch: `thejudge-auto/rule-excerpt-cap-ten-work` (cut from `origin/main` at `c28820b`)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260910-024919/`
 - Build-half canary (2026-09-10, lock retaken via `graph-preflight --take-lock`): `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] This exact call was already denied during this run (`recursive-force-remove`)…"; graph tier: nohup true → "[graph-boundary] This exact call was already denied during this run (`nohup-wrapper`)…")` — both denies came from the hook while the lock was held, which is the proof; the wording differs from the run-start canary because the run id is shared with the spec-forming half and the hook's denial ledger remembers it
-- Current node: `plan`
+- Current node: `build`
 - Next action: driver continues `gate-review → gate-qc → plan → build → review → close`; `land` is the owner's merge of the code PR
 
 ## Node ledger
@@ -24,6 +24,7 @@
 | — | claim | driver | ok | `driver-bookkeeping` | build half claimed after docs PR #230 merged at `c28820b`: kickoff worktree clean and removed (`git worktree remove`), `git worktree add .worktrees/implement-rule-excerpt-cap-ten -b thejudge-auto/rule-excerpt-cap-ten-work origin/main`, lock retaken (`graph-preflight --take-lock`, pid 66381), both canaries denied; claim commit `dc5b129` (README base → `origin/main`, ledger header) pushed; marker left at `owner-action` | 2026-09-10 |
 | — | gate-review | sonnet | ok | `0 → 24` | commit `2426986` on `thejudge-auto/rule-excerpt-cap-ten-work` (pushed) — 14/14 verdicts `accept` (0 edit, 0 reject) applied inside `GATE-QUESTIONS.md` (no diff changed); brief reconciliation `none`; `## Gate verdicts` + `## Open gate` resolved line written; STATUS.owner-action→refined, README `status: refined`, board row owner-action→refined; `git status --porcelain` empty; `git diff --stat origin/main -- PRD/sections` empty | 2026-09-10 |
 | 4 | gate-qc | sonnet | ok | `0 → 25` | attempt 3 (build-half re-grade) PASS, no findings, no commit. 266-hit grep reproduced on the build branch (32 amend rows = 14 slots, 234 not-this-cap rows, 0 undisposed); 32 before-text lines byte-identical to `PRD/sections/` (`grep -rFc`, 0 mismatches); 14 blocks well-formed with `- Verdict: accept`; no new DEC; `git diff --stat origin/main -- PRD/sections` empty; brief build-ready (constant flip + tests + `--excerpt-cap` default, no live call). STATUS stays refined; driver rewrote README `## Preparation gate` | 2026-09-10 |
+| 5 | plan | sonnet | ok | `0 → 49` | commit `d2e4114` on `thejudge-auto/rule-excerpt-cap-ten-work` (pushed) — `GAMEPLAN.md`, `slice-a-deploy-ten-excerpt-cap.md` + `slice-a.criteria.json` (4 criteria, all `false`), `slice-b-eval-instrument-and-recall-harness.md` + `slice-b.criteria.json` (5 criteria, all `false`; B depends on A), README slice table + implementation map + `status: active`, STATUS.refined→active, board row refined→active; README `## Preparation gate` line verified PASS by the node before writing; `git status --porcelain` empty | 2026-09-10 |
 
 ## Open gate
 
@@ -323,6 +324,36 @@ Boundaries: never write product code or edit `PRD/sections/`; never edit `DESIGN
 Tool-call cap for this node: 120.
 
 Report back: the commit hash, the slice table (letter, title, dependencies), the criteria count per slice, and `git status --porcelain` of the working directory (expected empty). Outcome word on its own last line: `ok` or `failed`.
+
+### build
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten
+
+You are node 6 (`build`) of graph run `graph-20260910-024919`, the build half driven by `graph-implement`. Invoke the `thejudge-implement-all` skill in its `graph is controlling` mode and follow it exactly. Read `PRD/instructions/graph-workflow-contract.md` (especially `## Propose / apply / close` and `## Acceptance criteria are earned, not written`), the skill's `reference.md`, and `PRD/instructions/workflow-reference.md` as the skill requires.
+
+Package: `PRD/work/rule-excerpt-cap-ten/` (relative to the working directory). Shared branch: `thejudge-auto/rule-excerpt-cap-ten-work` — it is the branch the working directory above is already checked out on (`git branch --show-current` must equal it; block and report if it differs). Recorded autonomous base (README `## Autonomous metadata`): `origin/main`. Work in place in this worktree — no second worktree, no contributor branch. Never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge`; every path you write must lie inside `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten/`, and the driver asserts that on your return (REQ-193) — a bare `PRD/work/rule-excerpt-cap-ten/…` path outside this worktree fails the node.
+
+Read `README.md`, `GAMEPLAN.md`, `slice-a-deploy-ten-excerpt-cap.md`, `slice-b-eval-instrument-and-recall-harness.md`, both `slice-<letter>.criteria.json` files, `DESIGN-BRIEF.md`, and `GATE-QUESTIONS.md` (14 finalized blocks, all `accept`). Implement slice A then slice B (B depends on A), sequentially, no implementation subagents.
+
+Apply product truth by intent: each slice writes the real `PRD/sections/` edits its GAMEPLAN assigns, re-derived from the finalized `GATE-QUESTIONS.md` diff and the brief against the current file text — never a blind replay. Every before-text line was verified byte-identical on this branch, so the edits should apply cleanly; if one does not match, report the mismatch and stop rather than forcing it. Apply each block exactly once across the run. Commit the truth together with the code that realizes it, one milestone commit per slice (`feat(rule-excerpt-cap-ten): complete slice <letter>`).
+
+The brief's recorded risk: moving the recall harness to top-10 may surface a forbidden rule already ranking 6–10 in an existing eval fixture, failing `npm run test:eval`. That is a genuine signal — record it in the slice notes and the PR body with the fixture and rule named; never suppress it by relaxing the check. If it blocks a slice, leave that slice `blocked` and end `failed` with the evidence.
+
+Criteria: set a criterion `true` in its `.criteria.json` only after the evidence its block names has actually run in this node; report `ok` only when every criterion in both files is `true` (read the emitted files, not a summary). Run `npm run quality:check` and the slice verification before each milestone commit. Never `git add -A`, `--all`, or `.` — explicit paths only. Push with `git push -u origin thejudge-auto/rule-excerpt-cap-ten-work`, never force.
+
+PR: after the first push, open the code PR with `gh pr create --base main --head thejudge-auto/rule-excerpt-cap-ten-work` if none exists for this branch (`gh pr list --head thejudge-auto/rule-excerpt-cap-ten-work` first). The PR body follows `PRD/instructions/plain-language-standard.md`: open with what a player gets (Ask AI attaches up to ten official rule excerpts instead of five), inline the substance of every REQ you cite, name the eval-fixture outcome, and end with the two attribution lines: `🤖 Generated with [Claude Code](https://claude.com/claude-code)` and `https://claude.ai/code/session_01Tr2kzbTDLtToCCdbaHrxL8`. Never merge or close it.
+
+When every slice is `done`: README `status: ship-ready`, marker `STATUS.active` → `STATUS.ship-ready` (exactly one), board row `## active` → `## ship-ready` in `PRD/work/STATUS.md` (remove from old, add to new), then the completion-gate READY loop from `reference.md`. Do not touch `GRAPH-RUN.md` or the README's `## Preparation gate` / `## Autonomous metadata` sections — the driver owns them. Do not run cleanup.
+
+Copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten` unchanged, on its own line, into every prompt you write for any subagent of your own.
+
+Boundaries: never edit any `thejudge-*` skill, `CLAUDE.md`, or `.claude/settings*.json`; never force-push; never push `main`; never merge or close a PR; no `nohup` or background `&`; no live provider calls (the answer-quality run stays confirmation-gated and is not executed); no `npm run data:refresh`; a denied call is never retried.
+
+Tool-call cap for this node: 1200.
+
+Report back: every commit hash on the branch in order, the PR URL, the complete list of paths you wrote (absolute, or relative to the launch root), each criterion id with the evidence command or path that earned it and its final value, the `npm run quality:check` and `npm run test:eval` results (pass/fail with the failing test names if any), the eval-fixture risk outcome, the final marker and board row, and `git status --porcelain` of the working directory (expected empty). Outcome word on its own last line: `ok` or `failed`.
 
 ## Instruction ledger
 
