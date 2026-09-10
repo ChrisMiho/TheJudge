@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | All five slices (A-E) done, all 12 `GATE-QUESTIONS.md` blocks applied to `PRD/sections/`, `npm test`/`npm run quality:check` green (2026-09-09) inside `/graph-implement`'s build half. Code PR #227 (`thejudge-auto/trade-balancer-first-card-ux-work` → `main`) open awaiting owner review/merge. Next: review, then close. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Quality-check PASS (attempt 7); mapped out into slices A-E (2026-09-09) inside `/graph-implement`'s build half. All 12 `GATE-QUESTIONS.md` blocks assigned across A/C/D/E per GAMEPLAN's sequencing table. Next: implementation node, then review, then close. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## refined
 

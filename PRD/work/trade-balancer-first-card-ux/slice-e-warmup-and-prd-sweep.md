@@ -1,6 +1,45 @@
 # Slice E — Warm-up ping on mount, remaining PRD-truth sweep, ship gates
 
-## Status: planned
+## Status: done
+
+### E3 note (code-review-level, no runtime assertion for an absence)
+
+`TradeBalancer.tsx`'s mount effect is:
+
+```ts
+useEffect(() => {
+  fetch(`${apiBaseUrl}/api/health`).catch(() => undefined);
+}, []);
+```
+
+No `.then()` reads the response; no state setter is called from this effect.
+The warm-up call's result never reaches component state — confirmed by
+reading the diff (E3 is a code-review check, not a runtime assertion, since
+you cannot assert the absence of a state write at runtime).
+
+### E12 completeness grep — result and disposition
+
+The narrowed grep matched only the substring `on add`/`on-add`; every other
+pattern (`first printing`, `printings[0]`, `first result`, `returns first`,
+`defaults? (is|to) non-foil`, `non-foil by default`, `only when ... card is
+added`) had zero hits. Of the `on add` hits: the large majority are
+incidental substrings inside unrelated words (e.g. "integrat**ion add**s",
+"select**ion add**s", "**butt**on **add**itionally", "collect**ion add**-
+action/ed", "sessi**on add**s", "isolati**on add**s", "instrumentati**on
+add**s") — none of these describe the Trade Balancer's fetch timing. The
+remaining handful are this slice's own new text describing the *scan* path's
+unchanged "fetch prices on add" behavior (`user-flows.md:556`,
+`system-map.md:556`, `functional-requirements.md:1494`,
+`trade-balancer/README.md:117/179/201`) — correct, current text, not stale
+wording. No remaining pre-change phrasing was found.
+
+### Deviation carried from Slice C
+
+`TradeBalancer.test.tsx`'s manual-search flow needed a picker-pick step
+(Slice C's product behavior) and `TradeBalancer.scan.test.tsx`'s one
+manual-search fallback assertion needed the same — both already applied and
+noted in Slice C's status; `useTradeScan.ts` and every scan-input test
+remain untouched (A11). No further deviation in this slice.
 
 ## Goal
 
@@ -50,39 +89,39 @@ sequencing table).
 
 ## Acceptance criteria
 
-- [ ] E1: `TradeBalancer` issues exactly one `GET <apiBaseUrl>/api/health`
+- [x] E1: `TradeBalancer` issues exactly one `GET <apiBaseUrl>/api/health`
       call on mount, alongside the `cardMetadata` fetch — unit/component
       test asserting the fetch call, not asserting on its response.
-- [ ] E2: A rejected/failed warm-up call produces no UI change, no thrown
+- [x] E2: A rejected/failed warm-up call produces no UI change, no thrown
       error, and no effect on search/scan availability — unit/component
       test.
-- [ ] E3: The warm-up call's result is never read into component state (no
+- [x] E3: The warm-up call's result is never read into component state (no
       new state variable backs it) — code-review-level check, confirmed by
       reading the diff; no runtime assertion is possible for an absence.
-- [ ] E4: `functional-requirements.md`'s `REQ-064` and its REQ-175
+- [x] E4: `functional-requirements.md`'s `REQ-064` and its REQ-175
       route-inventory clause are amended per the `GATE-QUESTIONS.md` block,
       re-derived against live text.
-- [ ] E5: `user-flows.md`'s `FLOW-009` is amended per the `GATE-QUESTIONS.md`
+- [x] E5: `user-flows.md`'s `FLOW-009` is amended per the `GATE-QUESTIONS.md`
       block, re-derived against live text.
-- [ ] E6: `user-flows.md`'s `FLOW-025` is amended per the `GATE-QUESTIONS.md`
+- [x] E6: `user-flows.md`'s `FLOW-025` is amended per the `GATE-QUESTIONS.md`
       block, re-derived against live text.
-- [ ] E7: `PRD/sections/trade-balancer/README.md` is amended per the
+- [x] E7: `PRD/sections/trade-balancer/README.md` is amended per the
       `GATE-QUESTIONS.md` block, re-derived against live text.
-- [ ] E8: `PRD/sections/system-map.md` is amended per the `GATE-QUESTIONS.md`
+- [x] E8: `PRD/sections/system-map.md` is amended per the `GATE-QUESTIONS.md`
       block, re-derived against live text.
-- [ ] E9: `PRD/sections/integrations-and-data.md` is amended per the
+- [x] E9: `PRD/sections/integrations-and-data.md` is amended per the
       `GATE-QUESTIONS.md` block, re-derived against live text.
-- [ ] E10: `PRD/sections/overview.md` is amended per the `GATE-QUESTIONS.md`
+- [x] E10: `PRD/sections/overview.md` is amended per the `GATE-QUESTIONS.md`
       block, re-derived against live text.
-- [ ] E11: `PRD/sections/non-functional-requirements.md` is amended per the
+- [x] E11: `PRD/sections/non-functional-requirements.md` is amended per the
       `GATE-QUESTIONS.md` block, re-derived against live text.
-- [ ] E12: All twelve `GATE-QUESTIONS.md` blocks are now applied across
+- [x] E12: All twelve `GATE-QUESTIONS.md` blocks are now applied across
       Slices A, C, D, and E (per GAMEPLAN's sequencing table) — a re-run of
       the design brief's completeness grep against `PRD/sections/` finds no
       remaining pre-change wording (`grep -rniE 'on add|on-add|only when (a|that) card is added|when (a|that) card is added|first printing|printings\[0\]|first result|returns first|defaults? (is|to) non-foil|non-foil by default' PRD/sections/` — the narrower grep, excluding `printing picker`/`change printing`/`health`, which still legitimately match unrelated or now-correct text).
-- [ ] E13: `npm test` is green in `apps/frontend`, including
+- [x] E13: `npm test` is green in `apps/frontend`, including
       `TradeBalancer.scan.test.tsx`.
-- [ ] E14: `npm run quality:check` is green.
+- [x] E14: `npm run quality:check` is green.
 
 ## Verification
 
@@ -106,8 +145,8 @@ grep -rniE 'on add|on-add|only when (a|that) card is added|when (a|that) card is
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/trade-balancer-first-card-ux/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/trade-balancer-first-card-ux/` ready to delete

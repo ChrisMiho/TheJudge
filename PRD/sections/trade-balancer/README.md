@@ -20,8 +20,10 @@ between the sides — so a trade can be balanced without doing the math by hand 
 the table. A player adds a card to a side by scanning it or searching its name;
 each card resolves to a specific printing carrying its own price, with a foil
 toggle and a quantity. The screen opens with only the shared local card index
-in hand; the moment a card is added, it fetches that one card's printings and
-prices from the backend, prices from a committed snapshot (not a live quote),
+in hand; it wakes the backend with one throwaway health-check ping as it opens,
+then fetches a card's printings and prices the moment the player taps that
+card's search suggestion (or adds a scanned card), pricing from a committed
+snapshot (not a live quote),
 and keeps no history — close it and the trade is gone. It sits outside the MTG
 Assistant core loop and changes nothing about it or the AI answer path.
 
@@ -45,6 +47,12 @@ Assistant core loop and changes nothing about it or the AI answer path.
   Assistant start screen and flow are unaffected. The portal chrome and routing
   are owned at the feature-portal level (DEC-095 / REQ-067 / DEC-157), not by
   this feature. (REQ-064)
+- Built: on open the balancer fires **one fire-and-forget warm-up request** to
+  the backend's existing health check (`GET /api/health`) beside its
+  `cardMetadata` load, so a cold backend wakes while the card list downloads
+  and the player types instead of that wait landing on the first card's price.
+  It carries no product data, renders no UI, and never blocks or errors search
+  when it fails or when no backend is running. (REQ-064)
 
 ### Adding a card to a side
 
@@ -57,16 +65,29 @@ Assistant core loop and changes nothing about it or the AI answer path.
   printing to any other printing of that card if the scanned print is wrong.
   Scanning is per-side and one camera at a time. (REQ-065, FLOW-009, FLOW-025)
 - Built: **manual search input** — the player finds a card by name via the
-  shared `cardMetadata` index (REQ-174) and adds it; the entry appears
-  immediately, defaulting to whichever printing the on-add fetch returns first,
-  with a brief loading state while it resolves. The player then **chooses the
-  correct printing** via the same "Change printing" affordance a scanned entry
-  uses, if the default isn't the one they want. Manual search is the permanent
-  fallback and stays fully functional when the camera is unavailable — the
-  surface closes and the reason is surfaced rather than breaking the screen.
-  (REQ-065, FLOW-009, FLOW-025)
+  shared `cardMetadata` index (REQ-174); tapping the suggestion fetches that
+  card's printings and shows the **printing picker in place of the
+  suggestions**, with a brief loading state, and the card is added carrying the
+  printing the player taps — the printing is chosen **before** the card lands
+  on the side. Cancelling returns to the search box. If that pre-add fetch
+  fails, the card is added anyway in the $0-plus-caution state with its retry
+  affordance. Manual search is the permanent fallback and stays fully
+  functional when the camera is unavailable — the surface closes and the reason
+  is surfaced rather than breaking the screen. (REQ-065, FLOW-009, FLOW-025)
+- Built: the **printing picker** — the same component before an add and behind
+  "Change printing" — heads with the card's printing count (`N printings`,
+  counted from the fetched list), lists printings **newest release first**
+  (REQ-066), **region-scrolls** in a short box instead of growing the page,
+  lazy-loads its row images, filters by set name or code once a card has more
+  than eight printings, and scrolls the selected printing into view on open.
+  (REQ-065, `screen-layout.md`)
 - Built: the **foil toggle** switches an entry's contribution between `usd` and
-  `usd_foil`; the default is non-foil. (REQ-065)
+  `usd_foil`. Whenever an entry receives a printing — picked before an add,
+  resolved from a scan, changed, or re-fetched on retry — the mode is
+  **re-derived from that printing's own prices**: non-foil when the printing
+  has a `usd` price, and foil only when `usd` is null and `usd_foil` is not (a
+  new entry starts non-foil). The player can still toggle into a mode with no
+  price, which keeps the $0-plus-caution treatment. (REQ-065)
 - Built: **quantity / multiples** — the same card or printing may appear more
   than once on a side, via repeated adds and/or a per-entry quantity control;
   each unit counts toward the side total. A trade side is a value list, not the
@@ -88,15 +109,19 @@ Assistant core loop and changes nothing about it or the AI answer path.
   incomplete. (REQ-065, FLOW-009)
 - Built: toggling foil on an entry that has no `usd_foil` (or off with no `usd`)
   applies the same $0 + caution treatment for that mode. (FLOW-009)
-- Built: if a card's on-add price fetch fails outright (not a missing price,
-  but a failed request), the entry degrades to the same $0-plus-caution
-  treatment with a **retry** affordance, rather than a broken row; the failed
-  result is not cached, so retrying re-fetches. (FLOW-025)
+- Built: if a card's price fetch fails outright (not a missing price, but a
+  failed request), the entry degrades to the same $0-plus-caution treatment
+  with a **retry** affordance, rather than a broken row; the failed result is
+  not cached, so retrying re-fetches. This covers both moments the fetch runs:
+  the pre-add fetch on a manual search — where the card is added anyway, in
+  that same state, so the picker never traps the player — and the on-add fetch
+  on a scan. (REQ-065, FLOW-025)
 
 ### Prices and freshness
 
 - Built: prices come from a committed printing-price snapshot served by the
-  backend on demand, one card at a time when it's added to a side, and cached
+  backend on demand, one card at a time — on a manual search when the player
+  taps that card's suggestion, on a scan when the card is added — and cached
   for the rest of the session — there is no live or real-time lookup, no
   runtime sync, and no up-front bulk download. The snapshot is refreshed on a
   weekly cadence by a one-command local script the owner runs
@@ -116,9 +141,11 @@ Assistant core loop and changes nothing about it or the AI answer path.
 - Built: **contract-frozen on the AI answer path, with one read-only backend
   fetch of its own** — no change to `AskAiRequest`, Zod schemas, `GameContext`,
   prompt assembly, the provider boundary, or `POST /api/ask-ai`. The balancer's
-  only backend traffic is the read-only price route
+  only product backend traffic is the read-only price route
   `GET /api/cards/:oracleId/prices` (REQ-175), which the question/RAG flow
-  never touches and which carries no rules text. (REQ-064, REQ-175)
+  never touches and which carries no rules text; its only other call is the
+  warm-up ping to the existing `GET /api/health`, which carries no product data
+  in either direction and adds no endpoint. (REQ-064, REQ-175)
 
 ## Measured bounds
 
@@ -129,6 +156,17 @@ Assistant core loop and changes nothing about it or the AI answer path.
 - Price freshness line: date-level copy only, e.g. `Prices as of 5 June 2026`;
   stays on one line at 390×844 (`scrollWidth` 299 = `clientWidth`); an
   unparseable `snapshotDate` omits the line entirely. (REQ-145, `screen-layout.md`)
+- Printing picker: **region-scrolls** at about five to six rows, capped near
+  `40vh`, so the page never grows with a card's printing count — the corpus
+  maximum is 771 printings (a basic land) and Sol Ring has 128, which
+  previously rendered a 10,748 px picker on an 844 px viewport and pushed Side
+  B out of reach. Row images are lazy-loaded rather than all requested on open,
+  and a set filter appears above eight printings. (REQ-065, `screen-layout.md`)
+- First-card wait: the balancer's warm-up ping on open overlaps the backend's
+  cold start (measured ~4.2 s cold against ~0.2 s warm on the live price route)
+  with the `cardMetadata` download and the player's typing, so the wait is
+  hidden rather than removed. A scheduled keep-warm ping is deliberately out of
+  scope. (REQ-064)
 - Layout/fit: sides stack on phone and the entry lists region-scroll; totals and
   primary actions stay visible with no page scroll; desktop/tablet uses the
   shell width (92% / 48rem or destination equivalent) rather than unused
@@ -137,7 +175,9 @@ Assistant core loop and changes nothing about it or the AI answer path.
 - Data footprint: no up-front price download — the balancer's only up-front
   frontend cost is the shared `cardMetadata` index (REQ-174), the same list
   MTG Assistant and Quick Lookup already load. A card's prices are fetched
-  from the backend only on add; per-card fetch and pricing stay within a
+  from the backend once per card — on the suggestion tap on a manual search,
+  on add on a scan — and the warm-up ping on open (REQ-064) downloads no
+  data; per-card fetch and pricing stay within a
   mobile-friendly budget (NFR-013). The committed backend snapshot's measured
   figures live in `data/cardPrintingPrices.md`.
 
@@ -157,8 +197,9 @@ Assistant core loop and changes nothing about it or the AI answer path.
 - **A single bulk frontend price download — retired, not merely closed.** The
   original design lazy-loaded one ~38 MB committed file on first Trade
   Balancer open. Measured against the live corpus, that stalled first open for
-  seconds on mobile; REQ-066 moved pricing to the backend, fetched per card on
-  add instead (FLOW-025).
+  seconds on mobile; REQ-066 moved pricing to the backend, fetched one card at
+  a time instead — on the suggestion tap on a manual search, on add on a scan
+  (REQ-065, FLOW-025).
 - **Live / real-time price sync — closed door.** Pricing was narrowed into scope
   only as a static build-time snapshot (`no live/real-time price sync`); there is
   deliberately no runtime fetch or scheduled refresh. The on-demand backend read

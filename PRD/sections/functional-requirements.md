@@ -1462,8 +1462,10 @@
   - an entry whose selected-mode price is missing contributes **$0** to its side total and is visibly flagged per REQ-065 (distinct color + caution triangle)
   - the view is reachable from the top-level navigation menu (REQ-067) and the MTG Assistant flow is unaffected
   - the trade state is **ephemeral**: no history, no persistence across reload, no marketplace/transaction handling, and no automated balancing suggestions
+  - when the view opens it issues **one fire-and-forget warm-up request** to the backend's existing health check (`GET /api/health`) alongside its `cardMetadata` load, so a cold backend wakes while the card list downloads and the player types instead of that wait landing on the first card's price fetch. It sends and reads no product data, renders no UI, and never blocks, disables, or surfaces an error on search when it fails or when no backend is running (mock-default local dev unaffected)
 - Constraints:
-  - the AI answer path stays frozen: no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or `POST /api/ask-ai`. The balancer prices cards only through a read-only backend price fetch (REQ-175); printing identity is never pushed into any prompt, rulings, or answer payload
+  - the AI answer path stays frozen: no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or `POST /api/ask-ai`. The balancer prices cards only through a read-only backend price fetch (REQ-175), and its only other backend traffic is the warm-up ping to the existing `GET /api/health`, which carries no product data in either direction; printing identity is never pushed into any prompt, rulings, or answer payload
+  - the warm-up adds **no endpoint and no schedule**: it reuses the health check that already exists for local, deployment, and uptime checks, and a scheduled keep-warm ping stays out of scope
   - USD only (Scryfall `usd` / `usd_foil`); EUR, tix, etched-foil, and grading/condition are out of scope for v1
   - mobile-first, touch-friendly layout (NFR-001)
 - Dependencies:
@@ -4056,7 +4058,7 @@
   - the frontend loads a card's detail from `GET /api/cards/:oracleId` on first open and caches it per card for the session (FLOW-024); it never bulk-downloads the map
   - ask-ai resolves card text by reading the same backend map internally inside `POST /api/ask-ai` (REQ-176), not by calling the new route; the route and the ask-ai read share the one artifact so they cannot drift
   - `npm run data:build` includes the card-detail build; `npm run data:refresh` requires explicit human approval before any download (existing policy)
-  - the product-facing routes are `POST /api/ask-ai`, `GET /api/cards/:oracleId`, and the read-only price companion `GET /api/cards/:oracleId/prices` (`GET /api/health` remains the non-product health check); `ASK_AI_PROVIDER=mock` local dev works unchanged with no runtime network call. The added route amends the one-endpoint rule (NFR-004)
+  - the product-facing routes are `POST /api/ask-ai`, `GET /api/cards/:oracleId`, and the read-only price companion `GET /api/cards/:oracleId/prices` (`GET /api/health` remains the **non-product** health check, and stays non-product even though the Trade Balancer now pings it once when the view opens as a warm-up carrying no product data in either direction, REQ-064); `ASK_AI_PROVIDER=mock` local dev works unchanged with **no runtime network call to any external provider** — the warm-up ping is an in-app request to this same backend, is fire-and-forget, and is a no-op when no backend is running. The added route amends the one-endpoint rule (NFR-004)
 - Constraints:
   - commit only the trimmed artifact, matching the existing `apps/backend/data/*.json` pattern
   - the card-detail route and the price companion are read-only `GET`s keyed by oracle id; the price companion is the product's third product-facing endpoint, authorized by amending the one-endpoint rule (canonical: NFR-004)

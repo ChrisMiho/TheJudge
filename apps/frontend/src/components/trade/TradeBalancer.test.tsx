@@ -52,6 +52,11 @@ function makeFetchMock(
     if (url.includes("/data/cardMetadata.json")) {
       return Promise.resolve(jsonResponse(metadata));
     }
+    // REQ-064: the mount-time warm-up ping the balancer now fires alongside
+    // the cardMetadata load.
+    if (url.endsWith("/api/health")) {
+      return Promise.resolve(jsonResponse({ ok: true }));
+    }
     const match = url.match(/\/api\/cards\/([^/]+)\/prices$/);
     if (match) {
       const oracleId = decodeURIComponent(match[1]);
@@ -132,6 +137,38 @@ describe("Frontend - Trade", () => {
     afterEach(() => {
       vi.unstubAllGlobals();
       vi.clearAllMocks();
+    });
+
+    it("E1: issues exactly one GET <apiBaseUrl>/api/health warm-up call on mount, alongside cardMetadata", async () => {
+      const fetchMock = makeFetchMock();
+      vi.stubGlobal("fetch", fetchMock);
+
+      await renderBalancer();
+
+      const healthCalls = fetchMock.mock.calls.filter((call) => String(call[0]).endsWith("/api/health"));
+      expect(healthCalls).toHaveLength(1);
+    });
+
+    it("E2: a rejected warm-up call produces no UI change, no thrown error, and leaves search available", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn((input: RequestInfo | URL) => {
+          const url = String(input);
+          if (url.includes("/data/cardMetadata.json")) {
+            return Promise.resolve(jsonResponse(cardMetadata));
+          }
+          if (url.endsWith("/api/health")) {
+            return Promise.reject(new Error("backend not running"));
+          }
+          return Promise.reject(new Error(`Unhandled fetch in test: ${url}`));
+        })
+      );
+
+      await renderBalancer();
+
+      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Even trade");
+      expect(screen.getByLabelText("Side A card search")).not.toBeDisabled();
+      expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
     it("shows a loading state for the card list, then an even trade with no snapshot line yet", async () => {
