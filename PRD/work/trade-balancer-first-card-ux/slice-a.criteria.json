@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "finalizePriceTransformState sorts each oracle's printings by released_at descending, then numeric-aware collector number, then printing id",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "node --test scripts/build-card-detail-by-oracle-id\\.test\\.mjs",
         "paths": ["scripts/build-card-detail-by-oracle-id.mjs", "scripts/build-card-detail-by-oracle-id.test.mjs"]
@@ -14,7 +14,7 @@
     {
       "id": "A2",
       "statement": "A printing with a missing or unparseable released_at sorts last",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "node --test scripts/build-card-detail-by-oracle-id\\.test\\.mjs",
         "paths": ["scripts/build-card-detail-by-oracle-id.test.mjs"]
@@ -23,7 +23,7 @@
     {
       "id": "A3",
       "statement": "buildPriceEntry's emitted field set is unchanged: id, set, setName, collectorNumber, usd, usdFoil, with no releasedAt field",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "node --test scripts/build-card-detail-by-oracle-id\\.test\\.mjs",
         "paths": ["scripts/build-card-detail-by-oracle-id.mjs"]
@@ -32,7 +32,7 @@
     {
       "id": "A4",
       "statement": "scripts/lambda-package-budget.test.mjs still passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "node --test scripts/lambda-package-budget\\.test\\.mjs"
       }
@@ -40,7 +40,7 @@
     {
       "id": "A5",
       "statement": "REQ-066 in PRD/sections/functional-requirements.md is amended per the GATE-QUESTIONS.md REQ-066 block, re-derived against live text",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["PRD/sections/functional-requirements.md"]
       }
@@ -48,7 +48,7 @@
     {
       "id": "A6",
       "statement": "npm run test:scripts is green",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }

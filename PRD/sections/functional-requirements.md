@@ -1510,9 +1510,10 @@
 - Acceptance Criteria:
   - the price/printing projection is emitted by the **existing card-detail build** (`scripts/build-card-detail-by-oracle-id.mjs`), which trims `default-cards.json` once and emits both the card-detail map and the price map; the separate `scripts/build-card-prices.mjs` is retired and no fourth extract of `default-cards.json` is added
   - the committed price artifact is **backend-only**, brotli-compressed (`apps/backend/data/cardPrintingPricesByOracleId.json.br`), keyed by **oracle id**; per oracle it carries the card's list of printings, each with printing id, set code, set name, collector number, `usd` (non-foil), and `usd_foil`; it records a **snapshot date**. Card name and image url are **not** stored per printing — name comes from the shared `cardMetadata` index (REQ-174) and image url is derived from the printing id (Scryfall template)
+  - each card's printings are emitted **newest release first** — Scryfall `released_at` descending, then collector number (numeric-aware, ascending), then printing id as a deterministic final tiebreak; a printing with a missing or unparseable release date sorts last. This order is part of the artifact and wire contract, so the picker and any default printing read newest-first with no client-side sort. `released_at` is a **build-time sort key only** and is not emitted: the per-printing field set, the artifact's size, and the route's wire response are unchanged
   - the backend brotli-decodes the committed price map into memory once at startup and serves one card's printings on demand (REQ-175) with **no runtime network call**, exactly like `cardDetailByOracleId.json.br`; the former `apps/frontend/public/data/cardPrintingPrices.json` is deleted and is no longer downloaded up front
   - the committed backend price map keeps the Lambda deployment inside AWS's **250 MB unzipped quota**: `scripts/lambda-package-budget.test.mjs` passes with the price map bundled (the whole `apps/backend/data/` folder ships in the Lambda zip), and the build records the measured price-map size so the budget headroom stays visible
-  - a scanned printing prices directly (its oracle resolves via the scan map, then the card's fetched printing list is matched by printing id); the manual picker lists every printing of a card from the fetched list
+  - a scanned printing prices directly (its oracle resolves via the scan map, then the card's fetched printing list is matched by printing id); the manual picker lists every printing of a card from the fetched list, in that emitted newest-first order
   - missing prices are stored as null/absent (consumed as $0 + caution per REQ-065)
   - `npm run data:build` regenerates the artifact from local inputs; `npm run data:refresh` refreshes the Scryfall bulk source (download is human-approved before it runs) then rebuilds
   - the build degrades gracefully: a missing/failed source keeps the prior committed artifact and does not break other artifact builds
@@ -1530,6 +1531,7 @@
 - Notes:
   - source-bulk choice and the exact filter/field set are build-time details validated by outcome (every priced gameplay printing present, prices display correctly); `all-cards` (every language) is unnecessary because prices are per printing
   - the freshness script's price **target artifact** changes from the deleted frontend file to the backend map; re-pointing it is a later change tracked by the freshness track, not resolved here
+  - the committed artifact takes the newest-first order at its next rebuild (`npm run data:build`, or the weekly `npm run data:refresh-pr`, REQ-195), since the raw Scryfall bulk source is gitignored and lives only in the owner's checkout. Until that rebuild the served order is the previous one; the picker is unaffected because the player chooses the printing rather than accepting a default
 
 ### REQ-067
 - Title: Feature portal — top-level app navigation

@@ -1,6 +1,6 @@
 # Slice A — Build-time newest-first printing order
 
-## Status: planned
+## Status: done
 
 ## Goal
 
