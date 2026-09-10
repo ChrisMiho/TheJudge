@@ -143,6 +143,110 @@ test("transformCardPrintingPrices keeps every printing of an oracle even though 
   assert.equal(cardPrintingPricesByOracleId.byOracleId["test-oracle-id"].printings.length, 2);
 });
 
+// A1/A2/A3: newest-release-first printing order, decided at build time.
+
+test("A1: transformCardPrintingPrices sorts printings by released_at descending, then collector number, then id", () => {
+  const cards = [
+    scryfallPrinting({
+      id: "aaaaaaaa-0000-0000-0000-000000000003",
+      collector_number: "5",
+      released_at: "2019-06-01"
+    }),
+    scryfallPrinting({
+      id: "aaaaaaaa-0000-0000-0000-000000000001",
+      collector_number: "10",
+      released_at: "2022-01-01"
+    }),
+    scryfallPrinting({
+      id: "aaaaaaaa-0000-0000-0000-000000000002",
+      collector_number: "2",
+      released_at: "2022-01-01"
+    })
+  ];
+
+  const { cardPrintingPricesByOracleId } = transformCardPrintingPrices(cards, "2026-09-09T00:00:00.000Z");
+  const printings = cardPrintingPricesByOracleId.byOracleId["test-oracle-id"].printings;
+
+  // Newest release first: both 2022 printings before the 2019 one.
+  // Among the two 2022 printings (same released_at), collector "2" before "10"
+  // (numeric-aware — a plain string compare would put "10" first).
+  assert.deepEqual(
+    printings.map((printing) => printing.id),
+    [
+      "aaaaaaaa-0000-0000-0000-000000000002",
+      "aaaaaaaa-0000-0000-0000-000000000001",
+      "aaaaaaaa-0000-0000-0000-000000000003"
+    ]
+  );
+});
+
+test("A1: ties on released_at and collector number fall back to printing id as a deterministic tiebreak", () => {
+  const cards = [
+    scryfallPrinting({
+      id: "aaaaaaaa-0000-0000-0000-000000000002",
+      collector_number: "1",
+      released_at: "2022-01-01"
+    }),
+    scryfallPrinting({
+      id: "aaaaaaaa-0000-0000-0000-000000000001",
+      collector_number: "1",
+      released_at: "2022-01-01"
+    })
+  ];
+
+  const { cardPrintingPricesByOracleId } = transformCardPrintingPrices(cards, "2026-09-09T00:00:00.000Z");
+  const printings = cardPrintingPricesByOracleId.byOracleId["test-oracle-id"].printings;
+
+  assert.deepEqual(
+    printings.map((printing) => printing.id),
+    ["aaaaaaaa-0000-0000-0000-000000000001", "aaaaaaaa-0000-0000-0000-000000000002"]
+  );
+});
+
+test("A2: a printing with a missing or unparseable released_at sorts last", () => {
+  const cards = [
+    scryfallPrinting({ id: "aaaaaaaa-0000-0000-0000-000000000001", released_at: "not-a-date" }),
+    scryfallPrinting({ id: "aaaaaaaa-0000-0000-0000-000000000002", released_at: "2020-01-01" })
+  ];
+  delete cards[0].released_at;
+
+  const { cardPrintingPricesByOracleId } = transformCardPrintingPrices(cards, "2026-09-09T00:00:00.000Z");
+  const printings = cardPrintingPricesByOracleId.byOracleId["test-oracle-id"].printings;
+
+  assert.deepEqual(
+    printings.map((printing) => printing.id),
+    ["aaaaaaaa-0000-0000-0000-000000000002", "aaaaaaaa-0000-0000-0000-000000000001"]
+  );
+});
+
+test("A2: an unparseable (non-empty garbage) released_at also sorts last, not first", () => {
+  const cards = [
+    scryfallPrinting({
+      id: "aaaaaaaa-0000-0000-0000-000000000001",
+      collector_number: "1",
+      released_at: "not-a-real-date"
+    }),
+    scryfallPrinting({
+      id: "aaaaaaaa-0000-0000-0000-000000000002",
+      collector_number: "2",
+      released_at: "2018-05-01"
+    })
+  ];
+
+  const { cardPrintingPricesByOracleId } = transformCardPrintingPrices(cards, "2026-09-09T00:00:00.000Z");
+  const printings = cardPrintingPricesByOracleId.byOracleId["test-oracle-id"].printings;
+
+  assert.deepEqual(
+    printings.map((printing) => printing.id),
+    ["aaaaaaaa-0000-0000-0000-000000000002", "aaaaaaaa-0000-0000-0000-000000000001"]
+  );
+});
+
+test("A3: buildPriceEntry's emitted field set is exactly id, set, setName, collectorNumber, usd, usdFoil — no releasedAt", () => {
+  const entry = buildPriceEntry(scryfallPrinting({ released_at: "2020-01-01" }));
+  assert.deepEqual(Object.keys(entry).sort(), ["collectorNumber", "id", "set", "setName", "usd", "usdFoil"].sort());
+});
+
 test("resolveSnapshotDate falls back to the build date when no meta sidecar or input file exists", () => {
   const now = new Date("2026-09-08T12:00:00.000Z");
   const date = resolveSnapshotDate(

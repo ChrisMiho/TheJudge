@@ -40,7 +40,7 @@ MTG Assistant intentionally keeps context structured but lightweight:
 - optional user question
 - no full legality validation (canonical rule: `goals-and-non-goals.md` Scope Notes)
 
-Beyond MTG Assistant, the suite includes a shipped standalone **Card Trade Balancer**: an ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via the feature-portal Menu (DEC-095). Prices come from a read-only backend fetch (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175) made only when a card is added; it makes no change to `AskAiRequest`, `GameContext`, prompt assembly, or `POST /api/ask-ai`.
+Beyond MTG Assistant, the suite includes a shipped standalone **Card Trade Balancer**: an ephemeral two-sided card-value comparison (static-snapshot USD prices, per-entry printing + foil + quantity), reached via the feature-portal Menu (DEC-095). Prices come from a read-only backend fetch (`GET /api/cards/:oracleId/prices`, REQ-066/REQ-175) made once per card — when the player taps its search suggestion, or when a scanned card is added (REQ-065, FLOW-025) — plus one fire-and-forget warm-up ping to the existing `GET /api/health` when the screen opens, which carries no product data and adds no endpoint (REQ-064); it makes no change to `AskAiRequest`, `GameContext`, prompt assembly, or `POST /api/ask-ai`.
 
 A planned backend-only Commander Spellbook integration adds tightly gated community combo context to existing In-Depth and Quick Question prompts: complete submitted identity/zone matches may enrich automatically, while partial combos appear only for explicit combo questions and must call out missing pieces (DEC-116). It adds no visible combo surface, endpoint, or runtime upstream dependency.
 

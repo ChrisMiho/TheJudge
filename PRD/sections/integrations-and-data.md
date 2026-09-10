@@ -151,8 +151,9 @@ Purpose:
 ### Endpoint: `GET /api/cards/:oracleId/prices`
 Purpose:
 - serve one card's printings and prices by Scryfall `oracle_id`, read-only, from the committed `cardPrintingPricesByOracleId.json.br` artifact (REQ-066, REQ-175), kept separate from the descriptive block so the card-detail/ask-ai path carries no price bytes
-- back the Trade Balancer's on-add fetch, cached per session (FLOW-025); a known id returns `200 { oracleId, snapshotDate, printings: CardPrintingPrice[] }`, an unknown id returns `404 { error: "card_not_found" }`
+- back the Trade Balancer's per-card fetch — on a manual search when the player taps that card's search suggestion, before the card is added; on a scan when the card is added — cached per session (REQ-065, FLOW-025); a known id returns `200 { oracleId, snapshotDate, printings: CardPrintingPrice[] }`, an unknown id returns `404 { error: "card_not_found" }`
 - each `CardPrintingPrice` carries `id` (Scryfall printing id — the frontend derives the image url from it), `set`, `setName`, `collectorNumber`, `usd` (non-foil, `number | null`), `usdFoil` (`number | null`); card name is not repeated per printing — the frontend takes it from the shared `cardMetadata` index (REQ-174)
+- `printings` arrives **newest release first** — the order the committed artifact was built in (`released_at` descending, then collector number, then printing id; REQ-066). The order is part of the contract and the client does not re-sort; no release-date field is carried on the wire
 - the product's third product-facing endpoint, permitted alongside `POST /api/ask-ai` and `GET /api/cards/:oracleId` by the one-endpoint rule (canonical: NFR-004, BLOCK-01 = A)
 
 ### Optional Endpoint: `GET /api/health`
@@ -160,6 +161,7 @@ Purpose:
 - local development checks
 - deployment health checks
 - uptime verification
+- the Trade Balancer's fire-and-forget warm-up ping when the screen opens, so the backend's cold start overlaps the card-list download instead of the first card's price fetch (REQ-064). No product data travels in either direction, the response is discarded, and a failure is ignored
 
 ## API Contracts
 
@@ -313,13 +315,13 @@ involve the backend, `POST /api/ask-ai`, or any prompt assembly.
 
 ## Trade Balancer Data Strategy
 
-The Trade Balancer is an optional, standalone, ephemeral feature outside the Decrypt-Stack core loop. It makes no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or `POST /api/ask-ai` — its only backend traffic is the read-only price route `GET /api/cards/:oracleId/prices` (REQ-066, REQ-175), which the question/RAG flow never touches.
+The Trade Balancer is an optional, standalone, ephemeral feature outside the Decrypt-Stack core loop. It makes no change to `AskAiRequest`, `GameContext`, prompt assembly, the provider boundary, or `POST /api/ask-ai` — its only product backend traffic is the read-only price route `GET /api/cards/:oracleId/prices` (REQ-066, REQ-175), which the question/RAG flow never touches, plus one fire-and-forget warm-up ping to the existing `GET /api/health` when the screen opens, which carries no product data and adds no endpoint (REQ-064).
 
 - pricing uses a committed, printing-level static price artifact, backend-only under `apps/backend/data/` (`cardPrintingPricesByOracleId.json.br`), built in the same pass as the card-detail build (`scripts/build-card-detail-by-oracle-id.mjs`, unified — no separate build script) alongside `data:build` / `data:refresh` (REQ-066)
-- per printing the artifact carries: printing id, set code, set name, collector number, `usd` (non-foil), and `usd_foil` — no card name or image url per printing (name comes from the shared `cardMetadata` index, REQ-174; image derives from the printing id); entries are indexable by oracle id (list a card's printings for the manual picker) and matched by printing id (a scanned printing prices directly)
+- per printing the artifact carries: printing id, set code, set name, collector number, `usd` (non-foil), and `usd_foil` — no card name or image url per printing (name comes from the shared `cardMetadata` index, REQ-174; image derives from the printing id); entries are indexable by oracle id (list a card's printings for the manual picker, newest release first per REQ-066) and matched by printing id (a scanned printing prices directly)
 - missing `usd`/`usd_foil` values are stored as null/absent and consumed as a $0 contribution with a distinct color and caution-triangle indicator in the UI (REQ-065)
 - the artifact records a snapshot date; prices are a static build-time snapshot with **no runtime price fetch and no runtime sync** — refreshed only via the human-approved `data:refresh` then `data:build` (DEC-012 posture, NFR-013)
-- there is no up-front frontend download: a card's printings and prices are fetched from the backend only when that card is added to a trade side, cached per session (FLOW-025); users who never open the balancer pay no startup cost, and the balancer's only up-front frontend cost is the shared `cardMetadata` index (NFR-013)
+- there is no up-front frontend download: a card's printings and prices are fetched from the backend once per card — when its search suggestion is tapped, or when a scanned card is added — and cached per session (FLOW-025); users who never open the balancer pay no startup cost, and the balancer's only up-front frontend cost is the shared `cardMetadata` index (NFR-013)
 - raw downloaded bulk data remains gitignored; only the trimmed, brotli-compressed price artifact is committed
 - a side total is `Σ qty × (foil ? usd_foil : usd)`; USD only (EUR/tix/etched-foil and grading/condition out of scope for v1)
 - input reuses the existing scan resolver (DEC-053, REQ-036) and manual card search (DEC-012); the chosen printing is a pricing/display layer only and is never pushed into prompt context, rulings lookup, or the Decrypt-Stack request payload

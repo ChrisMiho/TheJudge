@@ -146,14 +146,56 @@ export function createDetailTransformState() {
   };
 }
 
+/** A1/A2: `released_at` is read here only to sort — it rides alongside the
+ * entry in `printingsByOracleId` (never inside `buildPriceEntry`'s own
+ * return) so `finalizePriceTransformState` can order printings newest-first
+ * without ever emitting the field. */
+function parseReleasedAtMs(card) {
+  const raw = card?.released_at;
+  if (typeof raw !== "string") return null;
+  const time = Date.parse(raw);
+  return Number.isNaN(time) ? null : time;
+}
+
 function ingestPriceEntry(state, oracleId, card) {
-  const entry = buildPriceEntry(card);
+  const wrapper = { entry: buildPriceEntry(card), releasedAtMs: parseReleasedAtMs(card) };
   const existing = state.printingsByOracleId.get(oracleId);
   if (existing) {
-    existing.push(entry);
+    existing.push(wrapper);
     return;
   }
-  state.printingsByOracleId.set(oracleId, [entry]);
+  state.printingsByOracleId.set(oracleId, [wrapper]);
+}
+
+/** A1: numeric-aware ascending collector-number compare — "10" sorts after
+ * "9", not before it as a plain string compare would. A non-numeric
+ * collector number (e.g. a promo suffix) sorts after every numeric one, then
+ * falls back to a plain string compare between two non-numeric values. */
+function compareCollectorNumbers(a, b) {
+  const aMatch = /^(\d+)/.exec(a);
+  const bMatch = /^(\d+)/.exec(b);
+  if (aMatch && bMatch) {
+    const diff = Number(aMatch[1]) - Number(bMatch[1]);
+    if (diff !== 0) return diff;
+    return a.localeCompare(b);
+  }
+  if (Boolean(aMatch) !== Boolean(bMatch)) return aMatch ? -1 : 1;
+  return a.localeCompare(b);
+}
+
+/** A1/A2: released_at descending (newest first), then numeric-aware
+ * collector number ascending, then printing id as a deterministic final
+ * tiebreak. A printing with a missing/unparseable released_at sorts last. */
+function comparePrintingWrappers(a, b) {
+  const aHasDate = a.releasedAtMs !== null;
+  const bHasDate = b.releasedAtMs !== null;
+  if (aHasDate !== bHasDate) return aHasDate ? -1 : 1;
+  if (aHasDate && a.releasedAtMs !== b.releasedAtMs) return b.releasedAtMs - a.releasedAtMs;
+
+  const collectorDiff = compareCollectorNumbers(a.entry.collectorNumber, b.entry.collectorNumber);
+  if (collectorDiff !== 0) return collectorDiff;
+
+  return a.entry.id.localeCompare(b.entry.id);
 }
 
 export function ingestDetailCard(state, card) {
@@ -216,7 +258,9 @@ export function finalizePriceTransformState(state, snapshotDate) {
   let withoutAnyPrice = 0;
 
   for (const oracleId of sortedOracleIds) {
-    const printings = [...state.printingsByOracleId.get(oracleId)].sort((a, b) => a.id.localeCompare(b.id));
+    const printings = [...state.printingsByOracleId.get(oracleId)]
+      .sort(comparePrintingWrappers)
+      .map((wrapper) => wrapper.entry);
     byOracleId[oracleId] = { printings };
     totalPrintings += printings.length;
     for (const printing of printings) {

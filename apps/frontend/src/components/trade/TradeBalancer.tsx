@@ -3,8 +3,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { PageShell } from "../PageShell";
 import { StagedStepHeader } from "../StagedStepHeader";
 import { StepEyebrow } from "../StepEyebrow";
+import { apiBaseUrl } from "../../lib/env";
 import { fetchCardPrintings, type CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
 import {
+  defaultFoilForPrinting,
   difference,
   formatUsd,
   sideTotal,
@@ -131,6 +133,16 @@ export function TradeBalancer(): JSX.Element {
     return () => controller.abort();
   }, []);
 
+  // REQ-064: one fire-and-forget warm-up ping alongside the cardMetadata
+  // load, so a cold backend wakes while the card list downloads and the
+  // player types instead of that wait landing on the first card's price
+  // fetch. Result discarded, errors swallowed, no UI, no state — it never
+  // blocks or fails search, and mock-default local dev with no backend
+  // running is unaffected.
+  useEffect(() => {
+    fetch(`${apiBaseUrl}/api/health`).catch(() => undefined);
+  }, []);
+
   const searchIndex = useMemo(
     () => buildOracleSearchIndex(cardMetadata ?? []),
     [cardMetadata]
@@ -181,10 +193,10 @@ export function TradeBalancer(): JSX.Element {
           ...current,
           [instanceId]: { ...current[instanceId], status: "loaded", printings }
         }));
-        updateEntryOnEitherSide(instanceId, (entry) => ({
-          ...entry,
-          printing: selectPrinting(printings, preferredPrintingId)
-        }));
+        updateEntryOnEitherSide(instanceId, (entry) => {
+          const printing = selectPrinting(printings, preferredPrintingId);
+          return { ...entry, printing, foil: defaultFoilForPrinting(printing) };
+        });
       })
       .catch(() => {
         setEntryMetaById((current) => ({
@@ -260,7 +272,11 @@ export function TradeBalancer(): JSX.Element {
     printing: CardPrintingPrice
   ): void {
     setSideEntries(sideId, (entries) =>
-      updateEntries(entries, instanceId, (entry) => ({ ...entry, printing }))
+      updateEntries(entries, instanceId, (entry) => ({
+        ...entry,
+        printing,
+        foil: defaultFoilForPrinting(printing)
+      }))
     );
   }
 

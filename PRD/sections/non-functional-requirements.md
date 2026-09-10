@@ -204,11 +204,11 @@
 - Title: Trade-price data footprint and freshness
 - Description: The printing-level price data (REQ-066) must not cost users who never open the Trade Balancer, and its static-snapshot nature must be honest and clearly bounded. Prices are served from a committed backend artifact on demand (REQ-175), not downloaded up front.
 - Constraints:
-  - there is no up-front price download: the ~38 MB frontend price file is removed, and a card's prices are fetched from the backend only when that card is added, cached per session (FLOW-025). App startup and the MTG Assistant flow are unaffected, and the balancer's only up-front frontend cost is the slim shared `cardMetadata` index (REQ-174)
+  - there is no up-front price download: the ~38 MB frontend price file is removed, and a card's prices are fetched from the backend once per card — when its search suggestion is tapped, or when a scanned card is added — and cached per session (REQ-065, FLOW-025). App startup and the MTG Assistant flow are unaffected, and the balancer's only up-front frontend cost is the slim shared `cardMetadata` index (REQ-174); the warm-up ping on open (REQ-064) downloads no data
   - prices are a static build-time snapshot: no runtime price fetch, no runtime sync, and no automated/scheduled refresh; the committed snapshot is refreshed only through the human-approved data pipeline (`data:refresh` then `data:build`)
   - "no runtime price fetch" means no live/external price lookup; the on-demand backend read serves the committed snapshot from memory with no external network call, exactly like the card-detail route (REQ-175)
   - the artifact records a snapshot date, and the UI may surface it so users understand prices are point-in-time, not live
-  - per-card fetch and pricing must stay within a mobile-friendly budget and must not block or jank the trade UI; the on-demand fetch shows a brief in-place loading state and degrades to $0-plus-caution with retry on failure (FLOW-025)
+  - per-card fetch and pricing must stay within a mobile-friendly budget and must not block or jank the trade UI; the on-demand fetch shows a brief loading state — in the printing picker on the manual-search path, in place on the entry on the scan path — and degrades to $0-plus-caution with retry on failure (REQ-065, FLOW-025)
   - USD-only price fields (`usd`, `usd_foil`); no live market integration
 - Dependencies:
   - REQ-066
@@ -220,7 +220,7 @@
 - Notes:
   - the trade balancer is an optional top-level feature; like scanning, its data budget is scoped to users who actually use it
   - moving pricing to the backend (this reframing) reverses the frontend-only posture of the retired DEC-087; the freshness script's price target artifact moves to the backend map, re-pointed later by the freshness track
-  - free-tier posture: deleting the ~38 MB first-open download removes that S3/CloudFront egress; the per-card price fetch adds only tiny reads (a handful of KB and a Lambda invocation per card added), well inside the free-tier request allowance at trade-balancer volumes. The backend price map adds ~15-20 MB (estimate; measured at build) to the Lambda bundle, kept inside the 250 MB quota by the budget test (REQ-066)
+  - free-tier posture: deleting the ~38 MB first-open download removes that S3/CloudFront egress; the per-card price fetch adds only tiny reads (a handful of KB and a Lambda invocation per card looked up), plus one empty health-check invocation each time the balancer screen opens (REQ-064), well inside the free-tier request allowance at trade-balancer volumes. The backend price map adds ~15-20 MB (estimate; measured at build) to the Lambda bundle, kept inside the 250 MB quota by the budget test (REQ-066)
 
 ### NFR-014
 - Title: Route-level code splitting and initial-payload posture
