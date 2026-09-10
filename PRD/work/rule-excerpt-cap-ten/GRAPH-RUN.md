@@ -86,3 +86,4 @@ Report back: the commit hash(es) on the branch, the list of files created, the `
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "lets increase the cap to 10" | answered-once | shape | — |
+| "Raise the deployed System 3 rule-excerpt cap from 5 to 10" | answered-once | shape | — |
