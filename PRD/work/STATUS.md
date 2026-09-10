@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rule-excerpt-cap-ten](rule-excerpt-cap-ten/) | gate-qc loop 1 fix 2026-09-09: the appendix disposition reasons were re-checked against every cited `PRD/sections/` line and 59 wrong reasons corrected (the 8 flagged plus 51 more found in the same pass); no `amend` row, no `GATE-QUESTIONS.md` diff, and no `PRD/sections/` file changed |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| [rule-excerpt-cap-ten](rule-excerpt-cap-ten/) | gate-qc FAIL 2026-09-09: DESIGN-BRIEF.md's amendment-set appendix mislabels 8 disposition reasons ("Commander Spellbook combo-variant cap of five" pasted onto layout-cap, REQ-167 attach-limit, deploy-artifact-size, and cap-agnostic eval-instrument lines that aren't combo-variant at all); no amend slot is missing, but the disposition table is not agent-trustworthy as written |
 
 ## ideation
 
