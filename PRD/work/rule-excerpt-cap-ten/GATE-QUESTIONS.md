@@ -54,8 +54,8 @@ measured two-case gain on hard questions is not taken.
 +  - System 3's scoring mechanism moves from lexical-only to semantic-primary with lexical fallback under REQ-181; the section's placement and System 2 deduplication are unchanged. The cap moved from five excerpts to ten (2026-09-09, `rule-excerpt-cap-ten`) on the measured result that the deployed model `gpt-4.1` scored 16/18 on the worked-solution gold set at five and 18/18 at ten, at unchanged answer latency (REQ-190)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -102,8 +102,8 @@ is right, in either direction.
 +  - a digestible before/after relevance report is available for tuning review (one table per scenario: System 2 topics selected, System 3 top-10 with scores, recall hit/miss); may be a script output or harness report artifact
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -127,8 +127,8 @@ product no longer has, and the two requirements contradict each other.
 +  - the assembled prompt text is unchanged by this requirement: card oracle text still renders in its own card sections exactly as today, and the supplemental section still carries up to 10 excerpts
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -166,8 +166,8 @@ shipped product.
 +  - System 3 is capped at 10 excerpts, still deduplicated against the curated System 2 selection by rule-number prefix (REQ-179)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -207,8 +207,8 @@ silently ships a worse product.
 +  - the cap moved from 5 to 10 excerpts on 2026-09-09 (`rule-excerpt-cap-ten`) on REQ-190's run-3 measurement, which is model-dependent: the deployed `gpt-4.1` improved 16 → 18 fully correct of 18, while the smaller `gpt-4.1-mini` regressed 17 → 15 and `gpt-5-nano` 15 → 13 — extra lower-ranked excerpts distract a smaller model more than they inform it. If the deployed answer model is ever changed to a smaller one, this cap is re-decided in the same package, not inherited
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -235,8 +235,8 @@ today's number.
 +  - measured 2026-09-07: the gold set holds 18 cases (6 pre-existing plus 12 seeded at build), all tier 1 or tier 2, each carrying a `workedSolution`, a `tier`, a `source` block with the citation its tier requires, a non-empty `whyHard`, and at least one expected rule id; `npm run eval:worked-solutions` reported 14/18 retrieved at the then-production cap of five — the four misses (three tier-2 card-ruling cases and one tier-1 combat-damage case) are expected and recorded, not corrected, since REQ-190 notes tier-2 cases are not known to be retrieval-saturated and a miss here is a concrete signal for tuning, never a build failure (that first measurement asked the bare question and ranked lexically; re-measured 2026-09-07 after the check gained production fidelity — card attached, question embedded by the local provider, 18/18 ranked semantically — it was still 14/18 at cap 5 with the same four misses, matching answer-quality run 3's per-prompt `goldRuleInPrompt`, and `EMBEDDING_PROVIDER=mock` reproduces the lexical 14/18); the production cap moved to ten on 2026-09-09 (`rule-excerpt-cap-ten`), so the default run now reports 16/18 retrieved, the two added cases being 510.1c and 113.7a and the two remaining misses being tier-2 cases whose attached ruling answers them anyway (re-recorded at build); 31 eval fixtures exist, 10 carry an `expected` block, and 0 carry an answer; the committed rule index `apps/backend/data/gameRulesRuleIndex.json` holds 277 `Example:` lines across 215 of its 2,873 rule entries and the committed rulings index holds 76,605 rulings over 19,542 cards — the two official pools the tiers draw from, both already committed and both already served in production
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -261,8 +261,8 @@ against the wrong leg.
 +  - measured 2026-09-07 (three live runs, $0.67 / $0.69 / $0.63 actual against the ≈$2.50 estimate — the gpt-5 judge's reasoning output was far smaller than assumed): the first two runs passed no query embedding and attached no card, so both ranked lexically under a `local` label and the three tier-2 prompts carried no ruling; the prompt-fidelity criterion above was added and the run repeated. Run 3 (the committed baseline, `gitCommit b3f860f`, semantic for all 18 cases): fully correct of 18 at cap 5 / cap 10 — `gpt-4.1-mini` 17 / 15, `gpt-4.1` 16 / 18, `gpt-5-mini` 17 / 18, `gpt-5-nano` 15 / 13; mean latency `gpt-4.1` 3.4–3.5 s, `gpt-4.1-mini` 4.3–5.5 s, `gpt-5-mini` 13.5–20.7 s, `gpt-5-nano` 22.9–27.7 s; mean blind rank `gpt-4.1` 1.8, `gpt-5-mini` 1.9, `gpt-4.1-mini` 2.7–2.9, `gpt-5-nano` 3.3–3.6. The deployed model is `gpt-4.1` (`scripts/aws-deploy.sh` sets `OPENAI_MODEL`), and this run is what moved the deployed cap from five to ten on 2026-09-09 (`rule-excerpt-cap-ten`, REQ-190), so its cap-10 row is today's product and its cap-5 row is the superseded baseline. Full record: the `ai-answer-quality-baseline` package's slice E doc, promoted to its receipt at cleanup
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -341,8 +341,8 @@ with it.
 +  - measured 2026-09-07 (run 3 of the answer-quality baseline, semantic ranking, tier-2 cards attached — REQ-188's measurement note): the gold rule reached the prompt for 14 of 18 cases at cap 5 and 16 of 18 at cap 10; the two cases cap 10 adds are 510.1c (`combat-damage-assignment-order-multiple-blockers`, rank 7) and 113.7a (`sensei-top-leaves-battlefield-ability-on-stack`), and the two never reached at either cap are tier-2 cases whose attached ruling answers them anyway. On the combat-damage case, cap 5 had `gpt-4.1` at Correctness 1 and `gpt-5-mini` at 0 (both reasoning from the pre-2024 lethal-first rule) and cap 10 had every model at 2. Net per model, cap 5 → cap 10 fully correct: `gpt-4.1` 16 → 18, `gpt-5-mini` 17 → 18, `gpt-4.1-mini` 17 → 15, `gpt-5-nano` 15 → 13 — recall gain for the larger models, distraction loss for the smaller ones, at unchanged latency for `gpt-4.1` (3.4 → 3.5 s). This is the recorded run the deployed-cap criterion above asked for, and it was acted on: the `rule-excerpt-cap-ten` package raised the deployed cap to 10 on 2026-09-09, amending REQ-022, REQ-032, REQ-178, REQ-181, REQ-182, REQ-185, REQ-188, NFR-018 and the affected system-map and feature-spec text alongside this requirement. The model-dependence is the standing caveat, recorded on REQ-182: ten is right for `gpt-4.1` and wrong for the smaller models measured here
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -366,8 +366,8 @@ cap the product no longer runs.
 +  - Measured 2026-09-07 (build): the gold set grew from 6 to 18 committed cases (REQ-185) while this amendment landed. `npm run eval:worked-solutions` reported 14/18 retrieved at the then-current System 3 top five, and the retrieval half of this track is therefore no longer fully saturated the way the original six cases were — the misses are recorded as a concrete tuning signal, never corrected to make the number look better, and never a build failure. Re-recorded 2026-09-09 (`rule-excerpt-cap-ten`): the System 3 cap moved to ten, so the default run reports 16/18 retrieved and two tier-2 misses remain, each answered by its attached ruling regardless.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -404,8 +404,8 @@ exists, and it is the first file anyone reads.
 +- Summary: On-demand, confirmation-gated run that asks each model in a configured lineup every gold case and scores the returned answer against that case's published solution — deterministic assertions, a reference-grounded judge model stronger than every contestant, scoring alone and ranking blind side by side over four 0–2 axes, then a human review pass. Never in `quality:check`, never asserted against a golden, never a build gate. Answers each case once per System 3 excerpt cap so the deployed ten-excerpt limit can be compared against a larger one on the same questions; production is ten, and the run's default legs are ten and fifteen. Writes a small committed scores file and gitignored transcripts.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -429,8 +429,8 @@ actually sent.
 +- up to 10 supplemental WotC CR rule excerpts dynamically retrieved from the committed rule index artifact, ranked by a hybrid blend of normalised cosine against the committed per-rule embeddings and normalised lexical IDF overlap, with the exact-rule-id boost merged into the blended score and lexical scoring alone retained as the mock/offline default and failure fallback (DEC-046, REQ-181, REQ-182), from a query built from the question plus each card's name, type line, and keywords rather than its full oracle text (REQ-178), and deduplicated by rule-number prefix against selected System 2 baseline rule numbers (REQ-179)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -459,8 +459,8 @@ prompt" — is the Commander Spellbook cap and stays at five.
 +- Supplemental rules: up to 10 excerpts (System 3), deduplicated against System 2.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -484,8 +484,8 @@ prompts carry.
 +- Retrieval: System 3 returns a small capped best-ranked set (top 10), curated
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
@@ -528,8 +528,8 @@ rules retrieval teaches the wrong number in four places.
 +- System 3 is capped at ten supplemental excerpts per request (raised from five on 2026-09-09, REQ-190).
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted all 14 slots on 2026-09-10 after a walkthrough in session
 
 ---
 
