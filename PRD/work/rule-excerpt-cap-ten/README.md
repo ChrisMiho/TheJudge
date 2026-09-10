@@ -24,4 +24,4 @@ files — which are applied to `PRD/sections/` at build, never here.
 
 ## Open gate
 
-Answer `GATE-QUESTIONS.md` (14 verdict slots), then merge the docs PR to build.
+Answer `GATE-QUESTIONS.md` (14 verdict slots), then merge the docs PR to build: https://github.com/ChrisMiho/TheJudge/pull/230
