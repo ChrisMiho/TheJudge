@@ -8,7 +8,7 @@
 - Build branch: `thejudge-auto/rule-excerpt-cap-ten-work` (cut from `origin/main` at `c28820b`)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260910-024919/`
 - Build-half canary (2026-09-10, lock retaken via `graph-preflight --take-lock`): `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] This exact call was already denied during this run (`recursive-force-remove`)…"; graph tier: nohup true → "[graph-boundary] This exact call was already denied during this run (`nohup-wrapper`)…")` — both denies came from the hook while the lock was held, which is the proof; the wording differs from the run-start canary because the run id is shared with the spec-forming half and the hook's denial ledger remembers it
-- Current node: `gate-qc` (attempt 3 — re-grade after the resolved `define` gate)
+- Current node: `plan`
 - Next action: driver continues `gate-review → gate-qc → plan → build → review → close`; `land` is the owner's merge of the code PR
 
 ## Node ledger
@@ -23,6 +23,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 22` | attempt 2 PASS, no findings, no commit. Reviewer re-ran the wide grep (266 hits = appendix count) plus named-spelling and extra sweeps (`supplementalRuleCap`, bare `\b5\b`, `6–15`, `maxExcerpts`) — no System 3 cap line without a slot; 32 before-text lines script-extracted and byte-compared, 0 mismatches; "not this cap" reasons spot-checked against cited text (combo-variant, REQ-167 attach, retired DEC-032, recall@5 metric rows) all correct; 14 slots parsed well-formed; `git diff cf55225 0056266 -- GATE-QUESTIONS.md` empty; `git diff --stat origin/main -- PRD/sections` empty; no new DEC/REQ. STATUS stays refined. Run stops here: driver commit `28da373` (README gate PASS + `## Open gate`, STATUS.refined→owner-action, board row refined→owner-action), docs PR https://github.com/ChrisMiho/TheJudge/pull/230 opened `thejudge-auto/rule-excerpt-cap-ten` → `main` | 2026-09-10 |
 | — | claim | driver | ok | `driver-bookkeeping` | build half claimed after docs PR #230 merged at `c28820b`: kickoff worktree clean and removed (`git worktree remove`), `git worktree add .worktrees/implement-rule-excerpt-cap-ten -b thejudge-auto/rule-excerpt-cap-ten-work origin/main`, lock retaken (`graph-preflight --take-lock`, pid 66381), both canaries denied; claim commit `dc5b129` (README base → `origin/main`, ledger header) pushed; marker left at `owner-action` | 2026-09-10 |
 | — | gate-review | sonnet | ok | `0 → 24` | commit `2426986` on `thejudge-auto/rule-excerpt-cap-ten-work` (pushed) — 14/14 verdicts `accept` (0 edit, 0 reject) applied inside `GATE-QUESTIONS.md` (no diff changed); brief reconciliation `none`; `## Gate verdicts` + `## Open gate` resolved line written; STATUS.owner-action→refined, README `status: refined`, board row owner-action→refined; `git status --porcelain` empty; `git diff --stat origin/main -- PRD/sections` empty | 2026-09-10 |
+| 4 | gate-qc | sonnet | ok | `0 → 25` | attempt 3 (build-half re-grade) PASS, no findings, no commit. 266-hit grep reproduced on the build branch (32 amend rows = 14 slots, 234 not-this-cap rows, 0 undisposed); 32 before-text lines byte-identical to `PRD/sections/` (`grep -rFc`, 0 mismatches); 14 blocks well-formed with `- Verdict: accept`; no new DEC; `git diff --stat origin/main -- PRD/sections` empty; brief build-ready (constant flip + tests + `--excerpt-cap` default, no live call). STATUS stays refined; driver rewrote README `## Preparation gate` | 2026-09-10 |
 
 ## Open gate
 
@@ -293,6 +294,35 @@ Boundaries: never edit `PRD/sections/`, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md
 Tool-call cap for this node: 60.
 
 Report back: the verdict (PASS or FAIL) on its own line, the complete findings list (or `none`), the amendment-set grep hit count and any undisposed hit, the before-text verification result, any commit hash, and `git status --porcelain` of the working directory. Outcome word on its own last line: `ok` (verdict delivered) or `failed` (could not deliver a verdict).
+
+### plan
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten
+
+You are node 5 (`plan`) of graph run `graph-20260910-024919`, the build half driven by `graph-implement`. Invoke the `thejudge-map-out` skill in its `graph is controlling` mode and follow it exactly. Read `PRD/instructions/preparation-contract.md` as the skill's Mode section requires, and the skill's own `reference.md` for the slice template, the Ship gates block, and the `slice-<letter>.criteria.json` schema. Work only inside the working directory above — the build worktree on branch `thejudge-auto/rule-excerpt-cap-ten-work`, cut from `origin/main`; never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge`.
+
+Package: `PRD/work/rule-excerpt-cap-ten/`. Its README `## Preparation gate` records `Quality-check: PASS` (attempt 3, 2026-09-10) — verify that line yourself before writing anything; you cannot self-certify it. Read `DESIGN-BRIEF.md` (the design record) and `GATE-QUESTIONS.md` (the finalized product-truth proposal: 14 stable-ID blocks, all `accept`, 32 lines across 7 `PRD/sections/` files).
+
+What the build must deliver, so slice it accordingly:
+1. Code: `DEFAULT_SUPPLEMENTAL_RULE_CAP` in `apps/backend/src/prompt/preparation.ts` moves `5` → `10`, with `preparation.test.ts` cap assertions moved with it (including the proof that a larger cap's leading excerpts equal the smaller cap's and the added slots come from `runnerUp`); the System 3 recall harness checks (`system3-expected-recall`, `system3-noise-excluded`) move to top 10 per the brief's decision; the answer-quality run's `--excerpt-cap` default becomes `[10, 15]`. The brief records an implementation risk: a forbidden rule may already sit at ranks 6–10 in an existing eval fixture and fail `npm run test:eval` — that is a signal to record, never to suppress by relaxing the check; write the slice so the builder reports it rather than hides it.
+2. Product truth: apply the finalized `GATE-QUESTIONS.md` diffs to `PRD/sections/` by intent against current truth (never a blind replay), in the same slice as the code, so the PR carries both. Every before-text line was verified byte-identical, so an unchanged file should apply cleanly; a mismatch is reported, not forced.
+3. Verification: the repo's test and quality commands (`npm run quality:check` or its parts, `npm run test:eval` where the recall harness lives) as acceptance criteria with `evidence` blocks the hook can match. No live provider call is part of any slice; the eval run stays confirmation-gated and is not executed.
+
+Keep it small: one slice is expected, two at most (code + truth together; the recall-harness/eval-default change may be its own slice if that reads cleaner). No browser-observable risk — no Playwright criteria needed.
+
+Outputs: `GAMEPLAN.md`, `slice-<letter>-*.md` with a `slice-<letter>.criteria.json` beside each (every criterion `false`, each with an `evidence` block), README slice table + implementation map + `status: active`, marker `STATUS.refined` → `STATUS.active` (exactly one), board row `## refined` → `## active` in `PRD/work/STATUS.md` (remove from old, add to new). The final slice carries the PRD promotion checklist and the Ship gates block.
+
+Commit on the branch with explicit paths only (`git add <path> ...`; never `git add -A`, `--all`, or `.`) and push with `git push -u origin thejudge-auto/rule-excerpt-cap-ten-work`. Do not touch `GRAPH-RUN.md` or the README's `## Preparation gate` / `## Autonomous metadata` sections — the driver owns them.
+
+Copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten` unchanged, on its own line, into every prompt you write for any subagent of your own.
+
+Boundaries: never write product code or edit `PRD/sections/`; never edit `DESIGN-BRIEF.md` or `GATE-QUESTIONS.md`; never edit any `thejudge-*` skill, `CLAUDE.md`, or `.claude/settings*.json`; never force-push; never push `main`; never merge or close a PR; no `nohup` or background `&`; no live provider calls; a denied call is never retried.
+
+Tool-call cap for this node: 120.
+
+Report back: the commit hash, the slice table (letter, title, dependencies), the criteria count per slice, and `git status --porcelain` of the working directory (expected empty). Outcome word on its own last line: `ok` or `failed`.
 
 ## Instruction ledger
 

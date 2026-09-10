@@ -20,7 +20,7 @@ files — which are applied to `PRD/sections/` at build, never here.
 
 - Quality-check: PASS
 - Checked artifact: `PRD/work/rule-excerpt-cap-ten/DESIGN-BRIEF.md`
-- Findings: none (attempt 2, 2026-09-10 — after define loop 1 corrected 59 appendix disposition reasons; reviewer re-ran the 266-hit grep, byte-compared all 32 before-text lines, spot-checked the "not this cap" reasons against cited line text, confirmed 14 well-formed slots, no new DEC or REQ, `PRD/sections/` unedited; attempt 1 FAILed on the 8 mislabelled reasons now corrected)
+- Findings: none (attempt 3, 2026-09-10 — build-half re-grade after the owner accepted all 14 slots and `graph-gate-review` resolved the gate with no edit or reject; reviewer re-ran the 266-hit grep on the build branch with 0 undisposed hits, byte-compared all 32 before-text lines against `PRD/sections/` with 0 mismatches, confirmed 14 well-formed `accept` slots, no new DEC or REQ, `git diff --stat origin/main -- PRD/sections` empty, and the brief build-ready with no live provider call needed; attempts 1–2 were the spec-forming half's FAIL/PASS)
 
 ## Open gate
 
