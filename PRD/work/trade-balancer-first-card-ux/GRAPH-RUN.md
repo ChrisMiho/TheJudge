@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/trade-balancer-first-card-ux` by the build half's claim on 2026-09-09; docs PR #226 merged as `db18188`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-first-card-ux` (build half, branch `thejudge-auto/trade-balancer-first-card-ux-work` cut from `origin/main`; the kickoff worktree `.worktrees/kickoff-trade-balancer-first-card-ux` was clean and removed at claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260909-213550/` (one file, `GRAPH-BRIEF.md`, copied verbatim to `PRD/work/trade-balancer-first-card-ux/intake/GRAPH-BRIEF.md` in commit `14f9dfb`; staged copy deleted)
-- Current node: `gate-qc` (attempt 7 — re-grade after the owner resolved the attempt-6 park with a supersession note; build half, driven by `graph-implement`)
+- Current node: `plan` (node 5, `thejudge-map-out`; build half, driven by `graph-implement`)
 - Next action: `/graph-implement PRD/work/trade-balancer-first-card-ux/` (resumes at the node above)
 
 ## Node ledger
@@ -31,6 +31,7 @@
 | 4 | gate-qc (attempt 6) | sonnet | failed | `0 → 29` | FAIL, 1 finding: `intake/GRAPH-BRIEF.md` decision 4 (line 32, keep the player's current toggle otherwise) and the `defaultFoilFor(printing, currentFoil)` helper signature (line 41) still state the foil rule the owner replaced; the README pointer sentence sends map-out to that file for design direction. Clean: `DESIGN-BRIEF.md` foil section, A6, slice B; 56 removed lines verbatim, 0 mismatches; `PRD/sections/` diff empty; 12/12 blocks well-formed with filled verdicts; 11/11 assumptions evidence-backed; constraints testable. Commit `5e6a96e`: `STATUS.refined → STATUS.refining`, board row `## refined → ## refining`. README `## Preparation gate` rewritten FAIL (attempt 6). Past the three-loop limit → park at `owner-action` | 2026-09-09 |
 | — | park | driver | parked | `n/a (driver, no node)` | `STATUS.refining → STATUS.owner-action`; board row `## refining → ## owner-action`; `## Open gate` rewritten with the finding, the intake-is-verbatim constraint, and the recommended resolution; lock released with `.worktrees/.graph-run-release.json` `{"runId":"graph-20260909-213550","state":"PARKED"}`; run-state file deleted | 2026-09-09 |
 | — | owner resolves the park | owner (via the driver session, lock not held) | ok | `n/a (no run in flight)` | owner instruction quoted in `## Instruction ledger`; package `README.md` pointer sentence now states that `intake/GRAPH-BRIEF.md` is a verbatim pre-gate record, that `GATE-QUESTIONS.md` and `DESIGN-BRIEF.md` win where they disagree, and that its foil rule (decision 4) and `defaultFoilFor(printing, currentFoil)` signature are superseded by the accepted re-derive-every-time rule; intake file untouched; `DESIGN-BRIEF.md` cites no intake decision by number (`grep` for `GRAPH-BRIEF|intake` → one methodology sentence at line 55 only); `STATUS.owner-action → STATUS.refined`; board row `## owner-action → ## refined`; `## Open gate` marked resolved | 2026-09-09 |
+| 4 | gate-qc (attempt 7) | sonnet | ok | `0 → 16` | PASS, findings none: README supersession note present; no keep-current foil sentence outside the verbatim intake (brief foil section, A6, slice B all re-derive-every-time); intake untouched since `14f9dfb`; 56 removed diff lines verbatim against live `PRD/sections/`, 0 mismatches; `PRD/sections/` diff vs `origin/main` empty; 12/12 blocks well-formed, verdicts 10 accept / 2 edit; 11/11 assumptions evidence-backed; slice sketch A–E map-out-ready; constraints cite named tests; amendment grep 41 hits unchanged. No files written. README `## Preparation gate` rewritten PASS (attempt 7). Advance → `plan` | 2026-09-10 |
 
 ## Gate verdicts
 
@@ -405,6 +406,33 @@ Commit form if you write anything: `cd /Users/chrismiho/Coding/Projects/TheJudge
 Your tool-call budget for this dispatch is 60; a denial at the cap is final — write nothing further and report.
 
 Report back, each on its own line: verdict (`PASS` | `FAIL`), the complete findings list (every issue on FAIL, or `none`), what you verified (one line per check, with counts), files written (or none), commit hash (or none), `git status --porcelain` of the worktree (expect empty), and the exact tool-call count you made.
+
+### plan
+
+graph is controlling.
+
+You are node 5 (`plan`) of graph run `graph-20260909-213550`, driven by `graph-implement` (the build half). Invoke the `thejudge-map-out` skill (Skill tool, name `thejudge-map-out`) on the package `PRD/work/trade-balancer-first-card-ux/` and follow its `## Mode` section for an orchestrator-controlled run: read `PRD/instructions/preparation-contract.md`, require `Quality-check: PASS` in the package README's `## Preparation gate` section (it records PASS at attempt 7 — never self-certify one), create the GAMEPLAN and slice contract, and return control to the driver. Do not reimplement the skill. Do not implement anything.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-first-card-ux
+
+Copy the `Working directory:` line above, unchanged and on its own line, into every prompt you write for any subagent. Every file you read or write lives under that directory — a git worktree on branch `thejudge-auto/trade-balancer-first-card-ux-work`, cut from `origin/main`, the one branch the whole build half shares. Never write to `/Users/chrismiho/Coding/Projects/TheJudge` itself.
+
+Inputs already present: `DESIGN-BRIEF.md` (the design record; its slice sketch A–E is map-out-ready), the finalized proposal `GATE-QUESTIONS.md` (12 blocks, verdicts 10 accept / 2 edit / 0 reject — `## Gate verdicts` in `GRAPH-RUN.md` lists them; the two edits changed the foil rule to: every time an entry receives a printing, the foil mode is re-derived from that printing's prices, non-foil when it has a `usd` price, foil only when `usd` is null and `usd_foil` is not, current toggle never carried over), `IDEA.md`, and the verbatim intake `intake/GRAPH-BRIEF.md` (a pre-gate record; where it disagrees with the brief or the proposal, they win — the README pointer says so).
+
+Contract points the slices must carry (from `PRD/instructions/graph-workflow-contract.md`):
+1. Durable product truth is written at `build`, by intent: the slice that ships each behaviour also applies the matching `GATE-QUESTIONS.md` block(s) to `PRD/sections/` — re-derived against current truth from the finalized diff and `DESIGN-BRIEF.md`, never a blind replay — in the same slice. Assign every one of the 12 blocks to a slice explicitly; none may be left for cleanup.
+2. Beside each `slice-<letter>.md` emit `slice-<letter>.criteria.json` per `thejudge-map-out/reference.md`: one entry per `## Acceptance criteria` checkbox, every `value` `false`, ids `<letter><n>`, each with an `evidence` block (`command`, `paths`, or `manual: true`). Prefer command and path evidence; use `manual` only where nothing else can stand in.
+3. Any slice with browser-observable risk (the picker box, pick-before-add, foil auto-select) encodes the exact scenarios, viewports, and observations to check as acceptance criteria plus a cleanup-evidence criterion, per `PRD/instructions/runtime-process-hygiene.md`; captures go under `PRD/work/trade-balancer-first-card-ux/.playwright-mcp/` in this worktree.
+4. Honour the brief's assumptions A10 (the committed price artifact is not rebuilt in this worktree — the Scryfall bulk source is absent; the newest-first sort ships with its unit test and the served order changes at the owner's next `data:refresh-pr`) and A11 (the scan path is unchanged; `TradeBalancer.scan.test.tsx` is the contract), and its named constraints (no new artifact fields; Lambda package budget test).
+5. The implementation node runs in this same worktree on this same branch under `graph is controlling`, opening the code PR `thejudge-auto/trade-balancer-first-card-ux-work → main`; write the GAMEPLAN's handoff accordingly.
+
+Outputs the skill defines: `GAMEPLAN.md`, `slice-<letter>.md` and `slice-<letter>.criteria.json` for every slice, `STATUS.refined → STATUS.active` (exactly one marker), README top line `status: active`, and the `PRD/work/STATUS.md` board row moved from `## refined` to `## active` (remove the old row, add the new one). Do not edit `GRAPH-RUN.md`, `GATE-QUESTIONS.md`, `PRD/sections/`, code, or anything under `intake/`; do not touch the README `## Preparation gate` or `## Autonomous metadata` sections.
+
+Commit when done: `cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-trade-balancer-first-card-ux && git add <explicit paths> && git commit -m <message>`. Never `git add -A`, `git add .`, or `git -C`. Do not push — the driver pushes between nodes.
+
+Boundaries: never dispatch `thejudge-implement*`; never edit a `thejudge-*` skill, `.claude/`, or `CLAUDE.md`; never run a network refresh; never retry a denied command. Your tool-call budget for this dispatch is 120; a denial at the cap is final — write nothing further and report. If a genuine decision blocker under the contract's three-condition test appears, preserve the furthest valid artifacts and return it to the driver instead of guessing.
+
+Report back, each on its own line: outcome (`ok` | `failed` | `blocker`), the slice list with one-line goals, which `GATE-QUESTIONS.md` blocks each slice applies, the criteria count per slice (and how many are `manual`), any blocker verbatim, files written, the commit hash, `git status --porcelain` of the worktree (expect empty), and the exact tool-call count you made.
 
 ## Instruction ledger
 
