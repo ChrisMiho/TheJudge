@@ -22,8 +22,10 @@ build-half dispatch carries `Working directory: <root>/.worktrees/implement-<slu
 | 9 | `land` | human PR merge | — | — | run complete — outside the run's ledger; the package is on `main` when the owner merges | — |
 
 Gate resolution runs before node 5: dispatch `graph-gate-review` on an answered
-`GATE-QUESTIONS.md`, then re-enter at `gate-qc` (node 4) so an owner edit is
-re-graded, then continue to `plan`.
+`GATE-QUESTIONS.md` — it finalizes the verdicts inside the proposal and
+reconciles `DESIGN-BRIEF.md` (and the README's intake pointer) to every `edit`
+or `reject` — then re-enter at `gate-qc` (node 4) so an owner edit is re-graded
+against a consistent package, then continue to `plan`.
 
 ## Entry point (build half)
 
