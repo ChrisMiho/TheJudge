@@ -120,7 +120,13 @@ refinement no longer writes `PRD/sections/`, a live diff after `define` is alway
 empty. The run gates when `GATE-QUESTIONS.md` carries a proposed product-truth
 change, and does not gate when it carries none. `graph-gate-review` applies the
 owner's verdicts to the proposed diff **inside `GATE-QUESTIONS.md`** (finalizing
-the proposal in the work folder), never to live `PRD/sections/`.
+the proposal in the work folder), never to live `PRD/sections/`. In the same
+pass it reconciles `DESIGN-BRIEF.md` — and the package README's pointer to a
+verbatim `intake/` file — to every `edit` or `reject`, because the brief is
+what `gate-qc` re-grades and `plan` slices: a brief left on the pre-verdict
+rule fails the re-grade on findings that are consequences of the owner's own
+verdict (observed twice on 2026-09-09). The reconciliation is bounded to
+passages that contradict a verdict; `intake/` stays verbatim.
 
 This changes *where* durable truth is written, not the two-run split, the node
 table, the caps, or the boundary deny list.
@@ -180,9 +186,10 @@ once took in the terminal, now made on their own schedule.
 
 **Run two** (`graph-implement`) is `/graph-implement PRD/work/<slug>/`. On
 resuming an `owner-action` park whose questions file is fully answered, the driver
-dispatches `graph-gate-review` to apply the verdicts (restoring `STATUS.refined`),
-then re-enters at `gate-qc` via the entry-point table — so an owner edit is
-re-graded — and continues `plan → build → review → close`, every node in
+dispatches `graph-gate-review` to apply the verdicts and reconcile the brief to
+them (restoring `STATUS.refined`), then re-enters at `gate-qc` via the
+entry-point table — so an owner edit is re-graded against a consistent package
+— and continues `plan → build → review → close`, every node in
 `.worktrees/implement-<slug>` on `thejudge-auto/<slug>-work` (REQ-193); it ends
 `COMPLETE` with the code PR open, and `land` is the owner's merge. A questions file
 with any blank slot re-parks at `owner-action`, so run two stays a single owner
@@ -203,7 +210,8 @@ Exactly four graph skills exist in the spine: `graph-preflight`, `graph-kickoff`
 `define` gate, which reads the owner's answered `GATE-QUESTIONS.md`, applies its
 accept/edit/reject verdicts to the proposed diff **inside `GATE-QUESTIONS.md`**
 (finalizing the proposal in the work folder; `build` applies it to `PRD/sections/`
-later), and resumes the run.
+later), reconciles `DESIGN-BRIEF.md` and the README's intake pointer to every
+`edit` or `reject`, and resumes the run.
 
 ## Intake is evidence, never authority
 

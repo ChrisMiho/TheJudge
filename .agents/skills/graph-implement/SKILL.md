@@ -167,10 +167,14 @@ On resuming an `owner-action` park, resolve the gate before re-entering the node
 graph:
 
 - **`GATE-QUESTIONS.md` fully answered** → dispatch `graph-gate-review` to apply
-  the accept/edit/reject verdicts inside the proposal. It restores
-  `STATUS.refined`. Then re-enter at `gate-qc` via the entry-point table
-  ([reference.md](reference.md)), so an owner edit is re-graded, and continue
-  `plan → build → review → close → land`.
+  the accept/edit/reject verdicts inside the proposal **and reconcile
+  `DESIGN-BRIEF.md` (and the README's intake pointer) to every `edit` or
+  `reject`**, so the re-grade grades one consistent package rather than a brief
+  still on the pre-verdict rule. It restores `STATUS.refined`. Then re-enter at
+  `gate-qc` via the entry-point table ([reference.md](reference.md)), so an
+  owner edit is re-graded, and continue `plan → build → review → close → land`.
+  Name the reconciliation in the dispatch and require its `### Brief
+  reconciliation` list in the report.
 - **any answer slot still blank** → re-park at `owner-action` unchanged and end.
   The gate is not resolved, so nothing is guessed.
 - **no `GATE-QUESTIONS.md`** (refinement proposed no product truth) → nothing to
