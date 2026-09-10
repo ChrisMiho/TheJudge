@@ -1,6 +1,28 @@
 # Slice D — Printing picker becomes a scrollable, filterable box
 
-## Status: planned
+## Status: done
+
+### Manual observation (D9, 2026-09-09)
+
+At 390×844 (`http://localhost:5593/trade-balancer`, backend on
+`http://localhost:3593`): opened the picker for Sol Ring (128 printings from
+the currently-committed, not-yet-rebuilt artifact — A10). The header read
+"128 printings"; the filter input was present. Full-page screenshot measured
+390×1197 (down from the pre-Slice-D 10,748 px), and Side B's heading/total
+rendered fully in view directly below the picker with no page-scroll needed.
+Typing "Commander Masters" into the filter narrowed the visible rows from
+128 to 2, both matching. Checked the DOM: every row `<img>` carries
+`loading="lazy"`. Captures:
+`PRD/work/trade-balancer-first-card-ux/.playwright-mcp/slice-d-picker-scroll-box-open.png`,
+`PRD/work/trade-balancer-first-card-ux/.playwright-mcp/slice-d-filter-narrows-rows.png`.
+
+### Cleanup (D10, 2026-09-09)
+
+Browser closed (`browser_close`); owned dev servers (frontend on port 5593,
+backend on port 3593, both started by this session) stopped via `TaskStop`;
+`lsof -i :3593 -i :5593` confirms both ports released. Capture output path:
+`PRD/work/trade-balancer-first-card-ux/.playwright-mcp/` (two PNGs, listed
+above).
 
 ## Goal
 

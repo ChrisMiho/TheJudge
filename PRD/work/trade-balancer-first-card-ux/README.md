@@ -35,7 +35,7 @@ IDs are reserved.
 | A | Build-time newest-first printing order | `REQ-066` | — | done |
 | B | Foil mode auto-selects from the printing's prices | — | — | done |
 | C | Pick the printing before the card is added (search path) | `trade-balancer/data/cardPrintingPrices.md` | A, B | done |
-| D | Printing picker becomes a scrollable, filterable box | `REQ-065`, `screen-layout.md` | A, B, C | planned |
+| D | Printing picker becomes a scrollable, filterable box | `REQ-065`, `screen-layout.md` | A, B, C | done |
 | E | Warm-up ping on mount + remaining PRD-truth sweep + ship gates | `REQ-064`, `FLOW-009`, `FLOW-025`, `trade-balancer/README.md`, `system-map.md`, `integrations-and-data.md`, `overview.md`, `non-functional-requirements.md` | A, B, C, D | planned |
 
 Single-agent order: A → B → C → D → E. Every one of the twelve

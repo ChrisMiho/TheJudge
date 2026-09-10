@@ -216,9 +216,10 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Purpose | Two-sided USD trade comparison |
 | Phone | Shell/full destination width; sides stack; lists region-scroll; primary totals visible without hunting |
 | Desktop/tablet | Shell 92%/48rem (or destination equivalent); paired sides use shell width, not unused ultra-wide bands; content-sized vertically (DEC-145) |
-| Fit | No page scroll for totals/primary actions; entry lists region-scroll |
+| Fit | No page scroll for totals/primary actions; entry lists **and the printing picker** region-scroll |
+| Printing picker | Region-scrolls inside the side at about 5-6 rows, capped near `40vh`; the page never grows with a card's printing count (Sol Ring 128, corpus maximum 771). Row images lazy-load instead of all loading on open, a set-name/code filter appears above 8 printings, and the selected printing is scrolled into view on open (REQ-065, live observation 2026-09-09: 128 rows previously rendered 10,748 px tall on an 844 px viewport and pushed Side B to y≈11,500) |
 | Price freshness | Date-level copy only — `Prices as of 5 June 2026`, formatted from the artifact's ISO `snapshotDate` with no raw `T`, milliseconds, or zone suffix, so it never reads as a live quote. One line at 390x844 (`scrollWidth` 299 = `clientWidth`). An unparseable artifact value omits the line entirely rather than printing raw data (ui-review, 2026-08-11, REQ-145) |
-| Notes | DEC-087, DEC-145, REQ-145 |
+| Notes | DEC-087, DEC-145, REQ-145, REQ-065 |
 
 #### Feedback modal
 
