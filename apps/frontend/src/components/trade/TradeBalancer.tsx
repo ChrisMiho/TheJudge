@@ -5,6 +5,7 @@ import { StagedStepHeader } from "../StagedStepHeader";
 import { StepEyebrow } from "../StepEyebrow";
 import { fetchCardPrintings, type CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
 import {
+  defaultFoilForPrinting,
   difference,
   formatUsd,
   sideTotal,
@@ -181,10 +182,10 @@ export function TradeBalancer(): JSX.Element {
           ...current,
           [instanceId]: { ...current[instanceId], status: "loaded", printings }
         }));
-        updateEntryOnEitherSide(instanceId, (entry) => ({
-          ...entry,
-          printing: selectPrinting(printings, preferredPrintingId)
-        }));
+        updateEntryOnEitherSide(instanceId, (entry) => {
+          const printing = selectPrinting(printings, preferredPrintingId);
+          return { ...entry, printing, foil: defaultFoilForPrinting(printing) };
+        });
       })
       .catch(() => {
         setEntryMetaById((current) => ({
@@ -260,7 +261,11 @@ export function TradeBalancer(): JSX.Element {
     printing: CardPrintingPrice
   ): void {
     setSideEntries(sideId, (entries) =>
-      updateEntries(entries, instanceId, (entry) => ({ ...entry, printing }))
+      updateEntries(entries, instanceId, (entry) => ({
+        ...entry,
+        printing,
+        foil: defaultFoilForPrinting(printing)
+      }))
     );
   }
 

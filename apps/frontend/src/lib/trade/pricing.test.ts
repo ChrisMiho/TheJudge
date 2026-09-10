@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type { CardPrintingPrice } from "./fetchCardPrintings";
 import {
+  defaultFoilForPrinting,
   difference,
   entryContribution,
   entryHasMissingPrice,
@@ -114,6 +115,23 @@ describe("Frontend - Trade", () => {
     it("renders two-decimal USD", () => {
       expect(formatUsd(0)).toBe("$0.00");
       expect(formatUsd(17.5)).toBe("$17.50");
+    });
+  });
+
+  // B1/B2/B3: REQ-065's owner-edited foil rule — re-derived from the new
+  // printing's own prices every time, never carrying the entry's current mode.
+  describe("defaultFoilForPrinting", () => {
+    it("B1: returns false (non-foil) when usd is present, regardless of usdFoil", () => {
+      expect(defaultFoilForPrinting(printing({ usd: 3.5, usdFoil: 12.75 }))).toBe(false);
+      expect(defaultFoilForPrinting(printing({ usd: 3.5, usdFoil: null }))).toBe(false);
+    });
+
+    it("B2: returns true (foil) only when usd is null and usdFoil is present", () => {
+      expect(defaultFoilForPrinting(printing({ usd: null, usdFoil: 12.75 }))).toBe(true);
+    });
+
+    it("B3: returns false when neither usd nor usdFoil is present", () => {
+      expect(defaultFoilForPrinting(printing({ usd: null, usdFoil: null }))).toBe(false);
     });
   });
 });

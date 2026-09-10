@@ -236,6 +236,34 @@ describe("Frontend - Trade", () => {
       expect(sideTotalText("A")).toBe("$4.00");
     });
 
+    it("B4: a manually toggled foil resets to non-foil when the player changes to a non-foil-priced printing", async () => {
+      const user = userEvent.setup();
+      await renderBalancer();
+
+      await addCard(user, "A", "Lightning Bolt");
+      const foilToggle = within(side("A")).getByLabelText(
+        "Toggle foil for Lightning Bolt (Side A)"
+      );
+      expect(foilToggle).toHaveAttribute("aria-pressed", "false");
+
+      // Unlimited Edition (bolt-2ed) has no foil price — toggling foil here
+      // is a manual player action, not a printing change.
+      await user.click(foilToggle);
+      expect(
+        within(side("A")).getByLabelText("Toggle foil for Lightning Bolt (Side A)")
+      ).toHaveAttribute("aria-pressed", "true");
+
+      // Changing to Magic 2010 (bolt-m10, usd present) re-derives the mode
+      // from that printing's own prices — the toggled foil is not carried
+      // over; it lands back on non-foil.
+      await changePrinting(user, "A", "Lightning Bolt", /Magic 2010/);
+
+      expect(
+        within(side("A")).getByLabelText("Toggle foil for Lightning Bolt (Side A)")
+      ).toHaveAttribute("aria-pressed", "false");
+      expect(sideTotalText("A")).toBe("$4.00");
+    });
+
     it("disambiguates printings in the picker by set, collector number, and a working id-derived image", async () => {
       const user = userEvent.setup();
       await renderBalancer();

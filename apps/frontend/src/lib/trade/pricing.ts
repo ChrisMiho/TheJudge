@@ -61,3 +61,16 @@ export function difference(totalA: number, totalB: number): TradeDifference {
 export function formatUsd(amount: number): string {
   return `$${roundToCents(amount).toFixed(2)}`;
 }
+
+/**
+ * REQ-065 (owner's gate edit): whenever an entry receives a printing — picked
+ * before an add, resolved from a scan, changed, or re-fetched on retry — the
+ * foil mode is re-derived from that printing's own prices, never carried over
+ * from the entry's current toggle. Non-foil when `usd` is present; foil only
+ * when `usd` is `null` and `usdFoil` is not; non-foil (the $0-plus-caution
+ * case) when neither price is present.
+ */
+export function defaultFoilForPrinting(printing: CardPrintingPrice): boolean {
+  if (printing.usd !== null) return false;
+  return printing.usdFoil !== null;
+}

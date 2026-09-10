@@ -1,6 +1,28 @@
 # Slice B — Foil mode auto-selects from the printing's prices
 
-## Status: planned
+## Status: done
+
+### Manual observation (B6, 2026-09-09)
+
+At 390×844 (`http://localhost:5591/trade-balancer`, backend on
+`http://localhost:3591`): searched and added "Food Fight", whose default
+(first-array) printing is Wilds of Eldraine Promos (PWOE) #129s — foil-only
+(`usd: null`, `usdFoil: 0.41`). The entry's foil toggle opened
+`aria-pressed="true"` and showed `$0.41` (the real `usdFoil` price), not
+$0.00 with a caution triangle. Used "Change printing" to switch to Wilds of
+Eldraine (WOE) #129 (`usd: 0.27`, `usdFoil: 0.23`) — the toggle switched back
+to non-foil (`aria-pressed` attribute removed) unprompted and the price
+updated to $0.27. Captures:
+`PRD/work/trade-balancer-first-card-ux/.playwright-mcp/slice-b-foil-only-default.png`,
+`PRD/work/trade-balancer-first-card-ux/.playwright-mcp/slice-b-foil-resets-on-printing-change.png`.
+
+### Cleanup (B7, 2026-09-09)
+
+Browser closed (`browser_close`); owned dev servers (frontend on port 5591,
+backend on port 3591, both started by this session) stopped via `TaskStop`;
+`lsof -i :3591 -i :5591` confirms both ports released. Capture output path:
+`PRD/work/trade-balancer-first-card-ux/.playwright-mcp/` (two PNGs, listed
+above).
 
 ## Goal
 
