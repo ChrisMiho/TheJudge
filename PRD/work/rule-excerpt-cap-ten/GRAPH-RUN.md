@@ -30,6 +30,32 @@
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/230 (`thejudge-auto/rule-excerpt-cap-ten` → `main`, opened by the run, never merged by it)
 - Kickoff worktree stays through the park: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rule-excerpt-cap-ten`
 - Resume: after the PR merges, `/graph-implement PRD/work/rule-excerpt-cap-ten/` (the build half claims the spec from `origin/main`)
+- Resolved: 2026-09-10 — 14/14 verdicts, all `accept` (0 edit, 0 reject); applied by `graph-gate-review`, see `## Gate verdicts` below. Status restored to `refined`; run re-enters at `gate-qc`.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-022` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `REQ-032` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `REQ-178` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `REQ-181` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `REQ-182` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `REQ-185` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `REQ-188` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `REQ-190` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `NFR-018` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `system-map.md` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `integrations-and-data.md` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `in-depth/README.md` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `quick-lookup/README.md` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+| `system-map/game-rules-retrieval.md` | accept | owner accepted all 14 slots on 2026-09-10 after a walkthrough in session |
+
+Blocker questions: none recorded in `GATE-QUESTIONS.md` (`## Blocker questions` reads "None").
+
+### Brief reconciliation
+
+- none — every verdict is `accept`; each proposed diff in `GATE-QUESTIONS.md` stands as refinement wrote it, `DESIGN-BRIEF.md` is untouched, and the README's `intake/` pointer needs no supersession note.
 
 ## Dispatch prompts
 
@@ -212,6 +238,31 @@ Boundaries: never edit `PRD/sections/`, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md
 Tool-call cap for this node: 60.
 
 Report back: the verdict (PASS or FAIL) on its own line, the complete findings list (or `none`), the amendment-set grep and its per-hit dispositions, the before-text verification result, any commit hash, and `git status --porcelain` of the working directory. Outcome word on its own last line: `ok` (verdict delivered) or `failed` (could not deliver a verdict).
+
+### gate-review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten
+
+You are the gate-resolution step of graph run `graph-20260910-024919`, the build half driven by `graph-implement`. Invoke the `graph-gate-review` skill and follow it exactly. Read `PRD/instructions/graph-workflow-contract.md` first, as the skill requires. Work only inside the working directory above — the build worktree on branch `thejudge-auto/rule-excerpt-cap-ten-work`, cut from `origin/main` after the docs PR (#230) merged; never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge`.
+
+Package: `PRD/work/rule-excerpt-cap-ten/` (relative to the working directory). Read its `GRAPH-RUN.md` `## Open gate`, `GATE-QUESTIONS.md` (14 stable-ID slots), `README.md`, and the `STATUS.*` marker.
+
+What to do, per the skill:
+1. Confirm the open gate is the answered `define` proposal and every one of the 14 `Verdict:` slots is filled with `accept`, `edit`, or `reject` (an `edit`/`reject` needs a `Reason:`). Refuse and stop, naming the IDs, if any slot is blank or malformed.
+2. Apply each verdict inside that ID's proposed diff in `GATE-QUESTIONS.md` only — never in `PRD/sections/`. An `accept` changes nothing.
+3. Reconcile `DESIGN-BRIEF.md` and the README's intake pointer to every `edit` or `reject`, enumerated by a grep you quote; when every verdict is `accept`, the reconciliation list reads `none` and the brief is untouched.
+4. Write `## Gate verdicts` (one row per ID, plus `### Brief reconciliation`) into `GRAPH-RUN.md`, mark `## Open gate` resolved with the date and verdict count, and restore the lifecycle position: README `status:` → `refined`, marker `STATUS.owner-action` → `STATUS.refined` (exactly one marker), and move the `PRD/work/STATUS.md` board row from `## owner-action` to `## refined` (remove from the old section, add to the new).
+5. Commit on the branch with explicit paths only (`git add <path> ...`; never `git add -A`, `--all`, or `.`) and push with `git push -u origin thejudge-auto/rule-excerpt-cap-ten-work`. Do not edit the ledger's header lines or `## Node ledger` — the driver owns those; you write only `## Gate verdicts` and `## Open gate`.
+
+Copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten` unchanged, on its own line, into every prompt you write for any subagent of your own.
+
+Boundaries: never edit `PRD/sections/`, anything under `intake/`, any `thejudge-*` skill, `CLAUDE.md`, or `.claude/settings*.json`; never dispatch a subagent or run a `thejudge-*` skill; never force-push; never push `main`; never merge or close a PR; no `nohup` or background `&`; a denied call is never retried.
+
+Tool-call cap for this node: 60.
+
+Report back: the verdict split (accept/edit/reject counts), the `### Brief reconciliation` list verbatim (or `none`), the restored status (marker, README line, board row), the commit hash, and `git status --porcelain` plus `git diff --stat origin/main -- PRD/sections` of the working directory (the latter expected empty). Outcome word on its own last line: `ok` or `failed`.
 
 ## Instruction ledger
 
