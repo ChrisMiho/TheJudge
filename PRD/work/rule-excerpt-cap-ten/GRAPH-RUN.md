@@ -8,7 +8,7 @@
 - Build branch: `thejudge-auto/rule-excerpt-cap-ten-work` (cut from `origin/main` at `c28820b`)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260910-024919/`
 - Build-half canary (2026-09-10, lock retaken via `graph-preflight --take-lock`): `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] This exact call was already denied during this run (`recursive-force-remove`)…"; graph tier: nohup true → "[graph-boundary] This exact call was already denied during this run (`nohup-wrapper`)…")` — both denies came from the hook while the lock was held, which is the proof; the wording differs from the run-start canary because the run id is shared with the spec-forming half and the hook's denial ledger remembers it
-- Current node: `gate-review` (build half claimed; resolving the answered `define` gate)
+- Current node: `gate-qc` (attempt 3 — re-grade after the resolved `define` gate)
 - Next action: driver continues `gate-review → gate-qc → plan → build → review → close`; `land` is the owner's merge of the code PR
 
 ## Node ledger
@@ -21,6 +21,8 @@
 | 4 | gate-qc | sonnet | failed | `0 → 32` | FAIL commits `82356d7` + `156940f` — STATUS.refined→refining, board row moved. One finding: the brief's amendment-set appendix mislabels 8 of 266 "not this cap" rows as the REQ-094/095 combo-variant cap when the line is a layout/attach-limit/deploy/section-order cap (`screen-layout.md:132`, `functional-requirements.md:2211/3107/3379/3881/4442`, `decisions/deployment.md:31`, `in-depth/README.md:302`); the "not this cap" conclusion holds for all 8, the stated reason is wrong. Everything else clean: 266-hit grep reproduced, 0 missing/0 extra rows, 32 amend rows = 32 diff hunks, all 32 before-lines byte-identical (`ALL OK`), 14 slots well-formed, no new DEC, PRD/sections unedited. Loop 1 → define | 2026-09-10 |
 | 3 | define | opus | ok | `0 → 25` | attempt 2 (loop 1 fix). Commit `0056266` on run branch (pushed) — appendix disposition reasons re-read line by line against the cited `PRD/sections/` text: 59 reasons corrected (the 8 flagged + 51 more the same pass found), every one still "not this cap"; only column 3 of non-amend rows moved, all 32 amend rows byte-identical, GATE-QUESTIONS.md zero diff, `git diff --stat origin/main -- PRD/sections` empty; STATUS.refining→refined, README header refined, board row moved back | 2026-09-10 |
 | 4 | gate-qc | sonnet | ok | `0 → 22` | attempt 2 PASS, no findings, no commit. Reviewer re-ran the wide grep (266 hits = appendix count) plus named-spelling and extra sweeps (`supplementalRuleCap`, bare `\b5\b`, `6–15`, `maxExcerpts`) — no System 3 cap line without a slot; 32 before-text lines script-extracted and byte-compared, 0 mismatches; "not this cap" reasons spot-checked against cited text (combo-variant, REQ-167 attach, retired DEC-032, recall@5 metric rows) all correct; 14 slots parsed well-formed; `git diff cf55225 0056266 -- GATE-QUESTIONS.md` empty; `git diff --stat origin/main -- PRD/sections` empty; no new DEC/REQ. STATUS stays refined. Run stops here: driver commit `28da373` (README gate PASS + `## Open gate`, STATUS.refined→owner-action, board row refined→owner-action), docs PR https://github.com/ChrisMiho/TheJudge/pull/230 opened `thejudge-auto/rule-excerpt-cap-ten` → `main` | 2026-09-10 |
+| — | claim | driver | ok | `driver-bookkeeping` | build half claimed after docs PR #230 merged at `c28820b`: kickoff worktree clean and removed (`git worktree remove`), `git worktree add .worktrees/implement-rule-excerpt-cap-ten -b thejudge-auto/rule-excerpt-cap-ten-work origin/main`, lock retaken (`graph-preflight --take-lock`, pid 66381), both canaries denied; claim commit `dc5b129` (README base → `origin/main`, ledger header) pushed; marker left at `owner-action` | 2026-09-10 |
+| — | gate-review | sonnet | ok | `0 → 24` | commit `2426986` on `thejudge-auto/rule-excerpt-cap-ten-work` (pushed) — 14/14 verdicts `accept` (0 edit, 0 reject) applied inside `GATE-QUESTIONS.md` (no diff changed); brief reconciliation `none`; `## Gate verdicts` + `## Open gate` resolved line written; STATUS.owner-action→refined, README `status: refined`, board row owner-action→refined; `git status --porcelain` empty; `git diff --stat origin/main -- PRD/sections` empty | 2026-09-10 |
 
 ## Open gate
 
@@ -263,6 +265,34 @@ Boundaries: never edit `PRD/sections/`, anything under `intake/`, any `thejudge-
 Tool-call cap for this node: 60.
 
 Report back: the verdict split (accept/edit/reject counts), the `### Brief reconciliation` list verbatim (or `none`), the restored status (marker, README line, board row), the commit hash, and `git status --porcelain` plus `git diff --stat origin/main -- PRD/sections` of the working directory (the latter expected empty). Outcome word on its own last line: `ok` or `failed`.
+
+### gate-qc (attempt 3 — build half re-grade)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten
+
+You are node 4 (`gate-qc`), attempt 3, of graph run `graph-20260910-024919`, now in the build half driven by `graph-implement`. The spec-forming half passed this package at attempt 2, the owner answered all 14 `GATE-QUESTIONS.md` verdict slots `accept` and merged the docs PR (#230), and `graph-gate-review` resolved the gate (commit `2426986`) with no edit or reject, so the brief and the proposal are unchanged since the PASS. This re-grade exists because the contract requires one after every gate resolution; grade the package fresh anyway — do not assume the earlier PASS holds. Invoke the `thejudge-quality-check` skill in its `graph is controlling` mode and follow it exactly. Read `PRD/instructions/preparation-contract.md` as the skill's Mode section requires. Work only inside the working directory above — the build worktree on branch `thejudge-auto/rule-excerpt-cap-ten-work`, cut from `origin/main`; never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge`.
+
+Package: `PRD/work/rule-excerpt-cap-ten/`. Checked artifact: `PRD/work/rule-excerpt-cap-ten/DESIGN-BRIEF.md`, with `GATE-QUESTIONS.md` as the finalized product-truth diff it depends on (`## Gate verdicts` in `GRAPH-RUN.md` records 14 accepts).
+
+Grade the brief for PRD alignment and agent-readiness and return an explicit PASS or FAIL with every finding. In addition to the skill's normal checks, verify all of the following, each with a command you ran and its output:
+- `GATE-QUESTIONS.md` is well-formed: one `## <STABLE-ID>` block per stable ID whose `PRD/sections/` text changes, each with the three plain-language lines, a complete diff, and a filled `- Verdict: accept` slot.
+- Every before-text in every diff is byte-identical to the current `PRD/sections/` file content on this branch (`origin/main` merged the docs PR, which carried no `PRD/sections/` edits, but confirm rather than assume).
+- The amendment set is complete: independently re-run a grep across `PRD/sections/` for every spelling of the current cap (`five excerpt`, `five-excerpt`, `up to 5 excerpts`, `capped at 5`, `capped at five`, `top-5`, `top 5`, `stays at five`, `top five`, and any other spelling you find) and confirm every hit that describes the System 3 rule-excerpt cap has a slot, while hits that describe a different cap (for example the REQ-094/095 combo-variant cap of five) are noted as out of scope in the brief's appendix. Report the hit count and any hit without a disposition.
+- `PRD/sections/` is unedited: `git diff --stat origin/main -- PRD/sections` is empty.
+- No new `DEC-` is proposed.
+- The brief is build-ready: its `## Scope` names the code change (`DEFAULT_SUPPLEMENTAL_RULE_CAP` in `apps/backend/src/prompt/preparation.ts`, its tests, and the answer-quality run's `--excerpt-cap` default), and nothing in it requires a live provider call to build.
+
+On FAIL: set `STATUS.refining` (replace `STATUS.refined`; exactly one marker), move the `PRD/work/STATUS.md` board row to refining, and list every issue. On PASS: leave `STATUS.refined` in place. Do not create map-out artifacts, do not self-certify, do not fix the brief yourself. Commit any status-marker change on the branch with explicit paths only (`git add <path> ...`; never `git add -A`, `--all`, or `.`) and push with `git push -u origin thejudge-auto/rule-excerpt-cap-ten-work`. Do not touch `GRAPH-RUN.md` or the package README's `## Preparation gate` section — the driver owns both.
+
+Copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten` unchanged, on its own line, into every prompt you write for any subagent of your own.
+
+Boundaries: never edit `PRD/sections/`, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md`; never edit any `thejudge-*` skill, `CLAUDE.md`, or `.claude/settings*.json`; never force-push; never push `main`; never merge or close a PR; no `nohup` or background `&`; no live provider calls; a denied call is never retried.
+
+Tool-call cap for this node: 60.
+
+Report back: the verdict (PASS or FAIL) on its own line, the complete findings list (or `none`), the amendment-set grep hit count and any undisposed hit, the before-text verification result, any commit hash, and `git status --porcelain` of the working directory. Outcome word on its own last line: `ok` (verdict delivered) or `failed` (could not deliver a verdict).
 
 ## Instruction ledger
 
