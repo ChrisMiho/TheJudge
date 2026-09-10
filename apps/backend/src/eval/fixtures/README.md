@@ -65,8 +65,8 @@ structural-only score.
 | Check id | Field | Pass condition |
 | --- | --- | --- |
 | `system2-conditional-selection` | `expectedSystem2TopicIds` | `selectGameRulesTopics` output equals this id set exactly (no missing, no extra) |
-| `system3-expected-recall` | `expectedSupplementalRuleIds` | every id appears in the System 3 supplemental top-5 |
-| `system3-noise-excluded` | `forbiddenSupplementalRuleIds` | no id appears in the System 3 supplemental top-5 |
+| `system3-expected-recall` | `expectedSupplementalRuleIds` | every id appears in the System 3 supplemental top-10 |
+| `system3-noise-excluded` | `forbiddenSupplementalRuleIds` | no id appears in the System 3 supplemental top-10 |
 
 Label rule ids by **human judgment** of relevance, then confirm they are reachable
 (recall ids must be retrieved and outside the curated System 2 set, since curated

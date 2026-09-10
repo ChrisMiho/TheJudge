@@ -34,7 +34,7 @@ describe("Backend - Eval", () => {
         [
           "=== stack-scenario ===",
           "System 2 topics (2): stack-and-priority, targets-basics",
-          "System 3 top-5:",
+          "System 3 top-10:",
           "  608.2  score=12.40  [RECALL HIT]",
           "  609.3  score=10.10  [RECALL HIT]",
           "Expected supplemental: 608.2, 609.3 — all hit",
@@ -62,7 +62,7 @@ describe("Backend - Eval", () => {
         [
           "=== empty-scenario ===",
           "System 2 topics (0): (none)",
-          "System 3 top-5:",
+          "System 3 top-10:",
           "  (none)",
           "Scenario: PASS",
           "",
@@ -93,7 +93,7 @@ describe("Backend - Eval", () => {
           "=== broken-scenario ===",
           "System 2 topics (1): zones-basics",
           "  System 2 MISMATCH — missing: [stack-and-priority]; unexpected: [zones-basics]",
-          "System 3 top-5:",
+          "System 3 top-10:",
           "  100.1  score=5.00  [NOISE FAIL]",
           "  702.85  score=3.00",
           "Expected supplemental: 608.2 — MISSING: 608.2",

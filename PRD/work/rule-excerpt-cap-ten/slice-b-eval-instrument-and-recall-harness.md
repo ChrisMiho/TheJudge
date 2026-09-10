@@ -1,6 +1,6 @@
 # Slice B — Point the eval instrument and recall harness at the new cap
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -44,19 +44,42 @@ call is made; the answer-quality run stays confirmation-gated and unexecuted.
 
 ## Acceptance criteria
 
-- [ ] B1. `DEFAULT_EXCERPT_CAPS` is `[10, 15]` in `eval-answer-quality.mjs`.
-- [ ] B2. `contextEvaluationHarness.ts`'s System 3 recall-check text says
+- [x] B1. `DEFAULT_EXCERPT_CAPS` is `[10, 15]` in `eval-answer-quality.mjs`.
+- [x] B2. `contextEvaluationHarness.ts`'s System 3 recall-check text says
       "top-10", not "top-5", in the `EvaluationFixtureExpected` doc comments,
       the two check functions' `details` strings, and the relevance-report
       header/doc comment.
-- [ ] B3. The REQ-032 and REQ-190 `GATE-QUESTIONS.md` blocks are applied to
+- [x] B3. The REQ-032 and REQ-190 `GATE-QUESTIONS.md` blocks are applied to
       `PRD/sections/functional-requirements.md`, before-text byte-verified
       against current truth before editing.
-- [ ] B4. `npm run test:eval` was run from `apps/backend`, and its exact
+- [x] B4. `npm run test:eval` was run from `apps/backend`, and its exact
       pass/fail result — including any forbidden-rule-at-rank-6–10 finding —
       is recorded verbatim in this slice's evidence log, not suppressed by
       relaxing the check or the fixture.
-- [ ] B5. `npm run quality:check` (or its `test:scripts` leg) passes.
+- [x] B5. `npm run quality:check` (or its `test:scripts` leg) passes.
+
+## Evidence log
+
+- `cd apps/backend && npm run test:eval` (`contextEvaluationHarness.test.ts`)
+  — **PASS**, all 9 labelled fixtures, semantic path, at the new cap of 10:
+  `cascade-keyword` 2/2, `combat-deathtouch` 2/2, `counterspell-stack` 1/1,
+  `quick-lookup-card` 1/1, `quick-lookup-multi-card` 1/1,
+  `quick-lookup-multi-keyword-card` 2/2, `quick-lookup-no-card` 1/1,
+  `state-based-actions` 2/2, `upkeep-trigger` 2/2. The brief's recorded risk
+  — a forbidden rule already ranking 6–10 in an existing fixture — did
+  **not** materialize; `system3-noise-excluded` passed on every fixture with
+  no fixture edited and no check relaxed.
+- `npm run quality:check` — initially failed 3 tests in
+  `src/eval/relevanceReport.test.ts` (unit tests asserting the exact
+  `buildRelevanceReport` output text, which still hardcoded `"System 3
+  top-5:"`). Updated those 3 literal assertions to `"System 3 top-10:"` to
+  match B2's wording change, then re-ran: 575/575 script tests, typecheck,
+  lint, format:check, coverage:check, test:scripts all green. Also updated
+  two non-gated doc references to the same recall-check wording for
+  consistency (`apps/backend/src/eval/fixtures/README.md`'s check table,
+  `scripts/retrieval-relevance-report.mjs`'s header doc comment) — neither
+  is under a golden or snapshot assertion, so this did not affect the
+  quality:check result.
 
 ## Verification
 
@@ -70,6 +93,12 @@ npm run quality:check
 - `scripts/eval-answer-quality.mjs`
 - `apps/backend/src/eval/contextEvaluationHarness.ts`
 - `PRD/sections/functional-requirements.md` (REQ-032, REQ-190)
+- `apps/backend/src/eval/relevanceReport.test.ts` (3 literal assertions
+  updated to match the B2 wording change)
+- `apps/backend/src/eval/fixtures/README.md` (check-table wording, for
+  consistency)
+- `scripts/retrieval-relevance-report.mjs` (doc comment wording, for
+  consistency)
 
 ## PRD promotion checklist
 
@@ -77,33 +106,34 @@ Durable outcomes are promoted at build, across slices A and B, not deferred
 to cleanup. Cleanup should find every line below already present and promote
 nothing new:
 
-- [ ] `PRD/sections/functional-requirements.md` — REQ-022, REQ-032, REQ-178,
+- [x] `PRD/sections/functional-requirements.md` — REQ-022, REQ-032, REQ-178,
       REQ-181, REQ-182, REQ-185, REQ-188, REQ-190 (slice A: REQ-022, REQ-178,
       REQ-181, REQ-182, REQ-185, REQ-188; slice B: REQ-032, REQ-190)
-- [ ] `PRD/sections/non-functional-requirements.md` — NFR-018 (slice A)
-- [ ] `PRD/sections/system-map.md` — System 3 supplemental rule retrieval,
+- [x] `PRD/sections/non-functional-requirements.md` — NFR-018 (slice A)
+- [x] `PRD/sections/system-map.md` — System 3 supplemental rule retrieval,
       retrieval relevance report, answer-quality baseline entries (slice A)
-- [ ] `PRD/sections/integrations-and-data.md` — prompt contents list (slice A)
-- [ ] `PRD/sections/in-depth/README.md` — Built (supplemental rules), prompt
+- [x] `PRD/sections/integrations-and-data.md` — prompt contents list (slice A)
+- [x] `PRD/sections/in-depth/README.md` — Built (supplemental rules), prompt
       contents summary (slice A)
-- [ ] `PRD/sections/quick-lookup/README.md` — Retrieval (slice A)
-- [ ] `PRD/sections/system-map/game-rules-retrieval.md` — System 3
+- [x] `PRD/sections/quick-lookup/README.md` — Retrieval (slice A)
+- [x] `PRD/sections/system-map/game-rules-retrieval.md` — System 3
       walkthrough, retrieval return, deduplication rationale, invariants
       (slice A)
-- [ ] Code: `apps/backend/src/prompt/preparation.ts`
+- [x] Code: `apps/backend/src/prompt/preparation.ts`
       (`DEFAULT_SUPPLEMENTAL_RULE_CAP = 10`), `apps/backend/src/prompt/preparation.test.ts`
       (slice A); `scripts/eval-answer-quality.mjs`
       (`DEFAULT_EXCERPT_CAPS = [10, 15]`), `apps/backend/src/eval/contextEvaluationHarness.ts`
       (slice B)
-- [ ] Any `npm run test:eval` finding from B4 above is either resolved or
+- [x] Any `npm run test:eval` finding from B4 above is either resolved or
       explicitly carried into the receipt as a known, recorded gap — never
-      silently dropped
+      silently dropped. No finding: `test:eval` passed clean, the recorded
+      risk did not materialize.
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/rule-excerpt-cap-ten/` ready to
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/rule-excerpt-cap-ten/` ready to
       delete

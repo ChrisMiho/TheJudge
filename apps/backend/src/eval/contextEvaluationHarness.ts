@@ -50,9 +50,9 @@ type EvaluationCheckId =
 export type EvaluationFixtureExpected = {
   /** Exact set of System 2 topic ids `selectGameRulesTopics` should choose. */
   expectedSystem2TopicIds?: string[];
-  /** Rule ids that must all appear in the System 3 supplemental top-5. */
+  /** Rule ids that must all appear in the System 3 supplemental top-10. */
   expectedSupplementalRuleIds?: string[];
-  /** Rule ids that must NOT appear in the System 3 supplemental top-5. */
+  /** Rule ids that must NOT appear in the System 3 supplemental top-10. */
   forbiddenSupplementalRuleIds?: string[];
 };
 
@@ -508,8 +508,8 @@ function checkSystem3ExpectedRecall(
     id: "system3-expected-recall",
     passed,
     details: passed
-      ? "All expected supplemental rule ids appear in the System 3 top-5."
-      : `Missing expected supplemental rule ids from top-5: [${missing.join(", ")}].`
+      ? "All expected supplemental rule ids appear in the System 3 top-10."
+      : `Missing expected supplemental rule ids from top-10: [${missing.join(", ")}].`
   };
 }
 
@@ -524,8 +524,8 @@ function checkSystem3NoiseExcluded(
     id: "system3-noise-excluded",
     passed,
     details: passed
-      ? "No forbidden noise rule ids appear in the System 3 top-5."
-      : `Forbidden noise rule ids present in top-5: [${present.join(", ")}].`
+      ? "No forbidden noise rule ids appear in the System 3 top-10."
+      : `Forbidden noise rule ids present in top-10: [${present.join(", ")}].`
   };
 }
 
@@ -624,7 +624,7 @@ export function evaluateScenario(
 
 /**
  * Per-scenario inputs for the relevance report (Slice D, REQ-032). Carries the
- * Slice A selection and Slice B top-5 retrieval so the report mirrors production
+ * Slice A selection and Slice B top-10 retrieval so the report mirrors production
  * scoring rather than a legacy all-topics / flat scorer.
  */
 export type RelevanceReportInput = {
@@ -661,7 +661,7 @@ function renderRelevanceScenario(input: RelevanceReportInput): { text: string; p
   const expectedRuleIds = new Set(expected?.expectedSupplementalRuleIds ?? []);
   const forbiddenRuleIds = new Set(expected?.forbiddenSupplementalRuleIds ?? []);
 
-  lines.push("System 3 top-5:");
+  lines.push("System 3 top-10:");
   if (supplementalRules.length === 0) {
     lines.push("  (none)");
   } else {
@@ -698,7 +698,7 @@ function renderRelevanceScenario(input: RelevanceReportInput): { text: string; p
 
 /**
  * Build a digestible before/after relevance report (Slice D, REQ-032, DEC-047):
- * one section per labeled scenario with System 2 topic ids, System 3 top-5 with
+ * one section per labeled scenario with System 2 topic ids, System 3 top-10 with
  * scores, recall hit/miss per expected id, and forbidden exclusion status.
  */
 export function buildRelevanceReport(inputs: RelevanceReportInput[]): RelevanceReport {

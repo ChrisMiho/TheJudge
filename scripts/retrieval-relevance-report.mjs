@@ -2,7 +2,7 @@
 //
 // Builds a digestible before/after relevance report for tuning review: one
 // section per labeled scenario (fixtures with an `expected` block) listing the
-// System 2 topics selected, the System 3 top-5 with scores, recall hit/miss per
+// System 2 topics selected, the System 3 top-10 with scores, recall hit/miss per
 // expected rule id, and forbidden-noise exclusion status.
 //
 // No HTTP server and no OpenAI calls — it imports the same modules the eval

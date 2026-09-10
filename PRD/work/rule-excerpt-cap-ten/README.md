@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # rule-excerpt-cap-ten
 
@@ -17,7 +17,7 @@ lines across 7 files — which slices A and B apply to `PRD/sections/`.
 | Slice | Title | Dependencies | Status |
 | --- | --- | --- | --- |
 | [A](slice-a-deploy-ten-excerpt-cap.md) | Deploy the ten-excerpt cap | none | done |
-| [B](slice-b-eval-instrument-and-recall-harness.md) | Point the eval instrument and recall harness at the new cap | A | planned |
+| [B](slice-b-eval-instrument-and-recall-harness.md) | Point the eval instrument and recall harness at the new cap | A | done |
 
 ## Implementation map
 
@@ -48,4 +48,6 @@ Full architecture and verification checklist: `GAMEPLAN.md`.
 
 ## Open gate
 
-Answer `GATE-QUESTIONS.md` (14 verdict slots), then merge the docs PR to build: https://github.com/ChrisMiho/TheJudge/pull/230
+None. The docs PR (#230) merged, the define gate resolved with all 14 slots
+`accept`, and both build slices are done. Code PR:
+https://github.com/ChrisMiho/TheJudge/pull/231

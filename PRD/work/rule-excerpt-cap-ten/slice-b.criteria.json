@@ -5,31 +5,31 @@
     {
       "id": "B1",
       "statement": "DEFAULT_EXCERPT_CAPS is [10, 15] in eval-answer-quality.mjs.",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["scripts/eval-answer-quality.mjs"] }
     },
     {
       "id": "B2",
       "statement": "contextEvaluationHarness.ts's System 3 recall-check text says top-10, not top-5, in the EvaluationFixtureExpected doc comments, the two check functions' details strings, and the relevance-report header/doc comment.",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/backend/src/eval/contextEvaluationHarness.ts"] }
     },
     {
       "id": "B3",
       "statement": "The REQ-032 and REQ-190 GATE-QUESTIONS.md blocks are applied to PRD/sections/functional-requirements.md, before-text byte-verified against current truth before editing.",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
     },
     {
       "id": "B4",
       "statement": "npm run test:eval was run from apps/backend, and its exact pass/fail result -- including any forbidden-rule-at-rank-6-10 finding -- is recorded verbatim in this slice's evidence log, not suppressed by relaxing the check or the fixture.",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run test:eval" }
     },
     {
       "id": "B5",
       "statement": "npm run quality:check (or its test:scripts leg) passes.",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run quality:check|npm run test:scripts" }
     }
   ]

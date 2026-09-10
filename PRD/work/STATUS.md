@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rule-excerpt-cap-ten](rule-excerpt-cap-ten/) | Ask AI attaches up to ten official rule excerpts instead of five (measured 16/18 → 18/18 on the deployed model, latency unchanged). Both slices done: slice A (code + 12 GATE-QUESTIONS blocks) and slice B (eval-instrument default + recall-harness wording + REQ-032/REQ-190); `npm run test:eval`'s recorded risk (a forbidden rule already ranking 6–10) did not materialize — clean pass. Code PR #231 open into main. Next: owner review and merge, then `thejudge-cleanup` |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| [rule-excerpt-cap-ten](rule-excerpt-cap-ten/) | Ask AI attaches up to ten official rule excerpts instead of five (measured 16/18 → 18/18 on the deployed model, latency unchanged). Gate resolved 2026-09-10: owner answered all 14 `GATE-QUESTIONS.md` slots `accept`; docs PR #230 merged (build signal). Mapped into slice A (code + 12 GATE-QUESTIONS blocks) and slice B (eval-instrument default + recall-harness wording + REQ-032/REQ-190), B depends on A. Next: `thejudge-implement` slice A |
 
 ## refined
 
