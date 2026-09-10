@@ -3,11 +3,13 @@
 - Run ID: `graph-20260910-024919`
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] rm -rf is denied in every session."; graph tier: nohup true → "[graph-boundary] nohup is denied while a graph run holds the lock: a detached command outlives the run that started it.")`
-- Autonomous base: `origin/thejudge-auto/rule-excerpt-cap-ten` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rule-excerpt-cap-ten` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten` by the build half's claim)
+- Autonomous base: `origin/main` (rewritten by the build half's claim on 2026-09-10; was `origin/thejudge-auto/rule-excerpt-cap-ten` in the spec-forming half, whose docs PR #230 merged at `c28820b`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten` (rewritten by the build half's claim; the spec-forming half's `.worktrees/kickoff-rule-excerpt-cap-ten` was clean and removed at the claim)
+- Build branch: `thejudge-auto/rule-excerpt-cap-ten-work` (cut from `origin/main` at `c28820b`)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260910-024919/`
-- Current node: `gate-qc` (PASS — parked at `owner-action`; spec-forming half complete)
-- Next action: owner answers `PRD/work/rule-excerpt-cap-ten/GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/rule-excerpt-cap-ten/`
+- Build-half canary (2026-09-10, lock retaken via `graph-preflight --take-lock`): `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] This exact call was already denied during this run (`recursive-force-remove`)…"; graph tier: nohup true → "[graph-boundary] This exact call was already denied during this run (`nohup-wrapper`)…")` — both denies came from the hook while the lock was held, which is the proof; the wording differs from the run-start canary because the run id is shared with the spec-forming half and the hook's denial ledger remembers it
+- Current node: `gate-review` (build half claimed; resolving the answered `define` gate)
+- Next action: driver continues `gate-review → gate-qc → plan → build → review → close`; `land` is the owner's merge of the code PR
 
 ## Node ledger
 

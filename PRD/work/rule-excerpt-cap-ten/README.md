@@ -14,7 +14,7 @@ files — which are applied to `PRD/sections/` at build, never here.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/rule-excerpt-cap-ten
+- Autonomous base: origin/main
 
 ## Preparation gate
 
