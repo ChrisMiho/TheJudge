@@ -8,7 +8,7 @@
 - Build branch: `thejudge-auto/rule-excerpt-cap-ten-work` (cut from `origin/main` at `c28820b`)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260910-024919/`
 - Build-half canary (2026-09-10, lock retaken via `graph-preflight --take-lock`): `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent → "[graph-boundary] This exact call was already denied during this run (`recursive-force-remove`)…"; graph tier: nohup true → "[graph-boundary] This exact call was already denied during this run (`nohup-wrapper`)…")` — both denies came from the hook while the lock was held, which is the proof; the wording differs from the run-start canary because the run id is shared with the spec-forming half and the hook's denial ledger remembers it
-- Current node: `build`
+- Current node: `review`
 - Next action: driver continues `gate-review → gate-qc → plan → build → review → close`; `land` is the owner's merge of the code PR
 
 ## Node ledger
@@ -25,6 +25,7 @@
 | — | gate-review | sonnet | ok | `0 → 24` | commit `2426986` on `thejudge-auto/rule-excerpt-cap-ten-work` (pushed) — 14/14 verdicts `accept` (0 edit, 0 reject) applied inside `GATE-QUESTIONS.md` (no diff changed); brief reconciliation `none`; `## Gate verdicts` + `## Open gate` resolved line written; STATUS.owner-action→refined, README `status: refined`, board row owner-action→refined; `git status --porcelain` empty; `git diff --stat origin/main -- PRD/sections` empty | 2026-09-10 |
 | 4 | gate-qc | sonnet | ok | `0 → 25` | attempt 3 (build-half re-grade) PASS, no findings, no commit. 266-hit grep reproduced on the build branch (32 amend rows = 14 slots, 234 not-this-cap rows, 0 undisposed); 32 before-text lines byte-identical to `PRD/sections/` (`grep -rFc`, 0 mismatches); 14 blocks well-formed with `- Verdict: accept`; no new DEC; `git diff --stat origin/main -- PRD/sections` empty; brief build-ready (constant flip + tests + `--excerpt-cap` default, no live call). STATUS stays refined; driver rewrote README `## Preparation gate` | 2026-09-10 |
 | 5 | plan | sonnet | ok | `0 → 49` | commit `d2e4114` on `thejudge-auto/rule-excerpt-cap-ten-work` (pushed) — `GAMEPLAN.md`, `slice-a-deploy-ten-excerpt-cap.md` + `slice-a.criteria.json` (4 criteria, all `false`), `slice-b-eval-instrument-and-recall-harness.md` + `slice-b.criteria.json` (5 criteria, all `false`; B depends on A), README slice table + implementation map + `status: active`, STATUS.refined→active, board row refined→active; README `## Preparation gate` line verified PASS by the node before writing; `git status --porcelain` empty | 2026-09-10 |
+| 6 | build | sonnet | ok | `0 → 182` | commits `965b1da` (slice A) + `4b1267e` (slice B) on `thejudge-auto/rule-excerpt-cap-ten-work` (pushed, remote tip `4b1267e`); code PR https://github.com/ChrisMiho/TheJudge/pull/231 opened `thejudge-auto/rule-excerpt-cap-ten-work` → `main` (OPEN, not draft). `DEFAULT_SUPPLEMENTAL_RULE_CAP` 5→10 + `preparation.test.ts`; `DEFAULT_EXCERPT_CAPS` → `[10, 15]`; recall-harness wording top-5→top-10 (`contextEvaluationHarness.ts`, `retrieval-relevance-report.mjs`, `relevanceReport.test.ts`, fixtures README); 9 golden prompt fixtures regenerated (additive); all 14 `GATE-QUESTIONS.md` blocks applied to 7 `PRD/sections/` files. `npm run quality:check` PASS (575/575 script tests); `npm run test:eval` PASS, 9/9 fixtures 100% at cap 10 — the brief's forbidden-rule-at-rank-6–10 risk did not materialize, no fixture edited, no check relaxed. Criteria 9/9 `true` (self-reported evidence; known hook-evidence gap, review is the integrity gate). STATUS.active→ship-ready, board row active→ship-ready. Return-side: launch checkout `git status --porcelain` empty before and after, on `main`; every changed path under `.worktrees/implement-rule-excerpt-cap-ten/` (32 files, `git diff --stat origin/main`) | 2026-09-10 |
 
 ## Open gate
 
@@ -354,6 +355,49 @@ Boundaries: never edit any `thejudge-*` skill, `CLAUDE.md`, or `.claude/settings
 Tool-call cap for this node: 1200.
 
 Report back: every commit hash on the branch in order, the PR URL, the complete list of paths you wrote (absolute, or relative to the launch root), each criterion id with the evidence command or path that earned it and its final value, the `npm run quality:check` and `npm run test:eval` results (pass/fail with the failing test names if any), the eval-fixture risk outcome, the final marker and board row, and `git status --porcelain` of the working directory (expected empty). Outcome word on its own last line: `ok` or `failed`.
+
+### review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten
+
+You are node 7 (`review`) of graph run `graph-20260910-024919`, the build half driven by `graph-implement`: a fresh-context, no-write reviewer. You hold no `Write`, `Edit`, or `NotebookEdit`; use Bash only for read-only commands (`git diff`, `git log`, `grep`, `cat`, and test runs). Never modify, commit, push, or stash anything. You have not seen the build node's transcript and must not look for it — grade the work, not its justification. Work only from the working directory above (the build worktree on `thejudge-auto/rule-excerpt-cap-ten-work`); never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge`.
+
+What to review: the diff `git diff origin/main` (32 files, 2 build commits `965b1da` and `4b1267e`, PR https://github.com/ChrisMiho/TheJudge/pull/231). Package artifacts: `PRD/work/rule-excerpt-cap-ten/DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (14 finalized blocks, all `accept`), `GAMEPLAN.md`, `slice-a-deploy-ten-excerpt-cap.md`, `slice-b-eval-instrument-and-recall-harness.md`, and both `slice-<letter>.criteria.json`.
+
+The rubric is the slices' own acceptance criteria, quoted here — nothing else:
+
+Slice A
+- A1. `DEFAULT_SUPPLEMENTAL_RULE_CAP` is `10` in `preparation.ts`.
+- A2. `preparation.test.ts`'s cap assertions reflect `10` as the production default, and still prove directly (not by assumption) that a larger cap's leading excerpts equal the smaller cap's and the added slots are drawn from `runnerUp`.
+- A3. The 12 non-eval-instrument `GATE-QUESTIONS.md` blocks (REQ-022, REQ-178, REQ-181, REQ-182, REQ-185, REQ-188, NFR-018, `system-map.md`, `integrations-and-data.md`, `in-depth/README.md`, `quick-lookup/README.md`, `system-map/game-rules-retrieval.md`) are applied to `PRD/sections/`, each before-text byte-verified against current truth before editing.
+- A4. `npm run quality:check` passes (typecheck, lint, format:check, coverage:check including the updated `preparation.test.ts`, test:scripts).
+
+Slice B
+- B1. `DEFAULT_EXCERPT_CAPS` is `[10, 15]` in `eval-answer-quality.mjs`.
+- B2. `contextEvaluationHarness.ts`'s System 3 recall-check text says top-10, not top-5, in the `EvaluationFixtureExpected` doc comments, the two check functions' `details` strings, and the relevance-report header/doc comment.
+- B3. The REQ-032 and REQ-190 `GATE-QUESTIONS.md` blocks are applied to `PRD/sections/functional-requirements.md`, before-text byte-verified against current truth before editing.
+- B4. `npm run test:eval` was run from `apps/backend`, and its exact pass/fail result — including any forbidden-rule-at-rank-6–10 finding — is recorded verbatim in this slice's evidence log, not suppressed by relaxing the check or the fixture.
+- B5. `npm run quality:check` (or its `test:scripts` leg) passes.
+
+How to grade each criterion — with a command you ran and its output as evidence:
+- A1/B1/B2: read the files.
+- A2: read the test; confirm the larger-cap-vs-smaller-cap proof still exists and asserts on real retrieval output rather than a stub of the cap.
+- A3/B3: for every one of the 14 blocks, diff the applied `PRD/sections/` text against the block's after-text (`+` lines) — the apply is by intent, so wording may differ where current truth required it, but the substance of every `+` line must be present and no `-` line may survive. Confirm no `PRD/sections/` line outside the 14 blocks changed except where a block's own hunk required it, and that the combo-variant cap of five (REQ-094/095) is untouched.
+- A4/B5: re-run `npm run quality:check` yourself (it is read-only apart from coverage output) and report the result.
+- B4: re-run `npm run test:eval` from `apps/backend` yourself and compare with what the slice B evidence log records; confirm no fixture's `forbiddenRules`/expected lists were edited to make it pass (`git diff origin/main -- apps/backend/src/eval/fixtures/` should show only regenerated `*.prompt.golden.txt` and the README).
+- Also confirm the 9 regenerated golden prompt files are additive (excerpts 6–10 appended, the first five unchanged in content and order) on at least two fixtures, since that is the product promise the brief makes.
+
+Severity rule: a Critical or Important finding is one that makes a stated criterion false or breaks correctness. A preference, a style note, a wording nit, or an improvement outside these criteria is never Critical or Important and never loops the run back to `build` — record it as Minor. Manufactured findings spend a loop the run cannot get back.
+
+Copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten` unchanged, on its own line, into every prompt you write for any subagent of your own (you should need none).
+
+Boundaries: no writes of any kind; never merge, close, or comment on the PR; no live provider calls; no `nohup` or background `&`; a denied call is never retried.
+
+Tool-call cap for this node: 120.
+
+Report back: one line per criterion (`A1 … B5`) with met / not met and the evidence command, then findings grouped Critical / Important / Minor (or `none` per group), the `npm run quality:check` and `npm run test:eval` results as you observed them, and a final verdict line: `APPROVED` (no Critical or Important) or `RETURN TO BUILD` (with the findings that require it). Outcome word on its own last line: `ok` (verdict delivered) or `failed` (could not deliver a verdict).
 
 ## Instruction ledger
 
