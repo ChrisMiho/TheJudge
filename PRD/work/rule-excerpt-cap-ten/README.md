@@ -14,10 +14,10 @@ lines across 7 files — which slices A and B apply to `PRD/sections/`.
 
 ## Slices
 
-| Slice | Title | Dependencies |
-| --- | --- | --- |
-| [A](slice-a-deploy-ten-excerpt-cap.md) | Deploy the ten-excerpt cap | none |
-| [B](slice-b-eval-instrument-and-recall-harness.md) | Point the eval instrument and recall harness at the new cap | A |
+| Slice | Title | Dependencies | Status |
+| --- | --- | --- | --- |
+| [A](slice-a-deploy-ten-excerpt-cap.md) | Deploy the ten-excerpt cap | none | done |
+| [B](slice-b-eval-instrument-and-recall-harness.md) | Point the eval instrument and recall harness at the new cap | A | planned |
 
 ## Implementation map
 

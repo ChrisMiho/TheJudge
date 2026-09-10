@@ -22,7 +22,7 @@ System 3 is supplemental retrieval. It builds a query from the user's question p
 compact per-card signal — each submitted or attached card's name, type line, and
 keyword list — deliberately not the cards' full oracle text, which floods the query and
 was measured to drop recall@5 from 0.577 to 0.026 on a labelled benchmark. It then
-ranks official rule excerpts and selects at most five. Ranking is hybrid: when the
+ranks official rule excerpts and selects at most ten. Ranking is hybrid: when the
 embedding-provider seam is active the query is embedded and cosine-ranked against a
 committed per-rule embedding vector, that cosine score and the IDF-weighted lexical
 score are each normalised against the query's own top score, and the two are blended by
@@ -70,7 +70,7 @@ Supplemental retrieval builds the query from the question plus the per-card keyw
 signal, ranks the rule index (cosine over the committed rule embeddings when a query
 vector is present, IDF-weighted lexical otherwise or on embedding failure) with the
 exact-rule-ID boost merged in, drops entries whose rule IDs or parent rule IDs are
-already in the System 2 set, and returns the top five excerpts plus debug data when
+already in the System 2 set, and returns the top ten excerpts plus debug data when
 mock enrichment diagnostics are enabled. Prompt rendering places the resulting sections
 as curated rules, then supplemental excerpts, then official rulings.
 
@@ -102,7 +102,7 @@ combat-damage assignment surface even when they share few literal words with the
 question. Any explicit rule number in the query still pulls in an exact or parent match
 through the merged boost. If a combat damage rule is already present in the System 2
 topic set, that rule ID and its lettered sub-rules are excluded from System 3 so the
-supplemental block uses its five slots for additional relevant context rather than
+supplemental block uses its ten slots for additional relevant context rather than
 duplicating the baseline.
 
 System 1 independently checks the submitted card IDs against the rulings index. If one
@@ -118,7 +118,7 @@ reference material and simply omits `OFFICIAL RULINGS`.
   and populated-zone presence, not card names, oracle text, or keywords.
 - System 3 is deduplicated against the System 2 selection, so the same rule ID never
   appears once as curated baseline and again as supplemental retrieval.
-- System 3 is capped at five supplemental excerpts per request.
+- System 3 is capped at ten supplemental excerpts per request (raised from five on 2026-09-09, REQ-190).
 - System 3 ranking is a hybrid blend (normalised cosine over committed rule embeddings
   plus normalised lexical IDF overlap) with the exact-rule-ID boost merged in and
   lexical alone retained as the mock/offline default and the failure fallback; those

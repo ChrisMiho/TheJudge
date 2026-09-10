@@ -1,6 +1,6 @@
 # Slice A — Deploy the ten-excerpt cap
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -39,20 +39,36 @@ never states two different caps.
 
 ## Acceptance criteria
 
-- [ ] A1. `DEFAULT_SUPPLEMENTAL_RULE_CAP` is `10` in `preparation.ts`.
-- [ ] A2. `preparation.test.ts`'s cap assertions reflect `10` as the
+- [x] A1. `DEFAULT_SUPPLEMENTAL_RULE_CAP` is `10` in `preparation.ts`.
+- [x] A2. `preparation.test.ts`'s cap assertions reflect `10` as the
       production default, and still prove directly (not by assumption) that a
       larger cap's leading excerpts equal the smaller cap's and the added
       slots are drawn from `runnerUp`.
-- [ ] A3. The 12 non-eval-instrument `GATE-QUESTIONS.md` blocks (REQ-022,
+- [x] A3. The 12 non-eval-instrument `GATE-QUESTIONS.md` blocks (REQ-022,
       REQ-178, REQ-181, REQ-182, REQ-185, REQ-188, NFR-018, `system-map.md`,
       `integrations-and-data.md`, `in-depth/README.md`,
       `quick-lookup/README.md`, `system-map/game-rules-retrieval.md`) are
       applied to `PRD/sections/`, each before-text byte-verified against
       current truth before editing.
-- [ ] A4. `npm run quality:check` passes (typecheck, lint, format:check,
+- [x] A4. `npm run quality:check` passes (typecheck, lint, format:check,
       coverage:check including the updated `preparation.test.ts`,
       test:scripts).
+
+## Evidence log
+
+- `cd apps/backend && npx vitest run src/prompt/preparation.test.ts` — 14/14
+  passed.
+- `npm run quality:check` — initially failed one golden-snapshot test
+  (`contextEvaluationHarness.test.ts`'s `assertGoldenFile`, 9 fixture
+  `*.prompt.golden.txt` files) because the assembled prompt now legitimately
+  carries five more attached excerpts at the new cap. Regenerated with
+  `UPDATE_CONTEXT_EVAL_FIXTURES=1 npx vitest run src/eval/contextEvaluationHarness.test.ts`
+  and confirmed by diff that every changed golden file is purely additive —
+  the original five excerpts are byte-identical and in the same order, five
+  more are appended beneath them; `checklist-report.golden.txt` and every
+  `*.context.golden.json` file are unchanged. `npm run quality:check` then
+  passed clean (575/575 script tests, typecheck, lint, format:check,
+  coverage:check, test:scripts all green).
 
 ## Verification
 
@@ -73,3 +89,5 @@ npm run quality:check
 - `PRD/sections/in-depth/README.md`
 - `PRD/sections/quick-lookup/README.md`
 - `PRD/sections/system-map/game-rules-retrieval.md`
+- `apps/backend/src/eval/fixtures/*.prompt.golden.txt` (9 files, golden
+  snapshot regenerated for the new cap — additive only, verified by diff)
