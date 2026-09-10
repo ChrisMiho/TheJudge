@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # trade-balancer-first-card-ux
 
@@ -25,6 +25,31 @@ slice sketch, and the line-level disposition table under
 amended, 50 not contradicted and 17 off-topic); `GATE-QUESTIONS.md` carries the twelve
 proposed `PRD/sections/` amendments awaiting the owner's verdicts. No new stable
 IDs are reserved.
+
+## Slices
+
+`GAMEPLAN.md` has the full architecture, sequencing rationale, and data flow.
+
+| Slice | Objective | GATE-QUESTIONS blocks applied | Depends on |
+| --- | --- | --- | --- |
+| A | Build-time newest-first printing order | `REQ-066` | — |
+| B | Foil mode auto-selects from the printing's prices | — | — |
+| C | Pick the printing before the card is added (search path) | `trade-balancer/data/cardPrintingPrices.md` | A, B |
+| D | Printing picker becomes a scrollable, filterable box | `REQ-065`, `screen-layout.md` | A, B, C |
+| E | Warm-up ping on mount + remaining PRD-truth sweep + ship gates | `REQ-064`, `FLOW-009`, `FLOW-025`, `trade-balancer/README.md`, `system-map.md`, `integrations-and-data.md`, `overview.md`, `non-functional-requirements.md` | A, B, C, D |
+
+Single-agent order: A → B → C → D → E. Every one of the twelve
+`GATE-QUESTIONS.md` blocks is assigned above; none is left for cleanup.
+
+## Implementation map
+
+- `scripts/build-card-detail-by-oracle-id.mjs` — printing sort (A)
+- `apps/frontend/src/lib/trade/pricing.ts` — `defaultFoilForPrinting` (B)
+- `apps/frontend/src/components/trade/TradeBalancer.tsx` — foil wiring (B),
+  warm-up ping (E)
+- `apps/frontend/src/components/trade/TradeSide.tsx` — pick-before-add (C)
+- `apps/frontend/src/components/trade/PrintingPicker.tsx` — count/scroll/lazy/filter/scrollIntoView (D)
+- `PRD/sections/` — amended in place per the table above; no new stable IDs
 
 ## Autonomous metadata
 

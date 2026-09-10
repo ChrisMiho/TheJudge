@@ -1,0 +1,68 @@
+{
+  "slug": "trade-balancer-first-card-ux",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "Tapping a suggestion shows a loading state, then the printing picker in place of the suggestion list",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/TradeSide\\.test\\.tsx",
+        "paths": ["apps/frontend/src/components/trade/TradeSide.tsx", "apps/frontend/src/components/trade/TradeSide.test.tsx"]
+      }
+    },
+    {
+      "id": "C2",
+      "statement": "Tapping a printing row adds the card carrying that exact printing, not printings[0]",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/TradeSide\\.test\\.tsx",
+        "paths": ["apps/frontend/src/components/trade/TradeSide.tsx"]
+      }
+    },
+    {
+      "id": "C3",
+      "statement": "Cancel returns to the search box with the query text intact and no card added",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/TradeSide\\.test\\.tsx"
+      }
+    },
+    {
+      "id": "C4",
+      "statement": "A failed or empty pre-add printings fetch adds the card anyway in the $0-plus-caution state with the retry affordance",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/TradeSide\\.test\\.tsx"
+      }
+    },
+    {
+      "id": "C5",
+      "statement": "TradeBalancer.scan.test.tsx passes unmodified",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/TradeBalancer\\.scan\\.test\\.tsx"
+      }
+    },
+    {
+      "id": "C6",
+      "statement": "PRD/sections/trade-balancer/data/cardPrintingPrices.md is amended per the GATE-QUESTIONS.md block, re-derived against live text",
+      "value": false,
+      "evidence": {
+        "paths": ["PRD/sections/trade-balancer/data/cardPrintingPrices.md"]
+      }
+    },
+    {
+      "id": "C7",
+      "statement": "Browser observation at 390x844: suggestion tap opens the picker with a loading state then rows; picking a printing shows the entry already priced; Cancel returns to the search box with the query intact",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C8",
+      "statement": "Browser closed, owned server(s) stopped, ports released; capture output path recorded",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

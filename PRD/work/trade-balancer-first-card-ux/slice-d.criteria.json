@@ -1,0 +1,85 @@
+{
+  "slug": "trade-balancer-first-card-ux",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "The picker's header shows the printing count (N printings)",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/PrintingPicker\\.test\\.tsx",
+        "paths": ["apps/frontend/src/components/trade/PrintingPicker.tsx", "apps/frontend/src/components/trade/PrintingPicker.test.tsx"]
+      }
+    },
+    {
+      "id": "D2",
+      "statement": "The printing list is contained in a scroll region instead of a plain growing list",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/PrintingPicker\\.test\\.tsx",
+        "paths": ["apps/frontend/src/components/trade/PrintingPicker.tsx"]
+      }
+    },
+    {
+      "id": "D3",
+      "statement": "Row images carry loading=\"lazy\"",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/PrintingPicker\\.test\\.tsx",
+        "paths": ["apps/frontend/src/components/trade/PrintingPicker.tsx"]
+      }
+    },
+    {
+      "id": "D4",
+      "statement": "The set filter input is absent for 8 or fewer printings and present for more than 8",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/PrintingPicker\\.test\\.tsx"
+      }
+    },
+    {
+      "id": "D5",
+      "statement": "Typing in the filter narrows visible rows to those matching set name or set code",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/PrintingPicker\\.test\\.tsx"
+      }
+    },
+    {
+      "id": "D6",
+      "statement": "The row matching selectedPrintingId gets aria-current and scrollIntoView is called on it when the picker opens",
+      "value": false,
+      "evidence": {
+        "command": "npx vitest run src/components/trade/PrintingPicker\\.test\\.tsx"
+      }
+    },
+    {
+      "id": "D7",
+      "statement": "PRD/sections/screen-layout.md is amended per the GATE-QUESTIONS.md block, re-derived against live text",
+      "value": false,
+      "evidence": {
+        "paths": ["PRD/sections/screen-layout.md"]
+      }
+    },
+    {
+      "id": "D8",
+      "statement": "PRD/sections/functional-requirements.md's REQ-065 is amended per the GATE-QUESTIONS.md block with the owner's foil-rule edit applied, and REQ-175's fetch-timing line is corrected",
+      "value": false,
+      "evidence": {
+        "paths": ["PRD/sections/functional-requirements.md"]
+      }
+    },
+    {
+      "id": "D9",
+      "statement": "Browser observation at 390x844: a 128+ printing card's picker scrolls within roughly 40vh, the page does not grow, Side B stays reachable, the set filter narrows rows, and row images load lazily",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D10",
+      "statement": "Browser closed, owned server(s) stopped, ports released; capture output path recorded",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

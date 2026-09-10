@@ -11,6 +11,10 @@ Do not rename package folders to encode status.
 
 ## active
 
+| Package | Note |
+| --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Quality-check PASS (attempt 7); mapped out into slices A-E (2026-09-09) inside `/graph-implement`'s build half. All 12 `GATE-QUESTIONS.md` blocks assigned across A/C/D/E per GAMEPLAN's sequencing table. Next: implementation node, then review, then close. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
+
 ## refined
 
 | Package | Note |
@@ -20,7 +24,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Gate-qc attempt 6 park resolved on the owner's instruction (2026-09-09): README pointer now says the verbatim intake brief predates the gate and its foil rule is superseded by the owner's verdicts. Resuming inside `/graph-implement` at `gate-qc` attempt 7, then plan → build → review → close. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## ideation
 
