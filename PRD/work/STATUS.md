@@ -26,6 +26,10 @@ Do not rename package folders to encode status.
 
 ## ideation
 
+| Package | Note |
+| --- | --- |
+| [rule-excerpt-cap-ten](rule-excerpt-cap-ten/) | Raise the deployed System 3 rule-excerpt cap 5 → 10; measured 16/18 → 18/18 gpt-4.1 in the answer-quality instrument (receipt `ai-answer-quality-baseline-2026-09-07.md`) |
+
 ## owner-action
 
 | Package | Note |
