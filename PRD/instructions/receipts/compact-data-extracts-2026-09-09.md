@@ -232,3 +232,149 @@ Terminal state: COMPLETE — land: the owner's merge of https://github.com/Chris
 - `intake/GRAPH-BRIEF.md` — origin: staged verbatim from
   `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260908-233747/`
   at node 2 (`shape`), per `GRAPH-RUN.md`'s ledger row for that node.
+
+## Probe evidence folded at owner cleanup — 2026-09-09
+
+The intake brief came from the investigate-first probe
+`PRD/work/probe-data-extract-size/` (2026-09-08). Its findings file held the
+measured alternatives that the brief only summarised, and nothing else in the
+PRD records them. They are folded here so the decisions stay re-checkable;
+the probe folder (findings, measurement scripts, logs) was deleted after this
+fold. The scripts targeted the old per-variant gzip layout and no longer run
+against the committed files.
+
+All numbers measured on the owner's Apple laptop against `main` at 908fd6a
+and a fresh 108,484-variant combo build from the 2026-09-08 raw Commander
+Spellbook export. Sizes are committed on-disk bytes, which is what the budget
+test counts.
+
+### Where the bytes were (committed on `main`, before this change)
+
+| File | Committed | Encoding | Raw JSON |
+| --- | ---: | --- | ---: |
+| `commanderSpellbookCombos.json.gz` | 74.95 MB | one gzip member per combo | 171 MB |
+| `cardRulingsByOracleId.json` | 18.61 MB | raw minified JSON | 18.61 MB |
+| `cardDetailByOracleId.json` | 12.67 MB | raw minified JSON | 12.67 MB |
+| `cardPrintingPricesByOracleId.json.gz` | 4.76 MB | single gzip | 16.05 MB |
+| `commanderSpellbookComboIndex.json.gz` | 4.30 MB | single gzip of prettier-formatted JSON | 24.15 MB |
+| game-rules files (5) | 3.74 MB | raw / int8-base64 | |
+| **Total tracked** | **119.03 MB** | | 0.97 MB headroom; 137.3 MB with the fresh corpus |
+
+Raw combo-detail bytes by field (191.8 MB fresh): `cardIngredients` 29 %,
+`steps` 24 %, `templateIngredients` 21 % (37.9 MB of it a verbatim copy of
+`index.templates[*].oracleIds`), `producedEffects` 9 %, `sourceUrl` 3 %.
+
+### Codec per file, nothing restructured
+
+| File | Raw | gzip -9 | brotli q11 | zstd 19 | brotli decode |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| rulings | 18.61 MB | 4.71 MB | **1.47 MB** | 1.53 MB | 29 ms |
+| card detail | 12.67 MB | 2.87 MB | **1.57 MB** | 1.63 MB | 14 ms |
+| prices | 16.05 MB | 4.65 MB | **3.41 MB** | 3.53 MB | 40 ms |
+| combo index (fresh, prettier) | 46.64 MB | 6.30 MB | **2.42 MB** | — | — |
+| game rules rule index | 2.04 MB | 0.30 MB | 0.20 MB | 0.22 MB | 2 ms |
+| rule embeddings | 1.44 MB | 1.04 MB | 1.00 MB | 1.02 MB | 8 ms |
+
+Brotli won every file, 2–3× over gzip on the text-heavy ones. Zstd was within
+5 % and 3–4× faster to build, but its `zlib` binding is newer (v22.15 / v23.8);
+brotli was chosen as smaller and available on every Node the repo runs (22 CI,
+24 Lambda, 26 local). `gameRulesRuleIndex.json` was left raw: it is re-hashed
+by the embeddings build (`ruleIndexHash`) and the gain is 1.8 MB.
+
+### Combo detail layouts (the real lever)
+
+| Layout | gzip -9 | brotli q11 | zstd 19 | Random read of one combo |
+| --- | ---: | ---: | ---: | ---: |
+| per-record (old) | 90.96 MB | 77.63 MB | 89.43 MB | 0.02 ms |
+| blocks of 32 | 32.65 MB | 17.53 MB | 19.35 MB | ~0.1–1 ms |
+| **blocks of 128** (chosen) | 30.09 MB | **12.99 MB** | 14.19 MB | **0.34 ms** (measured through a file handle) |
+| blocks of 512 | 29.44 MB | 10.63 MB | 11.45 MB | ~1–2.5 ms |
+| one stream (lower bound, no random access) | 29.20 MB | — | 6.44 MB | n/a |
+| per-record zstd19 + 70 KB shared dictionary | | | 43.12 MB | 0.012 ms |
+| per-record brotli11 + 70 KB shared dictionary | | 39.63 MB | | 0.043 ms |
+| per-record zstd19 + 90 KB shared dictionary | | | 46.55 MB | 0.026 ms |
+| per-record brotli11 + 90 KB shared dictionary | | 43.94 MB | | 0.036 ms |
+
+- **Blocks of 128 won.** 512 saves 2.4 MB more but quadruples the read; 32
+  costs 4.5 MB more. One decoded block is ~230 KB, held only for the read; at
+  most five combos enter a prompt, so the per-request worst case is ~2 ms.
+  Build time ~80 s at brotli q11 (gzip 2 s, zstd 19 24 s), inside a weekly
+  `data:build` that already streams a 646 MB export.
+- **Shared dictionary rejected.** It keeps one-record reads but lands at 3×
+  the block layout: the savings come from the ~230 KB of neighbouring combos
+  a block shares, which no ~100 KB dictionary can carry. It also adds an
+  artifact that must stay byte-identical between build and runtime, and
+  Node 22 (CI) silently ignores the brotli `dictionary` option while Node 24
+  (Lambda) honours it, so a dictionary-built artifact would decode on Lambda
+  and fail in CI.
+- **"Slim" detail records rejected.** Dropping `sourceUrl` and the template
+  `oracleIds` lists duplicated from the index saves a further 4 MB on the
+  block layout (13.0 → 8.9 MB). Not taken: it would make a detail record
+  depend on the index to validate, against the per-record integrity model in
+  `catalog.ts`. Documented lever only.
+
+### Combo index forms
+
+| Index form | Raw | gzip -9 | brotli q11 |
+| --- | ---: | ---: | ---: |
+| as built before (prettier) | 46.64 MB | 6.30 MB | 2.42 MB |
+| minified | 18.65 MB | 4.02 MB | 1.89 MB |
+| **positional ints** (chosen, slice E) | 12.25 MB | 3.09 MB | 1.38 MB |
+
+The positional-int form's payoff is cold start and resident memory, not
+budget: it cuts the JSON parsed at every cold start from 47 MB to 12 MB.
+
+### The owner's hypothesis: one per-card record for prices + rulings + detail
+
+| Shape | Raw | gzip -9 | brotli q11 | zstd 19 |
+| --- | ---: | ---: | ---: | ---: |
+| three separate files | 47.34 MB | 12.23 MB | 5.77 MB | 6.68 MB |
+| one merged per-card file | 45.55 MB | 12.51 MB | 5.60 MB | 6.03 MB |
+| **difference** | −1.8 MB | +0.29 MB | **−0.17 MB** | −0.65 MB |
+
+The only bytes a merge removes are the repeated 36-character oracle-id keys,
+and a compressor already removes those. Rejected: it would also put price
+bytes on the ask-ai path (REQ-175) and REQ-093 forbids folding corpora
+together. A restructured price file (set names in a lookup table, printings
+as tuples) measured 3.28 MB vs 3.41 MB brotli as-is; not worth a schema change.
+
+### Rejected without measurement
+
+Each fails on an axis the numbers cannot change: S3 range reads at runtime
+(adds a network hop and a runtime data dependency DEC-162 avoids),
+container-image Lambda (replaces the DEC-169 zip deploy, worse cold start),
+Lambda layers (same 250 MB quota), EFS (new infra and a monthly charge),
+SQLite or any database (owner-excluded), raising `MIN_VARIANT_POPULARITY`
+(drops combos players see; stays in the code as the emergency valve, unused).
+
+### Cold start and the memory raise (2026-09-08 evening)
+
+Measured because the owner reported Trade Balancer price lookups feeling slow
+after PR #212 moved prices behind `GET /api/cards/:oracleId/prices`.
+
+| Price route hit, against the live Function URL | 512 MB (before) | 1769 MB (after) |
+| --- | ---: | ---: |
+| cold start over the wire | 12.3 – 13.6 s | **5.07 s** |
+| first-invocation `Duration` (CloudWatch) | 8.6 – 10.2 s | **2.40 s** |
+| `Init Duration` | 0.84 s | 0.66 s |
+| `Max Memory Used` | 491 MB of 512 | 497 MB of 1769 |
+| warm over the wire | 168 – 205 ms (~105 ms DNS + TLS) | 182 – 219 ms |
+| warm in-Lambda | 2 – 4 ms | 2 – 3 ms |
+
+The same startup on the laptop takes ~0.6 s (rulings 59 ms, card detail
+66 ms, prices 82 ms, combo index 112 ms, transformers + ONNX + sharp import
+118 ms, first embedding 70–280 ms) at ~660 MB RSS. At 512 MB the Lambda has
+roughly a third of a vCPU and was 21 MB from its memory cap during cold
+start: CPU starvation and near-OOM at once. The owner raised the function to
+1769 MB (`aws lambda update-function-configuration`, then
+`scripts/aws-bootstrap.sh` synced, PR #221). The ~2.6 s between the in-Lambda
+3.1 s and the 5.1 s on the wire is AWS fetching the then-137 MB package onto a
+fresh instance; the smaller package from this change trims that a little.
+Cost at 1769 MB and 85 invocations / 30 days is four orders of magnitude
+inside the free tier. The encoding change itself is neutral for cold start
+(brotli decode adds ~20 ms on the price file). Provisioned concurrency or a
+warm ping remain owner options if cold starts must go away entirely.
+
+Loose ends noted and left: the 130 MB non-data reserve was measured on macOS
+and NFR-017 still flags it as "to be re-measured on the CI runner"; with
+≈94 MB of data headroom it no longer threatens deploys.

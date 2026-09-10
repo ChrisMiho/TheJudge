@@ -123,7 +123,9 @@ log retired — no new DEC; amend in place.
 
 - Findings: `PRD/ideasForLater/combo-context-validation/FINDINGS.md` — "Findings
   #2" (over-assertion, both worked examples) and the 500-case negative family.
-- Status synthesis: `PRD/work/probe-combo-context-status/PROBE.md`.
+- Status synthesis: `PRD/ideasForLater/combo-context-validation/HANDOFF.md`
+  and the answer-quality receipt
+  `PRD/instructions/receipts/ai-answer-quality-baseline-2026-09-07.md`.
 - The throwaway harness that generated the 500-case suite (incl. the "unrelated"
   negative family) lives on branch `thejudge-auto/semantic-rule-retrieval` at
   `origin` (`bcbcebc`) — `select-suite.mjs` (five scenario families),
