@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # rule-excerpt-cap-ten
 
@@ -18,6 +18,10 @@ files — which are applied to `PRD/sections/` at build, never here.
 
 ## Preparation gate
 
-- Quality-check: FAIL
+- Quality-check: PASS
 - Checked artifact: `PRD/work/rule-excerpt-cap-ten/DESIGN-BRIEF.md`
-- Findings: the amendment-set appendix mislabels 8 of 266 "not this cap" rows as the REQ-094/095 combo-variant cap when the cited line is a layout, attach-limit, deploy, or section-order cap (`screen-layout.md:132`, `functional-requirements.md:2211`, `:3107`, `:3379`, `:3881`, `:4442`, `decisions/deployment.md:31`, `in-depth/README.md:302`); the "not this cap" conclusion holds for all 8, the stated reason is wrong, so the table cannot be trusted at face value by an implementing agent. All other checks clean (grep reproduced 266 hits, 32 amend rows = 32 diff hunks, all before-text byte-identical, 14 slots well-formed, no new DEC, `PRD/sections/` unedited)
+- Findings: none (attempt 2, 2026-09-10 — after define loop 1 corrected 59 appendix disposition reasons; reviewer re-ran the 266-hit grep, byte-compared all 32 before-text lines, spot-checked the "not this cap" reasons against cited line text, confirmed 14 well-formed slots, no new DEC or REQ, `PRD/sections/` unedited; attempt 1 FAILed on the 8 mislabelled reasons now corrected)
+
+## Open gate
+
+Answer `GATE-QUESTIONS.md` (14 verdict slots), then merge the docs PR to build.

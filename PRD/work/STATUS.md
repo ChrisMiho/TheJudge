@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rule-excerpt-cap-ten](rule-excerpt-cap-ten/) | gate-qc loop 1 fix 2026-09-09: the appendix disposition reasons were re-checked against every cited `PRD/sections/` line and 59 wrong reasons corrected (the 8 flagged plus 51 more found in the same pass); no `amend` row, no `GATE-QUESTIONS.md` diff, and no `PRD/sections/` file changed |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rule-excerpt-cap-ten](rule-excerpt-cap-ten/) | Ask AI attaches up to ten official rule excerpts instead of five (measured 16/18 → 18/18 on the deployed model, latency unchanged). gate-qc PASS 2026-09-10 (attempt 2). Owner: answer the 14 slots in `GATE-QUESTIONS.md`, then merge the docs PR — that merge is the build signal for `graph-implement` |
 
 
 ## deferred
