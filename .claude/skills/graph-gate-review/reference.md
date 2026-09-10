@@ -13,7 +13,8 @@ PARKED — STATUS.owner-action, complete diff under ## Open gate
    |
    |  /graph-gate-review PRD/work/<slug>/
    v
-gate resolved, ## Gate verdicts written, STATUS.refined restored
+gate resolved, ## Gate verdicts written, brief reconciled to every
+edit/reject, STATUS.refined restored
    |
    |  /graph-implement PRD/work/<slug>/
    v
@@ -66,6 +67,28 @@ allocates `154`. Reissuing a consumed ID breaks every reference that already
 pointed at it — receipts, work packages, prior decisions — which is the whole
 reason stable IDs are stable. Record the rejection so the gap is explicable
 later rather than looking like an accounting error.
+
+## Why an edit reconciles the brief
+
+A verdict is applied inside `GATE-QUESTIONS.md`, but the brief is what the run
+reads next: `gate-qc` re-grades it and `thejudge-map-out` slices from it. On
+2026-09-09 (`trade-balancer-first-card-ux`, run `graph-20260909-213550`) the
+owner's `edit` replaced the foil rule. The proposal was finalized correctly, but
+the brief's design section and one assumption row still stated the old rule,
+and the verbatim intake brief did too. The re-grade FAILed twice, each FAIL
+counting against the run's three-loop `gate-qc → define` limit, which the
+spec-forming half had already spent, so the run parked past the limit twice on
+findings that were pure consequences of the owner's own verdict. Reconciling in
+the same pass that applies the verdict closes that: the re-grade sees one
+consistent package.
+
+The reconciliation is bounded on purpose. It rewrites only passages that
+contradict an `edit` or `reject`, in the owner's words, with the verdict as the
+evidence; it adds no design and touches nothing for an `accept`. The passages
+are found by a quoted grep, not from memory, because the 2026-09-09 misses were
+exactly the passages nobody remembered. Intake stays verbatim — it is the record
+of what was handed in — so a stale intake claim is answered by a supersession
+note in the README pointer, never by editing the evidence.
 
 ## Gates this skill refuses
 

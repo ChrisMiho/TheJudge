@@ -462,7 +462,7 @@
   4. Node 2 (`shape`) receives the proposed slug, searches `PRD/instructions/receipts/` for slug and keyword matches, and writes `IDEA.md` with one `## Prior run` line per match.
   5. Node 3 (`define`) runs refinement, which reads those prior-run lines as input alongside `PRD/sections/`.
   6. The driver diffs `PRD/sections/`. A non-empty diff parks at `owner-action` with the complete diff and the new stable IDs; an empty diff advances straight to `gate-qc`.
-  7. Owner answers the verdict slots in `GATE-QUESTIONS.md` in the docs PR and merges it; the `graph-implement` loop claims the spec, dispatches `graph-gate-review` to apply the verdicts, and continues.
+  7. Owner answers the verdict slots in `GATE-QUESTIONS.md` in the docs PR and merges it; the `graph-implement` loop claims the spec, dispatches `graph-gate-review` to apply the verdicts and reconcile the design brief to them, and continues.
   8. The run continues through `gate-qc`, `plan`, `build`, `review`, and `close` unattended in `.worktrees/implement-<slug>` (REQ-193), ends `COMPLETE` with the code PR `thejudge-auto/<slug>-work → main` open, and the owner's merge (`land`, node 9) puts the fix, the receipt, and the package's deletion on `main` in one step (REQ-194).
 - Edge Cases:
   - description too thin to package → node 2 returns `NO ACTIONABLE PACKAGE`, the run ends at `BLOCKED` naming what it needs, and no package folder is created. The report names the `thejudge-auto/<slug>` branch node 1 already pushed, and the retry supplies an explicit `--branch` so it does not hit `graph-preflight`'s exit-code-2 collision with it

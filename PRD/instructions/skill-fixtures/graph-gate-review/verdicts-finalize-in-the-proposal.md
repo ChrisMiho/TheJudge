@@ -19,6 +19,13 @@ rewrites it in place, reject removes that id's block entirely (burning the numbe
 still carries the old behavior would try to revert a section file that refinement
 never wrote, which is the exact regression this package removes.
 
+A second trap was added on 2026-09-10. An `edit` or `reject` applied to the
+proposal but not carried into `DESIGN-BRIEF.md` leaves the brief on the
+pre-verdict rule, and the re-grade at `gate-qc` fails on it — observed twice on
+`trade-balancer-first-card-ux`, each time past the run's loop limit. The skill
+now reconciles the brief and the README's intake pointer in the same pass, and
+never edits the verbatim intake file itself.
+
 ## Preconditions
 
 A repository at the tip of `graph-shipping-mode-phase1`, built by the rig, with a
@@ -34,6 +41,12 @@ work package parked at an answered `define` gate:
   one `accept`, one `edit` (with `Reason:`), one `reject` (with `Reason:`).
 - `PRD/sections/` contains **no** edit from this package — refinement proposed
   only; nothing was applied.
+- `DESIGN-BRIEF.md` states, in a design section and in one `## Assumptions`
+  row, the behaviour the `edit` id's original diff proposed (so the owner's
+  `Reason:` contradicts both), and describes the `reject` id's change in the
+  slice sketch.
+- `intake/GRAPH-BRIEF.md` (verbatim intake) restates the pre-edit behaviour,
+  and the package README points readers at it for design direction.
 
 ## Scenario
 
@@ -63,10 +76,13 @@ Give the agent repo access and this prompt verbatim. Do not name
 | 5 | **Writes nothing to `PRD/sections/`.** No section file is edited, created, or reverted by this skill | `graph-gate-review/SKILL.md` `## Boundaries` ("Never edit `PRD/sections/` at all") | **Trap.** The old skill reverted a rejected id out of `PRD/sections/`; here refinement wrote no section file, so any `PRD/sections/` write is the regression |
 | 6 | Records `## Gate verdicts`, resolves `## Open gate`, restores `STATUS.refined`, and hands back `/graph-implement PRD/work/<slug>/` | `graph-gate-review/SKILL.md` `## Writes` / `## Next step` | The run must be able to resume at `gate-qc` |
 | 7 | Refuses if any `Verdict:` slot is blank or malformed, naming the offending ids | `graph-gate-review/SKILL.md` "Refuse an unanswered file" | An unanswered gate cannot resume |
+| 8 | `edit` id: every `DESIGN-BRIEF.md` passage stating the pre-edit behaviour — the design section and the assumption row — is rewritten to the owner's rule with the verdict as its evidence, and a `### Brief reconciliation` list under `## Gate verdicts` quotes the grep and names each rewritten passage | `graph-gate-review/SKILL.md` Procedure step 4 / `## Writes` | A brief left on the old rule fails the re-grade and spends a loop |
+| 9 | `reject` id: the brief's slice-sketch description of the rejected change is rewritten to say it is not proceeding; no new design is added anywhere, and the `accept` id's passages are untouched | `graph-gate-review/SKILL.md` Verdicts table (brief column) | Reconciliation is bounded to contradicted passages |
+| 10 | `intake/GRAPH-BRIEF.md` is byte-identical afterwards, and the README pointer gains one supersession sentence naming the intake passage and the verdict that supersedes it | `graph-gate-review/SKILL.md` `## Boundaries` (intake) | **Trap.** Intake is verbatim evidence; editing it to match the verdict falsifies the record |
 
-Outcome space: items 1–6 must succeed against a fully-answered file; item 5 is the
-trap (no `PRD/sections/` write); item 7 must refuse against a variant with one
-blank slot. A run where nothing refuses has not been tested — include the
+Outcome space: items 1–6 and 8–10 must succeed against a fully-answered file;
+items 5 and 10 are the traps (no `PRD/sections/` write; no `intake/` write);
+item 7 must refuse against a variant with one blank slot. A run where nothing refuses has not been tested — include the
 one-blank-slot variant as a second rep input.
 
 ## Measured runs
