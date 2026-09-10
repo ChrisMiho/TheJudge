@@ -9,7 +9,15 @@ prices fast.
 See `IDEA.md` for problem/outcome/non-goals and prior-run matches, and
 `intake/GRAPH-BRIEF.md` for the full measured brief handed off by
 `/graph-kickoff` (evidence, converged design direction, PRD sections to
-amend, slice sketch).
+amend, slice sketch). The intake brief is a verbatim record that predates
+the gate: where it disagrees with `GATE-QUESTIONS.md` or `DESIGN-BRIEF.md`,
+those win. In particular its foil rule (decision 4, keep the player's current
+toggle otherwise) and its `defaultFoilFor(printing, currentFoil)` helper
+signature are superseded by the owner's gate verdicts — the foil mode is
+re-derived from the printing's prices every time an entry receives a printing
+(non-foil when `usd` exists, foil only when `usd` is null and `usd_foil` is
+not), and the current toggle is never carried over; see the brief's
+`### Foil mode follows the printing`.
 
 `DESIGN-BRIEF.md` is the design record (scope, code verification, assumptions,
 slice sketch, and the line-level disposition table under

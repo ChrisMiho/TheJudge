@@ -20,6 +20,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | Gate-qc attempt 6 park resolved on the owner's instruction (2026-09-09): README pointer now says the verbatim intake brief predates the gate and its foil rule is superseded by the owner's verdicts. Resuming inside `/graph-implement` at `gate-qc` attempt 7, then plan → build → review → close. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 ## ideation
 
@@ -27,7 +28,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [trade-balancer-first-card-ux](trade-balancer-first-card-ux/) | PARKED by `graph-implement` after `gate-qc` attempt 6 FAIL (past the three-loop limit). The brief now matches the owner's accepted foil rule, but the verbatim intake brief `intake/GRAPH-BRIEF.md` (decision 4, line 32; helper signature, line 41) still states the superseded keep-current-toggle rule and the README pointer sends map-out there. Intake is verbatim evidence, so the fix is a supersession note in the README pointer (and brief), not an intake edit. Then restore `STATUS.refined`, push, `/graph-implement PRD/work/trade-balancer-first-card-ux/`. Graph run `graph-20260909-213550`, build worktree `.worktrees/implement-trade-balancer-first-card-ux` |
 
 
 ## deferred
