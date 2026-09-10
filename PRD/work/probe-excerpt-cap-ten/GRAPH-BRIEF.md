@@ -108,7 +108,6 @@ criteria in place. The decision log is retired — no new DEC; amend in place.
 
 ## Evidence + reusable tooling
 
-- Full status synthesis: `PRD/work/probe-combo-context-status/PROBE.md`.
 - The measurement: `PRD/instructions/receipts/ai-answer-quality-baseline-2026-09-07.md`
   (run 3 numbers) and REQ-190's measured notes in `functional-requirements.md`.
 - The instrument: `npm run eval:answer-quality -- --confirm-live-calls` and
