@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rule-excerpt-cap-ten](rule-excerpt-cap-ten/) | Raise the deployed System 3 rule-excerpt cap 5 → 10; measured 16/18 → 18/18 gpt-4.1 in the answer-quality instrument (REQ-190 run 3). Brief + 14-slot `GATE-QUESTIONS.md` proposal written; 32 product-truth lines across 7 files |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [rule-excerpt-cap-ten](rule-excerpt-cap-ten/) | gate-qc FAIL 2026-09-09: DESIGN-BRIEF.md's amendment-set appendix mislabels 8 disposition reasons ("Commander Spellbook combo-variant cap of five" pasted onto layout-cap, REQ-167 attach-limit, deploy-artifact-size, and cap-agnostic eval-instrument lines that aren't combo-variant at all); no amend slot is missing, but the disposition table is not agent-trustworthy as written |
 
 ## ideation
 

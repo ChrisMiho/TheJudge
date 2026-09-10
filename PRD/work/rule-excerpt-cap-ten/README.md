@@ -1,4 +1,4 @@
-status: refined
+status: refining
 
 # rule-excerpt-cap-ten
 
