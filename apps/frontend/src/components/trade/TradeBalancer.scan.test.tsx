@@ -312,6 +312,17 @@ describe("Frontend - Trade", () => {
       expect(search).not.toBeDisabled();
       await user.type(search, "Light");
       await user.click(within(side("A")).getByRole("button", { name: /^Lightning Bolt/ }));
+
+      // Slice C: manual search now picks the printing before the card is
+      // added — the scan path above is untouched (A11); this only reflects
+      // the same pick-before-add flow every manual-search test now goes
+      // through.
+      const pickerElement = await within(side("A")).findByRole("group", {
+        name: "Choose a printing for Lightning Bolt"
+      });
+      const [firstRow] = within(pickerElement).getAllByRole("listitem");
+      await user.click(within(firstRow).getByRole("button"));
+
       await waitFor(() => {
         expect(within(side("A")).queryByText("Loading price…")).not.toBeInTheDocument();
       });

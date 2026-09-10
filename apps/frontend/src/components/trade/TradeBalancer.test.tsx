@@ -80,9 +80,11 @@ function sideTotalText(sideId: "A" | "B"): string {
   return within(side(sideId)).getByLabelText(`Side ${sideId} total`).textContent ?? "";
 }
 
-/** Manual path: search a card by name and add it. The card is added immediately,
- * defaulting to the first printing the backend returns; the caller waits for
- * that fetch to resolve before making further assertions (FLOW-025). */
+/** Manual path (Slice C: pick-before-add): search a card by name, tap its
+ * suggestion — which fetches that card's printing list and swaps the
+ * suggestion list for the printing picker — then pick the first printing.
+ * The card is added carrying that printing, already priced from the cache
+ * `TradeSide`'s own pre-add fetch populated (REQ-065, FLOW-025). */
 async function addCard(
   user: ReturnType<typeof userEvent.setup>,
   sideId: "A" | "B",
@@ -92,7 +94,17 @@ async function addCard(
   await user.clear(search);
   await user.type(search, cardName.slice(0, 5));
   await user.click(within(side(sideId)).getByRole("button", { name: new RegExp(`^${cardName}`) }));
+
+  const pickerElement = await within(side(sideId)).findByRole("group", {
+    name: `Choose a printing for ${cardName}`
+  });
+  const [firstRow] = within(pickerElement).getAllByRole("listitem");
+  await user.click(within(firstRow).getByRole("button"));
+
   await waitFor(() => {
+    expect(
+      within(side(sideId)).queryByRole("group", { name: `Choose a printing for ${cardName}` })
+    ).not.toBeInTheDocument();
     expect(within(side(sideId)).queryByText("Loading price…")).not.toBeInTheDocument();
   });
 }
@@ -359,13 +371,18 @@ describe("Frontend - Trade", () => {
     });
 
     it("degrades a failed price fetch to $0-plus-caution with a retry affordance, and retrying re-fetches", async () => {
+      // Slice C: a suggestion tap fetches printings pre-add (call 1) before
+      // TradeSide falls back to add-then-degrade, whose entry-level fetch
+      // tries again (call 2) — both fail here so the entry lands in the
+      // error/retry state; the player's Retry click is the 3rd call, which
+      // succeeds.
       const flakyFetch = vi.fn((input: RequestInfo | URL) => {
         const url = String(input);
         if (url.includes("/data/cardMetadata.json")) {
           return Promise.resolve(jsonResponse(cardMetadata));
         }
         if (url.includes("/api/cards/oracle-bolt/prices")) {
-          if (flakyFetch.mock.calls.filter((call) => String(call[0]).includes("oracle-bolt")).length === 1) {
+          if (flakyFetch.mock.calls.filter((call) => String(call[0]).includes("oracle-bolt")).length <= 2) {
             return Promise.reject(new Error("network down"));
           }
           return Promise.resolve(jsonResponse({ oracleId: "oracle-bolt", ...pricesByOracle["oracle-bolt"] }));
@@ -381,7 +398,7 @@ describe("Frontend - Trade", () => {
       await user.type(search, "Light");
       await user.click(within(side("A")).getByRole("button", { name: /^Lightning Bolt/ }));
 
-      const entry = within(side("A")).getByRole("listitem");
+      const entry = await within(side("A")).findByRole("listitem");
       await waitFor(() => {
         expect(within(entry).getByText("Price unavailable right now.")).toBeInTheDocument();
       });

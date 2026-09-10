@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import { NO_MATCH_COPY } from "../../lib/search";
-import type { CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
+import { fetchCardPrintings, type CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
 import { formatUsd, sideTotal, type TradeEntry, type TradeSideId } from "../../lib/trade/pricing";
 import type { CardMetadataItem } from "../../types";
 import { ScanCameraSurface } from "../ScanCameraSurface";
+import { PrintingPicker } from "./PrintingPicker";
 import { TradeEntryRow, type TradeEntryPricingMeta } from "./TradeEntryRow";
 import type { TradeScan } from "./useTradeScan";
 import {
@@ -12,6 +13,11 @@ import {
   searchOracleIndex,
   type OracleSearchEntry
 } from "./oracleSearch";
+
+/** C1-C4: the card whose printing list is being fetched/shown before it is
+ * added — swaps the suggestion list for a loading state then the printing
+ * picker. `null` when no suggestion tap is pending. */
+type PendingCard = { oracleId: string; name: string } | null;
 
 export type TradeSideProps = {
   sideId: TradeSideId;
@@ -46,22 +52,73 @@ export function TradeSide({
   onRetryPricing
 }: TradeSideProps): JSX.Element {
   const [query, setQuery] = useState("");
+  const [pendingCard, setPendingCard] = useState<PendingCard>(null);
+  const [pendingPrintings, setPendingPrintings] = useState<CardPrintingPrice[] | null>(null);
+  // Guards a pending fetch's resolution against a stale write after Cancel or
+  // a second suggestion tap swapped `pendingCard` out from under it.
+  const pendingOracleIdRef = useRef<string | null>(null);
   const sideLabel = `Side ${sideId}`;
   const total = sideTotal(entries);
   const isScanOpen = scan.activeSideId === sideId;
   const scanNotice = scan.notice?.sideId === sideId ? scan.notice.message : null;
   const isInputDisabled = isSearchDisabled;
   const suggestions = searchOracleIndex(searchIndex, query);
-  const showSuggestionPanel = query.trim().length >= MIN_TRADE_SEARCH_LENGTH;
+  const showSuggestionPanel = pendingCard === null && query.trim().length >= MIN_TRADE_SEARCH_LENGTH;
 
-  // REQ-065/FLOW-025: the card is added immediately on selection — its printings
-  // and prices are not known yet (no bulk artifact to pick a printing from up
-  // front); the balancer fetches them on add and the entry shows a brief loading
-  // state while they resolve. The existing "Change printing" affordance on the
-  // resolved entry is how the player picks a different printing than the default.
-  function addByOracle(oracleId: string, name: string): void {
+  function clearPending(): void {
+    pendingOracleIdRef.current = null;
+    setPendingCard(null);
+    setPendingPrintings(null);
+  }
+
+  // C4: the pre-add fetch failed, or resolved with zero printings — the
+  // picker never traps the player. The card is added the way it is added
+  // today (no preferred printing), and `TradeBalancer`'s own fetch takes over
+  // the loading/error/retry state (FLOW-025's existing degrade path).
+  function fallBackToAddThenDegrade(oracleId: string, name: string): void {
     onAddByOracle(sideId, oracleId, name);
+    clearPending();
     setQuery("");
+  }
+
+  // C1: tapping a suggestion fetches that card's printing list (cached per
+  // session) and swaps the suggestion list for a loading state, then the
+  // printing picker — the choice happens before the card is added (REQ-065).
+  function handleSuggestionTap(oracleId: string, name: string): void {
+    pendingOracleIdRef.current = oracleId;
+    setPendingCard({ oracleId, name });
+    setPendingPrintings(null);
+
+    fetchCardPrintings(oracleId)
+      .then((block) => {
+        if (pendingOracleIdRef.current !== oracleId) return;
+        const printings = block?.printings ?? [];
+        if (printings.length === 0) {
+          fallBackToAddThenDegrade(oracleId, name);
+          return;
+        }
+        setPendingPrintings(printings);
+      })
+      .catch(() => {
+        if (pendingOracleIdRef.current !== oracleId) return;
+        fallBackToAddThenDegrade(oracleId, name);
+      });
+  }
+
+  // C2: picking a printing adds the card carrying that exact printing —
+  // `preferredPrintingId` selects it once `TradeBalancer`'s own fetch
+  // resolves, which it does immediately (`fetchCardPrintings` cache hit).
+  function handleSelectPendingPrinting(printing: CardPrintingPrice): void {
+    if (!pendingCard) return;
+    onAddByOracle(sideId, pendingCard.oracleId, pendingCard.name, printing.id);
+    clearPending();
+    setQuery("");
+  }
+
+  // C3: Cancel returns to the search box with the query text intact and no
+  // card added.
+  function handleCancelPending(): void {
+    clearPending();
   }
 
   return (
@@ -148,6 +205,21 @@ export function TradeSide({
         </div>
       )}
 
+      {!isScanOpen && pendingCard && (
+        <div className="rounded-xl border border-zinc-600 bg-zinc-800/70 p-2">
+          {pendingPrintings === null ? (
+            <p className="px-2 py-1 text-sm text-zinc-400">Loading printings…</p>
+          ) : (
+            <PrintingPicker
+              cardName={pendingCard.name}
+              printings={pendingPrintings}
+              onSelect={handleSelectPendingPrinting}
+              onCancel={handleCancelPending}
+            />
+          )}
+        </div>
+      )}
+
       {!isScanOpen && showSuggestionPanel && (
         <div className="rounded-xl border border-zinc-600 bg-zinc-800/70 p-2">
           {suggestions.length === 0 ? (
@@ -158,7 +230,7 @@ export function TradeSide({
                 <li key={suggestion.oracleId}>
                   <button
                     type="button"
-                    onClick={() => addByOracle(suggestion.oracleId, suggestion.name)}
+                    onClick={() => handleSuggestionTap(suggestion.oracleId, suggestion.name)}
                     className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-700 hover:text-accent-soft"
                   >
                     {suggestion.name}

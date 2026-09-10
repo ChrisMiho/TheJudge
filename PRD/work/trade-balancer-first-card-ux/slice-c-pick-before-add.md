@@ -1,6 +1,46 @@
 # Slice C — Pick the printing before the card is added (search path)
 
-## Status: planned
+## Status: done
+
+### Deviation from the files-touched list
+
+`apps/frontend/src/components/trade/TradeBalancer.test.tsx` and
+`TradeBalancer.scan.test.tsx` also needed a one-block edit each: both files'
+manual-search helpers/assertions clicked a suggestion and asserted the card
+priced immediately (the pre-Slice-C behavior). Slice C changes what a
+suggestion tap does everywhere, so those assertions were stale the moment
+this slice shipped — each was updated to pick the first printing from the
+now-open picker before checking the entry, with no change to scan mechanics
+or `useTradeScan.ts`. `TradeBalancer.scan.test.tsx`'s scan-input tests and
+`useTradeScan.ts` itself are untouched (A11); only the one manual-search
+fallback assertion at the end of that file was adjusted for the new flow.
+
+### Manual observation (C7, 2026-09-09)
+
+At 390×844 (`http://localhost:5592/trade-balancer`, backend on
+`http://localhost:3592`): searched "Sol Ring" (128 printings, pre-Slice-D so
+the picker is not yet a scroll box — this behavior lands in Slice D), tapped
+the suggestion, observed the suggestion list replaced by the printing picker
+with all 128 rows (no intermediate loading text was visible at the fetch
+speed observed, consistent with the local backend's low latency — C1 is unit
+tested for the loading state itself). Tapped "Lorwyn Eclipsed Commander
+(ECC) #57" and observed the entry appear on Side A already priced at $1.67
+with that exact printing — no $0/loading flash. Then searched "Black Lo",
+tapped "Black Lotus", observed its picker open, and tapped Cancel: the
+search box returned with "Black Lo" intact, the suggestion list reappeared,
+and no Black Lotus entry was added (only the earlier Sol Ring entry remains).
+Captures:
+`PRD/work/trade-balancer-first-card-ux/.playwright-mcp/slice-c-picker-before-add-open.png`,
+`PRD/work/trade-balancer-first-card-ux/.playwright-mcp/slice-c-entry-already-priced.png`,
+`PRD/work/trade-balancer-first-card-ux/.playwright-mcp/slice-c-cancel-returns-query-intact.png`.
+
+### Cleanup (C8, 2026-09-09)
+
+Browser closed (`browser_close`); owned dev servers (frontend on port 5592,
+backend on port 3592, both started by this session) stopped via `TaskStop`;
+`lsof -i :3592 -i :5592` confirms both ports released. Capture output path:
+`PRD/work/trade-balancer-first-card-ux/.playwright-mcp/` (three PNGs, listed
+above).
 
 ## Goal
 

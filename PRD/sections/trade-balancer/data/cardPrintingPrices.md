@@ -84,7 +84,13 @@ Top-level object with two keys:
 - `byOracleId: Record<oracleId, { printings: CardPrintingPrice[] }>` — every
   qualifying printing of a card, keyed by Scryfall `oracle_id`. Lets the
   backend serve one card's whole printing list per request (`GET
-  /api/cards/:oracleId/prices`, REQ-175).
+  /api/cards/:oracleId/prices`, REQ-175). Each card's `printings` array is
+  ordered **newest release first** — Scryfall `released_at` descending, then
+  collector number (numeric-aware, ascending), then printing id as a
+  deterministic tiebreak, with an unparseable release date sorting last. The
+  order is part of the artifact contract and is echoed verbatim on the wire;
+  `released_at` is a build-time sort key only and is **not** stored per
+  printing, so the field set and the artifact's size are unchanged (REQ-066).
 
 Each `CardPrintingPrice` (the shape `integrations-and-data.md` also documents,
 and the route's wire response echoes verbatim per printing):
@@ -123,8 +129,10 @@ refresh moves these.
 - **Backend-only, loaded into memory at startup, served on demand.** No
   up-front frontend download and no lazy-loaded frontend artifact — the
   balancer's only up-front frontend cost is the shared `cardMetadata` index
-  (NFR-013, REQ-174). A card's printings and prices are fetched only when that
-  card is added to a side, cached per session (FLOW-025). Loader lives in
+  (NFR-013, REQ-174). A card's printings and prices are fetched once per card
+  and cached per session (FLOW-025): on a manual search when the player taps
+  that card's suggestion, before the card is added, and on a scan when the
+  card is added (REQ-065). Loader lives in
   `apps/backend/src/cardPrices.ts` (`loadCardPrintingPricesIndex`); the route
   in `apps/backend/src/routes/cardPrices.ts`; the frontend fetch/cache module
   in `apps/frontend/src/lib/trade/fetchCardPrintings.ts`; pure price selectors
