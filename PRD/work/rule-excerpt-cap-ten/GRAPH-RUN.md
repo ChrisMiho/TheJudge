@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/rule-excerpt-cap-ten` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rule-excerpt-cap-ten` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rule-excerpt-cap-ten` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260910-024919/`
-- Current node: `define` (attempt 2, gate-qc loop 1 of 3)
+- Current node: `gate-qc` (attempt 2)
 - Next action: `/graph-kickoff PRD/work/rule-excerpt-cap-ten/`
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 26` | commit `46fa1cf` on run branch (pushed) — `PRD/work/rule-excerpt-cap-ten/{IDEA.md,README.md,STATUS.ideation,intake/GRAPH-BRIEF.md}` + `PRD/work/STATUS.md` ideation row; README carries `## Autonomous metadata`; intake copied verbatim (diff identical) and staging deleted; 9 `## Prior run` matches recorded in IDEA.md; worktree `git status --porcelain` empty | 2026-09-10 |
 | 3 | define | opus | ok | `0 → 55` | commit `06b6699` on run branch (pushed) — DESIGN-BRIEF.md + GATE-QUESTIONS.md (14 stable-ID slots: REQ-022/032/178/181/182/185/188/190, NFR-018, system-map.md, integrations-and-data.md, in-depth/README.md, quick-lookup/README.md, system-map/game-rules-retrieval.md; no new REQ or DEC); amendment set enumerated by wide grep (266 hits: 32 amended, 234 "not this cap" with a row each in the brief appendix); 33 before-text lines verified byte-identical by script; no blocker questions; STATUS.ideation→refined; board row moved; `git diff --stat origin/main -- PRD/sections` empty | 2026-09-10 |
 | 4 | gate-qc | sonnet | failed | `0 → 32` | FAIL commits `82356d7` + `156940f` — STATUS.refined→refining, board row moved. One finding: the brief's amendment-set appendix mislabels 8 of 266 "not this cap" rows as the REQ-094/095 combo-variant cap when the line is a layout/attach-limit/deploy/section-order cap (`screen-layout.md:132`, `functional-requirements.md:2211/3107/3379/3881/4442`, `decisions/deployment.md:31`, `in-depth/README.md:302`); the "not this cap" conclusion holds for all 8, the stated reason is wrong. Everything else clean: 266-hit grep reproduced, 0 missing/0 extra rows, 32 amend rows = 32 diff hunks, all 32 before-lines byte-identical (`ALL OK`), 14 slots well-formed, no new DEC, PRD/sections unedited. Loop 1 → define | 2026-09-10 |
+| 3 | define | opus | ok | `0 → 25` | attempt 2 (loop 1 fix). Commit `0056266` on run branch (pushed) — appendix disposition reasons re-read line by line against the cited `PRD/sections/` text: 59 reasons corrected (the 8 flagged + 51 more the same pass found), every one still "not this cap"; only column 3 of non-amend rows moved, all 32 amend rows byte-identical, GATE-QUESTIONS.md zero diff, `git diff --stat origin/main -- PRD/sections` empty; STATUS.refining→refined, README header refined, board row moved back | 2026-09-10 |
 
 ## Open gate
 
@@ -176,6 +177,33 @@ Boundaries: never edit `PRD/sections/`; never edit any `thejudge-*` skill, `CLAU
 Tool-call cap for this node: 150.
 
 Report back: the commit hash, the list of rows whose reason changed (file:line → new reason), confirmation that no `amend` row, no diff, and no `PRD/sections/` file changed, and `git status --porcelain` plus `git diff --stat origin/main -- PRD/sections` of the working directory. Outcome word on its own last line: `ok` or `failed`.
+
+### gate-qc (attempt 2)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rule-excerpt-cap-ten
+
+You are node 4 (`gate-qc`), attempt 2, of graph run `graph-20260910-024919`, the spec-forming half driven by `graph-kickoff`. Attempt 1 FAILed on one finding (the brief's amendment-set appendix mislabelled 8 "not this cap" reasons); define attempt 2 (commit `0056266`) corrected 59 reasons without touching any amend row, any diff, or `PRD/sections/`. Grade the package fresh — do not assume the fix is complete. Invoke the `thejudge-quality-check` skill in its `graph is controlling` mode and follow it exactly. Read `PRD/instructions/preparation-contract.md` as the skill's Mode section requires. Work only inside the working directory above — the kickoff worktree on branch `thejudge-auto/rule-excerpt-cap-ten`; never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge`.
+
+Package: `PRD/work/rule-excerpt-cap-ten/`. Checked artifact: `PRD/work/rule-excerpt-cap-ten/DESIGN-BRIEF.md`, with `GATE-QUESTIONS.md` as the proposed product-truth diff it depends on.
+
+Grade the brief for PRD alignment and agent-readiness and return an explicit PASS or FAIL with every finding. In addition to the skill's normal checks, verify all of the following, each with a command you ran and its output:
+- `GATE-QUESTIONS.md` is well-formed: one `## <STABLE-ID>` block per stable ID whose `PRD/sections/` text changes, each opening with the three plain-language lines (**What this decides**, **In plain terms**, **What happens if you say no**) with cited REQ/DEC substance inlined, then a complete diff, then `- Verdict:` and `- Reason:` slots.
+- Every before-text in every diff is byte-identical to the current `PRD/sections/` file content.
+- The amendment set is complete: independently re-run a grep across `PRD/sections/` for every spelling of the current cap (`five excerpt`, `five-excerpt`, `up to 5 excerpts`, `capped at 5`, `capped at five`, `top-5`, `top 5`, `stays at five`, `top five`, and any other spelling you find) and confirm every hit that describes the System 3 rule-excerpt cap has a slot, while hits that describe a different cap (for example the REQ-094/095 combo-variant cap of five) are explicitly noted as out of scope in the brief. Report the hit list with a disposition per hit, and spot-check the appendix's "not this cap" reasons against the cited line text — the axis attempt 1 failed on.
+- `PRD/sections/` is unedited: `git diff --stat origin/main -- PRD/sections` is empty.
+- No new `DEC-` is proposed.
+
+On FAIL: set `STATUS.refining` (replace `STATUS.refined`; exactly one marker), move the `PRD/work/STATUS.md` board row to refining, and list every issue. On PASS: leave `STATUS.refined` in place. Do not create map-out artifacts, do not self-certify, do not fix the brief yourself. Commit any status-marker change on the branch with explicit paths only (`git add <path> ...`; never `git add -A`, `--all`, or `.`) and push with `git push origin thejudge-auto/rule-excerpt-cap-ten`. Do not touch `GRAPH-RUN.md` or the package README's `## Preparation gate` section — the driver owns both.
+
+Copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rule-excerpt-cap-ten` unchanged, on its own line, into every prompt you write for any subagent of your own.
+
+Boundaries: never edit `PRD/sections/`, `DESIGN-BRIEF.md`, or `GATE-QUESTIONS.md`; never edit any `thejudge-*` skill, `CLAUDE.md`, or `.claude/settings*.json`; never force-push; never push `main`; never merge or close a PR; no `nohup` or background `&`; no live provider calls; a denied call is never retried.
+
+Tool-call cap for this node: 60.
+
+Report back: the verdict (PASS or FAIL) on its own line, the complete findings list (or `none`), the amendment-set grep and its per-hit dispositions, the before-text verification result, any commit hash, and `git status --porcelain` of the working directory. Outcome word on its own last line: `ok` (verdict delivered) or `failed` (could not deliver a verdict).
 
 ## Instruction ledger
 
