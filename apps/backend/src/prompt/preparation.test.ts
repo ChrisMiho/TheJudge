@@ -335,12 +335,12 @@ describe("Backend - Ask AI", () => {
       return parsed.question;
     }
 
-    it("DEFAULT_SUPPLEMENTAL_RULE_CAP is 5 — production's historical cap", () => {
-      expect(DEFAULT_SUPPLEMENTAL_RULE_CAP).toBe(5);
+    it("DEFAULT_SUPPLEMENTAL_RULE_CAP is 10 — production's current cap", () => {
+      expect(DEFAULT_SUPPLEMENTAL_RULE_CAP).toBe(10);
     });
 
     it.each(SIX_GOLD_CASE_IDS)(
-      "with no cap override, %s's assembled prompt is byte-identical to an explicit cap of 5 (the default)",
+      "with no cap override, %s's assembled prompt is byte-identical to an explicit cap of 10 (the default)",
       (caseId) => {
         const request: LookupAskAiRequest = { mode: "lookup", question: loadGoldQuestion(caseId) };
 
@@ -350,46 +350,46 @@ describe("Backend - Ask AI", () => {
           collectEnrichmentDebug: true,
           queryEmbedding: null
         });
-        const withExplicitFive = preparePromptInput(request, {
+        const withExplicitTen = preparePromptInput(request, {
           gameRulesTopics: realGameRulesTopics,
           gameRulesRuleIndex: realRuleIndex,
           collectEnrichmentDebug: true,
           queryEmbedding: null,
-          supplementalRuleCap: 5
+          supplementalRuleCap: 10
         });
 
-        expect(withDefault.promptText).toBe(withExplicitFive.promptText);
-        expect(withDefault.enrichmentDebug?.supplemental.selected.length).toBeLessThanOrEqual(5);
+        expect(withDefault.promptText).toBe(withExplicitTen.promptText);
+        expect(withDefault.enrichmentDebug?.supplemental.selected.length).toBeLessThanOrEqual(10);
       }
     );
 
-    it("a cap-10 override extends the same ranking's runnerUp without changing the top 5", () => {
+    it("a cap-15 override extends the same ranking's runnerUp without changing the top 10", () => {
       const request: LookupAskAiRequest = {
         mode: "lookup",
         question: loadGoldQuestion("illegal-target-partial-resolution")
       };
 
-      const atFive = preparePromptInput(request, {
+      const atTen = preparePromptInput(request, {
         gameRulesTopics: realGameRulesTopics,
         gameRulesRuleIndex: realRuleIndex,
         collectEnrichmentDebug: true,
         queryEmbedding: null
       });
-      const atTen = preparePromptInput(request, {
+      const atFifteen = preparePromptInput(request, {
         gameRulesTopics: realGameRulesTopics,
         gameRulesRuleIndex: realRuleIndex,
         collectEnrichmentDebug: true,
         queryEmbedding: null,
-        supplementalRuleCap: 10
+        supplementalRuleCap: 15
       });
 
-      const fiveIds = atFive.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId) ?? [];
       const tenIds = atTen.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId) ?? [];
-      const runnerUpIds = atFive.enrichmentDebug?.supplemental.runnerUp.map((rule) => rule.ruleId) ?? [];
+      const fifteenIds = atFifteen.enrichmentDebug?.supplemental.selected.map((rule) => rule.ruleId) ?? [];
+      const runnerUpIds = atTen.enrichmentDebug?.supplemental.runnerUp.map((rule) => rule.ruleId) ?? [];
 
-      expect(tenIds.slice(0, fiveIds.length)).toEqual(fiveIds);
-      expect(tenIds.slice(fiveIds.length)).toEqual(runnerUpIds.slice(0, tenIds.length - fiveIds.length));
-      expect(tenIds.length).toBeGreaterThan(fiveIds.length);
+      expect(fifteenIds.slice(0, tenIds.length)).toEqual(tenIds);
+      expect(fifteenIds.slice(tenIds.length)).toEqual(runnerUpIds.slice(0, fifteenIds.length - tenIds.length));
+      expect(fifteenIds.length).toBeGreaterThan(tenIds.length);
     });
   });
 });

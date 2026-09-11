@@ -49,7 +49,7 @@ import type {
  * that ever overrides it, via `PreparePromptInputOptions.supplementalRuleCap`,
  * so a larger cap is an experiment parameter, never a production change.
  */
-export const DEFAULT_SUPPLEMENTAL_RULE_CAP = 5;
+export const DEFAULT_SUPPLEMENTAL_RULE_CAP = 10;
 
 export type PreparedPromptInput = {
   context: PromptInputContext;
@@ -78,10 +78,10 @@ export type PreparePromptInputOptions = {
    * REQ-190: overrides the System 3 supplemental-rule excerpt cap
    * (default: `DEFAULT_SUPPLEMENTAL_RULE_CAP`). Every production call site
    * leaves this unset; only the answer-quality run passes a value, so it can
-   * assemble a cap-10 prompt from the identical ranking production uses at
-   * cap 5 — `retrieveRulesForQueryWithDebug` already returns ranks 6–15 as
-   * `runnerUp`, so no scoring, query construction, corpus, or embedding
-   * behavior changes for the experiment.
+   * assemble a larger-cap prompt from the identical ranking production uses
+   * at the default cap — `retrieveRulesForQueryWithDebug` already returns the
+   * ranks below the cap as `runnerUp`, so no scoring, query construction,
+   * corpus, or embedding behavior changes for the experiment.
    */
   supplementalRuleCap?: number;
 };

@@ -326,7 +326,7 @@ the game-mode request drives them. (DEC-020, DEC-010)
   `combatStep`, and populated zones only — no card names or oracle text). It is
   omitted only when the artifact is missing/empty, with a warning logged.
   (DEC-030, DEC-045, REQ-022)
-- Built: `ADDITIONAL RELEVANT RULE EXCERPTS` adds up to 5 supplemental rules
+- Built: `ADDITIONAL RELEVANT RULE EXCERPTS` adds up to 10 supplemental rules
   scored per DEC-046 — hybrid ranking (normalised cosine over the committed
   per-rule embeddings blended with the normalised IDF-weighted lexical score)
   when the embedding-provider seam is active, with the exact-rule-id boost
@@ -429,7 +429,7 @@ outcome-validated, not product truth.
   (DEC-031, REQ-023)
 - Auto-scroll near-bottom threshold: 64px (shared conversation workspace). (DEC-118,
   REQ-025)
-- Supplemental rules: up to 5 excerpts (System 3), deduplicated against System 2.
+- Supplemental rules: up to 10 excerpts (System 3), deduplicated against System 2.
   (DEC-046, REQ-022)
 - Combo variants: at most 5 selected per prompt — a relevance/noise cap
   independent of the 1,000,000-char prompt budget. (DEC-116, REQ-094, REQ-095)

@@ -61,7 +61,7 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const CONFIRM_FLAG = "--confirm-live-calls";
 export const DEFAULT_OUTPUT_DIR = "output/answer-quality";
 export const DEFAULT_LINEUP = ["gpt-4.1-mini", "gpt-4.1", "gpt-5-mini", "gpt-5-nano"];
-export const DEFAULT_EXCERPT_CAPS = [5, 10];
+export const DEFAULT_EXCERPT_CAPS = [10, 15];
 // Deliberately duplicated from apps/backend/src/eval/answer-quality/judge.ts
 // (same value, same env var, independently tested there): this plain .mjs
 // script's dry-run path must resolve the judge model synchronously under

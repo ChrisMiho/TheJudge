@@ -33,7 +33,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rule-excerpt-cap-ten](rule-excerpt-cap-ten/) | Ask AI attaches up to ten official rule excerpts instead of five (measured 16/18 → 18/18 on the deployed model, latency unchanged). gate-qc PASS 2026-09-10 (attempt 2). Owner: answer the 14 slots in `GATE-QUESTIONS.md`, then merge the docs PR — that merge is the build signal for `graph-implement` |
 
 
 ## deferred
