@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [domain-corporate-network-reachability](domain-corporate-network-reachability/) | Corporate web filter blocks the new `mtgjudge.gg` domain (attached 2026-09-05) while gaming sites load; candidate: CloudFront security headers + robots.txt/security.txt + domain-categorization submission checklist |
 
 ## owner-action
 
