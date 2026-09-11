@@ -11,9 +11,7 @@ steps needed to get corporate web filters to reclassify a brand-new domain.
 
 ## Autonomous metadata
 
-- Autonomous base: `thejudge-auto/domain-corporate-network-reachability`
-  (spec-forming half; graph rewrites this to `origin/main` when the build
-  half claims the merged spec)
+- Autonomous base: origin/thejudge-auto/domain-corporate-network-reachability
 
 ## Next step
 
