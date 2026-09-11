@@ -23,7 +23,7 @@
 - Terminal state: `PARKED` at `owner-action` (the normal `graph-kickoff` stop at the first `gate-qc` PASS).
 - Question: answer `PRD/work/domain-corporate-network-reachability/GATE-QUESTIONS.md`, then merge to build. Five verdict slots: REQ-197, REQ-198 (also name the `security.txt` contact address), REQ-199, DEC-084 (in-place amendment; keeps the bare apex as the only address), system-map.
 - Evidence: gate-qc PASS with no findings (node 4 row); `## Preparation gate` in the package README records it.
-- Docs PR: (URL recorded below once opened)
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/232 (opened by `gh pr create --base main --head thejudge-auto/domain-corporate-network-reachability`; never merged by the run)
 - Resume: the owner answers the slots in the PR and merges it to `main`. That merge is the build signal; `/graph-implement PRD/work/domain-corporate-network-reachability/` (or the background `graph-implement` loop) picks it up. The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-domain-corporate-network-reachability` stays through the park; `graph-implement` removes it at claim time.
 
 ## Dispatch prompts
