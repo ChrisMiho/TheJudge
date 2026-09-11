@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # Domain corporate network reachability
 
@@ -26,6 +26,13 @@ deployment entries. No `DEC-###` is minted.
 
 - Autonomous base: origin/thejudge-auto/domain-corporate-network-reachability
 
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/domain-corporate-network-reachability/DESIGN-BRIEF.md`
+- Findings: none
+
 ## Next step
 
-`/thejudge-quality-check PRD/work/domain-corporate-network-reachability/`
+Owner: answer the five `- Verdict:` slots in `GATE-QUESTIONS.md`, then merge the
+docs PR. That merge is the build signal; `graph-implement` builds it from `main`.

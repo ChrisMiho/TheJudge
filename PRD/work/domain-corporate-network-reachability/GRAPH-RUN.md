@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/domain-corporate-network-reachability` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-domain-corporate-network-reachability` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260911-160859/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half in progress)
+- Current node: `owner-action` (parked after `gate-qc` PASS — run one complete)
+- Next action: owner answers `PRD/work/domain-corporate-network-reachability/GATE-QUESTIONS.md` in the docs PR and merges it; `graph-implement` builds it from `main`
 
 ## Node ledger
 
@@ -16,10 +16,15 @@
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/domain-corporate-network-reachability` pushed from `.worktrees/kickoff-domain-corporate-network-reachability` (`git ls-remote --heads origin thejudge-auto/domain-corporate-network-reachability` → `1f79dc1`); launch checkout untouched on `main`; lock `.worktrees/.graph-run.lock` slug/runId/pid 5591 | 2026-09-11 |
 | 2 | shape | sonnet | ok | `0 → 36` | commit `fbf51a2` on `thejudge-auto/domain-corporate-network-reachability`: `PRD/work/domain-corporate-network-reachability/{IDEA.md,README.md,STATUS.ideation,intake/request.md}` + board row; staging folder emptied; one `## Prior run` match (`receipts/aws-deployment-onboarding-2026-07-03.md`); launch checkout `git status --porcelain` empty | 2026-09-11 |
 | 3 | define | opus | ok | `0 → 34` | commit `5ef4bb9`: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-197, REQ-198, REQ-199, DEC-084 in-place, system-map entry; no blocker questions), `STATUS.refined`, board row under `## refined`; `git diff HEAD~1 HEAD -- PRD/sections` empty; launch checkout clean → questions file present, gate continues to `gate-qc` | 2026-09-11 |
+| 4 | gate-qc | sonnet | ok (PASS) | `0 → 23` | verdict PASS, no findings; no commit made (`git status --short` clean at `c7864fa`); live re-measure of `curl -sI https://mtgjudge.gg` and `/robots.txt` matched the brief; REQ-196 confirmed highest existing id (`functional-requirements.md:4678`); package stays `STATUS.refined` until the driver parks | 2026-09-11 |
 
 ## Open gate
 
-- None
+- Terminal state: `PARKED` at `owner-action` (the normal `graph-kickoff` stop at the first `gate-qc` PASS).
+- Question: answer `PRD/work/domain-corporate-network-reachability/GATE-QUESTIONS.md`, then merge to build. Five verdict slots: REQ-197, REQ-198 (also name the `security.txt` contact address), REQ-199, DEC-084 (in-place amendment; keeps the bare apex as the only address), system-map.
+- Evidence: gate-qc PASS with no findings (node 4 row); `## Preparation gate` in the package README records it.
+- Docs PR: (URL recorded below once opened)
+- Resume: the owner answers the slots in the PR and merges it to `main`. That merge is the build signal; `/graph-implement PRD/work/domain-corporate-network-reachability/` (or the background `graph-implement` loop) picks it up. The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-domain-corporate-network-reachability` stays through the park; `graph-implement` removes it at claim time.
 
 ## Dispatch prompts
 
@@ -116,6 +121,34 @@ Outputs, per the skill and the contract:
 - Set the marker to `STATUS.refined` (exactly one marker), update `README.md`'s status line and the `PRD/work/STATUS.md` board row (remove from `## ideation`, add under `## refined`), and commit with explicit paths only (never `git add -A`, `--all`, or `.`). Do not push.
 
 Report back with labelled lines: outcome (`ok` / `failed` / blocker returned), the files written, the commit hash from `git log -1 --format=%H`, whether `GATE-QUESTIONS.md` exists and the list of stable IDs it carries, the material assumptions you made (one line each), any blocker question, and any command that was denied or refused, verbatim.
+
+### gate-qc
+
+graph is controlling.
+
+You are node 4 (`gate-qc`) of graph run `graph-20260911-160859`, dispatched by the `graph-kickoff` driver. Execute the `thejudge-quality-check` skill in its orchestrated mode: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-quality-check/SKILL.md` in full first (its `## Mode` section governs), then `PRD/instructions/preparation-contract.md`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-domain-corporate-network-reachability
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write. Every file you read or write and every git command you run happens inside that worktree, on branch `thejudge-auto/domain-corporate-network-reachability`. Never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge` itself. Verify directly: spawn no subagents or forks, no sleeping or polling. Your tool-call budget for this node is 60; stay well under it (the last direct-verification gate-qc passed in about 22 calls).
+
+Run inputs:
+- Package: `PRD/work/domain-corporate-network-reachability/` — grade `DESIGN-BRIEF.md`, and read `GATE-QUESTIONS.md` as the proposal it points at (refinement never edits `PRD/sections/`; the proposed diffs live only in that file).
+- Run id: `graph-20260911-160859`
+
+What to check, per the skill's checklist, against current product truth in `PRD/sections/` (`system-map.md` lines 504 to 531, `decisions/deployment.md` DEC-084, `non-functional-requirements.md` NFR-003 and NFR-004, `functional-requirements.md` for the highest existing REQ id so REQ-197 to REQ-199 are genuinely unused):
+- PRD alignment: the proposal does not contradict the one-canonical-address rule in DEC-084, adds no endpoint or service (NFR-004), and leaves backend-only secret loading untouched (NFR-003).
+- Agent-readiness: every acceptance criterion in REQ-197, REQ-198 and REQ-199 is checkable by a command, a path, or a stated manual observation; the camera grant in the permissions policy is asserted by a test; the dotted `public/.well-known/` copy is verified at build; the brief's measured evidence is dated and reproducible.
+- Gate-question format: each `## <STABLE-ID>` block opens with the three plain-language lines (What this decides, In plain terms, What happens if you say no), carries a complete diff rather than a summary, and ends with `- Verdict:` and `- Reason:` slots. Note that the fifth block is headed `## system-map` because the system-map entries carry no stable ID; judge whether that is acceptable or a finding.
+- Honesty: the brief and the proposal state plainly that no code change promises the site opens on a corporate network. Fail the brief if anywhere it promises an unblock.
+- No `DEC-###` is minted; DEC-084 is amended in place.
+- The brief introduces no user-visible screen, so `screen-layout.md` needs no row; confirm.
+
+Re-measuring is allowed and cheap: `curl -sI https://mtgjudge.gg` and `curl -sI https://mtgjudge.gg/robots.txt` reproduce the brief's evidence. Do not run any Scryfall or data refresh command.
+
+Outputs, per the skill: emit an explicit `PASS` or `FAIL` verdict with the complete issue list on FAIL. On PASS leave the package at `STATUS.refined` and the board row under `## refined`. On FAIL set the marker to `STATUS.refining`, update the README status line and move the board row under `## refining`, and commit with explicit paths only (never `git add -A`, `--all`, or `.`). Do not push. Do not fix the brief yourself; return every issue to the driver. Do not write the README's `## Preparation gate` section; the driver owns it.
+
+Report back with labelled lines: verdict (`PASS` / `FAIL`), the checklist items verified with one line of evidence each, the complete findings list on FAIL (severity, file, line, what is wrong, what would fix it), any commit hash you made from `git log -1 --format=%H`, and any command that was denied or refused, verbatim.
 
 ## Instruction ledger
 
