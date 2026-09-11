@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [domain-corporate-network-reachability](domain-corporate-network-reachability/) | Corporate web filter blocks the six-day-old `mtgjudge.gg`; brief separates what the repo ships (CloudFront security headers REQ-197, real `robots.txt`/`security.txt` REQ-198, runbook REQ-199) from the owner's manual vendor recategorization and from domain age — no code change promises the site opens at work |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [domain-corporate-network-reachability](domain-corporate-network-reachability/) | Corporate web filter blocks the new `mtgjudge.gg` domain (attached 2026-09-05) while gaming sites load; candidate: CloudFront security headers + robots.txt/security.txt + domain-categorization submission checklist |
 
 ## owner-action
 
