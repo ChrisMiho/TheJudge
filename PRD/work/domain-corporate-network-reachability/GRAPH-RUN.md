@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/domain-corporate-network-reachability` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-domain-corporate-network-reachability` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260911-160859/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/domain-corporate-network-reachability` pushed from `.worktrees/kickoff-domain-corporate-network-reachability` (`git ls-remote --heads origin thejudge-auto/domain-corporate-network-reachability` → `1f79dc1`); launch checkout untouched on `main`; lock `.worktrees/.graph-run.lock` slug/runId/pid 5591 | 2026-09-11 |
 | 2 | shape | sonnet | ok | `0 → 36` | commit `fbf51a2` on `thejudge-auto/domain-corporate-network-reachability`: `PRD/work/domain-corporate-network-reachability/{IDEA.md,README.md,STATUS.ideation,intake/request.md}` + board row; staging folder emptied; one `## Prior run` match (`receipts/aws-deployment-onboarding-2026-07-03.md`); launch checkout `git status --porcelain` empty | 2026-09-11 |
+| 3 | define | opus | ok | `0 → 34` | commit `5ef4bb9`: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-197, REQ-198, REQ-199, DEC-084 in-place, system-map entry; no blocker questions), `STATUS.refined`, board row under `## refined`; `git diff HEAD~1 HEAD -- PRD/sections` empty; launch checkout clean → questions file present, gate continues to `gate-qc` | 2026-09-11 |
 
 ## Open gate
 
@@ -81,6 +82,40 @@ Evidence pointers (starting points, not conclusions; verify in the repo):
 Do exactly what the skill's orchestrated mode says: investigate only request-relevant PRD and code; select exactly one evidence-backed candidate or return `NO ACTIONABLE PACKAGE`; create `IDEA.md`, the package `README.md`, the `STATUS.ideation` marker, and the `PRD/work/STATUS.md` board row; then copy the staged intake verbatim into `PRD/work/domain-corporate-network-reachability/intake/`, commit with explicit paths only (never `git add -A`, `--all`, or `.`), and delete the staged copy. Do not push. Do not edit `PRD/sections/`. Do not decide product truth; record open questions for the `define` node instead.
 
 Report back with labelled lines: outcome (`ok` / `NO ACTIONABLE PACKAGE` / `failed`), the package path, the files created, the commit hash from `git log -1 --format=%H` in the worktree, the `## Prior run` matches (or none), the candidate's one-line summary, the open product questions you recorded, and any command that was denied or refused, verbatim.
+
+### define
+
+graph is controlling.
+
+You are node 3 (`define`) of graph run `graph-20260911-160859`, dispatched by the `graph-kickoff` driver. Execute the `thejudge-refinement` skill in its orchestrated mode: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-refinement/SKILL.md` in full first (its `## Mode` section governs), then `PRD/instructions/preparation-contract.md`, `PRD/instructions/plain-language-standard.md`, and the `## The two runs` and `## Propose / apply / close` sections of `PRD/instructions/graph-workflow-contract.md`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-domain-corporate-network-reachability
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write. Every file you read or write and every git command you run happens inside that worktree, on branch `thejudge-auto/domain-corporate-network-reachability`. Never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge` itself. Do not dispatch subagents or forks; do the work directly, no sleeping or polling. Your tool-call budget for this node is 150; stay well under it.
+
+Run inputs:
+- Package: `PRD/work/domain-corporate-network-reachability/` (read `IDEA.md`, `README.md`, `intake/request.md` first)
+- Run id: `graph-20260911-160859`
+
+What the owner is asking, in product terms: the owner and the coworkers they want to share the app with cannot open `mtgjudge.gg` on the company network at all, while long-established gaming sites load. They want to know what about the new domain is still unset and to be able to demo the app at work.
+
+Measured evidence the driver captured on 2026-09-11 (record it in the brief as evidence, and re-measure yourself with `curl -sI https://mtgjudge.gg` if you need more detail):
+- `curl -sI https://mtgjudge.gg` returns HTTP/2 200 from CloudFront with only S3/CloudFront headers. There is no `strict-transport-security`, no `content-security-policy`, no `x-content-type-options`, no `x-frame-options`, no `referrer-policy`, no `permissions-policy`.
+- `https://mtgjudge.gg/robots.txt` and `https://mtgjudge.gg/.well-known/security.txt` both return 200 with `text/html`: the single-page-app fallback serves the app shell instead of a real file. Neither file exists in `apps/frontend/public/` (only `assets/` and `data/` are there).
+- The domain was registered through Route 53 and attached to CloudFront on 2026-09-05 (`docs/aws/deployment.md`, `### Custom domain`; `PRD/sections/decisions/deployment.md` line 26). It is six days old.
+- The bootstrap (`scripts/aws-bootstrap.sh` from line 375, `scripts/lib/cloudfront-custom-domain.mjs`) attaches an ACM certificate, Route 53 alias records, and a redirect function only. No response headers policy is attached to the distribution.
+
+Current product truth to read before proposing anything: `PRD/sections/system-map.md` lines 504 to 531 (`## AWS production deployment`, `### Deploy and cost guardrails`, backed by DEC-084, NFR-004, REQ-165, REQ-166, NFR-017), `PRD/sections/decisions/deployment.md`, and the NFR/REQ entries those point at in `PRD/sections/non-functional-requirements.md`. Also `PRD/instructions/receipts/aws-deployment-onboarding-2026-07-03.md` as prior ground.
+
+Shape the brief honestly. Corporate secure web gateways decide by domain category and reputation, and a domain this young usually sits in a newly-registered or uncategorized bucket that many corporate policies block outright. The code-side levers (a CloudFront response headers policy with HSTS and the standard security headers, a real `robots.txt`, a `security.txt`) are hygiene some reputation scanners score, but none of them is a guaranteed unblock. So the brief must separate three things: what the repo can ship (headers policy, static files, docs), what only the owner can do by hand (look up the domain's current category on the vendors' public lookup pages and submit a recategorization request, or ask their IT to allowlist it), and what only time does (domain age). Every claim about what moves a filter must be phrased as likely, not certain, and the brief must state plainly that no code change here promises the site opens at work. Include a verification step the owner can run before and after (the header check, and the public category lookups), so the package has an observable outcome. Weigh, and record as an assumption or a gate question, whether the redirect from the raw CloudFront hostname to the apex removes the only alternate address the owner could have used for a demo; the deployment decision made the apex the one canonical address, so do not silently reverse it.
+
+Outputs, per the skill and the contract:
+- `DESIGN-BRIEF.md` in the package, with every material assumption and its evidence recorded (the assumption ladder replaces the approval pause).
+- `GATE-QUESTIONS.md` in the package whenever you propose product-truth changes: one `## <STABLE-ID>` block per stable ID, each opening with the three-line plain-language block (What this decides, In plain terms, What happens if you say no), then that ID's complete proposed diff (never a summary), then `- Verdict:` and `- Reason:` slots. New truth is proposed as `REQ`/`FLOW` entries with reserved new IDs (check the highest existing REQ number first and continue from it); never mint a `DEC-###`. If the deployment decision's own text must change, propose it as an in-place amendment of that decision with its own block. Every amended or new ID gets its own slot, not only the headline ones. Put any genuine decision blocker under `## Blocker questions`, written to the same plain-language standard. The four open questions in `IDEA.md` are inputs: answer each with the assumption ladder where you can, and gate only what the ladder cannot settle.
+- Never edit `PRD/sections/`; the proposal lives only in `GATE-QUESTIONS.md`.
+- Set the marker to `STATUS.refined` (exactly one marker), update `README.md`'s status line and the `PRD/work/STATUS.md` board row (remove from `## ideation`, add under `## refined`), and commit with explicit paths only (never `git add -A`, `--all`, or `.`). Do not push.
+
+Report back with labelled lines: outcome (`ok` / `failed` / blocker returned), the files written, the commit hash from `git log -1 --format=%H`, whether `GATE-QUESTIONS.md` exists and the list of stable IDs it carries, the material assumptions you made (one line each), any blocker question, and any command that was denied or refused, verbatim.
 
 ## Instruction ledger
 
