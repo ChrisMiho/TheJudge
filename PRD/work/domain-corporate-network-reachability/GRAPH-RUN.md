@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (build half claimed 2026-09-12 after docs PR #232 merged at `758f2af`; the spec-forming half's base was `origin/thejudge-auto/domain-corporate-network-reachability`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability` on `thejudge-auto/domain-corporate-network-reachability-work` (the spec-forming half's `.worktrees/kickoff-domain-corporate-network-reachability` was removed clean at claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260911-160859/`
-- Current node: `build` (build half; plan ok at `e5d2ded`)
+- Current node: `review` (build half; build ok at `f44c142`, PR #234 open)
 - Next action: `graph-implement` continues `gate-qc → plan → build → review → close`; `land` is the owner's merge of the code PR
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | — | gate-review | sonnet | ok | `0 → 33` | commit `f40edb5` on `thejudge-auto/domain-corporate-network-reachability-work`: five IDs, 4 accept / 1 edit (REQ-198 → `Contact: https://mtgjudge.gg/` + Send-feedback comment, no email); `GATE-QUESTIONS.md:120` and `DESIGN-BRIEF.md:182` (A6) reconciled, grep re-run zero contradicting hits, no README supersession note needed; `## Gate verdicts` written, `## Open gate` resolved; marker `STATUS.refined`, board row under `## refined`; worktree porcelain empty; launch checkout porcelain empty | 2026-09-12 |
 | 4 | gate-qc (attempt 2) | sonnet | ok (PASS) | `0 → 18` | verdict PASS, no findings; no commit (`git status --porcelain` empty at `3b6de33`); REQ-198 contact rule consistent at `GATE-QUESTIONS.md:120`/`:140` and `DESIGN-BRIEF.md:182-189`; `grep -n 'REQ-197\|REQ-198\|REQ-199' PRD/sections/functional-requirements.md` empty (REQ-196 highest at line 4678); live `curl -sI https://mtgjudge.gg` and `/robots.txt` still match the brief's pre-state; README `## Preparation gate` already reads PASS / none and stands as the latest result | 2026-09-12 |
 | 5 | plan | sonnet | ok | `0 → 63` | commit `e5d2ded` on `thejudge-auto/domain-corporate-network-reachability-work`: `GAMEPLAN.md`, `slice-a-response-headers-policy.md` (7 criteria), `slice-b-static-files.md` (5), `slice-c-domain-reachability-runbook.md` (8), `slice-d-prd-truth-apply.md` (5, carries the PRD apply + Ship gates), four `slice-*.criteria.json` all `false`; README `status: active` + slice table; marker `STATUS.active` (only marker); board row under `## active`; no browser or dev server in any slice; worktree porcelain empty; launch checkout porcelain empty | 2026-09-12 |
+| 6 | build | sonnet | ok | `0 → 156` | four milestone commits on `thejudge-auto/domain-corporate-network-reachability-work`: A `feafb27` (`scripts/lib/cloudfront-response-headers.mjs` + test, `scripts/aws-bootstrap.sh` step 6, `docs/aws/deployment.md`), B `851e308` (`apps/frontend/public/robots.txt`, `apps/frontend/public/.well-known/security.txt`, `scripts/frontend-public-static-files.test.mjs` running a real `vite build`), C `e8ef801` (`docs/aws/domain-reachability.md`), D `f44c142` (REQ-197/198/199 in `PRD/sections/functional-requirements.md`, DEC-084 in place, `system-map.md` entries); `git diff --stat a2ea1a2..f44c142` → 22 files, +854/−82; PR https://github.com/ChrisMiho/TheJudge/pull/234 (`main` ← work branch, OPEN, MERGEABLE, title `[THEJUDGE-AUTO][READY] …`); marker `STATUS.ship-ready`, board row under `## ship-ready`; criteria 25/25 `true` — self-reported (builder cites `npm run test:scripts` 589/589 and `npm run quality:check` exit 0 per slice; `.worktrees/.graph-evidence.jsonl` holds 0 entries for this run, the known build-half evidence gap, so `review` re-verifies); return-side: launch checkout `git status --porcelain` empty before and after, `classifyBuildWrites` over every reported path → `ok` (all inside `.worktrees/implement-domain-corporate-network-reachability/`); remote tip equals local `f44c142`; worktree porcelain empty | 2026-09-12 |
 
 ## Open gate
 
@@ -274,6 +275,59 @@ Rules that bind this build:
 - Every stop that would be a question to a user is a park: end the node `failed` with the evidence (a blocked slice, a gate that will not go green, a conflict whose intent is not derivable) and never wait for an answer.
 
 Report back with labelled lines: outcome (`ok` / `failed`), the shared branch and `git branch --show-current`, per slice its status and the commit hash, the PR URL, the final title, every criterion id with the evidence that earned it (one line each), the commands run for verification with their pass/fail result (`npm run test:scripts`, `npm run quality:check`, the frontend build check), every path you wrote relative to the worktree root, the marker and board position at the end, `git status --porcelain` at the end, and any command that was denied or refused, verbatim.
+
+### review
+
+graph is controlling.
+
+You are node 7 (`review`) of graph run `graph-20260911-160859`, a fresh-context, no-write reviewer dispatched by the `graph-implement` driver. You hold no `Write`, `Edit`, or `NotebookEdit` tool and must change nothing: read, search, and run read-only verification commands only. You have not seen the build node's transcript and must not look for it; grade the work, not its justification. Do not dispatch subagents or forks; verify directly, no sleeping or polling. Your tool-call budget for this node is 120; stay well under it.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write. Every command runs inside that worktree, on branch `thejudge-auto/domain-corporate-network-reachability-work`. Never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge`.
+
+What to review: the diff `git diff a2ea1a2..f44c142` (four slice commits `feafb27`, `851e308`, `e8ef801`, `f44c142`; 22 files) for the package `PRD/work/domain-corporate-network-reachability/`. Read the package artifacts first: `GAMEPLAN.md`, the four `slice-*.md` docs, the four `slice-*.criteria.json` files, `GATE-QUESTIONS.md` (the finalized proposal, with the owner's REQ-198 edit: `security.txt` publishes `Contact: https://mtgjudge.gg/` plus a comment line pointing to the Send feedback action in the app's shared action menu, no email), and `DESIGN-BRIEF.md`. Also read `PRD/instructions/graph-workflow-contract.md` `## Node 7 — the no-write reviewer` and `## Acceptance criteria are earned, not written`. PR: https://github.com/ChrisMiho/TheJudge/pull/234.
+
+The rubric is each slice's own `## Acceptance criteria`, quoted here; flag gaps affecting correctness or these stated requirements, and nothing else:
+
+Slice A (response-headers-policy):
+- A1 — `scripts/lib/cloudfront-response-headers.mjs` exports a pure function producing the five header values verbatim (HSTS `max-age=31536000; includeSubDomains` without preload, `x-content-type-options`, `x-frame-options`, `referrer-policy`, `permissions-policy`), with no `Content-Security-Policy` key anywhere in its output.
+- A2 — its test asserts all five values verbatim, asserts `permissions-policy` keeps `camera=(self)`, and asserts no CSP header is produced.
+- A3 — the idempotency check is unit-tested both ways (policy already attached → no change; absent or different → attach needed).
+- A4 — a test proves the attach step changes only `DefaultCacheBehavior.ResponseHeadersPolicyId` and leaves `Aliases`, `ViewerCertificate`, `FunctionAssociations`, `CustomErrorResponses` byte-identical, using a fixture shaped like `cloudfront-custom-domain.test.mjs`'s `freshConfig()`.
+- A5 — `scripts/aws-bootstrap.sh` calls the create-or-update-policy step and the idempotent attach step in the custom-domain block, following the existing create/update-then-publish-then-attach shape used for the redirect function.
+- A6 — `docs/aws/deployment.md`'s `### Custom domain` intro and numbered list read six idempotent steps with the headers policy as step 6.
+- A7 — `npm run test:scripts` passes.
+
+Slice B (static-files):
+- B1 — `apps/frontend/public/robots.txt` exists, contains `User-agent: *` and `Disallow:` (crawling permitted), and no `Sitemap:` line.
+- B2 — `apps/frontend/public/.well-known/security.txt` exists, contains `Contact: https://mtgjudge.gg/`, a comment line naming the Send feedback action in the app's shared action menu, an `Expires:` line with a concrete date, and no `@` email address.
+- B3 — `scripts/frontend-public-static-files.test.mjs` runs the frontend production build and asserts `apps/frontend/dist/.well-known/security.txt` exists with content identical to the `public/` source.
+- B4 — the same test asserts `apps/frontend/dist/robots.txt` exists with content identical to the source.
+- B5 — `npm run test:scripts` passes.
+
+Slice C (domain-reachability-runbook):
+- C1 — `docs/aws/domain-reachability.md` exists and is linked from `docs/aws/deployment.md`'s `See also` list.
+- C2 — it opens with the three named buckets (repo ships / owner by hand / time only).
+- C3 — it states explicitly that no code change guarantees the site opens at work, and phrases every filter-behavior claim as a likelihood.
+- C4 — step 0 of the checklist is capturing the block page or asking IT which gateway the company runs.
+- C5 — the checklist names all seven vendors, each described by page name rather than a pinned URL.
+- C6 — it carries the three verification commands with the measured 2026-09-11 before result beside each, and states the owner runs them post-deploy.
+- C7 — it records 2026-09-05 as the domain's registration/attachment date.
+- C8 — it records slice B's `security.txt` `Expires:` date and states renewal is a manual step.
+
+Slice D (prd-truth-apply):
+- D1 — `PRD/sections/functional-requirements.md` contains REQ-197, REQ-198, REQ-199 following the requirement template, with REQ-198's Contact line matching the owner's edit (no email address).
+- D2 — DEC-084 in `PRD/sections/decisions/deployment.md` is amended in place per the accepted diff; no new `DEC-###` entry exists anywhere in `PRD/sections/`.
+- D3 — `PRD/sections/system-map.md`'s `## AWS production deployment` and `### Serverless hosting` entries carry REQ-197/198/199 in `Backed by`, updated `Summary` sentences, and a `Lives in` list matching the files A/B/C actually created.
+- D4 — every file path named in the new REQ-197/198/199 acceptance criteria and the amended system-map `Lives in` list exists in the repository.
+- D5 — `npm run quality:check` passes.
+
+Distrust the `true` marks in the criteria files: the hook's evidence log recorded nothing for this build, so those marks are the builder's self-report. Re-verify independently: run `npm run test:scripts` and `npm run quality:check` yourself and report the real exit codes and counts; read the two new test files and confirm they assert what A1–A4 and B3–B4 say (not merely that they exist); read `scripts/aws-bootstrap.sh`'s new block and confirm it is idempotent and never runs unless the custom-domain block runs; check the apply-by-intent in `PRD/sections/` against the finalized `GATE-QUESTIONS.md` (same substance, adapted to what shipped, REQ-198 carrying the owner's edit, no `DEC-###` minted, REQ ids 197–199 not colliding with any existing id); and confirm the PR body's plain-language block states that no code change promises the site opens on a corporate network. Never run `scripts/aws-bootstrap.sh`, any mutating `aws` command, or any data refresh.
+
+Severity rule: a preference, a style note, or an improvement outside the slices' stated criteria is never Critical or Important and never loops the run back to `build`. Critical means the shipped work is wrong or unsafe against a stated criterion or product truth; Important means a stated criterion is not actually met. Everything else is Minor.
+
+Report back with labelled lines: verdict (`APPROVE` / `RETURN TO BUILD`), each criterion id with met / not met and one line of evidence, the exact commands you ran with exit codes and counts, the findings list (severity, file, line, what is wrong, what would fix it — or `none`), and any command that was denied or refused, verbatim.
 
 ## Instruction ledger
 
