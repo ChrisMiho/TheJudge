@@ -117,7 +117,7 @@ site keeps having no published way to report a security problem.
 - Acceptance Criteria:
   - `apps/frontend/public/robots.txt` exists and is copied into the built frontend
   - `curl -sI https://mtgjudge.gg/robots.txt` returns `content-type: text/plain` (today: `text/html`) and the body is the robots file, not the app shell
-  - `apps/frontend/public/.well-known/security.txt` exists, is copied into the built frontend, and carries at minimum RFC 9116's `Contact:` and `Expires:` fields, with the contact address the owner nominated at the `define` gate
+  - `apps/frontend/public/.well-known/security.txt` exists, is copied into the built frontend, and carries RFC 9116's required `Contact:` and `Expires:` fields: `Contact: https://mtgjudge.gg/` (RFC 9116 requires a URI, not an email) with a comment line directing reporters to the Send feedback action in the app's shared action menu; no email address is published (REQ-198 edit verdict)
   - `curl -sI https://mtgjudge.gg/.well-known/security.txt` returns `content-type: text/plain` and the body is the security file, not the app shell
   - the build step is verified to copy a dotted directory (`public/.well-known/`) into the deployed output — asserted at build, never assumed, because a bundler that skips dotfiles would leave the path silently falling back to the app shell
   - the SPA deep-link fallback still works for a real app route (a request for an app path that is not a file still returns `index.html` with the app)

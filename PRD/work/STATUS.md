@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [domain-corporate-network-reachability](domain-corporate-network-reachability/) | Gate verdicts applied 2026-09-12 (run `graph-20260911-160859`): REQ-197 accept, REQ-198 edit (`security.txt` points to the app's Send feedback action, no email published), REQ-199 accept, DEC-084 accept (bare apex stays the only address), system-map accept. Docs PR #232 merged; the build half (`graph-implement`) is running from `main` |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [domain-corporate-network-reachability](domain-corporate-network-reachability/) | Gate-qc PASS 2026-09-11 (run `graph-20260911-160859`). Owner: answer the five verdict slots in `GATE-QUESTIONS.md` (REQ-197 security headers, REQ-198 real `robots.txt`/`security.txt` — needs a contact address, REQ-199 reachability runbook, DEC-084 in-place, system-map), then merge the docs PR to build. Headline: no code change promises `mtgjudge.gg` opens at work; the six-day-old domain's category and reputation sit with the filter vendors |
 
 
 ## deferred

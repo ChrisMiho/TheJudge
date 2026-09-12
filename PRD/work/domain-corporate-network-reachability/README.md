@@ -1,4 +1,4 @@
-status: owner-action
+status: refined
 
 # Domain corporate network reachability
 
@@ -34,5 +34,7 @@ deployment entries. No `DEC-###` is minted.
 
 ## Next step
 
-Owner: answer the five `- Verdict:` slots in `GATE-QUESTIONS.md`, then merge the
-docs PR. That merge is the build signal; `graph-implement` builds it from `main`.
+Gate verdicts applied 2026-09-12 (see `GRAPH-RUN.md` `## Gate verdicts`): 4
+accept, 1 edit (REQ-198 — `security.txt` points to the app's Send feedback
+action, no email published). Docs PR #232 is merged; the build half
+(`graph-implement`) is running from `main`.

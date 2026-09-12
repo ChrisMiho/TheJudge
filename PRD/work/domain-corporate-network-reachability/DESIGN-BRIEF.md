@@ -179,11 +179,14 @@ decision blocker test, so none is gated.
 - **A5 — HSTS `max-age=31536000; includeSubDomains`, no `preload`.** Evidence:
   ladder #4, smallest reversible scope. `preload` requires a submission to a
   browser-maintained list and is slow and awkward to undo.
-- **A6 — `security.txt` needs a contact address the repo does not have.** No
-  contact address appears anywhere in the repository, and the only address on
-  file is the owner's personal email. The gate asks the owner which address to
-  publish rather than the brief inventing one; RFC 9116 also requires an
-  `Expires` field, so the runbook carries its renewal date.
+- **A6 — `security.txt` publishes the app's Send feedback action, not an
+  email.** The owner answered the REQ-198 gate question `edit`: the security
+  contact is the app's own Send feedback feature, reached from the app's
+  shared action menu, which has no direct URL — so `security.txt` publishes
+  `Contact: https://mtgjudge.gg/` (RFC 9116 requires a URI) with a comment
+  line directing reporters to the Send feedback action in that menu. No email
+  address is published. RFC 9116 also requires an `Expires` field, so the
+  runbook carries its renewal date. Evidence: REQ-198 gate verdict, 2026-09-12.
 - **A7 — Vendors are named, exact submission URLs are not asserted.** Vendor
   lookup pages move. The runbook names each vendor and the page by its own name
   ("URL category lookup", "request recategorization") rather than pinning URLs

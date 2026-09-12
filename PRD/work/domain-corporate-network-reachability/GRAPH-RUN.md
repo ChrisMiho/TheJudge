@@ -20,11 +20,27 @@
 
 ## Open gate
 
-- Terminal state: `PARKED` at `owner-action` (the normal `graph-kickoff` stop at the first `gate-qc` PASS).
-- Question: answer `PRD/work/domain-corporate-network-reachability/GATE-QUESTIONS.md`, then merge to build. Five verdict slots: REQ-197, REQ-198 (also name the `security.txt` contact address), REQ-199, DEC-084 (in-place amendment; keeps the bare apex as the only address), system-map.
-- Evidence: gate-qc PASS with no findings (node 4 row); `## Preparation gate` in the package README records it.
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/232 (opened by `gh pr create --base main --head thejudge-auto/domain-corporate-network-reachability`; never merged by the run)
-- Resume: the owner answers the slots in the PR and merges it to `main`. That merge is the build signal; `/graph-implement PRD/work/domain-corporate-network-reachability/` (or the background `graph-implement` loop) picks it up. The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-domain-corporate-network-reachability` stays through the park; `graph-implement` removes it at claim time.
+- Terminal state: `RESOLVED` 2026-09-12 — five stable IDs, verdict split: 4 accept, 1 edit (REQ-198). See `## Gate verdicts` below.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/232 (merged to `main` at `758f2af`)
+- Resume: `gate-review` (this node) hands the run back to `graph-implement`, which re-enters at `gate-qc` per the entry-point table.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-197` | accept | owner approved 2026-09-12 in session, taking the driver's recommendation |
+| `REQ-198` | edit | the security contact is the app's own Send feedback feature, not an email address; `security.txt` publishes `Contact: https://mtgjudge.gg/` (RFC 9116 requires a URI) with a comment line directing reporters to the Send feedback action in the app's shared action menu, no email address published |
+| `REQ-199` | accept | owner approved 2026-09-12 in session, taking the driver's recommendation |
+| `DEC-084` | accept | owner approved 2026-09-12 in session; the bare apex stays the only address, no second demo address is built |
+| `system-map` | accept | owner approved 2026-09-12 in session, taking the driver's recommendation |
+
+### Brief reconciliation
+
+- grep: `grep -nE 'contact address|email|security\.txt|Contact:' DESIGN-BRIEF.md README.md`
+- `DESIGN-BRIEF.md:182` (A6) — said "`security.txt` needs a contact address the repo does not have… the only address on file is the owner's personal email. The gate asks the owner which address to publish" → now says the owner answered `edit`: `security.txt` publishes `Contact: https://mtgjudge.gg/` with a comment line pointing to the app's Send feedback action; no email is published (REQ-198 edit)
+- `GATE-QUESTIONS.md:120` (REQ-198 proposed diff, inside the file only) — acceptance criterion "carries at minimum RFC 9116's `Contact:` and `Expires:` fields, with the contact address the owner nominated at the `define` gate" → now names the concrete `Contact: https://mtgjudge.gg/` URI plus the Send-feedback comment line, no email (REQ-198 edit)
+- README.md pointer — no supersession note needed: `intake/request.md` never states a contact address or email, so nothing there is superseded
+- re-run of the grep: zero remaining hits contradict the REQ-198 verdict (all other matches are neutral mentions of `security.txt`/`robots.txt`)
 
 ## Dispatch prompts
 
@@ -149,6 +165,30 @@ Re-measuring is allowed and cheap: `curl -sI https://mtgjudge.gg` and `curl -sI 
 Outputs, per the skill: emit an explicit `PASS` or `FAIL` verdict with the complete issue list on FAIL. On PASS leave the package at `STATUS.refined` and the board row under `## refined`. On FAIL set the marker to `STATUS.refining`, update the README status line and move the board row under `## refining`, and commit with explicit paths only (never `git add -A`, `--all`, or `.`). Do not push. Do not fix the brief yourself; return every issue to the driver. Do not write the README's `## Preparation gate` section; the driver owns it.
 
 Report back with labelled lines: verdict (`PASS` / `FAIL`), the checklist items verified with one line of evidence each, the complete findings list on FAIL (severity, file, line, what is wrong, what would fix it), any commit hash you made from `git log -1 --format=%H`, and any command that was denied or refused, verbatim.
+
+### gate-review
+
+graph is controlling.
+
+You are the gate-resolution node (`gate-review`) of graph run `graph-20260911-160859`, dispatched by the `graph-implement` driver after claiming the spec. Execute the `graph-gate-review` skill exactly: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/graph-gate-review/SKILL.md` in full first, then the `## Propose / apply / close` and `## The two runs` sections of `PRD/instructions/graph-workflow-contract.md`, and `PRD/instructions/plain-language-standard.md`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write. Every file you read or write and every git command you run happens inside that worktree, on branch `thejudge-auto/domain-corporate-network-reachability-work`. Never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge` itself. Do not dispatch subagents or forks; do the work directly, no sleeping or polling. Your tool-call budget for this node is 60; stay well under it.
+
+Inputs:
+- Package: `PRD/work/domain-corporate-network-reachability/`
+- The docs PR #232 is merged to `main`; the owner answered all five verdict slots in `GATE-QUESTIONS.md`. Read the file yourself: every verdict comes from it, never from this prompt.
+
+Do exactly what the skill's `## Procedure` says:
+1. Restate the gate (ID count and verdict split). Refuse if any slot is blank or malformed.
+2. Apply each verdict inside that ID's proposed diff in `GATE-QUESTIONS.md` only. For the REQ-198 `edit`, carry the owner's `Reason:` into REQ-198's proposed diff: `security.txt` publishes `Contact: https://mtgjudge.gg/` with a comment line directing reporters to the Send feedback action in the app's shared action menu, and no email address is published; the acceptance criterion about the contact address is satisfied by that URI plus comment. REQ-199's diff is accepted, but where its runbook text names an email or an unnamed owner-nominated contact address, reconcile only that passage to the REQ-198 verdict, citing the verdict. Never edit `PRD/sections/`.
+3. Reconcile `DESIGN-BRIEF.md` and the README's intake pointer to the REQ-198 edit. Enumerate by a grep you quote (for example `grep -nE 'contact address|email|security\.txt|Contact:' DESIGN-BRIEF.md README.md`) every passage that still states the superseded behaviour (an owner-nominated email or an unnamed contact address), rewrite each to the owner's rule with the verdict cited as evidence, then re-run the grep and require zero contradicting hits. `intake/` is never edited; where `intake/request.md` states the superseded behaviour, add one supersession sentence to the README pointer.
+4. Write `## Gate verdicts` into `GRAPH-RUN.md` (one row per ID, then the `### Brief reconciliation` list naming the grep and every rewritten passage, or `none`); mark `## Open gate` resolved with the date and verdict count; leave `## Dispatch prompts` and `## Instruction ledger` untouched.
+5. Restore the lifecycle position: README `status: refined`, marker `STATUS.refined` (delete `STATUS.owner-action`; exactly one marker), and move the board row in `PRD/work/STATUS.md` from `## owner-action` to `## refined` (remove the old row entirely; the note should now say the verdicts are applied and the build half is running). Do not write the README's `## Preparation gate`; the driver owns it.
+6. Commit with explicit paths only (never `git add -A`, `--all`, or `.`). Do not push.
+
+Report back with labelled lines: outcome (`ok` / refused), the verdict split, each ID's applied action, the `### Brief reconciliation` list verbatim (grep quoted, passages rewritten, README note or none), the restored marker and board position, the commit hash from `git log -1 --format=%H`, the `git status --porcelain` output after the commit, and any command that was denied or refused, verbatim.
 
 ## Instruction ledger
 
