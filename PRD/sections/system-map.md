@@ -506,14 +506,14 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Status: shipped
 - Summary: Runs the live OpenAI-backed app on a low-cost AWS serverless stack at `https://mtgjudge.gg` (the API on its AWS-provided Function URL), with automated quality-gated deploys, backend-only secret loading, and explicit cost/scale guardrails.
 - Lives in: `.github/workflows/quality-check.yml` (`deploy` job), `scripts/aws-{bootstrap,deploy}.sh`, `scripts/package-lambda.sh`, `apps/backend/src/lambda.ts`, `docs/aws/`
-- Backed by: DEC-084, GOAL-003, NFR-003, NFR-004, REQ-165, REQ-166, NFR-017
+- Backed by: DEC-084, GOAL-003, NFR-003, NFR-004, REQ-165, REQ-166, NFR-017, REQ-197, REQ-198, REQ-199
 
 ### Serverless hosting
 
 - Status: shipped
-- Summary: Serves the static frontend from a private S3 origin through CloudFront on the custom domain `mtgjudge.gg` (ACM certificate, Route 53 alias records, attached by the bootstrap) and the backend from Lambda through a public Function URL. The backend's single allowed browser origin is derived from the distribution's live alias on every deploy. The Lambda deploy artifact is staged in a private S3 bucket rather than uploaded inline, raising the effective package ceiling to Lambda's 250MB unzipped quota.
-- Lives in: `scripts/aws-bootstrap.sh`, `scripts/aws-deploy.sh`, `scripts/lib/cloudfront-custom-domain.mjs`, `scripts/frontend-origin-source.test.mjs`, `apps/backend/src/lambda.ts`, `scripts/lambda-package-budget.test.mjs`
-- Backed by: DEC-084, NFR-004, REQ-165, REQ-166, NFR-017
+- Summary: Serves the static frontend from a private S3 origin through CloudFront on the custom domain `mtgjudge.gg` (ACM certificate, Route 53 alias records, and a response headers policy carrying HSTS, `nosniff`, `SAMEORIGIN` framing, a referrer policy and a camera-preserving permissions policy, attached by the bootstrap) and the backend from Lambda through a public Function URL. The frontend also ships a real `robots.txt` and `.well-known/security.txt`, which previously returned the single-page-app shell. The backend's single allowed browser origin is derived from the distribution's live alias on every deploy. The Lambda deploy artifact is staged in a private S3 bucket rather than uploaded inline, raising the effective package ceiling to Lambda's 250MB unzipped quota.
+- Lives in: `scripts/aws-bootstrap.sh`, `scripts/aws-deploy.sh`, `scripts/lib/cloudfront-custom-domain.mjs`, `scripts/lib/cloudfront-response-headers.mjs`, `scripts/frontend-origin-source.test.mjs`, `apps/backend/src/lambda.ts`, `scripts/lambda-package-budget.test.mjs`, `apps/frontend/public/robots.txt`, `apps/frontend/public/.well-known/security.txt`, `docs/aws/domain-reachability.md`
+- Backed by: DEC-084, NFR-004, REQ-165, REQ-166, NFR-017, REQ-197, REQ-198, REQ-199
 
 ### Production secrets and deployment identity
 
