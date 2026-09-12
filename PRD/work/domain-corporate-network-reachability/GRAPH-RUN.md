@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (build half claimed 2026-09-12 after docs PR #232 merged at `758f2af`; the spec-forming half's base was `origin/thejudge-auto/domain-corporate-network-reachability`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability` on `thejudge-auto/domain-corporate-network-reachability-work` (the spec-forming half's `.worktrees/kickoff-domain-corporate-network-reachability` was removed clean at claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260911-160859/`
-- Current node: `gate-qc` (build half, attempt 2 — re-grade after the gate verdicts)
+- Current node: `plan` (build half; gate-qc attempt 2 PASS)
 - Next action: `graph-implement` continues `gate-qc → plan → build → review → close`; `land` is the owner's merge of the code PR
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok (PASS) | `0 → 23` | verdict PASS, no findings; no commit made (`git status --short` clean at `c7864fa`); live re-measure of `curl -sI https://mtgjudge.gg` and `/robots.txt` matched the brief; REQ-196 confirmed highest existing id (`functional-requirements.md:4678`); package stays `STATUS.refined` until the driver parks | 2026-09-11 |
 | — | claim (build half) | driver | ok | `n/a (driver, no node)` | docs PR #232 merged at `758f2af`; kickoff worktree `.worktrees/kickoff-domain-corporate-network-reachability` clean (`git status --porcelain` empty) → `git worktree remove`; `git worktree add .worktrees/implement-domain-corporate-network-reachability -b thejudge-auto/domain-corporate-network-reachability-work origin/main` at `758f2af`; claim commit `4ea3269` (README `- Autonomous base: origin/main`, ledger `Autonomous base`/`Worktree` lines) pushed (`git push -u origin thejudge-auto/domain-corporate-network-reachability-work` → new branch); lock retaken via `npm run graph:preflight -- --take-lock --slug domain-corporate-network-reachability --run-id graph-20260911-160859 --pid 14377`; graph canary `nohup true` → denied (`nohup` is denied while a graph run holds the lock); launch checkout still `main`, porcelain empty | 2026-09-12 |
 | — | gate-review | sonnet | ok | `0 → 33` | commit `f40edb5` on `thejudge-auto/domain-corporate-network-reachability-work`: five IDs, 4 accept / 1 edit (REQ-198 → `Contact: https://mtgjudge.gg/` + Send-feedback comment, no email); `GATE-QUESTIONS.md:120` and `DESIGN-BRIEF.md:182` (A6) reconciled, grep re-run zero contradicting hits, no README supersession note needed; `## Gate verdicts` written, `## Open gate` resolved; marker `STATUS.refined`, board row under `## refined`; worktree porcelain empty; launch checkout porcelain empty | 2026-09-12 |
+| 4 | gate-qc (attempt 2) | sonnet | ok (PASS) | `0 → 18` | verdict PASS, no findings; no commit (`git status --porcelain` empty at `3b6de33`); REQ-198 contact rule consistent at `GATE-QUESTIONS.md:120`/`:140` and `DESIGN-BRIEF.md:182-189`; `grep -n 'REQ-197\|REQ-198\|REQ-199' PRD/sections/functional-requirements.md` empty (REQ-196 highest at line 4678); live `curl -sI https://mtgjudge.gg` and `/robots.txt` still match the brief's pre-state; README `## Preparation gate` already reads PASS / none and stands as the latest result | 2026-09-12 |
 
 ## Open gate
 
@@ -217,6 +218,34 @@ Re-measuring is allowed and cheap: `curl -sI https://mtgjudge.gg` and `curl -sI 
 Outputs, per the skill: emit an explicit `PASS` or `FAIL` verdict with the complete issue list on FAIL. On PASS leave the package at `STATUS.refined` and the board row under `## refined`, and make no commit. On FAIL set the marker to `STATUS.refining`, update the README status line and move the board row under `## refining`, and commit with explicit paths only (never `git add -A`, `--all`, or `.`). Do not push. Do not fix the brief yourself; return every issue to the driver. Do not write the README's `## Preparation gate` section; the driver owns it.
 
 Report back with labelled lines: verdict (`PASS` / `FAIL`), the checklist items verified with one line of evidence each, the complete findings list on FAIL (severity, file, line, what is wrong, what would fix it), any commit hash you made from `git log -1 --format=%H`, the `git status --porcelain` output at the end, and any command that was denied or refused, verbatim.
+
+### plan
+
+graph is controlling.
+
+You are node 5 (`plan`) of graph run `graph-20260911-160859`, dispatched by the `graph-implement` driver. Execute the `thejudge-map-out` skill in its orchestrated mode: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-map-out/SKILL.md` in full first (its `## Mode` section governs), then its `reference.md` (slice template, criteria-file schema, Ship gates block), `PRD/instructions/preparation-contract.md`, `PRD/instructions/workflow-reference.md`, and `PRD/instructions/runtime-process-hygiene.md`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write. Every file you read or write and every git command you run happens inside that worktree, on branch `thejudge-auto/domain-corporate-network-reachability-work`. Never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge` itself. Do not dispatch subagents or forks; do the work directly, no sleeping or polling. Your tool-call budget for this node is 120; stay well under it. Never write product code or `PRD/sections/` from this node.
+
+Run inputs:
+- Package: `PRD/work/domain-corporate-network-reachability/` — read `README.md` (its `## Preparation gate` must read `Quality-check: PASS`; it does, recorded by the driver after gate-qc attempt 2 on 2026-09-12), `DESIGN-BRIEF.md`, and `GATE-QUESTIONS.md` (the finalized proposal: REQ-197 security response headers, REQ-198 real `robots.txt` and `security.txt`, REQ-199 the domain-reachability runbook, DEC-084 amended in place, two `system-map.md` entries; REQ-198 was edited by the owner so `security.txt` publishes `Contact: https://mtgjudge.gg/` plus a comment pointing to the app's Send feedback action, no email).
+- Run id: `graph-20260911-160859`
+- Existing code to read before slicing: `scripts/aws-bootstrap.sh` (custom-domain block from about line 375, and the SPA fallback mapping near lines 321-333), `scripts/lib/cloudfront-custom-domain.mjs` and its test, `apps/frontend/public/` and the frontend build config (how `public/` is copied to `dist/`), `docs/aws/deployment.md`, and `apps/frontend/src/components/ScanCameraSurface.tsx` (the camera use the permissions policy must keep working).
+
+What to produce, per the skill: `GAMEPLAN.md`, one `slice-<letter>-<name>.md` per slice, one `slice-<letter>.criteria.json` per slice emitted from that slice's `## Acceptance criteria` (every criterion `false`, each with an `evidence` block naming a command pattern, file paths, or `manual: true`), the README slice table and implementation map with `status: active`, the marker `STATUS.active` (delete `STATUS.refined`; exactly one marker), and the board row moved from `## refined` to `## active` in `PRD/work/STATUS.md` (remove the old row entirely).
+
+Slicing guidance (you decide the final cut; one primary objective per slice, dependencies stated):
+- The brief's scope falls naturally into: the CloudFront response headers policy (a pure, unit-tested transform beside `cloudfront-custom-domain.mjs` plus the idempotent bootstrap attachment; HSTS `max-age=31536000; includeSubDomains` without `preload`, `x-content-type-options`, `x-frame-options`, `referrer-policy`, `permissions-policy` with `camera=(self), microphone=(), geolocation=()`; no Content-Security-Policy); the two static files under `apps/frontend/public/` with a build-time check that the dotted `.well-known/` directory reaches `dist/` and both files are served as `text/plain`; and the runbook `docs/aws/domain-reachability.md` with the before/after verification commands and the vendor-agnostic category-lookup steps.
+- Assign the PRD apply-by-intent step (REQ-197, REQ-198, REQ-199 into `PRD/sections/functional-requirements.md`, DEC-084 amended in place in `PRD/sections/decisions/deployment.md`, and the two `PRD/sections/system-map.md` entries) to exactly one slice, and say so in the GAMEPLAN and that slice's doc; the builder applies it together with the code, re-derived against current truth, never a blind replay.
+- Acceptance criteria must be checkable by a command (`npm run test:scripts`, `npm run quality:check`, a `curl` against the live site is NOT available pre-deploy, so phrase live-site checks as the owner's post-deploy verification in the runbook, not as build criteria), a file path, or a dated manual observation. No slice needs a browser or a dev server; say so, so no runtime-hygiene cleanup criterion is required.
+- The live AWS change (attaching the policy to the distribution) happens only when the owner runs the bootstrap; the build proves the script and transform, not the live distribution. State that plainly in the GAMEPLAN's verification checklist.
+- The final slice carries the Ship gates block from `reference.md`.
+
+Commit with explicit paths only (never `git add -A`, `--all`, or `.`). Do not push.
+
+Report back with labelled lines: outcome (`ok` / `failed`), the slice list (letter, name, one-line goal, dependencies), which slice carries the PRD apply, the files written, the commit hash from `git log -1 --format=%H`, the `git status --porcelain` output after the commit, and any command that was denied or refused, verbatim.
 
 ## Instruction ledger
 
