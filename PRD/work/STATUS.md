@@ -33,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [domain-corporate-network-reachability](domain-corporate-network-reachability/) | Gate-qc PASS 2026-09-11 (run `graph-20260911-160859`). Owner: answer the five verdict slots in `GATE-QUESTIONS.md` (REQ-197 security headers, REQ-198 real `robots.txt`/`security.txt` — needs a contact address, REQ-199 reachability runbook, DEC-084 in-place, system-map), then merge the docs PR to build. Headline: no code change promises `mtgjudge.gg` opens at work; the six-day-old domain's category and reputation sit with the filter vendors |
 
 
 ## deferred
