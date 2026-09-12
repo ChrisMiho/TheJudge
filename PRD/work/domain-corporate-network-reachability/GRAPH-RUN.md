@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (build half claimed 2026-09-12 after docs PR #232 merged at `758f2af`; the spec-forming half's base was `origin/thejudge-auto/domain-corporate-network-reachability`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability` on `thejudge-auto/domain-corporate-network-reachability-work` (the spec-forming half's `.worktrees/kickoff-domain-corporate-network-reachability` was removed clean at claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260911-160859/`
-- Current node: `owner-action` (parked after `gate-qc` PASS — run one complete)
-- Next action: owner answers `PRD/work/domain-corporate-network-reachability/GATE-QUESTIONS.md` in the docs PR and merges it; `graph-implement` builds it from `main`
+- Current node: `gate-qc` (build half, attempt 2 — re-grade after the gate verdicts)
+- Next action: `graph-implement` continues `gate-qc → plan → build → review → close`; `land` is the owner's merge of the code PR
 
 ## Node ledger
 
@@ -17,6 +17,8 @@
 | 2 | shape | sonnet | ok | `0 → 36` | commit `fbf51a2` on `thejudge-auto/domain-corporate-network-reachability`: `PRD/work/domain-corporate-network-reachability/{IDEA.md,README.md,STATUS.ideation,intake/request.md}` + board row; staging folder emptied; one `## Prior run` match (`receipts/aws-deployment-onboarding-2026-07-03.md`); launch checkout `git status --porcelain` empty | 2026-09-11 |
 | 3 | define | opus | ok | `0 → 34` | commit `5ef4bb9`: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-197, REQ-198, REQ-199, DEC-084 in-place, system-map entry; no blocker questions), `STATUS.refined`, board row under `## refined`; `git diff HEAD~1 HEAD -- PRD/sections` empty; launch checkout clean → questions file present, gate continues to `gate-qc` | 2026-09-11 |
 | 4 | gate-qc | sonnet | ok (PASS) | `0 → 23` | verdict PASS, no findings; no commit made (`git status --short` clean at `c7864fa`); live re-measure of `curl -sI https://mtgjudge.gg` and `/robots.txt` matched the brief; REQ-196 confirmed highest existing id (`functional-requirements.md:4678`); package stays `STATUS.refined` until the driver parks | 2026-09-11 |
+| — | claim (build half) | driver | ok | `n/a (driver, no node)` | docs PR #232 merged at `758f2af`; kickoff worktree `.worktrees/kickoff-domain-corporate-network-reachability` clean (`git status --porcelain` empty) → `git worktree remove`; `git worktree add .worktrees/implement-domain-corporate-network-reachability -b thejudge-auto/domain-corporate-network-reachability-work origin/main` at `758f2af`; claim commit `4ea3269` (README `- Autonomous base: origin/main`, ledger `Autonomous base`/`Worktree` lines) pushed (`git push -u origin thejudge-auto/domain-corporate-network-reachability-work` → new branch); lock retaken via `npm run graph:preflight -- --take-lock --slug domain-corporate-network-reachability --run-id graph-20260911-160859 --pid 14377`; graph canary `nohup true` → denied (`nohup` is denied while a graph run holds the lock); launch checkout still `main`, porcelain empty | 2026-09-12 |
+| — | gate-review | sonnet | ok | `0 → 33` | commit `f40edb5` on `thejudge-auto/domain-corporate-network-reachability-work`: five IDs, 4 accept / 1 edit (REQ-198 → `Contact: https://mtgjudge.gg/` + Send-feedback comment, no email); `GATE-QUESTIONS.md:120` and `DESIGN-BRIEF.md:182` (A6) reconciled, grep re-run zero contradicting hits, no README supersession note needed; `## Gate verdicts` written, `## Open gate` resolved; marker `STATUS.refined`, board row under `## refined`; worktree porcelain empty; launch checkout porcelain empty | 2026-09-12 |
 
 ## Open gate
 
@@ -189,6 +191,32 @@ Do exactly what the skill's `## Procedure` says:
 6. Commit with explicit paths only (never `git add -A`, `--all`, or `.`). Do not push.
 
 Report back with labelled lines: outcome (`ok` / refused), the verdict split, each ID's applied action, the `### Brief reconciliation` list verbatim (grep quoted, passages rewritten, README note or none), the restored marker and board position, the commit hash from `git log -1 --format=%H`, the `git status --porcelain` output after the commit, and any command that was denied or refused, verbatim.
+
+### gate-qc (attempt 2, build half)
+
+graph is controlling.
+
+You are node 4 (`gate-qc`, attempt 2) of graph run `graph-20260911-160859`, dispatched by the `graph-implement` driver after the owner's gate verdicts were applied. Execute the `thejudge-quality-check` skill in its orchestrated mode: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-quality-check/SKILL.md` in full first (its `## Mode` section governs), then `PRD/instructions/preparation-contract.md`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability
+
+Copy the `Working directory:` line above, unchanged, into every prompt you write. Every file you read or write and every git command you run happens inside that worktree, on branch `thejudge-auto/domain-corporate-network-reachability-work`. Never touch the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge` itself. Verify directly: spawn no subagents or forks, no sleeping or polling. Your tool-call budget for this node is 60; stay well under it (attempt 1 passed in 23 calls).
+
+Run inputs:
+- Package: `PRD/work/domain-corporate-network-reachability/` — grade `DESIGN-BRIEF.md`, and read `GATE-QUESTIONS.md` as the finalized proposal it points at. The owner's verdicts are recorded in `GRAPH-RUN.md` `## Gate verdicts`: REQ-197, REQ-199, DEC-084 and system-map accepted; REQ-198 edited so `security.txt` publishes `Contact: https://mtgjudge.gg/` with a comment line pointing to the app's Send feedback action and no email address.
+- Run id: `graph-20260911-160859`
+
+This is a re-grade of a package that already passed once (attempt 1, 2026-09-11, no findings). What changed since: the REQ-198 edit inside `GATE-QUESTIONS.md` and the reconciled assumption A6 in `DESIGN-BRIEF.md` (see the `### Brief reconciliation` list in `GRAPH-RUN.md`). Grade the whole brief per the skill's checklist, but focus on consistency after the verdict:
+- The brief, the REQ-198 proposed diff, and the REQ-199 runbook diff all state the same `security.txt` contact rule (URI plus Send-feedback comment, no email). Any passage still asking the owner for a contact address, or naming an email, is a finding.
+- PRD alignment: no contradiction of DEC-084's one-canonical-address rule, no new endpoint or service (NFR-004), backend-only secret loading untouched (NFR-003); REQ-197 to REQ-199 still unused in `PRD/sections/functional-requirements.md` (REQ-196 is the highest existing id).
+- Agent-readiness: every acceptance criterion in REQ-197, REQ-198 and REQ-199 is checkable by a command, a path, or a stated manual observation.
+- Honesty: the brief and proposal state plainly that no code change promises the site opens on a corporate network.
+
+Re-measuring is allowed and cheap: `curl -sI https://mtgjudge.gg` and `curl -sI https://mtgjudge.gg/robots.txt`. Do not run any Scryfall or data refresh command.
+
+Outputs, per the skill: emit an explicit `PASS` or `FAIL` verdict with the complete issue list on FAIL. On PASS leave the package at `STATUS.refined` and the board row under `## refined`, and make no commit. On FAIL set the marker to `STATUS.refining`, update the README status line and move the board row under `## refining`, and commit with explicit paths only (never `git add -A`, `--all`, or `.`). Do not push. Do not fix the brief yourself; return every issue to the driver. Do not write the README's `## Preparation gate` section; the driver owns it.
+
+Report back with labelled lines: verdict (`PASS` / `FAIL`), the checklist items verified with one line of evidence each, the complete findings list on FAIL (severity, file, line, what is wrong, what would fix it), any commit hash you made from `git log -1 --format=%H`, the `git status --porcelain` output at the end, and any command that was denied or refused, verbatim.
 
 ## Instruction ledger
 
