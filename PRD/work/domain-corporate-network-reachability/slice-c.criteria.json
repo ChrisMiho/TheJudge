@@ -5,66 +5,84 @@
     {
       "id": "C1",
       "statement": "docs/aws/domain-reachability.md exists and is linked from docs/aws/deployment.md's See also list",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep.*domain-reachability.*deployment\\.md",
-        "paths": ["docs/aws/domain-reachability.md", "docs/aws/deployment.md"]
+        "paths": [
+          "docs/aws/domain-reachability.md",
+          "docs/aws/deployment.md"
+        ]
       }
     },
     {
       "id": "C2",
       "statement": "The runbook opens with the three named buckets: what the repo ships, what only the owner can do by hand, what only time resolves",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["docs/aws/domain-reachability.md"]
+        "paths": [
+          "docs/aws/domain-reachability.md"
+        ]
       }
     },
     {
       "id": "C3",
       "statement": "The runbook states explicitly that no code change here guarantees the site opens at work, phrasing filter-behavior claims as likelihoods",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["docs/aws/domain-reachability.md"]
+        "paths": [
+          "docs/aws/domain-reachability.md"
+        ]
       }
     },
     {
       "id": "C4",
       "statement": "Step 0 of the checklist is capturing the block page or asking IT which gateway the company runs",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["docs/aws/domain-reachability.md"]
+        "paths": [
+          "docs/aws/domain-reachability.md"
+        ]
       }
     },
     {
       "id": "C5",
       "statement": "The checklist names all seven vendors, each described by page name rather than a pinned URL",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["docs/aws/domain-reachability.md"]
+        "paths": [
+          "docs/aws/domain-reachability.md"
+        ]
       }
     },
     {
       "id": "C6",
       "statement": "The runbook carries the three verification commands with the measured 2026-09-11 before-results, stated as post-deploy owner checks",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["docs/aws/domain-reachability.md"]
+        "paths": [
+          "docs/aws/domain-reachability.md"
+        ]
       }
     },
     {
       "id": "C7",
       "statement": "The runbook records 2026-09-05 as the domain's registration/attachment date",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["docs/aws/domain-reachability.md"]
+        "paths": [
+          "docs/aws/domain-reachability.md"
+        ]
       }
     },
     {
       "id": "C8",
       "statement": "The runbook records slice B's security.txt Expires: date and states renewal is a manual step",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["docs/aws/domain-reachability.md", "apps/frontend/public/.well-known/security.txt"]
+        "paths": [
+          "docs/aws/domain-reachability.md",
+          "apps/frontend/public/.well-known/security.txt"
+        ]
       }
     }
   ]

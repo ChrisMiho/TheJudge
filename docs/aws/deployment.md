@@ -6,8 +6,10 @@ keys. Players reach the app at **https://mtgjudge.gg**, a custom domain on the
 CloudFront distribution (DEC-084); the API stays on its AWS-provided Lambda
 Function URL.
 
-See also: [operations.md](./operations.md) (day-2 runbook) and
-[secrets.md](./secrets.md) (what lives where, and why GitHub needs no AWS keys).
+See also: [operations.md](./operations.md) (day-2 runbook),
+[secrets.md](./secrets.md) (what lives where, and why GitHub needs no AWS keys),
+and [domain-reachability.md](./domain-reachability.md) (why a corporate
+network might still block `mtgjudge.gg`, and what to do about it).
 
 ## Architecture
 

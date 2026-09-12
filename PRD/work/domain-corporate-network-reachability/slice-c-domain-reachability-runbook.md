@@ -1,6 +1,6 @@
 # Slice C — domain-reachability-runbook
 
-## Status: planned
+## Status: done
 
 ## Goal
 
