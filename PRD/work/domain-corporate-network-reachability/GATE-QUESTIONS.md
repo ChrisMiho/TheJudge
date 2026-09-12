@@ -80,8 +80,8 @@ changes `five idempotent steps` to `six idempotent steps`:
    no HSTS `preload` — see REQ-197's constraints for why.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-12 in session, taking the driver's recommendation.
 
 ---
 
@@ -136,8 +136,8 @@ site keeps having no published way to report a security problem.
   - `Expires:` is mandatory in RFC 9116 and the file goes stale on its own; the renewal date is recorded in the runbook rather than left to be discovered when a scanner flags it
 ```
 
-- Verdict:
-- Reason:
+- Verdict: edit
+- Reason: owner answered 2026-09-12: the security contact is the app's own Send feedback feature, not an email address. The feedback modal opens from the app's shared action menu and has no direct URL, so `security.txt` publishes `Contact: https://mtgjudge.gg/` (RFC 9116 requires a URI) with a comment line directing reporters to the Send feedback action in the app menu. No email address is published. The acceptance criterion "with the contact address the owner nominated at the `define` gate" is satisfied by that URI plus comment; the runbook (REQ-199) records the same wording.
 
 ---
 
@@ -195,8 +195,8 @@ undocumented.
   - the original AWS deployment receipt (`PRD/instructions/receipts/aws-deployment-onboarding-2026-07-03.md`) predates the custom domain and records no reachability or categorization work; this is the first such record
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-12 in session, taking the driver's recommendation.
 
 ---
 
@@ -255,8 +255,8 @@ is no alternate address, and one bullet is added after it:
   - 2026-09-11: the domain was measured six days after attachment and was unreachable from a corporate network while established gaming sites loaded. The distribution carried no security headers and both `robots.txt` and `security.txt` returned the app shell; REQ-197/198/199 close the repo-side gaps. Corporate reachability itself depends on domain category, reputation, and age, which sit outside this repository
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-12 in session; the bare apex stays the only address, no second demo address is built.
 
 ---
 
@@ -302,8 +302,8 @@ Line 516, `### Serverless hosting` — `- Backed by:` gains the three IDs:
 - Backed by: DEC-084, NFR-004, REQ-165, REQ-166, NFR-017, REQ-197, REQ-198, REQ-199
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-12 in session, taking the driver's recommendation.
 
 ---
 
