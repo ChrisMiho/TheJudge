@@ -24,7 +24,7 @@ deployment entries. No `DEC-###` is minted.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/domain-corporate-network-reachability
+- Autonomous base: origin/main
 
 ## Preparation gate
 

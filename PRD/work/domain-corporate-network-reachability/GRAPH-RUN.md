@@ -3,8 +3,8 @@
 - Run ID: `graph-20260911-160859`
 - Profile: `.claude/graph-profile.json (loaded — env sentinel THEJUDGE_GRAPH_PROFILE observed by graph-preflight and by the driver)`
 - Canary: `denied — hook live (rm -rf canary: "[graph-boundary] rm -rf is denied in every session."; graph canary nohup true: "[graph-boundary] nohup is denied while a graph run holds the lock")`
-- Autonomous base: `origin/thejudge-auto/domain-corporate-network-reachability` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-domain-corporate-network-reachability` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability` by the build half's claim)
+- Autonomous base: `origin/main` (build half claimed 2026-09-12 after docs PR #232 merged at `758f2af`; the spec-forming half's base was `origin/thejudge-auto/domain-corporate-network-reachability`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-domain-corporate-network-reachability` on `thejudge-auto/domain-corporate-network-reachability-work` (the spec-forming half's `.worktrees/kickoff-domain-corporate-network-reachability` was removed clean at claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260911-160859/`
 - Current node: `owner-action` (parked after `gate-qc` PASS — run one complete)
 - Next action: owner answers `PRD/work/domain-corporate-network-reachability/GATE-QUESTIONS.md` in the docs PR and merges it; `graph-implement` builds it from `main`
