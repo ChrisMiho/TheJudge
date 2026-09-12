@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [domain-corporate-network-reachability](domain-corporate-network-reachability/) | Mapped 2026-09-12 (run `graph-20260911-160859`): 4 slices — A response-headers-policy, B static-files, C domain-reachability-runbook (A/B/C parallel-ready), D prd-truth-apply (sequential on A/B/C, carries the REQ-197/198/199 + DEC-084 + system-map apply and Ship gates). No slice needs a browser or live-site curl; the live AWS change happens only when the owner runs `scripts/aws-bootstrap.sh` |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| [domain-corporate-network-reachability](domain-corporate-network-reachability/) | Gate verdicts applied 2026-09-12 (run `graph-20260911-160859`): REQ-197 accept, REQ-198 edit (`security.txt` points to the app's Send feedback action, no email published), REQ-199 accept, DEC-084 accept (bare apex stays the only address), system-map accept. Docs PR #232 merged; the build half (`graph-implement`) is running from `main` |
 
 ## refining
 
