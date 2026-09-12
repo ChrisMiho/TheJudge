@@ -4723,3 +4723,83 @@
   - the card-identity hash is the true determinant of template-expansion output
     (the searches run against the Scryfall card pool); the template-set hash
     covers Commander Spellbook adding a category without new cards
+
+### REQ-197
+- Title: Security response headers on the production distribution
+- Priority: medium
+- Description: Every response CloudFront serves for `mtgjudge.gg` carries a standard set of security headers, attached as a CloudFront response headers policy on the distribution's default cache behavior. Before this requirement, the distribution attached only an ACM certificate, Route 53 alias records, and the redirect-to-apex function (DEC-084), so production replied with nothing but S3/CloudFront headers. The policy is created (or updated) and attached idempotently by `scripts/aws-bootstrap.sh`, as the sixth step under its `### Custom domain` block, by the same pure-transform-plus-shell pattern the custom-domain attachment already uses (`scripts/lib/cloudfront-response-headers.mjs`, alongside `scripts/lib/cloudfront-custom-domain.mjs`). This is site hygiene: it is one input some domain-reputation scanners score, and it is not claimed to unblock any particular corporate web filter (REQ-199).
+- Acceptance Criteria:
+  - `scripts/aws-bootstrap.sh` creates or updates a named CloudFront response headers policy and idempotently attaches it to the distribution's default cache behavior; re-running the bootstrap against a distribution that already carries a policy with this exact header set makes no `update-distribution` call
+  - `curl -sI https://mtgjudge.gg` returns all five of:
+    - `strict-transport-security: max-age=31536000; includeSubDomains`
+    - `x-content-type-options: nosniff`
+    - `x-frame-options: SAMEORIGIN`
+    - `referrer-policy: strict-origin-when-cross-origin`
+    - `permissions-policy: camera=(self), microphone=(), geolocation=()`
+  - the `camera=(self)` grant is asserted by a unit test, because a blanket `camera=()` would silently break the Scan feature's `getUserMedia` call in `apps/frontend/src/components/ScanCameraSurface.tsx`
+  - the policy transform (`scripts/lib/cloudfront-response-headers.mjs`) is a pure function, unit-tested without AWS (`scripts/lib/cloudfront-response-headers.test.mjs`), matching the shape of `scripts/lib/cloudfront-custom-domain.mjs`; the shell script owns every AWS call
+  - a unit test proves the attach step changes only `DefaultCacheBehavior.ResponseHeadersPolicyId`, leaving `Aliases`, `ViewerCertificate`, `FunctionAssociations`, and `CustomErrorResponses` byte-identical
+  - `docs/aws/deployment.md`'s `### Custom domain` section records the policy as its sixth idempotent step
+- Constraints:
+  - no `Content-Security-Policy` is set by this requirement. There is no staging distribution to verify one against, and a wrong policy silently blocks the app's own bundle or its cross-origin call to the Lambda Function URL — a failure invisible in response headers and visible only as a broken page for players. CSP is named as deferred hardening
+  - HSTS carries no `preload` directive and the apex is not submitted to the browser preload list; `preload` is effectively one-way and would bind every future subdomain
+  - `x-frame-options: SAMEORIGIN` rather than `DENY`, so the app can still frame its own pages
+  - the backend's single allowed browser origin, the one-canonical-address rule, and CORS behavior are untouched (DEC-084, NFR-004)
+  - adds no endpoint, service, dependency, or architectural layer (NFR-004)
+- Dependencies:
+  - DEC-084
+  - REQ-199 (the runbook that states plainly what these headers do and do not do)
+- Notes:
+  - measured 2026-09-11 before the change: `curl -sI https://mtgjudge.gg` returned `HTTP/2 200` carrying only `content-type`, `content-length`, `date`, `last-modified`, `etag`, `x-amz-server-side-encryption`, `accept-ranges`, `server: AmazonS3`, `x-cache`, `via`, `x-amz-cf-pop`, `x-amz-cf-id`, `age` — no security header of any kind
+  - the live distribution is unchanged by this package's own build; the policy reaches production only when the owner re-runs `scripts/aws-bootstrap.sh`
+
+### REQ-198
+- Title: Real robots.txt and security.txt on the production domain
+- Priority: low
+- Description: `https://mtgjudge.gg/robots.txt` and `https://mtgjudge.gg/.well-known/security.txt` are served as their own files with their own content type, instead of returning the single-page-app shell. Before this requirement, both returned `HTTP/2 200` with `content-type: text/html` and the app's `index.html` body, because `scripts/aws-bootstrap.sh` maps CloudFront `403`/`404` to `/index.html` so deep links resolve. `apps/frontend/public/robots.txt` and `apps/frontend/public/.well-known/security.txt` now exist and are copied into the built frontend by `vite build`. Shipping them removes two "unfinished site" signals and gives the domain a published security contact (REQ-199).
+- Acceptance Criteria:
+  - `apps/frontend/public/robots.txt` exists (`User-agent: *`, `Disallow:`, no `Sitemap:` line) and is copied into `apps/frontend/dist/robots.txt` by the production build, proven by `scripts/frontend-public-static-files.test.mjs`
+  - `curl -sI https://mtgjudge.gg/robots.txt` returns `content-type: text/plain` (before this requirement: `text/html`) and the body is the robots file, not the app shell
+  - `apps/frontend/public/.well-known/security.txt` exists, is copied into `apps/frontend/dist/.well-known/security.txt` by the production build (proven at build time, never assumed, because a bundler that skips dotted directories would leave the path silently falling back to the app shell), and carries RFC 9116's required `Contact:` and `Expires:` fields: `Contact: https://mtgjudge.gg/` (RFC 9116 requires a URI, not an email) with a comment line directing reporters to the "Send feedback" action in the app's shared action menu; no email address is published anywhere in the file (REQ-198 gate edit verdict)
+  - `curl -sI https://mtgjudge.gg/.well-known/security.txt` returns `content-type: text/plain` and the body is the security file, not the app shell
+  - the SPA deep-link fallback still works for a real app route (a request for an app path that is not a file still returns `index.html` with the app) — the CloudFront `403`/`404` → `/index.html` mapping is unmodified by this requirement
+  - `docs/aws/domain-reachability.md` (REQ-199) records the `security.txt` `Expires:` date and that it must be renewed
+- Constraints:
+  - `robots.txt` permits crawling (`User-agent: *` / `Disallow:`); this is a public product and a blanket disallow would be another negative reputation signal
+  - no sitemap is declared, because none is generated
+  - the CloudFront `403`/`404` → `/index.html` mapping is not removed or narrowed; a real object at these keys wins on its own, because it is a `200` from S3 and the error mapping never fires
+  - no new endpoint, route, or backend behavior (NFR-004); these are static files on the existing frontend origin
+- Dependencies:
+  - DEC-084
+  - REQ-197
+  - REQ-199
+- Notes:
+  - measured 2026-09-11 before the change: `curl -sI https://mtgjudge.gg/robots.txt` returned `HTTP/2 200`, `content-type: text/html`, `content-length: 470`, `x-cache: Error from cloudfront` — the error-page fallback, byte-identical to the apex response
+  - `Expires:` is mandatory in RFC 9116 and the file goes stale on its own; `apps/frontend/public/.well-known/security.txt` carries `Expires: 2027-09-12T00:00:00.000Z`, recorded in the runbook (REQ-199) rather than left to be discovered when a scanner flags it
+
+### REQ-199
+- Title: Domain reachability and categorization runbook
+- Priority: medium
+- Description: `docs/aws/domain-reachability.md` records why a newly registered domain is commonly unreachable from a corporate network, what this repository ships against it (REQ-197, REQ-198), what only the owner can do by hand, and what only elapsed time resolves. It carries the before/after verification commands and a vendor-agnostic recategorization checklist. Its governing statement is that no change in this repository guarantees the site opens on any given corporate network.
+- Acceptance Criteria:
+  - `docs/aws/domain-reachability.md` exists and is linked from `docs/aws/deployment.md`'s `See also` list
+  - it opens with the three buckets, named as such: what the repo ships (REQ-197 headers, REQ-198 static files), what only the owner can do by hand (category lookup, recategorization submission, asking IT to allowlist), and what only time does (domain age; threat-intel feeds commonly hold a newly observed domain for weeks)
+  - it states explicitly, not by implication, that no code change here promises the site opens at work, and that every claim about what moves a filter is a likelihood, not a certainty
+  - step 0 of the manual checklist is capturing the evidence that narrows the vendor list: the block page the browser showed, or asking the company's IT which secure web gateway they run
+  - the manual checklist names all seven vendors (Zscaler, Palo Alto Networks, Cisco Talos/Umbrella, Fortinet FortiGuard, Netskope, Trellix/McAfee, Symantec/Broadcom) and describes each one's page by its own name — "URL category lookup", "request recategorization" — rather than pinning URLs that rot
+  - it carries the runnable verification block, with the measured 2026-09-11 "before" result recorded beside it so the owner can tell the after-state apart:
+    - `curl -sI https://mtgjudge.gg | grep -iE 'strict-transport|x-content-type|x-frame|referrer-policy|permissions-policy'` — before: no output
+    - `curl -sI https://mtgjudge.gg/robots.txt | grep -i content-type` — before: `text/html`
+    - `curl -sI https://mtgjudge.gg/.well-known/security.txt | grep -i content-type` — before: `text/html`
+  - it records the domain's registration date (2026-09-05, Route 53, attached to CloudFront the same day) as the age a "newly registered domain" policy is measured from
+  - it records the `security.txt` `Expires:` date (`2027-09-12T00:00:00.000Z`) from REQ-198 and that renewing it is a manual step
+- Constraints:
+  - the runbook never claims a code change fixes corporate reachability, and never names a specific vendor as the owner's blocker — that evidence exists only on the owner's screen
+  - no automated submission: every vendor's recategorization path is a human web form, and scripting one is both out of scope and against their terms
+  - documentation only; no code, no infrastructure change of its own
+- Dependencies:
+  - REQ-197
+  - REQ-198
+  - DEC-084
+- Notes:
+  - the original AWS deployment receipt (`PRD/instructions/receipts/aws-deployment-onboarding-2026-07-03.md`) predates the custom domain and records no reachability or categorization work; this is the first such record

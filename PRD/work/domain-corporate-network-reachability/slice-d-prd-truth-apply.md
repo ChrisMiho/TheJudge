@@ -1,6 +1,6 @@
 # Slice D — prd-truth-apply
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -42,22 +42,22 @@ carries the PRD apply-by-intent step for this package.
 
 ## Acceptance criteria
 
-- [ ] D1 — `PRD/sections/functional-requirements.md` contains REQ-197,
+- [x] D1 — `PRD/sections/functional-requirements.md` contains REQ-197,
       REQ-198, and REQ-199 entries following the requirement template, with
       REQ-198's Contact line matching the owner's edit verbatim (no email
       address).
-- [ ] D2 — `PRD/sections/decisions/deployment.md`'s DEC-084 entry is amended
+- [x] D2 — `PRD/sections/decisions/deployment.md`'s DEC-084 entry is amended
       in place (Decision, Impact, Related requirements, Notes) per the
       accepted `GATE-QUESTIONS.md` diff; no new `DEC-###` entry exists
       anywhere in `PRD/sections/`.
-- [ ] D3 — `PRD/sections/system-map.md`'s `## AWS production deployment` and
+- [x] D3 — `PRD/sections/system-map.md`'s `## AWS production deployment` and
       `### Serverless hosting` entries carry REQ-197/198/199 in `Backed by`,
       the updated `Summary` sentences, and a `Lives in` list matching the
       actual files slices A/B/C created.
-- [ ] D4 — every file path named in the new REQ-197/198/199 acceptance
+- [x] D4 — every file path named in the new REQ-197/198/199 acceptance
       criteria and the amended system-map `Lives in` list exists in the
       repository (no aspirational path left over from the proposal).
-- [ ] D5 — `npm run quality:check` passes.
+- [x] D5 — `npm run quality:check` passes.
 
 ## Verification
 
@@ -73,8 +73,8 @@ npm run quality:check
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/domain-corporate-network-reachability/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/domain-corporate-network-reachability/` ready to delete
