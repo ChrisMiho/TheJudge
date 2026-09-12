@@ -1,6 +1,6 @@
 # Slice B — static-files
 
-## Status: planned
+## Status: done
 
 ## Goal
 

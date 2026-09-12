@@ -1,0 +1,5 @@
+# To report a security issue with mtgjudge.gg, use the "Send feedback" action
+# in the app's shared action menu (available from any screen). This domain
+# publishes no dedicated security email address.
+Contact: https://mtgjudge.gg/
+Expires: 2027-09-12T00:00:00.000Z

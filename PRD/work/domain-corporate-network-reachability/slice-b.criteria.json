@@ -5,41 +5,49 @@
     {
       "id": "B1",
       "statement": "apps/frontend/public/robots.txt exists, permits crawling, and declares no sitemap",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["apps/frontend/public/robots.txt"]
+        "paths": [
+          "apps/frontend/public/robots.txt"
+        ]
       }
     },
     {
       "id": "B2",
       "statement": "apps/frontend/public/.well-known/security.txt exists with Contact: https://mtgjudge.gg/, a Send-feedback comment line, an Expires: date, and no email address",
-      "value": false,
+      "value": true,
       "evidence": {
-        "paths": ["apps/frontend/public/.well-known/security.txt"]
+        "paths": [
+          "apps/frontend/public/.well-known/security.txt"
+        ]
       }
     },
     {
       "id": "B3",
       "statement": "A build-time test proves the dotted .well-known/ directory is copied into apps/frontend/dist/ by the production build",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts",
-        "paths": ["scripts/frontend-public-static-files.test.mjs"]
+        "paths": [
+          "scripts/frontend-public-static-files.test.mjs"
+        ]
       }
     },
     {
       "id": "B4",
       "statement": "The same test asserts apps/frontend/dist/robots.txt exists and matches the public/ source",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts",
-        "paths": ["scripts/frontend-public-static-files.test.mjs"]
+        "paths": [
+          "scripts/frontend-public-static-files.test.mjs"
+        ]
       }
     },
     {
       "id": "B5",
       "statement": "npm run test:scripts passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
