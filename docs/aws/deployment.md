@@ -69,7 +69,7 @@ GitHub push to main
 
 The frontend bucket is private and readable only by CloudFront, so the domain
 points at the distribution, never at the bucket. `scripts/aws-bootstrap.sh`
-attaches it in five idempotent steps (`FRONTEND_DOMAIN`, default `mtgjudge.gg`;
+attaches it in six idempotent steps (`FRONTEND_DOMAIN`, default `mtgjudge.gg`;
 set it empty to skip):
 
 1. An ACM certificate covering the apex **and** `www.`, requested in
@@ -86,6 +86,14 @@ set it empty to skip):
    ETag-guarded, and a distribution that already has all three is left alone.
 5. A and AAAA alias records for the apex and for `www.` pointing at the
    distribution.
+6. A CloudFront response headers policy on the default cache behavior
+   (REQ-197): `strict-transport-security`, `x-content-type-options`,
+   `x-frame-options`, `referrer-policy`, and a `permissions-policy` that keeps
+   `camera=(self)` so card Scan still works. No `Content-Security-Policy` and
+   no HSTS `preload` — see REQ-197's constraints for why. The transform lives
+   in `scripts/lib/cloudfront-response-headers.mjs` (unit-tested); the policy
+   is created-or-updated by name, then attached idempotently the same way step
+   4 attaches the certificate and function.
 
 The backend allows exactly **one** browser origin (`FRONTEND_ORIGIN` → CORS),
 which is why exactly one name runs the app: `www.mtgjudge.gg` and the old

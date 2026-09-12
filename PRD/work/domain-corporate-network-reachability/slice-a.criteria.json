@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "cloudfront-response-headers.mjs exports a pure transform producing the five header values verbatim with no Content-Security-Policy key",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts",
         "paths": ["scripts/lib/cloudfront-response-headers.mjs"]
@@ -14,7 +14,7 @@
     {
       "id": "A2",
       "statement": "A unit test asserts all five header values verbatim, the camera=(self) grant specifically, and that no CSP header is produced",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts",
         "paths": ["scripts/lib/cloudfront-response-headers.test.mjs"]
@@ -23,7 +23,7 @@
     {
       "id": "A3",
       "statement": "The idempotency check is unit-tested for both the already-attached and needs-attach cases",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts",
         "paths": ["scripts/lib/cloudfront-response-headers.test.mjs"]
@@ -32,7 +32,7 @@
     {
       "id": "A4",
       "statement": "The attach transform changes only ResponseHeadersPolicyId, leaving Aliases, ViewerCertificate, FunctionAssociations, and CustomErrorResponses byte-identical",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts",
         "paths": ["scripts/lib/cloudfront-response-headers.test.mjs"]
@@ -41,7 +41,7 @@
     {
       "id": "A5",
       "statement": "scripts/aws-bootstrap.sh creates/updates the response headers policy and idempotently attaches it in the custom-domain block",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["scripts/aws-bootstrap.sh"]
       }
@@ -49,7 +49,7 @@
     {
       "id": "A6",
       "statement": "docs/aws/deployment.md's Custom domain section reads six idempotent steps with the response headers policy as step 6",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": ["docs/aws/deployment.md"]
       }
@@ -57,7 +57,7 @@
     {
       "id": "A7",
       "statement": "npm run test:scripts passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }

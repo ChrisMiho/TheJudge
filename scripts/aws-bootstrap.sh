@@ -376,13 +376,14 @@ frontend_origin="https://$cloudfront_domain"
 # Players reach the app on $frontend_domain instead of the raw CloudFront
 # hostname. www.$frontend_domain (and the CloudFront hostname itself) answer
 # with a permanent redirect to it: the backend allows exactly one browser
-# origin, so exactly one name may run the app. Five idempotent steps: an ACM
+# origin, so exactly one name may run the app. Six idempotent steps: an ACM
 # certificate covering both names (us-east-1 is the only region CloudFront
 # accepts certificates from, whatever $aws_region is), its DNS-validation
 # CNAMEs in Route 53, the redirect CloudFront Function, the aliases +
-# certificate + function on the distribution, and A/AAAA alias records
-# pointing both names at CloudFront. aws-deploy.sh then reads the apex alias
-# back off the distribution to set the backend's allowed origin, so the
+# certificate + function on the distribution, A/AAAA alias records pointing
+# both names at CloudFront, and a response headers policy (REQ-197) on the
+# distribution's default cache behavior. aws-deploy.sh then reads the apex
+# alias back off the distribution to set the backend's allowed origin, so the
 # domain is stored in AWS once.
 if [[ -n "$frontend_domain" ]]; then
   www_domain="www.$frontend_domain"
@@ -580,6 +581,61 @@ JSON
     --hosted-zone-id "$hosted_zone_id" \
     --change-batch "$(aws_file_uri "$tmp_dir/route53-alias-records.json")" \
     >/dev/null
+
+  # Step 6 — a CloudFront response headers policy (REQ-197): HSTS, nosniff,
+  # SAMEORIGIN framing, a referrer policy, and a camera-preserving
+  # permissions-policy (card Scan calls getUserMedia). No
+  # Content-Security-Policy and no HSTS preload — see REQ-197's constraints.
+  # Same create-or-update-then-attach shape as the redirect function above:
+  # reuse a policy of this name if one exists, always update it in place so a
+  # repo change to the header set is picked up, then attach it idempotently.
+  response_headers_policy_name="$app_name-security-headers"
+  node "$repo_root/scripts/lib/cloudfront-response-headers.mjs" config "$response_headers_policy_name" \
+    > "$tmp_dir/response-headers-policy-config.json"
+  response_headers_policy_id="$(aws cloudfront list-response-headers-policies \
+    --type custom \
+    --query "ResponseHeadersPolicyList.Items[?ResponseHeadersPolicy.ResponseHeadersPolicyConfig.Name=='$response_headers_policy_name'].ResponseHeadersPolicy.Id | [0]" \
+    --output text)"
+  if [[ "$response_headers_policy_id" == "None" || -z "$response_headers_policy_id" ]]; then
+    response_headers_policy_id="$(aws cloudfront create-response-headers-policy \
+      --response-headers-policy-config "$(aws_file_uri "$tmp_dir/response-headers-policy-config.json")" \
+      --query ResponseHeadersPolicy.Id \
+      --output text)"
+  else
+    response_headers_policy_etag="$(aws cloudfront get-response-headers-policy \
+      --id "$response_headers_policy_id" \
+      --query ETag \
+      --output text)"
+    aws cloudfront update-response-headers-policy \
+      --id "$response_headers_policy_id" \
+      --if-match "$response_headers_policy_etag" \
+      --response-headers-policy-config "$(aws_file_uri "$tmp_dir/response-headers-policy-config.json")" \
+      >/dev/null
+  fi
+
+  aws cloudfront get-distribution-config \
+    --id "$distribution_id" \
+    > "$tmp_dir/distribution-config.json"
+  aws cloudfront get-response-headers-policy \
+    --id "$response_headers_policy_id" \
+    > "$tmp_dir/response-headers-policy.json"
+  if node "$repo_root/scripts/lib/cloudfront-response-headers.mjs" check \
+    "$tmp_dir/distribution-config.json" "$tmp_dir/response-headers-policy.json"; then
+    echo "CloudFront distribution already carries the response headers policy."
+  else
+    distribution_etag="$(node -p \
+      "JSON.parse(require('fs').readFileSync(process.argv[1], 'utf8')).ETag" \
+      "$tmp_dir/distribution-config.json")"
+    node "$repo_root/scripts/lib/cloudfront-response-headers.mjs" attach \
+      "$tmp_dir/distribution-config.json" "$response_headers_policy_id" \
+      > "$tmp_dir/distribution-config-with-headers.json"
+    aws cloudfront update-distribution \
+      --id "$distribution_id" \
+      --if-match "$distribution_etag" \
+      --distribution-config "$(aws_file_uri "$tmp_dir/distribution-config-with-headers.json")" \
+      >/dev/null
+    echo "CloudFront distribution now carries the response headers policy."
+  fi
 
   frontend_origin="https://$frontend_domain"
 fi

@@ -1,6 +1,6 @@
 # Slice A — response-headers-policy
 
-## Status: planned
+## Status: done
 
 ## Goal
 
