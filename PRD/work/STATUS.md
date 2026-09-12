@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [domain-corporate-network-reachability](domain-corporate-network-reachability/) | Built 2026-09-12 (run `graph-20260911-160859`): all 4 slices done — A response-headers-policy, B static-files, C domain-reachability-runbook, D prd-truth-apply (REQ-197/198/199 + DEC-084 amendment + system-map applied). `npm run quality:check` green on `thejudge-auto/domain-corporate-network-reachability-work`; code PR carries the diff. No slice needed a browser or live-site curl; the live AWS change happens only when the owner runs `scripts/aws-bootstrap.sh` |
 
 ## active
 
