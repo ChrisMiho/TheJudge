@@ -65,6 +65,10 @@ Owner note: desktop is great with the two sides next to each other. Keep that.
   controls move or look different. Two things that already work well and
   should be kept in spirit: the Menu (fine for now, better than before) and
   the Trade Balancer desktop layout with both sides next to each other.
+  Protected outright: the cat-wizard Easter egg. Ten taps on the brand mark
+  on the In-Depth game-context step reveal the cat wizard for the session
+  (REQ-056, DEC-076). Whatever the brand mark becomes, it keeps that tap
+  trigger, and the reveal survives every direction.
 
 ## B. Who is this for, and where
 
