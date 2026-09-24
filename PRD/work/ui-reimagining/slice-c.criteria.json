@@ -6,7 +6,7 @@
       "id": "C1",
       "statement": "shared-chrome-menu.html renders both viewports with menu rail, brand mark, six-swatch Theme section, mock-mode banner, and working overlay demos",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/shared-chrome-menu.html"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/shared-chrome-menu.html"] }
     },
     {
       "id": "C2",
@@ -18,13 +18,13 @@
       "id": "C3",
       "statement": "Brand mark measures >=44px in its smaller dimension and uses a REQ-201 motif",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/shared-chrome-menu.html"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/shared-chrome-menu.html"] }
     },
     {
       "id": "C4",
       "statement": "Page embeds or links the slice-B before screenshot(s) for Menu/shared chrome",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/shared-chrome-menu.html"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/shared-chrome-menu.html"] }
     },
     {
       "id": "C5",
@@ -36,7 +36,7 @@
       "id": "C6",
       "statement": "Life Tracker after screenshots exist and are referenced with their before counterparts",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/after"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/after"] }
     },
     {
       "id": "C7",

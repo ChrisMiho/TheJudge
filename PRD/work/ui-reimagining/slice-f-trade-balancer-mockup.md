@@ -13,8 +13,8 @@ meets the `REQ-205` touch floor. Real card names, real prices. Paired with a
 
 ## Requirements
 
-1. `mockups/trade-balancer.html` imports `tokens.css`, `shell.css`, and
-   `motifs/`.
+1. `docs/design/ui-reimagining/direction-1/trade-balancer.html` imports
+   `tokens.css`, `shell.css`, and `motifs/`.
 2. Below 768px: exactly one side's entry list, search, scan control, and
    side total render at a time, selected by a clickable two-tab control. Both
    side totals and the difference readout stay visible in the first viewport
@@ -31,8 +31,9 @@ meets the `REQ-205` touch floor. Real card names, real prices. Paired with a
 7. Real card names and real prices on both sides.
 8. Visual language is consistent with slice C's token/motif system.
 9. The page embeds or links the slice-B "before" screenshot
-   (`mockups/before/trade-balancer-*.png`), showing the 224px-per-side
-   empty-state baseline this replaces.
+   (`../before/trade-balancer-*.png`, i.e.
+   `docs/design/ui-reimagining/before/trade-balancer-*.png`), showing the
+   224px-per-side empty-state baseline this replaces.
 
 ## Acceptance criteria
 
@@ -61,9 +62,9 @@ meets the `REQ-205` touch floor. Real card names, real prices. Paired with a
 ## Verification
 
 ```bash
-ls PRD/work/ui-reimagining/mockups/trade-balancer.html
+ls docs/design/ui-reimagining/direction-1/trade-balancer.html
 ```
 
 ## Files touched
 
-- `PRD/work/ui-reimagining/mockups/trade-balancer.html` (new)
+- `docs/design/ui-reimagining/direction-1/trade-balancer.html` (new)

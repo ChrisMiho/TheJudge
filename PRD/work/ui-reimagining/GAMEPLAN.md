@@ -18,37 +18,46 @@ instead of a proposal.
 
 **This package ships no app code.** `apps/frontend` and `apps/backend` are
 untouched. The deliverable is (1) durable PRD truth and (2) a folder of
-static, self-contained HTML/CSS/JS mockup pages plus screenshots, all living
-under `PRD/work/ui-reimagining/`. Do not let any slice's acceptance criteria,
-commit message, or the final receipt imply a shipped visual change — direction
-2/3 and the real redesign are named follow-on packages in `DESIGN-BRIEF.md`.
+static, self-contained HTML/CSS/JS mockup pages plus screenshots, committed
+under `docs/design/ui-reimagining/` — a durable design-candidate tree outside
+the package folder, mirroring `docs/design/tab-icon/`'s precedent, since
+`thejudge-cleanup` deletes `PRD/work/ui-reimagining/` on close and the owner
+must still be able to open direction 1 after that. `PRD/work/ui-reimagining/`
+itself holds only the process artifacts (this GAMEPLAN, the slice docs, the
+gate history) that cleanup removes. Do not let any slice's acceptance
+criteria, commit message, or the final receipt imply a shipped visual change —
+direction 2/3 and the real redesign are named follow-on packages in
+`DESIGN-BRIEF.md`.
 
 ## Architecture / data flow
 
 ```
-PRD/work/ui-reimagining/
+PRD/work/ui-reimagining/            (process artifacts only; deleted at close)
   |
   +-- PRD/sections/ (slice A, independent)
-  |     functional-requirements.md  + REQ-200..REQ-205 (new)
-  |                                  amend REQ-044/046/056/060/099/124/129/130/167
-  |     non-functional-requirements.md  amend NFR-011
-  |     user-flows.md                amend FLOW-007 (+ FLOW-001 step-1 wording)
-  |     goals-and-non-goals.md        amend two bullets
-  |     system-map.md                 amend Theme settings summary
-  |     -- applied by intent from the finalized GATE-QUESTIONS.md diffs --
-  |     -- no feature README `Built:` line touched: no code ships here --
+        functional-requirements.md  + REQ-200..REQ-205 (new)
+                                     amend REQ-044/046/056/060/099/124/129/130/167
+        non-functional-requirements.md  amend NFR-011
+        user-flows.md                amend FLOW-007 (+ FLOW-001 step-1 wording)
+        goals-and-non-goals.md        amend two bullets
+        system-map.md                 amend Theme settings summary
+        -- applied by intent from the finalized GATE-QUESTIONS.md diffs --
+        -- no feature README `Built:` line touched: no code ships here --
+
+docs/design/ui-reimagining/         (committed deliverables; durable, survives close)
   |
-  +-- mockups/ (slice B: shared foundation; slices C-F: per-flow pages)
-        tokens.css        <- single source: 6 profiles x REQ-200 surface roles
-        motifs/            <- REQ-201 original per-colour motif assets (svg/css)
-        shell.css           <- shared chrome/page-shell rules every page imports
-        before/*.png        <- today's live app, captured once (slice B)
-        shared-chrome-menu.html   (slice C) -- also produces the Life Tracker pair
-        quick-question.html      (slice D)
-        in-depth-question.html   (slice E)
-        trade-balancer.html      (slice F)
-        after/life-tracker-*.png (slice C: the REQ-202 proof pair's "after" half)
-        index.html          (slice G) <- gallery linking every page above
+  +-- README.md              <- slice B: names direction 1, what each file is
+  +-- direction-1/           (slice B: shared foundation; slices C-F: per-flow pages)
+  |     tokens.css        <- single source: 6 profiles x REQ-200 surface roles
+  |     motifs/            <- REQ-201 original per-colour motif assets (svg/css)
+  |     shell.css           <- shared chrome/page-shell rules every page imports
+  |     shared-chrome-menu.html   (slice C) -- also produces the Life Tracker pair
+  |     quick-question.html      (slice D)
+  |     in-depth-question.html   (slice E)
+  |     trade-balancer.html      (slice F)
+  +-- before/*.png            <- today's live app, captured once (slice B)
+  +-- after/life-tracker-*.png <- slice C: the REQ-202 proof pair's "after" half
+  +-- index.html               (slice G) <- gallery linking every page above
 ```
 
 Every per-flow page (`shared-chrome-menu.html`, `quick-question.html`,
@@ -66,7 +75,12 @@ mockup to open.
 page consumes (`REQ-200`'s "one authoritative frontend source... no
 duplicated colour constants" carried into the mockup layer even though this
 is not app code) — slices C-F read them, never redefine a palette value
-locally, which is why they all depend on slice B and not on each other.
+locally, which is why they all depend on slice B and not on each other. All
+of `direction-1/`'s files live in one flat folder, so each page's own imports
+stay simple relative references (`tokens.css`, `shell.css`, `motifs/...`); a
+page's reference to a screenshot one level up in `before/` or `after/` is the
+only relative path a slice needs to write as `../before/...` or
+`../after/...`.
 
 ## Slices
 
@@ -78,10 +92,10 @@ locally, which is why they all depend on slice B and not on each other.
 | [D — quick-question-mockup](slice-d-quick-question-mockup.md) | Clickable HTML mockup of Quick Question, fixing `REQ-129` (Send Request stays in the first viewport at up to 5 attached cards) and `REQ-205` touch floors | planned | sequential — B |
 | [E — in-depth-question-mockup](slice-e-in-depth-question-mockup.md) | Clickable HTML mockup covering every In-Depth Question step, fixing `REQ-130` (>=3 zone tiles visible) and `REQ-205` touch floors, demonstrating the `REQ-203` cross-screen Easter-egg entry point | planned | sequential — B |
 | [F — trade-balancer-mockup](slice-f-trade-balancer-mockup.md) | Clickable HTML mockup of Trade Balancer, implementing `REQ-204` (phone: two sides as tabs; desktop unchanged) and `REQ-205` touch floors | planned | sequential — B |
-| [G — gallery-and-ship-gates](slice-g-gallery-and-ship-gates.md) | `mockups/index.html` gallery linking every page and the Life Tracker pair; confirms slice A's PRD truth is complete and no app code changed; carries the Ship gates block | planned | sequential — A, C, D, E, F |
+| [G — gallery-and-ship-gates](slice-g-gallery-and-ship-gates.md) | `docs/design/ui-reimagining/index.html` gallery linking every page and the Life Tracker pair; confirms slice A's PRD truth is complete and no app code changed; carries the Ship gates block | planned | sequential — A, C, D, E, F |
 
 A and B are parallel-ready: A only touches `PRD/sections/`, B only touches
-`PRD/work/ui-reimagining/mockups/`. C, D, E, and F are parallel-ready with
+`docs/design/ui-reimagining/`. C, D, E, and F are parallel-ready with
 each other once B exists — each writes its own page and reads B's shared
 `tokens.css`/`motifs/`/`shell.css` and `before/` captures, with no file
 overlap between them. G is sequential on every other slice because its
@@ -100,13 +114,17 @@ A's output.
   (browser closed, the dev server this slice started stopped, ports released,
   capture path recorded under `PRD/work/ui-reimagining/.playwright-mcp/`).
 - "Before" screenshots and the Life Tracker "after" pair are **committed
-  deliverables** under `PRD/work/ui-reimagining/mockups/before/` and
-  `mockups/after/` — inside the package folder, not copied elsewhere, so they
-  stay compliant with the hygiene contract's "captures are disposable, do not
-  copy them out of the package folder" rule while still being the artifact
-  the owner reviews on the PR. Raw Playwright captures used only as
-  in-session evidence stay in the git-ignored `.playwright-mcp/` folder and
-  are not committed.
+  deliverables**, not disposable captures — `PRD/instructions/runtime-process-
+  hygiene.md`'s "captures are disposable, do not copy them out of the package
+  folder" rule governs only in-session Playwright evidence, and does not
+  apply to them. They live under `docs/design/ui-reimagining/before/` and
+  `docs/design/ui-reimagining/after/`, outside `PRD/work/ui-reimagining/`
+  entirely, so they survive `thejudge-cleanup`'s deletion of the package
+  folder and remain the artifact the owner reviews after close — mirroring
+  `docs/design/tab-icon/`'s precedent for committed design candidates. Raw
+  Playwright captures used only as in-session evidence stay in the
+  git-ignored `PRD/work/ui-reimagining/.playwright-mcp/` folder and are not
+  committed.
 - Slice G: `npm run quality:check` (final regression) plus a `git status`/`git
   diff` scope check confirming no path under `apps/frontend` or `apps/backend`
   changed.

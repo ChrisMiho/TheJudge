@@ -6,7 +6,7 @@
       "id": "F1",
       "statement": "Below 768px exactly one side renders at a time via a two-tab control, both totals and difference visible on either tab",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/trade-balancer.html"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/trade-balancer.html"] }
     },
     {
       "id": "F2",
@@ -36,7 +36,7 @@
       "id": "F6",
       "statement": "Both sides show real card names and real prices",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/trade-balancer.html"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/trade-balancer.html"] }
     },
     {
       "id": "F7",
@@ -48,7 +48,7 @@
       "id": "F8",
       "statement": "Page embeds or links the slice-B before screenshot for Trade Balancer",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/trade-balancer.html"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/trade-balancer.html"] }
     },
     {
       "id": "F9",

@@ -14,7 +14,8 @@ drift to Life Tracker's own screen.
 
 ## Requirements
 
-1. `mockups/shared-chrome-menu.html` imports `tokens.css`, `shell.css`, and
+1. `docs/design/ui-reimagining/direction-1/shared-chrome-menu.html` imports
+   `tokens.css`, `shell.css`, and
    `motifs/`; it renders the menu rail/tray, brand mark, a Theme section
    listing all six profiles in White/Blue/Black/Red/Green/Colorless order
    with Blue marked default, the mock-mode banner, and click-to-open demos of
@@ -26,13 +27,15 @@ drift to Life Tracker's own screen.
 3. The brand mark is a real element sized to the `REQ-205` 44px floor and
    uses a `REQ-201` motif, not an official Wizards of the Coast asset.
 4. The page embeds or links the matching "before" screenshot(s) from slice B
-   (`mockups/before/menu-*.png`) so the pairing is visible without leaving
-   the page.
+   (`../before/menu-*.png`, i.e.
+   `docs/design/ui-reimagining/before/menu-*.png`) so the pairing is visible
+   without leaving the page.
 5. Compose a Life Tracker "after" view: the real Life Tracker screen content
-   (captured or faithfully reproduced from `mockups/before/life-tracker-*.png`)
-   wrapped in the new shared chrome (menu rail, brand mark, theme styling).
-   Render it at 390x844 and 1440x900 and capture each as
-   `mockups/after/life-tracker-<viewport>.png`.
+   (captured or faithfully reproduced from
+   `docs/design/ui-reimagining/before/life-tracker-*.png`) wrapped in the new
+   shared chrome (menu rail, brand mark, theme styling). Render it at
+   390x844 and 1440x900 and capture each as
+   `docs/design/ui-reimagining/after/life-tracker-<viewport>.png`.
 6. Life Tracker's own screen content (counters, layout) in the "after"
    capture must read as visually unchanged from the "before" capture — this
    slice changes only the chrome around it.
@@ -55,10 +58,11 @@ drift to Life Tracker's own screen.
 - [ ] C5 (manual) — the Life Tracker "after" render at both viewports keeps
       Life Tracker's own counters and layout visually unchanged from the
       "before" capture; only the surrounding chrome differs.
-- [ ] C6 — `mockups/after/life-tracker-390x844.png` and
-      `mockups/after/life-tracker-1440x900.png` exist and are referenced
-      together with their `before/` counterparts (in the page or a short
-      `mockups/life-tracker-pair.md`/section) for the owner's review.
+- [ ] C6 — `docs/design/ui-reimagining/after/life-tracker-390x844.png` and
+      `docs/design/ui-reimagining/after/life-tracker-1440x900.png` exist and
+      are referenced together with their `before/` counterparts (in the page
+      or a short `docs/design/ui-reimagining/life-tracker-pair.md`/section)
+      for the owner's review.
 - [ ] C7 (manual) — no official Wizards of the Coast mana glyph, icon font,
       logo, or card art appears anywhere on the page or in the Life Tracker
       composite.
@@ -69,12 +73,12 @@ drift to Life Tracker's own screen.
 ## Verification
 
 ```bash
-ls PRD/work/ui-reimagining/mockups/shared-chrome-menu.html
-ls PRD/work/ui-reimagining/mockups/after/
+ls docs/design/ui-reimagining/direction-1/shared-chrome-menu.html
+ls docs/design/ui-reimagining/after/
 ```
 
 ## Files touched
 
-- `PRD/work/ui-reimagining/mockups/shared-chrome-menu.html` (new)
-- `PRD/work/ui-reimagining/mockups/after/life-tracker-390x844.png` (new)
-- `PRD/work/ui-reimagining/mockups/after/life-tracker-1440x900.png` (new)
+- `docs/design/ui-reimagining/direction-1/shared-chrome-menu.html` (new)
+- `docs/design/ui-reimagining/after/life-tracker-390x844.png` (new)
+- `docs/design/ui-reimagining/after/life-tracker-1440x900.png` (new)

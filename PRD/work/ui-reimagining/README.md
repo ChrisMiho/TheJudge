@@ -68,7 +68,7 @@ app-code redesign are follow-on packages — see `DESIGN-BRIEF.md`.
 | [D — quick-question-mockup](slice-d-quick-question-mockup.md) | Clickable Quick Question mockup fixing `REQ-129` (Send Request in the first viewport at 5 cards) and `REQ-205` touch floors | planned | sequential — B |
 | [E — in-depth-question-mockup](slice-e-in-depth-question-mockup.md) | Clickable In-Depth Question mockup (every step) fixing `REQ-130` (>=3 zone tiles visible) and `REQ-205`; demonstrates `REQ-203`'s Easter-egg entry point | planned | sequential — B |
 | [F — trade-balancer-mockup](slice-f-trade-balancer-mockup.md) | Clickable Trade Balancer mockup implementing `REQ-204` (phone tabs; desktop unchanged) and `REQ-205` | planned | sequential — B |
-| [G — gallery-and-ship-gates](slice-g-gallery-and-ship-gates.md) | `mockups/index.html` gallery, PRD promotion checklist, no-app-code confirmation; carries the Ship gates block | planned | sequential — A, C, D, E, F |
+| [G — gallery-and-ship-gates](slice-g-gallery-and-ship-gates.md) | `docs/design/ui-reimagining/index.html` gallery, PRD promotion checklist, no-app-code confirmation; carries the Ship gates block | planned | sequential — A, C, D, E, F |
 
 ## Implementation map
 
@@ -76,15 +76,24 @@ app-code redesign are follow-on packages — see `DESIGN-BRIEF.md`.
   `user-flows.md`, `goals-and-non-goals.md`, `system-map.md` — slice A, edited
   (durable PRD truth: `REQ-200`-`REQ-205` new; `REQ-044/046/056/060/099/124/
   129/130/167`, `NFR-011`, `FLOW-007` amended)
-- `mockups/tokens.css`, `mockups/motifs/`, `mockups/shell.css`,
-  `mockups/README.md`, `mockups/before/*.png` — slice B, new
-- `mockups/shared-chrome-menu.html`, `mockups/after/life-tracker-*.png` —
-  slice C, new
-- `mockups/quick-question.html` — slice D, new
-- `mockups/in-depth-question.html` — slice E, new
-- `mockups/trade-balancer.html` — slice F, new
-- `mockups/index.html` — slice G, new; the one entry point for the owner's
-  review, linking every mockup page and the Life Tracker before/after pair
+- `docs/design/ui-reimagining/README.md`,
+  `docs/design/ui-reimagining/direction-1/tokens.css`,
+  `docs/design/ui-reimagining/direction-1/motifs/`,
+  `docs/design/ui-reimagining/direction-1/shell.css`,
+  `docs/design/ui-reimagining/before/*.png` — slice B, new
+- `docs/design/ui-reimagining/direction-1/shared-chrome-menu.html`,
+  `docs/design/ui-reimagining/after/life-tracker-*.png` — slice C, new
+- `docs/design/ui-reimagining/direction-1/quick-question.html` — slice D, new
+- `docs/design/ui-reimagining/direction-1/in-depth-question.html` — slice E,
+  new
+- `docs/design/ui-reimagining/direction-1/trade-balancer.html` — slice F, new
+- `docs/design/ui-reimagining/index.html` — slice G, new; the one entry point
+  for the owner's review, linking every mockup page and the Life Tracker
+  before/after pair
+
+These are committed deliverables outside `PRD/work/ui-reimagining/`, mirroring
+`docs/design/tab-icon/`'s precedent for committed design candidates, so they
+survive `thejudge-cleanup`'s deletion of this package folder.
 
 Full architecture, data flow, and verification checklist: `GAMEPLAN.md`.
 

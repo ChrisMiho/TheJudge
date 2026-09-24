@@ -15,8 +15,9 @@ Paired with a "before" screenshot of today's screen.
 
 ## Requirements
 
-1. `mockups/in-depth-question.html` imports `tokens.css`, `shell.css`, and
-   `motifs/`. Clickable step navigation moves between game context, zone
+1. `docs/design/ui-reimagining/direction-1/in-depth-question.html` imports
+   `tokens.css`, `shell.css`, and `motifs/`. Clickable step navigation moves
+   between game context, zone
    collection, zone confirmation, and the answered workspace — the same
    steps, same order, as today.
 2. Zone collection at 390x844: at least 3 card tiles visible in the
@@ -40,7 +41,8 @@ Paired with a "before" screenshot of today's screen.
    today's layout uses them; no step added, removed, merged, or reordered.
 7. Visual language is consistent with slice C's token/motif system.
 8. The page embeds or links the slice-B "before" screenshots
-   (`mockups/before/in-depth-*.png`).
+   (`../before/in-depth-*.png`, i.e.
+   `docs/design/ui-reimagining/before/in-depth-*.png`).
 
 ## Acceptance criteria
 
@@ -72,9 +74,9 @@ Paired with a "before" screenshot of today's screen.
 ## Verification
 
 ```bash
-ls PRD/work/ui-reimagining/mockups/in-depth-question.html
+ls docs/design/ui-reimagining/direction-1/in-depth-question.html
 ```
 
 ## Files touched
 
-- `PRD/work/ui-reimagining/mockups/in-depth-question.html` (new)
+- `docs/design/ui-reimagining/direction-1/in-depth-question.html` (new)

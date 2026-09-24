@@ -6,7 +6,7 @@
       "id": "G1",
       "statement": "index.html links all four flow mockup pages and the Life Tracker before/after pair, each labeled",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/index.html"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/index.html"] }
     },
     {
       "id": "G2",
@@ -34,7 +34,7 @@
     },
     {
       "id": "G6",
-      "statement": "Package README names mockups/index.html as the entry point for the owner's review",
+      "statement": "Package README names docs/design/ui-reimagining/index.html as the entry point for the owner's review",
       "value": false,
       "evidence": { "paths": ["PRD/work/ui-reimagining/README.md"] }
     },

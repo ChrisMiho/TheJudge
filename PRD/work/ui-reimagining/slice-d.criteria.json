@@ -12,7 +12,7 @@
       "id": "D2",
       "statement": "The attached-card list is a bounded strip and/or region-scrolled list, not a growing vertical stack",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/quick-question.html"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/quick-question.html"] }
     },
     {
       "id": "D3",
@@ -24,7 +24,7 @@
       "id": "D4",
       "statement": "Answered state shows real card names, real prices, and real AI answer copy",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/quick-question.html"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/quick-question.html"] }
     },
     {
       "id": "D5",
@@ -42,7 +42,7 @@
       "id": "D7",
       "statement": "Page embeds or links the slice-B before screenshot for Quick Question",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/quick-question.html"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/quick-question.html"] }
     },
     {
       "id": "D8",

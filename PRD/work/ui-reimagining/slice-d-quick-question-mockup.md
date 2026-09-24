@@ -12,8 +12,8 @@ answer copy. Paired with a "before" screenshot of today's screen.
 
 ## Requirements
 
-1. `mockups/quick-question.html` imports `tokens.css`, `shell.css`, and
-   `motifs/`.
+1. `docs/design/ui-reimagining/direction-1/quick-question.html` imports
+   `tokens.css`, `shell.css`, and `motifs/`.
 2. Pre-submit state at 390x844 with the full `REQ-167` cap of 5 attached
    cards: the composer and **Send Request** stay inside the first viewport
    (bottom <= 844px). This reverses the measured baseline in
@@ -31,7 +31,8 @@ answer copy. Paired with a "before" screenshot of today's screen.
 7. Visual language (wash, panel edges, focus rings, motifs) is consistent
    with slice C's token/motif system — no locally redefined palette values.
 8. The page embeds or links the slice-B "before" screenshot
-   (`mockups/before/quick-question-*.png`).
+   (`../before/quick-question-*.png`, i.e.
+   `docs/design/ui-reimagining/before/quick-question-*.png`).
 
 ## Acceptance criteria
 
@@ -59,9 +60,9 @@ answer copy. Paired with a "before" screenshot of today's screen.
 ## Verification
 
 ```bash
-ls PRD/work/ui-reimagining/mockups/quick-question.html
+ls docs/design/ui-reimagining/direction-1/quick-question.html
 ```
 
 ## Files touched
 
-- `PRD/work/ui-reimagining/mockups/quick-question.html` (new)
+- `docs/design/ui-reimagining/direction-1/quick-question.html` (new)

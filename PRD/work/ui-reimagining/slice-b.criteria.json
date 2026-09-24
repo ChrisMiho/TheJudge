@@ -6,7 +6,7 @@
       "id": "B1",
       "statement": "tokens.css defines all eight named surface roles for each of the six profiles",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/tokens.css"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/tokens.css"] }
     },
     {
       "id": "B2",
@@ -30,19 +30,19 @@
       "id": "B5",
       "statement": "motifs/ holds one original local asset per colour; no official Wizards of the Coast artwork",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/motifs"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/motifs"] }
     },
     {
       "id": "B6",
       "statement": "shell.css is the single source of the chrome skeleton; no per-page duplicate",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/shell.css"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/shell.css"] }
     },
     {
       "id": "B7",
-      "statement": "All 12 before screenshots exist under mockups/before/, captured from the live dev app",
+      "statement": "All 12 before screenshots exist under docs/design/ui-reimagining/before/, captured from the live dev app",
       "value": false,
-      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/before"] }
+      "evidence": { "paths": ["docs/design/ui-reimagining/before"] }
     },
     {
       "id": "B8",
