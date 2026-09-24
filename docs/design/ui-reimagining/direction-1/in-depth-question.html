@@ -96,7 +96,7 @@
   .shelf .card {
     position: relative; flex: 0 0 auto; width: var(--tile-w); height: calc(var(--tile-w) * 88 / 63);
     border-radius: 8px; overflow: hidden; background: #111; scroll-snap-align: start;
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 40%, transparent), 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, #000);
+    box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, #000);
     transition: transform 160ms ease; cursor: pointer;
   }
   .shelf .card:hover { transform: translateY(-3px); }
@@ -118,7 +118,7 @@
   .wizard { display: grid; gap: 0.8rem; }
   @media (min-width: 720px) { .wizard { grid-template-columns: 200px 1fr; align-items: start; } }
   .wizard .hero { position: relative; width: 160px; height: calc(160px * 88 / 63); margin: 0 auto; border-radius: 10px; overflow: hidden;
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), 0 18px 40px -12px color-mix(in srgb, var(--accent) 70%, #000), 0 0 48px -8px color-mix(in srgb, var(--accent) 55%, transparent); }
+    --ring-w: 2px; box-shadow: 0 18px 40px -12px color-mix(in srgb, var(--accent) 70%, #000), 0 0 48px -8px color-mix(in srgb, var(--accent) 55%, transparent); }
   @media (min-width: 720px) { .wizard .hero { width: 200px; height: calc(200px * 88 / 63); } }
   .wizard .hero .card-widget { opacity: 1; transform: none; pointer-events: auto; width: 36px; height: 36px; font-size: 0.9rem; }
   .wizard .counter { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem; }
@@ -137,7 +137,7 @@
   .wizard-nav .btn.ghost { background: transparent; }
   .review { display: grid; gap: 0.4rem; }
   .review .row { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0.4rem; border-radius: 0.5rem; border: 1px solid var(--surface-edge); font-size: 0.82rem; }
-  .review img { width: 28px; height: 39px; border-radius: 3px; object-fit: cover; }
+  .review .thumb { width: 28px; height: 39px; border-radius: 3px; }
   .review .zone { color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; margin-left: auto; }
   .summary { font-size: 0.85rem; color: var(--text-muted); }
   .summary b { color: var(--text-primary); font-weight: 600; }
@@ -154,7 +154,7 @@
   .bubble.judge::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--motif) right -20% top -30% / 55% no-repeat; opacity: 0.06; pointer-events: none; }
   .bubble .who { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-soft); margin-bottom: 0.25rem; }
   .bubble .refs { display: flex; gap: 0.4rem; margin: 0.5rem 0 0; }
-  .bubble .refs img { width: 44px; height: 61px; border-radius: 4px; object-fit: cover; cursor: pointer; box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 40%, transparent); }
+  .bubble .refs .thumb { width: 44px; height: 61px; border-radius: 4px; cursor: pointer; }
   .followup { display: flex; gap: 0.5rem; align-items: end; }
   .followup .q-wrap { flex: 1; }
   .followup textarea.field { min-height: 44px; padding-bottom: 1.4rem; }
@@ -359,7 +359,7 @@
 
   <script src="flow.js"></script>
   <script>
-    const { img, library, byName, cardMarkup, openDetail, bindComposer } = window.FLOW;
+    const { img, library, byName, cardMarkup, openDetail, bindComposer, applyRing, thumb } = window.FLOW;
     const $ = (s) => document.getElementById(s);
 
     // ---- demo state ----
@@ -368,7 +368,7 @@
     const zoneCards = {
       'Stack': [byName('Lightning Bolt'), byName('Counterspell')],
       'Battlefield': [byName('Sol Ring'), byName('Llanowar Elves')],
-      'Hand': [byName('Swords to Plowshares')]
+      'Hand': [byName('Swords to Plowshares'), byName('Lightning Helix')]
     };
     let activeZone = 'Stack';
     let players = 2;
@@ -434,6 +434,7 @@
           (isStack ? '<span class="pos">' + (i === cards.length - 1 ? 'TOP' : '#' + (i + 1)) + '</span>' : '') + '</div>').join('');
         $('shelf').querySelectorAll('.card').forEach((el) => {
           const c = cards[Number(el.dataset.i)];
+          applyRing(el, c);
           el.querySelector('.remove').addEventListener('click', () => { cards.splice(cards.indexOf(c), 1); renderShelf(); });
           el.querySelector('.info').addEventListener('click', () => openDetail(c));
           el.addEventListener('click', (e) => { if (!e.target.closest('.card-widget')) openDetail(c); });
@@ -450,7 +451,7 @@
       const q = $('card-search').value.trim().toLowerCase();
       const hits = library.filter((c) => !allAttached().includes(c) && (!q || c.name.toLowerCase().includes(q))).slice(0, 4);
       $('search-results').innerHTML = hits.map((c) =>
-        '<button type="button" data-i="' + library.indexOf(c) + '"><img src="' + img(c.id) + '" alt=""><span>' + c.name + '</span><span class="type">' + c.type + '</span></button>').join('');
+        '<button type="button" data-i="' + library.indexOf(c) + '">' + thumb(c) + '<span>' + c.name + '</span><span class="type">' + c.type + '</span></button>').join('');
       $('search-results').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
         (zoneCards[activeZone] = zoneCards[activeZone] || []).push(library[Number(b.dataset.i)]);
         $('card-search').value = ''; closeSearch(); renderShelf();
@@ -480,12 +481,13 @@
       if (!done) {
         const { zone, card } = q[wiz];
         $('wizard-hero').innerHTML = cardMarkup(card, { noRemove: true });
+        applyRing($('wizard-hero'), card);
         $('wizard-hero').querySelector('.info').addEventListener('click', () => openDetail(card));
         $('wiz-n').textContent = wiz + 1; $('wiz-total').textContent = q.length; $('wiz-zone').textContent = zone;
         $('f-target-card').innerHTML = '<option value="">Select card…</option>' + q.filter((e) => e.card !== card).map((e) => '<option>' + e.card.name + ' (' + e.zone + ')</option>').join('');
         $('wiz-next').textContent = wiz < q.length - 1 ? 'OK — next card' : 'OK — finish context';
       } else {
-        $('review').innerHTML = q.map((e) => '<div class="row"><img src="' + img(e.card.id) + '" alt=""><span>' + e.card.name + '</span><span class="zone">' + e.zone + '</span></div>').join('');
+        $('review').innerHTML = q.map((e) => '<div class="row">' + thumb(e.card) + '<span>' + e.card.name + '</span><span class="zone">' + e.zone + '</span></div>').join('');
         $('sum-zones').innerHTML = zoneChips();
         $('sum-phase').textContent = $('turn-phase').value + ', ' + $('active-player').value + ' active';
       }
@@ -512,11 +514,11 @@
         (stack.length >= 2
           ? 'The top of the stack resolves first. Counterspell was cast in response to Lightning Bolt, so it resolves first and counters the Bolt — Lightning Bolt is put into its owner\'s graveyard and deals no damage. Sol Ring and Llanowar Elves on the battlefield are untouched, and Swords to Plowshares in hand could still be cast with priority after the stack empties.'
           : 'With ' + q.length + ' card' + (q.length === 1 ? '' : 's') + ' in context, nothing is on the stack — priority passes and the active player continues their ' + $('turn-phase').value + '.') +
-        '<div class="refs">' + q.map((e) => '<img src="' + img(e.card.id) + '" alt="' + e.card.name + '" data-name="' + e.card.name + '">').join('') + '</div></div>';
-      $('thread').querySelectorAll('.refs img').forEach((i) => i.addEventListener('click', () => openDetail(byName(i.dataset.name))));
+        '<div class="refs">' + q.map((e) => thumb(e.card).replace('<span class="thumb', '<span data-name="' + e.card.name + '" class="thumb')).join('') + '</div></div>';
+      $('thread').querySelectorAll('.refs .thumb').forEach((i) => i.addEventListener('click', () => openDetail(byName(i.dataset.name))));
       $('ctx-fields').innerHTML =
         '<dt>Turn phase</dt><dd>' + $('turn-phase').value + '</dd><dt>Active player</dt><dd>' + $('active-player').value + '</dd><dt>Players</dt><dd>' + players + '</dd>';
-      $('ctx-cards').innerHTML = q.map((e) => '<div class="row"><img src="' + img(e.card.id) + '" alt=""><span>' + e.card.name + '</span><span class="zone">' + e.zone + '</span></div>').join('');
+      $('ctx-cards').innerHTML = q.map((e) => '<div class="row">' + thumb(e.card) + '<span>' + e.card.name + '</span><span class="zone">' + e.zone + '</span></div>').join('');
     }
     bindComposer($('followup-field'), $('fu-count'), $('fu-meter'));
     function openCtx() { document.documentElement.dataset.trayOpen = 'true'; $('ctx-panel').dataset.open = 'true'; }

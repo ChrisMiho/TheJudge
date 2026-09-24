@@ -9,16 +9,30 @@ window.FLOW = (() => {
 
   // real corpus fields (cardMetadata.json imageId + cardDetailByOracleId) for the demo cards
   const library = [
-    { name: 'Lightning Bolt',       id: '132dc07f-74e2-4bd7-bdb1-4f5d5253c7f2', type: 'Instant',              cost: '{R}',    mv: 1, colors: 'Red',   sub: '—',          price: '$3.20',  oracle: 'Lightning Bolt deals 3 damage to any target.' },
-    { name: 'Sol Ring',             id: '0ab38fe7-1929-44f6-b4ce-ce8cfacbfb76', type: 'Artifact',             cost: '{1}',    mv: 1, colors: '—',     sub: '—',          price: '$1.85',  oracle: '{T}: Add {C}{C}.' },
-    { name: 'Llanowar Elves',       id: '2526a07a-0b92-4e31-81fe-14fb067b5821', type: 'Creature — Elf Druid', cost: '{G}',    mv: 1, colors: 'Green', sub: 'Elf, Druid', price: '$0.75',  oracle: '{T}: Add {G}.' },
-    { name: 'Swords to Plowshares', id: '68ec2aed-7662-48ae-ab25-04f74ece1e41', type: 'Instant',              cost: '{W}',    mv: 1, colors: 'White', sub: '—',          price: '$0.60',  oracle: 'Exile target creature. Its controller gains life equal to its power.' },
-    { name: 'Counterspell',         id: '4f616706-ec97-4923-bb1e-11a69fbaa1f8', type: 'Instant',              cost: '{U}{U}', mv: 2, colors: 'Blue',  sub: '—',          price: '$1.10',  oracle: 'Counter target spell.' },
-    { name: 'Rhystic Study',        id: '9f37c5b6-a59c-45cd-9a99-e9357fe9ea1b', type: 'Enchantment',          cost: '{2}{U}', mv: 3, colors: 'Blue',  sub: '—',          price: '$32.00', oracle: 'Whenever an opponent casts a spell, you may draw a card unless that player pays {1}.' },
-    { name: 'Path to Exile',        id: '177bd28f-8c83-4a91-a025-33312539d222', type: 'Instant',              cost: '{W}',    mv: 1, colors: 'White', sub: '—',          price: '$2.40',  oracle: 'Exile target creature. Its controller may search their library for a basic land card, put that card onto the battlefield tapped, then shuffle.' },
-    { name: 'Birds of Paradise',    id: '3ffe931c-9f19-4ea5-bc24-041eb00a5862', type: 'Creature — Bird',      cost: '{G}',    mv: 1, colors: 'Green', sub: 'Bird',       price: '$6.10',  oracle: 'Flying\n{T}: Add one mana of any color.' }
+    { name: 'Lightning Bolt',       id: '132dc07f-74e2-4bd7-bdb1-4f5d5253c7f2', colors: ['R'], type: 'Instant',              cost: '{R}',    mv: 1, colorsLabel: 'Red',   sub: '—',          price: '$3.20',  oracle: 'Lightning Bolt deals 3 damage to any target.' },
+    { name: 'Sol Ring',             id: '0ab38fe7-1929-44f6-b4ce-ce8cfacbfb76', colors: [], type: 'Artifact',             cost: '{1}',    mv: 1, colorsLabel: '—',     sub: '—',          price: '$1.85',  oracle: '{T}: Add {C}{C}.' },
+    { name: 'Llanowar Elves',       id: '2526a07a-0b92-4e31-81fe-14fb067b5821', colors: ['G'], type: 'Creature — Elf Druid', cost: '{G}',    mv: 1, colorsLabel: 'Green', sub: 'Elf, Druid', price: '$0.75',  oracle: '{T}: Add {G}.' },
+    { name: 'Swords to Plowshares', id: '68ec2aed-7662-48ae-ab25-04f74ece1e41', colors: ['W'], type: 'Instant',              cost: '{W}',    mv: 1, colorsLabel: 'White', sub: '—',          price: '$0.60',  oracle: 'Exile target creature. Its controller gains life equal to its power.' },
+    { name: 'Counterspell',         id: '4f616706-ec97-4923-bb1e-11a69fbaa1f8', colors: ['U'], type: 'Instant',              cost: '{U}{U}', mv: 2, colorsLabel: 'Blue',  sub: '—',          price: '$1.10',  oracle: 'Counter target spell.' },
+    { name: 'Rhystic Study',        id: '9f37c5b6-a59c-45cd-9a99-e9357fe9ea1b', colors: ['U'], type: 'Enchantment',          cost: '{2}{U}', mv: 3, colorsLabel: 'Blue',  sub: '—',          price: '$32.00', oracle: 'Whenever an opponent casts a spell, you may draw a card unless that player pays {1}.' },
+    { name: 'Path to Exile',        id: '177bd28f-8c83-4a91-a025-33312539d222', colors: ['W'], type: 'Instant',              cost: '{W}',    mv: 1, colorsLabel: 'White', sub: '—',          price: '$2.40',  oracle: 'Exile target creature. Its controller may search their library for a basic land card, put that card onto the battlefield tapped, then shuffle.' },
+    { name: 'Lightning Helix',      id: '4101e3fe-b0e7-4f0f-b9ac-9b61a4d628b3', colors: ['W', 'R'], type: 'Instant',           cost: '{R}{W}', mv: 2, colorsLabel: 'White, Red', sub: '—', price: '$0.90', oracle: 'Lightning Helix deals 3 damage to any target and you gain 3 life.' },
+    { name: 'Birds of Paradise',    id: '3ffe931c-9f19-4ea5-bc24-041eb00a5862', colors: ['G'], type: 'Creature — Bird',      cost: '{G}',    mv: 1, colorsLabel: 'Green', sub: 'Bird',       price: '$6.10',  oracle: 'Flying\n{T}: Add one mana of any color.' }
   ];
   const byName = (n) => library.find((c) => c.name === n);
+
+  // card identity ring — same colours and rules as the app's cardIdentityRing.ts
+  const RING = { W: 'rgb(248 231 185 / 0.55)', U: 'rgb(14 165 233 / 0.55)', B: 'rgb(113 113 122 / 0.55)', R: 'rgb(239 68 68 / 0.55)', G: 'rgb(34 197 94 / 0.55)' };
+  function ring(colors) {
+    const c = ['W', 'U', 'B', 'R', 'G'].filter((x) => (colors || []).includes(x));
+    if (!c.length) return 'rgb(148 163 184 / 0.55)';
+    if (c.length === 1) return RING[c[0]];
+    return 'linear-gradient(90deg, ' + c.map((x) => RING[x]).join(', ') + ')';
+  }
+  function applyRing(el, card) { el.classList.add('card-identity-ring'); el.style.setProperty('--card-identity-ring', ring(card.colors)); }
+  const ringAttr = (card) => 'class="card-identity-ring" style="--card-identity-ring:' + ring(card.colors) + '"';
+  // a small ringed thumbnail
+  const thumb = (card, extra = '') => '<span class="thumb card-identity-ring' + (extra ? ' ' + extra : '') + '" style="--card-identity-ring:' + ring(card.colors) + '"><img src="' + img(card.id) + '" alt="' + card.name + '"></span>';
 
   // inner markup of a .card: the art (or the name-only fallback) plus the two corner widgets
   function cardMarkup(c, opts = {}) {
@@ -56,7 +70,7 @@ window.FLOW = (() => {
       '<dt>Mana cost</dt><dd>' + c.cost + '</dd>' +
       '<dt>Mana value</dt><dd>' + c.mv + '</dd>' +
       '<dt>Type</dt><dd>' + c.type + '</dd>' +
-      '<dt>Colors</dt><dd>' + c.colors + '</dd>' +
+      '<dt>Colors</dt><dd>' + c.colorsLabel + '</dd>' +
       '<dt>Subtypes</dt><dd>' + c.sub + '</dd>' +
       '<dt>Price</dt><dd class="price">' + c.price + ' (nonfoil)</dd>';
     $('detail-oracle').textContent = c.oracle;
@@ -84,5 +98,5 @@ window.FLOW = (() => {
   }
 
   document.addEventListener('DOMContentLoaded', ensureDetailPanel);
-  return { img, library, byName, cardMarkup, openDetail, closeDetail, bindComposer };
+  return { img, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, ring, applyRing, ringAttr, thumb };
 })();

@@ -69,7 +69,7 @@
   .entries { display: grid; gap: 0.45rem; }
   .entry { display: grid; grid-template-columns: 56px 1fr auto; gap: 0.6rem; align-items: center; padding: 0.45rem; border-radius: 0.75rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
   .entry .card { position: relative; width: 56px; height: 78px; border-radius: 4px; overflow: hidden; cursor: pointer;
-    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 35%, transparent), 0 8px 18px -8px color-mix(in srgb, var(--accent) 70%, #000); }
+    box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--accent) 70%, #000); }
   .entry .card img { width: 100%; height: 100%; object-fit: cover; }
   .entry[data-foil="true"] .card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.35) 45%, rgba(120,200,255,0.25) 55%, transparent 70%); mix-blend-mode: screen; pointer-events: none; }
   .entry .info { min-width: 0; display: grid; gap: 0.15rem; }
@@ -99,7 +99,7 @@
   .printing-list { display: grid; gap: 0.3rem; margin-top: 0.6rem; }
   .printing-list button { display: grid; grid-template-columns: 40px 1fr auto; gap: 0.6rem; align-items: center; text-align: left; padding: 0.35rem; border-radius: 0.6rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-primary); cursor: pointer; }
   .printing-list button[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
-  .printing-list img { width: 40px; height: 56px; border-radius: 3px; object-fit: cover; }
+  .printing-list .thumb { width: 40px; height: 56px; border-radius: 3px; }
   .printing-list .set { font-size: 0.85rem; }
   .printing-list .set small { display: block; color: var(--text-muted); font-size: 0.7rem; }
   .printing-list .pr { font-size: 0.78rem; color: var(--accent-soft); text-align: right; white-space: nowrap; }
@@ -191,7 +191,7 @@
 
   <script src="flow.js"></script>
   <script>
-    const { img, library, byName, openDetail } = window.FLOW;
+    const { img, library, byName, openDetail, ringAttr, thumb } = window.FLOW;
     const $ = (s) => document.getElementById(s);
     const usd = (n) => '$' + n.toFixed(2);
 
@@ -204,13 +204,14 @@
       'Counterspell': [['Commander Masters', 'CMM', 1.10, 2.80], ['Modern Horizons 2', 'MH2', 1.60, 5.40]],
       'Rhystic Study': [['Commander Masters', 'CMM', 32.00, 41.00], ['Prophecy', 'PCY', 44.00, 320.00]],
       'Path to Exile': [['Commander Masters', 'CMM', 2.40, 5.00]],
-      'Birds of Paradise': [['Ravnica Remastered', 'RVR', 6.10, 13.50]]
+      'Birds of Paradise': [['Ravnica Remastered', 'RVR', 6.10, 13.50]],
+      'Lightning Helix': [['Ravnica Remastered', 'RVR', 0.90, 3.40]]
     };
     let uid = 0;
     const entry = (name, side, opts = {}) => ({ id: ++uid, card: byName(name), side, printing: opts.printing || 0, foil: !!opts.foil, qty: opts.qty || 1 });
     let entries = [
       entry('Lightning Bolt', 'a'), entry('Sol Ring', 'a', { qty: 2 }),
-      entry('Llanowar Elves', 'b'), entry('Counterspell', 'b', { foil: true }), entry('Swords to Plowshares', 'b')
+      entry('Llanowar Elves', 'b'), entry('Counterspell', 'b', { foil: true }), entry('Swords to Plowshares', 'b'), entry('Lightning Helix', 'b')
     ];
     let cash = { a: 0, b: 0 };
     let names = { a: 'Side A', b: 'Side B' };
@@ -250,7 +251,7 @@
         const rows = list.map((e) => {
           const p = PRINTINGS[e.card.name][e.printing]; const u = unit(e);
           return '<div class="entry" data-id="' + e.id + '" data-foil="' + e.foil + '">' +
-            '<div class="card" title="Card details"><img src="' + img(e.card.id) + '" alt="' + e.card.name + '"></div>' +
+            '<div ' + ringAttr(e.card).replace('class="', 'class="card ') + ' title="Card details"><img src="' + img(e.card.id) + '" alt="' + e.card.name + '"></div>' +
             '<div class="info"><span class="nm">' + e.card.name + '</span>' +
             '<span class="printing">' + p[0] + ' · ' + p[1] + ' <button data-act="printing">Change printing</button></span>' +
             '<div class="controls">' +
@@ -308,7 +309,7 @@
         const draw = () => {
           const q = input.value.trim().toLowerCase();
           const hits = library.filter((c) => !q || c.name.toLowerCase().includes(q)).slice(0, 4);
-          results.innerHTML = hits.map((c) => '<button type="button" data-n="' + c.name + '"><img src="' + img(c.id) + '" alt=""><span>' + c.name + '</span><span class="type">' + usd(PRINTINGS[c.name][0][2]) + '</span></button>').join('');
+          results.innerHTML = hits.map((c) => '<button type="button" data-n="' + c.name + '">' + thumb(c) + '<span>' + c.name + '</span><span class="type">' + usd(PRINTINGS[c.name][0][2]) + '</span></button>').join('');
           results.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { entries.push(entry(b.dataset.n, s)); openSearch = null; render(); }));
         };
         input.addEventListener('input', draw);
@@ -323,7 +324,7 @@
       ppEntry = e;
       $('pp-title').textContent = 'Printings of ' + e.card.name;
       $('pp-list').innerHTML = PRINTINGS[e.card.name].map((p, i) =>
-        '<button aria-pressed="' + (i === e.printing) + '" data-i="' + i + '"><img src="' + img(e.card.id) + '" alt=""><span class="set">' + p[0] + '<small>' + p[1] + '</small></span><span class="pr">' + usd(p[2]) + '<br>' + (p[3] === null ? 'no foil price' : usd(p[3]) + ' foil') + '</span></button>').join('');
+        '<button aria-pressed="' + (i === e.printing) + '" data-i="' + i + '">' + thumb(e.card) + '<span class="set">' + p[0] + '<small>' + p[1] + '</small></span><span class="pr">' + usd(p[2]) + '<br>' + (p[3] === null ? 'no foil price' : usd(p[3]) + ' foil') + '</span></button>').join('');
       $('pp-list').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { ppEntry.printing = Number(b.dataset.i); if (PRINTINGS[ppEntry.card.name][ppEntry.printing][3] === null) ppEntry.foil = false; closePrinting(); render(); }));
       document.documentElement.dataset.trayOpen = 'true'; $('pp-panel').dataset.open = 'true';
     }

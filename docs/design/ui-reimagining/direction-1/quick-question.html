@@ -114,7 +114,7 @@
 
   <script src="flow.js"></script>
   <script>
-    const { img, library, cardMarkup, openDetail, bindComposer } = window.FLOW;
+    const { img, library, cardMarkup, openDetail, bindComposer, applyRing, thumb } = window.FLOW;
     const starter = library.slice(0, 5);
     let attached = starter.slice();
     let focus = 0;
@@ -134,6 +134,7 @@
       const el = document.createElement('div');
       el.className = 'card';
       el.innerHTML = cardMarkup(c, { broken: breakImages });
+      applyRing(el, c);
       el.addEventListener('click', (e) => {
         if (e.target.closest('.card-widget')) return;
         if (el.dataset.front !== 'true') { focus = attached.indexOf(c); render(); }
@@ -180,7 +181,7 @@
       const q = $('card-search').value.trim().toLowerCase();
       const hits = library.filter((c) => !attached.includes(c) && (!q || c.name.toLowerCase().includes(q))).slice(0, 4);
       $('search-results').innerHTML = hits.map((c, i) =>
-        '<button type="button" data-i="' + library.indexOf(c) + '"><img src="' + img(c.id) + '" alt=""><span>' + c.name + '</span><span class="type">' + c.type + '</span></button>'
+        '<button type="button" data-i="' + library.indexOf(c) + '">' + thumb(c) + '<span>' + c.name + '</span><span class="type">' + c.type + '</span></button>'
       ).join('');
       $('search-results').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
         attached.push(library[Number(b.dataset.i)]);

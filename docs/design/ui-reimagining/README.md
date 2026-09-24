@@ -188,6 +188,16 @@ Shared pieces added this round, so the flows read as one product:
 
 #### Global
 
+- Rule (owner, 2026-09-24): **every card keeps its colour-identity ring.**
+  Today's app draws a one-pixel ring in the card's own colours around every
+  card tile (one colour, a WUBRG-ordered gradient for multicolour, silver
+  grey for colourless — `apps/frontend/src/lib/cardIdentityRing.ts`). Round
+  2 had replaced it with a ring in the theme accent; that was a regression,
+  not a design choice. Fixed: `flow.css .card-identity-ring` uses the same
+  colours and masked-border technique on every card surface (ring, shelf,
+  context hero, thumbnails, trade entries, printing picker). The theme owns
+  the glow behind a card, never its edge. Lightning Helix (white/red) was
+  added to In-Depth's Hand and Trade Balancer's Side B to show the gradient.
 - Every page uses the motif as the ornament: stage watermark, corner marks
   on the lit surfaces, the header edge, the judge's answer bubble. Intensity
   stays restrained (0.06–0.16 opacity) so card art wins.
