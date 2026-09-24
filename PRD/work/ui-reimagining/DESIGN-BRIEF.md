@@ -32,7 +32,11 @@ time. Building both sides of a trade on a phone no longer stacks Side A on top
 of Side B — the two sides become tabs the player flips between, while the
 desktop keeps its side-by-side layout unchanged.
 
-Life Tracker looks exactly as it does today, down to the pixel.
+Life Tracker's own screens, counters, and state stay exactly as they are
+today. Its shared chrome — menu rail, brand mark, theme section, overlays,
+page shell — inherits the redesign like every other destination; each slice
+that touches shared chrome attaches a before/after screenshot pair for the
+owner to review.
 
 ---
 
@@ -118,10 +122,11 @@ surface system must not fall below — not a round number picked in advance.
 | 390×844, capture before vs. after a full reload | 0 of 329,160 |
 | 1440×900, capture before vs. after a full reload | 0 of 1,296,000 |
 
-Life Tracker renders **bit-identical** across a reload at both widths. The
-screenshot-diff tolerance for "pixel-identical" is therefore **zero differing
-pixels**, measured, with no antialiasing allowance needed. This is what makes
-the pin in `REQ-202` enforceable rather than aspirational.
+Life Tracker renders **bit-identical** across a reload at both widths, with no
+antialiasing allowance needed. This is why the `REQ-202` before/after
+screenshot pair is a clean signal: in this app, a differing pixel is a real
+change, not render noise, so the owner's review of the pair is looking at
+something real rather than guessing past noise.
 
 ### The owner's friction rows, checked live
 
@@ -200,14 +205,21 @@ make the current-state spec lie.
 
 ### D3 — The colour becomes the theme, at a measured intensity
 
-**Assumption:** the chosen palette drives background wash, surface fills and
-edges, focus rings, the waiting panel, and the card-detail popup, bounded by
-the measured contrast floors above (body text ≥ 14.37:1, `accent-soft`
-≥ 6.19:1, `accent-contrast` on filled accent ≥ 5.42:1).
+**Assumption:** the chosen palette is the basis of a theme, not a fill: it
+drives background wash, surface fills and edges, focus rings, the waiting
+panel, and the card-detail popup, bounded by the measured contrast floors
+above (body text ≥ 14.37:1, `accent-soft` ≥ 6.19:1, `accent-contrast` on
+filled accent ≥ 5.42:1) and by keeping neutral ground and panel fills the
+visual majority of every screen in every profile — readability is the first
+constraint, the colour reads as wash/edges/rings/accents, never a dominant
+fill.
 **Ladder rung:** 1, then measurement.
-**Evidence:** intake D3 ("agree … at a restrained intensity"); measured values
-in **Measured evidence**, above. The intensity ceiling is expressed as those
-ratios, not as an opacity guess.
+**Evidence:** intake D3 ("agree … at a restrained intensity"); the
+`gate-review` verdict on `REQ-200` (2026-09-24), which retitled the entry from
+"palette-driven surface system" to "a theme built around the chosen colour" on
+this basis; measured values in **Measured evidence**, above. The intensity
+ceiling is expressed as those ratios plus the neutral-majority rule, not as an
+opacity guess.
 
 ### D4 — Dark only this pass, with a token set a light theme can join
 
@@ -227,15 +239,22 @@ card art ships; per-colour motifs are drawn for this app.
 **Evidence:** intake D2 ("own motifs … keeps the commercial option open").
 `REQ-201` turns the prohibition into a positive brief.
 
-### D6 — Life Tracker is pinned, and every later slice proves it
+### D6 — Life Tracker inherits shared chrome, reviewed by a screenshot pair
 
-**Assumption:** reading (a) from intake E1 — every shared token Life Tracker
-consumes is pinned to today's value inside Life Tracker — enforced by a
-zero-differing-pixel screenshot diff at 390×844 and 1440×900 on every slice
-that touches shared chrome, tokens, or `index.css`.
+**Assumption:** Life Tracker inherits shared chrome, the token set, and the
+shared stylesheet the same way every other destination does — the menu rail,
+brand mark, theme section, overlays, and page shell. Its own screens,
+counters, layout, and `lib/lifeTracker/` state are untouched by the redesign.
+Every slice that touches shared chrome, the token set, or the shared
+stylesheet attaches a Life Tracker before/after screenshot pair at 390×844 and
+1440×900 to its PR, for the owner to review before merge; there is no
+automated zero-pixel gate.
 **Ladder rung:** 1 and measurement.
-**Evidence:** intake E1; the measured 0/329,160 and 0/1,296,000 noise floor
-above. `REQ-202` carries it.
+**Evidence:** intake E1's initial reading (a) proposed a pin; the owner
+changed that to this reading at the `gate-review` verdict on `REQ-202`
+(2026-09-24) — see the README's intake supersession note. The measured
+0/329,160 and 0/1,296,000 noise floor above still holds and is why the
+screenshot pair is a clean signal rather than noise. `REQ-202` carries it.
 
 ### D7 — Copy may be rewritten; steps may not be re-sequenced
 
@@ -260,7 +279,9 @@ screenshot tolerance is the measured zero.
 
 **Assumption:** ten taps on the brand mark on **any** in-scope screen reveal
 the cat wizard everywhere for the rest of the session, from one shared count.
-Life Tracker keeps its own title and stays out.
+Life Tracker shows the same redesigned brand mark as every other screen
+(inherited as shared chrome, `REQ-202`), but is excluded from the tap count —
+it wires no tap handler and never reveals the cat wizard on its own screen.
 **Ladder rung:** 1 (the trigger and session-only scope are already
 `REQ-056` / `DEC-076` truth) plus the owner's explicit wish.
 **Evidence:** intake A5 ("Protected outright: the cat-wizard Easter egg …
@@ -289,9 +310,9 @@ proposed diff and a verdict slot.
 
 | ID | What it settles |
 | --- | --- |
-| `REQ-200` | The chosen mana colour drives the whole surface, through a named token set a light theme can join later |
+| `REQ-200` | The chosen mana colour is the basis of a restrained theme across the surface, neutral surfaces kept the majority, through a named token set a light theme can join later |
 | `REQ-201` | Original arcane motif kit per colour; no Wizards artwork or glyphs |
-| `REQ-202` | Life Tracker is visually pinned, proved by a zero-pixel screenshot diff per slice |
+| `REQ-202` | Life Tracker inherits shared chrome like every other destination, reviewed by a before/after screenshot pair at every touching slice — no zero-pixel gate |
 | `REQ-203` | The cat-wizard Easter egg reaches every in-scope screen from one session-wide tap count |
 | `REQ-204` | Trade Balancer's two sides become tabs on phone; desktop side-by-side unchanged |
 | `REQ-205` | Every control on the re-imagined screens meets the 44px touch floor |
@@ -465,29 +486,36 @@ overlay, and the HTML mockups are deliverables, not app screens.
 
 ---
 
-## Life Tracker: how it is pinned, and how every slice proves it
+## Life Tracker: how it inherits shared chrome, and how every slice proves it
 
-1. **Pin.** Every shared token Life Tracker consumes resolves to today's value
-   inside the Life Tracker destination — the pin lives with Life Tracker, not
-   as a carve-out inside each shared component (`REQ-202`).
+1. **Inheritance, not a pin.** Life Tracker consumes shared chrome, the token
+   set, and the shared stylesheet exactly as every other destination does — no
+   destination-scoped override, no forked shared component. Its own screens,
+   counters, layout, and `lib/lifeTracker/` state stay untouched by the
+   redesign (`REQ-202`).
 2. **Proof.** Every slice that touches shared chrome, the token set, or
-   `index.css` attaches a Life Tracker screenshot diff at 390×844 and
-   1440×900, captured the same way as the baselines in this brief, and the
-   diff must be **zero differing pixels**. A non-zero diff blocks the slice
-   until the drift is pinned or the owner approves it.
+   `index.css` attaches a Life Tracker before/after screenshot pair at
+   390×844 and 1440×900 to its PR, captured the same way as the baselines in
+   this brief. The owner reviews the pair and approves or requests changes;
+   there is no automated pixel-diff threshold and no gate that blocks the
+   slice on its own.
 3. **Baseline.** The four baseline captures in
    `PRD/work/ui-reimagining/.playwright-mcp/` are the reference; the folder is
-   git-ignored, so the code package re-captures them from the merge base before
-   it starts and records the counts in its slice docs.
-4. **Why zero is fair.** Measured: 0 of 329,160 differing pixels at 390×844 and
-   0 of 1,296,000 at 1440×900 across a reload. The renderer is deterministic
-   here, so a single differing pixel is a real change, not noise.
+   git-ignored, so the code package re-captures its own before/after pair from
+   the merge base before it starts and records it in its slice docs.
+4. **Why the pair is a clean signal.** Measured: 0 of 329,160 differing pixels
+   at 390×844 and 0 of 1,296,000 at 1440×900 across a reload with no shared
+   chrome change. The renderer is deterministic here, so a differing pixel in
+   a pair is a real change, not render noise — which is what makes the pair
+   worth the owner's look, even without an automated gate.
 
 ---
 
 ## Non-goals, restated as guard rails for the mockups
 
-- No Life Tracker change of any kind, including shared-token drift.
+- No change to Life Tracker's own screens, counters, layout, or
+  `lib/lifeTracker/` state. Shared-chrome drift is expected and reviewed by a
+  screenshot pair on each touching slice, not blocked outright.
 - No backend, prompt, scan-detection, or price-data change.
 - No new feature, and nothing the app cannot already do.
 - No step added, removed, merged, or re-ordered in In-Depth Question.
@@ -516,7 +544,7 @@ overlay, and the HTML mockups are deliverables, not app screens.
 | 1 | Build ships direction 1 only; 2–3 and the code are later packages | intake F2; graph one-code-PR shape | Say so on the docs PR; the plan collapses to one mockup package |
 | 2 | New REQs land as requirements, no `Built:` lines | `functional-requirements.md` is the requirement register | The code package would have to re-propose them |
 | 3 | Contrast floors are today's measured worst cases (14.37:1 body text, 6.19:1 `accent-soft`, 5.42:1 `accent-contrast`) | measured 2026-09-24 | A higher bar narrows how dark the wash may go |
-| 4 | Screenshot-diff tolerance is zero differing pixels | measured 0/329,160 and 0/1,296,000 | A tolerance above zero lets real drift through |
+| 4 | Life Tracker inherits shared chrome, reviewed by a before/after screenshot pair per touching slice, no automated diff threshold | `gate-review` verdict on `REQ-202` (2026-09-24); measured noise floor 0/329,160 and 0/1,296,000 shows a diff in the pair is real, not render noise | A pair the owner never reviews lets real drift through unnoticed |
 | 5 | One session-wide Easter-egg tap count | intake A5 recommendation | Per-screen counts would make the egg harder to find, not easier |
 | 6 | No new bundle, font, or tap-size number | intake E6 | A ceiling would have to be measured before it is written |
 | 7 | The In-Depth zone strip already exists; only tile density changes | measured live: `overflow-x-auto`, 146×203 tiles, ~1.8 visible | If the owner wanted a different list shape, the strip row changes further |

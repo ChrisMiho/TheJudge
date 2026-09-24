@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/ui-reimagining` by the build half's claim on 2026-09-24)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining` (rewritten from `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining` by the build half's claim on 2026-09-24; branch `thejudge-auto/ui-reimagining-work` cut from `origin/main` at `8cbb9c7`)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260924-050744/`
-- Current node: `owner-action` (parked after `gate-qc` PASS)
-- Next action: answer `PRD/work/ui-reimagining/GATE-QUESTIONS.md`, merge the docs PR; `graph-implement` builds it
+- Current node: `gate-review` (build half, resolving the answered `define` gate)
+- Next action: `/graph-implement PRD/work/ui-reimagining/` (in flight)
 
 ## Node ledger
 
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `8 → 36` | commit `d24bc22` on `thejudge-auto/ui-reimagining`: `PRD/work/ui-reimagining/{IDEA.md,README.md,STATUS.ideation,intake/GRAPH-BRIEF.md,intake/OWNER-INPUT.md,intake/inspiration/**}` (90 intake files, `diff -rq` against the staged copy zero drift) + board row under `## ideation`; README carries `## Autonomous metadata`; 28 `## Prior run` receipt matches in `IDEA.md`; staging folder emptied (`find … -type f` → 0); worktree and launch checkout porcelain empty | 2026-09-24 |
 | 3 | define | opus | ok | `36 → 106` | commit `de8ae44` on `thejudge-auto/ui-reimagining`: `DESIGN-BRIEF.md` (532 lines), `GATE-QUESTIONS.md` (1105 lines; 17 stable-ID blocks — new REQ-200..REQ-205, in-place REQ-044/046/056/060/099/124/129/130/167, NFR-011, FLOW-007; `## Blocker questions` none), README updated, `STATUS.refined` (only marker), board row under `## refined`; `git diff --stat e0ae6b5 HEAD -- PRD/sections` empty; live walk at 390×844 and 1440×900 (Life Tracker 0-pixel reload diff, Quick Question send button 179px below the fold with two cards, In-Depth zone strip ~1.8 tiles visible, ten controls under the 44px floor); worktree and launch checkout porcelain empty → questions file present, gate continues to `gate-qc` | 2026-09-24 |
 | 4 | gate-qc | sonnet | ok (PASS) | `106 → 32` (new attempt key `gate-qc/1`) | verdict PASS, findings none; no commit (`git status --porcelain` empty at `53cf615`); `git diff --stat origin/main HEAD -- PRD/sections` empty; 17 blocks match the brief's proposed-truth table, the four line-level greps re-run at 24 / 7 / 31 / 23 hits (broad grep 200) matching the brief; ~20 citations spot-checked verbatim; no new `DEC-` (grep); worktree and launch checkout porcelain empty | 2026-09-24 |
+| — | claim (build half) | driver | ok | `n/a (driver, no node)` | docs PR #236 merged at `8cbb9c7`; kickoff worktree `.worktrees/kickoff-ui-reimagining` clean (`git status --porcelain` empty) → `git worktree remove`; `git worktree add .worktrees/implement-ui-reimagining -b thejudge-auto/ui-reimagining-work origin/main` at `8cbb9c7`; claim commit `270cc93` (README `- Autonomous base: origin/main`, ledger `Autonomous base`/`Worktree` lines) pushed (`git push -u origin thejudge-auto/ui-reimagining-work` → new branch); lock: a first `npm run graph:preflight -- --take-lock …` wrote the lock into the worktree's own `.worktrees/` and the canary `nohup true` was allowed (the hook reads the launch root); stray file removed, lock retaken with `node scripts/graph-preflight.mjs --take-lock --slug ui-reimagining --run-id graph-20260924-050744 --pid 20883` at the launch root; graph canary `nohup true` → denied (`nohup` is denied while a graph run holds the lock); launch checkout still `main`, porcelain empty | 2026-09-24 |
 
 ## Open gate
 
@@ -25,6 +26,55 @@
 - PR: https://github.com/ChrisMiho/TheJudge/pull/236 (docs-only, `thejudge-auto/ui-reimagining` → `main`, opened by `gh pr create` at `864ee7e`)
 - Verdicts: all 17 slots filled by the driver on 2026-09-24 from the owner's answers given in session (15 accept; REQ-200 edit — a restrained theme built around the colour, not a fill; REQ-202 edit — Life Tracker inherits shared chrome, per-slice screenshot pair for review, no zero-pixel gate). Mockup scope confirmed: direction 1 only in this package.
 - Resume: merge the PR; `graph-implement` (the background build loop) claims the spec from `origin/main`. The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining` stays through the park; `graph-implement` removes it at claim time.
+- Resolved: 2026-09-24 by `gate-review` — 17/17 verdicts applied (15 accept, 2 edit). See `## Gate verdicts` below.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-200` | edit | "the chosen colour is the basis of a theme, not a fill. It informs the background wash, panel edges, focus rings, waiting panel and card-detail popup at a restrained intensity, with neutral surfaces still the majority and readability the first constraint (the three measured contrast floors stand). Retitle from 'palette-driven surface system / drives the whole app surface' to 'a theme built around the chosen colour'; keep the one named token set and the per-profile roles, since they are what makes the theme buildable. Drop the acceptance criterion that excludes Life Tracker from the token roles (see REQ-202)." |
+| `REQ-201` | accept | — |
+| `REQ-202` | edit | "Life Tracker inherits shared chrome changes (menu rail, brand mark, theme section, overlays, page shell) rather than pinning them. Its own screens, counters, layout and lib/lifeTracker/ state are untouched. Every slice that touches shared chrome, the token set, or the shared stylesheet attaches a Life Tracker before/after screenshot pair at 390x844 and 1440x900 to its PR for the owner to review; there is no zero-pixel gate." |
+| `REQ-203` | accept | — |
+| `REQ-204` | accept | — |
+| `REQ-205` | accept | — |
+| `REQ-044` | accept | — |
+| `REQ-046` | accept | — |
+| `REQ-060` | accept | — |
+| `REQ-099` | accept | — |
+| `REQ-124` | accept | — |
+| `REQ-129` | accept | — |
+| `REQ-130` | accept | — |
+| `REQ-167` | accept | — |
+| `REQ-056` | accept | — |
+| `NFR-011` | accept | — |
+| `FLOW-007` | accept | — |
+
+### Brief reconciliation
+
+- grep (superseded-behaviour phrases from the `REQ-200`/`REQ-202` edits, across
+  the package excluding `intake/` and `GRAPH-RUN.md`):
+  `grep -rnE 'pixel-identical|zero.differing.pixel|zero-pixel|is pinned|pinned to (today|its pre-redesign) value|visually pinned|Life Tracker keeps its own title|excluded from profile|present-day value|outside the profile|Palette-driven surface system|No Life Tracker change of any kind' DESIGN-BRIEF.md README.md GATE-QUESTIONS.md`
+- `GATE-QUESTIONS.md` `REQ-200` block — retitled "Palette-driven surface system" → "A theme built around the chosen colour"; description and acceptance criteria rewritten for restrained intensity / neutral-surfaces-majority; the criterion "Life Tracker is excluded: it resolves every shared role to its present-day value" dropped, per the `REQ-200` edit
+- `GATE-QUESTIONS.md` `REQ-200`'s `goals-and-non-goals.md` and `system-map.md` diff hunks — "driving the whole app surface" → "the basis of a restrained theme … with neutral surfaces kept the visual majority"; the `system-map.md` hunk's own cross-reference to `REQ-202` updated from "resolves every shared role to its present-day value" to "inherits every shared role like any other destination, reviewed by a before/after screenshot pair rather than pinned"
+- `GATE-QUESTIONS.md` `REQ-202` block — retitled "Life Tracker visual pin and zero-pixel drift gate" → "Life Tracker inherits shared chrome, reviewed by a screenshot pair at every touching slice"; description, acceptance criteria, constraints, and notes rewritten from a zero-pixel pin to shared-chrome inheritance with an owner-reviewed screenshot pair, per the `REQ-202` edit
+- `GATE-QUESTIONS.md` `REQ-060`/`REQ-046` amendment hunk — "Card-identity rings (REQ-058) and Life Tracker (REQ-202) stay outside the profile" → "Card-identity rings (REQ-058) stay outside the profile; Life Tracker (REQ-202) inherits the profile through shared chrome like every other destination, reviewed by a screenshot pair rather than pinned" (this `accept`-verdict block collaterally referenced the superseded `REQ-202` reading; fixed so the proposal stays internally consistent)
+- `GATE-QUESTIONS.md` `NFR-011` hunk — "Player Life Tracker is excluded from profile-driven surface changes and stays pixel-identical, verified by a zero-differing-pixel screenshot comparison…" → "Player Life Tracker inherits profile-driven shared chrome the same way every other destination does; its own screens, counters, and `lib/lifeTracker/` state stay untouched, and every slice that touches shared chrome or the token set attaches a before/after screenshot pair … for the owner's review"
+- `GATE-QUESTIONS.md` `FLOW-007` hunk (step 4 and Notes) — "Player Life Tracker is excluded and keeps its present-day appearance" → "Player Life Tracker's own screens keep their present-day appearance; the shared chrome it inherits … picks up the profile like every other destination, reviewed by a screenshot pair rather than pinned"; and the same "stay outside the profile" line fixed as in the `REQ-060`/`REQ-046` hunk
+- `GATE-QUESTIONS.md` `REQ-203` hunk — "Life Tracker is excluded — it keeps its own title and wires no tap count" → "Life Tracker shows the same redesigned brand mark as every other screen, inherited as shared chrome (REQ-202), but is excluded from the tap count" (the brand mark is shared chrome under the edited `REQ-202`, so the egg's exclusion is behavioural only, not visual)
+- `DESIGN-BRIEF.md:35` ("What the player gets") — "Life Tracker looks exactly as it does today, down to the pixel" → "Life Tracker's own screens, counters, and state stay exactly as they are today. Its shared chrome … inherits the redesign like every other destination; each slice … attaches a before/after screenshot pair for the owner to review" (REQ-202 edit)
+- `DESIGN-BRIEF.md` Life Tracker noise-floor paragraph — "This is what makes the pin in REQ-202 enforceable rather than aspirational" → "This is why the REQ-202 before/after screenshot pair is a clean signal … a differing pixel is a real change, not render noise" (REQ-202 edit)
+- `DESIGN-BRIEF.md` D3 — expanded to state the neutral-surfaces-majority rule explicitly and cite the `gate-review` verdict (REQ-200 edit)
+- `DESIGN-BRIEF.md` D6 — retitled "Life Tracker is pinned…" → "Life Tracker inherits shared chrome, reviewed by a screenshot pair"; assumption and evidence rewritten (REQ-202 edit)
+- `DESIGN-BRIEF.md` D9 — "Life Tracker keeps its own title and stays out" → "Life Tracker shows the same redesigned brand mark as every other screen … but is excluded from the tap count" (REQ-202 edit, via the REQ-203 cross-reference)
+- `DESIGN-BRIEF.md` Proposed-product-truth table, `REQ-200`/`REQ-202` rows — rewritten to the restrained-theme and inherit-with-review readings (both edits)
+- `DESIGN-BRIEF.md` "Life Tracker: how it is pinned…" section — retitled "… how it inherits shared chrome…"; all four numbered points rewritten from a zero-pixel pin to inheritance plus an owner-reviewed screenshot pair (REQ-202 edit)
+- `DESIGN-BRIEF.md` Non-goals guard rail — "No Life Tracker change of any kind, including shared-token drift" → "No change to Life Tracker's own screens … Shared-chrome drift is expected and reviewed by a screenshot pair … not blocked outright" (REQ-202 edit)
+- `DESIGN-BRIEF.md` Material assumptions row 4 — "Screenshot-diff tolerance is zero differing pixels" → "Life Tracker inherits shared chrome, reviewed by a before/after screenshot pair per touching slice, no automated diff threshold" (REQ-202 edit)
+- `README.md` top summary and "Refinement outputs" bullet — "Life Tracker pixel-identical" / "the Life Tracker pin" → "Life Tracker's own screens untouched … inherits shared chrome under owner review" (REQ-202 edit)
+- `README.md` — supersession note added: `intake/OWNER-INPUT.md`'s E1 answer ("(a) pixel-identical: pin every shared token Life Tracker consumes to today's value") is superseded by the `REQ-202` gate verdict
+
+- Re-grep after the rewrites (`DESIGN-BRIEF.md`, `README.md`, `GATE-QUESTIONS.md`): zero contradicting hits — the only remaining matches are the historical question text in `GATE-QUESTIONS.md`'s `REQ-202` "What this decides"/"In plain terms" lines and the owner's quoted `Reason:` (the record of what was asked and answered, not stated product truth), and the README supersession note's verbatim quote of the superseded intake line.
 
 ## Dispatch prompts
 
@@ -113,6 +163,22 @@ Grade `PRD/work/ui-reimagining/DESIGN-BRIEF.md` against PRD alignment and agent-
 Do not edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GRAPH-RUN.md`, or `PRD/sections/`; do not create map-out artifacts; do not self-certify. On FAIL set `STATUS.refining` (exactly one STATUS.* file) and move the board row in `PRD/work/STATUS.md` to `## refining`; on PASS leave `STATUS.refined` and the board row as they are. If you change the marker or the board, commit with explicit paths only (`git add PRD/work/ui-reimagining PRD/work/STATUS.md`; never `git add -A`, `--all`, or `.`) and `cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining && git push origin HEAD:thejudge-auto/ui-reimagining`. Never force-push. Use `cd <path> && git ...` forms, never `git -C`. Budget: this node has a cap of 60 tool calls. Copy the `Working directory:` line above, unchanged, into any prompt you write.
 
 Return: the verdict (PASS or FAIL), the complete findings list (or `none`), the commit hash if you committed, and `git status --porcelain` in the working directory and at the launch root.
+
+### gate-review
+
+graph is controlling. You are the gate-resolution node (`gate-review`) of graph run `graph-20260924-050744`, build half. Invoke the `graph-gate-review` skill (via the Skill tool) and follow it exactly.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining
+
+Package: `PRD/work/ui-reimagining/`, inside the working directory above, where the branch `thejudge-auto/ui-reimagining-work` is checked out. Never touch `/Users/chrismiho/Coding/Projects/TheJudge` itself — that is the launch checkout on `main`.
+
+State: the docs PR https://github.com/ChrisMiho/TheJudge/pull/236 is merged. `GATE-QUESTIONS.md` carries 17 `## <STABLE-ID>` blocks and every `- Verdict:` slot is filled (15 accept, 2 edit — REQ-200 and REQ-202, each with a `- Reason:`). `GRAPH-RUN.md` `## Open gate` is the answered `define` gate. The marker is `STATUS.owner-action`.
+
+Do, per the skill: apply every verdict inside `GATE-QUESTIONS.md` only, never in `PRD/sections/`. Carry each `edit` into `DESIGN-BRIEF.md` — enumerate the passages that still state the superseded behaviour by a grep you quote, rewrite each to the owner's rule in the owner's words, re-run the grep across the package (excluding `intake/` and `GRAPH-RUN.md`) and require zero contradicting hits. `intake/` is never edited; when a verbatim intake file still states the superseded behaviour, extend the README's intake pointer with one supersession note. Write `## Gate verdicts` with its `### Brief reconciliation` list in `GRAPH-RUN.md`, mark `## Open gate` resolved with the date and verdict count, and restore the lifecycle position: `STATUS.refined` as the only marker, the README `status:` field, and the `PRD/work/STATUS.md` board row under `## refined`.
+
+Commit on `thejudge-auto/ui-reimagining-work` with `cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining && git add <explicit paths> && git commit …` (never `git add -A`, `--all`, or `.`; never `git -C`), then `git push -u origin thejudge-auto/ui-reimagining-work`. Never run a `thejudge-*` skill, never dispatch a subagent, never edit `PRD/sections/`. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Report back, plain language first: the verdict split; per-ID verdicts with the owner's reasons quoted for both edits; the `### Brief reconciliation` list (the grep quoted, every passage rewritten as what it said → what it says now, the README note or none); the restored marker, status field, and board row; the commit SHA and push result; and the worktree's `git status --porcelain` output (must be empty). Outcome `ok` or `failed` with the exact failure.
 
 ## Instruction ledger
 

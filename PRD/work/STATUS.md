@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [ui-reimagining](ui-reimagining/) | `gate-review` resolved the `define` gate 2026-09-24: 17/17 verdicts applied (15 accept, 2 edit — REQ-200, REQ-202). Resume with `/graph-implement PRD/work/ui-reimagining/` at `gate-qc` |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [ui-reimagining](ui-reimagining/) | PARKED at the define gate: answer the 17 verdict slots in `ui-reimagining/GATE-QUESTIONS.md` (new REQ-200..REQ-205, amendments to REQ-044/046/056/060/099/124/129/130/167, NFR-011, FLOW-007), then merge the docs PR — that merge is the build signal. Build delivers mockup direction 1 + the rules, no app code |
 
 
 ## deferred

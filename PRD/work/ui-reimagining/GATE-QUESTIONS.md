@@ -50,18 +50,20 @@ form — the thing your UX-engineer friend called generic.
 +++ b/PRD/sections/functional-requirements.md
 @@ (new entry, inserted in numeric order after REQ-199)
 +### REQ-200
-+- Title: Palette-driven surface system
++- Title: A theme built around the chosen colour
 +- Priority: high
-+- Description: The selected colour profile must drive the whole app surface, not
-+  only primary accents. One authoritative token set replaces the four-token
-+  accent-only contract with named surface roles — page ground, raised panel
-+  fill, panel edge, colour wash, focus ring, and text — each supplied per
-+  profile, so choosing White, Blue, Black, Red, Green, or Colorless visibly
-+  changes the background wash, surface edges, focus rings, the Ask AI waiting
-+  panel, and the card-detail popup across shared chrome, Quick Question,
-+  In-Depth Question, and Trade Balancer. Dark values only in this pass; the
-+  token roles are named without reference to dark or light so a light theme is
-+  additive later rather than a second redesign.
++- Description: The selected colour profile is the basis of a restrained theme,
++  not a fill layered on top of the existing surface. One authoritative token
++  set replaces the four-token accent-only contract with named surface roles —
++  page ground, raised panel fill, panel edge, colour wash, focus ring, and
++  text — each supplied per profile, so choosing White, Blue, Black, Red, Green,
++  or Colorless visibly changes the background wash, surface edges, focus rings,
++  the Ask AI waiting panel, and the card-detail popup across shared chrome,
++  Quick Question, In-Depth Question, and Trade Balancer, at a restrained
++  intensity that keeps neutral surfaces (ground and panel fills) the visual
++  majority in every profile and readability the first constraint. Dark values
++  only in this pass; the token roles are named without reference to dark or
++  light so a light theme is additive later rather than a second redesign.
 +- Acceptance Criteria:
 +  - the token set covers at least these roles and every in-scope surface reads
 +    its colour from them rather than from a hard-coded zinc/slate value: page
@@ -72,6 +74,9 @@ form — the thing your UX-engineer friend called generic.
 +    profile through FLOW-007 visibly changes the background wash, at least one
 +    panel edge, the focus ring, the waiting panel, and the card-detail popup
 +    without resetting destination or workflow state
++  - the wash stays restrained: neutral ground and panel fills remain the visual
++    majority of every screen in every profile; the profile colour reads as a
++    wash, edges, rings, and accents, never as a dominant fill
 +  - measured contrast floors hold in all six profiles, at 390x844 and 1440x900,
 +    against the darkest and lightest point of that profile's wash: primary body
 +    text at least 14.37:1, accent text (`accent-soft` role) at least 6.19:1, and
@@ -86,11 +91,10 @@ form — the thing your UX-engineer friend called generic.
 +  - no token name encodes a theme mode, and no in-scope component hard-codes a
 +    zinc/slate colour value; adding a light theme later requires new values for
 +    the existing roles and no new component work
-+  - Life Tracker is excluded: it resolves every shared role to its present-day
-+    value (REQ-202)
 +  - tests cover the token set resolving per profile, one re-themed surface per
-+    in-scope flow, the measured contrast floors across all six profiles, and the
-+    Life Tracker pin
++    in-scope flow, and the measured contrast floors across all six profiles;
++    the Life Tracker inheritance and its screenshot-pair review are REQ-202's
++    gate, not this entry's
 +- Constraints:
 +  - one authoritative frontend source for the token set; no duplicated colour
 +    constants, no per-component theme overrides, no per-flow palettes
@@ -135,7 +139,7 @@ form — the thing your UX-engineer friend called generic.
 +++ b/PRD/sections/goals-and-non-goals.md
 @@ line 41
 -- predefined browser-local palette personalization hosted in the feature-portal Menu (DEC-066, DEC-110, REQ-044)
-+- predefined browser-local palette personalization hosted in the feature-portal Menu, driving the whole app surface — background wash, panel fills and edges, focus rings, waiting panel, card-detail popup — through one named token set (DEC-066, DEC-110, REQ-044, REQ-200)
++- predefined browser-local palette personalization hosted in the feature-portal Menu, the basis of a restrained theme across the app surface — background wash, panel fills and edges, focus rings, waiting panel, card-detail popup — through one named token set, with neutral surfaces kept the visual majority (DEC-066, DEC-110, REQ-044, REQ-200)
 @@ line 80
 -- arbitrary theme color input outside the Colorless-only custom RGB exception in DEC-119/REQ-099, per-component theme overrides, server-synced theme preferences, account-based theme settings, and dark/light mode redesign for theme customization (DEC-066, DEC-119)
 +- arbitrary theme color input outside the Colorless-only custom RGB exception in DEC-119/REQ-099, per-component theme overrides, server-synced theme preferences, and account-based theme settings (DEC-066, DEC-119). A **light theme** is no longer excluded outright: REQ-200 names theme-mode-agnostic token roles so light values can be added later, and this pass ships dark values only and adds no theme-mode control
@@ -146,7 +150,7 @@ form — the thing your UX-engineer friend called generic.
 +++ b/PRD/sections/system-map.md
 @@ line 221 (### Theme settings — Summary)
 -Palette reach extends beyond primary-accent surfaces to the page background end-stop (neutralized to slate, not palette-tinted), previously-fixed semantic green states, and the camera scanner UI.
-+Palette reach extends beyond primary-accent surfaces to previously-fixed semantic green states and the camera scanner UI. **REQ-200** extends it further to the whole surface through one named token set — page ground, colour wash, raised panel fill, panel edge, focus ring, and text roles — so the page background is palette-driven rather than neutralized to slate; Life Tracker resolves every shared role to its present-day value (REQ-202).
++Palette reach extends beyond primary-accent surfaces to previously-fixed semantic green states and the camera scanner UI. **REQ-200** extends it further to a restrained theme across the surface through one named token set — page ground, colour wash, raised panel fill, panel edge, focus ring, and text roles, with neutral surfaces kept the visual majority — so the page background is palette-driven rather than neutralized to slate; Life Tracker inherits every shared role like any other destination, reviewed by a before/after screenshot pair rather than pinned (REQ-202).
 -static chrome, card-identity rings, and tuned scanner motion stay neutral/unchanged
 +card-identity rings and tuned scanner motion stay unchanged; static chrome now reads the REQ-200 surface roles rather than staying neutral
 ```
@@ -264,42 +268,47 @@ everything else.
 +++ b/PRD/sections/functional-requirements.md
 @@ (new entry, after REQ-201)
 +### REQ-202
-+- Title: Life Tracker visual pin and zero-pixel drift gate
++- Title: Life Tracker inherits shared chrome, reviewed by a screenshot pair at
++  every touching slice
 +- Priority: high
-+- Description: Player Life Tracker must render pixel-identically before and
-+  after every step of the surface redesign. Every shared token, shared chrome
-+  component, and shared stylesheet rule that Life Tracker consumes resolves,
-+  inside the Life Tracker destination, to the value it has today. The pin lives
-+  with Life Tracker rather than as a carve-out inside each shared component.
++- Description: Player Life Tracker inherits shared chrome, the REQ-200 token
++  set, and shared stylesheet changes the same way every other destination
++  does — the menu rail, brand mark, theme section, overlays, and page shell.
++  Life Tracker's own screens, counters, layout, and `lib/lifeTracker/` state
++  are untouched by the redesign. Every slice that touches shared chrome, the
++  token set, or the shared stylesheet attaches a Life Tracker before/after
++  screenshot pair at 390x844 and 1440x900 to its PR, so the owner sees exactly
++  what changed before merging. There is no automated pixel-diff gate; the
++  owner's review on the PR is the check.
 +- Acceptance Criteria:
-+  - within the Life Tracker destination, every REQ-200 surface role and every
-+    shared chrome surface resolves to its pre-redesign value, independent of the
-+    selected colour profile, exactly as today
-+  - any change to shared chrome, the REQ-200 token set, or the shared stylesheet
-+    is accompanied by a Life Tracker screenshot comparison at 390x844 and
-+    1440x900 against the pre-change baseline, captured with the same viewport,
-+    profile, reduced-motion setting, and starting tracker state
-+  - the comparison passes only at **zero differing pixels**. Measured basis
-+    (2026-09-24, shipped app): repeat captures across a full page reload differ
-+    by 0 of 329,160 pixels at 390x844 and 0 of 1,296,000 at 1440x900, so no
-+    antialiasing allowance is needed and any non-zero diff is a real change
-+  - a non-zero diff blocks the change until the drift is pinned, or the owner
-+    explicitly approves that specific diff
++  - within the Life Tracker destination, shared chrome and every REQ-200
++    surface role resolve the same way they do everywhere else — no
++    destination-scoped override, no forked shared component, no pinned value
++  - any change to shared chrome, the REQ-200 token set, or the shared
++    stylesheet attaches a Life Tracker before/after screenshot pair at
++    390x844 and 1440x900 to its PR description, captured with the same
++    viewport, profile, reduced-motion setting, and starting tracker state
++  - the owner reviews the pair on the PR and approves or requests changes;
++    there is no automated diff threshold and no pixel count that blocks the
++    slice on its own
 +  - Life Tracker's one-screen fit at every supported player count (DEC-136) and
 +    its full-height counter panel (DEC-139) are unaffected
 +  - `lib/lifeTracker/` state, persistence, the commander-damage matrix, the
 +    counter palette, day/night, Game Setup, Reset/New Game, and the one-way MTG
-+    Assistant seed are untouched
-+  - automated coverage asserts the pin resolves shared roles to the pinned
-+    values inside Life Tracker while the same roles resolve to profile values
-+    outside it
++    Assistant seed are untouched by the redesign packages
++  - automated coverage asserts Life Tracker's own screens, counters, layout,
++    and `lib/lifeTracker/` state are unchanged by each redesign slice; the
++    shared-chrome inheritance itself is confirmed by the screenshot pair, not
++    by an automated pixel assertion
 +- Constraints:
-+  - the pin must not fork a shared component or add a per-destination size or
-+    style prop to one; it scopes values at the destination boundary
++  - Life Tracker must not fork a shared component or add a per-destination
++    override; it consumes shared chrome and the token set exactly as every
++    other destination does
 +  - no Life Tracker behaviour, copy, layout, or state change of any kind in the
 +    redesign packages
-+  - the screenshot comparison is a slice gate, not a CI job: it does not enter
-+    `npm run quality:check` and cannot fail an unrelated build
++  - the screenshot pair is a PR review attachment, not a CI job: it does not
++    enter `npm run quality:check`, cannot block a merge automatically, and
++    cannot fail an unrelated build
 +- Dependencies:
 +  - REQ-200
 +  - DEC-136
@@ -307,11 +316,14 @@ everything else.
 +  - REQ-081
 +  - NFR-001
 +- Notes:
-+  - one deliberate pass to bring Life Tracker onto the new look is explicitly
-+    deferred, not cut; it would be its own package with its own approval
++  - shared chrome changes reach Life Tracker automatically as each slice
++    ships, reviewed by the screenshot pair; there is no separate deferred
++    pass for shared chrome. Life Tracker's own screens remain a distinct,
++    not-yet-scheduled redesign, same as before
 +  - the baseline captures taken during refinement live in the work package's
-+    git-ignored `.playwright-mcp/` folder, so each build slice re-captures its
-+    baseline from its own merge base and records the pixel counts
++    git-ignored `.playwright-mcp/` folder; each build slice captures its own
++    before/after pair at merge time for the PR review, not as an automated
++    pixel-diff gate
 ```
 
 - Verdict: edit
@@ -361,8 +373,9 @@ brand mark on the other screens is inert.
 +    browser session, surviving destination switches
 +  - before the tenth tap the image is not in the document on any screen
 +  - the reveal is session-only: a reload clears it, exactly as today
-+  - Life Tracker is excluded — it keeps its own title and wires no tap count
-+    (REQ-202)
++  - Life Tracker shows the same redesigned brand mark as every other screen,
++    inherited as shared chrome (REQ-202), but is excluded from the tap count:
++    it wires no tap handler and never reveals the cat wizard on its own screen
 +  - whatever the brand mark becomes visually (REQ-201) keeps this trigger
 +  - the brand-mark tap target meets the 44px touch floor (REQ-205); a tap that
 +    reveals nothing yet changes no other state and never navigates
@@ -668,7 +681,7 @@ the background stays zinc no matter which colour is picked.
 +  - arbitrary RGB input is permitted only for Colorless under REQ-099; no per-component theme overrides, server-synced preferences, accounts, or theming-framework migration. Palette-driven backgrounds are now permitted and bounded by REQ-200's measured contrast floors; no theme-mode control or light-theme values ship in this pass
 @@ line 944 (REQ-046, Constraints)
 -  - static neutral slate chrome stays neutral by design; DEC-081 / REQ-060 permits restrained palette-derived treatment only on REQ-060's closed minimum surface inventory
-+  - the "static neutral slate chrome stays neutral by design" rule and REQ-060's closed surface inventory are **superseded by REQ-200**: static chrome now reads the REQ-200 surface roles. Card-identity rings (REQ-058) and Life Tracker (REQ-202) stay outside the profile
++  - the "static neutral slate chrome stays neutral by design" rule and REQ-060's closed surface inventory are **superseded by REQ-200**: static chrome now reads the REQ-200 surface roles. Card-identity rings (REQ-058) stay outside the profile; Life Tracker (REQ-202) inherits the profile through shared chrome like every other destination, reviewed by a screenshot pair rather than pinned
 @@ REQ-046 Dependencies
    - DEC-050
 +  - REQ-200
@@ -1028,7 +1041,7 @@ bar keeps a 4.5:1 promise weaker than what the app already achieves.
 +  - restrained ambient accents (DEC-081 / REQ-060) cover at least REQ-060's inventory, including DEC-118's context trigger/sheet/drawer and shared composer/workspace replacement surfaces, and must define resting, enhanced hover/focus, and selected/current intensity once through shared semantic styling. REQ-200 extends the reach to every in-scope surface; the define-once rule is unchanged
 @@ NFR-011 Constraints (new clause, after the reduced-text-size clause)
    - fluid responsive rules must not shrink body/supporting text below existing `text-sm` / `text-xs` or applicable primary controls below 44px touch targets
-+  - Player Life Tracker is excluded from profile-driven surface changes and stays pixel-identical, verified by a zero-differing-pixel screenshot comparison at 390x844 and 1440x900 (REQ-202)
++  - Player Life Tracker inherits profile-driven shared chrome the same way every other destination does; its own screens, counters, and `lib/lifeTracker/` state stay untouched, and every slice that touches shared chrome or the token set attaches a before/after screenshot pair at 390x844 and 1440x900 to its PR for the owner's review (REQ-202)
 @@ NFR-011 Dependencies
    - NFR-005
 +  - REQ-200
@@ -1067,10 +1080,10 @@ backed by `REQ-200`.)
 +++ b/PRD/sections/user-flows.md
 @@ FLOW-007, Main Flow step 4
 -  4. App immediately applies the selected profile to primary accents and the restrained resting/hover/focus/current treatments on REQ-060's closed minimum surface inventory without leaving the current workflow step.
-+  4. App immediately applies the selected profile to the whole surface — background wash, panel fills and edges, focus rings, the Ask AI waiting panel, and the card-detail popup — plus primary accents and the resting/hover/focus/current treatments on REQ-060's inventory, all without leaving the current workflow step (REQ-200). Player Life Tracker is excluded and keeps its present-day appearance (REQ-202).
++  4. App immediately applies the selected profile to the whole surface — background wash, panel fills and edges, focus rings, the Ask AI waiting panel, and the card-detail popup — plus primary accents and the resting/hover/focus/current treatments on REQ-060's inventory, all without leaving the current workflow step (REQ-200). Player Life Tracker's own screens keep their present-day appearance; the shared chrome it inherits (menu rail, brand mark, theme section) picks up the profile like every other destination, reviewed by a screenshot pair rather than pinned (REQ-202).
 @@ FLOW-007, Notes
 -  - only REQ-060's closed minimum surface inventory uses the restrained ambient hierarchy from DEC-081; static chrome and the dominant page background remain neutral
-+  - REQ-060's inventory is the minimum that carries the restrained ambient hierarchy from DEC-081; under REQ-200 static chrome and the dominant page background are profile-driven too, bounded by REQ-200's measured contrast floors. Card-identity rings (REQ-058) and Life Tracker (REQ-202) stay outside the profile
++  - REQ-060's inventory is the minimum that carries the restrained ambient hierarchy from DEC-081; under REQ-200 static chrome and the dominant page background are profile-driven too, bounded by REQ-200's measured contrast floors. Card-identity rings (REQ-058) stay outside the profile; Life Tracker (REQ-202) inherits the profile through shared chrome like every other destination
 @@ FLOW-007, Notes (appended)
    - DEC-119 / REQ-099 define the exact fixed token matrix and Colorless persistence/reset contract
 +  - dark values only in this pass; no theme-mode control exists and none is added (REQ-200)

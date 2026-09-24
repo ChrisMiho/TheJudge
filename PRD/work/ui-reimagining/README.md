@@ -1,14 +1,16 @@
-status: owner-action
+status: refined
 
 # ui-reimagining
 
 Re-imagine the UI of every player flow except Life Tracker — Menu and shared
 chrome, Quick Question, In-Depth Question, Trade Balancer — so the app reads
-as an arcane, premium, enchanting Magic tool with the chosen mana colour
-carrying through the whole surface, the owner's friction list fixed, Life
-Tracker pixel-identical, own motifs only (no Wizards of the Coast artwork),
-dark only this pass with tokens ready for light later, and three clickable
-HTML mockup directions approved before app code changes.
+as an arcane, premium, enchanting Magic tool built around the chosen mana
+colour at a restrained intensity, the owner's friction list fixed, Life
+Tracker's own screens and `lib/lifeTracker/` state untouched (it inherits
+shared chrome like every other destination, reviewed by a screenshot pair),
+own motifs only (no Wizards of the Coast artwork), dark only this pass with
+tokens ready for light later, and three clickable HTML mockup directions
+approved before app code changes.
 
 The owner answered every intake slot already; see `intake/OWNER-INPUT.md` and
 `intake/GRAPH-BRIEF.md` for the full detail, and `intake/inspiration/` for the
@@ -31,7 +33,8 @@ matches.
 
 - `DESIGN-BRIEF.md` — the design record: what the build delivers, the measured
   evidence from the live app, the settled decisions with their assumptions, the
-  grep-enumerated amendment set, and the Life Tracker pin.
+  grep-enumerated amendment set, and how Life Tracker inherits shared chrome
+  under an owner screenshot-pair review.
 - `GATE-QUESTIONS.md` — the proposed `PRD/sections/` changes, one block per
   stable ID with its complete diff and a verdict slot: new `REQ-200`–`REQ-205`
   and amendments to `REQ-044`, `REQ-046`, `REQ-056`, `REQ-060`, `REQ-099`,
@@ -44,6 +47,12 @@ matches.
 decision it raises is proposed at the `define` gate, not adopted from it. The
 documents and sites it cites (reference apps, past design passes, `docs/design/`
 files) are recorded as citations only and were not opened.
+
+Supersession note: `intake/OWNER-INPUT.md`'s E1 answer ("(a) pixel-identical:
+pin every shared token Life Tracker consumes to today's value") is superseded
+by the `gate-review` verdict on `REQ-202` (2026-09-24) — Life Tracker inherits
+shared chrome like every other destination, reviewed by a before/after
+screenshot pair at every touching slice, with no zero-pixel gate.
 
 Headline shaping call: this package's build delivers the **first mockup
 direction plus the approved rules, and no app code**. Directions 2–3 and the
