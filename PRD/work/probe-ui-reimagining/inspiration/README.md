@@ -1,12 +1,10 @@
 # Inspiration drop folder
 
-Put reference images here. Name the palette references exactly:
-
-`white.png` `blue.png` `black.png` `red.png` `green.png` `colorless.png`
-(any image extension is fine; the name before the dot is what matters)
-
-Anything else gets a descriptive name, for example `app-i-like-scryfall-search.png`.
-Then describe each file in `../OWNER-INPUT.md`, slot D1.
+Reference images live one folder per colour: `whiteMana/`, `blueMana/`,
+`blackMana/`, `redMana/`, `greenMana/`, `colorlessMana/`. Each folder holds the
+mana symbol (flat and as a sticker illustration) plus card art the owner picked.
+`DIGEST.md` here has a line per file and the three strongest per folder;
+`../OWNER-INPUT.md` slot D1 has the one-line read per colour.
 
 Images here are references for the design probe only. Nothing in this folder
 ships in the app. Whether the official mana symbols may appear in the app at
