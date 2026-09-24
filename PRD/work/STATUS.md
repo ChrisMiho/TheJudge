@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [ui-reimagining](ui-reimagining/) | Design brief + gate questions written; proposes new REQ-200..REQ-205 (colour drives the whole surface, own motifs, Life Tracker zero-pixel pin, suite-wide Easter egg, Trade Balancer phone tabs, 44px touch floor) and amends REQ-044/046/056/060/099/124/129/130/167, NFR-011, FLOW-007. Build delivers mockup direction 1 + the rules, no app code |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [ui-reimagining](ui-reimagining/) | Re-imagine every player flow except Life Tracker (Menu/shared chrome, Quick Question, In-Depth Question, Trade Balancer) as an arcane, premium mana-colour-driven Magic tool; owner intake fully answered, three mockup directions to come before app code |
 
 ## owner-action
 
