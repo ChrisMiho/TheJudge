@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [ui-reimagining](ui-reimagining/) | `gate-review` resolved the `define` gate 2026-09-24: 17/17 verdicts applied (15 accept, 2 edit — REQ-200, REQ-202). Resume with `/graph-implement PRD/work/ui-reimagining/` at `gate-qc` |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [ui-reimagining](ui-reimagining/) | `gate-qc` attempt 2 FAILed 2026-09-24: `GATE-QUESTIONS.md`'s `REQ-202` block still narrates the pre-verdict pixel-identical pin and a "must show zero differing pixels" automated test in its heading and "In plain terms" text, contradicting its own finalized diff, `DESIGN-BRIEF.md`, `README.md`, and `GRAPH-RUN.md`, all of which correctly say Life Tracker inherits shared chrome with a before/after screenshot pair and no zero-pixel gate. Needs a refinement pass to rewrite that narrative text before the re-grade can pass |
 
 ## ideation
 
