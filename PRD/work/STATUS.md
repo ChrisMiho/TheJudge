@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [ui-reimagining](ui-reimagining/) | Re-imagine every player flow except Life Tracker (Menu/shared chrome, Quick Question, In-Depth Question, Trade Balancer) as an arcane, premium mana-colour-driven Magic tool; owner intake fully answered, three mockup directions to come before app code |
 
 ## owner-action
 
