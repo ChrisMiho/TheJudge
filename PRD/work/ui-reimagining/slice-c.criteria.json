@@ -1,0 +1,54 @@
+{
+  "slug": "ui-reimagining",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "shared-chrome-menu.html renders both viewports with menu rail, brand mark, six-swatch Theme section, mock-mode banner, and working overlay demos",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/shared-chrome-menu.html"] }
+    },
+    {
+      "id": "C2",
+      "statement": "Clicking a Theme swatch visibly re-themes wash, panel edge, focus ring, and card-detail popup with no reload",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C3",
+      "statement": "Brand mark measures >=44px in its smaller dimension and uses a REQ-201 motif",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/shared-chrome-menu.html"] }
+    },
+    {
+      "id": "C4",
+      "statement": "Page embeds or links the slice-B before screenshot(s) for Menu/shared chrome",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/shared-chrome-menu.html"] }
+    },
+    {
+      "id": "C5",
+      "statement": "Life Tracker after render keeps its own counters/layout visually unchanged from before at both viewports",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C6",
+      "statement": "Life Tracker after screenshots exist and are referenced with their before counterparts",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/after"] }
+    },
+    {
+      "id": "C7",
+      "statement": "No official Wizards of the Coast artwork appears anywhere on the page or Life Tracker composite",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C8",
+      "statement": "Cleanup evidence recorded: browser closed, owned server stopped, ports released, capture path recorded",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

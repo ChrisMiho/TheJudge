@@ -1,0 +1,54 @@
+{
+  "slug": "ui-reimagining",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "tokens.css defines all eight named surface roles for each of the six profiles",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/tokens.css"] }
+    },
+    {
+      "id": "B2",
+      "statement": "Computed contrast meets the measured floors (14.37:1 / 6.19:1 / 5.42:1) in every profile against its darkest wash point",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "B3",
+      "statement": "No profile's wash renders darker than #09090B",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "B4",
+      "statement": "Neutral ground/panel fill is the visual majority in every profile at both viewports",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "B5",
+      "statement": "motifs/ holds one original local asset per colour; no official Wizards of the Coast artwork",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/motifs"] }
+    },
+    {
+      "id": "B6",
+      "statement": "shell.css is the single source of the chrome skeleton; no per-page duplicate",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/shell.css"] }
+    },
+    {
+      "id": "B7",
+      "statement": "All 12 before screenshots exist under mockups/before/, captured from the live dev app",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/before"] }
+    },
+    {
+      "id": "B8",
+      "statement": "Cleanup evidence recorded: browser closed, owned dev server stopped, ports released, capture path recorded",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [ui-reimagining](ui-reimagining/) | Mapped into 7 slices (A-G, `GAMEPLAN.md`): A applies the approved PRD truth (`REQ-200`-`REQ-205` new, 11 amendments); B builds the shared token/motif system and captures today's before screenshots; C/D/E/F build the direction-1 clickable mockups (shared chrome+Menu, Quick Question, In-Depth Question, Trade Balancer) in parallel once B lands, C also producing the Life Tracker before/after pair; G is the gallery + ship gates. No app code ships in this package |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| [ui-reimagining](ui-reimagining/) | Owner answered all 17 `define` gate slots (15 accept, 2 edit); `gate-review` applied them. Refinement attempt 2 (2026-09-24) rewrote the `REQ-200` and `REQ-202` plain-language narratives so they describe the finalized diffs — the chosen colour is the basis of a restrained theme with neutral surfaces still the majority, and Life Tracker inherits shared chrome under a before/after screenshot pair the owner reviews, with no zero-pixel gate. Awaiting the `gate-qc` re-grade |
 
 ## refining
 

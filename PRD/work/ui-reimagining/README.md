@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # ui-reimagining
 
@@ -57,3 +57,41 @@ screenshot pair at every touching slice, with no zero-pixel gate.
 Headline shaping call: this package's build delivers the **first mockup
 direction plus the approved rules, and no app code**. Directions 2–3 and the
 app-code redesign are follow-on packages — see `DESIGN-BRIEF.md`.
+
+## Slices
+
+| Slice | Goal | Status | Dependencies |
+| --- | --- | --- | --- |
+| [A — prd-truth-application](slice-a-prd-truth-application.md) | Apply the finalized `GATE-QUESTIONS.md` diffs (`REQ-200`-`REQ-205` new; nine amendments in `functional-requirements.md`, plus `NFR-011` and `FLOW-007`) to `PRD/sections/` by intent, exactly once | planned | parallel-ready — no dependency |
+| [B — design-system-and-baselines](slice-b-design-system-and-baselines.md) | Shared token/motif CSS every mockup page consumes (`REQ-200`, `REQ-201`), plus "before" screenshots of today's live app for every in-scope destination and Life Tracker at 390x844/1440x900 | planned | parallel-ready — no dependency |
+| [C — shared-chrome-and-menu-mockup](slice-c-shared-chrome-and-menu-mockup.md) | Clickable mockup of shared chrome and the Menu; produces the Life Tracker before/after pair proving `REQ-202` inheritance | planned | sequential — B |
+| [D — quick-question-mockup](slice-d-quick-question-mockup.md) | Clickable Quick Question mockup fixing `REQ-129` (Send Request in the first viewport at 5 cards) and `REQ-205` touch floors | planned | sequential — B |
+| [E — in-depth-question-mockup](slice-e-in-depth-question-mockup.md) | Clickable In-Depth Question mockup (every step) fixing `REQ-130` (>=3 zone tiles visible) and `REQ-205`; demonstrates `REQ-203`'s Easter-egg entry point | planned | sequential — B |
+| [F — trade-balancer-mockup](slice-f-trade-balancer-mockup.md) | Clickable Trade Balancer mockup implementing `REQ-204` (phone tabs; desktop unchanged) and `REQ-205` | planned | sequential — B |
+| [G — gallery-and-ship-gates](slice-g-gallery-and-ship-gates.md) | `mockups/index.html` gallery, PRD promotion checklist, no-app-code confirmation; carries the Ship gates block | planned | sequential — A, C, D, E, F |
+
+## Implementation map
+
+- `PRD/sections/functional-requirements.md`, `non-functional-requirements.md`,
+  `user-flows.md`, `goals-and-non-goals.md`, `system-map.md` — slice A, edited
+  (durable PRD truth: `REQ-200`-`REQ-205` new; `REQ-044/046/056/060/099/124/
+  129/130/167`, `NFR-011`, `FLOW-007` amended)
+- `mockups/tokens.css`, `mockups/motifs/`, `mockups/shell.css`,
+  `mockups/README.md`, `mockups/before/*.png` — slice B, new
+- `mockups/shared-chrome-menu.html`, `mockups/after/life-tracker-*.png` —
+  slice C, new
+- `mockups/quick-question.html` — slice D, new
+- `mockups/in-depth-question.html` — slice E, new
+- `mockups/trade-balancer.html` — slice F, new
+- `mockups/index.html` — slice G, new; the one entry point for the owner's
+  review, linking every mockup page and the Life Tracker before/after pair
+
+Full architecture, data flow, and verification checklist: `GAMEPLAN.md`.
+
+## Next step
+
+`/thejudge-implement PRD/work/ui-reimagining/ slice A` (Claude Code) or
+`$thejudge-implement PRD/work/ui-reimagining/ slice A` (Codex) — A and B are
+both valid starting points since neither depends on the other. For one
+unattended agent completing every slice,
+`/thejudge-implement-all PRD/work/ui-reimagining/`.

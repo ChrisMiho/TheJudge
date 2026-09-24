@@ -1,0 +1,66 @@
+{
+  "slug": "ui-reimagining",
+  "slice": "F",
+  "criteria": [
+    {
+      "id": "F1",
+      "statement": "Below 768px exactly one side renders at a time via a two-tab control, both totals and difference visible on either tab",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/trade-balancer.html"] }
+    },
+    {
+      "id": "F2",
+      "statement": "Switching tabs preserves each side's visible entries/quantities and does not reload the page",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "F3",
+      "statement": "At and above 768px both sides render side by side, matching today's shipped composition",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "F4",
+      "statement": "Tab control measures >=44px in its smaller dimension and shows a visible focus ring",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "F5",
+      "statement": "Per-side search input and Scan button each measure >=44px in their smaller dimension",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "F6",
+      "statement": "Both sides show real card names and real prices",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/trade-balancer.html"] }
+    },
+    {
+      "id": "F7",
+      "statement": "Page theme is visually consistent with slice C's token/motif system",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "F8",
+      "statement": "Page embeds or links the slice-B before screenshot for Trade Balancer",
+      "value": false,
+      "evidence": { "paths": ["PRD/work/ui-reimagining/mockups/trade-balancer.html"] }
+    },
+    {
+      "id": "F9",
+      "statement": "No official Wizards of the Coast artwork appears anywhere on the page",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "F10",
+      "statement": "Cleanup evidence recorded: browser closed, owned server stopped, ports released, capture path recorded",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}
