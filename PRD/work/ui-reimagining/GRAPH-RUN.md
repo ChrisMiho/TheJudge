@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/ui-reimagining` by the build half's claim on 2026-09-24)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining` (rewritten from `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining` by the build half's claim on 2026-09-24; branch `thejudge-auto/ui-reimagining-work` cut from `origin/main` at `8cbb9c7`)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260924-050744/`
-- Current node: `build` (attempt 2 — review loop 1 of 2: fix C5 and E2)
+- Current node: `review` (attempt 2)
 - Next action: `/graph-implement PRD/work/ui-reimagining/` (in flight)
 
 ## Node ledger
@@ -25,7 +25,8 @@
 | 5 | plan | sonnet | failed (driver return-side check) | `0 → 52` | commit `e8925ad` on `thejudge-auto/ui-reimagining-work` (pushed `2e44f5f..e8925ad`): `GAMEPLAN.md`, seven slices A–G (A applies the PRD truth; B tokens/motifs + before captures; C–F per-flow mockups, C carries the Life Tracker pair; G gallery + Ship gates), seven `slice-*.criteria.json` (62 criteria, 0 `true`, 31 manual), README `status: active` + slice table, marker `STATUS.active` (only marker), board row under `## active`; worktree and launch checkout porcelain empty. Driver rejected the artifact: `GAMEPLAN.md:84,103-107` and slices B–G place every committed deliverable (direction-1 pages, shared CSS/motifs, `before/`+`after/` screenshot pairs, gallery) under `PRD/work/ui-reimagining/mockups/`, which node 8 deletes with `git rm -r PRD/work/ui-reimagining/` on this branch before the owner merges — the deliverable would survive only in history; the cited hygiene rule (`runtime-process-hygiene.md:83-85`) covers disposable captures, not deliverables; precedent `docs/design/tab-icon/`. Placement is mechanics, not product truth → bounded `plan` attempt 2 re-homes the deliverables under `docs/design/ui-reimagining/` | 2026-09-24 |
 | 5 | plan (attempt 2) | sonnet | ok | `0 → 92` | commit `16a9f76` on `thejudge-auto/ui-reimagining-work` (pushed `19dcf58..16a9f76`): 14 package files rewritten (`GAMEPLAN.md`, README, slices B–G + criteria) so every committed deliverable lives under `docs/design/ui-reimagining/` (`README.md`; `direction-1/` tokens/shell CSS, `motifs/`, four flow pages; `before/` 12 captures; `after/` Life Tracker pair; gallery `index.html`) mirroring `docs/design/tab-icon/`; slice A untouched; driver grep for `mockups/` across GAMEPLAN/README/slices/criteria → zero hits; 62 criteria, 0 `true`; marker `STATUS.active`, board row under `## active`; `git diff --stat origin/main HEAD -- PRD/sections apps` empty; worktree porcelain empty, remote tip = local; launch checkout `main`, porcelain empty → `build` | 2026-09-24 |
 | 6 | build | sonnet | ok | `0 → 459` | seven milestone commits on `thejudge-auto/ui-reimagining-work`: A `f527ae9` (REQ-200..205 new + 11 amendments applied by intent across 7 `PRD/sections/` files, +398/−39; no new `DEC-`, no `Built:` line), B `aefff18` (`docs/design/ui-reimagining/direction-1/tokens.css`+`shell.css`, 6 motif SVGs, 12 `before/` captures; contrast floors measured in-browser, White got a distinct `--wash-tint`), C `43b3a74` (shared-chrome/Menu page with live re-theming; Life Tracker `after/` pair), D `329c06e` (Quick Question: Send Request bottom 732px vs 1067px with 5 cards), E `9bd370e` (In-Depth, 4 steps; 3 of 4 zone tiles visible; targets ≥44px; step order follows the live app, builder-flagged), F `e9a8253` (Trade Balancer phone tabs, desktop unchanged), G `8bac8a4` (gallery `index.html`, PRD re-check, `apps/` empty diff, `STATUS.ship-ready`, board row); PR https://github.com/ChrisMiho/TheJudge/pull/237 (`main` ← work branch, OPEN, MERGEABLE, `[THEJUDGE-AUTO][READY] …`, body opens plain-language, Life Tracker pair linked); criteria 62/62 `true` — self-reported (`.worktrees/.graph-evidence.jsonl` holds 0 entries for this run, the known build-half gap; `review` re-verifies); servers run as tracked background tasks, stopped via TaskStop, `browser_close` per slice (per `slice-*.evidence.md`); return-side: launch checkout `git status --porcelain` empty before and after (identical), `git diff --name-only e666899..HEAD` → 60 paths (7 `PRD/sections`, 24 `PRD/work`, 29 `docs/design`), `classifyBuildWrites` → `ok` all inside `.worktrees/implement-ui-reimagining/`; `git diff --stat origin/main HEAD -- apps` empty; remote tip = local `8bac8a4`; worktree porcelain empty | 2026-09-24 |
-| 7 | review | opus | failed (RETURN TO BUILD) | `0 → 84` | no-write reviewer (Plan-type subagent, no Write/Edit) over `git diff e666899..8bac8a4`: 60/62 criteria met with per-id evidence, 2 not met — Critical C5: `docs/design/ui-reimagining/direction-1/life-tracker-after.html:22-27,44-48,55-60` redraws Life Tracker's own screen (upright life numbers, one column at 390×844 showing 2 of 4 players, `gap: 0` square panels, `−`/`+` at the edges) so `after/life-tracker-*.png` contradict the before captures and the PR body's no-drift claim; Important E2: `direction-1/in-depth-question.html:160-180` zone tiles carry no detail popup (`grep -c 'overlay-backdrop\|overlay-panel'` → 0, `.thumb` inert); both flagged deviations ruled met (slice A's `screen-layout.md`/`trade-balancer/README.md` edits are inside the gate diffs; E1's list contradicts its own no-reorder clause, today's order governs); independently re-ran `npm run quality:check` (exit 0, 589/589), apps diff empty, no `Built:` line, no new `DEC-`, contrast/geometry re-measured in Chromium at both viewports; six Minor notes; nothing written (one ignored capture under `.playwright-mcp/`), no git mutation, browser closed, server stopped → loop 1 of 2 to `build` | 2026-09-24 |
+| 7 | review | opus | failed (RETURN TO BUILD) | `0 → 87` | no-write reviewer (Plan-type subagent, no Write/Edit) over `git diff e666899..8bac8a4`: 60/62 criteria met with per-id evidence, 2 not met — Critical C5: `docs/design/ui-reimagining/direction-1/life-tracker-after.html:22-27,44-48,55-60` redraws Life Tracker's own screen (upright life numbers, one column at 390×844 showing 2 of 4 players, `gap: 0` square panels, `−`/`+` at the edges) so `after/life-tracker-*.png` contradict the before captures and the PR body's no-drift claim; Important E2: `direction-1/in-depth-question.html:160-180` zone tiles carry no detail popup (`grep -c 'overlay-backdrop\|overlay-panel'` → 0, `.thumb` inert); both flagged deviations ruled met (slice A's `screen-layout.md`/`trade-balancer/README.md` edits are inside the gate diffs; E1's list contradicts its own no-reorder clause, today's order governs); independently re-ran `npm run quality:check` (exit 0, 589/589), apps diff empty, no `Built:` line, no new `DEC-`, contrast/geometry re-measured in Chromium at both viewports; six Minor notes; nothing written (one ignored capture under `.playwright-mcp/`), no git mutation, browser closed, server stopped → loop 1 of 2 to `build` | 2026-09-24 |
+| 6 | build (attempt 2) | sonnet | ok | `0 → 132` | two fix commits on `thejudge-auto/ui-reimagining-work`: `9326e79` slice C/C5 — `direction-1/life-tracker-after.html` now composes the before captures' real table pixels (`direction-1/life-tracker-table-{390x844,1440x900}.png`) under the new header, `after/life-tracker-*.png` recaptured, C5 evidence restated, PR body Life Tracker section corrected + a review-fixes section; `60e5f94` slice E/E2 — `direction-1/in-depth-question.html` gains a shared card-detail overlay with a corner control per zone tile (three tiles still visible at 390×844, Remove and detail controls 44×44); criteria 62/62 `true` (self-reported; evidence log still 0 entries for this run); static server port 8091 as a tracked task, stopped via TaskStop, `browser_close` called; builder notes Playwright MCP writes its per-navigation logs to the launch checkout's git-ignored `.playwright-mcp/` regardless of working directory and removed the three it caused; return-side: launch checkout porcelain empty before and after (identical), `git diff --name-only 58c1e78..60e5f94` → 11 paths, `classifyBuildWrites` → `ok`; `git diff --stat origin/main HEAD -- apps` empty; PR #237 OPEN, MERGEABLE, `[THEJUDGE-AUTO][READY] …`; marker `STATUS.ship-ready`; remote tip = local `60e5f94`; worktree porcelain empty | 2026-09-24 |
 
 ## Open gate
 
@@ -524,6 +525,81 @@ Per affected slice: set it `in-progress`, fix, re-run the slice verification and
 Budget: this node has a cap of 1200 tool calls. Copy the `Working directory:` line above, unchanged, into any prompt you write.
 
 Return: the fix commit SHAs and what each changed; the complete list of every path you wrote (relative to the working directory); what the new Life Tracker after images show versus the before captures, stated plainly; how the zone-tile popup opens; the PR body change; criteria totals per slice; cleanup evidence; `git status --porcelain` in the working directory and at the launch root (both must be empty); and the remote tip SHA. Outcome `ok` or `failed` with the exact failure.
+
+### review (attempt 2)
+
+graph is controlling. You are node 7 (`review`), attempt 2, of graph run `graph-20260924-050744`: a fresh-context, no-write reviewer. You hold no Write, Edit, or NotebookEdit tool and must not modify, stage, commit, push, or otherwise mutate anything in the repository; you never saw the build node's transcript and must not read `/private/tmp` task outputs. Grade the build against the slices' own stated acceptance criteria, nothing else.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining
+
+What you are reviewing: review attempt 1 graded the seven milestone commits `e666899..8bac8a4` (PR https://github.com/ChrisMiho/TheJudge/pull/237, `main` ← `thejudge-auto/ui-reimagining-work`) and found 60 of 62 criteria met, returning two findings to build — Critical C5 (the Life Tracker after pair redrew Life Tracker's own screen: upright life numbers, one column at 390×844 showing 2 of 4 players, square edge-to-edge panels, `−`/`+` at the edges) and Important E2 (the In-Depth zone tiles had no card-detail popup). Build attempt 2 answered with two fix commits, `9326e79` (slice C) and `60e5f94` (slice E), the range `58c1e78..60e5f94`, and reports that the after images now crop the real table pixels from the before captures under the new header, that each zone tile gained a corner detail control opening a shared overlay, that three tiles stay visible at 390×844 with 44px controls, and that the PR body's Life Tracker section was corrected. Grade that range: `git diff 58c1e78..60e5f94`, the delivered files under `docs/design/ui-reimagining/` (`direction-1/life-tracker-after.html`, `direction-1/life-tracker-table-*.png`, `after/life-tracker-*.png`, `direction-1/in-depth-question.html`), the slice docs and evidence logs for C and E, and the PR body.
+
+Rubric — slices C and E's own `## Acceptance criteria`, quoted verbatim below (double quotes rendered as single quotes). Decide C5 and E2 with your own evidence (compare `after/life-tracker-*.png` against `before/life-tracker-*.png` visually; open the served pages with a tracked static server and the browser tools, then close the browser and stop the server you started; write disposable captures only under `PRD/work/ui-reimagining/.playwright-mcp/` inside the working directory). Re-confirm the other C and E criteria the fix could have disturbed (C1, C2, C6, E2's three-visible-tiles geometry, E3's 44px floors, E9), and confirm the range touches nothing outside slices C and E, the package bookkeeping, and the PR body — slices A, B, D, F, G stand as attempt 1 verified them and need no re-grade unless this range changed their files. Re-run `npm run quality:check`.
+
+Severity rule: Critical is a correctness defect or a stated criterion not met in a way the owner would reject; Important is a stated criterion not met in a way a follow-on package would inherit; a preference, a style note, a wording nit, or an improvement outside the slices' stated requirements is Minor at most and never loops the run back to build. Do not manufacture findings. A third return would park the run, so be exact about what is and is not met.
+
+Budget: this node has a cap of 120 tool calls. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Return, plain language first: the verdict — APPROVE (no Critical or Important finding) or RETURN TO BUILD (each Critical/Important finding with slice, criterion id, file:line, and what would satisfy it); your rulings on C5 and E2 with the evidence you saw; the per-criterion results for slices C and E (18 rows); confirmation of what the range touched; the commands you re-ran with exit codes; Minor notes; and confirmation that you wrote nothing, mutated no git state, closed any browser, and stopped any server you started.
+
+## Acceptance criteria, quoted from the slice docs
+
+##### PRD/work/ui-reimagining/slice-c-shared-chrome-and-menu-mockup.md
+
+- [ ] C1 — `shared-chrome-menu.html` renders at 390x844 and 1440x900,
+      showing the menu rail/tray, brand mark, a six-swatch Theme section in
+      the correct order with Blue marked default, the mock-mode banner, and
+      working click-to-open demos of the feedback modal, history drawer,
+      View Context overlay, and card-detail popup.
+- [ ] C2 (manual) — clicking a Theme swatch visibly re-themes the wash, at
+      least one panel edge, the focus ring, and the card-detail popup on the
+      same page load, with no reload.
+- [ ] C3 — the brand mark element measures >=44px in its smaller dimension
+      and renders a `REQ-201` motif, not an official Wizards of the Coast
+      glyph/logo/card art.
+- [ ] C4 — the page visibly embeds or links the slice-B 'before' screenshot(s)
+      for the Menu/shared-chrome destination.
+- [ ] C5 (manual) — the Life Tracker 'after' render at both viewports keeps
+      Life Tracker's own counters and layout visually unchanged from the
+      'before' capture; only the surrounding chrome differs.
+- [ ] C6 — `docs/design/ui-reimagining/after/life-tracker-390x844.png` and
+      `docs/design/ui-reimagining/after/life-tracker-1440x900.png` exist and
+      are referenced together with their `before/` counterparts (in the page
+      or a short `docs/design/ui-reimagining/life-tracker-pair.md`/section)
+      for the owner's review.
+- [ ] C7 (manual) — no official Wizards of the Coast mana glyph, icon font,
+      logo, or card art appears anywhere on the page or in the Life Tracker
+      composite.
+- [ ] C8 — cleanup evidence: `browser_close` called; the dev server this
+      slice attached to (or started, if none was already running) is
+      stopped/released if owned by this slice; capture path recorded.
+
+##### PRD/work/ui-reimagining/slice-e-in-depth-question-mockup.md
+
+- [ ] E1 — clickable step navigation covers game context, zone collection,
+      zone confirmation, and the answered workspace, in that order, with no
+      step added, removed, merged, or reordered from today.
+- [ ] E2 — at 390x844, zone collection's strip shows at least 3 tiles
+      visible without scrolling, each keeping its Remove control, truncated
+      name, stack-position label where applicable, and detail popup.
+- [ ] E3 — at 390x844, the brand mark, turn-phase select, active-player
+      select, Confirm game-context, Back, Continue, and the zone checkbox
+      row's hit area each measure >=44px in the smaller dimension.
+- [ ] E4 (manual) — the brand mark is present and tappable on every step
+      shown, demonstrating the Easter-egg entry point.
+- [ ] E5 — the answered workspace shows real card names, real prices, and
+      real AI answer copy.
+- [ ] E6 (manual) — desktop composition keeps today's side-by-side panel
+      layout where it exists today.
+- [ ] E7 (manual) — the page's theme is visually consistent with slice C's
+      token/motif system.
+- [ ] E8 — the page embeds or links the slice-B 'before' screenshot(s) for
+      In-Depth Question.
+- [ ] E9 (manual) — no official Wizards of the Coast mana glyph, icon font,
+      logo, or card art appears anywhere on the page.
+- [ ] E10 — cleanup evidence: `browser_close` called; the dev server this
+      slice attached to (or started, if none was already running) is
+      stopped/released if owned by this slice; capture path recorded.
 
 ## Instruction ledger
 
