@@ -17,6 +17,9 @@
  *   --text-muted              secondary/supporting text
  *   --text-on-accent          text on a filled-accent control (REQ-099's
  *                            accent-contrast, kept at its measured floor)
+ *   --motif                   that profile's REQ-201 motif SVG, so a page can
+ *                            paint the current colour's art without knowing
+ *                            which profile is active
  *
  * Contrast floors (measured live 2026-09-24, DESIGN-BRIEF.md):
  *   --text-primary   on --surface-panel / --surface-ground >= 14.37:1
@@ -33,6 +36,7 @@
 
 :root,
 [data-profile="blue"] {
+  --motif: url("motifs/blue.svg");
   --accent: #0050d8;
   --accent-strong: #1e3a9c;
   --accent-soft: #38e1ff;
@@ -41,6 +45,7 @@
 }
 
 [data-profile="white"] {
+  --motif: url("motifs/white.svg");
   --accent: #ede7d6;
   --accent-strong: #b0a382;
   --accent-soft: #faf8f2;
@@ -49,6 +54,7 @@
 }
 
 [data-profile="black"] {
+  --motif: url("motifs/black.svg");
   --accent: #7c3aed;
   --accent-strong: #2e1a47;
   --accent-soft: #c77dff;
@@ -57,6 +63,7 @@
 }
 
 [data-profile="red"] {
+  --motif: url("motifs/red.svg");
   --accent: #c10230;
   --accent-strong: #7a0424;
   --accent-soft: #ff4d6d;
@@ -65,6 +72,7 @@
 }
 
 [data-profile="green"] {
+  --motif: url("motifs/green.svg");
   --accent: #0a7a42;
   --accent-strong: #0a5c33;
   --accent-soft: #4affa0;
@@ -73,6 +81,7 @@
 }
 
 [data-profile="colorless"] {
+  --motif: url("motifs/colorless.svg");
   --accent: #52525b;
   --accent-strong: #27272a;
   --accent-soft: #e4e4e7;

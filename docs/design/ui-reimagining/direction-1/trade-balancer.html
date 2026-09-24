@@ -6,53 +6,105 @@
 <title>Trade Balancer — direction 1</title>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="flow.css">
 <style>
-  .totals-bar {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.75rem;
-    margin: 1rem 0;
-    padding: 0.75rem 1rem;
-    background: var(--surface-panel);
-    border: 1px solid var(--surface-edge);
-    border-radius: 0.75rem;
-    font-weight: 600;
-  }
-  .totals-bar .diff { color: var(--accent-soft); }
+  .page-content { width: min(52rem, 92vw); }
+  .tb { display: grid; gap: 0.8rem; }
+  .flow-head .asof { font-size: 0.72rem; color: var(--text-muted); }
 
-  /* Below 768px: exactly one side's tab is shown at a time (REQ-204).
-     At and above 768px: both sides render side by side, tabs hidden —
-     protected desktop composition, unchanged by the phone tab treatment. */
-  .tab-control { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
-  .tab-control button {
-    min-height: 44px;
-    padding: 0.4rem 1rem;
-    border-radius: 0.6rem;
-    border: 1px solid var(--surface-edge);
-    background: var(--surface-panel);
-    color: var(--text-primary);
-    cursor: pointer;
+  /* ---- the scale: both sides on one beam, tilted toward the heavier side ---- */
+  .scale {
+    position: relative; overflow: hidden;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.6rem;
+    padding: 0.9rem 0.9rem 0.8rem; border-radius: 1.1rem; border: 1px solid var(--surface-edge);
+    background:
+      radial-gradient(70% 70% at 50% 30%, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 70%),
+      var(--surface-panel);
   }
-  .tab-control button[aria-selected="true"] {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--focus-ring) inset;
+  .scale::before { content: ""; position: absolute; inset: -30% -10% auto -10%; height: 150%; background: var(--motif) center / 60% no-repeat; opacity: 0.08; pointer-events: none; }
+  .scale > * { position: relative; z-index: 1; }
+  .pan { display: grid; gap: 0.1rem; }
+  .pan.b { text-align: right; }
+  .pan .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+  .pan .total { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; transition: color 200ms ease; }
+  .pan[data-heavy="true"] .total { color: var(--accent-soft); }
+  .pan .count { font-size: 0.72rem; color: var(--text-muted); }
+  .beam-wrap { display: grid; justify-items: center; gap: 0.35rem; min-width: 120px; }
+  .beam { width: 110px; height: 44px; }
+  .beam .bar { transform-origin: 55px 22px; transition: transform 320ms cubic-bezier(.2,.8,.2,1); }
+  .verdict { font-size: 0.82rem; font-weight: 600; text-align: center; white-space: nowrap; }
+  .verdict small { display: block; font-weight: 400; color: var(--text-muted); font-size: 0.72rem; white-space: normal; }
+  .verdict[data-even="true"] { color: var(--accent-soft); }
+  @media (max-width: 719px) {
+    .scale { grid-template-columns: 1fr 1fr; }
+    .beam-wrap { grid-column: 1 / -1; order: 3; }
+    .pan .total { font-size: 1.35rem; }
   }
-  .sides-wrap { display: block; }
-  .side-panel { display: none; }
-  .side-panel[data-active="true"] { display: block; }
-  @media (min-width: 768px) {
-    .tab-control { display: none; }
-    .sides-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-    .side-panel { display: block !important; }
-  }
+  .tolerance { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--text-muted); }
+  .tolerance .pills { display: flex; gap: 0.3rem; }
+  .tolerance button { min-height: 32px; padding: 0.15rem 0.6rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; }
+  .tolerance button[aria-pressed="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
 
-  .side-search-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
-  .side-search-row .field { flex: 1; }
-  .entry-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--surface-edge); }
-  .entry-row:last-child { border-bottom: none; }
-  .entry-name { font-weight: 600; }
-  .entry-price { color: var(--accent-soft); font-size: 0.85rem; }
-  .side-total { margin-top: 0.6rem; font-weight: 700; text-align: right; }
+  /* ---- sides: tabs on phone, two columns on desktop (REQ-204) ---- */
+  .side-tabs { display: flex; gap: 0.4rem; }
+  .side-tabs button { flex: 1; min-height: 44px; border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); font-size: 0.88rem; cursor: pointer; display: flex; justify-content: center; gap: 0.4rem; align-items: center; }
+  .side-tabs button b { color: var(--accent-soft); font-variant-numeric: tabular-nums; }
+  .side-tabs button[aria-selected="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
+  .sides { display: grid; gap: 0.8rem; }
+  .side { display: none; }
+  .side[data-active="true"] { display: grid; }
+  @media (min-width: 720px) {
+    .side-tabs { display: none; }
+    .sides { grid-template-columns: 1fr 1fr; align-items: start; }
+    .side { display: grid !important; }
+  }
+  .side { gap: 0.6rem; padding: 0.8rem; border-radius: 1rem; border: 1px solid var(--surface-edge);
+    background: radial-gradient(80% 50% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent) 0%, transparent 70%), var(--surface-panel); }
+  .side-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .side-head .name { font-size: 1rem; font-weight: 700; background: transparent; border: 0; border-bottom: 1px dashed transparent; color: var(--text-primary); padding: 0.1rem 0; width: 9rem; }
+  .side-head .name:hover, .side-head .name:focus { border-bottom-color: var(--accent-soft); outline: none; }
+  .side-head .attach { display: flex; gap: 0.35rem; }
+  .side-head .icon-chip { min-height: 40px; font-size: 0.8rem; padding: 0 0.6rem; }
+
+  .entries { display: grid; gap: 0.45rem; }
+  .entry { display: grid; grid-template-columns: 56px 1fr auto; gap: 0.6rem; align-items: center; padding: 0.45rem; border-radius: 0.75rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
+  .entry .card { position: relative; width: 56px; height: 78px; border-radius: 4px; overflow: hidden; cursor: pointer;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 35%, transparent), 0 8px 18px -8px color-mix(in srgb, var(--accent) 70%, #000); }
+  .entry .card img { width: 100%; height: 100%; object-fit: cover; }
+  .entry[data-foil="true"] .card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.35) 45%, rgba(120,200,255,0.25) 55%, transparent 70%); mix-blend-mode: screen; pointer-events: none; }
+  .entry .info { min-width: 0; display: grid; gap: 0.15rem; }
+  .entry .nm { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entry .printing { font-size: 0.72rem; color: var(--text-muted); display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
+  .entry .printing button { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.72rem; padding: 0; cursor: pointer; text-decoration: underline dotted; min-height: 24px; }
+  .entry .controls { display: flex; align-items: center; gap: 0.3rem; }
+  .entry .ctl { min-width: 32px; min-height: 32px; padding: 0 0.45rem; border-radius: 0.5rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-primary); font-size: 0.78rem; cursor: pointer; }
+  .entry .ctl[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel)); color: var(--accent-soft); }
+  .entry .qty { min-width: 1.4rem; text-align: center; font-variant-numeric: tabular-nums; font-size: 0.85rem; }
+  .entry .money { display: grid; justify-items: end; gap: 0.1rem; }
+  .entry .money .line { font-weight: 700; font-variant-numeric: tabular-nums; }
+  .entry .money .unit { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
+  .entry .x { border: 0; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; min-width: 32px; min-height: 32px; }
+  .entry .x:hover { color: var(--text-primary); }
+  .entry.cash .card { display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 30%, var(--surface-ground)); color: var(--accent-soft); font-weight: 700; font-size: 1.1rem; box-shadow: none; cursor: default; }
+  .entry.cash input { width: 6rem; min-height: 32px; }
+  .entry-empty { padding: 1rem; text-align: center; font-size: 0.85rem; color: var(--text-muted); border: 1px dashed color-mix(in srgb, var(--accent-soft) 45%, transparent); border-radius: 0.75rem; }
+  .side-foot { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; color: var(--text-muted); border-top: 1px solid var(--surface-edge); padding-top: 0.5rem; }
+  .side-foot b { color: var(--text-primary); font-size: 1rem; font-variant-numeric: tabular-nums; }
+  .side .search-pop { margin-top: -0.2rem; }
+
+  .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
+  .actions .btn { font-size: 0.85rem; }
+
+  /* printing picker (what "Change printing" opens) */
+  .printing-list { display: grid; gap: 0.3rem; margin-top: 0.6rem; }
+  .printing-list button { display: grid; grid-template-columns: 40px 1fr auto; gap: 0.6rem; align-items: center; text-align: left; padding: 0.35rem; border-radius: 0.6rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-primary); cursor: pointer; }
+  .printing-list button[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
+  .printing-list img { width: 40px; height: 56px; border-radius: 3px; object-fit: cover; }
+  .printing-list .set { font-size: 0.85rem; }
+  .printing-list .set small { display: block; color: var(--text-muted); font-size: 0.7rem; }
+  .printing-list .pr { font-size: 0.78rem; color: var(--accent-soft); text-align: right; white-space: nowrap; }
+
+  .foot-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 1.25rem; }
 </style>
 </head>
 <body>
@@ -68,65 +120,236 @@
   <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
 
   <main class="page-content">
-    <h1>Trade Balancer</h1>
-    <p class="text-muted">
+    <section class="tb">
+      <div class="flow-head">
+        <h1>Trade Balancer</h1>
+        <span class="asof">Prices as of 8 Sep 2026 · USD</span>
+      </div>
+
+      <!-- the scale -->
+      <div class="scale" id="scale">
+        <div class="pan a" id="pan-a">
+          <span class="label" id="lbl-a">Side A</span>
+          <span class="total" id="total-a">$0.00</span>
+          <span class="count" id="count-a"></span>
+        </div>
+        <div class="beam-wrap">
+          <svg class="beam" viewBox="0 0 110 44" aria-hidden="true">
+            <g class="bar" id="beam-bar">
+              <line x1="8" y1="22" x2="102" y2="22" stroke="var(--accent-soft)" stroke-width="2.5" stroke-linecap="round"/>
+              <path d="M8 22 l-4 8 h8 z M102 22 l-4 8 h8 z" fill="var(--accent-soft)"/>
+            </g>
+            <path d="M55 22 l-7 16 h14 z" fill="var(--accent)"/>
+            <circle cx="55" cy="22" r="3.5" fill="var(--surface-ground)" stroke="var(--accent-soft)" stroke-width="2"/>
+          </svg>
+          <div class="verdict" id="verdict"></div>
+        </div>
+        <div class="pan b" id="pan-b">
+          <span class="label" id="lbl-b">Side B</span>
+          <span class="total" id="total-b">$0.00</span>
+          <span class="count" id="count-b"></span>
+        </div>
+      </div>
+      <div class="tolerance">
+        <span>Call it even within</span>
+        <div class="pills" id="tolerance">
+          <button aria-pressed="false" data-t="0">$0</button>
+          <button aria-pressed="true" data-t="1">$1</button>
+          <button aria-pressed="false" data-t="5">$5</button>
+        </div>
+      </div>
+
+      <div class="side-tabs" role="tablist" aria-label="Trade side">
+        <button role="tab" aria-selected="true" data-side="a"><span id="tab-a">Side A</span><b id="tab-total-a"></b></button>
+        <button role="tab" aria-selected="false" data-side="b"><span id="tab-b">Side B</span><b id="tab-total-b"></b></button>
+      </div>
+
+      <div class="sides" id="sides"></div>
+
+      <div class="actions">
+        <button class="btn tap-target" id="swap">⇄ Swap sides</button>
+        <button class="btn tap-target" id="copy">Copy summary</button>
+        <button class="btn tap-target" id="clear">Start a new trade</button>
+      </div>
+    </section>
+
+    <p class="foot-note">
       Before: <a href="../before/trade-balancer-390x844.png">trade-balancer-390x844.png</a> ·
-      <a href="../before/trade-balancer-1440x900.png">trade-balancer-1440x900.png</a> — today's
-      shipped layout stacks both sides vertically; empty, that already spends
-      224px per side (Side A heading y 305, Side B heading y 529) before a
-      card is added. Resize below 768px to see the phone tab treatment; at
-      or above 768px both sides return to the protected side-by-side layout.
+      <a href="../before/trade-balancer-1440x900.png">trade-balancer-1440x900.png</a>.
+      Card images are the app's own corpus art via Scryfall (unchanged from today). Prices are demo values.
     </p>
-
-    <div class="totals-bar">
-      <span>Side A total: <strong id="total-a">$5.05</strong></span>
-      <span class="diff" id="diff">Difference: $0.90 (A ahead)</span>
-      <span>Side B total: <strong id="total-b">$4.15</strong></span>
-    </div>
-
-    <div class="tab-control" role="tablist" aria-label="Trade side">
-      <button role="tab" aria-selected="true" data-side="a">Side A</button>
-      <button role="tab" aria-selected="false" data-side="b">Side B</button>
-    </div>
-
-    <div class="sides-wrap">
-      <section class="card-panel side-panel" data-side-panel="a" data-active="true" aria-label="Side A">
-        <h2>Side A</h2>
-        <div class="side-search-row">
-          <input class="field tap-target" placeholder="Search to add a card" id="search-a">
-          <button class="btn tap-target" id="scan-a">Scan</button>
-        </div>
-        <div class="entry-row"><span class="entry-name">Sol Ring</span><span class="entry-price">$1.85 × 1</span></div>
-        <div class="entry-row"><span class="entry-name">Lightning Bolt</span><span class="entry-price">$3.20 × 1</span></div>
-        <div class="side-total">Side A total: $5.05</div>
-      </section>
-
-      <section class="card-panel side-panel" data-side-panel="b" aria-label="Side B">
-        <h2>Side B</h2>
-        <div class="side-search-row">
-          <input class="field tap-target" placeholder="Search to add a card" id="search-b">
-          <button class="btn tap-target" id="scan-b">Scan</button>
-        </div>
-        <div class="entry-row"><span class="entry-name">Llanowar Elves</span><span class="entry-price">$0.75 × 1</span></div>
-        <div class="entry-row"><span class="entry-name">Counterspell</span><span class="entry-price">$1.10 × 1</span></div>
-        <div class="entry-row"><span class="entry-name">Swords to Plowshares</span><span class="entry-price">$0.60 × 1</span></div>
-        <div class="side-total">Side B total: $4.15</div>
-      </section>
-    </div>
   </main>
 
+  <!-- printing picker: bottom sheet on phone, side panel on desktop -->
+  <div class="menu-tray-backdrop" id="pp-backdrop"></div>
+  <aside class="drawer-panel detail-panel" id="pp-panel" data-open="false" aria-label="Choose a printing">
+    <button class="icon-btn overlay-close tap-target" id="pp-close" aria-label="Close">✕</button>
+    <h2 id="pp-title">Choose a printing</h2>
+    <input class="field tap-target" placeholder="Filter by set name or code">
+    <div class="printing-list" id="pp-list"></div>
+  </aside>
+
+  <script src="flow.js"></script>
   <script>
-    document.querySelectorAll('.tab-control [role="tab"]').forEach((tab) => {
-      tab.addEventListener('click', () => {
-        const side = tab.dataset.side;
-        document.querySelectorAll('.tab-control [role="tab"]').forEach((t) =>
-          t.setAttribute('aria-selected', t === tab ? 'true' : 'false')
-        );
-        document.querySelectorAll('.side-panel').forEach((p) => {
-          p.setAttribute('data-active', p.dataset.sidePanel === side ? 'true' : 'false');
-        });
+    const { img, library, byName, openDetail } = window.FLOW;
+    const $ = (s) => document.getElementById(s);
+    const usd = (n) => '$' + n.toFixed(2);
+
+    // demo printings per card: set name · code · nonfoil / foil price
+    const PRINTINGS = {
+      'Lightning Bolt': [['Commander Legends: Baldur\'s Gate', 'CLB', 3.20, 6.90], ['Magic 2011', 'M11', 2.10, 24.00], ['Masters 25', 'A25', 2.40, 9.50]],
+      'Sol Ring': [['Commander 2021', 'C21', 1.85, null], ['Commander Masters', 'CMM', 1.60, 4.20], ['Secret Lair', 'SLD', 12.00, 38.00]],
+      'Llanowar Elves': [['Dominaria', 'DOM', 0.75, 3.10], ['Magic 2019', 'M19', 0.60, 2.40]],
+      'Swords to Plowshares': [['Commander Masters', 'CMM', 0.60, 1.90], ['Eternal Masters', 'EMA', 1.40, 11.00]],
+      'Counterspell': [['Commander Masters', 'CMM', 1.10, 2.80], ['Modern Horizons 2', 'MH2', 1.60, 5.40]],
+      'Rhystic Study': [['Commander Masters', 'CMM', 32.00, 41.00], ['Prophecy', 'PCY', 44.00, 320.00]],
+      'Path to Exile': [['Commander Masters', 'CMM', 2.40, 5.00]],
+      'Birds of Paradise': [['Ravnica Remastered', 'RVR', 6.10, 13.50]]
+    };
+    let uid = 0;
+    const entry = (name, side, opts = {}) => ({ id: ++uid, card: byName(name), side, printing: opts.printing || 0, foil: !!opts.foil, qty: opts.qty || 1 });
+    let entries = [
+      entry('Lightning Bolt', 'a'), entry('Sol Ring', 'a', { qty: 2 }),
+      entry('Llanowar Elves', 'b'), entry('Counterspell', 'b', { foil: true }), entry('Swords to Plowshares', 'b')
+    ];
+    let cash = { a: 0, b: 0 };
+    let names = { a: 'Side A', b: 'Side B' };
+    let tolerance = 1;
+    let activeSide = 'a';
+    let openSearch = null;
+
+    const unit = (e) => { const p = PRINTINGS[e.card.name][e.printing]; return e.foil ? p[3] : p[2]; };
+    const sideTotal = (s) => entries.filter((e) => e.side === s).reduce((t, e) => t + (unit(e) ?? 0) * e.qty, 0) + cash[s];
+
+    function render() {
+      const ta = sideTotal('a'), tb = sideTotal('b'), gap = Math.abs(ta - tb);
+      const heavy = ta === tb ? null : ta > tb ? 'a' : 'b';
+      const light = heavy === 'a' ? 'b' : 'a';
+      const even = gap <= tolerance;
+      $('total-a').textContent = usd(ta); $('total-b').textContent = usd(tb);
+      $('tab-total-a').textContent = usd(ta); $('tab-total-b').textContent = usd(tb);
+      $('lbl-a').textContent = names.a; $('lbl-b').textContent = names.b; $('tab-a').textContent = names.a; $('tab-b').textContent = names.b;
+      ['a', 'b'].forEach((s) => {
+        const n = entries.filter((e) => e.side === s).reduce((t, e) => t + e.qty, 0);
+        $('count-' + s).textContent = n + (n === 1 ? ' card' : ' cards') + (cash[s] ? ' + cash' : '');
+        $('pan-' + s).dataset.heavy = !even && heavy === s;
       });
+      // beam tilts toward the heavier side, capped at 9 degrees
+      const tilt = ta === tb ? 0 : Math.min(9, 2 + gap * 1.2) * (ta > tb ? -1 : 1);
+      $('beam-bar').style.transform = 'rotate(' + tilt + 'deg)';
+      const v = $('verdict');
+      v.dataset.even = even;
+      v.innerHTML = ta + tb === 0
+        ? 'Add cards to both sides'
+        : even
+          ? 'Even trade' + (gap > 0 ? '<small>' + names[heavy] + ' ahead by ' + usd(gap) + ', inside your $' + tolerance + ' window</small>' : '')
+          : names[heavy] + ' is ahead by ' + usd(gap) + '<small>' + names[light] + ' adds ' + usd(gap) + ' in cards or cash to even it</small>';
+
+      $('sides').innerHTML = ['a', 'b'].map((s) => {
+        const list = entries.filter((e) => e.side === s);
+        const rows = list.map((e) => {
+          const p = PRINTINGS[e.card.name][e.printing]; const u = unit(e);
+          return '<div class="entry" data-id="' + e.id + '" data-foil="' + e.foil + '">' +
+            '<div class="card" title="Card details"><img src="' + img(e.card.id) + '" alt="' + e.card.name + '"></div>' +
+            '<div class="info"><span class="nm">' + e.card.name + '</span>' +
+            '<span class="printing">' + p[0] + ' · ' + p[1] + ' <button data-act="printing">Change printing</button></span>' +
+            '<div class="controls">' +
+            '<button class="ctl" data-act="foil" aria-pressed="' + e.foil + '"' + (p[3] === null ? ' disabled title="No foil price"' : '') + '>Foil</button>' +
+            '<button class="ctl" data-act="dec" aria-label="Decrease quantity"' + (e.qty <= 1 ? ' disabled' : '') + '>−</button>' +
+            '<span class="qty">' + e.qty + '</span>' +
+            '<button class="ctl" data-act="inc" aria-label="Increase quantity">+</button>' +
+            '</div></div>' +
+            '<div class="money"><span class="line">' + (u === null ? '—' : usd(u * e.qty)) + '</span>' +
+            '<span class="unit">' + (u === null ? 'no foil price' : usd(u) + ' × ' + e.qty) + '</span>' +
+            '<button class="x" data-act="remove" aria-label="Remove ' + e.card.name + '">✕</button></div></div>';
+        }).join('');
+        const cashRow = cash[s] > 0 || openSearch === 'cash-' + s
+          ? '<div class="entry cash" data-side="' + s + '"><div class="card">$</div><div class="info"><span class="nm">Cash</span><span class="printing">Added to even the trade</span></div>' +
+            '<div class="money"><input class="field cash-in" inputmode="decimal" value="' + (cash[s] || '') + '" placeholder="0.00" aria-label="Cash on ' + names[s] + '"><button class="x" data-act="cash-remove" aria-label="Remove cash">✕</button></div></div>'
+          : '';
+        const searchOpen = openSearch === s;
+        return '<section class="side" data-side="' + s + '" data-active="' + (s === activeSide) + '" aria-label="' + names[s] + '">' +
+          '<div class="side-head"><input class="name" value="' + names[s] + '" aria-label="Rename ' + names[s] + '" data-side="' + s + '">' +
+          '<div class="attach"><button class="icon-chip tap-target" data-act="search" aria-expanded="' + searchOpen + '"><span class="glyph">＋</span> Add card</button>' +
+          '<button class="icon-chip tap-target"><span class="glyph">▣</span> Scan</button></div></div>' +
+          '<div class="search-pop' + (searchOpen ? ' open' : '') + '"><div class="search-row"><span class="glyph">⌕</span><input class="field tap-target side-search" placeholder="Search to add a card to ' + names[s] + '" autocomplete="off"></div><div class="search-results"></div></div>' +
+          '<div class="entries">' + (rows || '<div class="entry-empty">No cards on this side yet — add one, or scan it.</div>') + cashRow + '</div>' +
+          '<div class="side-foot"><button class="ctl icon-chip" style="min-height:32px;font-size:0.75rem" data-act="cash">＋ Add cash</button><span>' + names[s] + ' total <b>' + usd(sideTotal(s)) + '</b></span></div>' +
+          '</section>';
+      }).join('');
+      bindSides();
+    }
+
+    function bindSides() {
+      $('sides').querySelectorAll('.entry[data-id]').forEach((row) => {
+        const e = entries.find((x) => x.id === Number(row.dataset.id));
+        row.querySelector('.card').addEventListener('click', () => openDetail(e.card));
+        row.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => {
+          const a = b.dataset.act;
+          if (a === 'foil') e.foil = !e.foil;
+          if (a === 'inc') e.qty += 1;
+          if (a === 'dec') e.qty = Math.max(1, e.qty - 1);
+          if (a === 'remove') entries = entries.filter((x) => x !== e);
+          if (a === 'printing') return openPrinting(e);
+          render();
+        }));
+      });
+      $('sides').querySelectorAll('.side').forEach((sec) => {
+        const s = sec.dataset.side;
+        sec.querySelector('.name').addEventListener('change', (ev) => { names[s] = ev.target.value.trim() || ('Side ' + s.toUpperCase()); render(); });
+        sec.querySelector('[data-act="search"]').addEventListener('click', () => { openSearch = openSearch === s ? null : s; render(); if (openSearch === s) $('sides').querySelector('.side[data-side="' + s + '"] .side-search').focus(); });
+        sec.querySelector('[data-act="cash"]').addEventListener('click', () => { openSearch = 'cash-' + s; render(); sec = $('sides').querySelector('.side[data-side="' + s + '"]'); sec.querySelector('.cash-in')?.focus(); });
+        const cashIn = sec.querySelector('.cash-in');
+        if (cashIn) {
+          cashIn.addEventListener('input', () => { cash[s] = Math.max(0, parseFloat(cashIn.value) || 0); const el = cashIn; render(); const again = $('sides').querySelector('.side[data-side="' + s + '"] .cash-in'); if (again) { again.value = el.value; again.focus(); again.setSelectionRange(el.value.length, el.value.length); } });
+          sec.querySelector('[data-act="cash-remove"]').addEventListener('click', () => { cash[s] = 0; openSearch = null; render(); });
+        }
+        const input = sec.querySelector('.side-search'), results = sec.querySelector('.search-results');
+        const draw = () => {
+          const q = input.value.trim().toLowerCase();
+          const hits = library.filter((c) => !q || c.name.toLowerCase().includes(q)).slice(0, 4);
+          results.innerHTML = hits.map((c) => '<button type="button" data-n="' + c.name + '"><img src="' + img(c.id) + '" alt=""><span>' + c.name + '</span><span class="type">' + usd(PRINTINGS[c.name][0][2]) + '</span></button>').join('');
+          results.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { entries.push(entry(b.dataset.n, s)); openSearch = null; render(); }));
+        };
+        input.addEventListener('input', draw);
+        input.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { openSearch = null; render(); } });
+        if (openSearch === s) draw();
+      });
+    }
+
+    // ---- printing picker ----
+    let ppEntry = null;
+    function openPrinting(e) {
+      ppEntry = e;
+      $('pp-title').textContent = 'Printings of ' + e.card.name;
+      $('pp-list').innerHTML = PRINTINGS[e.card.name].map((p, i) =>
+        '<button aria-pressed="' + (i === e.printing) + '" data-i="' + i + '"><img src="' + img(e.card.id) + '" alt=""><span class="set">' + p[0] + '<small>' + p[1] + '</small></span><span class="pr">' + usd(p[2]) + '<br>' + (p[3] === null ? 'no foil price' : usd(p[3]) + ' foil') + '</span></button>').join('');
+      $('pp-list').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { ppEntry.printing = Number(b.dataset.i); if (PRINTINGS[ppEntry.card.name][ppEntry.printing][3] === null) ppEntry.foil = false; closePrinting(); render(); }));
+      document.documentElement.dataset.trayOpen = 'true'; $('pp-panel').dataset.open = 'true';
+    }
+    function closePrinting() { document.documentElement.dataset.trayOpen = 'false'; $('pp-panel').dataset.open = 'false'; }
+    $('pp-close').addEventListener('click', closePrinting);
+    $('pp-backdrop').addEventListener('click', closePrinting);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePrinting(); });
+
+    // ---- top-level controls ----
+    $('tolerance').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+      $('tolerance').querySelectorAll('button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true'); tolerance = Number(b.dataset.t); render();
+    }));
+    document.querySelectorAll('.side-tabs [role="tab"]').forEach((tab) => tab.addEventListener('click', () => {
+      activeSide = tab.dataset.side;
+      document.querySelectorAll('.side-tabs [role="tab"]').forEach((t) => t.setAttribute('aria-selected', t === tab));
+      render();
+    }));
+    $('swap').addEventListener('click', () => { entries.forEach((e) => { e.side = e.side === 'a' ? 'b' : 'a'; }); cash = { a: cash.b, b: cash.a }; names = { a: names.b, b: names.a }; render(); });
+    $('clear').addEventListener('click', () => { entries = []; cash = { a: 0, b: 0 }; openSearch = null; render(); });
+    $('copy').addEventListener('click', () => {
+      const line = (s) => names[s] + ' (' + usd(sideTotal(s)) + '): ' + entries.filter((e) => e.side === s).map((e) => e.qty + '× ' + e.card.name + (e.foil ? ' (foil)' : '')).join(', ') + (cash[s] ? ', cash ' + usd(cash[s]) : '');
+      const text = line('a') + '\n' + line('b') + '\n' + $('verdict').textContent;
+      (navigator.clipboard?.writeText(text) || Promise.resolve()).then(() => { $('copy').textContent = 'Copied'; setTimeout(() => { $('copy').textContent = 'Copy summary'; }, 1200); });
     });
+    render();
   </script>
 </body>
 </html>

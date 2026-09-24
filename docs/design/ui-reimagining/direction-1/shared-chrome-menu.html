@@ -6,28 +6,20 @@
 <title>Shared chrome &amp; Menu — direction 1</title>
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="flow.css">
 <style>
-  .swatch-white { background: #ede7d6; }
-  .swatch-blue { background: #0050d8; }
-  .swatch-black { background: #7c3aed; }
-  .swatch-red { background: #c10230; }
-  .swatch-green { background: #0a7a42; }
-  .swatch-colorless { background: #52525b; }
-  .demo-grid {
-    display: grid;
-    gap: 0.75rem;
-    margin-top: 1rem;
-  }
-  .demo-grid button { text-align: left; }
-  .motif-strip { display: flex; gap: 0.5rem; margin: 1rem 0; }
+  .demo-note { font-size: 0.8rem; color: var(--text-muted); }
+  .motif-strip { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.6rem 0 0; }
   .motif-strip img { width: 56px; height: 56px; border-radius: 0.5rem; border: 1px solid var(--surface-edge); }
+  .profile-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .card-panel h2 { font-size: 1rem; margin: 0 0 0.4rem; }
 </style>
 </head>
 <body data-tray-open="false">
   <header class="app-header">
     <div class="menu-rail">
       <button class="brand-mark tap-target" id="brand-mark" aria-label="TheJudge — tap 10 times anywhere in-scope to reveal the cat wizard">
-        <img id="brand-motif" src="motifs/blue.svg" alt="" aria-hidden="true">
+        <img class="brand-motif" src="motifs/blue.svg" alt="" aria-hidden="true">
         <span class="wordmark">TheJudge</span>
       </button>
     </div>
@@ -36,32 +28,29 @@
   <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
 
   <main class="page-content">
-    <h1>Shared chrome &amp; Menu — direction 1</h1>
-    <p class="text-muted">
+    <div class="flow-head">
+      <h1>Shared chrome &amp; Menu</h1>
+      <button class="icon-chip tap-target" id="open-menu-2"><span class="glyph">☰</span> Open the menu</button>
+    </div>
+    <p class="demo-note">
       Before: <a href="../before/menu-390x844.png">menu-390x844.png</a> ·
-      <a href="../before/menu-1440x900.png">menu-1440x900.png</a>. Open the
-      menu (top-right ☰) to see the Theme section and the four overlay
-      demos this page carries.
+      <a href="../before/menu-1440x900.png">menu-1440x900.png</a>. The header
+      above is the one every page shares (`shell.css`): the colour's motif
+      rides its right edge and a lit hairline runs its bottom. Open the menu
+      for the destinations, the Theme orbs, and the overlay demos.
     </p>
 
-    <div class="before-after">
-      <figure>
-        <img src="../before/menu-390x844.png" alt="Before: today's Menu at 390x844">
-        <figcaption>Before — today's shipped Menu (390×844)</figcaption>
-      </figure>
-      <figure>
-        <img src="../before/menu-1440x900.png" alt="Before: today's Menu at 1440x900">
-        <figcaption>Before — today's shipped Menu (1440×900)</figcaption>
-      </figure>
+    <div class="card-panel" style="margin:0.8rem 0;">
+      <h2>Try every colour</h2>
+      <div class="profile-row" id="profile-row"></div>
     </div>
 
-    <div class="card-panel" style="margin-bottom:1rem;">
+    <div class="card-panel" style="margin-bottom:0.8rem;">
       <h2>Life Tracker: shared chrome inherited, own screen untouched (REQ-202)</h2>
-      <p class="text-muted">
-        Life Tracker's own counters and layout are unchanged; only the
-        header chrome around them now reads this page's token set — see
-        <a href="life-tracker-after.html">life-tracker-after.html</a> for the
-        live composite.
+      <p class="demo-note">
+        Life Tracker's own counters and layout are unchanged; only the header
+        chrome around them reads this token set — see
+        <a href="life-tracker-after.html">life-tracker-after.html</a>.
       </p>
       <div class="before-after">
         <figure>
@@ -72,20 +61,12 @@
           <img src="../after/life-tracker-390x844.png" alt="After: Life Tracker with new shared chrome at 390x844">
           <figcaption>After — 390×844 (shared chrome only)</figcaption>
         </figure>
-        <figure>
-          <img src="../before/life-tracker-1440x900.png" alt="Before: Life Tracker at 1440x900">
-          <figcaption>Before — 1440×900</figcaption>
-        </figure>
-        <figure>
-          <img src="../after/life-tracker-1440x900.png" alt="After: Life Tracker with new shared chrome at 1440x900">
-          <figcaption>After — 1440×900 (shared chrome only)</figcaption>
-        </figure>
       </div>
     </div>
 
     <div class="card-panel">
       <h2>Original motif kit (REQ-201)</h2>
-      <p class="text-muted">One original asset per colour — no official Wizards of the Coast mana glyph, icon font, logo, or card art.</p>
+      <p class="demo-note">One original asset per colour — no official Wizards of the Coast mana glyph, icon font, logo, or card art.</p>
       <div class="motif-strip">
         <img src="motifs/white.svg" alt="White motif">
         <img src="motifs/blue.svg" alt="Blue motif">
@@ -97,30 +78,36 @@
     </div>
   </main>
 
-  <!-- Menu tray: Theme section + overlay demo entry points -->
+  <!-- Menu tray -->
   <div class="menu-tray-backdrop" id="tray-backdrop"></div>
   <nav class="menu-tray" id="menu-tray" aria-label="Feature destinations">
-    <h2>Menu</h2>
-    <ul class="tray-nav-list">
-      <li><button type="button">Quick Question</button></li>
-      <li><button type="button">In-Depth Question</button></li>
-      <li><button type="button">Life Tracker</button></li>
-      <li><button type="button">Trade Balancer</button></li>
-      <li><button type="button" id="open-feedback">Send feedback</button></li>
-    </ul>
-    <h3>Theme</h3>
-    <div class="theme-section" role="group" aria-label="Theme palettes">
-      <button class="theme-swatch swatch-white tap-target" data-profile-btn="white" aria-label="Theme: White"><span class="swatch-label">White</span></button>
-      <button class="theme-swatch swatch-blue tap-target" data-profile-btn="blue" aria-label="Theme: Blue" data-current="true"><span class="swatch-label">Blue</span></button>
-      <button class="theme-swatch swatch-black tap-target" data-profile-btn="black" aria-label="Theme: Black"><span class="swatch-label">Black</span></button>
-      <button class="theme-swatch swatch-red tap-target" data-profile-btn="red" aria-label="Theme: Red"><span class="swatch-label">Red</span></button>
-      <button class="theme-swatch swatch-green tap-target" data-profile-btn="green" aria-label="Theme: Green"><span class="swatch-label">Green</span></button>
-      <button class="theme-swatch swatch-colorless tap-target" data-profile-btn="colorless" aria-label="Theme: Colorless"><span class="swatch-label">Colorless</span></button>
+    <div class="tray-brand">
+      <span class="brand-mark">
+        <img class="brand-motif" src="motifs/blue.svg" alt="" aria-hidden="true">
+        <span><span class="wordmark">TheJudge</span><span class="tagline">MTG assistant</span></span>
+      </span>
+      <button class="icon-btn tap-target" id="tray-close" aria-label="Close menu">✕</button>
     </div>
-    <div class="demo-grid">
-      <button type="button" class="btn tap-target" id="open-history">Open conversation history (drawer demo)</button>
-      <button type="button" class="btn tap-target" id="open-context">Open View Context (overlay demo)</button>
-      <button type="button" class="btn tap-target" id="open-card-detail">Open card-detail popup (Sol Ring)</button>
+
+    <ul class="tray-nav-list">
+      <li><button type="button" aria-current="page"><span class="glyph">⚡</span><span>Quick Question<span class="hint">One card, one ruling, fast</span></span><span class="here">●</span></button></li>
+      <li><button type="button"><span class="glyph">◈</span><span>In-Depth Question<span class="hint">Set the board, then ask</span></span></button></li>
+      <li><button type="button"><span class="glyph">♥</span><span>Life Tracker<span class="hint">Totals for every player</span></span></button></li>
+      <li><button type="button"><span class="glyph">⚖</span><span>Trade Balancer<span class="hint">Weigh both sides in USD</span></span></button></li>
+    </ul>
+
+    <h3>Theme</h3>
+    <div class="theme-orbs" role="group" aria-label="Theme palettes" id="theme-orbs"></div>
+    <p class="theme-note" id="theme-note"></p>
+
+    <h3>More</h3>
+    <ul class="tray-nav-list">
+      <li><button type="button" id="open-feedback"><span class="glyph">✎</span><span>Send feedback<span class="hint">Tell us what's broken or missing</span></span></button></li>
+      <li><button type="button" id="open-history"><span class="glyph">◷</span><span>History<span class="hint">Past questions from this session</span></span></button></li>
+    </ul>
+    <div class="tray-links">
+      <button type="button" id="open-context">View Context demo</button>
+      <button type="button" id="open-card-detail">Card-detail demo</button>
     </div>
   </nav>
 
@@ -145,16 +132,6 @@
     </div>
   </div>
 
-  <!-- Card-detail popup -->
-  <div class="overlay-backdrop" id="card-detail-popup" data-open="false">
-    <div class="overlay-panel">
-      <button class="icon-btn overlay-close tap-target" data-close="card-detail-popup" aria-label="Close">✕</button>
-      <h2>Sol Ring</h2>
-      <p class="text-muted">Artifact — {1}, T: Add {C}{C}.</p>
-      <p class="accent-text">Price: $1.85 (nonfoil)</p>
-    </div>
-  </div>
-
   <!-- History drawer -->
   <aside class="drawer-panel" id="history-drawer" data-open="false" aria-label="Conversation history">
     <button class="icon-btn overlay-close tap-target" data-close="history-drawer" aria-label="Close">✕</button>
@@ -162,46 +139,51 @@
     <p class="text-muted">Past questions from this session appear here.</p>
   </aside>
 
+  <script src="flow.js"></script>
   <script>
     const body = document.body;
-    const trayBackdrop = document.getElementById('tray-backdrop');
     const menuToggle = document.getElementById('menu-toggle');
     function setTray(open) {
       body.setAttribute('data-tray-open', open ? 'true' : 'false');
       menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
     }
-    menuToggle.addEventListener('click', () => {
-      setTray(body.getAttribute('data-tray-open') !== 'true');
-    });
-    trayBackdrop.addEventListener('click', () => setTray(false));
+    menuToggle.addEventListener('click', () => setTray(body.getAttribute('data-tray-open') !== 'true'));
+    document.getElementById('open-menu-2').addEventListener('click', () => setTray(true));
+    document.getElementById('tray-close').addEventListener('click', () => setTray(false));
+    document.getElementById('tray-backdrop').addEventListener('click', () => setTray(false));
 
-    // Theme swatches — live re-theme, no reload (REQ-200 / FLOW-007 step 4)
-    document.querySelectorAll('[data-profile-btn]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const profile = btn.getAttribute('data-profile-btn');
-        document.documentElement.setAttribute('data-profile', profile);
-        document.querySelectorAll('[data-profile-btn]').forEach((b) =>
-          b.removeAttribute('data-current')
-        );
-        btn.setAttribute('data-current', 'true');
-        document.getElementById('brand-motif').src = 'motifs/' + profile + '.svg';
-      });
-    });
+    // Theme orbs — live re-theme, no reload (REQ-200 / FLOW-007 step 4)
+    const PROFILES = [
+      ['white', 'White', '#ede7d6', '#faf8f2', 'gilded filigree'],
+      ['blue', 'Blue', '#0050d8', '#38e1ff', 'charged vortex'],
+      ['black', 'Black', '#7c3aed', '#c77dff', 'decay with one hot glow'],
+      ['red', 'Red', '#c10230', '#ff4d6d', 'a burst inside darkness'],
+      ['green', 'Green', '#0a7a42', '#4affa0', 'forest vines, pinpoint glow'],
+      ['colorless', 'Colorless', '#52525b', '#e4e4e7', 'inscribed brass and bone']
+    ];
+    const orbs = document.getElementById('theme-orbs');
+    orbs.innerHTML = PROFILES.map(([id, name, orb, soft]) =>
+      '<button class="theme-orb tap-target" data-profile-btn="' + id + '" aria-label="Theme: ' + name + '" style="--orb:' + orb + ';--orb-soft:' + soft + ';--orb-motif:url(motifs/' + id + '.svg)"><span class="orb"></span>' + name + '</button>').join('');
+    document.getElementById('profile-row').innerHTML = PROFILES.map(([id, name]) => '<button class="icon-chip tap-target" data-profile-btn="' + id + '">' + name + '</button>').join('');
+    function setProfile(id) {
+      document.documentElement.setAttribute('data-profile', id);
+      document.querySelectorAll('[data-profile-btn]').forEach((b) => b.toggleAttribute('data-current', b.dataset.profileBtn === id));
+      document.querySelectorAll('.theme-orb').forEach((b) => b.setAttribute('data-current', b.dataset.profileBtn === id));
+      document.querySelectorAll('.brand-motif').forEach((i) => { i.src = 'motifs/' + id + '.svg'; });
+      const p = PROFILES.find((x) => x[0] === id);
+      document.getElementById('theme-note').innerHTML = '<b>' + p[1] + '</b> — ' + p[4] + '. Every screen follows.';
+    }
+    document.querySelectorAll('[data-profile-btn]').forEach((btn) => btn.addEventListener('click', () => setProfile(btn.dataset.profileBtn)));
+    setProfile('blue');
 
     // Generic overlay open/close
-    function openOverlay(id) {
-      document.getElementById(id).setAttribute('data-open', 'true');
-    }
-    function closeOverlay(id) {
-      document.getElementById(id).setAttribute('data-open', 'false');
-    }
-    document.getElementById('open-feedback').addEventListener('click', () => openOverlay('feedback-modal'));
-    document.getElementById('open-history').addEventListener('click', () => openOverlay('history-drawer'));
-    document.getElementById('open-context').addEventListener('click', () => openOverlay('context-overlay'));
-    document.getElementById('open-card-detail').addEventListener('click', () => openOverlay('card-detail-popup'));
-    document.querySelectorAll('[data-close]').forEach((btn) => {
-      btn.addEventListener('click', () => closeOverlay(btn.getAttribute('data-close')));
-    });
+    const openOverlay = (id) => document.getElementById(id).setAttribute('data-open', 'true');
+    const closeOverlay = (id) => document.getElementById(id).setAttribute('data-open', 'false');
+    document.getElementById('open-feedback').addEventListener('click', () => { setTray(false); openOverlay('feedback-modal'); });
+    document.getElementById('open-history').addEventListener('click', () => { setTray(false); openOverlay('history-drawer'); });
+    document.getElementById('open-context').addEventListener('click', () => { setTray(false); openOverlay('context-overlay'); });
+    document.getElementById('open-card-detail').addEventListener('click', () => { setTray(false); window.FLOW.openDetail(window.FLOW.byName('Sol Ring')); });
+    document.querySelectorAll('[data-close]').forEach((btn) => btn.addEventListener('click', () => closeOverlay(btn.getAttribute('data-close'))));
   </script>
 </body>
 </html>
