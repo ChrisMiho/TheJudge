@@ -5,61 +5,61 @@
     {
       "id": "E1",
       "statement": "Step navigation covers game context, zone collection, zone confirmation, answered workspace in today's order, none added/removed/merged/reordered",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/in-depth-question.html"] }
     },
     {
       "id": "E2",
       "statement": "At 390x844 zone collection's strip shows at least 3 tiles visible without scrolling, each keeping Remove, name, stack label, detail popup",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E3",
       "statement": "Brand mark, turn-phase select, active-player select, Confirm, Back, Continue, and zone checkbox hit area each measure >=44px",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E4",
       "statement": "Brand mark present and tappable on every step shown, demonstrating the Easter-egg entry point",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E5",
       "statement": "Answered workspace shows real card names, real prices, real AI answer copy",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/in-depth-question.html"] }
     },
     {
       "id": "E6",
       "statement": "Desktop composition keeps today's side-by-side panel layout where it exists today",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E7",
       "statement": "Page theme is visually consistent with slice C's token/motif system",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E8",
       "statement": "Page embeds or links the slice-B before screenshot(s) for In-Depth Question",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["docs/design/ui-reimagining/direction-1/in-depth-question.html"] }
     },
     {
       "id": "E9",
-      "statement": "No official Wizards of the Coast artwork appears anywhere on the page",
-      "value": false,
+      "statement": "No official Wizards of the Coast mana glyph, icon font, logo, or card art appears anywhere on the page",
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E10",
       "statement": "Cleanup evidence recorded: browser closed, owned server stopped, ports released, capture path recorded",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     }
   ]

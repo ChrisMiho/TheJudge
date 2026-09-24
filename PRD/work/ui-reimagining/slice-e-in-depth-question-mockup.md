@@ -1,6 +1,6 @@
 # Slice E — in-depth-question-mockup
 
-## Status: planned
+## Status: done
 
 ## Goal
 

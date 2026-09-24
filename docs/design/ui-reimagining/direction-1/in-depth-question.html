@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>In-Depth Question — direction 1</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<style>
+  .step-nav { display: flex; gap: 0.4rem; overflow-x: auto; margin: 1rem 0; }
+  .step-nav button {
+    flex: 0 0 auto;
+    min-height: 44px;
+    padding: 0.4rem 0.75rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--surface-edge);
+    background: var(--surface-panel);
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  .step-nav button[aria-current="step"] {
+    color: var(--text-primary);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--focus-ring) inset;
+  }
+  .step-panel { display: none; }
+  .step-panel.active { display: block; }
+
+  .paired-row { display: flex; flex-direction: column; gap: 0.75rem; }
+  @media (min-width: 640px) {
+    .paired-row { flex-direction: row; }
+    .paired-row > * { flex: 1; }
+  }
+  .field-group label { display: block; margin-bottom: 0.3rem; font-size: 0.85rem; color: var(--text-muted); }
+
+  .zone-checklist { display: flex; flex-direction: column; gap: 0.5rem; margin: 0.75rem 0; }
+  .zone-checklist label {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    min-height: 44px;
+    padding: 0 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--surface-edge);
+    cursor: pointer;
+  }
+  .zone-checklist input { width: 20px; height: 20px; }
+
+  .zone-tabs { display: flex; gap: 0.4rem; margin-bottom: 0.75rem; }
+  .zone-tabs button { min-height: 44px; padding: 0.4rem 0.9rem; border-radius: 0.6rem; border: 1px solid var(--surface-edge); background: var(--surface-panel); color: var(--text-primary); cursor: pointer; }
+  .zone-tabs button[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--focus-ring) inset; }
+
+  /* Zone-collection strip: narrowed tiles so >=3 are visible at 390px
+     without scrolling (REQ-130 as amended). */
+  .zone-strip { display: flex; gap: 0.5rem; overflow-x: auto; padding-bottom: 0.4rem; }
+  .zone-tile { position: relative; flex: 0 0 auto; width: 100px; display: flex; flex-direction: column; align-items: center; gap: 0.25rem; }
+  .zone-tile .thumb {
+    width: 92px; height: 128px; border-radius: 0.5rem; border: 1px solid var(--surface-edge);
+    background: linear-gradient(160deg, var(--accent), var(--accent-strong));
+    display: flex; align-items: center; justify-content: center; color: var(--text-on-accent); font-weight: 700; font-size: 0.9rem; cursor: pointer;
+  }
+  .zone-tile .name { font-size: 0.65rem; text-align: center; max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .zone-tile .stack-pos { position: absolute; top: 4px; left: 4px; background: var(--surface-ground); border-radius: 999px; font-size: 0.6rem; padding: 0.05rem 0.35rem; }
+  .zone-tile .remove { position: absolute; top: -6px; right: 2px; width: 22px; height: 22px; border-radius: 999px; border: 1px solid var(--surface-edge); background: var(--surface-panel); color: var(--text-primary); font-size: 0.7rem; cursor: pointer; }
+
+  .egg-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; }
+  .card-ref-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.5rem 0; }
+  .card-ref-row .thumb { width: 40px; height: 56px; border-radius: 0.3rem; flex: 0 0 auto; display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:var(--text-on-accent); background: linear-gradient(160deg, var(--accent), var(--accent-strong)); }
+  .price { color: var(--accent-soft); font-weight: 600; }
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="menu-rail">
+      <button class="brand-mark tap-target" id="brand-mark" aria-label="TheJudge — tap 10 times anywhere in-scope to reveal the cat wizard">
+        <img src="motifs/blue.svg" alt="" aria-hidden="true">
+        <span class="wordmark">TheJudge</span>
+      </button>
+    </div>
+    <button class="icon-btn tap-target" aria-label="Open menu">☰</button>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="page-content">
+    <p class="text-muted">
+      Before:
+      <a href="../before/in-depth-game-context-390x844.png">in-depth-game-context-390x844.png</a> ·
+      <a href="../before/in-depth-game-context-1440x900.png">in-depth-game-context-1440x900.png</a> ·
+      <a href="../before/in-depth-zone-collection-390x844.png">in-depth-zone-collection-390x844.png</a> ·
+      <a href="../before/in-depth-zone-collection-1440x900.png">in-depth-zone-collection-1440x900.png</a>
+    </p>
+    <p class="egg-note" id="egg-status">Brand-mark taps this page: 0 (demo counter — the real app's count is session-wide across every in-scope screen, REQ-203)</p>
+
+    <nav class="step-nav" aria-label="In-Depth Question steps">
+      <button data-step="game-context" aria-current="step">1. Game context</button>
+      <button data-step="zone-confirmation">2. Zone confirmation</button>
+      <button data-step="zone-collection">3. Zone collection</button>
+      <button data-step="answered">4. Answered</button>
+    </nav>
+
+    <section class="card-panel step-panel active" id="game-context" aria-label="Game context">
+      <h1>Game context</h1>
+      <div class="paired-row">
+        <div class="field-group">
+          <label for="turn-phase">Turn phase</label>
+          <select class="field tap-target" id="turn-phase">
+            <option>Untap</option>
+            <option>Upkeep</option>
+            <option>Draw</option>
+            <option selected>Pre Combat Main Phase</option>
+            <option>Combat</option>
+            <option>Post Combat Main Phase</option>
+            <option>End Step</option>
+            <option>Cleanup</option>
+          </select>
+        </div>
+        <div class="field-group">
+          <label for="active-player">Active player</label>
+          <select class="field tap-target" id="active-player">
+            <option selected>Player 1</option>
+            <option>Player 2</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top:1rem;">
+        <button class="btn primary tap-target" data-next="zone-confirmation">Confirm game context</button>
+      </div>
+    </section>
+
+    <section class="card-panel step-panel" id="zone-confirmation" aria-label="Zone confirmation">
+      <h1>Zone confirmation</h1>
+      <p class="text-muted">Select all zones that apply to your question.</p>
+      <div class="zone-checklist">
+        <label><input type="checkbox"> Stack</label>
+        <label><input type="checkbox" checked> Battlefield</label>
+        <label><input type="checkbox" checked> Hand</label>
+        <label><input type="checkbox"> Graveyard</label>
+        <label><input type="checkbox"> Exile</label>
+        <label><input type="checkbox"> Library</label>
+        <label><input type="checkbox"> Command Zone</label>
+      </div>
+      <div style="display:flex; gap:0.5rem;">
+        <button class="btn tap-target" data-next="game-context">Back</button>
+        <button class="btn primary tap-target" data-next="zone-collection">Continue</button>
+      </div>
+    </section>
+
+    <section class="card-panel step-panel" id="zone-collection" aria-label="Zone collection">
+      <h1>Add cards to zones</h1>
+      <p class="text-muted">Select a zone, then add cards by searching or scanning.</p>
+      <div class="zone-tabs">
+        <button aria-pressed="true">Battlefield</button>
+        <button aria-pressed="false">Hand</button>
+      </div>
+      <div class="search-row" style="display:flex; gap:0.5rem; margin-bottom:0.75rem;">
+        <input class="field tap-target" placeholder="Type to begin" style="flex:1;">
+        <button class="btn tap-target">Scan</button>
+      </div>
+      <div class="zone-strip" aria-label="Battlefield cards">
+        <div class="zone-tile">
+          <button class="remove tap-target" aria-label="Remove Sol Ring" style="width:22px;height:22px;">×</button>
+          <div class="thumb">SOL</div>
+          <div class="name">Sol Ring</div>
+        </div>
+        <div class="zone-tile">
+          <button class="remove tap-target" aria-label="Remove Llanowar Elves" style="width:22px;height:22px;">×</button>
+          <div class="thumb">ELV</div>
+          <div class="name">Llanowar Elves</div>
+        </div>
+        <div class="zone-tile">
+          <button class="remove tap-target" aria-label="Remove Swords to Plowshares" style="width:22px;height:22px;">×</button>
+          <div class="thumb">STP</div>
+          <div class="name">Swords to Plowshares</div>
+        </div>
+        <div class="zone-tile">
+          <button class="remove tap-target" aria-label="Remove Counterspell" style="width:22px;height:22px;">×</button>
+          <div class="thumb">CTR</div>
+          <div class="name">Counterspell</div>
+        </div>
+      </div>
+      <div style="display:flex; gap:0.5rem; margin-top:0.75rem;">
+        <button class="btn tap-target" data-next="zone-confirmation">Back</button>
+        <button class="btn primary tap-target" data-next="answered">Continue</button>
+      </div>
+    </section>
+
+    <section class="card-panel step-panel" id="answered" aria-label="Answered workspace">
+      <h1>In-Depth Question — answered</h1>
+      <div class="card-ref-row"><div class="thumb">SOL</div><div><strong>Sol Ring</strong><br><span class="price">$1.85 (nonfoil)</span></div></div>
+      <div class="card-ref-row"><div class="thumb">ELV</div><div><strong>Llanowar Elves</strong><br><span class="price">$0.75 (nonfoil)</span></div></div>
+      <p>
+        With Sol Ring and Llanowar Elves both on the battlefield in Pre
+        Combat Main Phase, Player 1 has {C}{C} available from Sol Ring
+        (tap, no cost) plus {G} from Llanowar Elves (tap, no cost) — three
+        mana total before casting anything else this main phase, assuming
+        neither creature is summoning-sick or otherwise unable to tap.
+      </p>
+      <button class="btn tap-target" data-next="game-context">Ask another question</button>
+    </section>
+  </main>
+
+  <script>
+    const steps = ['game-context', 'zone-confirmation', 'zone-collection', 'answered'];
+    function goTo(step) {
+      steps.forEach((s) => {
+        document.getElementById(s).classList.toggle('active', s === step);
+      });
+      document.querySelectorAll('.step-nav button').forEach((b) => {
+        if (b.dataset.step === step) {
+          b.setAttribute('aria-current', 'step');
+        } else {
+          b.removeAttribute('aria-current');
+        }
+      });
+    }
+    document.querySelectorAll('.step-nav button').forEach((b) => {
+      b.addEventListener('click', () => goTo(b.dataset.step));
+    });
+    document.querySelectorAll('[data-next]').forEach((b) => {
+      b.addEventListener('click', () => goTo(b.dataset.next));
+    });
+    document.querySelectorAll('.zone-tabs button').forEach((b) => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('.zone-tabs button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+        b.setAttribute('aria-pressed', 'true');
+      });
+    });
+
+    // Brand-mark Easter-egg entry point demo (REQ-203). This page's demo is
+    // a local, single-page tap count; the real app's count is session-wide
+    // across every in-scope screen — out of scope for a static mockup.
+    let taps = 0;
+    document.getElementById('brand-mark').addEventListener('click', () => {
+      taps += 1;
+      const status = document.getElementById('egg-status');
+      status.textContent = 'Brand-mark taps this page: ' + taps + (taps >= 10 ? ' — 🐱🧙 revealed (demo)' : ' (demo counter — the real app\'s count is session-wide across every in-scope screen, REQ-203)');
+    });
+  </script>
+</body>
+</html>
