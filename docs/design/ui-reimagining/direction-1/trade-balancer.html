@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade Balancer — direction 1</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<style>
+  .totals-bar {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin: 1rem 0;
+    padding: 0.75rem 1rem;
+    background: var(--surface-panel);
+    border: 1px solid var(--surface-edge);
+    border-radius: 0.75rem;
+    font-weight: 600;
+  }
+  .totals-bar .diff { color: var(--accent-soft); }
+
+  /* Below 768px: exactly one side's tab is shown at a time (REQ-204).
+     At and above 768px: both sides render side by side, tabs hidden —
+     protected desktop composition, unchanged by the phone tab treatment. */
+  .tab-control { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .tab-control button {
+    min-height: 44px;
+    padding: 0.4rem 1rem;
+    border-radius: 0.6rem;
+    border: 1px solid var(--surface-edge);
+    background: var(--surface-panel);
+    color: var(--text-primary);
+    cursor: pointer;
+  }
+  .tab-control button[aria-selected="true"] {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--focus-ring) inset;
+  }
+  .sides-wrap { display: block; }
+  .side-panel { display: none; }
+  .side-panel[data-active="true"] { display: block; }
+  @media (min-width: 768px) {
+    .tab-control { display: none; }
+    .sides-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .side-panel { display: block !important; }
+  }
+
+  .side-search-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .side-search-row .field { flex: 1; }
+  .entry-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; padding: 0.5rem 0; border-bottom: 1px solid var(--surface-edge); }
+  .entry-row:last-child { border-bottom: none; }
+  .entry-name { font-weight: 600; }
+  .entry-price { color: var(--accent-soft); font-size: 0.85rem; }
+  .side-total { margin-top: 0.6rem; font-weight: 700; text-align: right; }
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="menu-rail">
+      <button class="brand-mark tap-target">
+        <img src="motifs/blue.svg" alt="" aria-hidden="true">
+        <span class="wordmark">TheJudge</span>
+      </button>
+    </div>
+    <button class="icon-btn tap-target" aria-label="Open menu">☰</button>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="page-content">
+    <h1>Trade Balancer</h1>
+    <p class="text-muted">
+      Before: <a href="../before/trade-balancer-390x844.png">trade-balancer-390x844.png</a> ·
+      <a href="../before/trade-balancer-1440x900.png">trade-balancer-1440x900.png</a> — today's
+      shipped layout stacks both sides vertically; empty, that already spends
+      224px per side (Side A heading y 305, Side B heading y 529) before a
+      card is added. Resize below 768px to see the phone tab treatment; at
+      or above 768px both sides return to the protected side-by-side layout.
+    </p>
+
+    <div class="totals-bar">
+      <span>Side A total: <strong id="total-a">$5.05</strong></span>
+      <span class="diff" id="diff">Difference: $0.90 (A ahead)</span>
+      <span>Side B total: <strong id="total-b">$4.15</strong></span>
+    </div>
+
+    <div class="tab-control" role="tablist" aria-label="Trade side">
+      <button role="tab" aria-selected="true" data-side="a">Side A</button>
+      <button role="tab" aria-selected="false" data-side="b">Side B</button>
+    </div>
+
+    <div class="sides-wrap">
+      <section class="card-panel side-panel" data-side-panel="a" data-active="true" aria-label="Side A">
+        <h2>Side A</h2>
+        <div class="side-search-row">
+          <input class="field tap-target" placeholder="Search to add a card" id="search-a">
+          <button class="btn tap-target" id="scan-a">Scan</button>
+        </div>
+        <div class="entry-row"><span class="entry-name">Sol Ring</span><span class="entry-price">$1.85 × 1</span></div>
+        <div class="entry-row"><span class="entry-name">Lightning Bolt</span><span class="entry-price">$3.20 × 1</span></div>
+        <div class="side-total">Side A total: $5.05</div>
+      </section>
+
+      <section class="card-panel side-panel" data-side-panel="b" aria-label="Side B">
+        <h2>Side B</h2>
+        <div class="side-search-row">
+          <input class="field tap-target" placeholder="Search to add a card" id="search-b">
+          <button class="btn tap-target" id="scan-b">Scan</button>
+        </div>
+        <div class="entry-row"><span class="entry-name">Llanowar Elves</span><span class="entry-price">$0.75 × 1</span></div>
+        <div class="entry-row"><span class="entry-name">Counterspell</span><span class="entry-price">$1.10 × 1</span></div>
+        <div class="entry-row"><span class="entry-name">Swords to Plowshares</span><span class="entry-price">$0.60 × 1</span></div>
+        <div class="side-total">Side B total: $4.15</div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    document.querySelectorAll('.tab-control [role="tab"]').forEach((tab) => {
+      tab.addEventListener('click', () => {
+        const side = tab.dataset.side;
+        document.querySelectorAll('.tab-control [role="tab"]').forEach((t) =>
+          t.setAttribute('aria-selected', t === tab ? 'true' : 'false')
+        );
+        document.querySelectorAll('.side-panel').forEach((p) => {
+          p.setAttribute('data-active', p.dataset.sidePanel === side ? 'true' : 'false');
+        });
+      });
+    });
+  </script>
+</body>
+</html>

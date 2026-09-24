@@ -1,6 +1,6 @@
 # Slice F — trade-balancer-mockup
 
-## Status: planned
+## Status: done
 
 ## Goal
 

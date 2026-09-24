@@ -67,7 +67,7 @@ app-code redesign are follow-on packages — see `DESIGN-BRIEF.md`.
 | [C — shared-chrome-and-menu-mockup](slice-c-shared-chrome-and-menu-mockup.md) | Clickable mockup of shared chrome and the Menu; produces the Life Tracker before/after pair proving `REQ-202` inheritance | done | sequential — B |
 | [D — quick-question-mockup](slice-d-quick-question-mockup.md) | Clickable Quick Question mockup fixing `REQ-129` (Send Request in the first viewport at 5 cards) and `REQ-205` touch floors | done | sequential — B |
 | [E — in-depth-question-mockup](slice-e-in-depth-question-mockup.md) | Clickable In-Depth Question mockup (every step) fixing `REQ-130` (>=3 zone tiles visible) and `REQ-205`; demonstrates `REQ-203`'s Easter-egg entry point | done | sequential — B |
-| [F — trade-balancer-mockup](slice-f-trade-balancer-mockup.md) | Clickable Trade Balancer mockup implementing `REQ-204` (phone tabs; desktop unchanged) and `REQ-205` | planned | sequential — B |
+| [F — trade-balancer-mockup](slice-f-trade-balancer-mockup.md) | Clickable Trade Balancer mockup implementing `REQ-204` (phone tabs; desktop unchanged) and `REQ-205` | done | sequential — B |
 | [G — gallery-and-ship-gates](slice-g-gallery-and-ship-gates.md) | `docs/design/ui-reimagining/index.html` gallery, PRD promotion checklist, no-app-code confirmation; carries the Ship gates block | planned | sequential — A, C, D, E, F |
 
 ## Implementation map
