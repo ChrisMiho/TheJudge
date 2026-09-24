@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # ui-reimagining
 
@@ -20,6 +20,12 @@ matches.
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/ui-reimagining
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/ui-reimagining/DESIGN-BRIEF.md`
+- Findings: none
 
 ## Refinement outputs (2026-09-24)
 
