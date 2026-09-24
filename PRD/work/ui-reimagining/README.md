@@ -25,9 +25,9 @@ matches.
 
 ## Preparation gate
 
-- Quality-check: PASS
+- Quality-check: FAIL
 - Checked artifact: `PRD/work/ui-reimagining/DESIGN-BRIEF.md`
-- Findings: none
+- Findings: (attempt 2, 2026-09-24, Critical) `GATE-QUESTIONS.md` `## REQ-202` H2 title and its three plain-language lines (242–262) still narrate the rejected reading — a pixel-identical Life Tracker pin proved by an automated zero-differing-pixels check — contradicting the block's own finalized diff (inherits shared chrome; before/after screenshot pair per touching slice for the owner's review; no automated pixel-diff gate), `DESIGN-BRIEF.md` D6, and the README supersession note; the `## REQ-200` H2 title (16) has the same drift against its edit (restrained theme built around the chosen colour). Everything else clean: `git diff --stat origin/main HEAD -- PRD/sections` empty, no new `DEC-`, the 15 accept blocks internally consistent.
 
 ## Refinement outputs (2026-09-24)
 
