@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [ui-reimagining](ui-reimagining/) | All 7 slices (A-G) done. A applied the approved PRD truth (`REQ-200`-`REQ-205` new, 11 amendments) to `PRD/sections/`; B built the shared token/motif system and captured today's before screenshots; C/D/E/F built the direction-1 clickable mockups (shared chrome+Menu, Quick Question, In-Depth Question, Trade Balancer), C also producing the Life Tracker before/after pair; G is the gallery (`docs/design/ui-reimagining/index.html`) + ship gates, confirmed no `apps/frontend`/`apps/backend` diff. Code PR open for the owner's merge |
 
 ## active
 
