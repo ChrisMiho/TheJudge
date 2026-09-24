@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [ui-reimagining](ui-reimagining/) | Owner answered all 17 `define` gate slots (15 accept, 2 edit); `gate-review` applied them. Refinement attempt 2 (2026-09-24) rewrote the `REQ-200` and `REQ-202` plain-language narratives so they describe the finalized diffs — the chosen colour is the basis of a restrained theme with neutral surfaces still the majority, and Life Tracker inherits shared chrome under a before/after screenshot pair the owner reviews, with no zero-pixel gate. Awaiting the `gate-qc` re-grade |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| [ui-reimagining](ui-reimagining/) | `gate-qc` attempt 2 FAILed 2026-09-24: `GATE-QUESTIONS.md`'s `REQ-202` block still narrates the pre-verdict pixel-identical pin and a "must show zero differing pixels" automated test in its heading and "In plain terms" text, contradicting its own finalized diff, `DESIGN-BRIEF.md`, `README.md`, and `GRAPH-RUN.md`, all of which correctly say Life Tracker inherits shared chrome with a before/after screenshot pair and no zero-pixel gate. Needs a refinement pass to rewrite that narrative text before the re-grade can pass |
 
 ## ideation
 

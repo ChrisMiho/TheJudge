@@ -13,14 +13,14 @@ full measurement record is in `DESIGN-BRIEF.md`.
 
 ---
 
-## REQ-200 — the mana colour you pick becomes the whole screen, not just the buttons
+## REQ-200 — the colour you pick becomes a restrained theme, not just a button tint
 
 **What this decides:** whether the White / Blue / Black / Red / Green /
-Colorless colour a player picks in the Menu drives the entire surface — the
-background wash behind everything, the fill and edge of every panel, the ring
-around whatever they are typing in, the waiting panel while the AI thinks, and
-the card-detail popup — or stays what it is today, a tint on buttons and the
-wordmark.
+Colorless colour a player picks in the Menu is the basis of a restrained theme
+across the app — the background wash behind everything, the fill and edge of
+panels, the ring around whatever they are typing in, the waiting panel while
+the AI thinks, and the card-detail popup — or stays what it is today, a tint on
+buttons and the wordmark.
 
 **In plain terms:** today six palettes each set four colour slots — a main
 accent, a stronger one, a softer one, and the text colour that sits on a filled
@@ -31,8 +31,12 @@ pick, because two existing rules require exactly that (`REQ-046` and `REQ-060`
 both say the page background stays "palette-agnostic slate and is not
 palette-tinted"). This requirement replaces those four slots with one named set
 of surface roles — ground, raised panel, panel edge, colour wash, focus ring,
-text — so picking Red actually makes the app read red. The intensity is bounded
-by what is measured today, not by taste: body text keeps at least 14.37:1
+text — so picking Red changes how every screen in scope feels, not just its
+buttons. The colour is the basis of the theme, not a fill laid over the
+existing surface, and it stays restrained: neutral ground and panel fills remain the visual majority of
+every screen in every profile, and the colour reads as wash, edges, rings and
+accents, never as a dominant fill. Readability is the first constraint, bounded
+by what is measured today rather than by taste: body text keeps at least 14.37:1
 contrast (today's worst measured pairing, `#E2E8F0` on `#18181B`), accent text
 keeps at least 6.19:1 (today's worst, Red's `accent-soft` on the darkest
 background stop), and text on a filled accent button keeps at least 5.42:1
@@ -239,29 +243,36 @@ per-colour character in the 86 reference images you collected goes unused.
 
 ---
 
-## REQ-202 — Life Tracker does not move by a single pixel, and every slice proves it
+## REQ-202 — Life Tracker inherits the shared look, and you review a before/after pair every time
 
 **What this decides:** whether "Life Tracker untouched" means pinned to today's
-exact pixels, or inherits the new look and you approve each drift.
+exact pixels, or means Life Tracker inherits the new shared look like every
+other destination and you review each change before it merges.
 
 **In plain terms:** the Menu rail, the brand mark, the theme section, the
 overlay close buttons, the card popup and the page shell are shared by every
-destination, Life Tracker included. Any shared change reaches Life Tracker
-unless it is pinned. You chose reading (a) — pixel-identical, with one
-deliberate matching pass later if you want it (intake E1). This makes the pin a
-requirement and gives it a test: Life Tracker renders bit-identical, and every
-slice that touches shared chrome, the token set, or the shared stylesheet
-attaches a screenshot comparison at phone and desktop width that must show
-**zero** differing pixels. Zero is fair rather than harsh because it was
-measured: three captures at 390x844 and two at 1440x900, across full page
-reloads, differed by 0 pixels out of 329,160 and 0 out of 1,296,000. The
-renderer is deterministic here, so one changed pixel is a real change, not
-noise. (New; `DEC-136` keeps Life Tracker's one-screen fit, `DEC-139` its
-full-height counter panel.)
+destination, Life Tracker included. You chose inheritance: Life Tracker picks up
+those shared chrome changes, the new colour token set, and shared stylesheet
+changes exactly the way Quick Question or Trade Balancer does — no pinned
+values, no forked copy of a shared component. Its own screens, counters,
+layout, and saved game state (`lib/lifeTracker/`) stay untouched by the
+redesign. The check is your eyes, not a script: every slice that touches shared
+chrome, the token set, or the shared stylesheet attaches a Life Tracker
+before/after screenshot pair at phone width (390x844) and desktop width
+(1440x900) to its pull request, and you approve it or ask for changes. There is
+no automated pixel-diff gate and no pixel count that can block a slice on its
+own. The pair is a clean signal because the renderer was measured: three
+captures at 390x844 and two at 1440x900, across full page reloads, differed by 0
+pixels out of 329,160 and 0 out of 1,296,000 — so anything that moves in a pair
+is a real change worth your look, not render noise. (New; `DEC-136` keeps Life
+Tracker's one-screen fit at every player count, `DEC-139` its full-height
+counter panel.)
 
-**What happens if you say no:** Life Tracker drifts with the shared chrome, and
-the one screen your UX-engineer friend said was fine changes along with
-everything else.
+**What happens if you say no:** shared chrome changes still reach Life Tracker,
+but nothing shows you what moved — no before/after pair on any pull request, and
+no written promise that its own screens, counters, and saved game state stay
+untouched. The one screen your UX-engineer friend said was fine changes with
+nobody looking.
 
 ```diff
 --- a/PRD/sections/functional-requirements.md
