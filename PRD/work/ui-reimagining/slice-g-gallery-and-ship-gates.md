@@ -1,6 +1,6 @@
 # Slice G — gallery-and-ship-gates
 
-## Status: planned
+## Status: done
 
 ## Goal
 

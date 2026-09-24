@@ -5,43 +5,43 @@
     {
       "id": "G1",
       "statement": "index.html links all four flow mockup pages and the Life Tracker before/after pair, each labeled",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["docs/design/ui-reimagining/index.html"] }
     },
     {
       "id": "G2",
       "statement": "Every linked page opens without a console error and renders recognizably at both viewports",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "G3",
-      "statement": "REQ-200-REQ-205 and the eleven amendments are present in PRD/sections/, re-checked against GATE-QUESTIONS.md",
-      "value": false,
+      "statement": "REQ-200-REQ-205 and the eleven amendments are present in PRD/sections/, re-checked against GATE-QUESTIONS.md's finalized blocks",
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "G4",
       "statement": "No feature README Built: line was added or changed by this package",
-      "value": false,
+      "value": true,
       "evidence": { "command": "git diff.*sections/.*README" }
     },
     {
       "id": "G5",
       "statement": "git diff against the merge base for apps/frontend and apps/backend is empty",
-      "value": false,
+      "value": true,
       "evidence": { "command": "git diff.*apps/(frontend|backend)" }
     },
     {
       "id": "G6",
       "statement": "Package README names docs/design/ui-reimagining/index.html as the entry point for the owner's review",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/work/ui-reimagining/README.md"] }
     },
     {
       "id": "G7",
       "statement": "npm run quality:check passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run quality:check" }
     }
   ]
