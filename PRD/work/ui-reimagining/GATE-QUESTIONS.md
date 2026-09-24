@@ -151,8 +151,8 @@ form — the thing your UX-engineer friend called generic.
 +card-identity rings and tuned scanner motion stay unchanged; static chrome now reads the REQ-200 surface roles rather than staying neutral
 ```
 
-- Verdict:
-- Reason:
+- Verdict: edit
+- Reason: the chosen colour is the basis of a theme, not a fill. It informs the background wash, panel edges, focus rings, waiting panel and card-detail popup at a restrained intensity, with neutral surfaces still the majority and readability the first constraint (the three measured contrast floors stand). Retitle from 'palette-driven surface system / drives the whole app surface' to 'a theme built around the chosen colour'; keep the one named token set and the per-profile roles, since they are what makes the theme buildable. Drop the acceptance criterion that excludes Life Tracker from the token roles (see REQ-202)
 
 ---
 
@@ -230,8 +230,8 @@ per-colour character in the 86 reference images you collected goes unused.
 +    package's `intake/inspiration/`; none of them is a shipped product asset
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -314,8 +314,8 @@ everything else.
 +    baseline from its own merge base and records the pixel counts
 ```
 
-- Verdict:
-- Reason:
+- Verdict: edit
+- Reason: Life Tracker inherits shared chrome changes (menu rail, brand mark, theme section, overlays, page shell) rather than pinning them. Its own screens, counters, layout and lib/lifeTracker/ state are untouched. Every slice that touches shared chrome, the token set, or the shared stylesheet attaches a Life Tracker before/after screenshot pair at 390x844 and 1440x900 to its PR for the owner to review; there is no zero-pixel gate. Retitle accordingly and rewrite the criteria around the review pair, not the pin
 
 ---
 
@@ -403,8 +403,8 @@ brand mark on the other screens is inert.
 +  - refines header chrome only; the cat-wizard image is hidden by default and revealed session-only after 10 brand-mark taps counted across every in-scope screen (DEC-076, REQ-056, REQ-203)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -507,8 +507,8 @@ to one side keeps pushing the other side out of sight.
    (`screen-layout.md`, NFR-001)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -590,8 +590,8 @@ layouts later to fix them.
 +    tappable
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -626,8 +626,8 @@ light theme later means a second full redesign pass.
 +  - REQ-200 supersedes this requirement's accent-only reach: one palette choice now drives the whole surface through a named token set, and the "no dark/light mode redesign" constraint narrows to "no theme-mode control and no light values in this pass"
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -677,8 +677,8 @@ the background stays zinc no matter which colour is picked.
 +  - amended for the `ui-reimagining` pass (2026-09-24): REQ-200 supersedes the palette-agnostic-background half and the four-token-only constraint. The neutral backdrop was deliberate for this pass and is recorded here rather than deleted, so the reversal is auditable
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -726,8 +726,8 @@ stops at the edge of a six-item list.
 +  - amended for the `ui-reimagining` pass (2026-09-24): REQ-200 supersedes the closed-inventory ceiling and the palette-agnostic background. The resting / enhanced hover-focus / selected-current hierarchy, the "hover is never the sole carrier of state" rule, and the reduced-motion behaviour all survive unchanged and now apply across the whole surface
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -775,8 +775,8 @@ truth and cannot be built.
 +  - amended for the `ui-reimagining` pass (2026-09-24): REQ-200 adds surface roles per profile without changing any published hex value or the Colorless custom-RGB contract. Colorless's "artifact" reading — steel, brushed metal, a hint of warmth — is expressed through those new roles and REQ-201's motif language, not by editing Colorless's four published values
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -807,8 +807,8 @@ redesign on a technicality.
 +  - amended for the `ui-reimagining` pass (2026-09-24): the "no theme/typography/brand redesign" constraint is scoped to this requirement's own change. The `min(48rem, 92vw)` cap and its 768px-at-1440px measurement are unchanged and still bind the redesign
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -864,8 +864,8 @@ Request off the bottom of the phone screen.
 +| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-129, REQ-132, REQ-133, REQ-141, REQ-167, REQ-174, REQ-200, FLOW-024.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -924,8 +924,8 @@ under two cards at a glance.
 +| Notes | DEC-050, DEC-151, DEC-160, REQ-125, REQ-128–130, REQ-141, REQ-200, DEC-145.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -953,8 +953,8 @@ later pass re-measures toward the layout you just asked to change.
 +  - Screen-layout's "Quick Question — pre-submit" row was re-measured for the multi-card add strip on 2026-08-30 and again on 2026-09-24. The 2026-08-30 reading accepted page scroll past the composer with 2+ cards attached; the `ui-reimagining` pass withdraws that (REQ-129 as amended) and binds the attached-card region so Send Request stays in the first viewport at all five cards. That row is the authority; this note is no longer an instruction to re-measure.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -993,8 +993,8 @@ stays on one step.
 +  - amended for the `ui-reimagining` pass (2026-09-24): the Easter egg's trigger widens from the game-context step to every in-scope screen under one session-wide tap count (REQ-203). The session-only scope, the asset, and the hidden-on-initial-render behaviour are unchanged, and the egg is protected scope through the redesign.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -1039,8 +1039,8 @@ bar keeps a 4.5:1 promise weaker than what the app already achieves.
 +  - amended for the `ui-reimagining` pass (2026-09-24): the contrast bar is now the app's own measured worst cases rather than a generic 4.5:1, so the redesign cannot regress readability. The three figures were measured in the shipped app, not chosen.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 
@@ -1076,8 +1076,8 @@ backed by `REQ-200`.)
 +  - dark values only in this pass; no theme-mode control exists and none is added (REQ-200)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner approved 2026-09-24 in session, taking the driver's recommendation
 
 ---
 

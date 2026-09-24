@@ -23,7 +23,8 @@
 - Question: answer `PRD/work/ui-reimagining/GATE-QUESTIONS.md` (17 verdict slots: new REQ-200..REQ-205; in-place REQ-044/046/056/060/099/124/129/130/167, NFR-011, FLOW-007), then merge the docs PR to build. One scope call without a slot: the build delivers mockup direction 1 plus the rules, no app code — say on the PR if all three directions should land in one package.
 - Evidence: `gate-qc` PASS on attempt 1 (row 4); README `## Preparation gate` reads PASS / none; docs PR: see `- PR:` below.
 - PR: https://github.com/ChrisMiho/TheJudge/pull/236 (docs-only, `thejudge-auto/ui-reimagining` → `main`, opened by `gh pr create` at `864ee7e`)
-- Resume: answer the slots and merge the PR; `graph-implement` (the background build loop) claims the spec from `origin/main`. The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining` stays through the park; `graph-implement` removes it at claim time.
+- Verdicts: all 17 slots filled by the driver on 2026-09-24 from the owner's answers given in session (15 accept; REQ-200 edit — a restrained theme built around the colour, not a fill; REQ-202 edit — Life Tracker inherits shared chrome, per-slice screenshot pair for review, no zero-pixel gate). Mockup scope confirmed: direction 1 only in this package.
+- Resume: merge the PR; `graph-implement` (the background build loop) claims the spec from `origin/main`. The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining` stays through the park; `graph-implement` removes it at claim time.
 
 ## Dispatch prompts
 
