@@ -69,3 +69,47 @@ mockup — Life Tracker's own redesign is out of scope for this pass.
 
 `index.html` is the one page to open for the full review: it links every
 mockup above and the Life Tracker before/after pair.
+
+## Iteration log (owner-in-the-loop rework)
+
+The graph build (PR #237, commits `f527ae9..60e5f94`) met every slice
+criterion but the owner rejected the mockups' feel on 2026-09-24: shared chrome
+looked unchanged, cards were lettered chips instead of card art, In-Depth lost
+its questions and context, Trade Balancer had no card images. The pages are now
+being reworked **one flow at a time with the owner reacting to each render**,
+on this same branch, before anything is handed back to the graph. When all
+four flows are agreed, the agreed pages plus one written rule per flow become
+the intake for the next kickoff (product truth + app code).
+
+How to work on it: serve this folder (`python3 -m http.server 8137 --bind
+127.0.0.1` from `docs/design/ui-reimagining/`), open a page, screenshot at
+390×844 and 1440×900, show the owner, adjust. Card images are the app's own
+representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
+ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
+
+### Quick Question — agreed direction (2026-09-24)
+
+- Rule for this flow: **the attached card is the hero.** One real card image
+  centre stage on a lit, theme-coloured surface; the other attached cards sit
+  behind it on either side, scaled down and dimmed; arrows on each side (and
+  ←/→ keys, or tapping a background card) rotate which card is front.
+- Caption under the card: name · type · price. Details / Remove under that.
+- Composer below the stage: question box, then a row of `+ Card` and `Scan`
+  chips, the character count, and Send Request — all inside the first phone
+  viewport with five cards attached.
+- Desktop uses the same vertical composition (bigger card, wider spread); the
+  owner preferred it to a two-column layout.
+- A demo bar (not part of the design) switches 5 / 2 / 1 / 0 cards.
+- Owner's verdict on the ring: "now we're cooking". Open questions he has not
+  answered yet: show only three cards in the ring on phone; move Remove to a ✕
+  on the card corner and Details to a tap on the card to buy back ~50px.
+- Data note, not a mockup issue: Sol Ring's representative printing in the
+  corpus is a black-and-white MSCHF one, so it looks odd in the hero slot.
+
+### Still to rework
+
+In-Depth Question (restore the real questions and game-context fields first,
+then re-theme), Trade Balancer (card images per side; the owner has said the
+card-as-hero rule may *not* apply here because more information competes),
+shared chrome and Menu (last, so it matches the page style). Card-as-hero is a
+per-flow decision, not a global rule.

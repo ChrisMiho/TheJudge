@@ -7,74 +7,134 @@
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shell.css">
 <style>
-  .qq-panel { margin-top: 1rem; }
-  .search-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
-  .search-row .field { flex: 1; }
+  /* ---- demo controls (not part of the design) ---- */
+  .demo-bar {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
+    font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.75rem;
+  }
+  .demo-bar button {
+    font-size: 0.7rem; padding: 0.2rem 0.55rem; border-radius: 999px;
+    border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); cursor: pointer;
+  }
+  .demo-bar button[aria-pressed="true"] { color: var(--text-primary); border-color: var(--accent-soft); }
 
-  /* Bounded attached-card strip: fixed height, horizontal region scroll —
-     total height never grows with card count (REQ-129 as amended, up to
-     the REQ-167 cap of five). */
-  .attached-strip {
-    display: flex;
-    gap: 0.5rem;
-    overflow-x: auto;
-    padding-bottom: 0.4rem;
-    margin-bottom: 0.75rem;
-    max-height: 108px;
-  }
-  .attached-chip {
+  /* ---- Quick Question: the attached card is the hero ---- */
+  .page-content { width: min(34rem, 92vw); }
+  .qq { display: grid; gap: 0.9rem; }
+
+  .stage {
     position: relative;
-    flex: 0 0 auto;
-    width: 84px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.25rem;
-  }
-  .attached-chip .thumb {
-    width: 64px;
-    height: 88px;
-    border-radius: 0.4rem;
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    padding: 0.9rem 0.5rem 0.8rem;
+    border-radius: 1.1rem;
     border: 1px solid var(--surface-edge);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: var(--text-on-accent);
-    background: linear-gradient(160deg, var(--accent), var(--accent-strong));
-  }
-  .attached-chip .name {
-    font-size: 0.65rem;
-    text-align: center;
-    line-height: 1.1;
-    max-width: 80px;
+    background:
+      radial-gradient(60% 55% at 50% 40%, color-mix(in srgb, var(--accent) 34%, transparent) 0%, transparent 70%),
+      var(--surface-panel);
     overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
   }
-  .attached-chip .remove {
-    position: absolute;
-    top: -6px;
-    right: 6px;
-    width: 22px;
-    height: 22px;
-    border-radius: 999px;
-    border: 1px solid var(--surface-edge);
-    background: var(--surface-panel);
-    color: var(--text-primary);
-    font-size: 0.7rem;
-    line-height: 1;
+  .stage::before {
+    content: ""; position: absolute; inset: -20% -10% auto -10%; height: 120%;
+    background: url("motifs/blue.svg") center / 80% no-repeat;
+    opacity: 0.08; pointer-events: none;
+  }
+
+  /* the ring: centre card full size, neighbours behind it on either side */
+  .ring {
+    --card-w: 196px;
+    --card-h: calc(var(--card-w) * 88 / 63);
+    --step: 108px;          /* how far each neighbour sits to the side */
+    position: relative; z-index: 1;
+    width: 100%; height: var(--card-h);
+  }
+  @media (min-width: 720px) {
+    .ring { --card-w: 260px; --step: 150px; }
+  }
+  .ring .card {
+    position: absolute; left: 50%; top: 0;
+    width: var(--card-w); height: var(--card-h);
+    margin-left: calc(var(--card-w) / -2);
+    border-radius: 11px; overflow: hidden; background: #111;
+    transform: translateX(calc(var(--d) * var(--step))) scale(calc(1 - 0.16 * var(--ad)));
+    opacity: calc(1 - 0.42 * var(--ad));
+    filter: brightness(calc(1 - 0.35 * var(--ad))) blur(calc(var(--ad) * 0.6px));
+    z-index: calc(10 - var(--ad));
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent-soft) 45%, transparent),
+      0 18px 40px -12px color-mix(in srgb, var(--accent) 70%, #000);
+    transition: transform 260ms ease, opacity 260ms ease, filter 260ms ease;
     cursor: pointer;
   }
-  .question-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.5rem; }
-  .char-count { font-size: 0.75rem; color: var(--text-muted); }
-  .answer-block { margin-top: 1rem; display: none; }
+  .ring .card[data-front="true"] {
+    box-shadow:
+      0 0 0 1px color-mix(in srgb, var(--accent-soft) 60%, transparent),
+      0 18px 40px -12px color-mix(in srgb, var(--accent) 70%, #000),
+      0 0 60px -10px color-mix(in srgb, var(--accent) 55%, transparent);
+    cursor: default;
+  }
+  .ring .card img { display: block; width: 100%; height: 100%; object-fit: cover; }
+  .ring .card.empty {
+    display: grid; place-items: center; text-align: center;
+    border: 1px dashed color-mix(in srgb, var(--accent-soft) 55%, transparent);
+    background: color-mix(in srgb, var(--surface-ground) 70%, transparent);
+    color: var(--text-muted); font-size: 0.85rem; padding: 1rem; box-shadow: none;
+  }
+  .ring .card.empty strong { display: block; color: var(--text-primary); font-size: 1rem; margin-bottom: 0.3rem; }
+
+  .arrow {
+    position: absolute; top: 50%; z-index: 20; transform: translateY(-50%);
+    width: 44px; height: 44px; border-radius: 999px;
+    border: 1px solid var(--surface-edge);
+    background: color-mix(in srgb, var(--surface-ground) 82%, transparent);
+    color: var(--text-primary); font-size: 1.15rem; line-height: 1; cursor: pointer;
+    backdrop-filter: blur(4px);
+  }
+  .arrow.prev { left: 0.15rem; }
+  .arrow.next { right: 0.15rem; }
+  .arrow[hidden] { display: none; }
+
+  .dots { position: relative; z-index: 1; display: flex; gap: 0.35rem; min-height: 8px; }
+  .dots span { width: 6px; height: 6px; border-radius: 999px; background: var(--surface-edge); }
+  .dots span[data-on="true"] { background: var(--accent-soft); }
+
+  .hero-caption {
+    position: relative; z-index: 1;
+    display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+    width: 100%; min-height: 24px; font-size: 0.85rem;
+  }
+  .hero-caption .name { font-weight: 600; }
+  .hero-caption .meta { color: var(--text-muted); }
+  .hero-caption .price { color: var(--accent-soft); font-weight: 600; }
+  .hero-actions { position: relative; z-index: 1; display: flex; gap: 0.5rem; }
+  .hero-actions .btn { min-height: 36px; padding: 0.3rem 0.8rem; font-size: 0.8rem; }
+
+  /* composer */
+  .composer { display: grid; gap: 0.6rem; }
+  .composer h1 { font-size: 1.25rem; margin: 0; letter-spacing: 0.01em; }
+  .composer h1 small { display: block; font-size: 0.8rem; font-weight: 400; color: var(--text-muted); margin-top: 0.15rem; }
+  .composer textarea.field { resize: none; min-height: 72px; font: inherit; line-height: 1.35; }
+  .composer-row { display: flex; align-items: center; gap: 0.5rem; }
+  .composer-row .spacer { flex: 1; }
+  .char-count { font-size: 0.7rem; color: var(--text-muted); }
+  .icon-chip {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    min-height: 44px; padding: 0 0.75rem; border-radius: 0.6rem;
+    border: 1px solid var(--surface-edge); background: var(--surface-panel);
+    color: var(--text-primary); font-size: 0.85rem; cursor: pointer;
+  }
+  .icon-chip:disabled { opacity: 0.6; cursor: default; }
+  .icon-chip .glyph { color: var(--accent-soft); font-size: 1.05rem; line-height: 1; }
+  .search-pop { display: none; }
+  .search-pop.open { display: block; }
+
+  /* answered */
+  .answer-block { display: none; margin-top: 0.9rem; }
   .answer-block.shown { display: block; }
   .card-ref-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.5rem 0; }
-  .card-ref-row .thumb { width: 40px; height: 56px; border-radius: 0.3rem; flex: 0 0 auto; display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:var(--text-on-accent); background: linear-gradient(160deg, var(--accent), var(--accent-strong)); }
+  .card-ref-row img { width: 40px; height: 56px; border-radius: 0.3rem; object-fit: cover; flex: 0 0 auto; }
   .price { color: var(--accent-soft); font-weight: 600; }
-  #pre-submit.hidden { display: none; }
+  .qq.hidden { display: none; }
+  .foot-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 1.25rem; }
 </style>
 </head>
 <body>
@@ -90,99 +150,149 @@
   <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
 
   <main class="page-content">
-    <p class="text-muted">
-      Before: <a href="../before/quick-question-390x844.png">quick-question-390x844.png</a> ·
-      <a href="../before/quick-question-1440x900.png">quick-question-1440x900.png</a>
-      — today's screen, before this mockup's fix (2 cards attached already
-      pushed Send Request 179px below the fold; see the link above for the
-      full-size capture rather than an inline image, so the fix below stays
-      measured against the real first viewport).
-    </p>
+    <div class="demo-bar" aria-label="Mockup state (demo only)">
+      <span>Mockup state:</span>
+      <button data-state="5" aria-pressed="true">5 cards</button>
+      <button data-state="2" aria-pressed="false">2 cards</button>
+      <button data-state="1" aria-pressed="false">1 card</button>
+      <button data-state="0" aria-pressed="false">no cards</button>
+    </div>
 
-    <section id="pre-submit" class="card-panel qq-panel">
-      <h1>Quick Question</h1>
-      <p class="text-muted">Optional cards — add up to 5 cards for context, or ask any Magic related question.</p>
-
-      <div class="search-row">
-        <input class="field tap-target" id="card-search" placeholder="Search to add another card">
-        <button class="btn tap-target" id="scan-btn">Scan</button>
+    <section id="pre-submit" class="qq">
+      <div class="stage" id="stage">
+        <div class="ring" id="ring">
+          <button class="arrow prev tap-target" id="prev" aria-label="Previous card">‹</button>
+          <button class="arrow next tap-target" id="next" aria-label="Next card">›</button>
+        </div>
+        <div class="dots" id="dots"></div>
+        <div class="hero-caption" id="hero-caption"></div>
+        <div class="hero-actions" id="hero-actions">
+          <button class="btn tap-target" id="hero-detail">Details</button>
+          <button class="btn tap-target" id="hero-remove">Remove</button>
+        </div>
       </div>
 
-      <div class="attached-strip" id="attached-strip" aria-label="Attached cards"></div>
-
-      <label for="question-field">Question</label>
-      <textarea class="field" id="question-field" rows="2" placeholder="What would you like to know?" maxlength="300"></textarea>
-      <div class="question-row">
-        <span class="char-count" id="char-count">0/300</span>
-        <button class="btn primary tap-target" id="send-request">Send Request</button>
+      <div class="composer">
+        <h1>Quick Question <small id="composer-hint">Ask about Sol Ring, or anything in Magic.</small></h1>
+        <textarea class="field" id="question-field" rows="3" placeholder="What would you like to know?" maxlength="300"></textarea>
+        <div class="composer-row">
+          <button class="icon-chip tap-target" id="add-card"><span class="glyph">＋</span> Card</button>
+          <button class="icon-chip tap-target" id="scan-btn"><span class="glyph">▣</span> Scan</button>
+          <span class="spacer"></span>
+          <span class="char-count" id="char-count">0/300</span>
+          <button class="btn primary tap-target" id="send-request">Send Request</button>
+        </div>
+        <div class="search-pop" id="search-pop">
+          <input class="field tap-target" id="card-search" placeholder="Search to add a card">
+        </div>
       </div>
     </section>
 
     <section id="answered" class="card-panel answer-block">
       <h1>Quick Question — answered</h1>
-      <div class="card-ref-row"><div class="thumb">SOL</div><div><strong>Sol Ring</strong><br><span class="price">$1.85 (nonfoil)</span></div></div>
-      <div class="card-ref-row"><div class="thumb">LB</div><div><strong>Lightning Bolt</strong><br><span class="price">$3.20 (nonfoil)</span></div></div>
+      <div id="answer-refs"></div>
       <p>
         Sol Ring taps for {C}{C} — two colorless mana from one artifact, so
         it nets a full extra mana the turn after it resolves. Lightning
         Bolt deals 3 damage to any target for {R}, resolving on the stack
         before any triggered ability that hasn't already been put on the
-        stack ahead of it. Neither has an activation cost beyond tapping
-        (Sol Ring) or casting (Lightning Bolt), so there's no additional
-        mana to plan for beyond the spell itself.
+        stack ahead of it.
       </p>
       <button class="btn tap-target" id="ask-another">Ask another question</button>
     </section>
 
-    <div class="before-after">
-      <figure>
-        <img src="../before/quick-question-390x844.png" alt="Before: today's Quick Question at 390x844">
-        <figcaption>Before — today's shipped Quick Question (390×844, 2 cards; Send Request 179px below the fold)</figcaption>
-      </figure>
-      <figure>
-        <img src="../before/quick-question-1440x900.png" alt="Before: today's Quick Question at 1440x900">
-        <figcaption>Before — today's shipped Quick Question (1440×900)</figcaption>
-      </figure>
-    </div>
+    <p class="foot-note">
+      Before: <a href="../before/quick-question-390x844.png">quick-question-390x844.png</a> ·
+      <a href="../before/quick-question-1440x900.png">quick-question-1440x900.png</a>.
+      Card images are the app's own corpus art via Scryfall (unchanged from today).
+    </p>
   </main>
 
   <script>
-    const cardData = [
-      { id: 'sol', name: 'Sol Ring', abbr: 'SOL' },
-      { id: 'bolt', name: 'Lightning Bolt', abbr: 'LB' },
-      { id: 'elves', name: 'Llanowar Elves', abbr: 'ELV' },
-      { id: 'swords', name: 'Swords to Plowshares', abbr: 'STP' },
-      { id: 'counter', name: 'Counterspell', abbr: 'CTR' }
+    const img = (id) => 'https://cards.scryfall.io/normal/front/' + id[0] + '/' + id[1] + '/' + id + '.jpg';
+    const cards = [
+      { name: 'Sol Ring',             type: 'Artifact',             price: '$1.85', id: '0ab38fe7-1929-44f6-b4ce-ce8cfacbfb76' },
+      { name: 'Lightning Bolt',       type: 'Instant',              price: '$3.20', id: '132dc07f-74e2-4bd7-bdb1-4f5d5253c7f2' },
+      { name: 'Llanowar Elves',       type: 'Creature — Elf Druid', price: '$0.75', id: '2526a07a-0b92-4e31-81fe-14fb067b5821' },
+      { name: 'Swords to Plowshares', type: 'Instant',              price: '$0.60', id: '68ec2aed-7662-48ae-ab25-04f74ece1e41' },
+      { name: 'Counterspell',         type: 'Instant',              price: '$1.10', id: '4f616706-ec97-4923-bb1e-11a69fbaa1f8' }
     ];
-    const strip = document.getElementById('attached-strip');
-    function renderStrip() {
-      strip.innerHTML = '';
-      cardData.forEach((c) => {
-        const chip = document.createElement('div');
-        chip.className = 'attached-chip';
-        chip.innerHTML =
-          '<button class="remove tap-target" aria-label="Remove ' + c.name + '" style="width:22px;height:22px;">×</button>' +
-          '<div class="thumb">' + c.abbr + '</div>' +
-          '<div class="name">' + c.name + '</div>';
-        strip.appendChild(chip);
-      });
+    let attached = cards.slice();
+    let focus = 0;
+    const $ = (s) => document.getElementById(s);
+    const ring = $('ring');
+    const els = new Map(); // card id -> element, reused so the move animates
+
+    function place(el, d) {
+      el.style.setProperty('--d', d);
+      el.style.setProperty('--ad', Math.abs(d));
+      el.dataset.front = d === 0 ? 'true' : 'false';
     }
-    renderStrip();
 
-    const q = document.getElementById('question-field');
-    const count = document.getElementById('char-count');
-    q.addEventListener('input', () => {
-      count.textContent = q.value.length + '/300';
-    });
+    function render() {
+      const n = attached.length;
+      // drop elements for cards no longer attached
+      for (const [id, el] of els) if (!attached.some((c) => c.id === id)) { el.remove(); els.delete(id); }
+      ring.querySelectorAll('.card.empty').forEach((e) => e.remove());
 
-    document.getElementById('send-request').addEventListener('click', () => {
-      document.getElementById('pre-submit').classList.add('hidden');
-      document.getElementById('answered').classList.add('shown');
+      if (n === 0) {
+        const e = document.createElement('div');
+        e.className = 'card empty';
+        e.innerHTML = '<div><strong>No card yet</strong>Add a card for context, or just ask.</div>';
+        place(e, 0); ring.appendChild(e);
+        $('hero-caption').innerHTML = '';
+        $('hero-actions').style.display = 'none';
+        $('composer-hint').textContent = 'Ask anything in Magic.';
+      } else {
+        focus = ((focus % n) + n) % n;
+        attached.forEach((c, i) => {
+          let el = els.get(c.id);
+          if (!el) {
+            el = document.createElement('div');
+            el.className = 'card';
+            el.innerHTML = '<img src="' + img(c.id) + '" alt="' + c.name + '">';
+            el.addEventListener('click', () => { focus = attached.indexOf(c); render(); });
+            els.set(c.id, el); ring.appendChild(el);
+          }
+          // shortest signed distance around the ring: -2..2 for five cards
+          let d = i - focus;
+          if (d > n / 2) d -= n;
+          if (d < -n / 2) d += n;
+          place(el, d);
+        });
+        const c = attached[focus];
+        $('hero-caption').innerHTML =
+          '<span class="name">' + c.name + '</span><span class="meta">· ' + c.type + '</span><span class="price">' + c.price + '</span>';
+        $('hero-actions').style.display = '';
+        $('composer-hint').textContent = 'Ask about ' + c.name + ', or anything in Magic.';
+      }
+      $('prev').hidden = $('next').hidden = n < 2;
+      $('dots').innerHTML = n > 1 ? attached.map((_, i) => '<span data-on="' + (i === focus) + '"></span>').join('') : '';
+      $('add-card').innerHTML = n >= 5 ? '<span class="glyph">＋</span> 5 / 5' : '<span class="glyph">＋</span> Card';
+      $('add-card').disabled = n >= 5;
+      $('answer-refs').innerHTML = attached.slice(0, 2).map((c) =>
+        '<div class="card-ref-row"><img src="' + img(c.id) + '" alt=""><div><strong>' + c.name + '</strong><br><span class="price">' + c.price + ' (nonfoil)</span></div></div>'
+      ).join('');
+    }
+
+    $('prev').addEventListener('click', () => { focus -= 1; render(); });
+    $('next').addEventListener('click', () => { focus += 1; render(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { focus -= 1; render(); }
+      if (e.key === 'ArrowRight') { focus += 1; render(); }
     });
-    document.getElementById('ask-another').addEventListener('click', () => {
-      document.getElementById('answered').classList.remove('shown');
-      document.getElementById('pre-submit').classList.remove('hidden');
-    });
+    document.querySelectorAll('.demo-bar button').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.demo-bar button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true');
+      attached = cards.slice(0, Number(b.dataset.state)); focus = 0; render();
+    }));
+    $('hero-remove').addEventListener('click', () => { attached.splice(focus, 1); render(); });
+    $('add-card').addEventListener('click', () => $('search-pop').classList.toggle('open'));
+    const q = $('question-field'), count = $('char-count');
+    q.addEventListener('input', () => { count.textContent = q.value.length + '/300'; });
+    $('send-request').addEventListener('click', () => { $('pre-submit').classList.add('hidden'); $('answered').classList.add('shown'); });
+    $('ask-another').addEventListener('click', () => { $('answered').classList.remove('shown'); $('pre-submit').classList.remove('hidden'); });
+    render();
   </script>
 </body>
 </html>
