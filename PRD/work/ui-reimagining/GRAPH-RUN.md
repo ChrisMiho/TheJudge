@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/ui-reimagining` by the build half's claim on 2026-09-24)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining` (rewritten from `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining` by the build half's claim on 2026-09-24; branch `thejudge-auto/ui-reimagining-work` cut from `origin/main` at `8cbb9c7`)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260924-050744/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/ui-reimagining/` (in flight)
 
 ## Node ledger
@@ -24,6 +24,7 @@
 | 4 | gate-qc (attempt 3) | sonnet | ok (PASS) | `0 → 16` | verdict PASS, findings none; no commit (`git status --porcelain` empty at `3045621`); REQ-200/REQ-202 titles and plain-language lines now match their finalized diffs, no pre-verdict language stated as current truth in `DESIGN-BRIEF.md`/`GATE-QUESTIONS.md`/`README.md` (only the labeled attempt-2 finding and the intake supersession quote remain); `git diff --stat origin/main HEAD -- PRD/sections` empty; no new `DEC-`; REQ-200..205 collision-free and the 11 amendment targets each exist once in `PRD/sections/`; `screen-layout.md` rows carry proposed updates; marker `STATUS.refined`, board row under `## refined`; README `## Preparation gate` rewritten PASS / none by the driver; worktree and launch checkout porcelain empty → `plan` | 2026-09-24 |
 | 5 | plan | sonnet | failed (driver return-side check) | `0 → 52` | commit `e8925ad` on `thejudge-auto/ui-reimagining-work` (pushed `2e44f5f..e8925ad`): `GAMEPLAN.md`, seven slices A–G (A applies the PRD truth; B tokens/motifs + before captures; C–F per-flow mockups, C carries the Life Tracker pair; G gallery + Ship gates), seven `slice-*.criteria.json` (62 criteria, 0 `true`, 31 manual), README `status: active` + slice table, marker `STATUS.active` (only marker), board row under `## active`; worktree and launch checkout porcelain empty. Driver rejected the artifact: `GAMEPLAN.md:84,103-107` and slices B–G place every committed deliverable (direction-1 pages, shared CSS/motifs, `before/`+`after/` screenshot pairs, gallery) under `PRD/work/ui-reimagining/mockups/`, which node 8 deletes with `git rm -r PRD/work/ui-reimagining/` on this branch before the owner merges — the deliverable would survive only in history; the cited hygiene rule (`runtime-process-hygiene.md:83-85`) covers disposable captures, not deliverables; precedent `docs/design/tab-icon/`. Placement is mechanics, not product truth → bounded `plan` attempt 2 re-homes the deliverables under `docs/design/ui-reimagining/` | 2026-09-24 |
 | 5 | plan (attempt 2) | sonnet | ok | `0 → 92` | commit `16a9f76` on `thejudge-auto/ui-reimagining-work` (pushed `19dcf58..16a9f76`): 14 package files rewritten (`GAMEPLAN.md`, README, slices B–G + criteria) so every committed deliverable lives under `docs/design/ui-reimagining/` (`README.md`; `direction-1/` tokens/shell CSS, `motifs/`, four flow pages; `before/` 12 captures; `after/` Life Tracker pair; gallery `index.html`) mirroring `docs/design/tab-icon/`; slice A untouched; driver grep for `mockups/` across GAMEPLAN/README/slices/criteria → zero hits; 62 criteria, 0 `true`; marker `STATUS.active`, board row under `## active`; `git diff --stat origin/main HEAD -- PRD/sections apps` empty; worktree porcelain empty, remote tip = local; launch checkout `main`, porcelain empty → `build` | 2026-09-24 |
+| 6 | build | sonnet | ok | `0 → 459` | seven milestone commits on `thejudge-auto/ui-reimagining-work`: A `f527ae9` (REQ-200..205 new + 11 amendments applied by intent across 7 `PRD/sections/` files, +398/−39; no new `DEC-`, no `Built:` line), B `aefff18` (`docs/design/ui-reimagining/direction-1/tokens.css`+`shell.css`, 6 motif SVGs, 12 `before/` captures; contrast floors measured in-browser, White got a distinct `--wash-tint`), C `43b3a74` (shared-chrome/Menu page with live re-theming; Life Tracker `after/` pair), D `329c06e` (Quick Question: Send Request bottom 732px vs 1067px with 5 cards), E `9bd370e` (In-Depth, 4 steps; 3 of 4 zone tiles visible; targets ≥44px; step order follows the live app, builder-flagged), F `e9a8253` (Trade Balancer phone tabs, desktop unchanged), G `8bac8a4` (gallery `index.html`, PRD re-check, `apps/` empty diff, `STATUS.ship-ready`, board row); PR https://github.com/ChrisMiho/TheJudge/pull/237 (`main` ← work branch, OPEN, MERGEABLE, `[THEJUDGE-AUTO][READY] …`, body opens plain-language, Life Tracker pair linked); criteria 62/62 `true` — self-reported (`.worktrees/.graph-evidence.jsonl` holds 0 entries for this run, the known build-half gap; `review` re-verifies); servers run as tracked background tasks, stopped via TaskStop, `browser_close` per slice (per `slice-*.evidence.md`); return-side: launch checkout `git status --porcelain` empty before and after (identical), `git diff --name-only e666899..HEAD` → 60 paths (7 `PRD/sections`, 24 `PRD/work`, 29 `docs/design`), `classifyBuildWrites` → `ok` all inside `.worktrees/implement-ui-reimagining/`; `git diff --stat origin/main HEAD -- apps` empty; remote tip = local `8bac8a4`; worktree porcelain empty | 2026-09-24 |
 
 ## Open gate
 
@@ -285,6 +286,223 @@ Per slice: mark `in-progress`, implement, run the slice verification and `npm ru
 Budget: this node has a cap of 1200 tool calls. Copy the `Working directory:` line above, unchanged, into any prompt you write.
 
 Return: per slice the milestone commit SHA and what it delivered; the complete list of every path you wrote or deleted (relative to the working directory); the PR URL, title, base, head, and state; criteria totals per slice with how each was earned; the dev-server and browser cleanup evidence; `git status --porcelain` in the working directory and at the launch root (both must be empty); and the remote tip SHA. Outcome `ok` or `failed` with the exact failure.
+
+### review
+
+graph is controlling. You are node 7 (`review`) of graph run `graph-20260924-050744`: a fresh-context, no-write reviewer. You hold no Write, Edit, or NotebookEdit tool and must not modify, stage, commit, push, or otherwise mutate anything in the repository; you never saw the build node's transcript and must not read `/private/tmp` task outputs. Grade the build against the slices' own stated acceptance criteria, nothing else.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining
+
+What you are reviewing: the build node's seven milestone commits `e666899..8bac8a4` on `thejudge-auto/ui-reimagining-work` (slice A `f527ae9`, B `aefff18`, C `43b3a74`, D `329c06e`, E `9bd370e`, F `e9a8253`, G `8bac8a4`), open as PR https://github.com/ChrisMiho/TheJudge/pull/237 (`main` ← `thejudge-auto/ui-reimagining-work`). Read the diff (`git diff e666899..8bac8a4`, and `git diff origin/main..8bac8a4 -- PRD/sections` for the applied truth), the package artifacts in `PRD/work/ui-reimagining/` (`GAMEPLAN.md`, every `slice-*.md`, `slice-*.criteria.json`, `slice-*.evidence.md`, `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md`), and the delivered tree under `docs/design/ui-reimagining/`. The package delivers no app code: `apps/frontend` and `apps/backend` must be untouched.
+
+Rubric — the slices' own `## Acceptance criteria`, quoted verbatim below (double quotes rendered as single quotes). For every criterion, state met / not met / cannot verify, with the evidence you saw (a file path, a diff hunk, a command you re-ran and its result). The build self-reported all 62 as `true`; the hook's evidence log holds no entries for this run, so your independent check is the integrity gate — re-run what you can (`npm run quality:check`; open the mockup pages with a tracked static server and the browser tools if that is the only way to check a geometry or contrast criterion, then close the browser and stop the server you started; write disposable captures only under `PRD/work/ui-reimagining/.playwright-mcp/` inside the working directory).
+
+Specific checks: (1) slice A applied the product truth by intent — compare each of the 17 finalized blocks in `GATE-QUESTIONS.md` against the `PRD/sections/` diff for substance, confirm no new `DEC-` entry and no `Built:` line was added, and grade the builder's flagged deviation that slice A also amended `PRD/sections/screen-layout.md` and `PRD/sections/trade-balancer/README.md` (the REQ-129/130/204 blocks' own diffs, per its A9 criterion). (2) The builder's second flagged deviation: `in-depth-question.html` follows the live app's observed step order (game context → zone confirmation → zone collection → answered) rather than the slice E prose order, citing E1's no-reorder rule — decide whether that meets or breaks E1. (3) REQ-202 as edited: the Life Tracker before/after pair exists under `docs/design/ui-reimagining/after/`, is linked from the PR body, and no zero-pixel gate is claimed as a requirement. (4) The PR body opens with the plain-language block and the title carries `[THEJUDGE-AUTO][READY]`.
+
+Severity rule: Critical is a correctness defect or a stated criterion not met in a way the owner would reject; Important is a stated criterion not met in a way a follow-on package would inherit; a preference, a style note, a wording nit, or an improvement outside the slices' stated requirements is Minor at most and never loops the run back to build. Do not manufacture findings.
+
+Budget: this node has a cap of 120 tool calls. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Return, plain language first: the verdict — APPROVE (no Critical or Important finding) or RETURN TO BUILD (list each Critical/Important finding with slice, criterion id, file:line, and what would satisfy it); the per-criterion table (62 rows: id, met/not met/cannot verify, evidence); the commands you re-ran with their exit codes; the Minor notes; your rulings on the two flagged deviations; and confirmation that you wrote nothing, mutated no git state, closed any browser, and stopped any server you started.
+
+## Acceptance criteria, quoted from the slice docs
+
+##### PRD/work/ui-reimagining/slice-a-prd-truth-application.md
+
+- [ ] A1 — `PRD/sections/functional-requirements.md` contains `REQ-200`
+      through `REQ-205`, in numeric order after `REQ-199`, each matching its
+      `GATE-QUESTIONS.md` diff's title, priority, description, acceptance
+      criteria, constraints, dependencies, and notes by intent.
+- [ ] A2 — `REQ-044`, `REQ-046`, `REQ-056`, `REQ-060`, `REQ-099`, `REQ-124`,
+      `REQ-129`, `REQ-130`, and `REQ-167` in
+      `PRD/sections/functional-requirements.md` each carry their amendment
+      from `GATE-QUESTIONS.md` (the superseded-language edits, new
+      Dependencies rows, and amended Notes).
+- [ ] A3 — `NFR-011` in `PRD/sections/non-functional-requirements.md` carries
+      its amendment: the measured contrast floors replace the generic 4.5:1
+      bar, the 'rather than adding token roles' clause is superseded, and the
+      new Life Tracker constraint clause and `REQ-200`/`REQ-202`/`REQ-205`
+      dependencies are present.
+- [ ] A4 — `FLOW-007` in `PRD/sections/user-flows.md` carries its amendment
+      (step 4 and the Notes list); the `FLOW-001` Main Flow step-1 sentence
+      and the `REQ-045` note in `functional-requirements.md` both point at
+      `REQ-203`'s session-wide, cross-screen tap count instead of the
+      game-context-only wording.
+- [ ] A5 — `PRD/sections/goals-and-non-goals.md` line ~41 and line ~80 read
+      the amended text from the `REQ-200` block (palette drives the whole
+      surface; light theme no longer excluded outright).
+- [ ] A6 — `PRD/sections/system-map.md`'s `### Theme settings` summary reads
+      the amended text from the `REQ-200` block (palette reach extends to a
+      restrained theme; static chrome reads `REQ-200` roles).
+- [ ] A7 — no feature `README.md` under `PRD/sections/` gained or lost a
+      `Built:` line; `git diff` for `sections/scan/README.md`,
+      `sections/shared-chrome/README.md`, and `sections/in-depth/README.md`
+      shows no change from this slice.
+- [ ] A8 — no new `DEC-###` entry exists anywhere in `PRD/sections/`
+      (`grep -c '^### DEC-' PRD/sections/decisions.md` unchanged from before
+      this slice).
+- [ ] A9 (manual) — every 'Amend' row in `GATE-QUESTIONS.md`'s four grep
+      tables (Grep A-D: A1-A24, B1/B3/B4/B5, C1/C11, D1/D12/D16) is reflected
+      in the applied edits, read side by side with the resulting diff.
+- [ ] A10 — `npm run quality:check` passes.
+
+##### PRD/work/ui-reimagining/slice-b-design-system-and-baselines.md
+
+- [ ] B1 — `docs/design/ui-reimagining/direction-1/tokens.css` defines all
+      eight named surface roles for each of the six profiles.
+- [ ] B2 (manual) — computed contrast (via the browser's rendering, not
+      arithmetic alone) for primary text, accent text, and filled-accent text
+      meets or exceeds 14.37:1 / 6.19:1 / 5.42:1 respectively in every
+      profile against that profile's darkest wash point; recorded per
+      profile in the evidence log.
+- [ ] B3 (manual) — no profile's wash renders darker than `#09090B` at any
+      point.
+- [ ] B4 (manual) — a rendered swatch page shows neutral ground/panel fill as
+      the visual majority of the frame in every profile, at both 390x844 and
+      1440x900.
+- [ ] B5 — `docs/design/ui-reimagining/direction-1/motifs/` contains one
+      original asset per colour, each a local static file with no external
+      font/CDN/art request, and none of the six visually reproduces an
+      official Wizards of the Coast mana glyph, icon font, logo, or card art
+      (manual visual audit).
+- [ ] B6 — `docs/design/ui-reimagining/direction-1/shell.css` (or an
+      included partial) exists and is the single source of the chrome
+      skeleton; no per-page duplicate of the same rules exists in any of the
+      per-flow pages (checked once C-F land, recorded here as the contract
+      they must follow).
+- [ ] B7 — all 12 'before' screenshots (6 destinations x 2 viewports) exist
+      under `docs/design/ui-reimagining/before/`, captured from the live
+      `npm run dev` app in this checkout, matching the scenarios in
+      Requirement 7.
+- [ ] B8 — cleanup evidence: `browser_close` called after the last capture;
+      the dev server this slice started is stopped and its port released;
+      the capture path (`docs/design/ui-reimagining/before/` for the
+      committed deliverables, `PRD/work/ui-reimagining/.playwright-mcp/` for
+      any raw session captures) is recorded in this slice's evidence log.
+
+##### PRD/work/ui-reimagining/slice-c-shared-chrome-and-menu-mockup.md
+
+- [ ] C1 — `shared-chrome-menu.html` renders at 390x844 and 1440x900,
+      showing the menu rail/tray, brand mark, a six-swatch Theme section in
+      the correct order with Blue marked default, the mock-mode banner, and
+      working click-to-open demos of the feedback modal, history drawer,
+      View Context overlay, and card-detail popup.
+- [ ] C2 (manual) — clicking a Theme swatch visibly re-themes the wash, at
+      least one panel edge, the focus ring, and the card-detail popup on the
+      same page load, with no reload.
+- [ ] C3 — the brand mark element measures >=44px in its smaller dimension
+      and renders a `REQ-201` motif, not an official Wizards of the Coast
+      glyph/logo/card art.
+- [ ] C4 — the page visibly embeds or links the slice-B 'before' screenshot(s)
+      for the Menu/shared-chrome destination.
+- [ ] C5 (manual) — the Life Tracker 'after' render at both viewports keeps
+      Life Tracker's own counters and layout visually unchanged from the
+      'before' capture; only the surrounding chrome differs.
+- [ ] C6 — `docs/design/ui-reimagining/after/life-tracker-390x844.png` and
+      `docs/design/ui-reimagining/after/life-tracker-1440x900.png` exist and
+      are referenced together with their `before/` counterparts (in the page
+      or a short `docs/design/ui-reimagining/life-tracker-pair.md`/section)
+      for the owner's review.
+- [ ] C7 (manual) — no official Wizards of the Coast mana glyph, icon font,
+      logo, or card art appears anywhere on the page or in the Life Tracker
+      composite.
+- [ ] C8 — cleanup evidence: `browser_close` called; the dev server this
+      slice attached to (or started, if none was already running) is
+      stopped/released if owned by this slice; capture path recorded.
+
+##### PRD/work/ui-reimagining/slice-d-quick-question-mockup.md
+
+- [ ] D1 — at 390x844 with 5 cards attached, the composer and Send Request
+      render fully within the first viewport (measured `bottom` <= 844px).
+- [ ] D2 — the attached-card list renders as a bounded strip and/or
+      region-scrolled list, not a vertical stack whose height grows with card
+      count.
+- [ ] D3 — the card search input and Scan button each measure >=44px in their
+      smaller dimension.
+- [ ] D4 — the answered/conversation state shows real card names, real
+      prices, and real AI answer copy.
+- [ ] D5 (manual) — the desktop (1440x900) composition's content column
+      respects the `min(48rem, 92vw)` width cap.
+- [ ] D6 (manual) — the page's theme (wash/edges/rings/motifs) is visually
+      consistent with slice C's token/motif system.
+- [ ] D7 — the page embeds or links the slice-B 'before' screenshot for
+      Quick Question.
+- [ ] D8 (manual) — no official Wizards of the Coast mana glyph, icon font,
+      logo, or card art appears anywhere on the page.
+- [ ] D9 — cleanup evidence: `browser_close` called; the dev server this
+      slice attached to (or started, if none was already running) is
+      stopped/released if owned by this slice; capture path recorded.
+
+##### PRD/work/ui-reimagining/slice-e-in-depth-question-mockup.md
+
+- [ ] E1 — clickable step navigation covers game context, zone collection,
+      zone confirmation, and the answered workspace, in that order, with no
+      step added, removed, merged, or reordered from today.
+- [ ] E2 — at 390x844, zone collection's strip shows at least 3 tiles
+      visible without scrolling, each keeping its Remove control, truncated
+      name, stack-position label where applicable, and detail popup.
+- [ ] E3 — at 390x844, the brand mark, turn-phase select, active-player
+      select, Confirm game-context, Back, Continue, and the zone checkbox
+      row's hit area each measure >=44px in the smaller dimension.
+- [ ] E4 (manual) — the brand mark is present and tappable on every step
+      shown, demonstrating the Easter-egg entry point.
+- [ ] E5 — the answered workspace shows real card names, real prices, and
+      real AI answer copy.
+- [ ] E6 (manual) — desktop composition keeps today's side-by-side panel
+      layout where it exists today.
+- [ ] E7 (manual) — the page's theme is visually consistent with slice C's
+      token/motif system.
+- [ ] E8 — the page embeds or links the slice-B 'before' screenshot(s) for
+      In-Depth Question.
+- [ ] E9 (manual) — no official Wizards of the Coast mana glyph, icon font,
+      logo, or card art appears anywhere on the page.
+- [ ] E10 — cleanup evidence: `browser_close` called; the dev server this
+      slice attached to (or started, if none was already running) is
+      stopped/released if owned by this slice; capture path recorded.
+
+##### PRD/work/ui-reimagining/slice-f-trade-balancer-mockup.md
+
+- [ ] F1 — below 768px, exactly one side's list/search/scan/total renders at
+      a time via a clickable two-tab control, with both side totals and the
+      difference readout visible in the first viewport on either tab.
+- [ ] F2 (manual) — switching tabs preserves each side's visible
+      entries/quantities and does not reload the page.
+- [ ] F3 — at and above 768px, both sides render side by side, matching
+      today's shipped composition unchanged.
+- [ ] F4 — the tab control measures >=44px in its smaller dimension and
+      shows a visible focus ring on keyboard focus.
+- [ ] F5 — the per-side search input and Scan button each measure >=44px in
+      their smaller dimension.
+- [ ] F6 — both sides show real card names and real prices.
+- [ ] F7 (manual) — the page's theme is visually consistent with slice C's
+      token/motif system.
+- [ ] F8 — the page embeds or links the slice-B 'before' screenshot for
+      Trade Balancer.
+- [ ] F9 (manual) — no official Wizards of the Coast mana glyph, icon font,
+      logo, or card art appears anywhere on the page.
+- [ ] F10 — cleanup evidence: `browser_close` called; the dev server this
+      slice attached to (or started, if none was already running) is
+      stopped/released if owned by this slice; capture path recorded.
+
+##### PRD/work/ui-reimagining/slice-g-gallery-and-ship-gates.md
+
+- [ ] G1 — `docs/design/ui-reimagining/index.html` links all four flow
+      mockup pages and the Life Tracker before/after pair, each labeled with
+      its flow name and viewport note.
+- [ ] G2 (manual) — every linked page opens without a console error and
+      renders recognizably at 390x844 and 1440x900.
+- [ ] G3 (manual) — `REQ-200`-`REQ-205` and the eleven amendments
+      (`REQ-044/046/056/060/099/124/129/130/167`, `NFR-011`, `FLOW-007`) are
+      present in `PRD/sections/`, re-checked against `GATE-QUESTIONS.md`'s
+      finalized blocks.
+- [ ] G4 — no `PRD/sections/<feature>/README.md` `Built:` line was added or
+      changed by this package.
+- [ ] G5 — `git diff <merge-base>...HEAD -- apps/frontend apps/backend` is
+      empty.
+- [ ] G6 — the package `README.md` names
+      `docs/design/ui-reimagining/index.html` as the entry point for the
+      owner's review.
+- [ ] G7 — `npm run quality:check` passes.
 
 ## Instruction ledger
 
