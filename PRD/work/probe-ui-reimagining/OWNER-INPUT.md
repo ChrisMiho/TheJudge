@@ -69,6 +69,14 @@ Owner note: desktop is great with the two sides next to each other. Keep that.
   on the In-Depth game-context step reveal the cat wizard for the session
   (REQ-056, DEC-076). Whatever the brand mark becomes, it keeps that tap
   trigger, and the reveal survives every direction.
+  Owner wish, in scope for the redesign: extend the Easter egg to every
+  in-scope screen that shows the brand mark (Quick Question, every In-Depth
+  step and its answer, Trade Balancer). Today only the game-context step
+  wires the shared header's tap hook. Recommendation: one session-wide tap
+  count shared across screens, so ten taps anywhere reveal the cat wizard
+  everywhere for the rest of the session. Where the cat appears on screens
+  without a hero slot is a mockup decision. Life Tracker keeps its own
+  title and stays out.
 
 ## B. Who is this for, and where
 
