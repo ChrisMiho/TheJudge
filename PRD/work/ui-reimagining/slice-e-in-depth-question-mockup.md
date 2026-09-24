@@ -79,4 +79,6 @@ ls docs/design/ui-reimagining/direction-1/in-depth-question.html
 
 ## Files touched
 
-- `docs/design/ui-reimagining/direction-1/in-depth-question.html` (new)
+- `docs/design/ui-reimagining/direction-1/in-depth-question.html` (new;
+  build attempt 2, E2 fix: added the corner card-detail popup each zone
+  tile was missing)

@@ -90,7 +90,8 @@ app-code redesign are follow-on packages — see `DESIGN-BRIEF.md`.
   hand redraw)
 - `docs/design/ui-reimagining/direction-1/quick-question.html` — slice D, new
 - `docs/design/ui-reimagining/direction-1/in-depth-question.html` — slice E,
-  new
+  new (build attempt 2 fixed the E2 review finding: each zone tile now has
+  a working corner card-detail popup)
 - `docs/design/ui-reimagining/direction-1/trade-balancer.html` — slice F, new
 - `docs/design/ui-reimagining/index.html` — slice G, new; the one entry point
   for the owner's review, linking every mockup page and the Life Tracker

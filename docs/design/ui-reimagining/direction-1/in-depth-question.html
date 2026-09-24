@@ -63,6 +63,10 @@
   .zone-tile .name { font-size: 0.65rem; text-align: center; max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .zone-tile .stack-pos { position: absolute; top: 4px; left: 4px; background: var(--surface-ground); border-radius: 999px; font-size: 0.6rem; padding: 0.05rem 0.35rem; }
   .zone-tile .remove { position: absolute; top: -6px; right: 2px; width: 22px; height: 22px; border-radius: 999px; border: 1px solid var(--surface-edge); background: var(--surface-panel); color: var(--text-primary); font-size: 0.7rem; cursor: pointer; }
+  /* Corner detail control (REQ-130 as amended): every narrowed tile keeps its
+     detail popup as a read path, reusing shared-chrome-menu.html's
+     overlay-backdrop/overlay-panel + openOverlay/closeOverlay pattern below. */
+  .zone-tile .detail { position: absolute; bottom: 24px; left: 2px; width: 22px; height: 22px; border-radius: 999px; border: 1px solid var(--surface-edge); background: var(--surface-panel); color: var(--text-primary); font-size: 0.7rem; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 
   .egg-note { font-size: 0.75rem; color: var(--text-muted); margin-top: 0.5rem; }
   .card-ref-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.5rem 0; }
@@ -160,22 +164,26 @@
       <div class="zone-strip" aria-label="Battlefield cards">
         <div class="zone-tile">
           <button class="remove tap-target" aria-label="Remove Sol Ring" style="width:22px;height:22px;">×</button>
-          <div class="thumb">SOL</div>
+          <button class="detail tap-target" aria-label="Card details: Sol Ring" data-card-name="Sol Ring" data-card-type="Artifact — {1}, T: Add {C}{C}." data-card-price="$1.85 (nonfoil)">ⓘ</button>
+          <div class="thumb" tabindex="0" role="button" aria-label="Card details: Sol Ring" data-card-name="Sol Ring" data-card-type="Artifact — {1}, T: Add {C}{C}." data-card-price="$1.85 (nonfoil)">SOL</div>
           <div class="name">Sol Ring</div>
         </div>
         <div class="zone-tile">
           <button class="remove tap-target" aria-label="Remove Llanowar Elves" style="width:22px;height:22px;">×</button>
-          <div class="thumb">ELV</div>
+          <button class="detail tap-target" aria-label="Card details: Llanowar Elves" data-card-name="Llanowar Elves" data-card-type="Creature — Elf Druid. {T}: Add {G}." data-card-price="$0.75 (nonfoil)">ⓘ</button>
+          <div class="thumb" tabindex="0" role="button" aria-label="Card details: Llanowar Elves" data-card-name="Llanowar Elves" data-card-type="Creature — Elf Druid. {T}: Add {G}." data-card-price="$0.75 (nonfoil)">ELV</div>
           <div class="name">Llanowar Elves</div>
         </div>
         <div class="zone-tile">
           <button class="remove tap-target" aria-label="Remove Swords to Plowshares" style="width:22px;height:22px;">×</button>
-          <div class="thumb">STP</div>
+          <button class="detail tap-target" aria-label="Card details: Swords to Plowshares" data-card-name="Swords to Plowshares" data-card-type="Instant. Exile target creature. Its controller gains life equal to its power." data-card-price="$0.35 (nonfoil)">ⓘ</button>
+          <div class="thumb" tabindex="0" role="button" aria-label="Card details: Swords to Plowshares" data-card-name="Swords to Plowshares" data-card-type="Instant. Exile target creature. Its controller gains life equal to its power." data-card-price="$0.35 (nonfoil)">STP</div>
           <div class="name">Swords to Plowshares</div>
         </div>
         <div class="zone-tile">
           <button class="remove tap-target" aria-label="Remove Counterspell" style="width:22px;height:22px;">×</button>
-          <div class="thumb">CTR</div>
+          <button class="detail tap-target" aria-label="Card details: Counterspell" data-card-name="Counterspell" data-card-type="Instant. Counter target spell." data-card-price="$1.25 (nonfoil)">ⓘ</button>
+          <div class="thumb" tabindex="0" role="button" aria-label="Card details: Counterspell" data-card-name="Counterspell" data-card-type="Instant. Counter target spell." data-card-price="$1.25 (nonfoil)">CTR</div>
           <div class="name">Counterspell</div>
         </div>
       </div>
@@ -199,6 +207,20 @@
       <button class="btn tap-target" data-next="game-context">Ask another question</button>
     </section>
   </main>
+
+  <!-- Card-detail popup (REQ-130 as amended): shared by every zone tile's
+       corner detail control, reusing shared-chrome-menu.html's
+       overlay-backdrop/overlay-panel markup and openOverlay/closeOverlay
+       script so a narrowed tile still keeps its detail popup as a read
+       path. -->
+  <div class="overlay-backdrop" id="card-detail-popup" data-open="false">
+    <div class="overlay-panel">
+      <button class="icon-btn overlay-close tap-target" data-close="card-detail-popup" aria-label="Close">✕</button>
+      <h2 id="card-detail-name">Card name</h2>
+      <p class="text-muted" id="card-detail-type">Type line</p>
+      <p class="accent-text" id="card-detail-price">Price</p>
+    </div>
+  </div>
 
   <script>
     const steps = ['game-context', 'zone-confirmation', 'zone-collection', 'answered'];
@@ -224,6 +246,37 @@
       b.addEventListener('click', () => {
         document.querySelectorAll('.zone-tabs button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
         b.setAttribute('aria-pressed', 'true');
+      });
+    });
+
+    // Card-detail popup (REQ-130 as amended) — same openOverlay/closeOverlay
+    // pattern as shared-chrome-menu.html, driven by each tile's corner
+    // detail control (and the thumb itself, its read path).
+    function openOverlay(id) {
+      document.getElementById(id).setAttribute('data-open', 'true');
+    }
+    function closeOverlay(id) {
+      document.getElementById(id).setAttribute('data-open', 'false');
+    }
+    document.querySelectorAll('[data-close]').forEach((btn) => {
+      btn.addEventListener('click', () => closeOverlay(btn.getAttribute('data-close')));
+    });
+    function showCardDetail(source) {
+      document.getElementById('card-detail-name').textContent = source.dataset.cardName;
+      document.getElementById('card-detail-type').textContent = source.dataset.cardType;
+      document.getElementById('card-detail-price').textContent = source.dataset.cardPrice;
+      openOverlay('card-detail-popup');
+    }
+    document.querySelectorAll('.zone-tile .detail').forEach((btn) => {
+      btn.addEventListener('click', () => showCardDetail(btn));
+    });
+    document.querySelectorAll('.zone-tile .thumb').forEach((thumb) => {
+      thumb.addEventListener('click', () => showCardDetail(thumb));
+      thumb.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          showCardDetail(thumb);
+        }
       });
     });
 
