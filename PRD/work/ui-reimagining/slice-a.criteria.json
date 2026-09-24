@@ -5,61 +5,61 @@
     {
       "id": "A1",
       "statement": "REQ-200 through REQ-205 exist in functional-requirements.md, in numeric order after REQ-199, matching GATE-QUESTIONS.md by intent",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
     },
     {
       "id": "A2",
       "statement": "REQ-044, REQ-046, REQ-056, REQ-060, REQ-099, REQ-124, REQ-129, REQ-130, REQ-167 each carry their amendment",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
     },
     {
       "id": "A3",
       "statement": "NFR-011 carries its amendment: measured contrast floors, superseded token-role clause, new Life Tracker constraint, new dependencies",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/non-functional-requirements.md"] }
     },
     {
       "id": "A4",
       "statement": "FLOW-007, the FLOW-001 step-1 sentence, and the REQ-045 note all point at REQ-203's session-wide cross-screen tap count",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/user-flows.md", "PRD/sections/functional-requirements.md"] }
     },
     {
       "id": "A5",
       "statement": "goals-and-non-goals.md's two named bullets read the amended text",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/goals-and-non-goals.md"] }
     },
     {
       "id": "A6",
       "statement": "system-map.md's Theme settings summary reads the amended text",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["PRD/sections/system-map.md"] }
     },
     {
       "id": "A7",
       "statement": "No feature README Built: line changed (scan, shared-chrome, in-depth)",
-      "value": false,
+      "value": true,
       "evidence": { "command": "git diff.*sections/(scan|shared-chrome|in-depth)/README" }
     },
     {
       "id": "A8",
       "statement": "No new DEC-### entry exists anywhere in PRD/sections/",
-      "value": false,
+      "value": true,
       "evidence": { "command": "grep.*DEC-.*PRD/sections/decisions.md" }
     },
     {
       "id": "A9",
       "statement": "Every Amend row in GATE-QUESTIONS.md's four grep tables is reflected in the applied edits",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "A10",
       "statement": "npm run quality:check passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run quality:check" }
     }
   ]

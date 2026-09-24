@@ -1,6 +1,6 @@
 # Slice A — prd-truth-application
 
-## Status: planned
+## Status: done
 
 ## Goal
 

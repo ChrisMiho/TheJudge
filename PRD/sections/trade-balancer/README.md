@@ -167,7 +167,8 @@ Assistant core loop and changes nothing about it or the AI answer path.
   with the `cardMetadata` download and the player's typing, so the wait is
   hidden rather than removed. A scheduled keep-warm ping is deliberately out of
   scope. (REQ-064)
-- Layout/fit: sides stack on phone and the entry lists region-scroll; totals and
+- Layout/fit: on phone the two sides are tabs sharing one panel (REQ-204 — not
+  yet built; the shipped build stacks them) and the entry lists region-scroll; totals and
   primary actions stay visible with no page scroll; desktop/tablet uses the
   shell width (92% / 48rem or destination equivalent) rather than unused
   ultra-wide bands, content-sized vertically. Mobile-first and touch-friendly.

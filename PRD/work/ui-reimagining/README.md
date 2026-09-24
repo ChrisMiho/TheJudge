@@ -62,7 +62,7 @@ app-code redesign are follow-on packages — see `DESIGN-BRIEF.md`.
 
 | Slice | Goal | Status | Dependencies |
 | --- | --- | --- | --- |
-| [A — prd-truth-application](slice-a-prd-truth-application.md) | Apply the finalized `GATE-QUESTIONS.md` diffs (`REQ-200`-`REQ-205` new; nine amendments in `functional-requirements.md`, plus `NFR-011` and `FLOW-007`) to `PRD/sections/` by intent, exactly once | planned | parallel-ready — no dependency |
+| [A — prd-truth-application](slice-a-prd-truth-application.md) | Apply the finalized `GATE-QUESTIONS.md` diffs (`REQ-200`-`REQ-205` new; nine amendments in `functional-requirements.md`, plus `NFR-011` and `FLOW-007`) to `PRD/sections/` by intent, exactly once | done | parallel-ready — no dependency |
 | [B — design-system-and-baselines](slice-b-design-system-and-baselines.md) | Shared token/motif CSS every mockup page consumes (`REQ-200`, `REQ-201`), plus "before" screenshots of today's live app for every in-scope destination and Life Tracker at 390x844/1440x900 | planned | parallel-ready — no dependency |
 | [C — shared-chrome-and-menu-mockup](slice-c-shared-chrome-and-menu-mockup.md) | Clickable mockup of shared chrome and the Menu; produces the Life Tracker before/after pair proving `REQ-202` inheritance | planned | sequential — B |
 | [D — quick-question-mockup](slice-d-quick-question-mockup.md) | Clickable Quick Question mockup fixing `REQ-129` (Send Request in the first viewport at 5 cards) and `REQ-205` touch floors | planned | sequential — B |
