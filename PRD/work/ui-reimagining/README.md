@@ -19,7 +19,7 @@ matches.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/ui-reimagining
+- Autonomous base: origin/main
 
 ## Preparation gate
 
