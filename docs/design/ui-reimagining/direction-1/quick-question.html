@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quick Question — direction 1</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<style>
+  .qq-panel { margin-top: 1rem; }
+  .search-row { display: flex; gap: 0.5rem; margin-bottom: 0.75rem; }
+  .search-row .field { flex: 1; }
+
+  /* Bounded attached-card strip: fixed height, horizontal region scroll —
+     total height never grows with card count (REQ-129 as amended, up to
+     the REQ-167 cap of five). */
+  .attached-strip {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.4rem;
+    margin-bottom: 0.75rem;
+    max-height: 108px;
+  }
+  .attached-chip {
+    position: relative;
+    flex: 0 0 auto;
+    width: 84px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .attached-chip .thumb {
+    width: 64px;
+    height: 88px;
+    border-radius: 0.4rem;
+    border: 1px solid var(--surface-edge);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--text-on-accent);
+    background: linear-gradient(160deg, var(--accent), var(--accent-strong));
+  }
+  .attached-chip .name {
+    font-size: 0.65rem;
+    text-align: center;
+    line-height: 1.1;
+    max-width: 80px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .attached-chip .remove {
+    position: absolute;
+    top: -6px;
+    right: 6px;
+    width: 22px;
+    height: 22px;
+    border-radius: 999px;
+    border: 1px solid var(--surface-edge);
+    background: var(--surface-panel);
+    color: var(--text-primary);
+    font-size: 0.7rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .question-row { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; margin-top: 0.5rem; }
+  .char-count { font-size: 0.75rem; color: var(--text-muted); }
+  .answer-block { margin-top: 1rem; display: none; }
+  .answer-block.shown { display: block; }
+  .card-ref-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.5rem 0; }
+  .card-ref-row .thumb { width: 40px; height: 56px; border-radius: 0.3rem; flex: 0 0 auto; display:flex;align-items:center;justify-content:center;font-size:0.65rem;font-weight:700;color:var(--text-on-accent); background: linear-gradient(160deg, var(--accent), var(--accent-strong)); }
+  .price { color: var(--accent-soft); font-weight: 600; }
+  #pre-submit.hidden { display: none; }
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="menu-rail">
+      <button class="brand-mark tap-target">
+        <img src="motifs/blue.svg" alt="" aria-hidden="true">
+        <span class="wordmark">TheJudge</span>
+      </button>
+    </div>
+    <button class="icon-btn tap-target" aria-label="Open menu">☰</button>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="page-content">
+    <p class="text-muted">
+      Before: <a href="../before/quick-question-390x844.png">quick-question-390x844.png</a> ·
+      <a href="../before/quick-question-1440x900.png">quick-question-1440x900.png</a>
+      — today's screen, before this mockup's fix (2 cards attached already
+      pushed Send Request 179px below the fold; see the link above for the
+      full-size capture rather than an inline image, so the fix below stays
+      measured against the real first viewport).
+    </p>
+
+    <section id="pre-submit" class="card-panel qq-panel">
+      <h1>Quick Question</h1>
+      <p class="text-muted">Optional cards — add up to 5 cards for context, or ask any Magic related question.</p>
+
+      <div class="search-row">
+        <input class="field tap-target" id="card-search" placeholder="Search to add another card">
+        <button class="btn tap-target" id="scan-btn">Scan</button>
+      </div>
+
+      <div class="attached-strip" id="attached-strip" aria-label="Attached cards"></div>
+
+      <label for="question-field">Question</label>
+      <textarea class="field" id="question-field" rows="2" placeholder="What would you like to know?" maxlength="300"></textarea>
+      <div class="question-row">
+        <span class="char-count" id="char-count">0/300</span>
+        <button class="btn primary tap-target" id="send-request">Send Request</button>
+      </div>
+    </section>
+
+    <section id="answered" class="card-panel answer-block">
+      <h1>Quick Question — answered</h1>
+      <div class="card-ref-row"><div class="thumb">SOL</div><div><strong>Sol Ring</strong><br><span class="price">$1.85 (nonfoil)</span></div></div>
+      <div class="card-ref-row"><div class="thumb">LB</div><div><strong>Lightning Bolt</strong><br><span class="price">$3.20 (nonfoil)</span></div></div>
+      <p>
+        Sol Ring taps for {C}{C} — two colorless mana from one artifact, so
+        it nets a full extra mana the turn after it resolves. Lightning
+        Bolt deals 3 damage to any target for {R}, resolving on the stack
+        before any triggered ability that hasn't already been put on the
+        stack ahead of it. Neither has an activation cost beyond tapping
+        (Sol Ring) or casting (Lightning Bolt), so there's no additional
+        mana to plan for beyond the spell itself.
+      </p>
+      <button class="btn tap-target" id="ask-another">Ask another question</button>
+    </section>
+
+    <div class="before-after">
+      <figure>
+        <img src="../before/quick-question-390x844.png" alt="Before: today's Quick Question at 390x844">
+        <figcaption>Before — today's shipped Quick Question (390×844, 2 cards; Send Request 179px below the fold)</figcaption>
+      </figure>
+      <figure>
+        <img src="../before/quick-question-1440x900.png" alt="Before: today's Quick Question at 1440x900">
+        <figcaption>Before — today's shipped Quick Question (1440×900)</figcaption>
+      </figure>
+    </div>
+  </main>
+
+  <script>
+    const cardData = [
+      { id: 'sol', name: 'Sol Ring', abbr: 'SOL' },
+      { id: 'bolt', name: 'Lightning Bolt', abbr: 'LB' },
+      { id: 'elves', name: 'Llanowar Elves', abbr: 'ELV' },
+      { id: 'swords', name: 'Swords to Plowshares', abbr: 'STP' },
+      { id: 'counter', name: 'Counterspell', abbr: 'CTR' }
+    ];
+    const strip = document.getElementById('attached-strip');
+    function renderStrip() {
+      strip.innerHTML = '';
+      cardData.forEach((c) => {
+        const chip = document.createElement('div');
+        chip.className = 'attached-chip';
+        chip.innerHTML =
+          '<button class="remove tap-target" aria-label="Remove ' + c.name + '" style="width:22px;height:22px;">×</button>' +
+          '<div class="thumb">' + c.abbr + '</div>' +
+          '<div class="name">' + c.name + '</div>';
+        strip.appendChild(chip);
+      });
+    }
+    renderStrip();
+
+    const q = document.getElementById('question-field');
+    const count = document.getElementById('char-count');
+    q.addEventListener('input', () => {
+      count.textContent = q.value.length + '/300';
+    });
+
+    document.getElementById('send-request').addEventListener('click', () => {
+      document.getElementById('pre-submit').classList.add('hidden');
+      document.getElementById('answered').classList.add('shown');
+    });
+    document.getElementById('ask-another').addEventListener('click', () => {
+      document.getElementById('answered').classList.remove('shown');
+      document.getElementById('pre-submit').classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>

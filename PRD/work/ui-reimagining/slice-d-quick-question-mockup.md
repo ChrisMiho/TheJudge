@@ -1,6 +1,6 @@
 # Slice D — quick-question-mockup
 
-## Status: planned
+## Status: done
 
 ## Goal
 
