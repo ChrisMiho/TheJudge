@@ -8,75 +8,34 @@
 <link rel="stylesheet" href="shell.css">
 <style>
   /*
-   * Life Tracker's OWN screen content is reproduced here with fixed,
-   * hardcoded values — deliberately NOT driven by tokens.css — because
-   * REQ-202 keeps Life Tracker's own screens, counters, and layout
-   * untouched by this redesign. Only the surrounding chrome (the header
-   * above) reads the new REQ-200 surface-role tokens, exactly as it does
-   * on every other destination. Faithfully reproduces
-   * ../before/life-tracker-390x844.png and ../before/life-tracker-1440x900.png.
+   * Life Tracker's OWN screen content (the seat table below the banner) is
+   * NOT redrawn here. REQ-202 keeps Life Tracker's own screens, counters,
+   * and layout untouched by this redesign, so this page composes the real
+   * table by embedding a pixel crop taken directly from the "before"
+   * captures (../before/life-tracker-390x844.png and
+   * ../before/life-tracker-1440x900.png) below the header line measured in
+   * each capture (y=120 at 390x844, y=104 at 1440x900) — see
+   * life-tracker-table-390x844.png / life-tracker-table-1440x900.png next
+   * to this file. That crop is the real per-seat table: life numbers
+   * rotated to face each seat, the 2x2 grid with all four players, the
+   * same rounded cards and gutters, the same inboard -/+ placement — none
+   * of it is reproduced by hand. Only the header above (menu rail, brand
+   * mark, mock-mode banner) reads the new REQ-200 surface-role tokens,
+   * exactly as it does on every other destination.
    */
-  body { background: #09090b; }
-  .life-table {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 0;
-  }
-  @media (min-width: 640px) {
-    .life-table { grid-template-columns: 1fr 1fr; }
-  }
-  .life-card {
-    position: relative;
-    min-height: 380px;
+  .life-table-frame {
+    flex: 1;
+    min-height: 0;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #7dd8e8 0%, #f3f7fa 45%, #4c6b93 100%);
-    color: #0b0b0c;
-    border: 1px solid rgba(0, 0, 0, 0.15);
-    font-family: system-ui, sans-serif;
+    background: #09090b;
   }
-  .life-card .life-row {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-  }
-  .life-card .life-number {
-    font-size: 4.5rem;
-    font-weight: 900;
-    line-height: 1;
-  }
-  .life-card .pm {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #0b0b0c;
-    cursor: pointer;
-    padding: 0 1rem;
-  }
-  .life-card .minus { left: 0.5rem; }
-  .life-card .plus { right: 0.5rem; }
-  .life-card .player-label {
-    writing-mode: vertical-rl;
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 999px;
-    padding: 0.5rem 0.35rem;
-    font-weight: 600;
-    font-size: 0.85rem;
-  }
-  .life-card .counters {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.15rem;
-    background: rgba(255, 255, 255, 0.85);
-    border-radius: 0.6rem;
-    padding: 0.3rem;
-    font-size: 0.65rem;
-    text-align: center;
+  .life-table-frame picture,
+  .life-table-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
   }
   .life-header-controls {
     display: flex;
@@ -107,43 +66,11 @@
   </header>
   <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
 
-  <main class="life-table" aria-label="4-player life table">
-    <div class="life-card">
-      <button class="pm minus" aria-label="Decrease life for Player 2">−</button>
-      <div class="life-row">
-        <div class="counters"><span>me</span><span>0</span><span>0</span><span>0</span></div>
-        <div class="life-number">40</div>
-        <div class="player-label">Player 2</div>
-      </div>
-      <button class="pm plus" aria-label="Increase life for Player 2">+</button>
-    </div>
-    <div class="life-card">
-      <button class="pm minus" aria-label="Decrease life for Player 3">−</button>
-      <div class="life-row">
-        <div class="player-label">Player 3</div>
-        <div class="life-number">40</div>
-        <div class="counters"><span>0</span><span>me</span><span>0</span><span>0</span></div>
-      </div>
-      <button class="pm plus" aria-label="Increase life for Player 3">+</button>
-    </div>
-    <div class="life-card">
-      <button class="pm minus" aria-label="Decrease life for Player 1">−</button>
-      <div class="life-row">
-        <div class="counters"><span>me</span><span>0</span><span>0</span><span>0</span></div>
-        <div class="life-number">40</div>
-        <div class="player-label">Player 1</div>
-      </div>
-      <button class="pm plus" aria-label="Increase life for Player 1">+</button>
-    </div>
-    <div class="life-card">
-      <button class="pm minus" aria-label="Decrease life for Player 4">−</button>
-      <div class="life-row">
-        <div class="player-label">Player 4</div>
-        <div class="life-number">40</div>
-        <div class="counters"><span>0</span><span>0</span><span>0</span><span>me</span></div>
-      </div>
-      <button class="pm plus" aria-label="Increase life for Player 4">+</button>
-    </div>
+  <main class="life-table-frame" aria-label="4-player life table (unchanged from today)">
+    <picture>
+      <source media="(min-width: 640px)" srcset="life-tracker-table-1440x900.png">
+      <img src="life-tracker-table-390x844.png" alt="Life Tracker's own 4-player table, identical to the before capture — life numbers rotated to face each seat in a 2x2 grid, same card radii, gutters, and inboard +/- placement.">
+    </picture>
   </main>
 </body>
 </html>

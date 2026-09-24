@@ -82,7 +82,12 @@ app-code redesign are follow-on packages — see `DESIGN-BRIEF.md`.
   `docs/design/ui-reimagining/direction-1/shell.css`,
   `docs/design/ui-reimagining/before/*.png` — slice B, new
 - `docs/design/ui-reimagining/direction-1/shared-chrome-menu.html`,
+  `docs/design/ui-reimagining/direction-1/life-tracker-after.html`,
+  `docs/design/ui-reimagining/direction-1/life-tracker-table-*.png`,
   `docs/design/ui-reimagining/after/life-tracker-*.png` — slice C, new
+  (build attempt 2 fixed the C5 review finding: Life Tracker's own table
+  in the composite is now a captured crop of the before screenshot, not a
+  hand redraw)
 - `docs/design/ui-reimagining/direction-1/quick-question.html` — slice D, new
 - `docs/design/ui-reimagining/direction-1/in-depth-question.html` — slice E,
   new

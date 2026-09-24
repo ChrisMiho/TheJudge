@@ -80,5 +80,16 @@ ls docs/design/ui-reimagining/after/
 ## Files touched
 
 - `docs/design/ui-reimagining/direction-1/shared-chrome-menu.html` (new)
-- `docs/design/ui-reimagining/after/life-tracker-390x844.png` (new)
-- `docs/design/ui-reimagining/after/life-tracker-1440x900.png` (new)
+- `docs/design/ui-reimagining/after/life-tracker-390x844.png` (new; build
+  attempt 2 re-captured this from the fixed `life-tracker-after.html`)
+- `docs/design/ui-reimagining/after/life-tracker-1440x900.png` (new; build
+  attempt 2 re-captured this from the fixed `life-tracker-after.html`)
+- `docs/design/ui-reimagining/direction-1/life-tracker-after.html` (build
+  attempt 2, C5 fix: stopped hand-redrawing Life Tracker's own table;
+  composes the real table from a captured before-screenshot crop instead)
+- `docs/design/ui-reimagining/direction-1/life-tracker-table-390x844.png`
+  (new, build attempt 2: crop of `../before/life-tracker-390x844.png`
+  below its header line)
+- `docs/design/ui-reimagining/direction-1/life-tracker-table-1440x900.png`
+  (new, build attempt 2: crop of `../before/life-tracker-1440x900.png`
+  below its header line)
