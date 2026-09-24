@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="White motif: gilded authority">
+  <defs>
+    <radialGradient id="w-glow" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#FAF8F2" stop-opacity="0.9"/>
+      <stop offset="60%" stop-color="#EDE7D6" stop-opacity="0.25"/>
+      <stop offset="100%" stop-color="#09090B" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="w-filigree" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#B0A382"/>
+      <stop offset="100%" stop-color="#FAF8F2"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#w-glow)"/>
+  <g stroke="url(#w-filigree)" stroke-width="1.4" fill="none" opacity="0.8">
+    <line x1="40" y1="10" x2="40" y2="190"/>
+    <line x1="100" y1="0" x2="100" y2="200"/>
+    <line x1="160" y1="10" x2="160" y2="190"/>
+    <path d="M20 60 Q40 50 60 60 T100 60 T140 60 T180 60"/>
+    <path d="M20 140 Q40 150 60 140 T100 140 T140 140 T180 140"/>
+    <circle cx="100" cy="100" r="14" />
+    <circle cx="100" cy="100" r="26" opacity="0.5"/>
+  </g>
+</svg>

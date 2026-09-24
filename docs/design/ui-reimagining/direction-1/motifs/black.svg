@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Black motif: decay with one hot glow">
+  <defs>
+    <radialGradient id="k-glow" cx="55%" cy="45%" r="30%">
+      <stop offset="0%" stop-color="#C77DFF" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#2E1A47" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" fill="#18181B"/>
+  <g fill="#0F0A14" opacity="0.9">
+    <path d="M0 160 L30 140 L50 165 L80 130 L110 170 L140 145 L170 175 L200 150 L200 200 L0 200 Z"/>
+  </g>
+  <circle cx="110" cy="90" r="20" fill="url(#k-glow)"/>
+  <g stroke="#7C3AED" stroke-width="1.2" fill="none" opacity="0.6" stroke-linecap="round">
+    <path d="M40 60 L55 75 L45 90 L60 100"/>
+    <path d="M150 50 L140 70 L155 85"/>
+  </g>
+</svg>

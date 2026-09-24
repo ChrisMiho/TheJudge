@@ -1,0 +1,368 @@
+/*
+ * shell.css — the single source of direction 1's shared chrome skeleton:
+ * page shell, header/menu rail, brand mark slot, menu tray, and the small
+ * set of overlay primitives (modal, drawer, popup) every mockup page reuses
+ * rather than re-declaring. Imports tokens.css first for the roles below.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+body {
+  background: var(--surface-wash);
+  color: var(--text-primary);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+img {
+  max-width: 100%;
+}
+
+button,
+select,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+/* ---- Header / menu rail ---- */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  background: color-mix(in srgb, var(--surface-panel) 92%, transparent);
+  border-bottom: 1px solid var(--surface-edge);
+  backdrop-filter: blur(6px);
+}
+
+.menu-rail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 44px;
+  min-height: 44px;
+  padding: 0.25rem 0.5rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.brand-mark:hover,
+.brand-mark:focus-visible {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.brand-mark img,
+.brand-mark svg {
+  width: 28px;
+  height: 28px;
+}
+
+.brand-mark .wordmark {
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  background: linear-gradient(90deg, var(--accent-soft), var(--accent));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.step-eyebrow {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.menu-toggle,
+.icon-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--surface-panel);
+  border: 1px solid var(--surface-edge);
+  border-radius: 0.6rem;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.icon-btn:hover,
+.menu-toggle:hover {
+  border-color: var(--accent);
+}
+
+.mock-mode-banner {
+  text-align: center;
+  font-size: 0.75rem;
+  padding: 0.25rem 0.5rem;
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-ground));
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--surface-edge);
+}
+
+/* ---- Menu tray (slide-in from the right; also the Theme home) ---- */
+
+.menu-tray-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease;
+}
+
+.menu-tray {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(22rem, 90vw);
+  background: var(--surface-panel);
+  border-left: 1px solid var(--surface-edge);
+  z-index: 31;
+  padding: 1rem;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.2s ease;
+}
+
+[data-tray-open="true"] .menu-tray-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+[data-tray-open="true"] .menu-tray {
+  transform: translateX(0);
+}
+
+.menu-tray h2,
+.menu-tray h3 {
+  margin: 0 0 0.5rem;
+}
+
+.theme-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.5rem 0 1rem;
+}
+
+.theme-swatch {
+  min-width: 44px;
+  min-height: 44px;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 2px solid var(--surface-edge);
+  cursor: pointer;
+  position: relative;
+}
+
+.theme-swatch[data-current="true"] {
+  border-color: var(--text-primary);
+  box-shadow: 0 0 0 3px var(--focus-ring);
+}
+
+.theme-swatch .swatch-label {
+  position: absolute;
+  left: 50%;
+  top: calc(100% + 4px);
+  transform: translateX(-50%);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.tray-nav-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.tray-nav-list button {
+  width: 100%;
+  text-align: left;
+  padding: 0.6rem 0.75rem;
+  min-height: 44px;
+  background: var(--surface-ground);
+  border: 1px solid var(--surface-edge);
+  border-radius: 0.6rem;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.tray-nav-list button:hover,
+.tray-nav-list button:focus-visible {
+  border-color: var(--accent);
+}
+
+/* ---- Page shell / content column ---- */
+
+.page-content {
+  flex: 1;
+  width: min(48rem, 92vw);
+  margin: 0 auto;
+  padding: 1rem 0 2rem;
+}
+
+.card-panel {
+  background: var(--surface-panel);
+  border: 1px solid var(--surface-edge);
+  border-radius: 0.9rem;
+  padding: 1rem;
+}
+
+/* ---- Generic overlay (feedback modal / view-context / card-detail popup) --- */
+
+.overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+[data-open="true"].overlay-backdrop {
+  display: flex;
+}
+
+.overlay-panel {
+  background: var(--surface-panel);
+  border: 1px solid var(--surface-edge);
+  border-radius: 0.9rem;
+  max-width: 28rem;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 1rem;
+  position: relative;
+}
+
+.overlay-panel .overlay-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+}
+
+/* Right-side drawer at >=768px (history drawer / adaptive context) */
+.drawer-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: min(24rem, 92vw);
+  background: var(--surface-panel);
+  border-left: 1px solid var(--surface-edge);
+  z-index: 40;
+  padding: 1rem;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.2s ease;
+}
+
+[data-open="true"].drawer-panel {
+  transform: translateX(0);
+}
+
+@media (max-width: 767px) {
+  .drawer-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    width: auto;
+    height: min(70vh, 32rem);
+    border-left: none;
+    border-top: 1px solid var(--surface-edge);
+    transform: translateY(100%);
+  }
+
+  [data-open="true"].drawer-panel {
+    transform: translateY(0);
+  }
+}
+
+/* ---- Buttons / inputs shared across mockups ---- */
+
+.btn {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border-color: var(--accent-strong);
+}
+
+.field {
+  min-height: 44px;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-ground);
+  color: var(--text-primary);
+}
+
+.before-after {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.before-after figure {
+  margin: 0;
+  flex: 1 1 16rem;
+}
+
+.before-after img {
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1px solid var(--surface-edge);
+  display: block;
+}
+
+.before-after figcaption {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}

@@ -1,0 +1,152 @@
+/*
+ * tokens.css — direction 1's one authoritative surface-role token source
+ * (REQ-200, REQ-099).
+ *
+ * Six profiles, switched by [data-profile="..."] on <html> or <body>.
+ * Each profile supplies:
+ *   --accent / --accent-strong / --accent-soft / --accent-contrast
+ *     the four REQ-099 fixed values, unchanged from the shipped app.
+ *   --surface-ground        page ground (constant #09090B, the measured
+ *                            darkest point the app must not go below)
+ *   --surface-wash           colour wash over the ground
+ *   --surface-panel          raised panel fill
+ *   --surface-edge            panel edge / border colour
+ *   --focus-ring              focus-visible ring colour
+ *   --text-primary            primary body text (kept at the measured
+ *                            14.37:1-against-#18181B pairing)
+ *   --text-muted              secondary/supporting text
+ *   --text-on-accent          text on a filled-accent control (REQ-099's
+ *                            accent-contrast, kept at its measured floor)
+ *
+ * Contrast floors (measured live 2026-09-24, DESIGN-BRIEF.md):
+ *   --text-primary   on --surface-panel / --surface-ground >= 14.37:1
+ *   --accent-soft     on --surface-ground                  >= 6.19:1  (worst: Red)
+ *   --text-on-accent on --accent                            >= 5.42:1  (worst: Green)
+ * Every profile below reuses the exact REQ-099 accent/accent-soft/accent-
+ * contrast values and the exact #E2E8F0-on-#18181B / #09090B pairing that
+ * were measured to clear those floors, so the floors hold by construction —
+ * no new colour math is introduced. --surface-ground never differs from
+ * #09090B, so no profile's wash can render darker than the measured floor
+ * (B3). Custom Colorless RGB (entered by the player, not one of these six
+ * profiles) is deliberately exempt from these floors, exactly as it is today.
+ */
+
+:root,
+[data-profile="blue"] {
+  --accent: #0050d8;
+  --accent-strong: #1e3a9c;
+  --accent-soft: #38e1ff;
+  --accent-contrast: #ffffff;
+  --wash-tint: #05070d;
+}
+
+[data-profile="white"] {
+  --accent: #ede7d6;
+  --accent-strong: #b0a382;
+  --accent-soft: #faf8f2;
+  --accent-contrast: #09090b;
+  --wash-tint: #120e08;
+}
+
+[data-profile="black"] {
+  --accent: #7c3aed;
+  --accent-strong: #2e1a47;
+  --accent-soft: #c77dff;
+  --accent-contrast: #ffffff;
+  --wash-tint: #0d0710;
+}
+
+[data-profile="red"] {
+  --accent: #c10230;
+  --accent-strong: #7a0424;
+  --accent-soft: #ff4d6d;
+  --accent-contrast: #ffffff;
+  --wash-tint: #100304;
+}
+
+[data-profile="green"] {
+  --accent: #0a7a42;
+  --accent-strong: #0a5c33;
+  --accent-soft: #4affa0;
+  --accent-contrast: #ffffff;
+  --wash-tint: #030905;
+}
+
+[data-profile="colorless"] {
+  --accent: #52525b;
+  --accent-strong: #27272a;
+  --accent-soft: #e4e4e7;
+  --accent-contrast: #ffffff;
+  --wash-tint: #0c0c0d;
+}
+
+/* Surface roles: derived once per profile from the accent values above,
+   never redefined per component.
+   --wash-tint is a bespoke dark, hue-carrying colour per profile — NOT the
+   same value as --accent-strong. It exists because three of the six accent
+   palettes (White most acutely) carry accent-strong values that are
+   themselves light (by design — White's mana identity is warm cream/gold),
+   and mixing a light colour into the wash/panel raises luminance, which
+   silently drops the measured contrast floor below its 2026-09-24 value.
+   --wash-tint is chosen per profile to be reliably darker than
+   #18181B/--surface-panel's base, so mixing it in can only hold or improve
+   contrast, never regress it (verified live: 14.68-15.09:1 for panel text,
+   13.76-15.83:1 for wash text, all >= the 14.37:1 floor; see slice B
+   evidence log). The ground/darkest-wash-point stays fixed so B3 (no
+   profile darker than #09090B) holds for every profile. */
+:root,
+[data-profile] {
+  --surface-ground: #09090b;
+  --surface-wash: linear-gradient(
+    135deg,
+    #09090b 0%,
+    color-mix(in srgb, var(--wash-tint) 50%, #18181b) 45%,
+    #09090b 100%
+  );
+  --surface-panel: color-mix(in srgb, var(--wash-tint) 30%, #18181b);
+  --surface-edge: color-mix(in srgb, var(--accent) 38%, transparent);
+  --focus-ring: var(--accent-soft);
+  --text-primary: #e2e8f0;
+  --text-muted: #a1a1aa;
+  --text-on-accent: var(--accent-contrast);
+}
+
+/* ---- Shared token-driven utilities (not chrome-specific; shell.css owns
+   the chrome skeleton itself) ---- */
+
+.surface-wash {
+  background: var(--surface-wash);
+  color: var(--text-primary);
+}
+
+.panel {
+  background: var(--surface-panel);
+  border: 1px solid var(--surface-edge);
+  border-radius: 0.75rem;
+}
+
+.text-muted {
+  color: var(--text-muted);
+}
+
+.accent-text {
+  color: var(--accent-soft);
+}
+
+.btn-accent {
+  background: var(--accent);
+  color: var(--text-on-accent);
+  border: 1px solid var(--accent-strong);
+}
+
+:focus-visible {
+  outline: 3px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+/* 44px touch floor (REQ-205) — applied to every interactive control that
+   opts in with this class, on top of whatever intrinsic size it has. */
+.tap-target {
+  min-width: 44px;
+  min-height: 44px;
+}

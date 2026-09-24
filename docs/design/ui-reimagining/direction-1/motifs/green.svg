@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Green motif: forest at dusk">
+  <defs>
+    <radialGradient id="g-glow" cx="50%" cy="60%" r="20%">
+      <stop offset="0%" stop-color="#4AFFA0" stop-opacity="0.95"/>
+      <stop offset="100%" stop-color="#0A5C33" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" fill="#0A1710"/>
+  <g stroke="#0A7A42" stroke-width="2" fill="none" opacity="0.75" stroke-linecap="round">
+    <path d="M30 190 C30 140 60 150 55 100 C50 60 90 60 85 20"/>
+    <path d="M170 190 C170 150 140 150 145 110 C150 70 120 70 118 30"/>
+    <path d="M100 190 C100 150 110 140 100 100"/>
+  </g>
+  <circle cx="100" cy="120" r="6" fill="url(#g-glow)"/>
+</svg>

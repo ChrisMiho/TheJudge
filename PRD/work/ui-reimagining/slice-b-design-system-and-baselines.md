@@ -1,6 +1,6 @@
 # Slice B — design-system-and-baselines
 
-## Status: planned
+## Status: done
 
 ## Goal
 
