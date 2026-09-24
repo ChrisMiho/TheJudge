@@ -1,0 +1,149 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Tracker — after (shared chrome only)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<style>
+  /*
+   * Life Tracker's OWN screen content is reproduced here with fixed,
+   * hardcoded values — deliberately NOT driven by tokens.css — because
+   * REQ-202 keeps Life Tracker's own screens, counters, and layout
+   * untouched by this redesign. Only the surrounding chrome (the header
+   * above) reads the new REQ-200 surface-role tokens, exactly as it does
+   * on every other destination. Faithfully reproduces
+   * ../before/life-tracker-390x844.png and ../before/life-tracker-1440x900.png.
+   */
+  body { background: #09090b; }
+  .life-table {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0;
+  }
+  @media (min-width: 640px) {
+    .life-table { grid-template-columns: 1fr 1fr; }
+  }
+  .life-card {
+    position: relative;
+    min-height: 380px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #7dd8e8 0%, #f3f7fa 45%, #4c6b93 100%);
+    color: #0b0b0c;
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    font-family: system-ui, sans-serif;
+  }
+  .life-card .life-row {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+  }
+  .life-card .life-number {
+    font-size: 4.5rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .life-card .pm {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #0b0b0c;
+    cursor: pointer;
+    padding: 0 1rem;
+  }
+  .life-card .minus { left: 0.5rem; }
+  .life-card .plus { right: 0.5rem; }
+  .life-card .player-label {
+    writing-mode: vertical-rl;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 999px;
+    padding: 0.5rem 0.35rem;
+    font-weight: 600;
+    font-size: 0.85rem;
+  }
+  .life-card .counters {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.15rem;
+    background: rgba(255, 255, 255, 0.85);
+    border-radius: 0.6rem;
+    padding: 0.3rem;
+    font-size: 0.65rem;
+    text-align: center;
+  }
+  .life-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .day-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+  }
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="menu-rail">
+      <button class="icon-btn tap-target" aria-label="Menu">☰</button>
+      <button class="brand-mark tap-target" data-brand-tap>
+        <img src="motifs/blue.svg" alt="" aria-hidden="true">
+        <span class="wordmark">TheJudge</span>
+      </button>
+    </div>
+    <div class="life-header-controls">
+      <button class="icon-btn tap-target day-toggle">☀ Day</button>
+      <button class="icon-btn tap-target" aria-label="Game setup">⚙</button>
+    </div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="life-table" aria-label="4-player life table">
+    <div class="life-card">
+      <button class="pm minus" aria-label="Decrease life for Player 2">−</button>
+      <div class="life-row">
+        <div class="counters"><span>me</span><span>0</span><span>0</span><span>0</span></div>
+        <div class="life-number">40</div>
+        <div class="player-label">Player 2</div>
+      </div>
+      <button class="pm plus" aria-label="Increase life for Player 2">+</button>
+    </div>
+    <div class="life-card">
+      <button class="pm minus" aria-label="Decrease life for Player 3">−</button>
+      <div class="life-row">
+        <div class="player-label">Player 3</div>
+        <div class="life-number">40</div>
+        <div class="counters"><span>0</span><span>me</span><span>0</span><span>0</span></div>
+      </div>
+      <button class="pm plus" aria-label="Increase life for Player 3">+</button>
+    </div>
+    <div class="life-card">
+      <button class="pm minus" aria-label="Decrease life for Player 1">−</button>
+      <div class="life-row">
+        <div class="counters"><span>me</span><span>0</span><span>0</span><span>0</span></div>
+        <div class="life-number">40</div>
+        <div class="player-label">Player 1</div>
+      </div>
+      <button class="pm plus" aria-label="Increase life for Player 1">+</button>
+    </div>
+    <div class="life-card">
+      <button class="pm minus" aria-label="Decrease life for Player 4">−</button>
+      <div class="life-row">
+        <div class="player-label">Player 4</div>
+        <div class="life-number">40</div>
+        <div class="counters"><span>0</span><span>0</span><span>0</span><span>me</span></div>
+      </div>
+      <button class="pm plus" aria-label="Increase life for Player 4">+</button>
+    </div>
+  </main>
+</body>
+</html>

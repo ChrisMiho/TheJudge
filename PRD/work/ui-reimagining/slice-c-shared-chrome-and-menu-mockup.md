@@ -1,6 +1,6 @@
 # Slice C — shared-chrome-and-menu-mockup
 
-## Status: planned
+## Status: done
 
 ## Goal
 

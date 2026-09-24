@@ -1,0 +1,207 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared chrome &amp; Menu — direction 1</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<style>
+  .swatch-white { background: #ede7d6; }
+  .swatch-blue { background: #0050d8; }
+  .swatch-black { background: #7c3aed; }
+  .swatch-red { background: #c10230; }
+  .swatch-green { background: #0a7a42; }
+  .swatch-colorless { background: #52525b; }
+  .demo-grid {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 1rem;
+  }
+  .demo-grid button { text-align: left; }
+  .motif-strip { display: flex; gap: 0.5rem; margin: 1rem 0; }
+  .motif-strip img { width: 56px; height: 56px; border-radius: 0.5rem; border: 1px solid var(--surface-edge); }
+</style>
+</head>
+<body data-tray-open="false">
+  <header class="app-header">
+    <div class="menu-rail">
+      <button class="brand-mark tap-target" id="brand-mark" aria-label="TheJudge — tap 10 times anywhere in-scope to reveal the cat wizard">
+        <img id="brand-motif" src="motifs/blue.svg" alt="" aria-hidden="true">
+        <span class="wordmark">TheJudge</span>
+      </button>
+    </div>
+    <button class="menu-toggle tap-target" id="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="page-content">
+    <h1>Shared chrome &amp; Menu — direction 1</h1>
+    <p class="text-muted">
+      Before: <a href="../before/menu-390x844.png">menu-390x844.png</a> ·
+      <a href="../before/menu-1440x900.png">menu-1440x900.png</a>. Open the
+      menu (top-right ☰) to see the Theme section and the four overlay
+      demos this page carries.
+    </p>
+
+    <div class="before-after">
+      <figure>
+        <img src="../before/menu-390x844.png" alt="Before: today's Menu at 390x844">
+        <figcaption>Before — today's shipped Menu (390×844)</figcaption>
+      </figure>
+      <figure>
+        <img src="../before/menu-1440x900.png" alt="Before: today's Menu at 1440x900">
+        <figcaption>Before — today's shipped Menu (1440×900)</figcaption>
+      </figure>
+    </div>
+
+    <div class="card-panel" style="margin-bottom:1rem;">
+      <h2>Life Tracker: shared chrome inherited, own screen untouched (REQ-202)</h2>
+      <p class="text-muted">
+        Life Tracker's own counters and layout are unchanged; only the
+        header chrome around them now reads this page's token set — see
+        <a href="life-tracker-after.html">life-tracker-after.html</a> for the
+        live composite.
+      </p>
+      <div class="before-after">
+        <figure>
+          <img src="../before/life-tracker-390x844.png" alt="Before: Life Tracker at 390x844">
+          <figcaption>Before — 390×844</figcaption>
+        </figure>
+        <figure>
+          <img src="../after/life-tracker-390x844.png" alt="After: Life Tracker with new shared chrome at 390x844">
+          <figcaption>After — 390×844 (shared chrome only)</figcaption>
+        </figure>
+        <figure>
+          <img src="../before/life-tracker-1440x900.png" alt="Before: Life Tracker at 1440x900">
+          <figcaption>Before — 1440×900</figcaption>
+        </figure>
+        <figure>
+          <img src="../after/life-tracker-1440x900.png" alt="After: Life Tracker with new shared chrome at 1440x900">
+          <figcaption>After — 1440×900 (shared chrome only)</figcaption>
+        </figure>
+      </div>
+    </div>
+
+    <div class="card-panel">
+      <h2>Original motif kit (REQ-201)</h2>
+      <p class="text-muted">One original asset per colour — no official Wizards of the Coast mana glyph, icon font, logo, or card art.</p>
+      <div class="motif-strip">
+        <img src="motifs/white.svg" alt="White motif">
+        <img src="motifs/blue.svg" alt="Blue motif">
+        <img src="motifs/black.svg" alt="Black motif">
+        <img src="motifs/red.svg" alt="Red motif">
+        <img src="motifs/green.svg" alt="Green motif">
+        <img src="motifs/colorless.svg" alt="Colorless motif">
+      </div>
+    </div>
+  </main>
+
+  <!-- Menu tray: Theme section + overlay demo entry points -->
+  <div class="menu-tray-backdrop" id="tray-backdrop"></div>
+  <nav class="menu-tray" id="menu-tray" aria-label="Feature destinations">
+    <h2>Menu</h2>
+    <ul class="tray-nav-list">
+      <li><button type="button">Quick Question</button></li>
+      <li><button type="button">In-Depth Question</button></li>
+      <li><button type="button">Life Tracker</button></li>
+      <li><button type="button">Trade Balancer</button></li>
+      <li><button type="button" id="open-feedback">Send feedback</button></li>
+    </ul>
+    <h3>Theme</h3>
+    <div class="theme-section" role="group" aria-label="Theme palettes">
+      <button class="theme-swatch swatch-white tap-target" data-profile-btn="white" aria-label="Theme: White"><span class="swatch-label">White</span></button>
+      <button class="theme-swatch swatch-blue tap-target" data-profile-btn="blue" aria-label="Theme: Blue" data-current="true"><span class="swatch-label">Blue</span></button>
+      <button class="theme-swatch swatch-black tap-target" data-profile-btn="black" aria-label="Theme: Black"><span class="swatch-label">Black</span></button>
+      <button class="theme-swatch swatch-red tap-target" data-profile-btn="red" aria-label="Theme: Red"><span class="swatch-label">Red</span></button>
+      <button class="theme-swatch swatch-green tap-target" data-profile-btn="green" aria-label="Theme: Green"><span class="swatch-label">Green</span></button>
+      <button class="theme-swatch swatch-colorless tap-target" data-profile-btn="colorless" aria-label="Theme: Colorless"><span class="swatch-label">Colorless</span></button>
+    </div>
+    <div class="demo-grid">
+      <button type="button" class="btn tap-target" id="open-history">Open conversation history (drawer demo)</button>
+      <button type="button" class="btn tap-target" id="open-context">Open View Context (overlay demo)</button>
+      <button type="button" class="btn tap-target" id="open-card-detail">Open card-detail popup (Sol Ring)</button>
+    </div>
+  </nav>
+
+  <!-- Feedback modal -->
+  <div class="overlay-backdrop" id="feedback-modal" data-open="false">
+    <div class="overlay-panel">
+      <button class="icon-btn overlay-close tap-target" data-close="feedback-modal" aria-label="Close">✕</button>
+      <h2>Send feedback</h2>
+      <p class="text-muted">Tell us what's broken or what you'd like to see.</p>
+      <textarea class="field" rows="4" placeholder="What's on your mind?"></textarea>
+      <div style="margin-top:0.75rem;"><button class="btn primary tap-target">Send</button></div>
+    </div>
+  </div>
+
+  <!-- View Context overlay -->
+  <div class="overlay-backdrop" id="context-overlay" data-open="false">
+    <div class="overlay-panel">
+      <button class="icon-btn overlay-close tap-target" data-close="context-overlay" aria-label="Close">✕</button>
+      <h2>Game context</h2>
+      <p class="text-muted">Turn phase: Main 1 · Active player: Player 1</p>
+      <p>Battlefield: Sol Ring, Llanowar Elves</p>
+    </div>
+  </div>
+
+  <!-- Card-detail popup -->
+  <div class="overlay-backdrop" id="card-detail-popup" data-open="false">
+    <div class="overlay-panel">
+      <button class="icon-btn overlay-close tap-target" data-close="card-detail-popup" aria-label="Close">✕</button>
+      <h2>Sol Ring</h2>
+      <p class="text-muted">Artifact — {1}, T: Add {C}{C}.</p>
+      <p class="accent-text">Price: $1.85 (nonfoil)</p>
+    </div>
+  </div>
+
+  <!-- History drawer -->
+  <aside class="drawer-panel" id="history-drawer" data-open="false" aria-label="Conversation history">
+    <button class="icon-btn overlay-close tap-target" data-close="history-drawer" aria-label="Close">✕</button>
+    <h2>History</h2>
+    <p class="text-muted">Past questions from this session appear here.</p>
+  </aside>
+
+  <script>
+    const body = document.body;
+    const trayBackdrop = document.getElementById('tray-backdrop');
+    const menuToggle = document.getElementById('menu-toggle');
+    function setTray(open) {
+      body.setAttribute('data-tray-open', open ? 'true' : 'false');
+      menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    menuToggle.addEventListener('click', () => {
+      setTray(body.getAttribute('data-tray-open') !== 'true');
+    });
+    trayBackdrop.addEventListener('click', () => setTray(false));
+
+    // Theme swatches — live re-theme, no reload (REQ-200 / FLOW-007 step 4)
+    document.querySelectorAll('[data-profile-btn]').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const profile = btn.getAttribute('data-profile-btn');
+        document.documentElement.setAttribute('data-profile', profile);
+        document.querySelectorAll('[data-profile-btn]').forEach((b) =>
+          b.removeAttribute('data-current')
+        );
+        btn.setAttribute('data-current', 'true');
+        document.getElementById('brand-motif').src = 'motifs/' + profile + '.svg';
+      });
+    });
+
+    // Generic overlay open/close
+    function openOverlay(id) {
+      document.getElementById(id).setAttribute('data-open', 'true');
+    }
+    function closeOverlay(id) {
+      document.getElementById(id).setAttribute('data-open', 'false');
+    }
+    document.getElementById('open-feedback').addEventListener('click', () => openOverlay('feedback-modal'));
+    document.getElementById('open-history').addEventListener('click', () => openOverlay('history-drawer'));
+    document.getElementById('open-context').addEventListener('click', () => openOverlay('context-overlay'));
+    document.getElementById('open-card-detail').addEventListener('click', () => openOverlay('card-detail-popup'));
+    document.querySelectorAll('[data-close]').forEach((btn) => {
+      btn.addEventListener('click', () => closeOverlay(btn.getAttribute('data-close')));
+    });
+  </script>
+</body>
+</html>
