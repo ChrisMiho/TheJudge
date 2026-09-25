@@ -59,3 +59,87 @@ Theme intensity, motifs, the brand mark, copy tone, anything that applies to
 every screen.
 
 - the inspiration images come from cards in their respective colors. The art is inspiration for things we can do to the UI and make the application feel more like an mtg app, and now just a plain old web app
+
+---
+
+# Round 3 — owner feedback on round 2 (2026-09-25)
+
+Round 2 applied everything above; renders are in `renders/`, the record is
+`README.md` → "Round 2". Mark each point **Rule** (must hold) or **Try**
+(show me and I'll decide), or "accepted" to keep it as is. Then start a
+fresh session with:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 2), then apply
+my Round 3 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+## Quick Question (`direction-1/quick-question.html` · renders `qq-v2-*`)
+
+Tries waiting on your verdict:
+
+- ✕ Remove on the card's top-left corner (mirrors ⓘ).
+- Add card + Scan beside the title; search opens above the question box.
+  (Or should the search open right under the chips instead?)
+- Character count inside the question box with the hairline meter.
+
+Your points:
+
+-
+
+## In-Depth Question (`direction-1/in-depth-question.html` · renders `idq-*`)
+
+Tries waiting on your verdict:
+
+- The five-station progress rail (Game · Zones · Cards · Context · Answer).
+- Zone tiles that glow when selected.
+- Card-by-card context with the card as hero beside the fields.
+- The lit shelf for cards per zone, with #1…TOP badges on the Stack.
+
+Your points:
+
+-
+
+## Trade Balancer (`direction-1/trade-balancer.html` · renders `tb-*`)
+
+Tries waiting on your verdict:
+
+- The scale as the hero (tilting beam + verdict in plain words).
+- "Call it even within $0 / $1 / $5".
+- Per-entry foil toggle, quantity, Change printing (with the picker).
+- Add cash on a side, rename a side, Swap sides, Copy summary.
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`direction-1/shared-chrome-menu.html` · renders `menu-*`)
+
+Tries waiting on your verdict:
+
+- Header: motif along the right edge, lit hairline along the bottom, brand
+  mark in a lit orb.
+- Menu tray: destination tiles with a glyph and a one-line hint.
+- Theme as six mana orbs, the chosen one wearing its motif.
+
+Your points:
+
+-
+
+## Anything global
+
+Rules already locked: card-as-hero is per flow, not global; every card keeps
+its colour-identity ring; the theme owns the glow behind a card, never its
+edge.
+
+Your points:
+
+-
+
+## Ready to build?
+
+If every flow above is agreed, say so here and the next session writes one
+rule per flow and hands the agreed pages to a fresh kickoff (product truth +
+app code). Otherwise it runs one more mockup round.
+
+-
