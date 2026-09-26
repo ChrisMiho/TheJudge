@@ -292,7 +292,9 @@ the floating glass side tray.
 
 Your points:
 
--
+- the new animated background i think is a step in the right direction, but the design with the rays of light just isnt the vibe im looking for with this app, i need something more subtle, thats magical and mystical, like a moving haze or dust maybe, like magical dust, or smoke maybe, again subtle but moves around still
+- i think the icons still need to be redone again, maybe we can generate a bunch of examples and i can pick from them
+- the new judge header just doesnt feel right now, we have these new images around text, but overall, it just doesnt feel like a proper banner yet
 
 ## Quick Question (`r4-qq-*`)
 
@@ -300,7 +302,10 @@ Tries: send in line with the box on desktop; the glass detail tray.
 
 Your points:
 
--
+- heading in the right direction, but can the send request button be integrated into the text box, like the conversation ui has it? that would be way cleaner
+- the start over button seems odd and out of place, can we find a better spot towards the top right maybe that would be better, and just have the circular arrow on it, and no text
+- the side tray that pops out with more info on the desktop version is better now, but i want to ensure that users can close the box by either clicking on the x in the top right or by just simply clicking outside of the box 
+
 
 ## In-Depth Question (`r4-idq-*`)
 
@@ -309,7 +314,18 @@ on Battlefield cards too; the collapsible review.
 
 Your points:
 
--
+- Thinking about the future state of this app, the in-depth path is will become an extension of the quick question path, and the names will be simplified to just Question, with that in mind, does it make sense now to start scoping out how we can integrate the flow into the Quick flow, i already have some ideas, but i think under the quick question flow, a button that says "Add in-depth details" or something concise would then take users to the first step of the indepth path, and the cards defined in quick question just carry over into the flow, and will have the chance to assign the zone when the right step in the flow comes up.
+- back and send request buttons feel out of place, the send request can be integrated into the chat like the quick question chat suggetion is
+- the back button could just be an rrow at the top left or right to be able to navigate back maybe?
+- awkward startover button again
+- desktop back and continue buttons could use some rework, they just look out of place and ugly
+- the new targets system looks better
+- when adding context per card, it looks like there is an area that shows all the cards, that is uneccessary, id rather just have a little box that shows 1/X and then as you click next card, it just slowly increments up to X/X
+- theres also a lot of deadspace on the context enrighment step
+- some components stretch all the way across, it feels like an inefficient use of space that isnt highlighting the art of the card where possible
+- the boubbles that hold the various zones, sometimes theyre very transparent, i think they should be solid so the text is easy to ready and provides contrast to the background
+- for the stack, in the 2 card example, i see top and then 1, shouldnt the 1 be bottom in this case? and numbers would only be introduced for 3+ cards?
+
 
 ## Trade Balancer (`r4-tb-*`)
 
@@ -317,7 +333,7 @@ Tries: the verdict as just the difference; the tidied printing picker.
 
 Your points:
 
--
+- the new trade button on the desktop version looks out of place, it should be up in the top right hand corner, opposite of the Trade balancer title feels appropriate
 
 ## Shared chrome and Menu (`r4-menu-*`)
 
@@ -325,7 +341,10 @@ Tries: orbs with no names or blurb.
 
 Your points:
 
--
+- My only complaint about the menu is that the history is all the way at the bottom, it should be under in-depth question for now or future state, the one question option
+- it should also say "Question History" instead of just history
+- i like the orbs for color better
+- i like the flair of graphics at the bottom of the panel to utilize the dead space, but is there an opportunity to put a little more flair there, its a little too subtle
 
 ## Ready to build?
 
