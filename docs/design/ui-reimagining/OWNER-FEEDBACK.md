@@ -198,7 +198,11 @@ the corner ornaments, Cinzel for titles, the summon / seal / shimmer motion.
 
 Your points:
 
--
+- idk what font got chosen to add character, but this isnt the one, the other one felt clean and fresh, this one feels forced
+- the icons generated to represent each color need to be re-done, these arent it
+- the menu ballooned into a monstrosity, why is there so much text now, why is the color selection taking up the entire scree now?
+- i notice more personality in each theme which i appreciate, but its still to subtle
+- this new background is interesting and fun
 
 ## Quick Question (`r3-qq-*`)
 
@@ -207,7 +211,10 @@ searching; the art-led detail sheet; the chat with the Cards strip.
 
 Your points:
 
--
+- my only feedback right now i that the tray for the desktop looks ugly, the mobile verion looks great however, but the desktop one just looks boring, why is there so much gray? it doesnt feel like a tray, it feels like part of the screen is covered up
+- the send request button should be in line with the text box that hosts the user question, in the desktop screenshots, it looks out of place, on mobile, it looks better on its own line under
+- the accents added to the corners of the cards on display is some nice flair but i dont like how it looks, i think i want something more minimalistic for now
+- the chat view looks nice, i like the cards at the top displayed, thats clever, but i dont think they need to be displayed a second time in the chat as well, at least not the icons
 
 ## In-Depth Question (`r3-idq-*`)
 
@@ -216,7 +223,14 @@ context sheet (chips, stepper, tap-to-target); ✎ on the reviewed rows.
 
 Your points:
 
--
+- why are the + and - buttons circles now? the text in them isnt cenetered now, the squares were fine
+- the accents on the corners of the box that holds the cards is too much and needs to be more minimalistic
+- on the desktop photo, the back and continue button are different sizes, thats weird and should be balanced
+- this new context is horrible, its overhwleming options instead of a clean UI like before, i know i said we needed to work on this, but this is regression, the user should be able to properly provide context of what the card tartgets, whether it be nothing, something in a zone, a player, all players, or nothing at all and just exists on the board
+- all the mana spent also appears to be removed
+- in general for the context, its possible for a card to have lots and little context, and finding a way to streamline the ui to allow users to provide that context with as little clicks as possible, while also enabling them to provide it when needed
+- the final review screen looks nice, i like the cards laid out, but id love a way to collapse the list as well too if needed
+- chat looks nice, but like the quick flow, the cards dont need to be displayed twice
 
 ## Trade Balancer (`r3-tb-*`)
 
@@ -225,7 +239,13 @@ printing picker with Nonfoil / Foil price pills; fixed-viewport layout.
 
 Your points:
 
--
+- what is the add cash button and why was it added? that is not part of this functionality
+- the bottom tray on mobile looks great
+- the A/B sides looks great for mobile
+- the new scale animation is more concise and better
+- there is verbose info in the animation though, we can simplify this to just the diff 
+- the desktop side tray is still ugly
+- desktop overall looks good, but add cash needs to be removed, what does swap sides mean? Seems useless. what is copy summary? and i love the new trade button
 
 ## Shared chrome and Menu (`r3-menu-*`)
 
@@ -233,7 +253,9 @@ Tries: the themed tray from the left; plain rows; Theme orbs at the foot.
 
 Your points:
 
--
+- these r3 menu screenshots look great, but every screenshot ive seen in the other flows look horrible, uninspired, and needing of changes, these look better, still has room for improvement, but this is a step in the right direction for sure
+- the descrittion under the color however is unnecessary
+- the name on the colors if also unneeded
 
 ## Ready to build?
 
