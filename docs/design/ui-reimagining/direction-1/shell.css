@@ -1,8 +1,13 @@
 /*
  * shell.css — the single source of direction 1's shared chrome skeleton:
- * page shell, header/menu rail, brand mark slot, menu tray, and the small
- * set of overlay primitives (modal, drawer, popup) every mockup page reuses
- * rather than re-declaring. Imports tokens.css first for the roles below.
+ * page shell, header, brand mark, the menu tray (slides in from the LEFT,
+ * as today's app does — owner, round 3), the ornament frame utility, the
+ * shared buttons/fields, and the overlay primitives (modal, drawer) every
+ * mockup page reuses rather than re-declaring. Imports tokens.css first.
+ *
+ * Round 3 personality pass: a carved display face for titles (Cinzel), a
+ * breathing brand orb, corner flourishes per colour (.ornate), a shimmer on
+ * the primary button, and the ambience layer (ambience.css/js) behind it all.
  */
 
 * {
@@ -13,7 +18,7 @@ html,
 body {
   margin: 0;
   min-height: 100%;
-  font-family: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-family: var(--font-body);
 }
 
 body {
@@ -30,12 +35,19 @@ img {
 
 button,
 select,
-input {
+input,
+textarea {
   font: inherit;
   color: inherit;
 }
 
-/* ---- Header / menu rail ---- */
+h1, h2, .display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+/* ---- Header ---- */
 
 .app-header {
   position: sticky;
@@ -45,24 +57,24 @@ input {
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
-  padding: 0.5rem 0.75rem;
-  background: color-mix(in srgb, var(--surface-panel) 92%, transparent);
+  padding: 0.45rem 0.6rem;
+  background: color-mix(in srgb, var(--surface-panel) 88%, transparent);
   border-bottom: 1px solid var(--surface-edge);
-  backdrop-filter: blur(6px);
+  backdrop-filter: blur(8px);
   overflow: hidden;
 }
 
-/* the current colour's motif rides faintly along the header's right edge, and a
-   lit hairline runs the bottom edge — the chrome carries the theme, not just a tint */
+/* the colour's motif rides faintly along the header's right edge and a lit
+   hairline runs the bottom edge — the chrome carries the theme, not a tint */
 .app-header::before {
   content: "";
   position: absolute;
-  right: 3.5rem;
+  right: 1rem;
   top: -60%;
-  width: 160px;
+  width: 180px;
   height: 220%;
   background: var(--motif) center / contain no-repeat;
-  opacity: 0.16;
+  opacity: 0.14;
   pointer-events: none;
 }
 
@@ -73,8 +85,8 @@ input {
   right: 0;
   bottom: -1px;
   height: 1px;
-  background: linear-gradient(90deg, transparent 0%, var(--accent-soft) 35%, var(--accent) 65%, transparent 100%);
-  opacity: 0.8;
+  background: linear-gradient(90deg, transparent 0%, var(--accent-soft) 30%, var(--accent) 70%, transparent 100%);
+  opacity: 0.85;
 }
 
 .app-header > * {
@@ -85,19 +97,27 @@ input {
 .menu-rail {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.35rem;
 }
 
+.header-side {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* the brand mark: a breathing orb of the colour's motif + the wordmark */
 .brand-mark {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
-  min-width: 44px;
+  gap: 0.55rem;
   min-height: 44px;
   padding: 0.25rem 0.5rem;
   background: transparent;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 0.6rem;
   cursor: pointer;
   color: var(--text-primary);
 }
@@ -107,29 +127,33 @@ input {
   background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
+.brand-mark .orb,
 .brand-mark img,
 .brand-mark svg {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 45%, transparent), 0 0 16px color-mix(in srgb, var(--accent) 70%, transparent);
-  background: var(--surface-ground);
+  background: var(--motif) center / cover no-repeat, var(--surface-ground);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent) 75%, transparent);
+  animation: orb-breathe 4.5s ease-in-out infinite;
+}
+
+@keyframes orb-breathe {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 65%, transparent); }
+  50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 85%, transparent), 0 0 26px color-mix(in srgb, var(--accent) 95%, transparent); }
 }
 
 .brand-mark .wordmark {
+  font-family: var(--font-display);
   font-weight: 700;
-  letter-spacing: 0.02em;
-  background: linear-gradient(90deg, var(--accent-soft), var(--accent));
+  font-size: 1.05rem;
+  letter-spacing: 0.04em;
+  background: linear-gradient(90deg, var(--accent-soft), color-mix(in srgb, var(--accent-soft) 45%, var(--text-primary)));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-}
-
-.step-eyebrow {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
 }
 
 .menu-toggle,
@@ -139,99 +163,109 @@ input {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface-panel);
-  border: 1px solid var(--surface-edge);
+  background: transparent;
+  border: 1px solid transparent;
   border-radius: 0.6rem;
   cursor: pointer;
   color: var(--text-primary);
+  font-size: 1.1rem;
 }
 
 .icon-btn:hover,
-.menu-toggle:hover {
-  border-color: var(--accent);
+.menu-toggle:hover,
+.icon-btn:focus-visible,
+.menu-toggle:focus-visible {
+  border-color: var(--surface-edge);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .mock-mode-banner {
   text-align: center;
-  font-size: 0.75rem;
-  padding: 0.25rem 0.5rem;
-  background: color-mix(in srgb, var(--accent) 22%, var(--surface-ground));
+  font-size: 0.72rem;
+  padding: 0.22rem 0.5rem;
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface-ground));
   color: var(--text-primary);
   border-bottom: 1px solid var(--surface-edge);
 }
 
-/* ---- Menu tray (slide-in from the right; also the Theme home) ---- */
+/* ---- Menu tray: slides in from the left, like today's app ---- */
 
 .menu-tray-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
   z-index: 30;
   opacity: 0;
   pointer-events: none;
-  transition: opacity 0.18s ease;
+  transition: opacity 0.2s ease;
 }
 
 .menu-tray {
   position: fixed;
   top: 0;
-  right: 0;
+  left: 0;
   bottom: 0;
-  width: min(22rem, 90vw);
+  width: min(20rem, 86vw);
+  display: flex;
+  flex-direction: column;
   background:
-    radial-gradient(90% 40% at 100% 0%, color-mix(in srgb, var(--accent) 34%, transparent) 0%, transparent 70%),
-    var(--surface-panel);
-  border-left: 1px solid var(--surface-edge);
+    radial-gradient(90% 30% at 0% 100%, color-mix(in srgb, var(--accent) 28%, transparent) 0%, transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-panel) 96%, transparent), color-mix(in srgb, var(--surface-panel) 92%, var(--surface-ground)));
+  border-right: 1px solid var(--surface-edge);
+  box-shadow: 24px 0 60px -30px color-mix(in srgb, var(--accent) 60%, #000);
   z-index: 31;
-  padding: 1rem;
+  padding: 0.75rem 0 1rem;
   overflow-y: auto;
-  transform: translateX(100%);
-  transition: transform 0.2s ease;
+  transform: translateX(-100%);
+  transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
   isolation: isolate;
 }
 
+/* the motif watermark sits low in the tray, the lit hairline runs its edge */
 .menu-tray::before {
   content: "";
   position: absolute;
-  right: -20%;
-  top: -6%;
-  width: 78%;
+  left: -25%;
+  bottom: -8%;
+  width: 90%;
   aspect-ratio: 1;
   background: var(--motif) center / contain no-repeat;
-  opacity: 0.14;
+  opacity: 0.12;
   pointer-events: none;
   z-index: -1;
 }
 
-.menu-tray .tray-brand {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.menu-tray .tray-brand .brand-mark {
-  padding-left: 0;
-}
-
-.menu-tray .tray-brand .tagline {
-  display: block;
-  font-size: 0.7rem;
-  color: var(--text-muted);
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.menu-tray h3 {
-  font-size: 0.72rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--text-muted);
-  margin: 1.1rem 0 0.5rem;
+.menu-tray::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -1px;
+  width: 1px;
+  background: linear-gradient(180deg, var(--accent-soft), transparent 60%);
+  opacity: 0.7;
 }
 
 [data-tray-open="true"] .menu-tray-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* the same dimming for sheets and side panels, toggled on the backdrop itself
+   so a card-detail sheet never drags the menu tray open with it */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 39;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.sheet-backdrop[data-open="true"] {
   opacity: 1;
   pointer-events: auto;
 }
@@ -240,87 +274,76 @@ input {
   transform: translateX(0);
 }
 
-.menu-tray h2,
-.menu-tray h3 {
-  margin: 0 0 0.5rem;
-}
-
-.theme-section {
+.menu-tray .tray-brand {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin: 0.5rem 0 1rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.6rem 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--surface-edge);
 }
 
-.theme-swatch {
-  min-width: 44px;
-  min-height: 44px;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  border: 2px solid var(--surface-edge);
-  cursor: pointer;
-  position: relative;
+.menu-tray .tray-brand .brand-mark {
+  padding-left: 0;
 }
 
-.theme-swatch[data-current="true"] {
-  border-color: var(--text-primary);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-
-.theme-swatch .swatch-label {
-  position: absolute;
-  left: 50%;
-  top: calc(100% + 4px);
-  transform: translateX(-50%);
-  font-size: 0.65rem;
+.menu-tray .tray-brand .tagline {
+  display: block;
+  font-family: var(--font-body);
+  font-size: 0.66rem;
   color: var(--text-muted);
-  white-space: nowrap;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin-top: 0.1rem;
 }
 
+.menu-tray h3 {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin: 0.9rem 1rem 0.35rem;
+}
+
+/* destination rows: a plain list, themed — a lit bar marks the current screen */
 .tray-nav-list {
   list-style: none;
-  padding: 0;
-  margin: 0 0 1rem;
+  padding: 0.35rem 0.5rem 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.4rem;
+  gap: 0.1rem;
 }
 
 .tray-nav-list button {
   width: 100%;
   display: grid;
-  grid-template-columns: 36px 1fr auto;
+  grid-template-columns: 28px 1fr auto;
   align-items: center;
   gap: 0.6rem;
   text-align: left;
-  padding: 0.5rem 0.7rem;
-  min-height: 52px;
-  background: color-mix(in srgb, var(--surface-ground) 65%, transparent);
-  border: 1px solid var(--surface-edge);
-  border-radius: 0.7rem;
+  padding: 0 0.75rem;
+  min-height: 48px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.6rem;
   cursor: pointer;
   color: var(--text-primary);
-  transition: border-color 150ms ease, background 150ms ease;
+  font-weight: 500;
+  font-size: 0.95rem;
+  position: relative;
+  transition: background 150ms ease, border-color 150ms ease;
 }
 
 .tray-nav-list button .glyph {
-  width: 36px;
-  height: 36px;
-  border-radius: 0.55rem;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
-  font-size: 1.05rem;
+  font-size: 1rem;
   color: var(--accent-soft);
-  background: color-mix(in srgb, var(--accent) 18%, var(--surface-ground));
-  border: 1px solid color-mix(in srgb, var(--accent-soft) 30%, transparent);
-}
-
-.tray-nav-list button .hint {
-  display: block;
-  font-size: 0.72rem;
-  color: var(--text-muted);
-  margin-top: 0.1rem;
 }
 
 .tray-nav-list button .here {
@@ -329,41 +352,58 @@ input {
 }
 
 .tray-nav-list button[aria-current="page"] {
-  border-color: var(--accent-soft);
-  background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
-  box-shadow: 0 0 18px -6px color-mix(in srgb, var(--accent) 80%, transparent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent-soft) 25%, transparent);
+}
+
+.tray-nav-list button[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--accent-soft);
+  box-shadow: 0 0 12px var(--accent-soft);
 }
 
 .tray-nav-list button:hover,
 .tray-nav-list button:focus-visible {
-  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.tray-divider {
+  height: 1px;
+  margin: 0.5rem 1rem;
+  background: linear-gradient(90deg, var(--surface-edge), transparent);
 }
 
 /* theme orbs: each colour is a lit sphere, the chosen one wears its motif */
 .theme-orbs {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  gap: 0.35rem;
-  margin: 0.4rem 0 0.2rem;
+  gap: 0.2rem;
+  margin: 0.2rem 0.75rem 0;
 }
 
 .theme-orb {
   display: grid;
   justify-items: center;
-  gap: 0.35rem;
+  gap: 0.3rem;
   background: transparent;
   border: 0;
-  padding: 0.25rem 0;
+  padding: 0.3rem 0;
   min-height: 44px;
   cursor: pointer;
   color: var(--text-muted);
-  font-size: 0.62rem;
+  font-size: 0.6rem;
   letter-spacing: 0.03em;
 }
 
 .theme-orb .orb {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   border-radius: 999px;
   position: relative;
   background: radial-gradient(circle at 35% 30%, var(--orb-soft) 0%, var(--orb) 45%, color-mix(in srgb, var(--orb) 40%, #000) 100%);
@@ -374,7 +414,7 @@ input {
 .theme-orb .orb::after {
   content: "";
   position: absolute;
-  inset: 4px;
+  inset: 3px;
   border-radius: inherit;
   background: var(--orb-motif) center / cover no-repeat;
   opacity: 0;
@@ -387,7 +427,7 @@ input {
 
 .theme-orb[data-current="true"] .orb {
   transform: scale(1.12);
-  box-shadow: 0 0 0 2px var(--surface-ground), 0 0 0 4px var(--orb-soft), 0 0 22px var(--orb);
+  box-shadow: 0 0 0 2px var(--surface-ground), 0 0 0 3px var(--orb-soft), 0 0 20px var(--orb);
 }
 
 .theme-orb[data-current="true"] .orb::after {
@@ -399,9 +439,10 @@ input {
 }
 
 .theme-note {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   color: var(--text-muted);
-  margin: 0.4rem 0 0.6rem;
+  margin: 0.35rem 1rem 0;
+  line-height: 1.4;
 }
 
 .theme-note b {
@@ -409,22 +450,11 @@ input {
   font-weight: 600;
 }
 
-.tray-links {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4rem 0.9rem;
-  margin-top: 0.6rem;
-  font-size: 0.78rem;
-}
-
-.tray-links button {
-  background: transparent;
-  border: 0;
-  padding: 0.3rem 0;
-  min-height: 32px;
-  color: var(--accent-soft);
-  cursor: pointer;
-  text-decoration: underline dotted;
+.tray-foot {
+  margin-top: auto;
+  padding: 0.9rem 1rem 0;
+  font-size: 0.7rem;
+  color: var(--text-muted);
 }
 
 /* ---- Page shell / content column ---- */
@@ -443,12 +473,38 @@ input {
   padding: 1rem;
 }
 
-/* ---- Generic overlay (feedback modal / view-context / card-detail popup) --- */
+/* ---- Ornament frame: the colour's flourish in opposite corners (two via
+   pseudo-elements; add <i class="orn tr"></i><i class="orn bl"></i> for all four) ---- */
+.ornate {
+  position: relative;
+}
+
+.ornate::before,
+.ornate::after,
+.ornate .orn {
+  content: "";
+  position: absolute;
+  width: 46px;
+  height: 46px;
+  background: var(--ornament) 0 0 / contain no-repeat;
+  opacity: 0.75;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.ornate::before { top: 4px; left: 4px; }
+.ornate::after { bottom: 4px; right: 4px; transform: rotate(180deg); }
+.ornate .orn.tr { top: 4px; right: 4px; transform: rotate(90deg); }
+.ornate .orn.bl { bottom: 4px; left: 4px; transform: rotate(-90deg); }
+.ornate.small::before, .ornate.small::after, .ornate.small .orn { width: 30px; height: 30px; }
+
+/* ---- Generic overlay (feedback modal / view-context) --- */
 
 .overlay-backdrop {
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
   z-index: 40;
   display: none;
   align-items: center;
@@ -474,28 +530,42 @@ input {
 
 .overlay-panel .overlay-close {
   position: absolute;
-  top: 0.5rem;
-  right: 0.5rem;
+  top: 0.4rem;
+  right: 0.4rem;
 }
 
-/* Right-side drawer at >=768px (history drawer / adaptive context) */
+/* Right-side drawer at >=768px (history / card detail / printing picker);
+   a bottom sheet on phones that sizes to its content */
 .drawer-panel {
   position: fixed;
   top: 0;
   right: 0;
   bottom: 0;
-  width: min(24rem, 92vw);
-  background: var(--surface-panel);
+  width: min(26rem, 92vw);
+  background:
+    radial-gradient(80% 30% at 100% 0%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 70%),
+    var(--surface-panel);
   border-left: 1px solid var(--surface-edge);
+  box-shadow: -24px 0 60px -30px color-mix(in srgb, var(--accent) 60%, #000);
   z-index: 40;
-  padding: 1rem;
+  padding: 0;
   overflow-y: auto;
   transform: translateX(100%);
-  transition: transform 0.2s ease;
+  transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 [data-open="true"].drawer-panel {
   transform: translateX(0);
+}
+
+.drawer-panel .overlay-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 3;
+  background: rgba(9, 9, 11, 0.55);
+  border-color: color-mix(in srgb, var(--text-primary) 18%, transparent);
+  backdrop-filter: blur(4px);
 }
 
 @media (max-width: 767px) {
@@ -504,14 +574,29 @@ input {
     left: 0;
     right: 0;
     width: auto;
-    height: min(70vh, 32rem);
+    max-height: 88dvh;
     border-left: none;
     border-top: 1px solid var(--surface-edge);
+    border-radius: 1.1rem 1.1rem 0 0;
     transform: translateY(100%);
   }
 
   [data-open="true"].drawer-panel {
     transform: translateY(0);
+  }
+
+  /* grab handle */
+  .drawer-panel::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 40px;
+    height: 4px;
+    margin-left: -20px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--text-primary) 30%, transparent);
+    z-index: 3;
   }
 }
 
@@ -520,27 +605,67 @@ input {
 .btn {
   min-height: 44px;
   padding: 0.5rem 1rem;
-  border-radius: 0.6rem;
+  border-radius: 0.65rem;
   border: 1px solid var(--surface-edge);
-  background: var(--surface-panel);
+  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
   color: var(--text-primary);
   cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.btn:hover {
+  border-color: var(--accent);
 }
 
 .btn.primary {
-  background: var(--accent);
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff) 0%, var(--accent) 45%, var(--accent-strong) 100%);
   color: var(--text-on-accent);
-  border-color: var(--accent-strong);
+  border-color: color-mix(in srgb, var(--accent-soft) 45%, transparent);
+  box-shadow: 0 8px 24px -10px color-mix(in srgb, var(--accent) 90%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* a slow light sweep across the primary control */
+.btn.primary::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  bottom: -50%;
+  left: -30%;
+  width: 24%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: skewX(-18deg);
+  animation: shimmer 4.2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 60% { left: -30%; }
+  100% { left: 130%; }
+}
+
+.btn.ghost {
+  background: transparent;
 }
 
 .field {
   min-height: 44px;
   width: 100%;
   padding: 0.5rem 0.75rem;
-  border-radius: 0.6rem;
+  border-radius: 0.65rem;
   border: 1px solid var(--surface-edge);
-  background: var(--surface-ground);
+  background: color-mix(in srgb, var(--surface-ground) 80%, transparent);
   color: var(--text-primary);
+}
+
+.field::placeholder {
+  color: color-mix(in srgb, var(--text-muted) 80%, transparent);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--accent-soft);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .before-after {
@@ -566,4 +691,56 @@ input {
   font-size: 0.8rem;
   color: var(--text-muted);
   margin-top: 0.25rem;
+}
+
+/* ---- demo controls (mockup only, never app code): a dashed strip that
+   reads as scaffolding, kept out of the main composition ---- */
+.demo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin: 1.4rem 0 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px dashed color-mix(in srgb, var(--text-muted) 45%, transparent);
+  border-radius: 0.5rem;
+}
+
+.demo-bar .tag {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.6rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--text-muted) 25%, transparent);
+  color: var(--text-primary);
+}
+
+.demo-bar button {
+  font-size: 0.68rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--surface-edge);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.demo-bar button[aria-pressed="true"] {
+  color: var(--text-primary);
+  border-color: var(--accent-soft);
+}
+
+.foot-note {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.8rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark .orb, .brand-mark img, .brand-mark svg { animation: none; }
+  .btn.primary::after { display: none; }
 }

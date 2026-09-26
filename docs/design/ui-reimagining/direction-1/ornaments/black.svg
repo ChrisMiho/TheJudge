@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Black ornament: briar thorn with a drip">
+  <g fill="none" stroke="#c77dff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M3 3 H36 C30 6 24 8 20 14 C16 20 14 28 12 40 C11 46 8 50 3 52"/>
+    <path d="M22 11 L26 5" /><path d="M16 20 L9 18"/><path d="M13 30 L7 32"/><path d="M27 8 L31 12"/>
+    <path d="M36 3 C42 3 48 4 52 8"/>
+  </g>
+  <path d="M46 10 C46 14 44 16 44 19 A2 2 0 0 0 48 19 C48 16 46 14 46 10 Z" fill="#c77dff" opacity="0.9"/>
+  <circle cx="20" cy="14" r="2" fill="#7c3aed"/>
+</svg>

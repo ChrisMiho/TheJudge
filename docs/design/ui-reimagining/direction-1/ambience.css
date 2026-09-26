@@ -1,0 +1,147 @@
+/*
+ * ambience.css — the colour's personality, painted behind every screen
+ * (round 3, owner: "more animations, more graphics, more personality within
+ * each color profile … magical, mythical, ethereal").
+ *
+ * One fixed layer under the page, three parts per profile:
+ *   .ambience::before   a slow, large-scale light movement (rays, vortex,
+ *                       heat, breath, canopy light, brass rings)
+ *   .ambience::after    the colour's motif, huge and faint, drifting
+ *   #ambience-canvas    a particle field drawn by ambience.js
+ *                       (motes, sparks, ash, embers, pollen, dust)
+ *
+ * Everything obeys prefers-reduced-motion: the layer still paints, nothing
+ * moves. Intensity is restrained so card art always wins.
+ */
+
+.ambience {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.ambience::before,
+.ambience::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.ambience::after {
+  background: var(--motif) center / min(120vmin, 900px) no-repeat;
+  opacity: 0.1;
+  filter: blur(1px) saturate(1.2);
+  animation: ambience-drift 48s ease-in-out infinite alternate;
+}
+
+#ambience-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.9;
+  mix-blend-mode: screen;
+}
+
+/* the page content always sits above the ambience (fixed overlays — trays,
+   sheets, side panels — carry their own z-index and must keep position: fixed) */
+.mock-mode-banner,
+.page-content {
+  position: relative;
+  z-index: 1;
+}
+
+@keyframes ambience-drift {
+  from { transform: translate3d(-3%, -2%, 0) scale(1); }
+  to { transform: translate3d(3%, 3%, 0) scale(1.08); }
+}
+
+/* ---- White: dawn rays sweep slowly across the ground ---- */
+[data-profile="white"] .ambience::before {
+  background:
+    conic-gradient(from 200deg at 50% -20%, transparent 0 40%, rgba(250, 248, 242, 0.09) 44%, transparent 47%, transparent 55%, rgba(250, 248, 242, 0.06) 58%, transparent 61%, transparent 70%, rgba(250, 248, 242, 0.08) 73%, transparent 76%),
+    radial-gradient(60% 40% at 50% 0%, rgba(237, 231, 214, 0.16), transparent 70%);
+  animation: ambience-sway 22s ease-in-out infinite alternate;
+  transform-origin: 50% -20%;
+}
+@keyframes ambience-sway {
+  from { transform: rotate(-6deg); }
+  to { transform: rotate(6deg); }
+}
+
+/* ---- Blue: a charged vortex turns behind the page ---- */
+[data-profile="blue"] .ambience::before {
+  background:
+    repeating-conic-gradient(from 0deg at 50% 45%, transparent 0 9deg, rgba(56, 225, 255, 0.07) 10deg, transparent 12deg),
+    radial-gradient(45% 45% at 50% 45%, rgba(0, 80, 216, 0.28), transparent 70%);
+  -webkit-mask: radial-gradient(60% 60% at 50% 45%, #000 20%, transparent 75%);
+  mask: radial-gradient(60% 60% at 50% 45%, #000 20%, transparent 75%);
+  animation: ambience-spin 70s linear infinite;
+  transform-origin: 50% 45%;
+}
+@keyframes ambience-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ---- Black: the dark breathes; one hot violet ember pulses ---- */
+[data-profile="black"] .ambience::before {
+  background:
+    radial-gradient(28% 22% at 68% 38%, rgba(199, 125, 255, 0.28), transparent 70%),
+    radial-gradient(90% 50% at 50% 110%, rgba(46, 26, 71, 0.9), transparent 70%);
+  animation: ambience-breathe 7s ease-in-out infinite;
+}
+@keyframes ambience-breathe {
+  0%, 100% { opacity: 0.7; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.04); }
+}
+
+/* ---- Red: heat rises from the bottom, glow flickers ---- */
+[data-profile="red"] .ambience::before {
+  background:
+    radial-gradient(70% 45% at 50% 108%, rgba(193, 2, 48, 0.55), transparent 70%),
+    radial-gradient(30% 20% at 30% 100%, rgba(255, 77, 109, 0.25), transparent 70%),
+    radial-gradient(30% 20% at 72% 100%, rgba(255, 77, 109, 0.2), transparent 70%);
+  animation: ambience-flicker 5.5s ease-in-out infinite;
+}
+@keyframes ambience-flicker {
+  0%, 100% { opacity: 0.85; transform: translateY(0); }
+  35% { opacity: 1; transform: translateY(-1.5%); }
+  70% { opacity: 0.9; transform: translateY(0.5%); }
+}
+
+/* ---- Green: canopy light shifts through leaves ---- */
+[data-profile="green"] .ambience::before {
+  background:
+    radial-gradient(35% 30% at 20% 10%, rgba(74, 255, 160, 0.14), transparent 70%),
+    radial-gradient(40% 30% at 80% 20%, rgba(10, 122, 66, 0.35), transparent 70%),
+    radial-gradient(60% 40% at 50% 110%, rgba(10, 92, 51, 0.5), transparent 70%);
+  animation: ambience-canopy 26s ease-in-out infinite alternate;
+}
+@keyframes ambience-canopy {
+  from { transform: translate3d(-2%, 0, 0) scale(1); filter: hue-rotate(0deg); }
+  to { transform: translate3d(2%, 1%, 0) scale(1.06); filter: hue-rotate(-8deg); }
+}
+
+/* ---- Colorless: brass rings turn like a great clockwork ---- */
+[data-profile="colorless"] .ambience::before {
+  background:
+    repeating-radial-gradient(circle at 50% 50%, transparent 0 60px, rgba(228, 228, 231, 0.05) 61px, transparent 63px),
+    repeating-conic-gradient(from 0deg at 50% 50%, transparent 0 28deg, rgba(228, 228, 231, 0.035) 29deg, transparent 30deg);
+  -webkit-mask: radial-gradient(55% 55% at 50% 50%, #000 10%, transparent 80%);
+  mask: radial-gradient(55% 55% at 50% 50%, #000 10%, transparent 80%);
+  animation: ambience-spin 140s linear infinite reverse;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambience::before,
+  .ambience::after {
+    animation: none !important;
+  }
+  #ambience-canvas {
+    display: none;
+  }
+}
