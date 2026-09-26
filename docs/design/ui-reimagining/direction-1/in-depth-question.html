@@ -4,40 +4,51 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>In-Depth Question — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
 <link rel="stylesheet" href="flow.css">
 <style>
-  .page-content { width: min(36rem, 92vw); }
+  .page-content { width: min(36rem, 92vw); padding-top: 0.8rem; }
   .idq { display: grid; gap: 0.8rem; }
+  .idq[hidden] { display: none; }
 
-  /* ---- progress rail: five stations on one lit path ---- */
-  .rail { display: grid; grid-template-columns: repeat(5, 1fr); position: relative; margin: 0.2rem 0 0.1rem; }
+  /* ---- progress rail: four stations on one lit path (Answer is no longer a
+     station — when the ruling arrives the rail leaves and the chat takes over) ---- */
+  .rail { display: grid; grid-template-columns: repeat(4, 1fr); position: relative; margin: 0.1rem 0 0; }
   .rail::before {
-    content: ""; position: absolute; left: 10%; right: 10%; top: 11px; height: 2px;
+    content: ""; position: absolute; left: 12.5%; right: 12.5%; top: 12px; height: 2px;
     background: color-mix(in srgb, var(--surface-edge) 70%, transparent);
   }
-  .rail .fill { position: absolute; left: 10%; top: 11px; height: 2px; width: 0;
-    background: linear-gradient(90deg, var(--accent), var(--accent-soft)); transition: width 300ms ease; }
+  .rail .fill { position: absolute; left: 12.5%; top: 12px; height: 2px; width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent-soft)); box-shadow: 0 0 10px var(--accent-soft); transition: width 400ms cubic-bezier(0.2, 0.8, 0.2, 1); }
   .rail button {
     position: relative; display: grid; justify-items: center; gap: 0.35rem;
     background: transparent; border: 0; padding: 0; color: var(--text-muted); font-size: 0.72rem; cursor: pointer; min-height: 44px;
   }
   .rail .node {
-    width: 24px; height: 24px; border-radius: 999px;
+    width: 26px; height: 26px; border-radius: 999px;
     border: 2px solid var(--surface-edge); background: var(--surface-ground);
-    display: grid; place-items: center; font-size: 0.65rem; font-weight: 700; color: var(--text-muted);
-    transition: all 200ms ease;
+    display: grid; place-items: center; font-size: 0.68rem; font-weight: 700; color: var(--text-muted);
+    font-family: var(--font-display);
+    transition: all 250ms ease;
   }
   .rail button[data-done="true"] .node { border-color: var(--accent); background: var(--accent); color: var(--text-on-accent); }
   .rail button[aria-current="step"] { color: var(--text-primary); font-weight: 600; }
   .rail button[aria-current="step"] .node {
     border-color: var(--accent-soft); color: var(--accent-soft);
-    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 18px color-mix(in srgb, var(--accent-soft) 50%, transparent);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent);
+    animation: node-pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes node-pulse {
+    0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 14px color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+    50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 26px color-mix(in srgb, var(--accent-soft) 80%, transparent); }
   }
 
   .step-panel { display: none; }
-  .step-panel.active { display: grid; gap: 0.8rem; }
+  .step-panel.active { display: grid; gap: 0.8rem; animation: msg-in 300ms ease both; }
   .step-nav { display: flex; gap: 0.5rem; }
   .step-nav .btn { flex: 1; }
   .step-nav .btn.primary { flex: 2; font-weight: 600; }
@@ -48,9 +59,9 @@
     border: 1px solid var(--surface-edge);
     background:
       radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 70%),
-      var(--surface-panel);
+      color-mix(in srgb, var(--surface-panel) 88%, transparent);
   }
-  .plate h2 { margin: 0 0 0.6rem; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+  .plate h2 { margin: 0 0 0.6rem; font-family: var(--font-body); font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
   .plate .lede { margin: -0.3rem 0 0.7rem; font-size: 0.82rem; color: var(--text-muted); }
 
   /* step 1 — game context */
@@ -71,117 +82,132 @@
   select.field { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--accent-soft) 50%), linear-gradient(135deg, var(--accent-soft) 50%, transparent 50%);
     background-position: calc(100% - 1.1rem) 50%, calc(100% - 0.8rem) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 2rem; }
 
-  /* step 2 — zones */
+  /* step 2 — zones: tiles that glow when selected */
   .zone-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
   @media (min-width: 640px) { .zone-grid { grid-template-columns: repeat(4, 1fr); } }
   .zone-grid label {
-    display: flex; align-items: center; gap: 0.55rem; min-height: 52px; padding: 0.4rem 0.6rem;
+    position: relative; display: flex; align-items: center; gap: 0.55rem; min-height: 52px; padding: 0.4rem 0.6rem;
     border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 55%, transparent);
-    cursor: pointer; font-size: 0.88rem; transition: all 150ms ease;
+    cursor: pointer; font-size: 0.88rem; transition: all 180ms ease; overflow: hidden;
   }
   .zone-grid input { position: absolute; opacity: 0; width: 0; height: 0; }
-  .zone-grid .mark { width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--surface-edge); display: grid; place-items: center; font-size: 0.7rem; color: var(--text-on-accent); flex: 0 0 auto; }
+  .zone-grid .mark { width: 18px; height: 18px; border-radius: 999px; border: 1.5px solid var(--surface-edge); display: grid; place-items: center; font-size: 0.65rem; color: var(--text-on-accent); flex: 0 0 auto; transition: all 180ms ease; }
   .zone-grid label:has(input:checked) { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
-    box-shadow: 0 0 18px -6px color-mix(in srgb, var(--accent) 80%, transparent); }
-  .zone-grid label:has(input:checked) .mark { background: var(--accent); border-color: var(--accent-soft); }
+    box-shadow: 0 0 22px -6px color-mix(in srgb, var(--accent) 85%, transparent), inset 0 0 18px -10px var(--accent-soft); }
+  .zone-grid label:has(input:checked)::after { content: ""; position: absolute; right: -10px; top: -10px; width: 44px; height: 44px; background: var(--motif) center / cover no-repeat; opacity: 0.3; }
+  .zone-grid label:has(input:checked) .mark { background: var(--accent-soft); border-color: var(--accent-soft); color: var(--surface-ground); box-shadow: 0 0 10px var(--accent-soft); }
   .zone-grid label:has(input:checked) .mark::after { content: "✓"; }
 
-  /* step 3 — cards per zone */
+  /* step 3 — cards per zone: a lit shelf, widgets on the frame's edge */
   .zone-tabs { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 2px; }
   .zone-tabs button { flex: 0 0 auto; min-height: 40px; padding: 0.3rem 0.8rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); font-size: 0.82rem; cursor: pointer; }
   .zone-tabs button b { color: var(--accent-soft); font-weight: 600; margin-left: 0.25rem; }
   .zone-tabs button[aria-pressed="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
-  .shelf { --tile-w: 124px; display: flex; gap: 0.6rem; overflow-x: auto; padding: 0.3rem 0.1rem 0.5rem; scroll-snap-type: x proximity; min-height: calc(var(--tile-w) * 88 / 63 + 1rem); }
+  .shelf { --tile-w: 124px; display: flex; gap: 0.7rem; overflow-x: auto; overflow-y: visible; padding: 1rem 0.3rem 0.9rem; scroll-snap-type: x proximity; min-height: calc(var(--tile-w) * 88 / 63 + 1.9rem); position: relative; z-index: 1; width: 100%; }
   @media (min-width: 720px) { .shelf { --tile-w: 150px; } }
   .shelf .card {
     position: relative; flex: 0 0 auto; width: var(--tile-w); height: calc(var(--tile-w) * 88 / 63);
-    border-radius: 8px; overflow: hidden; background: #111; scroll-snap-align: start;
+    border-radius: 8px; background: #111; scroll-snap-align: start;
     box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, #000);
     transition: transform 160ms ease; cursor: pointer;
   }
   .shelf .card:hover { transform: translateY(-3px); }
-  .shelf .card .card-widget { width: 32px; height: 32px; font-size: 0.85rem; top: 4px; opacity: 1; transform: none; pointer-events: auto; }
-  .shelf .card .card-widget.remove { left: 4px; }
-  .shelf .card .card-widget.info { right: 4px; }
+  .shelf .card.summon { animation: summon 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both; --d: 0; --step: 0px; }
+  .shelf .card .card-widget { width: 26px; height: 26px; font-size: 0.72rem; top: -12px; opacity: 1; transform: none; pointer-events: auto; }
+  .shelf .card .card-widget.remove { left: -6px; }
+  .shelf .card .card-widget.info { right: -6px; }
+  /* the Stack's order tag straddles the bottom edge, where only the copyright line lives */
   .shelf .card .pos {
-    position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%);
-    padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.65rem; font-weight: 700; letter-spacing: 0.04em;
-    background: rgba(9, 9, 11, 0.85); color: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent-soft) 50%, transparent);
+    position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%); z-index: 5;
+    padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; font-family: var(--font-display);
+    background: rgba(9, 9, 11, 0.92); color: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent-soft) 50%, transparent);
+    box-shadow: 0 0 10px -2px color-mix(in srgb, var(--accent) 80%, transparent);
   }
+  .shelf .card .pos[data-top="true"] { color: var(--surface-ground); background: var(--accent-soft); }
   .shelf .empty {
     flex: 1; display: grid; place-items: center; text-align: center; min-height: 140px; border-radius: 0.8rem;
     border: 1px dashed color-mix(in srgb, var(--accent-soft) 50%, transparent); color: var(--text-muted); font-size: 0.85rem; padding: 1rem;
   }
-  .shelf .empty strong { display: block; color: var(--text-primary); margin-bottom: 0.2rem; }
+  .shelf .empty strong { display: block; color: var(--text-primary); margin-bottom: 0.2rem; font-family: var(--font-display); }
 
-  /* step 4 — context, card by card */
-  .wizard { display: grid; gap: 0.8rem; }
-  @media (min-width: 720px) { .wizard { grid-template-columns: 200px 1fr; align-items: start; } }
-  .wizard .hero { position: relative; width: 160px; height: calc(160px * 88 / 63); margin: 0 auto; border-radius: 10px; overflow: hidden;
-    --ring-w: 2px; box-shadow: 0 18px 40px -12px color-mix(in srgb, var(--accent) 70%, #000), 0 0 48px -8px color-mix(in srgb, var(--accent) 55%, transparent); }
-  @media (min-width: 720px) { .wizard .hero { width: 200px; height: calc(200px * 88 / 63); } }
-  .wizard .hero .card-widget { opacity: 1; transform: none; pointer-events: auto; width: 36px; height: 36px; font-size: 0.9rem; }
-  .wizard .counter { text-align: center; font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem; }
-  .wizard .counter b { color: var(--accent-soft); }
-  .fields { display: grid; gap: 0.6rem; }
-  .fields .two { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; }
-  .fields label { display: grid; gap: 0.25rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
-  .fields .field { min-height: 40px; }
-  .targets { display: grid; gap: 0.4rem; }
-  .targets .row { display: grid; grid-template-columns: 7rem 1fr 40px; gap: 0.4rem; align-items: center; }
-  .targets .row .btn { min-height: 40px; padding: 0; }
-  .fields .add-target { justify-self: start; font-size: 0.8rem; min-height: 36px; padding: 0.3rem 0.7rem; }
-  .fields textarea.field { min-height: 56px; resize: none; }
-  .wizard-nav { display: flex; gap: 0.5rem; align-items: center; }
-  .wizard-nav .btn.primary { flex: 1; font-weight: 600; }
-  .wizard-nav .btn.ghost { background: transparent; }
-  .review { display: grid; gap: 0.4rem; }
-  .review .row { display: flex; align-items: center; gap: 0.6rem; padding: 0.35rem 0.4rem; border-radius: 0.5rem; border: 1px solid var(--surface-edge); font-size: 0.82rem; }
-  .review .thumb { width: 28px; height: 39px; border-radius: 3px; }
-  .review .zone { color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; margin-left: auto; }
-  .summary { font-size: 0.85rem; color: var(--text-muted); }
-  .summary b { color: var(--text-primary); font-weight: 600; }
-  .summary .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; margin-top: 0.4rem; }
-  .summary .chips span { padding: 0.15rem 0.55rem; border-radius: 999px; border: 1px solid var(--surface-edge); font-size: 0.75rem; color: var(--text-primary); }
-  .summary .chips span b { color: var(--accent-soft); }
-  .context-btn { display: inline-flex; align-items: center; gap: 0.4rem; }
+  /* step 4 — context, card by card: one compact sheet per card ---- */
+  .ctx-head { display: grid; grid-template-columns: 78px 1fr; gap: 0.8rem; align-items: center; }
+  .ctx-head .hero { position: relative; width: 78px; height: calc(78px * 88 / 63); border-radius: 6px; overflow: visible; --ring-w: 1px; cursor: pointer;
+    box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--accent) 80%, #000), 0 0 30px -8px color-mix(in srgb, var(--accent) 55%, transparent); }
+  .ctx-head .hero img { border-radius: 6px; }
+  .ctx-head .hero .card-widget { display: none; }
+  .ctx-head .hero .card-widget.info { display: block; width: 24px; height: 24px; font-size: 0.68rem; top: -10px; right: -8px; opacity: 1; transform: none; pointer-events: auto; }
+  .ctx-head .who { min-width: 0; }
+  .ctx-head .eyebrow { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  .ctx-head .eyebrow b { color: var(--accent-soft); }
+  .ctx-head h2 { margin: 0.1rem 0 0.15rem; font-size: 1.25rem; line-height: 1.1; }
+  .ctx-head .sub { font-size: 0.8rem; color: var(--text-muted); }
+  .ctx-head .sub span { color: var(--text-primary); }
+  .queue-dots { display: flex; gap: 0.3rem; margin-top: 0.45rem; }
+  .queue-dots .thumb { width: 22px; height: 31px; border-radius: 2px; opacity: 0.45; cursor: pointer; transition: opacity 150ms ease, transform 150ms ease; }
+  .queue-dots .thumb[data-on="true"] { opacity: 1; transform: translateY(-2px); box-shadow: 0 0 10px -2px var(--accent-soft); }
+  .queue-dots .thumb[data-done="true"] { opacity: 0.8; }
 
-  /* step 5 — the conversation */
-  .thread { display: grid; gap: 0.7rem; }
-  .bubble { max-width: 92%; padding: 0.7rem 0.85rem; border-radius: 1rem; font-size: 0.92rem; line-height: 1.45; }
-  .bubble.you { justify-self: end; background: color-mix(in srgb, var(--accent) 30%, var(--surface-panel)); border: 1px solid var(--surface-edge); border-bottom-right-radius: 0.3rem; }
-  .bubble.judge { justify-self: start; background: var(--surface-panel); border: 1px solid var(--surface-edge); border-bottom-left-radius: 0.3rem; position: relative; }
-  .bubble.judge::before { content: ""; position: absolute; inset: 0; border-radius: inherit; background: var(--motif) right -20% top -30% / 55% no-repeat; opacity: 0.06; pointer-events: none; }
-  .bubble .who { display: block; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent-soft); margin-bottom: 0.25rem; }
-  .bubble .refs { display: flex; gap: 0.4rem; margin: 0.5rem 0 0; }
-  .bubble .refs .thumb { width: 44px; height: 61px; border-radius: 4px; cursor: pointer; }
-  .followup { display: flex; gap: 0.5rem; align-items: end; }
-  .followup .q-wrap { flex: 1; }
-  .followup textarea.field { min-height: 44px; padding-bottom: 1.4rem; }
-  .followup .btn.primary { min-width: 44px; padding: 0.5rem 0.9rem; font-weight: 600; }
+  .ctx-fields { display: grid; gap: 0.55rem; margin-top: 0.7rem; }
+  .ctx-fields .row { display: grid; gap: 0.35rem; }
+  .ctx-fields .row[hidden] { display: none; }
+  .ctx-fields .lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: flex; justify-content: space-between; }
+  .ctx-fields .lbl small { text-transform: none; letter-spacing: 0; font-size: 0.7rem; }
+  .chips { display: flex; flex-wrap: wrap; gap: 0.35rem; align-items: center; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 0.3rem; min-height: 32px; padding: 0 0.6rem; border-radius: 999px;
+    border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
+    color: var(--text-primary); font-size: 0.78rem; cursor: pointer; transition: all 150ms ease;
+  }
+  .chip:hover { border-color: var(--accent); }
+  .chip[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 26%, var(--surface-panel)); box-shadow: 0 0 14px -6px var(--accent-soft); }
+  .chip .thumb { width: 16px; height: 22px; border-radius: 2px; }
+  .chip.muted { color: var(--text-muted); }
+  .chip input { width: 7.5rem; min-height: 0; padding: 0.1rem 0.4rem; border: 0; border-bottom: 1px dashed var(--surface-edge); background: transparent; border-radius: 0; font-size: 0.78rem; }
+  .chip input:focus { outline: none; border-bottom-color: var(--accent-soft); box-shadow: none; }
+  .stepper { display: inline-flex; align-items: center; border: 1px solid var(--surface-edge); border-radius: 999px; overflow: hidden; }
+  .stepper button { width: 32px; height: 32px; border: 0; background: transparent; color: var(--accent-soft); font-size: 1rem; cursor: pointer; }
+  .stepper b { min-width: 2rem; text-align: center; font-variant-numeric: tabular-nums; }
+  .ctx-fields textarea.field { min-height: 38px; max-height: 96px; padding: 0.5rem 0.75rem; resize: none; overflow-y: auto; font-size: 0.9rem; }
+  .ctx-nav { display: flex; gap: 0.5rem; align-items: center; margin-top: 0.7rem; }
+  .ctx-nav .btn.primary { flex: 1; font-weight: 600; }
 
-  .foot-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 1.25rem; }
+  /* the review: every card and what was said about it, scrollable so it always fits */
+  .review { display: grid; gap: 0.35rem; max-height: 34dvh; overflow-y: auto; padding-right: 2px; }
+  .review .row { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 0.6rem; padding: 0.35rem 0.45rem; border-radius: 0.6rem; border: 1px solid var(--surface-edge); font-size: 0.84rem; background: color-mix(in srgb, var(--surface-ground) 35%, transparent); }
+  .review .thumb { width: 30px; height: 42px; border-radius: 3px; }
+  .review .nm { font-weight: 600; }
+  .review .what { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem; }
+  .review .zone { color: var(--accent-soft); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .review .edit { border: 0; background: transparent; color: var(--text-muted); cursor: pointer; min-width: 36px; min-height: 36px; border-radius: 0.5rem; font-size: 0.9rem; }
+  .review .edit:hover { color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .zone-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .zone-chips span { padding: 0.18rem 0.6rem; border-radius: 999px; border: 1px solid var(--surface-edge); font-size: 0.76rem; color: var(--text-primary); background: color-mix(in srgb, var(--surface-panel) 70%, transparent); }
+  .zone-chips span b { color: var(--accent-soft); }
+  .zone-chips span.none { color: var(--text-muted); border-style: dashed; }
+  .send-row .btn:not(.primary) { min-width: 0; flex: 0 0 auto; }
+  .composer .q-lbl { margin: -0.15rem 0 -0.35rem 0.2rem; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .composer .q-lbl small { text-transform: none; letter-spacing: 0; font-size: 0.7rem; }
+  .plate.ornate::before, .plate.ornate::after, .plate.ornate .orn { opacity: 0.5; }
 </style>
 </head>
-<body>
+<body data-tray-open="false">
   <header class="app-header">
     <div class="menu-rail">
-      <button class="brand-mark tap-target">
-        <img src="motifs/blue.svg" alt="" aria-hidden="true">
-        <span class="wordmark">TheJudge</span>
-      </button>
+      <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+      <button class="brand-mark"><span class="orb" aria-hidden="true"></span><span class="wordmark">TheJudge</span></button>
     </div>
-    <button class="icon-btn tap-target" aria-label="Open menu">☰</button>
+    <div class="header-side"></div>
   </header>
   <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
 
   <main class="page-content">
-    <section class="idq">
+    <section class="idq" id="flow">
       <div class="flow-head">
         <h1>In-Depth Question</h1>
         <div class="attach" id="attach" hidden>
-          <button class="icon-chip tap-target" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
-          <button class="icon-chip tap-target" id="scan-btn"><span class="glyph">▣</span> Scan</button>
+          <button class="icon-chip" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
+          <button class="icon-chip" id="scan-btn"><span class="glyph">▣</span> Scan</button>
         </div>
       </div>
 
@@ -191,50 +217,49 @@
         <button data-step="zones"><span class="node">2</span>Zones</button>
         <button data-step="cards"><span class="node">3</span>Cards</button>
         <button data-step="context"><span class="node">4</span>Context</button>
-        <button data-step="answer"><span class="node">5</span>Answer</button>
       </nav>
 
       <!-- 1 · Game context -->
       <section class="step-panel active" id="step-game" aria-label="Game context">
-        <div class="plate">
+        <div class="plate ornate small">
           <h2>Players in game</h2>
           <p class="lede">Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.</p>
           <div class="players-row">
-            <button class="btn tap-target expander" id="roster-toggle" aria-expanded="false"><span class="chev">▶</span><strong id="player-count">2 players</strong></button>
-            <button class="btn tap-target stepper" id="player-minus" aria-label="Remove last player">−</button>
-            <button class="btn tap-target stepper add" id="player-plus" aria-label="Add player">+</button>
+            <button class="btn expander" id="roster-toggle" aria-expanded="false"><span class="chev">▶</span><strong id="player-count">2 players</strong></button>
+            <button class="btn stepper" id="player-minus" aria-label="Remove last player">−</button>
+            <button class="btn stepper add" id="player-plus" aria-label="Add player">+</button>
           </div>
           <div class="roster" id="roster" data-open="false"></div>
         </div>
         <div class="plate">
           <div class="paired">
             <label>Turn phase
-              <select class="field tap-target" id="turn-phase">
+              <select class="field" id="turn-phase">
                 <option>Untap</option><option>Upkeep</option><option>Draw</option>
                 <option selected>Pre Combat Main Phase</option><option>Combat</option>
                 <option>Post Combat Main Phase</option><option>End Step</option><option>Cleanup</option>
               </select>
             </label>
             <label>Active player
-              <select class="field tap-target" id="active-player"><option selected>Player 1</option><option>Player 2</option></select>
+              <select class="field" id="active-player"><option selected>Player 1</option><option>Player 2</option></select>
             </label>
           </div>
         </div>
         <div class="step-nav">
-          <button class="btn primary tap-target" data-next="zones">Confirm game context</button>
+          <button class="btn primary" data-next="zones">Confirm game context</button>
         </div>
       </section>
 
       <!-- 2 · Zone confirmation -->
       <section class="step-panel" id="step-zones" aria-label="Zone confirmation">
-        <div class="plate">
-          <h2>Zone confirmation</h2>
-          <p class="lede">Select all zones that apply to your question.</p>
+        <div class="plate ornate small">
+          <h2>Zones in play</h2>
+          <p class="lede">Select every zone your question touches.</p>
           <div class="zone-grid" id="zone-grid"></div>
         </div>
         <div class="step-nav">
-          <button class="btn tap-target" data-next="game">Back</button>
-          <button class="btn primary tap-target" data-next="cards">Continue</button>
+          <button class="btn" data-next="game">Back</button>
+          <button class="btn primary" data-next="cards">Continue</button>
         </div>
       </section>
 
@@ -244,122 +269,114 @@
         <div class="search-pop" id="search-pop">
           <div class="search-row">
             <span class="glyph">⌕</span>
-            <input class="field tap-target" id="card-search" placeholder="Search for a card to add" autocomplete="off">
+            <input class="field" id="card-search" placeholder="Search for a card to add" autocomplete="off">
           </div>
           <div class="search-results" id="search-results"></div>
         </div>
-        <div class="stage" id="shelf-stage">
-          <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
-          <div class="shelf" id="shelf" style="position:relative; z-index:1; width:100%;"></div>
+        <div class="stage ornate" id="shelf-stage">
+          <i class="orn tr"></i><i class="orn bl"></i>
+          <div class="motif-wash" aria-hidden="true"></div>
+          <div class="shelf" id="shelf"></div>
         </div>
-        <p class="flow-hint" id="shelf-hint"></p>
+        <p class="flow-hint" id="shelf-hint" hidden></p>
         <div class="step-nav">
-          <button class="btn tap-target" data-next="zones">Back</button>
-          <button class="btn primary tap-target" data-next="context">Continue</button>
+          <button class="btn" data-next="zones">Back</button>
+          <button class="btn primary" data-next="context">Continue</button>
         </div>
       </section>
 
-      <!-- 4 · Context enrichment -->
-      <section class="step-panel" id="step-context" aria-label="Context enrichment">
-        <div class="plate" id="wizard-plate">
-          <div class="wizard">
-            <div>
-              <div class="card hero" id="wizard-hero"></div>
-              <p class="counter">Card <b id="wiz-n">1</b> of <b id="wiz-total">5</b> · <span id="wiz-zone">Stack</span></p>
-            </div>
-            <div class="fields">
-              <div class="two">
-                <label>Owner <select class="field tap-target" id="f-owner"><option>Player 1</option><option>Player 2</option></select></label>
-                <label>Caster <select class="field tap-target" id="f-caster"><option>Player 1</option><option>Player 2</option></select></label>
-              </div>
-              <label>Mana spent <input class="field tap-target" id="f-mana" placeholder="e.g. 3" inputmode="numeric"></label>
-              <label>Targets
-                <div class="targets" id="targets">
-                  <div class="row">
-                    <select class="field tap-target"><option>Player</option><option selected>Zone card</option><option>None</option><option>Other</option></select>
-                    <select class="field tap-target" id="f-target-card"></select>
-                    <button class="btn tap-target" aria-label="Remove target 1">✕</button>
-                  </div>
-                </div>
-              </label>
-              <button class="btn tap-target add-target" id="add-target"><span class="accent-text">＋</span> Add target</button>
-              <label>Context notes <textarea class="field" rows="2" placeholder="Optional notes about this card's context"></textarea></label>
+      <!-- 4 · Context, card by card -->
+      <section class="step-panel" id="step-context" aria-label="Card context">
+        <div class="plate ornate small" id="wizard-plate">
+          <div class="ctx-head">
+            <div class="card hero" id="ctx-hero"></div>
+            <div class="who">
+              <div class="eyebrow">Card <b id="wiz-n">1</b> of <b id="wiz-total">5</b> · <span id="wiz-zone">Stack</span></div>
+              <h2 id="ctx-name">Lightning Bolt</h2>
+              <div class="sub" id="ctx-sub"></div>
+              <div class="queue-dots" id="queue-dots"></div>
             </div>
           </div>
-          <div class="wizard-nav" style="margin-top:0.8rem;">
-            <button class="btn tap-target ghost" id="wiz-all">View all cards</button>
-            <button class="btn primary tap-target" id="wiz-next">OK — next card</button>
+          <div class="ctx-fields" id="ctx-fields">
+            <div class="row" id="row-owner"><span class="lbl">Owner</span><div class="chips" id="chips-owner"></div></div>
+            <div class="row" id="row-caster"><span class="lbl">Cast by</span><div class="chips" id="chips-caster"></div></div>
+            <div class="row" id="row-mana"><span class="lbl">Mana paid <small id="mana-note">as printed</small></span>
+              <div class="chips"><span class="stepper"><button id="mana-dec" aria-label="Less mana">−</button><b id="mana-val">1</b><button id="mana-inc" aria-label="More mana">+</button></span><button class="chip muted" id="mana-reset">As printed</button></div></div>
+            <div class="row" id="row-targets"><span class="lbl">Targets <small>tap all that apply</small></span><div class="chips" id="chips-targets"></div></div>
+            <div class="row" id="row-notes"><span class="lbl">Notes <small>optional</small></span>
+              <textarea class="field" id="ctx-notes" rows="1" placeholder="Anything else about this card"></textarea></div>
+          </div>
+          <div class="ctx-nav">
+            <button class="btn" id="wiz-back">Back</button>
+            <button class="btn primary" id="wiz-next">Next card</button>
           </div>
         </div>
 
-        <div class="plate" id="review-plate" hidden>
-          <h2>Card context reviewed</h2>
+        <div class="plate ornate small" id="review-plate" hidden>
+          <h2>Context reviewed · <span id="review-count"></span></h2>
           <div class="review" id="review"></div>
-          <div class="wizard-nav" style="margin-top:0.6rem;">
-            <button class="btn tap-target ghost" id="wiz-again">Card-by-card</button>
-          </div>
         </div>
 
         <div class="composer" id="idq-composer" hidden>
-          <div class="summary">
-            <b>Sending to TheJudge</b> — <span id="sum-phase">Pre Combat Main Phase, Player 1 active</span>
-            <div class="chips" id="sum-zones"></div>
-          </div>
+          <div class="zone-chips" id="sum-zones"></div>
+          <span class="lbl q-lbl">Your question <small>optional — blank asks “How does this resolve?”</small></span>
           <div class="q-wrap">
-            <textarea class="field" id="question-field" rows="2" placeholder="How does this resolve?" maxlength="300"></textarea>
+            <textarea class="field" id="question-field" rows="1" placeholder="How does this resolve?" maxlength="300"></textarea>
             <span class="q-count" id="char-count">0 / 300</span>
             <span class="q-meter"><i id="char-meter"></i></span>
           </div>
-          <p class="flow-hint" id="fallback-hint">No question? The Judge answers “<span id="fallback-q">How does this resolve?</span>”.</p>
           <div class="send-row">
-            <button class="btn tap-target" data-next="cards" style="min-width:0;">Back</button>
-            <button class="btn primary tap-target" data-next="answer">Send Request</button>
+            <button class="btn" data-next="cards">Back</button>
+            <button class="btn primary" id="send">Send Request</button>
           </div>
-        </div>
-      </section>
-
-      <!-- 5 · Answered: the conversation -->
-      <section class="step-panel" id="step-answer" aria-label="Conversation">
-        <div class="summary">
-          <button class="icon-chip tap-target context-btn" id="view-context"><span class="glyph">◈</span> View context · <span id="ctx-label">Pre Combat Main · 5 cards</span></button>
-        </div>
-        <div class="thread" id="thread"></div>
-        <div class="followup">
-          <div class="q-wrap">
-            <textarea class="field" id="followup-field" rows="1" placeholder="Ask a follow-up…" maxlength="300"></textarea>
-            <span class="q-count" id="fu-count">0 / 300</span>
-            <span class="q-meter"><i id="fu-meter"></i></span>
-          </div>
-          <button class="btn primary tap-target" aria-label="Send">➤</button>
-        </div>
-        <div class="step-nav">
-          <button class="btn tap-target" data-next="game" id="start-over">Start over</button>
         </div>
       </section>
     </section>
 
+    <!-- the ruling: the chat takes the whole panel; the rail is gone -->
+    <section class="chat" id="chat" hidden aria-label="Conversation">
+      <div class="chat-head"><h1>In-Depth Question</h1><button class="icon-chip" id="view-context"><span class="glyph">◈</span> View context</button></div>
+      <div class="chat-cards" id="chat-cards"></div>
+      <div class="thread" id="thread"></div>
+      <div class="followup">
+        <textarea id="followup-field" rows="1" placeholder="Ask a follow-up…" maxlength="300" aria-label="Follow-up question"></textarea>
+        <span class="fu-count" id="fu-count">0/300</span>
+        <button class="send" aria-label="Send">➤</button>
+      </div>
+      <div class="chat-foot"><button class="btn" id="start-over">Start over</button></div>
+    </section>
+
+    <div class="demo-bar" aria-label="Mockup state (demo only)">
+      <span class="tag">demo</span><span>jump to:</span>
+      <button data-jump="game">1 Game</button><button data-jump="zones">2 Zones</button><button data-jump="cards">3 Cards</button>
+      <button data-jump="context">4 Context</button><button data-jump="review">4 Reviewed</button><button data-jump="chat">Ruling</button>
+    </div>
     <p class="foot-note">
       Before:
       <a href="../before/in-depth-game-context-390x844.png">game-context 390</a> ·
       <a href="../before/in-depth-game-context-1440x900.png">1440</a> ·
       <a href="../before/in-depth-zone-collection-390x844.png">zone-collection 390</a> ·
       <a href="../before/in-depth-zone-collection-1440x900.png">1440</a>.
-      Card images are the app's own corpus art via Scryfall (unchanged from today).
+      Card images are the app's own corpus art via Scryfall (unchanged from today). The dashed strip is mockup scaffolding, not app UI.
     </p>
   </main>
 
-  <!-- Frozen game context: what "View context" opens on the Answer step -->
-  <div class="menu-tray-backdrop" id="ctx-backdrop"></div>
+  <!-- Frozen game context: what "View context" opens from the chat -->
+  <div class="sheet-backdrop" id="ctx-backdrop" data-open="false"></div>
   <aside class="drawer-panel detail-panel" id="ctx-panel" data-open="false" aria-label="Frozen game context">
-    <button class="icon-btn overlay-close tap-target" id="ctx-close" aria-label="Close">✕</button>
-    <h2>Game context</h2>
-    <dl id="ctx-fields"></dl>
-    <div class="review" id="ctx-cards" style="margin-top:0.8rem;"></div>
+    <button class="icon-btn overlay-close" id="ctx-close" aria-label="Close">✕</button>
+    <div class="body" style="padding-top:2.8rem">
+      <h2 style="margin:0">Game context</h2>
+      <div class="facts" id="ctx-facts"></div>
+      <div class="review" id="ctx-cards" style="max-height:none"></div>
+    </div>
   </aside>
 
+  <script src="ambience.js"></script>
   <script src="flow.js"></script>
   <script>
-    const { img, library, byName, cardMarkup, openDetail, bindComposer, applyRing, thumb } = window.FLOW;
+    const { img, library, byName, cardMarkup, openDetail, bindComposer, autoGrow, applyRing, thumb, chatMarkup, bindRefs, mountMenu } = window.FLOW;
+    mountMenu('In-Depth Question');
     const $ = (s) => document.getElementById(s);
 
     // ---- demo state ----
@@ -372,22 +389,25 @@
     };
     let activeZone = 'Stack';
     let players = 2;
-    const STEPS = ['game', 'zones', 'cards', 'context', 'answer'];
+    const playerNames = () => Array.from({ length: players }, (_, i) => 'Player ' + (i + 1));
+    const STEPS = ['game', 'zones', 'cards', 'context'];
+    // per-card context: keyed by card name (demo)
+    const ctx = {};
+    const ctxOf = (c, zone) => ctx[c.name] || (ctx[c.name] = { owner: $('active-player').value, caster: 'Player 1', mana: c.mv, targets: new Set(), other: '', notes: '', zone });
 
     // ---- steps + rail ----
     function goTo(step) {
       const i = STEPS.indexOf(step);
-      STEPS.forEach((s, j) => $('step-' + s).classList.toggle('active', s === step));
+      $('chat').hidden = true; $('flow').hidden = false;
+      STEPS.forEach((s) => $('step-' + s).classList.toggle('active', s === step));
       document.querySelectorAll('.rail button').forEach((b, j) => {
-        b.toggleAttribute('aria-current', j === i);
-        if (j === i) b.setAttribute('aria-current', 'step');
+        if (j === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
         b.dataset.done = j < i ? 'true' : 'false';
       });
-      $('rail-fill').style.width = (i / 4 * 80) + '%';
+      $('rail-fill').style.width = (i / 3 * 75) + '%';
       $('attach').hidden = step !== 'cards';
       if (step === 'cards') renderShelf();
       if (step === 'context') { wiz = 0; renderWizard(); }
-      if (step === 'answer') renderThread();
       window.scrollTo({ top: 0 });
     }
     document.querySelectorAll('.rail button').forEach((b) => b.addEventListener('click', () => goTo(b.dataset.step)));
@@ -397,10 +417,10 @@
     function renderRoster() {
       $('player-count').textContent = players + ' players';
       const start = players >= 3 ? 40 : 20;
-      $('roster').innerHTML = Array.from({ length: players }, (_, i) =>
-        '<div class="player"><label>Player ' + (i + 1) + ' name<input class="field tap-target" placeholder="Player ' + (i + 1) + '"></label>' +
-        '<label>Life<input class="field tap-target life" value="' + start + '"></label></div>').join('');
-      $('active-player').innerHTML = Array.from({ length: players }, (_, i) => '<option>Player ' + (i + 1) + '</option>').join('');
+      $('roster').innerHTML = playerNames().map((p, i) =>
+        '<div class="player"><label>' + p + ' name<input class="field" placeholder="' + p + '"></label>' +
+        '<label>Life<input class="field life" value="' + start + '"></label></div>').join('');
+      $('active-player').innerHTML = playerNames().map((p) => '<option>' + p + '</option>').join('');
     }
     $('roster-toggle').addEventListener('click', () => {
       const open = $('roster').dataset.open !== 'true';
@@ -419,42 +439,46 @@
     });
 
     // ---- 3 · cards per zone ----
+    let summonNext = null;
     function renderShelf() {
       const tabs = ZONES.filter((z) => selectedZones.has(z));
       $('zone-tabs').innerHTML = tabs.map((z) =>
         '<button aria-pressed="' + (z === activeZone) + '" data-zone="' + z + '">' + z + '<b>' + ((zoneCards[z] || []).length || '') + '</b></button>').join('');
-      $('zone-tabs').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { activeZone = b.dataset.zone; renderShelf(); }));
+      $('zone-tabs').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { activeZone = b.dataset.zone; closeSearch(); renderShelf(); }));
       const cards = zoneCards[activeZone] || [];
       const isStack = activeZone === 'Stack';
       if (!cards.length) {
-        $('shelf').innerHTML = '<div class="empty"><div><strong>' + (isStack ? 'Begin stackening!' : 'No cards in ' + activeZone + ' yet') + '</strong>Add a card with search or scan.</div></div>';
+        $('shelf').innerHTML = '<div class="empty"><div><strong>' + (isStack ? 'Begin stackening!' : 'Nothing in ' + activeZone + ' yet') + '</strong>Add a card with search or scan.</div></div>';
       } else {
         $('shelf').innerHTML = cards.map((c, i) =>
-          '<div class="card" data-front="true" data-i="' + i + '">' + cardMarkup(c) +
-          (isStack ? '<span class="pos">' + (i === cards.length - 1 ? 'TOP' : '#' + (i + 1)) + '</span>' : '') + '</div>').join('');
+          '<div class="card' + (summonNext === c ? ' summon' : '') + '" data-front="true" data-i="' + i + '">' + cardMarkup(c) +
+          (isStack ? '<span class="pos" data-top="' + (i === cards.length - 1) + '">' + (i === cards.length - 1 ? 'TOP' : '#' + (i + 1)) + '</span>' : '') + '</div>').join('');
         $('shelf').querySelectorAll('.card').forEach((el) => {
           const c = cards[Number(el.dataset.i)];
           applyRing(el, c);
-          el.querySelector('.remove').addEventListener('click', () => { cards.splice(cards.indexOf(c), 1); renderShelf(); });
-          el.querySelector('.info').addEventListener('click', () => openDetail(c));
+          el.querySelector('.remove').addEventListener('click', (e) => { e.stopPropagation(); cards.splice(cards.indexOf(c), 1); renderShelf(); });
+          el.querySelector('.info').addEventListener('click', (e) => { e.stopPropagation(); openDetail(c); });
           el.addEventListener('click', (e) => { if (!e.target.closest('.card-widget')) openDetail(c); });
         });
+        summonNext = null;
       }
-      $('shelf-hint').textContent = isStack
-        ? 'Stack order: first added resolves last — the top card resolves first.'
-        : 'Tap a card for its details. ✕ removes it from ' + activeZone + '.';
+      $('shelf-hint').hidden = !(isStack && cards.length > 1);
+      $('shelf-hint').textContent = 'The top of the stack resolves first.';
       $('add-card').innerHTML = '<span class="glyph">＋</span> ' + (isStack ? 'Add to Stack' : 'Add card');
       renderSearch();
     }
     function allAttached() { return Object.values(zoneCards).flat(); }
     function renderSearch() {
       const q = $('card-search').value.trim().toLowerCase();
-      const hits = library.filter((c) => !allAttached().includes(c) && (!q || c.name.toLowerCase().includes(q))).slice(0, 4);
+      const hits = library.filter((c) => !allAttached().includes(c) && (!q || c.name.toLowerCase().includes(q)));
       $('search-results').innerHTML = hits.map((c) =>
         '<button type="button" data-i="' + library.indexOf(c) + '">' + thumb(c) + '<span>' + c.name + '</span><span class="type">' + c.type + '</span></button>').join('');
       $('search-results').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
-        (zoneCards[activeZone] = zoneCards[activeZone] || []).push(library[Number(b.dataset.i)]);
+        const c = library[Number(b.dataset.i)];
+        (zoneCards[activeZone] = zoneCards[activeZone] || []).push(c);
+        summonNext = c;
         $('card-search').value = ''; closeSearch(); renderShelf();
+        $('shelf').scrollTo({ left: 9999, behavior: 'smooth' });
       }));
     }
     function openSearch() { $('search-pop').classList.add('open'); $('add-card').setAttribute('aria-expanded', 'true'); renderSearch(); $('card-search').focus(); }
@@ -466,12 +490,7 @@
     // ---- 4 · context, card by card ----
     let wiz = 0;
     function queue() { return ZONES.filter((z) => selectedZones.has(z)).flatMap((z) => (zoneCards[z] || []).map((c) => ({ zone: z, card: c }))); }
-    function zoneChips() {
-      return ZONES.filter((z) => selectedZones.has(z)).map((z) => {
-        const n = (zoneCards[z] || []).length;
-        return '<span>' + z + ' <b>' + n + '</b>' + (n === 0 ? ' · none added' : '') + '</span>';
-      }).join('');
-    }
+    const chip = (label, on, attrs = '') => '<button type="button" class="chip" aria-pressed="' + on + '" ' + attrs + '>' + label + '</button>';
     function renderWizard() {
       const q = queue();
       const done = wiz >= q.length;
@@ -480,53 +499,120 @@
       $('idq-composer').hidden = !done;
       if (!done) {
         const { zone, card } = q[wiz];
-        $('wizard-hero').innerHTML = cardMarkup(card, { noRemove: true });
-        applyRing($('wizard-hero'), card);
-        $('wizard-hero').querySelector('.info').addEventListener('click', () => openDetail(card));
+        const c = ctxOf(card, zone);
+        const isStack = zone === 'Stack';
+        $('ctx-hero').innerHTML = cardMarkup(card, { noRemove: true });
+        applyRing($('ctx-hero'), card);
+        $('ctx-hero').addEventListener('click', () => openDetail(card));
         $('wiz-n').textContent = wiz + 1; $('wiz-total').textContent = q.length; $('wiz-zone').textContent = zone;
-        $('f-target-card').innerHTML = '<option value="">Select card…</option>' + q.filter((e) => e.card !== card).map((e) => '<option>' + e.card.name + ' (' + e.zone + ')</option>').join('');
-        $('wiz-next').textContent = wiz < q.length - 1 ? 'OK — next card' : 'OK — finish context';
+        $('ctx-name').textContent = card.name;
+        $('ctx-sub').innerHTML = card.type + ' · <span>' + card.cost + '</span>';
+        $('queue-dots').innerHTML = q.map((e, i) => thumb(e.card).replace('class="thumb', 'data-i="' + i + '" data-on="' + (i === wiz) + '" data-done="' + (i < wiz) + '" class="thumb')).join('');
+        $('queue-dots').querySelectorAll('.thumb').forEach((t) => t.addEventListener('click', () => { wiz = Number(t.dataset.i); renderWizard(); }));
+
+        // which questions apply to this zone
+        $('row-owner').hidden = isStack;
+        $('row-caster').hidden = !isStack;
+        $('row-mana').hidden = !isStack;
+        $('row-targets').hidden = zone === 'Hand' || zone === 'Library';
+
+        $('chips-owner').innerHTML = playerNames().map((p) => chip(p, c.owner === p, 'data-p="' + p + '"')).join('');
+        $('chips-owner').querySelectorAll('.chip').forEach((b) => b.addEventListener('click', () => { c.owner = b.dataset.p; renderWizard(); }));
+        $('chips-caster').innerHTML = playerNames().map((p) => chip(p, c.caster === p, 'data-p="' + p + '"')).join('');
+        $('chips-caster').querySelectorAll('.chip').forEach((b) => b.addEventListener('click', () => { c.caster = b.dataset.p; renderWizard(); }));
+        $('mana-val').textContent = c.mana;
+        $('mana-note').textContent = c.mana === card.mv ? 'as printed' : (c.mana > card.mv ? '+' + (c.mana - card.mv) + ' over the printed cost' : 'under the printed cost');
+        $('mana-reset').hidden = c.mana === card.mv;
+
+        // targets: players, the other cards in context, none, other
+        const others = q.filter((e) => e.card !== card);
+        $('chips-targets').innerHTML =
+          playerNames().map((p) => chip(p, c.targets.has(p), 'data-t="' + p + '"')).join('') +
+          others.map((e) => chip(thumb(e.card) + e.card.name, c.targets.has(e.card.name), 'data-t="' + e.card.name + '"')).join('') +
+          chip('No target', c.targets.has('none'), 'data-t="none"') +
+          '<span class="chip' + (c.other || c.targets.has('other') ? '' : ' muted') + '" aria-pressed="' + (c.other !== '') + '">Other: <input id="ctx-other" placeholder="describe it" value="' + c.other.replace(/"/g, '&quot;') + '"></span>';
+        $('chips-targets').querySelectorAll('button.chip').forEach((b) => b.addEventListener('click', () => {
+          const t = b.dataset.t;
+          if (t === 'none') { c.targets.clear(); c.other = ''; c.targets.add('none'); }
+          else { c.targets.delete('none'); c.targets.has(t) ? c.targets.delete(t) : c.targets.add(t); }
+          renderWizard();
+        }));
+        $('ctx-other').addEventListener('input', (e) => { c.other = e.target.value; c.targets.delete('none'); e.target.closest('.chip').setAttribute('aria-pressed', c.other !== ''); e.target.closest('.chip').classList.toggle('muted', c.other === ''); });
+        $('ctx-notes').value = c.notes; autoGrow($('ctx-notes'));
+        $('ctx-notes').oninput = () => { c.notes = $('ctx-notes').value; autoGrow($('ctx-notes')); };
+        $('wiz-next').textContent = wiz < q.length - 1 ? 'Next card' : 'Finish context';
+        $('wiz-back').textContent = wiz === 0 ? 'Back' : 'Previous';
       } else {
-        $('review').innerHTML = q.map((e) => '<div class="row">' + thumb(e.card) + '<span>' + e.card.name + '</span><span class="zone">' + e.zone + '</span></div>').join('');
-        $('sum-zones').innerHTML = zoneChips();
-        $('sum-phase').textContent = $('turn-phase').value + ', ' + $('active-player').value + ' active';
+        $('review-count').textContent = q.length + (q.length === 1 ? ' card' : ' cards');
+        $('review').innerHTML = q.map((e, i) => {
+          const c = ctxOf(e.card, e.zone);
+          const what = summarize(e, c);
+          return '<div class="row">' + thumb(e.card) + '<div><span class="nm">' + e.card.name + '</span> <span class="zone">' + e.zone + '</span><span class="what">' + what + '</span></div>' +
+            '<button class="edit" data-i="' + i + '" aria-label="Edit context for ' + e.card.name + '">✎</button></div>';
+        }).join('');
+        $('review').querySelectorAll('.edit').forEach((b) => b.addEventListener('click', () => { wiz = Number(b.dataset.i); renderWizard(); }));
+        $('sum-zones').innerHTML = ZONES.filter((z) => selectedZones.has(z)).map((z) => {
+          const n = (zoneCards[z] || []).length;
+          return n ? '<span>' + z + ' <b>' + n + '</b></span>' : '<span class="none">' + z + ' · empty</span>';
+        }).join('');
       }
     }
-    $('wiz-next').addEventListener('click', () => { wiz += 1; renderWizard(); });
-    $('wiz-all').addEventListener('click', () => { wiz = queue().length; renderWizard(); });
-    $('wiz-again').addEventListener('click', () => { wiz = 0; renderWizard(); });
-    $('add-target').addEventListener('click', () => {
-      const row = $('targets').firstElementChild.cloneNode(true);
-      $('targets').appendChild(row);
-    });
-    $('targets').addEventListener('click', (e) => { const b = e.target.closest('.btn'); if (b && $('targets').children.length > 1) b.parentElement.remove(); });
-    bindComposer($('question-field'), $('char-count'), $('char-meter'));
-
-    // ---- 5 · conversation ----
-    function renderThread() {
-      const q = queue();
-      const question = $('question-field').value.trim() || $('fallback-q').textContent;
-      const stack = zoneCards['Stack'] || [];
-      $('ctx-label').textContent = $('turn-phase').value.replace(' Phase', '') + ' · ' + q.length + ' cards';
-      $('thread').innerHTML =
-        '<div class="bubble you"><span class="who">You</span>' + question + '</div>' +
-        '<div class="bubble judge"><span class="who">TheJudge</span>' +
-        (stack.length >= 2
-          ? 'The top of the stack resolves first. Counterspell was cast in response to Lightning Bolt, so it resolves first and counters the Bolt — Lightning Bolt is put into its owner\'s graveyard and deals no damage. Sol Ring and Llanowar Elves on the battlefield are untouched, and Swords to Plowshares in hand could still be cast with priority after the stack empties.'
-          : 'With ' + q.length + ' card' + (q.length === 1 ? '' : 's') + ' in context, nothing is on the stack — priority passes and the active player continues their ' + $('turn-phase').value + '.') +
-        '<div class="refs">' + q.map((e) => thumb(e.card).replace('<span class="thumb', '<span data-name="' + e.card.name + '" class="thumb')).join('') + '</div></div>';
-      $('thread').querySelectorAll('.refs .thumb').forEach((i) => i.addEventListener('click', () => openDetail(byName(i.dataset.name))));
-      $('ctx-fields').innerHTML =
-        '<dt>Turn phase</dt><dd>' + $('turn-phase').value + '</dd><dt>Active player</dt><dd>' + $('active-player').value + '</dd><dt>Players</dt><dd>' + players + '</dd>';
-      $('ctx-cards').innerHTML = q.map((e) => '<div class="row">' + thumb(e.card) + '<span>' + e.card.name + '</span><span class="zone">' + e.zone + '</span></div>').join('');
+    function summarize(e, c) {
+      const bits = [];
+      if (e.zone === 'Stack') { bits.push('cast by ' + c.caster); if (c.mana !== e.card.mv) bits.push(c.mana + ' mana paid'); }
+      else bits.push(c.owner + "'s");
+      const t = [...c.targets].filter((x) => x !== 'none');
+      if (c.targets.has('none')) bits.push('no target');
+      else if (t.length || c.other) bits.push('targets ' + [...t, c.other].filter(Boolean).join(', '));
+      if (c.notes) bits.push('“' + c.notes + '”');
+      return bits.join(' · ');
     }
-    bindComposer($('followup-field'), $('fu-count'), $('fu-meter'));
-    function openCtx() { document.documentElement.dataset.trayOpen = 'true'; $('ctx-panel').dataset.open = 'true'; }
-    function closeCtx() { document.documentElement.dataset.trayOpen = 'false'; $('ctx-panel').dataset.open = 'false'; }
+    $('wiz-next').addEventListener('click', () => { wiz += 1; renderWizard(); });
+    $('wiz-back').addEventListener('click', () => { if (wiz === 0) goTo('cards'); else { wiz -= 1; renderWizard(); } });
+    $('mana-inc').addEventListener('click', () => { const e = queue()[wiz]; const c = ctxOf(e.card, e.zone); c.mana += 1; renderWizard(); });
+    $('mana-dec').addEventListener('click', () => { const e = queue()[wiz]; const c = ctxOf(e.card, e.zone); c.mana = Math.max(0, c.mana - 1); renderWizard(); });
+    $('mana-reset').addEventListener('click', () => { const e = queue()[wiz]; const c = ctxOf(e.card, e.zone); c.mana = e.card.mv; renderWizard(); });
+    bindComposer($('question-field'), $('char-count'), $('char-meter'));
+    bindComposer($('followup-field'), $('fu-count'), null);
+
+    // ---- the ruling: the rail leaves, the chat takes the panel ----
+    function openChat() {
+      const q = queue();
+      const question = $('question-field').value.trim() || 'How does this resolve?';
+      $('flow').hidden = true; $('chat').hidden = false;
+      $('chat-cards').innerHTML = '<span class="lbl">Cards</span>' + q.map((e) => thumb(e.card, 'tap')).join('');
+      bindRefs($('chat-cards'));
+      const stack = zoneCards['Stack'] || [];
+      const msgs = [{ who: 'you', text: question }, { who: 'judge', text: '' }];
+      $('thread').innerHTML = chatMarkup(msgs);
+      setTimeout(() => {
+        msgs[1] = { who: 'judge', refs: stack.slice(0, 2), text: stack.length >= 2
+          ? 'The top of the stack resolves first. [[Counterspell]] was cast in response to [[Lightning Bolt]], so it resolves first and counters the Bolt — Lightning Bolt is put into its owner\'s graveyard and deals no damage.\n[[Sol Ring]] and [[Llanowar Elves]] on the battlefield are untouched. With the stack empty, ' + $('active-player').value + ' gets priority again in the ' + $('turn-phase').value + ' and could still cast [[Swords to Plowshares]] from hand.'
+          : 'With ' + q.length + ' card' + (q.length === 1 ? '' : 's') + ' in context and nothing on the stack, priority passes and the active player continues their ' + $('turn-phase').value + '.' };
+        $('thread').innerHTML = chatMarkup(msgs);
+        bindRefs($('thread'));
+      }, 900);
+      $('ctx-facts').innerHTML =
+        '<div class="fact"><small>Turn phase</small><b>' + $('turn-phase').value + '</b></div><div class="fact"><small>Active</small><b>' + $('active-player').value + '</b></div><div class="fact"><small>Players</small><b>' + players + '</b></div>';
+      $('ctx-cards').innerHTML = q.map((e) => '<div class="row">' + thumb(e.card) + '<div><span class="nm">' + e.card.name + '</span> <span class="zone">' + e.zone + '</span><span class="what">' + summarize(e, ctxOf(e.card, e.zone)) + '</span></div><span></span></div>').join('');
+      window.scrollTo({ top: 0 });
+    }
+    $('send').addEventListener('click', openChat);
     $('view-context').addEventListener('click', openCtx);
+    $('start-over').addEventListener('click', () => goTo('game'));
+    function openCtx() { $('ctx-backdrop').dataset.open = 'true'; $('ctx-panel').dataset.open = 'true'; }
+    function closeCtx() { $('ctx-backdrop').dataset.open = 'false'; $('ctx-panel').dataset.open = 'false'; }
     $('ctx-close').addEventListener('click', closeCtx);
     $('ctx-backdrop').addEventListener('click', closeCtx);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCtx(); });
+
+    // ---- demo bar ----
+    document.querySelectorAll('[data-jump]').forEach((b) => b.addEventListener('click', () => {
+      const j = b.dataset.jump;
+      if (j === 'review') { goTo('context'); wiz = queue().length; renderWizard(); }
+      else if (j === 'chat') openChat();
+      else goTo(j);
+    }));
 
     goTo('game');
   </script>
