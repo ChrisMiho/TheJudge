@@ -85,7 +85,14 @@ Tries waiting on your verdict:
 
 Your points:
 
--
+- the phrase "Ask anything in Magic, or add a card for context" is awkward and not help, id rather omit that all together and let the question in the text box drive the question to the user.
+- there is also the phrase "Ask about Lightning Bolt, or anything in Magic." shown in a mock up, i also dont want this, and want it removed all together, it doesnt help users imo
+- i just want to confirm that "mockup state: " isnt going to be included in the final code and is just a result of the screenshots
+- there is the lightning bolt icon nexct to quick question thats also next to the judge, we dont need it in both spots, next to the judge is fine
+- when the detail tray is opened in mobile, a lot of the box just shows gray and is un-appealing, additionally the box around the oracle text but nothing else feels off, and then the exit button right above the name is awkward instead of in the right hard corner utilizing the dead space
+- the search bar looks nice, but the text box for the question isnt in the pic, is it off screen, or just covered up? we have a requirement to try and fit everything on the screen for mobile users
+- the main screen you see when some cards have been added and the text box is ready for a question looks great
+- the red version also looks great, same comment on the custom icon next to quick question though, the one next to the judge is all we need
 
 ## In-Depth Question (`direction-1/in-depth-question.html` · renders `idq-*`)
 
@@ -98,7 +105,17 @@ Tries waiting on your verdict:
 
 Your points:
 
--
+- i really like this step by step 1 -> 2 path added to the top, that is top tier for communicating to the user how much is left and it visually looks great
+- the icons for opening the additional info or removing the card are so large they cover up the name of the card in the mockups, can we adjust the size of them, im almost considering aligning the card layout like it is in the quick question flow but i appreciate how the top and the following cards are communicated so i wanna try and tune this
+- the context menu needs a full rework, it great the options we have now, but ive noticed certain scenarios dont have the right label choice to pick or you default to certain ones because its eaiser, i think this can be evaulated for both space and how it can be streamlined, this is imo, the most painful screen for this flow
+- the screen that displays that all the context has been reviewed is great, but i notice parts of the ui cutoff in the screenshot which is something i want to avoid
+- there is the "Card-by-card" button, what does that do? seems out of place
+- the text "sending to TheJudge - Pre Combaint Main Phase, Player 1 active, and then all the boubles for the zones and their counts under, this doesnt work, the text can be removed all together, the boubles are nice
+- the list of all the catds however when all context is reviewed needs to be scrollables so it can always fit
+- i notice the default size of the question box is a bit large, can we default to a slimmer box until the question starts to fill in, then only expand the box if there is room, the text in the box also needs to be scrollable
+- i like the old chat better, i like the idea of having the cards that were passed in somehow accessible from the chat pannel, but the new UI i feel the mockup doesnt feel as premium as the old ui
+- when we reach the chat portion, the #5 of answer box i think could go away altogher, i like the flow, but overall, this is something i think can be cut and cleaned up, so that when the chat window opens, the whole node and line flow disapears and the user is just in the chat at this point then
+
 
 ## Trade Balancer (`direction-1/trade-balancer.html` · renders `tb-*`)
 
@@ -111,7 +128,10 @@ Tries waiting on your verdict:
 
 Your points:
 
--
+- the new UI looks incredible, but i am noticing in the mocks certain aspects sliding off screen, i want to avoid this at all costs, and figure out how this new ui can exist but still fit
+- the new balance animation with the scale is great, but that whole component in general is quite large, is there a way we can consolidate some of the space, to help alleviate the other space problems
+- the printings side pannel is ugly, this needs to be better
+- the desktop side by side looks great, but again the mockup has one side showing the list scrolling off screen, id like to make this list scrollable so that like mobile, everything fits on screen, leverage the screen, but dont go off screen
 
 ## Shared chrome and Menu (`direction-1/shared-chrome-menu.html` · renders `menu-*`)
 
@@ -124,7 +144,11 @@ Tries waiting on your verdict:
 
 Your points:
 
--
+- the new mobile is a fresh take, but i find it kind ugly
+- i dislike how the tray comes from the right instead of the left now
+- i dont like how send feedback and history are under the color options now
+- the menu on desktop coming from the right just overall looks bad and unpolished, non-premium
+- 
 
 ## Anything global
 
@@ -134,7 +158,9 @@ edge.
 
 Your points:
 
--
+- none of the mockups i feel show or utilize the art inspiration that was provided, the UI feels new, but it just feels like a re-worked version of the old UI, i dont really see a lot of new UI artifacts
+- i was hoping for more animations, more graphics, more personality within each color profile
+- its better, but overall it still missing the elements that make it feel magical, mythical, ethereal, and otherwise unique and non-generic
 
 ## Ready to build?
 
