@@ -4,118 +4,134 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Trade Balancer — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
 <link rel="stylesheet" href="flow.css">
 <style>
-  .page-content { width: min(52rem, 92vw); }
-  .tb { display: grid; gap: 0.8rem; }
-  .flow-head .asof { font-size: 0.72rem; color: var(--text-muted); }
+  /* ---- the whole screen fits the viewport: the lists scroll, nothing else does (owner, round 3) ---- */
+  .page-content { width: min(56rem, 94vw); padding: 0.6rem 0 0; display: flex; flex-direction: column; }
+  .tb { display: flex; flex-direction: column; gap: 0.55rem; height: calc(100dvh - var(--chrome, 100px) - 0.6rem); min-height: 0; }
+  .asof { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+  .flow-head .asof { display: none; }
+  @media (max-width: 719px) { .header-side .asof { display: none; } .flow-head .asof { display: inline; } }
 
-  /* ---- the scale: both sides on one beam, tilted toward the heavier side ---- */
+  /* ---- the scale, compact: totals at the edges, the beam and verdict between ---- */
   .scale {
-    position: relative; overflow: hidden;
-    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.6rem;
-    padding: 0.9rem 0.9rem 0.8rem; border-radius: 1.1rem; border: 1px solid var(--surface-edge);
+    position: relative; overflow: hidden; flex: 0 0 auto;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.5rem;
+    padding: 0.55rem 0.8rem 0.5rem; border-radius: 0.9rem; border: 1px solid var(--surface-edge);
     background:
-      radial-gradient(70% 70% at 50% 30%, color-mix(in srgb, var(--accent) 30%, transparent) 0%, transparent 70%),
-      var(--surface-panel);
+      radial-gradient(60% 90% at 50% 50%, color-mix(in srgb, var(--accent) 28%, transparent) 0%, transparent 70%),
+      color-mix(in srgb, var(--surface-panel) 85%, transparent);
   }
-  .scale::before { content: ""; position: absolute; inset: -30% -10% auto -10%; height: 150%; background: var(--motif) center / 60% no-repeat; opacity: 0.08; pointer-events: none; }
+  .scale .motif-wash { position: absolute; inset: -60% -10%; background: var(--motif) center / 40% no-repeat; opacity: 0.08; pointer-events: none; }
   .scale > * { position: relative; z-index: 1; }
-  .pan { display: grid; gap: 0.1rem; }
+  .pan { display: grid; gap: 0; min-width: 0; }
   .pan.b { text-align: right; }
-  .pan .label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
-  .pan .total { font-size: 1.6rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; transition: color 200ms ease; }
-  .pan[data-heavy="true"] .total { color: var(--accent-soft); }
-  .pan .count { font-size: 0.72rem; color: var(--text-muted); }
-  .beam-wrap { display: grid; justify-items: center; gap: 0.35rem; min-width: 120px; }
-  .beam { width: 110px; height: 44px; }
-  .beam .bar { transform-origin: 55px 22px; transition: transform 320ms cubic-bezier(.2,.8,.2,1); }
-  .verdict { font-size: 0.82rem; font-weight: 600; text-align: center; white-space: nowrap; }
-  .verdict small { display: block; font-weight: 400; color: var(--text-muted); font-size: 0.72rem; white-space: normal; }
+  .pan .label { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pan .total { font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; line-height: 1.15; transition: color 200ms ease; font-family: var(--font-display); }
+  .pan[data-heavy="true"] .total { color: var(--accent-soft); text-shadow: 0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent); }
+  .pan .count { font-size: 0.68rem; color: var(--text-muted); }
+  .beam-wrap { display: grid; justify-items: center; gap: 0.15rem; min-width: 150px; }
+  .beam { width: 96px; height: 34px; display: block; }
+  .beam .bar { transform-origin: 48px 16px; transition: transform 420ms cubic-bezier(.2,.8,.2,1); }
+  .verdict { font-size: 0.78rem; font-weight: 600; text-align: center; line-height: 1.25; }
+  .verdict small { display: block; font-weight: 400; color: var(--text-muted); font-size: 0.68rem; }
   .verdict[data-even="true"] { color: var(--accent-soft); }
-  @media (max-width: 719px) {
-    .scale { grid-template-columns: 1fr 1fr; }
-    .beam-wrap { grid-column: 1 / -1; order: 3; }
-    .pan .total { font-size: 1.35rem; }
+  .tolerance { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.64rem; color: var(--text-muted); margin-top: 0.15rem; white-space: nowrap; }
+  .tolerance button { min-height: 22px; padding: 0 0.45rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); font-size: 0.64rem; cursor: pointer; }
+  .tolerance button[aria-pressed="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel)); }
+  @media (min-width: 720px) {
+    .scale { padding: 0.6rem 1.1rem; }
+    .pan .total { font-size: 1.6rem; }
+    .beam-wrap { min-width: 260px; }
+    .verdict small { display: inline; margin-left: 0.35rem; }
   }
-  .tolerance { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem; font-size: 0.78rem; color: var(--text-muted); }
-  .tolerance .pills { display: flex; gap: 0.3rem; }
-  .tolerance button { min-height: 32px; padding: 0.15rem 0.6rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; }
-  .tolerance button[aria-pressed="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
 
-  /* ---- sides: tabs on phone, two columns on desktop (REQ-204) ---- */
-  .side-tabs { display: flex; gap: 0.4rem; }
-  .side-tabs button { flex: 1; min-height: 44px; border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); font-size: 0.88rem; cursor: pointer; display: flex; justify-content: center; gap: 0.4rem; align-items: center; }
+  /* ---- sides: tabs on phone, two columns on desktop (REQ-204); each list scrolls ---- */
+  .side-tabs { display: flex; gap: 0.4rem; flex: 0 0 auto; }
+  .side-tabs button { flex: 1; min-height: 42px; border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); font-size: 0.88rem; cursor: pointer; display: flex; justify-content: center; gap: 0.4rem; align-items: center; }
   .side-tabs button b { color: var(--accent-soft); font-variant-numeric: tabular-nums; }
-  .side-tabs button[aria-selected="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
-  .sides { display: grid; gap: 0.8rem; }
+  .side-tabs button[aria-selected="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); box-shadow: 0 0 16px -8px var(--accent-soft); }
+  .sides { display: grid; gap: 0.6rem; flex: 1 1 auto; min-height: 0; }
   .side { display: none; }
-  .side[data-active="true"] { display: grid; }
+  .side[data-active="true"] { display: flex; }
   @media (min-width: 720px) {
     .side-tabs { display: none; }
-    .sides { grid-template-columns: 1fr 1fr; align-items: start; }
-    .side { display: grid !important; }
+    .sides { grid-template-columns: 1fr 1fr; }
+    .side { display: flex !important; }
   }
-  .side { gap: 0.6rem; padding: 0.8rem; border-radius: 1rem; border: 1px solid var(--surface-edge);
-    background: radial-gradient(80% 50% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent) 0%, transparent 70%), var(--surface-panel); }
-  .side-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
-  .side-head .name { font-size: 1rem; font-weight: 700; background: transparent; border: 0; border-bottom: 1px dashed transparent; color: var(--text-primary); padding: 0.1rem 0; width: 9rem; }
+  .side { flex-direction: column; min-height: 0; gap: 0.5rem; padding: 0.6rem 0.7rem; border-radius: 1rem; border: 1px solid var(--surface-edge);
+    background: radial-gradient(80% 40% at 50% 0%, color-mix(in srgb, var(--accent) 14%, transparent) 0%, transparent 70%), color-mix(in srgb, var(--surface-panel) 85%, transparent); }
+  .side-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex: 0 0 auto; }
+  .side-head .name { font-family: var(--font-display); font-size: 1.02rem; font-weight: 600; background: transparent; border: 0; border-bottom: 1px dashed transparent; color: var(--text-primary); padding: 0.1rem 0; width: 8rem; min-width: 0; }
   .side-head .name:hover, .side-head .name:focus { border-bottom-color: var(--accent-soft); outline: none; }
   .side-head .attach { display: flex; gap: 0.35rem; }
-  .side-head .icon-chip { min-height: 40px; font-size: 0.8rem; padding: 0 0.6rem; }
+  .side-head .icon-chip { min-height: 38px; font-size: 0.8rem; padding: 0 0.6rem; }
+  .side .search-pop { flex: 0 0 auto; }
+  .side .search-results { max-height: 108px; }
 
-  .entries { display: grid; gap: 0.45rem; }
-  .entry { display: grid; grid-template-columns: 56px 1fr auto; gap: 0.6rem; align-items: center; padding: 0.45rem; border-radius: 0.75rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
-  .entry .card { position: relative; width: 56px; height: 78px; border-radius: 4px; overflow: hidden; cursor: pointer;
+  .entries { display: grid; gap: 0.4rem; align-content: start; flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 2px 2px 2px 0; scrollbar-width: thin; }
+  .entry { display: grid; grid-template-columns: 44px 1fr auto; gap: 0.55rem; align-items: center; padding: 0.4rem 0.45rem; border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); animation: msg-in 260ms ease both; }
+  .entry .card { position: relative; width: 44px; height: 61px; border-radius: 4px; overflow: hidden; cursor: pointer;
     box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--accent) 70%, #000); }
   .entry .card img { width: 100%; height: 100%; object-fit: cover; }
-  .entry[data-foil="true"] .card::after { content: ""; position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,0.35) 45%, rgba(120,200,255,0.25) 55%, transparent 70%); mix-blend-mode: screen; pointer-events: none; }
-  .entry .info { min-width: 0; display: grid; gap: 0.15rem; }
-  .entry .nm { font-weight: 600; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .entry .printing { font-size: 0.72rem; color: var(--text-muted); display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
-  .entry .printing button { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.72rem; padding: 0; cursor: pointer; text-decoration: underline dotted; min-height: 24px; }
-  .entry .controls { display: flex; align-items: center; gap: 0.3rem; }
-  .entry .ctl { min-width: 32px; min-height: 32px; padding: 0 0.45rem; border-radius: 0.5rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-primary); font-size: 0.78rem; cursor: pointer; }
+  .entry[data-foil="true"] .card::after { content: ""; position: absolute; inset: -40% -60%; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.45) 45%, rgba(120,200,255,0.35) 52%, rgba(255,180,255,0.3) 58%, transparent 68%); mix-blend-mode: screen; pointer-events: none; animation: foil 3.2s ease-in-out infinite; }
+  @keyframes foil { 0%, 100% { transform: translateX(-30%); } 50% { transform: translateX(30%); } }
+  .entry .info { min-width: 0; display: grid; gap: 0.12rem; }
+  .entry .nm { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entry .printing { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entry .printing button { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.7rem; padding: 0; cursor: pointer; text-decoration: underline dotted; }
+  .entry .controls { display: flex; align-items: center; gap: 0.25rem; margin-top: 0.1rem; }
+  .entry .ctl { min-width: 30px; min-height: 30px; padding: 0 0.4rem; border-radius: 0.45rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-primary); font-size: 0.74rem; cursor: pointer; }
   .entry .ctl[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel)); color: var(--accent-soft); }
-  .entry .qty { min-width: 1.4rem; text-align: center; font-variant-numeric: tabular-nums; font-size: 0.85rem; }
-  .entry .money { display: grid; justify-items: end; gap: 0.1rem; }
-  .entry .money .line { font-weight: 700; font-variant-numeric: tabular-nums; }
-  .entry .money .unit { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; }
-  .entry .x { border: 0; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.9rem; min-width: 32px; min-height: 32px; }
+  .entry .ctl:disabled { opacity: 0.4; cursor: default; }
+  .entry .qty { min-width: 1.3rem; text-align: center; font-variant-numeric: tabular-nums; font-size: 0.82rem; }
+  .entry .money { display: grid; justify-items: end; gap: 0.05rem; align-self: start; }
+  .entry .money .line { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 0.95rem; }
+  .entry .money .unit { font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; }
+  .entry .x { border: 0; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; min-width: 30px; min-height: 30px; margin-top: 0.1rem; }
   .entry .x:hover { color: var(--text-primary); }
-  .entry.cash .card { display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 30%, var(--surface-ground)); color: var(--accent-soft); font-weight: 700; font-size: 1.1rem; box-shadow: none; cursor: default; }
-  .entry.cash input { width: 6rem; min-height: 32px; }
-  .entry-empty { padding: 1rem; text-align: center; font-size: 0.85rem; color: var(--text-muted); border: 1px dashed color-mix(in srgb, var(--accent-soft) 45%, transparent); border-radius: 0.75rem; }
-  .side-foot { display: flex; justify-content: space-between; align-items: center; font-size: 0.82rem; color: var(--text-muted); border-top: 1px solid var(--surface-edge); padding-top: 0.5rem; }
-  .side-foot b { color: var(--text-primary); font-size: 1rem; font-variant-numeric: tabular-nums; }
-  .side .search-pop { margin-top: -0.2rem; }
+  .entry.cash .card { display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 30%, var(--surface-ground)); color: var(--accent-soft); font-weight: 700; font-size: 1.05rem; box-shadow: none; cursor: default; font-family: var(--font-display); }
+  .entry.cash input { width: 5.5rem; min-height: 32px; padding: 0.2rem 0.5rem; }
+  .entry-empty { padding: 1.2rem 1rem; text-align: center; font-size: 0.85rem; color: var(--text-muted); border: 1px dashed color-mix(in srgb, var(--accent-soft) 45%, transparent); border-radius: 0.75rem; }
+  .side-foot { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--surface-edge); padding-top: 0.45rem; flex: 0 0 auto; }
+  .side-foot b { color: var(--text-primary); font-size: 1rem; font-variant-numeric: tabular-nums; font-family: var(--font-display); }
+  .side-foot .icon-chip { min-height: 32px; font-size: 0.74rem; padding: 0 0.55rem; }
 
-  .actions { display: flex; flex-wrap: wrap; gap: 0.5rem; justify-content: flex-end; }
-  .actions .btn { font-size: 0.85rem; }
+  .actions { display: flex; gap: 0.4rem; justify-content: flex-end; flex: 0 0 auto; padding-bottom: 0.5rem; }
+  .actions .icon-chip { min-height: 38px; font-size: 0.78rem; }
+  @media (max-width: 719px) { .actions .icon-chip { flex: 1; justify-content: center; padding: 0 0.4rem; } }
 
-  /* printing picker (what "Change printing" opens) */
-  .printing-list { display: grid; gap: 0.3rem; margin-top: 0.6rem; }
-  .printing-list button { display: grid; grid-template-columns: 40px 1fr auto; gap: 0.6rem; align-items: center; text-align: left; padding: 0.35rem; border-radius: 0.6rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-primary); cursor: pointer; }
-  .printing-list button[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
-  .printing-list .thumb { width: 40px; height: 56px; border-radius: 3px; }
-  .printing-list .set { font-size: 0.85rem; }
-  .printing-list .set small { display: block; color: var(--text-muted); font-size: 0.7rem; }
-  .printing-list .pr { font-size: 0.78rem; color: var(--accent-soft); text-align: right; white-space: nowrap; }
-
-  .foot-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 1.25rem; }
+  /* ---- the printing picker: the card leads, one row per set, tap a price to pick finish + printing ---- */
+  .pp-filter { margin: 0 0 0.2rem; }
+  .printing-list { display: grid; gap: 0.35rem; }
+  .printing-row { display: grid; grid-template-columns: 40px 1fr; gap: 0.6rem; align-items: center; padding: 0.45rem 0.5rem; border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 40%, transparent); }
+  .printing-row[data-current="true"] { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); background: color-mix(in srgb, var(--accent) 14%, var(--surface-panel)); }
+  .printing-row .thumb { width: 40px; height: 56px; border-radius: 3px; }
+  .printing-row .set { display: grid; gap: 0.3rem; min-width: 0; }
+  .printing-row .set .n { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .printing-row .set .n small { display: block; font-weight: 500; color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.04em; margin-top: 0.1rem; }
+  .printing-row .finishes { display: flex; gap: 0.35rem; }
+  .finish { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 32px; padding: 0 0.6rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-primary); font-size: 0.78rem; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .finish small { color: var(--text-muted); font-size: 0.68rem; }
+  .finish b { font-weight: 700; }
+  .finish[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 26%, var(--surface-panel)); box-shadow: 0 0 12px -5px var(--accent-soft); }
+  .finish[aria-pressed="true"] b { color: var(--accent-soft); }
+  .finish:disabled { opacity: 0.45; cursor: default; }
+  .finish.foil::before { content: ""; width: 10px; height: 10px; border-radius: 999px; background: linear-gradient(135deg, #ffd6f5, #9be7ff, #fff7b0); }
 </style>
 </head>
-<body>
+<body data-tray-open="false">
   <header class="app-header">
     <div class="menu-rail">
-      <button class="brand-mark tap-target">
-        <img src="motifs/blue.svg" alt="" aria-hidden="true">
-        <span class="wordmark">TheJudge</span>
-      </button>
+      <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+      <button class="brand-mark"><span class="orb" aria-hidden="true"></span><span class="wordmark">TheJudge</span></button>
     </div>
-    <button class="icon-btn tap-target" aria-label="Open menu">☰</button>
+    <div class="header-side"><span class="asof">Prices as of 8 Sep 2026 · USD</span></div>
   </header>
   <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
 
@@ -128,34 +144,30 @@
 
       <!-- the scale -->
       <div class="scale" id="scale">
+        <div class="motif-wash" aria-hidden="true"></div>
         <div class="pan a" id="pan-a">
           <span class="label" id="lbl-a">Side A</span>
           <span class="total" id="total-a">$0.00</span>
           <span class="count" id="count-a"></span>
         </div>
         <div class="beam-wrap">
-          <svg class="beam" viewBox="0 0 110 44" aria-hidden="true">
+          <svg class="beam" viewBox="0 0 96 34" aria-hidden="true">
             <g class="bar" id="beam-bar">
-              <line x1="8" y1="22" x2="102" y2="22" stroke="var(--accent-soft)" stroke-width="2.5" stroke-linecap="round"/>
-              <path d="M8 22 l-4 8 h8 z M102 22 l-4 8 h8 z" fill="var(--accent-soft)"/>
+              <line x1="6" y1="16" x2="90" y2="16" stroke="var(--accent-soft)" stroke-width="2.2" stroke-linecap="round"/>
+              <path d="M6 16 l-4 7 h8 z M90 16 l-4 7 h8 z" fill="var(--accent-soft)"/>
             </g>
-            <path d="M55 22 l-7 16 h14 z" fill="var(--accent)"/>
-            <circle cx="55" cy="22" r="3.5" fill="var(--surface-ground)" stroke="var(--accent-soft)" stroke-width="2"/>
+            <path d="M48 16 l-6 14 h12 z" fill="var(--accent)"/>
+            <circle cx="48" cy="16" r="3" fill="var(--surface-ground)" stroke="var(--accent-soft)" stroke-width="2"/>
           </svg>
           <div class="verdict" id="verdict"></div>
+          <div class="tolerance"><span>even within</span>
+            <span id="tolerance"><button aria-pressed="false" data-t="0">$0</button><button aria-pressed="true" data-t="1">$1</button><button aria-pressed="false" data-t="5">$5</button></span>
+          </div>
         </div>
         <div class="pan b" id="pan-b">
           <span class="label" id="lbl-b">Side B</span>
           <span class="total" id="total-b">$0.00</span>
           <span class="count" id="count-b"></span>
-        </div>
-      </div>
-      <div class="tolerance">
-        <span>Call it even within</span>
-        <div class="pills" id="tolerance">
-          <button aria-pressed="false" data-t="0">$0</button>
-          <button aria-pressed="true" data-t="1">$1</button>
-          <button aria-pressed="false" data-t="5">$5</button>
         </div>
       </div>
 
@@ -167,45 +179,53 @@
       <div class="sides" id="sides"></div>
 
       <div class="actions">
-        <button class="btn tap-target" id="swap">⇄ Swap sides</button>
-        <button class="btn tap-target" id="copy">Copy summary</button>
-        <button class="btn tap-target" id="clear">Start a new trade</button>
+        <button class="icon-chip" id="swap"><span class="glyph">⇄</span> Swap sides</button>
+        <button class="icon-chip" id="copy"><span class="glyph">⎘</span> Copy summary</button>
+        <button class="icon-chip" id="clear"><span class="glyph">↺</span> New trade</button>
       </div>
     </section>
 
     <p class="foot-note">
       Before: <a href="../before/trade-balancer-390x844.png">trade-balancer-390x844.png</a> ·
       <a href="../before/trade-balancer-1440x900.png">trade-balancer-1440x900.png</a>.
-      Card images are the app's own corpus art via Scryfall (unchanged from today). Prices are demo values.
+      Card images are the app's own corpus art via Scryfall (unchanged from today). Prices are demo values. The screen above fits the viewport; only this note sits below it.
     </p>
   </main>
 
   <!-- printing picker: bottom sheet on phone, side panel on desktop -->
-  <div class="menu-tray-backdrop" id="pp-backdrop"></div>
+  <div class="sheet-backdrop" id="pp-backdrop" data-open="false"></div>
   <aside class="drawer-panel detail-panel" id="pp-panel" data-open="false" aria-label="Choose a printing">
-    <button class="icon-btn overlay-close tap-target" id="pp-close" aria-label="Close">✕</button>
-    <h2 id="pp-title">Choose a printing</h2>
-    <input class="field tap-target" placeholder="Filter by set name or code">
-    <div class="printing-list" id="pp-list"></div>
+    <button class="icon-btn overlay-close" id="pp-close" aria-label="Close">✕</button>
+    <div class="art"><img id="pp-art" alt=""><div class="title"><h2 id="pp-title"></h2><span class="cost">Printings</span></div></div>
+    <div class="body">
+      <input class="field pp-filter" id="pp-filter" placeholder="Filter by set name or code">
+      <div class="printing-list" id="pp-list"></div>
+    </div>
   </aside>
 
+  <script src="ambience.js"></script>
   <script src="flow.js"></script>
   <script>
-    const { img, library, byName, openDetail, ringAttr, thumb } = window.FLOW;
+    const { img, art, library, byName, openDetail, ringAttr, thumb, mountMenu } = window.FLOW;
+    mountMenu('Trade Balancer');
     const $ = (s) => document.getElementById(s);
     const usd = (n) => '$' + n.toFixed(2);
 
-    // demo printings per card: set name · code · nonfoil / foil price
+    // the screen fits the viewport: measure the chrome above the page once
+    function fit() { document.documentElement.style.setProperty('--chrome', (document.querySelector('.app-header').offsetHeight + document.querySelector('.mock-mode-banner').offsetHeight) + 'px'); }
+    fit(); window.addEventListener('resize', fit);
+
+    // demo printings per card: set name · code · year · nonfoil / foil price
     const PRINTINGS = {
-      'Lightning Bolt': [['Commander Legends: Baldur\'s Gate', 'CLB', 3.20, 6.90], ['Magic 2011', 'M11', 2.10, 24.00], ['Masters 25', 'A25', 2.40, 9.50]],
-      'Sol Ring': [['Commander 2021', 'C21', 1.85, null], ['Commander Masters', 'CMM', 1.60, 4.20], ['Secret Lair', 'SLD', 12.00, 38.00]],
-      'Llanowar Elves': [['Dominaria', 'DOM', 0.75, 3.10], ['Magic 2019', 'M19', 0.60, 2.40]],
-      'Swords to Plowshares': [['Commander Masters', 'CMM', 0.60, 1.90], ['Eternal Masters', 'EMA', 1.40, 11.00]],
-      'Counterspell': [['Commander Masters', 'CMM', 1.10, 2.80], ['Modern Horizons 2', 'MH2', 1.60, 5.40]],
-      'Rhystic Study': [['Commander Masters', 'CMM', 32.00, 41.00], ['Prophecy', 'PCY', 44.00, 320.00]],
-      'Path to Exile': [['Commander Masters', 'CMM', 2.40, 5.00]],
-      'Birds of Paradise': [['Ravnica Remastered', 'RVR', 6.10, 13.50]],
-      'Lightning Helix': [['Ravnica Remastered', 'RVR', 0.90, 3.40]]
+      'Lightning Bolt': [['Commander Legends: Baldur\'s Gate', 'CLB', 2022, 3.20, 6.90], ['Magic 2011', 'M11', 2010, 2.10, 24.00], ['Masters 25', 'A25', 2018, 2.40, 9.50]],
+      'Sol Ring': [['Commander 2021', 'C21', 2021, 1.85, null], ['Commander Masters', 'CMM', 2023, 1.60, 4.20], ['Secret Lair', 'SLD', 2024, 12.00, 38.00]],
+      'Llanowar Elves': [['Dominaria', 'DOM', 2018, 0.75, 3.10], ['Magic 2019', 'M19', 2018, 0.60, 2.40]],
+      'Swords to Plowshares': [['Commander Masters', 'CMM', 2023, 0.60, 1.90], ['Eternal Masters', 'EMA', 2016, 1.40, 11.00]],
+      'Counterspell': [['Commander Masters', 'CMM', 2023, 1.10, 2.80], ['Modern Horizons 2', 'MH2', 2021, 1.60, 5.40]],
+      'Rhystic Study': [['Commander Masters', 'CMM', 2023, 32.00, 41.00], ['Prophecy', 'PCY', 2000, 44.00, 320.00]],
+      'Path to Exile': [['Commander Masters', 'CMM', 2023, 2.40, 5.00]],
+      'Birds of Paradise': [['Ravnica Remastered', 'RVR', 2024, 6.10, 13.50]],
+      'Lightning Helix': [['Ravnica Remastered', 'RVR', 2024, 0.90, 3.40]]
     };
     let uid = 0;
     const entry = (name, side, opts = {}) => ({ id: ++uid, card: byName(name), side, printing: opts.printing || 0, foil: !!opts.foil, qty: opts.qty || 1 });
@@ -219,7 +239,7 @@
     let activeSide = 'a';
     let openSearch = null;
 
-    const unit = (e) => { const p = PRINTINGS[e.card.name][e.printing]; return e.foil ? p[3] : p[2]; };
+    const unit = (e) => { const p = PRINTINGS[e.card.name][e.printing]; return e.foil ? p[4] : p[3]; };
     const sideTotal = (s) => entries.filter((e) => e.side === s).reduce((t, e) => t + (unit(e) ?? 0) * e.qty, 0) + cash[s];
 
     function render() {
@@ -243,8 +263,8 @@
       v.innerHTML = ta + tb === 0
         ? 'Add cards to both sides'
         : even
-          ? 'Even trade' + (gap > 0 ? '<small>' + names[heavy] + ' ahead by ' + usd(gap) + ', inside your $' + tolerance + ' window</small>' : '')
-          : names[heavy] + ' is ahead by ' + usd(gap) + '<small>' + names[light] + ' adds ' + usd(gap) + ' in cards or cash to even it</small>';
+          ? 'Even trade' + (gap > 0 ? '<small>' + names[heavy] + ' ahead by ' + usd(gap) + ', inside $' + tolerance + '</small>' : '')
+          : names[heavy] + ' ahead by ' + usd(gap) + '<small>' + names[light] + ' adds ' + usd(gap) + ' to even it</small>';
 
       $('sides').innerHTML = ['a', 'b'].map((s) => {
         const list = entries.filter((e) => e.side === s);
@@ -253,9 +273,9 @@
           return '<div class="entry" data-id="' + e.id + '" data-foil="' + e.foil + '">' +
             '<div ' + ringAttr(e.card).replace('class="', 'class="card ') + ' title="Card details"><img src="' + img(e.card.id) + '" alt="' + e.card.name + '"></div>' +
             '<div class="info"><span class="nm">' + e.card.name + '</span>' +
-            '<span class="printing">' + p[0] + ' · ' + p[1] + ' <button data-act="printing">Change printing</button></span>' +
+            '<span class="printing">' + p[0] + ' · ' + p[1] + ' · <button data-act="printing">Change</button></span>' +
             '<div class="controls">' +
-            '<button class="ctl" data-act="foil" aria-pressed="' + e.foil + '"' + (p[3] === null ? ' disabled title="No foil price"' : '') + '>Foil</button>' +
+            '<button class="ctl" data-act="foil" aria-pressed="' + e.foil + '"' + (p[4] === null ? ' disabled title="No foil price"' : '') + '>Foil</button>' +
             '<button class="ctl" data-act="dec" aria-label="Decrease quantity"' + (e.qty <= 1 ? ' disabled' : '') + '>−</button>' +
             '<span class="qty">' + e.qty + '</span>' +
             '<button class="ctl" data-act="inc" aria-label="Increase quantity">+</button>' +
@@ -271,11 +291,11 @@
         const searchOpen = openSearch === s;
         return '<section class="side" data-side="' + s + '" data-active="' + (s === activeSide) + '" aria-label="' + names[s] + '">' +
           '<div class="side-head"><input class="name" value="' + names[s] + '" aria-label="Rename ' + names[s] + '" data-side="' + s + '">' +
-          '<div class="attach"><button class="icon-chip tap-target" data-act="search" aria-expanded="' + searchOpen + '"><span class="glyph">＋</span> Add card</button>' +
-          '<button class="icon-chip tap-target"><span class="glyph">▣</span> Scan</button></div></div>' +
-          '<div class="search-pop' + (searchOpen ? ' open' : '') + '"><div class="search-row"><span class="glyph">⌕</span><input class="field tap-target side-search" placeholder="Search to add a card to ' + names[s] + '" autocomplete="off"></div><div class="search-results"></div></div>' +
+          '<div class="attach"><button class="icon-chip" data-act="search" aria-expanded="' + searchOpen + '"><span class="glyph">＋</span> Add card</button>' +
+          '<button class="icon-chip"><span class="glyph">▣</span> Scan</button></div></div>' +
+          '<div class="search-pop' + (searchOpen ? ' open' : '') + '"><div class="search-row"><span class="glyph">⌕</span><input class="field side-search" placeholder="Search to add a card to ' + names[s] + '" autocomplete="off"></div><div class="search-results"></div></div>' +
           '<div class="entries">' + (rows || '<div class="entry-empty">No cards on this side yet — add one, or scan it.</div>') + cashRow + '</div>' +
-          '<div class="side-foot"><button class="ctl icon-chip" style="min-height:32px;font-size:0.75rem" data-act="cash">＋ Add cash</button><span>' + names[s] + ' total <b>' + usd(sideTotal(s)) + '</b></span></div>' +
+          '<div class="side-foot"><button class="icon-chip" data-act="cash"><span class="glyph">＋</span> Add cash</button><span>' + names[s] + ' total <b>' + usd(sideTotal(s)) + '</b></span></div>' +
           '</section>';
       }).join('');
       bindSides();
@@ -299,18 +319,18 @@
         const s = sec.dataset.side;
         sec.querySelector('.name').addEventListener('change', (ev) => { names[s] = ev.target.value.trim() || ('Side ' + s.toUpperCase()); render(); });
         sec.querySelector('[data-act="search"]').addEventListener('click', () => { openSearch = openSearch === s ? null : s; render(); if (openSearch === s) $('sides').querySelector('.side[data-side="' + s + '"] .side-search').focus(); });
-        sec.querySelector('[data-act="cash"]').addEventListener('click', () => { openSearch = 'cash-' + s; render(); sec = $('sides').querySelector('.side[data-side="' + s + '"]'); sec.querySelector('.cash-in')?.focus(); });
+        sec.querySelector('[data-act="cash"]').addEventListener('click', () => { openSearch = 'cash-' + s; render(); const again = $('sides').querySelector('.side[data-side="' + s + '"] .cash-in'); if (again) again.focus(); });
         const cashIn = sec.querySelector('.cash-in');
         if (cashIn) {
-          cashIn.addEventListener('input', () => { cash[s] = Math.max(0, parseFloat(cashIn.value) || 0); const el = cashIn; render(); const again = $('sides').querySelector('.side[data-side="' + s + '"] .cash-in'); if (again) { again.value = el.value; again.focus(); again.setSelectionRange(el.value.length, el.value.length); } });
+          cashIn.addEventListener('input', () => { cash[s] = Math.max(0, parseFloat(cashIn.value) || 0); const val = cashIn.value; render(); const again = $('sides').querySelector('.side[data-side="' + s + '"] .cash-in'); if (again) { again.value = val; again.focus(); again.setSelectionRange(val.length, val.length); } });
           sec.querySelector('[data-act="cash-remove"]').addEventListener('click', () => { cash[s] = 0; openSearch = null; render(); });
         }
         const input = sec.querySelector('.side-search'), results = sec.querySelector('.search-results');
         const draw = () => {
           const q = input.value.trim().toLowerCase();
-          const hits = library.filter((c) => !q || c.name.toLowerCase().includes(q)).slice(0, 4);
-          results.innerHTML = hits.map((c) => '<button type="button" data-n="' + c.name + '">' + thumb(c) + '<span>' + c.name + '</span><span class="type">' + usd(PRINTINGS[c.name][0][2]) + '</span></button>').join('');
-          results.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { entries.push(entry(b.dataset.n, s)); openSearch = null; render(); }));
+          const hits = library.filter((c) => !q || c.name.toLowerCase().includes(q));
+          results.innerHTML = hits.map((c) => '<button type="button" data-n="' + c.name + '">' + thumb(c) + '<span>' + c.name + '</span><span class="type">' + usd(PRINTINGS[c.name][0][3]) + '</span></button>').join('');
+          results.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { entries.push(entry(b.dataset.n, s)); openSearch = null; render(); const list = $('sides').querySelector('.side[data-side="' + s + '"] .entries'); list.scrollTo({ top: 9999, behavior: 'smooth' }); }));
         };
         input.addEventListener('input', draw);
         input.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { openSearch = null; render(); } });
@@ -318,17 +338,31 @@
       });
     }
 
-    // ---- printing picker ----
+    // ---- printing picker: tap a price to pick that printing in that finish ----
     let ppEntry = null;
+    function drawPrintings() {
+      const q = $('pp-filter').value.trim().toLowerCase();
+      const e = ppEntry;
+      $('pp-list').innerHTML = PRINTINGS[e.card.name].map((p, i) => [p, i]).filter(([p]) => !q || p[0].toLowerCase().includes(q) || p[1].toLowerCase().includes(q)).map(([p, i]) =>
+        '<div class="printing-row" data-current="' + (i === e.printing) + '">' + thumb(e.card) +
+        '<div class="set"><span class="n">' + p[0] + '<small>' + p[1] + ' · ' + p[2] + '</small></span>' +
+        '<div class="finishes">' +
+        '<button class="finish" data-i="' + i + '" data-foil="false" aria-pressed="' + (i === e.printing && !e.foil) + '"><small>Nonfoil</small><b>' + usd(p[3]) + '</b></button>' +
+        (p[4] === null ? '<button class="finish foil" disabled><small>Foil</small><b>—</b></button>'
+          : '<button class="finish foil" data-i="' + i + '" data-foil="true" aria-pressed="' + (i === e.printing && e.foil) + '"><small>Foil</small><b>' + usd(p[4]) + '</b></button>') +
+        '</div></div></div>').join('');
+      $('pp-list').querySelectorAll('.finish[data-i]').forEach((b) => b.addEventListener('click', () => { e.printing = Number(b.dataset.i); e.foil = b.dataset.foil === 'true'; closePrinting(); render(); }));
+    }
     function openPrinting(e) {
       ppEntry = e;
-      $('pp-title').textContent = 'Printings of ' + e.card.name;
-      $('pp-list').innerHTML = PRINTINGS[e.card.name].map((p, i) =>
-        '<button aria-pressed="' + (i === e.printing) + '" data-i="' + i + '">' + thumb(e.card) + '<span class="set">' + p[0] + '<small>' + p[1] + '</small></span><span class="pr">' + usd(p[2]) + '<br>' + (p[3] === null ? 'no foil price' : usd(p[3]) + ' foil') + '</span></button>').join('');
-      $('pp-list').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { ppEntry.printing = Number(b.dataset.i); if (PRINTINGS[ppEntry.card.name][ppEntry.printing][3] === null) ppEntry.foil = false; closePrinting(); render(); }));
-      document.documentElement.dataset.trayOpen = 'true'; $('pp-panel').dataset.open = 'true';
+      $('pp-title').textContent = e.card.name;
+      $('pp-art').src = art(e.card.id);
+      $('pp-filter').value = '';
+      drawPrintings();
+      $('pp-backdrop').dataset.open = 'true'; $('pp-panel').dataset.open = 'true'; $('pp-panel').scrollTop = 0;
     }
-    function closePrinting() { document.documentElement.dataset.trayOpen = 'false'; $('pp-panel').dataset.open = 'false'; }
+    function closePrinting() { $('pp-backdrop').dataset.open = 'false'; $('pp-panel').dataset.open = 'false'; }
+    $('pp-filter').addEventListener('input', drawPrintings);
     $('pp-close').addEventListener('click', closePrinting);
     $('pp-backdrop').addEventListener('click', closePrinting);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePrinting(); });
@@ -348,7 +382,7 @@
     $('copy').addEventListener('click', () => {
       const line = (s) => names[s] + ' (' + usd(sideTotal(s)) + '): ' + entries.filter((e) => e.side === s).map((e) => e.qty + '× ' + e.card.name + (e.foil ? ' (foil)' : '')).join(', ') + (cash[s] ? ', cash ' + usd(cash[s]) : '');
       const text = line('a') + '\n' + line('b') + '\n' + $('verdict').textContent;
-      (navigator.clipboard?.writeText(text) || Promise.resolve()).then(() => { $('copy').textContent = 'Copied'; setTimeout(() => { $('copy').textContent = 'Copy summary'; }, 1200); });
+      (navigator.clipboard?.writeText(text) || Promise.resolve()).then(() => { $('copy').innerHTML = '<span class="glyph">✓</span> Copied'; setTimeout(() => { $('copy').innerHTML = '<span class="glyph">⎘</span> Copy summary'; }, 1200); });
     });
     render();
   </script>
