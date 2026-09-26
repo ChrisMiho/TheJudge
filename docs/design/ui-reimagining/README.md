@@ -39,7 +39,10 @@ compositions each page targets.
   header/menu rail, brand mark slot, menu tray, theme orbs, overlay/drawer
   primitives) every page below imports rather than redeclaring.
 - `flow.css` + `flow.js` — the question-flow components and demo helpers
-  Quick Question, In-Depth Question and Trade Balancer share (see round 2).
+  Quick Question, In-Depth Question and Trade Balancer share (see round 2),
+  plus the shared menu tray, chat and card-detail panel (round 3).
+- `ambience.css` + `ambience.js` + `ornaments/` — the per-colour personality
+  layer behind every page and the corner flourishes (round 3).
 - `shared-chrome-menu.html` — the Menu, brand mark, Theme section, mock-mode
   banner, and overlay demos (feedback modal, history drawer, View Context
   overlay, card-detail popup).
@@ -88,6 +91,134 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 390×844 and 1440×900, show the owner, adjust. Card images are the app's own
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
+
+### Round 3 (2026-09-25, from `OWNER-FEEDBACK.md` → "Round 3")
+
+Every Round 3 note applied, plus the global ask ("more animations, more
+graphics, more personality within each color profile … magical, mythical,
+ethereal"). Renders are `renders/r3-*.png` (phone 390×844, desktop 1440×900).
+**Rule** = the owner said it must hold; **Try** = shown for a verdict.
+
+The personality layer, shared by every page:
+
+- `direction-1/ambience.css` + `ambience.js` — a fixed layer behind every
+  screen with three parts per colour: a slow large-scale light movement
+  (White dawn rays sweep · Blue vortex turns · Black breathes with one violet
+  ember · Red heat flickers up · Green canopy light shifts · Colorless brass
+  rings turn), the colour's motif huge and faint and drifting, and a canvas
+  particle field (motes · orbiting sparks · falling ash · rising embers ·
+  drifting pollen · settling dust). All of it obeys reduced-motion.
+- `direction-1/ornaments/*.svg` — one corner flourish per colour (gilded
+  filigree · rune arc with a spark · briar thorn with a drip · a cracked,
+  burning corner · vine with two leaves · riveted brass bracket), drawn for
+  this app, painted into the corners of every lit surface (`.ornate`).
+  `tokens.css` carries it as `--ornament` beside `--motif`.
+- Type: **Cinzel** (a carved display face) for titles, card names, totals and
+  the wordmark; Inter for everything read at length. Both from Google Fonts
+  with system fallbacks (`--font-display` / `--font-body`).
+- Motion: the brand orb breathes; a light sweeps across every primary button;
+  a card added to a stage "summons" in (rises, blooms, settles); the ruling
+  arrives under a seal that turns into place; the current rail station
+  pulses; foil entries carry a moving sheen; zone tiles glow and wear the
+  motif when chosen.
+- The demo bar on each page is now a dashed strip labelled **DEMO** and sits
+  below the composition. It is mockup scaffolding only and will not exist in
+  the app.
+
+#### Quick Question — `quick-question.html` (`r3-qq-*`)
+
+- Rule: the two hint phrases are gone; the question box carries the prompt.
+- Rule: no motif icon beside the title — the brand orb is the only one.
+- ✕ and ⓘ now **straddle the card's top corners**, half above the frame's
+  edge, so the printed name is never covered (this also fixes the In-Depth
+  shelf complaint). Try: keep them there, or hide them until the card is
+  tapped?
+- Try: with Add card open on a phone, the ring **folds into a strip of
+  thumbnails** ("2 of 5 attached") so the search, its results (three rows,
+  then scroll) and the question box all stay on one screen.
+- The card-detail sheet: the card's **art leads**, name in the display face
+  over it with the mana cost, one type line with colour pips, the oracle
+  text in a framed box, three fact tiles (mana value · subtypes · price). The
+  sheet **sizes to its content** (no grey void) and the close sits in the
+  top-right corner. Desktop: the same as a right-hand side panel.
+- Rule: the question box is **slim (one line) until text arrives**, grows to
+  about seven lines, then scrolls; count and meter stay inside the frame.
+- Answered: **today's chat** — your question in the accent on the right, the
+  ruling as open text under a small seal, tappable card names, a pill
+  composer with a round send, Start over — plus a **Cards strip** at the top
+  so every attached card is one tap away.
+
+#### In-Depth Question — `in-depth-question.html` (`r3-idq-*`)
+
+- The rail stays (owner: "top tier"), now **four stations**. Answer is no
+  longer a station: when the ruling arrives the rail and the flow leave and
+  the chat takes the whole panel (`r3-idq-*-5-chat`).
+- Shelf: widgets straddle the top edge (26px); the Stack's **#n / TOP tag
+  straddles the bottom edge**, over the copyright line only.
+- Context step, rebuilt as **one compact sheet per card**: a small hero with
+  the card name, "Card 1 of 6 · Stack", and a row of thumbnails to jump
+  between cards. The questions depend on the zone: Stack asks Cast by,
+  Mana paid, Targets; other zones ask Owner (and Targets where they make
+  sense); Hand and Library skip Targets. Owner / Cast by are player chips.
+  Mana paid is a stepper preset to the printed cost ("as printed" / "+1 over
+  the printed cost"). **Targets are tap-all-that-apply chips**: the players,
+  every other card in context (with its thumbnail), No target, and a
+  free-text Other — no more picking a kind first, then a value, then Add.
+  Notes stay optional and slim. Try: this replaces today's kind→value→Add
+  target rows entirely; is anything you need to say about a card missing?
+- The reviewed list **scrolls** (never taller than a third of the screen),
+  each row shows what was said ("cast by Player 1 · targets Counterspell")
+  with **✎ to jump back to that card**. The Card-by-card button is gone.
+- The "Sending to TheJudge — phase, active player" line is gone; the zone
+  bubbles stay (empty zones dashed). The question box is slim and grows;
+  a one-line label says a blank box asks "How does this resolve?".
+- Chat: today's chat, with the **Cards strip** and **View context** beside
+  the title (opens the frozen game context with each card's context).
+
+#### Trade Balancer — `trade-balancer.html` (`r3-tb-*`)
+
+- Rule: **the whole screen fits the viewport** at 390×844 and 1440×900.
+  Only the entry lists scroll (one per side); header, scale, tabs, side
+  headers, footers and the action row stay put. Verified in the render:
+  the action row's bottom edge lands at 844 on the phone.
+- The scale is a **compact band**: totals at the edges (display face,
+  the heavier side lit), the beam and the plain-words verdict between, and
+  the "even within $0 / $1 / $5" pills inside the band rather than on their
+  own row. Same tilt animation.
+- The **printing picker** leads with the card's art and lists **one row per
+  set** (name, code · year, thumbnail) with two price pills — Nonfoil and
+  Foil — tapping a pill picks that printing *and* that finish. Foil rows
+  show a sheen; a set with no foil price shows a disabled Foil pill.
+- Actions are one row of chips (Swap sides · Copy summary · New trade). The
+  price date sits in the header on desktop and under the title on phones.
+
+#### Shared chrome and Menu — `shared-chrome-menu.html` + `shell.css` + `flow.js` (`r3-menu-*`, `r3-chrome-*`)
+
+- Rule: the tray **slides in from the left**, on phone and desktop, like
+  today's app. ☰ sits at the left end of the header.
+- Rule: **Send feedback and History sit right under the destinations**,
+  above Theme.
+- The tiles are gone: destinations are a **plain list** with a small accent
+  glyph, the current screen lit with a bar and a ✓. Theme is the six orbs
+  at the foot (smaller), one line naming the colour's personality.
+- The tray is themed the same way as the pages: glass over the ambience,
+  the motif low in the corner, a lit hairline down its edge. Try: is this
+  the "premium" you meant, or should the tray be plainer still?
+- Every page now mounts this same tray, the Send feedback modal and the
+  History panel from `flow.js` (`mountMenu`), so the Menu is identical
+  everywhere.
+- `shared-chrome-menu.html` doubles as the **personality board**: six tiles,
+  one per colour, that re-theme the page live and say what each brings.
+
+### Open for the owner's verdict (Round 3)
+
+- Global: does the ambience + ornaments + display face reach "magical,
+  mythical, ethereal", or push further (more motion? bolder ornaments?
+  card-frame-like borders on panels?). Intensity is easy to tune.
+- Quick Question: widgets straddling the card corners.
+- In-Depth: the rebuilt context sheet (chips + tap-to-target).
+- Trade Balancer: the compact scale band; the new printing picker.
+- Menu: the themed tray from the left.
 
 ### Round 2 (2026-09-24, from `OWNER-FEEDBACK.md`)
 
@@ -202,7 +333,7 @@ Shared pieces added this round, so the flows read as one product:
   on the lit surfaces, the header edge, the judge's answer bubble. Intensity
   stays restrained (0.06–0.16 opacity) so card art wins.
 
-### Open for the owner's verdict
+### Open for the owner's verdict (Round 2 — superseded by Round 3 above)
 
 - Quick Question: ✕ on the card corner; count inside the box; attach chips
   beside the title (or should search open under the chips instead of above

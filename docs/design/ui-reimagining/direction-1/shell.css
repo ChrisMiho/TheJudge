@@ -457,6 +457,13 @@ h1, h2, .display {
   color: var(--text-muted);
 }
 
+/* history rows inside the History panel */
+.history-list { display: grid; gap: 0.35rem; margin-top: 0.5rem; }
+.history-row { display: grid; gap: 0.15rem; text-align: left; padding: 0.6rem 0.75rem; border-radius: 0.65rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 40%, transparent); color: var(--text-primary); cursor: pointer; }
+.history-row:hover { border-color: var(--accent); }
+.history-row .q { font-weight: 600; font-size: 0.9rem; }
+.history-row .m { font-size: 0.72rem; color: var(--text-muted); }
+
 /* ---- Page shell / content column ---- */
 
 .page-content {

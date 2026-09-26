@@ -168,4 +168,73 @@ If every flow above is agreed, say so here and the next session writes one
 rule per flow and hands the agreed pages to a fresh kickoff (product truth +
 app code). Otherwise it runs one more mockup round.
 
+---
+
+# Round 4 — owner feedback on round 3 (fill in)
+
+Round 3 applied every note above plus the global "more personality" ask;
+renders are `renders/r3-*.png`, the record is `README.md` → "Round 3". Mark
+each point **Rule** / **Try** / "accepted". Then start a fresh session with:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 3), then apply
+my Round 4 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+Answers to your Round 3 questions:
+
+- "mockup state:" is demo scaffolding only — it is now a dashed **DEMO**
+  strip below each composition and will not exist in the app.
+- The search render: the question box was pushed below the fold by the
+  result list. Now the ring folds into a thumb strip while you search, the
+  results cap at three rows, and the box stays on screen (`r3-qq-390-search`).
+- "Card-by-card" was today's toggle back from the reviewed list to the
+  wizard. Gone; each reviewed row has ✎ instead.
+
+## Global (`renders/r3-qq-1440-red`, `r3-menu-1440-black`, `r3-chrome-390`)
+
+Tries waiting on your verdict: the ambience (light + particles per colour),
+the corner ornaments, Cinzel for titles, the summon / seal / shimmer motion.
+
+Your points:
+
+-
+
+## Quick Question (`r3-qq-*`)
+
+Tries: widgets straddling the card's corners; the folding strip while
+searching; the art-led detail sheet; the chat with the Cards strip.
+
+Your points:
+
+-
+
+## In-Depth Question (`r3-idq-*`)
+
+Tries: four-station rail, chat takes over at the ruling; the rebuilt
+context sheet (chips, stepper, tap-to-target); ✎ on the reviewed rows.
+
+Your points:
+
+-
+
+## Trade Balancer (`r3-tb-*`)
+
+Tries: the compact scale band with the tolerance pills inside; the
+printing picker with Nonfoil / Foil price pills; fixed-viewport layout.
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`r3-menu-*`)
+
+Tries: the themed tray from the left; plain rows; Theme orbs at the foot.
+
+Your points:
+
+-
+
+## Ready to build?
+
 -

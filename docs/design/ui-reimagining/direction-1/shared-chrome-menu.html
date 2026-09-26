@@ -4,48 +4,77 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shared chrome &amp; Menu — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
 <link rel="stylesheet" href="flow.css">
 <style>
-  .demo-note { font-size: 0.8rem; color: var(--text-muted); }
-  .motif-strip { display: flex; flex-wrap: wrap; gap: 0.5rem; margin: 0.6rem 0 0; }
-  .motif-strip img { width: 56px; height: 56px; border-radius: 0.5rem; border: 1px solid var(--surface-edge); }
+  .page-content { width: min(44rem, 92vw); padding-top: 0.8rem; display: grid; gap: 0.9rem; align-content: start; }
+  .demo-note { font-size: 0.82rem; color: var(--text-muted); margin: 0; line-height: 1.45; }
+  .card-panel h2 { font-size: 1.05rem; margin: 0 0 0.4rem; }
   .profile-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-  .card-panel h2 { font-size: 1rem; margin: 0 0 0.4rem; }
+
+  /* the personality board: what each colour brings, side by side */
+  .persona { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+  @media (min-width: 720px) { .persona { grid-template-columns: repeat(3, 1fr); } }
+  .persona button {
+    position: relative; overflow: hidden; text-align: left; min-height: 120px; padding: 0.7rem 0.75rem; border-radius: 0.9rem; cursor: pointer;
+    border: 1px solid var(--surface-edge); color: var(--text-primary);
+    background: radial-gradient(80% 60% at 100% 0%, color-mix(in srgb, var(--p-accent) 45%, transparent), transparent 70%), color-mix(in srgb, var(--surface-panel) 80%, transparent);
+    display: grid; align-content: end; gap: 0.2rem; transition: transform 160ms ease, border-color 160ms ease;
+  }
+  .persona button:hover { transform: translateY(-2px); border-color: var(--p-soft); }
+  .persona button[data-current="true"] { border-color: var(--p-soft); box-shadow: 0 0 24px -8px var(--p-soft); }
+  .persona button::before { content: ""; position: absolute; right: -10%; top: -20%; width: 70%; aspect-ratio: 1; background: var(--p-motif) center / contain no-repeat; opacity: 0.35; }
+  .persona button::after { content: ""; position: absolute; left: 6px; top: 6px; width: 34px; height: 34px; background: var(--p-orn) 0 0 / contain no-repeat; opacity: 0.85; }
+  .persona .n { font-family: var(--font-display); font-size: 1.05rem; color: var(--p-soft); }
+  .persona .d { font-size: 0.74rem; color: var(--text-muted); line-height: 1.35; }
+  .kit { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
+  @media (min-width: 720px) { .kit { grid-template-columns: repeat(6, 1fr); } }
+  .kit figure { margin: 0; display: grid; gap: 0.3rem; justify-items: center; font-size: 0.68rem; color: var(--text-muted); }
+  .kit .pair { display: flex; gap: 0.3rem; }
+  .kit img { width: 46px; height: 46px; border-radius: 0.5rem; border: 1px solid var(--surface-edge); background: var(--surface-ground); }
 </style>
 </head>
 <body data-tray-open="false">
   <header class="app-header">
     <div class="menu-rail">
-      <button class="brand-mark tap-target" id="brand-mark" aria-label="TheJudge — tap 10 times anywhere in-scope to reveal the cat wizard">
-        <img class="brand-motif" src="motifs/blue.svg" alt="" aria-hidden="true">
-        <span class="wordmark">TheJudge</span>
-      </button>
+      <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+      <button class="brand-mark" id="brand-mark" aria-label="TheJudge"><span class="orb" aria-hidden="true"></span><span class="wordmark">TheJudge</span></button>
     </div>
-    <button class="menu-toggle tap-target" id="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <div class="header-side"></div>
   </header>
   <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
 
   <main class="page-content">
     <div class="flow-head">
       <h1>Shared chrome &amp; Menu</h1>
-      <button class="icon-chip tap-target" id="open-menu-2"><span class="glyph">☰</span> Open the menu</button>
+      <button class="icon-chip" id="open-menu-2"><span class="glyph">☰</span> Open the menu</button>
     </div>
     <p class="demo-note">
       Before: <a href="../before/menu-390x844.png">menu-390x844.png</a> ·
       <a href="../before/menu-1440x900.png">menu-1440x900.png</a>. The header
-      above is the one every page shares (`shell.css`): the colour's motif
-      rides its right edge and a lit hairline runs its bottom. Open the menu
-      for the destinations, the Theme orbs, and the overlay demos.
+      above and the tray behind ☰ are the ones every page shares (`shell.css`
+      + `flow.js`): the tray slides in from the left like today's, the
+      destinations are a plain list with the current screen lit, Send feedback
+      and History sit right under them, and Theme lives at the foot as six orbs.
     </p>
 
-    <div class="card-panel" style="margin:0.8rem 0;">
-      <h2>Try every colour</h2>
-      <div class="profile-row" id="profile-row"></div>
+    <div class="card-panel ornate small">
+      <h2>Six personalities — tap one, every screen follows</h2>
+      <p class="demo-note" style="margin-bottom:0.6rem">Each colour brings its own light behind the page, its own particles, its own corner flourish and motif. This is what a player sees change when they pick a theme.</p>
+      <div class="persona" id="persona"></div>
     </div>
 
-    <div class="card-panel" style="margin-bottom:0.8rem;">
+    <div class="card-panel">
+      <h2>The kit behind each colour (REQ-201)</h2>
+      <p class="demo-note" style="margin-bottom:0.6rem">One motif and one corner ornament per colour, drawn for this app — no official Wizards of the Coast mana glyph, icon font, logo, or card art.</p>
+      <div class="kit" id="kit"></div>
+    </div>
+
+    <div class="card-panel">
       <h2>Life Tracker: shared chrome inherited, own screen untouched (REQ-202)</h2>
       <p class="demo-note">
         Life Tracker's own counters and layout are unchanged; only the header
@@ -63,127 +92,29 @@
         </figure>
       </div>
     </div>
-
-    <div class="card-panel">
-      <h2>Original motif kit (REQ-201)</h2>
-      <p class="demo-note">One original asset per colour — no official Wizards of the Coast mana glyph, icon font, logo, or card art.</p>
-      <div class="motif-strip">
-        <img src="motifs/white.svg" alt="White motif">
-        <img src="motifs/blue.svg" alt="Blue motif">
-        <img src="motifs/black.svg" alt="Black motif">
-        <img src="motifs/red.svg" alt="Red motif">
-        <img src="motifs/green.svg" alt="Green motif">
-        <img src="motifs/colorless.svg" alt="Colorless motif">
-      </div>
-    </div>
   </main>
 
-  <!-- Menu tray -->
-  <div class="menu-tray-backdrop" id="tray-backdrop"></div>
-  <nav class="menu-tray" id="menu-tray" aria-label="Feature destinations">
-    <div class="tray-brand">
-      <span class="brand-mark">
-        <img class="brand-motif" src="motifs/blue.svg" alt="" aria-hidden="true">
-        <span><span class="wordmark">TheJudge</span><span class="tagline">MTG assistant</span></span>
-      </span>
-      <button class="icon-btn tap-target" id="tray-close" aria-label="Close menu">✕</button>
-    </div>
-
-    <ul class="tray-nav-list">
-      <li><button type="button" aria-current="page"><span class="glyph">⚡</span><span>Quick Question<span class="hint">One card, one ruling, fast</span></span><span class="here">●</span></button></li>
-      <li><button type="button"><span class="glyph">◈</span><span>In-Depth Question<span class="hint">Set the board, then ask</span></span></button></li>
-      <li><button type="button"><span class="glyph">♥</span><span>Life Tracker<span class="hint">Totals for every player</span></span></button></li>
-      <li><button type="button"><span class="glyph">⚖</span><span>Trade Balancer<span class="hint">Weigh both sides in USD</span></span></button></li>
-    </ul>
-
-    <h3>Theme</h3>
-    <div class="theme-orbs" role="group" aria-label="Theme palettes" id="theme-orbs"></div>
-    <p class="theme-note" id="theme-note"></p>
-
-    <h3>More</h3>
-    <ul class="tray-nav-list">
-      <li><button type="button" id="open-feedback"><span class="glyph">✎</span><span>Send feedback<span class="hint">Tell us what's broken or missing</span></span></button></li>
-      <li><button type="button" id="open-history"><span class="glyph">◷</span><span>History<span class="hint">Past questions from this session</span></span></button></li>
-    </ul>
-    <div class="tray-links">
-      <button type="button" id="open-context">View Context demo</button>
-      <button type="button" id="open-card-detail">Card-detail demo</button>
-    </div>
-  </nav>
-
-  <!-- Feedback modal -->
-  <div class="overlay-backdrop" id="feedback-modal" data-open="false">
-    <div class="overlay-panel">
-      <button class="icon-btn overlay-close tap-target" data-close="feedback-modal" aria-label="Close">✕</button>
-      <h2>Send feedback</h2>
-      <p class="text-muted">Tell us what's broken or what you'd like to see.</p>
-      <textarea class="field" rows="4" placeholder="What's on your mind?"></textarea>
-      <div style="margin-top:0.75rem;"><button class="btn primary tap-target">Send</button></div>
-    </div>
-  </div>
-
-  <!-- View Context overlay -->
-  <div class="overlay-backdrop" id="context-overlay" data-open="false">
-    <div class="overlay-panel">
-      <button class="icon-btn overlay-close tap-target" data-close="context-overlay" aria-label="Close">✕</button>
-      <h2>Game context</h2>
-      <p class="text-muted">Turn phase: Main 1 · Active player: Player 1</p>
-      <p>Battlefield: Sol Ring, Llanowar Elves</p>
-    </div>
-  </div>
-
-  <!-- History drawer -->
-  <aside class="drawer-panel" id="history-drawer" data-open="false" aria-label="Conversation history">
-    <button class="icon-btn overlay-close tap-target" data-close="history-drawer" aria-label="Close">✕</button>
-    <h2>History</h2>
-    <p class="text-muted">Past questions from this session appear here.</p>
-  </aside>
-
+  <script src="ambience.js"></script>
   <script src="flow.js"></script>
   <script>
-    const body = document.body;
-    const menuToggle = document.getElementById('menu-toggle');
-    function setTray(open) {
-      body.setAttribute('data-tray-open', open ? 'true' : 'false');
-      menuToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-    }
-    menuToggle.addEventListener('click', () => setTray(body.getAttribute('data-tray-open') !== 'true'));
+    const { mountMenu, setProfile, PROFILES } = window.FLOW;
+    const setTray = mountMenu('Quick Question');
     document.getElementById('open-menu-2').addEventListener('click', () => setTray(true));
-    document.getElementById('tray-close').addEventListener('click', () => setTray(false));
-    document.getElementById('tray-backdrop').addEventListener('click', () => setTray(false));
 
-    // Theme orbs — live re-theme, no reload (REQ-200 / FLOW-007 step 4)
-    const PROFILES = [
-      ['white', 'White', '#ede7d6', '#faf8f2', 'gilded filigree'],
-      ['blue', 'Blue', '#0050d8', '#38e1ff', 'charged vortex'],
-      ['black', 'Black', '#7c3aed', '#c77dff', 'decay with one hot glow'],
-      ['red', 'Red', '#c10230', '#ff4d6d', 'a burst inside darkness'],
-      ['green', 'Green', '#0a7a42', '#4affa0', 'forest vines, pinpoint glow'],
-      ['colorless', 'Colorless', '#52525b', '#e4e4e7', 'inscribed brass and bone']
-    ];
-    const orbs = document.getElementById('theme-orbs');
-    orbs.innerHTML = PROFILES.map(([id, name, orb, soft]) =>
-      '<button class="theme-orb tap-target" data-profile-btn="' + id + '" aria-label="Theme: ' + name + '" style="--orb:' + orb + ';--orb-soft:' + soft + ';--orb-motif:url(motifs/' + id + '.svg)"><span class="orb"></span>' + name + '</button>').join('');
-    document.getElementById('profile-row').innerHTML = PROFILES.map(([id, name]) => '<button class="icon-chip tap-target" data-profile-btn="' + id + '">' + name + '</button>').join('');
-    function setProfile(id) {
-      document.documentElement.setAttribute('data-profile', id);
-      document.querySelectorAll('[data-profile-btn]').forEach((b) => b.toggleAttribute('data-current', b.dataset.profileBtn === id));
-      document.querySelectorAll('.theme-orb').forEach((b) => b.setAttribute('data-current', b.dataset.profileBtn === id));
-      document.querySelectorAll('.brand-motif').forEach((i) => { i.src = 'motifs/' + id + '.svg'; });
-      const p = PROFILES.find((x) => x[0] === id);
-      document.getElementById('theme-note').innerHTML = '<b>' + p[1] + '</b> — ' + p[4] + '. Every screen follows.';
-    }
-    document.querySelectorAll('[data-profile-btn]').forEach((btn) => btn.addEventListener('click', () => setProfile(btn.dataset.profileBtn)));
+    const BLURB = {
+      white: 'Dawn rays sweep the ground; motes of light rise. Gilded filigree in the corners.',
+      blue: 'A charged vortex turns behind the page; sparks orbit. Rune arcs frame each surface.',
+      black: 'The dark breathes; ash drifts down and one violet ember pulses. Briar thorns.',
+      red: 'Heat flickers up from below; embers climb and fade. Cracked, burning corners.',
+      green: 'Canopy light shifts; pollen drifts sideways. Vines and leaves in the frame.',
+      colorless: 'Brass rings turn like clockwork; dust settles. Riveted bracket corners.'
+    };
+    document.getElementById('persona').innerHTML = PROFILES.map(([id, name, orb, soft]) =>
+      '<button data-profile-btn="' + id + '" style="--p-accent:' + orb + ';--p-soft:' + soft + ';--p-motif:url(motifs/' + id + '.svg);--p-orn:url(ornaments/' + id + '.svg)"><span class="n">' + name + '</span><span class="d">' + BLURB[id] + '</span></button>').join('');
+    document.getElementById('kit').innerHTML = PROFILES.map(([id, name]) =>
+      '<figure><span class="pair"><img src="motifs/' + id + '.svg" alt="' + name + ' motif"><img src="ornaments/' + id + '.svg" alt="' + name + ' ornament"></span>' + name + '</figure>').join('');
+    document.querySelectorAll('#persona [data-profile-btn]').forEach((b) => b.addEventListener('click', () => setProfile(b.dataset.profileBtn)));
     setProfile('blue');
-
-    // Generic overlay open/close
-    const openOverlay = (id) => document.getElementById(id).setAttribute('data-open', 'true');
-    const closeOverlay = (id) => document.getElementById(id).setAttribute('data-open', 'false');
-    document.getElementById('open-feedback').addEventListener('click', () => { setTray(false); openOverlay('feedback-modal'); });
-    document.getElementById('open-history').addEventListener('click', () => { setTray(false); openOverlay('history-drawer'); });
-    document.getElementById('open-context').addEventListener('click', () => { setTray(false); openOverlay('context-overlay'); });
-    document.getElementById('open-card-detail').addEventListener('click', () => { setTray(false); window.FLOW.openDetail(window.FLOW.byName('Sol Ring')); });
-    document.querySelectorAll('[data-close]').forEach((btn) => btn.addEventListener('click', () => closeOverlay(btn.getAttribute('data-close'))));
   </script>
 </body>
 </html>

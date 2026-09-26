@@ -160,6 +160,26 @@ window.FLOW = (() => {
     nav.querySelectorAll('[data-href]').forEach((b) => b.addEventListener('click', () => { if (!b.hasAttribute('aria-current')) location.href = b.dataset.href; else setTray(false); }));
     nav.querySelectorAll('[data-profile-btn]').forEach((b) => b.addEventListener('click', () => setProfile(b.dataset.profileBtn)));
     setProfile(document.documentElement.dataset.profile || 'blue');
+
+    // Send feedback (modal) and History (side panel / sheet) live under the destinations, above Theme
+    const fb = document.createElement('div'); fb.className = 'overlay-backdrop'; fb.id = 'feedback-modal'; fb.dataset.open = 'false';
+    fb.innerHTML = '<div class="overlay-panel ornate small"><button class="icon-btn overlay-close" data-close="feedback-modal" aria-label="Close">✕</button>' +
+      '<h2 style="margin:0.2rem 0 0.3rem">Send feedback</h2><p class="text-muted" style="margin:0 0 0.7rem;font-size:0.85rem">Tell us what\'s broken or what you\'d like to see.</p>' +
+      '<textarea class="field" rows="4" placeholder="What\'s on your mind?"></textarea><div style="margin-top:0.75rem;display:flex;justify-content:flex-end"><button class="btn primary">Send</button></div></div>';
+    const hb = document.createElement('div'); hb.className = 'sheet-backdrop'; hb.id = 'history-backdrop'; hb.dataset.open = 'false';
+    const hd = document.createElement('aside'); hd.className = 'drawer-panel detail-panel'; hd.id = 'history-drawer'; hd.dataset.open = 'false'; hd.setAttribute('aria-label', 'Conversation history');
+    hd.innerHTML = '<button class="icon-btn overlay-close" data-close="history-drawer" aria-label="Close">✕</button><div class="body" style="padding-top:2.8rem"><h2 style="margin:0">History</h2>' +
+      '<p class="text-muted" style="margin:0;font-size:0.85rem">Past questions from this session.</p>' +
+      '<div class="history-list">' + [['How does this resolve?', 'In-Depth · 6 cards · 2 min ago'], ['Does Sol Ring tap for two?', 'Quick · 1 card · 14 min ago'], ['Can I respond to a trigger?', 'Quick · no cards · yesterday']].map(([q, m]) =>
+        '<button class="history-row"><span class="q">' + q + '</span><span class="m">' + m + '</span></button>').join('') + '</div></div>';
+    document.body.append(fb, hb, hd);
+    const closeAll = () => { fb.dataset.open = 'false'; hb.dataset.open = 'false'; hd.dataset.open = 'false'; };
+    document.getElementById('tray-feedback').addEventListener('click', () => { setTray(false); fb.dataset.open = 'true'; fb.querySelector('textarea').focus(); });
+    document.getElementById('tray-history').addEventListener('click', () => { setTray(false); hb.dataset.open = 'true'; hd.dataset.open = 'true'; });
+    document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', closeAll));
+    fb.addEventListener('click', (e) => { if (e.target === fb) closeAll(); });
+    hb.addEventListener('click', closeAll);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAll(); setTray(false); } });
     return setTray;
   }
   function setProfile(id) {
