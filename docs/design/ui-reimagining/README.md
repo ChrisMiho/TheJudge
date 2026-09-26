@@ -29,20 +29,23 @@ compositions each page targets.
   switched by `[data-profile="white|blue|black|red|green|colorless"]`. The
   four `accent`/`accent-strong`/`accent-soft`/`accent-contrast` values in
   each profile are unchanged from `REQ-099`'s shipped values.
-- `motifs/` — one original SVG per colour (`REQ-201`): White's gilded
-  filigree, Blue's charged vortex/lightning, Black's decay with one hot
-  glow, Red's burst inside darkness, Green's forest vines with a pinpoint
-  glow, Colorless's inscribed brass-and-bone bands. Drawn for this app; no
-  official Wizards of the Coast mana glyph, icon font, logo, or card art
-  anywhere in this tree.
+- `motifs/` — one original SVG per colour (`REQ-201`), each a badge (round
+  4): a dark disc holding the colour's own symbol, wrapped in a ring of its
+  element — White a halo pierced by light in scattering rays, Blue a spiral
+  in a sweeping wave, Black an eclipse in thorns with ink dripping below,
+  Red an ember burst in a swirl of flame, Green three leaves round a seed in
+  a leaf wreath, Colorless a hexagonal cog in an inscribed riveted band.
+  Drawn for this app; no official Wizards of the Coast mana glyph, icon
+  font, logo, or card art anywhere in this tree.
 - `shell.css` — the single source of the shared chrome skeleton (page shell,
   header/menu rail, brand mark slot, menu tray, theme orbs, overlay/drawer
   primitives) every page below imports rather than redeclaring.
 - `flow.css` + `flow.js` — the question-flow components and demo helpers
   Quick Question, In-Depth Question and Trade Balancer share (see round 2),
   plus the shared menu tray, chat and card-detail panel (round 3).
-- `ambience.css` + `ambience.js` + `ornaments/` — the per-colour personality
-  layer behind every page and the corner flourishes (round 3).
+- `ambience.css` + `ambience.js` — the per-colour personality layer behind
+  every page (round 3; turned up in round 4). The round-3 `ornaments/` are
+  gone — corners are hairline brackets from `shell.css` now.
 - `shared-chrome-menu.html` — the Menu, brand mark, Theme section, mock-mode
   banner, and overlay demos (feedback modal, history drawer, View Context
   overlay, card-detail popup).
@@ -92,12 +95,112 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
 
+### Round 4 (2026-09-26, from `OWNER-FEEDBACK.md` → "Round 4")
+
+Every Round 4 note applied. Renders are `renders/r4-*.png` (phone 390×844,
+desktop 1440×900) — the only renders in the folder; Round 3's live in git
+history at commit `dfaa319`.
+**Rule** = the owner said it must hold; **Try** = shown for a verdict.
+
+Global, on every page:
+
+- Rule: **one typeface.** Cinzel is gone; Inter carries titles too (heavier,
+  tighter tracking). `--font-display` still exists so a page never has to
+  know, but it resolves to Inter.
+- The six **motifs are redrawn as badges** (`motifs/*.svg`), the icon
+  language the owner's sticker references use: a dark disc holding a flat
+  symbol, wrapped in a painterly ring of the colour's element. Our own
+  symbols, never the Wizards glyphs (the owner's D2 ruling): White a halo
+  pierced by a shard of light in scattering rays · Blue a spiral of charged
+  water in a sweeping wave · Black an eclipse in thorns with ink dripping
+  below · Red an ember burst in a swirl of flame · Green three leaves round
+  a seed in a leaf wreath · Colorless a hexagonal cog in an inscribed,
+  riveted band. Try: the badge shows in the brand orb, the header edge, the
+  judge's seal, the theme orbs, and drifts huge behind every page.
+- Rule: the drawn **corner flourishes are gone**; every lit surface keeps a
+  hairline L-bracket in each corner instead (`shell.css .ornate`).
+- Try: the **ambience is turned up** — the drifting badge at twice the
+  weight, brighter light fields, about half again as many particles. The
+  header and tray watermarks are stronger too. Intensity is one number per
+  layer if it needs to move either way.
+- The desktop **side tray is a floating glass card** (`shell.css
+  .drawer-panel`): inset from the edge, rounded, blurred over the ambience,
+  sized to its content — no full-height grey column. Card details, the
+  printing picker and History all ride it.
+- Rule: a card appears **once** in the chat — the Cards strip at the top.
+  The judge's message keeps tappable names, never thumbnails.
+- The **personality board** and the motif kit on `shared-chrome-menu.html`
+  are gone; the tray is the only place a colour is picked.
+
+#### Quick Question — `quick-question.html` (`r4-qq-*`)
+
+- Rule: on desktop **Send Request sits in line with the question box**,
+  hugging its bottom edge as the box grows; on a phone it keeps its own line
+  under the box.
+- The card widgets keep straddling the corners (no objection in round 4).
+- `r4-qq-1440-detail` is the floating glass tray; `r4-qq-1440-red` and
+  `r4-qq-1440-green` show two other colours' badges and ambience.
+
+#### In-Depth Question — `in-depth-question.html` (`r4-idq-*`)
+
+- Rule: the **context sheet is a clean form again** — the card beside a
+  short set of fields, selects not chips (owner: round 3's chips were "a
+  regression"). Per zone, the same rules as today's app: Owner for every
+  zone but the Stack; Cast by on the Stack; **Mana spent** on the Stack and
+  the Battlefield, **prefilled with the printed cost** (a card with nothing
+  special to say costs zero taps; the hint reads "printed {R}").
+- **Targets is one picker.** Its list is everything the owner named: No
+  target · Just on the board (Battlefield / Command Zone) · each player ·
+  All players · every other card in context (with its zone) · Something
+  else (a one-line description). Each pick becomes a pill with a ✕ (a card
+  pill carries its thumbnail); the picker resets to "Add another target…",
+  so several targets are several picks, no kind → value → Add. "No target"
+  and "Just on the board" replace whatever was there. Blank means no target.
+  Try: is this the streamlined version you meant?
+- Notes stays one slim optional line. "Skip to review" sits in the
+  eyebrow; the row of thumbnails still jumps between cards.
+- Rule: **no round steppers** — the mana field is a plain number box, the
+  player count keeps its square − / +.
+- Rule: **Back and Continue are the same width** on every step and in the
+  card sheet.
+- The reviewed list **collapses** (Collapse ▴ / Expand ▾) to one line of
+  card names so the question box has the room.
+- Chat: cards only in the Cards strip; View context beside the title.
+- Send in line with the box on desktop, as Quick Question.
+
+#### Trade Balancer — `trade-balancer.html` (`r4-tb-*`)
+
+- Rule: **Add cash is gone** (state, rows, the footer button). **Swap
+  sides and Copy summary are gone**; the action row is New trade alone.
+- Rule: the verdict is **just the difference** — "Side A +$1.85", or
+  "Even" inside the chosen window. The "adds … to even it" line is gone.
+  The "even within $0 / $1 / $5" pills stay in the band.
+- The printing picker rides the floating glass tray: the card's art and
+  name, one line of instruction, one row per set with the Nonfoil / Foil
+  price pills. The filter box only appears past five printings.
+
+#### Shared chrome and Menu — `shared-chrome-menu.html` + `shell.css` + `flow.js` (`r4-menu-*`)
+
+- Rule: the **colour names and the one-line blurb under the orbs are
+  gone**, and so is the tray's footer line. The orbs are a touch larger; a
+  hover title still says the colour.
+- Everything else from round 3 holds: from the left, plain rows, Send
+  feedback and History under the destinations, Theme at the foot.
+
+### Open for the owner's verdict (Round 4)
+
+- Global: the badge motifs — right direction? Ambience level — hold, or up
+  again?
+- In-Depth: the one-picker targets; Mana spent on Battlefield cards as well
+  as the Stack.
+- Trade Balancer: "Even" vs. showing the small gap inside the window.
+
 ### Round 3 (2026-09-25, from `OWNER-FEEDBACK.md` → "Round 3")
 
 Every Round 3 note applied, plus the global ask ("more animations, more
 graphics, more personality within each color profile … magical, mythical,
-ethereal"). Renders are `renders/r3-*.png` (phone 390×844, desktop 1440×900) — the only
-renders in the folder; earlier rounds live in git history.
+ethereal"). The Round 3 renders (`r3-*`) were removed on 2026-09-26; they
+remain in git history at commit `dfaa319`.
 **Rule** = the owner said it must hold; **Try** = shown for a verdict.
 
 The personality layer, shared by every page:

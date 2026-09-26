@@ -260,3 +260,73 @@ Your points:
 ## Ready to build?
 
 -
+
+---
+
+# Round 5 — owner feedback on round 4 (fill in)
+
+Round 4 applied every note above; renders are `renders/r4-*.png`, the record
+is `README.md` → "Round 4". Mark each point **Rule** / **Try** / "accepted".
+Then start a fresh session with:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 4), then apply
+my Round 5 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+Answers to your Round 4 questions:
+
+- The font was Cinzel. It is gone; Inter carries everything now.
+- "Mana spent" was never removed — it showed on Stack cards only, as in
+  today's app. It now shows on Stack and Battlefield cards, prefilled with
+  the printed cost.
+- Swap sides flipped the two lists; Copy summary put the trade on the
+  clipboard as text. Both are gone, as is Add cash.
+
+## Global (`r4-qq-1440`, `r4-qq-1440-red`, `r4-qq-1440-green`, `r4-menu-1440-black`)
+
+Tries waiting on your verdict: the six badge motifs (dark disc, own symbol,
+elemental ring — the sticker language from your inspiration folder); the
+ambience turned up; hairline corner brackets in place of the flourishes;
+the floating glass side tray.
+
+Your points:
+
+-
+
+## Quick Question (`r4-qq-*`)
+
+Tries: send in line with the box on desktop; the glass detail tray.
+
+Your points:
+
+-
+
+## In-Depth Question (`r4-idq-*`)
+
+Tries: the clean context form; the one-picker targets with pills; Mana spent
+on Battlefield cards too; the collapsible review.
+
+Your points:
+
+-
+
+## Trade Balancer (`r4-tb-*`)
+
+Tries: the verdict as just the difference; the tidied printing picker.
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`r4-menu-*`)
+
+Tries: orbs with no names or blurb.
+
+Your points:
+
+-
+
+## Ready to build?
+
+-
