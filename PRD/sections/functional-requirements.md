@@ -881,14 +881,14 @@
 - Acceptance Criteria:
   - a theme/settings affordance is available from the app chrome across the primary staged flow and answered-state conversation view
   - opening the control shows the named profiles as swatches, including Blue as the default and Colorless customization per REQ-099
-  - selecting a palette immediately restyles primary accent surfaces such as primary buttons, active controls, focus/selection accents, badges, and prominent status highlights
+  - selecting a palette immediately restyles primary accent surfaces such as primary buttons, active controls, focus/selection accents, badges, and prominent status highlights; REQ-200 extends the same immediate restyle to the whole surface — background wash, panel fills and edges, focus rings, waiting panel, card-detail popup
   - selected palette persists across page reloads for the same browser
   - missing or corrupt persisted values fall back to Blue; retired or unsupported selected IDs are deleted before falling back, without throwing or blocking app load
   - palette changes do not reset game setup, selected zones, cards, enrichment, question text, answers, conversation state, scanner state, or retry cooldowns
   - tests cover palette selection, persistence, fallback, and at least one representative themed control
 - Constraints:
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, or data-pipeline behavior
-  - arbitrary RGB input is permitted only for Colorless under REQ-099; no per-component theme overrides, server-synced preferences, accounts, or dark/light mode redesign
+  - arbitrary RGB input is permitted only for Colorless under REQ-099; no per-component theme overrides, server-synced preferences, or accounts. No theme-mode control and no light-theme values ship in this pass; REQ-200's token roles are named without a theme mode so light values can be added later without a second redesign
   - the six curated profiles must preserve readable contrast and touch-friendly mobile controls; deliberately uncorrected custom Colorless RGB is the only contrast-quality exception
   - palette definitions must have one authoritative frontend source rather than duplicated color constants
 - Dependencies:
@@ -901,6 +901,7 @@
   - this is personalization only; it must not imply gameplay state or rules confidence
   - REQ-046 (DEC-068) broadens this requirement's reach to additional surfaces, semantic states, and the scanner UI without changing the selection mechanism
   - DEC-119 / REQ-099 supersede the former predefined catalog and no-arbitrary-color constraint while preserving this requirement's global-control, immediate-apply, persistence, and state-preservation behavior
+  - REQ-200 supersedes this requirement's accent-only reach: one palette choice now drives the whole surface through a named token set, and the "no dark/light mode redesign" constraint narrows to "no theme-mode control and no light values in this pass"
 
 ### REQ-045
 - Title: Inline step label in the staged header
@@ -921,15 +922,15 @@
   - DEC-067
   - FLOW-001
 - Notes:
-  - refines header chrome only; the cat-wizard image is hidden by default on the game-context screen and revealed session-only after 10 brand clicks (DEC-076, REQ-056)
+  - refines header chrome only; the cat-wizard image is hidden by default and revealed session-only after 10 brand-mark taps counted across every in-scope screen (DEC-076, REQ-056, REQ-203)
   - amended by DEC-122: the step name moves out of the header row entirely into an eyebrow label above each step's own content heading; this requirement's step-name values, ordering, and per-step coverage stay valid, only the position clause is superseded
 
 ### REQ-046
 - Title: Expanded theme palette reach
 - Priority: medium
-- Description: The frontend must broaden the reach of the existing single-color palette personalization (REQ-044) so one palette choice produces a coherent themed experience: remaining hardcoded primary-accent surfaces, the previously-fixed semantic green states, and the camera scanner UI all respond to the selected palette, while the dominant page background is neutralized to a palette-agnostic slate backdrop.
+- Description: The frontend must broaden the reach of the existing single-color palette personalization (REQ-044) so one palette choice produces a coherent themed experience: remaining hardcoded primary-accent surfaces, the previously-fixed semantic green states, and the camera scanner UI all respond to the selected palette. This requirement also neutralized the dominant page background to a palette-agnostic slate backdrop; **REQ-200 supersedes that half** — the background is now palette-driven through a named token set. The semantic-state and scanner reach below is unchanged.
 - Acceptance Criteria:
-  - the page background gradient on every staged screen and the answered view no longer uses a hardcoded blue end-stop; the backdrop is a neutral slate that does not visibly bias toward any palette and is not palette-tinted
+  - the page background gradient on every staged screen and the answered view no longer uses a hardcoded blue end-stop. The "neutral slate that does not visibly bias toward any palette and is not palette-tinted" half is **superseded by REQ-200**, which makes the background wash palette-driven within measured contrast floors; what survives here is that no single palette's hue is hardcoded into the background
   - previously-fixed semantic green surfaces — success/confirmation states, the `Ready to decrypt` indicator, the `Answer` panel framing, the scan-lock/convergence indicators, the scan thumbs-up confirmation, and the add-to-stack confirm control — restyle with the selected palette
   - the camera scan screen's accent visuals (capture pill, card reticle, lock/progress bar, confirmation popup, review bubble) restyle with the selected palette rather than fixed sky/emerald
   - where two palette-driven elements sit adjacent, visual hierarchy is preserved using accent-token weight variants (`accent` vs `accent-soft`/`accent-strong`) rather than a second hue
@@ -937,11 +938,11 @@
   - the immediate-apply, global-reach, and workflow-state-preservation behavior from REQ-044 and FLOW-007 is unchanged; DEC-119/REQ-099 replace the catalog, add Colorless customization, and refine persisted-value cleanup
   - tests cover at least one re-themed semantic-state surface and one re-themed scanner surface resolving to the active palette
 - Constraints:
-  - reuse the existing four palette tokens (`accent`, `accent-strong`, `accent-soft`, `accent-contrast`); do not add token roles; fixed values remain authoritative in REQ-099
+  - reuse the palette token set; fixed values remain authoritative in REQ-099. The "do not add token roles" clause is **superseded by REQ-200**, which replaces the four-token contract with one authoritative named set of surface roles — still a single source, still no per-component override
   - palette definitions retain a single authoritative frontend source; no duplicated color constants introduced by the migration
   - frontend-only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, the scan-matching engine, or data-pipeline behavior
-  - arbitrary RGB input is permitted only for Colorless under REQ-099; no per-component theme overrides, palette-tinted backgrounds, server-synced preferences, accounts, dark/light mode redesign, or theming-framework migration
-  - static neutral slate chrome stays neutral by design; DEC-081 / REQ-060 permits restrained palette-derived treatment only on REQ-060's closed minimum surface inventory
+  - arbitrary RGB input is permitted only for Colorless under REQ-099; no per-component theme overrides, server-synced preferences, accounts, or theming-framework migration. Palette-driven backgrounds are now permitted and bounded by REQ-200's measured contrast floors; no theme-mode control or light-theme values ship in this pass
+  - the "static neutral slate chrome stays neutral by design" rule and REQ-060's closed surface inventory are **superseded by REQ-200**: static chrome now reads the REQ-200 surface roles. Card-identity rings (REQ-058) stay outside the profile; Life Tracker (REQ-202) inherits the profile through shared chrome like every other destination, reviewed by a screenshot pair rather than pinned
 - Dependencies:
   - DEC-068
   - DEC-119
@@ -950,9 +951,11 @@
   - REQ-099
   - NFR-011
   - DEC-050
+  - REQ-200
 - Notes:
   - this extends the reach of REQ-044; DEC-119/REQ-099 separately refine the catalog and Colorless selection interaction without changing this reach
   - scanner inclusion is an approved exception to DEC-050's separate scoping for presentation tokens only; it does not alter scan capture, matching, or lock behavior
+  - amended for the `ui-reimagining` pass (2026-09-24): REQ-200 supersedes the palette-agnostic-background half and the four-token-only constraint. The neutral backdrop was deliberate for this pass and is recorded here rather than deleted, so the reversal is auditable
 
 ### REQ-047
 - Title: Non-English / alt-art scan corpus coverage and coverage diagnostics
@@ -1174,12 +1177,12 @@
 - Priority: medium
 - Description: The frontend must compact the staged data-collection screens to reduce vertical scroll through presentation-only layout changes on game context, zone collection, enrichment list mode, and scan-focused zone-collection chrome. Zone confirmation is excluded.
 - Acceptance Criteria:
-  - **game context:** the cat-wizard hero image is not in the document on initial render; after 10 clicks on the `TheJudge` brand title on the game-context step it appears (`/assets/cats-homescreen.png`) and stays visible for the browser session only; turn phase and active player render in one merged panel side-by-side on `sm+` widths with combat sub-step full-width below when phase is `combat`; `(recommended)` does not appear in active-player labeling; player expand/collapse and add/remove controls use wider tap targets
+  - **game context:** the cat-wizard hero image is not in the document on initial render; after 10 taps on the `TheJudge` brand mark — counted session-wide across every in-scope screen under REQ-203, not only on this step — it appears (`/assets/cats-homescreen.png`) and stays visible for the browser session only; turn phase and active player render in one merged panel side-by-side on `sm+` widths with combat sub-step full-width below when phase is `combat`; `(recommended)` does not appear in active-player labeling; player expand/collapse and add/remove controls use wider tap targets
   - **zone collection:** cards render in a horizontal left-to-right strip in add order with horizontal region scroll (DEC-151 / REQ-130), for every zone including stack; remove buttons, images sized to the tile under DEC-160, truncated names, and stack-position labels are preserved; overflow cards are reachable via horizontal scroll; the empty-state `Select a suggestion to preview and add a card to …` placeholder is removed
   - **scan focus:** while scan is open, search input, scan entry button, zone card list, owner select, card preview, and outer staged-flow navigation/action buttons outside the camera surface are not in the document; the `Scan card` heading is removed; **Exit scan** is reachable on the camera surface top-right; the scan-local **Capture** button remains available; the low-confidence manual-search escalation prompt does not render; manual tap-to-capture remains available
   - **enrichment:** in **View all cards** mode, each zone's card list shows at most 4 full-width edit rows before internal scroll; card-by-card wizard mode is unchanged; all enrichment fields remain reachable by scrolling within the zone list
   - **zone confirmation:** no screen-specific control compaction; it may inherit the automatic responsive shell/spacing from REQ-096 while its existing control layout and behavior remain unchanged
-  - tests cover representative cases for game-context Easter egg, zone strip scroll, scan chrome hide/show, and enrichment list scroll cap
+  - tests cover representative cases for the Easter egg (its cross-screen tap count is covered by REQ-203), zone strip scroll, scan chrome hide/show, and enrichment list scroll cap
 - Constraints:
   - presentation only; no change to step names, step ordering, flow logic, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, provider selection, backend routes, card metadata, scan matching/stabilizer logic, or data-pipeline behavior
   - enrichment scroll cap (4 rows per zone) applies across automatic responsive widths; zone-collection list geometry follows DEC-151
@@ -1194,10 +1197,12 @@
   - DEC-067
   - DEC-050
   - DEC-052
+  - REQ-203
 - Notes:
   - incremental improvement — pages with many zones or the decrypt form below enrichment may still scroll; this requirement targets the worst vertical offenders
   - automatic responsive presentation (REQ-096 / DEC-117) adjusts surrounding spacing without changing these functional caps
   - prior 2-column / 4-visible-tile zone grid superseded by DEC-151 horizontal strip
+  - amended for the `ui-reimagining` pass (2026-09-24): the Easter egg's trigger widens from the game-context step to every in-scope screen under one session-wide tap count (REQ-203). The session-only scope, the asset, and the hidden-on-initial-render behaviour are unchanged, and the egg is protected scope through the redesign.
 
 ### REQ-057
 - Title: Scanner acquisition diagnostics and validation matrix
@@ -1315,7 +1320,7 @@
 ### REQ-060
 - Title: Restrained ambient palette accents
 - Priority: medium
-- Description: The frontend must make the selected theme palette feel cohesive across the four staged screens and the answered/conversation view by giving the closed minimum surface inventory below a faint palette accent at rest, strengthening it during hover/focus where interactive, and sustaining a stronger restrained treatment for selected/current states.
+- Description: The frontend must make the selected theme palette feel cohesive across the four staged screens and the answered/conversation view by giving the surface inventory below a faint palette accent at rest, strengthening it during hover/focus where interactive, and sustaining a stronger restrained treatment for selected/current states. **REQ-200 supersedes the "closed minimum inventory" half**: the palette now reaches every in-scope surface through a named token set, and the inventory below becomes the minimum that must carry the resting/enhanced/current hierarchy rather than a ceiling on reach.
 - Acceptance Criteria:
   - game context applies the resting treatment to the player-count disclosure row and the phase/active-player control group, including the conditional combat-step control; focused controls strengthen the treatment
   - zone confirmation applies the resting treatment to every zone option row; hover/focus strengthens it, and each checked row retains the stronger selected treatment
@@ -1323,18 +1328,18 @@
   - enrichment applies the resting treatment to the view-mode control and each rendered card-enrichment/question-submission working container; hover/focus strengthens interactive controls
   - enrichment current-state treatment follows the rendered mode: during wizard card editing only the card-enrichment container retains the stronger treatment; in list mode both the card-enrichment and question-submission containers retain it simultaneously; after wizard completion only the question-submission container retains it
   - the answered/conversation view applies the resting treatment to the context trigger, open adaptive context sheet/drawer, and follow-up composer/workspace; hover/focus strengthens their interactive controls, and the open context surface retains the stronger current treatment
-  - this inventory is exhaustive for REQ-060; surfaces outside it remain neutral unless another existing requirement, especially REQ-046, already themes them
+  - this inventory is the **minimum** that must carry the resting/enhanced/current hierarchy; it is no longer exhaustive. Surfaces outside it are themed by REQ-200's surface roles rather than left neutral
   - hovering an inventoried interactive item strengthens its palette-derived border/glow/icon treatment without obscuring text, controls, or content
   - keyboard `focus-visible`, touch active state where applicable, and selected/current state provide equivalent enhanced feedback; no state or meaning is communicated by hover alone
   - selected/current surfaces retain the stronger restrained treatment after pointer hover ends while that state remains true
   - switching palettes through FLOW-007 immediately retints both resting and enhanced accent treatments without resetting or changing workflow state
-  - the dominant page background remains palette-agnostic slate and is not palette-tinted
+  - the dominant page background is palette-driven under REQ-200, within its measured contrast floors; the former palette-agnostic-slate rule is superseded
   - DEC-078 card-identity rings remain derived from card colors, keep their existing no-glow/no-animation behavior, and are not replaced, recolored, or obscured by the ambient palette treatment
   - existing DEC-079 transitions and state-change cues may carry brief palette-colored emphasis, but no new motion trigger or timing system is introduced; `prefers-reduced-motion` continues to reduce or disable decorative motion
   - scanner reticle, convergence, lock/progress, and thumbs-up confirmation motion remain unchanged; existing scanner palette styling from REQ-046 remains valid
   - automated coverage verifies the shared resting/enhanced/current treatment and every inventoried surface across the staged flow and answered view; a visual review checks the full inventory with all six curated REQ-099 profiles for restraint and readable contrast; arbitrary custom Colorless RGB is excluded from that visual quality gate
 - Constraints:
-  - reuse only the existing `accent`, `accent-strong`, `accent-soft`, and `accent-contrast` palette tokens; do not add token roles; fixed profile values remain authoritative in REQ-099
+  - reuse the authoritative palette token set; fixed profile values remain authoritative in REQ-099. The "do not add token roles" clause is superseded by REQ-200's named surface roles, which remain a single source with no per-component overrides
   - define resting, enhanced, and selected/current treatment once through shared semantic styling and reuse it; do not duplicate intensity values across components
   - presentation only; no new screens, flow changes, theme control behavior, `AskAiRequest`, Zod schema, `GameContext`, prompt, backend, card metadata, scanner engine, stack-ordering, or data-pipeline changes
   - stay CSS-based and within the existing React/Vite/Tailwind stack; no theming or animation framework
@@ -1356,8 +1361,10 @@
   - FLOW-007
   - DEC-118
   - REQ-097
+  - REQ-200
 - Notes:
   - this defines ambient expression, not the palette model or selection mechanism; DEC-119/REQ-099 own the expanded catalog and Colorless interaction
+  - amended for the `ui-reimagining` pass (2026-09-24): REQ-200 supersedes the closed-inventory ceiling and the palette-agnostic background. The resting / enhanced hover-focus / selected-current hierarchy, the "hover is never the sole carrier of state" rule, and the reduced-motion behaviour all survive unchanged and now apply across the whole surface
 
 ### REQ-061
 - Title: Per-instance identity for duplicate zone cards
@@ -2377,10 +2384,10 @@
   - malformed saved custom RGB is deleted and Colorless uses its fixed gray values; unavailable storage or failed reads/writes do not block render or reset app state
   - tests cover exact catalog/order/swatches/token values, refreshed WUBRG swatch-to-`accent-soft` alignment, Blue default, fixed-profile contrast, Black-versus-Colorless distinction, global representative reach, custom apply/persist/restore/reset, legacy/unknown deletion, malformed custom deletion, and unavailable storage
 - Constraints:
-  - reuse the single authoritative four-token frontend theme system; do not add token roles, per-flow palettes, per-profile component overrides, or a generated theming/contrast engine
-  - do not broaden REQ-060's closed ambient-surface inventory, tint the neutral slate page background, recolor card-identity rings, or change scanner behavior/motion
+  - reuse the single authoritative frontend theme system; no per-flow palettes, per-profile component overrides, or generated theming/contrast engine. The four-token restriction is **superseded by REQ-200**, which adds named surface roles to the same single source; each profile supplies values for the new roles alongside the four published above, which stay authoritative and unchanged
+  - do not recolor card-identity rings (REQ-058) or change scanner behavior/motion. REQ-200 supersedes the closed-inventory and untinted-background clauses: the surface is palette-driven within REQ-200's measured contrast floors
   - frontend presentation and browser-local persistence only; no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, scan matching/stabilizer logic, stack ordering, or data pipeline
-  - no per-player themes, Magic mana symbols/logos/card art, customization of the five fixed Magic profiles, custom-Colorless contrast guarantee, light mode, accounts, or server synchronization
+  - no per-player themes, Magic mana symbols/logos/card art (the licensing ban stays absolute — REQ-201 gives it a positive brief), customization of the five fixed Magic profiles, custom-Colorless contrast guarantee, accounts, or server synchronization. No theme-mode control and no light-theme values ship in this pass; REQ-200's roles are named so light values can be added later
 - Dependencies:
   - DEC-119
   - DEC-066
@@ -2392,10 +2399,13 @@
   - REQ-060
   - FLOW-007
   - NFR-011
+  - REQ-200
+  - REQ-201
 - Notes:
   - approved Black direction: vivid, playful purple with saturated violet primary/highlight tokens and a purple-tinted near-black strong token; this intentionally supersedes the earlier muted plum/mauve, not-bright-purple direction
   - the neon direction is values-only; it adds no CSS shadow, bloom, halo, animation, profile-specific component rule, or new token role
   - the refinement comparison image is preview-only and is not a shipped product asset
+  - amended for the `ui-reimagining` pass (2026-09-24): REQ-200 adds surface roles per profile without changing any published hex value or the Colorless custom-RGB contract. Colorless's "artifact" reading — steel, brushed metal, a hint of warmth — is expressed through those new roles and REQ-201's motif language, not by editing Colorless's four published values
 
 ### REQ-100
 - Title: Compact synchronized player-secondary disclosure
@@ -2984,7 +2994,7 @@
   - no horizontal document overflow is introduced at any tested viewport
 - Constraints:
   - presentation only; step content, control sets, and payloads unchanged
-  - no theme, typography, or brand redesign
+  - no theme, typography, or brand redesign **as part of this width change** — the constraint scopes REQ-124's own pass and is not a standing ban; REQ-200 / REQ-201 own the theme, typography, and brand-mark redesign and must not change this requirement's measured shell width cap
   - does **not** require filling the vertical space below staged-step content; DEC-145 accepts that space until step-level content exists for it
 - Dependencies:
   - DEC-145
@@ -2994,6 +3004,7 @@
   - NFR-001
 - Notes:
   - width was chosen by comparing to-scale mocks of 42/48/64/90rem; rendered CTA width, not percentage of viewport filled, was the deciding measure
+  - amended for the `ui-reimagining` pass (2026-09-24): the "no theme/typography/brand redesign" constraint is scoped to this requirement's own change. The `min(48rem, 92vw)` cap and its 768px-at-1440px measurement are unchanged and still bind the redesign
 
 ### REQ-125
 - Title: Reachable add action in card detail
@@ -3102,6 +3113,7 @@
 - Acceptance Criteria:
   - at 390×844 on zone-collection card detail, the add action's `top` is ≤ 844px (REQ-125)
   - In-Depth Enrichment and Quick Question pre-submit card surfaces do not force page scroll solely because of card image size
+  - on Quick Question pre-submit at 390x844, the composer and **Send Request** stay inside the first viewport (`bottom` no greater than 844px) with **every permitted number of attached cards up to the REQ-167 cap of five**, not only with one. Measured baseline this replaces (2026-09-24): with two cards attached the document measured 1159px against an 844px viewport and Send Request sat at `top` 1023 / `bottom` 1067, 179px below the fold. The per-image cap is not the fix — the attached-card list becomes a bounded region (a strip and/or a region-scrolled list) so total attached-card height stops growing with the card count
   - Scan review's card list does not displace or overlap the scan camera chrome (DEC-090)
   - images remain uncropped and aspect-ratio preserving; identity remains image-first
   - where container-relative sizing (DEC-160) would violate any criterion above on a given surface, that surface's `screen-layout.md` row records a bounded cap and the row is the authority — the shared component is not forked and gains no size variant
@@ -3116,8 +3128,11 @@
   - DEC-149
   - DEC-090
   - NFR-001
+  - REQ-167
+  - REQ-204
 - Notes:
   - **amended during the `ui-review` pass (2026-08-06)**: originally titled "Compact card images for first-viewport fit" and framed as a smallness mandate, which DEC-160 retires — a 92×128px image on every surface at every viewport width was the defect REQ-141 exists to fix. The behavioral criteria are unchanged and now serve as the ceiling on growth rather than as a floor on shrinking.
+  - **amended during the `ui-reimagining` pass (2026-09-24)**: the multi-card consequence the layout catalog accepted on 2026-08-30 — "the page now scrolls past the composer with 2+ cards attached … an accepted consequence of the per-image cap holding" — is reversed. It was measured again live and is the owner-reported friction. The ceiling now binds the pre-submit page as a whole at the full five-card cap, not each image in isolation.
 
 ### REQ-130
 - Title: Horizontal In-Depth zone-card strip
@@ -3128,10 +3143,13 @@
   - overflow scrolls horizontally inside the strip region (not as document horizontal scroll)
   - stack zone bottom-to-top ordering semantics and Remove behavior remain
   - strip participates in the DEC-151 detail-popup rules and in DEC-160's container-relative image sizing
-  - under DEC-160 the tile's image grows to fill the tile; the tile itself keeps its established fixed width (`w-40`, 160px) so the strip's horizontal rhythm and scroll behavior are preserved, and the taller tile stays within REQ-129's first-viewport ceiling
+  - under DEC-160 the tile's image grows to fill the tile, and the strip's horizontal rhythm and scroll behaviour are preserved within REQ-129's first-viewport ceiling
+  - at 390x844 at least **three** tiles are visible in the strip without scrolling it, so a filled zone reads as a list rather than as one card and a sliver. Measured baseline this replaces (2026-09-24, two cards in Hand): the strip's visible width was 265px against a 326px scroll width with 146x203 tile images in a 256px-tall region — about 1.8 tiles visible. The established `w-40` / 160px tile width is therefore **superseded**: the tile narrows to meet this criterion
+  - each tile keeps its Remove control, truncated name, stack-position label where applicable, and the corner detail popup as its read path (REQ-128); narrowing the tile must not drop any of them
 - Constraints:
   - presentation only; no zone payload or stack-ordering rule change
-  - do not widen the tile to chase image legibility — the zone strip is a scannable add-order list, not a card-reading surface; the corner detail popup (REQ-128) remains the read path here
+  - do not widen the tile to chase image legibility — the zone strip is a scannable add-order list, not a card-reading surface; the corner detail popup (REQ-128) remains the read path here. Narrowing it is the correction this requirement now makes
+  - one shared tile size for every zone including stack; no per-zone variant and no fork of `CardPresentation`
 - Dependencies:
   - DEC-151
   - DEC-160
@@ -3140,8 +3158,10 @@
   - REQ-129
   - FLOW-001
   - NFR-001
+  - REQ-200
 - Notes:
   - **amended during the `ui-review` pass (2026-08-06)**: DEC-160 replaces the shared `max-h-32` cap with container-relative sizing, which reaches this strip because `ZoneCardPicker` consumes the same `CardPresentation`. The image grows from 92px to roughly the tile's 160px interior; nothing else about the strip changes.
+  - **amended during the `ui-reimagining` pass (2026-09-24)**: the strip itself was already shipped and verified live; the owner's reported friction was tile density, not a missing strip. The 160px tile is superseded by a three-tiles-visible-at-390px criterion, measured rather than chosen.
 
 ### REQ-131
 - Title: Theme orb single-row layout
@@ -3876,7 +3896,7 @@
 - Notes:
   - Supersedes the single-card constraint (DEC-107 "single card", DEC-106 optional single `card`). The `card` field becomes a bounded list; the exact wire spelling (`cards` array vs. keeping `card` as an array) is a code-shape choice made at implementation — both stay back-compatible through the `mode` union.
   - Amends REQ-094's `mode: "lookup"` combo criterion: the required match instance was the single attached card; it becomes the bounded attached-card set — a candidate qualifies on containing any one attached card, and attached-card coverage ranks results ahead of popularity. REQ-094 carries the reciprocal "amended by REQ-167" note and lists REQ-167 as a dependency. The zero-card and single-card lookup cases, and all of game-mode retrieval, are unchanged.
-  - Screen-layout's "Quick Question — pre-submit" row records a **single-card** image cap (REQ-129/DEC-160/REQ-141). That row must be re-measured and updated for a multi-card add strip when this ships; it is deliberately not restamped as measured truth here.
+  - Screen-layout's "Quick Question — pre-submit" row was re-measured for the multi-card add strip on 2026-08-30 and again on 2026-09-24. The 2026-08-30 reading accepted page scroll past the composer with 2+ cards attached; the `ui-reimagining` pass withdraws that (REQ-129 as amended) and binds the attached-card region so Send Request stays in the first viewport at all five cards. That row is the authority; this note is no longer an instruction to re-measure.
   - Does not resolve Q-003 (lightweight game context) or Q-004 (answer-seeded second-pass retrieval); both stay open.
   - Gate review (2026-08-30) tightened the add cap from a suggested ~6 to a fixed 5, and directed that lookup-mode combo answers explain a completed combo when the attached cards fully assemble it, and otherwise name the missing piece(s) and describe what would fill them. The define loop (2026-08-30) settled those mechanics in REQ-094 (amended): "complete" = every ingredient slot filled by an exact/template match in the attached set, with REQ-094's zone/quantity checks dropped for a board-less mode; "partial" = qualifies on at least one attached card but leaves a slot unmatched; lookup selection order is complete-before-partial, then attached-card coverage, then fewer missing, then popularity, then variant id. The answer is REQ-095's existing present/missing rendering, and "what would fill the role" is the missing ingredient's own identity/template from the combo catalog, not a card recommendation. No new stable ID was needed.
 
@@ -4803,3 +4823,335 @@
   - DEC-084
 - Notes:
   - the original AWS deployment receipt (`PRD/instructions/receipts/aws-deployment-onboarding-2026-07-03.md`) predates the custom domain and records no reachability or categorization work; this is the first such record
+
+### REQ-200
+- Title: A theme built around the chosen colour
+- Priority: high
+- Description: The selected colour profile is the basis of a restrained theme,
+  not a fill layered on top of the existing surface. One authoritative token
+  set replaces the four-token accent-only contract with named surface roles —
+  page ground, raised panel fill, panel edge, colour wash, focus ring, and
+  text — each supplied per profile, so choosing White, Blue, Black, Red, Green,
+  or Colorless visibly changes the background wash, surface edges, focus rings,
+  the Ask AI waiting panel, and the card-detail popup across shared chrome,
+  Quick Question, In-Depth Question, and Trade Balancer, at a restrained
+  intensity that keeps neutral surfaces (ground and panel fills) the visual
+  majority in every profile and readability the first constraint. Dark values
+  only in this pass; the token roles are named without reference to dark or
+  light so a light theme is additive later rather than a second redesign.
+- Acceptance Criteria:
+  - the token set covers at least these roles and every in-scope surface reads
+    its colour from them rather than from a hard-coded zinc/slate value: page
+    ground, colour wash over the ground, raised panel fill, panel edge, focus
+    ring, primary text, muted text, and the filled-accent text pairing carried
+    over from REQ-099
+  - each of the six profiles supplies its own values for every role; switching
+    profile through FLOW-007 visibly changes the background wash, at least one
+    panel edge, the focus ring, the waiting panel, and the card-detail popup
+    without resetting destination or workflow state
+  - the wash stays restrained: neutral ground and panel fills remain the visual
+    majority of every screen in every profile; the profile colour reads as a
+    wash, edges, rings, and accents, never as a dominant fill
+  - measured contrast floors hold in all six profiles, at 390x844 and 1440x900,
+    against the darkest and lightest point of that profile's wash: primary body
+    text at least 14.37:1, accent text (`accent-soft` role) at least 6.19:1, and
+    the filled-accent text pairing at least 5.42:1. These are the values measured
+    in the shipped app on 2026-09-24 (`#E2E8F0` on `#18181B` = 14.37:1; Red
+    `accent-soft` `#FF4D6D` on `#09090B` = 6.19:1; Green `accent-contrast`
+    `#FFFFFF` on `accent` `#0A7A42` = 5.42:1) and are floors, not targets
+  - the wash never goes fully black: its darkest point stays at or above the
+    measured `#09090B` luminance, so the app survives a bright game store
+  - deliberately uncorrected custom Colorless RGB (REQ-099) stays exempt from the
+    contrast floors, exactly as it is today
+  - no token name encodes a theme mode, and no in-scope component hard-codes a
+    zinc/slate colour value; adding a light theme later requires new values for
+    the existing roles and no new component work
+  - tests cover the token set resolving per profile, one re-themed surface per
+    in-scope flow, and the measured contrast floors across all six profiles;
+    the Life Tracker inheritance and its screenshot-pair review are REQ-202's
+    gate, not this entry's
+- Constraints:
+  - one authoritative frontend source for the token set; no duplicated colour
+    constants, no per-component theme overrides, no per-flow palettes
+  - CSS/token plumbing and basic React state only; no theming framework, no
+    generated contrast engine, no runtime colour derivation beyond what the
+    profile values already declare
+  - presentation only; no change to `AskAiRequest`, Zod schemas, `GameContext`,
+    prompt assembly, providers, backend routes, card metadata, scan
+    matching/stabilizer logic, stack ordering, or the data pipeline
+  - dark values only in this pass; this requirement defines no light-theme values
+    and does not add a theme-mode control
+  - no Wizards of the Coast mana glyphs, icon font, logos, or card art (REQ-201)
+  - card-identity rings stay derived from card colours and independent of the
+    profile (REQ-058)
+- Dependencies:
+  - REQ-044
+  - REQ-046
+  - REQ-060
+  - REQ-099
+  - REQ-201
+  - REQ-202
+  - NFR-001
+  - NFR-006
+  - NFR-011
+  - FLOW-007
+- Notes:
+  - supersedes the palette-agnostic-background rule asserted in REQ-046's
+    description and criteria, REQ-060's criteria, REQ-099's constraints, and
+    NFR-011's constraints; each is amended in place rather than retired
+  - the current-state `Built:` lines that still describe the neutral background
+    are accurate until the code ships and are updated by the code slice, not by
+    this entry: `sections/scan/README.md` (scan background stays neutralized),
+    `sections/shared-chrome/README.md` (no palette-tinted page background;
+    composer ambient treatment), `sections/in-depth/README.md` (slim brand
+    block), and `sections/system-map.md`'s Theme entry
+  - the contrast floors are measured current behaviour, not new quality targets:
+    the redesign may not make any of the three worse than it is today
+
+### REQ-201
+- Title: Original per-colour motif kit
+- Priority: medium
+- Description: The app's Magic character must come from original motifs drawn
+  for this product, never from Wizards of the Coast artwork. Each of the six
+  colour profiles carries a named motif language — shape, texture, and glow
+  behaviour — used for background texture, iconography, empty-state art, and the
+  brand mark, so a profile reads as its colour's character and not only as its
+  hue.
+- Acceptance Criteria:
+  - each profile declares a motif language: White warm luminous authority (cream
+    and gold light, gilded filigree, tall verticals); Blue charged energy
+    (glowing cyan, lightning, vortices); Black decay with one hot accent
+    (charcoal ground, jagged organic edges); Red heat against darkness (one hot
+    red-orange light inside a dark field, a burst not a fill); Green forest at
+    dusk (deep mossy greens, pinpoint lime glow, vines and roots); Colorless
+    artifact (bone, brass and stone, one inner glow, inscribed bands)
+  - every motif asset ships from the repository as a local static file; no
+    runtime request to an external icon font, CDN, or art source
+  - motifs are decorative: no motif is the sole carrier of meaning, state, or an
+    action, and removing one leaves every control usable and labelled
+  - motifs respect `prefers-reduced-motion` through the existing CSS motion
+    baseline (NFR-006); no new motion trigger or timing system is introduced
+  - the brand mark may keep, adapt, or replace today's gradient text wordmark,
+    and whatever it becomes keeps the Easter-egg tap trigger (REQ-203)
+- Constraints:
+  - no official Wizards of the Coast mana symbol, icon font (including the
+    community Mana font), logo, set symbol, or card art ships, in any build or
+    any asset pipeline
+  - card art rendered from the existing card corpus is unaffected: this
+    requirement governs chrome and decoration, not card images
+  - presentation only; no change to request contracts, prompts, backend routes,
+    card metadata, or the data pipeline
+  - motif assets stay within today's frontend asset budget; no new font or art
+    ceiling is introduced and none is relaxed (NFR-013)
+- Dependencies:
+  - REQ-200
+  - REQ-058
+  - REQ-099
+  - NFR-006
+  - NFR-013
+- Notes:
+  - this makes REQ-099's "no Magic mana symbols/logos/card art" constraint a
+    positive brief rather than only a prohibition; the prohibition itself is
+    unchanged and stays enforceable
+  - the reference images that informed the six motif languages live in the work
+    package's `intake/inspiration/`; none of them is a shipped product asset
+
+### REQ-202
+- Title: Life Tracker inherits shared chrome, reviewed by a screenshot pair at
+  every touching slice
+- Priority: high
+- Description: Player Life Tracker inherits shared chrome, the REQ-200 token
+  set, and shared stylesheet changes the same way every other destination
+  does — the menu rail, brand mark, theme section, overlays, and page shell.
+  Life Tracker's own screens, counters, layout, and `lib/lifeTracker/` state
+  are untouched by the redesign. Every slice that touches shared chrome, the
+  token set, or the shared stylesheet attaches a Life Tracker before/after
+  screenshot pair at 390x844 and 1440x900 to its PR, so the owner sees exactly
+  what changed before merging. There is no automated pixel-diff gate; the
+  owner's review on the PR is the check.
+- Acceptance Criteria:
+  - within the Life Tracker destination, shared chrome and every REQ-200
+    surface role resolve the same way they do everywhere else — no
+    destination-scoped override, no forked shared component, no pinned value
+  - any change to shared chrome, the REQ-200 token set, or the shared
+    stylesheet attaches a Life Tracker before/after screenshot pair at
+    390x844 and 1440x900 to its PR description, captured with the same
+    viewport, profile, reduced-motion setting, and starting tracker state
+  - the owner reviews the pair on the PR and approves or requests changes;
+    there is no automated diff threshold and no pixel count that blocks the
+    slice on its own
+  - Life Tracker's one-screen fit at every supported player count (DEC-136) and
+    its full-height counter panel (DEC-139) are unaffected
+  - `lib/lifeTracker/` state, persistence, the commander-damage matrix, the
+    counter palette, day/night, Game Setup, Reset/New Game, and the one-way MTG
+    Assistant seed are untouched by the redesign packages
+  - automated coverage asserts Life Tracker's own screens, counters, layout,
+    and `lib/lifeTracker/` state are unchanged by each redesign slice; the
+    shared-chrome inheritance itself is confirmed by the screenshot pair, not
+    by an automated pixel assertion
+- Constraints:
+  - Life Tracker must not fork a shared component or add a per-destination
+    override; it consumes shared chrome and the token set exactly as every
+    other destination does
+  - no Life Tracker behaviour, copy, layout, or state change of any kind in the
+    redesign packages
+  - the screenshot pair is a PR review attachment, not a CI job: it does not
+    enter `npm run quality:check`, cannot block a merge automatically, and
+    cannot fail an unrelated build
+- Dependencies:
+  - REQ-200
+  - DEC-136
+  - DEC-139
+  - REQ-081
+  - NFR-001
+- Notes:
+  - shared chrome changes reach Life Tracker automatically as each slice
+    ships, reviewed by the screenshot pair; there is no separate deferred
+    pass for shared chrome. Life Tracker's own screens remain a distinct,
+    not-yet-scheduled redesign, same as before
+  - the baseline captures taken during refinement live in the work package's
+    git-ignored `.playwright-mcp/` folder; each build slice captures its own
+    before/after pair at merge time for the PR review, not as an automated
+    pixel-diff gate
+
+### REQ-203
+- Title: Suite-wide brand-mark Easter egg
+- Priority: low
+- Description: The cat-wizard Easter egg must be reachable from the brand mark
+  on every in-scope screen, not only the In-Depth game-context step, driven by
+  one session-wide tap count shared across screens.
+- Acceptance Criteria:
+  - the brand mark is a tap target on every in-scope screen that shows it:
+    Quick Question pre-submit and answered, every In-Depth Question step and its
+    answered workspace, and Trade Balancer
+  - one session-wide count accumulates taps across screens; the tenth tap,
+    wherever it lands, reveals the cat wizard (`/assets/cats-homescreen.png`)
+    and the reveal then holds on every in-scope screen for the rest of the
+    browser session, surviving destination switches
+  - before the tenth tap the image is not in the document on any screen
+  - the reveal is session-only: a reload clears it, exactly as today
+  - Life Tracker shows the same redesigned brand mark as every other screen,
+    inherited as shared chrome (REQ-202), but is excluded from the tap count:
+    it wires no tap handler and never reveals the cat wizard on its own screen
+  - whatever the brand mark becomes visually (REQ-201) keeps this trigger
+  - the brand-mark tap target meets the 44px touch floor (REQ-205); a tap that
+    reveals nothing yet changes no other state and never navigates
+  - tests cover the shared count accumulating across two different screens, the
+    reveal holding after a destination switch, the reload clearing it, and Life
+    Tracker not participating
+- Constraints:
+  - presentation only; no change to step names, step ordering, flow logic,
+    request contracts, prompts, or backend behaviour
+  - the count is in-memory session state; it introduces no persisted key and
+    survives no reload
+  - no new asset: the existing `cats-homescreen.png` is reused
+- Dependencies:
+  - REQ-056
+  - REQ-201
+  - REQ-205
+  - DEC-076
+  - FLOW-001
+- Notes:
+  - where the cat appears on screens with no hero slot is a mockup decision,
+    deliberately not fixed here
+  - the egg is protected scope: it survives every mockup direction
+
+### REQ-204
+- Title: Trade Balancer phone side tabs
+- Priority: medium
+- Description: Below the phone/tablet boundary the Trade Balancer presents Side A
+  and Side B as two tabs sharing one panel instead of stacking them vertically,
+  so each side gets the full shell width and height available. At and above the
+  boundary the paired side-by-side composition is unchanged.
+- Acceptance Criteria:
+  - below `768px` exactly one side's entry list, search, scan control, and side
+    total render at a time, selected by a two-tab control; at `768px` and above
+    both sides render side by side exactly as today
+  - the difference readout and both side totals stay visible in the first
+    viewport whichever tab is active, so the player never switches tabs to learn
+    the balance
+  - switching tabs preserves every entry, quantity, foil toggle, chosen printing,
+    and in-flight search on both sides; it fetches no price and re-fetches
+    nothing
+  - the inactive side's total updates live while hidden
+  - the tab control meets the 44px touch floor and is reachable by keyboard with
+    a visible focus ring (REQ-205, REQ-200)
+  - scan-onto-a-side, the printing picker's region scroll and `40vh` cap
+    (REQ-065), the price-freshness line (REQ-145), the warm-up ping, and the
+    ephemeral no-persistence posture are all unchanged
+  - no page scroll for totals or primary actions at 390x844 with either tab
+    active, with the entry list region-scrolling as today
+  - measured baseline this replaces (2026-09-24, 390x844, both sides empty):
+    Side A heading at y 305, Side B heading at y 529
+  - tests cover tab switching preserving both sides' state, both totals and the
+    difference staying visible, and the desktop composition being unchanged
+- Constraints:
+  - layout only — this is not a re-sequencing of the flow and adds no step; no
+    change to pricing, printing selection, scan input, totals arithmetic, the
+    price route, or the ephemeral state posture
+  - one fluid component tree, mobile-first CSS, a structural media query at the
+    existing `768px` boundary; no UA sniffing, JS device detection, or a second
+    desktop tree (DEC-117, NFR-011)
+- Dependencies:
+  - REQ-064
+  - REQ-065
+  - REQ-145
+  - REQ-205
+  - DEC-117
+  - DEC-149
+  - NFR-001
+  - FLOW-009
+- Notes:
+  - desktop's side-by-side layout is explicitly protected scope
+  - whether the tabs read as tabs, a segmented control, or a swipe pager is a
+    mockup decision; the state-preservation and visible-totals criteria bind
+    whichever form wins
+
+### REQ-205
+- Title: Touch-floor conformance on the re-imagined screens
+- Priority: medium
+- Description: Every interactive control on the re-imagined screens must meet the
+  app's existing 44px minimum touch target. This closes the measured gap on
+  shared chrome, Quick Question, In-Depth Question, and Trade Balancer; it
+  introduces no new number.
+- Acceptance Criteria:
+  - at 390x844 every interactive control on shared chrome, Quick Question
+    (pre-submit and answered), every In-Depth Question step and its answered
+    workspace, and Trade Balancer measures at least 44px in its smaller
+    dimension, or sits inside a labelled hit area that does
+  - the measured 2026-09-24 offenders each clear the floor after the change:
+    Quick Question card search input (was 299x38), Quick Question Scan button
+    (was 299x38), In-Depth brand-mark button (was 108x29), turn-phase select
+    (was 307x37), active-player select (was 307x37), Confirm game context (was
+    333x40), zone confirmation Back and Continue (were 160x42), zone checkbox
+    row hit area (input was 16x16), Trade Balancer per-side search input (was
+    299x38), Trade Balancer per-side Scan button (was 299x40)
+  - growing a control does not push its screen's primary action out of the first
+    viewport (REQ-129) or introduce page scroll where there is none today
+  - controls already at or above the floor keep their size — In-Depth zone
+    collection's search row (223x44 input, 67x44 Scan, REQ-125/DEC-050) and the
+    corner-rail zones (44x44 each, REQ-114) are unchanged
+  - keyboard focus rings remain visible on every enlarged control (REQ-200)
+  - Life Tracker is out of scope (REQ-202)
+  - automated coverage asserts the floor for the named controls
+- Constraints:
+  - presentation only; no control is removed, merged, relabelled in meaning, or
+    moved to a different step to buy room
+  - no change to the 44px value itself and no new accessibility target
+  - hit area may exceed the painted affordance only where the label is visibly
+    part of the control; suite chrome's painted-equals-interactive rule
+    (REQ-114) is unchanged
+- Dependencies:
+  - NFR-001
+  - NFR-011
+  - REQ-101
+  - REQ-114
+  - REQ-125
+  - REQ-129
+  - REQ-200
+  - REQ-203
+- Notes:
+  - measured live at 390x844 on 2026-09-24 in the shipped app; the sizes above
+    are the baseline this requirement closes, not targets
+  - the brand-mark entry also makes the REQ-203 Easter-egg trigger comfortably
+    tappable

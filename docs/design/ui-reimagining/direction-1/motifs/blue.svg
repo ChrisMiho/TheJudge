@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Blue motif: charged energy">
+  <defs>
+    <radialGradient id="b-glow" cx="50%" cy="50%" r="65%">
+      <stop offset="0%" stop-color="#38E1FF" stop-opacity="0.8"/>
+      <stop offset="55%" stop-color="#0050D8" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#09090B" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="200" height="200" fill="url(#b-glow)"/>
+  <g stroke="#38E1FF" stroke-width="2" fill="none" opacity="0.85" stroke-linecap="round">
+    <path d="M100 20 L80 90 L110 90 L70 180"/>
+    <circle cx="100" cy="100" r="55" stroke="#1E3A9C" stroke-width="1.5" opacity="0.6"/>
+    <path d="M45 100 a55 55 0 1 0 110 0" stroke="#38E1FF" stroke-width="1.2" opacity="0.5"/>
+    <circle cx="100" cy="45" r="3" fill="#38E1FF" stroke="none"/>
+    <circle cx="155" cy="100" r="3" fill="#38E1FF" stroke="none"/>
+  </g>
+</svg>

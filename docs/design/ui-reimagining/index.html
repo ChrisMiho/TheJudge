@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UI re-imagining — direction 1 gallery</title>
+<link rel="stylesheet" href="direction-1/tokens.css">
+<link rel="stylesheet" href="direction-1/shell.css">
+<style>
+  .gallery-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  @media (min-width: 640px) {
+    .gallery-grid { grid-template-columns: 1fr 1fr; }
+  }
+  .gallery-card h2 { margin-top: 0; }
+  .gallery-card a.btn { display: inline-block; text-decoration: none; margin-top: 0.5rem; }
+  .viewport-note { font-size: 0.8rem; color: var(--text-muted); }
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="menu-rail">
+      <button class="brand-mark tap-target">
+        <img src="direction-1/motifs/blue.svg" alt="" aria-hidden="true">
+        <span class="wordmark">TheJudge</span>
+      </button>
+    </div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · direction 1 — no app code ships in this package</div>
+
+  <main class="page-content">
+    <h1>UI re-imagining — direction 1</h1>
+    <p class="text-muted">
+      One clickable mockup per in-scope flow, each viewable at phone
+      (390×844) and desktop (1440×900) width by resizing the window or
+      using your browser's device toolbar — the page itself is the mockup
+      at both sizes, there is no separate screenshot for these four. The
+      one exception is Player Life Tracker, out of scope for its own
+      redesign: its before/after screenshot pair (below) proves shared
+      chrome reaches it with no drift to its own screen.
+    </p>
+
+    <div class="gallery-grid">
+      <section class="card-panel gallery-card">
+        <h2>Shared chrome &amp; Menu</h2>
+        <p class="viewport-note">Menu rail, brand mark, Theme section, mock-mode banner, overlay demos. Viewable at 390×844 and 1440×900.</p>
+        <a class="btn primary tap-target" href="direction-1/shared-chrome-menu.html">Open mockup</a>
+      </section>
+
+      <section class="card-panel gallery-card">
+        <h2>Quick Question</h2>
+        <p class="viewport-note">Pre-submit (5 cards) and answered. Viewable at 390×844 and 1440×900.</p>
+        <a class="btn primary tap-target" href="direction-1/quick-question.html">Open mockup</a>
+      </section>
+
+      <section class="card-panel gallery-card">
+        <h2>In-Depth Question</h2>
+        <p class="viewport-note">Every step: game context, zone confirmation, zone collection, answered. Viewable at 390×844 and 1440×900.</p>
+        <a class="btn primary tap-target" href="direction-1/in-depth-question.html">Open mockup</a>
+      </section>
+
+      <section class="card-panel gallery-card">
+        <h2>Trade Balancer</h2>
+        <p class="viewport-note">Phone tabs below 768px; desktop side-by-side at and above 768px. Viewable at 390×844 and 1440×900.</p>
+        <a class="btn primary tap-target" href="direction-1/trade-balancer.html">Open mockup</a>
+      </section>
+
+      <section class="card-panel gallery-card">
+        <h2>Player Life Tracker — before / after</h2>
+        <p class="viewport-note">
+          Not a redesign — Life Tracker's own screen is out of scope. This
+          pair proves shared-chrome inheritance (REQ-202) causes no drift,
+          at 390×844 and 1440×900.
+        </p>
+        <div class="before-after">
+          <figure>
+            <img src="before/life-tracker-390x844.png" alt="Before: Life Tracker at 390x844">
+            <figcaption>Before — 390×844</figcaption>
+          </figure>
+          <figure>
+            <img src="after/life-tracker-390x844.png" alt="After: Life Tracker with new shared chrome at 390x844">
+            <figcaption>After — 390×844</figcaption>
+          </figure>
+          <figure>
+            <img src="before/life-tracker-1440x900.png" alt="Before: Life Tracker at 1440x900">
+            <figcaption>Before — 1440×900</figcaption>
+          </figure>
+          <figure>
+            <img src="after/life-tracker-1440x900.png" alt="After: Life Tracker with new shared chrome at 1440x900">
+            <figcaption>After — 1440×900</figcaption>
+          </figure>
+        </div>
+        <a class="btn tap-target" href="direction-1/life-tracker-after.html">Open the live composite</a>
+      </section>
+    </div>
+
+    <section class="card-panel" style="margin-top:1.5rem;">
+      <h2>What this package ships</h2>
+      <p>
+        Durable product truth in <code>PRD/sections/</code>
+        (<code>REQ-200</code>-<code>REQ-205</code> plus eleven amendments)
+        and this static mockup tree. No <code>apps/frontend</code> or
+        <code>apps/backend</code> code changed. See
+        <code>docs/design/ui-reimagining/README.md</code> for the full
+        file map.
+      </p>
+    </section>
+  </main>
+</body>
+</html>

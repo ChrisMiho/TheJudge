@@ -1,0 +1,216 @@
+/*
+ * flow.css — the question-flow components Quick Question and In-Depth
+ * Question share, so the two flows read as one product (and so a later
+ * "go in-depth" button on Quick Question is a step, not a jump). Imports
+ * after tokens.css + shell.css; nothing here re-declares chrome.
+ *
+ *   .flow-head / .icon-chip   flow title with the attach controls beside it
+ *   .stage / .ring / .card     the lit stage with the attached card as hero
+ *   .card-widget               ✕ Remove and ⓘ Details on the front card
+ *   .search-pop                the card search that opens above the question box
+ *   .q-wrap                    the question box with its 300-character budget built in
+ *   .detail-panel              the card-detail sheet (phone) / side panel (desktop)
+ */
+
+/* ---- flow header: title on the left, ways to attach a card on the right ---- */
+.flow-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.flow-head h1 { font-size: 1.3rem; margin: 0; letter-spacing: 0.01em; display: flex; align-items: center; gap: 0.5rem; white-space: nowrap; }
+.flow-head h1::before {
+  content: ""; width: 22px; height: 22px; flex: 0 0 auto;
+  background: var(--motif) center / contain no-repeat; opacity: 0.9;
+}
+.flow-head .attach { display: flex; gap: 0.4rem; }
+.flow-hint { margin: -0.3rem 0 0; font-size: 0.82rem; color: var(--text-muted); }
+@media (max-width: 719px) {
+  .flow-head h1 { font-size: 1.2rem; }
+  .flow-head h1::before { display: none; }
+  .icon-chip { font-size: 0.8rem; padding: 0 0.6rem; }
+}
+
+.icon-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;
+  min-height: 44px; padding: 0 0.7rem; border-radius: 0.6rem;
+  border: 1px solid var(--surface-edge); background: var(--surface-panel);
+  color: var(--text-primary); font-size: 0.85rem; cursor: pointer;
+}
+.icon-chip[aria-expanded="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
+.icon-chip:disabled { opacity: 0.55; cursor: default; }
+.icon-chip .glyph { color: var(--accent-soft); font-size: 1.05rem; line-height: 1; }
+
+/* ---- the stage: a lit, theme-coloured surface the card sits on ---- */
+.stage {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 0.45rem;
+  padding: 0.9rem 0.5rem 0.7rem;
+  border-radius: 1.1rem;
+  border: 1px solid var(--surface-edge);
+  background:
+    radial-gradient(60% 55% at 50% 42%, color-mix(in srgb, var(--accent) 36%, transparent) 0%, transparent 70%),
+    radial-gradient(120% 90% at 50% 100%, transparent 55%, rgba(0,0,0,0.45) 100%),
+    var(--surface-panel);
+  overflow: hidden;
+}
+.stage[hidden] { display: none; }
+.stage::before {
+  content: ""; position: absolute; inset: -18% -10% auto -10%; height: 120%;
+  background: var(--motif) center / 78% no-repeat;
+  opacity: 0.09; pointer-events: none;
+}
+/* corner ornaments — a nod to a card frame, drawn with borders only */
+.corner { position: absolute; width: 14px; height: 14px; pointer-events: none; opacity: 0.8; border: 1px solid var(--accent-soft); }
+.corner.tl { top: 6px; left: 6px; border-right: 0; border-bottom: 0; }
+.corner.tr { top: 6px; right: 6px; border-left: 0; border-bottom: 0; }
+.corner.bl { bottom: 6px; left: 6px; border-right: 0; border-top: 0; }
+.corner.br { bottom: 6px; right: 6px; border-left: 0; border-top: 0; }
+
+/* the ring: the front card full size, one neighbour peeking out on each
+   side; anything further round the ring waits off-stage until it is next */
+.ring {
+  --card-w: 200px;
+  --card-h: calc(var(--card-w) * 88 / 63);
+  --step: 104px;          /* how far a neighbour sits to the side */
+  position: relative; z-index: 1;
+  width: 100%; height: var(--card-h);
+}
+@media (min-width: 720px) {
+  .ring { --card-w: 280px; --step: 160px; }
+}
+.ring .card {
+  position: absolute; left: 50%; top: 0;
+  width: var(--card-w); height: var(--card-h);
+  margin-left: calc(var(--card-w) / -2);
+  border-radius: 11px; overflow: hidden; background: #111;
+  transform: translateX(calc(var(--d) * var(--step))) scale(calc(1 - 0.16 * var(--ad)));
+  opacity: calc(1 - 0.45 * var(--ad));
+  filter: brightness(calc(1 - 0.35 * var(--ad))) blur(calc(var(--ad) * 0.6px));
+  z-index: calc(10 - var(--ad));
+  box-shadow: 0 18px 40px -12px color-mix(in srgb, var(--accent) 70%, #000);
+  --ring-w: 2px;
+  transition: transform 280ms ease, opacity 280ms ease, filter 280ms ease;
+  cursor: pointer;
+}
+.ring .card[data-offstage="true"] { opacity: 0; pointer-events: none; }
+.ring .card[data-front="true"] {
+  box-shadow:
+    0 18px 40px -12px color-mix(in srgb, var(--accent) 70%, #000),
+    0 0 64px -8px color-mix(in srgb, var(--accent) 60%, transparent);
+  cursor: default;
+}
+.card img { display: block; width: 100%; height: 100%; object-fit: cover; }
+/* image unavailable: the card's name is the only text the stage shows */
+.card .fallback {
+  display: grid; place-items: center; text-align: center; height: 100%; padding: 1rem;
+  border-radius: 11px;
+  border: 1px dashed color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 70%, transparent);
+}
+.card .fallback strong { display: block; color: var(--text-primary); font-size: 1.05rem; }
+.card .fallback span { display: block; color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem; }
+
+/* the two corner widgets live on the front (or only) card */
+.card-widget {
+  position: absolute; top: 6px; z-index: 3;
+  width: 44px; height: 44px; border-radius: 999px; border: 0;
+  background: rgba(9, 9, 11, 0.85); color: #f4f4f5;
+  font-size: 1.05rem; line-height: 1; font-weight: 600; cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  opacity: 0; transform: scale(0.85); transition: opacity 180ms ease, transform 180ms ease;
+  pointer-events: none;
+}
+.card-widget.info { right: 6px; }
+.card-widget.remove { left: 6px; }
+.card-widget:hover { background: rgba(24, 24, 27, 0.95); }
+.ring .card[data-front="true"] .card-widget,
+.card[data-front="true"] .card-widget { opacity: 1; transform: none; pointer-events: auto; }
+
+.arrow {
+  position: absolute; top: 50%; z-index: 20; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 999px;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 82%, transparent);
+  color: var(--text-primary); font-size: 1.15rem; line-height: 1; cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.arrow.prev { left: 0.15rem; }
+.arrow.next { right: 0.15rem; }
+.arrow[hidden] { display: none; }
+
+.dots { position: relative; z-index: 1; display: flex; gap: 0.35rem; min-height: 6px; }
+.dots span { width: 6px; height: 6px; border-radius: 999px; background: var(--surface-edge); }
+.dots span[data-on="true"] { background: var(--accent-soft); }
+
+/* ---- card search: opens just above the question box when "Add card" is pressed ---- */
+.search-pop { display: none; }
+.search-pop.open { display: grid; gap: 0.4rem; }
+.search-row { position: relative; }
+.search-row .field { padding-left: 2.2rem; }
+.search-row .glyph { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--accent-soft); }
+.search-results { display: grid; gap: 0.25rem; }
+.search-results button {
+  display: flex; align-items: center; gap: 0.6rem; width: 100%; text-align: left;
+  min-height: 44px; padding: 0.3rem 0.5rem; border-radius: 0.6rem;
+  border: 1px solid transparent; background: transparent; color: var(--text-primary); cursor: pointer;
+}
+.search-results button:hover { border-color: var(--surface-edge); background: var(--surface-panel); }
+.search-results .thumb { width: 28px; height: 39px; border-radius: 3px; }
+.search-results .type { color: var(--text-muted); font-size: 0.78rem; margin-left: auto; }
+
+/* ---- composer: the question box with its character budget built into the frame ---- */
+.composer { display: grid; gap: 0.6rem; }
+.q-wrap { position: relative; }
+.q-wrap textarea.field {
+  display: block; resize: none; min-height: 88px; padding-bottom: 1.6rem;
+  font: inherit; line-height: 1.35; border-radius: 0.7rem;
+}
+.q-count {
+  position: absolute; right: 0.7rem; bottom: 0.5rem;
+  font-size: 0.68rem; color: var(--text-muted); letter-spacing: 0.02em; pointer-events: none;
+}
+.q-count[data-near="true"] { color: var(--accent-soft); }
+.q-meter {
+  position: absolute; left: 0.7rem; right: 0.7rem; bottom: 0; height: 2px;
+  background: color-mix(in srgb, var(--surface-edge) 50%, transparent); border-radius: 2px; overflow: hidden;
+}
+.q-meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); transition: width 120ms ease; }
+.send-row { display: flex; gap: 0.5rem; }
+.send-row .btn.primary { width: 100%; font-weight: 600; letter-spacing: 0.01em; }
+@media (min-width: 720px) {
+  .send-row { justify-content: flex-end; }
+  .send-row .btn.primary { width: auto; min-width: 12rem; }
+}
+
+/* ---- card detail panel — bottom sheet on phone, side panel on desktop (shell.css .drawer-panel) ---- */
+.detail-panel h2 { margin: 0.2rem 3rem 0.6rem 0; font-size: 1.15rem; }
+.detail-panel .detail-top { display: flex; gap: 0.8rem; align-items: flex-start; margin-bottom: 0.8rem; }
+.detail-panel .detail-top img { width: 96px; border-radius: 6px; flex: 0 0 auto; box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--accent) 70%, #000); }
+.detail-panel dl { display: grid; grid-template-columns: max-content 1fr; gap: 0.35rem 0.8rem; margin: 0; font-size: 0.88rem; }
+.detail-panel dt { color: var(--text-muted); }
+.detail-panel dd { margin: 0; white-space: pre-wrap; }
+.detail-panel .oracle { margin: 0.8rem 0 0; padding: 0.7rem 0.8rem; border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--surface-ground) 60%, transparent); border: 1px solid var(--surface-edge); font-size: 0.92rem; line-height: 1.45; }
+.detail-panel .oracle small { display: block; color: var(--text-muted); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.3rem; }
+.detail-panel .price { color: var(--accent-soft); font-weight: 600; }
+.price { color: var(--accent-soft); font-weight: 600; }
+
+/* ---- card identity ring (Rule, 2026-09-24): every card surface keeps the
+   one-pixel ring in the card's own colour identity that today's app draws —
+   the theme owns the glow behind the card, never its edge. Same colours and
+   masked-border technique as apps/frontend/src/lib/cardIdentityRing.ts:
+   one colour = that colour, multicolour = a left-to-right gradient in WUBRG
+   order, colourless = silver grey. ---- */
+.card-identity-ring { position: relative; isolation: isolate; }
+.card-identity-ring::before {
+  content: ""; position: absolute; inset: 0; z-index: 4; border-radius: inherit;
+  padding: var(--ring-w, 1px); pointer-events: none;
+  background: var(--card-identity-ring, rgb(148 163 184 / 0.55));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+/* a small card thumbnail that carries the ring */
+.thumb { display: inline-block; flex: 0 0 auto; border-radius: 4px; overflow: hidden; line-height: 0; background: #111; }
+.thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+
+/* the hidden attribute always wins over a component's own display value */
+[hidden] { display: none !important; }

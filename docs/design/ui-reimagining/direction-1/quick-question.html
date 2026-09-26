@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quick Question — direction 1</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="flow.css">
+<style>
+  /* ---- demo controls (not part of the design) ---- */
+  .demo-bar {
+    display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center;
+    font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.75rem;
+  }
+  .demo-bar button {
+    font-size: 0.7rem; padding: 0.2rem 0.55rem; border-radius: 999px;
+    border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); cursor: pointer;
+  }
+  .demo-bar button[aria-pressed="true"] { color: var(--text-primary); border-color: var(--accent-soft); }
+
+  /* ---- Quick Question: the attached card is the hero (shared parts live in flow.css) ---- */
+  .page-content { width: min(36rem, 92vw); }
+  .qq { display: grid; gap: 0.8rem; }
+
+  /* answered */
+  .answer-block { display: none; margin-top: 0.9rem; }
+  .answer-block.shown { display: block; }
+  .card-ref-row { display: flex; align-items: center; gap: 0.6rem; margin: 0.5rem 0; }
+  .card-ref-row img { width: 40px; height: 56px; border-radius: 0.3rem; object-fit: cover; flex: 0 0 auto; }
+  .qq.hidden { display: none; }
+  .foot-note { font-size: 0.72rem; color: var(--text-muted); margin-top: 1.25rem; }
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="menu-rail">
+      <button class="brand-mark tap-target">
+        <img src="motifs/blue.svg" alt="" aria-hidden="true">
+        <span class="wordmark">TheJudge</span>
+      </button>
+    </div>
+    <button class="icon-btn tap-target" aria-label="Open menu">☰</button>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="page-content">
+    <div class="demo-bar" aria-label="Mockup state (demo only)">
+      <span>Mockup state:</span>
+      <button data-state="5" aria-pressed="true">5 cards</button>
+      <button data-state="2" aria-pressed="false">2 cards</button>
+      <button data-state="1" aria-pressed="false">1 card</button>
+      <button data-state="noimg" aria-pressed="false">1 card, image unavailable</button>
+      <button data-state="0" aria-pressed="false">no cards</button>
+    </div>
+
+    <section id="pre-submit" class="qq">
+      <div class="flow-head">
+        <h1>Quick Question</h1>
+        <div class="attach">
+          <button class="icon-chip tap-target" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
+          <button class="icon-chip tap-target" id="scan-btn"><span class="glyph">▣</span> Scan</button>
+        </div>
+      </div>
+      <p class="flow-hint" id="composer-hint">Ask about Sol Ring, or anything in Magic.</p>
+
+      <div class="stage" id="stage">
+        <i class="corner tl"></i><i class="corner tr"></i><i class="corner bl"></i><i class="corner br"></i>
+        <div class="ring" id="ring">
+          <button class="arrow prev tap-target" id="prev" aria-label="Previous card">‹</button>
+          <button class="arrow next tap-target" id="next" aria-label="Next card">›</button>
+        </div>
+        <div class="dots" id="dots"></div>
+      </div>
+
+      <div class="composer">
+        <div class="search-pop" id="search-pop">
+          <div class="search-row">
+            <span class="glyph">⌕</span>
+            <input class="field tap-target" id="card-search" placeholder="Search for a card to add" autocomplete="off">
+          </div>
+          <div class="search-results" id="search-results"></div>
+        </div>
+        <div class="q-wrap">
+          <textarea class="field" id="question-field" rows="3" placeholder="What would you like to know?" maxlength="300"></textarea>
+          <span class="q-count" id="char-count">0 / 300</span>
+          <span class="q-meter"><i id="char-meter"></i></span>
+        </div>
+        <div class="send-row">
+          <button class="btn primary tap-target" id="send-request">Send Request</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="answered" class="card-panel answer-block">
+      <h1>Quick Question — answered</h1>
+      <div id="answer-refs"></div>
+      <p>
+        Sol Ring taps for {C}{C} — two colorless mana from one artifact, so
+        it nets a full extra mana the turn after it resolves. Lightning
+        Bolt deals 3 damage to any target for {R}, resolving on the stack
+        before any triggered ability that hasn't already been put on the
+        stack ahead of it.
+      </p>
+      <button class="btn tap-target" id="ask-another">Ask another question</button>
+    </section>
+
+    <p class="foot-note">
+      Before: <a href="../before/quick-question-390x844.png">quick-question-390x844.png</a> ·
+      <a href="../before/quick-question-1440x900.png">quick-question-1440x900.png</a>.
+      Card images are the app's own corpus art via Scryfall (unchanged from today).
+    </p>
+  </main>
+
+  <script src="flow.js"></script>
+  <script>
+    const { img, library, cardMarkup, openDetail, bindComposer, applyRing, thumb } = window.FLOW;
+    const starter = library.slice(0, 5);
+    let attached = starter.slice();
+    let focus = 0;
+    let breakImages = false;
+    const $ = (s) => document.getElementById(s);
+    const ring = $('ring');
+    const els = new Map(); // card id -> element, reused so the move animates
+
+    function place(el, d) {
+      el.style.setProperty('--d', d);
+      el.style.setProperty('--ad', Math.abs(d));
+      el.dataset.front = d === 0 ? 'true' : 'false';
+      el.dataset.offstage = Math.abs(d) > 1 ? 'true' : 'false';
+    }
+
+    function cardEl(c) {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.innerHTML = cardMarkup(c, { broken: breakImages });
+      applyRing(el, c);
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('.card-widget')) return;
+        if (el.dataset.front !== 'true') { focus = attached.indexOf(c); render(); }
+      });
+      el.querySelector('.remove').addEventListener('click', () => { attached.splice(attached.indexOf(c), 1); render(); });
+      el.querySelector('.info').addEventListener('click', () => openDetail(c));
+      return el;
+    }
+
+    function render() {
+      const n = attached.length;
+      for (const [id, el] of els) if (!attached.some((c) => c.id === id)) { el.remove(); els.delete(id); }
+      $('stage').hidden = n === 0;
+
+      if (n === 0) {
+        $('composer-hint').textContent = 'Ask anything in Magic, or add a card for context.';
+      } else {
+        focus = ((focus % n) + n) % n;
+        attached.forEach((c, i) => {
+          let el = els.get(c.id);
+          if (!el) { el = cardEl(c); els.set(c.id, el); ring.appendChild(el); }
+          // shortest signed distance around the ring; only |d| <= 1 is on stage
+          let d = i - focus;
+          if (d > n / 2) d -= n;
+          if (d < -n / 2) d += n;
+          place(el, d);
+        });
+        $('composer-hint').textContent = 'Ask about ' + attached[focus].name + ', or anything in Magic.';
+      }
+      $('prev').hidden = $('next').hidden = n < 2;
+      $('dots').innerHTML = n > 1 ? attached.map((_, i) => '<span data-on="' + (i === focus) + '"></span>').join('') : '';
+      const add = $('add-card');
+      add.innerHTML = n >= 5 ? '<span class="glyph">＋</span> 5 / 5' : '<span class="glyph">＋</span> Add card';
+      add.disabled = n >= 5;
+      if (n >= 5) closeSearch();
+      renderSearch();
+      $('answer-refs').innerHTML = attached.slice(0, 2).map((c) =>
+        '<div class="card-ref-row"><img src="' + img(c.id) + '" alt=""><div><strong>' + c.name + '</strong><br><span class="price">' + c.price + ' (nonfoil)</span></div></div>'
+      ).join('');
+    }
+
+    // ---- search (demo: a fixed shortlist, filtered by what is typed) ----
+    function renderSearch() {
+      const q = $('card-search').value.trim().toLowerCase();
+      const hits = library.filter((c) => !attached.includes(c) && (!q || c.name.toLowerCase().includes(q))).slice(0, 4);
+      $('search-results').innerHTML = hits.map((c, i) =>
+        '<button type="button" data-i="' + library.indexOf(c) + '">' + thumb(c) + '<span>' + c.name + '</span><span class="type">' + c.type + '</span></button>'
+      ).join('');
+      $('search-results').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+        attached.push(library[Number(b.dataset.i)]);
+        focus = attached.length - 1;
+        $('card-search').value = '';
+        closeSearch();
+        render();
+      }));
+    }
+    function openSearch() {
+      $('search-pop').classList.add('open');
+      $('add-card').setAttribute('aria-expanded', 'true');
+      renderSearch();
+      $('card-search').focus();
+    }
+    function closeSearch() {
+      $('search-pop').classList.remove('open');
+      $('add-card').setAttribute('aria-expanded', 'false');
+    }
+    $('add-card').addEventListener('click', () => ($('search-pop').classList.contains('open') ? closeSearch() : openSearch()));
+    $('card-search').addEventListener('input', renderSearch);
+    $('card-search').addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSearch(); });
+
+    // ---- ring navigation ----
+    $('prev').addEventListener('click', () => { focus -= 1; render(); });
+    $('next').addEventListener('click', () => { focus += 1; render(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.target.matches('input, textarea')) return;
+      if (e.key === 'ArrowLeft') { focus -= 1; render(); }
+      if (e.key === 'ArrowRight') { focus += 1; render(); }
+    });
+
+    // ---- demo bar ----
+    document.querySelectorAll('.demo-bar button').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.demo-bar button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true');
+      const s = b.dataset.state;
+      breakImages = s === 'noimg';
+      for (const el of els.values()) el.remove();
+      els.clear();
+      attached = starter.slice(0, s === 'noimg' ? 1 : Number(s)); focus = 0; closeSearch(); render();
+    }));
+
+    // ---- composer ----
+    bindComposer($('question-field'), $('char-count'), $('char-meter'));
+    $('send-request').addEventListener('click', () => { $('pre-submit').classList.add('hidden'); $('answered').classList.add('shown'); });
+    $('ask-another').addEventListener('click', () => { $('answered').classList.remove('shown'); $('pre-submit').classList.remove('hidden'); });
+    render();
+  </script>
+</body>
+</html>

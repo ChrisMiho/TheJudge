@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Tracker — after (shared chrome only)</title>
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<style>
+  /*
+   * Life Tracker's OWN screen content (the seat table below the banner) is
+   * NOT redrawn here. REQ-202 keeps Life Tracker's own screens, counters,
+   * and layout untouched by this redesign, so this page composes the real
+   * table by embedding a pixel crop taken directly from the "before"
+   * captures (../before/life-tracker-390x844.png and
+   * ../before/life-tracker-1440x900.png) below the header line measured in
+   * each capture (y=120 at 390x844, y=104 at 1440x900) — see
+   * life-tracker-table-390x844.png / life-tracker-table-1440x900.png next
+   * to this file. That crop is the real per-seat table: life numbers
+   * rotated to face each seat, the 2x2 grid with all four players, the
+   * same rounded cards and gutters, the same inboard -/+ placement — none
+   * of it is reproduced by hand. Only the header above (menu rail, brand
+   * mark, mock-mode banner) reads the new REQ-200 surface-role tokens,
+   * exactly as it does on every other destination.
+   */
+  .life-table-frame {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    background: #09090b;
+  }
+  .life-table-frame picture,
+  .life-table-frame img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: top center;
+  }
+  .life-header-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .day-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.4rem 0.75rem;
+  }
+</style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="menu-rail">
+      <button class="icon-btn tap-target" aria-label="Menu">☰</button>
+      <button class="brand-mark tap-target" data-brand-tap>
+        <img src="motifs/blue.svg" alt="" aria-hidden="true">
+        <span class="wordmark">TheJudge</span>
+      </button>
+    </div>
+    <div class="life-header-controls">
+      <button class="icon-btn tap-target day-toggle">☀ Day</button>
+      <button class="icon-btn tap-target" aria-label="Game setup">⚙</button>
+    </div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="life-table-frame" aria-label="4-player life table (unchanged from today)">
+    <picture>
+      <source media="(min-width: 640px)" srcset="life-tracker-table-1440x900.png">
+      <img src="life-tracker-table-390x844.png" alt="Life Tracker's own 4-player table, identical to the before capture — life numbers rotated to face each seat in a 2x2 grid, same card radii, gutters, and inboard +/- placement.">
+    </picture>
+  </main>
+</body>
+</html>
