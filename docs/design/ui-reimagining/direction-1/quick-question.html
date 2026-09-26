@@ -21,13 +21,8 @@
 </head>
 <body data-tray-open="false">
   <header class="app-header">
-    <div class="menu-rail">
-      <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
-      <button class="brand-mark">
-        <span class="orb" aria-hidden="true"></span>
-        <span class="wordmark">TheJudge</span>
-      </button>
-    </div>
+    <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <a class="brand-mark" href="../index.html" aria-label="TheJudge home"><span class="orb" aria-hidden="true"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></a>
     <div class="header-side"></div>
   </header>
   <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
@@ -61,22 +56,21 @@
           </div>
           <div class="search-results" id="search-results"></div>
         </div>
-        <div class="q-row">
-          <div class="q-wrap">
-            <textarea class="field" id="question-field" rows="1" placeholder="What would you like to know?" maxlength="300"></textarea>
-            <span class="q-count" id="char-count">0 / 300</span>
-            <span class="q-meter"><i id="char-meter"></i></span>
-          </div>
-          <div class="send-row">
-            <button class="btn primary" id="send-request">Send Request</button>
-          </div>
+        <div class="q-box">
+          <textarea id="question-field" rows="1" placeholder="What would you like to know?" maxlength="300" aria-label="Your question"></textarea>
+          <span class="q-count" id="char-count">0 / 300</span>
+          <button class="send" id="send-request" aria-label="Send request" title="Send request">➤</button>
+          <span class="q-meter"><i id="char-meter"></i></span>
+        </div>
+        <div class="composer-aside">
+          <button class="icon-chip" id="go-deep" title="Carry these cards into the In-Depth flow"><span class="glyph">◈</span> Add in-depth details</button>
         </div>
       </div>
     </section>
 
     <!-- answered: the conversation (same component as In-Depth's chat) -->
     <section id="answered" class="chat answer-block" aria-label="Conversation">
-      <div class="chat-head"><h1>Quick Question</h1></div>
+      <div class="chat-head"><h1>Quick Question</h1><div class="tools"><button class="icon-round" id="ask-another" aria-label="Start over" title="Start over">↺</button></div></div>
       <div class="chat-cards" id="chat-cards"></div>
       <div class="thread" id="thread"></div>
       <div class="followup">
@@ -84,7 +78,6 @@
         <span class="fu-count" id="fu-count">0/300</span>
         <button class="send" aria-label="Send">➤</button>
       </div>
-      <div class="chat-foot"><button class="btn" id="ask-another">Start over</button></div>
     </section>
 
     <div class="demo-bar" aria-label="Mockup state (demo only)">
@@ -241,6 +234,8 @@
       }, 900);
     });
     $('ask-another').addEventListener('click', () => { $('answered').classList.remove('shown'); $('pre-submit').classList.remove('hidden'); });
+    // the future "one Question" flow: the attached cards carry over into In-Depth, which asks for their zones at its Cards step
+    $('go-deep').addEventListener('click', () => { location.href = 'in-depth-question.html?carry=' + encodeURIComponent(attached.map((c) => c.name).join('|')); });
     render();
   </script>
 </body>

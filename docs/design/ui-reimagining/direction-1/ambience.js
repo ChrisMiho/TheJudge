@@ -1,26 +1,27 @@
 /*
- * ambience.js — the particle field behind every screen (pairs with
- * ambience.css). One small canvas, one profile-specific recipe:
+ * ambience.js — the magical dust behind every screen (pairs with
+ * ambience.css). One small canvas, one profile-specific tint and current:
  *
- *   white      slow rising motes of light, soft and round
- *   blue       tiny sparks orbiting a centre, occasional bright flash
- *   black      ash drifting down, a rare violet ember
- *   red        embers rising fast with a flicker, fading as they climb
- *   green      pollen drifting sideways, twinkling
+ *   white      motes of light lifting slowly
+ *   blue       dust turning on a slow, wide current
+ *   black      ash settling, a rare violet spark
+ *   red        embers lifting gently, a rare bright spark
+ *   green      pollen drifting sideways
  *   colorless  fine dust settling, dim and steady
  *
- * Reads the profile from <html data-profile> and restarts when it changes,
- * so the Theme orbs re-theme the field live. Respects reduced motion (draws
- * nothing). Round 4: ~50% denser (owner: "still too subtle"). Mockup plumbing only.
+ * Round 5: everything is slower, softer and finer than round 4 — no fast
+ * sparks, no flashes; each mote is a soft glow that twinkles. Reads the
+ * profile from <html data-profile> and restarts when it changes. Respects
+ * reduced motion (draws nothing). Mockup plumbing only.
  */
 (() => {
   const RECIPES = {
-    white:     { n: 52, color: [250, 248, 242], size: [1, 3],   vx: [-0.04, 0.04], vy: [-0.22, -0.08], twinkle: 0.6, glow: 10, life: [9, 16] },
-    blue:      { n: 70, color: [56, 225, 255],  size: [0.6, 1.8], vx: [-0.25, 0.25], vy: [-0.25, 0.25], twinkle: 1.2, glow: 8, life: [4, 9], orbit: true },
-    black:     { n: 60, color: [180, 170, 200], size: [0.8, 2.2], vx: [-0.08, 0.08], vy: [0.06, 0.2],   twinkle: 0.3, glow: 0, life: [10, 18], ember: [199, 125, 255] },
-    red:       { n: 66, color: [255, 120, 90],  size: [0.8, 2.4], vx: [-0.12, 0.12], vy: [-0.5, -0.22], twinkle: 1.8, glow: 12, life: [3, 7], fromBottom: true },
-    green:     { n: 58, color: [74, 255, 160],  size: [0.7, 2],   vx: [0.05, 0.22],  vy: [-0.06, 0.06], twinkle: 0.9, glow: 8, life: [8, 14] },
-    colorless: { n: 46, color: [228, 228, 231], size: [0.5, 1.4], vx: [-0.03, 0.03], vy: [0.04, 0.1],   twinkle: 0.2, glow: 0, life: [12, 20] }
+    white:     { n: 90,  color: [250, 248, 242], spark: [255, 255, 255], size: [0.5, 1.8], vx: [-0.03, 0.03], vy: [-0.1, -0.03], twinkle: 0.5, life: [12, 22] },
+    blue:      { n: 100, color: [120, 200, 255], spark: [56, 225, 255],  size: [0.5, 1.7], vx: [-0.06, 0.06], vy: [-0.05, 0.05], twinkle: 0.7, life: [10, 20], current: true },
+    black:     { n: 90,  color: [170, 150, 200], spark: [199, 125, 255], size: [0.5, 1.9], vx: [-0.04, 0.04], vy: [0.03, 0.09],   twinkle: 0.35, life: [14, 24] },
+    red:       { n: 90,  color: [255, 150, 120], spark: [255, 214, 102], size: [0.5, 1.8], vx: [-0.05, 0.05], vy: [-0.12, -0.04], twinkle: 0.8, life: [9, 18] },
+    green:     { n: 90,  color: [140, 255, 190], spark: [74, 255, 160],  size: [0.5, 1.7], vx: [0.02, 0.09],  vy: [-0.03, 0.03], twinkle: 0.6, life: [12, 22] },
+    colorless: { n: 80,  color: [228, 228, 231], spark: [244, 244, 245], size: [0.4, 1.4], vx: [-0.02, 0.02], vy: [0.02, 0.06],   twinkle: 0.25, life: [14, 26] }
   };
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -31,14 +32,13 @@
   function spawn(p, fresh) {
     const r = recipe;
     p.x = rnd(0, W);
-    p.y = fresh ? rnd(0, H) : r.fromBottom ? H + 10 : (r.vy[0] > 0 ? -10 : r.vy[1] < 0 ? H + 10 : rnd(0, H));
+    p.y = fresh ? rnd(0, H) : (r.vy[0] > 0 ? -10 : r.vy[1] < 0 ? H + 10 : rnd(0, H));
     p.vx = rnd(r.vx[0], r.vx[1]);
     p.vy = rnd(r.vy[0], r.vy[1]);
     p.s = rnd(r.size[0], r.size[1]);
     p.life = p.max = rnd(r.life[0], r.life[1]) * 60;
     p.ph = Math.random() * Math.PI * 2;
-    p.ember = r.ember && Math.random() < 0.08;
-    if (r.orbit) { p.a = Math.random() * Math.PI * 2; p.rad = rnd(Math.min(W, H) * 0.12, Math.min(W, H) * 0.42); p.sp = rnd(0.0012, 0.004) * (Math.random() < 0.5 ? 1 : -1); }
+    p.spark = Math.random() < 0.06;
     return p;
   }
 
@@ -62,34 +62,27 @@
   function tick() {
     t += 1;
     ctx.clearRect(0, 0, W, H);
-    const [cr, cg, cb] = recipe.color;
     for (const p of parts) {
       p.life -= 1;
       if (p.life <= 0) spawn(p, false);
-      if (recipe.orbit) {
-        p.a += p.sp;
-        const cx = W / 2, cy = H * 0.45;
-        p.x = cx + Math.cos(p.a) * p.rad + p.vx * 20 * Math.sin(t / 60 + p.ph);
-        p.y = cy + Math.sin(p.a) * p.rad * 0.7 + p.vy * 20 * Math.cos(t / 70 + p.ph);
-      } else {
-        p.x += p.vx + Math.sin(t / 90 + p.ph) * 0.12;
-        p.y += p.vy;
-        if (p.x < -10) p.x = W + 10; if (p.x > W + 10) p.x = -10;
-        if (p.y < -12 || p.y > H + 12) spawn(p, false);
-      }
-      const fade = Math.min(1, p.life / 60, (p.max - p.life) / 60);
-      const tw = 0.55 + 0.45 * Math.sin(t / (14 / Math.max(recipe.twinkle, 0.1)) + p.ph);
-      const alpha = fade * tw * (p.ember ? 1 : 0.85);
-      const col = p.ember ? recipe.ember : [cr, cg, cb];
-      if (recipe.glow || p.ember) {
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.s * (p.ember ? 7 : 4));
-        g.addColorStop(0, 'rgba(' + col.join(',') + ',' + (alpha * 0.55) + ')');
-        g.addColorStop(1, 'rgba(' + col.join(',') + ',0)');
-        ctx.fillStyle = g;
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.s * (p.ember ? 7 : 4), 0, Math.PI * 2); ctx.fill();
-      }
+      // a slow swirl on top of the drift; the blue current turns the whole field
+      const swirl = recipe.current ? 0.35 : 0.12;
+      p.x += p.vx + Math.sin(t / 140 + p.ph) * swirl * 0.5;
+      p.y += p.vy + Math.cos(t / 160 + p.ph) * swirl * 0.3;
+      if (p.x < -12) p.x = W + 12; if (p.x > W + 12) p.x = -12;
+      if (p.y < -12 || p.y > H + 12) spawn(p, false);
+      const fade = Math.min(1, p.life / 90, (p.max - p.life) / 90);
+      const tw = 0.5 + 0.5 * Math.sin(t / (22 / Math.max(recipe.twinkle, 0.1)) + p.ph);
+      const alpha = fade * (0.35 + 0.5 * tw) * (p.spark ? 1 : 0.7);
+      const col = p.spark ? recipe.spark : recipe.color;
+      const rad = p.s * (p.spark ? 6 : 4);
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rad);
+      g.addColorStop(0, 'rgba(' + col.join(',') + ',' + (alpha * 0.5) + ')');
+      g.addColorStop(1, 'rgba(' + col.join(',') + ',0)');
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = 'rgba(' + col.join(',') + ',' + alpha + ')';
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.s * (p.ember ? 1.6 : 1), 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.s * (p.spark ? 1.3 : 0.9), 0, Math.PI * 2); ctx.fill();
     }
     raf = requestAnimationFrame(tick);
   }
@@ -98,8 +91,10 @@
     if (document.querySelector('.ambience')) return;
     const layer = document.createElement('div');
     layer.className = 'ambience'; layer.setAttribute('aria-hidden', 'true');
+    const hazeA = document.createElement('div'); hazeA.className = 'haze a';
+    const hazeB = document.createElement('div'); hazeB.className = 'haze b';
     canvas = document.createElement('canvas'); canvas.id = 'ambience-canvas';
-    layer.appendChild(canvas);
+    layer.append(hazeA, hazeB, canvas);
     document.body.prepend(layer);
     ctx = canvas.getContext('2d');
     resize(); start();

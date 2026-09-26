@@ -349,3 +349,75 @@ Your points:
 ## Ready to build?
 
 -
+
+---
+
+# Round 6 — owner feedback on round 5 (fill in)
+
+Round 5 applied every note above; renders are `renders/r5-*.png`, the record
+is `README.md` → "Round 5". Mark each point **Rule** / **Try** / "accepted".
+Then start a fresh session with:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 5), then apply
+my Round 6 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+Answers to your Round 5 questions:
+
+- The tray already closed on a tap outside it (and on Escape); it still
+  does, and it is now written down as a rule.
+- Yes to scoping the one-Question flow now: "Add in-depth details" is on
+  Quick Question and the cards carry into In-Depth, where a strip at the
+  Cards step asks for each card's zone. The titles stay as they are until
+  you say the flows merge.
+- The stack tags now read BOTTOM / TOP for two cards; numbers start at
+  three.
+
+## Global (`r5-qq-1440`, `r5-motif-gallery-1440`)
+
+Tries waiting on your verdict: the haze and magical dust in place of the
+rays; the banner header; the motif gallery.
+
+Your points:
+
+- Motif picks — one letter per colour (A is today's):
+  White: · Blue: · Black: · Red: · Green: · Colorless:
+-
+
+## Quick Question (`r5-qq-*`)
+
+Tries: Send inside the box; ↺ at the top right; "Add in-depth details".
+
+Your points:
+
+-
+
+## In-Depth Question (`r5-idq-*`)
+
+Tries: the carried-cards strip; the ‹ arrow as the only Back; the art
+beside the form with the counter box.
+
+Your points:
+
+-
+
+## Trade Balancer (`r5-tb-1440`)
+
+Tries: New trade top right on desktop.
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`r5-menu-*`)
+
+Tries: Question History under In-Depth; the foot flair.
+
+Your points:
+
+-
+
+## Ready to build?
+
+-

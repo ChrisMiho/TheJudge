@@ -44,8 +44,11 @@ compositions each page targets.
   Quick Question, In-Depth Question and Trade Balancer share (see round 2),
   plus the shared menu tray, chat and card-detail panel (round 3).
 - `ambience.css` + `ambience.js` — the per-colour personality layer behind
-  every page (round 3; turned up in round 4). The round-3 `ornaments/` are
-  gone — corners are hairline brackets from `shell.css` now.
+  every page: two sheets of drifting haze and a field of magical dust
+  (round 5), plus the colour's badge faint and drifting. The round-3
+  `ornaments/` are gone — corners are hairline brackets from `shell.css`.
+- `motif-gallery.html` — four candidate symbols per colour at orb size and
+  large, for the owner to pick from (round 5).
 - `shared-chrome-menu.html` — the Menu, brand mark, Theme section, mock-mode
   banner, and overlay demos (feedback modal, history drawer, View Context
   overlay, card-detail popup).
@@ -95,11 +98,94 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
 
+### Round 5 (2026-09-26, from `OWNER-FEEDBACK.md` → "Round 5")
+
+Every Round 5 note applied. Renders are `renders/r5-*.png` (phone 390×844,
+desktop 1440×900) — the only renders in the folder; Round 4's live in git
+history at commit `525c0ae`.
+**Rule** = the owner said it must hold; **Try** = shown for a verdict.
+
+Global, on every page:
+
+- Rule: **the rays of light are gone.** The ambience is now two sheets of
+  soft, blurred colour that drift past each other very slowly (the haze /
+  smoke) plus a field of fine magical dust — finer, slower and softer than
+  round 4, every mote a small glow that twinkles. The badge still drifts
+  faintly behind the page. Try: is this the subtle, mystical movement you
+  meant? Density and speed are one number each.
+- Try: **the motif gallery** (`motif-gallery.html`, `r5-motif-gallery-1440`)
+  — four candidate symbols per colour on the dark disc, at brand-orb size,
+  theme-orb size and large. A is what the pages use today. Pick one letter
+  per colour (or "none, because …") in Round 6; the pick then gets its
+  elemental ring and the full badge treatment.
+- Try: **the header is a banner.** ☰ at the left, the brand centred — the
+  breathing orb, the wordmark, the "MTG Assistant" tagline — on a lit band
+  that rises under the brand, a hairline of the colour's light along its
+  foot, and the badge stamped faintly at each end on wide screens (never
+  near the text). The right-hand slot keeps the Trade Balancer's price
+  date.
+- Rule: the desktop tray closes on its ✕ **and on a tap anywhere outside
+  it** — `flow.js` binds the backdrop click and Escape as well.
+
+#### Quick Question — `quick-question.html` (`r5-qq-*`)
+
+- Rule: **Send lives inside the question box** — the box is the same pill
+  the chat uses, with the count and the round ➤ inside the frame and the
+  budget meter along its foot. It grows to about seven lines, then scrolls.
+- Rule: **Start over is a round ↺** at the top right of the chat, beside
+  the title. The bottom row is gone.
+- Try: **"Add in-depth details"** sits under the box. It carries the
+  attached cards into the In-Depth flow (`in-depth-question.html?carry=…`);
+  see In-Depth below. The two flows keep their names for now — when they
+  become one "Question", this button is the seam.
+
+#### In-Depth Question — `in-depth-question.html` (`r5-idq-*`)
+
+- Try, the future "one Question" flow: cards carried from Quick Question
+  wait in a **"From Quick Question · n to place"** strip above the zone
+  tabs at the Cards step (`r5-idq-390-3-cards-carry`); each row has a
+  "Place in…" picker of the zones chosen at step 2, and placing a card
+  summons it onto that zone's shelf. A one-line note under the title says
+  the cards came along. Search excludes carried cards.
+- Rule: **Back is a round ‹** beside the title (hidden on step 1). Inside
+  the context step it walks back a card first, then to Cards. Each step has
+  one **Continue**: full width on a phone, right-aligned on desktop.
+- Rule: **Send lives inside the question box**, as Quick Question.
+- Rule: **Start over is a round ↺** at the top right of the chat, beside
+  View context.
+- The context sheet is re-laid: **the card's art at the left, the form
+  beside it** (210px art on desktop, 96px on a phone, where the form drops
+  below). Nothing stretches wider than the form column; the art column has
+  no dead space under it. The row of thumbnails is gone; a small **counter
+  box** ("1 / 6 cards") counts up as you go. "Skip to review" stays.
+- Rule: the **zone bubbles are solid** (zone tabs and the summary chips).
+- Rule: the Stack's tags read **TOP** alone for one card, **BOTTOM / TOP**
+  for two, and **#1 … TOP** from three cards up.
+
+#### Trade Balancer — `trade-balancer.html` (`r5-tb-1440`)
+
+- Rule: on desktop **New trade sits top right, opposite the title**; on a
+  phone it keeps the bottom tray.
+
+#### Shared chrome and Menu — `shell.css` + `flow.js` (`r5-menu-*`)
+
+- Rule: **Question History** (renamed) sits right under In-Depth Question,
+  among the destinations. Send feedback sits alone under the divider.
+- Try: **more flair at the foot** — the badge large and slowly drifting,
+  a pool of the colour's light, and a scatter of twinkling dust fill the
+  tray's dead space.
+
+### Open for the owner's verdict (Round 5)
+
+- Global: the haze + dust; a letter per colour from the gallery; the banner.
+- Quick Question: "Add in-depth details" and the carry-over.
+- In-Depth: the art-beside-form sheet; the ‹ arrow as the only Back.
+- Menu: the foot flair.
+
 ### Round 4 (2026-09-26, from `OWNER-FEEDBACK.md` → "Round 4")
 
-Every Round 4 note applied. Renders are `renders/r4-*.png` (phone 390×844,
-desktop 1440×900) — the only renders in the folder; Round 3's live in git
-history at commit `dfaa319`.
+Every Round 4 note applied. The Round 4 renders (`r4-*`) were removed on
+2026-09-26; they remain in git history at commit `525c0ae`.
 **Rule** = the owner said it must hold; **Try** = shown for a verdict.
 
 Global, on every page:

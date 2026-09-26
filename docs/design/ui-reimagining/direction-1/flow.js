@@ -110,6 +110,8 @@ window.FLOW = (() => {
     const h = Math.min(textarea.scrollHeight, cap);
     textarea.style.height = h + 'px';
     textarea.classList.toggle('grown', h > 56);
+    const box = textarea.closest('.q-box, .followup');
+    if (box) box.style.borderRadius = h > 56 ? '1.1rem' : '';
   }
 
   // ---- the conversation: renders a thread of {who:'you'|'judge', text}; [[Card Name]]
@@ -141,17 +143,18 @@ window.FLOW = (() => {
     if (document.getElementById('menu-tray')) return;
     const backdrop = document.createElement('div'); backdrop.className = 'menu-tray-backdrop'; backdrop.id = 'tray-backdrop';
     const nav = document.createElement('nav'); nav.className = 'menu-tray'; nav.id = 'menu-tray'; nav.setAttribute('aria-label', 'Feature destinations');
-    const dest = [['Quick Question', '⚡', 'quick-question.html'], ['In-Depth Question', '◈', 'in-depth-question.html'], ['Life Tracker', '♥', 'life-tracker-after.html'], ['Trade Balancer', '⚖', 'trade-balancer.html']];
+    // Question History sits right under the question flows (round 5) — when the
+    // two flows become one "Question", it sits under that
+    const dest = [['Quick Question', '⚡', 'quick-question.html'], ['In-Depth Question', '◈', 'in-depth-question.html'], ['Question History', '◷', null], ['Life Tracker', '♥', 'life-tracker-after.html'], ['Trade Balancer', '⚖', 'trade-balancer.html']];
     nav.innerHTML =
-      '<div class="tray-brand"><span class="brand-mark"><span class="orb"></span><span><span class="wordmark">TheJudge</span><span class="tagline">MTG assistant</span></span></span>' +
+      '<div class="tray-brand"><span class="brand-mark"><span class="orb"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></span>' +
       '<button class="icon-btn" id="tray-close" aria-label="Close menu">✕</button></div>' +
-      '<ul class="tray-nav-list">' + dest.map(([n, g, href]) => '<li><button type="button" data-href="' + href + '"' + (n === current ? ' aria-current="page"' : '') + '><span class="glyph">' + g + '</span><span>' + n + '</span>' + (n === current ? '<span class="here">✓</span>' : '') + '</button></li>').join('') + '</ul>' +
+      '<ul class="tray-nav-list">' + dest.map(([n, g, href]) => '<li><button type="button"' + (href ? ' data-href="' + href + '"' : ' id="tray-history"') + (n === current ? ' aria-current="page"' : '') + '><span class="glyph">' + g + '</span><span>' + n + '</span>' + (n === current ? '<span class="here">✓</span>' : '') + '</button></li>').join('') + '</ul>' +
       '<div class="tray-divider"></div>' +
-      '<ul class="tray-nav-list"><li><button type="button" id="tray-feedback"><span class="glyph">✎</span><span>Send feedback</span></button></li>' +
-      '<li><button type="button" id="tray-history"><span class="glyph">◷</span><span>History</span></button></li></ul>' +
+      '<ul class="tray-nav-list"><li><button type="button" id="tray-feedback"><span class="glyph">✎</span><span>Send feedback</span></button></li></ul>' +
       '<h3>Theme</h3><div class="theme-orbs" role="group" aria-label="Theme palettes" id="theme-orbs">' +
       PROFILES.map(([id, name, orb, soft]) => '<button class="theme-orb" data-profile-btn="' + id + '" aria-label="Theme: ' + name + '" title="' + name + '" style="--orb:' + orb + ';--orb-soft:' + soft + ';--orb-motif:url(motifs/' + id + '.svg)"><span class="orb"></span></button>').join('') +
-      '</div>';
+      '</div><div class="tray-flair" aria-hidden="true"></div>';
     document.body.append(backdrop, nav);
     const setTray = (open) => { document.body.dataset.trayOpen = open ? 'true' : 'false'; };
     document.querySelectorAll('.menu-toggle').forEach((b) => b.addEventListener('click', () => setTray(document.body.dataset.trayOpen !== 'true')));
@@ -168,7 +171,7 @@ window.FLOW = (() => {
       '<textarea class="field" rows="4" placeholder="What\'s on your mind?"></textarea><div style="margin-top:0.75rem;display:flex;justify-content:flex-end"><button class="btn primary">Send</button></div></div>';
     const hb = document.createElement('div'); hb.className = 'sheet-backdrop'; hb.id = 'history-backdrop'; hb.dataset.open = 'false';
     const hd = document.createElement('aside'); hd.className = 'drawer-panel detail-panel'; hd.id = 'history-drawer'; hd.dataset.open = 'false'; hd.setAttribute('aria-label', 'Conversation history');
-    hd.innerHTML = '<button class="icon-btn overlay-close" data-close="history-drawer" aria-label="Close">✕</button><div class="body" style="padding-top:2.8rem"><h2 style="margin:0">History</h2>' +
+    hd.innerHTML = '<button class="icon-btn overlay-close" data-close="history-drawer" aria-label="Close">✕</button><div class="body" style="padding-top:2.8rem"><h2 style="margin:0">Question History</h2>' +
       '<p class="text-muted" style="margin:0;font-size:0.85rem">Past questions from this session.</p>' +
       '<div class="history-list">' + [['How does this resolve?', 'In-Depth · 6 cards · 2 min ago'], ['Does Sol Ring tap for two?', 'Quick · 1 card · 14 min ago'], ['Can I respond to a trigger?', 'Quick · no cards · yesterday']].map(([q, m]) =>
         '<button class="history-row"><span class="q">' + q + '</span><span class="m">' + m + '</span></button>').join('') + '</div></div>';

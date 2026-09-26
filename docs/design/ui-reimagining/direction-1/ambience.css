@@ -1,20 +1,16 @@
 /*
- * ambience.css — the colour's personality, painted behind every screen
- * (round 3, owner: "more animations, more graphics, more personality within
- * each color profile … magical, mythical, ethereal").
+ * ambience.css — the colour's personality, painted behind every screen.
  *
- * One fixed layer under the page, three parts per profile:
- *   .ambience::before   a slow, large-scale light movement (rays, vortex,
- *                       heat, breath, canopy light, brass rings)
- *   .ambience::after    the colour's motif, huge and faint, drifting
- *   #ambience-canvas    a particle field drawn by ambience.js
- *                       (motes, sparks, ash, embers, pollen, dust)
- *
+ * Round 5 (owner: "the rays of light just isn't the vibe … something more
+ * subtle, magical and mystical, like a moving haze or dust, or smoke"):
+ * the light fields are gone. One fixed layer under the page, three parts:
+ *   .ambience .haze     two sheets of soft, blurred colour that drift past
+ *                       each other very slowly — the haze / smoke
+ *   .ambience::after    the colour's badge, huge and faint, drifting
+ *   #ambience-canvas    magical dust drawn by ambience.js — fine motes that
+ *                       twinkle and drift on a slow current
  * Everything obeys prefers-reduced-motion: the layer still paints, nothing
- * moves. Round 4: turned up (owner: "still too subtle") — the motif badge
- * drifts at twice the weight, the light fields are brighter, the particle
- * field is denser. Card art still wins because it is the only saturated,
- * sharp thing on the page.
+ * moves. Card art still wins because it is the only sharp, saturated thing.
  */
 
 .ambience {
@@ -26,19 +22,45 @@
   isolation: isolate;
 }
 
-.ambience::before,
+.ambience .haze,
 .ambience::after {
   content: "";
   position: absolute;
-  inset: 0;
+  inset: -20%;
   pointer-events: none;
 }
 
+/* two sheets of haze: each is a few large soft blobs, blurred, on its own slow path */
+.ambience .haze {
+  filter: blur(38px) saturate(1.15);
+  opacity: 0.9;
+  animation: haze-a 46s ease-in-out infinite alternate;
+  transform-origin: 50% 50%;
+}
+.ambience .haze.b {
+  opacity: 0.7;
+  animation: haze-b 64s ease-in-out infinite alternate;
+}
+@keyframes haze-a {
+  from { transform: translate3d(-4%, -2%, 0) rotate(-2deg) scale(1); }
+  to { transform: translate3d(4%, 3%, 0) rotate(2deg) scale(1.08); }
+}
+@keyframes haze-b {
+  from { transform: translate3d(3%, 2%, 0) rotate(1.5deg) scale(1.06); }
+  to { transform: translate3d(-4%, -3%, 0) rotate(-1.5deg) scale(1); }
+}
+
+/* the badge, faint and drifting */
 .ambience::after {
-  background: var(--motif) center / min(130vmin, 980px) no-repeat;
-  opacity: 0.2;
-  filter: blur(1.5px) saturate(1.25);
-  animation: ambience-drift 48s ease-in-out infinite alternate;
+  inset: 0;
+  background: var(--motif) center / min(120vmin, 900px) no-repeat;
+  opacity: 0.1;
+  filter: blur(2px) saturate(1.2);
+  animation: ambience-drift 52s ease-in-out infinite alternate;
+}
+@keyframes ambience-drift {
+  from { transform: translate3d(-3%, -2%, 0) scale(1); }
+  to { transform: translate3d(3%, 3%, 0) scale(1.08); }
 }
 
 #ambience-canvas {
@@ -58,89 +80,81 @@
   z-index: 1;
 }
 
-@keyframes ambience-drift {
-  from { transform: translate3d(-3%, -2%, 0) scale(1); }
-  to { transform: translate3d(3%, 3%, 0) scale(1.08); }
+/* ---- per colour: the haze colours only; the motion is shared ---- */
+[data-profile="white"] .ambience .haze {
+  background:
+    radial-gradient(38% 30% at 22% 24%, rgba(250, 248, 242, 0.16), transparent 70%),
+    radial-gradient(34% 28% at 74% 62%, rgba(237, 231, 214, 0.14), transparent 70%),
+    radial-gradient(50% 36% at 50% 100%, rgba(176, 163, 130, 0.22), transparent 70%);
+}
+[data-profile="white"] .ambience .haze.b {
+  background:
+    radial-gradient(30% 26% at 66% 18%, rgba(250, 248, 242, 0.12), transparent 70%),
+    radial-gradient(44% 30% at 30% 78%, rgba(237, 231, 214, 0.12), transparent 70%);
 }
 
-/* ---- White: dawn rays sweep slowly across the ground ---- */
-[data-profile="white"] .ambience::before {
+[data-profile="blue"] .ambience .haze {
   background:
-    conic-gradient(from 200deg at 50% -20%, transparent 0 40%, rgba(250, 248, 242, 0.14) 44%, transparent 47%, transparent 55%, rgba(250, 248, 242, 0.1) 58%, transparent 61%, transparent 70%, rgba(250, 248, 242, 0.12) 73%, transparent 76%),
-    radial-gradient(60% 40% at 50% 0%, rgba(237, 231, 214, 0.26), transparent 70%);
-  animation: ambience-sway 22s ease-in-out infinite alternate;
-  transform-origin: 50% -20%;
+    radial-gradient(40% 32% at 24% 30%, rgba(0, 80, 216, 0.42), transparent 70%),
+    radial-gradient(34% 28% at 76% 58%, rgba(56, 225, 255, 0.16), transparent 70%),
+    radial-gradient(52% 36% at 50% 104%, rgba(30, 58, 156, 0.5), transparent 70%);
 }
-@keyframes ambience-sway {
-  from { transform: rotate(-6deg); }
-  to { transform: rotate(6deg); }
+[data-profile="blue"] .ambience .haze.b {
+  background:
+    radial-gradient(30% 26% at 70% 16%, rgba(56, 225, 255, 0.12), transparent 70%),
+    radial-gradient(44% 30% at 28% 80%, rgba(0, 80, 216, 0.34), transparent 70%);
 }
 
-/* ---- Blue: a charged vortex turns behind the page ---- */
-[data-profile="blue"] .ambience::before {
+[data-profile="black"] .ambience .haze {
   background:
-    repeating-conic-gradient(from 0deg at 50% 45%, transparent 0 9deg, rgba(56, 225, 255, 0.11) 10deg, transparent 12deg),
-    radial-gradient(45% 45% at 50% 45%, rgba(0, 80, 216, 0.42), transparent 70%);
-  -webkit-mask: radial-gradient(60% 60% at 50% 45%, #000 20%, transparent 75%);
-  mask: radial-gradient(60% 60% at 50% 45%, #000 20%, transparent 75%);
-  animation: ambience-spin 70s linear infinite;
-  transform-origin: 50% 45%;
+    radial-gradient(40% 32% at 26% 28%, rgba(124, 58, 237, 0.34), transparent 70%),
+    radial-gradient(30% 26% at 72% 56%, rgba(199, 125, 255, 0.16), transparent 70%),
+    radial-gradient(54% 36% at 50% 104%, rgba(46, 26, 71, 0.95), transparent 70%);
 }
-@keyframes ambience-spin {
-  to { transform: rotate(360deg); }
+[data-profile="black"] .ambience .haze.b {
+  background:
+    radial-gradient(28% 24% at 68% 16%, rgba(199, 125, 255, 0.12), transparent 70%),
+    radial-gradient(44% 30% at 30% 80%, rgba(124, 58, 237, 0.28), transparent 70%);
 }
 
-/* ---- Black: the dark breathes; one hot violet ember pulses ---- */
-[data-profile="black"] .ambience::before {
+[data-profile="red"] .ambience .haze {
   background:
-    radial-gradient(28% 22% at 68% 38%, rgba(199, 125, 255, 0.4), transparent 70%),
-    radial-gradient(90% 50% at 50% 110%, rgba(46, 26, 71, 1), transparent 70%);
-  animation: ambience-breathe 7s ease-in-out infinite;
+    radial-gradient(40% 32% at 26% 32%, rgba(193, 2, 48, 0.36), transparent 70%),
+    radial-gradient(30% 26% at 74% 54%, rgba(255, 77, 109, 0.16), transparent 70%),
+    radial-gradient(56% 38% at 50% 106%, rgba(122, 4, 36, 0.9), transparent 70%);
 }
-@keyframes ambience-breathe {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.04); }
+[data-profile="red"] .ambience .haze.b {
+  background:
+    radial-gradient(28% 24% at 70% 18%, rgba(255, 77, 109, 0.12), transparent 70%),
+    radial-gradient(44% 30% at 30% 82%, rgba(193, 2, 48, 0.3), transparent 70%);
 }
 
-/* ---- Red: heat rises from the bottom, glow flickers ---- */
-[data-profile="red"] .ambience::before {
+[data-profile="green"] .ambience .haze {
   background:
-    radial-gradient(70% 45% at 50% 108%, rgba(193, 2, 48, 0.7), transparent 70%),
-    radial-gradient(30% 20% at 30% 100%, rgba(255, 77, 109, 0.36), transparent 70%),
-    radial-gradient(30% 20% at 72% 100%, rgba(255, 77, 109, 0.3), transparent 70%);
-  animation: ambience-flicker 5.5s ease-in-out infinite;
+    radial-gradient(40% 32% at 24% 28%, rgba(10, 122, 66, 0.42), transparent 70%),
+    radial-gradient(30% 26% at 74% 56%, rgba(74, 255, 160, 0.14), transparent 70%),
+    radial-gradient(54% 36% at 50% 104%, rgba(10, 92, 51, 0.8), transparent 70%);
 }
-@keyframes ambience-flicker {
-  0%, 100% { opacity: 0.85; transform: translateY(0); }
-  35% { opacity: 1; transform: translateY(-1.5%); }
-  70% { opacity: 0.9; transform: translateY(0.5%); }
+[data-profile="green"] .ambience .haze.b {
+  background:
+    radial-gradient(28% 24% at 68% 16%, rgba(74, 255, 160, 0.1), transparent 70%),
+    radial-gradient(44% 30% at 30% 80%, rgba(10, 122, 66, 0.32), transparent 70%);
 }
 
-/* ---- Green: canopy light shifts through leaves ---- */
-[data-profile="green"] .ambience::before {
+[data-profile="colorless"] .ambience .haze {
   background:
-    radial-gradient(35% 30% at 20% 10%, rgba(74, 255, 160, 0.22), transparent 70%),
-    radial-gradient(40% 30% at 80% 20%, rgba(10, 122, 66, 0.5), transparent 70%),
-    radial-gradient(60% 40% at 50% 110%, rgba(10, 92, 51, 0.65), transparent 70%);
-  animation: ambience-canopy 26s ease-in-out infinite alternate;
+    radial-gradient(40% 32% at 24% 28%, rgba(161, 161, 170, 0.18), transparent 70%),
+    radial-gradient(30% 26% at 74% 56%, rgba(228, 228, 231, 0.08), transparent 70%),
+    radial-gradient(54% 36% at 50% 104%, rgba(82, 82, 91, 0.5), transparent 70%);
 }
-@keyframes ambience-canopy {
-  from { transform: translate3d(-2%, 0, 0) scale(1); filter: hue-rotate(0deg); }
-  to { transform: translate3d(2%, 1%, 0) scale(1.06); filter: hue-rotate(-8deg); }
-}
-
-/* ---- Colorless: brass rings turn like a great clockwork ---- */
-[data-profile="colorless"] .ambience::before {
+[data-profile="colorless"] .ambience .haze.b {
   background:
-    repeating-radial-gradient(circle at 50% 50%, transparent 0 60px, rgba(228, 228, 231, 0.08) 61px, transparent 63px),
-    repeating-conic-gradient(from 0deg at 50% 50%, transparent 0 28deg, rgba(228, 228, 231, 0.055) 29deg, transparent 30deg);
-  -webkit-mask: radial-gradient(55% 55% at 50% 50%, #000 10%, transparent 80%);
-  mask: radial-gradient(55% 55% at 50% 50%, #000 10%, transparent 80%);
-  animation: ambience-spin 140s linear infinite reverse;
+    radial-gradient(28% 24% at 68% 16%, rgba(228, 228, 231, 0.07), transparent 70%),
+    radial-gradient(44% 30% at 30% 80%, rgba(161, 161, 170, 0.16), transparent 70%);
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ambience::before,
+  .ambience .haze,
   .ambience::after {
     animation: none !important;
   }

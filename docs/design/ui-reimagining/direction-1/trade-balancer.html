@@ -98,9 +98,12 @@
   .side-foot { display: flex; justify-content: flex-end; align-items: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--surface-edge); padding-top: 0.45rem; flex: 0 0 auto; }
   .side-foot b { color: var(--text-primary); font-size: 1rem; font-variant-numeric: tabular-nums; font-family: var(--font-display); margin-left: 0.4rem; }
 
+  /* New trade: the bottom tray on a phone (owner: "looks great"); on desktop it sits top-right, opposite the title (round 5) */
   .actions { display: flex; gap: 0.4rem; justify-content: flex-end; flex: 0 0 auto; padding-bottom: 0.5rem; }
   .actions .icon-chip { min-height: 38px; font-size: 0.78rem; }
+  .flow-head .head-tools { display: none; align-items: center; gap: 0.6rem; }
   @media (max-width: 719px) { .actions .icon-chip { flex: 1; justify-content: center; padding: 0 0.4rem; } }
+  @media (min-width: 720px) { .actions { display: none; } .flow-head .head-tools { display: flex; } }
 
   /* ---- the printing picker: the card leads, one row per set, tap a price to pick finish + printing.
      The filter only appears once a card has more than five printings. ---- */
@@ -126,10 +129,8 @@
 </head>
 <body data-tray-open="false">
   <header class="app-header">
-    <div class="menu-rail">
-      <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
-      <button class="brand-mark"><span class="orb" aria-hidden="true"></span><span class="wordmark">TheJudge</span></button>
-    </div>
+    <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <a class="brand-mark" href="../index.html" aria-label="TheJudge home"><span class="orb" aria-hidden="true"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></a>
     <div class="header-side"><span class="asof">Prices as of 8 Sep 2026 · USD</span></div>
   </header>
   <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
@@ -139,6 +140,7 @@
       <div class="flow-head">
         <h1>Trade Balancer</h1>
         <span class="asof">Prices as of 8 Sep 2026 · USD</span>
+        <div class="head-tools"><button class="icon-chip" id="clear-top"><span class="glyph">↺</span> New trade</button></div>
       </div>
 
       <!-- the scale -->
@@ -362,7 +364,9 @@
       document.querySelectorAll('.side-tabs [role="tab"]').forEach((t) => t.setAttribute('aria-selected', t === tab));
       render();
     }));
-    $('clear').addEventListener('click', () => { entries = []; openSearch = null; render(); });
+    const newTrade = () => { entries = []; openSearch = null; render(); };
+    $('clear').addEventListener('click', newTrade);
+    $('clear-top').addEventListener('click', newTrade);
     render();
   </script>
 </body>
