@@ -11,16 +11,16 @@
  *
  * Reads the profile from <html data-profile> and restarts when it changes,
  * so the Theme orbs re-theme the field live. Respects reduced motion (draws
- * nothing). Mockup plumbing only.
+ * nothing). Round 4: ~50% denser (owner: "still too subtle"). Mockup plumbing only.
  */
 (() => {
   const RECIPES = {
-    white:     { n: 34, color: [250, 248, 242], size: [1, 3],   vx: [-0.04, 0.04], vy: [-0.22, -0.08], twinkle: 0.6, glow: 10, life: [9, 16] },
-    blue:      { n: 46, color: [56, 225, 255],  size: [0.6, 1.8], vx: [-0.25, 0.25], vy: [-0.25, 0.25], twinkle: 1.2, glow: 8, life: [4, 9], orbit: true },
-    black:     { n: 40, color: [180, 170, 200], size: [0.8, 2.2], vx: [-0.08, 0.08], vy: [0.06, 0.2],   twinkle: 0.3, glow: 0, life: [10, 18], ember: [199, 125, 255] },
-    red:       { n: 44, color: [255, 120, 90],  size: [0.8, 2.4], vx: [-0.12, 0.12], vy: [-0.5, -0.22], twinkle: 1.8, glow: 12, life: [3, 7], fromBottom: true },
-    green:     { n: 38, color: [74, 255, 160],  size: [0.7, 2],   vx: [0.05, 0.22],  vy: [-0.06, 0.06], twinkle: 0.9, glow: 8, life: [8, 14] },
-    colorless: { n: 30, color: [228, 228, 231], size: [0.5, 1.4], vx: [-0.03, 0.03], vy: [0.04, 0.1],   twinkle: 0.2, glow: 0, life: [12, 20] }
+    white:     { n: 52, color: [250, 248, 242], size: [1, 3],   vx: [-0.04, 0.04], vy: [-0.22, -0.08], twinkle: 0.6, glow: 10, life: [9, 16] },
+    blue:      { n: 70, color: [56, 225, 255],  size: [0.6, 1.8], vx: [-0.25, 0.25], vy: [-0.25, 0.25], twinkle: 1.2, glow: 8, life: [4, 9], orbit: true },
+    black:     { n: 60, color: [180, 170, 200], size: [0.8, 2.2], vx: [-0.08, 0.08], vy: [0.06, 0.2],   twinkle: 0.3, glow: 0, life: [10, 18], ember: [199, 125, 255] },
+    red:       { n: 66, color: [255, 120, 90],  size: [0.8, 2.4], vx: [-0.12, 0.12], vy: [-0.5, -0.22], twinkle: 1.8, glow: 12, life: [3, 7], fromBottom: true },
+    green:     { n: 58, color: [74, 255, 160],  size: [0.7, 2],   vx: [0.05, 0.22],  vy: [-0.06, 0.06], twinkle: 0.9, glow: 8, life: [8, 14] },
+    colorless: { n: 46, color: [228, 228, 231], size: [0.5, 1.4], vx: [-0.03, 0.03], vy: [0.04, 0.1],   twinkle: 0.2, glow: 0, life: [12, 20] }
   };
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');

@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Quick Question — direction 1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shell.css">
 <link rel="stylesheet" href="ambience.css">
@@ -61,13 +61,15 @@
           </div>
           <div class="search-results" id="search-results"></div>
         </div>
-        <div class="q-wrap">
-          <textarea class="field" id="question-field" rows="1" placeholder="What would you like to know?" maxlength="300"></textarea>
-          <span class="q-count" id="char-count">0 / 300</span>
-          <span class="q-meter"><i id="char-meter"></i></span>
-        </div>
-        <div class="send-row">
-          <button class="btn primary" id="send-request">Send Request</button>
+        <div class="q-row">
+          <div class="q-wrap">
+            <textarea class="field" id="question-field" rows="1" placeholder="What would you like to know?" maxlength="300"></textarea>
+            <span class="q-count" id="char-count">0 / 300</span>
+            <span class="q-meter"><i id="char-meter"></i></span>
+          </div>
+          <div class="send-row">
+            <button class="btn primary" id="send-request">Send Request</button>
+          </div>
         </div>
       </div>
     </section>
@@ -233,7 +235,7 @@
         msgs[1] = { who: 'judge', text:
           'If [[Counterspell]] is cast while [[Lightning Bolt]] is on the stack, Counterspell resolves first — the last spell put on the stack resolves first.\n' +
           'Counterspell counters Lightning Bolt: the Bolt is put into its owner\'s graveyard and deals no damage. Nothing on the battlefield is affected, and priority returns to the active player.',
-          refs: attached.slice(0, 2) };
+        };
         $('thread').innerHTML = chatMarkup(msgs);
         bindRefs($('thread'));
       }, 900);

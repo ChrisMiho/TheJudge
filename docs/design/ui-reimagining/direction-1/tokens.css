@@ -20,12 +20,10 @@
  *   --motif                   that profile's REQ-201 motif SVG, so a page can
  *                            paint the current colour's art without knowing
  *                            which profile is active
- *   --ornament                that profile's corner flourish (ornaments/*.svg,
- *                            round 3): filigree, rune arc, thorn, crack,
- *                            vine, rivet — drawn for this app, no WotC art
- *   --font-display / --font-body  the type pairing every page uses: a carved
- *                            display face for names and titles, a plain
- *                            humanist face for everything read at length
+ *   --font-display / --font-body  one clean face (Inter) for everything —
+ *                            titles carry weight and tighter tracking, not a
+ *                            second typeface (owner, round 4: the carved face
+ *                            "felt forced")
  *
  * Contrast floors (measured live 2026-09-24, DESIGN-BRIEF.md):
  *   --text-primary   on --surface-panel / --surface-ground >= 14.37:1
@@ -43,7 +41,6 @@
 :root,
 [data-profile="blue"] {
   --motif: url("motifs/blue.svg");
-  --ornament: url("ornaments/blue.svg");
   --accent: #0050d8;
   --accent-strong: #1e3a9c;
   --accent-soft: #38e1ff;
@@ -53,7 +50,6 @@
 
 [data-profile="white"] {
   --motif: url("motifs/white.svg");
-  --ornament: url("ornaments/white.svg");
   --accent: #ede7d6;
   --accent-strong: #b0a382;
   --accent-soft: #faf8f2;
@@ -63,7 +59,6 @@
 
 [data-profile="black"] {
   --motif: url("motifs/black.svg");
-  --ornament: url("ornaments/black.svg");
   --accent: #7c3aed;
   --accent-strong: #2e1a47;
   --accent-soft: #c77dff;
@@ -73,7 +68,6 @@
 
 [data-profile="red"] {
   --motif: url("motifs/red.svg");
-  --ornament: url("ornaments/red.svg");
   --accent: #c10230;
   --accent-strong: #7a0424;
   --accent-soft: #ff4d6d;
@@ -83,7 +77,6 @@
 
 [data-profile="green"] {
   --motif: url("motifs/green.svg");
-  --ornament: url("ornaments/green.svg");
   --accent: #0a7a42;
   --accent-strong: #0a5c33;
   --accent-soft: #4affa0;
@@ -93,7 +86,6 @@
 
 [data-profile="colorless"] {
   --motif: url("motifs/colorless.svg");
-  --ornament: url("ornaments/colorless.svg");
   --accent: #52525b;
   --accent-strong: #27272a;
   --accent-soft: #e4e4e7;
@@ -117,7 +109,7 @@
    profile darker than #09090B) holds for every profile. */
 :root,
 [data-profile] {
-  --font-display: "Cinzel", "Trajan Pro", "Palatino Linotype", Georgia, serif;
+  --font-display: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --surface-ground: #09090b;
   --surface-wash: linear-gradient(

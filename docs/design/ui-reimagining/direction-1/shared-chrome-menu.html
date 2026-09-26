@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Shared chrome &amp; Menu — direction 1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="tokens.css">
 <link rel="stylesheet" href="shell.css">
 <link rel="stylesheet" href="ambience.css">
@@ -16,26 +16,6 @@
   .card-panel h2 { font-size: 1.05rem; margin: 0 0 0.4rem; }
   .profile-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
 
-  /* the personality board: what each colour brings, side by side */
-  .persona { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
-  @media (min-width: 720px) { .persona { grid-template-columns: repeat(3, 1fr); } }
-  .persona button {
-    position: relative; overflow: hidden; text-align: left; min-height: 120px; padding: 0.7rem 0.75rem; border-radius: 0.9rem; cursor: pointer;
-    border: 1px solid var(--surface-edge); color: var(--text-primary);
-    background: radial-gradient(80% 60% at 100% 0%, color-mix(in srgb, var(--p-accent) 45%, transparent), transparent 70%), color-mix(in srgb, var(--surface-panel) 80%, transparent);
-    display: grid; align-content: end; gap: 0.2rem; transition: transform 160ms ease, border-color 160ms ease;
-  }
-  .persona button:hover { transform: translateY(-2px); border-color: var(--p-soft); }
-  .persona button[data-current="true"] { border-color: var(--p-soft); box-shadow: 0 0 24px -8px var(--p-soft); }
-  .persona button::before { content: ""; position: absolute; right: -10%; top: -20%; width: 70%; aspect-ratio: 1; background: var(--p-motif) center / contain no-repeat; opacity: 0.35; }
-  .persona button::after { content: ""; position: absolute; left: 6px; top: 6px; width: 34px; height: 34px; background: var(--p-orn) 0 0 / contain no-repeat; opacity: 0.85; }
-  .persona .n { font-family: var(--font-display); font-size: 1.05rem; color: var(--p-soft); }
-  .persona .d { font-size: 0.74rem; color: var(--text-muted); line-height: 1.35; }
-  .kit { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-  @media (min-width: 720px) { .kit { grid-template-columns: repeat(6, 1fr); } }
-  .kit figure { margin: 0; display: grid; gap: 0.3rem; justify-items: center; font-size: 0.68rem; color: var(--text-muted); }
-  .kit .pair { display: flex; gap: 0.3rem; }
-  .kit img { width: 46px; height: 46px; border-radius: 0.5rem; border: 1px solid var(--surface-edge); background: var(--surface-ground); }
 </style>
 </head>
 <body data-tray-open="false">
@@ -59,20 +39,9 @@
       above and the tray behind ☰ are the ones every page shares (`shell.css`
       + `flow.js`): the tray slides in from the left like today's, the
       destinations are a plain list with the current screen lit, Send feedback
-      and History sit right under them, and Theme lives at the foot as six orbs.
+      and History sit right under them, and Theme lives at the foot as six orbs
+      with no names or blurbs — pick one and every screen follows.
     </p>
-
-    <div class="card-panel ornate small">
-      <h2>Six personalities — tap one, every screen follows</h2>
-      <p class="demo-note" style="margin-bottom:0.6rem">Each colour brings its own light behind the page, its own particles, its own corner flourish and motif. This is what a player sees change when they pick a theme.</p>
-      <div class="persona" id="persona"></div>
-    </div>
-
-    <div class="card-panel">
-      <h2>The kit behind each colour (REQ-201)</h2>
-      <p class="demo-note" style="margin-bottom:0.6rem">One motif and one corner ornament per colour, drawn for this app — no official Wizards of the Coast mana glyph, icon font, logo, or card art.</p>
-      <div class="kit" id="kit"></div>
-    </div>
 
     <div class="card-panel">
       <h2>Life Tracker: shared chrome inherited, own screen untouched (REQ-202)</h2>
@@ -97,23 +66,10 @@
   <script src="ambience.js"></script>
   <script src="flow.js"></script>
   <script>
-    const { mountMenu, setProfile, PROFILES } = window.FLOW;
+    const { mountMenu, setProfile } = window.FLOW;
     const setTray = mountMenu('Quick Question');
     document.getElementById('open-menu-2').addEventListener('click', () => setTray(true));
 
-    const BLURB = {
-      white: 'Dawn rays sweep the ground; motes of light rise. Gilded filigree in the corners.',
-      blue: 'A charged vortex turns behind the page; sparks orbit. Rune arcs frame each surface.',
-      black: 'The dark breathes; ash drifts down and one violet ember pulses. Briar thorns.',
-      red: 'Heat flickers up from below; embers climb and fade. Cracked, burning corners.',
-      green: 'Canopy light shifts; pollen drifts sideways. Vines and leaves in the frame.',
-      colorless: 'Brass rings turn like clockwork; dust settles. Riveted bracket corners.'
-    };
-    document.getElementById('persona').innerHTML = PROFILES.map(([id, name, orb, soft]) =>
-      '<button data-profile-btn="' + id + '" style="--p-accent:' + orb + ';--p-soft:' + soft + ';--p-motif:url(motifs/' + id + '.svg);--p-orn:url(ornaments/' + id + '.svg)"><span class="n">' + name + '</span><span class="d">' + BLURB[id] + '</span></button>').join('');
-    document.getElementById('kit').innerHTML = PROFILES.map(([id, name]) =>
-      '<figure><span class="pair"><img src="motifs/' + id + '.svg" alt="' + name + ' motif"><img src="ornaments/' + id + '.svg" alt="' + name + ' ornament"></span>' + name + '</figure>').join('');
-    document.querySelectorAll('#persona [data-profile-btn]').forEach((b) => b.addEventListener('click', () => setProfile(b.dataset.profileBtn)));
     setProfile('blue');
   </script>
 </body>

@@ -5,9 +5,11 @@
  * shared buttons/fields, and the overlay primitives (modal, drawer) every
  * mockup page reuses rather than re-declaring. Imports tokens.css first.
  *
- * Round 3 personality pass: a carved display face for titles (Cinzel), a
- * breathing brand orb, corner flourishes per colour (.ornate), a shimmer on
- * the primary button, and the ambience layer (ambience.css/js) behind it all.
+ * Round 3 personality pass: a breathing brand orb, a shimmer on the primary
+ * button, and the ambience layer (ambience.css/js) behind it all. Round 4:
+ * one typeface (Inter) again, the corner flourishes reduced to hairline
+ * brackets, the ambience turned up, the side tray floating as glass, and the
+ * Menu tray stripped of every line of copy that was not a destination.
  */
 
 * {
@@ -43,8 +45,8 @@ textarea {
 
 h1, h2, .display {
   font-family: var(--font-display);
-  font-weight: 600;
-  letter-spacing: 0.02em;
+  font-weight: 700;
+  letter-spacing: -0.015em;
 }
 
 /* ---- Header ---- */
@@ -74,7 +76,7 @@ h1, h2, .display {
   width: 180px;
   height: 220%;
   background: var(--motif) center / contain no-repeat;
-  opacity: 0.14;
+  opacity: 0.22;
   pointer-events: none;
 }
 
@@ -147,9 +149,9 @@ h1, h2, .display {
 
 .brand-mark .wordmark {
   font-family: var(--font-display);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1.05rem;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.01em;
   background: linear-gradient(90deg, var(--accent-soft), color-mix(in srgb, var(--accent-soft) 45%, var(--text-primary)));
   -webkit-background-clip: text;
   background-clip: text;
@@ -231,7 +233,7 @@ h1, h2, .display {
   width: 90%;
   aspect-ratio: 1;
   background: var(--motif) center / contain no-repeat;
-  opacity: 0.12;
+  opacity: 0.2;
   pointer-events: none;
   z-index: -1;
 }
@@ -389,21 +391,17 @@ h1, h2, .display {
 
 .theme-orb {
   display: grid;
-  justify-items: center;
-  gap: 0.3rem;
+  place-items: center;
   background: transparent;
   border: 0;
   padding: 0.3rem 0;
   min-height: 44px;
   cursor: pointer;
-  color: var(--text-muted);
-  font-size: 0.6rem;
-  letter-spacing: 0.03em;
 }
 
 .theme-orb .orb {
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   border-radius: 999px;
   position: relative;
   background: radial-gradient(circle at 35% 30%, var(--orb-soft) 0%, var(--orb) 45%, color-mix(in srgb, var(--orb) 40%, #000) 100%);
@@ -421,10 +419,6 @@ h1, h2, .display {
   transition: opacity 150ms ease;
 }
 
-.theme-orb[data-current="true"] {
-  color: var(--text-primary);
-}
-
 .theme-orb[data-current="true"] .orb {
   transform: scale(1.12);
   box-shadow: 0 0 0 2px var(--surface-ground), 0 0 0 3px var(--orb-soft), 0 0 20px var(--orb);
@@ -436,25 +430,6 @@ h1, h2, .display {
 
 .theme-orb:hover .orb {
   transform: scale(1.08);
-}
-
-.theme-note {
-  font-size: 0.76rem;
-  color: var(--text-muted);
-  margin: 0.35rem 1rem 0;
-  line-height: 1.4;
-}
-
-.theme-note b {
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.tray-foot {
-  margin-top: auto;
-  padding: 0.9rem 1rem 0;
-  font-size: 0.7rem;
-  color: var(--text-muted);
 }
 
 /* history rows inside the History panel */
@@ -480,8 +455,10 @@ h1, h2, .display {
   padding: 1rem;
 }
 
-/* ---- Ornament frame: the colour's flourish in opposite corners (two via
-   pseudo-elements; add <i class="orn tr"></i><i class="orn bl"></i> for all four) ---- */
+/* ---- Corner brackets: a hairline L in each corner of a lit surface, in the
+   colour's light — the minimal stand-in for round 3's drawn flourishes
+   (owner, round 4: "something more minimalistic"). Two via pseudo-elements;
+   add <i class="orn tr"></i><i class="orn bl"></i> for all four. ---- */
 .ornate {
   position: relative;
 }
@@ -491,19 +468,19 @@ h1, h2, .display {
 .ornate .orn {
   content: "";
   position: absolute;
-  width: 46px;
-  height: 46px;
-  background: var(--ornament) 0 0 / contain no-repeat;
-  opacity: 0.75;
+  width: 14px;
+  height: 14px;
+  border: 0 solid color-mix(in srgb, var(--accent-soft) 75%, transparent);
+  opacity: 0.7;
   pointer-events: none;
   z-index: 2;
 }
 
-.ornate::before { top: 4px; left: 4px; }
-.ornate::after { bottom: 4px; right: 4px; transform: rotate(180deg); }
-.ornate .orn.tr { top: 4px; right: 4px; transform: rotate(90deg); }
-.ornate .orn.bl { bottom: 4px; left: 4px; transform: rotate(-90deg); }
-.ornate.small::before, .ornate.small::after, .ornate.small .orn { width: 30px; height: 30px; }
+.ornate::before { top: 7px; left: 7px; border-top-width: 1px; border-left-width: 1px; }
+.ornate::after { bottom: 7px; right: 7px; border-bottom-width: 1px; border-right-width: 1px; }
+.ornate .orn.tr { top: 7px; right: 7px; border-top-width: 1px; border-right-width: 1px; }
+.ornate .orn.bl { bottom: 7px; left: 7px; border-bottom-width: 1px; border-left-width: 1px; }
+.ornate.small::before, .ornate.small::after, .ornate.small .orn { width: 10px; height: 10px; }
 
 /* ---- Generic overlay (feedback modal / view-context) --- */
 
@@ -541,24 +518,34 @@ h1, h2, .display {
   right: 0.4rem;
 }
 
-/* Right-side drawer at >=768px (history / card detail / printing picker);
-   a bottom sheet on phones that sizes to its content */
+/* Right-side tray at >=768px (history / card detail / printing picker): a
+   floating glass card that sizes to its content — never a full-height grey
+   column (owner, round 4: "it feels like part of the screen is covered up").
+   A bottom sheet on phones that sizes to its content. */
 .drawer-panel {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  width: min(26rem, 92vw);
+  top: 0.75rem;
+  right: 0.75rem;
+  bottom: auto;
+  max-height: calc(100dvh - 1.5rem);
+  width: min(24rem, 92vw);
+  border-radius: 1.1rem;
   background:
-    radial-gradient(80% 30% at 100% 0%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 70%),
-    var(--surface-panel);
-  border-left: 1px solid var(--surface-edge);
-  box-shadow: -24px 0 60px -30px color-mix(in srgb, var(--accent) 60%, #000);
+    radial-gradient(90% 40% at 100% 0%, color-mix(in srgb, var(--accent) 26%, transparent) 0%, transparent 70%),
+    color-mix(in srgb, var(--surface-panel) 82%, transparent);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent);
+  box-shadow:
+    0 30px 80px -30px #000,
+    0 0 60px -20px color-mix(in srgb, var(--accent) 70%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
   z-index: 40;
   padding: 0;
   overflow-y: auto;
-  transform: translateX(100%);
-  transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  overflow-x: hidden;
+  transform: translateX(calc(100% + 1.5rem));
+  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 [data-open="true"].drawer-panel {
@@ -580,9 +567,10 @@ h1, h2, .display {
     top: auto;
     left: 0;
     right: 0;
+    bottom: 0;
     width: auto;
     max-height: 88dvh;
-    border-left: none;
+    border: none;
     border-top: 1px solid var(--surface-edge);
     border-radius: 1.1rem 1.1rem 0 0;
     transform: translateY(100%);

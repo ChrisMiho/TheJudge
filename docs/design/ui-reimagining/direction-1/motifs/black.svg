@@ -1,17 +1,39 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Black motif: decay with one hot glow">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Black motif: a badge of decay — an eclipsed disc, wrapped in thorns with ink dripping below">
   <defs>
-    <radialGradient id="k-glow" cx="55%" cy="45%" r="30%">
-      <stop offset="0%" stop-color="#C77DFF" stop-opacity="0.9"/>
-      <stop offset="100%" stop-color="#2E1A47" stop-opacity="0"/>
+    <radialGradient id="k-glow" cx="50%" cy="46%" r="55%">
+      <stop offset="0" stop-color="#c77dff" stop-opacity="0.5"/>
+      <stop offset="0.5" stop-color="#7c3aed" stop-opacity="0.2"/>
+      <stop offset="1" stop-color="#2e1a47" stop-opacity="0"/>
     </radialGradient>
+    <linearGradient id="k-drip" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#c77dff" stop-opacity="0.9"/>
+      <stop offset="1" stop-color="#7c3aed" stop-opacity="0"/>
+    </linearGradient>
   </defs>
-  <rect width="200" height="200" fill="#18181B"/>
-  <g fill="#0F0A14" opacity="0.9">
-    <path d="M0 160 L30 140 L50 165 L80 130 L110 170 L140 145 L170 175 L200 150 L200 200 L0 200 Z"/>
+  <circle cx="100" cy="96" r="98" fill="url(#k-glow)"/>
+  <!-- thorn arcs round the badge -->
+  <g fill="none" stroke="#c77dff" stroke-linecap="round">
+    <path d="M36 118 A66 66 0 0 1 100 30 A66 66 0 0 1 164 118" stroke-width="3" opacity="0.85"/>
+    <path d="M46 138 A70 70 0 0 1 40 100" stroke-width="2" opacity="0.5"/>
+    <path d="M154 138 A70 70 0 0 0 160 100" stroke-width="2" opacity="0.5"/>
   </g>
-  <circle cx="110" cy="90" r="20" fill="url(#k-glow)"/>
-  <g stroke="#7C3AED" stroke-width="1.2" fill="none" opacity="0.6" stroke-linecap="round">
-    <path d="M40 60 L55 75 L45 90 L60 100"/>
-    <path d="M150 50 L140 70 L155 85"/>
+  <g fill="#c77dff">
+    <path d="M100 30 l-4 -12 l9 8 z"/><path d="M62 46 l-11 -6 l12 -1 z"/><path d="M138 46 l11 -6 l-12 -1 z"/>
+    <path d="M40 84 l-12 -3 l10 -6 z"/><path d="M160 84 l12 -3 l-10 -6 z"/><path d="M42 122 l-12 4 l8 6 z"/><path d="M158 122 l12 4 l-8 6 z"/>
+  </g>
+  <!-- ink dripping under the badge -->
+  <g fill="none" stroke="url(#k-drip)" stroke-width="3" stroke-linecap="round">
+    <path d="M78 140 v 26"/><path d="M92 144 v 40"/><path d="M108 144 v 30"/><path d="M122 140 v 20"/>
+  </g>
+  <g fill="#c77dff"><circle cx="78" cy="168" r="2.4"/><circle cx="92" cy="186" r="2.6"/><circle cx="108" cy="176" r="2.2"/><circle cx="122" cy="162" r="2"/></g>
+  <!-- the badge -->
+  <circle cx="100" cy="96" r="47" fill="#0e0e11" stroke="#c77dff" stroke-opacity="0.4" stroke-width="2"/>
+  <circle cx="100" cy="96" r="43" fill="none" stroke="#c77dff" stroke-width="1" opacity="0.35"/>
+  <!-- the symbol: an eclipse — a dark disc with one bright sliver -->
+  <circle cx="100" cy="96" r="27" fill="#c77dff" fill-opacity="0.25"/>
+  <circle cx="100" cy="96" r="24" fill="#0e0e11" stroke="#e9c8ff" stroke-width="3.5"/>
+  <path d="M74 96 A26 26 0 0 1 100 70 A17 17 0 0 0 74 96 Z" fill="#f3e4ff"/>
+  <g stroke="#c77dff" stroke-width="1.5" stroke-linecap="round" opacity="0.8">
+    <path d="M100 64 V60"/><path d="M122 74 l3 -3"/><path d="M78 74 l-3 -3"/>
   </g>
 </svg>

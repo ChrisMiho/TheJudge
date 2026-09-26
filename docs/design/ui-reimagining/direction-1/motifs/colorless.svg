@@ -1,16 +1,30 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Colorless motif: bone-and-brass artifact">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Colorless motif: a badge of bone and brass — a hexagonal cog inside a disc, wrapped in an inscribed riveted band">
   <defs>
-    <radialGradient id="c-glow" cx="50%" cy="50%" r="22%">
-      <stop offset="0%" stop-color="#E4E4E7" stop-opacity="0.95"/>
-      <stop offset="100%" stop-color="#52525B" stop-opacity="0"/>
+    <radialGradient id="c-glow" cx="50%" cy="50%" r="55%">
+      <stop offset="0" stop-color="#e4e4e7" stop-opacity="0.35"/>
+      <stop offset="0.5" stop-color="#a1a1aa" stop-opacity="0.14"/>
+      <stop offset="1" stop-color="#52525b" stop-opacity="0"/>
     </radialGradient>
   </defs>
-  <rect width="200" height="200" fill="#141416"/>
-  <g stroke="#71717A" stroke-width="1.5" fill="none" opacity="0.8">
-    <rect x="55" y="55" width="90" height="90" rx="10"/>
-    <rect x="70" y="70" width="60" height="60" rx="6"/>
-    <line x1="55" y1="75" x2="145" y2="75"/>
-    <line x1="55" y1="125" x2="145" y2="125"/>
+  <circle cx="100" cy="100" r="98" fill="url(#c-glow)"/>
+  <!-- the inscribed band round the badge -->
+  <circle cx="100" cy="100" r="70" fill="none" stroke="#d8d4c8" stroke-width="14" opacity="0.55"/>
+  <circle cx="100" cy="100" r="70" fill="none" stroke="#0e0e11" stroke-width="2" opacity="0.7" stroke-dasharray="3 5"/>
+  <circle cx="100" cy="100" r="78" fill="none" stroke="#e4e4e7" stroke-width="1.5" opacity="0.7"/>
+  <circle cx="100" cy="100" r="62" fill="none" stroke="#e4e4e7" stroke-width="1.5" opacity="0.7"/>
+  <g fill="#f4f4f5">
+    <circle cx="100" cy="30" r="3"/><circle cx="160.6" cy="65" r="3"/><circle cx="160.6" cy="135" r="3"/>
+    <circle cx="100" cy="170" r="3"/><circle cx="39.4" cy="135" r="3"/><circle cx="39.4" cy="65" r="3"/>
   </g>
-  <circle cx="100" cy="100" r="10" fill="url(#c-glow)"/>
+  <!-- the badge -->
+  <circle cx="100" cy="100" r="47" fill="#0e0e11" stroke="#e4e4e7" stroke-opacity="0.45" stroke-width="2"/>
+  <circle cx="100" cy="100" r="43" fill="none" stroke="#e4e4e7" stroke-width="1" opacity="0.35"/>
+  <!-- the symbol: a hexagonal cog -->
+  <polygon points="100,72 124,86 124,114 100,128 76,114 76,86" fill="none" stroke="#e4e4e7" stroke-width="3"/>
+  <polygon points="100,86 112,93 112,107 100,114 88,107 88,93" fill="none" stroke="#e4e4e7" stroke-width="1.5" opacity="0.7"/>
+  <g fill="#e4e4e7">
+    <circle cx="100" cy="72" r="2.6"/><circle cx="124" cy="86" r="2.6"/><circle cx="124" cy="114" r="2.6"/>
+    <circle cx="100" cy="128" r="2.6"/><circle cx="76" cy="114" r="2.6"/><circle cx="76" cy="86" r="2.6"/>
+  </g>
+  <circle cx="100" cy="100" r="5" fill="#f4f4f5"/>
 </svg>

@@ -11,7 +11,10 @@
  *                       (motes, sparks, ash, embers, pollen, dust)
  *
  * Everything obeys prefers-reduced-motion: the layer still paints, nothing
- * moves. Intensity is restrained so card art always wins.
+ * moves. Round 4: turned up (owner: "still too subtle") — the motif badge
+ * drifts at twice the weight, the light fields are brighter, the particle
+ * field is denser. Card art still wins because it is the only saturated,
+ * sharp thing on the page.
  */
 
 .ambience {
@@ -32,9 +35,9 @@
 }
 
 .ambience::after {
-  background: var(--motif) center / min(120vmin, 900px) no-repeat;
-  opacity: 0.1;
-  filter: blur(1px) saturate(1.2);
+  background: var(--motif) center / min(130vmin, 980px) no-repeat;
+  opacity: 0.2;
+  filter: blur(1.5px) saturate(1.25);
   animation: ambience-drift 48s ease-in-out infinite alternate;
 }
 
@@ -43,7 +46,7 @@
   inset: 0;
   width: 100%;
   height: 100%;
-  opacity: 0.9;
+  opacity: 1;
   mix-blend-mode: screen;
 }
 
@@ -63,8 +66,8 @@
 /* ---- White: dawn rays sweep slowly across the ground ---- */
 [data-profile="white"] .ambience::before {
   background:
-    conic-gradient(from 200deg at 50% -20%, transparent 0 40%, rgba(250, 248, 242, 0.09) 44%, transparent 47%, transparent 55%, rgba(250, 248, 242, 0.06) 58%, transparent 61%, transparent 70%, rgba(250, 248, 242, 0.08) 73%, transparent 76%),
-    radial-gradient(60% 40% at 50% 0%, rgba(237, 231, 214, 0.16), transparent 70%);
+    conic-gradient(from 200deg at 50% -20%, transparent 0 40%, rgba(250, 248, 242, 0.14) 44%, transparent 47%, transparent 55%, rgba(250, 248, 242, 0.1) 58%, transparent 61%, transparent 70%, rgba(250, 248, 242, 0.12) 73%, transparent 76%),
+    radial-gradient(60% 40% at 50% 0%, rgba(237, 231, 214, 0.26), transparent 70%);
   animation: ambience-sway 22s ease-in-out infinite alternate;
   transform-origin: 50% -20%;
 }
@@ -76,8 +79,8 @@
 /* ---- Blue: a charged vortex turns behind the page ---- */
 [data-profile="blue"] .ambience::before {
   background:
-    repeating-conic-gradient(from 0deg at 50% 45%, transparent 0 9deg, rgba(56, 225, 255, 0.07) 10deg, transparent 12deg),
-    radial-gradient(45% 45% at 50% 45%, rgba(0, 80, 216, 0.28), transparent 70%);
+    repeating-conic-gradient(from 0deg at 50% 45%, transparent 0 9deg, rgba(56, 225, 255, 0.11) 10deg, transparent 12deg),
+    radial-gradient(45% 45% at 50% 45%, rgba(0, 80, 216, 0.42), transparent 70%);
   -webkit-mask: radial-gradient(60% 60% at 50% 45%, #000 20%, transparent 75%);
   mask: radial-gradient(60% 60% at 50% 45%, #000 20%, transparent 75%);
   animation: ambience-spin 70s linear infinite;
@@ -90,8 +93,8 @@
 /* ---- Black: the dark breathes; one hot violet ember pulses ---- */
 [data-profile="black"] .ambience::before {
   background:
-    radial-gradient(28% 22% at 68% 38%, rgba(199, 125, 255, 0.28), transparent 70%),
-    radial-gradient(90% 50% at 50% 110%, rgba(46, 26, 71, 0.9), transparent 70%);
+    radial-gradient(28% 22% at 68% 38%, rgba(199, 125, 255, 0.4), transparent 70%),
+    radial-gradient(90% 50% at 50% 110%, rgba(46, 26, 71, 1), transparent 70%);
   animation: ambience-breathe 7s ease-in-out infinite;
 }
 @keyframes ambience-breathe {
@@ -102,9 +105,9 @@
 /* ---- Red: heat rises from the bottom, glow flickers ---- */
 [data-profile="red"] .ambience::before {
   background:
-    radial-gradient(70% 45% at 50% 108%, rgba(193, 2, 48, 0.55), transparent 70%),
-    radial-gradient(30% 20% at 30% 100%, rgba(255, 77, 109, 0.25), transparent 70%),
-    radial-gradient(30% 20% at 72% 100%, rgba(255, 77, 109, 0.2), transparent 70%);
+    radial-gradient(70% 45% at 50% 108%, rgba(193, 2, 48, 0.7), transparent 70%),
+    radial-gradient(30% 20% at 30% 100%, rgba(255, 77, 109, 0.36), transparent 70%),
+    radial-gradient(30% 20% at 72% 100%, rgba(255, 77, 109, 0.3), transparent 70%);
   animation: ambience-flicker 5.5s ease-in-out infinite;
 }
 @keyframes ambience-flicker {
@@ -116,9 +119,9 @@
 /* ---- Green: canopy light shifts through leaves ---- */
 [data-profile="green"] .ambience::before {
   background:
-    radial-gradient(35% 30% at 20% 10%, rgba(74, 255, 160, 0.14), transparent 70%),
-    radial-gradient(40% 30% at 80% 20%, rgba(10, 122, 66, 0.35), transparent 70%),
-    radial-gradient(60% 40% at 50% 110%, rgba(10, 92, 51, 0.5), transparent 70%);
+    radial-gradient(35% 30% at 20% 10%, rgba(74, 255, 160, 0.22), transparent 70%),
+    radial-gradient(40% 30% at 80% 20%, rgba(10, 122, 66, 0.5), transparent 70%),
+    radial-gradient(60% 40% at 50% 110%, rgba(10, 92, 51, 0.65), transparent 70%);
   animation: ambience-canopy 26s ease-in-out infinite alternate;
 }
 @keyframes ambience-canopy {
@@ -129,8 +132,8 @@
 /* ---- Colorless: brass rings turn like a great clockwork ---- */
 [data-profile="colorless"] .ambience::before {
   background:
-    repeating-radial-gradient(circle at 50% 50%, transparent 0 60px, rgba(228, 228, 231, 0.05) 61px, transparent 63px),
-    repeating-conic-gradient(from 0deg at 50% 50%, transparent 0 28deg, rgba(228, 228, 231, 0.035) 29deg, transparent 30deg);
+    repeating-radial-gradient(circle at 50% 50%, transparent 0 60px, rgba(228, 228, 231, 0.08) 61px, transparent 63px),
+    repeating-conic-gradient(from 0deg at 50% 50%, transparent 0 28deg, rgba(228, 228, 231, 0.055) 29deg, transparent 30deg);
   -webkit-mask: radial-gradient(55% 55% at 50% 50%, #000 10%, transparent 80%);
   mask: radial-gradient(55% 55% at 50% 50%, #000 10%, transparent 80%);
   animation: ambience-spin 140s linear infinite reverse;

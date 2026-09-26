@@ -79,7 +79,7 @@ window.FLOW = (() => {
     $('detail-facts').innerHTML =
       '<div class="fact"><small>Mana value</small><b>' + c.mv + '</b></div>' +
       '<div class="fact"><small>Subtypes</small><b>' + c.sub + '</b></div>' +
-      '<div class="fact price"><small>Price · nonfoil</small><b>' + c.price + '</b></div>';
+      '<div class="fact price"><small>Price</small><b>' + c.price + '</b></div>';
     $('detail-backdrop').dataset.open = 'true';
     $('detail-panel').dataset.open = 'true';
     $('detail-panel').scrollTop = 0;
@@ -112,29 +112,30 @@ window.FLOW = (() => {
     textarea.classList.toggle('grown', h > 56);
   }
 
-  // ---- the conversation: renders a thread of {who:'you'|'judge', text, refs?} ----
+  // ---- the conversation: renders a thread of {who:'you'|'judge', text}; [[Card Name]]
+  // becomes a tappable name — the cards themselves live only in the Cards strip ----
   function chatMarkup(messages, cards) {
     return messages.map((m) => {
       if (m.who === 'you') return '<div class="msg you">' + m.text + '</div>';
       const body = m.text
         ? m.text.split('\n').map((p) => '<p>' + p.replace(/\[\[(.+?)\]\]/g, '<span class="ref" data-name="$1">$1</span>') + '</p>').join('')
         : '<span class="thinking"><i></i><i></i><i></i></span>';
-      return '<div class="msg judge"><span class="seal" aria-hidden="true"></span><div><span class="who">TheJudge</span>' + body +
-        (m.refs && m.refs.length ? '<div class="refs">' + m.refs.map((c) => thumb(c, 'tap')).join('') + '</div>' : '') + '</div></div>';
+      return '<div class="msg judge"><span class="seal" aria-hidden="true"></span><div><span class="who">TheJudge</span>' + body + '</div></div>';
     }).join('');
   }
   function bindRefs(root) {
     root.querySelectorAll('.ref, .thumb.tap').forEach((el) => el.addEventListener('click', () => { const c = byName(el.dataset.name); if (c) openDetail(c); }));
   }
 
-  // ---- the shared menu tray (round 3: from the left, plain rows, theme orbs at the foot) ----
+  // ---- the shared menu tray (round 3: from the left, plain rows, theme orbs at
+  // the foot; round 4: the orbs carry no names or blurbs — the colour is the label) ----
   const PROFILES = [
-    ['white', 'White', '#ede7d6', '#faf8f2', 'gilded filigree, dawn light'],
-    ['blue', 'Blue', '#0050d8', '#38e1ff', 'a charged vortex, sparks in orbit'],
-    ['black', 'Black', '#7c3aed', '#c77dff', 'thorns, ash, one hot ember'],
-    ['red', 'Red', '#c10230', '#ff4d6d', 'embers rising through the dark'],
-    ['green', 'Green', '#0a7a42', '#4affa0', 'vines, canopy light, pollen'],
-    ['colorless', 'Colorless', '#52525b', '#e4e4e7', 'brass clockwork, settling dust']
+    ['white', 'White', '#ede7d6', '#faf8f2'],
+    ['blue', 'Blue', '#0050d8', '#38e1ff'],
+    ['black', 'Black', '#7c3aed', '#c77dff'],
+    ['red', 'Red', '#c10230', '#ff4d6d'],
+    ['green', 'Green', '#0a7a42', '#4affa0'],
+    ['colorless', 'Colorless', '#52525b', '#e4e4e7']
   ];
   function mountMenu(current) {
     if (document.getElementById('menu-tray')) return;
@@ -149,9 +150,8 @@ window.FLOW = (() => {
       '<ul class="tray-nav-list"><li><button type="button" id="tray-feedback"><span class="glyph">✎</span><span>Send feedback</span></button></li>' +
       '<li><button type="button" id="tray-history"><span class="glyph">◷</span><span>History</span></button></li></ul>' +
       '<h3>Theme</h3><div class="theme-orbs" role="group" aria-label="Theme palettes" id="theme-orbs">' +
-      PROFILES.map(([id, name, orb, soft]) => '<button class="theme-orb" data-profile-btn="' + id + '" aria-label="Theme: ' + name + '" style="--orb:' + orb + ';--orb-soft:' + soft + ';--orb-motif:url(motifs/' + id + '.svg)"><span class="orb"></span>' + name + '</button>').join('') +
-      '</div><p class="theme-note" id="theme-note"></p>' +
-      '<div class="tray-foot">Every screen follows the colour you pick.</div>';
+      PROFILES.map(([id, name, orb, soft]) => '<button class="theme-orb" data-profile-btn="' + id + '" aria-label="Theme: ' + name + '" title="' + name + '" style="--orb:' + orb + ';--orb-soft:' + soft + ';--orb-motif:url(motifs/' + id + '.svg)"><span class="orb"></span></button>').join('') +
+      '</div>';
     document.body.append(backdrop, nav);
     const setTray = (open) => { document.body.dataset.trayOpen = open ? 'true' : 'false'; };
     document.querySelectorAll('.menu-toggle').forEach((b) => b.addEventListener('click', () => setTray(document.body.dataset.trayOpen !== 'true')));
@@ -185,9 +185,6 @@ window.FLOW = (() => {
   function setProfile(id) {
     document.documentElement.setAttribute('data-profile', id);
     document.querySelectorAll('[data-profile-btn]').forEach((b) => b.setAttribute('data-current', b.dataset.profileBtn === id));
-    const p = PROFILES.find((x) => x[0] === id);
-    const note = document.getElementById('theme-note');
-    if (note && p) note.innerHTML = '<b>' + p[1] + '</b> — ' + p[4] + '.';
   }
 
   document.addEventListener('DOMContentLoaded', ensureDetailPanel);

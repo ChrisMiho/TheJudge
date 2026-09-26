@@ -1,17 +1,34 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Blue motif: charged energy">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Blue motif: a badge of charged water — a spiral inside a disc, wrapped in a sweeping wave">
   <defs>
-    <radialGradient id="b-glow" cx="50%" cy="50%" r="65%">
-      <stop offset="0%" stop-color="#38E1FF" stop-opacity="0.8"/>
-      <stop offset="55%" stop-color="#0050D8" stop-opacity="0.3"/>
-      <stop offset="100%" stop-color="#09090B" stop-opacity="0"/>
+    <radialGradient id="b-glow" cx="50%" cy="50%" r="55%">
+      <stop offset="0" stop-color="#38e1ff" stop-opacity="0.5"/>
+      <stop offset="0.5" stop-color="#0050d8" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#0050d8" stop-opacity="0"/>
     </radialGradient>
+    <linearGradient id="b-wave" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#38e1ff" stop-opacity="0.2"/>
+      <stop offset="0.5" stop-color="#38e1ff" stop-opacity="1"/>
+      <stop offset="1" stop-color="#0050d8" stop-opacity="0.3"/>
+    </linearGradient>
   </defs>
-  <rect width="200" height="200" fill="url(#b-glow)"/>
-  <g stroke="#38E1FF" stroke-width="2" fill="none" opacity="0.85" stroke-linecap="round">
-    <path d="M100 20 L80 90 L110 90 L70 180"/>
-    <circle cx="100" cy="100" r="55" stroke="#1E3A9C" stroke-width="1.5" opacity="0.6"/>
-    <path d="M45 100 a55 55 0 1 0 110 0" stroke="#38E1FF" stroke-width="1.2" opacity="0.5"/>
-    <circle cx="100" cy="45" r="3" fill="#38E1FF" stroke="none"/>
-    <circle cx="155" cy="100" r="3" fill="#38E1FF" stroke="none"/>
+  <circle cx="100" cy="100" r="98" fill="url(#b-glow)"/>
+  <!-- the wave sweeping round the badge -->
+  <g fill="none" stroke="url(#b-wave)" stroke-linecap="round">
+    <path d="M26 128 C 14 70, 60 18, 116 22 C 156 26, 186 56, 182 96" stroke-width="11"/>
+    <path d="M38 150 C 24 106, 50 52, 104 44" stroke-width="4" opacity="0.7"/>
+    <path d="M176 128 C 178 154, 150 178, 118 178" stroke-width="7"/>
+    <path d="M150 160 C 132 172, 108 172, 92 168" stroke-width="3" opacity="0.6"/>
   </g>
+  <g fill="#dffaff">
+    <circle cx="182" cy="108" r="3"/><circle cx="24" cy="142" r="2.4"/><circle cx="128" cy="16" r="2"/><circle cx="60" cy="30" r="1.6"/>
+    <circle cx="112" cy="186" r="2.4"/><circle cx="166" cy="150" r="1.6"/><circle cx="46" cy="166" r="1.8"/><circle cx="188" cy="82" r="1.4"/>
+  </g>
+  <!-- the badge -->
+  <circle cx="100" cy="100" r="47" fill="#0e0e11" stroke="#38e1ff" stroke-opacity="0.4" stroke-width="2"/>
+  <circle cx="100" cy="100" r="43" fill="none" stroke="#38e1ff" stroke-width="1" opacity="0.35"/>
+  <!-- the symbol: a spiral of charged water -->
+  <path d="M100 100 c 4 -4, 12 -2, 12 6 c 0 10, -14 14, -22 6 c -10 -10, -2 -28, 14 -30 c 18 -2, 30 12, 26 30 c -2 8, -8 14, -14 18"
+        fill="none" stroke="#38e1ff" stroke-width="4" stroke-linecap="round"/>
+  <circle cx="116" cy="130" r="3" fill="#dffaff"/>
+  <circle cx="102" cy="103" r="2.2" fill="#dffaff"/>
 </svg>

@@ -1,23 +1,41 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="White motif: gilded authority">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="White motif: a badge of dawn light — a halo pierced by a shard of light, wrapped in scattering rays">
   <defs>
-    <radialGradient id="w-glow" cx="50%" cy="30%" r="70%">
-      <stop offset="0%" stop-color="#FAF8F2" stop-opacity="0.9"/>
-      <stop offset="60%" stop-color="#EDE7D6" stop-opacity="0.25"/>
-      <stop offset="100%" stop-color="#09090B" stop-opacity="0"/>
+    <radialGradient id="w-glow" cx="50%" cy="50%" r="55%">
+      <stop offset="0" stop-color="#fff8e6" stop-opacity="0.55"/>
+      <stop offset="0.5" stop-color="#ede7d6" stop-opacity="0.18"/>
+      <stop offset="1" stop-color="#ede7d6" stop-opacity="0"/>
     </radialGradient>
-    <linearGradient id="w-filigree" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0%" stop-color="#B0A382"/>
-      <stop offset="100%" stop-color="#FAF8F2"/>
+    <linearGradient id="w-ray" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0" stop-color="#fff8e6" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#e6d9b8" stop-opacity="0"/>
     </linearGradient>
   </defs>
-  <rect width="200" height="200" fill="url(#w-glow)"/>
-  <g stroke="url(#w-filigree)" stroke-width="1.4" fill="none" opacity="0.8">
-    <line x1="40" y1="10" x2="40" y2="190"/>
-    <line x1="100" y1="0" x2="100" y2="200"/>
-    <line x1="160" y1="10" x2="160" y2="190"/>
-    <path d="M20 60 Q40 50 60 60 T100 60 T140 60 T180 60"/>
-    <path d="M20 140 Q40 150 60 140 T100 140 T140 140 T180 140"/>
-    <circle cx="100" cy="100" r="14" />
-    <circle cx="100" cy="100" r="26" opacity="0.5"/>
+  <circle cx="100" cy="100" r="98" fill="url(#w-glow)"/>
+  <!-- scattering rays around the badge -->
+  <g fill="url(#w-ray)">
+    <path d="M100 52 L106 40 L100 4 L94 40 Z"/>
+    <path d="M100 52 L105 44 L100 22 L95 44 Z" transform="rotate(30 100 100)" opacity="0.7"/>
+    <path d="M100 52 L106 40 L100 10 L94 40 Z" transform="rotate(60 100 100)"/>
+    <path d="M100 52 L105 44 L100 26 L95 44 Z" transform="rotate(90 100 100)" opacity="0.7"/>
+    <path d="M100 52 L106 40 L100 4 L94 40 Z" transform="rotate(120 100 100)"/>
+    <path d="M100 52 L105 44 L100 22 L95 44 Z" transform="rotate(150 100 100)" opacity="0.7"/>
+    <path d="M100 52 L106 40 L100 12 L94 40 Z" transform="rotate(180 100 100)"/>
+    <path d="M100 52 L105 44 L100 26 L95 44 Z" transform="rotate(210 100 100)" opacity="0.7"/>
+    <path d="M100 52 L106 40 L100 4 L94 40 Z" transform="rotate(240 100 100)"/>
+    <path d="M100 52 L105 44 L100 22 L95 44 Z" transform="rotate(270 100 100)" opacity="0.7"/>
+    <path d="M100 52 L106 40 L100 10 L94 40 Z" transform="rotate(300 100 100)"/>
+    <path d="M100 52 L105 44 L100 26 L95 44 Z" transform="rotate(330 100 100)" opacity="0.7"/>
   </g>
+  <g fill="#fff8e6">
+    <circle cx="150" cy="34" r="2.2"/><circle cx="168" cy="72" r="1.6"/><circle cx="40" cy="60" r="2"/><circle cx="30" cy="124" r="1.6"/>
+    <circle cx="164" cy="146" r="2.2"/><circle cx="62" cy="168" r="1.6"/><circle cx="126" cy="176" r="2"/><circle cx="82" cy="24" r="1.4"/>
+  </g>
+  <!-- the badge -->
+  <circle cx="100" cy="100" r="47" fill="#0e0e11" stroke="#fff8e6" stroke-opacity="0.35" stroke-width="2"/>
+  <circle cx="100" cy="100" r="43" fill="none" stroke="#fff8e6" stroke-width="1" opacity="0.35"/>
+  <!-- the symbol: a halo pierced by a shard of light, two wing arcs -->
+  <circle cx="100" cy="100" r="20" fill="none" stroke="#fff8e6" stroke-width="3"/>
+  <path d="M100 66 L104 100 L100 134 L96 100 Z" fill="#fff8e6"/>
+  <path d="M70 108 Q 78 90 94 84" fill="none" stroke="#fff8e6" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M130 108 Q 122 90 106 84" fill="none" stroke="#fff8e6" stroke-width="2.5" stroke-linecap="round"/>
 </svg>

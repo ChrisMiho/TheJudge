@@ -14,8 +14,9 @@
  *                              the text to a cap, then scrolls; 300-char budget
  *                              built into the frame
  *   .detail-panel              the card-detail sheet / side panel, round 3
- *   .chat                      the conversation — today's chat feel, with the
- *                              cards of the question reachable from the panel
+ *   .chat                      the conversation — today's chat feel; the cards
+ *                              of the question live in the Cards strip only,
+ *                              never again inside a message (owner, round 4)
  */
 
 /* ---- flow header: title on the left, ways to attach a card on the right ---- */
@@ -57,7 +58,7 @@
 .stage .motif-wash {
   position: absolute; inset: -18% -10% auto -10%; height: 130%;
   background: var(--motif) center / 80% no-repeat;
-  opacity: 0.1; pointer-events: none;
+  opacity: 0.16; pointer-events: none;
   animation: stage-wash 30s ease-in-out infinite alternate;
 }
 @keyframes stage-wash { from { transform: translateX(-2%) scale(1); } to { transform: translateX(2%) scale(1.06); } }
@@ -202,11 +203,17 @@
   background: color-mix(in srgb, var(--surface-edge) 50%, transparent); border-radius: 2px; overflow: hidden;
 }
 .q-meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); transition: width 120ms ease; }
+/* the send row: its own line under the box on a phone; on desktop the
+   buttons sit in line with the box, hugging its bottom edge as it grows
+   (owner, round 4) */
+.q-row { display: grid; gap: 0.6rem; }
 .send-row { display: flex; gap: 0.5rem; }
 .send-row .btn.primary { width: 100%; font-weight: 600; letter-spacing: 0.01em; }
 @media (min-width: 720px) {
-  .send-row { justify-content: flex-end; }
-  .send-row .btn.primary { width: auto; min-width: 12rem; }
+  .q-row { display: flex; align-items: flex-end; }
+  .q-row .q-wrap { flex: 1 1 auto; min-width: 0; }
+  .send-row { flex: 0 0 auto; }
+  .send-row .btn.primary { width: auto; min-width: 11rem; }
 }
 
 /* ---- card detail panel — round 3: the art leads, the close sits in the
@@ -216,7 +223,8 @@
   position: relative; height: 190px; flex: 0 0 auto; overflow: hidden;
   background: var(--surface-ground);
 }
-@media (max-width: 767px) { .detail-panel .art { height: 160px; border-radius: 1.1rem 1.1rem 0 0; } }
+.detail-panel .art { border-radius: 1.1rem 1.1rem 0 0; }
+@media (max-width: 767px) { .detail-panel .art { height: 160px; } }
 .detail-panel .art img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; filter: saturate(1.1); }
 .detail-panel .art::after {
   content: ""; position: absolute; inset: 0;
@@ -297,8 +305,6 @@
 .msg.judge .who { display: block; font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-soft); margin-bottom: 0.2rem; }
 .msg.judge p { margin: 0 0 0.5rem; }
 .msg.judge .ref { color: var(--accent-soft); font-weight: 600; text-decoration: underline dotted; cursor: pointer; }
-.msg.judge .refs { display: flex; gap: 0.4rem; margin-top: 0.2rem; }
-.msg.judge .refs .thumb { width: 40px; height: 56px; border-radius: 4px; }
 .thinking { display: inline-flex; gap: 4px; align-items: center; height: 20px; }
 .thinking i { width: 6px; height: 6px; border-radius: 999px; background: var(--accent-soft); animation: think 1.2s ease-in-out infinite; }
 .thinking i:nth-child(2) { animation-delay: 0.15s; } .thinking i:nth-child(3) { animation-delay: 0.3s; }
