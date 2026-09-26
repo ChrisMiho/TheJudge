@@ -96,7 +96,8 @@ ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
 
 Every Round 3 note applied, plus the global ask ("more animations, more
 graphics, more personality within each color profile … magical, mythical,
-ethereal"). Renders are `renders/r3-*.png` (phone 390×844, desktop 1440×900).
+ethereal"). Renders are `renders/r3-*.png` (phone 390×844, desktop 1440×900) — the only
+renders in the folder; earlier rounds live in git history.
 **Rule** = the owner said it must hold; **Try** = shown for a verdict.
 
 The personality layer, shared by every page:
@@ -222,8 +223,10 @@ The personality layer, shared by every page:
 
 ### Round 2 (2026-09-24, from `OWNER-FEEDBACK.md`)
 
-All four flows reworked against the owner's written feedback. Renders of
-every state below live in `renders/` (phone 390×844, desktop 1440×900).
+All four flows reworked against the owner's written feedback. The Round 2
+renders (`qq-v2-*`, `idq-*`, `tb-*`, `menu-*`) were removed on 2026-09-25 so
+`renders/` holds only the current round; they remain in git history at
+commit `843dbd9`.
 **Rule** = the owner said it must hold; **Try** = shown for a verdict.
 
 Shared pieces added this round, so the flows read as one product:
