@@ -38,8 +38,8 @@
   .beam-wrap { display: grid; justify-items: center; gap: 0.15rem; min-width: 150px; }
   .beam { width: 96px; height: 34px; display: block; }
   .beam .bar { transform-origin: 48px 16px; transition: transform 420ms cubic-bezier(.2,.8,.2,1); }
-  .verdict { font-size: 0.78rem; font-weight: 600; text-align: center; line-height: 1.25; }
-  .verdict small { display: block; font-weight: 400; color: var(--text-muted); font-size: 0.68rem; }
+  /* the verdict is just the difference (owner, round 4): "Side A +$1.85", or "Even" */
+  .verdict { font-size: 0.86rem; font-weight: 700; text-align: center; line-height: 1.25; font-variant-numeric: tabular-nums; }
   .verdict[data-even="true"] { color: var(--accent-soft); }
   .tolerance { display: inline-flex; align-items: center; gap: 0.25rem; font-size: 0.64rem; color: var(--text-muted); margin-top: 0.15rem; white-space: nowrap; }
   .tolerance button { min-height: 22px; padding: 0 0.45rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); font-size: 0.64rem; cursor: pointer; }
@@ -48,7 +48,6 @@
     .scale { padding: 0.6rem 1.1rem; }
     .pan .total { font-size: 1.6rem; }
     .beam-wrap { min-width: 260px; }
-    .verdict small { display: inline; margin-left: 0.35rem; }
   }
 
   /* ---- sides: tabs on phone, two columns on desktop (REQ-204); each list scrolls ---- */
@@ -95,23 +94,23 @@
   .entry .money .unit { font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; }
   .entry .x { border: 0; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; min-width: 30px; min-height: 30px; margin-top: 0.1rem; }
   .entry .x:hover { color: var(--text-primary); }
-  .entry.cash .card { display: grid; place-items: center; background: color-mix(in srgb, var(--accent) 30%, var(--surface-ground)); color: var(--accent-soft); font-weight: 700; font-size: 1.05rem; box-shadow: none; cursor: default; font-family: var(--font-display); }
-  .entry.cash input { width: 5.5rem; min-height: 32px; padding: 0.2rem 0.5rem; }
   .entry-empty { padding: 1.2rem 1rem; text-align: center; font-size: 0.85rem; color: var(--text-muted); border: 1px dashed color-mix(in srgb, var(--accent-soft) 45%, transparent); border-radius: 0.75rem; }
-  .side-foot { display: flex; justify-content: space-between; align-items: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--surface-edge); padding-top: 0.45rem; flex: 0 0 auto; }
-  .side-foot b { color: var(--text-primary); font-size: 1rem; font-variant-numeric: tabular-nums; font-family: var(--font-display); }
-  .side-foot .icon-chip { min-height: 32px; font-size: 0.74rem; padding: 0 0.55rem; }
+  .side-foot { display: flex; justify-content: flex-end; align-items: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--surface-edge); padding-top: 0.45rem; flex: 0 0 auto; }
+  .side-foot b { color: var(--text-primary); font-size: 1rem; font-variant-numeric: tabular-nums; font-family: var(--font-display); margin-left: 0.4rem; }
 
   .actions { display: flex; gap: 0.4rem; justify-content: flex-end; flex: 0 0 auto; padding-bottom: 0.5rem; }
   .actions .icon-chip { min-height: 38px; font-size: 0.78rem; }
   @media (max-width: 719px) { .actions .icon-chip { flex: 1; justify-content: center; padding: 0 0.4rem; } }
 
-  /* ---- the printing picker: the card leads, one row per set, tap a price to pick finish + printing ---- */
+  /* ---- the printing picker: the card leads, one row per set, tap a price to pick finish + printing.
+     The filter only appears once a card has more than five printings. ---- */
   .pp-filter { margin: 0 0 0.2rem; }
-  .printing-list { display: grid; gap: 0.35rem; }
-  .printing-row { display: grid; grid-template-columns: 40px 1fr; gap: 0.6rem; align-items: center; padding: 0.45rem 0.5rem; border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 40%, transparent); }
+  .pp-filter[hidden] { display: none; }
+  .pp-lede { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+  .printing-list { display: grid; gap: 0.45rem; }
+  .printing-row { display: grid; grid-template-columns: 44px 1fr; gap: 0.7rem; align-items: center; padding: 0.55rem 0.6rem; border-radius: 0.8rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 40%, transparent); }
   .printing-row[data-current="true"] { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); background: color-mix(in srgb, var(--accent) 14%, var(--surface-panel)); }
-  .printing-row .thumb { width: 40px; height: 56px; border-radius: 3px; }
+  .printing-row .thumb { width: 44px; height: 61px; border-radius: 3px; }
   .printing-row .set { display: grid; gap: 0.3rem; min-width: 0; }
   .printing-row .set .n { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .printing-row .set .n small { display: block; font-weight: 500; color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.04em; margin-top: 0.1rem; }
@@ -179,8 +178,6 @@
       <div class="sides" id="sides"></div>
 
       <div class="actions">
-        <button class="icon-chip" id="swap"><span class="glyph">⇄</span> Swap sides</button>
-        <button class="icon-chip" id="copy"><span class="glyph">⎘</span> Copy summary</button>
         <button class="icon-chip" id="clear"><span class="glyph">↺</span> New trade</button>
       </div>
     </section>
@@ -196,9 +193,10 @@
   <div class="sheet-backdrop" id="pp-backdrop" data-open="false"></div>
   <aside class="drawer-panel detail-panel" id="pp-panel" data-open="false" aria-label="Choose a printing">
     <button class="icon-btn overlay-close" id="pp-close" aria-label="Close">✕</button>
-    <div class="art"><img id="pp-art" alt=""><div class="title"><h2 id="pp-title"></h2><span class="cost">Printings</span></div></div>
+    <div class="art"><img id="pp-art" alt=""><div class="title"><h2 id="pp-title"></h2><span class="cost" id="pp-cost"></span></div></div>
     <div class="body">
-      <input class="field pp-filter" id="pp-filter" placeholder="Filter by set name or code">
+      <p class="pp-lede">Tap a price to use that printing and finish.</p>
+      <input class="field pp-filter" id="pp-filter" placeholder="Filter by set name or code" hidden>
       <div class="printing-list" id="pp-list"></div>
     </div>
   </aside>
@@ -233,14 +231,13 @@
       entry('Lightning Bolt', 'a'), entry('Sol Ring', 'a', { qty: 2 }),
       entry('Llanowar Elves', 'b'), entry('Counterspell', 'b', { foil: true }), entry('Swords to Plowshares', 'b'), entry('Lightning Helix', 'b')
     ];
-    let cash = { a: 0, b: 0 };
     let names = { a: 'Side A', b: 'Side B' };
     let tolerance = 1;
     let activeSide = 'a';
     let openSearch = null;
 
     const unit = (e) => { const p = PRINTINGS[e.card.name][e.printing]; return e.foil ? p[4] : p[3]; };
-    const sideTotal = (s) => entries.filter((e) => e.side === s).reduce((t, e) => t + (unit(e) ?? 0) * e.qty, 0) + cash[s];
+    const sideTotal = (s) => entries.filter((e) => e.side === s).reduce((t, e) => t + (unit(e) ?? 0) * e.qty, 0);
 
     function render() {
       const ta = sideTotal('a'), tb = sideTotal('b'), gap = Math.abs(ta - tb);
@@ -252,7 +249,7 @@
       $('lbl-a').textContent = names.a; $('lbl-b').textContent = names.b; $('tab-a').textContent = names.a; $('tab-b').textContent = names.b;
       ['a', 'b'].forEach((s) => {
         const n = entries.filter((e) => e.side === s).reduce((t, e) => t + e.qty, 0);
-        $('count-' + s).textContent = n + (n === 1 ? ' card' : ' cards') + (cash[s] ? ' + cash' : '');
+        $('count-' + s).textContent = n + (n === 1 ? ' card' : ' cards');
         $('pan-' + s).dataset.heavy = !even && heavy === s;
       });
       // beam tilts toward the heavier side, capped at 9 degrees
@@ -260,11 +257,7 @@
       $('beam-bar').style.transform = 'rotate(' + tilt + 'deg)';
       const v = $('verdict');
       v.dataset.even = even;
-      v.innerHTML = ta + tb === 0
-        ? 'Add cards to both sides'
-        : even
-          ? 'Even trade' + (gap > 0 ? '<small>' + names[heavy] + ' ahead by ' + usd(gap) + ', inside $' + tolerance + '</small>' : '')
-          : names[heavy] + ' ahead by ' + usd(gap) + '<small>' + names[light] + ' adds ' + usd(gap) + ' to even it</small>';
+      v.textContent = ta + tb === 0 ? 'Add cards' : even ? 'Even' : names[heavy] + ' +' + usd(gap);
 
       $('sides').innerHTML = ['a', 'b'].map((s) => {
         const list = entries.filter((e) => e.side === s);
@@ -284,18 +277,14 @@
             '<span class="unit">' + (u === null ? 'no foil price' : usd(u) + ' × ' + e.qty) + '</span>' +
             '<button class="x" data-act="remove" aria-label="Remove ' + e.card.name + '">✕</button></div></div>';
         }).join('');
-        const cashRow = cash[s] > 0 || openSearch === 'cash-' + s
-          ? '<div class="entry cash" data-side="' + s + '"><div class="card">$</div><div class="info"><span class="nm">Cash</span><span class="printing">Added to even the trade</span></div>' +
-            '<div class="money"><input class="field cash-in" inputmode="decimal" value="' + (cash[s] || '') + '" placeholder="0.00" aria-label="Cash on ' + names[s] + '"><button class="x" data-act="cash-remove" aria-label="Remove cash">✕</button></div></div>'
-          : '';
         const searchOpen = openSearch === s;
         return '<section class="side" data-side="' + s + '" data-active="' + (s === activeSide) + '" aria-label="' + names[s] + '">' +
           '<div class="side-head"><input class="name" value="' + names[s] + '" aria-label="Rename ' + names[s] + '" data-side="' + s + '">' +
           '<div class="attach"><button class="icon-chip" data-act="search" aria-expanded="' + searchOpen + '"><span class="glyph">＋</span> Add card</button>' +
           '<button class="icon-chip"><span class="glyph">▣</span> Scan</button></div></div>' +
           '<div class="search-pop' + (searchOpen ? ' open' : '') + '"><div class="search-row"><span class="glyph">⌕</span><input class="field side-search" placeholder="Search to add a card to ' + names[s] + '" autocomplete="off"></div><div class="search-results"></div></div>' +
-          '<div class="entries">' + (rows || '<div class="entry-empty">No cards on this side yet — add one, or scan it.</div>') + cashRow + '</div>' +
-          '<div class="side-foot"><button class="icon-chip" data-act="cash"><span class="glyph">＋</span> Add cash</button><span>' + names[s] + ' total <b>' + usd(sideTotal(s)) + '</b></span></div>' +
+          '<div class="entries">' + (rows || '<div class="entry-empty">No cards on this side yet — add one, or scan it.</div>') + '</div>' +
+          '<div class="side-foot"><span>' + names[s] + ' total <b>' + usd(sideTotal(s)) + '</b></span></div>' +
           '</section>';
       }).join('');
       bindSides();
@@ -319,12 +308,6 @@
         const s = sec.dataset.side;
         sec.querySelector('.name').addEventListener('change', (ev) => { names[s] = ev.target.value.trim() || ('Side ' + s.toUpperCase()); render(); });
         sec.querySelector('[data-act="search"]').addEventListener('click', () => { openSearch = openSearch === s ? null : s; render(); if (openSearch === s) $('sides').querySelector('.side[data-side="' + s + '"] .side-search').focus(); });
-        sec.querySelector('[data-act="cash"]').addEventListener('click', () => { openSearch = 'cash-' + s; render(); const again = $('sides').querySelector('.side[data-side="' + s + '"] .cash-in'); if (again) again.focus(); });
-        const cashIn = sec.querySelector('.cash-in');
-        if (cashIn) {
-          cashIn.addEventListener('input', () => { cash[s] = Math.max(0, parseFloat(cashIn.value) || 0); const val = cashIn.value; render(); const again = $('sides').querySelector('.side[data-side="' + s + '"] .cash-in'); if (again) { again.value = val; again.focus(); again.setSelectionRange(val.length, val.length); } });
-          sec.querySelector('[data-act="cash-remove"]').addEventListener('click', () => { cash[s] = 0; openSearch = null; render(); });
-        }
         const input = sec.querySelector('.side-search'), results = sec.querySelector('.search-results');
         const draw = () => {
           const q = input.value.trim().toLowerCase();
@@ -356,8 +339,10 @@
     function openPrinting(e) {
       ppEntry = e;
       $('pp-title').textContent = e.card.name;
+      $('pp-cost').textContent = e.card.cost;
       $('pp-art').src = art(e.card.id);
       $('pp-filter').value = '';
+      $('pp-filter').hidden = PRINTINGS[e.card.name].length <= 5;
       drawPrintings();
       $('pp-backdrop').dataset.open = 'true'; $('pp-panel').dataset.open = 'true'; $('pp-panel').scrollTop = 0;
     }
@@ -377,13 +362,7 @@
       document.querySelectorAll('.side-tabs [role="tab"]').forEach((t) => t.setAttribute('aria-selected', t === tab));
       render();
     }));
-    $('swap').addEventListener('click', () => { entries.forEach((e) => { e.side = e.side === 'a' ? 'b' : 'a'; }); cash = { a: cash.b, b: cash.a }; names = { a: names.b, b: names.a }; render(); });
-    $('clear').addEventListener('click', () => { entries = []; cash = { a: 0, b: 0 }; openSearch = null; render(); });
-    $('copy').addEventListener('click', () => {
-      const line = (s) => names[s] + ' (' + usd(sideTotal(s)) + '): ' + entries.filter((e) => e.side === s).map((e) => e.qty + '× ' + e.card.name + (e.foil ? ' (foil)' : '')).join(', ') + (cash[s] ? ', cash ' + usd(cash[s]) : '');
-      const text = line('a') + '\n' + line('b') + '\n' + $('verdict').textContent;
-      (navigator.clipboard?.writeText(text) || Promise.resolve()).then(() => { $('copy').innerHTML = '<span class="glyph">✓</span> Copied'; setTimeout(() => { $('copy').innerHTML = '<span class="glyph">⎘</span> Copy summary'; }, 1200); });
-    });
+    $('clear').addEventListener('click', () => { entries = []; openSearch = null; render(); });
     render();
   </script>
 </body>
