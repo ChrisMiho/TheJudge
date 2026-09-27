@@ -29,14 +29,19 @@ compositions each page targets.
   switched by `[data-profile="white|blue|black|red|green|colorless"]`. The
   four `accent`/`accent-strong`/`accent-soft`/`accent-contrast` values in
   each profile are unchanged from `REQ-099`'s shipped values.
+- `motifs.js` — the one source of every colour's symbol (round 6): each
+  drawn in a 100×100 box, injected as an SVG sprite, with the letter the
+  pages wear today (`CHOSEN`) and the candidates the gallery shows.
 - `motifs/` — one original SVG per colour (`REQ-201`), each a badge (round
-  4): a dark disc holding the colour's own symbol, wrapped in a ring of its
-  element — White a halo pierced by light in scattering rays, Blue a spiral
-  in a sweeping wave, Black an eclipse in thorns with ink dripping below,
-  Red an ember burst in a swirl of flame, Green three leaves round a seed in
-  a leaf wreath, Colorless a hexagonal cog in an inscribed riveted band.
-  Drawn for this app; no official Wizards of the Coast mana glyph, icon
-  font, logo, or card art anywhere in this tree.
+  4): a dark disc holding the colour's chosen symbol, wrapped in a ring of
+  its element — White a sun rising over a horizon in scattering rays, Blue
+  a wave crest in a sweeping wave, Black a skull drawn in line among thorns
+  with ink dripping below, Red a flame in a swirl of fire, Green a seed
+  sprouting from the soil in a leaf wreath, Colorless a spiral inside a
+  ring, wrapped in curling tendrils. Each file embeds its symbol's paths
+  from `motifs.js`; when a pick changes, both change. Drawn for this app;
+  no official Wizards of the Coast mana glyph, icon font, logo, or card art
+  anywhere in this tree.
 - `shell.css` — the single source of the shared chrome skeleton (page shell,
   header/menu rail, brand mark slot, menu tray, theme orbs, overlay/drawer
   primitives) every page below imports rather than redeclaring.
@@ -45,10 +50,11 @@ compositions each page targets.
   plus the shared menu tray, chat and card-detail panel (round 3).
 - `ambience.css` + `ambience.js` — the per-colour personality layer behind
   every page: two sheets of drifting haze and a field of magical dust
-  (round 5), plus the colour's badge faint and drifting. The round-3
-  `ornaments/` are gone — corners are hairline brackets from `shell.css`.
-- `motif-gallery.html` — four candidate symbols per colour at orb size and
-  large, for the owner to pick from (round 5).
+  (round 5), plus the colour's badge faint and drifting, over a flat ground
+  (round 6). No corner decoration anywhere: the round-3 `ornaments/` and the
+  round-4 hairline brackets are both gone.
+- `motif-gallery.html` — the owner's picks and the round-6 candidates per
+  colour at orb size and large, for the owner to pick from.
 - `shared-chrome-menu.html` — the Menu, brand mark, Theme section, mock-mode
   banner, and overlay demos (feedback modal, history drawer, View Context
   overlay, card-detail popup).
@@ -98,11 +104,131 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
 
+### Round 6 (2026-09-27, from `OWNER-FEEDBACK.md` → "Round 6")
+
+Every Round 6 note applied. Renders are `renders/r6-*.png` (phone 390×844,
+desktop 1440×900) — the only renders in the folder; Round 5's live in git
+history at commit `4d0066c`.
+**Rule** = the owner said it must hold; **Try** = shown for a verdict.
+
+Global, on every page:
+
+- Rule: **White wears C (the rising sun), Blue wears C (the wave crest)** —
+  the owner's picks, now with their elemental rings and the full badge
+  treatment on every page.
+- Try: **fresh candidates for the four colours that missed**
+  (`motif-gallery.html`, `r6-motif-gallery-1440`), four each, ours not
+  Wizards': Black closer to the skull and bones (a skull drawn in line and
+  cracked · crossed bones · a small skull over crossed bones · a horned
+  skull); Red as flames (a three-tongued flame · one tall flame with embers
+  · a crown of fire · fire over the round-5 peak); Green as the sprouting
+  seed re-imagined (round 5's C · the seed half in the soil, sprouting · the
+  seed splitting round the shoot · one leaf and a tendril off the seed);
+  Colorless as a circle with a swirl, mystical and a little Eldrazi (a
+  spiral in a ring · three arms turning in a ring · a vortex with no outer
+  ring · a ring of tendrils with a swirl inside). The pages wear Black A,
+  Red A, Green B, Colorless A meanwhile; the gallery marks them. Pick one
+  letter per colour in Round 7.
+- Rule: **the badge stamps at each end of the banner are gone.** Try: in
+  their place each colour paints a faint **abstract design across the
+  band** that speaks its adjectives — White tall shafts of light, Blue
+  rings of energy radiating from each end, Black ink dripping from the
+  band's foot, Red one hot band low on the banner with embers, Green a fine
+  lattice of vines, Colorless inscribed rings turning at each end. All
+  built from the colour's tokens, so a custom Colorless colour carries in.
+- Rule: **the ground is flat** — one colour per profile, no gradient
+  (`tokens.css`). The haze is softer so the page reads flat with movement
+  in it; the drifting badge behind the page is fainter. Try: flat enough,
+  or should the haze go quieter still?
+- Rule: **Black moves like the other five** (`r6-global-1440-black`): its
+  haze was a near-black violet and read as still; now brighter violet
+  sheets drift and its ash carries far more violet sparks.
+- Rule: **Colorless keeps its custom colour** (`r6-global-1440-colorless-
+  custom`): with Colorless current, the Theme row shows a colour well and
+  "Reset to gray", as today's app. One hex applies to accent, accent-strong
+  and accent-soft alike; every token-driven surface, the banner design, the
+  haze and the dust follow it. (The symbol inside the badge stays its fixed
+  light grey — the SVG file's own ink.)
+- Rule: **no corner decoration anywhere** — the hairline brackets of rounds
+  4–5 are removed from every surface ("too sci-fi").
+
+#### Ask a Question — `quick-question.html` (`r6-qq-*`)
+
+- Rule: **Quick Question and In-Depth Question are one destination, "Ask a
+  Question."** This page is the front door; "Add in-depth details" under the
+  question box is the way deeper, and a line beside it says the attached
+  cards come along. Confirmed: cards added here carry into the in-depth
+  details (`in-depth-question.html?carry=…`), where each is placed in a zone
+  at the Cards step.
+- Rule: **up to 10 cards** may be attached (today's stack limit), not 5.
+- Rule: the **glow round the front card is quieter** — a plain drop shadow
+  and a whisper of the colour's light; the stage's own glow is dimmer too.
+- Rule: the **dots sit in a small dark pill with a "1 / 5" count** beside
+  them, so how many cards are attached is never lost against the dust.
+- Rule: **more room round the send button** inside the question box.
+- Rule: **the judge's reply sits in a solid bubble** of its own, panel-filled
+  with a small top-left corner, opposite your accent bubble — as a texting
+  app does (`r6-qq-390-chat`).
+
+#### Ask a Question · in-depth details — `in-depth-question.html` (`r6-idq-*`)
+
+- Rule: the title reads **"In-depth details"**; the Menu marks "Ask a
+  Question" as the current screen; the ‹ on step 1 goes back to the question
+  page.
+- Try: **the way forward is part of the panel** (`r6-idq-1440-1-game`,
+  `-3-cards`, `-4-context`): a lit bar along the foot of each step's plate
+  (and of the card shelf, and of the context sheet) that names the next step
+  — "Continue · next: which zones are in play", "Next card", "Finish context
+  · next: your question". The floating "Confirm game context" button is
+  gone.
+- Rule: **step 1 is one plate** — the players, then Turn phase and Active
+  player, under one "Game context" heading.
+- Rule: **every in-depth detail today's form carries is kept**: behind one
+  shared "More details for all players" toggle, each player has Poison ·
+  Energy · Experience, Commander damage from each other player, and Named
+  counters (with "Add a named counter"), as in the shipped app. Nothing was
+  deleted.
+- Rule: **a player's name carries through the whole flow** — the Active
+  player list, Owner and Cast by, the Targets picker, the other players'
+  "Commander damage from …" rows, the reviewed list, the frozen context and
+  the ruling all use the typed name (Chris and Sam in the renders).
+- Rule: **players cap at 8** (today's roster limit), not 6.
+- Rule: no corner decoration on any plate.
+
+#### Trade Balancer — `trade-balancer.html` (`r6-tb-1440`)
+
+- Rule: **the scale is a solid panel** — the same fill as the two side
+  panels, no motif wash, no glow behind the totals.
+- Rule: the **"even within $0 / $1 / $5" pills are gone**; the verdict is the
+  plain difference ("Side A +$1.85"), "Even" only when the totals match.
+- Rule: **cards stay in the order they were added**, and changing a
+  printing or finish edits the entry in place — it never moves. Verified in
+  the mockup: Side B's order is unchanged after Counterspell's printing is
+  switched.
+
+#### Shared chrome and Menu — `shell.css` + `flow.js` (`r6-menu-*`)
+
+- Rule: one **"Ask a Question"** row replaces Quick Question and In-Depth
+  Question; Question History sits right under it.
+- Rule: the question row's glyph is a **card silhouette**, not a lightning
+  bolt.
+- Rule: **Send feedback sits right at the foot of the list**, past a slim
+  hairline — no gap.
+- Rule: the **theme row is flat motif icons** — each colour's chosen symbol
+  in its own light, the current one in a thin ring; no spheres.
+- Rule: the **foot flair fades in from nothing** — no hard edge where the
+  badge met the tray.
+
+### Open for the owner's verdict (Round 6)
+
+- Global: a letter per colour for Black, Red, Green, Colorless; the banner
+  designs; is the flat ground flat enough; Black's motion.
+- In-depth details: the lit bar as the way forward.
+
 ### Round 5 (2026-09-26, from `OWNER-FEEDBACK.md` → "Round 5")
 
-Every Round 5 note applied. Renders are `renders/r5-*.png` (phone 390×844,
-desktop 1440×900) — the only renders in the folder; Round 4's live in git
-history at commit `525c0ae`.
+Every Round 5 note applied. The Round 5 renders (`r5-*`) were removed on
+2026-09-27; they remain in git history at commit `4d0066c`.
 **Rule** = the owner said it must hold; **Try** = shown for a verdict.
 
 Global, on every page:

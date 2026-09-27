@@ -36,12 +36,13 @@
       <a href="../before/menu-1440x900.png">menu-1440x900.png</a>. The header
       above and the tray behind ☰ are the ones every page shares (`shell.css`
       + `flow.js`): the tray slides in from the left like today's, the
-      destinations are a plain list with the current screen lit, Question
-      History sits right under the two question flows, Send feedback under a
-      divider, Theme as six orbs with no names or blurbs, and the colour's
-      flair fills the foot. The header above is the banner every page shares.
-      The candidate symbols for each colour are on
-      <a href="motif-gallery.html">motif-gallery.html</a>.
+      destinations are a plain list with the current screen lit — one
+      <b>Ask a Question</b> (round 6: Quick and In-Depth are one door), Question
+      History right under it, Send feedback at the foot of the list — Theme as
+      six flat motif icons (Colorless with its custom colour), and the colour's
+      flair fading in at the foot. The header above is the banner every page
+      shares, with an abstract design per colour. The candidate symbols for
+      each colour are on <a href="motif-gallery.html">motif-gallery.html</a>.
     </p>
 
     <div class="card-panel">
@@ -69,7 +70,7 @@
   <script src="flow.js"></script>
   <script>
     const { mountMenu, setProfile } = window.FLOW;
-    const setTray = mountMenu('Quick Question');
+    const setTray = mountMenu('Ask a Question');
     document.getElementById('open-menu-2').addEventListener('click', () => setTray(true));
 
     setProfile('blue');

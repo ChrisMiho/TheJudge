@@ -452,3 +452,70 @@ Your points:
 ## Ready to build?
 
 -
+
+# Round 7 — notes on the Round 6 renders
+
+Open `README.md` → "Round 6" for what changed and why; the renders are
+`renders/r6-*.png`. Write under each heading; a blank heading means "fine as
+shown". When done, open a new session and paste:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 6), then apply
+my Round 7 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+Answers to your Round 6 questions:
+
+- Yes — cards added on Ask a Question carry into the in-depth details; the
+  Cards step asks for each one's zone. The line beside "Add in-depth
+  details" now says so.
+- Yes — every in-depth player detail (poison, energy, experience, commander
+  damage, named counters) is in the mockup, behind "More details for all
+  players". Nothing was deleted.
+- Yes — a typed player name carries through every later step, the review,
+  the frozen context and the ruling.
+- Players cap at 8 now (today's limit). Cards on Ask a Question cap at 10
+  (today's stack limit).
+- Send feedback sat lower because it had its own list under a divider with
+  its own margins; it is now the last row of the one list.
+
+## Global (`r6-motif-gallery-1440`, `r6-global-1440-black`, `r6-global-1440-colorless-custom`)
+
+Tries: the fresh candidates; the banner designs; the flat ground; Black's
+motion.
+
+Your points:
+
+- Motif picks — one letter per colour (the gallery marks what the pages wear today):
+  Black: · Red: · Green: · Colorless:
+-
+
+## Ask a Question (`r6-qq-*`)
+
+Your points:
+
+-
+
+## In-depth details (`r6-idq-*`)
+
+Try: the lit bar at the foot of each panel as the way forward.
+
+Your points:
+
+-
+
+## Trade Balancer (`r6-tb-1440`)
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`r6-menu-*`)
+
+Your points:
+
+-
+
+## Ready to build?
+
+-
