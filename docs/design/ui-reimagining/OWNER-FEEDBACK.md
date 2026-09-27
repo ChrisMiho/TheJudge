@@ -382,8 +382,17 @@ rays; the banner header; the motif gallery.
 Your points:
 
 - Motif picks — one letter per colour (A is today's):
-  White: · Blue: · Black: · Red: · Green: · Colorless:
--
+  White:C · Blue:C · Black: None · Red: None · Green: C but i want tweaks · Colorless: None
+- I wrote none next to the ones I dont like
+- for black, while these tried to depict decay, i feel like they strayed too far from the original skull design. Id like to figure out how we can have someting that more closesly resembles the skull or bones
+- for fire, while i did like c for the volcano kind of vibe, none of them really feel like they embraced fire in the way i was hoping for, some version of flames i think would suffice without infringingin on the silouete 
+- for green, i really like C with the leaf, but I want to remimage the sprouting seed, can you give me some variations of it
+- for colorless, its a good attempt, but none of these really hit home for me, maybe a circle with some sort of swirl in it would be the right direction to try, im trying to think mystical and more than just artifacts, but eldrazi as well
+- the new banner looks better, but the swirl on each side just looks out of place, it would loook better without it
+- For graphics on the header, i think finding a way to do some sort of abstract design that embrace our adjectives would be a better direction for the header
+- the feedback im getting is the background needs to be more flat, remove the gradient
+- black is the only theme pallete that doenst have an animation in the background, it needs one
+- the colorless option has lost its ability to set its own custom color, the default setup for colorless looks good, but i want to ensure that that theme has the ability to set its own color and have that carry its way into the rest of the theme
 
 ## Quick Question (`r5-qq-*`)
 
@@ -391,7 +400,15 @@ Tries: Send inside the box; ↺ at the top right; "Add in-depth details".
 
 Your points:
 
--
+- the corner brackets that are on the edges of the images, but not the border of the component feel too sci-fi, remove them
+- add a little more padding around the send button
+- users do not like the glow around the cards in the carrousel, how can we reduce this so that its more subtle maybe
+- the dots in the carrousel can make the dots under the cards hard to see, its not always obvious how many cards are added
+- With the merging of in-depth and quick question, we also need to remove the number of cards restriction, as we should open it up to allow more, the max before was 10, so lets increase it to 10
+- I want to doubly confirm that cards added in quick question will be carried over to in-depth
+- Quick question and in-depth question options in the menu should be consolidated to one "Ask a Question" option
+- the background of the chat responses from TheJudge are currently transparent, this needs a solid background, like the message that is sent from me the user. this should simulate modern texting apps, where each peron has their own bouble cover around their messages
+
 
 ## In-Depth Question (`r5-idq-*`)
 
@@ -400,7 +417,14 @@ beside the form with the counter box.
 
 Your points:
 
--
+- Quick question and in-depth question options in the menu should be consolidated to one "Ask a Question" option
+- the confirm game context button that carries users from screen to screen looks out of place and not integrated into the flow, we need a new way to help users move forward without an ugly button sitting under the quetions
+- there are some corner decorations that i can see in some of the components, we can remove them, theyre too sci-fiy
+- on the first page of the in-depth, the total players and turn phase questions are in their own respective component, is it possible to have this all neat and tidy in its own singular component
+- When expanding on the players,  i see all of the other in-depth details arent in the mockup, i want to ensure those details arent being deleted by accident
+- I want to confirm that adding player names should carry through the UI
+- player count caps at 6 in the mock, i thought this shouldve been 8?
+
 
 ## Trade Balancer (`r5-tb-1440`)
 
@@ -408,7 +432,9 @@ Tries: New trade top right on desktop.
 
 Your points:
 
--
+- The background of the component that shows the price diff + scale utilizes the same image from the main background, i dont like this, i think this component should have a more solid colored background like the ones of the components that host all of the cards for the trade
+- the "even with" options are a nice idea, but they can be deleted, lets simplify this to just a diff between the two values
+- the order of the cards listed in the trade balancer should remain in the order that they were added, and when a print is changed, that order again needs to be retained
 
 ## Shared chrome and Menu (`r5-menu-*`)
 
@@ -416,7 +442,12 @@ Tries: Question History under In-Depth; the foot flair.
 
 Your points:
 
--
+- Quick question and in-depth question options in the menu should be consolidated to one "Ask a Question" option
+- the graphic at the bottom feels like a good start to utilizing that space, but there is a sharp cutoff at the top of the image that doesnt make it feel integrated into the UI
+- the icon next to the Question option is currently a lightning bolt, can we utilize a card sillouete instead
+- Send feedback is much lower than the other options, is there a reason for that? it should just be at the bottom
+- the orbs for the color selection should just be changed to flat images, levergaing the motifs as the icons
+
 
 ## Ready to build?
 
