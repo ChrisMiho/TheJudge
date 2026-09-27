@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>In-Depth Question — direction 1</title>
+<title>Ask a Question · in-depth details — direction 1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="tokens.css">
@@ -49,11 +49,23 @@
 
   .step-panel { display: none; }
   .step-panel.active { display: grid; gap: 0.8rem; animation: msg-in 300ms ease both; }
-  /* one Continue per step (round 5: Back is the ‹ arrow beside the title) — full width on a phone, right-aligned on desktop */
-  .step-nav { display: flex; gap: 0.5rem; justify-content: flex-end; }
-  .step-nav .btn.primary { font-weight: 600; width: 100%; }
-  @media (min-width: 720px) { .step-nav .btn.primary { width: auto; min-width: 14rem; } }
+  /* round 6: the way forward is part of the panel — a lit bar along the plate's
+     foot that names the next step, not a button floating under the questions
+     (owner: "out of place and not integrated into the flow") */
+  .plate-next {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+    width: calc(100% + 1.8rem); margin: 0.9rem -0.9rem -0.9rem; padding: 0.7rem 1rem; min-height: 52px;
+    border: 0; border-top: 1px solid var(--surface-edge); border-radius: 0 0 1rem 1rem;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 24%, transparent), color-mix(in srgb, var(--accent) 6%, transparent));
+    color: var(--text-primary); font-weight: 600; font-size: 0.92rem; cursor: pointer; text-align: left;
+    transition: background 150ms ease;
+  }
+  .plate-next:hover, .plate-next:focus-visible { background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 38%, transparent), color-mix(in srgb, var(--accent) 12%, transparent)); }
+  .plate-next small { font-weight: 500; color: var(--text-muted); font-size: 0.78rem; margin-left: 0.45rem; }
+  .plate-next .chev { color: var(--accent-soft); font-size: 1.3rem; line-height: 1; }
+  .stage .plate-next { margin: 0.4rem -0.5rem -0.6rem; width: calc(100% + 1rem); border-radius: 0 0 1.1rem 1.1rem; }
   .flow-head .lead { display: flex; align-items: center; gap: 0.6rem; }
+  .flow-head .lead .icon-round { text-decoration: none; }
   .carry-note { margin: -0.2rem 0 0; font-size: 0.8rem; color: var(--text-muted); }
   .carry-note b { color: var(--accent-soft); }
 
@@ -68,7 +80,7 @@
   .plate h2 { margin: 0 0 0.6rem; font-family: var(--font-body); font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
   .plate .lede { margin: -0.3rem 0 0.7rem; font-size: 0.82rem; color: var(--text-muted); }
 
-  /* step 1 — game context */
+  /* step 1 — game context: players, then the turn, one plate (round 6) */
   .players-row { display: flex; align-items: center; gap: 0.5rem; }
   .players-row .expander { flex: 1; display: flex; align-items: center; gap: 0.6rem; text-align: left; }
   .players-row .expander .chev { color: var(--accent-soft); transition: transform 150ms ease; }
@@ -77,10 +89,27 @@
   .players-row .stepper.add { color: var(--accent-soft); border-color: var(--accent); }
   .roster { display: none; gap: 0.5rem; margin-top: 0.6rem; }
   .roster[data-open="true"] { display: grid; }
+  .roster .player-card { display: grid; gap: 0.5rem; padding: 0.55rem 0.6rem; border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 40%, transparent); }
   .roster .player { display: grid; grid-template-columns: 1fr 5.5rem; gap: 0.5rem; align-items: end; }
   .roster label { display: grid; gap: 0.25rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
   .roster .life { text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
-  .paired { display: grid; gap: 0.7rem; }
+  /* the in-depth details every player carries today (poison · energy · experience,
+     commander damage from each other player, named counters) — kept, behind one
+     shared "More details" toggle, as in the shipped app (round 6) */
+  .roster-more { display: none; justify-content: flex-start; margin-top: 0.4rem; }
+  .roster[data-open="true"] + .roster-more { display: flex; }
+  .roster-more .link, .extras .link { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.76rem; cursor: pointer; min-height: 32px; padding: 0 0.2rem; }
+  .extras { display: none; gap: 0.55rem; padding-top: 0.5rem; border-top: 1px solid var(--surface-edge); }
+  .roster[data-more="true"] .extras { display: grid; }
+  .extras .lbl { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+  .extras .counters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+  .extras .counters label { gap: 0.2rem; }
+  .extras .field { min-height: 36px; font-size: 0.84rem; padding: 0.3rem 0.5rem; }
+  .extras select.field { padding-right: 1.6rem; background-position: calc(100% - 0.9rem) 50%, calc(100% - 0.6rem) 50%; }
+  .extras .cmd-row, .extras .named-row { display: grid; grid-template-columns: 1fr 5rem; gap: 0.4rem; align-items: center; font-size: 0.82rem; }
+  .extras .cmd-row span { color: var(--text-muted); }
+  .extras .named-row .field.amt { text-align: center; font-variant-numeric: tabular-nums; }
+  .paired { display: grid; gap: 0.7rem; margin-top: 0.9rem; }
   @media (min-width: 640px) { .paired { grid-template-columns: 1fr 1fr; } }
   .paired label { display: grid; gap: 0.3rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
   select.field { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--accent-soft) 50%), linear-gradient(135deg, var(--accent-soft) 50%, transparent 50%);
@@ -148,7 +177,7 @@
   /* the sheet: the card's art at the left, the form beside it — no dead space
      under the art on desktop, nothing stretched wider than it needs (round 5) */
   #wizard-plate { display: grid; grid-template-columns: 96px 1fr; grid-template-areas: "art head" "form form" "nav nav"; gap: 0.7rem 0.8rem; align-items: start; }
-  @media (min-width: 720px) { #wizard-plate { grid-template-columns: 210px 1fr; grid-template-areas: "art head" "art form" "art nav"; gap: 0.7rem 1.1rem; } }
+  @media (min-width: 720px) { #wizard-plate { grid-template-columns: 210px 1fr; grid-template-areas: "art head" "art form" "nav nav"; gap: 0.7rem 1.1rem; } }
   .ctx-art { grid-area: art; display: grid; gap: 0.5rem; justify-items: center; }
   .ctx-art .hero { position: relative; width: 96px; height: calc(96px * 88 / 63); border-radius: 6px; overflow: visible; --ring-w: 1px; cursor: pointer;
     box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--accent) 80%, #000), 0 0 30px -8px color-mix(in srgb, var(--accent) 55%, transparent); }
@@ -190,9 +219,8 @@
   .pill button:hover { color: var(--text-primary); background: color-mix(in srgb, var(--accent) 30%, transparent); }
   .targets input.field[hidden] { display: none; }
   .ctx-form textarea.field { min-height: 42px; max-height: 96px; padding: 0.55rem 0.75rem; resize: none; overflow-y: auto; }
-  .ctx-nav { display: flex; gap: 0.5rem; align-items: center; justify-content: flex-end; }
-  .ctx-nav .btn.primary { font-weight: 600; width: 100%; }
-  @media (min-width: 720px) { .ctx-nav .btn.primary { width: auto; min-width: 14rem; } }
+  /* the card sheet moves on the same way: its foot is the bar */
+  .ctx-nav.plate-next { margin-top: 0.2rem; }
 
   /* the review: every card and what was said about it, scrollable so it always fits */
   .review { display: grid; gap: 0.35rem; max-height: 34dvh; overflow-y: auto; padding-right: 2px; }
@@ -215,7 +243,6 @@
   .zone-chips span.none { color: var(--text-muted); border-style: dashed; }
   .composer .q-lbl { margin: -0.15rem 0 -0.35rem 0.2rem; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: flex; gap: 0.5rem; flex-wrap: wrap; }
   .composer .q-lbl small { text-transform: none; letter-spacing: 0; font-size: 0.7rem; }
-  .plate.ornate::before, .plate.ornate::after, .plate.ornate .orn { opacity: 0.55; }
 </style>
 </head>
 <body data-tray-open="false">
@@ -229,7 +256,7 @@
   <main class="page-content">
     <section class="idq" id="flow">
       <div class="flow-head">
-        <div class="lead"><button class="icon-round" id="step-back" aria-label="Back" title="Back" hidden>‹</button><h1>In-Depth Question</h1></div>
+        <div class="lead"><button class="icon-round" id="step-back" aria-label="Back" title="Back">‹</button><h1>In-depth details</h1></div>
         <div class="attach" id="attach" hidden>
           <button class="icon-chip" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
           <button class="icon-chip" id="scan-btn"><span class="glyph">▣</span> Scan</button>
@@ -245,19 +272,18 @@
         <button data-step="context"><span class="node">4</span>Context</button>
       </nav>
 
-      <!-- 1 · Game context -->
+      <!-- 1 · Game context: players and the turn, one plate (round 6) -->
       <section class="step-panel active" id="step-game" aria-label="Game context">
-        <div class="plate ornate small">
-          <h2>Players in game</h2>
-          <p class="lede">Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.</p>
+        <div class="plate">
+          <h2>Game context</h2>
+          <p class="lede">Who is playing, and where the turn is. Tap the arrow to name the players and set life — 2 players start at 20, 3+ at 40.</p>
           <div class="players-row">
             <button class="btn expander" id="roster-toggle" aria-expanded="false"><span class="chev">▶</span><strong id="player-count">2 players</strong></button>
             <button class="btn stepper" id="player-minus" aria-label="Remove last player">−</button>
             <button class="btn stepper add" id="player-plus" aria-label="Add player">+</button>
           </div>
-          <div class="roster" id="roster" data-open="false"></div>
-        </div>
-        <div class="plate">
+          <div class="roster" id="roster" data-open="false" data-more="false"></div>
+          <div class="roster-more"><button class="link" id="roster-more" type="button" aria-expanded="false">More details for all players ▾</button></div>
           <div class="paired">
             <label>Turn phase
               <select class="field" id="turn-phase">
@@ -267,24 +293,20 @@
               </select>
             </label>
             <label>Active player
-              <select class="field" id="active-player"><option selected>Player 1</option><option>Player 2</option></select>
+              <select class="field" id="active-player"></select>
             </label>
           </div>
-        </div>
-        <div class="step-nav">
-          <button class="btn primary" data-next="zones">Confirm game context</button>
+          <button class="plate-next" type="button" data-next="zones"><span>Continue<small>next: which zones are in play</small></span><span class="chev">›</span></button>
         </div>
       </section>
 
       <!-- 2 · Zone confirmation -->
       <section class="step-panel" id="step-zones" aria-label="Zone confirmation">
-        <div class="plate ornate small">
+        <div class="plate">
           <h2>Zones in play</h2>
           <p class="lede">Select every zone your question touches.</p>
           <div class="zone-grid" id="zone-grid"></div>
-        </div>
-        <div class="step-nav">
-          <button class="btn primary" data-next="cards">Continue</button>
+          <button class="plate-next" type="button" data-next="cards"><span>Continue<small>next: the cards in each zone</small></span><span class="chev">›</span></button>
         </div>
       </section>
 
@@ -299,20 +321,17 @@
           </div>
           <div class="search-results" id="search-results"></div>
         </div>
-        <div class="stage ornate" id="shelf-stage">
-          <i class="orn tr"></i><i class="orn bl"></i>
+        <div class="stage" id="shelf-stage">
           <div class="motif-wash" aria-hidden="true"></div>
           <div class="shelf" id="shelf"></div>
+          <button class="plate-next" type="button" data-next="context"><span>Continue<small>next: a few details per card</small></span><span class="chev">›</span></button>
         </div>
         <p class="flow-hint" id="shelf-hint" hidden></p>
-        <div class="step-nav">
-          <button class="btn primary" data-next="context">Continue</button>
-        </div>
       </section>
 
       <!-- 4 · Context, card by card -->
       <section class="step-panel" id="step-context" aria-label="Card context">
-        <div class="plate ornate small" id="wizard-plate">
+        <div class="plate" id="wizard-plate">
           <div class="ctx-art"><div class="card hero" id="ctx-hero"></div></div>
           <div class="ctx-head">
             <div class="eyebrow"><span id="wiz-zone">Stack</span><button class="link" id="skip-review" type="button">Skip to review</button></div>
@@ -334,12 +353,10 @@
             </div>
             <label><span class="t">Notes<small>optional</small></span><textarea class="field" id="ctx-notes" rows="1" placeholder="Anything else about this card"></textarea></label>
           </div>
-          <div class="ctx-nav">
-            <button class="btn primary" id="wiz-next">Next card</button>
-          </div>
+          <button class="plate-next ctx-nav" type="button" id="wiz-next"><span>Next card</span><span class="chev">›</span></button>
         </div>
 
-        <div class="plate ornate small" id="review-plate" hidden>
+        <div class="plate" id="review-plate" hidden>
           <div class="review-head"><h2>Context reviewed · <span id="review-count"></span></h2><button class="link" id="review-toggle" type="button" aria-expanded="true">Collapse ▴</button></div>
           <p class="review-sum" id="review-sum" hidden></p>
           <div class="review" id="review" data-collapsed="false"></div>
@@ -360,7 +377,7 @@
 
     <!-- the ruling: the chat takes the whole panel; the rail is gone -->
     <section class="chat" id="chat" hidden aria-label="Conversation">
-      <div class="chat-head"><h1>In-Depth Question</h1><div class="tools"><button class="icon-chip" id="view-context"><span class="glyph">◈</span> View context</button><button class="icon-round" id="start-over" aria-label="Start over" title="Start over">↺</button></div></div>
+      <div class="chat-head"><h1>Ask a Question</h1><div class="tools"><button class="icon-chip" id="view-context"><span class="glyph">◈</span> View context</button><button class="icon-round" id="start-over" aria-label="Start over" title="Start over">↺</button></div></div>
       <div class="chat-cards" id="chat-cards"></div>
       <div class="thread" id="thread"></div>
       <div class="followup">
@@ -401,7 +418,7 @@
   <script src="flow.js"></script>
   <script>
     const { img, library, byName, cardMarkup, openDetail, bindComposer, autoGrow, applyRing, thumb, chatMarkup, bindRefs, mountMenu } = window.FLOW;
-    mountMenu('In-Depth Question');
+    mountMenu('Ask a Question');
     const $ = (s) => document.getElementById(s);
 
     // ---- demo state ----
@@ -420,15 +437,24 @@
       selectedZones = new Set(['Stack', 'Battlefield']);
       for (const z of Object.keys(zoneCards)) zoneCards[z] = [];
       $('carry-note').hidden = false;
-      $('carry-note').innerHTML = '<b>' + carried.length + ' card' + (carried.length === 1 ? '' : 's') + '</b> came along from Quick Question — set the game up, then place each in its zone at step 3.';
+      $('carry-note').innerHTML = '<b>' + carried.length + ' card' + (carried.length === 1 ? '' : 's') + '</b> came along with your question — set the game up, then place each in its zone at step 3.';
     }
+    // players (round 6): up to 8, as today's roster (MAX_PLAYER_ROSTER_SIZE); a name typed
+    // here is the name every later step, the review and the ruling use for that player
+    const MAX_PLAYERS = 8;
     let players = 2;
-    const playerNames = () => Array.from({ length: players }, (_, i) => 'Player ' + (i + 1));
+    const startLife = () => (players >= 3 ? 40 : 20);
+    const roster = Array.from({ length: MAX_PLAYERS }, () => ({ name: '', life: null, poison: '', energy: '', experience: '', cmd: {}, counters: [] }));
+    const playerNames = () => roster.slice(0, players).map((p, i) => p.name.trim() || 'Player ' + (i + 1));
+    const nameOf = (i) => playerNames()[i] || 'Player ' + (i + 1);
+    const activeIdx = () => Number($('active-player').value) || 0;
     const STEPS = ['game', 'zones', 'cards', 'context'];
+    const opt = (v, label, sel) => '<option value="' + v + '"' + (sel ? ' selected' : '') + '>' + label + '</option>';
     // per-card context: keyed by card name (demo); the Bolt arrives targeting the Elves
     const ctx = {};
     // targets: [{k:'none'} | {k:'board'} | {k:'player', p} | {k:'all'} | {k:'card', name} | {k:'other', text}]
-    const ctxOf = (c, zone) => ctx[c.name] || (ctx[c.name] = { owner: $('active-player').value, caster: 'Player 1', mana: c.mv, targets: [], notes: '', zone });
+    // owner / caster / player targets are stored as player indexes, so a renamed player renames everywhere
+    const ctxOf = (c, zone) => ctx[c.name] || (ctx[c.name] = { owner: activeIdx(), caster: 0, mana: c.mv, targets: [], notes: '', zone });
     const hasOwner = (zone) => zone !== 'Stack';           // today's hasOwnerControl(): every zone but the Stack
     const hasMana = (zone) => zone === 'Stack' || zone === 'Battlefield';
 
@@ -443,7 +469,8 @@
       });
       $('rail-fill').style.width = (i / 3 * 75) + '%';
       $('attach').hidden = step !== 'cards';
-      $('step-back').hidden = i === 0;
+      // on step 1 the ‹ goes back to the question itself (one flow, round 6)
+      $('step-back').title = i === 0 ? 'Back to your question' : 'Back';
       if (step === 'cards') renderShelf();
       if (step === 'context') { wiz = 0; renderWizard(); }
       window.scrollTo({ top: 0 });
@@ -453,25 +480,66 @@
     $('step-back').addEventListener('click', () => {
       const cur = STEPS.find((s) => $('step-' + s).classList.contains('active'));
       if (cur === 'context') { if (wiz > 0) { wiz -= 1; renderWizard(); } else goTo('cards'); }
+      else if (cur === 'game') location.href = 'quick-question.html';
       else goTo(STEPS[Math.max(0, STEPS.indexOf(cur) - 1)]);
     });
     document.querySelectorAll('[data-next]').forEach((b) => b.addEventListener('click', () => goTo(b.dataset.next)));
 
-    // ---- 1 · players ----
+    // ---- 1 · players: name + life per player, and behind "More details" the
+    // counters today's form carries (poison · energy · experience, commander
+    // damage from each other player, named counters) ----
+    const scalarMax = { poison: 11, energy: 30, experience: 30 };
+    function renderActive() {
+      const cur = activeIdx();
+      $('active-player').innerHTML = playerNames().map((p, i) => opt(i, p, i === cur)).join('');
+    }
+    // a renamed player is renamed in every other player's "Commander damage from …" row at once
+    function renderCmdNames() { $('roster').querySelectorAll('.cmd-row').forEach((row) => { row.querySelector('span').textContent = 'From ' + nameOf(Number(row.querySelector('input').dataset.from)); }); }
     function renderRoster() {
       $('player-count').textContent = players + ' players';
-      const start = players >= 3 ? 40 : 20;
-      $('roster').innerHTML = playerNames().map((p, i) =>
-        '<div class="player"><label>' + p + ' name<input class="field" placeholder="' + p + '"></label>' +
-        '<label>Life<input class="field life" value="' + start + '"></label></div>').join('');
-      $('active-player').innerHTML = playerNames().map((p) => '<option>' + p + '</option>').join('');
+      $('player-plus').disabled = players >= MAX_PLAYERS;
+      $('player-minus').disabled = players <= 2;
+      $('roster').innerHTML = roster.slice(0, players).map((r, i) => {
+        const others = playerNames().map((n, j) => [n, j]).filter(([, j]) => j !== i);
+        return '<div class="player-card" data-i="' + i + '">' +
+          '<div class="player"><label>Player ' + (i + 1) + ' name<input class="field name" data-f="name" placeholder="Player ' + (i + 1) + '" value="' + r.name.replace(/"/g, '&quot;') + '"></label>' +
+          '<label>Life<input class="field life" data-f="life" inputmode="numeric" value="' + (r.life ?? startLife()) + '"></label></div>' +
+          '<div class="extras">' +
+            '<div class="counters">' + ['poison', 'energy', 'experience'].map((f) => '<label>' + f + '<select class="field" data-f="' + f + '">' + opt('', 'Unset', r[f] === '') + Array.from({ length: scalarMax[f] }, (_, n) => opt(n, n, String(r[f]) === String(n))).join('') + '</select></label>').join('') + '</div>' +
+            '<span class="lbl">Commander damage</span>' + others.map(([n, j]) => '<div class="cmd-row"><span>From ' + n + '</span><input class="field amt" data-f="cmd" data-from="' + j + '" inputmode="numeric" placeholder="0" value="' + (r.cmd[j] || '') + '"></div>').join('') +
+            '<span class="lbl">Named counters</span>' + r.counters.map((c, k) => '<div class="named-row"><input class="field" data-f="cname" data-k="' + k + '" placeholder="Counter name" value="' + c.name.replace(/"/g, '&quot;') + '"><input class="field amt" data-f="camt" data-k="' + k + '" inputmode="numeric" placeholder="0" value="' + c.amount + '"></div>').join('') +
+            '<div><button class="link" type="button" data-f="addc">＋ Add a named counter</button></div>' +
+          '</div></div>';
+      }).join('');
+      $('roster').querySelectorAll('.player-card').forEach((card) => {
+        const r = roster[Number(card.dataset.i)];
+        card.querySelectorAll('[data-f]').forEach((el) => {
+          const f = el.dataset.f;
+          if (f === 'addc') { el.addEventListener('click', () => { r.counters.push({ name: '', amount: '' }); renderRoster(); }); return; }
+          el.addEventListener('input', () => {
+            if (f === 'name') { r.name = el.value; renderActive(); renderCmdNames(); }
+            else if (f === 'life') r.life = el.value;
+            else if (f === 'cmd') r.cmd[el.dataset.from] = el.value;
+            else if (f === 'cname') r.counters[Number(el.dataset.k)].name = el.value;
+            else if (f === 'camt') r.counters[Number(el.dataset.k)].amount = el.value;
+            else r[f] = el.value;
+          });
+        });
+      });
+      renderActive();
     }
     $('roster-toggle').addEventListener('click', () => {
       const open = $('roster').dataset.open !== 'true';
       $('roster').dataset.open = open; $('roster-toggle').setAttribute('aria-expanded', open);
     });
-    $('player-plus').addEventListener('click', () => { players = Math.min(players + 1, 6); renderRoster(); });
-    $('player-minus').addEventListener('click', () => { players = Math.max(players - 1, 2); renderRoster(); });
+    $('roster-more').addEventListener('click', () => {
+      const more = $('roster').dataset.more !== 'true';
+      $('roster').dataset.more = more; $('roster-more').setAttribute('aria-expanded', more);
+      $('roster-more').textContent = more ? 'Hide details for all players ▴' : 'More details for all players ▾';
+    });
+    // adding or removing a player re-seats the default life (20 for two, 40 for three or more) on anyone who has not edited theirs
+    $('player-plus').addEventListener('click', () => { if (players >= MAX_PLAYERS) return; players += 1; renderRoster(); });
+    $('player-minus').addEventListener('click', () => { if (players <= 2) return; players -= 1; renderRoster(); });
     renderRoster();
 
     // ---- 2 · zones ----
@@ -551,7 +619,6 @@
     // ---- 4 · context, card by card ----
     let wiz = 0;
     function queue() { return ZONES.filter((z) => selectedZones.has(z)).flatMap((z) => (zoneCards[z] || []).map((c) => ({ zone: z, card: c }))); }
-    const opt = (v, label, sel) => '<option value="' + v + '"' + (sel ? ' selected' : '') + '>' + label + '</option>';
     let reviewCollapsed = false;
     function renderWizard() {
       const q = queue();
@@ -573,8 +640,8 @@
         $('row-owner').hidden = !hasOwner(zone);
         $('row-caster').hidden = zone !== 'Stack';
         $('row-mana').hidden = !hasMana(zone);
-        $('sel-owner').innerHTML = playerNames().map((p) => opt(p, p, c.owner === p)).join('');
-        $('sel-caster').innerHTML = playerNames().map((p) => opt(p, p, c.caster === p)).join('');
+        $('sel-owner').innerHTML = playerNames().map((p, i) => opt(i, p, c.owner === i)).join('');
+        $('sel-caster').innerHTML = playerNames().map((p, i) => opt(i, p, c.caster === i)).join('');
         $('mana-in').value = c.mana;
         $('mana-note').textContent = c.mana === card.mv ? 'printed ' + card.cost : 'printed ' + card.cost + ' · ' + (c.mana > card.mv ? '+' + (c.mana - card.mv) : c.mana - card.mv);
 
@@ -584,12 +651,12 @@
         $('target-list').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { c.targets.splice(Number(b.dataset.i), 1); renderWizard(); }));
         $('sel-target').innerHTML = opt('', c.targets.length ? 'Add another target…' : 'Choose a target…') +
           opt('none', 'No target') + (zone === 'Battlefield' || zone === 'Command Zone' ? opt('board', 'Just on the board') : '') +
-          '<optgroup label="Players">' + playerNames().map((p) => opt('player:' + p, p)).join('') + opt('all', 'All players') + '</optgroup>' +
+          '<optgroup label="Players">' + playerNames().map((p, i) => opt('player:' + i, p)).join('') + opt('all', 'All players') + '</optgroup>' +
           (others.length ? '<optgroup label="Cards in context">' + others.map((e) => opt('card:' + e.card.name, e.card.name + ' · ' + e.zone)).join('') + '</optgroup>' : '') +
           opt('other', 'Something else…');
         $('target-other').hidden = true;
         $('ctx-notes').value = c.notes; autoGrow($('ctx-notes'));
-        $('wiz-next').textContent = wiz < q.length - 1 ? 'Next card' : 'Finish context';
+        $('wiz-next').innerHTML = wizLabel(wiz >= q.length - 1);
       } else {
         $('review-count').textContent = q.length + (q.length === 1 ? ' card' : ' cards');
         $('review').innerHTML = q.map((e, i) => {
@@ -614,20 +681,20 @@
       if (t.k === 'none') return 'No target';
       if (t.k === 'board') return 'Just on the board';
       if (t.k === 'all') return 'All players';
-      if (t.k === 'player') return t.p;
+      if (t.k === 'player') return nameOf(t.p);
       if (t.k === 'card') { const c = byName(t.name); return (c ? thumb(c) : '') + t.name; }
       return t.text;
     }
     function current() { const e = queue()[wiz]; return { e, c: ctxOf(e.card, e.zone) }; }
-    $('sel-owner').addEventListener('change', (ev) => { current().c.owner = ev.target.value; });
-    $('sel-caster').addEventListener('change', (ev) => { current().c.caster = ev.target.value; });
+    $('sel-owner').addEventListener('change', (ev) => { current().c.owner = Number(ev.target.value); });
+    $('sel-caster').addEventListener('change', (ev) => { current().c.caster = Number(ev.target.value); });
     $('mana-in').addEventListener('input', (ev) => { const { e, c } = current(); const n = parseInt(ev.target.value, 10); c.mana = Number.isFinite(n) ? n : e.card.mv; $('mana-note').textContent = c.mana === e.card.mv ? 'printed ' + e.card.cost : 'printed ' + e.card.cost + ' · ' + (c.mana > e.card.mv ? '+' + (c.mana - e.card.mv) : c.mana - e.card.mv); });
     $('sel-target').addEventListener('change', (ev) => {
       const v = ev.target.value; const { c } = current();
       if (!v) return;
       if (v === 'other') { $('target-other').hidden = false; $('target-other').focus(); return; }
       const t = v === 'none' ? { k: 'none' } : v === 'board' ? { k: 'board' } : v === 'all' ? { k: 'all' }
-        : v.startsWith('player:') ? { k: 'player', p: v.slice(7) } : { k: 'card', name: v.slice(5) };
+        : v.startsWith('player:') ? { k: 'player', p: Number(v.slice(7)) } : { k: 'card', name: v.slice(5) };
       if (t.k === 'none' || t.k === 'board') c.targets = [t]; else { c.targets = c.targets.filter((x) => x.k !== 'none' && x.k !== 'board'); c.targets.push(t); }
       renderWizard();
     });
@@ -640,7 +707,7 @@
     $('review-toggle').addEventListener('click', () => { reviewCollapsed = !reviewCollapsed; renderWizard(); });
     function summarize(e, c) {
       const bits = [];
-      if (e.zone === 'Stack') bits.push('cast by ' + c.caster); else bits.push(c.owner + "'s");
+      if (e.zone === 'Stack') bits.push('cast by ' + nameOf(c.caster)); else bits.push(nameOf(c.owner) + "'s");
       if (hasMana(e.zone) && c.mana !== e.card.mv) bits.push(c.mana + ' mana spent');
       const names = c.targets.map((t) => t.k === 'card' ? t.name : targetLabel(t));
       if (c.targets.length === 1 && (c.targets[0].k === 'none' || c.targets[0].k === 'board')) bits.push(names[0].toLowerCase());
@@ -649,6 +716,8 @@
       return bits.join(' · ');
     }
     $('wiz-next').addEventListener('click', () => { wiz += 1; renderWizard(); });
+    // the sheet's bar says what comes next
+    const wizLabel = (last) => '<span>' + (last ? 'Finish context<small>next: your question</small>' : 'Next card') + '</span><span class="chev">›</span>';
     bindComposer($('question-field'), $('char-count'), $('char-meter'));
     bindComposer($('followup-field'), $('fu-count'), null);
 
@@ -664,13 +733,13 @@
       $('thread').innerHTML = chatMarkup(msgs);
       setTimeout(() => {
         msgs[1] = { who: 'judge', text: stack.length >= 2
-          ? 'The top of the stack resolves first. [[Counterspell]] was cast in response to [[Lightning Bolt]], so it resolves first and counters the Bolt — Lightning Bolt is put into its owner\'s graveyard and deals no damage.\n[[Sol Ring]] and [[Llanowar Elves]] on the battlefield are untouched. With the stack empty, ' + $('active-player').value + ' gets priority again in the ' + $('turn-phase').value + ' and could still cast [[Swords to Plowshares]] from hand.'
+          ? 'The top of the stack resolves first. [[Counterspell]] was cast in response to [[Lightning Bolt]], so it resolves first and counters the Bolt — Lightning Bolt is put into its owner\'s graveyard and deals no damage.\n[[Sol Ring]] and [[Llanowar Elves]] on the battlefield are untouched. With the stack empty, ' + nameOf(activeIdx()) + ' gets priority again in the ' + $('turn-phase').value + ' and could still cast [[Swords to Plowshares]] from hand.'
           : 'With ' + q.length + ' card' + (q.length === 1 ? '' : 's') + ' in context and nothing on the stack, priority passes and the active player continues their ' + $('turn-phase').value + '.' };
         $('thread').innerHTML = chatMarkup(msgs);
         bindRefs($('thread'));
       }, 900);
       $('ctx-facts').innerHTML =
-        '<div class="fact"><small>Turn phase</small><b>' + $('turn-phase').value + '</b></div><div class="fact"><small>Active</small><b>' + $('active-player').value + '</b></div><div class="fact"><small>Players</small><b>' + players + '</b></div>';
+        '<div class="fact"><small>Turn phase</small><b>' + $('turn-phase').value + '</b></div><div class="fact"><small>Active</small><b>' + nameOf(activeIdx()) + '</b></div><div class="fact"><small>Players</small><b>' + playerNames().join(', ') + '</b></div>';
       $('ctx-cards').innerHTML = q.map((e) => '<div class="row">' + thumb(e.card) + '<div><span class="nm">' + e.card.name + '</span> <span class="zone">' + e.zone + '</span><span class="what">' + summarize(e, ctxOf(e.card, e.zone)) + '</span></div><span></span></div>').join('');
       window.scrollTo({ top: 0 });
     }
@@ -693,7 +762,7 @@
 
     ctxOf(byName('Lightning Bolt'), 'Stack').targets = [{ k: 'card', name: 'Llanowar Elves' }];
     ctxOf(byName('Counterspell'), 'Stack').targets = [{ k: 'card', name: 'Lightning Bolt' }];
-    ctxOf(byName('Counterspell'), 'Stack').caster = 'Player 2';
+    ctxOf(byName('Counterspell'), 'Stack').caster = 1;
     goTo('game');
   </script>
 </body>
