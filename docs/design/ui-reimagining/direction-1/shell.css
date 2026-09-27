@@ -7,9 +7,11 @@
  *
  * Round 3 personality pass: a breathing brand orb, a shimmer on the primary
  * button, and the ambience layer (ambience.css/js) behind it all. Round 4:
- * one typeface (Inter) again, the corner flourishes reduced to hairline
- * brackets, the ambience turned up, the side tray floating as glass, and the
- * Menu tray stripped of every line of copy that was not a destination.
+ * one typeface (Inter) again, the side tray floating as glass, and the Menu
+ * tray stripped of every line of copy that was not a destination. Round 6:
+ * the hairline corner brackets are gone for good ("too sci-fi"), the banner
+ * carries an abstract design per colour instead of the badge stamps, the
+ * theme row is flat motif icons, and Colorless can wear a custom colour.
  */
 
 * {
@@ -50,8 +52,10 @@ h1, h2, .display {
 }
 
 /* ---- Header: a banner (round 5). ☰ at the left, the brand centred on a lit
-   band with its tagline, a slot at the right. The colour's badge is stamped
-   faintly at each end of the band on wide screens, never near the text. ---- */
+   band with its tagline, a slot at the right. Round 6: the badge stamps at
+   each end are gone ("out of place"); instead each colour paints an abstract
+   design across the band that speaks its adjectives — see the per-profile
+   rules under "banner designs" below. ---- */
 
 .app-header {
   position: sticky;
@@ -77,15 +81,60 @@ h1, h2, .display {
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background:
-    var(--motif) 12% 50% / 110px no-repeat,
-    var(--motif) 88% 50% / 110px no-repeat;
-  opacity: 0.16;
-  display: none;
+  opacity: 0.9;
 }
 
-@media (min-width: 900px) {
-  .app-header::before { display: block; }
+/* ---- banner designs (round 6): one abstract pattern per colour, faint, built
+   from the colour's own tokens so a custom Colorless colour carries into it.
+   White  · warm, luminous authority — tall shafts of light against stone
+   Blue   · charged energy — rings of energy radiating from each end
+   Black  · decay with a glow — ink dripping from the band's foot
+   Red    · heat against darkness — one hot band low on the banner, embers
+   Green  · a forest at dusk — a fine lattice of vines
+   Colorless · mystical, alien — inscribed rings turning at each end ---- */
+[data-profile="white"] .app-header::before {
+  background:
+    repeating-linear-gradient(98deg, transparent 0 22px, color-mix(in srgb, var(--accent-soft) 7%, transparent) 22px 27px, transparent 27px 40px),
+    radial-gradient(60% 120% at 50% -20%, color-mix(in srgb, var(--accent-soft) 14%, transparent) 0%, transparent 70%);
+}
+[data-profile="blue"] .app-header::before {
+  background:
+    repeating-radial-gradient(circle at 0% 50%, transparent 0 14px, color-mix(in srgb, var(--accent-soft) 9%, transparent) 14px 15.5px, transparent 15.5px 30px),
+    repeating-radial-gradient(circle at 100% 50%, transparent 0 14px, color-mix(in srgb, var(--accent-soft) 9%, transparent) 14px 15.5px, transparent 15.5px 30px);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, transparent 32%, transparent 68%, #000 100%);
+  mask-image: linear-gradient(90deg, #000 0%, transparent 32%, transparent 68%, #000 100%);
+}
+[data-profile="black"] .app-header::before {
+  background:
+    repeating-linear-gradient(90deg, transparent 0 34px, color-mix(in srgb, var(--accent-soft) 16%, transparent) 34px 36px, transparent 36px 61px, color-mix(in srgb, var(--accent-soft) 10%, transparent) 61px 62.5px, transparent 62.5px 90px),
+    linear-gradient(180deg, transparent 40%, color-mix(in srgb, var(--accent) 22%, transparent) 100%);
+  -webkit-mask-image: linear-gradient(180deg, transparent 30%, #000 100%);
+  mask-image: linear-gradient(180deg, transparent 30%, #000 100%);
+}
+[data-profile="red"] .app-header::before {
+  background:
+    radial-gradient(1.5px 1.5px at 18% 38%, var(--accent-soft) 60%, transparent 70%),
+    radial-gradient(1px 1px at 27% 62%, var(--accent-soft) 60%, transparent 70%),
+    radial-gradient(1.5px 1.5px at 76% 30%, var(--accent-soft) 60%, transparent 70%),
+    radial-gradient(1px 1px at 84% 66%, var(--accent-soft) 60%, transparent 70%),
+    radial-gradient(1px 1px at 9% 74%, var(--accent-soft) 60%, transparent 70%),
+    radial-gradient(1.5px 1.5px at 92% 46%, var(--accent-soft) 60%, transparent 70%),
+    linear-gradient(180deg, transparent 72%, color-mix(in srgb, var(--accent) 45%, transparent) 84%, transparent 96%);
+  opacity: 0.7;
+}
+[data-profile="green"] .app-header::before {
+  background:
+    repeating-linear-gradient(60deg, transparent 0 18px, color-mix(in srgb, var(--accent-soft) 8%, transparent) 18px 19px),
+    repeating-linear-gradient(-60deg, transparent 0 18px, color-mix(in srgb, var(--accent-soft) 8%, transparent) 18px 19px);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, transparent 30%, transparent 70%, #000 100%);
+  mask-image: linear-gradient(90deg, #000 0%, transparent 30%, transparent 70%, #000 100%);
+}
+[data-profile="colorless"] .app-header::before {
+  background:
+    repeating-radial-gradient(circle at 4% 50%, transparent 0 9px, color-mix(in srgb, var(--accent-soft) 10%, transparent) 9px 10px, transparent 10px 20px),
+    repeating-radial-gradient(circle at 96% 50%, transparent 0 9px, color-mix(in srgb, var(--accent-soft) 10%, transparent) 9px 10px, transparent 10px 20px);
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, transparent 28%, transparent 72%, #000 100%);
+  mask-image: linear-gradient(90deg, #000 0%, transparent 28%, transparent 72%, #000 100%);
 }
 
 .app-header::after {
@@ -283,6 +332,10 @@ h1, h2, .display {
   min-height: 210px;
   overflow: hidden;
   pointer-events: none;
+  /* round 6: the flair fades in from nothing, so there is no hard edge where
+     the badge meets the tray above it */
+  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 45%);
+  mask-image: linear-gradient(180deg, transparent 0%, #000 45%);
 }
 
 .tray-flair::before {
@@ -454,11 +507,16 @@ h1, h2, .display {
 
 .tray-divider {
   height: 1px;
-  margin: 0.5rem 1rem;
+  margin: 0.25rem 1rem;
   background: linear-gradient(90deg, var(--surface-edge), transparent);
 }
 
-/* theme orbs: each colour is a lit sphere, the chosen one wears its motif */
+/* a destination glyph drawn as an inline SVG (round 6: the question row wears
+   a card silhouette, not a lightning bolt) */
+.tray-nav-list button .glyph svg { width: 20px; height: 20px; display: block; }
+
+/* theme row (round 6): each colour is its motif, flat, in its own light —
+   no spheres. The chosen one sits in a thin ring. */
 .theme-orbs {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -477,37 +535,46 @@ h1, h2, .display {
 }
 
 .theme-orb .orb {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border-radius: 999px;
-  position: relative;
-  background: radial-gradient(circle at 35% 30%, var(--orb-soft) 0%, var(--orb) 45%, color-mix(in srgb, var(--orb) 40%, #000) 100%);
-  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08), 0 6px 14px -6px var(--orb);
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  display: grid;
+  place-items: center;
+  color: var(--orb-soft);
+  border: 1.5px solid transparent;
+  transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
 }
 
-.theme-orb .orb::after {
-  content: "";
-  position: absolute;
-  inset: 3px;
-  border-radius: inherit;
-  background: var(--orb-motif) center / cover no-repeat;
-  opacity: 0;
-  transition: opacity 150ms ease;
-}
+.theme-orb .orb svg { width: 28px; height: 28px; display: block; }
 
 .theme-orb[data-current="true"] .orb {
-  transform: scale(1.12);
-  box-shadow: 0 0 0 2px var(--surface-ground), 0 0 0 3px var(--orb-soft), 0 0 20px var(--orb);
-}
-
-.theme-orb[data-current="true"] .orb::after {
-  opacity: 0.9;
+  border-color: var(--orb-soft);
+  background: color-mix(in srgb, var(--orb) 22%, transparent);
+  transform: scale(1.08);
 }
 
 .theme-orb:hover .orb {
   transform: scale(1.08);
 }
+
+/* Colorless keeps its custom colour (as today's app): a colour well and a reset,
+   shown only while Colorless is the current theme */
+.theme-custom {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 0.4rem 0.75rem 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.theme-custom[data-show="true"] { display: flex; }
+.theme-custom input[type="color"] {
+  width: 36px; height: 36px; padding: 0; border: 1px solid var(--surface-edge); border-radius: 0.5rem; background: transparent; cursor: pointer;
+}
+.theme-custom input[type="color"]::-webkit-color-swatch-wrapper { padding: 3px; }
+.theme-custom input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0.3rem; }
+.theme-custom .btn { min-height: 34px; padding: 0.2rem 0.7rem; font-size: 0.78rem; }
 
 /* history rows inside the History panel */
 .history-list { display: grid; gap: 0.35rem; margin-top: 0.5rem; }
@@ -532,32 +599,8 @@ h1, h2, .display {
   padding: 1rem;
 }
 
-/* ---- Corner brackets: a hairline L in each corner of a lit surface, in the
-   colour's light — the minimal stand-in for round 3's drawn flourishes
-   (owner, round 4: "something more minimalistic"). Two via pseudo-elements;
-   add <i class="orn tr"></i><i class="orn bl"></i> for all four. ---- */
-.ornate {
-  position: relative;
-}
-
-.ornate::before,
-.ornate::after,
-.ornate .orn {
-  content: "";
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 0 solid color-mix(in srgb, var(--accent-soft) 75%, transparent);
-  opacity: 0.7;
-  pointer-events: none;
-  z-index: 2;
-}
-
-.ornate::before { top: 7px; left: 7px; border-top-width: 1px; border-left-width: 1px; }
-.ornate::after { bottom: 7px; right: 7px; border-bottom-width: 1px; border-right-width: 1px; }
-.ornate .orn.tr { top: 7px; right: 7px; border-top-width: 1px; border-right-width: 1px; }
-.ornate .orn.bl { bottom: 7px; left: 7px; border-bottom-width: 1px; border-left-width: 1px; }
-.ornate.small::before, .ornate.small::after, .ornate.small .orn { width: 10px; height: 10px; }
+/* (round 6) the hairline corner brackets of rounds 4–5 are gone — the owner
+   read them as sci-fi. No lit surface carries corner decoration now. */
 
 /* ---- Generic overlay (feedback modal / view-context) --- */
 

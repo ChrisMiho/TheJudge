@@ -11,6 +11,11 @@
  *                       twinkle and drift on a slow current
  * Everything obeys prefers-reduced-motion: the layer still paints, nothing
  * moves. Card art still wins because it is the only sharp, saturated thing.
+ *
+ * Round 6: the ground under all this is flat (tokens.css); the haze is
+ * softer so the page reads flat with movement in it, Black's haze and dust
+ * are turned up so it visibly moves like the other five, and Colorless takes
+ * its colours from the accent tokens so a custom colour carries into it.
  */
 
 .ambience {
@@ -32,13 +37,13 @@
 
 /* two sheets of haze: each is a few large soft blobs, blurred, on its own slow path */
 .ambience .haze {
-  filter: blur(38px) saturate(1.15);
-  opacity: 0.9;
+  filter: blur(46px) saturate(1.1);
+  opacity: 0.62;
   animation: haze-a 46s ease-in-out infinite alternate;
   transform-origin: 50% 50%;
 }
 .ambience .haze.b {
-  opacity: 0.7;
+  opacity: 0.5;
   animation: haze-b 64s ease-in-out infinite alternate;
 }
 @keyframes haze-a {
@@ -54,7 +59,7 @@
 .ambience::after {
   inset: 0;
   background: var(--motif) center / min(120vmin, 900px) no-repeat;
-  opacity: 0.1;
+  opacity: 0.07;
   filter: blur(2px) saturate(1.2);
   animation: ambience-drift 52s ease-in-out infinite alternate;
 }
@@ -105,16 +110,20 @@
     radial-gradient(44% 30% at 28% 80%, rgba(0, 80, 216, 0.34), transparent 70%);
 }
 
+/* Black (round 6): brighter violet sheets so the motion reads — before, its
+   haze was a near-black violet and the page looked still */
 [data-profile="black"] .ambience .haze {
+  opacity: 0.8;
   background:
-    radial-gradient(40% 32% at 26% 28%, rgba(124, 58, 237, 0.34), transparent 70%),
-    radial-gradient(30% 26% at 72% 56%, rgba(199, 125, 255, 0.16), transparent 70%),
-    radial-gradient(54% 36% at 50% 104%, rgba(46, 26, 71, 0.95), transparent 70%);
+    radial-gradient(40% 32% at 26% 28%, rgba(124, 58, 237, 0.55), transparent 70%),
+    radial-gradient(30% 26% at 72% 56%, rgba(199, 125, 255, 0.3), transparent 70%),
+    radial-gradient(54% 36% at 50% 104%, rgba(124, 58, 237, 0.42), transparent 70%);
 }
 [data-profile="black"] .ambience .haze.b {
+  opacity: 0.7;
   background:
-    radial-gradient(28% 24% at 68% 16%, rgba(199, 125, 255, 0.12), transparent 70%),
-    radial-gradient(44% 30% at 30% 80%, rgba(124, 58, 237, 0.28), transparent 70%);
+    radial-gradient(28% 24% at 68% 16%, rgba(199, 125, 255, 0.26), transparent 70%),
+    radial-gradient(44% 30% at 30% 80%, rgba(124, 58, 237, 0.4), transparent 70%);
 }
 
 [data-profile="red"] .ambience .haze {
@@ -141,16 +150,17 @@
     radial-gradient(44% 30% at 30% 80%, rgba(10, 122, 66, 0.32), transparent 70%);
 }
 
+/* Colorless reads the accent tokens, so a custom colour (round 6) tints the haze */
 [data-profile="colorless"] .ambience .haze {
   background:
-    radial-gradient(40% 32% at 24% 28%, rgba(161, 161, 170, 0.18), transparent 70%),
-    radial-gradient(30% 26% at 74% 56%, rgba(228, 228, 231, 0.08), transparent 70%),
-    radial-gradient(54% 36% at 50% 104%, rgba(82, 82, 91, 0.5), transparent 70%);
+    radial-gradient(40% 32% at 24% 28%, color-mix(in srgb, var(--accent-soft) 22%, transparent), transparent 70%),
+    radial-gradient(30% 26% at 74% 56%, color-mix(in srgb, var(--accent-soft) 10%, transparent), transparent 70%),
+    radial-gradient(54% 36% at 50% 104%, color-mix(in srgb, var(--accent) 50%, transparent), transparent 70%);
 }
 [data-profile="colorless"] .ambience .haze.b {
   background:
-    radial-gradient(28% 24% at 68% 16%, rgba(228, 228, 231, 0.07), transparent 70%),
-    radial-gradient(44% 30% at 30% 80%, rgba(161, 161, 170, 0.16), transparent 70%);
+    radial-gradient(28% 24% at 68% 16%, color-mix(in srgb, var(--accent-soft) 9%, transparent), transparent 70%),
+    radial-gradient(44% 30% at 30% 80%, color-mix(in srgb, var(--accent-soft) 18%, transparent), transparent 70%);
 }
 
 @media (prefers-reduced-motion: reduce) {

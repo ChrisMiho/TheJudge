@@ -130,7 +130,11 @@ window.FLOW = (() => {
   }
 
   // ---- the shared menu tray (round 3: from the left, plain rows, theme orbs at
-  // the foot; round 4: the orbs carry no names or blurbs — the colour is the label) ----
+  // the foot; round 4: the orbs carry no names or blurbs — the colour is the label;
+  // round 6: one "Ask a Question" destination, a card silhouette for its glyph,
+  // Send feedback right under the list, the theme row as flat motif icons, and
+  // Colorless with its custom colour back) ----
+  const CARD_GLYPH = '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="2" width="12" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="6.5" y="4.5" width="7" height="5" rx="1" fill="currentColor" opacity="0.85"/><path d="M6.5 12.5 h7 M6.5 15 h4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
   const PROFILES = [
     ['white', 'White', '#ede7d6', '#faf8f2'],
     ['blue', 'Blue', '#0050d8', '#38e1ff'],
@@ -145,16 +149,19 @@ window.FLOW = (() => {
     const nav = document.createElement('nav'); nav.className = 'menu-tray'; nav.id = 'menu-tray'; nav.setAttribute('aria-label', 'Feature destinations');
     // Question History sits right under the question flows (round 5) — when the
     // two flows become one "Question", it sits under that
-    const dest = [['Quick Question', '⚡', 'quick-question.html'], ['In-Depth Question', '◈', 'in-depth-question.html'], ['Question History', '◷', null], ['Life Tracker', '♥', 'life-tracker-after.html'], ['Trade Balancer', '⚖', 'trade-balancer.html']];
+    // Quick Question and In-Depth Question are one "Ask a Question" now: the question
+    // page opens, and "Add in-depth details" is the way into the deeper flow
+    const dest = [['Ask a Question', CARD_GLYPH, 'quick-question.html'], ['Question History', '◷', null], ['Life Tracker', '♥', 'life-tracker-after.html'], ['Trade Balancer', '⚖', 'trade-balancer.html']];
     nav.innerHTML =
       '<div class="tray-brand"><span class="brand-mark"><span class="orb"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></span>' +
       '<button class="icon-btn" id="tray-close" aria-label="Close menu">✕</button></div>' +
-      '<ul class="tray-nav-list">' + dest.map(([n, g, href]) => '<li><button type="button"' + (href ? ' data-href="' + href + '"' : ' id="tray-history"') + (n === current ? ' aria-current="page"' : '') + '><span class="glyph">' + g + '</span><span>' + n + '</span>' + (n === current ? '<span class="here">✓</span>' : '') + '</button></li>').join('') + '</ul>' +
-      '<div class="tray-divider"></div>' +
-      '<ul class="tray-nav-list"><li><button type="button" id="tray-feedback"><span class="glyph">✎</span><span>Send feedback</span></button></li></ul>' +
+      '<ul class="tray-nav-list">' + dest.map(([n, g, href]) => '<li><button type="button"' + (href ? ' data-href="' + href + '"' : ' id="tray-history"') + (n === current ? ' aria-current="page"' : '') + '><span class="glyph">' + g + '</span><span>' + n + '</span>' + (n === current ? '<span class="here">✓</span>' : '') + '</button></li>').join('') +
+      '<li><div class="tray-divider"></div></li>' +
+      '<li><button type="button" id="tray-feedback"><span class="glyph">✎</span><span>Send feedback</span></button></li></ul>' +
       '<h3>Theme</h3><div class="theme-orbs" role="group" aria-label="Theme palettes" id="theme-orbs">' +
-      PROFILES.map(([id, name, orb, soft]) => '<button class="theme-orb" data-profile-btn="' + id + '" aria-label="Theme: ' + name + '" title="' + name + '" style="--orb:' + orb + ';--orb-soft:' + soft + ';--orb-motif:url(motifs/' + id + '.svg)"><span class="orb"></span></button>').join('') +
-      '</div><div class="tray-flair" aria-hidden="true"></div>';
+      PROFILES.map(([id, name, orb, soft]) => '<button class="theme-orb" data-profile-btn="' + id + '" aria-label="Theme: ' + name + '" title="' + name + '" style="--orb:' + orb + ';--orb-soft:' + soft + '"><span class="orb">' + (window.MOTIFS ? window.MOTIFS.use(window.MOTIFS.chosen(id)) : '') + '</span></button>').join('') +
+      '</div><div class="theme-custom" id="theme-custom" data-show="false"><input type="color" id="colorless-hex" aria-label="Customize Colorless color" value="#71717a"><span>Colorless colour</span><button class="btn" id="colorless-reset" type="button">Reset to gray</button></div>' +
+      '<div class="tray-flair" aria-hidden="true"></div>';
     document.body.append(backdrop, nav);
     const setTray = (open) => { document.body.dataset.trayOpen = open ? 'true' : 'false'; };
     document.querySelectorAll('.menu-toggle').forEach((b) => b.addEventListener('click', () => setTray(document.body.dataset.trayOpen !== 'true')));
@@ -162,6 +169,8 @@ window.FLOW = (() => {
     backdrop.addEventListener('click', () => setTray(false));
     nav.querySelectorAll('[data-href]').forEach((b) => b.addEventListener('click', () => { if (!b.hasAttribute('aria-current')) location.href = b.dataset.href; else setTray(false); }));
     nav.querySelectorAll('[data-profile-btn]').forEach((b) => b.addEventListener('click', () => setProfile(b.dataset.profileBtn)));
+    document.getElementById('colorless-hex').addEventListener('input', (e) => setCustomColorless(e.target.value));
+    document.getElementById('colorless-reset').addEventListener('click', () => { setCustomColorless(null); document.getElementById('colorless-hex').value = '#71717a'; });
     setProfile(document.documentElement.dataset.profile || 'blue');
 
     // Send feedback (modal) and History (side panel / sheet) live under the destinations, above Theme
@@ -185,11 +194,26 @@ window.FLOW = (() => {
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAll(); setTray(false); } });
     return setTray;
   }
+  let colorlessHex = null;
   function setProfile(id) {
     document.documentElement.setAttribute('data-profile', id);
     document.querySelectorAll('[data-profile-btn]').forEach((b) => b.setAttribute('data-current', b.dataset.profileBtn === id));
+    const custom = document.getElementById('theme-custom');
+    if (custom) custom.dataset.show = id === 'colorless';
+    applyCustom();
+  }
+  // Colorless custom colour (as today's app): one hex applies to accent, accent-strong
+  // and accent-soft alike, the contrast stays white; null restores the fixed grey.
+  // Every token-driven surface, the haze and the dust follow it.
+  function setCustomColorless(hex) { colorlessHex = hex; applyCustom(); }
+  function applyCustom() {
+    const root = document.documentElement;
+    const on = root.dataset.profile === 'colorless' && colorlessHex;
+    ['--accent', '--accent-strong', '--accent-soft'].forEach((v) => on ? root.style.setProperty(v, colorlessHex) : root.style.removeProperty(v));
+    if (on) root.style.setProperty('--wash-tint', 'color-mix(in srgb, ' + colorlessHex + ' 18%, #0c0c0d)'); else root.style.removeProperty('--wash-tint');
+    if (on) root.setAttribute('data-accent', colorlessHex); else root.removeAttribute('data-accent');
   }
 
   document.addEventListener('DOMContentLoaded', ensureDetailPanel);
-  return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, bindRefs, mountMenu, setProfile, PROFILES };
+  return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, bindRefs, mountMenu, setProfile, setCustomColorless, PROFILES };
 })();

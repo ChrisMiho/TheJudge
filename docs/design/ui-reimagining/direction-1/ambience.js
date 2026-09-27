@@ -12,17 +12,29 @@
  * Round 5: everything is slower, softer and finer than round 4 — no fast
  * sparks, no flashes; each mote is a soft glow that twinkles. Reads the
  * profile from <html data-profile> and restarts when it changes. Respects
- * reduced motion (draws nothing). Mockup plumbing only.
+ * reduced motion (draws nothing). Round 6: Black's ash is brighter with far
+ * more violet sparks (it was the one colour that looked still); Colorless
+ * reads its tint from the live --accent-soft token, so a custom colour
+ * carries into the dust (restarts on data-accent as well). Mockup plumbing.
  */
 (() => {
   const RECIPES = {
     white:     { n: 90,  color: [250, 248, 242], spark: [255, 255, 255], size: [0.5, 1.8], vx: [-0.03, 0.03], vy: [-0.1, -0.03], twinkle: 0.5, life: [12, 22] },
     blue:      { n: 100, color: [120, 200, 255], spark: [56, 225, 255],  size: [0.5, 1.7], vx: [-0.06, 0.06], vy: [-0.05, 0.05], twinkle: 0.7, life: [10, 20], current: true },
-    black:     { n: 90,  color: [170, 150, 200], spark: [199, 125, 255], size: [0.5, 1.9], vx: [-0.04, 0.04], vy: [0.03, 0.09],   twinkle: 0.35, life: [14, 24] },
+    black:     { n: 120, color: [190, 150, 235], spark: [222, 170, 255], size: [0.6, 2.1], vx: [-0.05, 0.05], vy: [0.03, 0.1],    twinkle: 0.6,  life: [12, 22], sparkRate: 0.22 },
     red:       { n: 90,  color: [255, 150, 120], spark: [255, 214, 102], size: [0.5, 1.8], vx: [-0.05, 0.05], vy: [-0.12, -0.04], twinkle: 0.8, life: [9, 18] },
     green:     { n: 90,  color: [140, 255, 190], spark: [74, 255, 160],  size: [0.5, 1.7], vx: [0.02, 0.09],  vy: [-0.03, 0.03], twinkle: 0.6, life: [12, 22] },
-    colorless: { n: 80,  color: [228, 228, 231], spark: [244, 244, 245], size: [0.4, 1.4], vx: [-0.02, 0.02], vy: [0.02, 0.06],   twinkle: 0.25, life: [14, 26] }
+    colorless: { n: 80,  color: [228, 228, 231], spark: [244, 244, 245], size: [0.4, 1.4], vx: [-0.02, 0.02], vy: [0.02, 0.06],   twinkle: 0.25, life: [14, 26], fromToken: true }
   };
+
+  // Colorless: the live accent-soft token (a custom hex, or the fixed grey) as [r, g, b]
+  function tokenRGB() {
+    const v = getComputedStyle(document.documentElement).getPropertyValue('--accent-soft').trim();
+    const m = /^#([0-9a-f]{6})$/i.exec(v);
+    if (!m) return null;
+    const n = parseInt(m[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  }
 
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   let canvas, ctx, parts = [], recipe, W = 0, H = 0, raf = 0, dpr = 1;
@@ -38,7 +50,7 @@
     p.s = rnd(r.size[0], r.size[1]);
     p.life = p.max = rnd(r.life[0], r.life[1]) * 60;
     p.ph = Math.random() * Math.PI * 2;
-    p.spark = Math.random() < 0.06;
+    p.spark = Math.random() < (r.sparkRate || 0.06);
     return p;
   }
 
@@ -51,7 +63,8 @@
 
   function start() {
     const profile = document.documentElement.dataset.profile || 'blue';
-    recipe = RECIPES[profile] || RECIPES.blue;
+    recipe = Object.assign({}, RECIPES[profile] || RECIPES.blue);
+    if (recipe.fromToken) { const c = tokenRGB(); if (c) { recipe.color = c; recipe.spark = c.map((x) => Math.min(255, x + 40)); } }
     parts = Array.from({ length: recipe.n }, () => spawn({}, true));
     cancelAnimationFrame(raf);
     if (!reduced.matches) raf = requestAnimationFrame(tick);
@@ -99,7 +112,7 @@
     ctx = canvas.getContext('2d');
     resize(); start();
     window.addEventListener('resize', () => { resize(); });
-    new MutationObserver(start).observe(document.documentElement, { attributes: true, attributeFilter: ['data-profile'] });
+    new MutationObserver(start).observe(document.documentElement, { attributes: true, attributeFilter: ['data-profile', 'data-accent'] });
     reduced.addEventListener?.('change', start);
     document.addEventListener('visibilitychange', () => { if (document.hidden) cancelAnimationFrame(raf); else if (!reduced.matches) raf = requestAnimationFrame(tick); });
   }

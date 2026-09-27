@@ -1,30 +1,22 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Colorless motif: a badge of bone and brass — a hexagonal cog inside a disc, wrapped in an inscribed riveted band">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Colorless motif: a badge of the mystical and alien — a spiral inside a ring, wrapped in curling tendrils of mist">
   <defs>
-    <radialGradient id="c-glow" cx="50%" cy="50%" r="55%">
-      <stop offset="0" stop-color="#e4e4e7" stop-opacity="0.35"/>
-      <stop offset="0.5" stop-color="#a1a1aa" stop-opacity="0.14"/>
-      <stop offset="1" stop-color="#52525b" stop-opacity="0"/>
-    </radialGradient>
+    <radialGradient id="c-glow" cx="50%" cy="50%" r="55%"><stop offset="0" stop-color="#e4e4e7" stop-opacity="0.35"/><stop offset="0.5" stop-color="#a1a1aa" stop-opacity="0.14"/><stop offset="1" stop-color="#52525b" stop-opacity="0"/></radialGradient>
   </defs>
   <circle cx="100" cy="100" r="98" fill="url(#c-glow)"/>
-  <!-- the inscribed band round the badge -->
-  <circle cx="100" cy="100" r="70" fill="none" stroke="#d8d4c8" stroke-width="14" opacity="0.55"/>
-  <circle cx="100" cy="100" r="70" fill="none" stroke="#0e0e11" stroke-width="2" opacity="0.7" stroke-dasharray="3 5"/>
-  <circle cx="100" cy="100" r="78" fill="none" stroke="#e4e4e7" stroke-width="1.5" opacity="0.7"/>
-  <circle cx="100" cy="100" r="62" fill="none" stroke="#e4e4e7" stroke-width="1.5" opacity="0.7"/>
-  <g fill="#f4f4f5">
-    <circle cx="100" cy="30" r="3"/><circle cx="160.6" cy="65" r="3"/><circle cx="160.6" cy="135" r="3"/>
-    <circle cx="100" cy="170" r="3"/><circle cx="39.4" cy="135" r="3"/><circle cx="39.4" cy="65" r="3"/>
+  <circle cx="100" cy="100" r="66" fill="none" stroke="#e4e4e7" stroke-width="2" opacity="0.7"/>
+  <circle cx="100" cy="100" r="80" fill="none" stroke="#e4e4e7" stroke-width="1" opacity="0.35" stroke-dasharray="2 9"/>
+  <g fill="none" stroke="#e4e4e7" stroke-width="2.4" stroke-linecap="round" opacity="0.85">
+    <path d="M100 34 C 100 50, 86 54, 90 66 c 2 6, 10 6, 10 0" transform="rotate(0 100 100)"/>
+    <path d="M100 34 C 100 50, 86 54, 90 66 c 2 6, 10 6, 10 0" transform="rotate(45 100 100)"/>
+    <path d="M100 34 C 100 50, 86 54, 90 66 c 2 6, 10 6, 10 0" transform="rotate(90 100 100)"/>
+    <path d="M100 34 C 100 50, 86 54, 90 66 c 2 6, 10 6, 10 0" transform="rotate(135 100 100)"/>
+    <path d="M100 34 C 100 50, 86 54, 90 66 c 2 6, 10 6, 10 0" transform="rotate(180 100 100)"/>
+    <path d="M100 34 C 100 50, 86 54, 90 66 c 2 6, 10 6, 10 0" transform="rotate(225 100 100)"/>
+    <path d="M100 34 C 100 50, 86 54, 90 66 c 2 6, 10 6, 10 0" transform="rotate(270 100 100)"/>
+    <path d="M100 34 C 100 50, 86 54, 90 66 c 2 6, 10 6, 10 0" transform="rotate(315 100 100)"/>
   </g>
-  <!-- the badge -->
-  <circle cx="100" cy="100" r="47" fill="#0e0e11" stroke="#e4e4e7" stroke-opacity="0.45" stroke-width="2"/>
+  <g fill="#f4f4f5"><circle cx="100" cy="20" r="2.2"/><circle cx="156.6" cy="43.4" r="1.8"/><circle cx="180" cy="100" r="2.2"/><circle cx="156.6" cy="156.6" r="1.8"/><circle cx="100" cy="180" r="2.2"/><circle cx="43.4" cy="156.6" r="1.8"/><circle cx="20" cy="100" r="2.2"/><circle cx="43.4" cy="43.4" r="1.8"/></g>
+  <circle cx="100" cy="100" r="47" fill="#0e0e11" stroke="#e4e4e7" stroke-opacity="0.4" stroke-width="2"/>
   <circle cx="100" cy="100" r="43" fill="none" stroke="#e4e4e7" stroke-width="1" opacity="0.35"/>
-  <!-- the symbol: a hexagonal cog -->
-  <polygon points="100,72 124,86 124,114 100,128 76,114 76,86" fill="none" stroke="#e4e4e7" stroke-width="3"/>
-  <polygon points="100,86 112,93 112,107 100,114 88,107 88,93" fill="none" stroke="#e4e4e7" stroke-width="1.5" opacity="0.7"/>
-  <g fill="#e4e4e7">
-    <circle cx="100" cy="72" r="2.6"/><circle cx="124" cy="86" r="2.6"/><circle cx="124" cy="114" r="2.6"/>
-    <circle cx="100" cy="128" r="2.6"/><circle cx="76" cy="114" r="2.6"/><circle cx="76" cy="86" r="2.6"/>
-  </g>
-  <circle cx="100" cy="100" r="5" fill="#f4f4f5"/>
+  <g transform="translate(60 60) scale(0.8)" color="#e4e4e7"><circle cx="50" cy="50" r="33" fill="none" stroke="currentColor" stroke-width="3"/><path d="M50 50 c 3 -3, 9 -2, 9 4 c 0 8, -11 11, -17 4 c -8 -8, -2 -22, 11 -23 c 14 -1, 24 10, 20 24 c -1 4, -3 7, -6 9" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round"/><circle cx="51" cy="52" r="2" fill="currentColor"/></g>
 </svg>

@@ -112,12 +112,9 @@
   --font-display: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-body: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
   --surface-ground: #09090b;
-  --surface-wash: linear-gradient(
-    135deg,
-    #09090b 0%,
-    color-mix(in srgb, var(--wash-tint) 50%, #18181b) 45%,
-    #09090b 100%
-  );
+  /* round 6: the ground is one flat colour (owner: "the background needs to
+     be more flat, remove the gradient"); the haze layer carries the motion */
+  --surface-wash: color-mix(in srgb, var(--wash-tint) 55%, #0d0d10);
   --surface-panel: color-mix(in srgb, var(--wash-tint) 30%, #18181b);
   --surface-edge: color-mix(in srgb, var(--accent) 38%, transparent);
   --focus-ring: var(--accent-soft);

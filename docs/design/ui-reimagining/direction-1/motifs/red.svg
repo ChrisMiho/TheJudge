@@ -1,22 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Red motif: a badge of heat — an ember burst inside a disc, wrapped in a swirl of flame">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Red motif: a badge of heat — a flame inside a disc, wrapped in a swirl of fire">
   <defs>
-    <radialGradient id="r-glow" cx="50%" cy="50%" r="55%">
-      <stop offset="0" stop-color="#ffd166" stop-opacity="0.55"/>
-      <stop offset="0.5" stop-color="#c10230" stop-opacity="0.25"/>
-      <stop offset="1" stop-color="#c10230" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="r-tongue" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0" stop-color="#ffd166" stop-opacity="1"/>
-      <stop offset="0.55" stop-color="#ff4d6d" stop-opacity="0.9"/>
-      <stop offset="1" stop-color="#c10230" stop-opacity="0"/>
-    </linearGradient>
+    <radialGradient id="r-glow" cx="50%" cy="50%" r="55%"><stop offset="0" stop-color="#ffd166" stop-opacity="0.55"/><stop offset="0.5" stop-color="#c10230" stop-opacity="0.25"/><stop offset="1" stop-color="#c10230" stop-opacity="0"/></radialGradient>
+    <linearGradient id="r-tongue" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffd166" stop-opacity="1"/><stop offset="0.55" stop-color="#ff4d6d" stop-opacity="0.9"/><stop offset="1" stop-color="#c10230" stop-opacity="0"/></linearGradient>
+    <linearGradient id="r-flame" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#ffd166"/><stop offset="0.6" stop-color="#ff4d6d"/><stop offset="1" stop-color="#ff7a5c"/></linearGradient>
   </defs>
   <circle cx="100" cy="100" r="98" fill="url(#r-glow)"/>
-  <!-- the swirl of flame round the badge -->
   <path d="M40 130 A62 62 0 0 1 96 38" fill="none" stroke="#ff4d6d" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
   <path d="M160 70 A62 62 0 0 1 104 162" fill="none" stroke="#ff4d6d" stroke-width="5" stroke-linecap="round" opacity="0.8"/>
   <g fill="url(#r-tongue)">
-    <path d="M100 50 L108 34 L104 22 L112 10 L100 4 L92 16 L96 28 L90 36 Z"/>
+    <path d="M100 50 L108 34 L104 22 L112 10 L100 4 L92 16 L96 28 L90 36 Z" transform="rotate(0 100 100)"/>
     <path d="M100 50 L107 36 L103 28 L108 16 L100 12 L94 20 L97 30 L92 38 Z" transform="rotate(45 100 100)" opacity="0.85"/>
     <path d="M100 50 L108 34 L104 22 L112 10 L100 4 L92 16 L96 28 L90 36 Z" transform="rotate(90 100 100)"/>
     <path d="M100 50 L107 36 L103 28 L108 16 L100 12 L94 20 L97 30 L92 38 Z" transform="rotate(135 100 100)" opacity="0.85"/>
@@ -25,22 +17,8 @@
     <path d="M100 50 L108 34 L104 22 L112 10 L100 4 L92 16 L96 28 L90 36 Z" transform="rotate(270 100 100)"/>
     <path d="M100 50 L107 36 L103 28 L108 16 L100 12 L94 20 L97 30 L92 38 Z" transform="rotate(315 100 100)" opacity="0.85"/>
   </g>
-  <g fill="#ffd166">
-    <circle cx="156" cy="40" r="2.4"/><circle cx="44" cy="52" r="1.8"/><circle cx="172" cy="132" r="2"/><circle cx="30" cy="140" r="2.4"/>
-    <circle cx="124" cy="182" r="1.8"/><circle cx="74" cy="186" r="1.6"/><circle cx="182" cy="90" r="1.6"/>
-  </g>
-  <!-- the badge -->
-  <circle cx="100" cy="100" r="47" fill="#0e0e11" stroke="#ff4d6d" stroke-opacity="0.45" stroke-width="2"/>
+  <g fill="#ffd166"><circle cx="156" cy="40" r="2.4"/><circle cx="44" cy="52" r="1.8"/><circle cx="172" cy="132" r="2"/><circle cx="30" cy="140" r="2.4"/><circle cx="124" cy="182" r="1.8"/><circle cx="74" cy="186" r="1.6"/><circle cx="182" cy="90" r="1.6"/></g>
+  <circle cx="100" cy="100" r="47" fill="#0e0e11" stroke="#ff4d6d" stroke-opacity="0.4" stroke-width="2"/>
   <circle cx="100" cy="100" r="43" fill="none" stroke="#ff4d6d" stroke-width="1" opacity="0.35"/>
-  <!-- the symbol: an ember burst -->
-  <g fill="#ffd166">
-    <path d="M100 100 L95 88 L100 68 L105 88 Z"/>
-    <path d="M100 100 L95 88 L100 68 L105 88 Z" transform="rotate(60 100 100)"/>
-    <path d="M100 100 L95 88 L100 68 L105 88 Z" transform="rotate(120 100 100)"/>
-    <path d="M100 100 L95 88 L100 68 L105 88 Z" transform="rotate(180 100 100)"/>
-    <path d="M100 100 L95 88 L100 68 L105 88 Z" transform="rotate(240 100 100)"/>
-    <path d="M100 100 L95 88 L100 68 L105 88 Z" transform="rotate(300 100 100)"/>
-  </g>
-  <circle cx="100" cy="100" r="17" fill="none" stroke="#ff4d6d" stroke-width="2" stroke-dasharray="9 5"/>
-  <circle cx="100" cy="100" r="8" fill="#fff0c0"/>
+  <g transform="translate(60 60) scale(0.8)" color="#ff4d6d"><path d="M50 8 C 56 20, 64 24, 68 22 C 72 36, 76 44, 76 58 C 76 76, 64 88, 50 88 C 36 88, 24 76, 24 58 C 24 48, 30 40, 34 30 C 37 38, 42 42, 44 38 C 42 28, 46 18, 50 8 Z" fill="url(#r-flame)"/><path d="M50 48 C 56 56, 62 60, 62 69 C 62 77, 56 82, 50 82 C 44 82, 38 77, 38 69 C 38 63, 44 59, 44 53 C 46 59, 50 57, 50 48 Z" style="fill:var(--disc,#0e0e11)"/></g>
 </svg>

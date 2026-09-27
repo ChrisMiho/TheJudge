@@ -1,20 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Green motif: a badge of the wild — three leaves round a seed, wrapped in a leaf wreath">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Green motif: a badge of the wild — a seed sprouting from the soil, wrapped in a leaf wreath">
   <defs>
-    <radialGradient id="g-glow" cx="50%" cy="50%" r="55%">
-      <stop offset="0" stop-color="#4affa0" stop-opacity="0.45"/>
-      <stop offset="0.5" stop-color="#0a7a42" stop-opacity="0.22"/>
-      <stop offset="1" stop-color="#0a5c33" stop-opacity="0"/>
-    </radialGradient>
-    <linearGradient id="g-leaf" x1="0" y1="1" x2="0" y2="0">
-      <stop offset="0" stop-color="#0a7a42" stop-opacity="0.95"/>
-      <stop offset="1" stop-color="#4affa0" stop-opacity="0.95"/>
-    </linearGradient>
+    <radialGradient id="g-glow" cx="50%" cy="50%" r="55%"><stop offset="0" stop-color="#4affa0" stop-opacity="0.45"/><stop offset="0.5" stop-color="#0a7a42" stop-opacity="0.22"/><stop offset="1" stop-color="#0a5c33" stop-opacity="0"/></radialGradient>
+    <linearGradient id="g-leaf" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#0a7a42" stop-opacity="0.95"/><stop offset="1" stop-color="#4affa0" stop-opacity="0.95"/></linearGradient>
   </defs>
   <circle cx="100" cy="100" r="98" fill="url(#g-glow)"/>
-  <!-- the wreath round the badge -->
   <circle cx="100" cy="100" r="62" fill="none" stroke="#0a7a42" stroke-width="3" opacity="0.9"/>
   <g fill="url(#g-leaf)">
-    <path d="M100 18 c 12 8, 12 26, 0 36 c -12 -10, -12 -28, 0 -36 z"/>
+    <path d="M100 18 c 12 8, 12 26, 0 36 c -12 -10, -12 -28, 0 -36 z" transform="rotate(0 100 100)"/>
     <path d="M100 18 c 12 8, 12 26, 0 36 c -12 -10, -12 -28, 0 -36 z" transform="rotate(30 100 100)" opacity="0.8"/>
     <path d="M100 18 c 12 8, 12 26, 0 36 c -12 -10, -12 -28, 0 -36 z" transform="rotate(60 100 100)"/>
     <path d="M100 18 c 12 8, 12 26, 0 36 c -12 -10, -12 -28, 0 -36 z" transform="rotate(90 100 100)" opacity="0.8"/>
@@ -27,22 +19,8 @@
     <path d="M100 18 c 12 8, 12 26, 0 36 c -12 -10, -12 -28, 0 -36 z" transform="rotate(300 100 100)"/>
     <path d="M100 18 c 12 8, 12 26, 0 36 c -12 -10, -12 -28, 0 -36 z" transform="rotate(330 100 100)" opacity="0.8"/>
   </g>
-  <g fill="#dfffea" opacity="0.8">
-    <circle cx="160" cy="44" r="1.8"/><circle cx="36" cy="72" r="1.6"/><circle cx="170" cy="150" r="1.8"/><circle cx="50" cy="164" r="1.6"/>
-  </g>
-  <!-- the badge -->
+  <g fill="#dfffea" opacity="0.8"><circle cx="160" cy="44" r="1.8"/><circle cx="36" cy="72" r="1.6"/><circle cx="170" cy="150" r="1.8"/><circle cx="50" cy="164" r="1.6"/></g>
   <circle cx="100" cy="100" r="47" fill="#0e0e11" stroke="#4affa0" stroke-opacity="0.4" stroke-width="2"/>
   <circle cx="100" cy="100" r="43" fill="none" stroke="#4affa0" stroke-width="1" opacity="0.35"/>
-  <!-- the symbol: three leaves round a seed -->
-  <g fill="#4affa0">
-    <path d="M100 100 C 106 84, 120 76, 132 80 C 130 96, 116 108, 100 100 Z"/>
-    <path d="M100 100 C 106 84, 120 76, 132 80 C 130 96, 116 108, 100 100 Z" transform="rotate(120 100 100)"/>
-    <path d="M100 100 C 106 84, 120 76, 132 80 C 130 96, 116 108, 100 100 Z" transform="rotate(240 100 100)"/>
-  </g>
-  <g fill="none" stroke="#0e0e11" stroke-width="1.2" opacity="0.7">
-    <path d="M102 98 C 112 90, 122 84, 130 82"/>
-    <path d="M102 98 C 112 90, 122 84, 130 82" transform="rotate(120 100 100)"/>
-    <path d="M102 98 C 112 90, 122 84, 130 82" transform="rotate(240 100 100)"/>
-  </g>
-  <circle cx="100" cy="100" r="5" fill="#dfffea"/>
+  <g transform="translate(60 60) scale(0.8)" color="#4affa0"><path d="M12 84 H88" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.6"/><path d="M22 84 Q 50 66 78 84" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><ellipse cx="50" cy="74" rx="10" ry="7" fill="currentColor" transform="rotate(-20 50 74)"/><path d="M50 68 V42" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M50 44 C 48 32, 36 28, 26 32 C 28 44, 40 50, 50 44 Z" fill="currentColor"/><path d="M50 44 C 52 32, 64 28, 74 32 C 72 44, 60 50, 50 44 Z" fill="currentColor"/></g>
 </svg>
