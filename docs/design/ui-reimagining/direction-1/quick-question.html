@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Quick Question — direction 1</title>
+<title>Ask a Question — direction 1</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="tokens.css">
@@ -11,7 +11,11 @@
 <link rel="stylesheet" href="ambience.css">
 <link rel="stylesheet" href="flow.css">
 <style>
-  /* ---- Quick Question: the attached card is the hero (shared parts live in flow.css) ---- */
+  /* ---- Ask a Question (round 6: Quick Question and In-Depth are one destination;
+     this page is the front door, "Add in-depth details" the way deeper): the
+     attached card is the hero (shared parts live in flow.css) ---- */
+  .composer-aside { align-items: center; gap: 0.6rem; }
+  .composer-aside .carry { font-size: 0.74rem; color: var(--text-muted); }
   .page-content { width: min(36rem, 92vw); padding-top: 0.8rem; }
   .qq { display: grid; gap: 0.8rem; }
   .qq.hidden { display: none; }
@@ -30,15 +34,14 @@
   <main class="page-content">
     <section id="pre-submit" class="qq" data-searching="false">
       <div class="flow-head">
-        <h1>Quick Question</h1>
+        <h1>Ask a Question</h1>
         <div class="attach">
           <button class="icon-chip" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
           <button class="icon-chip" id="scan-btn"><span class="glyph">▣</span> Scan</button>
         </div>
       </div>
 
-      <div class="stage ornate" id="stage">
-        <i class="orn tr"></i><i class="orn bl"></i>
+      <div class="stage" id="stage">
         <div class="motif-wash" aria-hidden="true"></div>
         <div class="ring" id="ring">
           <button class="arrow prev" id="prev" aria-label="Previous card">‹</button>
@@ -63,14 +66,15 @@
           <span class="q-meter"><i id="char-meter"></i></span>
         </div>
         <div class="composer-aside">
-          <button class="icon-chip" id="go-deep" title="Carry these cards into the In-Depth flow"><span class="glyph">◈</span> Add in-depth details</button>
+          <button class="icon-chip" id="go-deep" title="Carry these cards into the in-depth details"><span class="glyph">◈</span> Add in-depth details</button>
+          <span class="carry" id="carry-hint"></span>
         </div>
       </div>
     </section>
 
     <!-- answered: the conversation (same component as In-Depth's chat) -->
     <section id="answered" class="chat answer-block" aria-label="Conversation">
-      <div class="chat-head"><h1>Quick Question</h1><div class="tools"><button class="icon-round" id="ask-another" aria-label="Start over" title="Start over">↺</button></div></div>
+      <div class="chat-head"><h1>Ask a Question</h1><div class="tools"><button class="icon-round" id="ask-another" aria-label="Start over" title="Start over">↺</button></div></div>
       <div class="chat-cards" id="chat-cards"></div>
       <div class="thread" id="thread"></div>
       <div class="followup">
@@ -82,6 +86,7 @@
 
     <div class="demo-bar" aria-label="Mockup state (demo only)">
       <span class="tag">demo</span><span>state:</span>
+      <button data-state="9" aria-pressed="false">9 cards</button>
       <button data-state="5" aria-pressed="true">5 cards</button>
       <button data-state="2" aria-pressed="false">2 cards</button>
       <button data-state="1" aria-pressed="false">1 card</button>
@@ -100,9 +105,10 @@
   <script src="flow.js"></script>
   <script>
     const { img, library, cardMarkup, openDetail, bindComposer, applyRing, thumb, chatMarkup, bindRefs, mountMenu, byName } = window.FLOW;
-    mountMenu('Quick Question');
-    const starter = library.slice(0, 5);
-    let attached = starter.slice();
+    mountMenu('Ask a Question');
+    const MAX_CARDS = 10; // round 6: the cap rises to today's stack limit (MAX_STACK_SIZE = 10)
+    const starter = library.slice();
+    let attached = starter.slice(0, 5);
     let focus = 0;
     let breakImages = false;
     const $ = (s) => document.getElementById(s);
@@ -152,12 +158,13 @@
       }
       summonNext = false;
       $('prev').hidden = $('next').hidden = n < 2;
-      $('dots').innerHTML = n > 1 ? attached.map((_, i) => '<span data-on="' + (i === focus) + '"></span>').join('') : '';
-      $('strip').innerHTML = attached.map((c) => thumb(c)).join('') + '<span class="note">' + n + ' of 5 attached</span>';
+      $('dots').innerHTML = n > 1 ? attached.map((_, i) => '<span data-on="' + (i === focus) + '"></span>').join('') + '<span class="n">' + (focus + 1) + ' / ' + n + '</span>' : '';
+      $('strip').innerHTML = attached.map((c) => thumb(c)).join('') + '<span class="note">' + n + ' of ' + MAX_CARDS + ' attached</span>';
       const add = $('add-card');
-      add.innerHTML = n >= 5 ? '<span class="glyph">＋</span> 5 / 5' : '<span class="glyph">＋</span> Add card';
-      add.disabled = n >= 5;
-      if (n >= 5) closeSearch();
+      add.innerHTML = n >= MAX_CARDS ? '<span class="glyph">＋</span> ' + MAX_CARDS + ' / ' + MAX_CARDS : '<span class="glyph">＋</span> Add card';
+      add.disabled = n >= MAX_CARDS;
+      if (n >= MAX_CARDS) closeSearch();
+      $('carry-hint').textContent = n ? 'your ' + n + ' card' + (n === 1 ? '' : 's') + ' come with you' : '';
       renderSearch();
     }
 
@@ -235,7 +242,7 @@
       }, 900);
     });
     $('ask-another').addEventListener('click', () => { $('answered').classList.remove('shown'); $('pre-submit').classList.remove('hidden'); });
-    // the future "one Question" flow: the attached cards carry over into In-Depth, which asks for their zones at its Cards step
+    // one Question (round 6): the attached cards carry over into the in-depth details, which ask for their zones at the Cards step
     $('go-deep').addEventListener('click', () => { location.href = 'in-depth-question.html?carry=' + encodeURIComponent(attached.map((c) => c.name).join('|')); });
     render();
   </script>

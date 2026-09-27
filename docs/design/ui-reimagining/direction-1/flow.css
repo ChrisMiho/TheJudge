@@ -17,7 +17,9 @@
  *   .detail-panel              the card-detail sheet / side panel, round 3
  *   .chat                      the conversation — today's chat feel; the cards
  *                              of the question live in the Cards strip only,
- *                              never again inside a message (owner, round 4)
+ *                              never again inside a message (owner, round 4);
+ *                              round 6: the judge's reply sits in a solid bubble
+ *                              of its own, as a texting app does
  */
 
 /* ---- flow header: title on the left, ways to attach a card on the right ---- */
@@ -50,7 +52,7 @@
   border-radius: 1.1rem;
   border: 1px solid var(--surface-edge);
   background:
-    radial-gradient(60% 55% at 50% 45%, color-mix(in srgb, var(--accent) 38%, transparent) 0%, transparent 70%),
+    radial-gradient(60% 55% at 50% 45%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 70%),
     radial-gradient(120% 90% at 50% 100%, transparent 55%, rgba(0,0,0,0.45) 100%),
     color-mix(in srgb, var(--surface-panel) 85%, transparent);
   overflow: hidden;
@@ -92,16 +94,18 @@
   opacity: calc(1 - 0.45 * var(--ad));
   filter: brightness(calc(1 - 0.35 * var(--ad))) blur(calc(var(--ad) * 0.6px));
   z-index: calc(10 - var(--ad));
-  box-shadow: 0 18px 40px -12px color-mix(in srgb, var(--accent) 70%, #000);
+  box-shadow: 0 14px 30px -14px rgba(0, 0, 0, 0.8);
   --ring-w: 2px;
   transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 320ms ease, filter 320ms ease;
   cursor: pointer;
 }
 .ring .card[data-offstage="true"] { opacity: 0; pointer-events: none; }
+/* round 6: the glow round the front card is far quieter (players disliked it) —
+   a plain drop shadow and a whisper of the colour's light, nothing more */
 .ring .card[data-front="true"] {
   box-shadow:
-    0 18px 40px -12px color-mix(in srgb, var(--accent) 70%, #000),
-    0 0 70px -6px color-mix(in srgb, var(--accent) 65%, transparent);
+    0 18px 36px -14px rgba(0, 0, 0, 0.85),
+    0 0 28px -10px color-mix(in srgb, var(--accent) 45%, transparent);
   cursor: default;
 }
 .ring .card.summon { animation: summon 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
@@ -152,9 +156,14 @@
 .arrow.next { right: 0.15rem; }
 .arrow[hidden] { display: none; }
 
-.dots { position: relative; z-index: 1; display: flex; gap: 0.35rem; min-height: 6px; }
-.dots span { width: 6px; height: 6px; border-radius: 999px; background: var(--surface-edge); transition: background 200ms ease; }
-.dots span[data-on="true"] { background: var(--accent-soft); box-shadow: 0 0 8px var(--accent-soft); }
+/* round 6: the dots sit in a small dark pill with a "3 / 5" count beside them,
+   so how many cards are attached is never lost against the dust or the art */
+.dots { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 0.4rem; min-height: 24px; padding: 0 0.65rem; border-radius: 999px;
+  background: rgba(9, 9, 11, 0.72); border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent); backdrop-filter: blur(4px); }
+.dots:empty { display: none; }
+.dots span { width: 7px; height: 7px; border-radius: 999px; background: color-mix(in srgb, var(--text-muted) 55%, transparent); transition: background 200ms ease; }
+.dots span[data-on="true"] { background: var(--accent-soft); box-shadow: 0 0 6px var(--accent-soft); }
+.dots .n { width: auto; height: auto; border-radius: 0; background: none; box-shadow: none; margin-left: 0.2rem; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
 
 /* ---- the strip: while the search is open on a phone, the ring folds into a
    row of thumbnails so the question box stays on screen ---- */
@@ -188,8 +197,8 @@
    button live inside the frame, the budget meter runs along its bottom ---- */
 .composer { display: grid; gap: 0.6rem; }
 .q-box, .followup {
-  position: relative; display: flex; align-items: flex-end; gap: 0.5rem;
-  padding: 0.3rem 0.35rem 0.3rem 1rem; border-radius: 1.5rem;
+  position: relative; display: flex; align-items: flex-end; gap: 0.6rem;
+  padding: 0.45rem 0.45rem 0.45rem 1.05rem; border-radius: 1.6rem;
   border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 78%, transparent);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 6%, transparent), 0 8px 24px -16px color-mix(in srgb, var(--accent) 80%, transparent);
   transition: border-color 150ms ease;
@@ -201,7 +210,7 @@
 }
 .q-box textarea:focus, .followup textarea:focus { outline: none; }
 .q-box textarea::placeholder, .followup textarea::placeholder { color: color-mix(in srgb, var(--text-muted) 80%, transparent); }
-.q-count, .fu-count { align-self: flex-end; margin-bottom: 0.75rem; font-size: 0.66rem; color: var(--text-muted); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.q-count, .fu-count { align-self: flex-end; margin-bottom: 0.8rem; font-size: 0.66rem; color: var(--text-muted); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .q-count[data-near="true"] { color: var(--accent-soft); }
 .q-box .send, .followup .send {
   flex: 0 0 auto; width: 40px; height: 40px; border-radius: 999px; border: 0; display: grid; place-items: center; cursor: pointer;
@@ -302,11 +311,14 @@
   background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, var(--accent-strong)), var(--accent-strong)); color: var(--text-on-accent);
   box-shadow: 0 8px 22px -12px color-mix(in srgb, var(--accent) 90%, transparent); }
 .msg.judge { justify-self: start; display: grid; grid-template-columns: 30px 1fr; gap: 0.6rem; align-items: start; }
+.msg.judge > div { padding: 0.65rem 0.95rem; border-radius: 1.1rem; border-top-left-radius: 0.3rem;
+  background: var(--surface-panel); border: 1px solid var(--surface-edge); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9); }
 .msg.judge .seal { width: 30px; height: 30px; border-radius: 999px; background: var(--motif) center / cover no-repeat, var(--surface-ground);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent); animation: seal-in 900ms ease-out both; }
 @keyframes seal-in { 0% { transform: scale(0.4) rotate(-40deg); opacity: 0; } 60% { transform: scale(1.12) rotate(6deg); opacity: 1; } 100% { transform: none; } }
 .msg.judge .who { display: block; font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-soft); margin-bottom: 0.2rem; }
 .msg.judge p { margin: 0 0 0.5rem; }
+.msg.judge p:last-child { margin-bottom: 0; }
 .msg.judge .ref { color: var(--accent-soft); font-weight: 600; text-decoration: underline dotted; cursor: pointer; }
 .thinking { display: inline-flex; gap: 4px; align-items: center; height: 20px; }
 .thinking i { width: 6px; height: 6px; border-radius: 999px; background: var(--accent-soft); animation: think 1.2s ease-in-out infinite; }
