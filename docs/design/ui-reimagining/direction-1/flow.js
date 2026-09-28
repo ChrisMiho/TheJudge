@@ -133,7 +133,8 @@ window.FLOW = (() => {
   // the foot; round 4: the orbs carry no names or blurbs — the colour is the label;
   // round 6: one "Ask a Question" destination, a card silhouette for its glyph,
   // Send feedback right under the list, the theme row as flat motif icons, and
-  // Colorless with its custom colour back) ----
+  // Colorless with its custom colour back; round 7: the icons sit in filled
+  // circles like mana symbols, and the foot plays the colour's element) ----
   const CARD_GLYPH = '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="4" y="2" width="12" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.6"/><rect x="6.5" y="4.5" width="7" height="5" rx="1" fill="currentColor" opacity="0.85"/><path d="M6.5 12.5 h7 M6.5 15 h4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>';
   const PROFILES = [
     ['white', 'White', '#ede7d6', '#faf8f2'],
@@ -163,6 +164,8 @@ window.FLOW = (() => {
       '</div><div class="theme-custom" id="theme-custom" data-show="false"><input type="color" id="colorless-hex" aria-label="Customize Colorless color" value="#71717a"><span>Colorless colour</span><button class="btn" id="colorless-reset" type="button">Reset to gray</button></div>' +
       '<div class="tray-flair" aria-hidden="true"></div>';
     document.body.append(backdrop, nav);
+    // round 7: the colour's element plays at a whisper in the tray's foot
+    if (window.AMBIENCE) window.AMBIENCE.mountFlair(nav.querySelector('.tray-flair'));
     const setTray = (open) => { document.body.dataset.trayOpen = open ? 'true' : 'false'; };
     document.querySelectorAll('.menu-toggle').forEach((b) => b.addEventListener('click', () => setTray(document.body.dataset.trayOpen !== 'true')));
     document.getElementById('tray-close').addEventListener('click', () => setTray(false));
@@ -171,7 +174,9 @@ window.FLOW = (() => {
     nav.querySelectorAll('[data-profile-btn]').forEach((b) => b.addEventListener('click', () => setProfile(b.dataset.profileBtn)));
     document.getElementById('colorless-hex').addEventListener('input', (e) => setCustomColorless(e.target.value));
     document.getElementById('colorless-reset').addEventListener('click', () => { setCustomColorless(null); document.getElementById('colorless-hex').value = '#71717a'; });
-    setProfile(document.documentElement.dataset.profile || 'blue');
+    // ?profile=green on any page previews that colour (round 7 convenience for review)
+    const want = new URLSearchParams(location.search).get('profile');
+    setProfile(want && PROFILES.some((p) => p[0] === want) ? want : (document.documentElement.dataset.profile || 'blue'));
 
     // Send feedback (modal) and History (side panel / sheet) live under the destinations, above Theme
     const fb = document.createElement('div'); fb.className = 'overlay-backdrop'; fb.id = 'feedback-modal'; fb.dataset.open = 'false';

@@ -1,5 +1,5 @@
 /*
- * motifs.js — the one source of every colour's symbol (round 6). Each symbol
+ * motifs.js — the one source of every colour's symbol (round 6; picks final in round 7). Each symbol
  * is drawn in a 100×100 box in currentColor; cut-outs use the disc colour
  * (--disc, the dark badge disc). The page's chosen symbol per colour is
  * CHOSEN; the other letters are the round-6 candidates the gallery shows.
@@ -33,8 +33,10 @@ window.MOTIFS = (() => {
     // D · fire over a peak (round 5's volcano, with flames)
     'red-d': '<path d="M12 84 L38 44 L50 56 L60 46 L88 84 Z" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/><g transform="translate(51 42) scale(0.5) translate(-50 -64)"><path d="M50 12 C 60 28, 70 40, 68 58 C 66 74, 58 84, 50 86 C 40 84, 32 74, 32 58 C 32 46, 40 40, 42 30 C 44 40, 50 42, 50 34 C 48 26, 48 20, 50 12 Z" fill="currentColor"/><path d="M50 52 C 55 58, 58 62, 58 69 C 58 76, 54 80, 50 80 C 46 80, 42 76, 42 69 C 42 64, 46 60, 46 56 C 47 60, 50 58, 50 52 Z" ' + D + '/></g><g fill="currentColor"><circle cx="70" cy="22" r="2"/><circle cx="32" cy="26" r="1.8"/></g>',
     // ---- Green: the sprouting seed, four ways (round 6; A is round 5's C) ----
-    // A · round 5's C — a stem, two leaves, a bud
-    'green-a': '<path d="M50 84 V50" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M50 52 C 48 36, 34 30, 22 34 C 24 48, 38 56, 50 52 Z" fill="currentColor"/><path d="M50 52 C 52 36, 66 30, 78 34 C 76 48, 62 56, 50 52 Z" fill="currentColor"/><path d="M32 84 H68" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.7"/><circle cx="50" cy="26" r="3" fill="currentColor"/>',
+    // A · round 7: the sprout redrawn — the bud is gone; the stem bends and curls
+    //     into a tendril, the two leaves differ in size and height, the soil line
+    //     sits off-centre. Asymmetric and a little mystical, not a diagram.
+    'green-a': '<path d="M14 84 H76" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.6"/><path d="M46 84 C 46 72, 44 60, 50 48 C 55 38, 61 34, 59 26 C 58 20.5, 51.5 20, 50.5 25 C 49.5 29.5, 54 32, 57 29" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M46 67 C 40 53, 26 46, 15 50 C 17 63, 34 71, 46 67 Z" fill="currentColor"/><path d="M46 67 C 38 61, 29 55, 18 51.5" fill="none" stroke="var(--disc,#0e0e11)" stroke-width="1.3" stroke-linecap="round" opacity="0.9"/><path d="M51 51 C 55 41, 66 36.5, 75 40 C 71 50.5, 59 55, 51 51 Z" fill="currentColor"/><path d="M51 51 C 57 47, 64 43, 73 40.8" fill="none" stroke="var(--disc,#0e0e11)" stroke-width="1.1" stroke-linecap="round" opacity="0.9"/>',
     // B · the seed itself, half in the soil, the sprout rising from it
     'green-b': '<path d="M12 84 H88" stroke="currentColor" stroke-width="3" stroke-linecap="round" opacity="0.6"/><path d="M22 84 Q 50 66 78 84" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/><ellipse cx="50" cy="74" rx="10" ry="7" fill="currentColor" transform="rotate(-20 50 74)"/><path d="M50 68 V42" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M50 44 C 48 32, 36 28, 26 32 C 28 44, 40 50, 50 44 Z" fill="currentColor"/><path d="M50 44 C 52 32, 64 28, 74 32 C 72 44, 60 50, 50 44 Z" fill="currentColor"/>',
     // C · the seed splitting, the shoot pushing up between the halves
@@ -51,14 +53,14 @@ window.MOTIFS = (() => {
     // D · a ring with tendrils curling inward
     'colorless-d': '<circle cx="50" cy="50" r="33" fill="none" stroke="currentColor" stroke-width="3"/><g fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M50 17 C 50 26, 42 28, 44 35"/><path d="M50 17 C 50 26, 42 28, 44 35" transform="rotate(60 50 50)"/><path d="M50 17 C 50 26, 42 28, 44 35" transform="rotate(120 50 50)"/><path d="M50 17 C 50 26, 42 28, 44 35" transform="rotate(180 50 50)"/><path d="M50 17 C 50 26, 42 28, 44 35" transform="rotate(240 50 50)"/><path d="M50 17 C 50 26, 42 28, 44 35" transform="rotate(300 50 50)"/></g><path d="M50 50 c 2 -2, 6 -1, 6 3 c 0 5, -7 7, -11 3 c -5 -5, -1 -14, 7 -15" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>'
   };
-  // the symbol each page wears today (round 6 defaults; the owner picks in OWNER-FEEDBACK.md)
-  const CHOSEN = { white: 'c', blue: 'c', black: 'a', red: 'a', green: 'b', colorless: 'a' };
+  // the symbol each page wears today — the owner's Round 7 picks: Black A, Red A, Green A (redrawn), Colorless C
+  const CHOSEN = { white: 'c', blue: 'c', black: 'a', red: 'a', green: 'a', colorless: 'c' };
   const CANDIDATES = {
     white: [['c', 'rising sun over a horizon']],
     blue: [['c', 'a single wave crest']],
     black: [['a', 'a skull in line, cracked'], ['b', 'crossed bones'], ['c', 'skull over crossed bones'], ['d', 'a horned skull']],
     red: [['a', 'a three-tongued flame'], ['b', 'one tall flame, three embers'], ['c', 'a crown of fire'], ['d', 'fire over a peak']],
-    green: [['a', 'stem, two leaves, a bud (round 5 C)'], ['b', 'the seed half in the soil, sprouting'], ['c', 'the seed splitting round the shoot'], ['d', 'one leaf and a tendril off the seed']],
+    green: [['a', 'the sprout — a curling stem, two unequal leaves (round 7 redraw)'], ['b', 'the seed half in the soil, sprouting'], ['c', 'the seed splitting round the shoot'], ['d', 'one leaf and a tendril off the seed']],
     colorless: [['a', 'a spiral inside a ring'], ['b', 'three arms turning in a ring'], ['c', 'a vortex, no outer ring'], ['d', 'a ring of tendrils, a swirl inside']]
   };
   function mount() {
