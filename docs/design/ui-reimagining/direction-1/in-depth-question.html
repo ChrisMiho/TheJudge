@@ -136,14 +136,29 @@
   .zone-tabs button { flex: 0 0 auto; min-height: 40px; padding: 0.3rem 0.8rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: var(--surface-panel); color: var(--text-muted); font-size: 0.82rem; cursor: pointer; }
   .zone-tabs button b { color: var(--accent-soft); font-weight: 600; margin-left: 0.25rem; }
   .zone-tabs button[aria-pressed="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
-  /* cards carried over from Quick Question wait here until each is placed in a zone */
-  .carried { display: grid; gap: 0.4rem; padding: 0.6rem 0.7rem; border-radius: 0.8rem; border: 1px dashed color-mix(in srgb, var(--accent-soft) 55%, transparent); background: var(--surface-panel); }
-  .carried[hidden] { display: none; }
-  .carried .lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
-  .carried .lbl b { color: var(--accent-soft); }
-  .carried .row { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 0.5rem; font-size: 0.86rem; }
-  .carried .row .thumb { width: 30px; height: 42px; border-radius: 3px; }
-  .carried select.field { min-height: 36px; width: auto; font-size: 0.8rem; padding: 0.2rem 2rem 0.2rem 0.6rem; }
+  /* round 7: cards carried from the question are placed one at a time — the same
+     sheet as the context step (art left, the ask beside it), one zone tile per
+     tap; the shelf waits behind it until every card has a zone (the guardrail) */
+  #step-cards[data-placing="true"] > :not(#place-plate) { display: none !important; }
+  .place-zones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+  @media (min-width: 720px) { .place-zones { grid-template-columns: repeat(3, 1fr); } }
+  .place-zones button, .act-zones button {
+    display: flex; align-items: center; gap: 0.55rem; min-height: 48px; padding: 0.4rem 0.7rem; text-align: left;
+    border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 55%, transparent);
+    color: var(--text-primary); cursor: pointer; font-size: 0.88rem; transition: all 160ms ease;
+  }
+  .place-zones button .mark, .act-zones button .mark { width: 18px; height: 18px; border-radius: 999px; border: 1.5px solid var(--surface-edge); flex: 0 0 auto; display: grid; place-items: center; font-size: 0.65rem; }
+  .place-zones button:hover, .act-zones button:hover { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 18%, var(--surface-panel)); }
+  .place-zones button[data-extra="true"] { border-style: dashed; color: var(--text-muted); }
+  .act-zones button[data-current="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
+  .act-zones button[data-current="true"] .mark { background: var(--accent-soft); border-color: var(--accent-soft); color: var(--surface-ground); }
+  .act-zones button[data-current="true"] .mark::after { content: "✓"; }
+  .place-more { justify-self: start; background: transparent; border: 0; color: var(--accent-soft); font-size: 0.78rem; cursor: pointer; min-height: 32px; padding: 0 0.2rem; }
+  .place-more[hidden] { display: none; }
+  .plate.nudge { animation: nudge 420ms ease; }
+  @keyframes nudge { 0%, 100% { transform: none; } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+  .place-plate .eyebrow .link.danger { color: var(--text-muted); }
+  .place-plate .eyebrow .link.danger:hover { color: #ff8fa3; }
   .shelf { --tile-w: 124px; display: flex; gap: 0.7rem; overflow-x: auto; overflow-y: visible; padding: 1rem 0.3rem 0.9rem; scroll-snap-type: x proximity; min-height: calc(var(--tile-w) * 88 / 63 + 1.9rem); position: relative; z-index: 1; width: 100%; }
   @media (min-width: 720px) { .shelf { --tile-w: 150px; } }
   .shelf .card {
@@ -153,6 +168,24 @@
     transition: transform 160ms ease; cursor: pointer;
   }
   .shelf .card:hover { transform: translateY(-3px); }
+  /* round 7: the Stack reorders by drag — the lifted card rides the pointer, the
+     others make room; a tap on any shelf card opens its actions instead */
+  .shelf[data-stack="true"] .card { touch-action: pan-x; }
+  .shelf .card.dragging { z-index: 20; transform: translateY(-8px) scale(1.04); box-shadow: 0 22px 40px -14px #000, 0 0 0 2px var(--accent-soft); transition: none; cursor: grabbing; }
+  .shelf .card.drop-before::before { content: ""; position: absolute; left: -0.45rem; top: 8%; bottom: 8%; width: 3px; border-radius: 3px; background: var(--accent-soft); box-shadow: 0 0 10px var(--accent-soft); z-index: 6; }
+  .shelf .card.drop-after::before { content: ""; position: absolute; right: -0.45rem; top: 8%; bottom: 8%; width: 3px; border-radius: 3px; background: var(--accent-soft); box-shadow: 0 0 10px var(--accent-soft); z-index: 6; }
+  /* the card actions sheet (round 7): move to another zone, reorder on the Stack, details, remove */
+  .act-body { display: grid; gap: 0.7rem; padding-top: 2.6rem; }
+  .act-head { display: grid; grid-template-columns: 44px 1fr; gap: 0.6rem; align-items: center; }
+  .act-head .thumb { width: 44px; height: 61px; border-radius: 4px; }
+  .act-head h2 { margin: 0; font-size: 1.1rem; }
+  .act-head .zone { color: var(--accent-soft); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .act-body .lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  .act-zones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
+  .act-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .act-row .btn { flex: 1; min-height: 40px; padding: 0.3rem 0.6rem; font-size: 0.84rem; }
+  .act-row .btn:disabled { opacity: 0.4; cursor: default; }
+  .act-row .btn.danger:hover { border-color: #ff8fa3; color: #ff8fa3; }
   .shelf .card.summon { animation: summon 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both; --d: 0; --step: 0px; }
   .shelf .card .card-widget { width: 26px; height: 26px; font-size: 0.72rem; top: -12px; opacity: 1; transform: none; pointer-events: auto; }
   .shelf .card .card-widget.remove { left: -6px; }
@@ -176,8 +209,8 @@
      every field prefilled so a card with little to say costs zero taps) ---- */
   /* the sheet: the card's art at the left, the form beside it — no dead space
      under the art on desktop, nothing stretched wider than it needs (round 5) */
-  #wizard-plate { display: grid; grid-template-columns: 96px 1fr; grid-template-areas: "art head" "form form" "nav nav"; gap: 0.7rem 0.8rem; align-items: start; }
-  @media (min-width: 720px) { #wizard-plate { grid-template-columns: 210px 1fr; grid-template-areas: "art head" "art form" "nav nav"; gap: 0.7rem 1.1rem; } }
+  #wizard-plate, .place-plate { display: grid; grid-template-columns: 96px 1fr; grid-template-areas: "art head" "form form" "nav nav"; gap: 0.7rem 0.8rem; align-items: start; }
+  @media (min-width: 720px) { #wizard-plate, .place-plate { grid-template-columns: 210px 1fr; grid-template-areas: "art head" "art form" "nav nav"; gap: 0.7rem 1.1rem; } }
   .ctx-art { grid-area: art; display: grid; gap: 0.5rem; justify-items: center; }
   .ctx-art .hero { position: relative; width: 96px; height: calc(96px * 88 / 63); border-radius: 6px; overflow: visible; --ring-w: 1px; cursor: pointer;
     box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--accent) 80%, #000), 0 0 30px -8px color-mix(in srgb, var(--accent) 55%, transparent); }
@@ -259,7 +292,7 @@
         <div class="lead"><button class="icon-round" id="step-back" aria-label="Back" title="Back">‹</button><h1>In-depth details</h1></div>
         <div class="attach" id="attach" hidden>
           <button class="icon-chip" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
-          <button class="icon-chip" id="scan-btn"><span class="glyph">▣</span> Scan</button>
+          <a class="icon-chip" id="scan-btn" href="card-scan.html?back=in-depth-question.html&into=Stack"><span class="glyph">▣</span> Scan</a>
         </div>
       </div>
 
@@ -311,8 +344,22 @@
       </section>
 
       <!-- 3 · Add cards to zones -->
-      <section class="step-panel" id="step-cards" aria-label="Add cards to zones">
-        <div class="carried" id="carried" hidden></div>
+      <section class="step-panel" id="step-cards" aria-label="Add cards to zones" data-placing="false">
+        <!-- round 7: cards from the question are placed one by one, the card the hero -->
+        <div class="plate place-plate" id="place-plate" hidden>
+          <div class="ctx-art"><div class="card hero" id="place-hero"></div></div>
+          <div class="ctx-head">
+            <div class="eyebrow"><span>From your question</span><button class="link danger" id="place-drop" type="button">Leave this card out</button></div>
+            <h2 id="place-name"></h2>
+            <div class="sub" id="place-sub"></div>
+            <span class="counter" aria-live="polite"><span id="place-n">1</span>&nbsp;/&nbsp;<span id="place-total">5</span><small>to place</small></span>
+          </div>
+          <div class="ctx-form">
+            <span class="lbl"><span class="t">Which zone is it in?<small>tap one — the next card follows</small></span></span>
+            <div class="place-zones" id="place-zones"></div>
+            <button class="link place-more" id="place-more" type="button">Other zones ▾</button>
+          </div>
+        </div>
         <div class="zone-tabs" id="zone-tabs"></div>
         <div class="search-pop" id="search-pop">
           <div class="search-row">
@@ -323,7 +370,7 @@
         </div>
         <div class="stage" id="shelf-stage">
           <div class="motif-wash" aria-hidden="true"></div>
-          <div class="shelf" id="shelf"></div>
+          <div class="shelf" id="shelf" data-stack="false"></div>
           <button class="plate-next" type="button" data-next="context"><span>Continue<small>next: a few details per card</small></span><span class="chev">›</span></button>
         </div>
         <p class="flow-hint" id="shelf-hint" hidden></p>
@@ -344,6 +391,8 @@
               <label id="row-owner"><span class="t">Owner</span><select class="field" id="sel-owner"></select></label>
               <label id="row-caster"><span class="t">Cast by</span><select class="field" id="sel-caster"></select></label>
               <label id="row-mana"><span class="t">Mana spent<small id="mana-note"></small></span><input class="field" id="mana-in" inputmode="numeric" placeholder="e.g. 3"></label>
+              <!-- round 7 (try): storm and copy effects get their own callout on Stack cards -->
+              <label id="row-copies"><span class="t">Copies<small>storm, fork…</small></span><input class="field" id="copies-in" inputmode="numeric" placeholder="0"></label>
             </div>
             <div class="targets" id="row-targets">
               <span class="lbl"><span class="t">Targets<small>leave blank if it has none</small></span></span>
@@ -390,7 +439,7 @@
     <div class="demo-bar" aria-label="Mockup state (demo only)">
       <span class="tag">demo</span><span>jump to:</span>
       <button data-jump="game">1 Game</button><button data-jump="zones">2 Zones</button><button data-jump="cards">3 Cards</button>
-      <button data-jump="context">4 Context</button><button data-jump="review">4 Reviewed</button><button data-jump="chat">Ruling</button>
+      <button data-jump="place">3 Placing carried cards</button><button data-jump="context">4 Context</button><button data-jump="review">4 Reviewed</button><button data-jump="chat">Ruling</button>
     </div>
     <p class="foot-note">
       Before:
@@ -401,6 +450,22 @@
       Card images are the app's own corpus art via Scryfall (unchanged from today). The dashed strip is mockup scaffolding, not app UI.
     </p>
   </main>
+
+  <!-- Card actions (round 7): a tap on a shelf card — move it to another zone, reorder it on the Stack, details, remove -->
+  <div class="sheet-backdrop" id="act-backdrop" data-open="false"></div>
+  <aside class="drawer-panel detail-panel" id="act-panel" data-open="false" aria-label="Card actions">
+    <button class="icon-btn overlay-close" id="act-close" aria-label="Close">✕</button>
+    <div class="body act-body">
+      <div class="act-head" id="act-head"></div>
+      <span class="lbl">Move to</span>
+      <div class="act-zones" id="act-zones"></div>
+      <div id="act-stack" hidden style="display:grid;gap:0.4rem">
+        <span class="lbl">Order on the stack <small style="text-transform:none;letter-spacing:0">· the top resolves first</small></span>
+        <div class="act-row"><button class="btn" id="act-down" type="button">↓ Move down</button><button class="btn" id="act-up" type="button">↑ Move up</button><button class="btn" id="act-top" type="button">To top</button></div>
+      </div>
+      <div class="act-row"><button class="btn" id="act-details" type="button">Details</button><button class="btn danger" id="act-remove" type="button">Remove</button></div>
+    </div>
+  </aside>
 
   <!-- Frozen game context: what "View context" opens from the chat -->
   <div class="sheet-backdrop" id="ctx-backdrop" data-open="false"></div>
@@ -437,7 +502,7 @@
       selectedZones = new Set(['Stack', 'Battlefield']);
       for (const z of Object.keys(zoneCards)) zoneCards[z] = [];
       $('carry-note').hidden = false;
-      $('carry-note').innerHTML = '<b>' + carried.length + ' card' + (carried.length === 1 ? '' : 's') + '</b> came along with your question — set the game up, then place each in its zone at step 3.';
+      $('carry-note').innerHTML = '<b>' + carried.length + ' card' + (carried.length === 1 ? '' : 's') + '</b> came along with your question — set the game up, then step 3 asks for each one\'s zone, one card at a time.';
     }
     // players (round 6): up to 8, as today's roster (MAX_PLAYER_ROSTER_SIZE); a name typed
     // here is the name every later step, the review and the ruling use for that player
@@ -454,12 +519,17 @@
     const ctx = {};
     // targets: [{k:'none'} | {k:'board'} | {k:'player', p} | {k:'all'} | {k:'card', name} | {k:'other', text}]
     // owner / caster / player targets are stored as player indexes, so a renamed player renames everywhere
-    const ctxOf = (c, zone) => ctx[c.name] || (ctx[c.name] = { owner: activeIdx(), caster: 0, mana: c.mv, targets: [], notes: '', zone });
+    const ctxOf = (c, zone) => ctx[c.name] || (ctx[c.name] = { owner: activeIdx(), caster: 0, mana: c.mv, copies: 0, targets: [], notes: '', zone });
     const hasOwner = (zone) => zone !== 'Stack';           // today's hasOwnerControl(): every zone but the Stack
     const hasMana = (zone) => zone === 'Stack' || zone === 'Battlefield';
 
     // ---- steps + rail ----
     function goTo(step) {
+      // the guardrail (round 7): nothing past the Cards step until every carried card has a zone
+      if (step === 'context' && carried.length) {
+        step = 'cards';
+        setTimeout(() => { const pl = $('place-plate'); pl.classList.remove('nudge'); void pl.offsetWidth; pl.classList.add('nudge'); }, 50);
+      }
       const i = STEPS.indexOf(step);
       $('chat').hidden = true; $('flow').hidden = false;
       STEPS.forEach((s) => $('step-' + s).classList.toggle('active', s === step));
@@ -468,7 +538,7 @@
         b.dataset.done = j < i ? 'true' : 'false';
       });
       $('rail-fill').style.width = (i / 3 * 75) + '%';
-      $('attach').hidden = step !== 'cards';
+      $('attach').hidden = step !== 'cards' || carried.length > 0;
       // on step 1 the ‹ goes back to the question itself (one flow, round 6)
       $('step-back').title = i === 0 ? 'Back to your question' : 'Back';
       if (step === 'cards') renderShelf();
@@ -559,6 +629,8 @@
       $('zone-tabs').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { activeZone = b.dataset.zone; closeSearch(); renderShelf(); }));
       const cards = zoneCards[activeZone] || [];
       const isStack = activeZone === 'Stack';
+      $('shelf').dataset.stack = isStack;
+      $('scan-btn').href = 'card-scan.html?back=in-depth-question.html&into=' + encodeURIComponent(activeZone);
       renderCarried();
       if (!cards.length) {
         $('shelf').innerHTML = '<div class="empty"><div><strong>' + (isStack ? 'Begin stackening!' : 'Nothing in ' + activeZone + ' yet') + '</strong>Add a card with search or scan.</div></div>';
@@ -571,31 +643,119 @@
           applyRing(el, c);
           el.querySelector('.remove').addEventListener('click', (e) => { e.stopPropagation(); cards.splice(cards.indexOf(c), 1); renderShelf(); });
           el.querySelector('.info').addEventListener('click', (e) => { e.stopPropagation(); openDetail(c); });
-          el.addEventListener('click', (e) => { if (!e.target.closest('.card-widget')) openDetail(c); });
+          // a tap opens the card's actions (move, reorder, details, remove) — round 7
+          el.addEventListener('click', (e) => { if (e.target.closest('.card-widget')) return; if (suppressClick) { suppressClick = false; return; } openActions(c); });
+          if (isStack) bindDrag(el, c, cards);
         });
         summonNext = null;
       }
       $('shelf-hint').hidden = !(isStack && cards.length > 1);
-      $('shelf-hint').textContent = 'The top of the stack resolves first.';
+      $('shelf-hint').textContent = 'The top of the stack resolves first. Drag a card to reorder it, or tap it for Move up / Move down.';
       $('add-card').innerHTML = '<span class="glyph">＋</span> ' + (isStack ? 'Add to Stack' : 'Add card');
       renderSearch();
     }
     // the Stack's tags: TOP alone for one card, BOTTOM / TOP for two, #1… up to TOP for three or more (round 5)
     function stackLabel(i, n) { if (i === n - 1) return 'TOP'; if (n === 2) return 'BOTTOM'; return '#' + (i + 1); }
+    // ---- round 7: placing the carried cards, one at a time ----
+    let placeMore = false;
     function renderCarried() {
-      const el = $('carried');
-      el.hidden = !carried.length;
-      if (!carried.length) return;
-      const zones = ZONES.filter((z) => selectedZones.has(z));
-      el.innerHTML = '<span class="lbl">From Quick Question · <b>' + carried.length + '</b> to place</span>' + carried.map((c, i) =>
-        '<div class="row">' + thumb(c) + '<span>' + c.name + '</span><select class="field" data-i="' + i + '" aria-label="Zone for ' + c.name + '"><option value="">Place in…</option>' + zones.map((z) => '<option>' + z + '</option>').join('') + '</select></div>').join('');
-      el.querySelectorAll('select').forEach((s) => s.addEventListener('change', () => {
-        if (!s.value) return;
-        const c = carried.splice(Number(s.dataset.i), 1)[0];
-        (zoneCards[s.value] = zoneCards[s.value] || []).push(c);
-        activeZone = s.value; summonNext = c; renderShelf();
-      }));
+      const placing = carried.length > 0;
+      $('step-cards').dataset.placing = placing;
+      $('place-plate').hidden = !placing;
+      $('attach').hidden = placing || !$('step-cards').classList.contains('active');
+      if (!placing) return;
+      const c = carried[0];
+      $('place-hero').innerHTML = cardMarkup(c, { noRemove: true });
+      applyRing($('place-hero'), c);
+      $('place-hero').onclick = () => openDetail(c);
+      $('place-name').textContent = c.name;
+      $('place-sub').innerHTML = c.type + ' · <span>' + c.cost + '</span>';
+      $('place-n').textContent = placedSoFar + 1; $('place-total').textContent = placedSoFar + carried.length;
+      const chosen = ZONES.filter((z) => selectedZones.has(z)), rest = ZONES.filter((z) => !selectedZones.has(z));
+      const tile = (z, extra) => '<button type="button" data-zone="' + z + '" data-extra="' + extra + '"><span class="mark"></span>' + z + '</button>';
+      $('place-zones').innerHTML = chosen.map((z) => tile(z, false)).join('') + (placeMore ? rest.map((z) => tile(z, true)).join('') : '');
+      $('place-more').hidden = placeMore || !rest.length;
+      $('place-zones').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => placeCarried(b.dataset.zone)));
     }
+    let placedSoFar = 0;
+    function placeCarried(zone) {
+      const c = carried.shift();
+      placedSoFar += 1;
+      if (!selectedZones.has(zone)) { selectedZones.add(zone); const cb = $('zone-grid').querySelector('input[value="' + zone + '"]'); if (cb) cb.checked = true; }
+      (zoneCards[zone] = zoneCards[zone] || []).push(c);
+      activeZone = zone; summonNext = c;
+      if (!carried.length) placedSoFar = 0;
+      renderShelf();
+    }
+    $('place-more').addEventListener('click', () => { placeMore = true; renderCarried(); });
+    $('place-drop').addEventListener('click', () => { carried.shift(); if (!carried.length) placedSoFar = 0; renderShelf(); });
+
+    // ---- round 7: the card actions sheet ----
+    let actCard = null;
+    function openActions(c) {
+      actCard = c;
+      const zone = Object.keys(zoneCards).find((z) => (zoneCards[z] || []).includes(c));
+      const list = zoneCards[zone] || [], i = list.indexOf(c);
+      $('act-head').innerHTML = thumb(c) + '<div><span class="zone">' + zone + (zone === 'Stack' ? ' · ' + stackLabel(i, list.length) : '') + '</span><h2>' + c.name + '</h2></div>';
+      $('act-zones').innerHTML = ZONES.map((z) => '<button type="button" data-zone="' + z + '" data-current="' + (z === zone) + '"><span class="mark"></span>' + z + '</button>').join('');
+      $('act-zones').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { if (b.dataset.zone === zone) return closeActions(); moveCard(c, zone, b.dataset.zone); closeActions(); }));
+      $('act-stack').hidden = zone !== 'Stack';
+      $('act-down').disabled = i <= 0; $('act-up').disabled = i >= list.length - 1; $('act-top').disabled = i >= list.length - 1;
+      $('act-backdrop').dataset.open = 'true'; $('act-panel').dataset.open = 'true';
+    }
+    function closeActions() { $('act-backdrop').dataset.open = 'false'; $('act-panel').dataset.open = 'false'; }
+    function moveCard(c, from, to) {
+      zoneCards[from].splice(zoneCards[from].indexOf(c), 1);
+      if (!selectedZones.has(to)) { selectedZones.add(to); const cb = $('zone-grid').querySelector('input[value="' + to + '"]'); if (cb) cb.checked = true; }
+      (zoneCards[to] = zoneCards[to] || []).push(c);
+      if (ctx[c.name]) ctx[c.name].zone = to;
+      activeZone = to; summonNext = c; renderShelf();
+    }
+    function reorder(c, delta, toTop) {
+      const list = zoneCards['Stack']; const i = list.indexOf(c);
+      const j = toTop ? list.length - 1 : Math.max(0, Math.min(list.length - 1, i + delta));
+      list.splice(i, 1); list.splice(j, 0, c); renderShelf(); openActions(c);
+    }
+    $('act-up').addEventListener('click', () => reorder(actCard, 1));
+    $('act-down').addEventListener('click', () => reorder(actCard, -1));
+    $('act-top').addEventListener('click', () => reorder(actCard, 0, true));
+    $('act-details').addEventListener('click', () => { closeActions(); openDetail(actCard); });
+    $('act-remove').addEventListener('click', () => { const z = Object.keys(zoneCards).find((k) => (zoneCards[k] || []).includes(actCard)); zoneCards[z].splice(zoneCards[z].indexOf(actCard), 1); closeActions(); renderShelf(); });
+    $('act-close').addEventListener('click', closeActions);
+    $('act-backdrop').addEventListener('click', closeActions);
+
+    // ---- round 7: drag to reorder on the Stack (pointer events; a mouse drags at once, touch after a short hold) ----
+    let drag = null, suppressClick = false;
+    function bindDrag(el, c, cards) {
+      el.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.card-widget') || e.button > 0) return;
+        drag = { el, c, cards, x0: e.clientX, started: false, mouse: e.pointerType === 'mouse', to: -1 };
+        drag.timer = setTimeout(() => { if (drag && !drag.started) startDrag(e); }, 240);
+        el.setPointerCapture(e.pointerId);
+      });
+      el.addEventListener('pointermove', (e) => {
+        if (!drag || drag.el !== el) return;
+        if (!drag.started) { if (drag.mouse && Math.abs(e.clientX - drag.x0) > 6) startDrag(e); else return; }
+        el.style.transform = 'translate(' + (e.clientX - drag.x0) + 'px, -8px) scale(1.04)';
+        const others = [...$('shelf').querySelectorAll('.card')].filter((x) => x !== el);
+        const mid = el.getBoundingClientRect(); const cx = mid.left + mid.width / 2;
+        let to = 0; others.forEach((o) => { const r = o.getBoundingClientRect(); if (cx > r.left + r.width / 2) to += 1; o.classList.remove('drop-before', 'drop-after'); });
+        drag.to = to;
+        if (others.length) { if (to < others.length) others[to].classList.add('drop-before'); else others[others.length - 1].classList.add('drop-after'); }
+      });
+      const end = (e) => {
+        if (!drag || drag.el !== el) return;
+        clearTimeout(drag.timer);
+        if (drag.started) {
+          suppressClick = true;
+          const i = cards.indexOf(c); cards.splice(i, 1); cards.splice(drag.to, 0, c);
+          drag = null; renderShelf();
+        } else drag = null;
+      };
+      el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+    }
+    function startDrag() { drag.started = true; drag.el.classList.add('dragging'); }
+
     function allAttached() { return Object.values(zoneCards).flat().concat(carried); }
     function renderSearch() {
       const q = $('card-search').value.trim().toLowerCase();
@@ -640,6 +800,8 @@
         $('row-owner').hidden = !hasOwner(zone);
         $('row-caster').hidden = zone !== 'Stack';
         $('row-mana').hidden = !hasMana(zone);
+        $('row-copies').hidden = zone !== 'Stack';
+        $('copies-in').value = c.copies || '';
         $('sel-owner').innerHTML = playerNames().map((p, i) => opt(i, p, c.owner === i)).join('');
         $('sel-caster').innerHTML = playerNames().map((p, i) => opt(i, p, c.caster === i)).join('');
         $('mana-in').value = c.mana;
@@ -649,10 +811,17 @@
         const others = q.filter((e) => e.card !== card);
         $('target-list').innerHTML = c.targets.map((t, i) => '<span class="pill">' + targetLabel(t) + '<button type="button" data-i="' + i + '" aria-label="Remove target">✕</button></span>').join('');
         $('target-list').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { c.targets.splice(Number(b.dataset.i), 1); renderWizard(); }));
+        // round 7: a target can be picked once — what is already a pill leaves the list;
+        // "All players" stands in for every player, so with it picked no single player is offered
+        const hasAll = c.targets.some((t) => t.k === 'all');
+        const pickedP = new Set(c.targets.filter((t) => t.k === 'player').map((t) => t.p));
+        const pickedC = new Set(c.targets.filter((t) => t.k === 'card').map((t) => t.name));
+        const playerOpts = hasAll ? '' : playerNames().map((p, i) => pickedP.has(i) ? '' : opt('player:' + i, p)).join('') + opt('all', 'All players');
+        const cardOpts = others.filter((e) => !pickedC.has(e.card.name)).map((e) => opt('card:' + e.card.name, e.card.name + ' · ' + e.zone)).join('');
         $('sel-target').innerHTML = opt('', c.targets.length ? 'Add another target…' : 'Choose a target…') +
           opt('none', 'No target') + (zone === 'Battlefield' || zone === 'Command Zone' ? opt('board', 'Just on the board') : '') +
-          '<optgroup label="Players">' + playerNames().map((p, i) => opt('player:' + i, p)).join('') + opt('all', 'All players') + '</optgroup>' +
-          (others.length ? '<optgroup label="Cards in context">' + others.map((e) => opt('card:' + e.card.name, e.card.name + ' · ' + e.zone)).join('') + '</optgroup>' : '') +
+          (playerOpts ? '<optgroup label="Players">' + playerOpts + '</optgroup>' : '') +
+          (cardOpts ? '<optgroup label="Cards in context">' + cardOpts + '</optgroup>' : '') +
           opt('other', 'Something else…');
         $('target-other').hidden = true;
         $('ctx-notes').value = c.notes; autoGrow($('ctx-notes'));
@@ -695,11 +864,26 @@
       if (v === 'other') { $('target-other').hidden = false; $('target-other').focus(); return; }
       const t = v === 'none' ? { k: 'none' } : v === 'board' ? { k: 'board' } : v === 'all' ? { k: 'all' }
         : v.startsWith('player:') ? { k: 'player', p: Number(v.slice(7)) } : { k: 'card', name: v.slice(5) };
-      if (t.k === 'none' || t.k === 'board') c.targets = [t]; else { c.targets = c.targets.filter((x) => x.k !== 'none' && x.k !== 'board'); c.targets.push(t); }
+      addTarget(c, t);
       renderWizard();
     });
+    // round 7 target rules: no target twice; every player named one by one becomes
+    // "All players"; picking "All players" drops the single-player pills
+    const sameTarget = (a, b) => a.k === b.k && (a.p ?? null) === (b.p ?? null) && (a.name ?? null) === (b.name ?? null) && (a.text ?? null) === (b.text ?? null);
+    function addTarget(c, t) {
+      if (t.k === 'none' || t.k === 'board') { c.targets = [t]; return; }
+      c.targets = c.targets.filter((x) => x.k !== 'none' && x.k !== 'board');
+      if (c.targets.some((x) => sameTarget(x, t))) return;
+      if (t.k === 'all') c.targets = c.targets.filter((x) => x.k !== 'player');
+      if (t.k === 'player' && c.targets.some((x) => x.k === 'all')) return;
+      c.targets.push(t);
+      if (t.k === 'player' && new Set(c.targets.filter((x) => x.k === 'player').map((x) => x.p)).size >= players) {
+        c.targets = c.targets.filter((x) => x.k !== 'player'); c.targets.push({ k: 'all' });
+      }
+    }
+    $('copies-in').addEventListener('input', (ev) => { const n = parseInt(ev.target.value, 10); current().c.copies = Number.isFinite(n) && n > 0 ? n : 0; });
     $('target-other').addEventListener('keydown', (ev) => {
-      if (ev.key === 'Enter' && ev.target.value.trim()) { const { c } = current(); c.targets = c.targets.filter((x) => x.k !== 'none' && x.k !== 'board'); c.targets.push({ k: 'other', text: ev.target.value.trim() }); ev.target.value = ''; renderWizard(); }
+      if (ev.key === 'Enter' && ev.target.value.trim()) { const { c } = current(); addTarget(c, { k: 'other', text: ev.target.value.trim() }); ev.target.value = ''; renderWizard(); }
       if (ev.key === 'Escape') { ev.target.hidden = true; $('sel-target').value = ''; }
     });
     $('ctx-notes').addEventListener('input', () => { current().c.notes = $('ctx-notes').value; autoGrow($('ctx-notes')); });
@@ -709,6 +893,7 @@
       const bits = [];
       if (e.zone === 'Stack') bits.push('cast by ' + nameOf(c.caster)); else bits.push(nameOf(c.owner) + "'s");
       if (hasMana(e.zone) && c.mana !== e.card.mv) bits.push(c.mana + ' mana spent');
+      if (e.zone === 'Stack' && c.copies) bits.push('+' + c.copies + (c.copies === 1 ? ' copy' : ' copies'));
       const names = c.targets.map((t) => t.k === 'card' ? t.name : targetLabel(t));
       if (c.targets.length === 1 && (c.targets[0].k === 'none' || c.targets[0].k === 'board')) bits.push(names[0].toLowerCase());
       else if (names.length) bits.push('targets ' + names.join(', '));
@@ -755,7 +940,8 @@
     // ---- demo bar ----
     document.querySelectorAll('[data-jump]').forEach((b) => b.addEventListener('click', () => {
       const j = b.dataset.jump;
-      if (j === 'review') { goTo('context'); wiz = queue().length; renderWizard(); }
+      if (j === 'place') { carried = ['Lightning Bolt', 'Sol Ring', 'Llanowar Elves'].map(byName).filter((c) => !allAttached().includes(c)); placedSoFar = 0; goTo('cards'); }
+      else if (j === 'review') { goTo('context'); wiz = queue().length; renderWizard(); }
       else if (j === 'chat') openChat();
       else goTo(j);
     }));
