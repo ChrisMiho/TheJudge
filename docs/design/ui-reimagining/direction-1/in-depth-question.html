@@ -731,7 +731,7 @@
         if (e.target.closest('.card-widget') || e.button > 0) return;
         drag = { el, c, cards, x0: e.clientX, started: false, mouse: e.pointerType === 'mouse', to: -1 };
         drag.timer = setTimeout(() => { if (drag && !drag.started) startDrag(e); }, 240);
-        el.setPointerCapture(e.pointerId);
+        try { el.setPointerCapture(e.pointerId); } catch (_) { /* synthetic pointers have no capture */ }
       });
       el.addEventListener('pointermove', (e) => {
         if (!drag || drag.el !== el) return;
