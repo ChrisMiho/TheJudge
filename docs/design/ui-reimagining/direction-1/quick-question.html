@@ -14,8 +14,6 @@
   /* ---- Ask a Question (round 6: Quick Question and In-Depth are one destination;
      this page is the front door, "Add in-depth details" the way deeper): the
      attached card is the hero (shared parts live in flow.css) ---- */
-  .composer-aside { align-items: center; gap: 0.6rem; }
-  .composer-aside .carry { font-size: 0.74rem; color: var(--text-muted); }
   .page-content { width: min(36rem, 92vw); padding-top: 0.8rem; }
   .qq { display: grid; gap: 0.8rem; }
   .qq.hidden { display: none; }
@@ -37,7 +35,7 @@
         <h1>Ask a Question</h1>
         <div class="attach">
           <button class="icon-chip" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
-          <button class="icon-chip" id="scan-btn"><span class="glyph">▣</span> Scan</button>
+          <a class="icon-chip" id="scan-btn" href="card-scan.html?back=quick-question.html&into=your%20question"><span class="glyph">▣</span> Scan</a>
         </div>
       </div>
 
@@ -59,15 +57,15 @@
           </div>
           <div class="search-results" id="search-results"></div>
         </div>
+        <!-- round 7: "Add in-depth details" lives inside the question box, at its
+             left end, beside the text — one control among the box's own, not a
+             row of its own -->
         <div class="q-box">
+          <button class="deep" id="go-deep" title="Add in-depth details — your cards come with you" aria-label="Add in-depth details"><span class="glyph">◈</span><span class="lbl">In-depth</span></button>
           <textarea id="question-field" rows="1" placeholder="What would you like to know?" maxlength="300" aria-label="Your question"></textarea>
           <span class="q-count" id="char-count">0 / 300</span>
           <button class="send" id="send-request" aria-label="Send request" title="Send request">➤</button>
           <span class="q-meter"><i id="char-meter"></i></span>
-        </div>
-        <div class="composer-aside">
-          <button class="icon-chip" id="go-deep" title="Carry these cards into the in-depth details"><span class="glyph">◈</span> Add in-depth details</button>
-          <span class="carry" id="carry-hint"></span>
         </div>
       </div>
     </section>
@@ -164,7 +162,6 @@
       add.innerHTML = n >= MAX_CARDS ? '<span class="glyph">＋</span> ' + MAX_CARDS + ' / ' + MAX_CARDS : '<span class="glyph">＋</span> Add card';
       add.disabled = n >= MAX_CARDS;
       if (n >= MAX_CARDS) closeSearch();
-      $('carry-hint').textContent = n ? 'your ' + n + ' card' + (n === 1 ? '' : 's') + ' come with you' : '';
       renderSearch();
     }
 
