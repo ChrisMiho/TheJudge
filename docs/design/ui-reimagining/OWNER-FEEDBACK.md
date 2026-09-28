@@ -574,3 +574,82 @@ Your points:
 ## Ready to build?
 
 -
+
+# Round 8 — notes on the Round 7 renders
+
+Open `README.md` → "Round 7" for what changed and why; the renders are
+`renders/r7-*.png`. Write under each heading; a blank heading means "fine as
+shown". When done, open a new session and paste:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 7), then apply
+my Round 8 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+Answers to your Round 7 questions:
+
+- Green A is redrawn as you asked — no dot, a curling stem, two unequal
+  leaves. Colorless wears C. Black A and Red A as picked.
+- Every colour now has its own background animation (one render each,
+  `r7-global-1440-*`); the banner design is the same element.
+- The card scanner has its page now, `card-scan.html`, reachable from every
+  Scan button.
+- Cards that cannot change printing in the Trade Balancer demo have one demo
+  printing; the row now says "only printing". The built app lists every
+  printing the price snapshot knows.
+- The gold piles are in, with the three open questions decided (absolute
+  tiers + a glow on the richer pile; live per card; a bare ground line when
+  empty) — say if you want any of them the other way.
+
+## Global (`r7-motif-gallery-1440`, `r7-global-1440-<colour>`)
+
+Tries: the six background animations; the elemental banners; the circled
+theme icons.
+
+Your points:
+
+-
+
+## Ask a Question (`r7-qq-*`)
+
+Your points:
+
+-
+
+## In-depth details (`r7-idq-*`)
+
+Tries: the Copies callout for storm; the actions sheet as the mechanical
+reorder beside drag.
+
+Your points:
+
+-
+
+## Trade Balancer (`r7-tb-*`)
+
+Tries: absolute tiers with the imbalance cue; live building; the empty state.
+
+Your points:
+
+-
+
+## Card scan (`r7-scan-*`)
+
+Tries: the whole screen in the new chrome; the lock outline in the colour's
+light rather than a fixed green.
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`r7-menu-*`)
+
+Tries: the whisper of the element at the foot.
+
+Your points:
+
+-
+
+## Ready to build?
+
+-

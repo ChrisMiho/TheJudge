@@ -31,14 +31,16 @@ compositions each page targets.
   each profile are unchanged from `REQ-099`'s shipped values.
 - `motifs.js` — the one source of every colour's symbol (round 6): each
   drawn in a 100×100 box, injected as an SVG sprite, with the letter the
-  pages wear today (`CHOSEN`) and the candidates the gallery shows.
+  pages wear (`CHOSEN` — the owner's final picks as of round 7: White C,
+  Blue C, Black A, Red A, Green A redrawn, Colorless C) and the candidates
+  the gallery keeps for the record.
 - `motifs/` — one original SVG per colour (`REQ-201`), each a badge (round
   4): a dark disc holding the colour's chosen symbol, wrapped in a ring of
   its element — White a sun rising over a horizon in scattering rays, Blue
   a wave crest in a sweeping wave, Black a skull drawn in line among thorns
-  with ink dripping below, Red a flame in a swirl of fire, Green a seed
-  sprouting from the soil in a leaf wreath, Colorless a spiral inside a
-  ring, wrapped in curling tendrils. Each file embeds its symbol's paths
+  with ink dripping below, Red a flame in a swirl of fire, Green a sprout
+  curling up from the soil in a leaf wreath (round 7), Colorless a vortex of
+  broken rings, wrapped in curling tendrils (round 7). Each file embeds its symbol's paths
   from `motifs.js`; when a pick changes, both change. Drawn for this app;
   no official Wizards of the Coast mana glyph, icon font, logo, or card art
   anywhere in this tree.
@@ -50,9 +52,13 @@ compositions each page targets.
   plus the shared menu tray, chat and card-detail panel (round 3).
 - `ambience.css` + `ambience.js` — the per-colour personality layer behind
   every page: two sheets of drifting haze and a field of magical dust
-  (round 5), plus the colour's badge faint and drifting, over a flat ground
-  (round 6). No corner decoration anywhere: the round-3 `ornaments/` and the
-  round-4 hairline brackets are both gone.
+  (round 5), the colour's badge faint and drifting, over a flat ground
+  (round 6), and — round 7 — each colour's **element played as its own
+  animation** on the same canvas (a green canopy shedding leaves, blue
+  bubbles and waves, black fog and wisps, red heat, white beams, colorless
+  shapes). The same renderer plays at a whisper in the Menu's foot. No
+  corner decoration anywhere: the round-3 `ornaments/` and the round-4
+  hairline brackets are both gone.
 - `motif-gallery.html` — the owner's picks and the round-6 candidates per
   colour at orb size and large, for the owner to pick from.
 - `shared-chrome-menu.html` — the Menu, brand mark, Theme section, mock-mode
@@ -61,15 +67,17 @@ compositions each page targets.
 - `quick-question.html` — Quick Question, pre-submit and answered.
 - `in-depth-question.html` — every In-Depth Question step.
 - `trade-balancer.html` — Trade Balancer, phone tabs and desktop side-by-side.
+- `card-scan.html` — round 7: the card scanner (today's `ScanCameraSurface`
+  + `ScanReviewBubble`) in the shared chrome; the camera feed is a still.
+  Every Scan button on the three flows opens it with `?back=` and `?into=`.
 
 ## Previewing all six colours
 
 Every page's `<html>` tag carries `data-profile="blue"` by default (Blue is
-the shipped default, `REQ-099`). To preview another colour, either use the
-Theme section on `shared-chrome-menu.html` (it live-updates the page with no
-reload) or edit the `data-profile` attribute directly in your browser's
-DevTools — valid values are `white`, `blue`, `black`, `red`, `green`,
-`colorless`.
+the shipped default, `REQ-099`). To preview another colour, open any page
+with `?profile=green` (round 7 — any of `white`, `blue`, `black`, `red`,
+`green`, `colorless`), use the Theme row in the Menu (it live-updates the
+page with no reload), or edit the `data-profile` attribute in DevTools.
 
 ## `before/`, `after/` and `renders/`
 
@@ -104,11 +112,156 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
 
+### Round 7 (2026-09-28, from `OWNER-FEEDBACK.md` → "Round 7")
+
+Every Round 7 note applied. Renders are `renders/r7-*.png` (phone 390×844,
+desktop 1440×900) — the only renders in the folder; Round 6's live in git
+history at commit `9fdb1a0`.
+**Rule** = the owner said it must hold; **Try** = shown for a verdict.
+
+Global, on every page:
+
+- Rule: **the six symbols are final** — White C, Blue C, Black A, Red A,
+  Green A, Colorless C (`motif-gallery.html`, `r7-motif-gallery-1440`).
+  Green A is **redrawn** on the note: the dot above the sprout is gone, the
+  stem bends and curls into a tendril, the two leaves differ in size and
+  height, the soil line sits off-centre — asymmetric, a little mystical,
+  not a diagram. `motifs/green.svg` and `motifs/colorless.svg` carry the
+  new symbols; the brand orb, the judge's seal and the drifting badge follow.
+- Rule: **the theme icons sit in a circle** — a light disc of the colour
+  with the symbol dark on it, a play on the printed mana symbols; the chosen
+  one wears a thin ring of its light (`r7-menu-*`). The gallery shows each
+  candidate in that circle too.
+- Try: **each colour's element plays behind the page** (`r7-global-1440-*`,
+  one per colour), on the same canvas as the dust, all slow and faint:
+  Green a canopy hangs from the top edge — its branches and leaf clusters
+  are the top of the screen — and leaves fall casually to the bottom · Blue
+  bubbles rise through three slow waves, undersea · Black fog banks roll low
+  across the page and a few wisps wander (the ominous vibe, not only the
+  graveyard) · Red a bed of heat along the foot with soft tongues licking up
+  and embers rising — fire without a bonfire · White soft beams from above
+  and slow orbs of light lifting · Colorless abstract geometry — hexagons,
+  rings, ticks, dashed circles — turning slowly, mechanical. Density and
+  alpha are one number each per scene in `ambience.js`.
+- Rule: **the banner design is the colour's own element**, not an abstract
+  pattern: White the rays of a low sun fanning up behind the brand · Blue
+  waves along the band's foot · Black fog pooling at each end · Red the hot
+  band and embers (kept) · Green leaves blown in from each end · Colorless a
+  hexagonal lattice at each end. All cut from the colour's tokens, so a
+  custom Colorless colour carries in.
+- Rule: **the drifting badge behind the page is fainter** so the element
+  reads. The haze, the flat ground and Black's motion hold from round 6.
+
+#### Ask a Question — `quick-question.html` (`r7-qq-*`)
+
+- Rule: the **"your cards come with you" line is gone.**
+- Rule: **"Add in-depth details" lives inside the question box**, at its
+  left end — a pill the height of the round send, one control among the
+  box's own, not a row of its own. On a narrow phone it keeps its glyph and
+  drops the word (`r7-qq-390`). It still carries the attached cards over.
+
+#### Ask a Question · in-depth details — `in-depth-question.html` (`r7-idq-*`)
+
+- Rule: the **combined game plate and the hidden extra details stay**.
+- Rule: **carried cards are placed one at a time** (`r7-idq-1440-3-placing`,
+  `r7-idq-390-3-placing`): the same sheet as the context step — the card is
+  the hero at the left, "Which zone is it in?" beside it, one tile per zone
+  chosen at step 2, "Other zones ▾" for the rest (picking one adds it to the
+  chosen zones). A tap places the card and the next one follows; a counter
+  reads "1 / 5 to place"; "Leave this card out" drops it. The dropdown strip
+  is gone.
+- Rule: **the guardrail** — nothing past the Cards step until every carried
+  card has a zone. The shelf, the search and Continue wait behind the
+  placement sheet; the rail's "Context" station bounces back to Cards and
+  nudges the sheet.
+- Rule: after placing, **a tap on any shelf card opens its actions**
+  (`r7-idq-1440-3-card-actions`): Move to — every zone as a tile, the
+  current one marked — Details, Remove; on the Stack also ↓ Move down ·
+  ↑ Move up · To top. So a placed card can be reassigned, and lists edited,
+  from the zone itself.
+- Rule: **the Stack reorders by drag** — a card lifts and rides the pointer
+  (a mouse drags at once; touch after a short hold), the others show where
+  it will land, and the tags (#1 … TOP) renumber. The actions sheet is the
+  mechanical way. The hint under the shelf says both.
+- Rule: **a target can be picked once.** What is already a pill leaves the
+  picker. Naming every player one by one folds the pills into **All
+  players**; picking All players drops the single-player pills and hides
+  them from the picker (`r7-idq-1440-4-context`).
+- Try: **Copies** — a small number field on Stack cards ("storm, fork…") is
+  the storm callout: the one honest case for "the same thing again". The
+  review reads "+3 copies".
+
+#### Trade Balancer — `trade-balancer.html` (`r7-tb-*`)
+
+- Rule: **two piles of gold replace the scale** (`r7-tb-1440`,
+  `r7-tb-1440-hoard`, `r7-tb-390`). Each side's pile grows through five
+  tiers by the dollar value on that side — under $10 loose coins and a
+  two-coin stack · $10–25 two taller stacks · $25–60 a mound with a stack at
+  its peak · $60–150 a larger mound crowned with a purple gem and taller
+  side stacks · $150+ the hoard: the largest mound topped with a chalice,
+  the tallest outer stacks, coins scattered at the edges. Each tier builds
+  on the last. Thresholds are placeholders in `TIERS`, to tune on real
+  trade data.
+- Rule: **tier-up drops in from above** with a slight overshoot (550 ms),
+  ~90 ms stagger per element so a multi-tier jump cascades; tier-down lifts
+  and fades at once; nothing loops idle.
+- Rule: **the verdict line** (serif, under the piles), by the ratio of the
+  smaller side to the larger: 95%+ "Fair trade" · 85–95% "Slightly favors
+  …" · 60–85% "Leans toward …" · under 60% "Lopsided — … by NN%". The plain
+  dollar difference stays beneath it (rounds 4 and 6). "Even" when equal.
+- Rule: flat fills — gold and amber with a bronze outline, one purple gem.
+- Decided, from the open questions: **absolute tiers with an imbalance cue**
+  — the richer pile glows, the lighter one dims a step, and the verdict
+  names the side (relative tiers would hide how big the trade is). **Live
+  building** — the piles update as each card is added (that is how the
+  mockup already works). **Empty state** — the bare ground line and "Add
+  cards to weigh the trade". The Dragon's Hoard stays a later option.
+- Answer: a card that cannot change printing has **one demo printing** in
+  this mockup (Birds, Path, Helix); it now reads "only printing". The built
+  app offers every printing the price snapshot knows for that card.
+- The demo strip switches between one trade per verdict band.
+
+#### Card scan — `card-scan.html` (`r7-scan-*`)
+
+- Try: the **scanner in the new chrome**, every part of today's screen kept
+  (`ScanCameraSurface`, `ScanReviewBubble`; DEC-052…062): the viewfinder is
+  a lit frame in the colour's edge; the card guide is the colour's light
+  with corner ticks and pulses while locking; the indicator (searching hints
+  · "Locking on Lightning Bolt" with the vote bar · "Good — hold steady" ·
+  "Camera unavailable") is a themed pill; the lock outline on the card is a
+  marching dash of the colour's light; the review bubble is the colour's
+  filled pill and opens the "Added this session" list with Remove; the
+  thumbs-up on each auto-add is the colour's plate; mute, Debug, Capture and
+  Exit scan are all there. "Adding to Stack · ✓ 2 added" sits under the
+  title. Scan buttons on the three flows open it and come back.
+- There is no shipped screenshot of this screen (a camera needs a device);
+  the feed here is a still of a card on a table.
+
+#### Shared chrome and Menu — `shell.css` + `flow.js` (`r7-menu-*`)
+
+- Rule: the theme icons are **circles** (above).
+- Try: **the foot is quieter and on-theme** (`r7-menu-1440`,
+  `r7-menu-1440-green`, `r7-menu-390`): the badge is gone; the colour's own
+  element plays there at a whisper — a few falling leaves, a handful of
+  bubbles and a wave, a wisp in fog, heat, a beam, a turning ring — over a
+  faint pool of the colour's light, fading in from nothing. Not dead space,
+  not a picture.
+
+### Open for the owner's verdict (Round 7)
+
+- Global: the six background animations — the right amount of subtle? any
+  colour whose element misses?
+- In-depth: the Copies callout for storm; the actions sheet as the
+  mechanical reorder.
+- Trade Balancer: absolute tiers + the cue; live building; the empty state.
+- Card scan: the lock outline in the colour's light (today's is a fixed
+  green) — keep, or keep green as the "yes" colour?
+- Menu: the whisper at the foot.
+
 ### Round 6 (2026-09-27, from `OWNER-FEEDBACK.md` → "Round 6")
 
-Every Round 6 note applied. Renders are `renders/r6-*.png` (phone 390×844,
-desktop 1440×900) — the only renders in the folder; Round 5's live in git
-history at commit `4d0066c`.
+Every Round 6 note applied. The Round 6 renders (`r6-*`) were removed on
+2026-09-28; they remain in git history at commit `9fdb1a0`.
 **Rule** = the owner said it must hold; **Try** = shown for a verdict.
 
 Global, on every page:
