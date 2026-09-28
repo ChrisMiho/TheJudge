@@ -34,18 +34,36 @@
   .pan .total { font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; line-height: 1.15; transition: color 200ms ease; font-family: var(--font-display); }
   .pan[data-heavy="true"] .total { color: var(--accent-soft); text-shadow: 0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent); }
   .pan .count { font-size: 0.68rem; color: var(--text-muted); }
-  .beam-wrap { display: grid; justify-items: center; gap: 0.15rem; min-width: 150px; }
-  .beam { width: 96px; height: 34px; display: block; }
-  .beam .bar { transform-origin: 48px 16px; transition: transform 420ms cubic-bezier(.2,.8,.2,1); }
-  /* the verdict is just the difference (owner, rounds 4 and 6): "Side A +$1.85",
-     or "Even" when the two totals match — the "even within" window is gone */
-  .verdict { font-size: 0.9rem; font-weight: 700; text-align: center; line-height: 1.25; font-variant-numeric: tabular-nums; margin-top: 0.1rem; }
+  /* ---- round 7: two piles of gold replace the beam. Each side's pile grows
+     through five tiers by the dollar value on that side (under $10 / 10–25 /
+     25–60 / 60–150 / 150+); each tier adds to the last. New treasure drops in
+     from above with a small overshoot, staggered; a shrinking pile lifts and
+     fades at once. Flat fills, gold and bronze, one purple gem. ---- */
+  .piles-wrap { display: grid; justify-items: center; gap: 0.1rem; min-width: 200px; }
+  .piles { display: flex; align-items: flex-end; justify-content: center; gap: 0.4rem; }
+  .pile { width: 120px; height: 67px; display: block; overflow: visible; transition: filter 300ms ease, opacity 300ms ease; }
+  .pile[data-heavy="true"] { filter: drop-shadow(0 0 10px rgba(226, 177, 60, 0.55)); }
+  .pile[data-light="true"] { opacity: 0.72; }
+  .pile [data-t] { opacity: 0; visibility: hidden; transform-box: fill-box; transform-origin: center bottom; }
+  .pile [data-t].on { visibility: visible; animation: tier-in 550ms cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: var(--d, 0ms); }
+  .pile [data-t].off { visibility: visible; animation: tier-out 260ms ease both; }
+  @keyframes tier-in { from { opacity: 0; transform: translateY(-34px); } to { opacity: 1; transform: none; } }
+  @keyframes tier-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-14px); } }
+  .pile .ground { stroke: color-mix(in srgb, var(--text-muted) 55%, transparent); }
+  /* the verdict (round 7): by the ratio of the smaller side to the larger —
+     Fair trade · Slightly favors · Leans toward · Lopsided (with the gap); the
+     plain dollar difference stays beneath it (rule, rounds 4 and 6) */
+  .verdict { font-size: 0.9rem; font-weight: 700; text-align: center; line-height: 1.25; margin-top: 0.05rem; font-family: Georgia, "Times New Roman", serif; font-style: italic; letter-spacing: 0.01em; }
   .verdict[data-even="true"] { color: var(--accent-soft); }
+  .verdict small { display: block; font-family: var(--font-body); font-style: normal; font-weight: 600; font-size: 0.72rem; color: var(--text-muted); font-variant-numeric: tabular-nums; letter-spacing: 0; }
   @media (min-width: 720px) {
     .scale { padding: 0.6rem 1.1rem; }
     .pan .total { font-size: 1.6rem; }
-    .beam-wrap { min-width: 260px; }
+    .piles-wrap { min-width: 320px; }
+    .pile { width: 196px; height: 109px; }
+    .piles { gap: 1.2rem; }
   }
+  @media (max-width: 719px) { .pile { width: 92px; height: 52px; } .piles-wrap { min-width: 0; } }
 
   /* ---- sides: tabs on phone, two columns on desktop (REQ-204); each list scrolls ---- */
   .side-tabs { display: flex; gap: 0.4rem; flex: 0 0 auto; }
@@ -81,6 +99,7 @@
   .entry .nm { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .entry .printing { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .entry .printing button { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.7rem; padding: 0; cursor: pointer; text-decoration: underline dotted; }
+  .entry .printing .only { color: var(--text-muted); }
   .entry .controls { display: flex; align-items: center; gap: 0.25rem; margin-top: 0.1rem; }
   .entry .ctl { min-width: 30px; min-height: 30px; padding: 0 0.4rem; border-radius: 0.45rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-primary); font-size: 0.74rem; cursor: pointer; }
   .entry .ctl[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel)); color: var(--accent-soft); }
@@ -147,16 +166,12 @@
           <span class="total" id="total-a">$0.00</span>
           <span class="count" id="count-a"></span>
         </div>
-        <div class="beam-wrap">
-          <svg class="beam" viewBox="0 0 96 34" aria-hidden="true">
-            <g class="bar" id="beam-bar">
-              <line x1="6" y1="16" x2="90" y2="16" stroke="var(--accent-soft)" stroke-width="2.2" stroke-linecap="round"/>
-              <path d="M6 16 l-4 7 h8 z M90 16 l-4 7 h8 z" fill="var(--accent-soft)"/>
-            </g>
-            <path d="M48 16 l-6 14 h12 z" fill="var(--accent)"/>
-            <circle cx="48" cy="16" r="3" fill="var(--surface-ground)" stroke="var(--accent-soft)" stroke-width="2"/>
-          </svg>
-          <div class="verdict" id="verdict"></div>
+        <div class="piles-wrap">
+          <div class="piles" aria-hidden="true">
+            <svg class="pile" id="pile-a" viewBox="0 0 180 100"></svg>
+            <svg class="pile" id="pile-b" viewBox="0 0 180 100"></svg>
+          </div>
+          <div class="verdict" id="verdict" aria-live="polite"></div>
         </div>
         <div class="pan b" id="pan-b">
           <span class="label" id="lbl-b">Side B</span>
@@ -177,10 +192,20 @@
       </div>
     </section>
 
+    <div class="demo-bar" aria-label="Mockup state (demo only)">
+      <span class="tag">demo</span><span>trade:</span>
+      <button data-trade="lean" aria-pressed="true">Leans (tier 3 vs 2)</button>
+      <button data-trade="fair" aria-pressed="false">Fair trade</button>
+      <button data-trade="slight" aria-pressed="false">Slightly favors</button>
+      <button data-trade="lopsided" aria-pressed="false">Lopsided</button>
+      <button data-trade="hoard" aria-pressed="false">Hoard (tier 5)</button>
+      <button data-trade="empty" aria-pressed="false">Empty</button>
+    </div>
+
     <p class="foot-note">
       Before: <a href="../before/trade-balancer-390x844.png">trade-balancer-390x844.png</a> ·
       <a href="../before/trade-balancer-1440x900.png">trade-balancer-1440x900.png</a>.
-      Card images are the app's own corpus art via Scryfall (unchanged from today). Prices are demo values. The screen above fits the viewport; only this note sits below it.
+      Card images are the app's own corpus art via Scryfall (unchanged from today). Prices are demo values; a card with one demo printing shows "only printing" instead of Change. The screen above fits the viewport; the dashed strip is mockup scaffolding, not app UI.
     </p>
   </main>
 
@@ -223,10 +248,16 @@
     };
     let uid = 0;
     const entry = (name, side, opts = {}) => ({ id: ++uid, card: byName(name), side, printing: opts.printing || 0, foil: !!opts.foil, qty: opts.qty || 1 });
-    let entries = [
-      entry('Lightning Bolt', 'a'), entry('Sol Ring', 'a', { qty: 2 }),
-      entry('Llanowar Elves', 'b'), entry('Counterspell', 'b', { foil: true }), entry('Swords to Plowshares', 'b'), entry('Lightning Helix', 'b')
-    ];
+    // demo trades (round 7): one per verdict band, so every pile tier can be seen
+    const TRADES = {
+      lean:     () => [entry('Rhystic Study', 'a'), entry('Lightning Bolt', 'a'), entry('Birds of Paradise', 'b', { qty: 2 }), entry('Counterspell', 'b', { foil: true }), entry('Sol Ring', 'b', { qty: 2 }), entry('Swords to Plowshares', 'b'), entry('Path to Exile', 'b'), entry('Lightning Helix', 'b')],
+      fair:     () => [entry('Lightning Bolt', 'a'), entry('Path to Exile', 'a'), entry('Swords to Plowshares', 'a'), entry('Birds of Paradise', 'b')],
+      slight:   () => [entry('Sol Ring', 'a'), entry('Counterspell', 'a'), entry('Lightning Bolt', 'b')],
+      lopsided: () => [entry('Rhystic Study', 'a', { printing: 1 }), entry('Lightning Helix', 'b'), entry('Path to Exile', 'b')],
+      hoard:    () => [entry('Rhystic Study', 'a', { printing: 1, foil: true }), entry('Birds of Paradise', 'a', { qty: 2 }), entry('Rhystic Study', 'b'), entry('Sol Ring', 'b', { printing: 2, foil: true })],
+      empty:    () => []
+    };
+    let entries = TRADES.lean();
     // entries keep the order they were added in — changing a printing or finish edits the
     // entry in place, it never moves (rule, round 6); the side lists are drawn from this one array
     let names = { a: 'Side A', b: 'Side B' };
@@ -249,12 +280,13 @@
         $('count-' + s).textContent = n + (n === 1 ? ' card' : ' cards');
         $('pan-' + s).dataset.heavy = !even && heavy === s;
       });
-      // beam tilts toward the heavier side, capped at 9 degrees
-      const tilt = ta === tb ? 0 : Math.min(9, 2 + gap * 1.2) * (ta > tb ? -1 : 1);
-      $('beam-bar').style.transform = 'rotate(' + tilt + 'deg)';
+      // the piles: each side's tier from its own total; the richer pile glows, the lighter one dims (the imbalance cue)
+      setTier($('pile-a'), tierOf(ta)); setTier($('pile-b'), tierOf(tb));
+      $('pile-a').dataset.heavy = !even && heavy === 'a'; $('pile-b').dataset.heavy = !even && heavy === 'b';
+      $('pile-a').dataset.light = !even && light === 'a' && ta + tb > 0; $('pile-b').dataset.light = !even && light === 'b' && ta + tb > 0;
       const v = $('verdict');
       v.dataset.even = even;
-      v.textContent = ta + tb === 0 ? 'Add cards' : even ? 'Even' : names[heavy] + ' +' + usd(gap);
+      v.innerHTML = ta + tb === 0 ? 'Add cards to weigh the trade' : verdictLine(ta, tb, heavy, gap);
 
       $('sides').innerHTML = ['a', 'b'].map((s) => {
         const list = entries.filter((e) => e.side === s);
@@ -263,7 +295,7 @@
           return '<div class="entry" data-id="' + e.id + '" data-foil="' + e.foil + '">' +
             '<div ' + ringAttr(e.card).replace('class="', 'class="card ') + ' title="Card details"><img src="' + img(e.card.id) + '" alt="' + e.card.name + '"></div>' +
             '<div class="info"><span class="nm">' + e.card.name + '</span>' +
-            '<span class="printing">' + p[0] + ' · ' + p[1] + ' · <button data-act="printing">Change</button></span>' +
+            '<span class="printing">' + p[0] + ' · ' + p[1] + ' · ' + (PRINTINGS[e.card.name].length > 1 ? '<button data-act="printing">Change</button>' : '<span class="only">only printing</span>') + '</span>' +
             '<div class="controls">' +
             '<button class="ctl" data-act="foil" aria-pressed="' + e.foil + '"' + (p[4] === null ? ' disabled title="No foil price"' : '') + '>Foil</button>' +
             '<button class="ctl" data-act="dec" aria-label="Decrease quantity"' + (e.qty <= 1 ? ' disabled' : '') + '>−</button>' +
@@ -278,7 +310,7 @@
         return '<section class="side" data-side="' + s + '" data-active="' + (s === activeSide) + '" aria-label="' + names[s] + '">' +
           '<div class="side-head"><input class="name" value="' + names[s] + '" aria-label="Rename ' + names[s] + '" data-side="' + s + '">' +
           '<div class="attach"><button class="icon-chip" data-act="search" aria-expanded="' + searchOpen + '"><span class="glyph">＋</span> Add card</button>' +
-          '<button class="icon-chip"><span class="glyph">▣</span> Scan</button></div></div>' +
+          '<a class="icon-chip" href="card-scan.html?back=trade-balancer.html&into=' + encodeURIComponent(names[s]) + '"><span class="glyph">▣</span> Scan</a></div></div>' +
           '<div class="search-pop' + (searchOpen ? ' open' : '') + '"><div class="search-row"><span class="glyph">⌕</span><input class="field side-search" placeholder="Search to add a card to ' + names[s] + '" autocomplete="off"></div><div class="search-results"></div></div>' +
           '<div class="entries">' + (rows || '<div class="entry-empty">No cards on this side yet — add one, or scan it.</div>') + '</div>' +
           '<div class="side-foot"><span>' + names[s] + ' total <b>' + usd(sideTotal(s)) + '</b></span></div>' +
@@ -348,6 +380,63 @@
     $('pp-close').addEventListener('click', closePrinting);
     $('pp-backdrop').addEventListener('click', closePrinting);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePrinting(); });
+
+    // ---- the gold piles (round 7) ----
+    const TIERS = [10, 25, 60, 150];                       // placeholder thresholds — tune against real trade data
+    const tierOf = (v) => v <= 0 ? 0 : 1 + TIERS.filter((t) => v >= t).length;
+    function verdictLine(ta, tb, heavy, gap) {
+      const ratio = Math.min(ta, tb) / Math.max(ta, tb);
+      const who = names[heavy];
+      const diff = '<small>' + who + ' +' + usd(gap) + '</small>';
+      if (ta === tb) return 'Even';
+      if (ratio >= 0.95) return 'Fair trade' + diff;
+      if (ratio >= 0.85) return 'Slightly favors ' + who + diff;
+      if (ratio >= 0.60) return 'Leans toward ' + who + diff;
+      return 'Lopsided — ' + who + ' by ' + Math.round((1 - ratio) * 100) + '%' + diff;
+    }
+    // one pile: every element carries the tier it belongs to; tiers build on each other
+    const G = { coin: '#e2b13c', rim: '#c9962c', edge: '#7a4f12', mound: '#d9a63a', gem: '#a855f7', gemL: '#d8b4fe', gemD: '#7e22ce' };
+    const coin = (x, y, r = 10) => '<ellipse cx="' + x + '" cy="' + y + '" rx="' + r + '" ry="' + (r * 0.36).toFixed(1) + '" fill="' + G.coin + '" stroke="' + G.edge + '" stroke-width="1.2"/>';
+    function stack(x, base, n, r = 10) {
+      let out = '';
+      for (let i = 0; i < n; i++) {
+        const y = base - i * 4;
+        out += '<rect x="' + (x - r) + '" y="' + (y - 3.5) + '" width="' + (r * 2) + '" height="3.5" fill="' + G.rim + '" stroke="' + G.edge + '" stroke-width="1"/>' + coin(x, y - 3.5, r);
+      }
+      return out;
+    }
+    const mound = (x0, x1, peakCtl) => '<path d="M' + x0 + ' 88 Q 90 ' + peakCtl + ' ' + x1 + ' 88 Z" fill="' + G.mound + '" stroke="' + G.edge + '" stroke-width="1.3"/>' +
+      '<path d="M' + (x0 + 14) + ' 84 Q 90 ' + (peakCtl + 18) + ' ' + (x1 - 14) + ' 84" fill="none" stroke="' + G.edge + '" stroke-width="0.9" opacity="0.5"/>';
+    const gem = (x, y) => '<polygon points="' + x + ',' + (y - 13) + ' ' + (x + 9) + ',' + (y - 4) + ' ' + x + ',' + (y + 8) + ' ' + (x - 9) + ',' + (y - 4) + '" fill="' + G.gem + '" stroke="' + G.gemD + '" stroke-width="1.2"/>' +
+      '<polygon points="' + x + ',' + (y - 13) + ' ' + (x + 9) + ',' + (y - 4) + ' ' + (x - 9) + ',' + (y - 4) + '" fill="' + G.gemL + '" opacity="0.7"/>';
+    const chalice = (x, y) => '<path d="M' + (x - 11) + ' ' + (y - 26) + ' h22 q0 14 -11 16 q-11 -2 -11 -16 z" fill="' + G.coin + '" stroke="' + G.edge + '" stroke-width="1.2"/>' +
+      '<rect x="' + (x - 2) + '" y="' + (y - 10) + '" width="4" height="7" fill="' + G.rim + '" stroke="' + G.edge + '" stroke-width="1"/>' +
+      '<path d="M' + (x - 9) + ' ' + y + ' q9 -6 18 0 z" fill="' + G.coin + '" stroke="' + G.edge + '" stroke-width="1.2"/>' +
+      '<circle cx="' + x + '" cy="' + (y - 19) + '" r="2" fill="' + G.gem + '"/>';
+    const T = (t, body, hideAt) => '<g data-t="' + t + '"' + (hideAt ? ' data-hide-at="' + hideAt + '"' : '') + '>' + body + '</g>';
+    const PILE_MARKUP =
+      '<line class="ground" x1="2" y1="88" x2="178" y2="88" stroke-width="1.5" stroke-linecap="round"/>' +
+      T(5, mound(22, 158, 26)) + T(4, mound(40, 140, 40)) + T(3, mound(55, 125, 52)) +
+      T(1, coin(40, 88)) + T(1, coin(62, 90)) + T(1, coin(128, 89)) + T(1, stack(100, 88, 2)) +
+      T(2, stack(46, 88, 5)) + T(2, stack(136, 88, 4)) +
+      T(3, stack(90, 70, 3), 5) +
+      T(4, gem(60, 70)) + T(4, stack(26, 88, 7)) + T(4, stack(154, 88, 6)) +
+      T(5, chalice(90, 58)) + T(5, stack(10, 88, 9, 9)) + T(5, stack(170, 88, 8, 9)) + T(5, coin(48, 93, 7)) + T(5, coin(132, 94, 7));
+    $('pile-a').innerHTML = PILE_MARKUP; $('pile-b').innerHTML = PILE_MARKUP;
+    function setTier(svg, tier) {
+      let k = 0;
+      svg.querySelectorAll('[data-t]').forEach((el) => {
+        const t = Number(el.dataset.t), hide = Number(el.dataset.hideAt || 99);
+        const want = t <= tier && tier < hide, on = el.classList.contains('on');
+        if (want && !on) { el.classList.remove('off'); el.style.setProperty('--d', (k++ * 90) + 'ms'); el.classList.add('on'); }
+        else if (!want && on) { el.classList.remove('on'); el.classList.add('off'); el.addEventListener('animationend', () => el.classList.remove('off'), { once: true }); }
+      });
+    }
+    document.querySelectorAll('[data-trade]').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('[data-trade]').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true');
+      entries = TRADES[b.dataset.trade](); openSearch = null; render();
+    }));
 
     // ---- top-level controls ----
     document.querySelectorAll('.side-tabs [role="tab"]').forEach((tab) => tab.addEventListener('click', () => {
