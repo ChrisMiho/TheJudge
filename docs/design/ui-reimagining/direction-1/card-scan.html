@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scan a card — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
+<link rel="stylesheet" href="flow.css">
+<style>
+  /* ---- Card scanning (round 7): the shipped scan screen (ScanCameraSurface +
+     ScanReviewBubble, DEC-052..062) re-dressed in the colour's chrome. Same
+     parts, same behaviour: a live viewfinder with the card guide, the
+     searching → locking → locked indicator with its vote bar, the mute toggle,
+     the "added this session" review bubble, the thumbs-up on each auto-add,
+     the debug toggle, Capture, Exit scan. The camera feed is a still here. ---- */
+  .page-content { width: min(36rem, 92vw); padding-top: 0.8rem; }
+  .scan { display: grid; gap: 0.8rem; }
+  .flow-head .lead { display: flex; align-items: center; gap: 0.6rem; }
+  .flow-head .lead .icon-round { text-decoration: none; }
+  .into { display: flex; align-items: center; gap: 0.5rem; margin: -0.3rem 0 0; font-size: 0.82rem; color: var(--text-muted); }
+  .into b { color: var(--text-primary); }
+  .into .count { display: inline-flex; align-items: center; gap: 0.3rem; min-height: 24px; padding: 0 0.6rem; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--accent-soft) 45%, transparent); background: color-mix(in srgb, var(--accent) 18%, var(--surface-panel)); color: var(--accent-soft); font-weight: 700; font-size: 0.72rem; }
+
+  /* the viewfinder: a lit, rounded frame in the colour's edge; the feed inside */
+  .viewfinder {
+    position: relative; overflow: hidden; border-radius: 1.1rem; border: 1px solid var(--surface-edge);
+    background: #0b0b0d; height: clamp(20rem, calc(100dvh - 19rem), 42rem);
+    box-shadow: 0 20px 50px -30px #000, 0 0 40px -22px color-mix(in srgb, var(--accent) 80%, transparent);
+  }
+  @media (min-width: 720px) { .viewfinder { height: auto; aspect-ratio: 3 / 4; max-height: 42rem; } }
+  /* the still standing in for the camera: a table, a card lying on it */
+  .feed { position: absolute; inset: 0; background:
+    radial-gradient(80% 60% at 50% 40%, rgba(70, 58, 48, 0.55), transparent 70%),
+    radial-gradient(120% 90% at 50% 100%, rgba(0, 0, 0, 0.6), transparent 60%),
+    linear-gradient(180deg, #2a2420, #17130f 60%, #0e0b09); filter: saturate(0.85); }
+  .feed::after { content: ""; position: absolute; inset: 0; background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0 2px, transparent 2px 4px); mix-blend-mode: screen; }
+  .feed .table-card { position: absolute; left: 50%; top: 50%; width: 58%; aspect-ratio: 63 / 88; transform: translate(-50%, -49%) rotate(-3deg);
+    border-radius: 4.5% / 3.2%; overflow: hidden; box-shadow: 0 18px 40px -14px #000, 0 2px 6px rgba(0,0,0,0.6); filter: contrast(0.95) brightness(0.92) blur(0.2px); }
+  .feed .table-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  [data-state="searching"] .feed .table-card, [data-state="camera-error"] .feed .table-card { display: none; }
+  [data-state="nudge"] .feed .table-card { transform: translate(-42%, -38%) rotate(-14deg) scale(0.8); filter: blur(1.4px) brightness(0.8); }
+  [data-state="camera-error"] .feed { background: #111114; }
+  /* the dim outside the guide, the guide itself: the colour's light, corner ticks */
+  .guide { position: absolute; left: 50%; top: 50%; height: 82%; aspect-ratio: 745 / 1040; transform: translate(-50%, -50%);
+    border-radius: 0.8rem; border: 2px solid color-mix(in srgb, var(--accent-soft) 90%, transparent);
+    box-shadow: 0 0 0 999px rgba(9, 9, 11, 0.42), 0 0 22px -6px color-mix(in srgb, var(--accent-soft) 70%, transparent); pointer-events: none; }
+  .guide .tick { position: absolute; width: 18px; height: 18px; border: 3px solid var(--accent-soft); }
+  .guide .tick.tl { left: -3px; top: -3px; border-right: 0; border-bottom: 0; border-top-left-radius: 0.8rem; }
+  .guide .tick.tr { right: -3px; top: -3px; border-left: 0; border-bottom: 0; border-top-right-radius: 0.8rem; }
+  .guide .tick.bl { left: -3px; bottom: -3px; border-right: 0; border-top: 0; border-bottom-left-radius: 0.8rem; }
+  .guide .tick.br { right: -3px; bottom: -3px; border-left: 0; border-top: 0; border-bottom-right-radius: 0.8rem; }
+  [data-state="locking"] .guide { border-color: var(--accent-soft); box-shadow: 0 0 0 999px rgba(9, 9, 11, 0.42), 0 0 30px -4px var(--accent-soft); animation: guide-pulse 1.2s ease-in-out infinite; }
+  @keyframes guide-pulse { 50% { box-shadow: 0 0 0 999px rgba(9, 9, 11, 0.42), 0 0 44px 0 var(--accent-soft); } }
+  .guide .mute { pointer-events: auto; position: absolute; left: 8px; top: 8px; min-width: 36px; min-height: 30px; padding: 0 0.5rem; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent); background: rgba(9, 9, 11, 0.7); color: var(--text-primary); font-size: 0.85rem; cursor: pointer; }
+  .guide .powered { position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%); white-space: nowrap; padding: 0.2rem 0.6rem; border-radius: 999px; background: rgba(9, 9, 11, 0.6); color: color-mix(in srgb, var(--text-muted) 80%, transparent); font-size: 0.62rem; font-weight: 500; }
+  /* the lock outline on the card the scanner is reading (DEC-083) */
+  .lock-outline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+  [data-state="locking"] .lock-outline { display: block; }
+  .lock-outline polygon { fill: none; stroke: var(--accent-soft); stroke-width: 2.5; stroke-dasharray: 10 6; animation: march 1.6s linear infinite; filter: drop-shadow(0 0 6px var(--accent-soft)); }
+  @keyframes march { to { stroke-dashoffset: -32; } }
+  /* the indicator: searching hints, "Locking on <card>" with the vote bar */
+  .indicator { position: absolute; left: 0.75rem; top: 0.75rem; max-width: 80%; display: grid; gap: 0.3rem; padding: 0.5rem 0.75rem; border-radius: 0.8rem;
+    background: rgba(9, 9, 11, 0.78); border: 1px solid color-mix(in srgb, var(--accent-soft) 30%, transparent); backdrop-filter: blur(6px); font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
+  .indicator[hidden] { display: none; }
+  .indicator .votes { display: flex; align-items: center; gap: 0.5rem; }
+  .indicator .bar { width: 88px; height: 6px; border-radius: 999px; background: color-mix(in srgb, var(--text-muted) 30%, transparent); overflow: hidden; }
+  .indicator .bar i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); transition: width 150ms ease; }
+  .indicator .n { font-size: 0.7rem; color: var(--accent-soft); font-variant-numeric: tabular-nums; }
+  .indicator .dot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; background: var(--accent-soft); box-shadow: 0 0 8px var(--accent-soft); margin-right: 0.4rem; vertical-align: middle; animation: think 1.2s ease-in-out infinite; }
+  [data-state="camera-error"] .indicator { border-color: rgba(255, 143, 163, 0.5); }
+  /* the review bubble: the count, then the cards added this session */
+  .review-bubble { position: absolute; right: 0.75rem; top: 0.75rem; display: grid; justify-items: end; gap: 0.4rem; z-index: 3; }
+  .review-bubble .pill { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 34px; padding: 0 0.8rem; border-radius: 999px; border: 0; cursor: pointer; font-weight: 700; font-size: 0.86rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff) 0%, var(--accent) 45%, var(--accent-strong) 100%); color: var(--text-on-accent); box-shadow: 0 8px 20px -10px var(--accent); }
+  .review-bubble .list { display: none; width: 16rem; max-width: calc(100% - 0.5rem); padding: 0.6rem; border-radius: 0.9rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 92%, transparent); backdrop-filter: blur(10px); text-align: left; }
+  .review-bubble[data-open="true"] .list { display: grid; gap: 0.4rem; }
+  .review-bubble .list .lbl { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  .review-bubble .row { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 0.5rem; font-size: 0.82rem; }
+  .review-bubble .row .thumb { width: 30px; height: 42px; border-radius: 3px; }
+  .review-bubble .row .btn { min-height: 30px; padding: 0.1rem 0.55rem; font-size: 0.72rem; }
+  /* the thumbs-up on each auto-add */
+  .confirm { position: absolute; inset: 0; display: none; place-items: center; pointer-events: none; }
+  [data-state="added"] .confirm { display: grid; animation: confirm-pop 1.4s ease-out forwards; }
+  .confirm > div { display: grid; justify-items: center; gap: 0.2rem; padding: 0.9rem 1.4rem; border-radius: 1rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff) 0%, var(--accent) 45%, var(--accent-strong) 100%); color: var(--text-on-accent); box-shadow: 0 16px 40px -14px #000, 0 0 30px -8px var(--accent-soft); font-weight: 700; font-size: 0.9rem; }
+  .confirm .up { font-size: 2.2rem; line-height: 1; }
+  @keyframes confirm-pop { 0% { opacity: 0; transform: scale(0.8); } 15% { opacity: 1; transform: scale(1.06); } 30% { transform: scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: scale(0.96); } }
+  /* the debug toggle stays, small, at the foot of the frame */
+  .debug-toggle { position: absolute; left: 50%; bottom: 0.6rem; transform: translateX(-50%); min-height: 26px; padding: 0 0.6rem; border-radius: 999px; border: 1px solid transparent; background: rgba(9, 9, 11, 0.7); color: var(--text-muted); font-size: 0.66rem; font-weight: 600; cursor: pointer; }
+  .debug-toggle[aria-pressed="true"] { background: var(--accent); color: var(--text-on-accent); }
+  /* under the frame: Capture, Exit scan */
+  .scan-actions { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; align-items: center; }
+  .scan-actions .btn.primary { width: 100%; }
+  .scan-hint { margin: -0.3rem 0 0; font-size: 0.78rem; color: var(--text-muted); }
+  .camera-error { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 1rem; color: var(--text-muted); font-size: 0.9rem; }
+  [data-state="camera-error"] .camera-error { display: grid; }
+  .camera-error b { display: block; color: var(--text-primary); font-size: 1.05rem; margin-bottom: 0.3rem; font-family: var(--font-display); }
+  [data-state="camera-error"] .guide, [data-state="camera-error"] .debug-toggle { display: none; }
+</style>
+</head>
+<body data-tray-open="false">
+  <header class="app-header">
+    <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <a class="brand-mark" href="../index.html" aria-label="TheJudge home"><span class="orb" aria-hidden="true"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></a>
+    <div class="header-side"></div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the camera feed is a still — the scanner's parts and states are real</div>
+
+  <main class="page-content">
+    <section class="scan" id="scan" data-state="locking">
+      <div class="flow-head">
+        <div class="lead"><a class="icon-round" id="back" href="quick-question.html" aria-label="Back" title="Back">‹</a><h1>Scan a card</h1></div>
+      </div>
+      <p class="into">Adding to <b id="into">your question</b> <span class="count" id="added-count">✓ 2 added</span></p>
+
+      <div class="viewfinder" id="viewfinder">
+        <div class="feed" aria-hidden="true"><div class="table-card" id="table-card"></div></div>
+        <svg class="lock-outline" viewBox="0 0 400 533" preserveAspectRatio="none" aria-hidden="true"><polygon id="lock-poly" points="98,128 312,110 304,412 86,430"/></svg>
+        <div class="guide" data-testid="scan-alignment-guide">
+          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+          <button class="mute" id="mute" type="button" aria-pressed="false" aria-label="Mute scan sound">🔊</button>
+          <span class="powered">Powered by Cardomancer</span>
+        </div>
+        <div class="indicator" id="indicator" role="status" aria-live="polite"></div>
+        <div class="review-bubble" id="review" data-open="false">
+          <button class="pill" id="review-pill" type="button" aria-expanded="false" aria-label="Scanned this session"><span aria-hidden="true">✓</span><span id="review-n">2</span></button>
+          <div class="list" id="review-list"></div>
+        </div>
+        <div class="confirm" id="confirm" role="status"><div><span class="up" aria-hidden="true">👍</span><span id="confirm-text">Added Sol Ring</span></div></div>
+        <div class="camera-error"><div><b>Camera unavailable</b>Allow camera access, or exit and add the card by search.</div></div>
+        <button class="debug-toggle" id="debug" type="button" aria-pressed="false">Debug</button>
+      </div>
+
+      <div class="scan-actions">
+        <button class="btn primary" id="capture" type="button">Capture</button>
+        <a class="icon-chip" id="exit" href="quick-question.html"><span class="glyph">‹</span> Exit scan</a>
+      </div>
+      <p class="scan-hint">Auto-scan is on: a confident match adds the card and keeps scanning. Capture reads one frame by hand.</p>
+    </section>
+
+    <div class="demo-bar" aria-label="Mockup state (demo only)">
+      <span class="tag">demo</span><span>state:</span>
+      <button data-state="searching">searching</button>
+      <button data-state="nudge">hint · hold steady</button>
+      <button data-state="locking" aria-pressed="true">locking on</button>
+      <button data-state="added">added ✓</button>
+      <button data-state="camera-error">camera unavailable</button>
+      <button data-review="toggle">review bubble</button>
+    </div>
+    <p class="foot-note">
+      No shipped screenshot exists for this screen (the camera needs a device). Parts map one-to-one to today's <code>ScanCameraSurface</code> and <code>ScanReviewBubble</code>; the states are the scanner's own (DEC-057). The dashed strip is mockup scaffolding, not app UI.
+    </p>
+  </main>
+
+  <script src="motifs.js"></script>
+  <script src="ambience.js"></script>
+  <script src="flow.js"></script>
+  <script>
+    const { img, byName, thumb, mountMenu } = window.FLOW;
+    const $ = (s) => document.getElementById(s);
+    const q = new URLSearchParams(location.search);
+    const back = q.get('back') || 'quick-question.html';
+    const into = q.get('into') || 'your question';
+    mountMenu(back.startsWith('trade') ? 'Trade Balancer' : 'Ask a Question');
+    $('back').href = back; $('exit').href = back; $('into').textContent = into;
+
+    const leader = byName('Lightning Bolt');
+    $('table-card').innerHTML = '<img src="' + img(leader.id) + '" alt="">';
+    let added = [byName('Sol Ring'), byName('Llanowar Elves')];
+    let votes = 3, needed = 5, state = 'locking';
+
+    function render() {
+      $('scan').dataset.state = state;
+      const ind = $('indicator');
+      ind.hidden = false;
+      if (state === 'camera-error') ind.textContent = 'Camera unavailable';
+      else if (state === 'searching') ind.innerHTML = '<span><span class="dot"></span>Searching — fill the guide with a card</span>';
+      else if (state === 'nudge') ind.innerHTML = '<span><span class="dot"></span>Hold steady</span>';
+      else if (state === 'locking') ind.innerHTML = '<span>Locking on ' + leader.name + '</span><span class="votes"><span class="bar"><i style="width:' + Math.round(votes / needed * 100) + '%"></i></span><span class="n">' + votes + '/' + needed + '</span></span>';
+      else ind.innerHTML = '<span><span class="dot"></span>Good — hold steady</span>';
+      $('review').hidden = !added.length;
+      $('review-n').textContent = added.length;
+      $('added-count').textContent = '✓ ' + added.length + ' added';
+      $('review-list').innerHTML = '<span class="lbl">Added this session</span>' + added.map((c, i) => '<div class="row">' + thumb(c) + '<span>' + c.name + '</span><button class="btn" data-i="' + i + '" type="button">Remove</button></div>').join('');
+      $('review-list').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { added.splice(Number(b.dataset.i), 1); render(); }));
+    }
+    $('review-pill').addEventListener('click', () => { const open = $('review').dataset.open !== 'true'; $('review').dataset.open = open; $('review-pill').setAttribute('aria-expanded', open); });
+    $('mute').addEventListener('click', () => { const m = $('mute').getAttribute('aria-pressed') !== 'true'; $('mute').setAttribute('aria-pressed', m); $('mute').textContent = m ? '🔇' : '🔊'; $('mute').setAttribute('aria-label', m ? 'Unmute scan sound' : 'Mute scan sound'); });
+    $('debug').addEventListener('click', () => $('debug').setAttribute('aria-pressed', $('debug').getAttribute('aria-pressed') !== 'true'));
+    // Capture (or a completed lock): the card is added, the thumbs-up plays, scanning resumes
+    function addLeader() {
+      if (!added.includes(leader)) added.push(leader);
+      $('confirm-text').textContent = 'Added ' + leader.name;
+      state = 'added'; render();
+      setTimeout(() => { if (state === 'added') { state = 'searching'; render(); } }, 1500);
+    }
+    $('capture').addEventListener('click', addLeader);
+    document.querySelectorAll('.demo-bar [data-state]').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.demo-bar [data-state]').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true');
+      if (b.dataset.state === 'added') return addLeader();
+      state = b.dataset.state; render();
+    }));
+    document.querySelector('[data-review]').addEventListener('click', () => $('review-pill').click());
+    render();
+  </script>
+</body>
+</html>

@@ -63,7 +63,13 @@
     .pile { width: 196px; height: 109px; }
     .piles { gap: 1.2rem; }
   }
-  @media (max-width: 719px) { .pile { width: 92px; height: 52px; } .piles-wrap { min-width: 0; } }
+  /* on a phone the piles take a row of their own above the two totals */
+  @media (max-width: 719px) {
+    .scale { grid-template-columns: 1fr 1fr; gap: 0.2rem 0.5rem; padding-top: 0.4rem; }
+    .piles-wrap { grid-column: 1 / -1; grid-row: 1; min-width: 0; }
+    .pile { width: 132px; height: 73px; }
+    .piles { gap: 0.6rem; }
+  }
 
   /* ---- sides: tabs on phone, two columns on desktop (REQ-204); each list scrolls ---- */
   .side-tabs { display: flex; gap: 0.4rem; flex: 0 0 auto; }
