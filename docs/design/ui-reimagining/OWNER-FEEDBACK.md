@@ -711,7 +711,17 @@ random Colorless banner.
 
 Your points:
 
--
+- the new blue profile with the random symbols and such floating around is much better than the water, but some of the shapes are too large and detailed for what id like, if there are larger shapes, they need to be less detailed like the ones in the colorless profile
+- the blue profile side menu still has the underwater theme going and not the new theme
+- all profiles outside the blue have much better animations and vibes between the main background and the side menu, however, i do not like how the main background image sits behind the card compoennt and off to the left side, that feels out of place and not what im going for
+- i think for the background, making the image larger, centered, and maybe a bit blurry was the solution to the old background that was mostly covered
+- the image behind the card can go to a more generic solid color, like the chat uses, so that it stands apart from the background
+- i like the sentiment behind moving it off to the side, but i dislike how it looks, the image/logo isnt a focus for the app, its part of the atmosphere of the profile
+- the green banner new graphic doesnt capture what i asked for, instead, can we find an abstract kind of pattern leveraging shapes that look like leaves and other tree related items
+- the blue banner still has the waves, i think some subtle random shapes would be better
+- the white banner is okay, but i want it a little toned down on the beams of light
+- for all chat screens or places where you can type a question, i want to add a microphone icon inside of the send icon, that users can click, that will enable the microphone on their phone and leverage their voice to text feature to type for them, so that they dont have to type out their own questions, this feature is not to implement an api or anything to enable this functionality, this should leverage what the phone already has installed
+- 
 
 ## Ask a Question (`r8-qq-*`)
 
@@ -719,7 +729,9 @@ Tries: the waiting lines typed in the Judge's bubble.
 
 Your points:
 
--
+- the animation that plays while we wait for the LLM response is too fast, the text changes before its even fully readable, i like the effect, but i cant appreciate it for how fast its moving
+- if possible to make that effect more mystical, arcane, or magical, id appreciate that, but its a good start
+- when clicking the restart button, it brings me back to the screen with the same cards still in context, does that mean the restart button is meant to modify the current request, or actually start over? id like the restart button to wipe and give a clean state, so what i noticed is missing is the ability to edit the cards in a current request, if that isnt a good idea, we need a better way to allow people to modify and then start a new request then, while still also giving a clean wipe button
 
 ## In-depth details (`r8-idq-*`)
 
@@ -728,7 +740,8 @@ More details for Copies; the zone tags lighting up their rows.
 
 Your points:
 
--
+- when clicking the zones for the cards, when you click the option to show all fields, it continues to show all fields for the rest of the cards, id like to enhance this, so that only the newly used fields are added to the selection, to reduce the options the user needs to click, unless they click the option to add another again
+- i am unable to re-order the cards when i drag them around, id like to make sure that works
 
 ## Trade Balancer (`r8-tb-*`)
 
@@ -736,7 +749,7 @@ Tries: relative piles (the richer side is the full hoard).
 
 Your points:
 
--
+- its hard to find complaints now, however, on desktop, i notice both sides go all the way down to the bottom of the screen, while i appreciate the use of the space, can we add a little buffer under the bottom, so that the final prices of each side arent all the way at the bottom of the screen, i dont want to remove them though, i still like it there because it makes screenshots really clean
 
 ## Card scan (`r8-scan-*`)
 
@@ -744,7 +757,7 @@ Tries: the quiet guide; the ✕ in the corner; one count; Debug's look.
 
 Your points:
 
--
+- this looks much better, can we add another widgit to the top of the camera area next to the circle with the number of cards added this session, it should be like a yellow caution triangle, and when clicked on, will produce a pop-up that informs the user, that this feature is experimental and isnt fully functioning 
 
 ## Shared chrome and Menu (`r8-menu-*`)
 
@@ -752,7 +765,9 @@ Tries: the element across the whole tray.
 
 Your points:
 
--
+- the blue profile side menu still has boubles floating around instead of the new abstract things floating around
+- the animation utziling the entire tray is amazing, i love it
+- all the themes look so much better, just need to fix the blue one now, the rest all look great
 
 ## Ready to build?
 
