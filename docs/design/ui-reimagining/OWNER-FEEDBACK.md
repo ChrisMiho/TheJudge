@@ -608,13 +608,20 @@ theme icons.
 
 Your points:
 
--
+- the white background animations are perfect, this is the vibe i want and i love it, i love the animation in the side panel, id like to explore is the background image however, a majority of it is covered up, and while i dont want it to be a prevelant thing, its also almost completely hidden
+- blue however, doesnt hit, i like the waves in the banner, but the background image is still the old circle one, the horizontal lines moving is a nice touch but it doesnt work, just like the boubles, it also doesnt work, i like the little specs floatin around, but this doesnt work for blue in the way i hoped, i think we need to explore a version that is maybe more blue arcane focused, i love the animation in the side panel
+- black feels kinda generic, the colors are spot on, the glow is perfect, i like the orbs floating around, but the background image is basically complete covered up by the UI itself, i dont want it to be some prevelant thing, but i think we could do better than just an hambre background, which is what it kinda looks like right now, i love the animation in the side panel
+- red feels great, i love the animation that kinda feels like fire with the orbs floating up, the one thing id like to explore is the background image however, a majority of it is covered up, and while i dont want it to be a prevelant thing, its also almost completely hidden
+- I think this is an incredible first stab at the green theme, the branches hanging down are a little wonky, but i love the animation of the leaves casually falling, the pattern in the banner is a cool idea, but i think id prefer it to look more like leaves/branches within the trees, to play onto the animation, its cool to see the side panel animation, but it looks out of place compared to the others, i dont want to get rid of it, but maybe for green and the rest of the profiles, we can utilize more of the deadspace, instead of just the bottom half
+- I love the gray colorless theme, the random shapes moving around and the overall vibe is incredible, same feedback about the background image like the others, but overall, love the design, i love the animation in the side menu, and the top banner isnt bad with the hexagons either, although id love something with more abstract design that feels more random, the only real feedback i have on this, and im not sure how to approach it, is that setting certain colors removes the ability to read certain text, and other colors even made the background images disapear, is there anyway we can make changes to address this?
+- i love how simple the menu bar is in the top right, but i feel its too small, especially on desktop, can we make it tad larger please, maybe 20-30%
+
 
 ## Ask a Question (`r7-qq-*`)
 
 Your points:
 
--
+- i noticed the funny text that prints while we wait for the LLM response isnt there anymore, is that still in scope, and is there a fun way we can integrate that stuff, maybe some sort of bouble with an animation that prints those messages while we wait
 
 ## In-depth details (`r7-idq-*`)
 
@@ -623,7 +630,12 @@ reorder beside drag.
 
 Your points:
 
--
+- i can drag to re-order the cards in step 3 of the flow, i realize the order maybe only matters for some of the zones, but overall, i think its a nice quality of life for users
+- on desktop, i like the little info box that pops up when you click it, but the location feels so odd shoved into the top right, can we find a place more towards the center that feels more natural maybe?
+- when adding specific context on a card, i see "COPIES storm, fork....", i like the idea of a storm drop down that goes from 0-99, but it should only show a few, i also feel like copies are really uncommon, so id like to find a way to hide it if possible, im sure there will be other things ill add in the future, but id like to figure out a sleak way to hide these extra settings, without cluttering the ui with multiple buttons or other things to compact stuff, i also wonder if there should be an extra details button of sorts, that will have a new page slide up and over the current one, that exposes all those settings, and then would slide away after being filled out, similar to our side tray maybe, but within the main card ui obviously, and done so in a very sleak manner
+- in the final menu after adding all the context to each card, the nice list is great and i love that we can collapse it, but the stack/battlefield tags at the bottom would be a cool way to filter out records, maybe in the form of highlighting the ones that are in that zone
+- but the other thing i want to confirm, is if the lsit grows to 10, does the list scroll, i have fears about it getting too tall for mobile and sliding off the screen
+- and im thinking those buttons of filtering may be a good way to help control length potentially, but i think the scroll is still needed
 
 ## Trade Balancer (`r7-tb-*`)
 
@@ -631,7 +643,8 @@ Tries: absolute tiers with the imbalance cue; live building; the empty state.
 
 Your points:
 
--
+- the only thing i want to try and do is have the gold coins in the stack scale with the amount that the players provided, meaning, if one player has $25 worth of cards and the other player has $15 worth of cards, the $25 player should have their stack using the max version 5 animation, while the $15 person should have 1-4, wherever the appropriate spot would be using $25 as the top of the scale using percentage maybe?
+
 
 ## Card scan (`r7-scan-*`)
 
@@ -640,7 +653,15 @@ light rather than a fixed green.
 
 Your points:
 
--
+- the flashing glow on the inner outline is too strong, a minor one at best, but this is too sci-fi, not mystical or magical
+- the capture button is great, but it uses up all the space and sticks the exit button to the side, can that button be moved above the camera box in the deadspace at the top right corner, and could it just be simplified to a box with an X? i think that communicates exit well
+- its also worth calling out that the back button in the top right hand corner should probably be hidden when the camera is opened, so that users dont accidentally go to a different step when they mean to close the camera
+- the text "Adding to your question" seems out of place
+- there are 2 different spots that communicate how many cards are scanned our in the equation, can this be simplified to just one, and i think that one should be the top right one of the ui, that lets you access the list and remove items
+- is this list the full list of cards or just the ones scanned? i think maybe just the ones scanned? and then those are merged into the list if thye maybe also typed some, that way there isnt a chance of accidental removal with the whole list there
+- the locking on animation overlaps with that middle inner circle with the glow, lets clean this up so that no elements overlap
+- debug button doesnt display anythinbg, but i know itll be ugly, but just make it look nicer i guess
+
 
 ## Shared chrome and Menu (`r7-menu-*`)
 
@@ -648,7 +669,7 @@ Tries: the whisper of the element at the foot.
 
 Your points:
 
--
+- This honestly looks incredible, my only feedback which i think is already given above, is there is a lot of dead space between the bottom where the animations are and the options above, probably less on mobile, but id like to find a way to utilize that space better, in the subtle ways we are now, that isnt overbearing but is tasteful for the space
 
 ## Ready to build?
 
