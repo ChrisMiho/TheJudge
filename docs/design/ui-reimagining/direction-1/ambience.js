@@ -22,7 +22,7 @@
 window.AMBIENCE = (() => {
   const RECIPES = {
     white:     { n: 70,  color: [250, 248, 242], spark: [255, 255, 255], size: [0.5, 1.8], vx: [-0.03, 0.03], vy: [-0.1, -0.03], twinkle: 0.5, life: [12, 22] },
-    blue:      { n: 70,  color: [120, 200, 255], spark: [56, 225, 255],  size: [0.5, 1.7], vx: [-0.06, 0.06], vy: [-0.05, 0.05], twinkle: 0.7, life: [10, 20], current: true },
+    blue:      { n: 70,  color: [120, 200, 255], spark: [56, 225, 255],  size: [0.5, 1.7], vx: [-0.06, 0.06], vy: [-0.05, 0.05], twinkle: 0.7, life: [10, 20], current: true, links: 120 },
     black:     { n: 90,  color: [190, 150, 235], spark: [222, 170, 255], size: [0.6, 2.1], vx: [-0.05, 0.05], vy: [0.03, 0.1],    twinkle: 0.6,  life: [12, 22], sparkRate: 0.22 },
     red:       { n: 80,  color: [255, 150, 120], spark: [255, 214, 102], size: [0.5, 1.8], vx: [-0.05, 0.05], vy: [-0.14, -0.05], twinkle: 0.8, life: [9, 18], sparkRate: 0.14 },
     green:     { n: 60,  color: [140, 255, 190], spark: [74, 255, 160],  size: [0.5, 1.7], vx: [0.02, 0.09],  vy: [-0.03, 0.03], twinkle: 0.6, life: [12, 22] },
@@ -50,9 +50,9 @@ window.AMBIENCE = (() => {
   // backdrop(ctx, W, H) (optional) paints the still part once per resize into a cache
 
   const GREEN = {
-    dark: [10, 92, 51], mid: [10, 122, 66], mint: [74, 255, 160],
+    dark: [10, 92, 51], mid: [10, 122, 66], mint: [74, 255, 160], wood: [60, 150, 100],
     init(W, H, k) {
-      const n = Math.max(4, Math.round(14 * k * Math.sqrt(W * H / 1296000)));
+      const n = Math.max(7, Math.round(14 * k * Math.sqrt(W * H / 1296000)));
       this.leaves = Array.from({ length: n }, () => this.leaf(W, H, true));
     },
     leaf(W, H, fresh) {
@@ -67,29 +67,64 @@ window.AMBIENCE = (() => {
       if (veinCol) { ctx.beginPath(); ctx.moveTo(0, -s * 0.8); ctx.lineTo(0, s * 0.8); ctx.strokeStyle = rgba(veinCol, a * 0.8); ctx.lineWidth = 0.8; ctx.stroke(); }
       ctx.restore();
     },
+    // round 8 ("the branches hanging down are a little wonky"): limbs now grow
+    // like limbs — they reach in from the top corners, arch, droop under their
+    // own weight, fork into thinner twigs, and carry leaves that hang
+    limb(ctx, x, y, ang, len, w, k, depth) {
+      const steps = Math.max(4, Math.round(len / 7));
+      const bend = rnd(-0.02, 0.02);
+      const forks = depth < 2 ? [Math.round(steps * rnd(0.3, 0.45)), Math.round(steps * rnd(0.6, 0.8))] : [];
+      ctx.lineCap = 'round';
+      for (let i = 0; i < steps; i++) {
+        const nx = x + Math.cos(ang) * 7, ny = y + Math.sin(ang) * 7;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny);
+        ctx.strokeStyle = rgba(this.wood, (0.34 - depth * 0.06) * k); ctx.lineWidth = w; ctx.stroke();
+        if (forks.includes(i)) this.limb(ctx, nx, ny, ang + (Math.random() < 0.5 ? -1 : 1) * rnd(0.45, 0.85), len * rnd(0.45, 0.6), w * 0.62, k, depth + 1);
+        // leaves hang off the thinner wood, pointing down-and-out
+        if (depth >= 1 && i % 6 === 3 && i > 2) {
+          const hang = Math.PI / 2 + rnd(-0.7, 0.7);
+          this.drawLeaf(ctx, nx + Math.cos(hang) * 8, ny + Math.sin(hang) * 8, rnd(6, 10), hang + Math.PI / 2, mix(this.mid, this.mint, rnd(0.05, 0.35)), rnd(0.14, 0.22) * k, this.dark);
+        }
+        x = nx; y = ny;
+        // gravity: the limb droops toward straight down the further it reaches
+        ang += bend + (Math.PI / 2 - ang) * 0.012 * (1 + depth * 0.6);
+        w = Math.max(0.7, w * 0.965);
+      }
+      // a cluster at the tip
+      for (let q = 0; q < 2 + Math.floor(rnd(0, 2)); q++) {
+        const hang = Math.PI / 2 + rnd(-1, 1);
+        this.drawLeaf(ctx, x + Math.cos(hang) * rnd(6, 12), y + Math.sin(hang) * rnd(6, 12), rnd(6, 10), hang + Math.PI / 2, mix(this.mid, this.mint, rnd(0.1, 0.4)), rnd(0.14, 0.22) * k, this.dark);
+      }
+    },
     backdrop(ctx, W, H, k) {
-      // the canopy: a soft dark band along the top and a few branches hanging into the page
+      // the canopy's shade: a soft band along the top
       const g = ctx.createLinearGradient(0, 0, 0, Math.min(180, H * 0.3));
       g.addColorStop(0, rgba(this.mid, 0.3 * k)); g.addColorStop(1, rgba(this.dark, 0));
       ctx.fillStyle = g; ctx.fillRect(0, 0, W, Math.min(180, H * 0.3));
-      const branches = Math.max(3, Math.round(W / 180));
-      for (let i = 0; i < branches; i++) {
-        const x0 = (i + 0.5 + rnd(-0.3, 0.3)) * (W / branches), len = rnd(110, 250) * Math.min(1, H / 700), dir = rnd(-1, 1);
-        const cx1 = x0 + dir * len * 0.3, cy1 = len * 0.45, x1 = x0 + dir * len * 0.7, y1 = len;
-        // taper: several strokes of shrinking width along the same curve
-        for (let w = 5; w >= 1; w -= 1.3) {
-          ctx.beginPath(); ctx.moveTo(x0, -6); ctx.quadraticCurveTo(cx1, cy1 * (w / 5) * 0.9 + 6, x0 + (x1 - x0) * (1 - (w - 1) / 6), y1 * (1 - (w - 1) / 6));
-          ctx.strokeStyle = rgba(this.mid, 0.34 * k); ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.stroke();
+      // limbs: from just past each top corner, reaching inward and drooping;
+      // a short one or two hang from the middle of the top edge
+      const scale = Math.max(0.5, Math.min(1, W / 1100)) * Math.min(1, H / 700);
+      // tall and narrow (the Menu tray, a phone): the limbs hang down both side
+      // edges as vines, reaching into the open space below the content
+      if (H > W * 1.6 && W < 520) {
+        for (const side of [0, 1]) {
+          for (let i = 0; i < 2; i++) {
+            const x0 = side ? W + 6 : -6;
+            const ang = side ? Math.PI * rnd(0.6, 0.68) : Math.PI * rnd(0.32, 0.4);
+            this.limb(ctx, x0, rnd(-10, 40) + i * H * 0.28, ang, H * rnd(0.3, 0.45), rnd(3, 4.5), k, 0);
+          }
         }
-        // twigs and leaf clusters along the branch
-        for (let j = 0; j < 4; j++) {
-          const tt = 0.3 + j * 0.2, bx = (1 - tt) * (1 - tt) * x0 + 2 * (1 - tt) * tt * cx1 + tt * tt * x1, by = (1 - tt) * (1 - tt) * -6 + 2 * (1 - tt) * tt * cy1 + tt * tt * y1;
-          const tx = bx + rnd(-30, 30), ty = by + rnd(6, 30);
-          ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(tx, ty); ctx.strokeStyle = rgba(this.mid, 0.3 * k); ctx.lineWidth = 1.2; ctx.stroke();
-          const m = 3 + Math.floor(rnd(0, 4));
-          for (let q = 0; q < m; q++) this.drawLeaf(ctx, tx + rnd(-14, 14), ty + rnd(-10, 12), rnd(4, 8), rnd(0, 6.3), mix(this.mid, this.mint, rnd(0, 0.5)), 0.24 * k, null);
+        return;
+      }
+      const per = W > 900 ? 3 : 2;
+      for (const side of [0, 1]) {
+        for (let i = 0; i < per; i++) {
+          const x0 = side ? W + rnd(0, 30) - i * W * 0.07 : -rnd(0, 30) + i * W * 0.07;
+          const ang = side ? Math.PI - rnd(0.05, 0.4) : rnd(0.05, 0.4);
+          this.limb(ctx, x0, rnd(-10, 26) + i * 10, ang, rnd(300, 460) * scale, rnd(4, 6) * scale + 1.5, k, 0);
         }
       }
+      if (W > 600) for (let i = 0; i < 2; i++) this.limb(ctx, W * rnd(0.3, 0.7), -8, Math.PI / 2 + rnd(-0.6, 0.6), rnd(90, 150) * scale, 2.6, k, 1);
     },
     draw(ctx, t, W, H) {
       for (const l of this.leaves) {
@@ -129,30 +164,104 @@ window.AMBIENCE = (() => {
     }
   };
 
+  // Blue (round 8: "more blue arcane focused" — the bubbles and the moving
+  // horizontal lines are gone): runes of an invented script write themselves
+  // in the air, glow, and fade as they drift up; now and then a spell circle
+  // inscribes itself in the open space and dissolves; the dust specks are
+  // threaded into faint constellations (the renderer's `links`).
+  // The runes are drawn for this app — no real alphabet, no Wizards glyph.
+  const RUNES = [
+    [[[0, -1], [0, 1]], [[-0.6, -0.4], [0, 0.1], [0.6, -0.4]]],
+    [[[-0.6, -1], [0.6, -1], [0, 1]], [[-0.3, 0.2], [0.3, 0.2]]],
+    [[[0, -1], [0, 1]], [[0, -0.5], [0.6, -0.9]], [[0, 0], [-0.6, 0.4]]],
+    [[[-0.6, 1], [-0.6, -1], [0.6, -0.4], [-0.6, 0.2]]],
+    [[[-0.6, -0.6], [0.6, -0.6]], [[0, -0.6], [0, 1]], [[-0.4, 1], [0.4, 1]]],
+    [[[-0.5, -1], [0.5, 0], [-0.5, 1]], [[0.5, -1], [0.5, 1]]],
+    [[[0, -1], [0.6, 0], [0, 1], [-0.6, 0], [0, -1]], [[0, -0.3], [0, 0.3]]],
+    [[[-0.6, -1], [-0.6, 1], [0.6, 1]], [[-0.6, 0], [0.4, -0.6]]],
+    [[[0.6, -1], [-0.2, -0.2], [0.6, 0.6]], [[-0.6, -0.2], [-0.6, 1]]],
+    [[[-0.6, 0.8], [0, -1], [0.6, 0.8]], [[-0.35, 0.1], [0.35, 0.1]], [[0, 0.1], [0, 1]]]
+  ];
   const BLUE = {
-    ink: [30, 58, 156], cyan: [56, 225, 255], pale: [180, 235, 255],
+    cyan: [56, 225, 255], pale: [190, 240, 255], deep: [0, 80, 216],
     init(W, H, k) {
-      const n = Math.max(5, Math.round(16 * k * Math.sqrt(W * H / 1296000)));
-      this.bubbles = Array.from({ length: n }, () => this.bubble(W, H, true));
-      this.waves = [0, 1, 2].map((i) => ({ y: 0.58 + i * 0.14, amp: rnd(5, 9), len: rnd(170, 260), sp: rnd(0.25, 0.5) * (i % 2 ? -1 : 1), ph: rnd(0, 6.3) }));
+      this.k = k;
+      this.maxRunes = Math.max(2, Math.round(7 * k * Math.sqrt(W * H / 1296000)));
+      this.runes = [];
+      this.circle = null; this.nextCircle = 120;
     },
-    bubble(W, H, fresh) { return { x: rnd(0, W), y: fresh ? rnd(0, H) : H + rnd(10, 40), r: rnd(2.5, 8), vy: rnd(0.22, 0.55), ph: rnd(0, 6.3), a: rnd(0.22, 0.4) }; },
+    // a rune: writes itself (stroke by stroke), holds with a glow, fades as it rises
+    rune(W, H) {
+      return { g: pick(RUNES), x: rnd(0.04, 0.96) * W, y: rnd(0.12, 0.95) * H, s: rnd(7, 13), rot: rnd(-0.25, 0.25), age: 0, write: rnd(90, 150), hold: rnd(160, 300), fade: rnd(160, 240), vy: rnd(0.04, 0.12) };
+    },
+    // the spell circle sits in open space: the side gutters on a wide screen, low on a phone
+    spellCircle(W, H) {
+      const col = Math.min(768, W * 0.92), gutter = (W - col) / 2;
+      const wide = gutter > 150;
+      const r = wide ? Math.min(gutter * 0.62, H * 0.2, 150) : Math.min(W * 0.32, 120);
+      const x = wide ? (Math.random() < 0.5 ? gutter / 2 : W - gutter / 2) : rnd(0.25, 0.75) * W;
+      const y = wide ? rnd(0.3, 0.78) * H : rnd(0.72, 0.9) * H;
+      return { x, y, r, age: 0, draw: 260, hold: 600, fade: 260, rot: rnd(0, 6.3), marks: Array.from({ length: 8 }, () => pick(RUNES)) };
+    },
+    strokeRune(ctx, g, x, y, s, rot, prog) {
+      // prog 0..1 across all of the rune's strokes
+      const segs = [];
+      for (const line of g) for (let i = 1; i < line.length; i++) segs.push([line[i - 1], line[i]]);
+      const shown = prog * segs.length;
+      ctx.save(); ctx.translate(x, y); ctx.rotate(rot); ctx.beginPath();
+      segs.forEach(([a, b], i) => {
+        if (i >= shown) return;
+        const f = Math.min(1, shown - i);
+        ctx.moveTo(a[0] * s, a[1] * s); ctx.lineTo((a[0] + (b[0] - a[0]) * f) * s, (a[1] + (b[1] - a[1]) * f) * s);
+      });
+      ctx.stroke(); ctx.restore();
+    },
     draw(ctx, t, W, H) {
-      for (const w of this.waves) {
-        ctx.beginPath();
-        const y0 = H * w.y;
-        for (let x = -10; x <= W + 10; x += 8) ctx.lineTo(x, y0 + Math.sin((x / w.len) * Math.PI * 2 + t * 0.004 * w.sp + w.ph) * w.amp);
-        ctx.strokeStyle = rgba(this.cyan, 0.11); ctx.lineWidth = 1.4; ctx.stroke();
-      }
-      for (const b of this.bubbles) {
-        b.y -= b.vy; b.x += Math.sin(t / 80 + b.ph) * 0.3;
-        if (b.y < -20) Object.assign(b, this.bubble(W, H, false));
-        const fade = Math.min(1, (H + 20 - b.y) / 80);
-        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-        ctx.fillStyle = rgba(this.cyan, 0.04 * fade); ctx.fill();
-        ctx.strokeStyle = rgba(this.pale, b.a * fade); ctx.lineWidth = 1; ctx.stroke();
-        ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.62, Math.PI * 1.05, Math.PI * 1.55);
-        ctx.strokeStyle = rgba([255, 255, 255], b.a * 1.2 * fade); ctx.lineWidth = 1.1; ctx.stroke();
+      if (this.runes.length < this.maxRunes && Math.random() < 0.012) this.runes.push(this.rune(W, H));
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      this.runes = this.runes.filter((r) => {
+        r.age += 1; r.y -= r.vy;
+        const end = r.write + r.hold + r.fade;
+        if (r.age > end) return false;
+        const prog = Math.min(1, r.age / r.write);
+        const a = r.age < r.write + r.hold ? 1 : 1 - (r.age - r.write - r.hold) / r.fade;
+        ctx.shadowColor = rgba(this.cyan, 0.8 * a); ctx.shadowBlur = 10;
+        ctx.strokeStyle = rgba(this.pale, 0.34 * a); ctx.lineWidth = 1.3;
+        this.strokeRune(ctx, r.g, r.x, r.y, r.s, r.rot, prog);
+        return true;
+      });
+      ctx.shadowBlur = 0;
+      // the spell circle: inscribe (arc grows, rune marks appear), hold and breathe, dissolve
+      if (!this.circle && --this.nextCircle <= 0) this.circle = this.spellCircle(W, H);
+      const c = this.circle;
+      if (c) {
+        c.age += 1;
+        const end = c.draw + c.hold + c.fade;
+        if (c.age > end) { this.circle = null; this.nextCircle = rnd(240, 600); return; }
+        const p = Math.min(1, c.age / c.draw);
+        const a = (c.age < c.draw + c.hold ? 1 : 1 - (c.age - c.draw - c.hold) / c.fade) * (0.85 + 0.15 * Math.sin(t / 70));
+        const turn = c.rot + t * 0.0006;
+        ctx.save(); ctx.translate(c.x, c.y);
+        ctx.shadowColor = rgba(this.cyan, 0.6 * a); ctx.shadowBlur = 8;
+        ctx.strokeStyle = rgba(this.pale, 0.16 * a); ctx.lineWidth = 1.1;
+        ctx.beginPath(); ctx.arc(0, 0, c.r, turn, turn + p * Math.PI * 2); ctx.stroke();
+        ctx.beginPath(); ctx.arc(0, 0, c.r * 0.78, -turn, -turn - p * Math.PI * 2, true); ctx.stroke();
+        ctx.strokeStyle = rgba(this.pale, 0.1 * a);
+        ctx.beginPath(); ctx.arc(0, 0, c.r * 0.34, 0, p * Math.PI * 2); ctx.stroke();
+        // a star of chords inside, drawn last
+        if (p > 0.6) {
+          const q = (p - 0.6) / 0.4;
+          ctx.beginPath();
+          for (let i = 0; i <= 5; i++) { const ang = turn * 0.5 + (i * 2 / 5) * Math.PI * 2; ctx.lineTo(Math.cos(ang) * c.r * 0.78, Math.sin(ang) * c.r * 0.78); }
+          ctx.strokeStyle = rgba(this.pale, 0.07 * a * q); ctx.stroke();
+        }
+        ctx.strokeStyle = rgba(this.pale, 0.24 * a); ctx.lineWidth = 1;
+        c.marks.forEach((g, i) => {
+          if (i / c.marks.length > p) return;
+          const ang = turn + (i / c.marks.length) * Math.PI * 2;
+          this.strokeRune(ctx, g, Math.cos(ang) * c.r * 0.89, Math.sin(ang) * c.r * 0.89, c.r * 0.055, ang + Math.PI / 2, 1);
+        });
+        ctx.restore(); ctx.shadowBlur = 0;
       }
     }
   };
@@ -186,8 +295,56 @@ window.AMBIENCE = (() => {
     }
   };
 
+  // Black (round 8: "kinda generic … better than just an ombré background"):
+  // the fog and the wandering orbs stay; the still part now has a shape —
+  // thorned brambles creeping in from both lower corners and a pale crescent
+  // moon, veiled, high in the open space.
   const BLACK = {
-    fog: [140, 110, 180], wisp: [199, 125, 255],
+    fog: [140, 110, 180], wisp: [199, 125, 255], vine: [124, 58, 237], moon: [226, 212, 255],
+    bramble(ctx, x0, y0, dir, len, w, k, depth) {
+      // one curling stem: a run of short segments that bends as it goes, thorns along it
+      let x = x0, y = y0, ang = dir, width = w;
+      const bend = rnd(0.012, 0.03) * (Math.random() < 0.5 ? -1 : 1);
+      const steps = Math.round(len / 6);
+      ctx.lineCap = 'round';
+      for (let i = 0; i < steps; i++) {
+        const nx = x + Math.cos(ang) * 6, ny = y + Math.sin(ang) * 6;
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny);
+        ctx.strokeStyle = rgba(this.vine, (0.34 - 0.18 * i / steps) * k); ctx.lineWidth = width; ctx.stroke();
+        if (i % 4 === 2 && i < steps - 2) {
+          // a thorn: a small hooked triangle off one side
+          const side = i % 8 === 2 ? 1 : -1, ta = ang + side * 1.1, tl = 3 + width * 1.6;
+          ctx.beginPath(); ctx.moveTo(nx + Math.cos(ang) * 2, ny + Math.sin(ang) * 2); ctx.lineTo(nx + Math.cos(ta) * tl, ny + Math.sin(ta) * tl); ctx.lineTo(nx - Math.cos(ang) * 2, ny - Math.sin(ang) * 2);
+          ctx.fillStyle = rgba(this.vine, 0.3 * k); ctx.fill();
+        }
+        if (depth < 1 && i > steps * 0.35 && i % 11 === 5) this.bramble(ctx, nx, ny, ang + (Math.random() < 0.5 ? -0.9 : 0.9), len * 0.35, width * 0.6, k, depth + 1);
+        x = nx; y = ny; ang += bend + Math.sin(i / 5) * 0.012; width = Math.max(0.6, width * 0.985);
+      }
+    },
+    backdrop(ctx, W, H, k) {
+      const col = Math.min(768, W * 0.92), gutter = (W - col) / 2, wide = gutter > 150;
+      // brambles: a few stems from each lower corner, reaching up and in
+      const reach = Math.min(W * 0.4, 520) * (wide ? 1 : 0.8);
+      for (const side of [0, 1]) {
+        const x0 = side ? W + 4 : -4, n = wide ? 4 : 3;
+        for (let i = 0; i < n; i++) {
+          const up = -Math.PI / 2 + (side ? -1 : 1) * rnd(0.35, 1.1);
+          this.bramble(ctx, x0, H + 4 - rnd(0, H * 0.18), up, reach * rnd(0.55, 1), rnd(1.8, 3), k, 0);
+        }
+      }
+      // the moon: a crescent in the open space, behind a veil of its own light
+      const r = wide ? Math.min(46, gutter * 0.18) : 26;
+      const mx = wide ? W - gutter / 2 + gutter * 0.12 : W - 44, my = wide ? H * 0.2 : 118;
+      const halo = ctx.createRadialGradient(mx - r * 0.3, my, r * 0.4, mx, my, r * 3.6);
+      halo.addColorStop(0, rgba(this.wisp, 0.07 * k)); halo.addColorStop(1, rgba(this.wisp, 0));
+      ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(mx, my, r * 4, 0, Math.PI * 2); ctx.fill();
+      const m = document.createElement('canvas'); m.width = m.height = Math.ceil(r * 2 + 4);
+      const mc = m.getContext('2d');
+      mc.filter = 'blur(0.8px)'; mc.fillStyle = rgba(this.moon, 0.2 * k); mc.beginPath(); mc.arc(r + 2, r + 2, r, 0, Math.PI * 2); mc.fill();
+      mc.globalCompositeOperation = 'destination-out';
+      mc.beginPath(); mc.arc(r + 2 + r * 0.38, r + 2 - r * 0.2, r * 0.92, 0, Math.PI * 2); mc.fill();
+      ctx.drawImage(m, mx - r - 2, my - r - 2);
+    },
     init(W, H, k) {
       const n = Math.max(3, Math.round(7 * k * Math.sqrt(W / 1440)));
       this.banks = Array.from({ length: n }, () => ({ x: rnd(0, W), y: H * rnd(0.55, 0.98), rx: rnd(160, 340), ry: rnd(40, 100), vx: rnd(0.06, 0.2) * (Math.random() < 0.5 ? -1 : 1), a: rnd(0.08, 0.14), ph: rnd(0, 6.3) }));
@@ -291,6 +448,21 @@ window.AMBIENCE = (() => {
       ctx.clearRect(0, 0, W, H);
       if (cache) ctx.drawImage(cache, 0, 0, W, H);
       scene.draw(ctx, t, W, H);
+      // Blue (round 8): specks near each other are threaded into faint constellations
+      if (recipe.links) {
+        const L = recipe.links * Math.min(1, 0.6 + 0.4 * k), L2 = L * L;
+        ctx.lineWidth = 0.7;
+        for (let i = 0; i < parts.length; i++) {
+          const a = parts[i];
+          for (let j = i + 1; j < parts.length; j++) {
+            const b = parts[j], dx = a.x - b.x, dy = a.y - b.y, d2 = dx * dx + dy * dy;
+            if (d2 > L2) continue;
+            const fa = Math.min(1, a.life / 90, (a.max - a.life) / 90), fb = Math.min(1, b.life / 90, (b.max - b.life) / 90);
+            ctx.strokeStyle = rgba(recipe.color, 0.16 * (1 - Math.sqrt(d2) / L) * fa * fb);
+            ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+          }
+        }
+      }
       for (const p of parts) {
         p.life -= 1;
         if (p.life <= 0) spawn(p, false);
@@ -332,11 +504,13 @@ window.AMBIENCE = (() => {
     window.addEventListener('resize', r.resize);
   }
 
-  // the Menu tray's foot (round 7): the same scene at a whisper, sized to its box
+  // the Menu tray (round 7: its foot; round 8: the whole tray, behind the rows,
+  // strongest at the foot — "a lot of dead space between the bottom where the
+  // animations are and the options above"): the same scene at a whisper
   function mountFlair(el) {
     const canvas = document.createElement('canvas'); canvas.className = 'flair-canvas';
     el.append(canvas);
-    const r = attach(canvas, { k: 0.45, dust: 0.35, size: () => [el.clientWidth || 320, el.clientHeight || 200] });
+    const r = attach(canvas, { k: 0.7, dust: 0.45, size: () => [el.clientWidth || 320, el.clientHeight || 200] });
     if (window.ResizeObserver) new ResizeObserver(() => { r.resize(); r.start(); }).observe(el);
     return r;
   }

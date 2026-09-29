@@ -207,15 +207,46 @@ window.FLOW = (() => {
     if (custom) custom.dataset.show = id === 'colorless';
     applyCustom();
   }
-  // Colorless custom colour (as today's app): one hex applies to accent, accent-strong
-  // and accent-soft alike, the contrast stays white; null restores the fixed grey.
-  // Every token-driven surface, the haze and the dust follow it.
+  // Colorless custom colour (as today's app). Round 8 ("setting certain colors
+  // removes the ability to read certain text, and other colors even made the
+  // background images disappear"): the picked hex is no longer poured into all
+  // three accent tokens as-is. Each token is derived from it with a floor —
+  //   accent-soft  (accent text, the dust, the shapes, the badge light)
+  //                lifted toward white until it reads on the page ground (7:1)
+  //   accent       (fills, glows, edges) lifted until it stands off the ground
+  //                (2.4:1), so a near-black pick still shows
+  //   text-on-accent  white or near-black, whichever reads on that fill
+  //   accent-strong   the fill a step darker (the button's lower half)
+  // The hue always survives; only lightness moves. null restores the grey.
+  const hexRGB = (h) => { const n = parseInt(h.slice(1), 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; };
+  const rgbHex = (c) => '#' + c.map((x) => Math.round(Math.max(0, Math.min(255, x))).toString(16).padStart(2, '0')).join('');
+  const lum = (c) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }; return 0.2126 * f(c[0]) + 0.7152 * f(c[1]) + 0.0722 * f(c[2]); };
+  const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+  const GROUND = [9, 9, 11];
+  function liftTo(c, floor) {
+    // mix toward white in small steps until the colour clears the floor on the ground
+    for (let t = 0; t <= 1.0001; t += 0.02) {
+      const m = c.map((v) => v + (255 - v) * t);
+      if (contrast(m, GROUND) >= floor) return m;
+    }
+    return [255, 255, 255];
+  }
+  function deriveColorless(hex) {
+    const c = hexRGB(hex);
+    const soft = liftTo(c, 7), accent = liftTo(c, 2.4);
+    const onAccent = contrast(accent, [255, 255, 255]) >= contrast(accent, GROUND) ? '#ffffff' : '#09090b';
+    const strong = accent.map((v) => v * 0.62);
+    return { soft: rgbHex(soft), accent: rgbHex(accent), strong: rgbHex(strong), onAccent };
+  }
   function setCustomColorless(hex) { colorlessHex = hex; applyCustom(); }
   function applyCustom() {
     const root = document.documentElement;
     const on = root.dataset.profile === 'colorless' && colorlessHex;
-    ['--accent', '--accent-strong', '--accent-soft'].forEach((v) => on ? root.style.setProperty(v, colorlessHex) : root.style.removeProperty(v));
-    if (on) root.style.setProperty('--wash-tint', 'color-mix(in srgb, ' + colorlessHex + ' 18%, #0c0c0d)'); else root.style.removeProperty('--wash-tint');
+    const d = on ? deriveColorless(colorlessHex) : null;
+    const set = (v, x) => (on ? root.style.setProperty(v, x) : root.style.removeProperty(v));
+    set('--accent', d && d.accent); set('--accent-strong', d && d.strong); set('--accent-soft', d && d.soft);
+    set('--accent-contrast', d && d.onAccent);
+    set('--wash-tint', d && 'color-mix(in srgb, ' + d.accent + ' 16%, #0c0c0d)');
     if (on) root.setAttribute('data-accent', colorlessHex); else root.removeAttribute('data-accent');
   }
 

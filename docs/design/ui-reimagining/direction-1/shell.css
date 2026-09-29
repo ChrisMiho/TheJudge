@@ -95,8 +95,10 @@ h1, h2, .display {
    Blue   · rolling waves along the band's foot
    Black  · fog pooling low at each end
    Red    · one hot band low on the banner, embers rising
-   Green  · leaves scattered in from each end, as if blown off the canopy
-   Colorless · a hexagonal lattice, mechanical, at each end ---- */
+   Green  · (round 8) limbs of the canopy running along the band's top with
+            leaves hanging off them — the trees the leaves fall from
+   Colorless · (round 8) a random scatter of small shapes — triangles, rings,
+            arcs, dots, crosses — no lattice, no order ---- */
 [data-profile="white"] .app-header::before {
   background: repeating-conic-gradient(from -90deg at 50% 135%, transparent 0 5deg, color-mix(in srgb, var(--accent-soft) 9%, transparent) 5deg 7deg);
   -webkit-mask-image: radial-gradient(60% 160% at 50% 135%, #000 20%, transparent 80%);
@@ -135,24 +137,28 @@ h1, h2, .display {
 }
 [data-profile="green"] .app-header::before {
   background: color-mix(in srgb, var(--accent-soft) 13%, transparent);
-  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 64'><g fill='%23000'><path d='M14 12 c 6 -8 14 -6 16 2 c -8 6 -14 4 -16 -2z'/><path d='M40 40 c 7 -7 14 -4 15 4 c -8 5 -13 2 -15 -4z' opacity='.7'/><path d='M70 18 c 5 -9 13 -8 16 0 c -7 7 -13 5 -16 0z' opacity='.85'/><path d='M96 46 c 6 -8 14 -6 16 2 c -8 6 -14 4 -16 -2z' opacity='.6'/><path d='M6 52 c 5 -6 11 -4 12 2 c -6 4 -10 2 -12 -2z' opacity='.5'/><path d='M58 58 c 4 -6 10 -5 12 0 c -5 5 -9 3 -12 0z' opacity='.5'/><path d='M104 6 c 4 -6 10 -5 12 0 c -5 5 -9 3 -12 0z' opacity='.6'/></g></svg>"), linear-gradient(90deg, #000 0%, transparent 32%, transparent 68%, #000 100%);
-  -webkit-mask-size: 120px 64px, 100% 100%;
-  -webkit-mask-repeat: repeat, no-repeat;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 64'><g fill='none' stroke='%23000' stroke-linecap='round'><path stroke-width='2' d='M0 9 C 28 14 54 5 84 13 C 108 19 126 11 150 7 C 176 3 206 12 240 9'/><path stroke-width='1.3' d='M36 11 C 40 20 37 28 42 36'/><path stroke-width='1.3' d='M84 13 C 96 22 100 32 108 40 C 112 44 114 50 113 56'/><path stroke-width='1.1' d='M150 7 C 150 18 156 24 154 34'/><path stroke-width='1.3' d='M198 10 C 204 20 200 30 206 42'/><path stroke-width='1' d='M120 12 C 124 16 130 18 134 24'/></g><g fill='%23000'><path transform='translate(20 12) rotate(-20) scale(1)' opacity='0.9' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(30 10) rotate(25) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(42 36) rotate(-10) scale(1)' opacity='0.95' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(38 26) rotate(40) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(58 9) rotate(-30) scale(0.9)' opacity='0.8' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(70 11) rotate(20) scale(0.85)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(100 31) rotate(-35) scale(0.9)' opacity='0.85' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(113 56) rotate(5) scale(0.9)' opacity='0.9' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(108 44) rotate(35) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(134 24) rotate(-15) scale(0.8)' opacity='0.75' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(128 14) rotate(30) scale(0.7)' opacity='0.6' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(154 34) rotate(10) scale(1)' opacity='0.9' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(152 22) rotate(-40) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(170 5) rotate(25) scale(0.85)' opacity='0.75' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(206 42) rotate(-5) scale(1)' opacity='0.95' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(202 28) rotate(35) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(222 11) rotate(-25) scale(0.9)' opacity='0.8' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(232 9) rotate(20) scale(0.7)' opacity='0.6' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(6 9) rotate(15) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/></g></svg>"), linear-gradient(90deg, #000 0%, transparent 34%, transparent 66%, #000 100%);
+  -webkit-mask-size: 240px 64px, 100% 100%;
+  -webkit-mask-repeat: repeat-x, no-repeat;
+  -webkit-mask-position: 0 0, 0 0;
   -webkit-mask-composite: source-in;
-  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 64'><g fill='%23000'><path d='M14 12 c 6 -8 14 -6 16 2 c -8 6 -14 4 -16 -2z'/><path d='M40 40 c 7 -7 14 -4 15 4 c -8 5 -13 2 -15 -4z' opacity='.7'/><path d='M70 18 c 5 -9 13 -8 16 0 c -7 7 -13 5 -16 0z' opacity='.85'/><path d='M96 46 c 6 -8 14 -6 16 2 c -8 6 -14 4 -16 -2z' opacity='.6'/><path d='M6 52 c 5 -6 11 -4 12 2 c -6 4 -10 2 -12 -2z' opacity='.5'/><path d='M58 58 c 4 -6 10 -5 12 0 c -5 5 -9 3 -12 0z' opacity='.5'/><path d='M104 6 c 4 -6 10 -5 12 0 c -5 5 -9 3 -12 0z' opacity='.6'/></g></svg>"), linear-gradient(90deg, #000 0%, transparent 32%, transparent 68%, #000 100%);
-  mask-size: 120px 64px, 100% 100%;
-  mask-repeat: repeat, no-repeat;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 240 64'><g fill='none' stroke='%23000' stroke-linecap='round'><path stroke-width='2' d='M0 9 C 28 14 54 5 84 13 C 108 19 126 11 150 7 C 176 3 206 12 240 9'/><path stroke-width='1.3' d='M36 11 C 40 20 37 28 42 36'/><path stroke-width='1.3' d='M84 13 C 96 22 100 32 108 40 C 112 44 114 50 113 56'/><path stroke-width='1.1' d='M150 7 C 150 18 156 24 154 34'/><path stroke-width='1.3' d='M198 10 C 204 20 200 30 206 42'/><path stroke-width='1' d='M120 12 C 124 16 130 18 134 24'/></g><g fill='%23000'><path transform='translate(20 12) rotate(-20) scale(1)' opacity='0.9' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(30 10) rotate(25) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(42 36) rotate(-10) scale(1)' opacity='0.95' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(38 26) rotate(40) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(58 9) rotate(-30) scale(0.9)' opacity='0.8' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(70 11) rotate(20) scale(0.85)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(100 31) rotate(-35) scale(0.9)' opacity='0.85' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(113 56) rotate(5) scale(0.9)' opacity='0.9' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(108 44) rotate(35) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(134 24) rotate(-15) scale(0.8)' opacity='0.75' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(128 14) rotate(30) scale(0.7)' opacity='0.6' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(154 34) rotate(10) scale(1)' opacity='0.9' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(152 22) rotate(-40) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(170 5) rotate(25) scale(0.85)' opacity='0.75' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(206 42) rotate(-5) scale(1)' opacity='0.95' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(202 28) rotate(35) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(222 11) rotate(-25) scale(0.9)' opacity='0.8' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(232 9) rotate(20) scale(0.7)' opacity='0.6' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(6 9) rotate(15) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/></g></svg>"), linear-gradient(90deg, #000 0%, transparent 34%, transparent 66%, #000 100%);
+  mask-size: 240px 64px, 100% 100%;
+  mask-repeat: repeat-x, no-repeat;
+  mask-position: 0 0, 0 0;
   mask-composite: intersect;
 }
 [data-profile="colorless"] .app-header::before {
-  background: color-mix(in srgb, var(--accent-soft) 12%, transparent);
-  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 64'><g fill='none' stroke='%23000' stroke-width='1.3'><path d='M14 2 L26 9 L26 23 L14 30 L2 23 L2 9 Z'/><path d='M42 18 L54 25 L54 39 L42 46 L30 39 L30 25 Z'/><path d='M14 34 L26 41 L26 55 L14 62 L2 55 L2 41 Z' opacity='.6'/></g></svg>"), linear-gradient(90deg, #000 0%, transparent 26%, transparent 74%, #000 100%);
-  -webkit-mask-size: 56px 64px, 100% 100%;
+  background: color-mix(in srgb, var(--accent-soft) 15%, transparent);
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 64'><g fill='none' stroke='%23000' stroke-width='1.2' stroke-linecap='round'><rect transform='translate(112.7 25.5) rotate(15.8)' opacity='0.44' x='-2.1' y='-2.1' width='4.2' height='4.2'/><path transform='translate(66.3 39.4) rotate(163.1)' opacity='0.67' stroke-dasharray='1 3' d='M-9.3 0 H9.3'/><rect transform='translate(264.4 26.9) rotate(273.2)' opacity='0.81' x='-3.0' y='-3.0' width='5.9' height='5.9'/><path transform='translate(123.4 52.9) rotate(40.9)' opacity='0.52' stroke-dasharray='1 3' d='M-8.5 0 H8.5'/><circle transform='translate(117.3 49.1) rotate(20.9)' opacity='0.5' r='3.6'/><circle transform='translate(149.3 39.8) rotate(209.4)' opacity='0.44' r='8.4'/><circle transform='translate(161.4 7.9) rotate(53.4)' opacity='0.91' r='7.2'/><path transform='translate(215.9 51.8) rotate(128.4)' opacity='0.92' d='M-2.4 0 H2.4 M0 -2.4 V2.4'/><path transform='translate(51.6 37.3) rotate(113.0)' opacity='0.58' d='M-6.2 0 A 6.2 6.2 0 0 1 6.2 0'/><path transform='translate(151.0 16.3) rotate(190.3)' opacity='0.68' d='M-1.9 0 H1.9 M0 -1.9 V1.9'/><circle transform='translate(238.7 50.5) rotate(196.2)' opacity='0.57' r='8.5'/><path transform='translate(91.2 17.4) rotate(91.7)' opacity='0.54' d='M0 -3.2 L2.8 1.6 L-2.8 1.6Z'/><path transform='translate(56.5 26.6) rotate(238.7)' opacity='0.98' d='M4.0 0.0 L2.0 3.5 L-2.0 3.5 L-4.0 -0.0 L-2.0 -3.5 L2.0 -3.5Z'/><rect transform='translate(286.2 14.4) rotate(286.7)' opacity='0.6' x='-1.9' y='-1.9' width='3.7' height='3.7'/><path transform='translate(169.9 53.1) rotate(203.0)' opacity='0.61' d='M-3.8 0 A 3.8 3.8 0 0 1 3.8 0'/><circle transform='translate(175.5 21.0) rotate(30.7)' opacity='0.42' r='3.6'/><path transform='translate(157.9 14.0) rotate(175.8)' opacity='0.45' stroke-dasharray='1 3' d='M-13.8 0 H13.8'/><circle transform='translate(60.6 53.5) rotate(237.0)' opacity='0.43' r='5.0'/><path transform='translate(260.3 51.2) rotate(293.9)' opacity='0.46' d='M0 -7.9 L6.9 4.0 L-6.9 4.0Z'/><path transform='translate(285.3 29.0) rotate(217.9)' opacity='0.67' d='M-4.9 0 H4.9'/><path transform='translate(233.6 25.8) rotate(259.5)' opacity='0.77' d='M-1.9 0 H1.9 M0 -1.9 V1.9'/><path transform='translate(154.2 10.7) rotate(203.0)' opacity='0.88' d='M-4.3 0 H4.3 M0 -4.3 V4.3'/><path transform='translate(70.9 16.3) rotate(38.9)' opacity='0.82' d='M-2.9 0 H2.9 M0 -2.9 V2.9'/><path transform='translate(194.7 49.1) rotate(352.3)' opacity='0.84' d='M0 -6.2 L5.4 3.1 L-5.4 3.1Z'/><path transform='translate(242.0 35.6) rotate(116.7)' opacity='0.6' stroke-dasharray='1 3' d='M-9.6 0 H9.6'/></g><g fill='%23000'><circle cx='107.2' cy='56.2' r='1.9' opacity='0.49'/></g></svg>"), linear-gradient(90deg, #000 0%, rgba(0,0,0,.18) 36%, transparent 46%, transparent 54%, rgba(0,0,0,.18) 64%, #000 100%);
+  -webkit-mask-size: 300px 64px, 100% 100%;
   -webkit-mask-repeat: repeat, no-repeat;
+  -webkit-mask-position: 0 0, 0 0;
   -webkit-mask-composite: source-in;
-  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 56 64'><g fill='none' stroke='%23000' stroke-width='1.3'><path d='M14 2 L26 9 L26 23 L14 30 L2 23 L2 9 Z'/><path d='M42 18 L54 25 L54 39 L42 46 L30 39 L30 25 Z'/><path d='M14 34 L26 41 L26 55 L14 62 L2 55 L2 41 Z' opacity='.6'/></g></svg>"), linear-gradient(90deg, #000 0%, transparent 26%, transparent 74%, #000 100%);
-  mask-size: 56px 64px, 100% 100%;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 64'><g fill='none' stroke='%23000' stroke-width='1.2' stroke-linecap='round'><rect transform='translate(112.7 25.5) rotate(15.8)' opacity='0.44' x='-2.1' y='-2.1' width='4.2' height='4.2'/><path transform='translate(66.3 39.4) rotate(163.1)' opacity='0.67' stroke-dasharray='1 3' d='M-9.3 0 H9.3'/><rect transform='translate(264.4 26.9) rotate(273.2)' opacity='0.81' x='-3.0' y='-3.0' width='5.9' height='5.9'/><path transform='translate(123.4 52.9) rotate(40.9)' opacity='0.52' stroke-dasharray='1 3' d='M-8.5 0 H8.5'/><circle transform='translate(117.3 49.1) rotate(20.9)' opacity='0.5' r='3.6'/><circle transform='translate(149.3 39.8) rotate(209.4)' opacity='0.44' r='8.4'/><circle transform='translate(161.4 7.9) rotate(53.4)' opacity='0.91' r='7.2'/><path transform='translate(215.9 51.8) rotate(128.4)' opacity='0.92' d='M-2.4 0 H2.4 M0 -2.4 V2.4'/><path transform='translate(51.6 37.3) rotate(113.0)' opacity='0.58' d='M-6.2 0 A 6.2 6.2 0 0 1 6.2 0'/><path transform='translate(151.0 16.3) rotate(190.3)' opacity='0.68' d='M-1.9 0 H1.9 M0 -1.9 V1.9'/><circle transform='translate(238.7 50.5) rotate(196.2)' opacity='0.57' r='8.5'/><path transform='translate(91.2 17.4) rotate(91.7)' opacity='0.54' d='M0 -3.2 L2.8 1.6 L-2.8 1.6Z'/><path transform='translate(56.5 26.6) rotate(238.7)' opacity='0.98' d='M4.0 0.0 L2.0 3.5 L-2.0 3.5 L-4.0 -0.0 L-2.0 -3.5 L2.0 -3.5Z'/><rect transform='translate(286.2 14.4) rotate(286.7)' opacity='0.6' x='-1.9' y='-1.9' width='3.7' height='3.7'/><path transform='translate(169.9 53.1) rotate(203.0)' opacity='0.61' d='M-3.8 0 A 3.8 3.8 0 0 1 3.8 0'/><circle transform='translate(175.5 21.0) rotate(30.7)' opacity='0.42' r='3.6'/><path transform='translate(157.9 14.0) rotate(175.8)' opacity='0.45' stroke-dasharray='1 3' d='M-13.8 0 H13.8'/><circle transform='translate(60.6 53.5) rotate(237.0)' opacity='0.43' r='5.0'/><path transform='translate(260.3 51.2) rotate(293.9)' opacity='0.46' d='M0 -7.9 L6.9 4.0 L-6.9 4.0Z'/><path transform='translate(285.3 29.0) rotate(217.9)' opacity='0.67' d='M-4.9 0 H4.9'/><path transform='translate(233.6 25.8) rotate(259.5)' opacity='0.77' d='M-1.9 0 H1.9 M0 -1.9 V1.9'/><path transform='translate(154.2 10.7) rotate(203.0)' opacity='0.88' d='M-4.3 0 H4.3 M0 -4.3 V4.3'/><path transform='translate(70.9 16.3) rotate(38.9)' opacity='0.82' d='M-2.9 0 H2.9 M0 -2.9 V2.9'/><path transform='translate(194.7 49.1) rotate(352.3)' opacity='0.84' d='M0 -6.2 L5.4 3.1 L-5.4 3.1Z'/><path transform='translate(242.0 35.6) rotate(116.7)' opacity='0.6' stroke-dasharray='1 3' d='M-9.6 0 H9.6'/></g><g fill='%23000'><circle cx='107.2' cy='56.2' r='1.9' opacity='0.49'/></g></svg>"), linear-gradient(90deg, #000 0%, rgba(0,0,0,.18) 36%, transparent 46%, transparent 54%, rgba(0,0,0,.18) 64%, #000 100%);
+  mask-size: 300px 64px, 100% 100%;
   mask-repeat: repeat, no-repeat;
+  mask-position: 0 0, 0 0;
   mask-composite: intersect;
 }
 
@@ -291,6 +297,21 @@ h1, h2, .display {
   font-size: 1.1rem;
 }
 
+/* the ☰ (round 8: "too small, especially on desktop … 20-30%"): about a
+   quarter larger on a phone, a third on desktop */
+.app-header .menu-toggle {
+  min-width: 50px;
+  min-height: 50px;
+  font-size: 1.4rem;
+}
+@media (min-width: 768px) {
+  .app-header .menu-toggle {
+    min-width: 54px;
+    min-height: 54px;
+    font-size: 1.5rem;
+  }
+}
+
 .icon-btn:hover,
 .menu-toggle:hover,
 .icon-btn:focus-visible,
@@ -342,18 +363,20 @@ h1, h2, .display {
   isolation: isolate;
 }
 
-/* the foot of the tray (round 7: "turn the subtle knob a bit"): no badge any
-   more — the colour's own element plays here at a whisper (ambience.js
-   mountFlair: falling leaves, bubbles, fog, heat, beams, turning shapes),
-   over a faint pool of the colour's light. It fades in from nothing. */
+/* the tray's backdrop (round 7: the foot; round 8: the whole tray). The
+   colour's own element plays at a whisper behind the rows (ambience.js
+   mountFlair: falling leaves from a canopy at the tray's top, runes, fog and
+   brambles, heat, beams, turning shapes) — faint behind the destinations,
+   fuller in the open space below the Theme row, over a pool of the colour's
+   light at the foot. Nothing in it takes a tap. */
 .tray-flair {
-  position: relative;
-  margin-top: auto;
-  min-height: 210px;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
   overflow: hidden;
   pointer-events: none;
-  -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 40%);
-  mask-image: linear-gradient(180deg, transparent 0%, #000 40%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.35) 30%, rgba(0, 0, 0, 0.75) 55%, #000 80%);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.35) 30%, rgba(0, 0, 0, 0.75) 55%, #000 80%);
 }
 
 .tray-flair .flair-canvas {
@@ -369,7 +392,7 @@ h1, h2, .display {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(70% 55% at 30% 105%, color-mix(in srgb, var(--accent) 40%, transparent) 0%, transparent 70%);
+  background: radial-gradient(90% 28% at 30% 104%, color-mix(in srgb, var(--accent) 40%, transparent) 0%, transparent 70%);
   animation: flair-twinkle 6s ease-in-out infinite alternate;
 }
 

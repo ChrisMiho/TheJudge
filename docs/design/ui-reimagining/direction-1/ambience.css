@@ -20,6 +20,10 @@
  * green canopy and its falling leaves, blue bubbles and waves, black fog and
  * wisps, red heat, white beams, colorless shapes. The badge behind the page
  * is fainter still so the element reads.
+ * Round 8: the badge moves out from under the content into the open space
+ * (the gutter beside the column; the foot of a phone), where it can be seen.
+ * Blue's element is arcane now (runes, a spell circle, constellations), Black
+ * gains brambles and a moon, Green's limbs are redrawn.
  */
 
 .ambience {
@@ -59,17 +63,40 @@
   to { transform: translate3d(-4%, -3%, 0) rotate(-1.5deg) scale(1); }
 }
 
-/* the badge, faint and drifting */
+/* the badge (round 8: "a majority of it is covered up … almost completely
+   hidden"): it no longer sits dead-centre under the content column. On a wide
+   screen it hangs in the open space beside the column — sized to that gutter,
+   its inner edge tucked just under the column — faint but plainly there. On a
+   phone, where there is no gutter, it rises from the foot of the screen, half
+   of it showing. It turns very slowly as it drifts. */
 .ambience::after {
-  inset: 0;
-  background: var(--motif) center / min(120vmin, 900px) no-repeat;
-  opacity: 0.045;
-  filter: blur(2px) saturate(1.2);
-  animation: ambience-drift 52s ease-in-out infinite alternate;
+  --col: min(48rem, 92vw);
+  --gutter: calc((100vw - var(--col)) / 2);
+  --badge: clamp(260px, calc(var(--gutter) * 1.55), min(72vh, 620px));
+  inset: auto;
+  width: var(--badge);
+  height: var(--badge);
+  left: calc(var(--gutter) / 2 - var(--badge) / 2 + 1.5vw);
+  top: calc(56% - var(--badge) / 2);
+  background: var(--motif) center / contain no-repeat;
+  opacity: 0.16;
+  filter: saturate(1.1);
+  -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+  animation: badge-drift 70s ease-in-out infinite alternate;
 }
-@keyframes ambience-drift {
-  from { transform: translate3d(-3%, -2%, 0) scale(1); }
-  to { transform: translate3d(3%, 3%, 0) scale(1.08); }
+@keyframes badge-drift {
+  from { transform: translate3d(0, -2.5%, 0) rotate(-6deg); }
+  to { transform: translate3d(0, 2.5%, 0) rotate(6deg); }
+}
+@media (max-width: 1099px) {
+  .ambience::after {
+    --badge: min(118vw, 560px);
+    left: calc(50% - var(--badge) / 2);
+    top: auto;
+    bottom: calc(var(--badge) / -2.1);
+    opacity: 0.14;
+  }
 }
 
 #ambience-canvas {

@@ -1,17 +1,33 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Blue motif: a badge of charged water — a wave crest inside a disc, wrapped in a sweeping wave">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Blue motif: an arcane badge — a wave crest inside a disc, wrapped in a spell circle of runes (round 8)">
   <defs>
-    <radialGradient id="b-glow" cx="50%" cy="50%" r="55%"><stop offset="0" stop-color="#38e1ff" stop-opacity="0.5"/><stop offset="0.5" stop-color="#0050d8" stop-opacity="0.22"/><stop offset="1" stop-color="#0050d8" stop-opacity="0"/></radialGradient>
-    <linearGradient id="b-wave" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#38e1ff" stop-opacity="0.2"/><stop offset="0.5" stop-color="#38e1ff" stop-opacity="1"/><stop offset="1" stop-color="#0050d8" stop-opacity="0.3"/></linearGradient>
+    <radialGradient id="b-glow" cx="50%" cy="50%" r="55%"><stop offset="0" stop-color="#38e1ff" stop-opacity="0.45"/><stop offset="0.55" stop-color="#0050d8" stop-opacity="0.2"/><stop offset="1" stop-color="#0050d8" stop-opacity="0"/></radialGradient>
+    <filter id="b-soft" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="1.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
   </defs>
   <circle cx="100" cy="100" r="98" fill="url(#b-glow)"/>
-  <g fill="none" stroke="url(#b-wave)" stroke-linecap="round">
-    <path d="M26 128 C 14 70, 60 18, 116 22 C 156 26, 186 56, 182 96" stroke-width="11"/>
-    <path d="M38 150 C 24 106, 50 52, 104 44" stroke-width="4" opacity="0.7"/>
-    <path d="M176 128 C 178 154, 150 178, 118 178" stroke-width="7"/>
-    <path d="M150 160 C 132 172, 108 172, 92 168" stroke-width="3" opacity="0.6"/>
+  <g fill="none" stroke="#38e1ff" stroke-linecap="round" stroke-linejoin="round" filter="url(#b-soft)">
+    <circle cx="100" cy="100" r="90" stroke-width="2.2" opacity="0.9"/>
+    <circle cx="100" cy="100" r="68" stroke-width="1.6" opacity="0.8"/>
+    <circle cx="100" cy="100" r="94" stroke-width="0.8" opacity="0.45" stroke-dasharray="2 5"/>
+    <path transform="translate(120.4 23.7) rotate(15.0)" d="M0.0 -5.2 L0.0 5.2 M-3.1 -2.1 L0.0 0.5 L3.1 -2.1" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(155.9 44.1) rotate(45.0)" d="M-3.1 -5.2 L3.1 -5.2 L0.0 5.2 M-1.6 1.0 L1.6 1.0" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(176.3 79.6) rotate(75.0)" d="M0.0 -5.2 L0.0 5.2 M0.0 -2.6 L3.1 -4.7 M0.0 0.0 L-3.1 2.1" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(176.3 120.4) rotate(105.0)" d="M-3.1 5.2 L-3.1 -5.2 L3.1 -2.1 L-3.1 1.0" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(155.9 155.9) rotate(135.0)" d="M-3.1 -3.1 L3.1 -3.1 M0.0 -3.1 L0.0 5.2 M-2.1 5.2 L2.1 5.2" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(120.4 176.3) rotate(165.0)" d="M-2.6 -5.2 L2.6 0.0 L-2.6 5.2 M2.6 -5.2 L2.6 5.2" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(79.6 176.3) rotate(195.0)" d="M0.0 -5.2 L3.1 0.0 L0.0 5.2 L-3.1 0.0 L0.0 -5.2 M0.0 -1.6 L0.0 1.6" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(44.1 155.9) rotate(225.0)" d="M-3.1 -5.2 L-3.1 5.2 L3.1 5.2 M-3.1 0.0 L2.1 -3.1" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(23.7 120.4) rotate(255.0)" d="M3.1 -5.2 L-1.0 -1.0 L3.1 3.1 M-3.1 -1.0 L-3.1 5.2" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(23.7 79.6) rotate(285.0)" d="M-3.1 4.2 L0.0 -5.2 L3.1 4.2 M-1.8 0.5 L1.8 0.5 M0.0 0.5 L0.0 5.2" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(44.1 44.1) rotate(315.0)" d="M0.0 -5.2 L0.0 5.2 M-3.1 -2.1 L0.0 0.5 L3.1 -2.1" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(79.6 23.7) rotate(345.0)" d="M-3.1 -5.2 L3.1 -5.2 L0.0 5.2 M-1.6 1.0 L1.6 1.0" stroke-width="1.6" stroke="#bff3ff"/>
+    <path transform="translate(100.0 10.0) rotate(0)" d="M0 -6 L4 0 L0 6 L-4 0Z" fill="#0e0e11" stroke-width="1.6"/>
+    <path transform="translate(190.0 100.0) rotate(90)" d="M0 -6 L4 0 L0 6 L-4 0Z" fill="#0e0e11" stroke-width="1.6"/>
+    <path transform="translate(100.0 190.0) rotate(180)" d="M0 -6 L4 0 L0 6 L-4 0Z" fill="#0e0e11" stroke-width="1.6"/>
+    <path transform="translate(10.0 100.0) rotate(270)" d="M0 -6 L4 0 L0 6 L-4 0Z" fill="#0e0e11" stroke-width="1.6"/>
+    <path d="M100.0 32.0 L140.0 155.0 L35.3 79.0 L164.7 79.0 L60.0 155.0 L100.0 32.0" stroke-width="0.9" opacity="0.3"/>
   </g>
-  <g fill="#dffaff"><circle cx="182" cy="108" r="3"/><circle cx="24" cy="142" r="2.4"/><circle cx="128" cy="16" r="2"/><circle cx="60" cy="30" r="1.6"/><circle cx="112" cy="186" r="2.4"/><circle cx="166" cy="150" r="1.6"/><circle cx="46" cy="166" r="1.8"/><circle cx="188" cy="82" r="1.4"/></g>
-  <circle cx="100" cy="100" r="47" fill="#0e0e11" stroke="#38e1ff" stroke-opacity="0.4" stroke-width="2"/>
+  <g fill="#dffaff"><circle cx="100" cy="4" r="2.4"/><circle cx="171" cy="41" r="1.6"/><circle cx="30" cy="150" r="1.8"/><circle cx="150" cy="176" r="1.4"/><circle cx="18" cy="72" r="1.4"/></g>
+  <circle cx="100" cy="100" r="47" fill="#0e0e11" stroke="#38e1ff" stroke-opacity="0.45" stroke-width="2"/>
   <circle cx="100" cy="100" r="43" fill="none" stroke="#38e1ff" stroke-width="1" opacity="0.35"/>
   <g transform="translate(60 60) scale(0.8)" color="#38e1ff"><path d="M12 66 C 22 40, 40 30, 58 38 C 70 44, 74 56, 64 60 C 58 62, 54 56, 60 52" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/><path d="M14 74 H86" stroke="currentColor" stroke-width="2.5" opacity="0.5" stroke-linecap="round"/><g fill="currentColor"><circle cx="72" cy="38" r="2.4"/><circle cx="80" cy="50" r="1.8"/><circle cx="66" cy="28" r="1.6"/></g></g>
 </svg>
