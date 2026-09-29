@@ -45,33 +45,21 @@
 .icon-chip:disabled { opacity: 0.55; cursor: default; }
 .icon-chip .glyph { color: var(--accent-soft); font-size: 1.05rem; line-height: 1; }
 
-/* ---- the stage: a lit, theme-coloured surface the card sits on ---- */
+/* ---- the stage: the surface the card sits on. Round 9 (owner: "the image
+   behind the card can go to a more generic solid color, like the chat uses,
+   so that it stands apart from the background"): a solid panel, the same fill
+   as the judge's bubble — no motif wash, no glow, no light line. ---- */
 .stage {
   position: relative;
   display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
   padding: 1.1rem 0.5rem 0.6rem;
   border-radius: 1.1rem;
   border: 1px solid var(--surface-edge);
-  background:
-    radial-gradient(60% 55% at 50% 45%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 70%),
-    radial-gradient(120% 90% at 50% 100%, transparent 55%, rgba(0,0,0,0.45) 100%),
-    color-mix(in srgb, var(--surface-panel) 85%, transparent);
+  background: var(--surface-panel);
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.9);
   overflow: hidden;
 }
 .stage[hidden] { display: none; }
-.stage .motif-wash {
-  position: absolute; inset: -18% -10% auto -10%; height: 130%;
-  background: var(--motif) center / 80% no-repeat;
-  opacity: 0.16; pointer-events: none;
-  animation: stage-wash 30s ease-in-out infinite alternate;
-}
-@keyframes stage-wash { from { transform: translateX(-2%) scale(1); } to { transform: translateX(2%) scale(1.06); } }
-/* a slow light pass across the stage floor */
-.stage::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px;
-  background: linear-gradient(90deg, transparent, var(--accent-soft), transparent);
-  opacity: 0.6;
-}
 
 /* the ring: the front card full size, one neighbour peeking out on each
    side; anything further round the ring waits off-stage until it is next */
@@ -197,6 +185,8 @@
    the text grows inside it to a cap, the character count and the round send
    button live inside the frame, the budget meter runs along its bottom ---- */
 .composer { display: grid; gap: 0.6rem; }
+/* round 9: the box may shrink below the textarea's intrinsic width on a phone (the mic made the send wider) */
+.composer, .q-box, .followup { min-width: 0; }
 .q-box, .followup {
   position: relative; display: flex; align-items: flex-end; gap: 0.6rem;
   padding: 0.45rem 0.45rem 0.45rem 1.05rem; border-radius: 1.6rem;
@@ -213,13 +203,30 @@
 .q-box textarea::placeholder, .followup textarea::placeholder { color: color-mix(in srgb, var(--text-muted) 80%, transparent); }
 .q-count, .fu-count { align-self: flex-end; margin-bottom: 0.8rem; font-size: 0.66rem; color: var(--text-muted); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .q-count[data-near="true"] { color: var(--accent-soft); }
-.q-box .send, .followup .send {
-  flex: 0 0 auto; width: 40px; height: 40px; border-radius: 999px; border: 0; display: grid; place-items: center; cursor: pointer;
-  background: linear-gradient(135deg, var(--accent), var(--accent-strong)); color: var(--text-on-accent); font-size: 1rem;
+/* round 9: a microphone inside the send control (owner: "add a microphone
+   icon inside of the send icon … leverage the phone's own voice-to-text").
+   The round send is one pill with two halves now: the mic on the left, the
+   arrow on the right. A tap on the mic listens — the phone's own speech
+   recognition (the browser's SpeechRecognition hands off to the device's
+   dictation engine; no service of ours) types what is said into the box —
+   and the half glows while it listens. The mockup plays a demo sentence. */
+.send-pair {
+  flex: 0 0 auto; display: inline-flex; align-items: stretch; height: 40px; border-radius: 999px; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong)); color: var(--text-on-accent);
   box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--accent) 90%, transparent);
-  transition: transform 150ms ease, box-shadow 150ms ease;
+  transition: box-shadow 150ms ease;
 }
-.q-box .send:hover, .followup .send:hover { transform: scale(1.06); box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--accent) 100%, transparent); }
+.send-pair:hover { box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--accent) 100%, transparent); }
+.send-pair button { width: 40px; height: 40px; border: 0; padding: 0; background: transparent; color: inherit; display: grid; place-items: center; cursor: pointer; font-size: 1rem; transition: background 150ms ease; }
+.send-pair button:hover { background: rgba(255, 255, 255, 0.14); }
+.send-pair .mic { border-right: 1px solid color-mix(in srgb, var(--text-on-accent) 26%, transparent); }
+.send-pair .mic svg { width: 18px; height: 18px; display: block; }
+.send-pair .mic[aria-pressed="true"] { background: color-mix(in srgb, var(--accent-soft) 38%, transparent); animation: mic-listen 1.1s ease-in-out infinite; }
+@keyframes mic-listen {
+  0%, 100% { box-shadow: inset 0 0 0 0 transparent; }
+  50% { box-shadow: inset 0 0 14px color-mix(in srgb, var(--accent-soft) 80%, transparent); }
+}
+.q-box:has(.mic[aria-pressed="true"]), .followup:has(.mic[aria-pressed="true"]) { border-color: var(--accent-soft); }
 .q-meter {
   position: absolute; left: 1.4rem; right: 1.4rem; bottom: 0; height: 2px;
   background: color-mix(in srgb, var(--surface-edge) 50%, transparent); border-radius: 2px; overflow: hidden;
@@ -341,7 +348,27 @@
    the bubble's edge breathes in the colour's light, each line types behind a
    caret, the last one lifts away, the clock ticks at the foot. The absurd
    lines lean in italics. */
-.msg.judge.waiting > div { min-width: min(20rem, 70vw); animation: wait-breathe 2.4s ease-in-out infinite; }
+/* round 9: the wait is slower and more arcane — the clock runs at real speed,
+   every letter inks itself in with a glow that fades, two motes of the
+   colour's light drift up through the bubble, and a faint dashed ring turns
+   round the seal while the judge reads. */
+.msg.judge.waiting > div { position: relative; overflow: hidden; min-width: min(20rem, 70vw); animation: wait-breathe 2.4s ease-in-out infinite; }
+.msg.judge.waiting > div::before, .msg.judge.waiting > div::after {
+  content: ""; position: absolute; left: 16%; bottom: 8%; width: 3px; height: 3px; border-radius: 999px; pointer-events: none;
+  background: var(--accent-soft); box-shadow: 0 0 8px 2px color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  opacity: 0; animation: mote 5.5s ease-in-out infinite;
+}
+.msg.judge.waiting > div::after { left: 74%; width: 2px; height: 2px; animation-duration: 7s; animation-delay: 2.6s; }
+@keyframes mote { 0% { transform: none; opacity: 0; } 15% { opacity: 0.9; } 100% { transform: translate(8px, -72px); opacity: 0; } }
+.msg.judge .seal { position: relative; }
+.msg.judge.waiting .seal::after { content: ""; position: absolute; inset: -6px; border-radius: 999px; border: 1px dashed color-mix(in srgb, var(--accent-soft) 60%, transparent); animation: seal-ring 9s linear infinite; }
+@keyframes seal-ring { to { transform: rotate(360deg); } }
+.wait-line .ch { animation: ink-in 720ms ease-out both; }
+@keyframes ink-in {
+  0% { opacity: 0; filter: blur(3px); text-shadow: 0 0 14px var(--accent-soft), 0 0 3px #fff; }
+  45% { opacity: 1; filter: none; text-shadow: 0 0 10px var(--accent-soft); }
+  100% { opacity: 1; text-shadow: 0 0 0 transparent; }
+}
 @keyframes wait-breathe {
   0%, 100% { border-color: var(--surface-edge); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9), 0 0 0 0 transparent; }
   50% { border-color: color-mix(in srgb, var(--accent-soft) 45%, transparent); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9), 0 0 22px -6px color-mix(in srgb, var(--accent) 80%, transparent); }
@@ -351,7 +378,7 @@
 .wait { display: grid; gap: 0.35rem; }
 .wait-lines { position: relative; display: grid; min-height: 1.5em; }
 .wait-line { grid-area: 1 / 1; color: var(--text-primary); }
-.wait-line::after { content: ""; display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -0.12em; background: var(--accent-soft); box-shadow: 0 0 6px var(--accent-soft); animation: caret 0.9s steps(1) infinite; }
+.wait-line::after { content: ""; display: inline-block; width: 2px; height: 1em; margin-left: 3px; vertical-align: -0.12em; background: var(--accent-soft); box-shadow: 0 0 8px 1px var(--accent-soft); animation: caret 0.9s steps(1) infinite; }
 .wait-line.typed::after { animation: caret 0.9s steps(1) infinite; opacity: 0.8; }
 @keyframes caret { 50% { opacity: 0; } }
 .wait-line[data-v="curious"] { color: color-mix(in srgb, var(--accent-soft) 35%, var(--text-primary)); }
@@ -369,5 +396,5 @@
 [hidden] { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
-  .stage .motif-wash, .ring .card.summon, .msg, .msg.judge .seal, .thinking i, .msg.judge.waiting > div, .wait-line, .wait-line::after { animation: none !important; }
+  .ring .card.summon, .msg, .msg.judge .seal, .thinking i, .msg.judge.waiting > div, .msg.judge.waiting > div::before, .msg.judge.waiting > div::after, .msg.judge.waiting .seal::after, .wait-line, .wait-line .ch, .wait-line::after, .send-pair .mic { animation: none !important; }
 }

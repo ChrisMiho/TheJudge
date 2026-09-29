@@ -133,8 +133,11 @@ window.FLOW = (() => {
   // WAIT_STAGES (askAiWaitStages.ts, verbatim) play inside the judge's own
   // bubble — each line types itself out behind a quill caret, the one before it
   // lifts and fades, and the elapsed clock ticks at the foot. The bubble's edge
-  // breathes in the colour's light while it waits. `speed` compresses time for
-  // the mockup (the thresholds are real seconds in the app).
+  // breathes in the colour's light while it waits. Round 9 ("too fast, the text
+  // changes before it's even fully readable"): the clock runs at real speed —
+  // the thresholds are the seconds a player actually waits — and each letter
+  // inks itself in with a glow (flow.css .ch). `speed` is 1 unless a demo says
+  // otherwise.
   const WAIT_STAGES = [
     { threshold: 0, message: 'Consulting the stack…', variant: 'calm' },
     { threshold: 3, message: 'Priority is passing to the LLM.', variant: 'calm' },
@@ -153,7 +156,11 @@ window.FLOW = (() => {
       clearInterval(typer);
       let i = 0;
       el.textContent = '';
-      typer = setInterval(() => { i += 1; el.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(typer); el.classList.add('typed'); } }, 34);
+      typer = setInterval(() => {
+        const ch = document.createElement('span'); ch.className = 'ch'; ch.textContent = text[i]; el.append(ch);
+        i += 1;
+        if (i >= text.length) { clearInterval(typer); el.classList.add('typed'); }
+      }, 46);
     }
     const tick = setInterval(() => {
       const sec = (performance.now() - t0) / 1000 * speed;
@@ -172,6 +179,35 @@ window.FLOW = (() => {
     function stop() { clearInterval(tick); clearInterval(typer); }
     return stop;
   }
+
+  // ---- round 9: the microphone inside the send control. A tap starts
+  // listening (the mic half glows, the box says so); what is said types into
+  // the box. The build uses the browser's SpeechRecognition, which hands off to
+  // the phone's own dictation engine — nothing of ours runs. The mockup plays a
+  // demo sentence after a moment instead of listening.
+  const MIC_SVG = '<svg viewBox="0 0 20 20" aria-hidden="true"><rect x="7" y="2" width="6" height="10" rx="3" fill="currentColor"/><path d="M4.5 9.5a5.5 5.5 0 0 0 11 0M10 15v3M7 18h6" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>';
+  function mountMics() {
+    document.querySelectorAll('.send-pair .mic').forEach((mic) => {
+      if (mic.dataset.bound) return; mic.dataset.bound = 'true';
+      mic.innerHTML = MIC_SVG;
+      const box = mic.closest('.q-box, .followup'), ta = box && box.querySelector('textarea');
+      if (!ta) return;
+      const was = ta.placeholder;
+      let timer = 0, typing = 0;
+      const stop = () => { clearTimeout(timer); clearInterval(typing); mic.setAttribute('aria-pressed', 'false'); ta.placeholder = was; };
+      mic.addEventListener('click', () => {
+        if (mic.getAttribute('aria-pressed') === 'true') return stop();
+        mic.setAttribute('aria-pressed', 'true'); ta.placeholder = 'Listening… say your question'; ta.value = '';
+        ta.dispatchEvent(new Event('input'));
+        const said = mic.dataset.demo || 'Can I respond to Lightning Bolt with Counterspell after it targets my Elves?';
+        timer = setTimeout(() => {
+          let i = 0;
+          typing = setInterval(() => { i += 1; ta.value = said.slice(0, i); ta.dispatchEvent(new Event('input')); if (i >= said.length) stop(); }, 28);
+        }, 1400);
+      });
+    });
+  }
+  document.addEventListener('DOMContentLoaded', mountMics);
 
   function bindRefs(root) {
     root.querySelectorAll('.ref, .thumb.tap').forEach((el) => el.addEventListener('click', () => { const c = byName(el.dataset.name); if (c) openDetail(c); }));
@@ -299,5 +335,5 @@ window.FLOW = (() => {
   }
 
   document.addEventListener('DOMContentLoaded', ensureDetailPanel);
-  return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, runWait, WAIT_STAGES, bindRefs, mountMenu, setProfile, setCustomColorless, PROFILES };
+  return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, runWait, WAIT_STAGES, bindRefs, mountMics, mountMenu, setProfile, setCustomColorless, PROFILES };
 })();

@@ -6,7 +6,7 @@
  *   the dust    fine motes that twinkle and drift (round 5), one recipe per colour
  *   the scene   round 7 — each colour's element, played as its own animation:
  *     white      soft beams from above and slow orbs of light lifting
- *     blue       bubbles rising through slow waves — undersea
+ *     blue       runes writing themselves in the air, a plain ring now and then — arcane
  *     black      fog banks rolling low, a few wandering wisps
  *     red        heat tongues licking up from the foot of the screen, embers
  *     green      a canopy hangs from the top edge; leaves fall from it
@@ -175,10 +175,13 @@ window.AMBIENCE = (() => {
 
   // Blue (round 8: "more blue arcane focused" — the bubbles and the moving
   // horizontal lines are gone): runes of an invented script write themselves
-  // in the air, glow, and fade as they drift up; now and then a spell circle
-  // inscribes itself in the open space and dissolves; the dust specks are
-  // threaded into faint constellations (the renderer's `links`).
-  // The runes are drawn for this app — no real alphabet, no Wizards glyph.
+  // in the air, glow, and fade as they drift up; the dust specks are threaded
+  // into faint constellations (the renderer's `links`). Round 9 ("some of the
+  // shapes are too large and detailed … larger shapes need to be less detailed
+  // like the ones in the colorless profile"): the big shape is a plain ring —
+  // one circle that inscribes itself, holds, and dissolves, with at most a
+  // thin second ring inside — no rune marks, no star of chords. The runes stay
+  // small. The runes are drawn for this app — no real alphabet, no Wizards glyph.
   const RUNES = [
     [[[0, -1], [0, 1]], [[-0.6, -0.4], [0, 0.1], [0.6, -0.4]]],
     [[[-0.6, -1], [0.6, -1], [0, 1]], [[-0.3, 0.2], [0.3, 0.2]]],
@@ -203,14 +206,14 @@ window.AMBIENCE = (() => {
     rune(W, H) {
       return { g: pick(RUNES), x: rnd(0.04, 0.96) * W, y: rnd(0.12, 0.95) * H, s: rnd(7, 13), rot: rnd(-0.25, 0.25), age: 0, write: rnd(90, 150), hold: rnd(160, 300), fade: rnd(160, 240), vy: rnd(0.04, 0.12) };
     },
-    // the spell circle sits in open space: the side gutters on a wide screen, low on a phone
+    // the ring sits in open space: the side gutters on a wide screen, low on a phone or in the tray
     spellCircle(W, H) {
       const col = Math.min(768, W * 0.92), gutter = (W - col) / 2;
       const wide = gutter > 150;
-      const r = wide ? Math.min(gutter * 0.62, H * 0.2, 150) : Math.min(W * 0.32, 120);
+      const r = wide ? Math.min(gutter * 0.5, H * 0.16, 110) : Math.min(W * 0.26, 90);
       const x = wide ? (Math.random() < 0.5 ? gutter / 2 : W - gutter / 2) : rnd(0.25, 0.75) * W;
-      const y = wide ? rnd(0.3, 0.78) * H : rnd(0.72, 0.9) * H;
-      return { x, y, r, age: 0, draw: 260, hold: 600, fade: 260, rot: rnd(0, 6.3), marks: Array.from({ length: 8 }, () => pick(RUNES)) };
+      const y = wide ? rnd(0.3, 0.78) * H : rnd(0.7, 0.9) * H;
+      return { x, y, r, age: 0, draw: 260, hold: 600, fade: 260, rot: rnd(0, 6.3), inner: Math.random() < 0.5 };
     },
     strokeRune(ctx, g, x, y, s, rot, prog) {
       // prog 0..1 across all of the rune's strokes
@@ -240,7 +243,7 @@ window.AMBIENCE = (() => {
         return true;
       });
       ctx.shadowBlur = 0;
-      // the spell circle: inscribe (arc grows, rune marks appear), hold and breathe, dissolve
+      // the ring (round 9, plain): inscribe (the arc grows), hold and breathe, dissolve
       if (!this.circle && --this.nextCircle <= 0) this.circle = this.spellCircle(W, H);
       const c = this.circle;
       if (c) {
@@ -254,22 +257,7 @@ window.AMBIENCE = (() => {
         ctx.shadowColor = rgba(this.cyan, 0.6 * a); ctx.shadowBlur = 8;
         ctx.strokeStyle = rgba(this.pale, 0.16 * a); ctx.lineWidth = 1.1;
         ctx.beginPath(); ctx.arc(0, 0, c.r, turn, turn + p * Math.PI * 2); ctx.stroke();
-        ctx.beginPath(); ctx.arc(0, 0, c.r * 0.78, -turn, -turn - p * Math.PI * 2, true); ctx.stroke();
-        ctx.strokeStyle = rgba(this.pale, 0.1 * a);
-        ctx.beginPath(); ctx.arc(0, 0, c.r * 0.34, 0, p * Math.PI * 2); ctx.stroke();
-        // a star of chords inside, drawn last
-        if (p > 0.6) {
-          const q = (p - 0.6) / 0.4;
-          ctx.beginPath();
-          for (let i = 0; i <= 5; i++) { const ang = turn * 0.5 + (i * 2 / 5) * Math.PI * 2; ctx.lineTo(Math.cos(ang) * c.r * 0.78, Math.sin(ang) * c.r * 0.78); }
-          ctx.strokeStyle = rgba(this.pale, 0.07 * a * q); ctx.stroke();
-        }
-        ctx.strokeStyle = rgba(this.pale, 0.24 * a); ctx.lineWidth = 1;
-        c.marks.forEach((g, i) => {
-          if (i / c.marks.length > p) return;
-          const ang = turn + (i / c.marks.length) * Math.PI * 2;
-          this.strokeRune(ctx, g, Math.cos(ang) * c.r * 0.89, Math.sin(ang) * c.r * 0.89, c.r * 0.055, ang + Math.PI / 2, 1);
-        });
+        if (c.inner) { ctx.strokeStyle = rgba(this.pale, 0.09 * a); ctx.beginPath(); ctx.arc(0, 0, c.r * 0.7, -turn, -turn - p * Math.PI * 2, true); ctx.stroke(); }
         ctx.restore(); ctx.shadowBlur = 0;
       }
     }
@@ -409,38 +397,12 @@ window.AMBIENCE = (() => {
     }
   };
 
-  // the Menu tray's Blue (round 8): the page went arcane, but the owner loved the
-  // tray's bubbles and wave as they were in round 7 — so the tray keeps them
-  const BLUE_TRAY = {
-    cyan: [56, 225, 255], pale: [180, 235, 255],
-    init(W, H, k) {
-      const n = Math.max(5, Math.round(16 * k * Math.sqrt(W * H / 1296000)));
-      this.bubbles = Array.from({ length: n }, () => this.bubble(W, H, true));
-      this.waves = [0, 1, 2].map((i) => ({ y: 0.58 + i * 0.14, amp: rnd(5, 9), len: rnd(170, 260), sp: rnd(0.25, 0.5) * (i % 2 ? -1 : 1), ph: rnd(0, 6.3) }));
-    },
-    bubble(W, H, fresh) { return { x: rnd(0, W), y: fresh ? rnd(0, H) : H + rnd(10, 40), r: rnd(2.5, 8), vy: rnd(0.22, 0.55), ph: rnd(0, 6.3), a: rnd(0.22, 0.4) }; },
-    draw(ctx, t, W, H) {
-      for (const w of this.waves) {
-        ctx.beginPath();
-        const y0 = H * w.y;
-        for (let x = -10; x <= W + 10; x += 8) ctx.lineTo(x, y0 + Math.sin((x / w.len) * Math.PI * 2 + t * 0.004 * w.sp + w.ph) * w.amp);
-        ctx.strokeStyle = rgba(this.cyan, 0.11); ctx.lineWidth = 1.4; ctx.stroke();
-      }
-      for (const b of this.bubbles) {
-        b.y -= b.vy; b.x += Math.sin(t / 80 + b.ph) * 0.3;
-        if (b.y < -20) Object.assign(b, this.bubble(W, H, false));
-        const fade = Math.min(1, (H + 20 - b.y) / 80);
-        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
-        ctx.fillStyle = rgba(this.cyan, 0.04 * fade); ctx.fill();
-        ctx.strokeStyle = rgba(this.pale, b.a * fade); ctx.lineWidth = 1; ctx.stroke();
-        ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.62, Math.PI * 1.05, Math.PI * 1.55);
-        ctx.strokeStyle = rgba([255, 255, 255], b.a * 1.2 * fade); ctx.lineWidth = 1.1; ctx.stroke();
-      }
-    }
-  };
-
+  // the Menu tray (round 9: "the blue profile side menu still has bubbles
+  // floating around instead of the new abstract things"): every colour's tray
+  // plays the same scene as its page — Blue's runes and ring included. Round
+  // 8's bubbles-and-wave tray scene is gone.
   const SCENES = { white: WHITE, blue: BLUE, black: BLACK, red: RED, green: GREEN, colorless: COLORLESS };
-  const TRAY_SCENES = { blue: BLUE_TRAY };
+  const TRAY_SCENES = {};
 
   /* ================= one renderer, attached to a canvas ================= */
   // opts: k (scene density, 1 = the page), dust (dust density, 1 = the page), size() -> [W, H]

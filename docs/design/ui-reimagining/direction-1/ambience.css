@@ -24,6 +24,9 @@
  * (the gutter beside the column; the foot of a phone), where it can be seen.
  * Blue's element is arcane now (runes, a spell circle, constellations), Black
  * gains brambles and a moon, Green's limbs are redrawn.
+ * Round 9: the badge is back in the centre — larger, a little blurred, part of
+ * the atmosphere rather than a thing beside the content; the stage and the
+ * plates are solid panels now, so it shows around them, never through them.
  */
 
 .ambience {
@@ -63,26 +66,24 @@
   to { transform: translate3d(-4%, -3%, 0) rotate(-1.5deg) scale(1); }
 }
 
-/* the badge (round 8: "a majority of it is covered up … almost completely
-   hidden"): it no longer sits dead-centre under the content column. On a wide
-   screen it hangs in the open space beside the column — sized to that gutter,
-   its inner edge tucked just under the column — faint but plainly there. On a
-   phone, where there is no gutter, it rises from the foot of the screen, half
-   of it showing. It turns very slowly as it drifts. */
+/* the badge (round 9: "making the image larger, centered, and maybe a bit
+   blurry … the image/logo isn't a focus for the app, it's part of the
+   atmosphere of the profile"): it sits in the centre of the screen behind
+   everything, big and soft — blurred a little, faint — and the content panels
+   are solid now (flow.css), so it shows around them rather than through them.
+   Round 8's off-to-the-side placement is gone. It still turns very slowly. */
 .ambience::after {
-  --col: min(48rem, 92vw);
-  --gutter: calc((100vw - var(--col)) / 2);
-  --badge: clamp(260px, calc(var(--gutter) * 1.55), min(72vh, 620px));
+  --badge: min(108vh, 100vw, 1040px);
   inset: auto;
   width: var(--badge);
   height: var(--badge);
-  left: calc(var(--gutter) / 2 - var(--badge) / 2 + 1.5vw);
-  top: calc(56% - var(--badge) / 2);
+  left: calc(50% - var(--badge) / 2);
+  top: calc(52% - var(--badge) / 2);
   background: var(--motif) center / contain no-repeat;
-  opacity: 0.16;
-  filter: saturate(1.1);
-  -webkit-mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
-  mask-image: radial-gradient(closest-side, #000 62%, transparent 100%);
+  opacity: 0.26;
+  filter: blur(6px) saturate(1.1);
+  -webkit-mask-image: radial-gradient(closest-side, #000 80%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 80%, transparent 100%);
   animation: badge-drift 70s ease-in-out infinite alternate;
 }
 @keyframes badge-drift {
@@ -91,11 +92,9 @@
 }
 @media (max-width: 1099px) {
   .ambience::after {
-    --badge: min(118vw, 560px);
-    left: calc(50% - var(--badge) / 2);
-    top: auto;
-    bottom: calc(var(--badge) / -2.1);
-    opacity: 0.14;
+    --badge: min(140vw, 700px);
+    top: calc(50% - var(--badge) / 2);
+    opacity: 0.22;
   }
 }
 
