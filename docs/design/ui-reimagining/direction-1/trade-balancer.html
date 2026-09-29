@@ -14,6 +14,10 @@
   /* ---- the whole screen fits the viewport: the lists scroll, nothing else does (owner, round 3) ---- */
   .page-content { width: min(56rem, 94vw); padding: 0.6rem 0 0; display: flex; flex-direction: column; }
   .tb { display: flex; flex-direction: column; gap: 0.55rem; height: calc(100dvh - var(--chrome, 100px) - 0.6rem); min-height: 0; }
+  /* round 9 (owner: "add a little buffer under the bottom, so that the final prices of each
+     side aren't all the way at the bottom of the screen"): on desktop the two sides stop
+     short of the foot — the totals stay in each side's foot, with breathing room below */
+  @media (min-width: 720px) { .tb { height: calc(100dvh - var(--chrome, 100px) - 0.6rem - 2.25rem); } }
   .asof { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
   .flow-head .asof { display: none; }
   @media (max-width: 719px) { .header-side .asof { display: none; } .flow-head .asof { display: inline; } }

@@ -78,7 +78,7 @@
   .lock-outline polygon { fill: none; stroke: color-mix(in srgb, var(--accent-soft) 85%, transparent); stroke-width: 1.8; stroke-dasharray: 10 6; animation: march 2.4s linear infinite; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-soft) 60%, transparent)); }
   @keyframes march { to { stroke-dashoffset: -32; } }
   /* the indicator: searching hints, "Locking on <card>" with the vote bar */
-  .indicator { position: absolute; left: 0.75rem; top: 0.6rem; max-width: calc(100% - 7rem); min-height: 44px; display: grid; gap: 0.3rem; padding: 0.5rem 0.75rem; border-radius: 0.8rem;
+  .indicator { position: absolute; left: 0.75rem; top: 0.6rem; max-width: calc(100% - 10rem); min-height: 44px; display: grid; gap: 0.3rem; padding: 0.5rem 0.75rem; border-radius: 0.8rem;
     background: rgba(9, 9, 11, 0.78); border: 1px solid color-mix(in srgb, var(--accent-soft) 30%, transparent); backdrop-filter: blur(6px); font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
   .indicator[hidden] { display: none; }
   .indicator .votes { display: flex; align-items: center; gap: 0.5rem; }
@@ -87,11 +87,26 @@
   .indicator .n { font-size: 0.7rem; color: var(--accent-soft); font-variant-numeric: tabular-nums; }
   .indicator .dot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; background: var(--accent-soft); box-shadow: 0 0 8px var(--accent-soft); margin-right: 0.4rem; vertical-align: middle; animation: think 1.2s ease-in-out infinite; }
   [data-state="camera-error"] .indicator { border-color: rgba(255, 143, 163, 0.5); }
-  /* the review bubble: the count, then the cards added this session */
-  .review-bubble { position: absolute; right: 0.75rem; top: 0.6rem; display: grid; justify-items: end; gap: 0.4rem; z-index: 3; }
+  /* the frame's top-right (round 9): the caution triangle, then the count pill; the
+     pill's list drops beneath, aligned to the right edge */
+  .vf-top-right { position: absolute; right: 0.75rem; top: 0.6rem; display: flex; align-items: flex-start; gap: 0.4rem; z-index: 3; }
+  /* round 9 (owner): a yellow caution triangle beside the count — a tap says the
+     scanner is experimental and not fully working yet */
+  .caution { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; border: 1px solid rgba(250, 204, 21, 0.55); background: rgba(9, 9, 11, 0.78); color: #facc15; cursor: pointer; backdrop-filter: blur(6px);
+    box-shadow: 0 0 14px -6px rgba(250, 204, 21, 0.8); transition: border-color 150ms ease, background 150ms ease; }
+  .caution:hover, .caution:focus-visible { border-color: #facc15; background: rgba(250, 204, 21, 0.14); }
+  .caution svg { width: 22px; height: 22px; display: block; }
+  .caution-panel { max-width: 22rem; border-color: rgba(250, 204, 21, 0.45); }
+  .caution-panel .ch { display: flex; align-items: center; gap: 0.6rem; margin: 0.2rem 2rem 0.5rem 0; }
+  .caution-panel .ch .caution { pointer-events: none; }
+  .caution-panel h2 { margin: 0; font-size: 1.1rem; }
+  .caution-panel p { margin: 0 0 0.6rem; font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); }
+  .caution-panel p.text-muted { font-size: 0.82rem; }
+  .review-bubble { position: relative; display: grid; justify-items: end; gap: 0.4rem; }
+  .review-bubble .list { position: absolute; right: 0; top: calc(100% + 0.4rem); }
   .review-bubble .pill { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 44px; padding: 0 0.8rem; border-radius: 999px; border: 0; cursor: pointer; font-weight: 700; font-size: 0.86rem;
     background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff) 0%, var(--accent) 45%, var(--accent-strong) 100%); color: var(--text-on-accent); box-shadow: 0 8px 20px -10px var(--accent); }
-  .review-bubble .list { display: none; width: 16rem; max-width: calc(100% - 0.5rem); padding: 0.6rem; border-radius: 0.9rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 92%, transparent); backdrop-filter: blur(10px); text-align: left; }
+  .review-bubble .list { display: none; width: 16rem; max-width: calc(100vw - 2.5rem); padding: 0.6rem; border-radius: 0.9rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 92%, transparent); backdrop-filter: blur(10px); text-align: left; }
   .review-bubble[data-open="true"] .list { display: grid; gap: 0.4rem; }
   .review-bubble .list .lbl { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
   .review-bubble .list .note { font-size: 0.72rem; color: var(--text-muted); line-height: 1.35; margin: 0; }
@@ -170,9 +185,12 @@
           <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
         </div>
         <div class="indicator" id="indicator" role="status" aria-live="polite"></div>
-        <div class="review-bubble" id="review" data-open="false">
-          <button class="pill" id="review-pill" type="button" aria-expanded="false" aria-label="Scanned this session"><span aria-hidden="true">✓</span><span id="review-n">2</span></button>
-          <div class="list" id="review-list"></div>
+        <div class="vf-top-right">
+          <button class="caution" id="caution" type="button" aria-haspopup="dialog" aria-label="Experimental feature — read more" title="Experimental"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 22 20.5H2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 9.2v5.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.25" fill="currentColor"/></svg></button>
+          <div class="review-bubble" id="review" data-open="false">
+            <button class="pill" id="review-pill" type="button" aria-expanded="false" aria-label="Scanned this session"><span aria-hidden="true">✓</span><span id="review-n">2</span></button>
+            <div class="list" id="review-list"></div>
+          </div>
         </div>
         <div class="confirm" id="confirm" role="status"><div><span class="up" aria-hidden="true">👍</span><span id="confirm-text">Added Sol Ring</span></div></div>
         <div class="camera-error"><div><b>Camera unavailable</b>Allow camera access, or exit and add the card by search.</div></div>
@@ -199,12 +217,24 @@
       <button data-state="added">added ✓</button>
       <button data-state="camera-error">camera unavailable</button>
       <button data-review="toggle">review bubble</button>
+      <button data-caution="toggle">caution pop-up</button>
       <button data-debug-demo="toggle">debug</button>
     </div>
     <p class="foot-note">
       No shipped screenshot exists for this screen (the camera needs a device). Parts map one-to-one to today's <code>ScanCameraSurface</code> and <code>ScanReviewBubble</code>; the states are the scanner's own (DEC-057). The dashed strip is mockup scaffolding, not app UI.
     </p>
   </main>
+
+  <!-- round 9: the caution's pop-up -->
+  <div class="overlay-backdrop" id="caution-modal" data-open="false">
+    <div class="overlay-panel caution-panel" role="dialog" aria-labelledby="caution-title">
+      <button class="icon-btn overlay-close" id="caution-close" aria-label="Close">✕</button>
+      <div class="ch"><span class="caution" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.2 22 20.5H2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 9.2v5.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.25" fill="currentColor"/></svg></span><h2 id="caution-title">Card scanning is experimental</h2></div>
+      <p>This feature is experimental and isn't fully functioning yet. It may miss a card, read the wrong one, or need a few tries — check what it adds before you ask.</p>
+      <p class="text-muted">You can always add a card by search instead.</p>
+      <div style="display:flex;justify-content:flex-end"><button class="btn primary" id="caution-ok" type="button">Got it</button></div>
+    </div>
+  </div>
 
   <script src="motifs.js"></script>
   <script src="ambience.js"></script>
@@ -242,6 +272,13 @@
       renderDebug();
       $('review-list').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { added.splice(Number(b.dataset.i), 1); render(); }));
     }
+    // round 9: the caution triangle opens the "experimental" note
+    const cautionOpen = (open) => { $('caution-modal').dataset.open = open; if (open) $('caution-ok').focus(); else $('caution').focus(); };
+    $('caution').addEventListener('click', () => cautionOpen(true));
+    $('caution-close').addEventListener('click', () => cautionOpen(false));
+    $('caution-ok').addEventListener('click', () => cautionOpen(false));
+    $('caution-modal').addEventListener('click', (e) => { if (e.target === $('caution-modal')) cautionOpen(false); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cautionOpen(false); });
     $('review-pill').addEventListener('click', () => { const open = $('review').dataset.open !== 'true'; $('review').dataset.open = open; $('review-pill').setAttribute('aria-expanded', open); });
     $('mute').addEventListener('click', () => { const m = $('mute').getAttribute('aria-pressed') !== 'true'; $('mute').setAttribute('aria-pressed', m); $('mute').textContent = m ? '🔇' : '🔊'; $('mute').setAttribute('aria-label', m ? 'Unmute scan sound' : 'Mute scan sound'); });
     // Debug: the shipped overlay's numbers (ScanDebugOverlay), grouped; demo values that follow the state
@@ -276,6 +313,7 @@
       state = b.dataset.state; render();
     }));
     document.querySelector('[data-review]').addEventListener('click', () => $('review-pill').click());
+    document.querySelector('[data-caution]').addEventListener('click', () => cautionOpen(true));
     render();
   </script>
 </body>
