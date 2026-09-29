@@ -55,8 +55,9 @@ compositions each page targets.
   (round 5), the colour's badge faint and drifting, over a flat ground
   (round 6), and — round 7 — each colour's **element played as its own
   animation** on the same canvas (a green canopy shedding leaves, blue
-  bubbles and waves, black fog and wisps, red heat, white beams, colorless
-  shapes). The same renderer plays at a whisper in the Menu's foot. No
+  runes and spell circles over constellations (round 8), black fog, wisps,
+  brambles and a moon (round 8), red heat, white beams, colorless shapes).
+  The same renderer plays at a whisper across the Menu tray (round 8). No
   corner decoration anywhere: the round-3 `ornaments/` and the round-4
   hairline brackets are both gone.
 - `motif-gallery.html` — the owner's picks and the round-6 candidates per
@@ -112,11 +113,134 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
 
+### Round 8 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 8")
+
+Every Round 8 note applied. Renders are `renders/r8-*.png` (phone 390×844,
+desktop 1440×900), the only renders in the folder. Round 7's live in git
+history at commit `a97d5de`.
+**Rule** = the owner said it must hold. **Try** = shown for a verdict.
+
+Global, on every page (`r8-global-*`, `r8-menu-*`):
+
+- Rule: **the colour's badge is seen, not buried.** It no longer sits under
+  the content column. On a wide screen it hangs in the open space beside the
+  column, sized to that space, turning very slowly. On a phone it rises from
+  the foot of the screen, half showing. Faint (16%), but plainly there.
+- Try: **Blue is arcane.** The bubbles and the moving horizontal lines are
+  gone. Runes of an invented script write themselves in the air, glow, and
+  fade as they drift up. Now and then a spell circle inscribes itself in the
+  open space and dissolves. The specks you liked stay, threaded into faint
+  constellations. Blue's badge ring is a circle of runes around the wave
+  crest (`motifs/blue.svg`). The banner's waves stay.
+- Try: **Black has a shape.** The glow, the fog and the floating orbs stay.
+  Thorned brambles creep in from both lower corners, and a pale crescent moon
+  hangs veiled in the open space.
+- Try: **Green's limbs are redrawn.** They reach in from the top corners,
+  arch, droop under their own weight, fork, and hold hanging leaves. The
+  leaves still fall. The banner now shows the same limbs with leaves hanging
+  off them. On a phone and in the Menu they hang down the side edges as
+  vines.
+- Try: **Colorless's banner is random**: small triangles, rings, arcs, dots
+  and crosses scattered, with no lattice.
+- Rule: **a custom Colorless colour can't break the page.** The picked
+  colour no longer fills every accent token as-is. Accent text, dust and
+  shapes are lifted until they read on the ground (7:1). Fills are lifted
+  until they stand off it (2.4:1). Text on a fill is white or near-black,
+  whichever reads. The hue always survives (`r8-global-1440-colorless-custom`,
+  a bright yellow).
+- Rule: **the Menu's animation fills the tray**, not just its foot. It plays
+  behind the rows (faint there) and fuller in the empty space below the Theme
+  row, over the pool of light at the foot.
+- Rule: **the ☰ is larger**: about a quarter bigger on a phone, a third on
+  desktop. Read as the ☰ at the top left; the note said top right.
+
+#### Ask a Question — `quick-question.html` (`r8-qq-*`)
+
+- Rule: **the waiting lines are back.** They are shipped today
+  (`askAiWaitStages.ts`, word for word) and the mockup had dropped them. They
+  now play inside the Judge's own bubble. Each line types itself out behind a
+  caret, the one before lifts and fades, and an elapsed clock ticks at the
+  foot. The bubble's edge breathes in the colour's light while it waits. The
+  absurd lines lean into italics. The mockup runs the clock six times fast;
+  a demo toggle picks a long wait or a quick answer. The in-depth chat uses
+  the same bubble.
+
+#### Ask a Question · in-depth details — `in-depth-question.html` (`r8-idq-*`)
+
+- Rule: **every zone reorders by drag**, not only the Stack. Only the Stack
+  wears order tags, because only there does order change the ruling. The
+  actions sheet's reorder buttons work in every zone (‹ Move left · Move
+  right › outside the Stack).
+- Rule: **a card's actions open beside the card on desktop**
+  (`r8-idq-1440-3-card-actions`), not in the top-right corner. It's a
+  pop-over under the card, or over it, or beside it when neither fits,
+  pointing at the card. Details open inside the same pop-over
+  (`r8-idq-1440-3-card-details`). A phone keeps the bottom sheet.
+- Try: **More details** (`r8-idq-1440-4-more-details`, `r8-idq-390-4-more-details`).
+  Copies left the main form. One slim dashed row at the foot of the card
+  form reads "More details" and shows what is set there ("4 copies"). A tap
+  slides a sheet up over the card sheet, and Done slides it away. Copies
+  there is a picker holding 0–99 that shows five rows at a time. Future rare
+  settings join this sheet, with no new buttons on the form.
+- Rule: **the review's zone chips filter it** (`r8-idq-1440-4-review-stack`).
+  They sit under the review's header: All · Stack 3 · Battlefield 3 …. A tap
+  shows only that zone's cards and lights the chip. Tapping it again, or
+  All, shows everything.
+- Answer: **yes, the list scrolls.** At 10 cards
+  (`r8-idq-1440-4-review-10`, `r8-idq-390-4-review-10`) the list stops at a
+  third of the screen and scrolls. A fade at its edge and a line under it
+  ("10 cards · scroll the list for the rest") say there is more.
+- Grapeshot (a storm card) and Dark Ritual join the demo library.
+
+#### Trade Balancer — `trade-balancer.html` (`r8-tb-*`)
+
+- Rule: **the piles are relative.** The richer side is always the full
+  hoard (tier 5). The lighter side's pile is its share of the richer side:
+  95%+ tier 5 · 75%+ tier 4 · 50%+ tier 3 · 25%+ tier 2 · under that tier 1.
+  $24.70 against $15.70 (64%) is tier 5 against tier 3 (`r8-tb-1440`). This
+  reverses Round 7's absolute tiers. The dollar totals now carry the trade's
+  size; the glow and dim cue and the verdict line stay.
+
+#### Card scan — `card-scan.html` (`r8-scan-*`)
+
+- Rule: **the guide is quiet**: a thin line of the colour's light that
+  breathes slowly while locking, not a flashing glow. The lock outline is
+  thinner and slower too.
+- Rule: **the way out is a box with an ✕** above the camera's top-right
+  corner, and it's the only way out. The ‹ back arrow is gone while the
+  camera is open. Capture takes the full width.
+- Rule: **one count**: the pill in the frame's top right. "Adding to your
+  question" and its "✓ 2 added" chip are gone.
+- Rule: **the pill's list is only what was scanned here** ("Scanned just
+  now"), never cards that were typed, so a Remove there can't touch them.
+  Its foot says "These join your question (the Stack, Side A) when you close
+  the scanner."
+- Rule: **nothing overlaps.** The frame has three bands: the indicator and
+  the pill on top, the guide in the middle, and sound · credit · Debug at the
+  foot.
+- Try: **Debug has a look** (`r8-scan-1440-debug`, `r8-scan-390-debug`). It
+  dresses the shipped overlay's parts in the colour: the detected card's
+  outline and the art region the scanner reads, drawn on the feed; and the
+  live numbers (match, thresholds, frame, camera) as a grouped panel under
+  the frame, with small bars for votes, glare, sharpness and quality.
+
+#### Shared chrome and Menu (`r8-menu-*`)
+
+- The empty space between the foot and the rows is used: see "the Menu's
+  animation fills the tray" above.
+
+### Open for the owner's verdict (Round 8)
+
+- Global: Blue's arcane scene, Black's brambles and moon, Green's new limbs,
+  the badge in the open space (too faint, too strong?).
+- In-depth: the More details sheet as the home for rare settings.
+- Trade Balancer: relative piles (the totals carry the size now).
+- Card scan: Debug's look.
+
 ### Round 7 (2026-09-28, from `OWNER-FEEDBACK.md` → "Round 7")
 
-Every Round 7 note applied. Renders are `renders/r7-*.png` (phone 390×844,
-desktop 1440×900) — the only renders in the folder; Round 6's live in git
-history at commit `9fdb1a0`.
+Every Round 7 note applied. Its renders (`r7-*.png`) live in git history at
+commit `a97d5de`; Round 6's at `9fdb1a0`.
 **Rule** = the owner said it must hold; **Try** = shown for a verdict.
 
 Global, on every page:

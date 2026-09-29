@@ -674,3 +674,85 @@ Your points:
 ## Ready to build?
 
 -
+
+# Round 9 — notes on the Round 8 renders
+
+Open `README.md` → "Round 8" for what changed and why; the renders are
+`renders/r8-*.png`. Write under each heading; a blank heading means "fine as
+shown". When done, open a new session from the worktree at
+`.worktrees/implement-ui-reimagining/` and paste:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 8), then apply
+my Round 9 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+Answers to your Round 8 questions:
+
+- The funny waiting lines are still in scope. Today's app ships them, and the
+  mockup had dropped them. They're back, typed out one by one inside the
+  Judge's reply bubble while you wait.
+- Yes, the review list scrolls. At 10 cards it stops at a third of the
+  screen, with a fade and a "scroll for the rest" line. The zone chips now
+  filter it too.
+- The scanner's list holds only the cards you scanned just now. Typed cards
+  never appear there, so a Remove can't touch them. Scanned cards join your
+  question when you close the scanner.
+- A custom Colorless colour is now adjusted for legibility. The hue stays;
+  only its lightness moves, so text and the background never vanish.
+- You wrote "menu bar in the top right"; I enlarged the ☰ at the top left.
+  Say if you meant something else.
+
+## Global (`r8-global-1440-<colour>`, `r8-global-390-*`, `r8-global-1440-colorless-custom`)
+
+Tries: the badge in the open space; Blue arcane; Black's brambles and moon;
+Green's limbs and branch banner; the random Colorless banner.
+
+Your points:
+
+-
+
+## Ask a Question (`r8-qq-*`)
+
+Tries: the waiting lines typed in the Judge's bubble.
+
+Your points:
+
+-
+
+## In-depth details (`r8-idq-*`)
+
+Tries: the actions pop-over beside the card; More details for Copies; the
+review filters.
+
+Your points:
+
+-
+
+## Trade Balancer (`r8-tb-*`)
+
+Tries: relative piles (the richer side is the full hoard).
+
+Your points:
+
+-
+
+## Card scan (`r8-scan-*`)
+
+Tries: the quiet guide; the ✕ in the corner; one count; Debug's look.
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`r8-menu-*`)
+
+Tries: the element across the whole tray.
+
+Your points:
+
+-
+
+## Ready to build?
+
+-
