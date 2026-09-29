@@ -34,9 +34,12 @@
   .pan .total { font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; line-height: 1.15; transition: color 200ms ease; font-family: var(--font-display); }
   .pan[data-heavy="true"] .total { color: var(--accent-soft); text-shadow: 0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent); }
   .pan .count { font-size: 0.68rem; color: var(--text-muted); }
-  /* ---- round 7: two piles of gold replace the beam. Each side's pile grows
-     through five tiers by the dollar value on that side (under $10 / 10–25 /
-     25–60 / 60–150 / 150+); each tier adds to the last. New treasure drops in
+  /* ---- round 7: two piles of gold replace the beam, five tiers each, each
+     tier adding to the last. Round 8: the tiers are relative — the richer
+     side's pile is always the full hoard (tier 5) and the lighter side's is its
+     share of the richer side (95%+ five · 75%+ four · 50%+ three · 25%+ two ·
+     under that one), so $15 against $25 (60%) is tier 3. The totals carry the
+     trade's size. New treasure drops in
      from above with a small overshoot, staggered; a shrinking pile lifts and
      fades at once. Flat fills, gold and bronze, one purple gem. ---- */
   .piles-wrap { display: grid; justify-items: center; gap: 0.1rem; min-width: 200px; }
@@ -200,11 +203,11 @@
 
     <div class="demo-bar" aria-label="Mockup state (demo only)">
       <span class="tag">demo</span><span>trade:</span>
-      <button data-trade="lean" aria-pressed="true">Leans (tier 3 vs 2)</button>
+      <button data-trade="lean" aria-pressed="true">Leans</button><button data-trade="owner" aria-pressed="false">$25 vs $15</button>
       <button data-trade="fair" aria-pressed="false">Fair trade</button>
       <button data-trade="slight" aria-pressed="false">Slightly favors</button>
       <button data-trade="lopsided" aria-pressed="false">Lopsided</button>
-      <button data-trade="hoard" aria-pressed="false">Hoard (tier 5)</button>
+      <button data-trade="hoard" aria-pressed="false">Big trade</button><button data-trade="one" aria-pressed="false">One side only</button>
       <button data-trade="empty" aria-pressed="false">Empty</button>
     </div>
 
@@ -250,6 +253,8 @@
       'Rhystic Study': [['Commander Masters', 'CMM', 2023, 32.00, 41.00], ['Prophecy', 'PCY', 2000, 44.00, 320.00]],
       'Path to Exile': [['Commander Masters', 'CMM', 2023, 2.40, 5.00]],
       'Birds of Paradise': [['Ravnica Remastered', 'RVR', 2024, 6.10, 13.50]],
+      'Grapeshot': [['Time Spiral Remastered', 'TSR', 2021, 0.45, 1.90]],
+      'Dark Ritual': [['Dominaria Remastered', 'DMR', 2023, 0.70, 2.10]],
       'Lightning Helix': [['Ravnica Remastered', 'RVR', 2024, 0.90, 3.40]]
     };
     let uid = 0;
@@ -261,6 +266,9 @@
       slight:   () => [entry('Sol Ring', 'a'), entry('Counterspell', 'a'), entry('Lightning Bolt', 'b')],
       lopsided: () => [entry('Rhystic Study', 'a', { printing: 1 }), entry('Lightning Helix', 'b'), entry('Path to Exile', 'b')],
       hoard:    () => [entry('Rhystic Study', 'a', { printing: 1, foil: true }), entry('Birds of Paradise', 'a', { qty: 2 }), entry('Rhystic Study', 'b'), entry('Sol Ring', 'b', { printing: 2, foil: true })],
+      // round 8: the owner's example — about $25 against about $15 (60%, tier 5 vs tier 3)
+      owner:    () => [entry('Birds of Paradise', 'a', { qty: 3 }), entry('Lightning Bolt', 'a', { qty: 2 }), entry('Path to Exile', 'b', { qty: 5 }), entry('Sol Ring', 'b', { qty: 2 })],
+      one:      () => [entry('Rhystic Study', 'a')],
       empty:    () => []
     };
     let entries = TRADES.lean();
@@ -286,8 +294,10 @@
         $('count-' + s).textContent = n + (n === 1 ? ' card' : ' cards');
         $('pan-' + s).dataset.heavy = !even && heavy === s;
       });
-      // the piles: each side's tier from its own total; the richer pile glows, the lighter one dims (the imbalance cue)
-      setTier($('pile-a'), tierOf(ta)); setTier($('pile-b'), tierOf(tb));
+      // the piles (round 8): the richer side is the top of the scale; the lighter side's
+      // pile is its share of it. The richer pile glows, the lighter one dims (the imbalance cue)
+      const top = Math.max(ta, tb);
+      setTier($('pile-a'), tierOf(ta, top)); setTier($('pile-b'), tierOf(tb, top));
       $('pile-a').dataset.heavy = !even && heavy === 'a'; $('pile-b').dataset.heavy = !even && heavy === 'b';
       $('pile-a').dataset.light = !even && light === 'a' && ta + tb > 0; $('pile-b').dataset.light = !even && light === 'b' && ta + tb > 0;
       const v = $('verdict');
@@ -388,8 +398,9 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePrinting(); });
 
     // ---- the gold piles (round 7) ----
-    const TIERS = [10, 25, 60, 150];                       // placeholder thresholds — tune against real trade data
-    const tierOf = (v) => v <= 0 ? 0 : 1 + TIERS.filter((t) => v >= t).length;
+    // round 8: a side's tier is its share of the richer side — the richer side is always 5
+    const SHARES = [0.25, 0.5, 0.75, 0.95];
+    const tierOf = (v, top) => v <= 0 || top <= 0 ? 0 : 1 + SHARES.filter((f) => v / top >= f - 1e-9).length;
     function verdictLine(ta, tb, heavy, gap) {
       const ratio = Math.min(ta, tb) / Math.max(ta, tb);
       const who = names[heavy];
