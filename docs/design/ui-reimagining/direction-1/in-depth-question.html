@@ -916,13 +916,14 @@
       const stack = zoneCards['Stack'] || [];
       const msgs = [{ who: 'you', text: question }, { who: 'judge', text: '' }];
       $('thread').innerHTML = chatMarkup(msgs);
-      setTimeout(() => {
+      // round 8: the wait lines play in the judge's bubble (clock six times fast)
+      window.FLOW.runWait($('thread'), { speed: 6, until: 20, onDone: () => {
         msgs[1] = { who: 'judge', text: stack.length >= 2
           ? 'The top of the stack resolves first. [[Counterspell]] was cast in response to [[Lightning Bolt]], so it resolves first and counters the Bolt — Lightning Bolt is put into its owner\'s graveyard and deals no damage.\n[[Sol Ring]] and [[Llanowar Elves]] on the battlefield are untouched. With the stack empty, ' + nameOf(activeIdx()) + ' gets priority again in the ' + $('turn-phase').value + ' and could still cast [[Swords to Plowshares]] from hand.'
           : 'With ' + q.length + ' card' + (q.length === 1 ? '' : 's') + ' in context and nothing on the stack, priority passes and the active player continues their ' + $('turn-phase').value + '.' };
         $('thread').innerHTML = chatMarkup(msgs);
         bindRefs($('thread'));
-      }, 900);
+      } });
       $('ctx-facts').innerHTML =
         '<div class="fact"><small>Turn phase</small><b>' + $('turn-phase').value + '</b></div><div class="fact"><small>Active</small><b>' + nameOf(activeIdx()) + '</b></div><div class="fact"><small>Players</small><b>' + playerNames().join(', ') + '</b></div>';
       $('ctx-cards').innerHTML = q.map((e) => '<div class="row">' + thumb(e.card) + '<div><span class="nm">' + e.card.name + '</span> <span class="zone">' + e.zone + '</span><span class="what">' + summarize(e, ctxOf(e.card, e.zone)) + '</span></div><span></span></div>').join('');

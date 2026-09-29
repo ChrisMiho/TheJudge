@@ -90,6 +90,9 @@
       <button data-state="1" aria-pressed="false">1 card</button>
       <button data-state="noimg" aria-pressed="false">1 card, image unavailable</button>
       <button data-state="0" aria-pressed="false">no cards</button>
+      <span style="margin-left:0.6rem">answer:</span>
+      <button data-wait="long" aria-pressed="true">after a long wait</button>
+      <button data-wait="quick" aria-pressed="false">quickly</button>
     </div>
     <p class="foot-note">
       Before: <a href="../before/quick-question-390x844.png">quick-question-390x844.png</a> ·
@@ -207,8 +210,8 @@
     });
 
     // ---- demo bar ----
-    document.querySelectorAll('.demo-bar button').forEach((b) => b.addEventListener('click', () => {
-      document.querySelectorAll('.demo-bar button').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+    document.querySelectorAll('.demo-bar [data-state]').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.demo-bar [data-state]').forEach((x) => x.setAttribute('aria-pressed', 'false'));
       b.setAttribute('aria-pressed', 'true');
       const s = b.dataset.state;
       breakImages = s === 'noimg';
@@ -229,16 +232,23 @@
       bindRefs($('chat-cards'));
       const msgs = [{ who: 'you', text: question }, { who: 'judge', text: '' }];
       $('thread').innerHTML = chatMarkup(msgs);
-      setTimeout(() => {
+      // round 8: the wait plays today's lines in the judge's bubble; the mockup
+      // runs its clock six times fast so every line shows before the answer lands
+      stopWait = window.FLOW.runWait($('thread'), { speed: 6, until: longWait ? 47 : 2, onDone: () => {
         msgs[1] = { who: 'judge', text:
           'If [[Counterspell]] is cast while [[Lightning Bolt]] is on the stack, Counterspell resolves first — the last spell put on the stack resolves first.\n' +
           'Counterspell counters Lightning Bolt: the Bolt is put into its owner\'s graveyard and deals no damage. Nothing on the battlefield is affected, and priority returns to the active player.',
         };
         $('thread').innerHTML = chatMarkup(msgs);
         bindRefs($('thread'));
-      }, 900);
+      } });
     });
-    $('ask-another').addEventListener('click', () => { $('answered').classList.remove('shown'); $('pre-submit').classList.remove('hidden'); });
+    let stopWait = () => {}, longWait = true;
+    document.querySelectorAll('[data-wait]').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('[data-wait]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      longWait = b.dataset.wait === 'long';
+    }));
+    $('ask-another').addEventListener('click', () => { stopWait(); $('answered').classList.remove('shown'); $('pre-submit').classList.remove('hidden'); });
     // one Question (round 6): the attached cards carry over into the in-depth details, which ask for their zones at the Cards step
     $('go-deep').addEventListener('click', () => { location.href = 'in-depth-question.html?carry=' + encodeURIComponent(attached.map((c) => c.name).join('|')); });
     render();

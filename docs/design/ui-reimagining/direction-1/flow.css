@@ -337,6 +337,31 @@
 .thinking i { width: 6px; height: 6px; border-radius: 999px; background: var(--accent-soft); animation: think 1.2s ease-in-out infinite; }
 .thinking i:nth-child(2) { animation-delay: 0.15s; } .thinking i:nth-child(3) { animation-delay: 0.3s; }
 @keyframes think { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+/* the wait (round 8): today's wait lines, typed out in the judge's bubble —
+   the bubble's edge breathes in the colour's light, each line types behind a
+   caret, the last one lifts away, the clock ticks at the foot. The absurd
+   lines lean in italics. */
+.msg.judge.waiting > div { min-width: min(20rem, 70vw); animation: wait-breathe 2.4s ease-in-out infinite; }
+@keyframes wait-breathe {
+  0%, 100% { border-color: var(--surface-edge); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9), 0 0 0 0 transparent; }
+  50% { border-color: color-mix(in srgb, var(--accent-soft) 45%, transparent); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9), 0 0 22px -6px color-mix(in srgb, var(--accent) 80%, transparent); }
+}
+.msg.judge.waiting .seal { animation: seal-in 900ms ease-out both, seal-scry 3s ease-in-out 900ms infinite; }
+@keyframes seal-scry { 0%, 100% { transform: none; } 50% { transform: rotate(-8deg) scale(1.06); } }
+.wait { display: grid; gap: 0.35rem; }
+.wait-lines { position: relative; display: grid; min-height: 1.5em; }
+.wait-line { grid-area: 1 / 1; color: var(--text-primary); }
+.wait-line::after { content: ""; display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -0.12em; background: var(--accent-soft); box-shadow: 0 0 6px var(--accent-soft); animation: caret 0.9s steps(1) infinite; }
+.wait-line.typed::after { animation: caret 0.9s steps(1) infinite; opacity: 0.8; }
+@keyframes caret { 50% { opacity: 0; } }
+.wait-line[data-v="curious"] { color: color-mix(in srgb, var(--accent-soft) 35%, var(--text-primary)); }
+.wait-line[data-v="absurd"] { font-style: italic; color: color-mix(in srgb, var(--accent-soft) 55%, var(--text-primary)); }
+.wait-line.out { animation: wait-out 650ms ease-in forwards; }
+.wait-line.out::after { display: none; }
+@keyframes wait-out { to { opacity: 0; transform: translateY(-0.9em); filter: blur(2px); } }
+.wait-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.wait-time { font-size: 0.72rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
 /* the chat head: the title, then the tools — View context (In-Depth) and the round Start over ↺ at the far right */
 .chat-head .tools { display: flex; align-items: center; gap: 0.4rem; }
 
@@ -344,5 +369,5 @@
 [hidden] { display: none !important; }
 
 @media (prefers-reduced-motion: reduce) {
-  .stage .motif-wash, .ring .card.summon, .msg, .msg.judge .seal, .thinking i { animation: none !important; }
+  .stage .motif-wash, .ring .card.summon, .msg, .msg.judge .seal, .thinking i, .msg.judge.waiting > div, .wait-line, .wait-line::after { animation: none !important; }
 }

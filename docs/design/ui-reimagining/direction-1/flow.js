@@ -121,10 +121,55 @@ window.FLOW = (() => {
       if (m.who === 'you') return '<div class="msg you">' + m.text + '</div>';
       const body = m.text
         ? m.text.split('\n').map((p) => '<p>' + p.replace(/\[\[(.+?)\]\]/g, '<span class="ref" data-name="$1">$1</span>') + '</p>').join('')
-        : '<span class="thinking"><i></i><i></i><i></i></span>';
-      return '<div class="msg judge"><span class="seal" aria-hidden="true"></span><div><span class="who">TheJudge</span>' + body + '</div></div>';
+        : '<span class="wait" role="status" aria-live="polite"><span class="wait-lines"></span><span class="wait-foot"><span class="thinking"><i></i><i></i><i></i></span><span class="wait-time">0:00</span></span></span>';
+      return '<div class="msg judge' + (m.text ? '' : ' waiting') + '"><span class="seal" aria-hidden="true"></span><div><span class="who">TheJudge</span>' + body + '</div></div>';
     }).join('');
   }
+  // ---- the wait (round 8: "the funny text that prints while we wait … some
+  // sort of bubble with an animation that prints those messages"): today's
+  // WAIT_STAGES (askAiWaitStages.ts, verbatim) play inside the judge's own
+  // bubble — each line types itself out behind a quill caret, the one before it
+  // lifts and fades, and the elapsed clock ticks at the foot. The bubble's edge
+  // breathes in the colour's light while it waits. `speed` compresses time for
+  // the mockup (the thresholds are real seconds in the app).
+  const WAIT_STAGES = [
+    { threshold: 0, message: 'Consulting the stack…', variant: 'calm' },
+    { threshold: 3, message: 'Priority is passing to the LLM.', variant: 'calm' },
+    { threshold: 8, message: 'The judge is reading every layer. Twice.', variant: 'curious' },
+    { threshold: 15, message: 'Still waiting? The servers are scrying 1.', variant: 'curious' },
+    { threshold: 25, message: 'At this point we’re basically in a MUD subgame.', variant: 'absurd' },
+    { threshold: 40, message: 'If this were F6, we’d have resolved by now.', variant: 'absurd' }
+  ];
+  function runWait(root, { speed = 1, until = Infinity, onDone } = {}) {
+    const box = root.querySelector('.wait');
+    if (!box) return () => {};
+    const lines = box.querySelector('.wait-lines'), clock = box.querySelector('.wait-time');
+    const t0 = performance.now();
+    let shown = -1, typer = 0, done = false;
+    function type(el, text) {
+      clearInterval(typer);
+      let i = 0;
+      el.textContent = '';
+      typer = setInterval(() => { i += 1; el.textContent = text.slice(0, i); if (i >= text.length) { clearInterval(typer); el.classList.add('typed'); } }, 34);
+    }
+    const tick = setInterval(() => {
+      const sec = (performance.now() - t0) / 1000 * speed;
+      clock.textContent = Math.floor(sec / 60) + ':' + String(Math.floor(sec) % 60).padStart(2, '0');
+      let idx = 0; WAIT_STAGES.forEach((st, i) => { if (st.threshold <= sec) idx = i; });
+      if (idx !== shown) {
+        shown = idx;
+        const old = lines.querySelector('.wait-line:not(.out)');
+        if (old) { old.classList.add('out'); setTimeout(() => old.remove(), 700); }
+        const el = document.createElement('span');
+        el.className = 'wait-line'; el.dataset.v = WAIT_STAGES[idx].variant;
+        lines.append(el); type(el, WAIT_STAGES[idx].message);
+      }
+      if (!done && sec >= until) { done = true; stop(); onDone && onDone(); }
+    }, 100);
+    function stop() { clearInterval(tick); clearInterval(typer); }
+    return stop;
+  }
+
   function bindRefs(root) {
     root.querySelectorAll('.ref, .thumb.tap').forEach((el) => el.addEventListener('click', () => { const c = byName(el.dataset.name); if (c) openDetail(c); }));
   }
@@ -251,5 +296,5 @@ window.FLOW = (() => {
   }
 
   document.addEventListener('DOMContentLoaded', ensureDetailPanel);
-  return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, bindRefs, mountMenu, setProfile, setCustomColorless, PROFILES };
+  return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, runWait, WAIT_STAGES, bindRefs, mountMenu, setProfile, setCustomColorless, PROFILES };
 })();
