@@ -46,20 +46,27 @@ compositions each page targets.
   anywhere in this tree.
 - `shell.css` — the single source of the shared chrome skeleton (page shell,
   header/menu rail, brand mark slot, menu tray, theme orbs, overlay/drawer
-  primitives) every page below imports rather than redeclaring.
+  primitives) every page below imports rather than redeclaring. The banner
+  designs live here too (round 9: Green an abstract scatter of leaf-and-tree
+  shapes, Blue a subtle scatter of arcane shapes, White's beams toned down).
 - `flow.css` + `flow.js` — the question-flow components and demo helpers
   Quick Question, In-Depth Question and Trade Balancer share (see round 2),
-  plus the shared menu tray, chat and card-detail panel (round 3).
+  plus the shared menu tray, chat and card-detail panel (round 3), the wait
+  lines (round 8, real speed and inked in letter by letter in round 9) and
+  the microphone inside every question box's send control (round 9).
 - `ambience.css` + `ambience.js` — the per-colour personality layer behind
   every page: two sheets of drifting haze and a field of magical dust
   (round 5), the colour's badge faint and drifting, over a flat ground
   (round 6), and — round 7 — each colour's **element played as its own
   animation** on the same canvas (a green canopy shedding leaves, blue
-  runes and spell circles over constellations (round 8), black fog, wisps,
-  brambles and a moon (round 8), red heat, white beams, colorless shapes).
-  The same renderer plays at a whisper across the Menu tray (round 8). No
-  corner decoration anywhere: the round-3 `ornaments/` and the round-4
-  hairline brackets are both gone.
+  runes over constellations with a plain ring now and then (rounds 8–9),
+  black fog, wisps, brambles and a moon (round 8), red heat, white beams,
+  colorless shapes). The same scene plays at a whisper across the Menu tray
+  for every colour (rounds 8–9). Round 9: the badge sits in the centre of the
+  screen, larger and a little blurred, and the stage and plates are solid
+  panels, so it shows around them rather than through them. No corner
+  decoration anywhere: the round-3 `ornaments/` and the round-4 hairline
+  brackets are both gone.
 - `motif-gallery.html` — the owner's picks and the round-6 candidates per
   colour at orb size and large, for the owner to pick from.
 - `shared-chrome-menu.html` — the Menu, brand mark, Theme section, mock-mode
@@ -113,11 +120,115 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
 
+### Round 9 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 9")
+
+Every Round 9 note applied, as written. Renders are `renders/r9-*.png`
+(phone 390×844, desktop 1440×900), the only renders in the folder.
+**Rule** = the owner said it must hold. **Try** = shown for a verdict.
+
+Global, on every page (`r9-global-*`, `r9-menu-*`):
+
+- Rule: **the badge is in the centre, larger, a little blurred.** It sits
+  behind everything, about the height of the screen, blurred a touch and
+  faint — part of the atmosphere, not a thing beside the content. The stage
+  the cards sit on and every in-depth plate are **solid panels** now, the
+  same fill as the judge's chat bubble, so the badge shows around them and
+  never through them. Round 8's off-to-the-side placement is gone
+  (`r9-global-1440-green`, `r9-global-390-green`).
+- Rule: **Blue's big shape is plain.** The spell circle with its rune marks
+  and star of chords is gone; in its place one ring inscribes itself, holds,
+  and dissolves, sometimes with a thin second ring inside — as simple as
+  Colorless's shapes. The small runes and the constellations stay
+  (`r9-global-1440-blue`).
+- Rule: **Blue's Menu tray is arcane too.** The bubbles and wave are gone from
+  the tray; every colour's tray now plays the same scene as its page
+  (`r9-menu-1440-blue`, `r9-menu-390-blue`).
+- Try: **Green's banner is an abstract scatter of leaf-and-tree shapes** —
+  leaves filled and outlined, twigs, acorns, tree rings, seeds, fern sprigs —
+  no order, fading out behind the brand. The drawn limbs are gone.
+- Try: **Blue's banner is a subtle random scatter of arcane shapes** — runes
+  of the invented script, rings, small stars, dots, arcs. The waves are gone.
+- Rule: **White's beams are toned down** — about half their strength, with a
+  softer fade (`r9-global-1440-white`).
+- Try: **a microphone inside the send.** Read "a microphone icon inside of
+  the send icon" literally: the round send is now one pill with two halves —
+  the mic on the left, the arrow on the right — in every place a question is
+  typed (Ask a Question and its follow-up, the in-depth question and its
+  follow-up). A tap on the mic listens: the half glows, the box says
+  "Listening…", and what is said types into the box. In the build this is the
+  browser's own speech recognition, which hands off to the phone's dictation
+  engine — no service of ours, nothing to implement server-side. The mockup
+  types a demo sentence after a moment (`r9-qq-1440-listening`). Say if you
+  meant the mic to take the arrow's place while the box is empty instead.
+
+#### Ask a Question — `quick-question.html` (`r9-qq-*`)
+
+- Rule: **the wait runs at real speed.** The lines change when they change
+  for a player — 3 s, 8 s, 15 s, 25 s, 40 s (the app's own thresholds) — so
+  each one can be read. The "after a long wait" demo now answers after 45
+  real seconds (`r9-qq-1440-wait`, `r9-qq-1440-wait-late`, `r9-qq-390-wait`).
+- Try: **the wait is more arcane.** Each letter inks itself in with a glow
+  that fades, the typing is a touch slower, two motes of the colour's light
+  drift up through the bubble, and a faint dashed ring turns round the seal
+  while the judge reads. The breathing edge and the lifting lines stay.
+- Answer + Rule: **↺ used to go back to the request with its cards** — it was
+  neither a clean start nor an edit. Now there are two ways on from a ruling:
+  **✎ Edit cards** returns to the request exactly as it was (cards and
+  question kept) so it can be changed and asked again, and **↺ Start over
+  wipes** — no cards, an empty question, a clean page
+  (`r9-qq-1440-answered`, `r9-qq-1440-start-over`).
+
+#### Ask a Question · in-depth details — `in-depth-question.html` (`r9-idq-*`)
+
+- Rule: **"Other zones" folds away again.** When a carried card is placed in
+  a zone that was not selected, that zone alone joins the tiles for the next
+  card; the rest fold back behind "Other zones ▾" until it is tapped again
+  (`r9-idq-1440-3-place-other`, `r9-idq-1440-3-place-next`).
+- Rule: **drag reorder works.** Two things broke it: with a mouse, the card's
+  image started the browser's own image drag under the pointer, which
+  cancelled ours; on a phone, the shelf's sideways swipe took the touch. The
+  image is inert now, and a card that is held for a moment keeps the touch
+  while it is dragged (a plain swipe still scrolls the shelf). A tap right
+  after a drag opens the card's actions again — it used to swallow one tap.
+  Verified with a real pointer sequence: Lightning Bolt dragged past
+  Counterspell swaps them and the TOP/BOTTOM tags follow
+  (`r9-idq-1440-3-dragging`, `r9-idq-1440-3-cards`, `r9-idq-390-3-cards`).
+- Rule: **✎ Edit and ↺ Start over** on the ruling, as on Ask a Question:
+  Edit returns to the reviewed context with everything kept; ↺ goes to a
+  clean Ask a Question (`r9-idq-1440-chat`, `r9-idq-1440-4-review`).
+- The plates are solid panels and both question boxes carry the mic (global).
+
+#### Trade Balancer — `trade-balancer.html` (`r9-tb-*`)
+
+- Rule: **a buffer under the two sides on desktop.** The sides stop about
+  36 px short of the foot of the screen; each side's total stays in its foot
+  (`r9-tb-1440`). A phone is unchanged (`r9-tb-390`).
+
+#### Card scan — `card-scan.html` (`r9-scan-*`)
+
+- Rule: **a yellow caution triangle beside the count**, in the frame's top
+  right next to the scanned-count pill. A tap opens a pop-up: "Card scanning
+  is experimental — this feature is experimental and isn't fully functioning
+  yet…", with a Got it button (`r9-scan-1440`, `r9-scan-1440-caution`,
+  `r9-scan-390-caution`). The pill's list still drops beneath the pill
+  (`r9-scan-1440-list`).
+
+#### Shared chrome and Menu (`r9-menu-*`)
+
+- Blue's tray plays the arcane scene now; the other colours' trays are as
+  they were (`r9-menu-1440-green`).
+
+### Open for the owner's verdict (Round 9)
+
+- Global: the badge's size and blur at the centre; the two new banners (Green
+  leaf-and-tree, Blue arcane); the mic as the left half of the send pill.
+- Ask a Question: the inscription effect on the wait (too much, not enough?).
+- Card scan: the caution pop-up's wording.
+
 ### Round 8 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 8")
 
-Every Round 8 note applied. Renders are `renders/r8-*.png` (phone 390×844,
-desktop 1440×900), the only renders in the folder. Round 7's live in git
-history at commit `a97d5de`.
+Every Round 8 note applied. Round 8's renders (`r8-*.png`) live in git
+history at commit `89bd329`; Round 7's at `a97d5de`.
 **Rule** = the owner said it must hold. **Try** = shown for a verdict.
 
 Global, on every page (`r8-global-*`, `r8-menu-*`):

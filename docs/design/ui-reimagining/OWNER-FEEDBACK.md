@@ -772,3 +772,82 @@ Your points:
 ## Ready to build?
 
 -
+
+# Round 10 — notes on the Round 9 renders
+
+Open `README.md` → "Round 9" for what changed and why; the renders are
+`renders/r9-*.png`. Write under each heading; a blank heading means "fine as
+shown". When done, open a new session from the worktree at
+`.worktrees/implement-ui-reimagining/` and paste:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 9), then apply
+my Round 10 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+Answers to your Round 9 questions:
+
+- The ↺ was neither an edit nor a clean start — it went back to the request
+  with its cards still there. Now ✎ Edit cards returns to the request as it
+  was, and ↺ Start over wipes everything to a clean page. Same pair on the
+  in-depth ruling.
+- Drag reorder was broken by two things: the card image's own browser drag
+  (mouse) and the shelf's swipe (touch). Both fixed; hold a card on a phone,
+  then drag.
+- "A microphone icon inside of the send icon" — I made the send one pill with
+  two halves, mic left, arrow right. If you meant the mic to stand in for the
+  arrow while the box is empty, say so.
+
+## Global (`r9-global-1440-<colour>`, `r9-global-390-*`)
+
+Tries: the badge centred, larger and blurred; Green's leaf-and-tree banner;
+Blue's arcane banner; the mic in the send.
+
+Your points:
+
+-
+
+## Ask a Question (`r9-qq-*`)
+
+Tries: the wait at real speed with the letters inking in, the motes and the
+turning seal ring; Edit cards beside ↺.
+
+Your points:
+
+-
+
+## In-depth details (`r9-idq-*`)
+
+Tries: drag reorder; Other zones folding away; Edit beside ↺.
+
+Your points:
+
+-
+
+## Trade Balancer (`r9-tb-*`)
+
+Tries: the buffer under the sides.
+
+Your points:
+
+-
+
+## Card scan (`r9-scan-*`)
+
+Tries: the caution triangle and its pop-up.
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`r9-menu-*`)
+
+Tries: Blue's tray, arcane.
+
+Your points:
+
+-
+
+## Ready to build?
+
+-
