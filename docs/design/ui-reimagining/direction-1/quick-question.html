@@ -40,7 +40,6 @@
       </div>
 
       <div class="stage" id="stage">
-        <div class="motif-wash" aria-hidden="true"></div>
         <div class="ring" id="ring">
           <button class="arrow prev" id="prev" aria-label="Previous card">‹</button>
           <button class="arrow next" id="next" aria-label="Next card">›</button>
@@ -64,7 +63,7 @@
           <button class="deep" id="go-deep" title="Add in-depth details — your cards come with you" aria-label="Add in-depth details"><span class="glyph">◈</span><span class="lbl">In-depth</span></button>
           <textarea id="question-field" rows="1" placeholder="What would you like to know?" maxlength="300" aria-label="Your question"></textarea>
           <span class="q-count" id="char-count">0 / 300</span>
-          <button class="send" id="send-request" aria-label="Send request" title="Send request">➤</button>
+          <span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your question" title="Speak your question"></button><button class="send" id="send-request" aria-label="Send request" title="Send request">➤</button></span>
           <span class="q-meter"><i id="char-meter"></i></span>
         </div>
       </div>
@@ -72,13 +71,15 @@
 
     <!-- answered: the conversation (same component as In-Depth's chat) -->
     <section id="answered" class="chat answer-block" aria-label="Conversation">
-      <div class="chat-head"><h1>Ask a Question</h1><div class="tools"><button class="icon-round" id="ask-another" aria-label="Start over" title="Start over">↺</button></div></div>
+      <!-- round 9: two ways on — Edit cards goes back to this request with its cards and
+           question intact; ↺ Start over wipes everything and gives a clean page -->
+      <div class="chat-head"><h1>Ask a Question</h1><div class="tools"><button class="icon-chip" id="edit-request" title="Change the cards or the question, then ask again"><span class="glyph">✎</span> Edit cards</button><button class="icon-round" id="ask-another" aria-label="Start over — clears the cards and the question" title="Start over — clears the cards and the question">↺</button></div></div>
       <div class="chat-cards" id="chat-cards"></div>
       <div class="thread" id="thread"></div>
       <div class="followup">
         <textarea id="followup-field" rows="1" placeholder="Ask a follow-up…" maxlength="300" aria-label="Follow-up question"></textarea>
         <span class="fu-count" id="fu-count">0/300</span>
-        <button class="send" aria-label="Send">➤</button>
+        <span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your follow-up" title="Speak your follow-up"></button><button class="send" aria-label="Send">➤</button></span>
       </div>
     </section>
 
@@ -91,7 +92,7 @@
       <button data-state="noimg" aria-pressed="false">1 card, image unavailable</button>
       <button data-state="0" aria-pressed="false">no cards</button>
       <span style="margin-left:0.6rem">answer:</span>
-      <button data-wait="long" aria-pressed="true">after a long wait</button>
+      <button data-wait="long" aria-pressed="true">after a long wait (45 s, real time)</button>
       <button data-wait="quick" aria-pressed="false">quickly</button>
     </div>
     <p class="foot-note">
@@ -232,9 +233,10 @@
       bindRefs($('chat-cards'));
       const msgs = [{ who: 'you', text: question }, { who: 'judge', text: '' }];
       $('thread').innerHTML = chatMarkup(msgs);
-      // round 8: the wait plays today's lines in the judge's bubble; the mockup
-      // runs its clock six times fast so every line shows before the answer lands
-      stopWait = window.FLOW.runWait($('thread'), { speed: 6, until: longWait ? 47 : 2, onDone: () => {
+      // round 8: the wait plays today's lines in the judge's bubble. Round 9: at
+      // real speed — the lines change when they change for a player (3 s, 8 s,
+      // 15 s, 25 s, 40 s); the long demo answers after 45 s, the quick one after 2 s
+      stopWait = window.FLOW.runWait($('thread'), { speed: 1, until: longWait ? 45 : 2, onDone: () => {
         msgs[1] = { who: 'judge', text:
           'If [[Counterspell]] is cast while [[Lightning Bolt]] is on the stack, Counterspell resolves first — the last spell put on the stack resolves first.\n' +
           'Counterspell counters Lightning Bolt: the Bolt is put into its owner\'s graveyard and deals no damage. Nothing on the battlefield is affected, and priority returns to the active player.',
@@ -248,7 +250,18 @@
       document.querySelectorAll('[data-wait]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
       longWait = b.dataset.wait === 'long';
     }));
-    $('ask-another').addEventListener('click', () => { stopWait(); $('answered').classList.remove('shown'); $('pre-submit').classList.remove('hidden'); });
+    // round 9: ✎ Edit cards returns to the request as it was; ↺ Start over wipes it
+    // (no cards, an empty question) and gives a clean page
+    const backToRequest = () => { stopWait(); $('answered').classList.remove('shown'); $('pre-submit').classList.remove('hidden'); };
+    $('edit-request').addEventListener('click', () => { backToRequest(); render(); });
+    $('ask-another').addEventListener('click', () => {
+      backToRequest();
+      for (const el of els.values()) el.remove();
+      els.clear(); attached = []; focus = 0; closeSearch();
+      $('question-field').value = ''; $('question-field').dispatchEvent(new Event('input'));
+      document.querySelectorAll('.demo-bar [data-state]').forEach((x) => x.setAttribute('aria-pressed', x.dataset.state === '0'));
+      render(); $('question-field').focus();
+    });
     // one Question (round 6): the attached cards carry over into the in-depth details, which ask for their zones at the Cards step
     $('go-deep').addEventListener('click', () => { location.href = 'in-depth-question.html?carry=' + encodeURIComponent(attached.map((c) => c.name).join('|')); });
     render();
