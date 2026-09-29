@@ -71,29 +71,38 @@ window.AMBIENCE = (() => {
     // like limbs — they reach in from the top corners, arch, droop under their
     // own weight, fork into thinner twigs, and carry leaves that hang
     limb(ctx, x, y, ang, len, w, k, depth) {
-      const steps = Math.max(4, Math.round(len / 7));
+      // walk the limb, bending under gravity, and keep its points; then draw the
+      // wood as one tapered stroke (a dark core with a lit edge), so it reads as a
+      // branch rather than a chain of beads
+      const steps = Math.max(5, Math.round(len / 7));
       const bend = rnd(-0.02, 0.02);
       const forks = depth < 2 ? [Math.round(steps * rnd(0.3, 0.45)), Math.round(steps * rnd(0.6, 0.8))] : [];
-      ctx.lineCap = 'round';
+      const pts = [{ x, y, w }], forkAt = [];
       for (let i = 0; i < steps; i++) {
-        const nx = x + Math.cos(ang) * 7, ny = y + Math.sin(ang) * 7;
-        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny);
-        ctx.strokeStyle = rgba(this.wood, (0.34 - depth * 0.06) * k); ctx.lineWidth = w; ctx.stroke();
-        if (forks.includes(i)) this.limb(ctx, nx, ny, ang + (Math.random() < 0.5 ? -1 : 1) * rnd(0.45, 0.85), len * rnd(0.45, 0.6), w * 0.62, k, depth + 1);
-        // leaves hang off the thinner wood, pointing down-and-out
-        if (depth >= 1 && i % 6 === 3 && i > 2) {
-          const hang = Math.PI / 2 + rnd(-0.7, 0.7);
-          this.drawLeaf(ctx, nx + Math.cos(hang) * 8, ny + Math.sin(hang) * 8, rnd(6, 10), hang + Math.PI / 2, mix(this.mid, this.mint, rnd(0.05, 0.35)), rnd(0.14, 0.22) * k, this.dark);
-        }
-        x = nx; y = ny;
-        // gravity: the limb droops toward straight down the further it reaches
+        x += Math.cos(ang) * 7; y += Math.sin(ang) * 7;
+        if (forks.includes(i)) forkAt.push({ x, y, ang: ang + (Math.random() < 0.5 ? -1 : 1) * rnd(0.5, 0.9), len: len * rnd(0.45, 0.6), w: w * 0.6 });
         ang += bend + (Math.PI / 2 - ang) * 0.012 * (1 + depth * 0.6);
-        w = Math.max(0.7, w * 0.965);
+        w = Math.max(0.8, w * 0.965);
+        pts.push({ x, y, w });
       }
-      // a cluster at the tip
-      for (let q = 0; q < 2 + Math.floor(rnd(0, 2)); q++) {
-        const hang = Math.PI / 2 + rnd(-1, 1);
-        this.drawLeaf(ctx, x + Math.cos(hang) * rnd(6, 12), y + Math.sin(hang) * rnd(6, 12), rnd(6, 10), hang + Math.PI / 2, mix(this.mid, this.mint, rnd(0.1, 0.4)), rnd(0.14, 0.22) * k, this.dark);
+      ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+      for (let i = 1; i < pts.length; i++) {
+        const a = pts[i - 1], b = pts[i];
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+        ctx.strokeStyle = rgba(this.dark, (0.6 - depth * 0.08) * k); ctx.lineWidth = a.w; ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y);
+        ctx.strokeStyle = rgba(this.wood, (0.42 - depth * 0.08) * k); ctx.lineWidth = Math.max(0.6, a.w * 0.45); ctx.stroke();
+      }
+      for (const f of forkAt) this.limb(ctx, f.x, f.y, f.ang, f.len, f.w, k, depth + 1);
+      // leaves: a few hang from the outer third of any thinner wood, and a small cluster at every tip
+      if (depth >= 1) for (let i = Math.round(pts.length * 0.6); i < pts.length - 1; i += 3) {
+        const p = pts[i], hang = Math.PI / 2 + rnd(-0.6, 0.6);
+        this.drawLeaf(ctx, p.x + Math.cos(hang) * 9, p.y + Math.sin(hang) * 9, rnd(6, 10), hang + Math.PI / 2, mix(this.mid, this.mint, rnd(0.05, 0.35)), rnd(0.18, 0.28) * k, this.dark);
+      }
+      const tip = pts[pts.length - 1];
+      for (let q = 0; q < 3 + Math.floor(rnd(0, 2)); q++) {
+        const hang = Math.PI / 2 + rnd(-1.1, 1.1);
+        this.drawLeaf(ctx, tip.x + Math.cos(hang) * rnd(5, 12), tip.y + Math.sin(hang) * rnd(5, 12), rnd(6, 10), hang + Math.PI / 2, mix(this.mid, this.mint, rnd(0.1, 0.4)), rnd(0.18, 0.28) * k, this.dark);
       }
     },
     backdrop(ctx, W, H, k) {
@@ -111,7 +120,7 @@ window.AMBIENCE = (() => {
           for (let i = 0; i < 2; i++) {
             const x0 = side ? W + 6 : -6;
             const ang = side ? Math.PI * rnd(0.6, 0.68) : Math.PI * rnd(0.32, 0.4);
-            this.limb(ctx, x0, rnd(-10, 40) + i * H * 0.28, ang, H * rnd(0.3, 0.45), rnd(3, 4.5), k, 0);
+            this.limb(ctx, x0, rnd(-10, 40) + i * H * 0.28, ang, H * rnd(0.3, 0.45), rnd(5, 7), k, 0);
           }
         }
         return;
@@ -121,10 +130,10 @@ window.AMBIENCE = (() => {
         for (let i = 0; i < per; i++) {
           const x0 = side ? W + rnd(0, 30) - i * W * 0.07 : -rnd(0, 30) + i * W * 0.07;
           const ang = side ? Math.PI - rnd(0.05, 0.4) : rnd(0.05, 0.4);
-          this.limb(ctx, x0, rnd(-10, 26) + i * 10, ang, rnd(300, 460) * scale, rnd(4, 6) * scale + 1.5, k, 0);
+          this.limb(ctx, x0, rnd(-10, 26) + i * 10, ang, rnd(300, 460) * scale, rnd(7, 10) * scale + 2, k, 0);
         }
       }
-      if (W > 600) for (let i = 0; i < 2; i++) this.limb(ctx, W * rnd(0.3, 0.7), -8, Math.PI / 2 + rnd(-0.6, 0.6), rnd(90, 150) * scale, 2.6, k, 1);
+      if (W > 600) for (let i = 0; i < 2; i++) this.limb(ctx, W * rnd(0.3, 0.7), -8, Math.PI / 2 + rnd(-0.6, 0.6), rnd(90, 150) * scale, 4, k, 1);
     },
     draw(ctx, t, W, H) {
       for (const l of this.leaves) {
@@ -310,37 +319,40 @@ window.AMBIENCE = (() => {
       for (let i = 0; i < steps; i++) {
         const nx = x + Math.cos(ang) * 6, ny = y + Math.sin(ang) * 6;
         ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(nx, ny);
-        ctx.strokeStyle = rgba(this.vine, (0.34 - 0.18 * i / steps) * k); ctx.lineWidth = width; ctx.stroke();
+        ctx.strokeStyle = rgba(this.vine, (0.62 - 0.3 * i / steps) * k); ctx.lineWidth = width; ctx.stroke();
+        if (i % 3 === 0) { ctx.strokeStyle = rgba(this.wisp, (0.22 - 0.12 * i / steps) * k); ctx.lineWidth = Math.max(0.5, width * 0.35); ctx.stroke(); }
         if (i % 4 === 2 && i < steps - 2) {
           // a thorn: a small hooked triangle off one side
           const side = i % 8 === 2 ? 1 : -1, ta = ang + side * 1.1, tl = 3 + width * 1.6;
           ctx.beginPath(); ctx.moveTo(nx + Math.cos(ang) * 2, ny + Math.sin(ang) * 2); ctx.lineTo(nx + Math.cos(ta) * tl, ny + Math.sin(ta) * tl); ctx.lineTo(nx - Math.cos(ang) * 2, ny - Math.sin(ang) * 2);
-          ctx.fillStyle = rgba(this.vine, 0.3 * k); ctx.fill();
+          ctx.fillStyle = rgba(this.wisp, 0.5 * k); ctx.fill();
         }
-        if (depth < 1 && i > steps * 0.35 && i % 11 === 5) this.bramble(ctx, nx, ny, ang + (Math.random() < 0.5 ? -0.9 : 0.9), len * 0.35, width * 0.6, k, depth + 1);
+        if (depth < 2 && i > steps * 0.3 && i % 9 === 4) this.bramble(ctx, nx, ny, ang + (Math.random() < 0.5 ? -0.9 : 0.9), len * 0.35, width * 0.6, k, depth + 1);
         x = nx; y = ny; ang += bend + Math.sin(i / 5) * 0.012; width = Math.max(0.6, width * 0.985);
       }
     },
     backdrop(ctx, W, H, k) {
       const col = Math.min(768, W * 0.92), gutter = (W - col) / 2, wide = gutter > 150;
       // brambles: a few stems from each lower corner, reaching up and in
-      const reach = Math.min(W * 0.4, 520) * (wide ? 1 : 0.8);
+      const reach = Math.min(W * 0.42, 560) * (wide ? 1 : 0.85);
       for (const side of [0, 1]) {
-        const x0 = side ? W + 4 : -4, n = wide ? 4 : 3;
+        const x0 = side ? W + 4 : -4, n = wide ? 5 : 3;
         for (let i = 0; i < n; i++) {
-          const up = -Math.PI / 2 + (side ? -1 : 1) * rnd(0.35, 1.1);
-          this.bramble(ctx, x0, H + 4 - rnd(0, H * 0.18), up, reach * rnd(0.55, 1), rnd(1.8, 3), k, 0);
+          const up = -Math.PI / 2 + (side ? -1 : 1) * rnd(0.3, 1.15);
+          this.bramble(ctx, x0, H + 4 - rnd(0, H * 0.22), up, reach * rnd(0.6, 1), rnd(2.6, 4.2), k, 0);
         }
+        // a couple more creep in along the top corners, hanging down
+        if (wide) for (let i = 0; i < 2; i++) this.bramble(ctx, side ? W + 4 : -4, rnd(H * 0.05, H * 0.25), side ? Math.PI + rnd(-0.5, 0.2) : rnd(-0.2, 0.5), reach * rnd(0.35, 0.6), rnd(2, 3), k, 0);
       }
       // the moon: a crescent in the open space, behind a veil of its own light
       const r = wide ? Math.min(46, gutter * 0.18) : 26;
       const mx = wide ? W - gutter / 2 + gutter * 0.12 : W - 44, my = wide ? H * 0.2 : 118;
       const halo = ctx.createRadialGradient(mx - r * 0.3, my, r * 0.4, mx, my, r * 3.6);
-      halo.addColorStop(0, rgba(this.wisp, 0.07 * k)); halo.addColorStop(1, rgba(this.wisp, 0));
+      halo.addColorStop(0, rgba(this.wisp, 0.12 * k)); halo.addColorStop(1, rgba(this.wisp, 0));
       ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(mx, my, r * 4, 0, Math.PI * 2); ctx.fill();
       const m = document.createElement('canvas'); m.width = m.height = Math.ceil(r * 2 + 4);
       const mc = m.getContext('2d');
-      mc.filter = 'blur(0.8px)'; mc.fillStyle = rgba(this.moon, 0.2 * k); mc.beginPath(); mc.arc(r + 2, r + 2, r, 0, Math.PI * 2); mc.fill();
+      mc.filter = 'blur(0.8px)'; mc.fillStyle = rgba(this.moon, 0.32 * k); mc.beginPath(); mc.arc(r + 2, r + 2, r, 0, Math.PI * 2); mc.fill();
       mc.globalCompositeOperation = 'destination-out';
       mc.beginPath(); mc.arc(r + 2 + r * 0.38, r + 2 - r * 0.2, r * 0.92, 0, Math.PI * 2); mc.fill();
       ctx.drawImage(m, mx - r - 2, my - r - 2);
@@ -397,7 +409,38 @@ window.AMBIENCE = (() => {
     }
   };
 
+  // the Menu tray's Blue (round 8): the page went arcane, but the owner loved the
+  // tray's bubbles and wave as they were in round 7 — so the tray keeps them
+  const BLUE_TRAY = {
+    cyan: [56, 225, 255], pale: [180, 235, 255],
+    init(W, H, k) {
+      const n = Math.max(5, Math.round(16 * k * Math.sqrt(W * H / 1296000)));
+      this.bubbles = Array.from({ length: n }, () => this.bubble(W, H, true));
+      this.waves = [0, 1, 2].map((i) => ({ y: 0.58 + i * 0.14, amp: rnd(5, 9), len: rnd(170, 260), sp: rnd(0.25, 0.5) * (i % 2 ? -1 : 1), ph: rnd(0, 6.3) }));
+    },
+    bubble(W, H, fresh) { return { x: rnd(0, W), y: fresh ? rnd(0, H) : H + rnd(10, 40), r: rnd(2.5, 8), vy: rnd(0.22, 0.55), ph: rnd(0, 6.3), a: rnd(0.22, 0.4) }; },
+    draw(ctx, t, W, H) {
+      for (const w of this.waves) {
+        ctx.beginPath();
+        const y0 = H * w.y;
+        for (let x = -10; x <= W + 10; x += 8) ctx.lineTo(x, y0 + Math.sin((x / w.len) * Math.PI * 2 + t * 0.004 * w.sp + w.ph) * w.amp);
+        ctx.strokeStyle = rgba(this.cyan, 0.11); ctx.lineWidth = 1.4; ctx.stroke();
+      }
+      for (const b of this.bubbles) {
+        b.y -= b.vy; b.x += Math.sin(t / 80 + b.ph) * 0.3;
+        if (b.y < -20) Object.assign(b, this.bubble(W, H, false));
+        const fade = Math.min(1, (H + 20 - b.y) / 80);
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+        ctx.fillStyle = rgba(this.cyan, 0.04 * fade); ctx.fill();
+        ctx.strokeStyle = rgba(this.pale, b.a * fade); ctx.lineWidth = 1; ctx.stroke();
+        ctx.beginPath(); ctx.arc(b.x, b.y, b.r * 0.62, Math.PI * 1.05, Math.PI * 1.55);
+        ctx.strokeStyle = rgba([255, 255, 255], b.a * 1.2 * fade); ctx.lineWidth = 1.1; ctx.stroke();
+      }
+    }
+  };
+
   const SCENES = { white: WHITE, blue: BLUE, black: BLACK, red: RED, green: GREEN, colorless: COLORLESS };
+  const TRAY_SCENES = { blue: BLUE_TRAY };
 
   /* ================= one renderer, attached to a canvas ================= */
   // opts: k (scene density, 1 = the page), dust (dust density, 1 = the page), size() -> [W, H]
@@ -434,7 +477,7 @@ window.AMBIENCE = (() => {
     function start() {
       const profile = document.documentElement.dataset.profile || 'blue';
       recipe = Object.assign({}, RECIPES[profile] || RECIPES.blue);
-      scene = Object.create(SCENES[profile] || SCENES.blue);
+      scene = Object.create((opts.tray && TRAY_SCENES[profile]) || SCENES[profile] || SCENES.blue);
       if (recipe.fromToken) { const c = tokenRGB(); if (c) { recipe.color = c; recipe.spark = c.map((x) => Math.min(255, x + 40)); scene.col = c; } }
       parts = Array.from({ length: Math.round(recipe.n * dustK) }, () => spawn({}, true));
       scene.init(W, H, k);
@@ -449,7 +492,7 @@ window.AMBIENCE = (() => {
       if (cache) ctx.drawImage(cache, 0, 0, W, H);
       scene.draw(ctx, t, W, H);
       // Blue (round 8): specks near each other are threaded into faint constellations
-      if (recipe.links) {
+      if (recipe.links && !opts.tray) {
         const L = recipe.links * Math.min(1, 0.6 + 0.4 * k), L2 = L * L;
         ctx.lineWidth = 0.7;
         for (let i = 0; i < parts.length; i++) {
@@ -510,7 +553,7 @@ window.AMBIENCE = (() => {
   function mountFlair(el) {
     const canvas = document.createElement('canvas'); canvas.className = 'flair-canvas';
     el.append(canvas);
-    const r = attach(canvas, { k: 0.7, dust: 0.45, size: () => [el.clientWidth || 320, el.clientHeight || 200] });
+    const r = attach(canvas, { k: 0.7, dust: 0.45, tray: true, size: () => [el.clientWidth || 320, el.clientHeight || 200] });
     if (window.ResizeObserver) new ResizeObserver(() => { r.resize(); r.start(); }).observe(el);
     return r;
   }

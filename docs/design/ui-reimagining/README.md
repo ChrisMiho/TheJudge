@@ -126,20 +126,24 @@ Global, on every page (`r8-global-*`, `r8-menu-*`):
   the content column. On a wide screen it hangs in the open space beside the
   column, sized to that space, turning very slowly. On a phone it rises from
   the foot of the screen, half showing. Faint (16%), but plainly there.
-- Try: **Blue is arcane.** The bubbles and the moving horizontal lines are
-  gone. Runes of an invented script write themselves in the air, glow, and
-  fade as they drift up. Now and then a spell circle inscribes itself in the
-  open space and dissolves. The specks you liked stay, threaded into faint
-  constellations. Blue's badge ring is a circle of runes around the wave
-  crest (`motifs/blue.svg`). The banner's waves stay.
-- Try: **Black has a shape.** The glow, the fog and the floating orbs stay.
-  Thorned brambles creep in from both lower corners, and a pale crescent moon
-  hangs veiled in the open space.
-- Try: **Green's limbs are redrawn.** They reach in from the top corners,
-  arch, droop under their own weight, fork, and hold hanging leaves. The
-  leaves still fall. The banner now shows the same limbs with leaves hanging
-  off them. On a phone and in the Menu they hang down the side edges as
-  vines.
+- Try: **Blue's page is arcane.** The bubbles and the moving horizontal
+  lines are gone from the page. Runes of an invented script write themselves
+  in the air, glow, and fade as they drift up. Now and then a spell circle
+  inscribes itself in the open space and dissolves. The specks you liked
+  stay, threaded into faint constellations. Blue's badge ring is a circle of
+  runes around the wave crest (`motifs/blue.svg`). The banner's waves stay.
+  **The Menu tray keeps its bubbles and wave** — you said you love that one,
+  so only the page changed (`r8-menu-1440-blue`).
+- Try: **Black has a shape**, not just an ombré. The glow, the fog and the
+  floating orbs stay. Thorned brambles, drawn in the violet with a lit edge,
+  climb in from the lower corners and hang from the upper ones, and a pale
+  crescent moon sits veiled in the open space.
+- Try: **Green's limbs are redrawn** as wood: each is one tapered stroke
+  (a dark core, a lit edge) that reaches in from the top corners, arches,
+  droops under its own weight and forks; leaves hang from the thinner wood
+  and cluster at the tips. The leaves still fall. The banner shows the same
+  limbs with leaves hanging off them. On a phone and in the Menu they hang
+  down the side edges as vines.
 - Try: **Colorless's banner is random**: small triangles, rings, arcs, dots
   and crosses scattered, with no lattice.
 - Rule: **a custom Colorless colour can't break the page.** The picked
@@ -171,21 +175,27 @@ Global, on every page (`r8-global-*`, `r8-menu-*`):
   wears order tags, because only there does order change the ruling. The
   actions sheet's reorder buttons work in every zone (‹ Move left · Move
   right › outside the Stack).
+- Rule: **the ⓘ card-detail box opens in the centre of the screen on
+  desktop** (`r8-qq-1440-card-details`), everywhere it appears — the
+  question ring, the context sheet, the review rows, a card name in the
+  ruling — not in the top-right corner. It fades up into place. Question
+  History and the printing picker sit there too. A phone keeps the bottom
+  sheet.
 - Rule: **a card's actions open beside the card on desktop**
-  (`r8-idq-1440-3-card-actions`), not in the top-right corner. It's a
-  pop-over under the card, or over it, or beside it when neither fits,
-  pointing at the card. Details open inside the same pop-over
-  (`r8-idq-1440-3-card-details`). A phone keeps the bottom sheet.
+  (`r8-idq-1440-3-card-actions`): a pop-over under the card, or over it, or
+  beside it when neither fits, pointing at the card. Details open inside
+  the same pop-over (`r8-idq-1440-3-card-details`).
 - Try: **More details** (`r8-idq-1440-4-more-details`, `r8-idq-390-4-more-details`).
   Copies left the main form. One slim dashed row at the foot of the card
   form reads "More details" and shows what is set there ("4 copies"). A tap
   slides a sheet up over the card sheet, and Done slides it away. Copies
   there is a picker holding 0–99 that shows five rows at a time. Future rare
   settings join this sheet, with no new buttons on the form.
-- Rule: **the review's zone chips filter it** (`r8-idq-1440-4-review-stack`).
-  They sit under the review's header: All · Stack 3 · Battlefield 3 …. A tap
-  shows only that zone's cards and lights the chip. Tapping it again, or
-  All, shows everything.
+- Rule: **the zone tags at the foot of the review pick out that zone's
+  cards** (`r8-idq-1440-4-review-stack`): All · Stack 3 · Battlefield 3 ….
+  A tap lights the tag, the rows in that zone light up in the colour and the
+  rest dim — nothing is hidden — and the list scrolls to the first one.
+  Tapping it again, or All, clears it.
 - Answer: **yes, the list scrolls.** At 10 cards
   (`r8-idq-1440-4-review-10`, `r8-idq-390-4-review-10`) the list stops at a
   third of the screen and scrolls. A fade at its edge and a line under it
@@ -231,8 +241,9 @@ Global, on every page (`r8-global-*`, `r8-menu-*`):
 
 ### Open for the owner's verdict (Round 8)
 
-- Global: Blue's arcane scene, Black's brambles and moon, Green's new limbs,
-  the badge in the open space (too faint, too strong?).
+- Global: Blue's arcane page beside its unchanged tray, Black's brambles
+  and moon (too strong now?), Green's new limbs, the badge in the open space
+  (too faint, too strong?).
 - In-depth: the More details sheet as the home for rare settings.
 - Trade Balancer: relative piles (the totals carry the size now).
 - Card scan: Debug's look.

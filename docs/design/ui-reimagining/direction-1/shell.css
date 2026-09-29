@@ -666,17 +666,19 @@ h1, h2, .display {
   right: 0.4rem;
 }
 
-/* Right-side tray at >=768px (history / card detail / printing picker): a
-   floating glass card that sizes to its content — never a full-height grey
-   column (owner, round 4: "it feels like part of the screen is covered up").
-   A bottom sheet on phones that sizes to its content. */
+/* The card-detail box, History and the printing picker at >=768px: a floating
+   glass card that sizes to its content — never a full-height grey column
+   (owner, round 4). Round 8: it sits in the centre of the screen, not shoved
+   into the top-right corner (owner: "the location feels so odd … more towards
+   the center"), and fades up into place. A bottom sheet on phones. */
 .drawer-panel {
   position: fixed;
-  top: 0.75rem;
-  right: 0.75rem;
+  top: 50%;
+  left: 50%;
+  right: auto;
   bottom: auto;
-  max-height: calc(100dvh - 1.5rem);
-  width: min(24rem, 92vw);
+  max-height: calc(100dvh - 3rem);
+  width: min(26rem, 92vw);
   border-radius: 1.1rem;
   background:
     radial-gradient(90% 40% at 100% 0%, color-mix(in srgb, var(--accent) 26%, transparent) 0%, transparent 70%),
@@ -692,12 +694,16 @@ h1, h2, .display {
   padding: 0;
   overflow-y: auto;
   overflow-x: hidden;
-  transform: translateX(calc(100% + 1.5rem));
-  transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) translateY(14px) scale(0.97);
+  transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s ease;
 }
 
 [data-open="true"].drawer-panel {
-  transform: translateX(0);
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
 }
 
 .drawer-panel .overlay-close {
@@ -721,7 +727,9 @@ h1, h2, .display {
     border: none;
     border-top: 1px solid var(--surface-edge);
     border-radius: 1.1rem 1.1rem 0 0;
+    opacity: 1;
     transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   [data-open="true"].drawer-panel {

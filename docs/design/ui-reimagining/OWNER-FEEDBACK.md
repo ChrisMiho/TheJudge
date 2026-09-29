@@ -705,8 +705,9 @@ Answers to your Round 8 questions:
 
 ## Global (`r8-global-1440-<colour>`, `r8-global-390-*`, `r8-global-1440-colorless-custom`)
 
-Tries: the badge in the open space; Blue arcane; Black's brambles and moon;
-Green's limbs and branch banner; the random Colorless banner.
+Tries: the badge in the open space; Blue's arcane page (its tray keeps the
+bubbles); Black's brambles and moon; Green's limbs and branch banner; the
+random Colorless banner.
 
 Your points:
 
@@ -722,8 +723,8 @@ Your points:
 
 ## In-depth details (`r8-idq-*`)
 
-Tries: the actions pop-over beside the card; More details for Copies; the
-review filters.
+Tries: the ⓘ box centred on desktop; the actions pop-over beside the card;
+More details for Copies; the zone tags lighting up their rows.
 
 Your points:
 
