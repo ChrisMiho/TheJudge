@@ -69,13 +69,13 @@
   .carry-note { margin: -0.2rem 0 0; font-size: 0.8rem; color: var(--text-muted); }
   .carry-note b { color: var(--accent-soft); }
 
-  /* a themed panel used by every step: the stage's surface without the glow */
+  /* a themed panel used by every step: the same solid fill as the stage and
+     the chat bubble (round 9 — panels stand apart from the background) */
   .plate {
     position: relative; padding: 0.9rem; border-radius: 1rem;
     border: 1px solid var(--surface-edge);
-    background:
-      radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--accent) 16%, transparent) 0%, transparent 70%),
-      color-mix(in srgb, var(--surface-panel) 88%, transparent);
+    background: var(--surface-panel);
+    box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.9);
   }
   .plate h2 { margin: 0 0 0.6rem; font-family: var(--font-body); font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
   .plate .lede { margin: -0.3rem 0 0.7rem; font-size: 0.82rem; color: var(--text-muted); }
@@ -172,7 +172,12 @@
      others make room; a tap on any shelf card opens its actions instead */
   /* round 8: every zone's shelf reorders by drag (owner: "a nice quality of
      life") — only the Stack wears order tags, since only there does order rule */
-  .shelf .card { touch-action: pan-x; }
+  /* round 9 ("i am unable to re-order the cards when i drag them around"): the
+     card's image used to start the browser's own image drag under the pointer,
+     which cancelled ours — it is inert now; and a lifted card holds the touch
+     (the shelf still swipes when a card is not held first) */
+  .shelf .card { touch-action: pan-x; user-select: none; -webkit-user-select: none; }
+  .shelf .card img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
   .shelf .card.dragging { z-index: 20; transform: translateY(-8px) scale(1.04); box-shadow: 0 22px 40px -14px #000, 0 0 0 2px var(--accent-soft); transition: none; cursor: grabbing; }
   .shelf .card.drop-before::before { content: ""; position: absolute; left: -0.45rem; top: 8%; bottom: 8%; width: 3px; border-radius: 3px; background: var(--accent-soft); box-shadow: 0 0 10px var(--accent-soft); z-index: 6; }
   .shelf .card.drop-after::before { content: ""; position: absolute; right: -0.45rem; top: 8%; bottom: 8%; width: 3px; border-radius: 3px; background: var(--accent-soft); box-shadow: 0 0 10px var(--accent-soft); z-index: 6; }
@@ -469,8 +474,7 @@
           <div class="search-results" id="search-results"></div>
         </div>
         <div class="stage" id="shelf-stage">
-          <div class="motif-wash" aria-hidden="true"></div>
-          <div class="shelf" id="shelf" data-stack="false"></div>
+            <div class="shelf" id="shelf" data-stack="false"></div>
           <button class="plate-next" type="button" data-next="context"><span>Continue<small>next: a few details per card</small></span><span class="chev">›</span></button>
         </div>
         <p class="flow-hint" id="shelf-hint" hidden></p>
@@ -529,7 +533,7 @@
           <div class="q-box">
             <textarea id="question-field" rows="1" placeholder="How does this resolve?" maxlength="300" aria-label="Your question"></textarea>
             <span class="q-count" id="char-count">0 / 300</span>
-            <button class="send" id="send" aria-label="Send request" title="Send request">➤</button>
+            <span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your question" title="Speak your question"></button><button class="send" id="send" aria-label="Send request" title="Send request">➤</button></span>
             <span class="q-meter"><i id="char-meter"></i></span>
           </div>
         </div>
@@ -538,13 +542,14 @@
 
     <!-- the ruling: the chat takes the whole panel; the rail is gone -->
     <section class="chat" id="chat" hidden aria-label="Conversation">
-      <div class="chat-head"><h1>Ask a Question</h1><div class="tools"><button class="icon-chip" id="view-context"><span class="glyph">◈</span> View context</button><button class="icon-round" id="start-over" aria-label="Start over" title="Start over">↺</button></div></div>
+      <!-- round 9: ✎ Edit goes back into the details with everything intact; ↺ Start over wipes to a clean Ask a Question -->
+      <div class="chat-head"><h1>Ask a Question</h1><div class="tools"><button class="icon-chip" id="view-context"><span class="glyph">◈</span> View context</button><button class="icon-chip" id="edit-request" title="Change the cards or their details, then ask again"><span class="glyph">✎</span> Edit</button><button class="icon-round" id="start-over" aria-label="Start over — clears everything" title="Start over — clears everything">↺</button></div></div>
       <div class="chat-cards" id="chat-cards"></div>
       <div class="thread" id="thread"></div>
       <div class="followup">
         <textarea id="followup-field" rows="1" placeholder="Ask a follow-up…" maxlength="300" aria-label="Follow-up question"></textarea>
         <span class="fu-count" id="fu-count">0/300</span>
-        <button class="send" aria-label="Send">➤</button>
+        <span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your follow-up" title="Speak your follow-up"></button><button class="send" aria-label="Send">➤</button></span>
       </div>
     </section>
 
@@ -767,8 +772,8 @@
       }
       $('shelf-hint').hidden = cards.length < 2;
       $('shelf-hint').textContent = isStack
-        ? 'The top of the stack resolves first. Drag a card to reorder it, or tap it for Move up / Move down.'
-        : 'Drag to put them in any order you like — tap a card to move it to another zone.';
+        ? 'The top of the stack resolves first. Drag a card to reorder it (hold it first on a phone), or tap it for Move up / Move down.'
+        : 'Drag to put them in any order you like (hold first on a phone) — tap a card to move it to another zone.';
       $('add-card').innerHTML = '<span class="glyph">＋</span> ' + (isStack ? 'Add to Stack' : 'Add card');
       renderSearch();
     }
@@ -799,6 +804,10 @@
     function placeCarried(zone) {
       const c = carried.shift();
       placedSoFar += 1;
+      // round 9 (owner: "only the newly used fields are added to the selection … unless they
+      // click the option to add another again"): the zone just used joins the tiles for the
+      // next card; the rest fold away again behind "Other zones"
+      placeMore = false;
       if (!selectedZones.has(zone)) { selectedZones.add(zone); const cb = $('zone-grid').querySelector('input[value="' + zone + '"]'); if (cb) cb.checked = true; }
       (zoneCards[zone] = zoneCards[zone] || []).push(c);
       activeZone = zone; summonNext = c;
@@ -894,8 +903,13 @@
     // ---- round 7: drag to reorder on the Stack (pointer events; a mouse drags at once, touch after a short hold) ----
     let drag = null, suppressClick = false;
     function bindDrag(el, c, cards) {
+      // round 9: no native image drag under the pointer; once a card is lifted the
+      // touch stays with it (the browser would otherwise pan the shelf and cancel)
+      el.addEventListener('dragstart', (e) => e.preventDefault());
+      el.addEventListener('touchmove', (e) => { if (drag && drag.el === el && drag.started) e.preventDefault(); }, { passive: false });
       el.addEventListener('pointerdown', (e) => {
         if (e.target.closest('.card-widget') || e.button > 0) return;
+        e.preventDefault();
         drag = { el, c, cards, x0: e.clientX, started: false, mouse: e.pointerType === 'mouse', to: -1 };
         drag.timer = setTimeout(() => { if (drag && !drag.started) startDrag(e); }, 240);
         try { el.setPointerCapture(e.pointerId); } catch (_) { /* synthetic pointers have no capture */ }
@@ -914,7 +928,7 @@
         if (!drag || drag.el !== el) return;
         clearTimeout(drag.timer);
         if (drag.started) {
-          suppressClick = true;
+          suppressClick = true; setTimeout(() => { suppressClick = false; }, 0);
           const i = cards.indexOf(c); cards.splice(i, 1); cards.splice(drag.to, 0, c);
           drag = null; renderShelf();
         } else drag = null;
@@ -1129,8 +1143,8 @@
       const stack = zoneCards['Stack'] || [];
       const msgs = [{ who: 'you', text: question }, { who: 'judge', text: '' }];
       $('thread').innerHTML = chatMarkup(msgs);
-      // round 8: the wait lines play in the judge's bubble (clock six times fast)
-      window.FLOW.runWait($('thread'), { speed: 6, until: 20, onDone: () => {
+      // round 8: the wait lines play in the judge's bubble; round 9: at real speed, the ruling lands after 20 s
+      window.FLOW.runWait($('thread'), { speed: 1, until: 20, onDone: () => {
         msgs[1] = { who: 'judge', text: stack.length >= 2
           ? 'The top of the stack resolves first. [[Counterspell]] was cast in response to [[Lightning Bolt]], so it resolves first and counters the Bolt — Lightning Bolt is put into its owner\'s graveyard and deals no damage.\n[[Sol Ring]] and [[Llanowar Elves]] on the battlefield are untouched. With the stack empty, ' + nameOf(activeIdx()) + ' gets priority again in the ' + $('turn-phase').value + ' and could still cast [[Swords to Plowshares]] from hand.'
           : 'With ' + q.length + ' card' + (q.length === 1 ? '' : 's') + ' in context and nothing on the stack, priority passes and the active player continues their ' + $('turn-phase').value + '.' };
@@ -1144,7 +1158,9 @@
     }
     $('send').addEventListener('click', openChat);
     $('view-context').addEventListener('click', openCtx);
-    $('start-over').addEventListener('click', () => goTo('game'));
+    // round 9: ↺ wipes — a clean Ask a Question, no cards, no details; ✎ Edit returns to the review with everything kept
+    $('start-over').addEventListener('click', () => { location.href = 'quick-question.html'; });
+    $('edit-request').addEventListener('click', () => { goTo('context'); wiz = queue().length; renderWizard(); });
     function openCtx() { $('ctx-backdrop').dataset.open = 'true'; $('ctx-panel').dataset.open = 'true'; }
     function closeCtx() { $('ctx-backdrop').dataset.open = 'false'; $('ctx-panel').dataset.open = 'false'; }
     $('ctx-close').addEventListener('click', closeCtx);
