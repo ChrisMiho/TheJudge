@@ -19,7 +19,10 @@ window.FLOW = (() => {
     { name: 'Rhystic Study',        id: '9f37c5b6-a59c-45cd-9a99-e9357fe9ea1b', colors: ['U'], type: 'Enchantment',          cost: '{2}{U}', mv: 3, colorsLabel: 'Blue',  sub: '—',          price: '$32.00', oracle: 'Whenever an opponent casts a spell, you may draw a card unless that player pays {1}.' },
     { name: 'Path to Exile',        id: '177bd28f-8c83-4a91-a025-33312539d222', colors: ['W'], type: 'Instant',              cost: '{W}',    mv: 1, colorsLabel: 'White', sub: '—',          price: '$2.40',  oracle: 'Exile target creature. Its controller may search their library for a basic land card, put that card onto the battlefield tapped, then shuffle.' },
     { name: 'Lightning Helix',      id: '4101e3fe-b0e7-4f0f-b9ac-9b61a4d628b3', colors: ['W', 'R'], type: 'Instant',           cost: '{R}{W}', mv: 2, colorsLabel: 'White, Red', sub: '—', price: '$0.90', oracle: 'Lightning Helix deals 3 damage to any target and you gain 3 life.' },
-    { name: 'Birds of Paradise',    id: '3ffe931c-9f19-4ea5-bc24-041eb00a5862', colors: ['G'], type: 'Creature — Bird',      cost: '{G}',    mv: 1, colorsLabel: 'Green', sub: 'Bird',       price: '$6.10',  oracle: 'Flying\n{T}: Add one mana of any color.', pt: '0/1' }
+    { name: 'Birds of Paradise',    id: '3ffe931c-9f19-4ea5-bc24-041eb00a5862', colors: ['G'], type: 'Creature — Bird',      cost: '{G}',    mv: 1, colorsLabel: 'Green', sub: 'Bird',       price: '$6.10',  oracle: 'Flying\n{T}: Add one mana of any color.', pt: '0/1' },
+    // round 8: a storm card and a ritual, for the Copies demo and a ten-card review
+    { name: 'Grapeshot',            id: '923e1291-3999-4f81-ade4-073fb982143f', colors: ['R'], type: 'Sorcery',              cost: '{1}{R}', mv: 2, colorsLabel: 'Red',   sub: '—',          price: '$0.45',  oracle: 'Grapeshot deals 1 damage to any target.\nStorm (When you cast this spell, copy it for each spell cast before it this turn. You may choose new targets for the copies.)' },
+    { name: 'Dark Ritual',          id: '055d3a93-6c9a-4c03-a2f4-17a41fa8f0b1', colors: ['B'], type: 'Instant',              cost: '{B}',    mv: 1, colorsLabel: 'Black', sub: '—',          price: '$0.70',  oracle: 'Add {B}{B}{B}.' }
   ];
   const byName = (n) => library.find((c) => c.name === n);
 
