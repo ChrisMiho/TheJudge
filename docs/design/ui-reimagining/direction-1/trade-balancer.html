@@ -18,6 +18,8 @@
      side aren't all the way at the bottom of the screen"): on desktop the two sides stop
      short of the foot — the totals stay in each side's foot, with breathing room below */
   @media (min-width: 720px) { .tb { height: calc(100dvh - var(--chrome, 100px) - 0.6rem - 2.25rem); } }
+  /* round 11: with New trade gone from the foot, the sides keep a small buffer above the phone's edge */
+  @media (max-width: 719px) { .tb { padding-bottom: 0.6rem; } }
   .asof { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
   .flow-head .asof { display: none; }
   @media (max-width: 719px) { .header-side .asof { display: none; } .flow-head .asof { display: inline; } }
@@ -127,12 +129,19 @@
   .side-foot { display: flex; justify-content: flex-end; align-items: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--surface-edge); padding-top: 0.45rem; flex: 0 0 auto; }
   .side-foot b { color: var(--text-primary); font-size: 1rem; font-variant-numeric: tabular-nums; font-family: var(--font-display); margin-left: 0.4rem; }
 
-  /* New trade: the bottom tray on a phone (owner: "looks great"); on desktop it sits top-right, opposite the title (round 5) */
-  .actions { display: flex; gap: 0.4rem; justify-content: flex-end; flex: 0 0 auto; padding-bottom: 0.5rem; }
-  .actions .icon-chip { min-height: 38px; font-size: 0.78rem; }
-  .flow-head .head-tools { display: none; align-items: center; gap: 0.6rem; }
-  @media (max-width: 719px) { .actions .icon-chip { flex: 1; justify-content: center; padding: 0 0.4rem; } }
-  @media (min-width: 720px) { .actions { display: none; } .flow-head .head-tools { display: flex; } }
+  /* New trade (round 11: "move it to the top right like it is in the desktop app, so
+     that people don't accidentally click it"): top-right on every screen — a round ↺
+     on a phone, the chip with its word on desktop — and it asks before it clears. */
+  .flow-head .head-tools { display: flex; align-items: center; gap: 0.6rem; }
+  .flow-head .head-tools .icon-round { text-decoration: none; }
+  @media (max-width: 719px) {
+    .flow-head { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.1rem 0.5rem; }
+    .flow-head h1 { grid-column: 1; }
+    .flow-head .head-tools { grid-column: 2; grid-row: 1; }
+    .flow-head .asof { grid-column: 1 / -1; grid-row: 2; }
+    .flow-head .head-tools .icon-chip { display: none; }
+  }
+  @media (min-width: 720px) { .flow-head .head-tools .icon-round { display: none; } }
 
   /* ---- the printing picker: the card leads, one row per set, tap a price to pick finish + printing.
      The filter only appears once a card has more than five printings. ---- */
@@ -169,7 +178,7 @@
       <div class="flow-head">
         <h1>Trade Balancer</h1>
         <span class="asof">Prices as of 8 Sep 2026 · USD</span>
-        <div class="head-tools"><button class="icon-chip" id="clear-top"><span class="glyph">↺</span> New trade</button></div>
+        <div class="head-tools"><button class="icon-chip" id="clear-top"><span class="glyph">↺</span> New trade</button><button class="icon-round" id="clear-top-phone" aria-label="New trade — clears both sides" title="New trade — clears both sides">↺</button></div>
       </div>
 
       <!-- the scale -->
@@ -199,10 +208,6 @@
       </div>
 
       <div class="sides" id="sides"></div>
-
-      <div class="actions">
-        <button class="icon-chip" id="clear"><span class="glyph">↺</span> New trade</button>
-      </div>
     </section>
 
     <div class="demo-bar" aria-label="Mockup state (demo only)">
@@ -221,6 +226,14 @@
       Card images are the app's own corpus art via Scryfall (unchanged from today). Prices are demo values; a card with one demo printing shows "only printing" instead of Change. The screen above fits the viewport; the dashed strip is mockup scaffolding, not app UI.
     </p>
   </main>
+
+  <!-- round 11: New trade asks first — a small confirm sheet on both phone and desktop -->
+  <div class="sheet-backdrop" id="nt-backdrop" data-open="false"></div>
+  <aside class="drawer-panel confirm-panel" id="nt-confirm" data-open="false" role="dialog" aria-label="Start a new trade?">
+    <h2>Start a new trade?</h2>
+    <p id="nt-body"></p>
+    <div class="row"><button class="btn" id="nt-keep" type="button">Keep this trade</button><button class="btn go" id="nt-go" type="button">↺ Clear both sides</button></div>
+  </aside>
 
   <!-- printing picker: bottom sheet on phone, side panel on desktop -->
   <div class="sheet-backdrop" id="pp-backdrop" data-open="false"></div>
@@ -465,9 +478,24 @@
       document.querySelectorAll('.side-tabs [role="tab"]').forEach((t) => t.setAttribute('aria-selected', t === tab));
       render();
     }));
-    const newTrade = () => { entries = []; openSearch = null; render(); };
-    $('clear').addEventListener('click', newTrade);
-    $('clear-top').addEventListener('click', newTrade);
+    // round 11: New trade asks first ("a safe guard … so that when it's clicked, people
+    // have to confirm before it clears") — the sheet names what goes: how many cards, how
+    // much. An already-empty trade has nothing to clear, so nothing opens.
+    const newTrade = () => { entries = []; openSearch = null; render(); closeConfirm(); };
+    function askNewTrade() {
+      const n = entries.reduce((t, e) => t + e.qty, 0);
+      if (!n) return;
+      $('nt-body').innerHTML = 'Both sides clear — <b>' + n + (n === 1 ? ' card' : ' cards') + '</b>, <b>' + usd(sideTotal('a') + sideTotal('b')) + '</b> in all. ' + names.a + ' and ' + names.b + ' keep their names. This can\'t be undone.';
+      $('nt-backdrop').dataset.open = 'true'; $('nt-confirm').dataset.open = 'true';
+      setTimeout(() => $('nt-keep').focus(), 250);
+    }
+    function closeConfirm() { $('nt-backdrop').dataset.open = 'false'; $('nt-confirm').dataset.open = 'false'; }
+    $('clear-top').addEventListener('click', askNewTrade);
+    $('clear-top-phone').addEventListener('click', askNewTrade);
+    $('nt-go').addEventListener('click', newTrade);
+    $('nt-keep').addEventListener('click', closeConfirm);
+    $('nt-backdrop').addEventListener('click', closeConfirm);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeConfirm(); });
     render();
   </script>
 </body>
