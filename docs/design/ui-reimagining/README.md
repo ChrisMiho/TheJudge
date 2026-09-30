@@ -57,6 +57,16 @@ compositions each page targets.
   10: the colour picked is remembered in the browser and carried into every
   page (as the app's saved setting), a card the judge names sits in a tinted
   chip, and on a phone the demo strip folds behind a slim DEMO edge tab.
+  Round 11: the question box steps its controls onto their own row once the
+  text wraps, its hint shortens in tiers, and the 300-character budget is a
+  ring round the send pill; Question History holds six demo conversations
+  (`HISTORY`) that reopen live in Ask a Question; Send feedback is today's
+  form in the shared sheet.
+- `life-tracker-menus.html` — round 11: the menus behind Life Tracker's
+  table (Game Setup behind the ⚙ gear, a player's Counters behind the
+  seat-map on their card, the confirm sheet Reset and New game ask through)
+  redrawn in the shared language. The table itself is the same pixel crop
+  `life-tracker-after.html` composes — untouched, REQ-202.
 - `ambience.css` + `ambience.js` — the per-colour personality layer behind
   every page: two sheets of drifting haze and a field of magical dust
   (round 5), the colour's badge faint and drifting, over a flat ground
@@ -98,8 +108,9 @@ Tracker at phone (390×844) and desktop (1440×900) width — the baseline each
 mockup page is paired against. `after/life-tracker-*.png` is the one
 screenshot pair in this tree: Life Tracker's real screen content composed
 inside the new shared chrome, proving `REQ-202`'s inheritance causes no drift
-to Life Tracker's own counters or layout. There is no clickable Life Tracker
-mockup — Life Tracker's own redesign is out of scope for this pass.
+to Life Tracker's own counters or layout. The table itself has no clickable
+mockup and is not redesigned; round 11's `direction-1/life-tracker-menus.html`
+redraws only the sheets that open from it (Game Setup, a player's Counters).
 
 ## Entry point
 
@@ -122,6 +133,167 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 390×844 and 1440×900, show the owner, adjust. Card images are the app's own
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
+
+### Round 11 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 11")
+
+Every Round 11 note applied, as written. Renders are `renders/r11-*.png`
+(phone 390×844, desktop 1440×900, plus a 320-wide phone and a 700-wide
+tablet where the note was about width), the only renders in the folder.
+**Rule** = the owner said it must hold. **Try** = shown for a verdict.
+
+Global:
+
+- Owner: "overall this all looks incredibly polished and refined, im in
+  love." Nothing in the atmosphere changed this round.
+- Rule: **Send feedback is a real form now** — the owner: "we've never gone
+  over the submit feedback form, lets do that next." It is today's form
+  (`FeedbackModal.tsx`: a type, what happened, an optional reply email, and
+  the snapshot of the app's state every report carries) in the shared sheet
+  — a bottom sheet on a phone, a floating card on desktop. The type is three
+  pills (Bug · Suggestion · Other) and the box's hint changes with it; the
+  snapshot folds behind one dashed row and opens to what it holds (screen,
+  colour, the question in progress, cards, viewport, build, browser). Send
+  turns the sheet into a thank-you under the colour's seal; an empty box is
+  told so before anything sends (`r11-feedback-390-red`,
+  `r11-feedback-1440-blue`, `r11-feedback-1440-sent-blue`).
+- Rule: **Question History opens the conversation.** A row used to do
+  nothing. Now every row shows the question's cards as a small fan of
+  thumbnails (three, then "+n"; a dashed frame for no cards), the question,
+  the first line of the ruling, and one meta line — Quick or In-depth, how
+  many cards, the game context for In-depth, how many follow-ups, when. On
+  a phone a tap closes the sheet and reopens that conversation, live, in
+  Ask a Question: the cards back in the strip, the whole thread in the chat,
+  a "Reopened from your history" line under the title, and the follow-up
+  box ready (`r11-history-390-blue`, `r11-qq-390-reopened-blue`). From
+  600 px up the panel is two panes — the list at the left, the chosen
+  conversation read in full at the right, with **Open conversation** and
+  **Delete this question** at its foot (`r11-history-700-red`,
+  `r11-history-1440-green`). Today's app keeps the last 20 answered
+  questions in the browser and reopening one is live, with follow-ups
+  against the same frozen context — the mockup carries that shape. One
+  list holds both modes (today each screen shows only its own mode's).
+- Rule: **"Past questions from this session" is gone.** The header is the
+  title and "6 of 20".
+- Rule: **the phone sheet stops sooner.** The history panel used to stay a
+  full-width bottom sheet up to 767 px, with dead space on a tablet. It
+  switches to the floating card at 600 px now, and the card drives every
+  wider screen. The header and foot stay put; only the list — and the
+  preview — scroll, so a long history never pushes the title away.
+- Rule: **narrow phones.** The question box no longer squeezes the text
+  into a thin column between its controls (below, under Ask a Question);
+  the Menu's six theme discs share the tray's width and shrink instead of
+  overlapping, and the Colorless row wraps cleanly (`r11-menu-320-colorless`,
+  `r11-menu-390-colorless`); Trade Balancer's New trade no longer sits as a
+  block under the sides; the in-depth card sheet no longer grows with every
+  target. The shared sheets (feedback, history, the confirm) each keep a
+  fixed head and a scrolling body.
+- Rule: **Life Tracker's back menus, redrawn — the table untouched.** The
+  owner: "the main life interface is set up perfectly … the menus within
+  the lifetracker app could use some refreshment … refining only those back
+  menus." A new page, `life-tracker-menus.html`, composes the same pixel
+  crop of today's table as `life-tracker-after.html` (REQ-202 holds) and
+  redraws only what opens from it. **Game Setup** (the ⚙ gear): Reset life
+  totals and New game as tray-style rows that ask first through the shared
+  confirm sheet; a Players stepper (2–8) with an Edit names disclosure;
+  Layout (Grid · List) and Card style (Ombre · Flat) as segmented pills;
+  Starting life as pills (20 · 25 · 30 · 40 · Custom, the custom field
+  taking 1–999) with a line saying it applies at the next reset. **Counters
+  for a player** (the seat-map on their card): two tabs — Commander damage
+  laid out like the table, the player's own seat marked, − / + under each
+  other seat, 21 lit red; and Counters, today's eleven named counters as
+  tiles that add one on a tap and light when above zero, a ⋯ on each that
+  opens a row to take one away, set a number or clear, and Custom counters
+  with the same tiles, a remove ✕, and the add field with today's three
+  errors. Every control, option, default and range is the shipped one
+  (`GameSetupPanel.tsx`, `CounterPanel.tsx`); only the clothes changed
+  (`r11-lt-390-blue`, `r11-lt-setup-390-blue`, `r11-lt-setup-1440-green`,
+  `r11-lt-reset-390-blue`, `r11-lt-counters-390-red`,
+  `r11-lt-counters-1440-red`, `r11-lt-counters-tab-390-black`,
+  `r11-lt-counters-tab-1440-black`). The Menu's Life Tracker row opens this
+  page now.
+
+#### Ask a Question — `quick-question.html` (`r11-qq-*`)
+
+- Rule: **the box has two shapes.** One line of text: one row — In-depth,
+  the text, the count, the send. Once the text wraps, it takes the whole
+  top row at full width and the controls step down onto a row of their own
+  beneath it, In-depth at the left and the count + send at the right — so
+  they always sit together and never fall out of step with the text
+  (`r11-qq-390-typed-white`, `r11-qq-1440-typed-green`). The one-line row
+  decides the shape; the full-width row then decides the height.
+- Rule: **the hint shortens in tiers.** "What would you like to know?" →
+  "Ask your question…" → "Ask…", whichever is the longest that fits the box
+  on one line, re-measured as the box changes width (`r11-qq-320-empty-blue`
+  reads "Ask…"). In-depth's box does the same ("How does this resolve?" →
+  "Your question…" → "Ask…"), and the follow-up box ("Ask a follow-up…" →
+  "Follow up…"). In-depth's pill drops its word below 480 px now (was 420).
+- Rule: **the budget is a ring round the send.** The bar along the box's
+  foot is gone. The 300-character budget traces the send pill's edge in the
+  colour's light, clockwise from the top left, over a faint track — brighter
+  in the last 30 characters, closed at 300. The same ring sits on every
+  send: Ask a Question, In-depth, both follow-ups.
+- Try: **the count waits until there is something to count.** An empty box
+  shows the hint, the ring's track and the send — nothing more.
+
+#### Ask a Question · in-depth details — `in-depth-question.html` (`r11-idq-*`)
+
+- Rule: **the note is folded.** "Notes · optional" was an always-open box at
+  the foot of the card sheet; with several targets the sheet grew down the
+  page. It is a slim **＋ Add a note** row now, beside More details on one
+  line — one tap opens the box, and a card that already has a note opens
+  with it showing (`r11-idq-390-context-blue` with four targets,
+  `r11-idq-1440-context-red`). More details stays the tray for the rarer
+  things.
+- Rule: **the reorder reminder moved up and stands out.** It sits between
+  the zone tabs and the shelf, in a lit row with a ⇄ glyph — "Top resolves
+  first, then 2nd, 3rd… down to the bottom. Drag a card to reorder it (hold
+  first on a phone), or tap it for Move up / Move down" — where it is read
+  before the cards, not after (`r11-idq-390-cards-green`).
+- Rule: **the card menu is no longer a stack of blocks.** Move to is a wrap
+  of small pills with the current zone lit; the order controls are one
+  segmented pill (↓ Down · ↑ Up · ⤒ To top; ‹ Left · Right › off the Stack);
+  and Card details and Remove from the Stack are rows in the Menu tray's
+  manner — a glyph, the words, a chevron — under a hairline
+  (`r11-idq-390-card-menu-green`, `r11-idq-1440-card-menu-blue`). Same
+  pop-over beside the card on desktop, same bottom sheet on a phone.
+
+#### Trade Balancer — `trade-balancer.html` (`r11-tb-*`)
+
+- Rule: **New trade sits top-right on the phone too** — a round ↺ beside the
+  title, as the chip does on desktop — and the block under the sides is gone;
+  the sides keep a small buffer above the phone's edge (`r11-tb-390-red`).
+- Rule: **New trade asks first, on every screen.** A small confirm sheet —
+  "Start a new trade?", how many cards and how much clear, the side names
+  stay — with Keep this trade and ↺ Clear both sides (`r11-tb-390-confirm-red`,
+  `r11-tb-1440-confirm-white`). An already-empty trade has nothing to clear,
+  so nothing opens. The confirm sheet lives in `shell.css` and Life Tracker's
+  Reset and New game use the same one.
+
+#### Card scan — `card-scan.html`
+
+- Owner: "this looks great." Unchanged; no render this round.
+
+#### Shared chrome and Menu (`r11-menu-*`)
+
+- Rule: **the theme discs share the tray's width.** Each is as large as its
+  sixth of the row allows, up to 38 px, so on a 320 px phone they shrink a
+  little instead of touching; the chosen one's ring is drawn inside its
+  cell. The Colorless row (colour well · label · Reset to gray) wraps
+  without breaking a word (`r11-menu-320-colorless`, `r11-menu-390-colorless`).
+
+### Open for the owner's verdict (Round 11)
+
+- History on desktop: the two panes (list + the conversation read in full,
+  Open at the foot) — or open straight into the conversation there too, as
+  the phone does?
+- History: one list for both modes, or one per mode as today?
+- The question box: the count hidden while the box is empty — keep, or
+  always show "0 / 300"?
+- The card menu: the zone pills carry no glyphs — want one per zone?
+- Life Tracker: the ⋯ row on a counter tile (take one away, set, clear)
+  stands in for today's long-press. Right, or keep the long-press too?
+- Life Tracker: the seat map for commander damage — the right shape, or a
+  plain list?
 
 ### Round 10 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 10")
 

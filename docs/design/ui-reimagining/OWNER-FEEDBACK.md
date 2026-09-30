@@ -883,7 +883,13 @@ Tries: the DEMO edge tab on a phone.
 
 Your points:
 
--
+- overall this all looks incredibly polished and refined, im in love, but i just realized weve never gone over the submit feedback forum, lets do that next!
+- the desktop view is incredibly polished and looks great, however the narrow mobile views still have some awkward spacing and format, can we evaluate that and make adjustments so that things fit nicely on a mobile screen
+- i see the question history format, but clicking on them does nothing, id like to explore what that user experience looks like for mobile and for desktop users, so that its polished and the experience makes sense
+- the phrase in question history "past questions from this session" doesnt really make sense, this whole phrase can just be deleted all together
+- the overall width that the question history box allows before swapping to the desktop version needs to be refined, its quite large, and i suspect on some tablets, would look bad given how much dead space there is, i think we should tighten this uo more and let the desktop version drive the larger screens, always ensuring both versions support scrolling when the list gets long since these will all be cache convos
+- id also like to expand on the information displayed in the question history pannel, right now its very high level, but could we potentiially add some more details while still wrapping everything up in a concise package? 
+- until now, we've avoided worked on the life tracker because i was happy with its functionality, but now after seeing all the progress that we've made, i want to refine the menus behind the main life interface, the main life interface is setup perfectly, it functions as expected, but the menus within the lifetracker app could use some refreshment, so id like to please explore refining only those back menus please
 
 ## Ask a Question (`r10-qq-*`)
 
@@ -892,7 +898,10 @@ Colorless and Blue.
 
 Your points:
 
--
+- when dragging the spacing of the ui around, the chat box button for in-depth lost its position and fell to the bottom, along with the other buttons, except the text stayed floating up higher, coming out of sync
+- when the width shrinks so much that the text no longer fits, i like how the in-depth changes to just the icon next to it, can we do something similar with the default text in the box too?
+- the bar that fills up across the chat box is cool effect, but i want to rethink it, and move it to an outline to the send button, so that it feels more integrated
+
 
 ## In-depth details (`r10-idq-*`)
 
@@ -901,7 +910,9 @@ BOTTOM · 2ND · TOP (BOTTOM · 3RD · 2ND · TOP for four).
 
 Your points:
 
--
+- when adding lots of tags to a single card in the context screen, the page grows in legnth, im trying to determine how to fix this without moving the optional note to the more details, maybe we start with the optional note collapsed and easily accessible, since its something i always want quick at hand, while the tray is for more niche things
+- after giving all the cards their proper zones in the in-depth flow, id like to refine the text at the bottom that talks about moving them to re-order or tapping to change zones, can we make that text stand out a tad more, i almost feel like it should be between the top of the components that holds all the cards and the little boubles for each zone available, having it under the component led to me not reading the reminder text
+- the menu that opens up is functional to move the cards around, but can be steal some inspiration from the main shared menu and also find a more elegant way to display all of these buttons instead of just a long list of blocks stacked on eachother
 
 ## Trade Balancer (`r10-tb-*`)
 
@@ -910,7 +921,7 @@ record).
 
 Your points:
 
--
+- in the mobile version of the tb, the new trade button is this big block at the bottom, can we move it to the to right like it is in the desktop app, so that people dont accidentally click it, speaking of which, we should add a safe guard to this button for both mobile and desktop so that when its clicked, people have to confirm before it clears
 
 ## Card scan (`r10-scan-*`)
 
@@ -918,11 +929,96 @@ Tries: the shutter in the frame's foot; the credit under the frame.
 
 Your points:
 
--
+- this looks great
 
 ## Shared chrome and Menu (`r10-menu-*`)
 
 Tries: Colorless's tray — more shapes, a shade brighter, a pale pool of light.
+
+Your points:
+
+- for the mobile or narrow views, i noticed that the theme icons overlap on eachother some and there are some other awkward spacing around the bottom, is there a solution we could try like shrinking the circls a bit to accomodate for the lack of space so that the UI stays in line
+
+## Ready to build?
+
+-
+
+# Round 12 — notes on the Round 11 renders
+
+Open `README.md` → "Round 11" for what changed and why; the renders are
+`renders/r11-*.png`. Write under each heading; a blank heading means "fine as
+shown". When done, open a new session from the worktree at
+`.worktrees/implement-ui-reimagining/` and paste:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 11), then apply
+my Round 12 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+Answers to your Round 11 notes that were questions:
+
+- Question History: a tap does something now. On a phone it reopens the
+  conversation, live, in Ask a Question — cards, thread, follow-up box. On a
+  wide screen the panel is two panes: the list, and the conversation read in
+  full with Open at its foot. Both scroll inside the panel; the phone sheet
+  gives way to the floating card at 600 px.
+- The theme discs shrink to share the tray's width on a narrow phone, so they
+  no longer overlap; the Colorless row wraps cleanly.
+- Life Tracker: only the two sheets behind the table changed (Game Setup and
+  a player's Counters) plus the confirm they ask through. The table is the
+  same pixels as today.
+
+## Global (`r11-feedback-*`, `r11-history-*`, `r11-lt-*`, `r11-menu-320-*`)
+
+Tries: the feedback form's three pills and folded snapshot; history's
+two-pane desktop card and 600 px switch; one history list for both modes;
+Life Tracker's Game Setup rows, seat map and counter tiles (the ⋯ row stands
+in for today's long-press).
+
+Your points:
+
+-
+
+## Ask a Question (`r11-qq-*`)
+
+Tries: the two-shape box (controls step down once the text wraps); the hint
+that shortens in tiers; the budget ring round the send; the count hidden
+while the box is empty.
+
+Your points:
+
+-
+
+## In-depth details (`r11-idq-*`)
+
+Tries: the folded "＋ Add a note" row beside More details; the lit reorder
+reminder above the shelf; the card menu as zone pills, one segmented order
+control, and Details / Remove as tray rows.
+
+Your points:
+
+-
+
+## Trade Balancer (`r11-tb-*`)
+
+Tries: the round ↺ top-right on the phone; the confirm sheet before a clear
+(what it names, its two buttons).
+
+Your points:
+
+-
+
+## Card scan
+
+Unchanged this round.
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`r11-menu-*`)
+
+Tries: the discs at 320 px; the Colorless row's wrap.
 
 Your points:
 
