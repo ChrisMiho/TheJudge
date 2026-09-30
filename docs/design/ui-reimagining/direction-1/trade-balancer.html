@@ -1,0 +1,500 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trade Balancer — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
+<link rel="stylesheet" href="flow.css">
+<style>
+  /* ---- the whole screen fits the viewport: the lists scroll, nothing else does (owner, round 3) ---- */
+  .page-content { width: min(56rem, 94vw); padding: 0.6rem 0 0; display: flex; flex-direction: column; }
+  .tb { display: flex; flex-direction: column; gap: 0.55rem; height: calc(100dvh - var(--chrome, 100px) - 0.6rem); min-height: 0; }
+  /* round 9 (owner: "add a little buffer under the bottom, so that the final prices of each
+     side aren't all the way at the bottom of the screen"): on desktop the two sides stop
+     short of the foot — the totals stay in each side's foot, with breathing room below */
+  @media (min-width: 720px) { .tb { height: calc(100dvh - var(--chrome, 100px) - 0.6rem - 2.25rem); } }
+  /* round 11: with New trade gone from the foot, the sides keep a small buffer above the phone's edge */
+  @media (max-width: 719px) { .tb { padding-bottom: 0.6rem; } }
+  .asof { font-size: 0.72rem; color: var(--text-muted); white-space: nowrap; }
+  .flow-head .asof { display: none; }
+  @media (max-width: 719px) { .header-side .asof { display: none; } .flow-head .asof { display: inline; } }
+
+  /* ---- the scale, compact: totals at the edges, the beam and verdict between.
+     Round 6: a solid fill like the two side panels — no motif wash, no glow
+     (owner: "this component should have a more solid colored background") ---- */
+  .scale {
+    position: relative; overflow: hidden; flex: 0 0 auto;
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 0.5rem;
+    padding: 0.55rem 0.8rem 0.5rem; border-radius: 0.9rem; border: 1px solid var(--surface-edge);
+    background: var(--surface-panel);
+  }
+  .scale > * { position: relative; z-index: 1; }
+  .pan { display: grid; gap: 0; min-width: 0; }
+  .pan.b { text-align: right; }
+  .pan .label { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pan .total { font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; line-height: 1.15; transition: color 200ms ease; font-family: var(--font-display); }
+  .pan[data-heavy="true"] .total { color: var(--accent-soft); text-shadow: 0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent); }
+  .pan .count { font-size: 0.68rem; color: var(--text-muted); }
+  /* ---- round 7: two piles of gold replace the beam, five tiers each, each
+     tier adding to the last. Round 8: the tiers are relative — the richer
+     side's pile is always the full hoard (tier 5) and the lighter side's is its
+     share of the richer side (95%+ five · 75%+ four · 50%+ three · 25%+ two ·
+     under that one), so $15 against $25 (60%) is tier 3. The totals carry the
+     trade's size. New treasure drops in
+     from above with a small overshoot, staggered; a shrinking pile lifts and
+     fades at once. Flat fills, gold and bronze, one purple gem. ---- */
+  .piles-wrap { display: grid; justify-items: center; gap: 0.1rem; min-width: 200px; }
+  .piles { display: flex; align-items: flex-end; justify-content: center; gap: 0.4rem; }
+  .pile { width: 120px; height: 67px; display: block; overflow: visible; transition: filter 300ms ease, opacity 300ms ease; }
+  .pile[data-heavy="true"] { filter: drop-shadow(0 0 10px rgba(226, 177, 60, 0.55)); }
+  .pile[data-light="true"] { opacity: 0.72; }
+  .pile [data-t] { opacity: 0; visibility: hidden; transform-box: fill-box; transform-origin: center bottom; }
+  .pile [data-t].on { visibility: visible; animation: tier-in 550ms cubic-bezier(0.34, 1.56, 0.64, 1) both; animation-delay: var(--d, 0ms); }
+  .pile [data-t].off { visibility: visible; animation: tier-out 260ms ease both; }
+  @keyframes tier-in { from { opacity: 0; transform: translateY(-34px); } to { opacity: 1; transform: none; } }
+  @keyframes tier-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(-14px); } }
+  .pile .ground { stroke: color-mix(in srgb, var(--text-muted) 55%, transparent); }
+  /* the verdict (round 7): by the ratio of the smaller side to the larger —
+     Fair trade · Slightly favors · Leans toward · Lopsided (with the gap); the
+     plain dollar difference stays beneath it (rule, rounds 4 and 6) */
+  .verdict { font-size: 0.9rem; font-weight: 700; text-align: center; line-height: 1.25; margin-top: 0.05rem; font-family: Georgia, "Times New Roman", serif; font-style: italic; letter-spacing: 0.01em; }
+  .verdict[data-even="true"] { color: var(--accent-soft); }
+  .verdict small { display: block; font-family: var(--font-body); font-style: normal; font-weight: 600; font-size: 0.72rem; color: var(--text-muted); font-variant-numeric: tabular-nums; letter-spacing: 0; }
+  @media (min-width: 720px) {
+    .scale { padding: 0.6rem 1.1rem; }
+    .pan .total { font-size: 1.6rem; }
+    .piles-wrap { min-width: 320px; }
+    .pile { width: 196px; height: 109px; }
+    .piles { gap: 1.2rem; }
+  }
+  /* on a phone the piles take a row of their own above the two totals */
+  @media (max-width: 719px) {
+    .scale { grid-template-columns: 1fr 1fr; gap: 0.2rem 0.5rem; padding-top: 0.4rem; }
+    .piles-wrap { grid-column: 1 / -1; grid-row: 1; min-width: 0; }
+    .pile { width: 132px; height: 73px; }
+    .piles { gap: 0.6rem; }
+  }
+
+  /* ---- sides: tabs on phone, two columns on desktop (REQ-204); each list scrolls ---- */
+  .side-tabs { display: flex; gap: 0.4rem; flex: 0 0 auto; }
+  .side-tabs button { flex: 1; min-height: 42px; border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-muted); font-size: 0.88rem; cursor: pointer; display: flex; justify-content: center; gap: 0.4rem; align-items: center; }
+  .side-tabs button b { color: var(--accent-soft); font-variant-numeric: tabular-nums; }
+  .side-tabs button[aria-selected="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); box-shadow: 0 0 16px -8px var(--accent-soft); }
+  .sides { display: grid; gap: 0.6rem; flex: 1 1 auto; min-height: 0; }
+  .side { display: none; }
+  .side[data-active="true"] { display: flex; }
+  @media (min-width: 720px) {
+    .side-tabs { display: none; }
+    .sides { grid-template-columns: 1fr 1fr; }
+    .side { display: flex !important; }
+  }
+  .side { flex-direction: column; min-height: 0; gap: 0.5rem; padding: 0.6rem 0.7rem; border-radius: 1rem; border: 1px solid var(--surface-edge);
+    background: var(--surface-panel); }
+  .side-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; flex: 0 0 auto; }
+  .side-head .name { font-family: var(--font-display); font-size: 1.02rem; font-weight: 600; background: transparent; border: 0; border-bottom: 1px dashed transparent; color: var(--text-primary); padding: 0.1rem 0; width: 8rem; min-width: 0; }
+  .side-head .name:hover, .side-head .name:focus { border-bottom-color: var(--accent-soft); outline: none; }
+  .side-head .attach { display: flex; gap: 0.35rem; }
+  .side-head .icon-chip { min-height: 38px; font-size: 0.8rem; padding: 0 0.6rem; }
+  .side .search-pop { flex: 0 0 auto; }
+  .side .search-results { max-height: 108px; }
+
+  .entries { display: grid; gap: 0.4rem; align-content: start; flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 2px 2px 2px 0; scrollbar-width: thin; }
+  .entry { display: grid; grid-template-columns: 44px 1fr auto; gap: 0.55rem; align-items: center; padding: 0.4rem 0.45rem; border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); animation: msg-in 260ms ease both; }
+  .entry .card { position: relative; width: 44px; height: 61px; border-radius: 4px; overflow: hidden; cursor: pointer;
+    box-shadow: 0 8px 18px -8px color-mix(in srgb, var(--accent) 70%, #000); }
+  .entry .card img { width: 100%; height: 100%; object-fit: cover; }
+  .entry[data-foil="true"] .card::after { content: ""; position: absolute; inset: -40% -60%; background: linear-gradient(115deg, transparent 35%, rgba(255,255,255,0.45) 45%, rgba(120,200,255,0.35) 52%, rgba(255,180,255,0.3) 58%, transparent 68%); mix-blend-mode: screen; pointer-events: none; animation: foil 3.2s ease-in-out infinite; }
+  @keyframes foil { 0%, 100% { transform: translateX(-30%); } 50% { transform: translateX(30%); } }
+  .entry .info { min-width: 0; display: grid; gap: 0.12rem; }
+  .entry .nm { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entry .printing { font-size: 0.7rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .entry .printing button { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.7rem; padding: 0; cursor: pointer; text-decoration: underline dotted; }
+  .entry .printing .only { color: var(--text-muted); }
+  .entry .controls { display: flex; align-items: center; gap: 0.25rem; margin-top: 0.1rem; }
+  .entry .ctl { min-width: 30px; min-height: 30px; padding: 0 0.4rem; border-radius: 0.45rem; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-primary); font-size: 0.74rem; cursor: pointer; }
+  .entry .ctl[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel)); color: var(--accent-soft); }
+  .entry .ctl:disabled { opacity: 0.4; cursor: default; }
+  .entry .qty { min-width: 1.3rem; text-align: center; font-variant-numeric: tabular-nums; font-size: 0.82rem; }
+  .entry .money { display: grid; justify-items: end; gap: 0.05rem; align-self: start; }
+  .entry .money .line { font-weight: 700; font-variant-numeric: tabular-nums; font-size: 0.95rem; }
+  .entry .money .unit { font-size: 0.66rem; color: var(--text-muted); white-space: nowrap; }
+  .entry .x { border: 0; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.85rem; min-width: 30px; min-height: 30px; margin-top: 0.1rem; }
+  .entry .x:hover { color: var(--text-primary); }
+  .entry-empty { padding: 1.2rem 1rem; text-align: center; font-size: 0.85rem; color: var(--text-muted); border: 1px dashed color-mix(in srgb, var(--accent-soft) 45%, transparent); border-radius: 0.75rem; }
+  .side-foot { display: flex; justify-content: flex-end; align-items: center; font-size: 0.8rem; color: var(--text-muted); border-top: 1px solid var(--surface-edge); padding-top: 0.45rem; flex: 0 0 auto; }
+  .side-foot b { color: var(--text-primary); font-size: 1rem; font-variant-numeric: tabular-nums; font-family: var(--font-display); margin-left: 0.4rem; }
+
+  /* New trade (round 11: "move it to the top right like it is in the desktop app, so
+     that people don't accidentally click it"): top-right on every screen, and it asks
+     before it clears. Round 12 (owner: "the mobile new trade button could use some
+     text for clarification like the desktop version"): the phone wears the same chip
+     as desktop — ↺ New trade — not a bare round glyph. */
+  .flow-head .head-tools { display: flex; align-items: center; gap: 0.6rem; }
+  @media (max-width: 719px) {
+    .flow-head { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.1rem 0.5rem; }
+    .flow-head h1 { grid-column: 1; }
+    .flow-head .head-tools { grid-column: 2; grid-row: 1; }
+    .flow-head .asof { grid-column: 1 / -1; grid-row: 2; }
+  }
+
+  /* ---- the printing picker: the card leads, one row per set, tap a price to pick finish + printing.
+     The filter only appears once a card has more than five printings. ---- */
+  .pp-filter { margin: 0 0 0.2rem; }
+  .pp-filter[hidden] { display: none; }
+  .pp-lede { margin: 0; font-size: 0.8rem; color: var(--text-muted); }
+  .printing-list { display: grid; gap: 0.45rem; }
+  .printing-row { display: grid; grid-template-columns: 44px 1fr; gap: 0.7rem; align-items: center; padding: 0.55rem 0.6rem; border-radius: 0.8rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 40%, transparent); }
+  .printing-row[data-current="true"] { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); background: color-mix(in srgb, var(--accent) 14%, var(--surface-panel)); }
+  .printing-row .thumb { width: 44px; height: 61px; border-radius: 3px; }
+  .printing-row .set { display: grid; gap: 0.3rem; min-width: 0; }
+  .printing-row .set .n { font-weight: 600; font-size: 0.88rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .printing-row .set .n small { display: block; font-weight: 500; color: var(--text-muted); font-size: 0.7rem; letter-spacing: 0.04em; margin-top: 0.1rem; }
+  .printing-row .finishes { display: flex; gap: 0.35rem; }
+  .finish { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 32px; padding: 0 0.6rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: transparent; color: var(--text-primary); font-size: 0.78rem; cursor: pointer; font-variant-numeric: tabular-nums; }
+  .finish small { color: var(--text-muted); font-size: 0.68rem; }
+  .finish b { font-weight: 700; }
+  .finish[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 26%, var(--surface-panel)); box-shadow: 0 0 12px -5px var(--accent-soft); }
+  .finish[aria-pressed="true"] b { color: var(--accent-soft); }
+  .finish:disabled { opacity: 0.45; cursor: default; }
+  .finish.foil::before { content: ""; width: 10px; height: 10px; border-radius: 999px; background: linear-gradient(135deg, #ffd6f5, #9be7ff, #fff7b0); }
+</style>
+</head>
+<body data-tray-open="false">
+  <header class="app-header">
+    <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <a class="brand-mark" href="../index.html" aria-label="TheJudge home"><span class="orb" aria-hidden="true"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></a>
+    <div class="header-side"><span class="asof">Prices as of 8 Sep 2026 · USD</span></div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="page-content">
+    <section class="tb">
+      <div class="flow-head">
+        <h1>Trade Balancer</h1>
+        <span class="asof">Prices as of 8 Sep 2026 · USD</span>
+        <div class="head-tools"><button class="icon-chip" id="clear-top" title="New trade — clears both sides"><span class="glyph">↺</span> New trade</button></div>
+      </div>
+
+      <!-- the scale -->
+      <div class="scale" id="scale">
+        <div class="pan a" id="pan-a">
+          <span class="label" id="lbl-a">Side A</span>
+          <span class="total" id="total-a">$0.00</span>
+          <span class="count" id="count-a"></span>
+        </div>
+        <div class="piles-wrap">
+          <div class="piles" aria-hidden="true">
+            <svg class="pile" id="pile-a" viewBox="0 0 180 100"></svg>
+            <svg class="pile" id="pile-b" viewBox="0 0 180 100"></svg>
+          </div>
+          <div class="verdict" id="verdict" aria-live="polite"></div>
+        </div>
+        <div class="pan b" id="pan-b">
+          <span class="label" id="lbl-b">Side B</span>
+          <span class="total" id="total-b">$0.00</span>
+          <span class="count" id="count-b"></span>
+        </div>
+      </div>
+
+      <div class="side-tabs" role="tablist" aria-label="Trade side">
+        <button role="tab" aria-selected="true" data-side="a"><span id="tab-a">Side A</span><b id="tab-total-a"></b></button>
+        <button role="tab" aria-selected="false" data-side="b"><span id="tab-b">Side B</span><b id="tab-total-b"></b></button>
+      </div>
+
+      <div class="sides" id="sides"></div>
+    </section>
+
+    <div class="demo-bar" aria-label="Mockup state (demo only)">
+      <span class="tag">demo</span><span>trade:</span>
+      <button data-trade="lean" aria-pressed="true">Leans</button><button data-trade="owner" aria-pressed="false">$25 vs $15</button>
+      <button data-trade="fair" aria-pressed="false">Fair trade</button>
+      <button data-trade="slight" aria-pressed="false">Slightly favors</button>
+      <button data-trade="lopsided" aria-pressed="false">Lopsided</button>
+      <button data-trade="hoard" aria-pressed="false">Big trade</button><button data-trade="one" aria-pressed="false">One side only</button>
+      <button data-trade="empty" aria-pressed="false">Empty</button>
+    </div>
+
+    <p class="foot-note">
+      Before: <a href="../before/trade-balancer-390x844.png">trade-balancer-390x844.png</a> ·
+      <a href="../before/trade-balancer-1440x900.png">trade-balancer-1440x900.png</a>.
+      Card images are the app's own corpus art via Scryfall (unchanged from today). Prices are demo values; a card with one demo printing shows "only printing" instead of Change. The screen above fits the viewport; the dashed strip is mockup scaffolding, not app UI.
+    </p>
+  </main>
+
+  <!-- round 11: New trade asks first — a small confirm sheet on both phone and desktop -->
+  <div class="sheet-backdrop" id="nt-backdrop" data-open="false"></div>
+  <aside class="drawer-panel confirm-panel" id="nt-confirm" data-open="false" role="dialog" aria-label="Start a new trade?">
+    <h2>Start a new trade?</h2>
+    <p id="nt-body"></p>
+    <div class="row"><button class="btn" id="nt-keep" type="button">Keep this trade</button><button class="btn go" id="nt-go" type="button">↺ Clear both sides</button></div>
+  </aside>
+
+  <!-- printing picker: bottom sheet on phone, side panel on desktop -->
+  <div class="sheet-backdrop" id="pp-backdrop" data-open="false"></div>
+  <aside class="drawer-panel detail-panel" id="pp-panel" data-open="false" aria-label="Choose a printing">
+    <button class="icon-btn overlay-close" id="pp-close" aria-label="Close">✕</button>
+    <div class="art"><img id="pp-art" alt=""><div class="title"><h2 id="pp-title"></h2><span class="cost" id="pp-cost"></span></div></div>
+    <div class="body">
+      <p class="pp-lede">Tap a price to use that printing and finish.</p>
+      <input class="field pp-filter" id="pp-filter" placeholder="Filter by set name or code" hidden>
+      <div class="printing-list" id="pp-list"></div>
+    </div>
+  </aside>
+
+  <script src="motifs.js"></script>
+  <script src="ambience.js"></script>
+  <script src="flow.js"></script>
+  <script>
+    const { img, art, library, byName, openDetail, ringAttr, thumb, mountMenu } = window.FLOW;
+    mountMenu('Trade Balancer');
+    const $ = (s) => document.getElementById(s);
+    const usd = (n) => '$' + n.toFixed(2);
+
+    // the screen fits the viewport: measure the chrome above the page once
+    function fit() { document.documentElement.style.setProperty('--chrome', (document.querySelector('.app-header').offsetHeight + document.querySelector('.mock-mode-banner').offsetHeight) + 'px'); }
+    fit(); window.addEventListener('resize', fit);
+
+    // demo printings per card: set name · code · year · nonfoil / foil price
+    const PRINTINGS = {
+      'Lightning Bolt': [['Commander Legends: Baldur\'s Gate', 'CLB', 2022, 3.20, 6.90], ['Magic 2011', 'M11', 2010, 2.10, 24.00], ['Masters 25', 'A25', 2018, 2.40, 9.50]],
+      'Sol Ring': [['Commander 2021', 'C21', 2021, 1.85, null], ['Commander Masters', 'CMM', 2023, 1.60, 4.20], ['Secret Lair', 'SLD', 2024, 12.00, 38.00]],
+      'Llanowar Elves': [['Dominaria', 'DOM', 2018, 0.75, 3.10], ['Magic 2019', 'M19', 2018, 0.60, 2.40]],
+      'Swords to Plowshares': [['Commander Masters', 'CMM', 2023, 0.60, 1.90], ['Eternal Masters', 'EMA', 2016, 1.40, 11.00]],
+      'Counterspell': [['Commander Masters', 'CMM', 2023, 1.10, 2.80], ['Modern Horizons 2', 'MH2', 2021, 1.60, 5.40]],
+      'Rhystic Study': [['Commander Masters', 'CMM', 2023, 32.00, 41.00], ['Prophecy', 'PCY', 2000, 44.00, 320.00]],
+      'Path to Exile': [['Commander Masters', 'CMM', 2023, 2.40, 5.00]],
+      'Birds of Paradise': [['Ravnica Remastered', 'RVR', 2024, 6.10, 13.50]],
+      'Grapeshot': [['Time Spiral Remastered', 'TSR', 2021, 0.45, 1.90]],
+      'Dark Ritual': [['Dominaria Remastered', 'DMR', 2023, 0.70, 2.10]],
+      'Lightning Helix': [['Ravnica Remastered', 'RVR', 2024, 0.90, 3.40]]
+    };
+    let uid = 0;
+    const entry = (name, side, opts = {}) => ({ id: ++uid, card: byName(name), side, printing: opts.printing || 0, foil: !!opts.foil, qty: opts.qty || 1 });
+    // demo trades (round 7): one per verdict band, so every pile tier can be seen
+    const TRADES = {
+      lean:     () => [entry('Rhystic Study', 'a'), entry('Lightning Bolt', 'a'), entry('Birds of Paradise', 'b', { qty: 2 }), entry('Counterspell', 'b', { foil: true }), entry('Sol Ring', 'b', { qty: 2 }), entry('Swords to Plowshares', 'b'), entry('Path to Exile', 'b'), entry('Lightning Helix', 'b')],
+      fair:     () => [entry('Lightning Bolt', 'a'), entry('Path to Exile', 'a'), entry('Swords to Plowshares', 'a'), entry('Birds of Paradise', 'b')],
+      slight:   () => [entry('Sol Ring', 'a'), entry('Counterspell', 'a'), entry('Lightning Bolt', 'b')],
+      lopsided: () => [entry('Rhystic Study', 'a', { printing: 1 }), entry('Lightning Helix', 'b'), entry('Path to Exile', 'b')],
+      hoard:    () => [entry('Rhystic Study', 'a', { printing: 1, foil: true }), entry('Birds of Paradise', 'a', { qty: 2 }), entry('Rhystic Study', 'b'), entry('Sol Ring', 'b', { printing: 2, foil: true })],
+      // round 8: the owner's example — about $25 against about $15 (60%, tier 5 vs tier 3)
+      owner:    () => [entry('Birds of Paradise', 'a', { qty: 3 }), entry('Lightning Bolt', 'a', { qty: 2 }), entry('Path to Exile', 'b', { qty: 5 }), entry('Sol Ring', 'b', { qty: 2 })],
+      one:      () => [entry('Rhystic Study', 'a')],
+      empty:    () => []
+    };
+    let entries = TRADES.lean();
+    // entries keep the order they were added in — changing a printing or finish edits the
+    // entry in place, it never moves (rule, round 6); the side lists are drawn from this one array
+    let names = { a: 'Side A', b: 'Side B' };
+    let activeSide = 'a';
+    let openSearch = null;
+
+    const unit = (e) => { const p = PRINTINGS[e.card.name][e.printing]; return e.foil ? p[4] : p[3]; };
+    const sideTotal = (s) => entries.filter((e) => e.side === s).reduce((t, e) => t + (unit(e) ?? 0) * e.qty, 0);
+
+    function render() {
+      const ta = sideTotal('a'), tb = sideTotal('b'), gap = Math.abs(ta - tb);
+      const heavy = ta === tb ? null : ta > tb ? 'a' : 'b';
+      const light = heavy === 'a' ? 'b' : 'a';
+      const even = gap === 0;
+      $('total-a').textContent = usd(ta); $('total-b').textContent = usd(tb);
+      $('tab-total-a').textContent = usd(ta); $('tab-total-b').textContent = usd(tb);
+      $('lbl-a').textContent = names.a; $('lbl-b').textContent = names.b; $('tab-a').textContent = names.a; $('tab-b').textContent = names.b;
+      ['a', 'b'].forEach((s) => {
+        const n = entries.filter((e) => e.side === s).reduce((t, e) => t + e.qty, 0);
+        $('count-' + s).textContent = n + (n === 1 ? ' card' : ' cards');
+        $('pan-' + s).dataset.heavy = !even && heavy === s;
+      });
+      // the piles (round 8): the richer side is the top of the scale; the lighter side's
+      // pile is its share of it. The richer pile glows, the lighter one dims (the imbalance cue)
+      const top = Math.max(ta, tb);
+      setTier($('pile-a'), tierOf(ta, top)); setTier($('pile-b'), tierOf(tb, top));
+      $('pile-a').dataset.heavy = !even && heavy === 'a'; $('pile-b').dataset.heavy = !even && heavy === 'b';
+      $('pile-a').dataset.light = !even && light === 'a' && ta + tb > 0; $('pile-b').dataset.light = !even && light === 'b' && ta + tb > 0;
+      const v = $('verdict');
+      v.dataset.even = even;
+      v.innerHTML = ta + tb === 0 ? 'Add cards to weigh the trade' : verdictLine(ta, tb, heavy, gap);
+
+      $('sides').innerHTML = ['a', 'b'].map((s) => {
+        const list = entries.filter((e) => e.side === s);
+        const rows = list.map((e) => {
+          const p = PRINTINGS[e.card.name][e.printing]; const u = unit(e);
+          return '<div class="entry" data-id="' + e.id + '" data-foil="' + e.foil + '">' +
+            '<div ' + ringAttr(e.card).replace('class="', 'class="card ') + ' title="Card details"><img src="' + img(e.card.id) + '" alt="' + e.card.name + '"></div>' +
+            '<div class="info"><span class="nm">' + e.card.name + '</span>' +
+            '<span class="printing">' + p[0] + ' · ' + p[1] + ' · ' + (PRINTINGS[e.card.name].length > 1 ? '<button data-act="printing">Change</button>' : '<span class="only">only printing</span>') + '</span>' +
+            '<div class="controls">' +
+            '<button class="ctl" data-act="foil" aria-pressed="' + e.foil + '"' + (p[4] === null ? ' disabled title="No foil price"' : '') + '>Foil</button>' +
+            '<button class="ctl" data-act="dec" aria-label="Decrease quantity"' + (e.qty <= 1 ? ' disabled' : '') + '>−</button>' +
+            '<span class="qty">' + e.qty + '</span>' +
+            '<button class="ctl" data-act="inc" aria-label="Increase quantity">+</button>' +
+            '</div></div>' +
+            '<div class="money"><span class="line">' + (u === null ? '—' : usd(u * e.qty)) + '</span>' +
+            '<span class="unit">' + (u === null ? 'no foil price' : usd(u) + ' × ' + e.qty) + '</span>' +
+            '<button class="x" data-act="remove" aria-label="Remove ' + e.card.name + '">✕</button></div></div>';
+        }).join('');
+        const searchOpen = openSearch === s;
+        return '<section class="side" data-side="' + s + '" data-active="' + (s === activeSide) + '" aria-label="' + names[s] + '">' +
+          '<div class="side-head"><input class="name" value="' + names[s] + '" aria-label="Rename ' + names[s] + '" data-side="' + s + '">' +
+          '<div class="attach"><button class="icon-chip" data-act="search" aria-expanded="' + searchOpen + '"><span class="glyph">＋</span> Add card</button>' +
+          '<a class="icon-chip" href="card-scan.html?back=trade-balancer.html&into=' + encodeURIComponent(names[s]) + '"><span class="glyph">▣</span> Scan</a></div></div>' +
+          '<div class="search-pop' + (searchOpen ? ' open' : '') + '"><div class="search-row"><span class="glyph">⌕</span><input class="field side-search" placeholder="Search to add a card to ' + names[s] + '" autocomplete="off"></div><div class="search-results"></div></div>' +
+          '<div class="entries">' + (rows || '<div class="entry-empty">No cards on this side yet — add one, or scan it.</div>') + '</div>' +
+          '<div class="side-foot"><span>' + names[s] + ' total <b>' + usd(sideTotal(s)) + '</b></span></div>' +
+          '</section>';
+      }).join('');
+      bindSides();
+    }
+
+    function bindSides() {
+      $('sides').querySelectorAll('.entry[data-id]').forEach((row) => {
+        const e = entries.find((x) => x.id === Number(row.dataset.id));
+        row.querySelector('.card').addEventListener('click', () => openDetail(e.card));
+        row.querySelectorAll('[data-act]').forEach((b) => b.addEventListener('click', () => {
+          const a = b.dataset.act;
+          if (a === 'foil') e.foil = !e.foil;
+          if (a === 'inc') e.qty += 1;
+          if (a === 'dec') e.qty = Math.max(1, e.qty - 1);
+          if (a === 'remove') entries = entries.filter((x) => x !== e);
+          if (a === 'printing') return openPrinting(e);
+          render();
+        }));
+      });
+      $('sides').querySelectorAll('.side').forEach((sec) => {
+        const s = sec.dataset.side;
+        sec.querySelector('.name').addEventListener('change', (ev) => { names[s] = ev.target.value.trim() || ('Side ' + s.toUpperCase()); render(); });
+        sec.querySelector('[data-act="search"]').addEventListener('click', () => { openSearch = openSearch === s ? null : s; render(); if (openSearch === s) $('sides').querySelector('.side[data-side="' + s + '"] .side-search').focus(); });
+        const input = sec.querySelector('.side-search'), results = sec.querySelector('.search-results');
+        const draw = () => {
+          const q = input.value.trim().toLowerCase();
+          const hits = library.filter((c) => !q || c.name.toLowerCase().includes(q));
+          results.innerHTML = hits.map((c) => '<button type="button" data-n="' + c.name + '">' + thumb(c) + '<span>' + c.name + '</span><span class="type">' + usd(PRINTINGS[c.name][0][3]) + '</span></button>').join('');
+          results.querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { entries.push(entry(b.dataset.n, s)); openSearch = null; render(); const list = $('sides').querySelector('.side[data-side="' + s + '"] .entries'); list.scrollTo({ top: 9999, behavior: 'smooth' }); }));
+        };
+        input.addEventListener('input', draw);
+        input.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') { openSearch = null; render(); } });
+        if (openSearch === s) draw();
+      });
+    }
+
+    // ---- printing picker: tap a price to pick that printing in that finish ----
+    let ppEntry = null;
+    function drawPrintings() {
+      const q = $('pp-filter').value.trim().toLowerCase();
+      const e = ppEntry;
+      $('pp-list').innerHTML = PRINTINGS[e.card.name].map((p, i) => [p, i]).filter(([p]) => !q || p[0].toLowerCase().includes(q) || p[1].toLowerCase().includes(q)).map(([p, i]) =>
+        '<div class="printing-row" data-current="' + (i === e.printing) + '">' + thumb(e.card) +
+        '<div class="set"><span class="n">' + p[0] + '<small>' + p[1] + ' · ' + p[2] + '</small></span>' +
+        '<div class="finishes">' +
+        '<button class="finish" data-i="' + i + '" data-foil="false" aria-pressed="' + (i === e.printing && !e.foil) + '"><small>Nonfoil</small><b>' + usd(p[3]) + '</b></button>' +
+        (p[4] === null ? '<button class="finish foil" disabled><small>Foil</small><b>—</b></button>'
+          : '<button class="finish foil" data-i="' + i + '" data-foil="true" aria-pressed="' + (i === e.printing && e.foil) + '"><small>Foil</small><b>' + usd(p[4]) + '</b></button>') +
+        '</div></div></div>').join('');
+      $('pp-list').querySelectorAll('.finish[data-i]').forEach((b) => b.addEventListener('click', () => { e.printing = Number(b.dataset.i); e.foil = b.dataset.foil === 'true'; closePrinting(); render(); }));
+    }
+    function openPrinting(e) {
+      ppEntry = e;
+      $('pp-title').textContent = e.card.name;
+      $('pp-cost').textContent = e.card.cost;
+      $('pp-art').src = art(e.card.id);
+      $('pp-filter').value = '';
+      $('pp-filter').hidden = PRINTINGS[e.card.name].length <= 5;
+      drawPrintings();
+      $('pp-backdrop').dataset.open = 'true'; $('pp-panel').dataset.open = 'true'; $('pp-panel').scrollTop = 0;
+    }
+    function closePrinting() { $('pp-backdrop').dataset.open = 'false'; $('pp-panel').dataset.open = 'false'; }
+    $('pp-filter').addEventListener('input', drawPrintings);
+    $('pp-close').addEventListener('click', closePrinting);
+    $('pp-backdrop').addEventListener('click', closePrinting);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closePrinting(); });
+
+    // ---- the gold piles (round 7) ----
+    // round 8: a side's tier is its share of the richer side — the richer side is always 5
+    const SHARES = [0.25, 0.5, 0.75, 0.95];
+    const tierOf = (v, top) => v <= 0 || top <= 0 ? 0 : 1 + SHARES.filter((f) => v / top >= f - 1e-9).length;
+    function verdictLine(ta, tb, heavy, gap) {
+      const ratio = Math.min(ta, tb) / Math.max(ta, tb);
+      const who = names[heavy];
+      const diff = '<small>' + who + ' +' + usd(gap) + '</small>';
+      if (ta === tb) return 'Even';
+      if (ratio >= 0.95) return 'Fair trade' + diff;
+      if (ratio >= 0.85) return 'Slightly favors ' + who + diff;
+      if (ratio >= 0.60) return 'Leans toward ' + who + diff;
+      return 'Lopsided — ' + who + ' by ' + Math.round((1 - ratio) * 100) + '%' + diff;
+    }
+    // one pile: every element carries the tier it belongs to; tiers build on each other
+    const G = { coin: '#e2b13c', rim: '#c9962c', edge: '#7a4f12', mound: '#d9a63a', gem: '#a855f7', gemL: '#d8b4fe', gemD: '#7e22ce' };
+    const coin = (x, y, r = 10) => '<ellipse cx="' + x + '" cy="' + y + '" rx="' + r + '" ry="' + (r * 0.36).toFixed(1) + '" fill="' + G.coin + '" stroke="' + G.edge + '" stroke-width="1.2"/>';
+    function stack(x, base, n, r = 10) {
+      let out = '';
+      for (let i = 0; i < n; i++) {
+        const y = base - i * 4;
+        out += '<rect x="' + (x - r) + '" y="' + (y - 3.5) + '" width="' + (r * 2) + '" height="3.5" fill="' + G.rim + '" stroke="' + G.edge + '" stroke-width="1"/>' + coin(x, y - 3.5, r);
+      }
+      return out;
+    }
+    const mound = (x0, x1, peakCtl) => '<path d="M' + x0 + ' 88 Q 90 ' + peakCtl + ' ' + x1 + ' 88 Z" fill="' + G.mound + '" stroke="' + G.edge + '" stroke-width="1.3"/>' +
+      '<path d="M' + (x0 + 14) + ' 84 Q 90 ' + (peakCtl + 18) + ' ' + (x1 - 14) + ' 84" fill="none" stroke="' + G.edge + '" stroke-width="0.9" opacity="0.5"/>';
+    const gem = (x, y) => '<polygon points="' + x + ',' + (y - 13) + ' ' + (x + 9) + ',' + (y - 4) + ' ' + x + ',' + (y + 8) + ' ' + (x - 9) + ',' + (y - 4) + '" fill="' + G.gem + '" stroke="' + G.gemD + '" stroke-width="1.2"/>' +
+      '<polygon points="' + x + ',' + (y - 13) + ' ' + (x + 9) + ',' + (y - 4) + ' ' + (x - 9) + ',' + (y - 4) + '" fill="' + G.gemL + '" opacity="0.7"/>';
+    const chalice = (x, y) => '<path d="M' + (x - 11) + ' ' + (y - 26) + ' h22 q0 14 -11 16 q-11 -2 -11 -16 z" fill="' + G.coin + '" stroke="' + G.edge + '" stroke-width="1.2"/>' +
+      '<rect x="' + (x - 2) + '" y="' + (y - 10) + '" width="4" height="7" fill="' + G.rim + '" stroke="' + G.edge + '" stroke-width="1"/>' +
+      '<path d="M' + (x - 9) + ' ' + y + ' q9 -6 18 0 z" fill="' + G.coin + '" stroke="' + G.edge + '" stroke-width="1.2"/>' +
+      '<circle cx="' + x + '" cy="' + (y - 19) + '" r="2" fill="' + G.gem + '"/>';
+    const T = (t, body, hideAt) => '<g data-t="' + t + '"' + (hideAt ? ' data-hide-at="' + hideAt + '"' : '') + '>' + body + '</g>';
+    const PILE_MARKUP =
+      '<line class="ground" x1="2" y1="88" x2="178" y2="88" stroke-width="1.5" stroke-linecap="round"/>' +
+      T(5, mound(22, 158, 26)) + T(4, mound(40, 140, 40)) + T(3, mound(55, 125, 52)) +
+      T(1, coin(40, 88)) + T(1, coin(62, 90)) + T(1, coin(128, 89)) + T(1, stack(100, 88, 2)) +
+      T(2, stack(46, 88, 5)) + T(2, stack(136, 88, 4)) +
+      T(3, stack(90, 70, 3), 5) +
+      T(4, gem(60, 70)) + T(4, stack(26, 88, 7)) + T(4, stack(154, 88, 6)) +
+      T(5, chalice(90, 58)) + T(5, stack(10, 88, 9, 9)) + T(5, stack(170, 88, 8, 9)) + T(5, coin(48, 93, 7)) + T(5, coin(132, 94, 7));
+    $('pile-a').innerHTML = PILE_MARKUP; $('pile-b').innerHTML = PILE_MARKUP;
+    function setTier(svg, tier) {
+      let k = 0;
+      svg.querySelectorAll('[data-t]').forEach((el) => {
+        const t = Number(el.dataset.t), hide = Number(el.dataset.hideAt || 99);
+        const want = t <= tier && tier < hide, on = el.classList.contains('on');
+        if (want && !on) { el.classList.remove('off'); el.style.setProperty('--d', (k++ * 90) + 'ms'); el.classList.add('on'); }
+        else if (!want && on) { el.classList.remove('on'); el.classList.add('off'); el.addEventListener('animationend', () => el.classList.remove('off'), { once: true }); }
+      });
+    }
+    document.querySelectorAll('[data-trade]').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('[data-trade]').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true');
+      entries = TRADES[b.dataset.trade](); openSearch = null; render();
+    }));
+
+    // ---- top-level controls ----
+    document.querySelectorAll('.side-tabs [role="tab"]').forEach((tab) => tab.addEventListener('click', () => {
+      activeSide = tab.dataset.side;
+      document.querySelectorAll('.side-tabs [role="tab"]').forEach((t) => t.setAttribute('aria-selected', t === tab));
+      render();
+    }));
+    // round 11: New trade asks first ("a safe guard … so that when it's clicked, people
+    // have to confirm before it clears") — the sheet names what goes: how many cards, how
+    // much. An already-empty trade has nothing to clear, so nothing opens.
+    const newTrade = () => { entries = []; openSearch = null; render(); closeConfirm(); };
+    function askNewTrade() {
+      const n = entries.reduce((t, e) => t + e.qty, 0);
+      if (!n) return;
+      $('nt-body').innerHTML = 'Both sides clear — <b>' + n + (n === 1 ? ' card' : ' cards') + '</b>, <b>' + usd(sideTotal('a') + sideTotal('b')) + '</b> in all. ' + names.a + ' and ' + names.b + ' keep their names. This can\'t be undone.';
+      $('nt-backdrop').dataset.open = 'true'; $('nt-confirm').dataset.open = 'true';
+      setTimeout(() => $('nt-keep').focus(), 250);
+    }
+    function closeConfirm() { $('nt-backdrop').dataset.open = 'false'; $('nt-confirm').dataset.open = 'false'; }
+    $('clear-top').addEventListener('click', askNewTrade);
+    $('nt-go').addEventListener('click', newTrade);
+    $('nt-keep').addEventListener('click', closeConfirm);
+    $('nt-backdrop').addEventListener('click', closeConfirm);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeConfirm(); });
+    render();
+  </script>
+</body>
+</html>

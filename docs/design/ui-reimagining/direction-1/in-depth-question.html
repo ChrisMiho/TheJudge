@@ -1,0 +1,1308 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask a Question · in-depth details — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
+<link rel="stylesheet" href="flow.css">
+<style>
+  .page-content { width: min(36rem, 92vw); padding-top: 0.8rem; }
+  .idq { display: grid; gap: 0.8rem; }
+  .idq[hidden] { display: none; }
+
+  /* ---- progress rail: four stations on one lit path (Answer is no longer a
+     station — when the ruling arrives the rail leaves and the chat takes over) ---- */
+  .rail { display: grid; grid-template-columns: repeat(4, 1fr); position: relative; margin: 0.1rem 0 0; }
+  .rail::before {
+    content: ""; position: absolute; left: 12.5%; right: 12.5%; top: 12px; height: 2px;
+    background: color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  }
+  .rail .fill { position: absolute; left: 12.5%; top: 12px; height: 2px; width: 0;
+    background: linear-gradient(90deg, var(--accent), var(--accent-soft)); box-shadow: 0 0 10px var(--accent-soft); transition: width 400ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+  .rail button {
+    position: relative; display: grid; justify-items: center; gap: 0.35rem;
+    background: transparent; border: 0; padding: 0; color: var(--text-muted); font-size: 0.72rem; cursor: pointer; min-height: 44px;
+  }
+  .rail .node {
+    width: 26px; height: 26px; border-radius: 999px;
+    border: 2px solid var(--surface-edge); background: var(--surface-ground);
+    display: grid; place-items: center; font-size: 0.68rem; font-weight: 700; color: var(--text-muted);
+    font-family: var(--font-display);
+    transition: all 250ms ease;
+  }
+  .rail button[data-done="true"] .node { border-color: var(--accent); background: var(--accent); color: var(--text-on-accent); }
+  .rail button[aria-current="step"] { color: var(--text-primary); font-weight: 600; }
+  .rail button[aria-current="step"] .node {
+    border-color: var(--accent-soft); color: var(--accent-soft);
+    box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent);
+    animation: node-pulse 2.6s ease-in-out infinite;
+  }
+  @keyframes node-pulse {
+    0%, 100% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 14px color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+    50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 26px color-mix(in srgb, var(--accent-soft) 80%, transparent); }
+  }
+
+  .step-panel { display: none; }
+  .step-panel.active { display: grid; gap: 0.8rem; animation: msg-in 300ms ease both; }
+  /* round 6: the way forward is part of the panel — a lit bar along the plate's
+     foot that names the next step, not a button floating under the questions
+     (owner: "out of place and not integrated into the flow") */
+  .plate-next {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.6rem;
+    width: calc(100% + 1.8rem); margin: 0.9rem -0.9rem -0.9rem; padding: 0.7rem 1rem; min-height: 52px;
+    border: 0; border-top: 1px solid var(--surface-edge); border-radius: 0 0 1rem 1rem;
+    background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 24%, transparent), color-mix(in srgb, var(--accent) 6%, transparent));
+    color: var(--text-primary); font-weight: 600; font-size: 0.92rem; cursor: pointer; text-align: left;
+    transition: background 150ms ease;
+  }
+  .plate-next:hover, .plate-next:focus-visible { background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 38%, transparent), color-mix(in srgb, var(--accent) 12%, transparent)); }
+  .plate-next small { font-weight: 500; color: var(--text-muted); font-size: 0.78rem; margin-left: 0.45rem; }
+  .plate-next .chev { color: var(--accent-soft); font-size: 1.3rem; line-height: 1; }
+  .stage .plate-next { margin: 0.4rem -0.5rem -0.6rem; width: calc(100% + 1rem); border-radius: 0 0 1.1rem 1.1rem; }
+  .flow-head .lead { display: flex; align-items: center; gap: 0.6rem; }
+  .flow-head .lead .icon-round { text-decoration: none; }
+  /* round 12: the attach pair lives under the track — a row of its own between the
+     rail and the Cards step. On a phone the two chips share the row as equal halves,
+     each a full thumb target; from 480 px up they sit at the left at their own width. */
+  .idq > .attach { display: flex; gap: 0.5rem; margin-top: -0.2rem; }
+  .idq > .attach[hidden] { display: none; }
+  @media (max-width: 479px) { .idq > .attach .icon-chip { flex: 1 1 0; justify-content: center; min-height: 44px; } }
+  .carry-note { margin: -0.2rem 0 0; font-size: 0.8rem; color: var(--text-muted); }
+  .carry-note b { color: var(--accent-soft); }
+
+  /* a themed panel used by every step: the same solid fill as the stage and
+     the chat bubble (round 9 — panels stand apart from the background) */
+  .plate {
+    position: relative; padding: 0.9rem; border-radius: 1rem;
+    border: 1px solid var(--surface-edge);
+    background: var(--surface-panel);
+    box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.9);
+  }
+  .plate h2 { margin: 0 0 0.6rem; font-family: var(--font-body); font-size: 0.74rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  .plate .lede { margin: -0.3rem 0 0.7rem; font-size: 0.82rem; color: var(--text-muted); }
+
+  /* step 1 — game context: players, then the turn, one plate (round 6) */
+  .players-row { display: flex; align-items: center; gap: 0.5rem; }
+  .players-row .expander { flex: 1; display: flex; align-items: center; gap: 0.6rem; text-align: left; }
+  .players-row .expander .chev { color: var(--accent-soft); transition: transform 150ms ease; }
+  .players-row .expander[aria-expanded="true"] .chev { transform: rotate(90deg); }
+  .players-row .stepper { width: 44px; padding: 0; text-align: center; }
+  .players-row .stepper.add { color: var(--accent-soft); border-color: var(--accent); }
+  .roster { display: none; gap: 0.5rem; margin-top: 0.6rem; }
+  .roster[data-open="true"] { display: grid; }
+  .roster .player-card { display: grid; gap: 0.5rem; padding: 0.55rem 0.6rem; border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 40%, transparent); }
+  .roster .player { display: grid; grid-template-columns: 1fr 5.5rem; gap: 0.5rem; align-items: end; }
+  .roster label { display: grid; gap: 0.25rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+  .roster .life { text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+  /* the in-depth details every player carries today (poison · energy · experience,
+     commander damage from each other player, named counters) — kept, behind one
+     shared "More details" toggle, as in the shipped app (round 6) */
+  .roster-more { display: none; justify-content: flex-start; margin-top: 0.4rem; }
+  .roster[data-open="true"] + .roster-more { display: flex; }
+  .roster-more .link, .extras .link { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.76rem; cursor: pointer; min-height: 32px; padding: 0 0.2rem; }
+  .extras { display: none; gap: 0.55rem; padding-top: 0.5rem; border-top: 1px solid var(--surface-edge); }
+  .roster[data-more="true"] .extras { display: grid; }
+  .extras .lbl { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+  .extras .counters { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+  .extras .counters label { gap: 0.2rem; }
+  .extras .field { min-height: 36px; font-size: 0.84rem; padding: 0.3rem 0.5rem; }
+  .extras select.field { padding-right: 1.6rem; background-position: calc(100% - 0.9rem) 50%, calc(100% - 0.6rem) 50%; }
+  .extras .cmd-row, .extras .named-row { display: grid; grid-template-columns: 1fr 5rem; gap: 0.4rem; align-items: center; font-size: 0.82rem; }
+  .extras .cmd-row span { color: var(--text-muted); }
+  .extras .named-row .field.amt { text-align: center; font-variant-numeric: tabular-nums; }
+  .paired { display: grid; gap: 0.7rem; margin-top: 0.9rem; }
+  @media (min-width: 640px) { .paired { grid-template-columns: 1fr 1fr; } }
+  .paired label { display: grid; gap: 0.3rem; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+  select.field { appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--accent-soft) 50%), linear-gradient(135deg, var(--accent-soft) 50%, transparent 50%);
+    background-position: calc(100% - 1.1rem) 50%, calc(100% - 0.8rem) 50%; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 2rem; }
+
+  /* step 2 — zones: tiles that glow when selected */
+  .zone-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+  @media (min-width: 640px) { .zone-grid { grid-template-columns: repeat(4, 1fr); } }
+  .zone-grid label {
+    position: relative; display: flex; align-items: center; gap: 0.55rem; min-height: 52px; padding: 0.4rem 0.6rem;
+    border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 55%, transparent);
+    cursor: pointer; font-size: 0.88rem; transition: all 180ms ease; overflow: hidden;
+  }
+  .zone-grid input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .zone-grid .mark { width: 18px; height: 18px; border-radius: 999px; border: 1.5px solid var(--surface-edge); display: grid; place-items: center; font-size: 0.65rem; color: var(--text-on-accent); flex: 0 0 auto; transition: all 180ms ease; }
+  .zone-grid label:has(input:checked) { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
+    box-shadow: 0 0 22px -6px color-mix(in srgb, var(--accent) 85%, transparent), inset 0 0 18px -10px var(--accent-soft); }
+  .zone-grid label:has(input:checked)::after { content: ""; position: absolute; right: -10px; top: -10px; width: 44px; height: 44px; background: var(--motif) center / cover no-repeat; opacity: 0.3; }
+  .zone-grid label:has(input:checked) .mark { background: var(--accent-soft); border-color: var(--accent-soft); color: var(--surface-ground); box-shadow: 0 0 10px var(--accent-soft); }
+  .zone-grid label:has(input:checked) .mark::after { content: "✓"; }
+
+  /* step 3 — cards per zone: a lit shelf, widgets on the frame's edge */
+  .zone-tabs { display: flex; gap: 0.4rem; overflow-x: auto; padding-bottom: 2px; }
+  .zone-tabs button { flex: 0 0 auto; min-height: 40px; padding: 0.3rem 0.8rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: var(--surface-panel); color: var(--text-muted); font-size: 0.82rem; cursor: pointer; }
+  .zone-tabs button b { color: var(--accent-soft); font-weight: 600; margin-left: 0.25rem; }
+  .zone-tabs button[aria-pressed="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
+  /* round 7: cards carried from the question are placed one at a time — the same
+     sheet as the context step (art left, the ask beside it), one zone tile per
+     tap; the shelf waits behind it until every card has a zone (the guardrail) */
+  #step-cards[data-placing="true"] > :not(#place-plate) { display: none !important; }
+  .place-zones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+  @media (min-width: 720px) { .place-zones { grid-template-columns: repeat(3, 1fr); } }
+  .place-zones button, .act-zones button {
+    display: flex; align-items: center; gap: 0.55rem; min-height: 48px; padding: 0.4rem 0.7rem; text-align: left;
+    border-radius: 0.7rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 55%, transparent);
+    color: var(--text-primary); cursor: pointer; font-size: 0.88rem; transition: all 160ms ease;
+  }
+  .place-zones button .mark, .act-zones button .mark { width: 18px; height: 18px; border-radius: 999px; border: 1.5px solid var(--surface-edge); flex: 0 0 auto; display: grid; place-items: center; font-size: 0.65rem; }
+  .place-zones button:hover, .act-zones button:hover { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 18%, var(--surface-panel)); }
+  .place-zones button[data-extra="true"] { border-style: dashed; color: var(--text-muted); }
+  .act-zones button[data-current="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
+  .act-zones button[data-current="true"] .mark { background: var(--accent-soft); border-color: var(--accent-soft); color: var(--surface-ground); }
+  .act-zones button[data-current="true"] .mark::after { content: "✓"; }
+  .place-more { justify-self: start; background: transparent; border: 0; color: var(--accent-soft); font-size: 0.78rem; cursor: pointer; min-height: 32px; padding: 0 0.2rem; }
+  .place-more[hidden] { display: none; }
+  .plate.nudge { animation: nudge 420ms ease; }
+  @keyframes nudge { 0%, 100% { transform: none; } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
+  .place-plate .eyebrow .link.danger { color: var(--text-muted); }
+  .place-plate .eyebrow .link.danger:hover { color: #ff8fa3; }
+  /* round 11: the reorder reminder, lit, above the shelf */
+  .shelf-hint { display: flex; align-items: flex-start; gap: 0.55rem; margin: -0.2rem 0 -0.2rem; padding: 0.5rem 0.75rem; border-radius: 0.7rem;
+    border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent);
+    font-size: 0.8rem; line-height: 1.4; color: var(--text-primary); }
+  .shelf-hint .glyph { color: var(--accent-soft); font-size: 1.05rem; line-height: 1.1; flex: 0 0 auto; }
+  .shelf-hint b { color: var(--accent-soft); font-weight: 600; }
+  .shelf { --tile-w: 124px; display: flex; gap: 0.7rem; overflow-x: auto; overflow-y: visible; padding: 1rem 0.3rem 0.9rem; scroll-snap-type: x proximity; min-height: calc(var(--tile-w) * 88 / 63 + 1.9rem); position: relative; z-index: 1; width: 100%; }
+  @media (min-width: 720px) { .shelf { --tile-w: 150px; } }
+  .shelf .card {
+    position: relative; flex: 0 0 auto; width: var(--tile-w); height: calc(var(--tile-w) * 88 / 63);
+    border-radius: 8px; background: #111; scroll-snap-align: start;
+    box-shadow: 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, #000);
+    transition: transform 160ms ease; cursor: pointer;
+  }
+  .shelf .card:hover { transform: translateY(-3px); }
+  /* round 7: the Stack reorders by drag — the lifted card rides the pointer, the
+     others make room; a tap on any shelf card opens its actions instead */
+  /* round 8: every zone's shelf reorders by drag (owner: "a nice quality of
+     life") — only the Stack wears order tags, since only there does order rule */
+  /* round 9 ("i am unable to re-order the cards when i drag them around"): the
+     card's image used to start the browser's own image drag under the pointer,
+     which cancelled ours — it is inert now; and a lifted card holds the touch
+     (the shelf still swipes when a card is not held first) */
+  .shelf .card { touch-action: pan-x; user-select: none; -webkit-user-select: none; }
+  .shelf .card img { -webkit-user-drag: none; user-drag: none; pointer-events: none; }
+  .shelf .card.dragging { z-index: 20; transform: translateY(-8px) scale(1.04); box-shadow: 0 22px 40px -14px #000, 0 0 0 2px var(--accent-soft); transition: none; cursor: grabbing; }
+  .shelf .card.drop-before::before { content: ""; position: absolute; left: -0.45rem; top: 8%; bottom: 8%; width: 3px; border-radius: 3px; background: var(--accent-soft); box-shadow: 0 0 10px var(--accent-soft); z-index: 6; }
+  .shelf .card.drop-after::before { content: ""; position: absolute; right: -0.45rem; top: 8%; bottom: 8%; width: 3px; border-radius: 3px; background: var(--accent-soft); box-shadow: 0 0 10px var(--accent-soft); z-index: 6; }
+  /* the card actions sheet (round 7): move to another zone, reorder on the Stack, details, remove */
+  .act-body { display: grid; gap: 0.7rem; padding-top: 2.6rem; }
+  .act-head { display: grid; grid-template-columns: 44px 1fr; gap: 0.6rem; align-items: center; }
+  .act-head .thumb { width: 44px; height: 61px; border-radius: 4px; }
+  .act-head h2 { margin: 0; font-size: 1.1rem; }
+  .act-head .zone { color: var(--accent-soft); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .act-body .lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  /* round 11: zones as pills, order as one segmented pill, actions as tray rows */
+  .act-zones { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .act-zones button { min-height: 36px; padding: 0.2rem 0.75rem 0.2rem 0.6rem; border-radius: 999px; font-size: 0.82rem; gap: 0.4rem; background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
+  /* round 13 (owner: "glyphs on the pills sounds awesome … subtle, so it feels random and
+     magical without feeling like a forced effect — subtle but elegant, mystical"): each
+     pill wears a small line-drawn sign, faint in the colour's light; the current
+     zone's sign brightens and glows a touch. No two alike, nothing filled in. Round 14:
+     the signs are dealt at random from a pool each time the menu opens (see SIGN_POOL),
+     and rest 5 % fainter (0.55 → 0.50, the owner's ask). */
+  .act-zones button .zg { width: 15px; height: 15px; flex: 0 0 auto; color: var(--accent-soft); opacity: 0.50; transition: opacity 160ms ease, filter 160ms ease; }
+  .act-zones button .zg svg { width: 100%; height: 100%; display: block; fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
+  .act-zones button:hover .zg { opacity: 0.85; }
+  .act-zones button[data-current="true"] { box-shadow: 0 0 14px -5px color-mix(in srgb, var(--accent) 80%, transparent); }
+  .act-zones button[data-current="true"] .zg { opacity: 1; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-soft) 85%, transparent)); }
+  .seg { display: inline-flex; border-radius: 999px; border: 1px solid var(--surface-edge); overflow: hidden; background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
+  .seg button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; flex: 1 1 0; min-height: 40px; padding: 0 0.8rem; border: 0; background: transparent; color: var(--text-primary); font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--surface-edge); }
+  .seg button .glyph { color: var(--accent-soft); font-size: 0.95rem; }
+  .seg button:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .seg button:disabled { opacity: 0.4; cursor: default; }
+  .seg button[hidden] { display: none; }
+  .act-menu { display: grid; gap: 0.1rem; margin: 0.2rem -0.5rem 0; padding-top: 0.5rem; border-top: 1px solid var(--surface-edge); }
+  .act-menu button { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 0.6rem; width: 100%; min-height: 46px; padding: 0 0.75rem; text-align: left;
+    border: 1px solid transparent; border-radius: 0.6rem; background: transparent; color: var(--text-primary); font-weight: 500; font-size: 0.92rem; cursor: pointer; transition: background 150ms ease; }
+  .act-menu button .glyph { width: 28px; height: 28px; display: grid; place-items: center; color: var(--accent-soft); font-size: 1rem; }
+  .act-menu button .chev { color: var(--accent-soft); }
+  .act-menu button:hover, .act-menu button:focus-visible { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .act-menu button.danger .glyph { color: #ff8fa3; }
+  .act-menu button.danger:hover { color: #ff8fa3; background: rgba(255, 143, 163, 0.08); }
+  .shelf .card.summon { animation: summon 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both; --d: 0; --step: 0px; }
+  .shelf .card .card-widget { width: 26px; height: 26px; font-size: 0.72rem; top: -12px; opacity: 1; transform: none; pointer-events: auto; }
+  .shelf .card .card-widget.remove { left: -6px; }
+  .shelf .card .card-widget.info { right: -6px; }
+  /* the Stack's order tag straddles the bottom edge, where only the copyright line lives */
+  .shelf .card .pos {
+    position: absolute; left: 50%; bottom: -9px; transform: translateX(-50%); z-index: 5;
+    padding: 0.1rem 0.5rem; border-radius: 999px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; font-family: var(--font-display);
+    background: rgba(9, 9, 11, 0.92); color: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent-soft) 50%, transparent);
+    box-shadow: 0 0 10px -2px color-mix(in srgb, var(--accent) 80%, transparent);
+  }
+  .shelf .card .pos[data-top="true"] { color: var(--surface-ground); background: var(--accent-soft); }
+  .shelf .empty {
+    flex: 1; display: grid; place-items: center; text-align: center; min-height: 140px; border-radius: 0.8rem;
+    border: 1px dashed color-mix(in srgb, var(--accent-soft) 50%, transparent); color: var(--text-muted); font-size: 0.85rem; padding: 1rem;
+  }
+  .shelf .empty strong { display: block; color: var(--text-primary); margin-bottom: 0.2rem; font-family: var(--font-display); }
+
+  /* step 4 — context, card by card: the card beside a short, clean form
+     (owner, round 4: back to the clean round-2 sheet — selects, not chips;
+     every field prefilled so a card with little to say costs zero taps) ---- */
+  /* the sheet: the card's art at the left, the form beside it — no dead space
+     under the art on desktop, nothing stretched wider than it needs (round 5) */
+  #wizard-plate, .place-plate { display: grid; grid-template-columns: 96px 1fr; grid-template-areas: "art head" "form form" "nav nav"; gap: 0.7rem 0.8rem; align-items: start; }
+  @media (min-width: 720px) { #wizard-plate, .place-plate { grid-template-columns: 210px 1fr; grid-template-areas: "art head" "art form" "nav nav"; gap: 0.7rem 1.1rem; } }
+  .ctx-art { grid-area: art; display: grid; gap: 0.5rem; justify-items: center; }
+  .ctx-art .hero { position: relative; width: 96px; height: calc(96px * 88 / 63); border-radius: 6px; overflow: visible; --ring-w: 1px; cursor: pointer;
+    box-shadow: 0 12px 28px -12px color-mix(in srgb, var(--accent) 80%, #000), 0 0 30px -8px color-mix(in srgb, var(--accent) 55%, transparent); }
+  .ctx-art .hero img { border-radius: 6px; }
+  .ctx-art .hero .card-widget { display: none; }
+  .ctx-art .hero .card-widget.info { display: block; width: 24px; height: 24px; font-size: 0.68rem; top: -10px; right: -8px; opacity: 1; transform: none; pointer-events: auto; }
+  @media (min-width: 720px) {
+    .ctx-art .hero { width: 210px; height: calc(210px * 88 / 63); border-radius: 10px; }
+    .ctx-art .hero img { border-radius: 10px; }
+  }
+  .ctx-head { grid-area: head; min-width: 0; display: grid; gap: 0.15rem; align-content: start; }
+  .ctx-head .eyebrow { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+  .ctx-head .eyebrow .link { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.68rem; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; padding: 0.3rem 0; min-height: 0; }
+  .ctx-head h2 { margin: 0.1rem 0 0; font-size: 1.2rem; line-height: 1.15; text-transform: none; letter-spacing: -0.015em; color: var(--text-primary); font-family: var(--font-display); font-weight: 700; }
+  .ctx-head .sub { font-size: 0.8rem; color: var(--text-muted); }
+  .ctx-head .sub span { color: var(--text-primary); }
+  /* the counter: a small box that counts up as cards are reviewed */
+  .counter { display: inline-flex; align-items: baseline; justify-content: center; justify-self: start; margin-top: 0.4rem; white-space: nowrap; min-width: 3.4rem; min-height: 30px; padding: 0 0.6rem; border-radius: 0.5rem;
+    border: 1px solid color-mix(in srgb, var(--accent-soft) 45%, transparent); background: color-mix(in srgb, var(--accent) 18%, var(--surface-panel)); font-size: 0.82rem; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent-soft); }
+  .counter small { font-weight: 500; color: var(--text-muted); margin-left: 0.3rem; font-size: 0.68rem; }
+  .ctx-form { grid-area: form; }
+  .ctx-nav { grid-area: nav; }
+  .ctx-form { display: grid; gap: 0.6rem; }
+  .ctx-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+  .ctx-form label, .ctx-form .lbl { display: grid; gap: 0.28rem; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  .ctx-form label[hidden] { display: none; }
+  .ctx-form .t { display: flex; align-items: baseline; gap: 0.4rem; flex-wrap: wrap; }
+  .ctx-form .t small { text-transform: none; letter-spacing: 0; font-size: 0.7rem; }
+  .ctx-form .field { min-height: 42px; font-size: 0.92rem; }
+  .ctx-form input.field { font-variant-numeric: tabular-nums; }
+  /* targets: one picker, chosen targets sit above it as pills with the card's thumbnail */
+  .targets { display: grid; gap: 0.35rem; }
+  .target-list { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .target-list:empty { display: none; }
+  .pill { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 32px; padding: 0 0.25rem 0 0.6rem; border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--accent-soft) 55%, transparent); background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel)); color: var(--text-primary); font-size: 0.8rem; }
+  .pill .thumb { width: 16px; height: 22px; border-radius: 2px; }
+  .pill button { width: 26px; height: 26px; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); cursor: pointer; font-size: 0.8rem; display: grid; place-items: center; }
+  .pill button:hover { color: var(--text-primary); background: color-mix(in srgb, var(--accent) 30%, transparent); }
+  .targets input.field[hidden] { display: none; }
+  .ctx-form textarea.field { min-height: 42px; max-height: 96px; padding: 0.55rem 0.75rem; resize: none; overflow-y: auto; }
+  /* the card sheet moves on the same way: its foot is the bar */
+  .ctx-nav.plate-next { margin-top: 0.2rem; }
+
+  /* the review: every card and what was said about it, scrollable so it always fits */
+  .review { display: grid; gap: 0.35rem; max-height: 34dvh; overflow-y: auto; padding-right: 2px; }
+  .review[data-collapsed="true"] { display: none; }
+  .review-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .review-head h2 { margin: 0; }
+  .review-head .link { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.72rem; cursor: pointer; min-height: 32px; padding: 0 0.3rem; }
+  .review-sum { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+  .review-sum[hidden] { display: none; }
+  .review .row { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 0.6rem; padding: 0.35rem 0.45rem; border-radius: 0.6rem; border: 1px solid var(--surface-edge); font-size: 0.84rem; background: color-mix(in srgb, var(--surface-ground) 35%, transparent); }
+  .review .thumb { width: 30px; height: 42px; border-radius: 3px; }
+  .review .nm { font-weight: 600; }
+  .review .what { display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 0.1rem; }
+  .review .zone { color: var(--accent-soft); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .review .edit { border: 0; background: transparent; color: var(--text-muted); cursor: pointer; min-width: 36px; min-height: 36px; border-radius: 0.5rem; font-size: 0.9rem; }
+  .review .edit:hover { color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+  .zone-chips { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .zone-chips span { padding: 0.22rem 0.65rem; border-radius: 999px; border: 1px solid var(--surface-edge); font-size: 0.76rem; color: var(--text-primary); background: var(--surface-panel); }
+  .zone-chips span b { color: var(--accent-soft); }
+  .zone-chips span.none { color: var(--text-muted); border-style: dashed; }
+  /* ---- round 8: the card's actions open beside the card on desktop — a small
+     pop-over just under (or over) the tapped card, pointing at it — instead of
+     the corner drawer ("shoved into the top right"). A phone keeps the bottom
+     sheet. Details open in the same pop-over. ---- */
+  @media (min-width: 768px) {
+    #act-panel.drawer-panel { top: var(--ay, 20vh); left: var(--ax, 50%); right: auto; bottom: auto; width: 25rem; max-height: min(34rem, calc(100dvh - 2rem));
+      overflow: visible; opacity: 0; pointer-events: none; transform: translateY(var(--from, 8px)) scale(0.97); transition: opacity 160ms ease, transform 200ms cubic-bezier(0.2, 0.8, 0.2, 1); }
+    #act-panel.drawer-panel[data-open="true"] { opacity: 1; pointer-events: auto; transform: none; }
+    /* the ⓘ card-detail box (shared, flow.js) is centred by shell.css now — this pop-over is the one exception, anchored to its card */
+    #act-panel .act-scroll { max-height: min(34rem, calc(100dvh - 2rem)); overflow-y: auto; border-radius: inherit; }
+    #act-panel::after { content: ""; position: absolute; left: var(--arrow, 50%); width: 14px; height: 14px; margin-left: -7px; transform: rotate(45deg);
+      background: color-mix(in srgb, var(--surface-panel) 92%, var(--accent)); border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent); }
+    #act-panel[data-side="below"]::after { top: -8px; border-right: 0; border-bottom: 0; }
+    #act-panel[data-side="above"]::after { bottom: -8px; border-left: 0; border-top: 0; }
+    #act-panel[data-side="right"]::after, #act-panel[data-side="left"]::after { top: var(--arrow-y, 50%); margin: -7px 0 0; }
+    #act-panel[data-side="right"]::after { left: -8px; border-top: 0; border-right: 0; }
+    #act-panel[data-side="left"]::after { left: auto; right: -8px; border-bottom: 0; border-left: 0; }
+    #act-backdrop { background: rgba(0, 0, 0, 0.32); backdrop-filter: none; }
+  }
+  .act-body { padding: 2.6rem 1rem 1rem; }
+  .act-detail { display: grid; gap: 0.6rem; padding: 0 0 1rem; }
+  .act-detail .art { position: relative; height: 150px; overflow: hidden; border-radius: 1.1rem 1.1rem 0 0; }
+  .act-detail .art img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .act-detail .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, color-mix(in srgb, var(--surface-panel) 96%, transparent)); }
+  .act-detail .title { position: absolute; left: 1rem; right: 1rem; bottom: 0.6rem; z-index: 1; display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+  .act-detail .title h2 { margin: 0; font-size: 1.15rem; }
+  .act-detail .title .cost { color: var(--text-muted); font-size: 0.85rem; }
+  .act-detail .inner { display: grid; gap: 0.5rem; padding: 0 1rem; }
+  .act-detail .typeline { font-size: 0.82rem; color: var(--text-muted); display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap; }
+  .act-detail .typeline b { color: var(--text-primary); font-weight: 600; }
+  .act-detail .oracle { margin: 0; font-size: 0.88rem; line-height: 1.5; white-space: pre-line; }
+  .act-detail .facts { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .act-detail .fact { padding: 0.3rem 0.55rem; border-radius: 0.5rem; border: 1px solid var(--surface-edge); font-size: 0.78rem; }
+  .act-detail .fact small { color: var(--text-muted); margin-right: 0.3rem; }
+  .act-back { justify-self: start; background: transparent; border: 0; color: var(--accent-soft); font-size: 0.8rem; cursor: pointer; min-height: 36px; padding: 0 1rem; }
+
+  /* ---- round 8: "More details" — the rare settings (Copies today; more will
+     join) live off the main form. One slim row at the form's foot names what is
+     set there; a tap slides a sheet up over the card sheet, and Done slides it
+     away. Nothing else on the form grows a button. ---- */
+  #wizard-plate { overflow: hidden; }
+  .more-row { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; width: 100%; min-height: 44px; padding: 0.35rem 0.7rem;
+    border-radius: 0.7rem; border: 1px dashed color-mix(in srgb, var(--accent-soft) 35%, transparent); background: transparent; color: var(--text-muted); font-size: 0.84rem; cursor: pointer; text-align: left; }
+  .more-row:hover, .more-row:focus-visible { border-style: solid; border-color: var(--accent-soft); color: var(--text-primary); }
+  .more-row .set { display: inline-flex; gap: 0.3rem; flex-wrap: wrap; }
+  .more-row .set b { padding: 0.08rem 0.5rem; border-radius: 999px; font-size: 0.74rem; font-weight: 600; color: var(--text-primary); background: color-mix(in srgb, var(--accent) 26%, var(--surface-panel)); border: 1px solid color-mix(in srgb, var(--accent-soft) 45%, transparent); }
+  .more-row .up { color: var(--accent-soft); }
+  .more-row[hidden] { display: none; }
+  /* round 11: the note row and More details share one line; either alone takes the whole line */
+  .ctx-tail { display: flex; gap: 0.5rem; }
+  .ctx-tail .more-row { flex: 1 1 0; min-width: 0; }
+  .ctx-tail .more-row > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-row .glyph { color: var(--accent-soft); }
+  .note-row small { color: var(--text-muted); font-size: 0.72rem; margin-left: 0.2rem; }
+  .note-row[aria-expanded="true"] { border-style: solid; color: var(--text-primary); }
+  .more-sheet { position: absolute; inset: 0; z-index: 8; display: grid; grid-template-rows: auto 1fr auto; border-radius: inherit;
+    background: radial-gradient(90% 50% at 50% 0%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 70%), color-mix(in srgb, var(--surface-panel) 97%, #000);
+    border-top: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent);
+    transform: translateY(102%); transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1); visibility: hidden; }
+  .more-sheet[data-open="true"] { transform: none; visibility: visible; }
+  .more-sheet .ms-head { display: grid; grid-template-columns: 34px 1fr auto; gap: 0.6rem; align-items: center; padding: 0.9rem 0.9rem 0.6rem; }
+  .more-sheet .ms-head .thumb { width: 34px; height: 47px; border-radius: 3px; }
+  .more-sheet .ms-head small { display: block; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  .more-sheet .ms-head b { font-family: var(--font-display); font-size: 1.05rem; }
+  .more-sheet .ms-body { display: grid; align-content: start; gap: 0.9rem; padding: 0.4rem 0.9rem 1rem; overflow: visible; }
+  .more-sheet .ms-field { display: grid; grid-template-columns: 1fr auto; gap: 0.2rem 1rem; align-items: center; padding: 0.7rem 0.8rem; border-radius: 0.8rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
+  .more-sheet .ms-field .t { font-weight: 600; font-size: 0.92rem; }
+  .more-sheet .ms-field .h { grid-column: 1; font-size: 0.76rem; color: var(--text-muted); }
+  .more-sheet .ms-field .num-pick { grid-column: 2; grid-row: 1 / span 2; }
+  .more-sheet .plate-next { margin: 0; width: 100%; }
+  /* a compact number picker: the value on a button; its list holds 0–99 but
+     shows five rows at a time and scrolls, the current value centred */
+  .num-pick { position: relative; }
+  .num-pick > button { display: inline-flex; align-items: center; gap: 0.6rem; min-width: 6.2rem; min-height: 44px; padding: 0 0.8rem; justify-content: space-between;
+    border-radius: 0.65rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 80%, transparent); color: var(--text-primary); font-weight: 700; font-size: 1rem; font-variant-numeric: tabular-nums; cursor: pointer; }
+  .num-pick > button .chev { color: var(--accent-soft); font-size: 0.7rem; }
+  .num-pick[data-open="true"] > button { border-color: var(--accent-soft); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent); }
+  .num-pick ul { position: absolute; right: 0; top: calc(100% + 6px); z-index: 3; width: 100%; min-width: 6.2rem; max-height: calc(5 * 2.25rem); overflow-y: auto; margin: 0; padding: 0.25rem; list-style: none;
+    border-radius: 0.7rem; border: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent); background: color-mix(in srgb, var(--surface-panel) 96%, #000); box-shadow: 0 18px 40px -16px #000; display: none; scroll-snap-type: y proximity; }
+  .num-pick[data-open="true"] ul { display: block; }
+  .num-pick li { height: 2.1rem; display: grid; place-items: center; border-radius: 0.45rem; cursor: pointer; font-variant-numeric: tabular-nums; scroll-snap-align: center; color: var(--text-muted); }
+  .num-pick li:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); color: var(--text-primary); }
+  .num-pick li[aria-selected="true"] { background: color-mix(in srgb, var(--accent) 34%, var(--surface-panel)); color: var(--text-primary); font-weight: 700; }
+
+  /* ---- round 8: the zone tags at the foot of the review pick out that
+     zone's cards (owner: "highlighting the ones that are in that zone") — the
+     rows in it light up in the colour and the others dim; nothing is hidden.
+     Tap the tag again, or All, to clear. The list scrolls once it is taller
+     than a third of the screen, with a fade at the edge that says there is
+     more. ---- */
+  .review-filters { display: flex; flex-wrap: wrap; gap: 0.35rem; margin: 0.6rem 0 0; }
+  .review-filters[hidden] { display: none; }
+  .review-filters button { min-height: 32px; padding: 0.15rem 0.7rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: var(--surface-panel); color: var(--text-primary); font-size: 0.76rem; cursor: pointer; }
+  .review-filters button b { color: var(--accent-soft); margin-left: 0.2rem; }
+  .review-filters button[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 30%, var(--surface-panel)); box-shadow: 0 0 14px -4px color-mix(in srgb, var(--accent) 80%, transparent); }
+  .review-filters button:disabled { color: var(--text-muted); border-style: dashed; cursor: default; }
+  .review[data-more-below="true"] { -webkit-mask-image: linear-gradient(180deg, #000 82%, transparent); mask-image: linear-gradient(180deg, #000 82%, transparent); }
+  .review .row { transition: opacity 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease; }
+  .review[data-zone] .row { opacity: 0.38; }
+  .review[data-zone] .row[data-hit="true"] { opacity: 1; border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 16%, var(--surface-panel));
+    box-shadow: 0 0 18px -6px color-mix(in srgb, var(--accent) 85%, transparent), inset 0 0 14px -10px var(--accent-soft); }
+  .review-count-line { font-size: 0.72rem; color: var(--text-muted); margin: 0.35rem 0 0; }
+  .review-count-line[hidden] { display: none; }
+  .composer .q-lbl { margin: -0.15rem 0 -0.35rem 0.2rem; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: flex; gap: 0.5rem; flex-wrap: wrap; }
+  .composer .q-lbl small { text-transform: none; letter-spacing: 0; font-size: 0.7rem; }
+</style>
+</head>
+<body data-tray-open="false">
+  <header class="app-header">
+    <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <a class="brand-mark" href="../index.html" aria-label="TheJudge home"><span class="orb" aria-hidden="true"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></a>
+    <div class="header-side"></div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="page-content">
+    <section class="idq" id="flow">
+      <div class="flow-head">
+        <div class="lead"><button class="icon-round" id="step-back" aria-label="Back" title="Back">‹</button><h1>In-depth details</h1></div>
+      </div>
+
+      <p class="carry-note" id="carry-note" hidden></p>
+      <nav class="rail" aria-label="In-Depth Question steps">
+        <span class="fill" id="rail-fill"></span>
+        <button data-step="game" aria-current="step"><span class="node">1</span>Game</button>
+        <button data-step="zones"><span class="node">2</span>Zones</button>
+        <button data-step="cards"><span class="node">3</span>Cards</button>
+        <button data-step="context"><span class="node">4</span>Context</button>
+      </nav>
+      <!-- round 12: Add card and Scan sit under the track, above the zones they add
+           into — not up beside the title, where reaching them meant reaching over the
+           flow (owner: "it feels awkward to push them when you need to add a card") -->
+      <div class="attach" id="attach" hidden>
+        <button class="icon-chip" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
+        <a class="icon-chip" id="scan-btn" href="card-scan.html?back=in-depth-question.html&into=Stack"><span class="glyph">▣</span> Scan</a>
+      </div>
+
+      <!-- 1 · Game context: players and the turn, one plate (round 6) -->
+      <section class="step-panel active" id="step-game" aria-label="Game context">
+        <div class="plate">
+          <h2>Game context</h2>
+          <p class="lede">Who is playing, and where the turn is. Tap the arrow to name the players and set life — 2 players start at 20, 3+ at 40.</p>
+          <div class="players-row">
+            <button class="btn expander" id="roster-toggle" aria-expanded="false"><span class="chev">▶</span><strong id="player-count">2 players</strong></button>
+            <button class="btn stepper" id="player-minus" aria-label="Remove last player">−</button>
+            <button class="btn stepper add" id="player-plus" aria-label="Add player">+</button>
+          </div>
+          <div class="roster" id="roster" data-open="false" data-more="false"></div>
+          <div class="roster-more"><button class="link" id="roster-more" type="button" aria-expanded="false">More details for all players ▾</button></div>
+          <div class="paired">
+            <label>Turn phase
+              <select class="field" id="turn-phase">
+                <option>Untap</option><option>Upkeep</option><option>Draw</option>
+                <option selected>Pre Combat Main Phase</option><option>Combat</option>
+                <option>Post Combat Main Phase</option><option>End Step</option><option>Cleanup</option>
+              </select>
+            </label>
+            <label>Active player
+              <select class="field" id="active-player"></select>
+            </label>
+          </div>
+          <button class="plate-next" type="button" data-next="zones"><span>Continue<small>next: which zones are in play</small></span><span class="chev">›</span></button>
+        </div>
+      </section>
+
+      <!-- 2 · Zone confirmation -->
+      <section class="step-panel" id="step-zones" aria-label="Zone confirmation">
+        <div class="plate">
+          <h2>Zones in play</h2>
+          <p class="lede">Select every zone your question touches.</p>
+          <div class="zone-grid" id="zone-grid"></div>
+          <button class="plate-next" type="button" data-next="cards"><span>Continue<small>next: the cards in each zone</small></span><span class="chev">›</span></button>
+        </div>
+      </section>
+
+      <!-- 3 · Add cards to zones -->
+      <section class="step-panel" id="step-cards" aria-label="Add cards to zones" data-placing="false">
+        <!-- round 7: cards from the question are placed one by one, the card the hero -->
+        <div class="plate place-plate" id="place-plate" hidden>
+          <div class="ctx-art"><div class="card hero" id="place-hero"></div></div>
+          <div class="ctx-head">
+            <div class="eyebrow"><span>From your question</span><button class="link danger" id="place-drop" type="button">Leave this card out</button></div>
+            <h2 id="place-name"></h2>
+            <div class="sub" id="place-sub"></div>
+            <span class="counter" aria-live="polite"><span id="place-n">1</span>&nbsp;/&nbsp;<span id="place-total">5</span><small>to place</small></span>
+          </div>
+          <div class="ctx-form">
+            <span class="lbl"><span class="t">Which zone is it in?<small>tap one — the next card follows</small></span></span>
+            <div class="place-zones" id="place-zones"></div>
+            <button class="link place-more" id="place-more" type="button">Other zones ▾</button>
+          </div>
+        </div>
+        <div class="zone-tabs" id="zone-tabs"></div>
+        <!-- round 11: the reorder reminder sits between the zone tabs and the shelf, lit,
+             where it is read before the cards — under the shelf it went unread -->
+        <p class="shelf-hint" id="shelf-hint" hidden></p>
+        <div class="search-pop" id="search-pop">
+          <div class="search-row">
+            <span class="glyph">⌕</span>
+            <input class="field" id="card-search" placeholder="Search for a card to add" autocomplete="off">
+          </div>
+          <div class="search-results" id="search-results"></div>
+        </div>
+        <div class="stage" id="shelf-stage">
+            <div class="shelf" id="shelf" data-stack="false"></div>
+          <button class="plate-next" type="button" data-next="context"><span>Continue<small>next: a few details per card</small></span><span class="chev">›</span></button>
+        </div>
+      </section>
+
+      <!-- 4 · Context, card by card -->
+      <section class="step-panel" id="step-context" aria-label="Card context">
+        <div class="plate" id="wizard-plate">
+          <div class="ctx-art"><div class="card hero" id="ctx-hero"></div></div>
+          <div class="ctx-head">
+            <div class="eyebrow"><span id="wiz-zone">Stack</span><button class="link" id="skip-review" type="button">Skip to review</button></div>
+            <h2 id="ctx-name">Lightning Bolt</h2>
+            <div class="sub" id="ctx-sub"></div>
+            <span class="counter" aria-live="polite"><span id="wiz-n">1</span>&nbsp;/&nbsp;<span id="wiz-total">5</span><small>cards</small></span>
+          </div>
+          <div class="ctx-form">
+            <div class="ctx-grid">
+              <label id="row-owner"><span class="t">Owner</span><select class="field" id="sel-owner"></select></label>
+              <label id="row-caster"><span class="t">Cast by</span><select class="field" id="sel-caster"></select></label>
+              <label id="row-mana"><span class="t">Mana spent<small id="mana-note"></small></span><input class="field" id="mana-in" inputmode="numeric" placeholder="e.g. 3"></label>
+            </div>
+            <div class="targets" id="row-targets">
+              <span class="lbl"><span class="t">Targets<small>leave blank if it has none</small></span></span>
+              <div class="target-list" id="target-list"></div>
+              <select class="field" id="sel-target"></select>
+              <input class="field" id="target-other" placeholder="Describe the target, then press Enter" hidden>
+            </div>
+            <!-- round 11 ("start with the optional note collapsed and easily accessible"):
+                 the note is one tap away on a slim row beside More details; the box opens
+                 only when wanted (or when the card already has a note), so a card with
+                 many targets no longer pushes the sheet down the page -->
+            <label id="row-notes" hidden><span class="t">Note<small>optional</small></span><textarea class="field" id="ctx-notes" rows="1" placeholder="Anything else about this card"></textarea></label>
+            <div class="ctx-tail">
+              <button class="more-row note-row" id="note-toggle" type="button" aria-expanded="false" title="Optional — anything else about this card"><span><span class="glyph">＋</span> Add a note</span></button>
+              <!-- round 8: the rare settings (Copies — storm, fork) live behind one slim row -->
+              <button class="more-row" id="more-row" type="button" aria-haspopup="dialog"><span>More details <span class="set" id="more-set"></span></span><span class="up">▴</span></button>
+            </div>
+          </div>
+          <button class="plate-next ctx-nav" type="button" id="wiz-next"><span>Next card</span><span class="chev">›</span></button>
+          <div class="more-sheet" id="more-sheet" data-open="false" role="dialog" aria-label="More details">
+            <div class="ms-head"><span id="ms-thumb"></span><div><small>More details</small><b id="ms-name"></b></div><button class="icon-round" id="ms-close" type="button" aria-label="Close">✕</button></div>
+            <div class="ms-body">
+              <div class="ms-field">
+                <span class="t">Copies</span>
+                <span class="h">Storm, fork, or any effect that copies this spell — how many copies are on the stack with it.</span>
+                <div class="num-pick" id="copies-pick" data-open="false"><button type="button" aria-haspopup="listbox" aria-label="Copies"><span id="copies-val">0</span><span class="chev">▼</span></button><ul role="listbox" id="copies-list"></ul></div>
+              </div>
+            </div>
+            <button class="plate-next" type="button" id="ms-done"><span>Done<small>back to the card</small></span><span class="chev">▾</span></button>
+          </div>
+        </div>
+
+        <div class="plate" id="review-plate" hidden>
+          <div class="review-head"><h2>Context reviewed · <span id="review-count"></span></h2><button class="link" id="review-toggle" type="button" aria-expanded="true">Collapse ▴</button></div>
+          <p class="review-sum" id="review-sum" hidden></p>
+          <div class="review" id="review" data-collapsed="false"></div>
+          <p class="review-count-line" id="review-more" hidden></p>
+          <div class="review-filters" id="review-filters" role="group" aria-label="Pick out a zone's cards"></div>
+        </div>
+
+        <div class="composer" id="idq-composer" hidden>
+          <span class="lbl q-lbl">Your question <small>optional — blank asks “How does this resolve?”</small></span>
+          <div class="q-box">
+            <textarea id="question-field" rows="1" placeholder="How does this resolve?" data-placeholders="How does this resolve?|Your question…|Ask…" maxlength="300" aria-label="Your question"></textarea>
+            <span class="q-count" id="char-count">0 / 300</span>
+            <span class="send-wrap"><svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><path class="track" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/><path class="fill" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/></svg><span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your question" title="Speak your question"></button><button class="send" id="send" aria-label="Send request" title="Send request">➤</button></span></span>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <!-- the ruling: the chat takes the whole panel; the rail is gone -->
+    <section class="chat" id="chat" hidden aria-label="Conversation">
+      <!-- round 9: ✎ Edit goes back into the details with everything intact; ↺ Start over wipes to a clean Ask a Question -->
+      <div class="chat-head"><h1>Ask a Question</h1><div class="tools"><button class="icon-chip" id="view-context"><span class="glyph">◈</span> View context</button><button class="icon-chip" id="edit-request" title="Change the cards or their details, then ask again"><span class="glyph">✎</span> Edit</button><button class="icon-round" id="start-over" aria-label="Start over — clears everything" title="Start over — clears everything">↺</button></div></div>
+      <div class="chat-cards" id="chat-cards"></div>
+      <div class="thread" id="thread"></div>
+      <div class="followup">
+        <textarea id="followup-field" rows="1" placeholder="Ask a follow-up…" data-placeholders="Ask a follow-up…|Follow up…" maxlength="300" aria-label="Follow-up question"></textarea>
+        <span class="fu-count" id="fu-count">0/300</span>
+        <span class="send-wrap"><svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><path class="track" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/><path class="fill" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/></svg><span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your follow-up" title="Speak your follow-up"></button><button class="send" aria-label="Send">➤</button></span></span>
+      </div>
+    </section>
+
+    <div class="demo-bar" aria-label="Mockup state (demo only)">
+      <span class="tag">demo</span><span>jump to:</span>
+      <button data-jump="game">1 Game</button><button data-jump="zones">2 Zones</button><button data-jump="cards">3 Cards</button>
+      <button data-jump="place">3 Placing carried cards</button><button data-jump="context">4 Context</button><button data-jump="review">4 Reviewed</button><button data-jump="review10">4 Reviewed · 10 cards</button><button data-jump="more">4 More details</button><button data-jump="chat">Ruling</button>
+    </div>
+    <p class="foot-note">
+      Before:
+      <a href="../before/in-depth-game-context-390x844.png">game-context 390</a> ·
+      <a href="../before/in-depth-game-context-1440x900.png">1440</a> ·
+      <a href="../before/in-depth-zone-collection-390x844.png">zone-collection 390</a> ·
+      <a href="../before/in-depth-zone-collection-1440x900.png">1440</a>.
+      Card images are the app's own corpus art via Scryfall (unchanged from today). The dashed strip is mockup scaffolding, not app UI.
+    </p>
+  </main>
+
+  <!-- Card actions (round 7): a tap on a shelf card — move it to another zone, reorder it on the Stack, details, remove -->
+  <div class="sheet-backdrop" id="act-backdrop" data-open="false"></div>
+  <aside class="drawer-panel detail-panel" id="act-panel" data-open="false" aria-label="Card actions">
+    <div class="act-scroll">
+    <button class="icon-btn overlay-close" id="act-close" aria-label="Close">✕</button>
+    <div class="act-detail" id="act-detail" hidden></div>
+    <!-- round 11 ("a more elegant way to display all of these buttons instead of a long
+         list of blocks"): the zones are a wrap of small pills with the current one lit;
+         the order controls are one segmented pill; Details and Remove are rows in the
+         Menu tray's manner — a glyph, the words, a chevron — under a hairline -->
+    <div class="body act-body" id="act-body">
+      <div class="act-head" id="act-head"></div>
+      <span class="lbl">Move to</span>
+      <div class="act-zones" id="act-zones"></div>
+      <div id="act-stack" hidden style="display:grid;gap:0.4rem">
+        <span class="lbl" id="act-order-lbl">Order on the stack</span>
+        <div class="seg" role="group" aria-label="Reorder"><button id="act-down" type="button"><span class="glyph">↓</span><span class="w">Down</span></button><button id="act-up" type="button"><span class="glyph">↑</span><span class="w">Up</span></button><button id="act-top" type="button"><span class="glyph">⤒</span><span class="w">To top</span></button></div>
+      </div>
+      <div class="act-menu">
+        <button id="act-details" type="button"><span class="glyph">ⓘ</span><span>Card details</span><span class="chev">›</span></button>
+        <button id="act-remove" type="button" class="danger"><span class="glyph">✕</span><span id="act-remove-lbl">Remove from the Stack</span></button>
+      </div>
+    </div>
+    </div>
+  </aside>
+
+  <!-- Frozen game context: what "View context" opens from the chat -->
+  <div class="sheet-backdrop" id="ctx-backdrop" data-open="false"></div>
+  <aside class="drawer-panel detail-panel" id="ctx-panel" data-open="false" aria-label="Frozen game context">
+    <button class="icon-btn overlay-close" id="ctx-close" aria-label="Close">✕</button>
+    <div class="body" style="padding-top:2.8rem">
+      <h2 style="margin:0">Game context</h2>
+      <div class="facts" id="ctx-facts"></div>
+      <div class="review" id="ctx-cards" style="max-height:none"></div>
+    </div>
+  </aside>
+
+  <script src="motifs.js"></script>
+  <script src="ambience.js"></script>
+  <script src="flow.js"></script>
+  <script>
+    const { img, art, library, byName, cardMarkup, openDetail, bindComposer, autoGrow, applyRing, thumb, pips, chatMarkup, bindRefs, mountMenu } = window.FLOW;
+    mountMenu('Ask a Question');
+    const $ = (s) => document.getElementById(s);
+
+    // ---- demo state ----
+    const ZONES = ['Stack', 'Battlefield', 'Hand', 'Graveyard', 'Exile', 'Library', 'Command Zone'];
+    let selectedZones = new Set(['Stack', 'Battlefield', 'Hand']);
+    // round 12 (owner: "cards are pre-added when you get to the step for adding cards,
+    // even if flow starts with no cards"): a walk from step 1 starts with empty zones,
+    // as the app does — cards arrive only by search, scan, or carried from the
+    // question. The demo's six placed cards are seeded only by the demo strip's jumps.
+    const zoneCards = { 'Stack': [], 'Battlefield': [], 'Hand': [] };
+    const DEMO_ZONES = {
+      'Stack': ['Lightning Bolt', 'Counterspell'],
+      'Battlefield': ['Sol Ring', 'Llanowar Elves'],
+      'Hand': ['Swords to Plowshares', 'Lightning Helix']
+    };
+    function seedDemoCards() {
+      if (Object.values(zoneCards).some((l) => l.length)) return;
+      for (const z in DEMO_ZONES) zoneCards[z] = DEMO_ZONES[z].map(byName);
+    }
+    let activeZone = 'Stack';
+    // cards carried over from Quick Question (?carry=Name|Name): they wait in a strip at the Cards step until placed in a zone
+    const carryParam = new URLSearchParams(location.search).get('carry');
+    let carried = carryParam ? carryParam.split('|').map(byName).filter(Boolean) : [];
+    if (carried.length) {
+      selectedZones = new Set(['Stack', 'Battlefield']);
+      for (const z of Object.keys(zoneCards)) zoneCards[z] = [];
+      $('carry-note').hidden = false;
+      $('carry-note').innerHTML = '<b>' + carried.length + ' card' + (carried.length === 1 ? '' : 's') + '</b> came along with your question — set the game up, then step 3 asks for each one\'s zone, one card at a time.';
+    }
+    // players (round 6): up to 8, as today's roster (MAX_PLAYER_ROSTER_SIZE); a name typed
+    // here is the name every later step, the review and the ruling use for that player
+    const MAX_PLAYERS = 8;
+    let players = 2;
+    const startLife = () => (players >= 3 ? 40 : 20);
+    const roster = Array.from({ length: MAX_PLAYERS }, () => ({ name: '', life: null, poison: '', energy: '', experience: '', cmd: {}, counters: [] }));
+    const playerNames = () => roster.slice(0, players).map((p, i) => p.name.trim() || 'Player ' + (i + 1));
+    const nameOf = (i) => playerNames()[i] || 'Player ' + (i + 1);
+    const activeIdx = () => Number($('active-player').value) || 0;
+    const STEPS = ['game', 'zones', 'cards', 'context'];
+    const opt = (v, label, sel) => '<option value="' + v + '"' + (sel ? ' selected' : '') + '>' + label + '</option>';
+    // per-card context: keyed by card name (demo); the Bolt arrives targeting the Elves
+    const ctx = {};
+    // targets: [{k:'none'} | {k:'board'} | {k:'player', p} | {k:'all'} | {k:'card', name} | {k:'other', text}]
+    // owner / caster / player targets are stored as player indexes, so a renamed player renames everywhere
+    const ctxOf = (c, zone) => ctx[c.name] || (ctx[c.name] = { owner: activeIdx(), caster: 0, mana: c.mv, copies: 0, targets: [], notes: '', zone });
+    const hasOwner = (zone) => zone !== 'Stack';           // today's hasOwnerControl(): every zone but the Stack
+    const hasMana = (zone) => zone === 'Stack' || zone === 'Battlefield';
+
+    // ---- steps + rail ----
+    function goTo(step) {
+      // the guardrail (round 7): nothing past the Cards step until every carried card has a zone
+      if (step === 'context' && carried.length) {
+        step = 'cards';
+        setTimeout(() => { const pl = $('place-plate'); pl.classList.remove('nudge'); void pl.offsetWidth; pl.classList.add('nudge'); }, 50);
+      }
+      const i = STEPS.indexOf(step);
+      $('chat').hidden = true; $('flow').hidden = false;
+      STEPS.forEach((s) => $('step-' + s).classList.toggle('active', s === step));
+      document.querySelectorAll('.rail button').forEach((b, j) => {
+        if (j === i) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+        b.dataset.done = j < i ? 'true' : 'false';
+      });
+      $('rail-fill').style.width = (i / 3 * 75) + '%';
+      $('attach').hidden = step !== 'cards' || carried.length > 0;
+      // on step 1 the ‹ goes back to the question itself (one flow, round 6)
+      $('step-back').title = i === 0 ? 'Back to your question' : 'Back';
+      if (step === 'cards') renderShelf();
+      if (step === 'context') { wiz = 0; renderWizard(); }
+      window.scrollTo({ top: 0 });
+    }
+    document.querySelectorAll('.rail button').forEach((b) => b.addEventListener('click', () => goTo(b.dataset.step)));
+    // the ‹ arrow: one step back — inside the context step it walks back a card first
+    $('step-back').addEventListener('click', () => {
+      const cur = STEPS.find((s) => $('step-' + s).classList.contains('active'));
+      if (cur === 'context') { if (wiz > 0) { wiz -= 1; renderWizard(); } else goTo('cards'); }
+      else if (cur === 'game') location.href = 'quick-question.html';
+      else goTo(STEPS[Math.max(0, STEPS.indexOf(cur) - 1)]);
+    });
+    document.querySelectorAll('[data-next]').forEach((b) => b.addEventListener('click', () => goTo(b.dataset.next)));
+
+    // ---- 1 · players: name + life per player, and behind "More details" the
+    // counters today's form carries (poison · energy · experience, commander
+    // damage from each other player, named counters) ----
+    const scalarMax = { poison: 11, energy: 30, experience: 30 };
+    function renderActive() {
+      const cur = activeIdx();
+      $('active-player').innerHTML = playerNames().map((p, i) => opt(i, p, i === cur)).join('');
+    }
+    // a renamed player is renamed in every other player's "Commander damage from …" row at once
+    function renderCmdNames() { $('roster').querySelectorAll('.cmd-row').forEach((row) => { row.querySelector('span').textContent = 'From ' + nameOf(Number(row.querySelector('input').dataset.from)); }); }
+    function renderRoster() {
+      $('player-count').textContent = players + ' players';
+      $('player-plus').disabled = players >= MAX_PLAYERS;
+      $('player-minus').disabled = players <= 2;
+      $('roster').innerHTML = roster.slice(0, players).map((r, i) => {
+        const others = playerNames().map((n, j) => [n, j]).filter(([, j]) => j !== i);
+        return '<div class="player-card" data-i="' + i + '">' +
+          '<div class="player"><label>Player ' + (i + 1) + ' name<input class="field name" data-f="name" placeholder="Player ' + (i + 1) + '" value="' + r.name.replace(/"/g, '&quot;') + '"></label>' +
+          '<label>Life<input class="field life" data-f="life" inputmode="numeric" value="' + (r.life ?? startLife()) + '"></label></div>' +
+          '<div class="extras">' +
+            '<div class="counters">' + ['poison', 'energy', 'experience'].map((f) => '<label>' + f + '<select class="field" data-f="' + f + '">' + opt('', 'Unset', r[f] === '') + Array.from({ length: scalarMax[f] }, (_, n) => opt(n, n, String(r[f]) === String(n))).join('') + '</select></label>').join('') + '</div>' +
+            '<span class="lbl">Commander damage</span>' + others.map(([n, j]) => '<div class="cmd-row"><span>From ' + n + '</span><input class="field amt" data-f="cmd" data-from="' + j + '" inputmode="numeric" placeholder="0" value="' + (r.cmd[j] || '') + '"></div>').join('') +
+            '<span class="lbl">Named counters</span>' + r.counters.map((c, k) => '<div class="named-row"><input class="field" data-f="cname" data-k="' + k + '" placeholder="Counter name" value="' + c.name.replace(/"/g, '&quot;') + '"><input class="field amt" data-f="camt" data-k="' + k + '" inputmode="numeric" placeholder="0" value="' + c.amount + '"></div>').join('') +
+            '<div><button class="link" type="button" data-f="addc">＋ Add a named counter</button></div>' +
+          '</div></div>';
+      }).join('');
+      $('roster').querySelectorAll('.player-card').forEach((card) => {
+        const r = roster[Number(card.dataset.i)];
+        card.querySelectorAll('[data-f]').forEach((el) => {
+          const f = el.dataset.f;
+          if (f === 'addc') { el.addEventListener('click', () => { r.counters.push({ name: '', amount: '' }); renderRoster(); }); return; }
+          el.addEventListener('input', () => {
+            if (f === 'name') { r.name = el.value; renderActive(); renderCmdNames(); }
+            else if (f === 'life') r.life = el.value;
+            else if (f === 'cmd') r.cmd[el.dataset.from] = el.value;
+            else if (f === 'cname') r.counters[Number(el.dataset.k)].name = el.value;
+            else if (f === 'camt') r.counters[Number(el.dataset.k)].amount = el.value;
+            else r[f] = el.value;
+          });
+        });
+      });
+      renderActive();
+    }
+    $('roster-toggle').addEventListener('click', () => {
+      const open = $('roster').dataset.open !== 'true';
+      $('roster').dataset.open = open; $('roster-toggle').setAttribute('aria-expanded', open);
+    });
+    $('roster-more').addEventListener('click', () => {
+      const more = $('roster').dataset.more !== 'true';
+      $('roster').dataset.more = more; $('roster-more').setAttribute('aria-expanded', more);
+      $('roster-more').textContent = more ? 'Hide details for all players ▴' : 'More details for all players ▾';
+    });
+    // adding or removing a player re-seats the default life (20 for two, 40 for three or more) on anyone who has not edited theirs
+    $('player-plus').addEventListener('click', () => { if (players >= MAX_PLAYERS) return; players += 1; renderRoster(); });
+    $('player-minus').addEventListener('click', () => { if (players <= 2) return; players -= 1; renderRoster(); });
+    renderRoster();
+
+    // ---- 2 · zones ----
+    $('zone-grid').innerHTML = ZONES.map((z) =>
+      '<label><input type="checkbox" value="' + z + '"' + (selectedZones.has(z) ? ' checked' : '') + '><span class="mark"></span>' + z + '</label>').join('');
+    $('zone-grid').addEventListener('change', (e) => {
+      if (e.target.checked) selectedZones.add(e.target.value); else selectedZones.delete(e.target.value);
+      if (!selectedZones.has(activeZone)) activeZone = [...selectedZones][0] || 'Battlefield';
+    });
+
+    // ---- 3 · cards per zone ----
+    let summonNext = null;
+    function renderShelf() {
+      const tabs = ZONES.filter((z) => selectedZones.has(z));
+      $('zone-tabs').innerHTML = tabs.map((z) =>
+        '<button aria-pressed="' + (z === activeZone) + '" data-zone="' + z + '">' + z + '<b>' + ((zoneCards[z] || []).length || '') + '</b></button>').join('');
+      $('zone-tabs').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { activeZone = b.dataset.zone; closeSearch(); renderShelf(); }));
+      const cards = zoneCards[activeZone] || [];
+      const isStack = activeZone === 'Stack';
+      $('shelf').dataset.stack = isStack;
+      $('scan-btn').href = 'card-scan.html?back=in-depth-question.html&into=' + encodeURIComponent(activeZone);
+      renderCarried();
+      if (!cards.length) {
+        $('shelf').innerHTML = '<div class="empty"><div><strong>' + (isStack ? 'Begin stackening!' : 'Nothing in ' + activeZone + ' yet') + '</strong>Add a card with search or scan.</div></div>';
+      } else {
+        $('shelf').innerHTML = cards.map((c, i) =>
+          '<div class="card' + (summonNext === c ? ' summon' : '') + '" data-front="true" data-i="' + i + '">' + cardMarkup(c) +
+          (isStack ? '<span class="pos" data-top="' + (i === cards.length - 1) + '">' + stackLabel(i, cards.length) + '</span>' : '') + '</div>').join('');
+        $('shelf').querySelectorAll('.card').forEach((el) => {
+          const c = cards[Number(el.dataset.i)];
+          applyRing(el, c);
+          el.querySelector('.remove').addEventListener('click', (e) => { e.stopPropagation(); cards.splice(cards.indexOf(c), 1); renderShelf(); });
+          el.querySelector('.info').addEventListener('click', (e) => { e.stopPropagation(); openActions(c, 'details'); });
+          // a tap opens the card's actions (move, reorder, details, remove) — round 7;
+          // round 8: beside the card on desktop, and every zone reorders by drag
+          el.addEventListener('click', (e) => { if (e.target.closest('.card-widget')) return; if (suppressClick) { suppressClick = false; return; } openActions(c); });
+          bindDrag(el, c, cards);
+        });
+        summonNext = null;
+      }
+      $('shelf-hint').hidden = cards.length < 2;
+      $('shelf-hint').innerHTML = '<span class="glyph" aria-hidden="true">⇄</span><span>' + (isStack
+        ? '<b>Top resolves first</b>, then 2nd, 3rd… down to the bottom. Drag a card to reorder it (hold first on a phone), or tap it for Move up / Move down.'
+        : '<b>Drag to reorder</b> (hold first on a phone). Tap a card to move it to another zone.') + '</span>';
+      $('add-card').innerHTML = '<span class="glyph">＋</span> ' + (isStack ? 'Add to Stack' : 'Add card');
+      renderSearch();
+    }
+    // the Stack's tags (round 10: "1, 2, top? where is bottom?"): TOP alone for one
+    // card; BOTTOM / TOP for two; for three or more the ends are BOTTOM and TOP and
+    // the cards between count down from the top in resolving order — TOP, 2ND,
+    // 3RD… BOTTOM — so a tag always says where the card sits in the stack
+    function stackLabel(i, n) {
+      if (i === n - 1) return 'TOP';
+      if (i === 0) return 'BOTTOM';
+      const k = n - i, suf = k === 2 ? 'ND' : k === 3 ? 'RD' : 'TH';
+      return k + suf;
+    }
+    // ---- round 7: placing the carried cards, one at a time ----
+    let placeMore = false;
+    function renderCarried() {
+      const placing = carried.length > 0;
+      $('step-cards').dataset.placing = placing;
+      $('place-plate').hidden = !placing;
+      $('attach').hidden = placing || !$('step-cards').classList.contains('active');
+      if (!placing) return;
+      const c = carried[0];
+      $('place-hero').innerHTML = cardMarkup(c, { noRemove: true });
+      applyRing($('place-hero'), c);
+      $('place-hero').onclick = () => openDetail(c);
+      $('place-name').textContent = c.name;
+      $('place-sub').innerHTML = c.type + ' · <span>' + c.cost + '</span>';
+      $('place-n').textContent = placedSoFar + 1; $('place-total').textContent = placedSoFar + carried.length;
+      const chosen = ZONES.filter((z) => selectedZones.has(z)), rest = ZONES.filter((z) => !selectedZones.has(z));
+      const tile = (z, extra) => '<button type="button" data-zone="' + z + '" data-extra="' + extra + '"><span class="mark"></span>' + z + '</button>';
+      $('place-zones').innerHTML = chosen.map((z) => tile(z, false)).join('') + (placeMore ? rest.map((z) => tile(z, true)).join('') : '');
+      $('place-more').hidden = placeMore || !rest.length;
+      $('place-zones').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => placeCarried(b.dataset.zone)));
+    }
+    let placedSoFar = 0;
+    function placeCarried(zone) {
+      const c = carried.shift();
+      placedSoFar += 1;
+      // round 9 (owner: "only the newly used fields are added to the selection … unless they
+      // click the option to add another again"): the zone just used joins the tiles for the
+      // next card; the rest fold away again behind "Other zones"
+      placeMore = false;
+      if (!selectedZones.has(zone)) { selectedZones.add(zone); const cb = $('zone-grid').querySelector('input[value="' + zone + '"]'); if (cb) cb.checked = true; }
+      (zoneCards[zone] = zoneCards[zone] || []).push(c);
+      activeZone = zone; summonNext = c;
+      if (!carried.length) placedSoFar = 0;
+      renderShelf();
+    }
+    $('place-more').addEventListener('click', () => { placeMore = true; renderCarried(); });
+    $('place-drop').addEventListener('click', () => { carried.shift(); if (!carried.length) placedSoFar = 0; renderShelf(); });
+
+    // ---- round 7: the card actions sheet ----
+    let actCard = null;
+    const zoneOf = (c) => Object.keys(zoneCards).find((z) => (zoneCards[z] || []).includes(c));
+    // round 13: small line-drawn signs, 16×16, stroked in the colour's light, on the card
+    // menu's Move to pills. Round 14 (owner: "the glyphs aren't randomized"): the signs are
+    // a pool of fourteen arcane marks — a pile of cards, a shield, a fan of cards, a
+    // headstone, a spark, a closed book, a crown, a crescent moon, an eye, a key, an
+    // hourglass, a rune, a comet, a sigil ring — and every time the menu opens seven are
+    // dealt at random, one per pill, no two alike. A sign no longer names its zone; the
+    // word does that. Nothing filled in.
+    const SIGN_POOL = [
+      '<path d="M2.5 5.5h8.5v9H2.5z"/><path d="M5 5.5V3.2a.7.7 0 0 1 .7-.7h7.6a.7.7 0 0 1 .7.7v8.6"/>',
+      '<path d="M8 1.8 13 3.6v4.1c0 3.2-2.1 5.6-5 6.9-2.9-1.3-5-3.7-5-6.9V3.6z"/><path d="M8 5v5.2"/>',
+      '<g transform="rotate(-20 8 13)"><rect x="5.6" y="4.6" width="4.8" height="8" rx=".8"/></g><rect x="5.6" y="3" width="4.8" height="8" rx=".8"/><g transform="rotate(20 8 13)"><rect x="5.6" y="4.6" width="4.8" height="8" rx=".8"/></g>',
+      '<path d="M4 14V6.2a4 4 0 0 1 8 0V14"/><path d="M2.5 14h11"/><path d="M8 6.4v3.4M6.5 7.9h3"/>',
+      '<path d="M8 1.6c.5 3.7 2.7 5.9 6.4 6.4-3.7.5-5.9 2.7-6.4 6.4-.5-3.7-2.7-5.9-6.4-6.4 3.7-.5 5.9-2.7 6.4-6.4z"/>',
+      '<rect x="3.6" y="2.2" width="8.8" height="11.6" rx="1.1"/><path d="M6.2 2.2v11.6M8.6 5h2.2"/>',
+      '<path d="M3 12.6 2.4 5.2l3.6 2.9L8 3.6l2 4.5 3.6-2.9-.6 7.4z"/><path d="M3.3 12.6h9.4"/>',
+      '<path d="M10.2 2.4a6 6 0 1 0 3.4 9.9 5.2 5.2 0 0 1-3.4-9.9z"/>',
+      '<path d="M1.8 8c1.6-3 3.7-4.5 6.2-4.5S12.6 5 14.2 8c-1.6 3-3.7 4.5-6.2 4.5S3.4 11 1.8 8z"/><circle cx="8" cy="8" r="2"/>',
+      '<circle cx="5" cy="6" r="3"/><path d="M7.2 8.2 13.5 14.5M11 12l1.6-1.6M9.3 10.3l1.6-1.6"/>',
+      '<path d="M4 2.2h8M4 13.8h8M5 2.2v2.4L8 8l-3 3.4v2.4M11 2.2v2.4L8 8l3 3.4v2.4"/>',
+      '<path d="M8 1.8v12.4M8 5.4l4-2.4M8 5.4 4 3M8 10.6l4 2.4M8 10.6 4 13"/>',
+      '<circle cx="11" cy="5" r="2.4"/><path d="M8.9 6.9 2.5 13.3M9.4 9.6l-3 3M6.4 6.6l-3 3"/>',
+      '<circle cx="8" cy="8" r="5.6"/><circle cx="8" cy="8" r="1.4"/><path d="M8 2.4v1.8M8 11.8v1.8M2.4 8h1.8M11.8 8h1.8"/>'
+    ];
+    const dealSigns = (n) => { const pool = SIGN_POOL.slice(); for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; } return pool.slice(0, n); };
+    const zoneSign = (paths) => '<span class="zg" aria-hidden="true"><svg viewBox="0 0 16 16">' + paths + '</svg></span>';
+    function openActions(c, view) {
+      actCard = c;
+      const zone = zoneOf(c);
+      const list = zoneCards[zone] || [], i = list.indexOf(c);
+      const isStack = zone === 'Stack';
+      $('act-head').innerHTML = thumb(c) + '<div><span class="zone">' + zone + (isStack ? ' · ' + stackLabel(i, list.length) : '') + '</span><h2>' + c.name + '</h2></div>';
+      const signs = dealSigns(ZONES.length);
+      $('act-zones').innerHTML = ZONES.map((z, k) => '<button type="button" data-zone="' + z + '" data-current="' + (z === zone) + '">' + zoneSign(signs[k]) + z + '</button>').join('');
+      $('act-zones').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { if (b.dataset.zone === zone) return closeActions(); moveCard(c, zone, b.dataset.zone); closeActions(); }));
+      // round 8: every zone can be reordered; only the Stack's order has a rule behind it
+      $('act-stack').hidden = list.length < 2;
+      $('act-order-lbl').innerHTML = isStack ? 'Order on the stack <small style="text-transform:none;letter-spacing:0">· the top resolves first</small>' : 'Order in ' + zone;
+      $('act-down').innerHTML = isStack ? '<span class="glyph">↓</span><span class="w">Down</span>' : '<span class="glyph">‹</span><span class="w">Left</span>';
+      $('act-up').innerHTML = isStack ? '<span class="glyph">↑</span><span class="w">Up</span>' : '<span class="w">Right</span><span class="glyph">›</span>';
+      $('act-top').hidden = !isStack;
+      $('act-remove-lbl').textContent = 'Remove from ' + (isStack ? 'the Stack' : zone);
+      $('act-down').disabled = i <= 0; $('act-up').disabled = i >= list.length - 1; $('act-top').disabled = i >= list.length - 1;
+      showActView(view === 'details' ? 'details' : 'actions');
+      $('act-backdrop').dataset.open = 'true'; $('act-panel').dataset.open = 'true';
+      anchorActions(c);
+    }
+    // the details view, inside the same pop-over: the art, the type line, the rules text
+    function showActView(view) {
+      const c = actCard;
+      $('act-body').hidden = view !== 'actions';
+      $('act-detail').hidden = view !== 'details';
+      if (view === 'details') {
+        $('act-detail').innerHTML = '<div class="art"><img src="' + art(c.id) + '" alt=""><div class="title"><h2>' + c.name + '</h2><span class="cost">' + c.cost + '</span></div></div>' +
+          '<div class="inner"><div class="typeline"><b>' + c.type + '</b>' + (c.pt ? '<span>·</span><b>' + c.pt + '</b>' : '') + '<span>·</span>' + pips(c) + '<span>' + c.colorsLabel + '</span></div>' +
+          '<p class="oracle">' + c.oracle + '</p><div class="facts"><span class="fact"><small>Mana value</small>' + c.mv + '</span><span class="fact"><small>Price</small>' + c.price + '</span></div></div>' +
+          '<button class="act-back" type="button" id="act-back">‹ Back to move, reorder or remove</button>';
+        $('act-back').addEventListener('click', () => { showActView('actions'); anchorActions(actCard); });
+      }
+    }
+    // desktop: sit the pop-over just under the tapped card (over it when there is no room), centred on it, pointing at it
+    function anchorActions(c) {
+      const panel = $('act-panel');
+      if (!matchMedia('(min-width: 768px)').matches) { panel.style.removeProperty('--ax'); panel.style.removeProperty('--ay'); return; }
+      const cards = zoneCards[zoneOf(c)] || [];
+      const el = $('shelf').querySelector('.card[data-i="' + cards.indexOf(c) + '"]');
+      if (!el) return;
+      const r = el.getBoundingClientRect(), w = panel.offsetWidth || 400, h = panel.offsetHeight || 380, gap = 14, m = 12;
+      // under the card if it fits, else over it, else beside it — never on top of it
+      const below = innerHeight - r.bottom - gap - m >= h, above = r.top - gap - m >= h;
+      let side, x, y;
+      if (below || above) {
+        side = below ? 'below' : 'above';
+        y = below ? r.bottom + gap : r.top - gap - h;
+        x = Math.max(m, Math.min(innerWidth - w - m, r.left + r.width / 2 - w / 2));
+        panel.style.setProperty('--arrow', Math.max(22, Math.min(w - 22, r.left + r.width / 2 - x)) + 'px');
+      } else {
+        side = innerWidth - r.right - gap - m >= w ? 'right' : 'left';
+        x = side === 'right' ? r.right + gap : r.left - gap - w;
+        y = Math.max(m, Math.min(innerHeight - h - m, r.top + r.height / 2 - h / 2));
+        panel.style.setProperty('--arrow-y', Math.max(22, Math.min(h - 22, r.top + r.height / 2 - y)) + 'px');
+      }
+      panel.dataset.side = side;
+      panel.style.setProperty('--ax', x + 'px'); panel.style.setProperty('--ay', y + 'px');
+      panel.style.setProperty('--from', side === 'below' ? '-8px' : side === 'above' ? '8px' : '0px');
+    }
+    function closeActions() { $('act-backdrop').dataset.open = 'false'; $('act-panel').dataset.open = 'false'; }
+    function moveCard(c, from, to) {
+      zoneCards[from].splice(zoneCards[from].indexOf(c), 1);
+      if (!selectedZones.has(to)) { selectedZones.add(to); const cb = $('zone-grid').querySelector('input[value="' + to + '"]'); if (cb) cb.checked = true; }
+      (zoneCards[to] = zoneCards[to] || []).push(c);
+      if (ctx[c.name]) ctx[c.name].zone = to;
+      activeZone = to; summonNext = c; renderShelf();
+    }
+    function reorder(c, delta, toTop) {
+      const list = zoneCards[zoneOf(c)]; const i = list.indexOf(c);
+      const j = toTop ? list.length - 1 : Math.max(0, Math.min(list.length - 1, i + delta));
+      list.splice(i, 1); list.splice(j, 0, c); renderShelf(); openActions(c);
+    }
+    $('act-up').addEventListener('click', () => reorder(actCard, 1));
+    $('act-down').addEventListener('click', () => reorder(actCard, -1));
+    $('act-top').addEventListener('click', () => reorder(actCard, 0, true));
+    $('act-details').addEventListener('click', () => { showActView('details'); anchorActions(actCard); });
+    $('act-remove').addEventListener('click', () => { const z = zoneOf(actCard); zoneCards[z].splice(zoneCards[z].indexOf(actCard), 1); closeActions(); renderShelf(); });
+    addEventListener('resize', () => { if ($('act-panel').dataset.open === 'true') anchorActions(actCard); });
+    $('act-close').addEventListener('click', closeActions);
+    $('act-backdrop').addEventListener('click', closeActions);
+
+    // ---- round 7: drag to reorder on the Stack (pointer events; a mouse drags at once, touch after a short hold) ----
+    let drag = null, suppressClick = false;
+    function bindDrag(el, c, cards) {
+      // round 9: no native image drag under the pointer; once a card is lifted the
+      // touch stays with it (the browser would otherwise pan the shelf and cancel)
+      el.addEventListener('dragstart', (e) => e.preventDefault());
+      el.addEventListener('touchmove', (e) => { if (drag && drag.el === el && drag.started) e.preventDefault(); }, { passive: false });
+      el.addEventListener('pointerdown', (e) => {
+        if (e.target.closest('.card-widget') || e.button > 0) return;
+        e.preventDefault();
+        drag = { el, c, cards, x0: e.clientX, started: false, mouse: e.pointerType === 'mouse', to: -1 };
+        drag.timer = setTimeout(() => { if (drag && !drag.started) startDrag(e); }, 240);
+        try { el.setPointerCapture(e.pointerId); } catch (_) { /* synthetic pointers have no capture */ }
+      });
+      el.addEventListener('pointermove', (e) => {
+        if (!drag || drag.el !== el) return;
+        if (!drag.started) { if (drag.mouse && Math.abs(e.clientX - drag.x0) > 6) startDrag(e); else return; }
+        el.style.transform = 'translate(' + (e.clientX - drag.x0) + 'px, -8px) scale(1.04)';
+        const others = [...$('shelf').querySelectorAll('.card')].filter((x) => x !== el);
+        const mid = el.getBoundingClientRect(); const cx = mid.left + mid.width / 2;
+        let to = 0; others.forEach((o) => { const r = o.getBoundingClientRect(); if (cx > r.left + r.width / 2) to += 1; o.classList.remove('drop-before', 'drop-after'); });
+        drag.to = to;
+        if (others.length) { if (to < others.length) others[to].classList.add('drop-before'); else others[others.length - 1].classList.add('drop-after'); }
+      });
+      const end = (e) => {
+        if (!drag || drag.el !== el) return;
+        clearTimeout(drag.timer);
+        if (drag.started) {
+          suppressClick = true; setTimeout(() => { suppressClick = false; }, 0);
+          const i = cards.indexOf(c); cards.splice(i, 1); cards.splice(drag.to, 0, c);
+          drag = null; renderShelf();
+        } else drag = null;
+      };
+      el.addEventListener('pointerup', end); el.addEventListener('pointercancel', end);
+    }
+    function startDrag() { drag.started = true; drag.el.classList.add('dragging'); }
+
+    function allAttached() { return Object.values(zoneCards).flat().concat(carried); }
+    function renderSearch() {
+      const q = $('card-search').value.trim().toLowerCase();
+      const hits = library.filter((c) => !allAttached().includes(c) && (!q || c.name.toLowerCase().includes(q)));
+      $('search-results').innerHTML = hits.map((c) =>
+        '<button type="button" data-i="' + library.indexOf(c) + '">' + thumb(c) + '<span>' + c.name + '</span><span class="type">' + c.type + '</span></button>').join('');
+      $('search-results').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+        const c = library[Number(b.dataset.i)];
+        (zoneCards[activeZone] = zoneCards[activeZone] || []).push(c);
+        summonNext = c;
+        $('card-search').value = ''; closeSearch(); renderShelf();
+        $('shelf').scrollTo({ left: 9999, behavior: 'smooth' });
+      }));
+    }
+    function openSearch() { $('search-pop').classList.add('open'); $('add-card').setAttribute('aria-expanded', 'true'); renderSearch(); $('card-search').focus(); }
+    function closeSearch() { $('search-pop').classList.remove('open'); $('add-card').setAttribute('aria-expanded', 'false'); }
+    $('add-card').addEventListener('click', () => ($('search-pop').classList.contains('open') ? closeSearch() : openSearch()));
+    $('card-search').addEventListener('input', renderSearch);
+    $('card-search').addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSearch(); });
+
+    // ---- 4 · context, card by card ----
+    let wiz = 0;
+    function queue() { return ZONES.filter((z) => selectedZones.has(z)).flatMap((z) => (zoneCards[z] || []).map((c) => ({ zone: z, card: c }))); }
+    let reviewCollapsed = false, reviewZone = null;
+    function markReviewScroll() {
+      const r = $('review'), more = r.scrollHeight - r.clientHeight - r.scrollTop > 4;
+      r.dataset.moreBelow = more;
+      const shown = r.querySelectorAll('.row').length, fit = Math.max(1, Math.floor(r.clientHeight / 56));
+      $('review-more').hidden = reviewCollapsed || r.scrollHeight <= r.clientHeight + 4;
+      $('review-more').textContent = shown + ' cards · scroll the list for the rest';
+    }
+    function renderWizard() {
+      const q = queue();
+      const done = wiz >= q.length;
+      $('wizard-plate').hidden = done;
+      $('review-plate').hidden = !done;
+      $('idq-composer').hidden = !done;
+      if (!done) {
+        const { zone, card } = q[wiz];
+        const c = ctxOf(card, zone);
+        $('ctx-hero').innerHTML = cardMarkup(card, { noRemove: true });
+        applyRing($('ctx-hero'), card);
+        $('ctx-hero').onclick = () => openDetail(card);
+        $('wiz-n').textContent = wiz + 1; $('wiz-total').textContent = q.length; $('wiz-zone').textContent = zone;
+        $('ctx-name').textContent = card.name;
+        $('ctx-sub').innerHTML = card.type + ' · <span>' + card.cost + '</span>';
+
+        // which fields apply to this zone (same rules as today's form)
+        $('row-owner').hidden = !hasOwner(zone);
+        $('row-caster').hidden = zone !== 'Stack';
+        $('row-mana').hidden = !hasMana(zone);
+        // round 8: the rare settings sit behind "More details" — today only Copies, on Stack cards
+        $('more-row').hidden = zone !== 'Stack';
+        $('more-set').innerHTML = c.copies ? '<b>' + c.copies + (c.copies === 1 ? ' copy' : ' copies') + '</b>' : '';
+        closeMore(true);
+        $('sel-owner').innerHTML = playerNames().map((p, i) => opt(i, p, c.owner === i)).join('');
+        $('sel-caster').innerHTML = playerNames().map((p, i) => opt(i, p, c.caster === i)).join('');
+        $('mana-in').value = c.mana;
+        $('mana-note').textContent = c.mana === card.mv ? 'printed ' + card.cost : 'printed ' + card.cost + ' · ' + (c.mana > card.mv ? '+' + (c.mana - card.mv) : c.mana - card.mv);
+
+        // targets: chosen ones as pills, one picker below
+        const others = q.filter((e) => e.card !== card);
+        $('target-list').innerHTML = c.targets.map((t, i) => '<span class="pill">' + targetLabel(t) + '<button type="button" data-i="' + i + '" aria-label="Remove target">✕</button></span>').join('');
+        $('target-list').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { c.targets.splice(Number(b.dataset.i), 1); renderWizard(); }));
+        // round 7: a target can be picked once — what is already a pill leaves the list;
+        // "All players" stands in for every player, so with it picked no single player is offered
+        const hasAll = c.targets.some((t) => t.k === 'all');
+        const pickedP = new Set(c.targets.filter((t) => t.k === 'player').map((t) => t.p));
+        const pickedC = new Set(c.targets.filter((t) => t.k === 'card').map((t) => t.name));
+        const playerOpts = hasAll ? '' : playerNames().map((p, i) => pickedP.has(i) ? '' : opt('player:' + i, p)).join('') + opt('all', 'All players');
+        const cardOpts = others.filter((e) => !pickedC.has(e.card.name)).map((e) => opt('card:' + e.card.name, e.card.name + ' · ' + e.zone)).join('');
+        $('sel-target').innerHTML = opt('', c.targets.length ? 'Add another target…' : 'Choose a target…') +
+          opt('none', 'No target') + (zone === 'Battlefield' || zone === 'Command Zone' ? opt('board', 'Just on the board') : '') +
+          (playerOpts ? '<optgroup label="Players">' + playerOpts + '</optgroup>' : '') +
+          (cardOpts ? '<optgroup label="Cards in context">' + cardOpts + '</optgroup>' : '') +
+          opt('other', 'Something else…');
+        $('target-other').hidden = true;
+        $('ctx-notes').value = c.notes; autoGrow($('ctx-notes'));
+        setNoteOpen(!!c.notes);
+        $('wiz-next').innerHTML = wizLabel(wiz >= q.length - 1);
+      } else {
+        $('review-count').textContent = q.length + (q.length === 1 ? ' card' : ' cards');
+        // round 8: the zone tags at the foot pick out that zone's rows (they used to sit, inert, above the question)
+        if (reviewZone && !(zoneCards[reviewZone] || []).length) reviewZone = null;
+        $('review-filters').innerHTML = '<button type="button" data-z="" aria-pressed="' + !reviewZone + '">All<b>' + q.length + '</b></button>' +
+          ZONES.filter((z) => selectedZones.has(z)).map((z) => {
+            const n = (zoneCards[z] || []).length;
+            return n ? '<button type="button" data-z="' + z + '" aria-pressed="' + (reviewZone === z) + '">' + z + '<b>' + n + '</b></button>' : '<button type="button" disabled>' + z + ' · empty</button>';
+          }).join('');
+        $('review-filters').querySelectorAll('[data-z]').forEach((b) => b.addEventListener('click', () => { reviewZone = b.dataset.z && reviewZone !== b.dataset.z ? b.dataset.z : null; renderWizard(); if (reviewZone) { const hit = $('review').querySelector('[data-hit="true"]'); if (hit) hit.scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } }));
+        $('review-filters').hidden = reviewCollapsed;
+        if (reviewZone) $('review').dataset.zone = reviewZone; else delete $('review').dataset.zone;
+        $('review').innerHTML = q.map((e, i) => {
+          const c = ctxOf(e.card, e.zone);
+          const what = summarize(e, c);
+          return '<div class="row" data-hit="' + (reviewZone === e.zone) + '">' + thumb(e.card) + '<div><span class="nm">' + e.card.name + '</span> <span class="zone">' + e.zone + '</span><span class="what">' + what + '</span></div>' +
+            '<button class="edit" data-i="' + i + '" aria-label="Edit context for ' + e.card.name + '">✎</button></div>';
+        }).join('');
+        $('review').querySelectorAll('.edit').forEach((b) => b.addEventListener('click', () => { wiz = Number(b.dataset.i); renderWizard(); }));
+        $('review').dataset.collapsed = reviewCollapsed;
+        $('review-toggle').textContent = reviewCollapsed ? 'Expand ▾' : 'Collapse ▴';
+        $('review-toggle').setAttribute('aria-expanded', !reviewCollapsed);
+        $('review-sum').hidden = !reviewCollapsed;
+        $('review-sum').textContent = q.map((e) => e.card.name).join(' · ');
+        // the list scrolls once it is taller than its box; a fade and a count say there is more
+        requestAnimationFrame(markReviewScroll);
+      }
+    }
+    function targetLabel(t) {
+      if (t.k === 'none') return 'No target';
+      if (t.k === 'board') return 'Just on the board';
+      if (t.k === 'all') return 'All players';
+      if (t.k === 'player') return nameOf(t.p);
+      if (t.k === 'card') { const c = byName(t.name); return (c ? thumb(c) : '') + t.name; }
+      return t.text;
+    }
+    function current() { const e = queue()[wiz]; return { e, c: ctxOf(e.card, e.zone) }; }
+    $('sel-owner').addEventListener('change', (ev) => { current().c.owner = Number(ev.target.value); });
+    $('sel-caster').addEventListener('change', (ev) => { current().c.caster = Number(ev.target.value); });
+    $('mana-in').addEventListener('input', (ev) => { const { e, c } = current(); const n = parseInt(ev.target.value, 10); c.mana = Number.isFinite(n) ? n : e.card.mv; $('mana-note').textContent = c.mana === e.card.mv ? 'printed ' + e.card.cost : 'printed ' + e.card.cost + ' · ' + (c.mana > e.card.mv ? '+' + (c.mana - e.card.mv) : c.mana - e.card.mv); });
+    $('sel-target').addEventListener('change', (ev) => {
+      const v = ev.target.value; const { c } = current();
+      if (!v) return;
+      if (v === 'other') { $('target-other').hidden = false; $('target-other').focus(); return; }
+      const t = v === 'none' ? { k: 'none' } : v === 'board' ? { k: 'board' } : v === 'all' ? { k: 'all' }
+        : v.startsWith('player:') ? { k: 'player', p: Number(v.slice(7)) } : { k: 'card', name: v.slice(5) };
+      addTarget(c, t);
+      renderWizard();
+    });
+    // round 7 target rules: no target twice; every player named one by one becomes
+    // "All players"; picking "All players" drops the single-player pills
+    const sameTarget = (a, b) => a.k === b.k && (a.p ?? null) === (b.p ?? null) && (a.name ?? null) === (b.name ?? null) && (a.text ?? null) === (b.text ?? null);
+    function addTarget(c, t) {
+      if (t.k === 'none' || t.k === 'board') { c.targets = [t]; return; }
+      c.targets = c.targets.filter((x) => x.k !== 'none' && x.k !== 'board');
+      if (c.targets.some((x) => sameTarget(x, t))) return;
+      if (t.k === 'all') c.targets = c.targets.filter((x) => x.k !== 'player');
+      if (t.k === 'player' && c.targets.some((x) => x.k === 'all')) return;
+      c.targets.push(t);
+      if (t.k === 'player' && new Set(c.targets.filter((x) => x.k === 'player').map((x) => x.p)).size >= players) {
+        c.targets = c.targets.filter((x) => x.k !== 'player'); c.targets.push({ k: 'all' });
+      }
+    }
+    // ---- round 8: More details — slides up over the card sheet, Done slides it away ----
+    function openMore() {
+      const { e, c } = current();
+      $('ms-thumb').innerHTML = thumb(e.card); $('ms-name').textContent = e.card.name;
+      setCopies(c.copies || 0, false);
+      $('more-sheet').dataset.open = 'true';
+      setTimeout(() => $('copies-pick').querySelector('button').focus(), 330);
+    }
+    function closeMore(instant) {
+      const sh = $('more-sheet');
+      if (instant) { sh.style.transition = 'none'; sh.dataset.open = 'false'; void sh.offsetWidth; sh.style.transition = ''; }
+      else sh.dataset.open = 'false';
+      $('copies-pick').dataset.open = 'false';
+    }
+    function setCopies(n, save = true) {
+      $('copies-val').textContent = n;
+      $('copies-list').querySelectorAll('li').forEach((li) => li.setAttribute('aria-selected', String(Number(li.dataset.n) === n)));
+      if (save) { const { c } = current(); c.copies = n; $('more-set').innerHTML = n ? '<b>' + n + (n === 1 ? ' copy' : ' copies') + '</b>' : ''; }
+    }
+    $('copies-list').innerHTML = Array.from({ length: 100 }, (_, n) => '<li role="option" data-n="' + n + '">' + n + '</li>').join('');
+    $('copies-pick').querySelector('button').addEventListener('click', () => {
+      const pick = $('copies-pick'), open = pick.dataset.open !== 'true';
+      pick.dataset.open = open;
+      if (open) { const sel = $('copies-list').querySelector('[aria-selected="true"]'); if (sel) $('copies-list').scrollTop = sel.offsetTop - $('copies-list').clientHeight / 2 + sel.offsetHeight / 2; }
+    });
+    $('copies-list').addEventListener('click', (ev) => { const li = ev.target.closest('li'); if (!li) return; setCopies(Number(li.dataset.n)); $('copies-pick').dataset.open = 'false'; });
+    $('more-row').addEventListener('click', openMore);
+    $('ms-done').addEventListener('click', () => closeMore());
+    $('ms-close').addEventListener('click', () => closeMore());
+    $('target-other').addEventListener('keydown', (ev) => {
+      if (ev.key === 'Enter' && ev.target.value.trim()) { const { c } = current(); addTarget(c, { k: 'other', text: ev.target.value.trim() }); ev.target.value = ''; renderWizard(); }
+      if (ev.key === 'Escape') { ev.target.hidden = true; $('sel-target').value = ''; }
+    });
+    $('ctx-notes').addEventListener('input', () => { current().c.notes = $('ctx-notes').value; autoGrow($('ctx-notes')); });
+    // round 11: the note box is folded until asked for; a card that already has a note opens with it
+    function setNoteOpen(open) {
+      $('row-notes').hidden = !open; $('note-toggle').hidden = open;
+      $('note-toggle').setAttribute('aria-expanded', String(open));
+    }
+    $('note-toggle').addEventListener('click', () => { setNoteOpen(true); $('ctx-notes').focus(); });
+    $('skip-review').addEventListener('click', () => { wiz = queue().length; renderWizard(); });
+    $('review-toggle').addEventListener('click', () => { reviewCollapsed = !reviewCollapsed; renderWizard(); });
+    $('review').addEventListener('scroll', markReviewScroll);
+    function summarize(e, c) {
+      const bits = [];
+      if (e.zone === 'Stack') bits.push('cast by ' + nameOf(c.caster)); else bits.push(nameOf(c.owner) + "'s");
+      if (hasMana(e.zone) && c.mana !== e.card.mv) bits.push(c.mana + ' mana spent');
+      if (e.zone === 'Stack' && c.copies) bits.push('+' + c.copies + (c.copies === 1 ? ' copy' : ' copies'));
+      const names = c.targets.map((t) => t.k === 'card' ? t.name : targetLabel(t));
+      if (c.targets.length === 1 && (c.targets[0].k === 'none' || c.targets[0].k === 'board')) bits.push(names[0].toLowerCase());
+      else if (names.length) bits.push('targets ' + names.join(', '));
+      if (c.notes) bits.push('“' + c.notes + '”');
+      return bits.join(' · ');
+    }
+    $('wiz-next').addEventListener('click', () => { wiz += 1; renderWizard(); });
+    // the sheet's bar says what comes next
+    const wizLabel = (last) => '<span>' + (last ? 'Finish context<small>next: your question</small>' : 'Next card') + '</span><span class="chev">›</span>';
+    bindComposer($('question-field'), $('char-count'), $('char-meter'));
+    bindComposer($('followup-field'), $('fu-count'), null);
+
+    // ---- the ruling: the rail leaves, the chat takes the panel ----
+    function openChat() {
+      const q = queue();
+      const question = $('question-field').value.trim() || 'How does this resolve?';
+      $('flow').hidden = true; $('chat').hidden = false;
+      $('chat-cards').innerHTML = '<span class="lbl">Cards</span>' + q.map((e) => thumb(e.card, 'tap')).join('');
+      bindRefs($('chat-cards'));
+      const stack = zoneCards['Stack'] || [];
+      const msgs = [{ who: 'you', text: question }, { who: 'judge', text: '' }];
+      $('thread').innerHTML = chatMarkup(msgs);
+      // round 8: the wait lines play in the judge's bubble; round 9: at real speed, the ruling lands after 20 s
+      window.FLOW.runWait($('thread'), { speed: 1, until: 20, onDone: () => {
+        msgs[1] = { who: 'judge', text: stack.length >= 2
+          ? 'The top of the stack resolves first. [[Counterspell]] was cast in response to [[Lightning Bolt]], so it resolves first and counters the Bolt — Lightning Bolt is put into its owner\'s graveyard and deals no damage.\n[[Sol Ring]] and [[Llanowar Elves]] on the battlefield are untouched. With the stack empty, ' + nameOf(activeIdx()) + ' gets priority again in the ' + $('turn-phase').value + ' and could still cast [[Swords to Plowshares]] from hand.'
+          : 'With ' + q.length + ' card' + (q.length === 1 ? '' : 's') + ' in context and nothing on the stack, priority passes and the active player continues their ' + $('turn-phase').value + '.' };
+        $('thread').innerHTML = chatMarkup(msgs);
+        bindRefs($('thread'));
+      } });
+      $('ctx-facts').innerHTML =
+        '<div class="fact"><small>Turn phase</small><b>' + $('turn-phase').value + '</b></div><div class="fact"><small>Active</small><b>' + nameOf(activeIdx()) + '</b></div><div class="fact"><small>Players</small><b>' + playerNames().join(', ') + '</b></div>';
+      $('ctx-cards').innerHTML = q.map((e) => '<div class="row">' + thumb(e.card) + '<div><span class="nm">' + e.card.name + '</span> <span class="zone">' + e.zone + '</span><span class="what">' + summarize(e, ctxOf(e.card, e.zone)) + '</span></div><span></span></div>').join('');
+      window.scrollTo({ top: 0 });
+    }
+    $('send').addEventListener('click', openChat);
+    $('view-context').addEventListener('click', openCtx);
+    // round 9: ↺ wipes — a clean Ask a Question, no cards, no details; ✎ Edit returns to the review with everything kept
+    $('start-over').addEventListener('click', () => { location.href = 'quick-question.html'; });
+    $('edit-request').addEventListener('click', () => { goTo('context'); wiz = queue().length; renderWizard(); });
+    function openCtx() { $('ctx-backdrop').dataset.open = 'true'; $('ctx-panel').dataset.open = 'true'; }
+    function closeCtx() { $('ctx-backdrop').dataset.open = 'false'; $('ctx-panel').dataset.open = 'false'; }
+    $('ctx-close').addEventListener('click', closeCtx);
+    $('ctx-backdrop').addEventListener('click', closeCtx);
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeCtx(); });
+
+    // ---- demo bar ----
+    document.querySelectorAll('[data-jump]').forEach((b) => b.addEventListener('click', () => {
+      const j = b.dataset.jump;
+      if (j !== 'game' && j !== 'zones') seedDemoCards();
+      if (j === 'place') { carried = ['Lightning Bolt', 'Sol Ring', 'Llanowar Elves'].map(byName).filter((c) => !allAttached().includes(c)); placedSoFar = 0; goTo('cards'); }
+      else if (j === 'review') { goTo('context'); wiz = queue().length; renderWizard(); }
+      else if (j === 'review10') {
+        carried = []; selectedZones = new Set(['Stack', 'Battlefield', 'Hand', 'Graveyard']);
+        $('zone-grid').querySelectorAll('input').forEach((cb) => { cb.checked = selectedZones.has(cb.value); });
+        Object.assign(zoneCards, { 'Stack': ['Lightning Bolt', 'Counterspell', 'Grapeshot'], 'Battlefield': ['Sol Ring', 'Llanowar Elves', 'Birds of Paradise'], 'Hand': ['Swords to Plowshares', 'Lightning Helix', 'Dark Ritual'], 'Graveyard': ['Path to Exile'] });
+        for (const z in zoneCards) zoneCards[z] = zoneCards[z].map((n) => (typeof n === 'string' ? byName(n) : n));
+        ctxOf(byName('Grapeshot'), 'Stack').copies = 4;
+        goTo('context'); wiz = queue().length; renderWizard();
+      }
+      else if (j === 'more') {
+        carried = []; zoneCards['Stack'] = [byName('Grapeshot'), byName('Lightning Bolt')];
+        goTo('context'); wiz = 0; renderWizard(); openMore();
+      }
+      else if (j === 'chat') openChat();
+      else goTo(j);
+    }));
+
+    ctxOf(byName('Lightning Bolt'), 'Stack').targets = [{ k: 'card', name: 'Llanowar Elves' }];
+    ctxOf(byName('Counterspell'), 'Stack').targets = [{ k: 'card', name: 'Lightning Bolt' }];
+    ctxOf(byName('Counterspell'), 'Stack').caster = 1;
+    goTo('game');
+  </script>
+</body>
+</html>

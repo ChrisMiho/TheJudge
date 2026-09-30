@@ -17,6 +17,10 @@ export default tseslint.config(
       // Product docs plus probe/work-package scratch tooling, never product
       // code; prettier already ignores it (.prettierignore).
       "PRD/**",
+      // Static design mockups (plain browser scripts, no build): kept design
+      // art the owner clicks through, never product code. Prettier ignores
+      // them too (.prettierignore).
+      "docs/design/**",
       "apps/frontend/data/scryfall/default-cards.json"
     ]
   },

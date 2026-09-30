@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Shared chrome &amp; Menu — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
+<link rel="stylesheet" href="flow.css">
+<style>
+  .page-content { width: min(44rem, 92vw); padding-top: 0.8rem; display: grid; gap: 0.9rem; align-content: start; }
+  .demo-note { font-size: 0.82rem; color: var(--text-muted); margin: 0; line-height: 1.45; }
+  .card-panel h2 { font-size: 1.05rem; margin: 0 0 0.4rem; }
+  .profile-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+
+</style>
+</head>
+<body data-tray-open="false">
+  <header class="app-header">
+    <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <a class="brand-mark" href="../index.html" aria-label="TheJudge home"><span class="orb" aria-hidden="true"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></a>
+    <div class="header-side"></div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="page-content">
+    <div class="flow-head">
+      <h1>Shared chrome &amp; Menu</h1>
+      <button class="icon-chip" id="open-menu-2"><span class="glyph">☰</span> Open the menu</button>
+    </div>
+    <p class="demo-note">
+      Before: <a href="../before/menu-390x844.png">menu-390x844.png</a> ·
+      <a href="../before/menu-1440x900.png">menu-1440x900.png</a>. The header
+      above and the tray behind ☰ are the ones every page shares (`shell.css`
+      + `flow.js`): the tray slides in from the left like today's, the
+      destinations are a plain list with the current screen lit — one
+      <b>Ask a Question</b> (round 6: Quick and In-Depth are one door), Question
+      History right under it, Send feedback at the foot of the list — Theme as
+      six flat motif icons (Colorless with its custom colour), and the colour's
+      flair fading in at the foot. The header above is the banner every page
+      shares, with an abstract design per colour. The candidate symbols for
+      each colour are on <a href="motif-gallery.html">motif-gallery.html</a>.
+    </p>
+
+    <div class="card-panel">
+      <h2>Life Tracker: shared chrome inherited, own screen untouched (REQ-202)</h2>
+      <p class="demo-note">
+        Life Tracker's own counters and layout are unchanged; only the header
+        chrome around them reads this token set — see
+        <a href="life-tracker-after.html">life-tracker-after.html</a>.
+      </p>
+      <div class="before-after">
+        <figure>
+          <img src="../before/life-tracker-390x844.png" alt="Before: Life Tracker at 390x844">
+          <figcaption>Before — 390×844</figcaption>
+        </figure>
+        <figure>
+          <img src="../after/life-tracker-390x844.png" alt="After: Life Tracker with new shared chrome at 390x844">
+          <figcaption>After — 390×844 (shared chrome only)</figcaption>
+        </figure>
+      </div>
+    </div>
+  </main>
+
+  <script src="motifs.js"></script>
+  <script src="ambience.js"></script>
+  <script src="flow.js"></script>
+  <script>
+    const { mountMenu, setProfile } = window.FLOW;
+    const setTray = mountMenu('Ask a Question');
+    document.getElementById('open-menu-2').addEventListener('click', () => setTray(true));
+
+    // the colour comes from ?profile= (round 7) or the page default, Blue
+  </script>
+</body>
+</html>

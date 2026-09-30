@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ask a Question — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
+<link rel="stylesheet" href="flow.css">
+<style>
+  /* ---- Ask a Question (round 6: Quick Question and In-Depth are one destination;
+     this page is the front door, "Add in-depth details" the way deeper): the
+     attached card is the hero (shared parts live in flow.css) ---- */
+  .page-content { width: min(36rem, 92vw); padding-top: 0.8rem; }
+  .qq { display: grid; gap: 0.8rem; }
+  .qq.hidden { display: none; }
+  .answer-block { display: none; }
+  .answer-block.shown { display: grid; }
+  .from-history { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; margin: -0.3rem 0 0; font-size: 0.76rem; color: var(--text-muted); }
+  .from-history .glyph { color: var(--accent-soft); }
+</style>
+</head>
+<body data-tray-open="false">
+  <header class="app-header">
+    <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <a class="brand-mark" href="../index.html" aria-label="TheJudge home"><span class="orb" aria-hidden="true"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></a>
+    <div class="header-side"></div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="page-content">
+    <section id="pre-submit" class="qq" data-searching="false">
+      <div class="flow-head">
+        <h1>Ask a Question</h1>
+        <div class="attach">
+          <button class="icon-chip" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
+          <a class="icon-chip" id="scan-btn" href="card-scan.html?back=quick-question.html&into=your%20question"><span class="glyph">▣</span> Scan</a>
+        </div>
+      </div>
+
+      <div class="stage" id="stage">
+        <div class="ring" id="ring">
+          <button class="arrow prev" id="prev" aria-label="Previous card">‹</button>
+          <button class="arrow next" id="next" aria-label="Next card">›</button>
+        </div>
+        <div class="dots" id="dots"></div>
+      </div>
+      <div class="strip" id="strip" aria-label="Attached cards"></div>
+
+      <div class="composer">
+        <div class="search-pop" id="search-pop">
+          <div class="search-row">
+            <span class="glyph">⌕</span>
+            <input class="field" id="card-search" placeholder="Search for a card to add" autocomplete="off">
+          </div>
+          <div class="search-results" id="search-results"></div>
+        </div>
+        <!-- round 7: "Add in-depth details" lives inside the question box, at its
+             left end, beside the text — one control among the box's own, not a
+             row of its own -->
+        <div class="q-box">
+          <button class="deep" id="go-deep" title="Add in-depth details — your cards come with you" aria-label="Add in-depth details"><span class="glyph">◈</span><span class="lbl">In-depth</span></button>
+          <!-- round 11: the hint shortens in tiers as the box narrows; the 300-character budget is the ring round the send pill -->
+          <textarea id="question-field" rows="1" placeholder="What would you like to know?" data-placeholders="What would you like to know?|Ask your question…|Ask…" maxlength="300" aria-label="Your question"></textarea>
+          <span class="q-count" id="char-count">0 / 300</span>
+          <span class="send-wrap"><svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><path class="track" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/><path class="fill" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/></svg><span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your question" title="Speak your question"></button><button class="send" id="send-request" aria-label="Send request" title="Send request">➤</button></span></span>
+        </div>
+      </div>
+    </section>
+
+    <!-- answered: the conversation (same component as In-Depth's chat) -->
+    <section id="answered" class="chat answer-block" aria-label="Conversation">
+      <!-- round 9: two ways on — Edit cards goes back to this request with its cards and
+           question intact; ↺ Start over wipes everything and gives a clean page -->
+      <div class="chat-head"><h1>Ask a Question</h1><div class="tools"><button class="icon-chip" id="edit-request" title="Change the cards or the question, then ask again"><span class="glyph">✎</span> Edit cards</button><button class="icon-round" id="ask-another" aria-label="Start over — clears the cards and the question" title="Start over — clears the cards and the question">↺</button></div></div>
+      <!-- round 11: a conversation reopened from Question History says so, and stays live -->
+      <p class="from-history" id="from-history" hidden></p>
+      <div class="chat-cards" id="chat-cards"></div>
+      <div class="thread" id="thread"></div>
+      <div class="followup">
+        <textarea id="followup-field" rows="1" placeholder="Ask a follow-up…" data-placeholders="Ask a follow-up…|Follow up…" maxlength="300" aria-label="Follow-up question"></textarea>
+        <span class="fu-count" id="fu-count">0/300</span>
+        <span class="send-wrap"><svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><path class="track" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/><path class="fill" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/></svg><span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your follow-up" title="Speak your follow-up"></button><button class="send" id="followup-send" aria-label="Send">➤</button></span></span>
+      </div>
+    </section>
+
+    <div class="demo-bar" aria-label="Mockup state (demo only)">
+      <span class="tag">demo</span><span>state:</span>
+      <button data-state="9" aria-pressed="false">9 cards</button>
+      <button data-state="5" aria-pressed="true">5 cards</button>
+      <button data-state="2" aria-pressed="false">2 cards</button>
+      <button data-state="1" aria-pressed="false">1 card</button>
+      <button data-state="noimg" aria-pressed="false">1 card, image unavailable</button>
+      <button data-state="0" aria-pressed="false">no cards</button>
+      <span style="margin-left:0.6rem">answer:</span>
+      <button data-wait="long" aria-pressed="true">after a long wait (45 s, real time)</button>
+      <button data-wait="quick" aria-pressed="false">quickly</button>
+      <span style="margin-left:0.6rem">question:</span>
+      <button data-typed="0" aria-pressed="true">empty</button>
+      <button data-typed="150" aria-pressed="false">half typed</button>
+      <button data-typed="285" aria-pressed="false">near the cap</button>
+    </div>
+    <p class="foot-note">
+      Before: <a href="../before/quick-question-390x844.png">quick-question-390x844.png</a> ·
+      <a href="../before/quick-question-1440x900.png">quick-question-1440x900.png</a>.
+      Card images are the app's own corpus art via Scryfall (unchanged from today). The dashed strip above is mockup scaffolding, not app UI.
+    </p>
+  </main>
+
+  <script src="motifs.js"></script>
+  <script src="ambience.js"></script>
+  <script src="flow.js"></script>
+  <script>
+    const { img, library, cardMarkup, openDetail, bindComposer, applyRing, thumb, chatMarkup, bindRefs, mountMenu, byName } = window.FLOW;
+    mountMenu('Ask a Question');
+    const MAX_CARDS = 10; // round 6: the cap rises to today's stack limit (MAX_STACK_SIZE = 10)
+    const starter = library.slice();
+    let attached = starter.slice(0, 5);
+    let focus = 0;
+    let breakImages = false;
+    const $ = (s) => document.getElementById(s);
+    const ring = $('ring');
+    const els = new Map(); // card id -> element, reused so the move animates
+
+    function place(el, d) {
+      el.style.setProperty('--d', d);
+      el.style.setProperty('--ad', Math.abs(d));
+      el.dataset.front = d === 0 ? 'true' : 'false';
+      el.dataset.offstage = Math.abs(d) > 1 ? 'true' : 'false';
+    }
+
+    function cardEl(c, summon) {
+      const el = document.createElement('div');
+      el.className = 'card' + (summon ? ' summon' : '');
+      el.innerHTML = cardMarkup(c, { broken: breakImages });
+      applyRing(el, c);
+      el.addEventListener('animationend', () => el.classList.remove('summon'));
+      el.addEventListener('click', (e) => {
+        if (e.target.closest('.card-widget')) return;
+        if (el.dataset.front !== 'true') { focus = attached.indexOf(c); render(); }
+      });
+      el.querySelector('.remove').addEventListener('click', () => { attached.splice(attached.indexOf(c), 1); render(); });
+      el.querySelector('.info').addEventListener('click', () => openDetail(c));
+      return el;
+    }
+
+    let summonNext = false;
+    function render() {
+      const n = attached.length;
+      for (const [id, el] of els) if (!attached.some((c) => c.id === id)) { el.remove(); els.delete(id); }
+      $('stage').hidden = n === 0;
+      $('strip').hidden = n === 0;
+
+      if (n > 0) {
+        focus = ((focus % n) + n) % n;
+        attached.forEach((c, i) => {
+          let el = els.get(c.id);
+          if (!el) { el = cardEl(c, summonNext); els.set(c.id, el); ring.appendChild(el); }
+          // shortest signed distance around the ring; only |d| <= 1 is on stage
+          let d = i - focus;
+          if (d > n / 2) d -= n;
+          if (d < -n / 2) d += n;
+          place(el, d);
+        });
+      }
+      summonNext = false;
+      $('prev').hidden = $('next').hidden = n < 2;
+      $('dots').innerHTML = n > 1 ? attached.map((_, i) => '<span data-on="' + (i === focus) + '"></span>').join('') + '<span class="n">' + (focus + 1) + ' / ' + n + '</span>' : '';
+      $('strip').innerHTML = attached.map((c) => thumb(c)).join('') + '<span class="note">' + n + ' of ' + MAX_CARDS + ' attached</span>';
+      const add = $('add-card');
+      add.innerHTML = n >= MAX_CARDS ? '<span class="glyph">＋</span> ' + MAX_CARDS + ' / ' + MAX_CARDS : '<span class="glyph">＋</span> Add card';
+      add.disabled = n >= MAX_CARDS;
+      if (n >= MAX_CARDS) closeSearch();
+      renderSearch();
+    }
+
+    // ---- search (demo: a fixed shortlist, filtered by what is typed) ----
+    function renderSearch() {
+      const q = $('card-search').value.trim().toLowerCase();
+      const hits = library.filter((c) => !attached.includes(c) && (!q || c.name.toLowerCase().includes(q)));
+      $('search-results').innerHTML = hits.map((c) =>
+        '<button type="button" data-i="' + library.indexOf(c) + '">' + thumb(c) + '<span>' + c.name + '</span><span class="type">' + c.type + '</span></button>'
+      ).join('');
+      $('search-results').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => {
+        attached.push(library[Number(b.dataset.i)]);
+        focus = attached.length - 1;
+        $('card-search').value = '';
+        summonNext = true;
+        closeSearch();
+        render();
+      }));
+    }
+    function openSearch() {
+      $('search-pop').classList.add('open');
+      $('pre-submit').dataset.searching = 'true';
+      $('add-card').setAttribute('aria-expanded', 'true');
+      renderSearch();
+      $('card-search').focus();
+    }
+    function closeSearch() {
+      $('search-pop').classList.remove('open');
+      $('pre-submit').dataset.searching = 'false';
+      $('add-card').setAttribute('aria-expanded', 'false');
+    }
+    $('add-card').addEventListener('click', () => ($('search-pop').classList.contains('open') ? closeSearch() : openSearch()));
+    $('card-search').addEventListener('input', renderSearch);
+    $('card-search').addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSearch(); });
+
+    // ---- ring navigation ----
+    $('prev').addEventListener('click', () => { focus -= 1; render(); });
+    $('next').addEventListener('click', () => { focus += 1; render(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.target.matches('input, textarea')) return;
+      if (e.key === 'ArrowLeft') { focus -= 1; render(); }
+      if (e.key === 'ArrowRight') { focus += 1; render(); }
+    });
+
+    // ---- demo bar ----
+    document.querySelectorAll('.demo-bar [data-state]').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.demo-bar [data-state]').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true');
+      const s = b.dataset.state;
+      breakImages = s === 'noimg';
+      for (const el of els.values()) el.remove();
+      els.clear();
+      attached = starter.slice(0, s === 'noimg' ? 1 : Number(s)); focus = 0; closeSearch(); render();
+    }));
+
+    // round 15: the demo can fill the question box so the budget ring is seen as it
+    // will be — empty (no ring at all), half typed, near the cap
+    const TYPED_EXAMPLE = 'If I cast Lightning Bolt targeting my opponent and they respond with Counterspell, but I then tap Sol Ring and cast a second spell in response, which of these resolves first, and does the Bolt still deal its three damage if the Counterspell is itself countered by something else on the stack?';
+    document.querySelectorAll('.demo-bar [data-typed]').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.demo-bar [data-typed]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      $('question-field').value = TYPED_EXAMPLE.slice(0, Number(b.dataset.typed));
+      $('question-field').dispatchEvent(new Event('input'));
+    }));
+
+    // ---- composer → conversation ----
+    bindComposer($('question-field'), $('char-count'), $('char-meter'));
+    bindComposer($('followup-field'), $('fu-count'), null);
+    $('send-request').addEventListener('click', () => {
+      const question = $('question-field').value.trim() || 'How do Lightning Bolt and Counterspell interact on the stack?';
+      $('pre-submit').classList.add('hidden'); $('answered').classList.add('shown');
+      $('chat-cards').innerHTML = attached.length
+        ? '<span class="lbl">Cards</span>' + attached.map((c) => thumb(c, 'tap')).join('')
+        : '<span class="lbl">No cards attached</span>';
+      bindRefs($('chat-cards'));
+      $('from-history').hidden = true;
+      const msgs = [{ who: 'you', text: question }, { who: 'judge', text: '' }];
+      thread = msgs;
+      $('thread').innerHTML = chatMarkup(msgs);
+      // round 8: the wait plays today's lines in the judge's bubble. Round 9: at
+      // real speed — the lines change when they change for a player (3 s, 8 s,
+      // 15 s, 25 s, 40 s); the long demo answers after 45 s, the quick one after 2 s
+      stopWait = window.FLOW.runWait($('thread'), { speed: 1, until: longWait ? 45 : 2, onDone: () => {
+        msgs[1] = { who: 'judge', text:
+          'If [[Counterspell]] is cast while [[Lightning Bolt]] is on the stack, Counterspell resolves first — the last spell put on the stack resolves first.\n' +
+          'Counterspell counters Lightning Bolt: the Bolt is put into its owner\'s graveyard and deals no damage. Nothing on the battlefield is affected, and priority returns to the active player.',
+        };
+        $('thread').innerHTML = chatMarkup(msgs);
+        bindRefs($('thread'));
+      } });
+    });
+    let stopWait = () => {}, longWait = true;
+    document.querySelectorAll('[data-wait]').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('[data-wait]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      longWait = b.dataset.wait === 'long';
+    }));
+    // round 9: ✎ Edit cards returns to the request as it was; ↺ Start over wipes it
+    // (no cards, an empty question) and gives a clean page
+    const backToRequest = () => { stopWait(); $('answered').classList.remove('shown'); $('pre-submit').classList.remove('hidden'); };
+    $('edit-request').addEventListener('click', () => { backToRequest(); render(); });
+    $('ask-another').addEventListener('click', () => {
+      backToRequest();
+      for (const el of els.values()) el.remove();
+      els.clear(); attached = []; focus = 0; closeSearch();
+      $('question-field').value = ''; $('question-field').dispatchEvent(new Event('input'));
+      document.querySelectorAll('.demo-bar [data-state]').forEach((x) => x.setAttribute('aria-pressed', x.dataset.state === '0'));
+      render(); $('question-field').focus();
+    });
+    // one Question (round 6): the attached cards carry over into the in-depth details, which ask for their zones at the Cards step
+    $('go-deep').addEventListener('click', () => { location.href = 'in-depth-question.html?carry=' + encodeURIComponent(attached.map((c) => c.name).join('|')); });
+
+    // ---- round 11: a saved question reopens here, live. The cards come back to
+    // the strip, the whole thread to the chat, and the follow-up box is ready —
+    // exactly what today's app does when a history entry is tapped. ----
+    let thread = [];
+    function showThread() { $('thread').innerHTML = chatMarkup(thread); bindRefs($('thread')); $('thread').scrollTop = 1e6; }
+    window.FLOW.onOpenHistory = (h) => {
+      stopWait();
+      attached = h.cards.map(byName).filter(Boolean); focus = 0;
+      for (const el of els.values()) el.remove(); els.clear(); render();
+      $('pre-submit').classList.add('hidden'); $('answered').classList.add('shown');
+      $('chat-cards').innerHTML = attached.length ? '<span class="lbl">Cards</span>' + attached.map((c) => thumb(c, 'tap')).join('') : '<span class="lbl">No cards attached</span>';
+      bindRefs($('chat-cards'));
+      $('from-history').hidden = false;
+      $('from-history').innerHTML = '<span><span class="glyph">◷</span> Reopened from your history · <b>' + h.mode + '</b> · asked ' + h.when + (h.context ? ' · ' + h.context : '') + '</span>';
+      thread = window.FLOW.historyMessages(h); showThread();
+      $('followup-field').focus();
+      history.replaceState(null, '', location.pathname + location.search.replace(/[?&]history=[^&]*/, '').replace(/^&/, '?'));
+    };
+    const wanted = window.FLOW.historyById(new URLSearchParams(location.search).get('history'));
+    // a follow-up appends to the thread and the judge answers after a short wait
+    $('followup-send').addEventListener('click', () => {
+      const t = $('followup-field').value.trim(); if (!t) return;
+      $('followup-field').value = ''; $('followup-field').dispatchEvent(new Event('input'));
+      thread.push({ who: 'you', text: t }, { who: 'judge', text: '' }); showThread();
+      stopWait = window.FLOW.runWait($('thread'), { speed: 1, until: 2, onDone: () => { thread[thread.length - 1] = { who: 'judge', text: 'Yes — the same rule applies: the last spell put on the stack resolves first, and nothing already resolved can be undone.' }; showThread(); } });
+    });
+    $('followup-field').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('followup-send').click(); } });
+    render();
+    if (wanted) window.FLOW.onOpenHistory(wanted);
+  </script>
+</body>
+</html>

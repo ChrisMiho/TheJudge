@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scan a card — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
+<link rel="stylesheet" href="flow.css">
+<style>
+  /* ---- Card scanning (round 7): the shipped scan screen (ScanCameraSurface +
+     ScanReviewBubble, DEC-052..062) re-dressed in the colour's chrome. Same
+     parts, same behaviour: a live viewfinder with the card guide, the
+     searching → locking → locked indicator with its vote bar, the mute toggle,
+     the "added this session" review bubble, the thumbs-up on each auto-add,
+     the debug toggle, Capture, Exit scan. The camera feed is a still here. ---- */
+  .page-content { width: min(36rem, 92vw); padding-top: 0.8rem; }
+  /* the column is the camera box's width, so the ✕ sits right over its corner */
+  @media (min-width: 720px) { .page-content { width: min(31.5rem, 92vw); } }
+  .scan { display: grid; gap: 0.8rem; }
+  .flow-head { align-items: center; }
+  /* round 8: the way out is a plain box with an ✕ in the corner above the camera
+     (the dead space at the top right) — and it is the only way out: the ‹ back
+     arrow is gone while the camera is open, so nobody steps back by accident */
+  .scan-exit { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 0.7rem; border: 1px solid var(--surface-edge);
+    background: color-mix(in srgb, var(--surface-panel) 85%, transparent); color: var(--text-primary); font-size: 1.15rem; text-decoration: none; transition: border-color 150ms ease, background 150ms ease; }
+  .scan-exit:hover, .scan-exit:focus-visible { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 18%, var(--surface-panel)); }
+
+  /* the viewfinder: a lit, rounded frame in the colour's edge; the feed inside */
+  .viewfinder {
+    position: relative; overflow: hidden; border-radius: 1.1rem; border: 1px solid var(--surface-edge);
+    background: #0b0b0d; height: clamp(20rem, calc(100dvh - 19rem), 42rem);
+    box-shadow: 0 20px 50px -30px #000, 0 0 40px -22px color-mix(in srgb, var(--accent) 80%, transparent);
+  }
+  @media (min-width: 720px) { .viewfinder { height: auto; aspect-ratio: 3 / 4; max-height: 42rem; } }
+  /* the still standing in for the camera: a table, a card lying on it */
+  .feed { position: absolute; inset: 0; background:
+    radial-gradient(80% 60% at 50% 40%, rgba(70, 58, 48, 0.55), transparent 70%),
+    radial-gradient(120% 90% at 50% 100%, rgba(0, 0, 0, 0.6), transparent 60%),
+    linear-gradient(180deg, #2a2420, #17130f 60%, #0e0b09); filter: saturate(0.85); }
+  .feed::after { content: ""; position: absolute; inset: 0; background:
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0 2px, transparent 2px 4px); mix-blend-mode: screen; }
+  .feed .table-card { position: absolute; left: 50%; top: 50%; width: 58%; aspect-ratio: 63 / 88; transform: translate(-50%, -49%) rotate(-3deg);
+    border-radius: 4.5% / 3.2%; overflow: hidden; box-shadow: 0 18px 40px -14px #000, 0 2px 6px rgba(0,0,0,0.6); filter: contrast(0.95) brightness(0.92) blur(0.2px); }
+  .feed .table-card img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  [data-state="searching"] .feed .table-card, [data-state="camera-error"] .feed .table-card { display: none; }
+  [data-state="nudge"] .feed .table-card { transform: translate(-42%, -38%) rotate(-14deg) scale(0.8); filter: blur(1.4px) brightness(0.8); }
+  [data-state="camera-error"] .feed { background: #111114; }
+  /* the dim outside the guide, the guide itself: the colour's light, corner ticks */
+  /* round 8: the frame has three bands that never overlap — the top band (the
+     indicator at the left, the scanned count at the right), the guide in the
+     middle, the foot band (sound, credit, Debug). The guide is quieter: a thin
+     line of the colour's light that breathes slowly while locking, a soft glow
+     at most — mystical, not a targeting reticle. */
+  .guide { position: absolute; left: 50%; top: 74px; height: calc(100% - 74px - 52px); aspect-ratio: 745 / 1040; transform: translateX(-50%);
+    border-radius: 0.8rem; border: 1.5px solid color-mix(in srgb, var(--accent-soft) 55%, transparent);
+    box-shadow: 0 0 0 999px rgba(9, 9, 11, 0.42), 0 0 14px -8px color-mix(in srgb, var(--accent-soft) 50%, transparent); pointer-events: none; }
+  .guide .tick { position: absolute; width: 16px; height: 16px; border: 2px solid color-mix(in srgb, var(--accent-soft) 85%, transparent); }
+  .guide .tick.tl { left: -3px; top: -3px; border-right: 0; border-bottom: 0; border-top-left-radius: 0.8rem; }
+  .guide .tick.tr { right: -3px; top: -3px; border-left: 0; border-bottom: 0; border-top-right-radius: 0.8rem; }
+  .guide .tick.bl { left: -3px; bottom: -3px; border-right: 0; border-top: 0; border-bottom-left-radius: 0.8rem; }
+  .guide .tick.br { right: -3px; bottom: -3px; border-left: 0; border-top: 0; border-bottom-right-radius: 0.8rem; }
+  [data-state="locking"] .guide { animation: guide-breathe 3.2s ease-in-out infinite; }
+  @keyframes guide-breathe {
+    0%, 100% { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); box-shadow: 0 0 0 999px rgba(9, 9, 11, 0.42), 0 0 14px -8px color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+    50% { border-color: color-mix(in srgb, var(--accent-soft) 80%, transparent); box-shadow: 0 0 0 999px rgba(9, 9, 11, 0.42), 0 0 20px -8px color-mix(in srgb, var(--accent-soft) 70%, transparent); }
+  }
+  /* the foot band: sound at the left, the shutter in the middle, Debug at the right.
+     Round 10 ("the capture button is massive … maybe a button where the
+     'Powered by Cardomancer' is"): Capture is a camera shutter — a ring of the
+     colour's light round a filled disc — sitting inside the frame where the
+     credit was; the credit moved under the frame. A press sinks the disc. */
+  .vf-foot { position: absolute; left: 0.75rem; right: 0.75rem; bottom: 0.55rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; z-index: 2; }
+  .vf-foot .mute { min-width: 36px; min-height: 30px; padding: 0 0.5rem; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent); background: rgba(9, 9, 11, 0.7); color: var(--text-primary); font-size: 0.85rem; cursor: pointer; }
+  .vf-foot .shutter { width: 54px; height: 54px; border-radius: 999px; padding: 0; cursor: pointer; display: grid; place-items: center;
+    border: 2px solid color-mix(in srgb, var(--accent-soft) 88%, transparent); background: rgba(9, 9, 11, 0.55);
+    box-shadow: 0 0 0 3px rgba(9, 9, 11, 0.45), 0 0 18px -4px color-mix(in srgb, var(--accent-soft) 70%, transparent); transition: transform 120ms ease; }
+  .vf-foot .shutter::before { content: ""; width: 40px; height: 40px; border-radius: 999px; display: block;
+    background: radial-gradient(circle at 38% 34%, color-mix(in srgb, var(--accent-soft) 55%, var(--accent)), var(--accent) 55%, var(--accent-strong)); transition: transform 120ms ease; }
+  .vf-foot .shutter:hover::before { transform: scale(1.05); }
+  .vf-foot .shutter:active::before { transform: scale(0.86); }
+  .vf-foot .shutter:active { transform: scale(0.97); }
+  .credit { margin: 0; text-align: center; color: color-mix(in srgb, var(--text-muted) 80%, transparent); font-size: 0.62rem; font-weight: 500; letter-spacing: 0.02em; }
+  /* the lock outline on the card the scanner is reading (DEC-083) */
+  .lock-outline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+  [data-state="locking"] .lock-outline { display: block; }
+  .lock-outline polygon { fill: none; stroke: color-mix(in srgb, var(--accent-soft) 85%, transparent); stroke-width: 1.8; stroke-dasharray: 10 6; animation: march 2.4s linear infinite; filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-soft) 60%, transparent)); }
+  @keyframes march { to { stroke-dashoffset: -32; } }
+  /* the indicator: searching hints, "Locking on <card>" with the vote bar */
+  .indicator { position: absolute; left: 0.75rem; top: 0.6rem; max-width: calc(100% - 10rem); min-height: 44px; display: grid; gap: 0.3rem; padding: 0.5rem 0.75rem; border-radius: 0.8rem;
+    background: rgba(9, 9, 11, 0.78); border: 1px solid color-mix(in srgb, var(--accent-soft) 30%, transparent); backdrop-filter: blur(6px); font-size: 0.8rem; font-weight: 600; color: var(--text-primary); }
+  .indicator[hidden] { display: none; }
+  .indicator .votes { display: flex; align-items: center; gap: 0.5rem; }
+  .indicator .bar { width: 88px; height: 6px; border-radius: 999px; background: color-mix(in srgb, var(--text-muted) 30%, transparent); overflow: hidden; }
+  .indicator .bar i { display: block; height: 100%; width: 0; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); transition: width 150ms ease; }
+  .indicator .n { font-size: 0.7rem; color: var(--accent-soft); font-variant-numeric: tabular-nums; }
+  .indicator .dot { display: inline-block; width: 8px; height: 8px; border-radius: 999px; background: var(--accent-soft); box-shadow: 0 0 8px var(--accent-soft); margin-right: 0.4rem; vertical-align: middle; animation: think 1.2s ease-in-out infinite; }
+  [data-state="camera-error"] .indicator { border-color: rgba(255, 143, 163, 0.5); }
+  /* the frame's top-right (round 9): the caution triangle, then the count pill; the
+     pill's list drops beneath, aligned to the right edge */
+  .vf-top-right { position: absolute; right: 0.75rem; top: 0.6rem; display: flex; align-items: flex-start; gap: 0.4rem; z-index: 3; }
+  /* round 9 (owner): a yellow caution triangle beside the count — a tap says the
+     scanner is experimental and not fully working yet */
+  .caution { display: inline-grid; place-items: center; width: 44px; height: 44px; border-radius: 999px; border: 1px solid rgba(250, 204, 21, 0.55); background: rgba(9, 9, 11, 0.78); color: #facc15; cursor: pointer; backdrop-filter: blur(6px);
+    box-shadow: 0 0 14px -6px rgba(250, 204, 21, 0.8); transition: border-color 150ms ease, background 150ms ease; }
+  .caution:hover, .caution:focus-visible { border-color: #facc15; background: rgba(250, 204, 21, 0.14); }
+  .caution svg { width: 22px; height: 22px; display: block; }
+  .caution-panel { max-width: 22rem; border-color: rgba(250, 204, 21, 0.45); }
+  .caution-panel .ch { display: flex; align-items: center; gap: 0.6rem; margin: 0.2rem 2rem 0.5rem 0; }
+  .caution-panel .ch .caution { pointer-events: none; }
+  .caution-panel h2 { margin: 0; font-size: 1.1rem; }
+  .caution-panel p { margin: 0 0 0.6rem; font-size: 0.9rem; line-height: 1.5; color: var(--text-primary); }
+  .caution-panel p.text-muted { font-size: 0.82rem; }
+  .review-bubble { position: relative; display: grid; justify-items: end; gap: 0.4rem; }
+  .review-bubble .list { position: absolute; right: 0; top: calc(100% + 0.4rem); }
+  .review-bubble .pill { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 44px; padding: 0 0.8rem; border-radius: 999px; border: 0; cursor: pointer; font-weight: 700; font-size: 0.86rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff) 0%, var(--accent) 45%, var(--accent-strong) 100%); color: var(--text-on-accent); box-shadow: 0 8px 20px -10px var(--accent); }
+  .review-bubble .list { display: none; width: 16rem; max-width: calc(100vw - 2.5rem); padding: 0.6rem; border-radius: 0.9rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 92%, transparent); backdrop-filter: blur(10px); text-align: left; }
+  .review-bubble[data-open="true"] .list { display: grid; gap: 0.4rem; }
+  .review-bubble .list .lbl { font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
+  .review-bubble .list .note { font-size: 0.72rem; color: var(--text-muted); line-height: 1.35; margin: 0; }
+  .review-bubble .row { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 0.5rem; font-size: 0.82rem; }
+  .review-bubble .row .thumb { width: 30px; height: 42px; border-radius: 3px; }
+  .review-bubble .row .btn { min-height: 30px; padding: 0.1rem 0.55rem; font-size: 0.72rem; }
+  /* the thumbs-up on each auto-add */
+  .confirm { position: absolute; inset: 0; display: none; place-items: center; pointer-events: none; }
+  [data-state="added"] .confirm { display: grid; animation: confirm-pop 1.4s ease-out forwards; }
+  .confirm > div { display: grid; justify-items: center; gap: 0.2rem; padding: 0.9rem 1.4rem; border-radius: 1rem;
+    background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff) 0%, var(--accent) 45%, var(--accent-strong) 100%); color: var(--text-on-accent); box-shadow: 0 16px 40px -14px #000, 0 0 30px -8px var(--accent-soft); font-weight: 700; font-size: 0.9rem; }
+  .confirm .up { font-size: 2.2rem; line-height: 1; }
+  @keyframes confirm-pop { 0% { opacity: 0; transform: scale(0.8); } 15% { opacity: 1; transform: scale(1.06); } 30% { transform: scale(1); } 70% { opacity: 1; } 100% { opacity: 0; transform: scale(0.96); } }
+  /* Debug (round 8: "doesn't display anything … make it look nicer"): the
+     shipped overlay's three parts, dressed in the colour — the detected card's
+     outline and the art region the scanner reads, drawn on the feed; and the
+     live numbers as a panel under the frame, grouped, never over the camera */
+  .debug-toggle { min-height: 30px; padding: 0 0.7rem; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent); background: rgba(9, 9, 11, 0.7); color: var(--text-muted); font-size: 0.68rem; font-weight: 600; cursor: pointer; }
+  .debug-toggle[aria-pressed="true"] { border-color: var(--accent-soft); color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, rgba(9, 9, 11, 0.8)); }
+  .debug-geo { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
+  [data-debug="true"] .debug-geo { display: block; }
+  .debug-geo .detected { fill: none; stroke: color-mix(in srgb, var(--accent-soft) 70%, #fff); stroke-width: 1.2; opacity: 0.8; }
+  .debug-geo .region { fill: color-mix(in srgb, var(--accent) 18%, transparent); stroke: var(--accent-soft); stroke-width: 1.4; stroke-dasharray: 5 4; }
+  .debug-geo text { fill: var(--accent-soft); font: 600 9px var(--font-body); letter-spacing: 0.08em; }
+  .debug-panel { display: none; gap: 0.7rem; padding: 0.8rem 0.9rem; border-radius: 1rem; border: 1px solid color-mix(in srgb, var(--accent-soft) 30%, transparent);
+    background: radial-gradient(80% 60% at 0% 0%, color-mix(in srgb, var(--accent) 14%, transparent), transparent 70%), color-mix(in srgb, var(--surface-panel) 92%, transparent); }
+  [data-debug="true"] .debug-panel { display: grid; }
+  .debug-panel .dh { display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem; }
+  .debug-panel .dh b { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-soft); }
+  .debug-panel .dh span { font-size: 0.7rem; color: var(--text-muted); }
+  .debug-panel .groups { display: grid; gap: 0.7rem; grid-template-columns: 1fr; }
+  @media (min-width: 560px) { .debug-panel .groups { grid-template-columns: 1fr 1fr; } }
+  .debug-panel .grp { display: grid; gap: 0.25rem; align-content: start; }
+  .debug-panel .grp h4 { margin: 0 0 0.1rem; font-size: 0.62rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); }
+  .debug-panel .m { display: grid; grid-template-columns: 6.5rem 1fr auto; align-items: center; gap: 0.5rem; font-size: 0.74rem; }
+  .debug-panel .m span { color: var(--text-muted); }
+  .debug-panel .m b { font-variant-numeric: tabular-nums; font-weight: 600; text-align: right; font-family: ui-monospace, "SF Mono", Menlo, monospace; font-size: 0.72rem; }
+  .debug-panel .m i { height: 4px; border-radius: 999px; background: color-mix(in srgb, var(--text-muted) 22%, transparent); overflow: hidden; }
+  .debug-panel .m i::after { content: ""; display: block; height: 100%; width: var(--v, 0%); border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); }
+  .debug-panel .m i.none { background: transparent; }
+  .debug-panel .m i.none::after { display: none; }
+  /* under the frame (round 10): the credit line, then the hint — the full-width Capture is gone */
+  .scan-hint { margin: -0.2rem 0 0; font-size: 0.78rem; color: var(--text-muted); }
+  .camera-error { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 1rem; color: var(--text-muted); font-size: 0.9rem; }
+  [data-state="camera-error"] .camera-error { display: grid; }
+  .camera-error b { display: block; color: var(--text-primary); font-size: 1.05rem; margin-bottom: 0.3rem; font-family: var(--font-display); }
+  [data-state="camera-error"] .guide, [data-state="camera-error"] .debug-toggle, [data-state="camera-error"] .vf-foot .shutter { display: none; }
+</style>
+</head>
+<body data-tray-open="false">
+  <header class="app-header">
+    <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <a class="brand-mark" href="../index.html" aria-label="TheJudge home"><span class="orb" aria-hidden="true"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></a>
+    <div class="header-side"></div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the camera feed is a still — the scanner's parts and states are real</div>
+
+  <main class="page-content">
+    <section class="scan" id="scan" data-state="locking">
+      <div class="flow-head">
+        <h1>Scan a card</h1>
+        <a class="scan-exit" id="exit" href="quick-question.html" aria-label="Close the scanner" title="Close the scanner">✕</a>
+      </div>
+
+      <div class="viewfinder" id="viewfinder">
+        <div class="feed" aria-hidden="true"><div class="table-card" id="table-card"></div></div>
+        <svg class="lock-outline" viewBox="0 0 400 533" preserveAspectRatio="none" aria-hidden="true"><polygon id="lock-poly" points="98,128 312,110 304,412 86,430"/></svg>
+        <svg class="debug-geo" viewBox="0 0 400 533" preserveAspectRatio="none" aria-hidden="true">
+          <polygon class="detected" points="100,132 309,114 302,408 88,426"/>
+          <polygon class="region" points="116,166 294,151 290,262 110,277"/>
+          <text x="118" y="161">READ REGION</text>
+        </svg>
+        <div class="guide" data-testid="scan-alignment-guide">
+          <span class="tick tl"></span><span class="tick tr"></span><span class="tick bl"></span><span class="tick br"></span>
+        </div>
+        <div class="indicator" id="indicator" role="status" aria-live="polite"></div>
+        <div class="vf-top-right">
+          <button class="caution" id="caution" type="button" aria-haspopup="dialog" aria-label="Experimental feature — read more" title="Experimental"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.2 22 20.5H2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 9.2v5.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.25" fill="currentColor"/></svg></button>
+          <div class="review-bubble" id="review" data-open="false">
+            <button class="pill" id="review-pill" type="button" aria-expanded="false" aria-label="Scanned this session"><span aria-hidden="true">✓</span><span id="review-n">2</span></button>
+            <div class="list" id="review-list"></div>
+          </div>
+        </div>
+        <div class="confirm" id="confirm" role="status"><div><span class="up" aria-hidden="true">👍</span><span id="confirm-text">Added Sol Ring</span></div></div>
+        <div class="camera-error"><div><b>Camera unavailable</b>Allow camera access, or exit and add the card by search.</div></div>
+        <div class="vf-foot">
+          <button class="mute" id="mute" type="button" aria-pressed="false" aria-label="Mute scan sound">🔊</button>
+          <button class="shutter" id="capture" type="button" aria-label="Capture — read one frame by hand" title="Capture"></button>
+          <button class="debug-toggle" id="debug" type="button" aria-pressed="false">Debug</button>
+        </div>
+      </div>
+
+      <div class="debug-panel" id="debug-panel" aria-label="Scanner diagnostics"></div>
+
+      <p class="credit">Powered by Cardomancer</p>
+      <p class="scan-hint">Auto-scan is on: a confident match adds the card and keeps scanning. The shutter reads one frame by hand.</p>
+    </section>
+
+    <div class="demo-bar" aria-label="Mockup state (demo only)">
+      <span class="tag">demo</span><span>state:</span>
+      <button data-state="searching">searching</button>
+      <button data-state="nudge">hint · hold steady</button>
+      <button data-state="locking" aria-pressed="true">locking on</button>
+      <button data-state="added">added ✓</button>
+      <button data-state="camera-error">camera unavailable</button>
+      <button data-review="toggle">review bubble</button>
+      <button data-caution="toggle">caution pop-up</button>
+      <button data-debug-demo="toggle">debug</button>
+    </div>
+    <p class="foot-note">
+      No shipped screenshot exists for this screen (the camera needs a device). Parts map one-to-one to today's <code>ScanCameraSurface</code> and <code>ScanReviewBubble</code>; the states are the scanner's own (DEC-057). The dashed strip is mockup scaffolding, not app UI.
+    </p>
+  </main>
+
+  <!-- round 9: the caution's pop-up -->
+  <div class="overlay-backdrop" id="caution-modal" data-open="false">
+    <div class="overlay-panel caution-panel" role="dialog" aria-labelledby="caution-title">
+      <button class="icon-btn overlay-close" id="caution-close" aria-label="Close">✕</button>
+      <div class="ch"><span class="caution" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3.2 22 20.5H2Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/><path d="M12 9.2v5.2" stroke="currentColor" stroke-width="2.1" stroke-linecap="round"/><circle cx="12" cy="17.3" r="1.25" fill="currentColor"/></svg></span><h2 id="caution-title">Card scanning is experimental</h2></div>
+      <p>This feature is experimental and isn't fully functioning yet. It may miss a card, read the wrong one, or need a few tries — check what it adds before you ask.</p>
+      <p class="text-muted">You can always add a card by search instead.</p>
+      <div style="display:flex;justify-content:flex-end"><button class="btn primary" id="caution-ok" type="button">Got it</button></div>
+    </div>
+  </div>
+
+  <script src="motifs.js"></script>
+  <script src="ambience.js"></script>
+  <script src="flow.js"></script>
+  <script>
+    const { img, byName, thumb, mountMenu } = window.FLOW;
+    const $ = (s) => document.getElementById(s);
+    const q = new URLSearchParams(location.search);
+    const back = q.get('back') || 'quick-question.html';
+    const into = q.get('into') || 'your question';
+    mountMenu(back.startsWith('trade') ? 'Trade Balancer' : 'Ask a Question');
+    $('exit').href = back;
+    // round 8: "Adding to …" and its second count are gone — the one count is the pill in the frame
+    const joins = into === 'your question' ? 'your question' : /^Side /.test(into) ? into : 'the ' + into;
+
+    const leader = byName('Lightning Bolt');
+    $('table-card').innerHTML = '<img src="' + img(leader.id) + '" alt="">';
+    let added = [byName('Sol Ring'), byName('Llanowar Elves')];
+    let votes = 3, needed = 5, state = 'locking';
+
+    function render() {
+      $('scan').dataset.state = state;
+      const ind = $('indicator');
+      ind.hidden = false;
+      if (state === 'camera-error') ind.textContent = 'Camera unavailable';
+      else if (state === 'searching') ind.innerHTML = '<span><span class="dot"></span>Searching — fill the guide with a card</span>';
+      else if (state === 'nudge') ind.innerHTML = '<span><span class="dot"></span>Hold steady</span>';
+      else if (state === 'locking') ind.innerHTML = '<span>Locking on ' + leader.name + '</span><span class="votes"><span class="bar"><i style="width:' + Math.round(votes / needed * 100) + '%"></i></span><span class="n">' + votes + '/' + needed + '</span></span>';
+      else ind.innerHTML = '<span><span class="dot"></span>Good — hold steady</span>';
+      $('review').hidden = !added.length;
+      $('review-n').textContent = added.length;
+      // only what was scanned here — typed cards are never in this list, so a Remove here can't touch them
+      $('review-list').innerHTML = '<span class="lbl">Scanned just now</span>' + added.map((c, i) => '<div class="row">' + thumb(c) + '<span>' + c.name + '</span><button class="btn" data-i="' + i + '" type="button">Remove</button></div>').join('') +
+        '<p class="note">These join ' + joins + ' when you close the scanner.</p>';
+      renderDebug();
+      $('review-list').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { added.splice(Number(b.dataset.i), 1); render(); }));
+    }
+    // round 9: the caution triangle opens the "experimental" note
+    const cautionOpen = (open) => { $('caution-modal').dataset.open = open; if (open) $('caution-ok').focus(); else $('caution').focus(); };
+    $('caution').addEventListener('click', () => cautionOpen(true));
+    $('caution-close').addEventListener('click', () => cautionOpen(false));
+    $('caution-ok').addEventListener('click', () => cautionOpen(false));
+    $('caution-modal').addEventListener('click', (e) => { if (e.target === $('caution-modal')) cautionOpen(false); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') cautionOpen(false); });
+    $('review-pill').addEventListener('click', () => { const open = $('review').dataset.open !== 'true'; $('review').dataset.open = open; $('review-pill').setAttribute('aria-expanded', open); });
+    $('mute').addEventListener('click', () => { const m = $('mute').getAttribute('aria-pressed') !== 'true'; $('mute').setAttribute('aria-pressed', m); $('mute').textContent = m ? '🔇' : '🔊'; $('mute').setAttribute('aria-label', m ? 'Unmute scan sound' : 'Mute scan sound'); });
+    // Debug: the shipped overlay's numbers (ScanDebugOverlay), grouped; demo values that follow the state
+    function renderDebug() {
+      const on = $('debug').getAttribute('aria-pressed') === 'true';
+      $('scan').dataset.debug = on;
+      if (!on) return;
+      const locking = state === 'locking' || state === 'added';
+      const m = (label, value, bar) => '<div class="m"><span>' + label + '</span><i' + (bar == null ? ' class="none"' : ' style="--v:' + Math.round(bar * 100) + '%"') + '></i><b>' + value + '</b></div>';
+      const grp = (h, rows) => '<div class="grp"><h4>' + h + '</h4>' + rows.join('') + '</div>';
+      $('debug-panel').innerHTML = '<div class="dh"><b>Debug</b><span>phase · ' + (state === 'camera-error' ? 'error' : locking ? 'locking' : 'searching') + '</span></div><div class="groups">' +
+        grp('Match', [m('best', locking ? 'Lightning Bolt (41)' : '—'), m('runner-up', locking ? 'Chain Lightning (78)' : '—'), m('margin', locking ? '37' : '—'), m('votes', votes + '/' + needed, votes / needed)]) +
+        grp('Thresholds', [m('lockDistance', '60'), m('marginMin', '18')]) +
+        grp('Frame', [m('glare', state === 'nudge' ? '21%' : '4%', state === 'nudge' ? 0.21 : 0.04), m('sharpness', state === 'nudge' ? '0.38' : '0.82', state === 'nudge' ? 0.38 : 0.82), m('quality', state === 'nudge' ? '0.44' : '0.79', state === 'nudge' ? 0.44 : 0.79), m('reason', state === 'nudge' ? 'blur' : '—')]) +
+        grp('Camera', [m('frame', '1284'), m('native', '1920×1080'), m('track', '1920×1080'), m('facing', 'environment'), m('focus', 'continuous'), m('detector', state === 'searching' ? 'miss' : 'hit')]) +
+        '</div>';
+    }
+    $('debug').addEventListener('click', () => { $('debug').setAttribute('aria-pressed', $('debug').getAttribute('aria-pressed') !== 'true'); renderDebug(); });
+    document.querySelector('[data-debug-demo]').addEventListener('click', () => $('debug').click());
+    // Capture (or a completed lock): the card is added, the thumbs-up plays, scanning resumes
+    function addLeader() {
+      if (!added.includes(leader)) added.push(leader);
+      $('confirm-text').textContent = 'Added ' + leader.name;
+      state = 'added'; render();
+      setTimeout(() => { if (state === 'added') { state = 'searching'; render(); } }, 1500);
+    }
+    $('capture').addEventListener('click', addLeader);
+    document.querySelectorAll('.demo-bar [data-state]').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.demo-bar [data-state]').forEach((x) => x.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true');
+      if (b.dataset.state === 'added') return addLeader();
+      state = b.dataset.state; render();
+    }));
+    document.querySelector('[data-review]').addEventListener('click', () => $('review-pill').click());
+    document.querySelector('[data-caution]').addEventListener('click', () => cautionOpen(true));
+    render();
+  </script>
+</body>
+</html>

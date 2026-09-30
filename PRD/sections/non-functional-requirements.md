@@ -143,11 +143,12 @@
   - no layout-density/device-profile control, layout persistence, UA sniffing, or separate mobile/desktop component trees
   - themed and automatically responsive controls must remain readable and touch-friendly across supported viewports
   - palette persistence must degrade gracefully when browser storage is unavailable; the retired density key is ignored and never required for app load
-  - re-themed surfaces and semantic states (DEC-068 / REQ-046) must keep readable contrast across all six curated DEC-119/REQ-099 profiles; each fixed profile's `accent-contrast` must clear at least 4.5:1 against both `accent` and `accent-strong`, and consumers must reuse the existing accent tokens rather than adding token roles or duplicated color constants
+  - re-themed surfaces and semantic states (DEC-068 / REQ-046) must keep readable contrast across all six curated DEC-119/REQ-099 profiles; each fixed profile's `accent-contrast` must clear at least 4.5:1 against both `accent` and `accent-strong`. Under REQ-200 the bar is raised to the app's own measured worst cases (2026-09-24): primary body text at least 14.37:1, accent text at least 6.19:1, and filled-accent text at least 5.42:1, against the darkest and lightest point of each profile's wash. Consumers reuse REQ-200's single authoritative token set — the "rather than adding token roles" clause is superseded by that set — and never duplicate colour constants
   - arbitrary custom Colorless RGB is deliberately exempt from the curated-profile contrast guarantee: it is applied unchanged with no warning, validation, rejection, or correction; the fixed Colorless gray profile remains inside the quality gate
-  - restrained ambient accents (DEC-081 / REQ-060) apply only to REQ-060's closed minimum surface inventory, including DEC-118's context trigger/sheet/drawer and shared composer/workspace replacement surfaces, and must define resting, enhanced hover/focus, and selected/current intensity once through shared semantic styling
+  - restrained ambient accents (DEC-081 / REQ-060) cover at least REQ-060's inventory, including DEC-118's context trigger/sheet/drawer and shared composer/workspace replacement surfaces, and must define resting, enhanced hover/focus, and selected/current intensity once through shared semantic styling. REQ-200 extends the reach to every in-scope surface; the define-once rule is unchanged
   - card-identity rings remain independent from the selected palette, and scanner convergence/lock/confirmation motion remains unchanged
   - fluid responsive rules must not shrink body/supporting text below existing `text-sm` / `text-xs` or applicable primary controls below 44px touch targets
+  - Player Life Tracker inherits profile-driven shared chrome the same way every other destination does; its own screens, counters, and `lib/lifeTracker/` state stay untouched, and every slice that touches shared chrome or the token set attaches a before/after screenshot pair at 390x844 and 1440x900 to its PR for the owner's review (REQ-202)
   - the adaptive context surface is a bottom sheet below `768px` and right-side drawer at `768px+`; both preserve keyboard/focus accessibility and do not require a different component tree
 - Dependencies:
   - DEC-066
@@ -167,9 +168,13 @@
   - NFR-004
   - NFR-006
   - NFR-005
+  - REQ-200
+  - REQ-202
+  - REQ-205
 - Notes:
   - palette personalization should add delight without slowing the live-table interaction loop; viewport-appropriate spacing is automatic product behavior, not personalization
   - the fixed White/Blue/Black/Red/Green/Colorless profiles are polished product UI; only user-supplied Colorless RGB is permitted to produce poor contrast
+  - amended for the `ui-reimagining` pass (2026-09-24): the contrast bar is now the app's own measured worst cases rather than a generic 4.5:1, so the redesign cannot regress readability. The three figures were measured in the shipped app, not chosen.
 
 ### NFR-012
 - Title: Test-suite hygiene and CI efficiency

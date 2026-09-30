@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Motif gallery — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
+<link rel="stylesheet" href="flow.css">
+<style>
+  /* ---- the motif gallery (round 6): the owner's round-5 picks (White C, Blue C)
+     shown once, and four fresh candidates for Black (skull and bones), Red
+     (flames), Green (the sprouting seed) and Colorless (a circle with a swirl),
+     each at the three sizes it must survive. The letter the pages wear today
+     is marked. Symbols come from motifs.js. ---- */
+  .page-content { width: min(60rem, 94vw); padding-top: 0.8rem; display: grid; gap: 0.9rem; align-content: start; }
+  .demo-note { font-size: 0.84rem; color: var(--text-muted); margin: 0; line-height: 1.45; }
+  .colour { display: grid; gap: 0.6rem; padding: 0.9rem; border-radius: 1rem; border: 1px solid var(--surface-edge);
+    background: radial-gradient(70% 90% at 0% 0%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 70%), color-mix(in srgb, var(--surface-panel) 85%, transparent); }
+  .colour h2 { margin: 0; font-size: 1.05rem; display: flex; align-items: center; gap: 0.6rem; }
+  .colour h2 .dot { width: 14px; height: 14px; border-radius: 999px; background: var(--accent-soft); box-shadow: 0 0 12px var(--accent-soft); }
+  .colour .read { font-size: 0.78rem; color: var(--text-muted); margin: -0.3rem 0 0; }
+  .cands { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
+  @media (min-width: 720px) { .cands { grid-template-columns: repeat(4, 1fr); } }
+  .cand { display: grid; gap: 0.5rem; padding: 0.7rem; border-radius: 0.8rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); color: var(--accent-soft); }
+  .cand[data-current="true"] { border-color: color-mix(in srgb, var(--accent-soft) 50%, transparent); }
+  .cand .letter { display: flex; align-items: center; justify-content: space-between; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--text-muted); }
+  .cand .letter b { color: var(--text-primary); font-size: 0.9rem; letter-spacing: 0; }
+  .cand .letter .cur { font-size: 0.62rem; color: var(--accent-soft); }
+  .cand .name { font-size: 0.8rem; color: var(--text-primary); font-weight: 500; }
+  .cand .sizes { display: flex; align-items: center; gap: 0.6rem; }
+  .badge { position: relative; border-radius: 999px; background: #0e0e11; flex: 0 0 auto; display: grid; place-items: center;
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 45%, transparent), 0 0 16px -4px color-mix(in srgb, var(--accent) 80%, transparent); }
+  .badge svg { width: 86%; height: 86%; display: block; overflow: visible; }
+  .badge.lg { width: 112px; height: 112px; }
+  .badge.md { width: 38px; height: 38px; }
+  .badge.sm { width: 28px; height: 28px; }
+  /* the round-7 theme circle: the symbol dark on a light disc of the colour */
+  .cand .mana { width: 38px; height: 38px; border-radius: 999px; background: var(--accent-soft); color: #0e0e11; --disc: var(--accent-soft); display: grid; place-items: center; margin-left: auto;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.18), 0 2px 8px -3px rgba(0,0,0,0.7); }
+  .cand .mana svg { width: 27px; height: 27px; display: block; }
+  .cand .glyph-only { display: grid; place-items: center; width: 44px; height: 44px; }
+  .cand .glyph-only svg { width: 36px; height: 36px; }
+</style>
+</head>
+<body data-tray-open="false">
+  <header class="app-header">
+    <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <a class="brand-mark" href="../index.html" aria-label="TheJudge home"><span class="orb" aria-hidden="true"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></a>
+    <div class="header-side"></div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · motif gallery — the six picks are final (round 7); Green A is redrawn</div>
+
+  <main class="page-content">
+    <div class="flow-head"><h1>Motif gallery</h1></div>
+    <p class="demo-note">
+      Round 7. Every colour now has its pick: White C, Blue C, Black A, Red A,
+      Green A, Colorless C — all drawn for this app, no Wizards glyphs. Green A
+      is <b>redrawn</b> on your note: the dot above the sprout is gone, the stem
+      bends and curls into a tendril, the two leaves differ in size and height,
+      the soil line sits off-centre — asymmetric and a little mystical instead
+      of a diagram. The other candidates stay here for the record. Each sits on
+      the dark disc it wears in the brand orb and the judge's seal, at the three
+      sizes it must survive; the row below each shows the round-7 <b>theme
+      circle</b> — the symbol dark on a light disc of its colour, a play on the
+      printed mana symbols, as the Menu's Theme row wears it.
+    </p>
+    <div id="gallery"></div>
+  </main>
+
+  <script src="motifs.js"></script>
+  <script src="ambience.js"></script>
+  <script src="flow.js"></script>
+  <script>
+    window.FLOW.mountMenu('Motif gallery');
+    const { CANDIDATES, CHOSEN, use } = window.MOTIFS;
+    const ROWS = [
+      ['white', 'White', 'warm, luminous authority — light against stone · your round-5 pick'],
+      ['blue', 'Blue', 'charged energy — glowing cyan, vortices and orbs · your round-5 pick'],
+      ['black', 'Black', 'decay with a glow — the cracked skull in line (A)'],
+      ['red', 'Red', 'heat against darkness — the three-tongued flame (A)'],
+      ['green', 'Green', 'a forest at dusk — the sprout, redrawn in round 7 (A)'],
+      ['colorless', 'Colorless', 'mystical and alien — the vortex (C), not a second Blue']
+    ];
+    document.getElementById('gallery').innerHTML = ROWS.map(([id, name, read]) =>
+      '<section class="colour" data-profile="' + id + '"><h2><span class="dot"></span>' + name + '</h2><p class="read">' + read + '</p><div class="cands">' +
+      CANDIDATES[id].map(([l, n]) => { const sid = id + '-' + l; const cur = l === CHOSEN[id]; return '<div class="cand" data-current="' + cur + '"><div class="letter"><b>' + l.toUpperCase() + '</b>' + (cur ? '<span class="cur">your pick</span>' : '') + '</div>' +
+        '<div class="sizes"><span class="badge lg">' + use(sid) + '</span><span class="badge md">' + use(sid) + '</span><span class="badge sm">' + use(sid) + '</span><span class="mana">' + use(sid) + '</span></div><span class="name">' + n + '</span></div>'; }).join('') +
+      '</div></section>').join('');
+    document.getElementById('gallery').style.display = 'grid';
+    document.getElementById('gallery').style.gap = '0.9rem';
+  </script>
+</body>
+</html>
