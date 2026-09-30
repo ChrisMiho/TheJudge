@@ -1,0 +1,403 @@
+<!doctype html>
+<html lang="en" data-profile="blue">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Life Tracker · the menus behind the table — direction 1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="tokens.css">
+<link rel="stylesheet" href="shell.css">
+<link rel="stylesheet" href="ambience.css">
+<link rel="stylesheet" href="flow.css">
+<style>
+  /*
+   * Life Tracker — round 11. The owner: "the main life interface is set up
+   * perfectly … but the menus within the life tracker app could use some
+   * refreshment, so I'd like to explore refining only those back menus."
+   * The table itself is NOT redrawn (REQ-202): it is the same pixel crop of
+   * today's screen life-tracker-after.html shows. What this page adds is the
+   * two sheets a player opens from it, redrawn in the shared language —
+   *   · Game Setup, behind the ⚙ gear: reset / new game, players and names,
+   *     layout and card style, starting life
+   *   · Counters for a player, behind the small seat-map on their card:
+   *     commander damage from each other seat, the named counters, custom ones
+   * — plus the confirm sheet Reset and New Game ask through. Every control,
+   * option, default and range is today's (GameSetupPanel.tsx, CounterPanel.tsx);
+   * only the clothes change.
+   */
+  .life-table-frame { flex: 1; min-height: 0; display: flex; background: #09090b; position: relative; }
+  .life-table-frame picture, .life-table-frame img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top center; }
+  /* the seat-map on each card is what opens Counters today: a transparent tap target sits over each one in the crop */
+  .seat-hit { position: absolute; width: 18%; height: 9%; border: 0; background: transparent; cursor: pointer; border-radius: 0.6rem; }
+  .seat-hit:hover, .seat-hit:focus-visible { outline: 2px dashed var(--accent-soft); outline-offset: 2px; }
+  .header-side .day { display: inline-flex; align-items: center; gap: 0.35rem; min-height: 40px; padding: 0 0.8rem; border-radius: 999px; font-size: 0.82rem; font-weight: 600; }
+  .header-side .day .glyph { color: var(--accent-soft); }
+
+  /* ---- the sheet: head, scrolling body, a lit foot bar (Done) ---- */
+  .lt-sheet { display: flex; flex-direction: column; padding: 0; }
+  .lt-head { flex: 0 0 auto; padding: 1.1rem 3.2rem 0.7rem 1rem; border-bottom: 1px solid var(--surface-edge); }
+  @media (max-width: 599px) { .lt-head { padding-top: 1.4rem; } }
+  .lt-head small { display: block; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-soft); }
+  .lt-head h2 { margin: 0.1rem 0 0; font-size: 1.3rem; display: flex; align-items: baseline; gap: 0.5rem; flex-wrap: wrap; }
+  .lt-head h2 .life { font-size: 0.9rem; color: var(--text-muted); font-weight: 500; }
+  .lt-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0.8rem 1rem 1rem; display: grid; gap: 1rem; align-content: start; scrollbar-width: thin; }
+  .lt-foot { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; min-height: 52px; padding: 0.7rem 1rem;
+    border: 0; border-top: 1px solid var(--surface-edge); background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 24%, transparent), color-mix(in srgb, var(--accent) 6%, transparent));
+    color: var(--text-primary); font-weight: 600; font-size: 0.92rem; cursor: pointer; text-align: left; width: 100%; }
+  .lt-foot:hover { background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 38%, transparent), color-mix(in srgb, var(--accent) 12%, transparent)); }
+  .lt-foot .chev { color: var(--accent-soft); font-size: 1.2rem; }
+  .lt-sec { display: grid; gap: 0.5rem; }
+  .lt-sec > .lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: flex; justify-content: space-between; align-items: baseline; gap: 0.5rem; }
+  .lt-sec > .lbl small { text-transform: none; letter-spacing: 0; font-size: 0.72rem; }
+  @media (min-width: 600px) {
+    .lt-sheet.drawer-panel { width: min(32rem, 92vw); max-height: min(44rem, calc(100dvh - 3rem)); overflow: hidden; }
+    .lt-sheet .lt-body { max-height: none; }
+  }
+
+  /* tray-style rows (as the Menu): a glyph, the words, a hint, a chevron */
+  .lt-rows { display: grid; gap: 0.15rem; margin: 0 -0.35rem; }
+  .lt-rows button { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 0.6rem; width: 100%; min-height: 50px; padding: 0.35rem 0.6rem; text-align: left;
+    border: 1px solid transparent; border-radius: 0.7rem; background: transparent; color: var(--text-primary); font-weight: 500; font-size: 0.92rem; cursor: pointer; transition: background 150ms ease; }
+  .lt-rows button:hover, .lt-rows button:focus-visible { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .lt-rows .glyph { width: 30px; height: 30px; display: grid; place-items: center; color: var(--accent-soft); font-size: 1.05rem; }
+  .lt-rows .words { display: grid; gap: 0.05rem; min-width: 0; }
+  .lt-rows .words small { font-weight: 400; font-size: 0.74rem; color: var(--text-muted); }
+  .lt-rows .chev { color: var(--accent-soft); }
+  .lt-rows button.danger .glyph { color: #ff8fa3; }
+
+  /* the stepper: − count + on one pill */
+  .stepper { display: inline-flex; align-items: center; border-radius: 999px; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); overflow: hidden; }
+  .stepper button { width: 46px; height: 44px; border: 0; background: transparent; color: var(--accent-soft); font-size: 1.2rem; cursor: pointer; }
+  .stepper button:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .stepper button:disabled { opacity: 0.35; cursor: default; }
+  .stepper .val { min-width: 6.5rem; text-align: center; font-weight: 700; font-variant-numeric: tabular-nums; font-family: var(--font-display); font-size: 1rem; }
+  .stepper .val small { display: block; font-weight: 500; font-size: 0.66rem; color: var(--text-muted); font-family: var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; }
+  .players-line { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
+  .link { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.8rem; cursor: pointer; min-height: 36px; padding: 0 0.3rem; }
+  .names { display: none; grid-template-columns: 1fr; gap: 0.4rem; }
+  .names[data-open="true"] { display: grid; }
+  @media (min-width: 600px) { .names { grid-template-columns: 1fr 1fr; } }
+  .names label { display: grid; grid-template-columns: 4.2rem 1fr; align-items: center; gap: 0.5rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
+  .names .field { min-height: 40px; font-size: 0.9rem; }
+
+  /* one segmented pill for a two- or three-way choice */
+  .seg { display: inline-flex; border-radius: 999px; border: 1px solid var(--surface-edge); overflow: hidden; background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
+  .seg button { display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; flex: 1 1 0; min-height: 42px; padding: 0 0.9rem; border: 0; background: transparent; color: var(--text-muted); font-size: 0.86rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+  .seg button + button { border-left: 1px solid var(--surface-edge); }
+  .seg button .glyph { color: var(--accent-soft); font-size: 1rem; }
+  .seg button[aria-pressed="true"] { color: var(--text-primary); background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-soft) 45%, transparent); }
+  .seg.full { display: flex; }
+  .pair { display: grid; gap: 0.6rem; }
+  @media (min-width: 600px) { .pair { grid-template-columns: 1fr 1fr; } }
+  .pair .sub { display: grid; gap: 0.35rem; }
+  .pair .sub small { font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); }
+
+  /* starting life: presets as pills, Custom opens a field */
+  .life-pills { display: flex; flex-wrap: wrap; gap: 0.4rem; align-items: center; }
+  .life-pills button { min-width: 3.2rem; min-height: 42px; padding: 0 0.9rem; border-radius: 999px; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
+    color: var(--text-primary); font-weight: 700; font-variant-numeric: tabular-nums; font-family: var(--font-display); font-size: 0.95rem; cursor: pointer; transition: all 150ms ease; }
+  .life-pills button:hover { border-color: var(--accent-soft); }
+  .life-pills button[aria-pressed="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel)); color: var(--accent-soft); box-shadow: 0 0 14px -5px color-mix(in srgb, var(--accent) 80%, transparent); }
+  .life-pills .custom { font-family: var(--font-body); font-weight: 600; font-size: 0.86rem; }
+  .life-custom { display: none; align-items: center; gap: 0.4rem; }
+  .life-custom[data-show="true"] { display: flex; }
+  .life-custom .field { width: 6rem; min-height: 42px; text-align: center; font-variant-numeric: tabular-nums; font-weight: 700; }
+  .life-custom .ok { width: 42px; height: 42px; border-radius: 999px; border: 1px solid var(--accent-soft); background: color-mix(in srgb, var(--accent) 30%, var(--surface-panel)); color: var(--accent-soft); cursor: pointer; font-size: 1rem; }
+  .life-custom .err { font-size: 0.74rem; color: #ff8fa3; }
+  .life-note { font-size: 0.74rem; color: var(--text-muted); margin: 0; }
+
+  /* ---- Counters: the seat map, laid out like the table (REQ-173) ---- */
+  .seat-map { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+  .seat { display: grid; grid-template-rows: auto 1fr auto; gap: 0.2rem; min-height: 104px; padding: 0.5rem 0.55rem; border-radius: 0.8rem; border: 1px solid var(--surface-edge);
+    background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 18%, var(--surface-panel)), var(--surface-panel)); position: relative; overflow: hidden; }
+  .seat .who { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.02em; }
+  .seat .dmg { display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .seat .dmg[data-lethal="true"] { color: #ff8fa3; text-shadow: 0 0 16px rgba(255, 77, 109, 0.6); }
+  .seat .bands { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; }
+  .seat .bands button { min-height: 34px; border-radius: 0.5rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); color: var(--text-primary); font-size: 1rem; cursor: pointer; }
+  .seat .bands button:hover:not(:disabled) { border-color: var(--accent-soft); }
+  .seat .bands button:disabled { opacity: 0.35; cursor: default; }
+  .seat.me { display: grid; place-items: center; background: color-mix(in srgb, var(--surface-ground) 40%, transparent); border-style: dashed; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
+  .seat.me small { display: block; font-weight: 400; font-size: 0.68rem; margin-top: 0.15rem; }
+  .cmd-note { font-size: 0.74rem; color: var(--text-muted); margin: 0; }
+
+  /* the counter tiles: a tap adds one; ⋯ opens the tile's own row (−1, set, clear) */
+  .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; }
+  @media (min-width: 600px) { .tiles { grid-template-columns: repeat(4, 1fr); } }
+  .tile { position: relative; display: grid; grid-template-rows: auto auto auto; justify-items: center; gap: 0.15rem; min-height: 84px; padding: 0.55rem 0.4rem 0.45rem; border-radius: 0.8rem;
+    border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); color: var(--text-primary); cursor: pointer; text-align: center; transition: all 160ms ease; }
+  .tile:hover { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); }
+  .tile[data-on="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); box-shadow: 0 0 18px -6px color-mix(in srgb, var(--accent) 85%, transparent), inset 0 0 14px -10px var(--accent-soft); }
+  .tile .ico { font-size: 1.3rem; line-height: 1; }
+  .tile .nm { font-size: 0.72rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; }
+  .tile .n { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text-muted); }
+  .tile[data-on="true"] .n { color: var(--accent-soft); }
+  .tile .more { position: absolute; top: 2px; right: 2px; width: 28px; height: 28px; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; line-height: 1; }
+  .tile .more:hover { color: var(--text-primary); background: color-mix(in srgb, var(--accent) 20%, transparent); }
+  .tile[data-open="true"] { border-color: var(--accent-soft); }
+  .tile.pulse .n { animation: tick 320ms ease; }
+  @keyframes tick { 30% { transform: translateY(-4px) scale(1.15); } }
+  .tile-tools { display: none; grid-column: 1 / -1; align-items: center; gap: 0.4rem; flex-wrap: wrap; padding: 0.5rem 0.6rem; border-radius: 0.7rem; border: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent); background: color-mix(in srgb, var(--accent) 10%, transparent); font-size: 0.82rem; }
+  .tile-tools[data-show="true"] { display: flex; }
+  .tile-tools b { margin-right: auto; }
+  .tile-tools .stepper button { width: 40px; height: 38px; }
+  .tile-tools .stepper .val { min-width: 2.6rem; font-size: 0.95rem; }
+  .tile-tools .field { width: 4.4rem; min-height: 38px; text-align: center; font-variant-numeric: tabular-nums; }
+  .tile-tools .btn { min-height: 38px; padding: 0.3rem 0.7rem; font-size: 0.8rem; }
+  .tile-tools .btn.danger:hover { border-color: #ff8fa3; color: #ff8fa3; }
+  .tiles .tile.custom .rm { position: absolute; top: 2px; right: 2px; width: 28px; height: 28px; border: 0; border-radius: 999px; background: transparent; color: var(--text-muted); font-size: 0.85rem; cursor: pointer; }
+  .tiles .tile.custom .rm:hover { color: #ff8fa3; }
+  .add-counter { display: grid; grid-template-columns: 1fr auto; gap: 0.4rem; }
+  .add-counter .field { min-height: 42px; }
+  .add-counter .btn { min-height: 42px; }
+  .add-err { font-size: 0.74rem; color: #ff8fa3; margin: 0; }
+  .add-err[hidden] { display: none; }
+  .hint { font-size: 0.76rem; color: var(--text-muted); margin: 0; }
+  .lt-tab[hidden] { display: none; }
+</style>
+</head>
+<body data-tray-open="false">
+  <header class="app-header">
+    <button class="menu-toggle" aria-label="Open menu" aria-haspopup="true">☰</button>
+    <a class="brand-mark" href="../index.html" aria-label="TheJudge home"><span class="orb" aria-hidden="true"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></a>
+    <div class="header-side">
+      <button class="icon-chip day" id="day-toggle" aria-label="Day and night: currently day. Flip designation." title="Day / night"><span class="glyph">☀</span><span id="day-word">Day</span></button>
+      <button class="icon-round" id="gear" aria-label="Open game setup" title="Game setup">⚙</button>
+    </div>
+  </header>
+  <div class="mock-mode-banner">⚖️ MOCK MODE · the real Judge is off duty — these rulings are pretend</div>
+
+  <main class="life-table-frame" aria-label="4-player life table (unchanged from today)">
+    <picture>
+      <source media="(min-width: 640px)" srcset="life-tracker-table-1440x900.png">
+      <img src="life-tracker-table-390x844.png" alt="Life Tracker's own 4-player table, identical to today's — this page only redraws the menus behind it.">
+    </picture>
+    <!-- the seat-map on each card opens that player's counters (today's tap target) -->
+    <button class="seat-hit" style="left:6%;top:22%" data-seat="1" aria-label="Open counters for Player 2"></button>
+    <button class="seat-hit" style="left:76%;top:22%" data-seat="2" aria-label="Open counters for Player 3"></button>
+    <button class="seat-hit" style="left:6%;top:67%" data-seat="0" aria-label="Open counters for Player 1"></button>
+    <button class="seat-hit" style="left:76%;top:67%" data-seat="3" aria-label="Open counters for Player 4"></button>
+  </main>
+
+  <div class="demo-bar" aria-label="Mockup state (demo only)" style="margin:0.6rem auto;width:min(56rem,94vw)">
+    <span class="tag">demo</span><span>open:</span>
+    <button data-demo="setup">Game setup</button>
+    <button data-demo="setup-names">Game setup · names open</button>
+    <button data-demo="reset">Reset confirm</button>
+    <button data-demo="counters">Counters · Player 2</button>
+    <button data-demo="counters-tab">Counters · Counters tab</button>
+  </div>
+
+  <!-- ---- Game Setup (the ⚙ gear) ---- -->
+  <div class="sheet-backdrop" id="setup-backdrop" data-open="false"></div>
+  <aside class="drawer-panel lt-sheet" id="setup" data-open="false" role="dialog" aria-label="Game setup">
+    <button class="icon-btn overlay-close" data-close aria-label="Close game setup">✕</button>
+    <div class="lt-head"><small>Life Tracker</small><h2>Game Setup</h2></div>
+    <div class="lt-body">
+      <div class="lt-sec">
+        <span class="lbl">This game</span>
+        <div class="lt-rows">
+          <button type="button" id="reset-row"><span class="glyph">↺</span><span class="words">Reset life totals<small>Everyone back to the starting life, counters cleared. Players, names and settings stay.</small></span><span class="chev">›</span></button>
+          <button type="button" id="new-row" class="danger"><span class="glyph">✦</span><span class="words">New game<small>Back to 4 players at 40, names and counters cleared. Layout and card style stay.</small></span><span class="chev">›</span></button>
+        </div>
+      </div>
+      <div class="lt-sec">
+        <span class="lbl">Players <small id="life-rule">2 players start at 20 · 3 or more at 40</small></span>
+        <div class="players-line">
+          <div class="stepper"><button type="button" id="p-minus" aria-label="Remove a player">−</button><span class="val"><span id="p-count">4</span><small>players</small></span><button type="button" id="p-plus" aria-label="Add a player">+</button></div>
+          <button class="link" type="button" id="names-toggle" aria-expanded="false">Edit names ▾</button>
+        </div>
+        <div class="names" id="names" data-open="false"></div>
+      </div>
+      <div class="lt-sec">
+        <span class="lbl">Layout</span>
+        <div class="pair">
+          <div class="sub"><small>Arrangement</small><div class="seg full" role="group" aria-label="Layout"><button type="button" data-layout="grid" aria-pressed="true"><span class="glyph">▦</span>Grid</button><button type="button" data-layout="list" aria-pressed="false"><span class="glyph">☷</span>List</button></div></div>
+          <div class="sub"><small>Card style</small><div class="seg full" role="group" aria-label="Card style"><button type="button" data-style="gradient" aria-pressed="true"><span class="glyph">◐</span>Ombre</button><button type="button" data-style="flat" aria-pressed="false"><span class="glyph">●</span>Flat</button></div></div>
+        </div>
+      </div>
+      <div class="lt-sec">
+        <span class="lbl">Starting life</span>
+        <div class="life-pills" id="life-pills" role="group" aria-label="Starting life">
+          <button type="button" data-life="20" aria-pressed="false">20</button><button type="button" data-life="25" aria-pressed="false">25</button><button type="button" data-life="30" aria-pressed="false">30</button><button type="button" data-life="40" aria-pressed="true">40</button>
+          <button type="button" class="custom" data-life="custom" aria-pressed="false">Custom</button>
+          <span class="life-custom" id="life-custom" data-show="false"><input class="field" id="life-in" inputmode="numeric" value="60" aria-label="Custom starting life"><button type="button" class="ok" id="life-ok" aria-label="Use this starting life">✓</button><span class="err" id="life-err" hidden>Enter a whole number from 1 to 999.</span></span>
+        </div>
+        <p class="life-note" id="life-note">Applies to the next reset or new game — nobody's total changes now.</p>
+      </div>
+    </div>
+    <button class="lt-foot" type="button" data-close><span>Done</span><span class="chev">›</span></button>
+  </aside>
+
+  <!-- ---- Counters for one player (the seat-map on their card) ---- -->
+  <div class="sheet-backdrop" id="ctr-backdrop" data-open="false"></div>
+  <aside class="drawer-panel lt-sheet" id="ctr" data-open="false" role="dialog" aria-label="Counters">
+    <button class="icon-btn overlay-close" data-close aria-label="Close counters">✕</button>
+    <div class="lt-head"><small>Life Tracker</small><h2><span id="ctr-name">Counters · Player 2</span><span class="life" id="ctr-life">40 life</span></h2></div>
+    <div class="lt-body">
+      <div class="seg full" role="tablist" aria-label="Counters sections"><button type="button" role="tab" data-tab="player" aria-pressed="true"><span class="glyph">⚔</span>Commander damage</button><button type="button" role="tab" data-tab="counters" aria-pressed="false"><span class="glyph">◈</span>Counters</button></div>
+      <div class="lt-tab" id="tab-player">
+        <div class="lt-sec">
+          <span class="lbl">Commander damage taken <small>21 from one commander is lethal</small></span>
+          <div class="seat-map" id="seat-map"></div>
+          <p class="cmd-note">Laid out like the table, so each seat is where that player sits. Your own seat is marked.</p>
+        </div>
+      </div>
+      <div class="lt-tab" id="tab-counters" hidden>
+        <div class="lt-sec">
+          <span class="lbl">Counters <small>tap to add one · ⋯ for more</small></span>
+          <div class="tiles" id="tiles"></div>
+          <div class="tile-tools" id="tile-tools" data-show="false"></div>
+        </div>
+        <div class="lt-sec" style="margin-top:1rem">
+          <span class="lbl">Custom counters</span>
+          <div class="tiles" id="custom-tiles"></div>
+          <div class="add-counter"><input class="field" id="custom-in" placeholder="Custom counter name" maxlength="40" aria-label="Custom counter name"><button class="btn" type="button" id="custom-add">＋ Add</button></div>
+          <p class="add-err" id="add-err" hidden></p>
+        </div>
+      </div>
+    </div>
+    <button class="lt-foot" type="button" data-close><span>Done</span><span class="chev">›</span></button>
+  </aside>
+
+  <!-- ---- the confirm sheet Reset and New Game ask through (shared, shell.css) ---- -->
+  <div class="sheet-backdrop" id="cf-backdrop" data-open="false"></div>
+  <aside class="drawer-panel confirm-panel" id="cf" data-open="false" role="dialog" aria-label="Are you sure?">
+    <h2 id="cf-title"></h2>
+    <p id="cf-body"></p>
+    <div class="row"><button class="btn" id="cf-keep" type="button">Keep playing</button><button class="btn go" id="cf-go" type="button"></button></div>
+  </aside>
+
+  <script src="motifs.js"></script>
+  <script src="ambience.js"></script>
+  <script src="flow.js"></script>
+  <script>
+    const { mountMenu } = window.FLOW;
+    mountMenu('Life Tracker');
+    const $ = (s) => document.getElementById(s);
+
+    // ---- state (today's ranges and defaults) ----
+    const MAX = 8;
+    let players = 4, layout = 'grid', style = 'gradient', startLife = 40, day = true;
+    const names = Array.from({ length: MAX }, () => '');
+    const nameOf = (i) => names[i].trim() || 'Player ' + (i + 1);
+    const NAMED = [['Monarch', '👑'], ['Treasure', '💰'], ['Initiative', '🛡️'], ['Poison', '☣️'], ['Ascend', '⬆️'], ['Rad', '☢️'], ['Day/night', '🌗'], ['C.Tax', '🏰'], ['K.O.', '💀'], ['Energy', '⚡'], ['Exp', '⭐']];
+    // per player: named counter values, custom counters, commander damage from each other seat
+    const seats = Array.from({ length: MAX }, () => ({ counters: {}, custom: [], cmd: {} }));
+    seats[1].counters.Poison = 3; seats[1].counters.Treasure = 2; seats[1].cmd[2] = 14; seats[1].custom = [{ name: 'Storm count', n: 4 }];
+
+    // ---- sheets ----
+    const open = (id) => { $(id + '-backdrop').dataset.open = 'true'; $(id).dataset.open = 'true'; $(id).scrollTop = 0; };
+    const close = (id) => { $(id + '-backdrop').dataset.open = 'false'; $(id).dataset.open = 'false'; };
+    const closeAll = () => ['setup', 'ctr', 'cf'].forEach(close);
+    document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', () => { close('setup'); close('ctr'); }));
+    ['setup', 'ctr', 'cf'].forEach((id) => $(id + '-backdrop').addEventListener('click', () => close(id)));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeAll(); });
+    $('gear').addEventListener('click', () => { renderSetup(); open('setup'); });
+    $('day-toggle').addEventListener('click', () => { day = !day; $('day-word').textContent = day ? 'Day' : 'Night'; $('day-toggle').querySelector('.glyph').textContent = day ? '☀' : '☾'; });
+
+    // ---- Game Setup ----
+    function renderSetup() {
+      $('p-count').textContent = players;
+      $('p-minus').disabled = players <= 2; $('p-plus').disabled = players >= MAX;
+      $('names').innerHTML = Array.from({ length: players }, (_, i) => '<label>Player ' + (i + 1) + '<input class="field" data-i="' + i + '" placeholder="Player ' + (i + 1) + '" value="' + names[i].replace(/"/g, '&quot;') + '"></label>').join('');
+      $('names').querySelectorAll('input').forEach((el) => el.addEventListener('input', () => { names[Number(el.dataset.i)] = el.value; }));
+      document.querySelectorAll('[data-layout]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.layout === layout)));
+      document.querySelectorAll('[data-style]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.style === style)));
+      const preset = [20, 25, 30, 40].includes(startLife);
+      $('life-pills').querySelectorAll('[data-life]').forEach((b) => b.setAttribute('aria-pressed', String(preset ? Number(b.dataset.life) === startLife : b.dataset.life === 'custom')));
+      $('life-custom').dataset.show = String(!preset);
+      if (!preset) $('life-in').value = startLife;
+    }
+    $('p-minus').addEventListener('click', () => { if (players > 2) { players -= 1; renderSetup(); } });
+    $('p-plus').addEventListener('click', () => { if (players < MAX) { players += 1; renderSetup(); } });
+    $('names-toggle').addEventListener('click', () => { const o = $('names').dataset.open !== 'true'; $('names').dataset.open = o; $('names-toggle').setAttribute('aria-expanded', o); $('names-toggle').textContent = o ? 'Hide names ▴' : 'Edit names ▾'; });
+    document.querySelectorAll('[data-layout]').forEach((b) => b.addEventListener('click', () => { layout = b.dataset.layout; renderSetup(); }));
+    document.querySelectorAll('[data-style]').forEach((b) => b.addEventListener('click', () => { style = b.dataset.style; renderSetup(); }));
+    $('life-pills').querySelectorAll('[data-life]').forEach((b) => b.addEventListener('click', () => {
+      if (b.dataset.life === 'custom') { $('life-pills').querySelectorAll('[data-life]').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); $('life-custom').dataset.show = 'true'; $('life-in').focus(); $('life-in').select(); return; }
+      startLife = Number(b.dataset.life); $('life-err').hidden = true; renderSetup();
+    }));
+    $('life-ok').addEventListener('click', () => {
+      const n = Number($('life-in').value);
+      if (!Number.isInteger(n) || n < 1 || n > 999) { $('life-err').hidden = false; return; }
+      $('life-err').hidden = true; startLife = n; renderSetup();
+    });
+    $('life-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('life-ok').click(); });
+
+    // ---- the confirm sheet ----
+    let onGo = null;
+    function confirm(title, body, go, fn) { $('cf-title').textContent = title; $('cf-body').innerHTML = body; $('cf-go').textContent = go; onGo = fn; open('cf'); setTimeout(() => $('cf-keep').focus(), 250); }
+    $('cf-keep').addEventListener('click', () => close('cf'));
+    $('cf-go').addEventListener('click', () => { if (onGo) onGo(); close('cf'); close('setup'); });
+    $('reset-row').addEventListener('click', () => confirm('Reset this game?', 'Every life total goes back to <b>' + startLife + '</b> and all counters clear. Players, names and settings stay.', '↺ Reset', () => { seats.forEach((s) => { s.counters = {}; s.custom = []; s.cmd = {}; }); }));
+    $('new-row').addEventListener('click', () => confirm('Start a new game?', 'This game is discarded: back to <b>4 players at 40 life</b>, with names and counters cleared. Layout and card style stay.', '✦ New game', () => { players = 4; startLife = 40; names.fill(''); day = true; $('day-word').textContent = 'Day'; seats.forEach((s) => { s.counters = {}; s.custom = []; s.cmd = {}; }); renderSetup(); }));
+
+    // ---- Counters for one player ----
+    let who = 1, tab = 'player', toolsFor = null;
+    function openCounters(i, t) { who = i; tab = t || 'player'; toolsFor = null; renderCounters(); open('ctr'); }
+    document.querySelectorAll('.seat-hit').forEach((b) => b.addEventListener('click', () => openCounters(Number(b.dataset.seat))));
+    document.querySelectorAll('[data-tab]').forEach((b) => b.addEventListener('click', () => { tab = b.dataset.tab; renderCounters(); }));
+    function renderCounters() {
+      const s = seats[who];
+      $('ctr-name').textContent = 'Counters · ' + nameOf(who);
+      $('ctr-life').textContent = startLife + ' life';
+      document.querySelectorAll('[data-tab]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.tab === tab)));
+      $('tab-player').hidden = tab !== 'player'; $('tab-counters').hidden = tab !== 'counters';
+      // the seat map in table order: seats 1,2 across the top, 0,3 along the bottom (as the crop)
+      const order = players >= 4 ? [1, 2, 0, 3] : Array.from({ length: players }, (_, i) => i);
+      $('seat-map').style.gridTemplateColumns = players <= 2 ? '1fr 1fr' : '1fr 1fr';
+      $('seat-map').innerHTML = order.filter((i) => i < players).map((i) => i === who
+        ? '<div class="seat me"><div>' + nameOf(i) + '<small>that\'s you</small></div></div>'
+        : '<div class="seat" data-from="' + i + '"><span class="who">From ' + nameOf(i) + '</span><span class="dmg" data-lethal="' + ((s.cmd[i] || 0) >= 21) + '">' + (s.cmd[i] || 0) + '</span><span class="bands"><button type="button" data-d="-1" aria-label="Less commander damage from ' + nameOf(i) + '"' + ((s.cmd[i] || 0) <= 0 ? ' disabled' : '') + '>−</button><button type="button" data-d="1" aria-label="More commander damage from ' + nameOf(i) + '">+</button></span></div>').join('');
+      $('seat-map').querySelectorAll('.seat[data-from] button').forEach((b) => b.addEventListener('click', () => { const i = Number(b.closest('.seat').dataset.from); s.cmd[i] = Math.max(0, (s.cmd[i] || 0) + Number(b.dataset.d)); renderCounters(); }));
+      const tile = (name, ico, n, custom) => '<button type="button" class="tile' + (custom ? ' custom' : '') + '" data-name="' + name + '" data-on="' + (n > 0) + '" data-open="' + (toolsFor === name) + '">' +
+        '<span class="ico" aria-hidden="true">' + ico + '</span><span class="nm">' + name + '</span><span class="n">' + n + '</span>' +
+        (custom ? '<span class="rm" role="button" data-rm aria-label="Remove ' + name + '">✕</span>' : '<span class="more" role="button" data-more aria-label="More options for ' + name + '">⋯</span>') + '</button>';
+      $('tiles').innerHTML = NAMED.map(([nm, ico]) => tile(nm, ico, s.counters[nm] || 0, false)).join('');
+      $('custom-tiles').innerHTML = s.custom.map((c) => tile(c.name, '✦', c.n, true)).join('') || '<p class="hint" style="grid-column:1/-1">None yet — name one below.</p>';
+      const bump = (name, d, custom) => { if (custom) { const c = s.custom.find((x) => x.name === name); c.n = Math.max(0, c.n + d); } else s.counters[name] = Math.max(0, (s.counters[name] || 0) + d); };
+      document.querySelectorAll('#tiles .tile, #custom-tiles .tile').forEach((t) => {
+        const name = t.dataset.name, custom = t.classList.contains('custom');
+        t.addEventListener('click', (e) => {
+          if (e.target.closest('[data-more]')) { toolsFor = toolsFor === name ? null : name; renderCounters(); return; }
+          if (e.target.closest('[data-rm]')) { s.custom = s.custom.filter((x) => x.name !== name); if (toolsFor === name) toolsFor = null; renderCounters(); return; }
+          bump(name, 1, custom); renderCounters();
+          const nt = document.querySelector('.tile[data-name="' + name + '"]'); if (nt) nt.classList.add('pulse');
+        });
+      });
+      // the tools row for the tile ⋯ opened: take one away, set a number, clear
+      const tools = $('tile-tools');
+      tools.dataset.show = String(!!toolsFor);
+      if (toolsFor) {
+        const n = s.counters[toolsFor] || 0;
+        tools.innerHTML = '<b>' + toolsFor + '</b><div class="stepper"><button type="button" data-t="-1" aria-label="Decrease by 1">−</button><span class="val">' + n + '</span><button type="button" data-t="1" aria-label="Increase by 1">+</button></div>' +
+          '<input class="field" id="set-in" inputmode="numeric" value="' + n + '" aria-label="Set ' + toolsFor + ' to"><button class="btn" type="button" id="set-ok">Set</button><button class="btn danger" type="button" id="set-clear">Clear</button>';
+        tools.querySelectorAll('[data-t]').forEach((b) => b.addEventListener('click', () => { bump(toolsFor, Number(b.dataset.t)); renderCounters(); }));
+        tools.querySelector('#set-ok').addEventListener('click', () => { const v = parseInt(tools.querySelector('#set-in').value, 10); if (Number.isFinite(v)) s.counters[toolsFor] = Math.max(0, v); renderCounters(); });
+        tools.querySelector('#set-clear').addEventListener('click', () => { s.counters[toolsFor] = 0; toolsFor = null; renderCounters(); });
+      }
+    }
+    $('custom-add').addEventListener('click', () => {
+      const s = seats[who], v = $('custom-in').value.trim(), err = $('add-err');
+      if (!v) { err.textContent = 'Enter a counter name.'; err.hidden = false; return; }
+      if (v.length > 40) { err.textContent = 'Use 40 characters or fewer.'; err.hidden = false; return; }
+      if (s.custom.some((c) => c.name.toLowerCase() === v.toLowerCase()) || NAMED.some(([n]) => n.toLowerCase() === v.toLowerCase())) { err.textContent = 'A counter with that name already exists.'; err.hidden = false; return; }
+      err.hidden = true; s.custom.push({ name: v, n: 0 }); $('custom-in').value = ''; renderCounters();
+    });
+    $('custom-in').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('custom-add').click(); });
+
+    // ---- demo bar ----
+    document.querySelectorAll('[data-demo]').forEach((b) => b.addEventListener('click', () => {
+      const d = b.dataset.demo; closeAll();
+      if (d === 'setup') { renderSetup(); open('setup'); }
+      if (d === 'setup-names') { renderSetup(); $('names').dataset.open = 'true'; $('names-toggle').setAttribute('aria-expanded', 'true'); $('names-toggle').textContent = 'Hide names ▴'; open('setup'); }
+      if (d === 'reset') { $('reset-row').click(); }
+      if (d === 'counters') openCounters(1, 'player');
+      if (d === 'counters-tab') openCounters(1, 'counters');
+    }));
+    renderSetup();
+  </script>
+</body>
+</html>

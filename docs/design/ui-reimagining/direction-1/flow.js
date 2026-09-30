@@ -277,7 +277,7 @@ window.FLOW = (() => {
     // two flows become one "Question", it sits under that
     // Quick Question and In-Depth Question are one "Ask a Question" now: the question
     // page opens, and "Add in-depth details" is the way into the deeper flow
-    const dest = [['Ask a Question', CARD_GLYPH, 'quick-question.html'], ['Question History', '◷', null], ['Life Tracker', '♥', 'life-tracker-after.html'], ['Trade Balancer', '⚖', 'trade-balancer.html']];
+    const dest = [['Ask a Question', CARD_GLYPH, 'quick-question.html'], ['Question History', '◷', null], ['Life Tracker', '♥', 'life-tracker-menus.html'], ['Trade Balancer', '⚖', 'trade-balancer.html']];
     nav.innerHTML =
       '<div class="tray-brand"><span class="brand-mark"><span class="orb"></span><span class="brand-text"><span class="wordmark">TheJudge</span><span class="tagline">MTG Assistant</span></span></span>' +
       '<button class="icon-btn" id="tray-close" aria-label="Close menu">✕</button></div>' +
