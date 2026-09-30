@@ -772,13 +772,21 @@
       }
       $('shelf-hint').hidden = cards.length < 2;
       $('shelf-hint').textContent = isStack
-        ? 'The top of the stack resolves first. Drag a card to reorder it (hold it first on a phone), or tap it for Move up / Move down.'
+        ? 'The top of the stack resolves first, then 2nd, 3rd… down to the bottom. Drag a card to reorder it (hold it first on a phone), or tap it for Move up / Move down.'
         : 'Drag to put them in any order you like (hold first on a phone) — tap a card to move it to another zone.';
       $('add-card').innerHTML = '<span class="glyph">＋</span> ' + (isStack ? 'Add to Stack' : 'Add card');
       renderSearch();
     }
-    // the Stack's tags: TOP alone for one card, BOTTOM / TOP for two, #1… up to TOP for three or more (round 5)
-    function stackLabel(i, n) { if (i === n - 1) return 'TOP'; if (n === 2) return 'BOTTOM'; return '#' + (i + 1); }
+    // the Stack's tags (round 10: "1, 2, top? where is bottom?"): TOP alone for one
+    // card; BOTTOM / TOP for two; for three or more the ends are BOTTOM and TOP and
+    // the cards between count down from the top in resolving order — TOP, 2ND,
+    // 3RD… BOTTOM — so a tag always says where the card sits in the stack
+    function stackLabel(i, n) {
+      if (i === n - 1) return 'TOP';
+      if (i === 0) return 'BOTTOM';
+      const k = n - i, suf = k === 2 ? 'ND' : k === 3 ? 'RD' : 'TH';
+      return k + suf;
+    }
     // ---- round 7: placing the carried cards, one at a time ----
     let placeMore = false;
     function renderCarried() {
