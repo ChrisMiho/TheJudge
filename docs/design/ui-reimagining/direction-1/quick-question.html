@@ -66,7 +66,7 @@
           <!-- round 11: the hint shortens in tiers as the box narrows; the 300-character budget is the ring round the send pill -->
           <textarea id="question-field" rows="1" placeholder="What would you like to know?" data-placeholders="What would you like to know?|Ask your question…|Ask…" maxlength="300" aria-label="Your question"></textarea>
           <span class="q-count" id="char-count">0 / 300</span>
-          <span class="send-wrap"><svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><rect class="track" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/><rect class="fill" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/></svg><span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your question" title="Speak your question"></button><button class="send" id="send-request" aria-label="Send request" title="Send request">➤</button></span></span>
+          <span class="send-wrap"><svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><path class="track" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/><path class="fill" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/></svg><span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your question" title="Speak your question"></button><button class="send" id="send-request" aria-label="Send request" title="Send request">➤</button></span></span>
         </div>
       </div>
     </section>
@@ -83,7 +83,7 @@
       <div class="followup">
         <textarea id="followup-field" rows="1" placeholder="Ask a follow-up…" data-placeholders="Ask a follow-up…|Follow up…" maxlength="300" aria-label="Follow-up question"></textarea>
         <span class="fu-count" id="fu-count">0/300</span>
-        <span class="send-wrap"><svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><rect class="track" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/><rect class="fill" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/></svg><span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your follow-up" title="Speak your follow-up"></button><button class="send" id="followup-send" aria-label="Send">➤</button></span></span>
+        <span class="send-wrap"><svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><path class="track" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/><path class="fill" d="M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z" pathLength="100"/></svg><span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your follow-up" title="Speak your follow-up"></button><button class="send" id="followup-send" aria-label="Send">➤</button></span></span>
       </div>
     </section>
 
@@ -98,6 +98,10 @@
       <span style="margin-left:0.6rem">answer:</span>
       <button data-wait="long" aria-pressed="true">after a long wait (45 s, real time)</button>
       <button data-wait="quick" aria-pressed="false">quickly</button>
+      <span style="margin-left:0.6rem">question:</span>
+      <button data-typed="0" aria-pressed="true">empty</button>
+      <button data-typed="150" aria-pressed="false">half typed</button>
+      <button data-typed="285" aria-pressed="false">near the cap</button>
     </div>
     <p class="foot-note">
       Before: <a href="../before/quick-question-390x844.png">quick-question-390x844.png</a> ·
@@ -223,6 +227,15 @@
       for (const el of els.values()) el.remove();
       els.clear();
       attached = starter.slice(0, s === 'noimg' ? 1 : Number(s)); focus = 0; closeSearch(); render();
+    }));
+
+    // round 15: the demo can fill the question box so the budget ring is seen as it
+    // will be — empty (no ring at all), half typed, near the cap
+    const TYPED_EXAMPLE = 'If I cast Lightning Bolt targeting my opponent and they respond with Counterspell, but I then tap Sol Ring and cast a second spell in response, which of these resolves first, and does the Bolt still deal its three damage if the Counterspell is itself countered by something else on the stack?';
+    document.querySelectorAll('.demo-bar [data-typed]').forEach((b) => b.addEventListener('click', () => {
+      document.querySelectorAll('.demo-bar [data-typed]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)));
+      $('question-field').value = TYPED_EXAMPLE.slice(0, Number(b.dataset.typed));
+      $('question-field').dispatchEvent(new Event('input'));
     }));
 
     // ---- composer → conversation ----

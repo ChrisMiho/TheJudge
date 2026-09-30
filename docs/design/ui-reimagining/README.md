@@ -142,7 +142,31 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
 
-### Round 14 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 14" and the owner's inline answers to the Round 13 open list) — the last round
+### Round 15 (2026-09-29, one owner tweak in chat after the close)
+
+- Owner: "on the outline of the send button that represents how many
+  characters are left … there is just a lone pixel hanging out randomly on
+  the button, can we have the starting point be at the split point, and
+  then also when there is 0/300, can that pixel not be there, that way it
+  doesnt stand out to the user until they start typing? can we also update
+  the demo so that the example is in line."
+- Rule: **the budget ring starts at the split and runs clockwise.** The
+  ring's path now begins at the top of the seam between the mic half and
+  the arrow half and runs right over the arrow, round the pill, and back
+  under the mic to close at 300 — so the fill grows out of the seam. It
+  used to be a rounded rectangle whose path starts after its top-left
+  corner; with a round line cap a zero-length dash still painted one dot
+  there, which was the stray pixel. Same path in `flow.js` (`SEND_RING`)
+  and in the inline copies on both question pages.
+- Rule: **at 0 / 300 nothing is drawn** — neither the track nor the fill —
+  until the first character (`r15-qq-390-empty-blue`).
+- The Ask a Question demo bar has a **question:** group — empty · half typed
+  (150) · near the cap (285) — that fills the box with a sample question so
+  the ring is seen as it will be (`r15-qq-390-half-typed-blue`,
+  `r15-qq-390-near-cap-blue`). Mockup scaffolding only.
+- `GRAPH-BRIEF.md` carries the rule. The rework stays closed.
+
+### Round 14 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 14" and the owner's inline answers to the Round 13 open list) — the last design round
 
 The owner wrote one line, under Global: "I think everything is finalized and
 ready to be turned into a proper prd for an agent to implement into the

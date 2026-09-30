@@ -137,8 +137,14 @@ window.FLOW = (() => {
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
     fit();
   }
-  // the send control: a mic half and an arrow half in one pill, with the budget ring round it (round 11)
-  const SEND_RING = '<svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><rect class="track" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/><rect class="fill" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/></svg>';
+  // the send control: a mic half and an arrow half in one pill, with the budget ring round it (round 11).
+  // Round 15 (owner: "a lone pixel hanging out randomly on the button … have the starting point be
+  // at the split point"): the ring is one stadium path that begins at the top of the split between
+  // the mic and the arrow (x 44) and runs clockwise — over the arrow half, round, back under the mic
+  // — so the fill grows out of the seam. A <rect> path starts after its top-left corner, which is
+  // where the stray dot sat. At 0 characters the fill is not drawn at all (flow.css).
+  const RING_PATH = 'M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z';
+  const SEND_RING = '<svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><path class="track" d="' + RING_PATH + '" pathLength="100"/><path class="fill" d="' + RING_PATH + '" pathLength="100"/></svg>';
   function sendMarkup(opts = {}) {
     return '<span class="send-wrap">' + SEND_RING + '<span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="' + (opts.micLabel || 'Speak your question') + '" title="' + (opts.micLabel || 'Speak your question') + '"' + (opts.demo ? ' data-demo="' + opts.demo + '"' : '') + '></button>' +
       '<button class="send"' + (opts.id ? ' id="' + opts.id + '"' : '') + ' aria-label="' + (opts.label || 'Send') + '" title="' + (opts.label || 'Send') + '">➤</button></span></span>';

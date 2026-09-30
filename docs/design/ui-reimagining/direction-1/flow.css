@@ -241,18 +241,22 @@
 /* round 11 ("the bar that fills up across the chat box … move it to an outline
    to the send button, so that it feels more integrated"): the 300-character
    budget is a ring of the colour's light that traces the send pill's edge as
-   the question grows, clockwise from the top left — a faint track under it,
-   brightening as the cap nears, and closed at 300. The bar along the box's
-   foot is gone. */
+   the question grows — a faint track under it, brightening as the cap nears,
+   and closed at 300. The bar along the box's foot is gone. Round 15: the ring
+   starts at the top of the split between the mic and the arrow and runs
+   clockwise (the path in flow.js SEND_RING), and at 0 characters neither the
+   track nor the fill is drawn — the round line cap used to leave one stray dot
+   on the pill before anything was typed. */
 .send-wrap { position: relative; flex: 0 0 auto; align-self: flex-end; display: inline-grid; width: 80px; height: 40px; }
 .send-wrap .send-pair { grid-area: 1 / 1; }
 .send-ring { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); pointer-events: none; overflow: visible; }
-.send-ring rect { fill: none; stroke-width: 2; stroke-linecap: round; }
+.send-ring path { fill: none; stroke-width: 2; stroke-linecap: round; }
 .send-ring .track { stroke: color-mix(in srgb, var(--text-primary) 14%, transparent); }
 .send-ring .fill { stroke: var(--accent-soft); stroke-dasharray: var(--fill, 0) 100; transition: stroke-dasharray 120ms ease, stroke 200ms ease;
   filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-soft) 70%, transparent)); }
 .q-box[data-near="true"] .send-ring .fill, .followup[data-near="true"] .send-ring .fill { stroke: color-mix(in srgb, var(--accent-soft) 55%, #fff); filter: drop-shadow(0 0 5px var(--accent-soft)); }
-.q-box[data-fill="0"] .send-ring .track, .followup[data-fill="0"] .send-ring .track { opacity: 0; }
+.q-box[data-fill="0"] .send-ring .track, .followup[data-fill="0"] .send-ring .track,
+.q-box[data-fill="0"] .send-ring .fill, .followup[data-fill="0"] .send-ring .fill { opacity: 0; }
 /* round 7: "Add in-depth details" is a control inside the question box, at its
    left end — the same height as the round send, a pill of the colour's edge.
    On a narrow phone it keeps its glyph and drops the word. */

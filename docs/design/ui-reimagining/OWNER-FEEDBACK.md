@@ -1121,3 +1121,16 @@ theme band's floor is perfect; Game Setup and Commander damage are great).
 The mockup rework is closed. The build intake is
 `docs/design/ui-reimagining/GRAPH-BRIEF.md`; `README.md` → "Round 14" says
 how to hand it to `/graph-kickoff` once PR #237 is merged.
+
+# Round 15 — one tweak after the close (2026-09-29, in chat)
+
+Owner: "on the outline of the send button that represents how many
+characters are left … there is just a lone pixel hanging out randomly on
+the button, can we have the starting point be at the split point, and then
+also when there is 0/300, can that pixel not be there … can we also update
+the demo so that the example is in line."
+
+Applied: the ring starts at the top of the split between the mic and the
+arrow and runs clockwise; at 0 / 300 nothing is drawn; the Ask a Question
+demo bar gained a "question:" group (empty · half typed · near the cap).
+Renders `renders/r15-qq-390-*.png`. See `README.md` → "Round 15".

@@ -164,8 +164,12 @@ Global, every screen:
   ("What would you like to know?" → "Ask your question…" → "Ask…").
 - The 300-character budget is a ring traced round the send pill's edge in
   the colour's light, over a faint track, brighter in the last 30 characters,
-  closed at 300. The count is hidden while the box is empty. No separate
-  Send Request button, no bar under the box, no hint phrases under the title.
+  closed at 300. **It starts at the top of the split between the mic and the
+  arrow and runs clockwise** (over the arrow, round, back under the mic), and
+  **at 0 characters nothing is drawn** — no track, no fill, no dot — until the
+  first character (Round 15). The count is hidden while the box is empty. No
+  separate Send Request button, no bar under the box, no hint phrases under
+  the title.
 - **The send is one pill with two halves: a microphone at the left, the
   arrow at the right**, in every place a question is typed (here, the
   follow-up, In-depth's question and its follow-up). A tap on the mic
