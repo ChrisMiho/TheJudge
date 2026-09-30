@@ -24,7 +24,7 @@
 
 - **Question:** answer `PRD/work/ui-reimagining-build/GATE-QUESTIONS.md` (57 verdict slots: 9 real choices with recommendations, 8 structure blocks, 40 follow-on wording amendments), then merge the docs PR to `main` to build.
 - **Evidence:** gate-qc PASS on attempt 2 (row 4 above); the proposal carries 57 `## <STABLE-ID>` blocks with complete diffs; `git diff --stat origin/main HEAD -- PRD/sections` empty.
-- **Docs PR:** <recorded below once opened>
+- **Docs PR:** https://github.com/ChrisMiho/TheJudge/pull/238 (`main` ← `thejudge-auto/ui-reimagining-build`, docs-only, opened by `gh pr create` from the kickoff worktree at `ecd47b0`)
 - **Resume:** the owner's merge of the docs PR is the build signal; `graph-implement` (the background build loop) picks the package up from `main`. To re-grade after answering without merging, `graph-gate-review` runs in this kickoff worktree; `/graph-implement PRD/work/ui-reimagining-build/` is the build half's command.
 - **Kickoff worktree:** `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining-build` stays through the park; `graph-implement` removes it at claim time.
 - **Terminal state:** PARKED — lock released (`.worktrees/.graph-run-release.json` state `PARKED`, lock deleted).
