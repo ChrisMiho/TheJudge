@@ -130,18 +130,17 @@
   .side-foot b { color: var(--text-primary); font-size: 1rem; font-variant-numeric: tabular-nums; font-family: var(--font-display); margin-left: 0.4rem; }
 
   /* New trade (round 11: "move it to the top right like it is in the desktop app, so
-     that people don't accidentally click it"): top-right on every screen — a round ↺
-     on a phone, the chip with its word on desktop — and it asks before it clears. */
+     that people don't accidentally click it"): top-right on every screen, and it asks
+     before it clears. Round 12 (owner: "the mobile new trade button could use some
+     text for clarification like the desktop version"): the phone wears the same chip
+     as desktop — ↺ New trade — not a bare round glyph. */
   .flow-head .head-tools { display: flex; align-items: center; gap: 0.6rem; }
-  .flow-head .head-tools .icon-round { text-decoration: none; }
   @media (max-width: 719px) {
     .flow-head { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0.1rem 0.5rem; }
     .flow-head h1 { grid-column: 1; }
     .flow-head .head-tools { grid-column: 2; grid-row: 1; }
     .flow-head .asof { grid-column: 1 / -1; grid-row: 2; }
-    .flow-head .head-tools .icon-chip { display: none; }
   }
-  @media (min-width: 720px) { .flow-head .head-tools .icon-round { display: none; } }
 
   /* ---- the printing picker: the card leads, one row per set, tap a price to pick finish + printing.
      The filter only appears once a card has more than five printings. ---- */
@@ -178,7 +177,7 @@
       <div class="flow-head">
         <h1>Trade Balancer</h1>
         <span class="asof">Prices as of 8 Sep 2026 · USD</span>
-        <div class="head-tools"><button class="icon-chip" id="clear-top"><span class="glyph">↺</span> New trade</button><button class="icon-round" id="clear-top-phone" aria-label="New trade — clears both sides" title="New trade — clears both sides">↺</button></div>
+        <div class="head-tools"><button class="icon-chip" id="clear-top" title="New trade — clears both sides"><span class="glyph">↺</span> New trade</button></div>
       </div>
 
       <!-- the scale -->
@@ -491,7 +490,6 @@
     }
     function closeConfirm() { $('nt-backdrop').dataset.open = 'false'; $('nt-confirm').dataset.open = 'false'; }
     $('clear-top').addEventListener('click', askNewTrade);
-    $('clear-top-phone').addEventListener('click', askNewTrade);
     $('nt-go').addEventListener('click', newTrade);
     $('nt-keep').addEventListener('click', closeConfirm);
     $('nt-backdrop').addEventListener('click', closeConfirm);

@@ -552,55 +552,70 @@ h1, h2, .display {
 /* theme row (round 7): each colour's symbol sits in a filled circle — a play
    on the printed mana symbols: a light disc of the colour, the symbol dark on
    it. The chosen one wears a thin ring of its light and sits a touch larger. */
-/* round 11 ("the theme icons overlap on each other some" on a narrow phone):
-   the six discs share the tray's width — each one is as large as its sixth of
-   the row allows, up to 38 px, so on a 320 px phone they shrink a little
-   instead of touching; the chosen one's ring is drawn inside its cell. */
+/* round 11 shrank the six discs to share a narrow tray's width; round 12 (owner:
+   "they reach a point where you can't even click on them … a new solution that
+   allows them to look nice without shrinking them down") replaces the discs with
+   ONE BAND: a single pill the width of the tray, cut into six equal cells, one
+   per colour. A cell is as wide as its sixth of the row and always 46 px tall,
+   so the target never shrinks below a thumb; the symbol inside is a fixed
+   28 px and never scales. An unchosen cell is a faint wash of its colour with
+   the symbol in the colour's light; the chosen cell is filled with the colour's
+   light, its symbol dark on it — the printed-mana-symbol look the discs had —
+   and glows a touch. Still one row, at every width. */
 .theme-orbs {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
-  gap: 0.25rem;
+  gap: 2px;
   margin: 0.2rem 0.75rem 0;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 60%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 10px -6px rgba(0, 0, 0, 0.8);
 }
 
 .theme-orb {
   display: grid;
   place-items: center;
-  background: transparent;
+  background: color-mix(in srgb, var(--orb) 20%, transparent);
   border: 0;
-  padding: 0.35rem 0.15rem;
-  min-height: 44px;
+  padding: 0;
+  min-height: 46px;
   min-width: 0;
+  border-radius: 8px;
+  color: var(--orb-soft);
   cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
 }
+.theme-orb:first-child { border-radius: 999px 8px 8px 999px; }
+.theme-orb:last-child { border-radius: 8px 999px 999px 8px; }
 
 .theme-orb .orb {
-  width: min(38px, 100%);
-  aspect-ratio: 1;
-  height: auto;
-  border-radius: 999px;
+  width: 28px;
+  height: 28px;
   display: grid;
   place-items: center;
-  color: #0e0e11;
+  opacity: 0.9;
+  transition: opacity 150ms ease, transform 150ms ease;
+  /* the symbol's cut-outs (a skull's eyes, a leaf's vein) show the cell behind them */
+  --disc: color-mix(in srgb, var(--orb) 20%, var(--surface-panel));
+}
+.theme-orb[data-current="true"] .orb { --disc: var(--orb-soft); }
+.theme-orb .orb svg { width: 100%; height: 100%; display: block; }
+
+.theme-orb:hover,
+.theme-orb:focus-visible {
+  background: color-mix(in srgb, var(--orb) 30%, transparent);
+}
+.theme-orb:hover .orb,
+.theme-orb:focus-visible .orb { opacity: 1; }
+
+.theme-orb[data-current="true"] {
   background: var(--orb-soft);
-  --disc: var(--orb-soft);
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 2px 8px -3px rgba(0, 0, 0, 0.7);
-  opacity: 0.78;
-  transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
+  color: #0e0e11;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 0 14px color-mix(in srgb, var(--orb) 70%, transparent);
 }
-
-.theme-orb .orb svg { width: 72%; height: 72%; display: block; }
-
-.theme-orb[data-current="true"] .orb {
-  opacity: 1;
-  transform: scale(1.08);
-  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 0 0 2px var(--surface-panel), 0 0 0 3.5px var(--orb-soft), 0 0 16px color-mix(in srgb, var(--orb) 70%, transparent);
-}
-
-.theme-orb:hover .orb {
-  opacity: 1;
-  transform: scale(1.08);
-}
+.theme-orb[data-current="true"] .orb { opacity: 1; transform: scale(1.08); }
 
 /* Colorless keeps its custom colour (as today's app): a colour well and a reset,
    shown only while Colorless is the current theme. Round 11: the row wraps

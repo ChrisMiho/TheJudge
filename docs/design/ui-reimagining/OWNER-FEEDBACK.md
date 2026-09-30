@@ -977,7 +977,7 @@ in for today's long-press).
 
 Your points:
 
--
+- i think the shrinkage was the wrong call, they reach a point where you cant even click on them, is there another way wed be able to display these without introducing another row?
 
 ## Ask a Question (`r11-qq-*`)
 
@@ -987,7 +987,7 @@ while the box is empty.
 
 Your points:
 
--
+- looks great now, even at the smaller resolutions
 
 ## In-depth details (`r11-idq-*`)
 
@@ -997,12 +997,90 @@ control, and Details / Remove as tray rows.
 
 Your points:
 
--
+- when walking through the indepth view, cards are pre-added when you get to the step for adding cards, even if flow starts with no cards, i think this is a side effect of the demo, but just clarifying
+- the add card and scan button should move under the track for the in-depth flow, it feels awkward to push them when you need to add a card and reach over the flow
+
 
 ## Trade Balancer (`r11-tb-*`)
 
 Tries: the round ↺ top-right on the phone; the confirm sheet before a clear
 (what it names, its two buttons).
+
+Your points:
+
+- the mobile new trade button could use some text i think for clarification like the desktop version
+
+## Card scan
+
+Unchanged this round.
+
+Your points:
+
+- unchanged
+
+## Shared chrome and Menu (`r11-menu-*`)
+
+Tries: the discs at 320 px; the Colorless row's wrap.
+
+Your points:
+
+- we need a new solution for the orb that allows them to look nice without shrinking them down so small you cant click them
+
+## Ready to build?
+
+-
+
+# Round 13 — notes on the Round 12 renders
+
+Open `README.md` → "Round 12" for what changed and why; the renders are
+`renders/r12-*.png`. Write under each heading; a blank heading means "fine as
+shown". When done, open a new session from the worktree at
+`.worktrees/implement-ui-reimagining/` and paste:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 12), then apply
+my Round 13 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+Answers to your Round 12 notes that were questions:
+
+- The pre-added cards in the in-depth walk were the demo's doing. A walk from
+  step 1 now starts with empty zones, as the app does; the demo strip's
+  jumps still seed the six cards.
+- The theme discs are one band now — six equal cells in a pill the width of
+  the tray, each always 46 px tall with a fixed-size symbol, still one row.
+  If the band is wrong, say what you'd rather see; the two alternatives I
+  set aside are in the README.
+
+## Global (`r12-menu-*`)
+
+Tries: the theme band at 320, 390 and in the desktop tray — the unchosen
+cells as faint washes, the chosen cell lit with its symbol dark.
+
+Your points:
+
+-
+
+## Ask a Question
+
+Unchanged this round.
+
+Your points:
+
+-
+
+## In-depth details (`r12-idq-*`)
+
+Tries: Add card and Scan under the track (equal halves on a phone, left-set
+on desktop); the empty shelf on a fresh walk.
+
+Your points:
+
+-
+
+## Trade Balancer (`r12-tb-*`)
+
+Tries: the phone's ↺ New trade chip with its word.
 
 Your points:
 
@@ -1016,9 +1094,9 @@ Your points:
 
 -
 
-## Shared chrome and Menu (`r11-menu-*`)
+## Shared chrome and Menu (`r12-menu-*`)
 
-Tries: the discs at 320 px; the Colorless row's wrap.
+Tries: the theme band (same as Global above).
 
 Your points:
 

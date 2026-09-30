@@ -66,6 +66,12 @@
   .stage .plate-next { margin: 0.4rem -0.5rem -0.6rem; width: calc(100% + 1rem); border-radius: 0 0 1.1rem 1.1rem; }
   .flow-head .lead { display: flex; align-items: center; gap: 0.6rem; }
   .flow-head .lead .icon-round { text-decoration: none; }
+  /* round 12: the attach pair lives under the track — a row of its own between the
+     rail and the Cards step. On a phone the two chips share the row as equal halves,
+     each a full thumb target; from 480 px up they sit at the left at their own width. */
+  .idq > .attach { display: flex; gap: 0.5rem; margin-top: -0.2rem; }
+  .idq > .attach[hidden] { display: none; }
+  @media (max-width: 479px) { .idq > .attach .icon-chip { flex: 1 1 0; justify-content: center; min-height: 44px; } }
   .carry-note { margin: -0.2rem 0 0; font-size: 0.8rem; color: var(--text-muted); }
   .carry-note b { color: var(--accent-soft); }
 
@@ -421,10 +427,6 @@
     <section class="idq" id="flow">
       <div class="flow-head">
         <div class="lead"><button class="icon-round" id="step-back" aria-label="Back" title="Back">‹</button><h1>In-depth details</h1></div>
-        <div class="attach" id="attach" hidden>
-          <button class="icon-chip" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
-          <a class="icon-chip" id="scan-btn" href="card-scan.html?back=in-depth-question.html&into=Stack"><span class="glyph">▣</span> Scan</a>
-        </div>
       </div>
 
       <p class="carry-note" id="carry-note" hidden></p>
@@ -435,6 +437,13 @@
         <button data-step="cards"><span class="node">3</span>Cards</button>
         <button data-step="context"><span class="node">4</span>Context</button>
       </nav>
+      <!-- round 12: Add card and Scan sit under the track, above the zones they add
+           into — not up beside the title, where reaching them meant reaching over the
+           flow (owner: "it feels awkward to push them when you need to add a card") -->
+      <div class="attach" id="attach" hidden>
+        <button class="icon-chip" id="add-card" aria-expanded="false" aria-controls="search-pop"><span class="glyph">＋</span> Add card</button>
+        <a class="icon-chip" id="scan-btn" href="card-scan.html?back=in-depth-question.html&into=Stack"><span class="glyph">▣</span> Scan</a>
+      </div>
 
       <!-- 1 · Game context: players and the turn, one plate (round 6) -->
       <section class="step-panel active" id="step-game" aria-label="Game context">
@@ -650,11 +659,20 @@
     // ---- demo state ----
     const ZONES = ['Stack', 'Battlefield', 'Hand', 'Graveyard', 'Exile', 'Library', 'Command Zone'];
     let selectedZones = new Set(['Stack', 'Battlefield', 'Hand']);
-    const zoneCards = {
-      'Stack': [byName('Lightning Bolt'), byName('Counterspell')],
-      'Battlefield': [byName('Sol Ring'), byName('Llanowar Elves')],
-      'Hand': [byName('Swords to Plowshares'), byName('Lightning Helix')]
+    // round 12 (owner: "cards are pre-added when you get to the step for adding cards,
+    // even if flow starts with no cards"): a walk from step 1 starts with empty zones,
+    // as the app does — cards arrive only by search, scan, or carried from the
+    // question. The demo's six placed cards are seeded only by the demo strip's jumps.
+    const zoneCards = { 'Stack': [], 'Battlefield': [], 'Hand': [] };
+    const DEMO_ZONES = {
+      'Stack': ['Lightning Bolt', 'Counterspell'],
+      'Battlefield': ['Sol Ring', 'Llanowar Elves'],
+      'Hand': ['Swords to Plowshares', 'Lightning Helix']
     };
+    function seedDemoCards() {
+      if (Object.values(zoneCards).some((l) => l.length)) return;
+      for (const z in DEMO_ZONES) zoneCards[z] = DEMO_ZONES[z].map(byName);
+    }
     let activeZone = 'Stack';
     // cards carried over from Quick Question (?carry=Name|Name): they wait in a strip at the Cards step until placed in a zone
     const carryParam = new URLSearchParams(location.search).get('carry');
@@ -1227,6 +1245,7 @@
     // ---- demo bar ----
     document.querySelectorAll('[data-jump]').forEach((b) => b.addEventListener('click', () => {
       const j = b.dataset.jump;
+      if (j !== 'game' && j !== 'zones') seedDemoCards();
       if (j === 'place') { carried = ['Lightning Bolt', 'Sol Ring', 'Llanowar Elves'].map(byName).filter((c) => !allAttached().includes(c)); placedSoFar = 0; goTo('cards'); }
       else if (j === 'review') { goTo('context'); wiz = queue().length; renderWizard(); }
       else if (j === 'review10') {

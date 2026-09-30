@@ -49,6 +49,8 @@ compositions each page targets.
   primitives) every page below imports rather than redeclaring. The banner
   designs live here too (round 9: Green an abstract scatter of leaf-and-tree
   shapes, Blue a subtle scatter of arcane shapes, White's beams toned down).
+  Round 12: the Theme row is one segmented band of six colour cells, not six
+  discs — the cells never shrink below a thumb on a narrow phone.
 - `flow.css` + `flow.js` — the question-flow components and demo helpers
   Quick Question, In-Depth Question and Trade Balancer share (see round 2),
   plus the shared menu tray, chat and card-detail panel (round 3), the wait
@@ -134,11 +136,83 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
 
+### Round 12 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 12")
+
+Every Round 12 note applied. Renders are `renders/r12-*.png` (phone 390×844,
+desktop 1440×900, plus a 320-wide phone for the Menu), the only renders in
+the folder. **Rule** = the owner said it must hold. **Try** = shown for a
+verdict. Ask a Question ("looks great now, even at the smaller resolutions")
+and Card scan ("unchanged") did not change this round.
+
+#### Shared chrome and Menu — the theme picker (`r12-menu-*`)
+
+- Owner, twice: "the shrinkage was the wrong call, they reach a point where
+  you can't even click on them … is there another way we'd be able to
+  display these without introducing another row?" and "we need a new
+  solution for the orb that allows them to look nice without shrinking them
+  down so small you can't click them."
+- Try: **the six discs are one band.** The Theme row is a single pill the
+  width of the tray, cut into six equal cells, one per colour. A cell is as
+  wide as its sixth of the row and always 46 px tall, so the thing you tap
+  never shrinks below a thumb, and the symbol inside is a fixed 28 px that
+  never scales. An unchosen cell is a faint wash of its colour with the
+  symbol in the colour's light; the chosen cell fills with the colour's
+  light and the symbol goes dark on it — the printed-mana-symbol look the
+  discs had — with a small glow. Still one row at every width: 39 px cells
+  on a 320 px phone (`r12-menu-320-colorless`), 46 px on a 390 px phone
+  (`r12-menu-390-blue`), the same band in the desktop tray
+  (`r12-menu-1440-green`). It is the same shape as the segmented pills the
+  card menu, Life Tracker's Layout and Card style use, so the tray reads as
+  one language. Only `shell.css` changed; the Menu markup is untouched.
+- Considered and not built: a scrolling strip of full-size discs (a picker
+  of six should never scroll), overlapping discs fanned like a hand (the
+  visible sliver per disc is smaller than today's), a second row (the owner
+  ruled it out).
+
+#### Ask a Question · in-depth details — `in-depth-question.html` (`r12-idq-*`)
+
+- Rule: **Add card and Scan sit under the track.** They were up beside the
+  title; the owner: "it feels awkward to push them when you need to add a
+  card and reach over the flow." They are a row of their own now, directly
+  under the step track and above the zone tabs they add into, and still
+  appear only on the Cards step. On a phone the two chips share the row as
+  equal halves, each a full 44 px target (`r12-idq-390-cards-green`); from
+  480 px up they sit at the left at their own width (`r12-idq-1440-cards-blue`).
+- Answered: "cards are pre-added when you get to the step for adding cards,
+  even if the flow starts with no cards — I think this is a side effect of
+  the demo?" Yes, it was. The page seeded six cards into three zones on load
+  so the Cards step had something to show. Now a walk from step 1 starts with
+  empty zones, as the app does — cards arrive only by search, scan, or
+  carried from the question — and the Cards step shows the empty shelf
+  ("Begin stackening!", `r12-idq-390-fresh-walk-blue`). The demo strip's
+  jumps (3 Cards, 4 Context, Reviewed, Ruling) still seed the six cards, so
+  the populated states are one tap away.
+
+#### Trade Balancer — `trade-balancer.html` (`r12-tb-*`)
+
+- Rule: **New trade says its name on the phone too.** The round ↺ from round
+  11 is gone; the phone wears the same chip as desktop — ↺ New trade —
+  top-right beside the title (`r12-tb-390-red`). It still asks first through
+  the confirm sheet.
+
+### Open for the owner's verdict (Round 12)
+
+- The theme band: keep it, or would you rather the discs back at a fixed
+  size with the row allowed to scroll on the narrowest phones?
+- Still open from Round 11, unanswered: History on desktop as two panes or
+  straight into the conversation; one history list for both modes or one
+  per mode; the count hidden while the question box is empty; glyphs on the
+  card menu's zone pills; the ⋯ row versus the long-press on a counter tile;
+  the seat map versus a plain list for commander damage.
+- "Ready to build?" has been blank two rounds running. If the four flows
+  are agreed, say so and the next step is the kickoff intake (the agreed
+  pages plus one written rule per flow).
+
 ### Round 11 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 11")
 
-Every Round 11 note applied, as written. Renders are `renders/r11-*.png`
+Every Round 11 note applied, as written. Renders were `renders/r11-*.png`
 (phone 390×844, desktop 1440×900, plus a 320-wide phone and a 700-wide
-tablet where the note was about width), the only renders in the folder.
+tablet where the note was about width), replaced by Round 12's.
 **Rule** = the owner said it must hold. **Try** = shown for a verdict.
 
 Global:
