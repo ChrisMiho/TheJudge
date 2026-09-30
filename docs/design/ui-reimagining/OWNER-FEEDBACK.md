@@ -805,7 +805,7 @@ Blue's arcane banner; the mic in the send.
 
 Your points:
 
--
+- the overall vibe of each color profile is spot on, from the colors to the animations, it all is unique and it fits perfectly for the app
 
 ## Ask a Question (`r9-qq-*`)
 
@@ -814,7 +814,7 @@ turning seal ring; Edit cards beside ↺.
 
 Your points:
 
--
+- within the chat ui, for the white and colorless profile, the highlighting of the text in the response that would open up the specifcially refereneced cards, the highlighting isnt obvious as the highlight is basically the same color as the text, there is no contrast like there is with the other colors, i want to find a way to make the highlighting standout
 
 ## In-depth details (`r9-idq-*`)
 
@@ -822,7 +822,9 @@ Tries: drag reorder; Other zones folding away; Edit beside ↺.
 
 Your points:
 
--
+- when i move to the in-depth portion of the flowm, the color profile always swaps to blue, i just want to make sure that isnt carried over into the live app and is just a side effect of the demo/mock up
+- i can now drag the order which is great, but the numbering is off, 1, 2, top? where is bottom?
+
 
 ## Trade Balancer (`r9-tb-*`)
 
@@ -830,7 +832,8 @@ Tries: the buffer under the sides.
 
 Your points:
 
--
+- it looks great, i just want to make sure everything fits on the mobile screen without cutting off elements, i think there is only stuff cutoff now due to the demo buttons
+- 
 
 ## Card scan (`r9-scan-*`)
 
@@ -838,7 +841,7 @@ Tries: the caution triangle and its pop-up.
 
 Your points:
 
--
+- looks great, warning is perfect, but the capture button is massive, can we make that look sleaker and more integrated perhaps? maybe a button where the "Powered by Cardomancer" is and move that text to under the image component
 
 ## Shared chrome and Menu (`r9-menu-*`)
 
@@ -846,7 +849,7 @@ Tries: Blue's tray, arcane.
 
 Your points:
 
--
+- the colorless profile tray really lacks animation, or theyre invisible? i cant tell, i still want it subtle like the others but this one seems even more subtle
 
 ## Ready to build?
 
