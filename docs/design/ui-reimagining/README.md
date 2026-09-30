@@ -8,9 +8,11 @@ approved in `PRD/sections/` (`REQ-200`-`REQ-205`) but has not yet built.
 untouched; this is a static, self-contained preview the owner reviews before
 a later package builds it for real.
 
-Directions 2 and 3 are a follow-on package, kicked off after the owner has
-reacted to this one. Mirrors `docs/design/tab-icon/`'s precedent for kept
-design-candidate art living outside `PRD/work/`.
+Directions 2 and 3 were planned as a follow-on; the owner's Round 14 verdict
+(2026-09-29) finalised direction 1 instead, so they are not being made. The
+build intake is `GRAPH-BRIEF.md` in this folder. Mirrors
+`docs/design/tab-icon/`'s precedent for kept design-candidate art living
+outside `PRD/work/`.
 
 ## How to open it
 
@@ -125,17 +127,69 @@ mockup above and the Life Tracker before/after pair.
 The graph build (PR #237, commits `f527ae9..60e5f94`) met every slice
 criterion but the owner rejected the mockups' feel on 2026-09-24: shared chrome
 looked unchanged, cards were lettered chips instead of card art, In-Depth lost
-its questions and context, Trade Balancer had no card images. The pages are now
-being reworked **one flow at a time with the owner reacting to each render**,
-on this same branch, before anything is handed back to the graph. When all
-four flows are agreed, the agreed pages plus one written rule per flow become
-the intake for the next kickoff (product truth + app code).
+its questions and context, Trade Balancer had no card images. The pages were
+then reworked **one flow at a time with the owner reacting to each render**,
+on this same branch, through fourteen rounds (2026-09-24 → 2026-09-29). **The
+rework is closed.** On Round 14 the owner wrote "everything is finalized and
+ready to be turned into a proper prd for an agent to implement into the
+judge". The agreed pages plus the written rules per flow are the intake for
+the next kickoff (product truth + app code): `GRAPH-BRIEF.md` in this folder,
+handed to `/graph-kickoff` after PR #237 merges (see "Round 14" below).
 
 How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 127.0.0.1` from `docs/design/ui-reimagining/`), open a page, screenshot at
 390×844 and 1440×900, show the owner, adjust. Card images are the app's own
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
+
+### Round 14 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 14" and the owner's inline answers to the Round 13 open list) — the last round
+
+The owner wrote one line, under Global: "I think everything is finalized and
+ready to be turned into a proper prd for an agent to implement into the
+judge", and left every flow heading blank (fine as shown). The Round 13 open
+list was answered inline in this file, kept verbatim below: the theme band's
+floor — "whatever its set to right now is perfect"; Game Setup and Commander
+damage — "the menus look so much better now, theyre great"; the zone signs —
+"i think it can be 5% fainter, and also i noticed the glyphs arent
+randomized". Two changes, then the rework is closed. Renders are
+`renders/r14-idq-*.png`; the `r13-*` renders of the Menu band and Life
+Tracker's two sheets stay in the folder as the approved final.
+
+#### Ask a Question · in-depth details — the card menu (`r14-idq-*`)
+
+- Rule: **the signs are dealt at random.** Round 13 gave each zone a fixed
+  sign of its own (a headstone for the Graveyard, a crown for the Command
+  Zone …). The owner's Round 13 words were "so it feels random and magical",
+  and a fixed sign per zone is not random. The pool is fourteen line-drawn
+  marks now — the seven from Round 13 plus a crescent moon, an eye, a key, an
+  hourglass, a rune, a comet and a sigil ring — and every time the card menu
+  opens, seven are dealt, one per Move to pill, no two alike. A sign never
+  names its zone; the word does. The two renders are two different deals
+  (`r14-idq-390-card-menu-green`, `r14-idq-1440-card-menu-green`).
+- Rule: **5 % fainter at rest** — 0.55 → 0.50 of the colour's light. The
+  current zone's sign still lights to full with its small glow.
+
+#### Everything else
+
+Unchanged: the theme band and its 40 px floor, Game Setup, Commander damage,
+Ask a Question, Trade Balancer, Card scan. Nothing is open for a verdict.
+
+#### Next: the build
+
+The mockup is the visual truth; `GRAPH-BRIEF.md` in this folder is the
+written one — the rules per flow from rounds 2–14, what already stands in
+`PRD/sections/` (`REQ-200`–`REQ-205`), and what the build must amend or gate.
+The sequence is: merge PR #237 (this branch — the mockup tree, the rounds,
+the brief), then from the `main` checkout run
+
+```
+/graph-kickoff "Build the agreed direction-1 UI re-imagining into the shipped app" docs/design/ui-reimagining/GRAPH-BRIEF.md
+```
+
+That is the spec-forming half (brief → gate questions → docs PR); the build
+half follows with `/graph-implement` after the owner answers the gate.
+Directions 2 and 3 are not being made: the owner's Round 14 verdict
+finalises direction 1.
 
 ### Round 13 (2026-09-29, from the owner's walk-through of the Round 12 open questions)
 
@@ -213,10 +267,10 @@ the feedback doc after this pass.
 ### Open for the owner's verdict (Round 13)
 
 - The theme band's floor: 40 px cells and arrows only below 320 px — right,
-  or should the arrows come sooner (a 44 px floor, arrows from 340 px)?
-- The zone signs: the right amount of presence, or fainter still?
+  or should the arrows come sooner (a 44 px floor, arrows from 340 px)? whatever its set to right now is perfect
+- The zone signs: the right amount of presence, or fainter still? i think it can be 5% fainter, and also i noticed the glyphs arent randomized
 - Game Setup and Commander damage: is this the refinement you meant, or
-  was there a specific thing that needed to change?
+  was there a specific thing that needed to change? the menus look so much better now, theyre great
 - Ready to build?
 
 ### Round 12 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 12")

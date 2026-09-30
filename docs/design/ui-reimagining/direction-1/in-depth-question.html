@@ -205,9 +205,11 @@
   .act-zones button { min-height: 36px; padding: 0.2rem 0.75rem 0.2rem 0.6rem; border-radius: 999px; font-size: 0.82rem; gap: 0.4rem; background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
   /* round 13 (owner: "glyphs on the pills sounds awesome … subtle, so it feels random and
      magical without feeling like a forced effect — subtle but elegant, mystical"): each
-     zone wears its own small line-drawn sign, faint in the colour's light; the current
-     zone's sign brightens and glows a touch. No two alike, nothing filled in. */
-  .act-zones button .zg { width: 15px; height: 15px; flex: 0 0 auto; color: var(--accent-soft); opacity: 0.55; transition: opacity 160ms ease, filter 160ms ease; }
+     pill wears a small line-drawn sign, faint in the colour's light; the current
+     zone's sign brightens and glows a touch. No two alike, nothing filled in. Round 14:
+     the signs are dealt at random from a pool each time the menu opens (see SIGN_POOL),
+     and rest 5 % fainter (0.55 → 0.50, the owner's ask). */
+  .act-zones button .zg { width: 15px; height: 15px; flex: 0 0 auto; color: var(--accent-soft); opacity: 0.50; transition: opacity 160ms ease, filter 160ms ease; }
   .act-zones button .zg svg { width: 100%; height: 100%; display: block; fill: none; stroke: currentColor; stroke-width: 1.35; stroke-linecap: round; stroke-linejoin: round; }
   .act-zones button:hover .zg { opacity: 0.85; }
   .act-zones button[data-current="true"] { box-shadow: 0 0 14px -5px color-mix(in srgb, var(--accent) 80%, transparent); }
@@ -894,27 +896,39 @@
     // ---- round 7: the card actions sheet ----
     let actCard = null;
     const zoneOf = (c) => Object.keys(zoneCards).find((z) => (zoneCards[z] || []).includes(c));
-    // round 13: one small sign per zone for the card menu's Move to pills — line-drawn,
-    // 16×16, stroked in the colour's light: a pile of cards for the Stack, a shield for
-    // the Battlefield, a fan of cards for the Hand, a headstone for the Graveyard, a spark
-    // for Exile, a closed book for the Library, a crown for the Command Zone
-    const ZONE_SIGN = {
-      'Stack': '<path d="M2.5 5.5h8.5v9H2.5z"/><path d="M5 5.5V3.2a.7.7 0 0 1 .7-.7h7.6a.7.7 0 0 1 .7.7v8.6"/>',
-      'Battlefield': '<path d="M8 1.8 13 3.6v4.1c0 3.2-2.1 5.6-5 6.9-2.9-1.3-5-3.7-5-6.9V3.6z"/><path d="M8 5v5.2"/>',
-      'Hand': '<g transform="rotate(-20 8 13)"><rect x="5.6" y="4.6" width="4.8" height="8" rx=".8"/></g><rect x="5.6" y="3" width="4.8" height="8" rx=".8"/><g transform="rotate(20 8 13)"><rect x="5.6" y="4.6" width="4.8" height="8" rx=".8"/></g>',
-      'Graveyard': '<path d="M4 14V6.2a4 4 0 0 1 8 0V14"/><path d="M2.5 14h11"/><path d="M8 6.4v3.4M6.5 7.9h3"/>',
-      'Exile': '<path d="M8 1.6c.5 3.7 2.7 5.9 6.4 6.4-3.7.5-5.9 2.7-6.4 6.4-.5-3.7-2.7-5.9-6.4-6.4 3.7-.5 5.9-2.7 6.4-6.4z"/>',
-      'Library': '<rect x="3.6" y="2.2" width="8.8" height="11.6" rx="1.1"/><path d="M6.2 2.2v11.6M8.6 5h2.2"/>',
-      'Command Zone': '<path d="M3 12.6 2.4 5.2l3.6 2.9L8 3.6l2 4.5 3.6-2.9-.6 7.4z"/><path d="M3.3 12.6h9.4"/>'
-    };
-    const zoneSign = (z) => '<span class="zg" aria-hidden="true"><svg viewBox="0 0 16 16">' + (ZONE_SIGN[z] || '') + '</svg></span>';
+    // round 13: small line-drawn signs, 16×16, stroked in the colour's light, on the card
+    // menu's Move to pills. Round 14 (owner: "the glyphs aren't randomized"): the signs are
+    // a pool of fourteen arcane marks — a pile of cards, a shield, a fan of cards, a
+    // headstone, a spark, a closed book, a crown, a crescent moon, an eye, a key, an
+    // hourglass, a rune, a comet, a sigil ring — and every time the menu opens seven are
+    // dealt at random, one per pill, no two alike. A sign no longer names its zone; the
+    // word does that. Nothing filled in.
+    const SIGN_POOL = [
+      '<path d="M2.5 5.5h8.5v9H2.5z"/><path d="M5 5.5V3.2a.7.7 0 0 1 .7-.7h7.6a.7.7 0 0 1 .7.7v8.6"/>',
+      '<path d="M8 1.8 13 3.6v4.1c0 3.2-2.1 5.6-5 6.9-2.9-1.3-5-3.7-5-6.9V3.6z"/><path d="M8 5v5.2"/>',
+      '<g transform="rotate(-20 8 13)"><rect x="5.6" y="4.6" width="4.8" height="8" rx=".8"/></g><rect x="5.6" y="3" width="4.8" height="8" rx=".8"/><g transform="rotate(20 8 13)"><rect x="5.6" y="4.6" width="4.8" height="8" rx=".8"/></g>',
+      '<path d="M4 14V6.2a4 4 0 0 1 8 0V14"/><path d="M2.5 14h11"/><path d="M8 6.4v3.4M6.5 7.9h3"/>',
+      '<path d="M8 1.6c.5 3.7 2.7 5.9 6.4 6.4-3.7.5-5.9 2.7-6.4 6.4-.5-3.7-2.7-5.9-6.4-6.4 3.7-.5 5.9-2.7 6.4-6.4z"/>',
+      '<rect x="3.6" y="2.2" width="8.8" height="11.6" rx="1.1"/><path d="M6.2 2.2v11.6M8.6 5h2.2"/>',
+      '<path d="M3 12.6 2.4 5.2l3.6 2.9L8 3.6l2 4.5 3.6-2.9-.6 7.4z"/><path d="M3.3 12.6h9.4"/>',
+      '<path d="M10.2 2.4a6 6 0 1 0 3.4 9.9 5.2 5.2 0 0 1-3.4-9.9z"/>',
+      '<path d="M1.8 8c1.6-3 3.7-4.5 6.2-4.5S12.6 5 14.2 8c-1.6 3-3.7 4.5-6.2 4.5S3.4 11 1.8 8z"/><circle cx="8" cy="8" r="2"/>',
+      '<circle cx="5" cy="6" r="3"/><path d="M7.2 8.2 13.5 14.5M11 12l1.6-1.6M9.3 10.3l1.6-1.6"/>',
+      '<path d="M4 2.2h8M4 13.8h8M5 2.2v2.4L8 8l-3 3.4v2.4M11 2.2v2.4L8 8l3 3.4v2.4"/>',
+      '<path d="M8 1.8v12.4M8 5.4l4-2.4M8 5.4 4 3M8 10.6l4 2.4M8 10.6 4 13"/>',
+      '<circle cx="11" cy="5" r="2.4"/><path d="M8.9 6.9 2.5 13.3M9.4 9.6l-3 3M6.4 6.6l-3 3"/>',
+      '<circle cx="8" cy="8" r="5.6"/><circle cx="8" cy="8" r="1.4"/><path d="M8 2.4v1.8M8 11.8v1.8M2.4 8h1.8M11.8 8h1.8"/>'
+    ];
+    const dealSigns = (n) => { const pool = SIGN_POOL.slice(); for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; } return pool.slice(0, n); };
+    const zoneSign = (paths) => '<span class="zg" aria-hidden="true"><svg viewBox="0 0 16 16">' + paths + '</svg></span>';
     function openActions(c, view) {
       actCard = c;
       const zone = zoneOf(c);
       const list = zoneCards[zone] || [], i = list.indexOf(c);
       const isStack = zone === 'Stack';
       $('act-head').innerHTML = thumb(c) + '<div><span class="zone">' + zone + (isStack ? ' · ' + stackLabel(i, list.length) : '') + '</span><h2>' + c.name + '</h2></div>';
-      $('act-zones').innerHTML = ZONES.map((z) => '<button type="button" data-zone="' + z + '" data-current="' + (z === zone) + '">' + zoneSign(z) + z + '</button>').join('');
+      const signs = dealSigns(ZONES.length);
+      $('act-zones').innerHTML = ZONES.map((z, k) => '<button type="button" data-zone="' + z + '" data-current="' + (z === zone) + '">' + zoneSign(signs[k]) + z + '</button>').join('');
       $('act-zones').querySelectorAll('button').forEach((b) => b.addEventListener('click', () => { if (b.dataset.zone === zone) return closeActions(); moveCard(c, zone, b.dataset.zone); closeActions(); }));
       // round 8: every zone can be reordered; only the Stack's order has a rule behind it
       $('act-stack').hidden = list.length < 2;

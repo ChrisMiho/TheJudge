@@ -1054,7 +1054,7 @@ six cells no longer fit (the 280 px squish); untouched at 390.
 
 Your points:
 
--
+- I think everything is finalized and ready to be turned into a proper prd for an agent to implement into the judge
 
 ## Ask a Question
 
@@ -1111,3 +1111,13 @@ Your points:
 ## Ready to build?
 
 -
+
+---
+
+Round 14 applied on 2026-09-29: the zone signs on the card menu are dealt
+at random from a pool of fourteen each time the menu opens, and rest 5 %
+fainter. The Round 13 open list was answered inline in `README.md` (the
+theme band's floor is perfect; Game Setup and Commander damage are great).
+The mockup rework is closed. The build intake is
+`docs/design/ui-reimagining/GRAPH-BRIEF.md`; `README.md` → "Round 14" says
+how to hand it to `/graph-kickoff` once PR #237 is merged.
