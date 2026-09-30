@@ -854,3 +854,80 @@ Your points:
 ## Ready to build?
 
 -
+
+# Round 11 — notes on the Round 10 renders
+
+Open `README.md` → "Round 10" for what changed and why; the renders are
+`renders/r10-*.png`. Write under each heading; a blank heading means "fine as
+shown". When done, open a new session from the worktree at
+`.worktrees/implement-ui-reimagining/` and paste:
+
+"Continue the ui-reimagining mockup rework. Start from
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 10), then apply
+my Round 11 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+me a render after each flow."
+
+Answers to your Round 10 questions:
+
+- The swap to Blue on the way into in-depth was the mockup only: each page
+  started from its own default and never carried the colour across. The
+  shipped app keeps your colour as a saved setting, and the mockup now does
+  the same — pick a colour once and every page opens in it.
+- Nothing on the Trade Balancer phone screen was cut off by the app itself;
+  the demo strip under it pushed the page past the fold. The strip now folds
+  behind a slim DEMO tab on the right edge on every phone screen.
+
+## Global (`r10-*-390-*`)
+
+Tries: the DEMO edge tab on a phone.
+
+Your points:
+
+-
+
+## Ask a Question (`r10-qq-*`)
+
+Tries: a card the judge names sits in a tinted chip — see it on White,
+Colorless and Blue.
+
+Your points:
+
+-
+
+## In-depth details (`r10-idq-*`)
+
+Tries: the colour carried in from Ask a Question; the Stack's tags read
+BOTTOM · 2ND · TOP (BOTTOM · 3RD · 2ND · TOP for four).
+
+Your points:
+
+-
+
+## Trade Balancer (`r10-tb-*`)
+
+Tries: the phone screen alone, demo strip folded (and floated over, for the
+record).
+
+Your points:
+
+-
+
+## Card scan (`r10-scan-*`)
+
+Tries: the shutter in the frame's foot; the credit under the frame.
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`r10-menu-*`)
+
+Tries: Colorless's tray — more shapes, a shade brighter, a pale pool of light.
+
+Your points:
+
+-
+
+## Ready to build?
+
+-

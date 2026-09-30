@@ -53,7 +53,10 @@ compositions each page targets.
   Quick Question, In-Depth Question and Trade Balancer share (see round 2),
   plus the shared menu tray, chat and card-detail panel (round 3), the wait
   lines (round 8, real speed and inked in letter by letter in round 9) and
-  the microphone inside every question box's send control (round 9).
+  the microphone inside every question box's send control (round 9). Round
+  10: the colour picked is remembered in the browser and carried into every
+  page (as the app's saved setting), a card the judge names sits in a tinted
+  chip, and on a phone the demo strip folds behind a slim DEMO edge tab.
 - `ambience.css` + `ambience.js` — the per-colour personality layer behind
   every page: two sheets of drifting haze and a field of magical dust
   (round 5), the colour's badge faint and drifting, over a flat ground
@@ -119,6 +122,90 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 390×844 and 1440×900, show the owner, adjust. Card images are the app's own
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
+
+### Round 10 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 10")
+
+Every Round 10 note applied, as written. Renders are `renders/r10-*.png`
+(phone 390×844, desktop 1440×900), the only renders in the folder.
+**Rule** = the owner said it must hold. **Try** = shown for a verdict.
+
+Global (`r10-*-390-*`):
+
+- Owner: "the overall vibe of each color profile is spot on … it all is
+  unique and it fits perfectly for the app." Nothing changed in the
+  atmosphere this round.
+- Rule: **on a phone the demo strip no longer sits under the screen.** It
+  folds behind a slim DEMO tab on the right edge; a tap floats the strip over
+  the page, a second tap or Escape folds it away. Every phone screen now
+  fills the viewport exactly with nothing below the fold — Trade Balancer and
+  Card scan both measure a scroll height equal to the viewport
+  (`r10-tb-390`, `r10-tb-390-demo-open`, `r10-scan-390`). Desktop is
+  unchanged. The strip is mockup scaffolding; none of this is app UI.
+
+#### Ask a Question — `quick-question.html` (`r10-qq-*`)
+
+- Rule: **a card the judge names sits in a chip.** The name has a tint of the
+  colour's light behind it, a hairline round it and a solid underline, so it
+  reads as a thing to tap on White and Colorless — where the accent text was
+  the same colour as the body text — as well as on the strong colours
+  (`r10-qq-1440-answered-white`, `r10-qq-1440-answered-colorless`,
+  `r10-qq-1440-answered-blue`, `r10-qq-390-answered-white`). Hover or press
+  brightens the chip. A tap still opens the card's detail.
+
+#### Ask a Question · in-depth details — `in-depth-question.html` (`r10-idq-*`)
+
+- Answer + Rule: **the colour no longer swaps to Blue on the way in.** It was
+  a mockup side effect only: each page started from its own default and the
+  colour was never carried across a page change. The shipped app keeps the
+  player's colour as a saved setting (`REQ-099`), so the mockup now does the
+  same — the last colour picked (and a custom Colorless) is remembered in the
+  browser and every page opens in it. Proof: Ask a Question opened in Green,
+  "Add in-depth details" tapped, in-depth arrived Green with no `?profile=`
+  in its address (`r10-idq-1440-1-carried-green`). `?profile=` still wins for
+  a one-off preview.
+- Rule: **the Stack's tags read BOTTOM … TOP.** Three or more cards used to
+  read #1, #2, TOP. Now the ends are BOTTOM and TOP and the cards between
+  count down from the top in resolving order — TOP, 2ND, 3RD … BOTTOM — so a
+  tag always says where the card sits (`r10-idq-1440-3-cards` reads BOTTOM ·
+  2ND · TOP; `r10-idq-1440-3-cards-four` reads BOTTOM · 3RD · 2ND · TOP;
+  `r10-idq-390-3-cards`). The hint under the shelf says the same: "The top of
+  the stack resolves first, then 2nd, 3rd… down to the bottom."
+
+#### Trade Balancer — `trade-balancer.html` (`r10-tb-*`)
+
+- Owner: "it looks great." Nothing in the screen changed. On a phone it fits
+  the viewport exactly with the demo strip folded away (`r10-tb-390`); the
+  strip floats over the page when the tab is tapped (`r10-tb-390-demo-open`).
+  Desktop unchanged (`r10-tb-1440`).
+
+#### Card scan — `card-scan.html` (`r10-scan-*`)
+
+- Rule: **Capture is a shutter in the frame's foot.** The full-width green
+  button is gone. Where "Powered by Cardomancer" was — the middle of the foot
+  band between sound and Debug — sits a camera shutter: a ring of the colour's
+  light round a filled disc that sinks when pressed. The credit moved to a
+  quiet line under the frame, above the hint (`r10-scan-390`,
+  `r10-scan-1440`). The shutter is the same `#capture` control; it still reads
+  one frame by hand and the hint says so.
+
+#### Shared chrome and Menu (`r10-menu-*`)
+
+- Rule: **Colorless's tray moves.** Its shapes were there but at tray size
+  came to four faint outlines at 5–11 % — as good as invisible — and the pool
+  of light at the foot was drawn from Colorless's dark-grey accent, so it
+  vanished. The tray now gets a fuller scatter of smaller shapes, drawn a
+  shade brighter and turning a touch faster, and the pool is drawn from the
+  colour's pale light. Still the quietest of the six trays
+  (`r10-menu-1440-colorless`, `r10-menu-390-colorless`). The page's own
+  Colorless scene is untouched.
+
+### Open for the owner's verdict (Round 10)
+
+- Ask a Question: the chip on the strong colours (Blue render) — too loud
+  there, or right?
+- In-depth: the tag words — 2ND / 3RD, or plain numbers under TOP?
+- Card scan: the shutter's size (54 px ring, 40 px disc).
+- Menu: Colorless's tray — enough movement now, or nudge it once more?
 
 ### Round 9 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 9")
 
