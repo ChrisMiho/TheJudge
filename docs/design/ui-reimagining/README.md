@@ -50,7 +50,8 @@ compositions each page targets.
   designs live here too (round 9: Green an abstract scatter of leaf-and-tree
   shapes, Blue a subtle scatter of arcane shapes, White's beams toned down).
   Round 12: the Theme row is one segmented band of six colour cells, not six
-  discs — the cells never shrink below a thumb on a narrow phone.
+  discs. Round 13: a cell never goes below 40 px; when six no longer fit
+  the tray the band slides, with an arrow at each end.
 - `flow.css` + `flow.js` — the question-flow components and demo helpers
   Quick Question, In-Depth Question and Trade Balancer share (see round 2),
   plus the shared menu tray, chat and card-detail panel (round 3), the wait
@@ -136,11 +137,93 @@ How to work on it: serve this folder (`python3 -m http.server 8137 --bind
 representative printings via `https://cards.scryfall.io/normal/front/<a>/<b>/<id>.jpg`;
 ids come from `apps/frontend/public/data/cardMetadata.json` (`imageId`).
 
+### Round 13 (2026-09-29, from the owner's walk-through of the Round 12 open questions)
+
+The owner answered the open list in chat rather than in `OWNER-FEEDBACK.md`;
+the answers and what they changed are recorded here. Renders are
+`renders/r13-*.png` (phone 390×844, desktop 1440×900, plus a 280-wide squish
+for the Menu), the only renders in the folder. **Rule** = the owner said it
+must hold. **Try** = shown for a verdict.
+
+Settled, no change: History on desktop stays two panes and the phone jumps
+straight in ("the way it's functioning in the demo is perfect right now").
+One consolidated history list ("for sure"). The count stays hidden until
+someone types. The card menu's zone pills get glyphs (below). The seat map
+for commander damage is "perfect". "Ready to build?" — the owner will fill
+the feedback doc after this pass.
+
+#### Shared chrome and Menu — the theme band (`r13-menu-*`)
+
+- Owner: "I love the theme band, but when I squished the screen a ton, the
+  band did as well, making things small and hard to click on … do we change
+  the UI to an arrow in each direction with the colour band selection in the
+  middle, that way there is more real estate to select it?"
+- Rule: **a cell never shrinks below 40 px.** When six full-size cells no
+  longer fit the tray, the band keeps its cells and slides instead: an arrow
+  appears at each end and nudges it along two cells at a time, the arrow at
+  the end you have reached fades, and the chosen colour is brought into view
+  when the Menu opens (`r13-menu-280-red`, a 280 px squish). On every phone
+  from 320 px up all six still fit and no arrow shows (`r13-menu-390-blue`).
+  This is the owner's arrows-either-side idea applied only when it is
+  needed — the full band with every colour in reach is always the better
+  picker, so the arrows are a floor, not the default.
+
+#### Ask a Question · in-depth details — the card menu (`r13-idq-*`)
+
+- Owner: "glyphs on the pills sounds awesome, but I don't want the same glyph
+  on each button, and I want it to be subtle, so it feels random and magical
+  without feeling like a forced effect or flair — subtle but elegant,
+  mystical."
+- Try: **each zone wears its own sign.** Seven small line drawings, 16 px,
+  stroked in the colour's light at about half strength, nothing filled in: a
+  pile of cards for the Stack, a shield for the Battlefield, a fan of cards
+  for the Hand, a headstone for the Graveyard, a spark for Exile, a closed
+  book for the Library, a crown for the Command Zone. The current zone's
+  sign brightens and glows a touch (`r13-idq-390-card-menu-green`,
+  `r13-idq-1440-card-menu-green`). They live on the card menu's Move to
+  pills only; the zone tabs on the Cards step and the placing tiles are
+  words alone, as before.
+
+#### Life Tracker — Game Setup and Commander damage (`r13-lt-*`)
+
+- Owner: "the menu for setting up the game needs refinement, and the menu
+  that opens when you apply commander damage can also use some refinement
+  too, be cleaned up." No specifics, so the pass is a tidy of what was
+  there; every control, option, default and range is still the shipped one.
+- Rule: **Game Setup is one screen on a phone now.** The two "This game" rows
+  say one line each. The name fields are compact boxes with the seat number
+  inside at the left, two to a row on every screen, so eight players are
+  four short rows. Starting life moved up under Players (its rule, "2
+  players start at 20 · 3+ at 40", sits with it now) and the two look
+  settings — Layout (Grid · List) and Card style (Ombre · Flat) — close the
+  sheet as a pair with one label each; the "Layout" group label that sat
+  above two more labels is gone (`r13-lt-setup-390-red`,
+  `r13-lt-setup-1440-green`).
+- Rule: **the Commander damage tab is the seat map and nothing else.** The
+  label is "Commander damage · lethal at 21". A seat tile is the player's
+  name, the number, and one joined − / + pill (the Players stepper's shape);
+  at 21 the tile's edge lights red and a small LETHAL tag sits by the name.
+  Your own seat is drawn like your card — your name, your life total muted
+  behind, "your seat". The line explaining the layout is gone; the map
+  explains itself (`r13-lt-cmd-390-lethal-red`, `r13-lt-cmd-1440-red`).
+- Answered in chat, unchanged: on the Counters tab every tile adds one on a
+  tap; to take one away, set a number or clear it, today you long-press the
+  tile, and the mockup adds a ⋯ on each tile that opens that row. Both stay.
+
+### Open for the owner's verdict (Round 13)
+
+- The theme band's floor: 40 px cells and arrows only below 320 px — right,
+  or should the arrows come sooner (a 44 px floor, arrows from 340 px)?
+- The zone signs: the right amount of presence, or fainter still?
+- Game Setup and Commander damage: is this the refinement you meant, or
+  was there a specific thing that needed to change?
+- Ready to build?
+
 ### Round 12 (2026-09-29, from `OWNER-FEEDBACK.md` → "Round 12")
 
-Every Round 12 note applied. Renders are `renders/r12-*.png` (phone 390×844,
-desktop 1440×900, plus a 320-wide phone for the Menu), the only renders in
-the folder. **Rule** = the owner said it must hold. **Try** = shown for a
+Every Round 12 note applied. Renders were `renders/r12-*.png` (phone 390×844,
+desktop 1440×900, plus a 320-wide phone for the Menu), replaced by Round
+13's. **Rule** = the owner said it must hold. **Try** = shown for a
 verdict. Ask a Question ("looks great now, even at the smaller resolutions")
 and Card scan ("unchanged") did not change this round.
 

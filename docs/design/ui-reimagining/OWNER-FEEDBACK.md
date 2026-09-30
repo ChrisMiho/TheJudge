@@ -1030,32 +1030,27 @@ Your points:
 
 -
 
-# Round 13 — notes on the Round 12 renders
+# Round 13 — answered in chat (2026-09-29)
 
-Open `README.md` → "Round 12" for what changed and why; the renders are
-`renders/r12-*.png`. Write under each heading; a blank heading means "fine as
+The owner walked through the Round 12 open questions in the session instead
+of here. The answers and what they changed are in `README.md` → "Round 13".
+
+# Round 14 — notes on the Round 13 renders
+
+Open `README.md` → "Round 13" for what changed and why; the renders are
+`renders/r13-*.png`. Write under each heading; a blank heading means "fine as
 shown". When done, open a new session from the worktree at
 `.worktrees/implement-ui-reimagining/` and paste:
 
 "Continue the ui-reimagining mockup rework. Start from
-`docs/design/ui-reimagining/README.md` (Iteration log, Round 12), then apply
-my Round 13 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
+`docs/design/ui-reimagining/README.md` (Iteration log, Round 13), then apply
+my Round 14 notes in `docs/design/ui-reimagining/OWNER-FEEDBACK.md`, showing
 me a render after each flow."
 
-Answers to your Round 12 notes that were questions:
+## Global (`r13-menu-*`)
 
-- The pre-added cards in the in-depth walk were the demo's doing. A walk from
-  step 1 now starts with empty zones, as the app does; the demo strip's
-  jumps still seed the six cards.
-- The theme discs are one band now — six equal cells in a pill the width of
-  the tray, each always 46 px tall with a fixed-size symbol, still one row.
-  If the band is wrong, say what you'd rather see; the two alternatives I
-  set aside are in the README.
-
-## Global (`r12-menu-*`)
-
-Tries: the theme band at 320, 390 and in the desktop tray — the unchosen
-cells as faint washes, the chosen cell lit with its symbol dark.
+Tries: the theme band with a 40 px cell floor — arrows at each end only when
+six cells no longer fit (the 280 px squish); untouched at 390.
 
 Your points:
 
@@ -1069,18 +1064,18 @@ Your points:
 
 -
 
-## In-depth details (`r12-idq-*`)
+## In-depth details (`r13-idq-*`)
 
-Tries: Add card and Scan under the track (equal halves on a phone, left-set
-on desktop); the empty shelf on a fresh walk.
+Tries: one line-drawn sign per zone on the card menu's Move to pills, faint,
+the current one lit.
 
 Your points:
 
 -
 
-## Trade Balancer (`r12-tb-*`)
+## Trade Balancer
 
-Tries: the phone's ↺ New trade chip with its word.
+Unchanged this round.
 
 Your points:
 
@@ -1094,7 +1089,18 @@ Your points:
 
 -
 
-## Shared chrome and Menu (`r12-menu-*`)
+## Life Tracker (`r13-lt-*`)
+
+Tries: Game Setup tidied (one-line rows, compact numbered name fields two to
+a row, starting life under Players, Layout / Card style as a labelled pair);
+the Commander damage tab as the seat map alone (name · number · one − / +
+pill, LETHAL at 21, your own seat drawn like your card).
+
+Your points:
+
+-
+
+## Shared chrome and Menu (`r13-menu-*`)
 
 Tries: the theme band (same as Global above).
 

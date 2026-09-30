@@ -284,9 +284,9 @@ window.FLOW = (() => {
       '<ul class="tray-nav-list">' + dest.map(([n, g, href]) => '<li><button type="button"' + (href ? ' data-href="' + href + '"' : ' id="tray-history"') + (n === current ? ' aria-current="page"' : '') + '><span class="glyph">' + g + '</span><span>' + n + '</span>' + (n === current ? '<span class="here">✓</span>' : '') + '</button></li>').join('') +
       '<li><div class="tray-divider"></div></li>' +
       '<li><button type="button" id="tray-feedback"><span class="glyph">✎</span><span>Send feedback</span></button></li></ul>' +
-      '<h3>Theme</h3><div class="theme-orbs" role="group" aria-label="Theme palettes" id="theme-orbs">' +
+      '<h3>Theme</h3><div class="theme-band" id="theme-band" data-overflow="false"><button class="theme-step" type="button" data-dir="-1" aria-label="Earlier colours">‹</button><div class="theme-orbs" role="group" aria-label="Theme palettes" id="theme-orbs">' +
       PROFILES.map(([id, name, orb, soft]) => '<button class="theme-orb" data-profile-btn="' + id + '" aria-label="Theme: ' + name + '" title="' + name + '" style="--orb:' + orb + ';--orb-soft:' + soft + '"><span class="orb">' + (window.MOTIFS ? window.MOTIFS.use(window.MOTIFS.chosen(id)) : '') + '</span></button>').join('') +
-      '</div><div class="theme-custom" id="theme-custom" data-show="false"><input type="color" id="colorless-hex" aria-label="Customize Colorless color" value="#71717a"><span>Colorless colour</span><button class="btn" id="colorless-reset" type="button">Reset to gray</button></div>' +
+      '</div><button class="theme-step" type="button" data-dir="1" aria-label="Later colours">›</button></div><div class="theme-custom" id="theme-custom" data-show="false"><input type="color" id="colorless-hex" aria-label="Customize Colorless color" value="#71717a"><span>Colorless colour</span><button class="btn" id="colorless-reset" type="button">Reset to gray</button></div>' +
       '<div class="tray-flair" aria-hidden="true"></div>';
     document.body.append(backdrop, nav);
     // round 7: the colour's element plays at a whisper in the tray's foot
@@ -297,6 +297,26 @@ window.FLOW = (() => {
     backdrop.addEventListener('click', () => setTray(false));
     nav.querySelectorAll('[data-href]').forEach((b) => b.addEventListener('click', () => { if (!b.hasAttribute('aria-current')) location.href = b.dataset.href; else setTray(false); }));
     nav.querySelectorAll('[data-profile-btn]').forEach((b) => b.addEventListener('click', () => setProfile(b.dataset.profileBtn)));
+    // round 13: the band slides when six full-size cells no longer fit the tray —
+    // an arrow at each end nudges it two cells; the arrow at the reached end fades
+    const band = document.getElementById('theme-band'), strip = document.getElementById('theme-orbs');
+    const bandState = () => {
+      // "would six floor-width cells fit the band without the arrows?" — measured
+      // against the band, not the strip, so showing the arrows can't re-trigger itself
+      const cells = strip.querySelectorAll('.theme-orb');
+      const floor = cells.length ? parseFloat(getComputedStyle(cells[0]).minWidth) || 40 : 40;
+      const need = cells.length * floor + (cells.length - 1) * 2 + 8;
+      const over = need > band.clientWidth + 1;
+      band.dataset.overflow = String(over);
+      band.querySelector('[data-dir="-1"]').dataset.off = String(strip.scrollLeft <= 1);
+      band.querySelector('[data-dir="1"]').dataset.off = String(strip.scrollLeft + strip.clientWidth >= strip.scrollWidth - 1);
+    };
+    band.querySelectorAll('.theme-step').forEach((b) => b.addEventListener('click', () => { const cell = strip.querySelector('.theme-orb'); strip.scrollBy({ left: Number(b.dataset.dir) * (cell ? cell.offsetWidth + 2 : 44) * 2, behavior: 'smooth' }); }));
+    strip.addEventListener('scroll', bandState, { passive: true });
+    if (window.ResizeObserver) new ResizeObserver(bandState).observe(band); else window.addEventListener('resize', bandState);
+    const keepCurrentInView = () => { const cur = strip.querySelector('[data-current="true"]'); if (cur && strip.scrollWidth > strip.clientWidth + 1) strip.scrollTo({ left: cur.offsetLeft - (strip.clientWidth - cur.offsetWidth) / 2, behavior: 'auto' }); bandState(); };
+    document.querySelectorAll('.menu-toggle').forEach((b) => b.addEventListener('click', () => setTimeout(keepCurrentInView, 30)));
+    setTimeout(keepCurrentInView, 0);
     document.getElementById('colorless-hex').addEventListener('input', (e) => setCustomColorless(e.target.value));
     document.getElementById('colorless-reset').addEventListener('click', () => { setCustomColorless(null); document.getElementById('colorless-hex').value = '#71717a'; });
     // ?profile=green on any page previews that colour (round 7 convenience for review).

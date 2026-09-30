@@ -75,11 +75,16 @@
   .stepper .val small { display: block; font-weight: 500; font-size: 0.66rem; color: var(--text-muted); font-family: var(--font-body); letter-spacing: 0.06em; text-transform: uppercase; }
   .players-line { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; flex-wrap: wrap; }
   .link { background: transparent; border: 0; color: var(--accent-soft); font-size: 0.8rem; cursor: pointer; min-height: 36px; padding: 0 0.3rem; }
-  .names { display: none; grid-template-columns: 1fr; gap: 0.4rem; }
+  /* round 13: a name field is one compact box — the seat number sits inside it at the
+     left, the name (or its placeholder) beside — two to a row on every screen, so eight
+     players are four short rows, not eight tall ones */
+  .names { display: none; grid-template-columns: 1fr 1fr; gap: 0.4rem; }
   .names[data-open="true"] { display: grid; }
-  @media (min-width: 600px) { .names { grid-template-columns: 1fr 1fr; } }
-  .names label { display: grid; grid-template-columns: 4.2rem 1fr; align-items: center; gap: 0.5rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); }
-  .names .field { min-height: 40px; font-size: 0.9rem; }
+  .names label { display: flex; align-items: center; min-height: 42px; border-radius: 0.6rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); overflow: hidden; transition: border-color 150ms ease; }
+  .names label:focus-within { border-color: var(--accent-soft); }
+  .names .num { flex: 0 0 2rem; text-align: center; font-size: 0.7rem; font-weight: 700; color: var(--accent-soft); font-family: var(--font-display); }
+  .names input { flex: 1 1 0; min-width: 0; border: 0; background: transparent; color: var(--text-primary); font: inherit; font-size: 0.9rem; padding: 0 0.5rem 0 0; outline: none; }
+  .names input::placeholder { color: var(--text-muted); }
 
   /* one segmented pill for a two- or three-way choice */
   .seg { display: inline-flex; border-radius: 999px; border: 1px solid var(--surface-edge); overflow: hidden; background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
@@ -111,16 +116,22 @@
   .seat-map { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
   .seat { display: grid; grid-template-rows: auto 1fr auto; gap: 0.2rem; min-height: 104px; padding: 0.5rem 0.55rem; border-radius: 0.8rem; border: 1px solid var(--surface-edge);
     background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 18%, var(--surface-panel)), var(--surface-panel)); position: relative; overflow: hidden; }
-  .seat .who { font-size: 0.72rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.02em; }
+  .seat .who { font-size: 0.74rem; color: var(--text-muted); font-weight: 600; letter-spacing: 0.02em; display: flex; align-items: center; justify-content: space-between; gap: 0.3rem; }
+  .seat .who .tag { font-size: 0.58rem; letter-spacing: 0.1em; text-transform: uppercase; color: #ff8fa3; border: 1px solid rgba(255, 77, 109, 0.55); border-radius: 999px; padding: 0.1rem 0.4rem; }
+  .seat[data-lethal="true"] { border-color: rgba(255, 77, 109, 0.6); box-shadow: 0 0 18px -6px rgba(255, 77, 109, 0.7); }
   .seat .dmg { display: grid; place-items: center; font-family: var(--font-display); font-weight: 800; font-size: 1.9rem; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
   .seat .dmg[data-lethal="true"] { color: #ff8fa3; text-shadow: 0 0 16px rgba(255, 77, 109, 0.6); }
-  .seat .bands { display: grid; grid-template-columns: 1fr 1fr; gap: 0.3rem; }
-  .seat .bands button { min-height: 34px; border-radius: 0.5rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); color: var(--text-primary); font-size: 1rem; cursor: pointer; }
-  .seat .bands button:hover:not(:disabled) { border-color: var(--accent-soft); }
+  /* − and + are one joined pill, as the Players stepper is */
+  .seat .bands { display: grid; grid-template-columns: 1fr 1fr; border-radius: 999px; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 45%, transparent); overflow: hidden; }
+  .seat .bands button { min-height: 36px; border: 0; background: transparent; color: var(--accent-soft); font-size: 1.1rem; cursor: pointer; }
+  .seat .bands button + button { border-left: 1px solid var(--surface-edge); }
+  .seat .bands button:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 18%, transparent); }
   .seat .bands button:disabled { opacity: 0.35; cursor: default; }
-  .seat.me { display: grid; place-items: center; background: color-mix(in srgb, var(--surface-ground) 40%, transparent); border-style: dashed; color: var(--text-muted); font-weight: 600; font-size: 0.9rem; }
-  .seat.me small { display: block; font-weight: 400; font-size: 0.68rem; margin-top: 0.15rem; }
-  .cmd-note { font-size: 0.74rem; color: var(--text-muted); margin: 0; }
+  /* your own seat, drawn like your card on the table: your name, your life, "you" */
+  .seat.me { background: color-mix(in srgb, var(--surface-ground) 40%, transparent); border-style: dashed; }
+  .seat.me .who { color: var(--accent-soft); }
+  .seat.me .dmg { color: var(--text-muted); opacity: 0.7; }
+  .seat.me .you { text-align: center; font-size: 0.68rem; color: var(--text-muted); min-height: 36px; display: grid; place-items: center; }
 
   /* the counter tiles: a tap adds one; ⋯ opens the tile's own row (−1, set, clear) */
   .tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.45rem; }
@@ -198,12 +209,13 @@
       <div class="lt-sec">
         <span class="lbl">This game</span>
         <div class="lt-rows">
-          <button type="button" id="reset-row"><span class="glyph">↺</span><span class="words">Reset life totals<small>Everyone back to the starting life, counters cleared. Players, names and settings stay.</small></span><span class="chev">›</span></button>
-          <button type="button" id="new-row" class="danger"><span class="glyph">✦</span><span class="words">New game<small>Back to 4 players at 40, names and counters cleared. Layout and card style stay.</small></span><span class="chev">›</span></button>
+          <!-- round 13 ("the menu for setting up the game needs refinement"): one line under each row, not two -->
+          <button type="button" id="reset-row"><span class="glyph">↺</span><span class="words">Reset life totals<small>Back to starting life, counters cleared. Names stay.</small></span><span class="chev">›</span></button>
+          <button type="button" id="new-row" class="danger"><span class="glyph">✦</span><span class="words">New game<small>4 players at 40, names and counters cleared.</small></span><span class="chev">›</span></button>
         </div>
       </div>
       <div class="lt-sec">
-        <span class="lbl">Players <small id="life-rule">2 players start at 20 · 3 or more at 40</small></span>
+        <span class="lbl">Players</span>
         <div class="players-line">
           <div class="stepper"><button type="button" id="p-minus" aria-label="Remove a player">−</button><span class="val"><span id="p-count">4</span><small>players</small></span><button type="button" id="p-plus" aria-label="Add a player">+</button></div>
           <button class="link" type="button" id="names-toggle" aria-expanded="false">Edit names ▾</button>
@@ -211,20 +223,20 @@
         <div class="names" id="names" data-open="false"></div>
       </div>
       <div class="lt-sec">
-        <span class="lbl">Layout</span>
-        <div class="pair">
-          <div class="sub"><small>Arrangement</small><div class="seg full" role="group" aria-label="Layout"><button type="button" data-layout="grid" aria-pressed="true"><span class="glyph">▦</span>Grid</button><button type="button" data-layout="list" aria-pressed="false"><span class="glyph">☷</span>List</button></div></div>
-          <div class="sub"><small>Card style</small><div class="seg full" role="group" aria-label="Card style"><button type="button" data-style="gradient" aria-pressed="true"><span class="glyph">◐</span>Ombre</button><button type="button" data-style="flat" aria-pressed="false"><span class="glyph">●</span>Flat</button></div></div>
-        </div>
-      </div>
-      <div class="lt-sec">
-        <span class="lbl">Starting life</span>
+        <span class="lbl">Starting life <small id="life-rule">2 players start at 20 · 3+ at 40</small></span>
         <div class="life-pills" id="life-pills" role="group" aria-label="Starting life">
           <button type="button" data-life="20" aria-pressed="false">20</button><button type="button" data-life="25" aria-pressed="false">25</button><button type="button" data-life="30" aria-pressed="false">30</button><button type="button" data-life="40" aria-pressed="true">40</button>
           <button type="button" class="custom" data-life="custom" aria-pressed="false">Custom</button>
           <span class="life-custom" id="life-custom" data-show="false"><input class="field" id="life-in" inputmode="numeric" value="60" aria-label="Custom starting life"><button type="button" class="ok" id="life-ok" aria-label="Use this starting life">✓</button><span class="err" id="life-err" hidden>Enter a whole number from 1 to 999.</span></span>
         </div>
-        <p class="life-note" id="life-note">Applies to the next reset or new game — nobody's total changes now.</p>
+        <p class="life-note" id="life-note">Applies at the next reset or new game — nobody's total changes now.</p>
+      </div>
+      <!-- round 13: one label per control — the "Layout" group label above two more labels is gone -->
+      <div class="lt-sec">
+        <div class="pair">
+          <div class="sub"><small>Layout</small><div class="seg full" role="group" aria-label="Layout"><button type="button" data-layout="grid" aria-pressed="true"><span class="glyph">▦</span>Grid</button><button type="button" data-layout="list" aria-pressed="false"><span class="glyph">☷</span>List</button></div></div>
+          <div class="sub"><small>Card style</small><div class="seg full" role="group" aria-label="Card style"><button type="button" data-style="gradient" aria-pressed="true"><span class="glyph">◐</span>Ombre</button><button type="button" data-style="flat" aria-pressed="false"><span class="glyph">●</span>Flat</button></div></div>
+        </div>
       </div>
     </div>
     <button class="lt-foot" type="button" data-close><span>Done</span><span class="chev">›</span></button>
@@ -239,9 +251,11 @@
       <div class="seg full" role="tablist" aria-label="Counters sections"><button type="button" role="tab" data-tab="player" aria-pressed="true"><span class="glyph">⚔</span>Commander damage</button><button type="button" role="tab" data-tab="counters" aria-pressed="false"><span class="glyph">◈</span>Counters</button></div>
       <div class="lt-tab" id="tab-player">
         <div class="lt-sec">
-          <span class="lbl">Commander damage taken <small>21 from one commander is lethal</small></span>
+          <!-- round 13 ("the menu that opens when you apply commander damage can use some refinement"):
+               a shorter label, the seat tiles cleaned up (the name alone, one joined − / + pill, a
+               LETHAL tag at 21), your own seat drawn like your card, and the explaining line gone -->
+          <span class="lbl">Commander damage <small>lethal at 21</small></span>
           <div class="seat-map" id="seat-map"></div>
-          <p class="cmd-note">Laid out like the table, so each seat is where that player sits. Your own seat is marked.</p>
         </div>
       </div>
       <div class="lt-tab" id="tab-counters" hidden>
@@ -301,7 +315,7 @@
     function renderSetup() {
       $('p-count').textContent = players;
       $('p-minus').disabled = players <= 2; $('p-plus').disabled = players >= MAX;
-      $('names').innerHTML = Array.from({ length: players }, (_, i) => '<label>Player ' + (i + 1) + '<input class="field" data-i="' + i + '" placeholder="Player ' + (i + 1) + '" value="' + names[i].replace(/"/g, '&quot;') + '"></label>').join('');
+      $('names').innerHTML = Array.from({ length: players }, (_, i) => '<label><span class="num" aria-hidden="true">' + (i + 1) + '</span><input data-i="' + i + '" aria-label="Player ' + (i + 1) + ' name" placeholder="Player ' + (i + 1) + '" value="' + names[i].replace(/"/g, '&quot;') + '"></label>').join('');
       $('names').querySelectorAll('input').forEach((el) => el.addEventListener('input', () => { names[Number(el.dataset.i)] = el.value; }));
       document.querySelectorAll('[data-layout]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.layout === layout)));
       document.querySelectorAll('[data-style]').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.style === style)));
@@ -349,8 +363,8 @@
       const order = players >= 4 ? [1, 2, 0, 3] : Array.from({ length: players }, (_, i) => i);
       $('seat-map').style.gridTemplateColumns = players <= 2 ? '1fr 1fr' : '1fr 1fr';
       $('seat-map').innerHTML = order.filter((i) => i < players).map((i) => i === who
-        ? '<div class="seat me"><div>' + nameOf(i) + '<small>that\'s you</small></div></div>'
-        : '<div class="seat" data-from="' + i + '"><span class="who">From ' + nameOf(i) + '</span><span class="dmg" data-lethal="' + ((s.cmd[i] || 0) >= 21) + '">' + (s.cmd[i] || 0) + '</span><span class="bands"><button type="button" data-d="-1" aria-label="Less commander damage from ' + nameOf(i) + '"' + ((s.cmd[i] || 0) <= 0 ? ' disabled' : '') + '>−</button><button type="button" data-d="1" aria-label="More commander damage from ' + nameOf(i) + '">+</button></span></div>').join('');
+        ? '<div class="seat me"><span class="who">' + nameOf(i) + '</span><span class="dmg">' + startLife + '</span><span class="you">your seat · life total</span></div>'
+        : '<div class="seat" data-from="' + i + '" data-lethal="' + ((s.cmd[i] || 0) >= 21) + '"><span class="who">' + nameOf(i) + ((s.cmd[i] || 0) >= 21 ? '<span class="tag">lethal</span>' : '') + '</span><span class="dmg" data-lethal="' + ((s.cmd[i] || 0) >= 21) + '">' + (s.cmd[i] || 0) + '</span><span class="bands"><button type="button" data-d="-1" aria-label="Less commander damage from ' + nameOf(i) + '"' + ((s.cmd[i] || 0) <= 0 ? ' disabled' : '') + '>−</button><button type="button" data-d="1" aria-label="More commander damage from ' + nameOf(i) + '">+</button></span></div>').join('');
       $('seat-map').querySelectorAll('.seat[data-from] button').forEach((b) => b.addEventListener('click', () => { const i = Number(b.closest('.seat').dataset.from); s.cmd[i] = Math.max(0, (s.cmd[i] || 0) + Number(b.dataset.d)); renderCounters(); }));
       const tile = (name, ico, n, custom) => '<button type="button" class="tile' + (custom ? ' custom' : '') + '" data-name="' + name + '" data-on="' + (n > 0) + '" data-open="' + (toolsFor === name) + '">' +
         '<span class="ico" aria-hidden="true">' + ico + '</span><span class="nm">' + name + '</span><span class="n">' + n + '</span>' +
