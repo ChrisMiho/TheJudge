@@ -339,7 +339,18 @@
 .msg.judge .who { display: block; font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-soft); margin-bottom: 0.2rem; }
 .msg.judge p { margin: 0 0 0.5rem; }
 .msg.judge p:last-child { margin-bottom: 0; }
-.msg.judge .ref { color: var(--accent-soft); font-weight: 600; text-decoration: underline dotted; cursor: pointer; }
+/* a card the judge names (round 10: "the highlighting isn't obvious … the
+   highlight is basically the same color as the text" on White and Colorless):
+   the name sits in a chip — a tint of the colour's light behind it, a hairline
+   round it, a solid underline — so it reads as a thing to tap even when the
+   accent is as pale as the body text. Hover/press brightens the chip. */
+.msg.judge .ref { display: inline; color: var(--accent-soft); font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap;
+  padding: 0.04em 0.4em 0.06em; margin: 0 0.04em; border-radius: 0.4em;
+  background: color-mix(in srgb, var(--accent-soft) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-soft) 32%, transparent), inset 0 -2px 0 0 color-mix(in srgb, var(--accent-soft) 70%, transparent);
+  transition: background-color 160ms ease, box-shadow 160ms ease; }
+.msg.judge .ref:hover, .msg.judge .ref:focus-visible { background: color-mix(in srgb, var(--accent-soft) 26%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), inset 0 -2px 0 0 var(--accent-soft); }
 .thinking { display: inline-flex; gap: 4px; align-items: center; height: 20px; }
 .thinking i { width: 6px; height: 6px; border-radius: 999px; background: var(--accent-soft); animation: think 1.2s ease-in-out infinite; }
 .thinking i:nth-child(2) { animation-delay: 0.15s; } .thinking i:nth-child(3) { animation-delay: 0.3s; }

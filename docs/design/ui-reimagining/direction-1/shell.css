@@ -403,6 +403,15 @@ h1, h2, .display {
   to { opacity: 0.9; }
 }
 
+/* round 10 ("the colorless profile tray really lacks animation, or they're
+   invisible?"): Colorless's accent is a dark grey, so the pool of light at the
+   tray's foot all but vanished and its few faint shapes read as nothing. The
+   pool is drawn from the colour's pale light instead, and ambience.js gives
+   the tray more shapes, drawn a shade brighter — still the quietest of the six. */
+[data-profile="colorless"] .tray-flair::after {
+  background: radial-gradient(90% 28% at 30% 104%, color-mix(in srgb, var(--accent-soft) 26%, transparent) 0%, transparent 70%);
+}
+
 .menu-tray::after {
   content: "";
   position: absolute;
@@ -892,6 +901,29 @@ h1, h2, .display {
   color: var(--text-muted);
   margin-top: 0.8rem;
 }
+
+/* round 10 ("I think there is only stuff cut off now due to the demo
+   buttons"): on a phone the demo strip and the foot-note no longer sit under
+   the screen pushing it past the fold. The strip folds into a small DEMO tab
+   at the foot's right corner (flow.js mounts it); a tap floats the strip over
+   the page, a second tap or Escape folds it away. The app screen alone fills
+   the phone, as it will in the build. Desktop is unchanged. */
+@media (max-width: 719px) {
+  .demo-bar, .foot-note { display: none; }
+  .demo-toggle {
+    position: fixed; right: 0.6rem; bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px)); z-index: 60;
+    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.25rem 0.55rem; border-radius: 999px; cursor: pointer;
+    border: 1px dashed color-mix(in srgb, var(--text-muted) 55%, transparent);
+    background: rgba(9, 9, 11, 0.78); color: var(--text-muted); opacity: 0.75;
+  }
+  .demo-toggle[aria-expanded="true"] { color: var(--text-primary); border-style: solid; opacity: 1; }
+  body[data-demo-open="true"] .demo-bar {
+    display: flex; position: fixed; left: 0.6rem; right: 0.6rem; bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); z-index: 59; margin: 0;
+    background: rgba(9, 9, 11, 0.94); box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.9);
+  }
+}
+@media (min-width: 720px) { .demo-toggle { display: none; } }
 
 @media (prefers-reduced-motion: reduce) {
   .brand-mark .orb, .brand-mark img, .brand-mark svg, .tray-flair::after { animation: none; }

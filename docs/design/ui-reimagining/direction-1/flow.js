@@ -258,9 +258,18 @@ window.FLOW = (() => {
     nav.querySelectorAll('[data-profile-btn]').forEach((b) => b.addEventListener('click', () => setProfile(b.dataset.profileBtn)));
     document.getElementById('colorless-hex').addEventListener('input', (e) => setCustomColorless(e.target.value));
     document.getElementById('colorless-reset').addEventListener('click', () => { setCustomColorless(null); document.getElementById('colorless-hex').value = '#71717a'; });
-    // ?profile=green on any page previews that colour (round 7 convenience for review)
+    // ?profile=green on any page previews that colour (round 7 convenience for review).
+    // Round 10 ("when I move to the in-depth portion, the color profile always
+    // swaps to blue"): the mockup forgot the colour between pages — each page
+    // started from its own default. The shipped app keeps the player's colour as
+    // a saved setting (REQ-099), so the mockup now does the same: the last
+    // colour picked (and a custom Colorless) is remembered in this browser and
+    // carried into every page. ?profile= still wins for a one-off preview.
     const want = new URLSearchParams(location.search).get('profile');
-    setProfile(want && PROFILES.some((p) => p[0] === want) ? want : (document.documentElement.dataset.profile || 'blue'));
+    const kept = remember('profile');
+    const keptHex = remember('colorless');
+    if (keptHex && /^#[0-9a-f]{6}$/i.test(keptHex)) { colorlessHex = keptHex; const well = document.getElementById('colorless-hex'); if (well) well.value = keptHex; }
+    setProfile(want && PROFILES.some((p) => p[0] === want) ? want : (kept && PROFILES.some((p) => p[0] === kept) ? kept : (document.documentElement.dataset.profile || 'blue')));
 
     // Send feedback (modal) and History (side panel / sheet) live under the destinations, above Theme
     const fb = document.createElement('div'); fb.className = 'overlay-backdrop'; fb.id = 'feedback-modal'; fb.dataset.open = 'false';
@@ -284,8 +293,19 @@ window.FLOW = (() => {
     return setTray;
   }
   let colorlessHex = null;
+  // the remembered colour (round 10) — read with one argument, write with two;
+  // storage can be missing or refused (file://, private windows), so it never throws
+  function remember(key, value) {
+    try {
+      const k = 'thejudge-mock-' + key;
+      if (arguments.length < 2) return localStorage.getItem(k);
+      if (value == null) localStorage.removeItem(k); else localStorage.setItem(k, value);
+    } catch (e) { /* no storage: the page still works, it just forgets */ }
+    return null;
+  }
   function setProfile(id) {
     document.documentElement.setAttribute('data-profile', id);
+    remember('profile', id);
     document.querySelectorAll('[data-profile-btn]').forEach((b) => b.setAttribute('data-current', b.dataset.profileBtn === id));
     const custom = document.getElementById('theme-custom');
     if (custom) custom.dataset.show = id === 'colorless';
@@ -322,7 +342,7 @@ window.FLOW = (() => {
     const strong = accent.map((v) => v * 0.62);
     return { soft: rgbHex(soft), accent: rgbHex(accent), strong: rgbHex(strong), onAccent };
   }
-  function setCustomColorless(hex) { colorlessHex = hex; applyCustom(); }
+  function setCustomColorless(hex) { colorlessHex = hex; remember('colorless', hex); applyCustom(); }
   function applyCustom() {
     const root = document.documentElement;
     const on = root.dataset.profile === 'colorless' && colorlessHex;
@@ -334,6 +354,16 @@ window.FLOW = (() => {
     if (on) root.setAttribute('data-accent', colorlessHex); else root.removeAttribute('data-accent');
   }
 
+  // round 10: on a phone the demo strip folds behind a DEMO tab (shell.css)
+  function mountDemoToggle() {
+    if (!document.querySelector('.demo-bar') || document.querySelector('.demo-toggle')) return;
+    const b = document.createElement('button'); b.type = 'button'; b.className = 'demo-toggle'; b.textContent = 'demo'; b.setAttribute('aria-expanded', 'false'); b.setAttribute('aria-label', 'Show the mockup demo controls');
+    const set = (open) => { document.body.dataset.demoOpen = open ? 'true' : 'false'; b.setAttribute('aria-expanded', String(open)); };
+    b.addEventListener('click', () => set(document.body.dataset.demoOpen !== 'true'));
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') set(false); });
+    document.body.append(b);
+  }
   document.addEventListener('DOMContentLoaded', ensureDetailPanel);
+  document.addEventListener('DOMContentLoaded', mountDemoToggle);
   return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, runWait, WAIT_STAGES, bindRefs, mountMics, mountMenu, setProfile, setCustomColorless, PROFILES };
 })();
