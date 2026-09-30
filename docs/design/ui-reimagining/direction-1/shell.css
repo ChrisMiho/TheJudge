@@ -910,12 +910,13 @@ h1, h2, .display {
    the phone, as it will in the build. Desktop is unchanged. */
 @media (max-width: 719px) {
   .demo-bar, .foot-note { display: none; }
+  /* a slim tab on the right edge, clear of every foot control (New trade, the send pill) */
   .demo-toggle {
-    position: fixed; right: 0.6rem; bottom: calc(0.6rem + env(safe-area-inset-bottom, 0px)); z-index: 60;
-    font-size: 0.6rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
-    padding: 0.25rem 0.55rem; border-radius: 999px; cursor: pointer;
-    border: 1px dashed color-mix(in srgb, var(--text-muted) 55%, transparent);
-    background: rgba(9, 9, 11, 0.78); color: var(--text-muted); opacity: 0.75;
+    position: fixed; right: 0; top: 62%; z-index: 60; writing-mode: vertical-rl;
+    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.5rem 0.22rem; border-radius: 0.4rem 0 0 0.4rem; cursor: pointer;
+    border: 1px dashed color-mix(in srgb, var(--text-muted) 55%, transparent); border-right: 0;
+    background: rgba(9, 9, 11, 0.78); color: var(--text-muted); opacity: 0.7;
   }
   .demo-toggle[aria-expanded="true"] { color: var(--text-primary); border-style: solid; opacity: 1; }
   body[data-demo-open="true"] .demo-bar {

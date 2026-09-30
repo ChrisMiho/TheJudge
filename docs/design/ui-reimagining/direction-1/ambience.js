@@ -402,7 +402,23 @@ window.AMBIENCE = (() => {
   // plays the same scene as its page — Blue's runes and ring included. Round
   // 8's bubbles-and-wave tray scene is gone.
   const SCENES = { white: WHITE, blue: BLUE, black: BLACK, red: RED, green: GREEN, colorless: COLORLESS };
-  const TRAY_SCENES = {};
+  // round 10 ("the colorless profile tray really lacks animation, or they're
+  // invisible?"): at tray size the page recipe gave Colorless four shapes at
+  // 5–11% — nothing to see. The tray gets a fuller scatter of smaller shapes,
+  // drawn a shade brighter and turning a touch faster; still the quietest tray.
+  const TRAY_SCENES = {
+    colorless: Object.assign(Object.create(COLORLESS), {
+      init(W, H, k) {
+        const n = Math.max(12, Math.round(30 * k * Math.sqrt(W * H / 1296000)));
+        this.shapes = Array.from({ length: n }, () => this.shape(W, H));
+      },
+      shape(W, H) {
+        const s = COLORLESS.shape(W, H);
+        s.r = rnd(8, 30); s.a = rnd(0.16, 0.3); s.rs = rnd(-0.008, 0.008);
+        return s;
+      }
+    })
+  };
 
   /* ================= one renderer, attached to a canvas ================= */
   // opts: k (scene density, 1 = the page), dust (dust density, 1 = the page), size() -> [W, H]

@@ -68,10 +68,22 @@
     0%, 100% { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); box-shadow: 0 0 0 999px rgba(9, 9, 11, 0.42), 0 0 14px -8px color-mix(in srgb, var(--accent-soft) 50%, transparent); }
     50% { border-color: color-mix(in srgb, var(--accent-soft) 80%, transparent); box-shadow: 0 0 0 999px rgba(9, 9, 11, 0.42), 0 0 20px -8px color-mix(in srgb, var(--accent-soft) 70%, transparent); }
   }
-  /* the foot band: sound at the left, the credit in the middle, Debug at the right */
-  .vf-foot { position: absolute; left: 0.75rem; right: 0.75rem; bottom: 0.55rem; height: 32px; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; z-index: 2; }
+  /* the foot band: sound at the left, the shutter in the middle, Debug at the right.
+     Round 10 ("the capture button is massive … maybe a button where the
+     'Powered by Cardomancer' is"): Capture is a camera shutter — a ring of the
+     colour's light round a filled disc — sitting inside the frame where the
+     credit was; the credit moved under the frame. A press sinks the disc. */
+  .vf-foot { position: absolute; left: 0.75rem; right: 0.75rem; bottom: 0.55rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; z-index: 2; }
   .vf-foot .mute { min-width: 36px; min-height: 30px; padding: 0 0.5rem; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent); background: rgba(9, 9, 11, 0.7); color: var(--text-primary); font-size: 0.85rem; cursor: pointer; }
-  .vf-foot .powered { white-space: nowrap; color: color-mix(in srgb, var(--text-muted) 80%, transparent); font-size: 0.62rem; font-weight: 500; }
+  .vf-foot .shutter { width: 54px; height: 54px; border-radius: 999px; padding: 0; cursor: pointer; display: grid; place-items: center;
+    border: 2px solid color-mix(in srgb, var(--accent-soft) 88%, transparent); background: rgba(9, 9, 11, 0.55);
+    box-shadow: 0 0 0 3px rgba(9, 9, 11, 0.45), 0 0 18px -4px color-mix(in srgb, var(--accent-soft) 70%, transparent); transition: transform 120ms ease; }
+  .vf-foot .shutter::before { content: ""; width: 40px; height: 40px; border-radius: 999px; display: block;
+    background: radial-gradient(circle at 38% 34%, color-mix(in srgb, var(--accent-soft) 55%, var(--accent)), var(--accent) 55%, var(--accent-strong)); transition: transform 120ms ease; }
+  .vf-foot .shutter:hover::before { transform: scale(1.05); }
+  .vf-foot .shutter:active::before { transform: scale(0.86); }
+  .vf-foot .shutter:active { transform: scale(0.97); }
+  .credit { margin: 0; text-align: center; color: color-mix(in srgb, var(--text-muted) 80%, transparent); font-size: 0.62rem; font-weight: 500; letter-spacing: 0.02em; }
   /* the lock outline on the card the scanner is reading (DEC-083) */
   .lock-outline { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: none; }
   [data-state="locking"] .lock-outline { display: block; }
@@ -148,14 +160,12 @@
   .debug-panel .m i::after { content: ""; display: block; height: 100%; width: var(--v, 0%); border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); }
   .debug-panel .m i.none { background: transparent; }
   .debug-panel .m i.none::after { display: none; }
-  /* under the frame: Capture, full width (round 8: Exit moved to the top corner) */
-  .scan-actions { display: grid; }
-  .scan-actions .btn.primary { width: 100%; }
-  .scan-hint { margin: -0.3rem 0 0; font-size: 0.78rem; color: var(--text-muted); }
+  /* under the frame (round 10): the credit line, then the hint — the full-width Capture is gone */
+  .scan-hint { margin: -0.2rem 0 0; font-size: 0.78rem; color: var(--text-muted); }
   .camera-error { position: absolute; inset: 0; display: none; place-items: center; text-align: center; padding: 1rem; color: var(--text-muted); font-size: 0.9rem; }
   [data-state="camera-error"] .camera-error { display: grid; }
   .camera-error b { display: block; color: var(--text-primary); font-size: 1.05rem; margin-bottom: 0.3rem; font-family: var(--font-display); }
-  [data-state="camera-error"] .guide, [data-state="camera-error"] .debug-toggle, [data-state="camera-error"] .vf-foot .powered { display: none; }
+  [data-state="camera-error"] .guide, [data-state="camera-error"] .debug-toggle, [data-state="camera-error"] .vf-foot .shutter { display: none; }
 </style>
 </head>
 <body data-tray-open="false">
@@ -196,17 +206,15 @@
         <div class="camera-error"><div><b>Camera unavailable</b>Allow camera access, or exit and add the card by search.</div></div>
         <div class="vf-foot">
           <button class="mute" id="mute" type="button" aria-pressed="false" aria-label="Mute scan sound">🔊</button>
-          <span class="powered">Powered by Cardomancer</span>
+          <button class="shutter" id="capture" type="button" aria-label="Capture — read one frame by hand" title="Capture"></button>
           <button class="debug-toggle" id="debug" type="button" aria-pressed="false">Debug</button>
         </div>
       </div>
 
       <div class="debug-panel" id="debug-panel" aria-label="Scanner diagnostics"></div>
 
-      <div class="scan-actions">
-        <button class="btn primary" id="capture" type="button">Capture</button>
-      </div>
-      <p class="scan-hint">Auto-scan is on: a confident match adds the card and keeps scanning. Capture reads one frame by hand.</p>
+      <p class="credit">Powered by Cardomancer</p>
+      <p class="scan-hint">Auto-scan is on: a confident match adds the card and keeps scanning. The shutter reads one frame by hand.</p>
     </section>
 
     <div class="demo-bar" aria-label="Mockup state (demo only)">
