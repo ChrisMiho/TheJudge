@@ -188,12 +188,23 @@
 /* round 9: the box may shrink below the textarea's intrinsic width on a phone (the mic made the send wider) */
 .composer, .q-box, .followup { min-width: 0; }
 .q-box, .followup {
-  position: relative; display: flex; align-items: flex-end; gap: 0.6rem;
+  position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem 0.6rem;
   padding: 0.45rem 0.45rem 0.45rem 1.05rem; border-radius: 1.6rem;
   border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 78%, transparent);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 6%, transparent), 0 8px 24px -16px color-mix(in srgb, var(--accent) 80%, transparent);
   transition: border-color 150ms ease;
 }
+/* round 11 ("the in-depth button lost its position and fell to the bottom …
+   the text stayed floating up higher, out of sync"): the box has two shapes.
+   One line of text: a single row — In-depth, the text, the count, the send.
+   Two lines or more: the text takes the whole top row at full width and the
+   controls step down onto a row of their own beneath it, In-depth at the left
+   and the count + send at the right, so they always sit together and the text
+   is never squeezed into a thin column between them on a phone. */
+.q-box:has(textarea.grown), .followup:has(textarea.grown) { padding: 0.55rem 0.45rem 0.45rem 0.45rem; }
+.q-box:has(textarea.grown) textarea, .followup:has(textarea.grown) textarea { flex: 1 0 100%; order: -1; padding: 0.3rem 0.6rem 0.2rem; }
+.q-box:has(textarea.grown) .deep { margin-right: auto; }
+.followup:has(textarea.grown) .fu-count { margin-left: auto; }
 .q-box:focus-within, .followup:focus-within { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); }
 .q-box textarea, .followup textarea {
   flex: 1; min-width: 0; resize: none; background: transparent; border: 0; padding: 0.6rem 0;
@@ -227,11 +238,21 @@
   50% { box-shadow: inset 0 0 14px color-mix(in srgb, var(--accent-soft) 80%, transparent); }
 }
 .q-box:has(.mic[aria-pressed="true"]), .followup:has(.mic[aria-pressed="true"]) { border-color: var(--accent-soft); }
-.q-meter {
-  position: absolute; left: 1.4rem; right: 1.4rem; bottom: 0; height: 2px;
-  background: color-mix(in srgb, var(--surface-edge) 50%, transparent); border-radius: 2px; overflow: hidden;
-}
-.q-meter i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--accent-soft)); transition: width 120ms ease; }
+/* round 11 ("the bar that fills up across the chat box … move it to an outline
+   to the send button, so that it feels more integrated"): the 300-character
+   budget is a ring of the colour's light that traces the send pill's edge as
+   the question grows, clockwise from the top left — a faint track under it,
+   brightening as the cap nears, and closed at 300. The bar along the box's
+   foot is gone. */
+.send-wrap { position: relative; flex: 0 0 auto; align-self: flex-end; display: inline-grid; width: 80px; height: 40px; }
+.send-wrap .send-pair { grid-area: 1 / 1; }
+.send-ring { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); pointer-events: none; overflow: visible; }
+.send-ring rect { fill: none; stroke-width: 2; stroke-linecap: round; }
+.send-ring .track { stroke: color-mix(in srgb, var(--text-primary) 14%, transparent); }
+.send-ring .fill { stroke: var(--accent-soft); stroke-dasharray: var(--fill, 0) 100; transition: stroke-dasharray 120ms ease, stroke 200ms ease;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-soft) 70%, transparent)); }
+.q-box[data-near="true"] .send-ring .fill, .followup[data-near="true"] .send-ring .fill { stroke: color-mix(in srgb, var(--accent-soft) 55%, #fff); filter: drop-shadow(0 0 5px var(--accent-soft)); }
+.q-box[data-fill="0"] .send-ring .track, .followup[data-fill="0"] .send-ring .track { opacity: 0; }
 /* round 7: "Add in-depth details" is a control inside the question box, at its
    left end — the same height as the round send, a pill of the colour's edge.
    On a narrow phone it keeps its glyph and drops the word. */
@@ -246,7 +267,9 @@
 .q-box .deep:hover, .q-box .deep:focus-visible { background: color-mix(in srgb, var(--accent) 28%, transparent); border-color: var(--accent-soft); }
 .q-box:has(.deep) { padding-left: 0.45rem; }
 .q-box:has(.deep) textarea { padding-left: 0.3rem; }
-@media (max-width: 419px) { .q-box .deep .lbl { display: none; } .q-box .deep { padding: 0 0.6rem; } }
+@media (max-width: 479px) { .q-box .deep .lbl { display: none; } .q-box .deep { padding: 0 0.6rem; } }
+/* round 11: the count waits until there is something to count — an empty box shows the hint, the ring and the send, nothing more */
+.q-box[data-fill="0"] .q-count, .followup[data-fill="0"] .fu-count { display: none; }
 
 /* ---- card detail panel — round 3: the art leads, the close sits in the
    corner, the oracle text reads like a card's own text box ---- */

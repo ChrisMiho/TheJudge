@@ -97,24 +97,66 @@ window.FLOW = (() => {
 
   // ---- question box: slim until text arrives, grows to a cap, then scrolls;
   // the 300-character budget is shown inside the frame ----
+  // round 11: the budget is drawn as a ring round the send pill (flow.css
+  // .send-ring) — the box carries --fill (0–100) and data-near; `meterEl` is
+  // accepted for older callers and ignored
   function bindComposer(textarea, countEl, meterEl, max = 300) {
+    const box = textarea.closest('.q-box, .followup');
     const update = () => {
       const n = textarea.value.length;
-      if (countEl) { countEl.textContent = n + ' / ' + max; countEl.dataset.near = n >= max - 30 ? 'true' : 'false'; }
-      if (meterEl) meterEl.style.width = (n / max * 100) + '%';
+      const near = n >= max - 30;
+      if (countEl) { countEl.textContent = n + ' / ' + max; countEl.dataset.near = near ? 'true' : 'false'; }
+      if (box) { box.style.setProperty('--fill', (n / max * 100).toFixed(1)); box.dataset.near = near ? 'true' : 'false'; box.dataset.fill = n === 0 ? '0' : 'some'; }
       autoGrow(textarea);
     };
     textarea.addEventListener('input', update);
     update();
+    fitPlaceholder(textarea);
+  }
+  // round 11 ("when the width shrinks so much that the text no longer fits …
+  // can we do something similar with the default text in the box too?"): the
+  // box's hint comes in tiers — data-placeholders="What would you like to
+  // know?|Ask your question…|Ask…" — and the longest one that fits the box on
+  // one line is the one shown, re-measured whenever the box changes width.
+  const measureCtx = document.createElement('canvas').getContext('2d');
+  function fitPlaceholder(textarea) {
+    const tiers = (textarea.dataset.placeholders || textarea.placeholder || '').split('|').map((s) => s.trim()).filter(Boolean);
+    textarea.dataset.placeholders = tiers.join('|');
+    if (tiers.length < 2) return;
+    const fit = () => {
+      if (textarea.dataset.listening === 'true') return;
+      const cs = getComputedStyle(textarea);
+      measureCtx.font = cs.fontStyle + ' ' + cs.fontWeight + ' ' + cs.fontSize + ' ' + cs.fontFamily;
+      const room = textarea.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight) - 2;
+      const pick = tiers.find((t) => measureCtx.measureText(t).width <= room) || tiers[tiers.length - 1];
+      if (textarea.placeholder !== pick) textarea.placeholder = pick;
+    };
+    textarea._fitPlaceholder = fit;
+    if ('ResizeObserver' in window) new ResizeObserver(fit).observe(textarea); else addEventListener('resize', fit);
+    // the web font may land after the first measure
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(fit);
+    fit();
+  }
+  // the send control: a mic half and an arrow half in one pill, with the budget ring round it (round 11)
+  const SEND_RING = '<svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><rect class="track" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/><rect class="fill" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/></svg>';
+  function sendMarkup(opts = {}) {
+    return '<span class="send-wrap">' + SEND_RING + '<span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="' + (opts.micLabel || 'Speak your question') + '" title="' + (opts.micLabel || 'Speak your question') + '"' + (opts.demo ? ' data-demo="' + opts.demo + '"' : '') + '></button>' +
+      '<button class="send"' + (opts.id ? ' id="' + opts.id + '"' : '') + ' aria-label="' + (opts.label || 'Send') + '" title="' + (opts.label || 'Send') + '">➤</button></span></span>';
   }
   function autoGrow(textarea) {
     const cap = parseFloat(getComputedStyle(textarea).maxHeight) || 176;
+    const box = textarea.closest('.q-box, .followup');
+    // measured twice (round 11): crossing the one-line threshold moves the text
+    // onto a full-width row of its own, which changes how much height it needs
+    // the one-line row decides the shape; the full-width row then decides the height
+    textarea.classList.remove('grown');
     textarea.style.height = 'auto';
+    const grown = textarea.scrollHeight > 56;
+    textarea.classList.toggle('grown', grown);
+    if (grown) textarea.style.height = 'auto';
     const h = Math.min(textarea.scrollHeight, cap);
     textarea.style.height = h + 'px';
-    textarea.classList.toggle('grown', h > 56);
-    const box = textarea.closest('.q-box, .followup');
-    if (box) box.style.borderRadius = h > 56 ? '1.1rem' : '';
+    if (box) box.style.borderRadius = grown ? '1.1rem' : '';
   }
 
   // ---- the conversation: renders a thread of {who:'you'|'judge', text}; [[Card Name]]
@@ -192,12 +234,11 @@ window.FLOW = (() => {
       mic.innerHTML = MIC_SVG;
       const box = mic.closest('.q-box, .followup'), ta = box && box.querySelector('textarea');
       if (!ta) return;
-      const was = ta.placeholder;
       let timer = 0, typing = 0;
-      const stop = () => { clearTimeout(timer); clearInterval(typing); mic.setAttribute('aria-pressed', 'false'); ta.placeholder = was; };
+      const stop = () => { clearTimeout(timer); clearInterval(typing); mic.setAttribute('aria-pressed', 'false'); ta.dataset.listening = 'false'; if (ta._fitPlaceholder) ta._fitPlaceholder(); else ta.placeholder = ta.dataset.placeholders ? ta.dataset.placeholders.split('|')[0] : ta.placeholder; };
       mic.addEventListener('click', () => {
         if (mic.getAttribute('aria-pressed') === 'true') return stop();
-        mic.setAttribute('aria-pressed', 'true'); ta.placeholder = 'Listening… say your question'; ta.value = '';
+        mic.setAttribute('aria-pressed', 'true'); ta.dataset.listening = 'true'; ta.placeholder = 'Listening…'; ta.value = '';
         ta.dispatchEvent(new Event('input'));
         const said = mic.dataset.demo || 'Can I respond to Lightning Bolt with Counterspell after it targets my Elves?';
         timer = setTimeout(() => {
@@ -365,5 +406,5 @@ window.FLOW = (() => {
   }
   document.addEventListener('DOMContentLoaded', ensureDetailPanel);
   document.addEventListener('DOMContentLoaded', mountDemoToggle);
-  return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, runWait, WAIT_STAGES, bindRefs, mountMics, mountMenu, setProfile, setCustomColorless, PROFILES };
+  return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, fitPlaceholder, sendMarkup, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, runWait, WAIT_STAGES, bindRefs, mountMics, mountMenu, setProfile, setCustomColorless, PROFILES };
 })();

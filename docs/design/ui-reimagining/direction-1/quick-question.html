@@ -61,10 +61,10 @@
              row of its own -->
         <div class="q-box">
           <button class="deep" id="go-deep" title="Add in-depth details — your cards come with you" aria-label="Add in-depth details"><span class="glyph">◈</span><span class="lbl">In-depth</span></button>
-          <textarea id="question-field" rows="1" placeholder="What would you like to know?" maxlength="300" aria-label="Your question"></textarea>
+          <!-- round 11: the hint shortens in tiers as the box narrows; the 300-character budget is the ring round the send pill -->
+          <textarea id="question-field" rows="1" placeholder="What would you like to know?" data-placeholders="What would you like to know?|Ask your question…|Ask…" maxlength="300" aria-label="Your question"></textarea>
           <span class="q-count" id="char-count">0 / 300</span>
-          <span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your question" title="Speak your question"></button><button class="send" id="send-request" aria-label="Send request" title="Send request">➤</button></span>
-          <span class="q-meter"><i id="char-meter"></i></span>
+          <span class="send-wrap"><svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><rect class="track" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/><rect class="fill" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/></svg><span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your question" title="Speak your question"></button><button class="send" id="send-request" aria-label="Send request" title="Send request">➤</button></span></span>
         </div>
       </div>
     </section>
@@ -77,9 +77,9 @@
       <div class="chat-cards" id="chat-cards"></div>
       <div class="thread" id="thread"></div>
       <div class="followup">
-        <textarea id="followup-field" rows="1" placeholder="Ask a follow-up…" maxlength="300" aria-label="Follow-up question"></textarea>
+        <textarea id="followup-field" rows="1" placeholder="Ask a follow-up…" data-placeholders="Ask a follow-up…|Follow up…" maxlength="300" aria-label="Follow-up question"></textarea>
         <span class="fu-count" id="fu-count">0/300</span>
-        <span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your follow-up" title="Speak your follow-up"></button><button class="send" aria-label="Send">➤</button></span>
+        <span class="send-wrap"><svg class="send-ring" viewBox="0 0 88 48" aria-hidden="true"><rect class="track" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/><rect class="fill" x="4" y="4" width="80" height="40" rx="20" pathLength="100"/></svg><span class="send-pair"><button class="mic" type="button" aria-pressed="false" aria-label="Speak your follow-up" title="Speak your follow-up"></button><button class="send" id="followup-send" aria-label="Send">➤</button></span></span>
       </div>
     </section>
 
