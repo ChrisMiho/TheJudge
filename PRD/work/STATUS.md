@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ui-reimagining-build | Build the agreed direction-1 UI re-imagining into the shipped app |
 
 ## owner-action
 
