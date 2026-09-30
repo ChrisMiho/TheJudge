@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/ui-reimagining-build` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining-build` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining-build` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260930-055958/`
-- Current node: `gate-qc`
+- Current node: `define` (attempt 2, loop 1 of 3)
 - Next action: `/graph-kickoff PRD/work/ui-reimagining-build/` (spec-forming half in progress)
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 10` | branch `thejudge-auto/ui-reimagining-build` cut from `origin/main` at `0054ade` and pushed from `.worktrees/kickoff-ui-reimagining-build` (`git ls-remote --heads origin thejudge-auto/ui-reimagining-build` → `0054ade`); shape `root`; launch checkout untouched on `main`, porcelain empty before and after; lock `.worktrees/.graph-run.lock` slug `ui-reimagining-build` / run `graph-20260930-055958` / pid 53602 (the driver session); universal canary `rm -rf .worktrees/.graph-canary-nonexistent` denied ("`rm -rf` is denied in every session"), graph canary `nohup true` denied ("`nohup` is denied while a graph run holds the lock"); `Profile: loaded (env sentinel)`; slug chosen by the driver because `thejudge-auto/ui-reimagining` (the merged mockup run's docs branch) still exists on origin | 2026-09-30 |
 | 2 | shape | sonnet | ok | `0 → 21` | commit `5bcddfe` on `thejudge-auto/ui-reimagining-build` (pushed `0054ade..5bcddfe`): `PRD/work/ui-reimagining-build/{IDEA.md,README.md,STATUS.ideation,intake/GRAPH-BRIEF.md}` + board row under `## ideation`; intake `diff -q` against `docs/design/ui-reimagining/GRAPH-BRIEF.md` identical; staging folder emptied (`ls -A` → 0); 9 `## Prior run` receipt matches in `IDEA.md`; worktree and launch checkout porcelain empty | 2026-09-30 |
 | 3 | define | opus | ok | `0 → 143` | commit `94b0055` on `thejudge-auto/ui-reimagining-build` (pushed `d68b0d1..94b0055`): `DESIGN-BRIEF.md` (381 lines), `GATE-QUESTIONS.md` (3100 lines; 57 stable-ID blocks — 10 new reserved REQ-206..REQ-215, 47 in-place amendments across REQ/NFR-006/FLOW; 57 `- Verdict:` slots, 57 plain-language openings; `## Blocker questions` none; no new `DEC-`), README `status: refined`, marker `STATUS.refined` (only marker), board row moved fully to `## refined`; `git diff --stat origin/main HEAD -- PRD/sections` empty; worktree and launch checkout porcelain empty → questions file present, gate continues to `gate-qc` | 2026-09-30 |
+| 4 | gate-qc | sonnet | failed (FAIL) | `0 → 32` | verdict FAIL, two findings, both `PRD/sections/screen-layout.md` rows the brief redesigns but no block updates: (1) `#### Quick Question — answered workspace` (`screen-layout.md:135-143`, incl. the `Rail clearance` line 141 that still describes the corner `.portal-menu-rail` the banner header REQ-207 replaces) is not touched by the REQ-206 block's screen-layout hunk; (2) `#### In-Depth — Answered workspace` (`screen-layout.md:184-191`) is not touched by the REQ-209 block; every other checklist item PASS (57 blocks, no duplicates, new ids REQ-206..215 collision-free, 47 in-place targets exist once, no new `DEC-`, 415/415 removed lines match current text, `git diff --stat origin/main HEAD -- PRD/sections` empty); commit `129dd79` pushed (`277b18c..129dd79`): README `status: refining`, marker `STATUS.refining` (only marker), board row under `## refining`; README `## Preparation gate` rewritten FAIL + findings by the driver; worktree and launch checkout porcelain empty → loop 1 of 3 to `define` | 2026-09-30 |
 
 ## Open gate
 
@@ -132,6 +133,34 @@ Tool-call cap for this node: 60.
 Boundaries: never edit any `thejudge-*` skill, `.claude/settings*.json`, `.claude/graph-profile.json`, or `CLAUDE.md`; never touch `.secrets/`; never force-push; never merge or push to `main`.
 
 Return, in this order, as plain text: `verdict: PASS | FAIL`; the complete findings list (or the word none), each finding naming the file and line; the checklist items with a one-line result each; `git diff --stat origin/main HEAD -- PRD/sections` output; the commit hash and push output if you committed (or the words no commit); the marker present (`ls PRD/work/ui-reimagining-build/STATUS.*`); `git status --porcelain` in the worktree (expect empty); and `cd /Users/chrismiho/Coding/Projects/TheJudge && git branch --show-current && git status --porcelain` output (expect `main` and empty). No summary beyond that.
+
+### define (attempt 2)
+
+graph is controlling.
+
+You are node 3 (`define`), attempt 2, of graph run `graph-20260930-055958`, dispatched by the `graph-kickoff` driver after `gate-qc` attempt 1 returned FAIL. Run the `thejudge-refinement` skill (invoke it with the Skill tool: `thejudge-refinement`) in its orchestrated mode on the package `PRD/work/ui-reimagining-build/`, as a bounded correction of the two findings below and nothing more. Read `.claude/skills/thejudge-refinement/SKILL.md`, `PRD/instructions/graph-workflow-contract.md` (`## Propose / apply / close`), and `PRD/instructions/plain-language-standard.md` before acting.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining-build
+
+Copy that `Working directory:` line, unchanged, into every prompt you write for any subagent of your own. Every file you write and every git command you run happens inside that worktree, on branch `thejudge-auto/ui-reimagining-build`. Never write to, commit in, stash, or switch `/Users/chrismiho/Coding/Projects/TheJudge` (the owner's launch checkout).
+
+The package already holds `DESIGN-BRIEF.md` (381 lines) and `GATE-QUESTIONS.md` (3100 lines, 57 blocks) from attempt 1, committed at `94b0055`. The quality check found them consistent on every checklist item except one: the screen catalog `PRD/sections/screen-layout.md` is left stale for two screens the brief redesigns. The complete findings, verbatim from the quality check:
+
+1. `GATE-QUESTIONS.md` (REQ-206 block, about lines 477–658, screen-layout hunk at `@@ -128,7 +128,7 @@`) proposes no update to the `#### Quick Question — answered workspace` row (`PRD/sections/screen-layout.md:135-143`). `DESIGN-BRIEF.md` §2 redesigns that view: a Cards strip at the top, a solid bubble under the colour's seal, tappable card chips, and ✎ Edit cards / ↺ Start over beside the title. The row still reads only `Chat-first follow-up after first answer`. Its `Rail clearance` line (`screen-layout.md:141`) still describes the corner `.portal-menu-rail` band. The banner header (REQ-207) replaces that band, so the line is contradicted.
+2. `GATE-QUESTIONS.md` (REQ-209 block, about lines 873–1044) proposes no update to the `#### In-Depth — Answered workspace` row (`PRD/sections/screen-layout.md:184-191`). `DESIGN-BRIEF.md` §3 gives it a review, the same chat as Ask a Question, and View Context beside the title. The row still says `Frozen game context + chat follow-ups… Same shared conversation workspace rules as Quick Question answered`. No REQ-206, REQ-209 or REQ-075 block edits either row (the brief's disposition table lists no such edit), so the catalog is stale for both redesigned screens. Required fix: propose row updates for both answered-workspace rows and the Rail clearance line, inside the REQ-206 or REQ-209 block's screen-layout diff.
+
+Do exactly this, inside `PRD/work/ui-reimagining-build/` only:
+- Extend the `PRD/sections/screen-layout.md` diff inside the existing `## REQ-206` block (for the Quick Question answered-workspace row, including its `Rail clearance` line) and the existing `## REQ-209` block (for the In-Depth answered-workspace row) with the complete proposed row edits, consistent with the brief's §2 and §3 and with the other rows those blocks already propose. Keep the diffs complete edits against the current file text, never summaries. Update those two blocks' plain-language lines only where the new rows change what the owner is deciding.
+- Add the matching rows to the brief's `## Amendment-set disposition` table so the disposition and the proposal agree.
+- Do not add, remove, or renumber any block; do not touch the other 55 blocks; do not mint a `DEC-###`; do not write `- Verdict:` answers.
+- Package status back to refined: `status: refined` in README, marker `STATUS.refined` (exactly one `STATUS.*`, remove `STATUS.refining`), board row moved fully from `## refining` to `## refined` in `PRD/work/STATUS.md`.
+Never edit `PRD/sections/`, code, or slice docs. Commit with explicit paths (`git add <paths>`; never `git add -A`, `--all`, or `.`) on `thejudge-auto/ui-reimagining-build`, then `git push origin HEAD:thejudge-auto/ui-reimagining-build`. Do not write `GRAPH-RUN.md` or the README's `## Autonomous metadata` / `## Preparation gate` sections; the driver owns those.
+
+Tool-call cap for this node: 150; this correction should need far fewer.
+
+Boundaries: never edit any `thejudge-*` skill, `.claude/settings*.json`, `.claude/graph-profile.json`, or `CLAUDE.md`; never touch `.secrets/`; never force-push; never merge or push to `main`.
+
+Return, in this order, as plain text: `outcome: ok | failed | blocked`; the commit hash and push output; the line ranges you changed in `GATE-QUESTIONS.md` and `DESIGN-BRIEF.md`; the block count (`grep -c '^## \(REQ\|FLOW\|NFR\)-' PRD/work/ui-reimagining-build/GATE-QUESTIONS.md`, expect 57); `git diff --stat origin/main HEAD -- PRD/sections` (expect empty); the marker present (`ls PRD/work/ui-reimagining-build/STATUS.*`); `git status --porcelain` in the worktree (expect empty); and `cd /Users/chrismiho/Coding/Projects/TheJudge && git branch --show-current && git status --porcelain` output (expect `main` and empty). No summary beyond that.
 
 ## Instruction ledger
 
