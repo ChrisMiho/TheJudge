@@ -19,6 +19,8 @@
   .qq.hidden { display: none; }
   .answer-block { display: none; }
   .answer-block.shown { display: grid; }
+  .from-history { display: flex; flex-wrap: wrap; align-items: center; gap: 0.3rem 0.5rem; margin: -0.3rem 0 0; font-size: 0.76rem; color: var(--text-muted); }
+  .from-history .glyph { color: var(--accent-soft); }
 </style>
 </head>
 <body data-tray-open="false">
@@ -74,6 +76,8 @@
       <!-- round 9: two ways on — Edit cards goes back to this request with its cards and
            question intact; ↺ Start over wipes everything and gives a clean page -->
       <div class="chat-head"><h1>Ask a Question</h1><div class="tools"><button class="icon-chip" id="edit-request" title="Change the cards or the question, then ask again"><span class="glyph">✎</span> Edit cards</button><button class="icon-round" id="ask-another" aria-label="Start over — clears the cards and the question" title="Start over — clears the cards and the question">↺</button></div></div>
+      <!-- round 11: a conversation reopened from Question History says so, and stays live -->
+      <p class="from-history" id="from-history" hidden></p>
       <div class="chat-cards" id="chat-cards"></div>
       <div class="thread" id="thread"></div>
       <div class="followup">
@@ -231,7 +235,9 @@
         ? '<span class="lbl">Cards</span>' + attached.map((c) => thumb(c, 'tap')).join('')
         : '<span class="lbl">No cards attached</span>';
       bindRefs($('chat-cards'));
+      $('from-history').hidden = true;
       const msgs = [{ who: 'you', text: question }, { who: 'judge', text: '' }];
+      thread = msgs;
       $('thread').innerHTML = chatMarkup(msgs);
       // round 8: the wait plays today's lines in the judge's bubble. Round 9: at
       // real speed — the lines change when they change for a player (3 s, 8 s,
@@ -264,7 +270,36 @@
     });
     // one Question (round 6): the attached cards carry over into the in-depth details, which ask for their zones at the Cards step
     $('go-deep').addEventListener('click', () => { location.href = 'in-depth-question.html?carry=' + encodeURIComponent(attached.map((c) => c.name).join('|')); });
+
+    // ---- round 11: a saved question reopens here, live. The cards come back to
+    // the strip, the whole thread to the chat, and the follow-up box is ready —
+    // exactly what today's app does when a history entry is tapped. ----
+    let thread = [];
+    function showThread() { $('thread').innerHTML = chatMarkup(thread); bindRefs($('thread')); $('thread').scrollTop = 1e6; }
+    window.FLOW.onOpenHistory = (h) => {
+      stopWait();
+      attached = h.cards.map(byName).filter(Boolean); focus = 0;
+      for (const el of els.values()) el.remove(); els.clear(); render();
+      $('pre-submit').classList.add('hidden'); $('answered').classList.add('shown');
+      $('chat-cards').innerHTML = attached.length ? '<span class="lbl">Cards</span>' + attached.map((c) => thumb(c, 'tap')).join('') : '<span class="lbl">No cards attached</span>';
+      bindRefs($('chat-cards'));
+      $('from-history').hidden = false;
+      $('from-history').innerHTML = '<span><span class="glyph">◷</span> Reopened from your history · <b>' + h.mode + '</b> · asked ' + h.when + (h.context ? ' · ' + h.context : '') + '</span>';
+      thread = window.FLOW.historyMessages(h); showThread();
+      $('followup-field').focus();
+      history.replaceState(null, '', location.pathname + location.search.replace(/[?&]history=[^&]*/, '').replace(/^&/, '?'));
+    };
+    const wanted = window.FLOW.historyById(new URLSearchParams(location.search).get('history'));
+    // a follow-up appends to the thread and the judge answers after a short wait
+    $('followup-send').addEventListener('click', () => {
+      const t = $('followup-field').value.trim(); if (!t) return;
+      $('followup-field').value = ''; $('followup-field').dispatchEvent(new Event('input'));
+      thread.push({ who: 'you', text: t }, { who: 'judge', text: '' }); showThread();
+      stopWait = window.FLOW.runWait($('thread'), { speed: 1, until: 2, onDone: () => { thread[thread.length - 1] = { who: 'judge', text: 'Yes — the same rule applies: the last spell put on the stack resolves first, and nothing already resolved can be undone.' }; showThread(); } });
+    });
+    $('followup-field').addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('followup-send').click(); } });
     render();
+    if (wanted) window.FLOW.onOpenHistory(wanted);
   </script>
 </body>
 </html>

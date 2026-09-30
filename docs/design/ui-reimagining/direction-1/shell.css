@@ -615,12 +615,73 @@ h1, h2, .display {
 .theme-custom input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0.3rem; }
 .theme-custom .btn { min-height: 34px; padding: 0.2rem 0.7rem; font-size: 0.78rem; }
 
-/* history rows inside the History panel */
-.history-list { display: grid; gap: 0.35rem; margin-top: 0.5rem; }
-.history-row { display: grid; gap: 0.15rem; text-align: left; padding: 0.6rem 0.75rem; border-radius: 0.65rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 40%, transparent); color: var(--text-primary); cursor: pointer; }
-.history-row:hover { border-color: var(--accent); }
-.history-row .q { font-weight: 600; font-size: 0.9rem; }
-.history-row .m { font-size: 0.72rem; color: var(--text-muted); }
+/* ---- Question History (round 11). The owner: "clicking on them does
+   nothing … explore what that user experience looks like for mobile and for
+   desktop"; "expand on the information displayed … while still wrapping
+   everything up in a concise package"; "the width the history box allows
+   before swapping to the desktop version … is quite large"; "always ensuring
+   both versions support scrolling".
+   Every row: the cards of the question as a small fan of thumbnails, the
+   question, the first line of the ruling, and one meta line — Quick or
+   In-depth, how many cards, how many follow-ups, when. A tap on a phone
+   closes the sheet and reopens that conversation, live, in Ask a Question. On
+   a wide screen the panel is two panes: the list at the left, the chosen
+   conversation read in full at the right, with Open at its foot.
+   The phone sheet stops at 600 px (the rest of the overlays keep 768); from
+   600 px up the floating card drives. The header stays put and only the list
+   (and the preview) scroll. ---- */
+.history-panel { display: flex; flex-direction: column; max-height: inherit; }
+.history-panel .h-head { flex: 0 0 auto; display: flex; align-items: baseline; gap: 0.5rem; padding: 1.1rem 3.2rem 0.6rem 1rem; border-bottom: 1px solid var(--surface-edge); }
+.history-panel .h-head h2 { margin: 0; font-size: 1.25rem; }
+.history-panel .h-head .n { font-size: 0.78rem; color: var(--text-muted); }
+.history-panel .h-panes { display: grid; grid-template-columns: 1fr; min-height: 0; flex: 1 1 auto; }
+.history-list { display: grid; gap: 0.35rem; align-content: start; padding: 0.6rem 0.75rem 0.9rem; overflow-y: auto; min-height: 0; scrollbar-width: thin; }
+.history-row {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.7rem; text-align: left; width: 100%;
+  padding: 0.55rem 0.6rem 0.55rem 0.6rem; border-radius: 0.75rem; border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 40%, transparent); color: var(--text-primary); cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+.history-row:hover, .history-row:focus-visible { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.history-row[aria-current="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 20%, var(--surface-panel)); box-shadow: 0 0 16px -6px color-mix(in srgb, var(--accent) 80%, transparent); }
+/* the fan: up to three thumbnails overlapping, a "+n" tab for the rest; a dashed empty frame when the question had no cards */
+.history-row .h-fan { display: flex; align-items: center; width: 52px; height: 46px; position: relative; flex: 0 0 auto; }
+.history-row .h-fan .thumb { position: absolute; top: 0; width: 30px; height: 42px; border-radius: 3px; box-shadow: 0 4px 10px -4px #000, 0 0 0 1px rgba(0, 0, 0, 0.6); }
+.history-row .h-fan .thumb:nth-child(1) { left: 0; z-index: 3; }
+.history-row .h-fan .thumb:nth-child(2) { left: 11px; z-index: 2; top: 2px; filter: brightness(0.9); }
+.history-row .h-fan .thumb:nth-child(3) { left: 22px; z-index: 1; top: 4px; filter: brightness(0.8); }
+.history-row .h-fan .more { position: absolute; right: -2px; bottom: -2px; z-index: 4; padding: 0 0.3rem; border-radius: 999px; font-size: 0.6rem; font-weight: 700; line-height: 1.5; background: var(--accent-soft); color: var(--surface-ground); }
+.history-row .h-fan .none { width: 30px; height: 42px; border-radius: 3px; border: 1px dashed color-mix(in srgb, var(--text-muted) 55%, transparent); display: grid; place-items: center; color: var(--text-muted); font-size: 0.8rem; }
+.history-row .h-main { min-width: 0; display: grid; gap: 0.12rem; }
+.history-row .h-q { font-weight: 600; font-size: 0.9rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.history-row .h-a { font-size: 0.76rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-row .h-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem 0.35rem; font-size: 0.68rem; color: var(--text-muted); margin-top: 0.1rem; }
+.history-row .h-meta .sep::before { content: "·"; }
+.mode-chip { display: inline-block; padding: 0.02rem 0.45rem; border-radius: 999px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.history-row .h-chev { color: var(--accent-soft); font-size: 1.1rem; line-height: 1; }
+.history-empty { padding: 1.4rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed color-mix(in srgb, var(--accent-soft) 45%, transparent); border-radius: 0.75rem; margin: 0.6rem 0.75rem; }
+.history-foot { flex: 0 0 auto; padding: 0.4rem 1rem 0.7rem; font-size: 0.68rem; color: var(--text-muted); border-top: 1px solid var(--surface-edge); }
+/* the preview pane (wide screens only) */
+.h-preview { display: none; }
+@media (min-width: 600px) {
+  #history-drawer.drawer-panel { top: 50%; left: 50%; right: auto; bottom: auto; width: min(52rem, 94vw); max-height: min(40rem, calc(100dvh - 3rem)); border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent); border-radius: 1.1rem; opacity: 0; transform: translate(-50%, -50%) translateY(14px) scale(0.97); transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s ease; overflow: hidden; }
+  #history-drawer.drawer-panel[data-open="true"] { opacity: 1; transform: translate(-50%, -50%); }
+  #history-drawer.drawer-panel::before { display: none; }
+  .history-panel { height: min(40rem, calc(100dvh - 3rem)); }
+  .history-panel .h-panes { grid-template-columns: minmax(16rem, 20rem) 1fr; }
+  .history-list { border-right: 1px solid var(--surface-edge); }
+  .history-row .h-chev { display: none; }
+  .h-preview { display: flex; flex-direction: column; min-height: 0; }
+  .h-preview .pv-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0.8rem 1rem 0.6rem; display: flex; flex-direction: column; gap: 0.7rem; scrollbar-width: thin; }
+  .h-preview .pv-scroll > * { flex: 0 0 auto; }
+  .h-preview .pv-when { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.45rem; font-size: 0.74rem; color: var(--text-muted); }
+  .h-preview .thread { max-height: none; overflow: visible; }
+  .h-preview .pv-foot { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; padding: 0.6rem 1rem 0.8rem; border-top: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 60%, transparent); }
+  .h-preview .pv-foot .link { background: transparent; border: 0; color: var(--text-muted); font-size: 0.78rem; cursor: pointer; min-height: 36px; padding: 0 0.3rem; }
+  .h-preview .pv-foot .link:hover { color: #ff8fa3; }
+  .h-preview .pv-foot .btn.primary { min-height: 40px; padding: 0.4rem 1.1rem; font-weight: 600; }
+  .h-preview .pv-empty { display: grid; place-items: center; height: 100%; color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem; }
+}
 
 /* ---- Page shell / content column ---- */
 

@@ -318,21 +318,102 @@ window.FLOW = (() => {
       '<h2 style="margin:0.2rem 0 0.3rem">Send feedback</h2><p class="text-muted" style="margin:0 0 0.7rem;font-size:0.85rem">Tell us what\'s broken or what you\'d like to see.</p>' +
       '<textarea class="field" rows="4" placeholder="What\'s on your mind?"></textarea><div style="margin-top:0.75rem;display:flex;justify-content:flex-end"><button class="btn primary">Send</button></div></div>';
     const hb = document.createElement('div'); hb.className = 'sheet-backdrop'; hb.id = 'history-backdrop'; hb.dataset.open = 'false';
-    const hd = document.createElement('aside'); hd.className = 'drawer-panel detail-panel'; hd.id = 'history-drawer'; hd.dataset.open = 'false'; hd.setAttribute('aria-label', 'Conversation history');
-    hd.innerHTML = '<button class="icon-btn overlay-close" data-close="history-drawer" aria-label="Close">✕</button><div class="body" style="padding-top:2.8rem"><h2 style="margin:0">Question History</h2>' +
-      '<p class="text-muted" style="margin:0;font-size:0.85rem">Past questions from this session.</p>' +
-      '<div class="history-list">' + [['How does this resolve?', 'In-Depth · 6 cards · 2 min ago'], ['Does Sol Ring tap for two?', 'Quick · 1 card · 14 min ago'], ['Can I respond to a trigger?', 'Quick · no cards · yesterday']].map(([q, m]) =>
-        '<button class="history-row"><span class="q">' + q + '</span><span class="m">' + m + '</span></button>').join('') + '</div></div>';
+    const hd = document.createElement('aside'); hd.className = 'drawer-panel history-panel'; hd.id = 'history-drawer'; hd.dataset.open = 'false'; hd.setAttribute('aria-label', 'Question history');
+    hd.innerHTML = '<button class="icon-btn overlay-close" data-close="history-drawer" aria-label="Close">✕</button>' +
+      '<div class="h-head"><h2>Question History</h2><span class="n" id="history-n"></span></div>' +
+      '<div class="h-panes"><div class="history-list" id="history-list" role="list"></div><div class="h-preview" id="history-preview"></div></div>' +
+      '<div class="history-foot">Your last 20 answered questions are kept on this device. Open one to keep the conversation going.</div>';
     document.body.append(fb, hb, hd);
     const closeAll = () => { fb.dataset.open = 'false'; hb.dataset.open = 'false'; hd.dataset.open = 'false'; };
     document.getElementById('tray-feedback').addEventListener('click', () => { setTray(false); fb.dataset.open = 'true'; fb.querySelector('textarea').focus(); });
-    document.getElementById('tray-history').addEventListener('click', () => { setTray(false); hb.dataset.open = 'true'; hd.dataset.open = 'true'; });
+    document.getElementById('tray-history').addEventListener('click', () => { setTray(false); renderHistory(); hb.dataset.open = 'true'; hd.dataset.open = 'true'; });
     document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', closeAll));
     fb.addEventListener('click', (e) => { if (e.target === fb) closeAll(); });
     hb.addEventListener('click', closeAll);
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAll(); setTray(false); } });
+    closeHistory = closeAll;
     return setTray;
   }
+
+  // ---- Question History (round 11) — the demo's saved conversations. Today's
+  // app keeps the last 20 answered questions in the browser (both modes); each
+  // one holds the frozen cards or game context, the question, and the whole
+  // thread, and reopening one is live — follow-ups keep going against the same
+  // context. The mockup carries the same shape. ----
+  const HISTORY = [
+    { id: 'h1', mode: 'In-depth', when: '2 min ago', cards: ['Lightning Bolt', 'Counterspell', 'Sol Ring', 'Llanowar Elves', 'Swords to Plowshares', 'Lightning Helix'], context: 'Pre Combat Main · 2 players', q: 'How does this resolve?',
+      thread: ['The top of the stack resolves first. [[Counterspell]] was cast in response to [[Lightning Bolt]], so it resolves first and counters the Bolt — Lightning Bolt is put into its owner\'s graveyard and deals no damage.\n[[Sol Ring]] and [[Llanowar Elves]] on the battlefield are untouched. With the stack empty, Player 1 gets priority again in the Pre Combat Main Phase and could still cast [[Swords to Plowshares]] from hand.',
+        'you:What if I cast Lightning Helix at the Elves instead?', 'If [[Lightning Helix]] is cast with the stack empty, it is the only spell on the stack and resolves unless someone responds: it deals 3 damage to the Elves — lethal for a 1/1 — and you gain 3 life. The Counterspell already resolved, so it cannot be used again.'] },
+    { id: 'h2', mode: 'Quick', when: '14 min ago', cards: ['Sol Ring'], q: 'Does Sol Ring tap for two?',
+      thread: ['Yes. [[Sol Ring]] has "{T}: Add {C}{C}" — one tap gives two colorless mana. It is a mana ability, so it does not use the stack and cannot be responded to. It can be activated the turn it enters the battlefield; artifacts have no summoning sickness.'] },
+    { id: 'h3', mode: 'Quick', when: '1 h ago', cards: ['Grapeshot', 'Dark Ritual'], q: 'If I cast Dark Ritual then Grapeshot, how many copies do I get?',
+      thread: ['Storm counts every spell cast before [[Grapeshot]] this turn, by any player. With [[Dark Ritual]] as the only earlier spell, Grapeshot is copied once — two instances total, each dealing 1 damage to any target, and you may choose new targets for the copy.', 'you:Does the copy also have storm?', 'No. The copy is created by the storm trigger, not cast, so its own storm ability never triggers.'] },
+    { id: 'h4', mode: 'Quick', when: 'yesterday', cards: [], q: 'Can I respond to a trigger?',
+      thread: ['Yes. A triggered ability goes on the stack the next time a player would receive priority, and every player then gets a chance to respond to it with instants and activated abilities before it resolves. You cannot respond to it before it is put on the stack.'] },
+    { id: 'h5', mode: 'In-depth', when: 'yesterday', cards: ['Birds of Paradise', 'Path to Exile', 'Rhystic Study'], context: 'Combat · 3 players', q: 'Do I draw from Rhystic Study if the Path is paid for?',
+      thread: ['[[Rhystic Study]] triggers when an opponent casts a spell. When [[Path to Exile]] is cast, the trigger goes on the stack above it; when it resolves, that player chooses whether to pay {1}. If they pay, you draw nothing; if they do not, you may draw a card. Either way Path still resolves afterwards and exiles [[Birds of Paradise]].'] },
+    { id: 'h6', mode: 'Quick', when: '3 days ago', cards: ['Llanowar Elves', 'Lightning Bolt'], q: 'Can I tap Llanowar Elves for mana in response to Lightning Bolt targeting it?',
+      thread: ['Yes. Tapping [[Llanowar Elves]] for mana is a mana ability, and you can activate it while you hold priority in response to [[Lightning Bolt]]. The Elves still die when the Bolt resolves, but the mana is yours to spend on an instant first — the mana empties at the end of the step or phase.'] }
+  ];
+  let closeHistory = () => {};
+  let previewId = null;
+  const modeChip = (m) => '<span class="mode-chip">' + m + '</span>';
+  const fan = (names) => {
+    const cards = names.map(byName).filter(Boolean);
+    if (!cards.length) return '<span class="h-fan"><span class="none" aria-hidden="true">—</span></span>';
+    return '<span class="h-fan">' + cards.slice(0, 3).map((c) => thumb(c)).join('') + (cards.length > 3 ? '<span class="more">+' + (cards.length - 3) + '</span>' : '') + '</span>';
+  };
+  const followups = (h) => h.thread.filter((t) => t.startsWith('you:')).length;
+  const firstLine = (h) => h.thread[0].replace(/\[\[(.+?)\]\]/g, '$1').split('\n')[0];
+  function historyMessages(h) {
+    return [{ who: 'you', text: h.q }].concat(h.thread.map((t) => t.startsWith('you:') ? { who: 'you', text: t.slice(4) } : { who: 'judge', text: t }));
+  }
+  function renderHistory() {
+    const list = document.getElementById('history-list'), n = document.getElementById('history-n');
+    if (!list) return;
+    n.textContent = HISTORY.length ? HISTORY.length + ' of 20' : '';
+    list.innerHTML = HISTORY.length ? HISTORY.map((h) => {
+      const f = followups(h), cardsN = h.cards.length;
+      return '<button class="history-row" role="listitem" data-id="' + h.id + '" aria-current="' + (previewId === h.id) + '">' + fan(h.cards) +
+        '<span class="h-main"><span class="h-q">' + h.q + '</span><span class="h-a">' + firstLine(h) + '</span>' +
+        '<span class="h-meta">' + modeChip(h.mode) + '<span class="sep"></span><span>' + (cardsN ? cardsN + (cardsN === 1 ? ' card' : ' cards') : 'no cards') + '</span>' +
+        (h.context ? '<span class="sep"></span><span>' + h.context + '</span>' : '') +
+        (f ? '<span class="sep"></span><span>' + f + (f === 1 ? ' follow-up' : ' follow-ups') + '</span>' : '') +
+        '<span class="sep"></span><span>' + h.when + '</span></span></span><span class="h-chev" aria-hidden="true">›</span></button>';
+    }).join('') : '<div class="history-empty">No saved questions yet. Every answered question is kept here, twenty at most.</div>';
+    list.querySelectorAll('.history-row').forEach((b) => b.addEventListener('click', () => {
+      const h = HISTORY.find((x) => x.id === b.dataset.id);
+      // wide screen: pick it for the preview pane; phone: straight into the conversation
+      if (matchMedia('(min-width: 600px)').matches) { previewId = h.id; renderHistory(); } else openHistoryEntry(h);
+    }));
+    renderPreview();
+  }
+  function renderPreview() {
+    const pv = document.getElementById('history-preview');
+    if (!pv) return;
+    const h = HISTORY.find((x) => x.id === previewId);
+    if (!h) { pv.innerHTML = '<div class="pv-empty">Pick a question to read it here.<br>Open puts you back in the conversation.</div>'; return; }
+    const cards = h.cards.map(byName).filter(Boolean);
+    pv.innerHTML = '<div class="pv-scroll"><div class="pv-when">' + modeChip(h.mode) + '<span>asked ' + h.when + '</span>' + (h.context ? '<span>·</span><span>' + h.context + '</span>' : '') + '</div>' +
+      '<div class="chat-cards">' + (cards.length ? '<span class="lbl">Cards</span>' + cards.map((c) => thumb(c, 'tap')).join('') : '<span class="lbl">No cards attached</span>') + '</div>' +
+      '<div class="thread">' + chatMarkup(historyMessages(h)) + '</div></div>' +
+      '<div class="pv-foot"><button class="link" type="button" id="history-delete">Delete this question</button><button class="btn primary" type="button" id="history-open">Open conversation ›</button></div>';
+    bindRefs(pv);
+    pv.querySelector('#history-open').addEventListener('click', () => openHistoryEntry(h));
+    pv.querySelector('#history-delete').addEventListener('click', () => {
+      const b = pv.querySelector('#history-delete');
+      if (b.dataset.armed !== 'true') { b.dataset.armed = 'true'; b.textContent = 'Delete for good? Tap again'; b.style.color = '#ff8fa3'; return; }
+      HISTORY.splice(HISTORY.indexOf(h), 1); previewId = null; renderHistory();
+    });
+  }
+  // opening a saved question: the page that owns the conversation (Ask a
+  // Question) shows it in place; any other page goes there with ?history=
+  function openHistoryEntry(h) {
+    closeHistory();
+    if (typeof window.FLOW.onOpenHistory === 'function') window.FLOW.onOpenHistory(h);
+    else location.href = 'quick-question.html?history=' + encodeURIComponent(h.id);
+  }
+  const historyById = (id) => HISTORY.find((x) => x.id === id) || null;
   let colorlessHex = null;
   // the remembered colour (round 10) — read with one argument, write with two;
   // storage can be missing or refused (file://, private windows), so it never throws
@@ -406,5 +487,5 @@ window.FLOW = (() => {
   }
   document.addEventListener('DOMContentLoaded', ensureDetailPanel);
   document.addEventListener('DOMContentLoaded', mountDemoToggle);
-  return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, fitPlaceholder, sendMarkup, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, runWait, WAIT_STAGES, bindRefs, mountMics, mountMenu, setProfile, setCustomColorless, PROFILES };
+  return { img, art, library, byName, cardMarkup, openDetail, closeDetail, bindComposer, fitPlaceholder, sendMarkup, autoGrow, ring, applyRing, ringAttr, thumb, pips, chatMarkup, runWait, WAIT_STAGES, bindRefs, mountMics, mountMenu, setProfile, setCustomColorless, PROFILES, HISTORY, historyMessages, historyById, openHistoryEntry };
 })();
