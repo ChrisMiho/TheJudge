@@ -552,10 +552,14 @@ h1, h2, .display {
 /* theme row (round 7): each colour's symbol sits in a filled circle — a play
    on the printed mana symbols: a light disc of the colour, the symbol dark on
    it. The chosen one wears a thin ring of its light and sits a touch larger. */
+/* round 11 ("the theme icons overlap on each other some" on a narrow phone):
+   the six discs share the tray's width — each one is as large as its sixth of
+   the row allows, up to 38 px, so on a 320 px phone they shrink a little
+   instead of touching; the chosen one's ring is drawn inside its cell. */
 .theme-orbs {
   display: grid;
-  grid-template-columns: repeat(6, 1fr);
-  gap: 0.2rem;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.25rem;
   margin: 0.2rem 0.75rem 0;
 }
 
@@ -564,14 +568,16 @@ h1, h2, .display {
   place-items: center;
   background: transparent;
   border: 0;
-  padding: 0.3rem 0;
+  padding: 0.35rem 0.15rem;
   min-height: 44px;
+  min-width: 0;
   cursor: pointer;
 }
 
 .theme-orb .orb {
-  width: 38px;
-  height: 38px;
+  width: min(38px, 100%);
+  aspect-ratio: 1;
+  height: auto;
   border-radius: 999px;
   display: grid;
   place-items: center;
@@ -583,37 +589,84 @@ h1, h2, .display {
   transition: transform 150ms ease, box-shadow 150ms ease, opacity 150ms ease;
 }
 
-.theme-orb .orb svg { width: 27px; height: 27px; display: block; }
+.theme-orb .orb svg { width: 72%; height: 72%; display: block; }
 
 .theme-orb[data-current="true"] .orb {
   opacity: 1;
-  transform: scale(1.1);
+  transform: scale(1.08);
   box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 0 0 2px var(--surface-panel), 0 0 0 3.5px var(--orb-soft), 0 0 16px color-mix(in srgb, var(--orb) 70%, transparent);
 }
 
 .theme-orb:hover .orb {
   opacity: 1;
-  transform: scale(1.1);
+  transform: scale(1.08);
 }
 
 /* Colorless keeps its custom colour (as today's app): a colour well and a reset,
-   shown only while Colorless is the current theme */
+   shown only while Colorless is the current theme. Round 11: the row wraps
+   cleanly on a narrow phone — the label never breaks mid-word and the reset
+   keeps to one line. */
 .theme-custom {
   display: none;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  margin: 0.4rem 0.75rem 0;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.5rem;
+  margin: 0.5rem 0.75rem 0;
   font-size: 0.78rem;
   color: var(--text-muted);
 }
 .theme-custom[data-show="true"] { display: flex; }
+.theme-custom span { white-space: nowrap; }
+.theme-custom .btn { white-space: nowrap; }
 .theme-custom input[type="color"] {
   width: 36px; height: 36px; padding: 0; border: 1px solid var(--surface-edge); border-radius: 0.5rem; background: transparent; cursor: pointer;
 }
 .theme-custom input[type="color"]::-webkit-color-swatch-wrapper { padding: 3px; }
 .theme-custom input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0.3rem; }
 .theme-custom .btn { min-height: 34px; padding: 0.2rem 0.7rem; font-size: 0.78rem; }
+
+/* ---- Send feedback (round 11): today's form in the shared sheet ---- */
+.feedback-panel { padding: 0; }
+.fb-form { display: grid; gap: 0.8rem; padding: 1.1rem 1rem 1rem; }
+@media (max-width: 599px) { .fb-form { padding-top: 1.3rem; } }
+.fb-head small { display: block; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-soft); }
+.fb-head h2 { margin: 0.1rem 0 0; font-size: 1.3rem; }
+.fb-kind { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.fb-pill { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 40px; padding: 0 0.9rem 0 0.7rem; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.86rem;
+  border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 40%, transparent); color: var(--text-muted); transition: all 150ms ease; }
+.fb-pill .glyph { color: var(--accent-soft); font-size: 0.9rem; line-height: 1; }
+.fb-pill:hover { border-color: var(--accent-soft); color: var(--text-primary); }
+.fb-pill[aria-pressed="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel)); box-shadow: 0 0 14px -5px color-mix(in srgb, var(--accent) 80%, transparent); }
+.fb-field { display: grid; gap: 0.3rem; }
+.fb-field .t { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: flex; gap: 0.4rem; align-items: baseline; }
+.fb-field .t small { text-transform: none; letter-spacing: 0; font-size: 0.7rem; }
+.fb-field textarea.field { resize: vertical; min-height: 6.5rem; line-height: 1.45; padding: 0.6rem 0.75rem; }
+.fb-field[data-invalid="true"] .field { border-color: #ff8fa3; box-shadow: 0 0 0 3px rgba(255, 143, 163, 0.18); }
+.fb-err { font-size: 0.76rem; color: #ff8fa3; }
+.fb-snapshot { border: 1px dashed color-mix(in srgb, var(--accent-soft) 35%, transparent); border-radius: 0.7rem; }
+.fb-snap-row { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; width: 100%; min-height: 44px; padding: 0.4rem 0.75rem; text-align: left;
+  background: transparent; border: 0; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; }
+.fb-snap-row .glyph { color: var(--accent-soft); }
+.fb-snap-row .chev { color: var(--accent-soft); transition: transform 150ms ease; }
+.fb-snap-row[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.fb-snap-list { display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.8rem; margin: 0; padding: 0.2rem 0.75rem 0.7rem; font-size: 0.78rem; border-top: 1px solid var(--surface-edge); }
+.fb-snap-list dt { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.64rem; padding-top: 0.15rem; }
+.fb-snap-list dd { margin: 0; color: var(--text-primary); min-width: 0; overflow-wrap: anywhere; }
+.fb-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; padding-top: 0.2rem; }
+.fb-note { font-size: 0.72rem; color: var(--text-muted); }
+.fb-foot .btn.primary { min-height: 44px; padding: 0.5rem 1.2rem; font-weight: 600; margin-left: auto; }
+.fb-foot .btn.primary:disabled { opacity: 0.7; cursor: default; }
+.fb-done { display: grid; justify-items: center; text-align: center; gap: 0.5rem; padding: 2rem 1.2rem 1.4rem; }
+.fb-done .seal { width: 56px; height: 56px; border-radius: 999px; background: var(--motif) center / cover no-repeat, var(--surface-ground);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), 0 0 24px color-mix(in srgb, var(--accent) 75%, transparent); animation: seal-in 900ms ease-out both; margin-bottom: 0.4rem; }
+.fb-done h2 { margin: 0; font-size: 1.15rem; }
+.fb-done p { margin: 0 0 0.6rem; font-size: 0.84rem; color: var(--text-muted); max-width: 26rem; }
+@media (min-width: 600px) {
+  #feedback-modal.drawer-panel { top: 50%; left: 50%; right: auto; bottom: auto; width: min(30rem, 92vw); max-height: calc(100dvh - 3rem); border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent); border-radius: 1.1rem; opacity: 0; transform: translate(-50%, -50%) translateY(14px) scale(0.97); transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s ease; }
+  #feedback-modal.drawer-panel[data-open="true"] { opacity: 1; transform: translate(-50%, -50%); }
+  #feedback-modal.drawer-panel::before { display: none; }
+}
 
 /* ---- Question History (round 11). The owner: "clicking on them does
    nothing … explore what that user experience looks like for mobile and for

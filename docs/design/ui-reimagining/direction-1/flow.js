@@ -313,10 +313,71 @@ window.FLOW = (() => {
     setProfile(want && PROFILES.some((p) => p[0] === want) ? want : (kept && PROFILES.some((p) => p[0] === kept) ? kept : (document.documentElement.dataset.profile || 'blue')));
 
     // Send feedback (modal) and History (side panel / sheet) live under the destinations, above Theme
-    const fb = document.createElement('div'); fb.className = 'overlay-backdrop'; fb.id = 'feedback-modal'; fb.dataset.open = 'false';
-    fb.innerHTML = '<div class="overlay-panel ornate small"><button class="icon-btn overlay-close" data-close="feedback-modal" aria-label="Close">✕</button>' +
-      '<h2 style="margin:0.2rem 0 0.3rem">Send feedback</h2><p class="text-muted" style="margin:0 0 0.7rem;font-size:0.85rem">Tell us what\'s broken or what you\'d like to see.</p>' +
-      '<textarea class="field" rows="4" placeholder="What\'s on your mind?"></textarea><div style="margin-top:0.75rem;display:flex;justify-content:flex-end"><button class="btn primary">Send</button></div></div>';
+    // round 11 ("we've never gone over the submit feedback form, let's do that
+    // next"): the same sheet the rest of the app uses — a bottom sheet on a
+    // phone, a floating card on desktop — carrying today's form: the kind of
+    // feedback as three pills (Bug · Suggestion · Other), what happened, an
+    // optional reply email, and the snapshot of the app's state that goes with
+    // every report, folded behind one row. Send turns the sheet into a thank-you.
+    const fbb = document.createElement('div'); fbb.className = 'sheet-backdrop'; fbb.id = 'feedback-backdrop'; fbb.dataset.open = 'false';
+    const fb = document.createElement('aside'); fb.className = 'drawer-panel feedback-panel'; fb.id = 'feedback-modal'; fb.dataset.open = 'false'; fb.setAttribute('aria-label', 'Send feedback'); fb.setAttribute('role', 'dialog');
+    const screenName = current || document.title.split(' — ')[0];
+    fb.innerHTML = '<button class="icon-btn overlay-close" data-close="feedback-modal" aria-label="Close">✕</button>' +
+      '<form class="fb-form" id="fb-form" novalidate>' +
+        '<div class="fb-head"><small>Feedback</small><h2>Send feedback</h2></div>' +
+        '<div class="fb-kind" role="radiogroup" aria-label="Feedback type">' +
+          '<button type="button" class="fb-pill" data-kind="bug" aria-pressed="true"><span class="glyph">✕</span>Bug</button>' +
+          '<button type="button" class="fb-pill" data-kind="suggestion" aria-pressed="false"><span class="glyph">✦</span>Suggestion</button>' +
+          '<button type="button" class="fb-pill" data-kind="other" aria-pressed="false"><span class="glyph">…</span>Other</button></div>' +
+        '<label class="fb-field"><span class="t">What happened?</span><textarea class="field" id="fb-text" rows="4" placeholder="What went wrong, and what did you expect to happen?" maxlength="2000"></textarea><span class="fb-err" id="fb-err" hidden>Please describe what happened before sending.</span></label>' +
+        '<label class="fb-field"><span class="t">Reply email <small>optional</small></span><input class="field" id="fb-email" type="email" placeholder="you@example.com" autocomplete="email"></label>' +
+        '<div class="fb-snapshot"><button type="button" class="fb-snap-row" id="fb-snap" aria-expanded="false"><span><span class="glyph">◈</span> Your report includes a snapshot of the app right now</span><span class="chev">▾</span></button>' +
+          '<dl class="fb-snap-list" id="fb-snap-list" hidden>' +
+            '<dt>Screen</dt><dd>' + screenName + '</dd>' +
+            '<dt>Colour</dt><dd id="fb-snap-colour"></dd>' +
+            '<dt>Question</dt><dd id="fb-snap-q">—</dd>' +
+            '<dt>Cards</dt><dd id="fb-snap-cards">—</dd>' +
+            '<dt>Viewport</dt><dd id="fb-snap-vp"></dd>' +
+            '<dt>Build</dt><dd>direction-1 mockup · round 11</dd>' +
+            '<dt>Browser</dt><dd id="fb-snap-ua"></dd></dl></div>' +
+        '<div class="fb-foot"><span class="fb-note">Sent to the team, not to a public board.</span><button type="submit" class="btn primary" id="fb-send">Send feedback</button></div>' +
+      '</form>' +
+      '<div class="fb-done" id="fb-done" hidden><span class="seal" aria-hidden="true"></span><h2>Thanks — your feedback was sent.</h2><p>The team reads every report. If you left an email, a reply comes there.</p><button type="button" class="btn" data-close="feedback-modal">Done</button></div>';
+    const KIND_HINT = { bug: 'What went wrong, and what did you expect to happen?', suggestion: 'What would make TheJudge better?', other: 'What\'s on your mind?' };
+    const KIND_LABEL = { bug: 'What happened?', suggestion: 'What\'s your idea?', other: 'What would you like to tell us?' };
+    setTimeout(() => {
+      fb.querySelectorAll('.fb-pill').forEach((p) => p.addEventListener('click', () => {
+        fb.querySelectorAll('.fb-pill').forEach((x) => x.setAttribute('aria-pressed', String(x === p)));
+        fb.querySelector('#fb-text').placeholder = KIND_HINT[p.dataset.kind];
+        fb.querySelector('.fb-field .t').textContent = KIND_LABEL[p.dataset.kind];
+      }));
+      fb.querySelector('#fb-snap').addEventListener('click', () => {
+        const open = fb.querySelector('#fb-snap').getAttribute('aria-expanded') !== 'true';
+        fb.querySelector('#fb-snap').setAttribute('aria-expanded', String(open)); fb.querySelector('#fb-snap-list').hidden = !open;
+      });
+      fb.querySelector('#fb-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const ta = fb.querySelector('#fb-text');
+        if (!ta.value.trim()) { fb.querySelector('#fb-err').hidden = false; ta.focus(); ta.closest('.fb-field').dataset.invalid = 'true'; return; }
+        const send = fb.querySelector('#fb-send'); send.disabled = true; send.textContent = 'Sending…';
+        setTimeout(() => { fb.querySelector('#fb-form').hidden = true; fb.querySelector('#fb-done').hidden = false; fb.querySelector('#fb-done .btn').focus(); }, 900);
+      });
+      fb.querySelector('#fb-text').addEventListener('input', () => { fb.querySelector('#fb-err').hidden = true; delete fb.querySelector('#fb-text').closest('.fb-field').dataset.invalid; });
+    }, 0);
+    function openFeedback() {
+      const q = document.getElementById('question-field');
+      fb.querySelector('#fb-snap-colour').textContent = (document.documentElement.dataset.profile || 'blue').replace(/^./, (c) => c.toUpperCase());
+      fb.querySelector('#fb-snap-q').textContent = q && q.value.trim() ? '“' + q.value.trim().slice(0, 80) + (q.value.trim().length > 80 ? '…' : '') + '”' : 'none in progress';
+      const n = document.querySelectorAll('#ring .card, #shelf .card, .entry[data-id]').length;
+      fb.querySelector('#fb-snap-cards').textContent = n ? n + (n === 1 ? ' card' : ' cards') : 'none';
+      fb.querySelector('#fb-snap-vp').textContent = innerWidth + ' × ' + innerHeight;
+      fb.querySelector('#fb-snap-ua').textContent = /Chrome/.test(navigator.userAgent) ? 'Chrome' : /Safari/.test(navigator.userAgent) ? 'Safari' : /Firefox/.test(navigator.userAgent) ? 'Firefox' : 'Browser';
+      fb.querySelector('#fb-form').hidden = false; fb.querySelector('#fb-done').hidden = true;
+      const send = fb.querySelector('#fb-send'); send.disabled = false; send.textContent = 'Send feedback';
+      fbb.dataset.open = 'true'; fb.dataset.open = 'true'; fb.scrollTop = 0;
+      setTimeout(() => fb.querySelector('#fb-text').focus(), 300);
+    }
+    document.body.append(fbb);
     const hb = document.createElement('div'); hb.className = 'sheet-backdrop'; hb.id = 'history-backdrop'; hb.dataset.open = 'false';
     const hd = document.createElement('aside'); hd.className = 'drawer-panel history-panel'; hd.id = 'history-drawer'; hd.dataset.open = 'false'; hd.setAttribute('aria-label', 'Question history');
     hd.innerHTML = '<button class="icon-btn overlay-close" data-close="history-drawer" aria-label="Close">✕</button>' +
@@ -324,12 +385,13 @@ window.FLOW = (() => {
       '<div class="h-panes"><div class="history-list" id="history-list" role="list"></div><div class="h-preview" id="history-preview"></div></div>' +
       '<div class="history-foot">Your last 20 answered questions are kept on this device. Open one to keep the conversation going.</div>';
     document.body.append(fb, hb, hd);
-    const closeAll = () => { fb.dataset.open = 'false'; hb.dataset.open = 'false'; hd.dataset.open = 'false'; };
-    document.getElementById('tray-feedback').addEventListener('click', () => { setTray(false); fb.dataset.open = 'true'; fb.querySelector('textarea').focus(); });
+    const closeAll = () => { fb.dataset.open = 'false'; fbb.dataset.open = 'false'; hb.dataset.open = 'false'; hd.dataset.open = 'false'; };
+    document.getElementById('tray-feedback').addEventListener('click', () => { setTray(false); openFeedback(); });
     document.getElementById('tray-history').addEventListener('click', () => { setTray(false); renderHistory(); hb.dataset.open = 'true'; hd.dataset.open = 'true'; });
     document.querySelectorAll('[data-close]').forEach((b) => b.addEventListener('click', closeAll));
-    fb.addEventListener('click', (e) => { if (e.target === fb) closeAll(); });
+    fbb.addEventListener('click', closeAll);
     hb.addEventListener('click', closeAll);
+    window.FLOW.openFeedback = openFeedback;
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { closeAll(); setTray(false); } });
     closeHistory = closeAll;
     return setTray;
