@@ -159,6 +159,12 @@
   @keyframes nudge { 0%, 100% { transform: none; } 20% { transform: translateX(-6px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(4px); } }
   .place-plate .eyebrow .link.danger { color: var(--text-muted); }
   .place-plate .eyebrow .link.danger:hover { color: #ff8fa3; }
+  /* round 11: the reorder reminder, lit, above the shelf */
+  .shelf-hint { display: flex; align-items: flex-start; gap: 0.55rem; margin: -0.2rem 0 -0.2rem; padding: 0.5rem 0.75rem; border-radius: 0.7rem;
+    border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent); background: color-mix(in srgb, var(--accent) 12%, transparent);
+    font-size: 0.8rem; line-height: 1.4; color: var(--text-primary); }
+  .shelf-hint .glyph { color: var(--accent-soft); font-size: 1.05rem; line-height: 1.1; flex: 0 0 auto; }
+  .shelf-hint b { color: var(--accent-soft); font-weight: 600; }
   .shelf { --tile-w: 124px; display: flex; gap: 0.7rem; overflow-x: auto; overflow-y: visible; padding: 1rem 0.3rem 0.9rem; scroll-snap-type: x proximity; min-height: calc(var(--tile-w) * 88 / 63 + 1.9rem); position: relative; z-index: 1; width: 100%; }
   @media (min-width: 720px) { .shelf { --tile-w: 150px; } }
   .shelf .card {
@@ -188,11 +194,26 @@
   .act-head h2 { margin: 0; font-size: 1.1rem; }
   .act-head .zone { color: var(--accent-soft); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.08em; }
   .act-body .lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); }
-  .act-zones { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.4rem; }
-  .act-row { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-  .act-row .btn { flex: 1; min-height: 40px; padding: 0.3rem 0.6rem; font-size: 0.84rem; }
-  .act-row .btn:disabled { opacity: 0.4; cursor: default; }
-  .act-row .btn.danger:hover { border-color: #ff8fa3; color: #ff8fa3; }
+  /* round 11: zones as pills, order as one segmented pill, actions as tray rows */
+  .act-zones { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .act-zones button { min-height: 36px; padding: 0.2rem 0.75rem 0.2rem 0.6rem; border-radius: 999px; font-size: 0.82rem; gap: 0.4rem; background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
+  .act-zones button .mark { width: 14px; height: 14px; font-size: 0.55rem; }
+  .act-zones button[data-current="true"] { box-shadow: 0 0 14px -5px color-mix(in srgb, var(--accent) 80%, transparent); }
+  .seg { display: inline-flex; border-radius: 999px; border: 1px solid var(--surface-edge); overflow: hidden; background: color-mix(in srgb, var(--surface-ground) 45%, transparent); }
+  .seg button { display: inline-flex; align-items: center; justify-content: center; gap: 0.35rem; flex: 1 1 0; min-height: 40px; padding: 0 0.8rem; border: 0; background: transparent; color: var(--text-primary); font-size: 0.82rem; font-weight: 600; cursor: pointer; }
+  .seg button + button { border-left: 1px solid var(--surface-edge); }
+  .seg button .glyph { color: var(--accent-soft); font-size: 0.95rem; }
+  .seg button:hover:not(:disabled) { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+  .seg button:disabled { opacity: 0.4; cursor: default; }
+  .seg button[hidden] { display: none; }
+  .act-menu { display: grid; gap: 0.1rem; margin: 0.2rem -0.5rem 0; padding-top: 0.5rem; border-top: 1px solid var(--surface-edge); }
+  .act-menu button { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; gap: 0.6rem; width: 100%; min-height: 46px; padding: 0 0.75rem; text-align: left;
+    border: 1px solid transparent; border-radius: 0.6rem; background: transparent; color: var(--text-primary); font-weight: 500; font-size: 0.92rem; cursor: pointer; transition: background 150ms ease; }
+  .act-menu button .glyph { width: 28px; height: 28px; display: grid; place-items: center; color: var(--accent-soft); font-size: 1rem; }
+  .act-menu button .chev { color: var(--accent-soft); }
+  .act-menu button:hover, .act-menu button:focus-visible { background: color-mix(in srgb, var(--accent) 12%, transparent); }
+  .act-menu button.danger .glyph { color: #ff8fa3; }
+  .act-menu button.danger:hover { color: #ff8fa3; background: rgba(255, 143, 163, 0.08); }
   .shelf .card.summon { animation: summon 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both; --d: 0; --step: 0px; }
   .shelf .card .card-widget { width: 26px; height: 26px; font-size: 0.72rem; top: -12px; opacity: 1; transform: none; pointer-events: auto; }
   .shelf .card .card-widget.remove { left: -6px; }
@@ -298,8 +319,6 @@
     #act-panel[data-side="right"]::after, #act-panel[data-side="left"]::after { top: var(--arrow-y, 50%); margin: -7px 0 0; }
     #act-panel[data-side="right"]::after { left: -8px; border-top: 0; border-right: 0; }
     #act-panel[data-side="left"]::after { left: auto; right: -8px; border-bottom: 0; border-left: 0; }
-    #act-panel .act-zones { grid-template-columns: repeat(3, 1fr); }
-    #act-panel .act-zones button { min-height: 42px; font-size: 0.82rem; padding: 0.3rem 0.5rem; gap: 0.4rem; }
     #act-backdrop { background: rgba(0, 0, 0, 0.32); backdrop-filter: none; }
   }
   .act-body { padding: 2.6rem 1rem 1rem; }
@@ -331,6 +350,13 @@
   .more-row .set b { padding: 0.08rem 0.5rem; border-radius: 999px; font-size: 0.74rem; font-weight: 600; color: var(--text-primary); background: color-mix(in srgb, var(--accent) 26%, var(--surface-panel)); border: 1px solid color-mix(in srgb, var(--accent-soft) 45%, transparent); }
   .more-row .up { color: var(--accent-soft); }
   .more-row[hidden] { display: none; }
+  /* round 11: the note row and More details share one line; either alone takes the whole line */
+  .ctx-tail { display: flex; gap: 0.5rem; }
+  .ctx-tail .more-row { flex: 1 1 0; min-width: 0; }
+  .ctx-tail .more-row > span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .note-row .glyph { color: var(--accent-soft); }
+  .note-row small { color: var(--text-muted); font-size: 0.72rem; margin-left: 0.2rem; }
+  .note-row[aria-expanded="true"] { border-style: solid; color: var(--text-primary); }
   .more-sheet { position: absolute; inset: 0; z-index: 8; display: grid; grid-template-rows: auto 1fr auto; border-radius: inherit;
     background: radial-gradient(90% 50% at 50% 0%, color-mix(in srgb, var(--accent) 22%, transparent) 0%, transparent 70%), color-mix(in srgb, var(--surface-panel) 97%, #000);
     border-top: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent);
@@ -466,6 +492,9 @@
           </div>
         </div>
         <div class="zone-tabs" id="zone-tabs"></div>
+        <!-- round 11: the reorder reminder sits between the zone tabs and the shelf, lit,
+             where it is read before the cards — under the shelf it went unread -->
+        <p class="shelf-hint" id="shelf-hint" hidden></p>
         <div class="search-pop" id="search-pop">
           <div class="search-row">
             <span class="glyph">⌕</span>
@@ -477,7 +506,6 @@
             <div class="shelf" id="shelf" data-stack="false"></div>
           <button class="plate-next" type="button" data-next="context"><span>Continue<small>next: a few details per card</small></span><span class="chev">›</span></button>
         </div>
-        <p class="flow-hint" id="shelf-hint" hidden></p>
       </section>
 
       <!-- 4 · Context, card by card -->
@@ -502,9 +530,16 @@
               <select class="field" id="sel-target"></select>
               <input class="field" id="target-other" placeholder="Describe the target, then press Enter" hidden>
             </div>
-            <label><span class="t">Notes<small>optional</small></span><textarea class="field" id="ctx-notes" rows="1" placeholder="Anything else about this card"></textarea></label>
-            <!-- round 8: the rare settings (Copies — storm, fork) live behind one slim row -->
-            <button class="more-row" id="more-row" type="button" aria-haspopup="dialog"><span>More details <span class="set" id="more-set"></span></span><span class="up">▴</span></button>
+            <!-- round 11 ("start with the optional note collapsed and easily accessible"):
+                 the note is one tap away on a slim row beside More details; the box opens
+                 only when wanted (or when the card already has a note), so a card with
+                 many targets no longer pushes the sheet down the page -->
+            <label id="row-notes" hidden><span class="t">Note<small>optional</small></span><textarea class="field" id="ctx-notes" rows="1" placeholder="Anything else about this card"></textarea></label>
+            <div class="ctx-tail">
+              <button class="more-row note-row" id="note-toggle" type="button" aria-expanded="false" title="Optional — anything else about this card"><span><span class="glyph">＋</span> Add a note</span></button>
+              <!-- round 8: the rare settings (Copies — storm, fork) live behind one slim row -->
+              <button class="more-row" id="more-row" type="button" aria-haspopup="dialog"><span>More details <span class="set" id="more-set"></span></span><span class="up">▴</span></button>
+            </div>
           </div>
           <button class="plate-next ctx-nav" type="button" id="wiz-next"><span>Next card</span><span class="chev">›</span></button>
           <div class="more-sheet" id="more-sheet" data-open="false" role="dialog" aria-label="More details">
@@ -573,15 +608,22 @@
     <div class="act-scroll">
     <button class="icon-btn overlay-close" id="act-close" aria-label="Close">✕</button>
     <div class="act-detail" id="act-detail" hidden></div>
+    <!-- round 11 ("a more elegant way to display all of these buttons instead of a long
+         list of blocks"): the zones are a wrap of small pills with the current one lit;
+         the order controls are one segmented pill; Details and Remove are rows in the
+         Menu tray's manner — a glyph, the words, a chevron — under a hairline -->
     <div class="body act-body" id="act-body">
       <div class="act-head" id="act-head"></div>
       <span class="lbl">Move to</span>
       <div class="act-zones" id="act-zones"></div>
       <div id="act-stack" hidden style="display:grid;gap:0.4rem">
         <span class="lbl" id="act-order-lbl">Order on the stack</span>
-        <div class="act-row"><button class="btn" id="act-down" type="button">↓ Move down</button><button class="btn" id="act-up" type="button">↑ Move up</button><button class="btn" id="act-top" type="button">To top</button></div>
+        <div class="seg" role="group" aria-label="Reorder"><button id="act-down" type="button"><span class="glyph">↓</span><span class="w">Down</span></button><button id="act-up" type="button"><span class="glyph">↑</span><span class="w">Up</span></button><button id="act-top" type="button"><span class="glyph">⤒</span><span class="w">To top</span></button></div>
       </div>
-      <div class="act-row"><button class="btn" id="act-details" type="button">Details</button><button class="btn danger" id="act-remove" type="button">Remove</button></div>
+      <div class="act-menu">
+        <button id="act-details" type="button"><span class="glyph">ⓘ</span><span>Card details</span><span class="chev">›</span></button>
+        <button id="act-remove" type="button" class="danger"><span class="glyph">✕</span><span id="act-remove-lbl">Remove from the Stack</span></button>
+      </div>
     </div>
     </div>
   </aside>
@@ -770,9 +812,9 @@
         summonNext = null;
       }
       $('shelf-hint').hidden = cards.length < 2;
-      $('shelf-hint').textContent = isStack
-        ? 'The top of the stack resolves first, then 2nd, 3rd… down to the bottom. Drag a card to reorder it (hold it first on a phone), or tap it for Move up / Move down.'
-        : 'Drag to put them in any order you like (hold first on a phone) — tap a card to move it to another zone.';
+      $('shelf-hint').innerHTML = '<span class="glyph" aria-hidden="true">⇄</span><span>' + (isStack
+        ? '<b>Top resolves first</b>, then 2nd, 3rd… down to the bottom. Drag a card to reorder it (hold first on a phone), or tap it for Move up / Move down.'
+        : '<b>Drag to reorder</b> (hold first on a phone). Tap a card to move it to another zone.') + '</span>';
       $('add-card').innerHTML = '<span class="glyph">＋</span> ' + (isStack ? 'Add to Stack' : 'Add card');
       renderSearch();
     }
@@ -838,9 +880,10 @@
       // round 8: every zone can be reordered; only the Stack's order has a rule behind it
       $('act-stack').hidden = list.length < 2;
       $('act-order-lbl').innerHTML = isStack ? 'Order on the stack <small style="text-transform:none;letter-spacing:0">· the top resolves first</small>' : 'Order in ' + zone;
-      $('act-down').textContent = isStack ? '↓ Move down' : '‹ Move left';
-      $('act-up').textContent = isStack ? '↑ Move up' : 'Move right ›';
+      $('act-down').innerHTML = isStack ? '<span class="glyph">↓</span><span class="w">Down</span>' : '<span class="glyph">‹</span><span class="w">Left</span>';
+      $('act-up').innerHTML = isStack ? '<span class="glyph">↑</span><span class="w">Up</span>' : '<span class="w">Right</span><span class="glyph">›</span>';
       $('act-top').hidden = !isStack;
+      $('act-remove-lbl').textContent = 'Remove from ' + (isStack ? 'the Stack' : zone);
       $('act-down').disabled = i <= 0; $('act-up').disabled = i >= list.length - 1; $('act-top').disabled = i >= list.length - 1;
       showActView(view === 'details' ? 'details' : 'actions');
       $('act-backdrop').dataset.open = 'true'; $('act-panel').dataset.open = 'true';
@@ -855,7 +898,7 @@
         $('act-detail').innerHTML = '<div class="art"><img src="' + art(c.id) + '" alt=""><div class="title"><h2>' + c.name + '</h2><span class="cost">' + c.cost + '</span></div></div>' +
           '<div class="inner"><div class="typeline"><b>' + c.type + '</b>' + (c.pt ? '<span>·</span><b>' + c.pt + '</b>' : '') + '<span>·</span>' + pips(c) + '<span>' + c.colorsLabel + '</span></div>' +
           '<p class="oracle">' + c.oracle + '</p><div class="facts"><span class="fact"><small>Mana value</small>' + c.mv + '</span><span class="fact"><small>Price</small>' + c.price + '</span></div></div>' +
-          '<button class="act-back" type="button" id="act-back">‹ Move, reorder or remove</button>';
+          '<button class="act-back" type="button" id="act-back">‹ Back to move, reorder or remove</button>';
         $('act-back').addEventListener('click', () => { showActView('actions'); anchorActions(actCard); });
       }
     }
@@ -1022,6 +1065,7 @@
           opt('other', 'Something else…');
         $('target-other').hidden = true;
         $('ctx-notes').value = c.notes; autoGrow($('ctx-notes'));
+        setNoteOpen(!!c.notes);
         $('wiz-next').innerHTML = wizLabel(wiz >= q.length - 1);
       } else {
         $('review-count').textContent = q.length + (q.length === 1 ? ' card' : ' cards');
@@ -1120,6 +1164,12 @@
       if (ev.key === 'Escape') { ev.target.hidden = true; $('sel-target').value = ''; }
     });
     $('ctx-notes').addEventListener('input', () => { current().c.notes = $('ctx-notes').value; autoGrow($('ctx-notes')); });
+    // round 11: the note box is folded until asked for; a card that already has a note opens with it
+    function setNoteOpen(open) {
+      $('row-notes').hidden = !open; $('note-toggle').hidden = open;
+      $('note-toggle').setAttribute('aria-expanded', String(open));
+    }
+    $('note-toggle').addEventListener('click', () => { setNoteOpen(true); $('ctx-notes').focus(); });
     $('skip-review').addEventListener('click', () => { wiz = queue().length; renderWizard(); });
     $('review-toggle').addEventListener('click', () => { reviewCollapsed = !reviewCollapsed; renderWizard(); });
     $('review').addEventListener('scroll', markReviewScroll);
