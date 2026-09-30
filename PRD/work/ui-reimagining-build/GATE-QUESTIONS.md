@@ -544,6 +544,18 @@ Proposed `PRD/sections/` diff (new, reserved):
 +| Fit | No page scroll for the primary submit path: at 390×844 and 1440×900 the send pill's `bottom` stays inside the first viewport at every attached-card count up to the cap, and with search open. The stage replaces the stacked per-image list whose measured overflow (2026-09-24: two cards pushed Send Request 179px below the fold at 390×844) this row previously bounded; the per-image `25dvh` / `42dvh` cap retires with that list |
 +| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-158, DEC-160, REQ-129, REQ-133, REQ-141, REQ-167, REQ-174, REQ-200, REQ-206, FLOW-024. The on-demand card-detail load state follows the `#### Card detail popup (suite-wide)` row (REQ-174 / FLOW-024): quiet, in-region, no layout jump, failing soft to the name fallback |
  
+@@ -138,7 +138,7 @@
+ |---|---|
+-| Purpose | Chat-first follow-up after first answer |
+-| Phone / Desktop | Thread fills **available shell/workspace height**; composer docked in workspace; thread region-scrolls |
++| Purpose | Ask a Question — answered: chat follow-up after the first ruling, with the attached cards in a Cards strip (REQ-206, REQ-075) |
++| Phone / Desktop | Thread fills **available shell/workspace height**; composer (the shared one-pill question box with the send pill, REQ-206) docked in workspace; thread region-scrolls. Top to bottom: the title row with **✎ Edit cards** and **↺ Start over** at its right once a ruling exists; the **Cards strip** when any card is attached (every attached card once, one tap from its detail; one row that never becomes document horizontal scroll; no strip without a card); then the thread — the player's question first as a right-aligned bubble (REQ-025), the judge's messages in a solid bubble under the colour's seal with no card thumbnails, and a card name that exactly matches an attached card rendered as a tappable chip opening that card's detail |
+ | Fit | No page scroll; thread is the scroll region (DEC-127/131) |
+-| Rail clearance | The corner rail participates in layout (`.portal-menu-rail` is `position: relative`, giving the header's left column a real 44px band), so the first element under the header needs **no compensating clearance**. `.adaptive-context-trigger`'s `margin-top: calc(2.75rem - var(--layout-panel-padding))` is retired; spacing is plain `--layout-surface-gap` — measured 8px at 390x844 and 16px at 1440x900, with the rail's bottom 12px / 32px above View Context and no overlap. Do not reintroduce a rail-sized clearance constant here (ui-review, 2026-08-11) |
+-| Notes | DEC-118, DEC-127, DEC-131, REQ-139 |
++| Header clearance | The banner header (REQ-207) is in flow and replaces the corner rail, so the title row under it needs **no compensating clearance**; spacing is plain `--layout-surface-gap`. `.adaptive-context-trigger`'s retired `margin-top: calc(2.75rem - var(--layout-panel-padding))` stays retired (REQ-136). The ☰ button's hit area never overlaps ✎ Edit cards, ↺ Start over or the Cards strip at 390×844 or 1440×900. Do not reintroduce a header-sized clearance constant here. Superseded geometry: the corner `.portal-menu-rail` band (`position: relative`, a 44px left-column band, its bottom 12px / 32px above View Context, gap 8px / 16px at 390x844 / 1440x900; ui-review, 2026-08-11) |
++| Notes | DEC-118, DEC-127, DEC-131, REQ-139, REQ-025, REQ-075, REQ-136, REQ-206, REQ-207 |
+ 
 --- a/PRD/sections/shared-chrome/README.md
 +++ b/PRD/sections/shared-chrome/README.md
 @@ -118,10 +118,12 @@
@@ -874,7 +886,7 @@ Proposed `PRD/sections/` diff (new, reserved):
 
 **What this decides:** how In-depth details walks a player through the game, the zones, the cards and each card's context before the question.
 
-**In plain terms:** Today's four steps (game context, zones, cards, per-card context) stay, and every detail they collect is kept. They become four stations on a tappable progress rail — Game · Zones · Cards · Context — each with a lit "Continue · next: …" bar built into its panel instead of a separate button. The Cards station shows real card images on a lit shelf, one tab per chosen zone; tapping a card opens a small menu to move it to another zone, reorder it, read its details or remove it (each Move-to button wears a small drawn sign, shuffled each time). Cards carried from Ask a Question are placed one at a time ("Which zone is it in?"), and nobody passes the Cards station until each carried card has a zone or is left out. A review lists each card's context in words before the question. The ruling arrives in the same chat as Ask a Question.
+**In plain terms:** Today's four steps (game context, zones, cards, per-card context) stay, and every detail they collect is kept. They become four stations on a tappable progress rail — Game · Zones · Cards · Context — each with a lit "Continue · next: …" bar built into its panel instead of a separate button. The Cards station shows real card images on a lit shelf, one tab per chosen zone; tapping a card opens a small menu to move it to another zone, reorder it, read its details or remove it (each Move-to button wears a small drawn sign, shuffled each time). Cards carried from Ask a Question are placed one at a time ("Which zone is it in?"), and nobody passes the Cards station until each carried card has a zone or is left out. A review lists each card's context in words before the question. The ruling arrives in the same chat as Ask a Question, with View Context (the frozen game) beside the title.
 
 **What happens if you say no:** the four steps keep today's layout, restyled only by the new frame, and carried cards have nowhere to land.
 
@@ -974,6 +986,16 @@ Proposed `PRD/sections/` diff (new, reserved):
  | Fit | Composer growth must not force page scroll or clip chrome below the field (REQ-110); card image growth is bounded by the same no-page-scroll rule (REQ-129), with any needed cap recorded on this row |
 -| Notes | DEC-146, DEC-153, REQ-110, REQ-132, DEC-145, DEC-151, DEC-158, DEC-160, REQ-133, REQ-141 |
 +| Notes | DEC-146, DEC-153, REQ-110, REQ-132, DEC-145, DEC-151, DEC-158, DEC-160, REQ-133, REQ-141, REQ-017, REQ-209 |
+ 
+@@ -187,6 +197,6 @@
+ |---|---|
+-| Purpose | Frozen game context + chat follow-ups |
+-| Phone / Desktop | Same shared conversation workspace rules as Quick Question answered |
++| Purpose | In-depth details — answered: frozen game context + chat follow-ups; when the ruling arrives the station rail and the flow give way to the chat (REQ-209) |
++| Phone / Desktop | Same shared conversation workspace rules as the Ask a Question answered row (REQ-206): the same Cards strip, question-first thread, solid judge's bubble under the colour's seal, tappable card-name chips, and docked send-pill composer. The title row carries **View Context** (opening the frozen setup/zone/card/enrichment detail in the `#### View Context / adaptive context overlay` row), **✎ Edit** (back to the review with everything kept; the conversation is saved to history first) and **↺ Start over** (REQ-029). The banner header (REQ-207) is in flow, so the title row needs no compensating top clearance, and the ☰ button's hit area never overlaps View Context at 390×844 or 1440×900 (REQ-107, REQ-116, REQ-136 as amended) |
+ | Fit | No page scroll; thread region-scrolls |
+-| Notes | DEC-118, DEC-127, DEC-131 |
++| Notes | DEC-118, DEC-127, DEC-131, REQ-025, REQ-029, REQ-107, REQ-116, REQ-136, REQ-206, REQ-207, REQ-209 |
  
 --- a/PRD/sections/in-depth/README.md
 +++ b/PRD/sections/in-depth/README.md

@@ -348,6 +348,12 @@ retired `decisions.md` index). Every hit has a disposition.
 | Per-player arrows / Players in game | user-flows:10 FLOW-001 step 1 | FLOW-001 block (note) |
 | | F:2415–2425 REQ-100 | REQ-100 block |
 | | F:1614 REQ-069, F:1643 REQ-070, F:3305 REQ-137; in-depth:100, :124 | no change: the Players expander, −/+ stepper and helper copy stay |
+| Answered-workspace rows (`#### Quick Question — answered workspace`, `#### In-Depth — Answered workspace`; added after gate-qc attempt 1) | screen-layout:139–140, :143 (Quick Question answered: Purpose, Phone / Desktop, Notes) | REQ-206 block (row rewritten: send-pill composer, Cards strip, question-first thread, solid bubble under the seal, card-name chips, ✎ Edit cards / ↺ Start over beside the title) |
+| | screen-layout:188–189, :191 (In-Depth answered: Purpose, Phone / Desktop, Notes) | REQ-209 block (row rewritten: the rail gives way to the chat; same chat as Ask a Question; View Context, ✎ Edit, ↺ Start over beside the title) |
+| | screen-layout:141, :190 (Fit lines) | no change: no page scroll, the thread is the scroll region |
+| Corner-rail clearance (`portal-menu-rail\|Rail clearance`) | screen-layout:142 | REQ-206 block (the line becomes `Header clearance` against the banner header, REQ-207; rail geometry kept as superseded) |
+| | shared-chrome:497 (CSS class list) | A23 (code-location line, updated by the code slice that retires the class) |
+| | system-map:564 | A23 |
 
 ## Verification the build must show
 
