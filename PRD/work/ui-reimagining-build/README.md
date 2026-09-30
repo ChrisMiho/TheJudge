@@ -1,8 +1,9 @@
-status: ideation
+status: refined
 
 # ui-reimagining-build
 
-See IDEA.md. Intake evidence: intake/GRAPH-BRIEF.md.
+See IDEA.md. Intake evidence: intake/GRAPH-BRIEF.md. Design brief: DESIGN-BRIEF.md.
+Proposed product truth, awaiting the owner's verdicts: GATE-QUESTIONS.md.
 
 ## Autonomous metadata
 
