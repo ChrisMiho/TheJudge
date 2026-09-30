@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Build the agreed direction-1 UI re-imagining into the shipped app — brief + 57 gate questions (10 new REQs reserved: REQ-206–REQ-215) |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ui-reimagining-build | Answer `PRD/work/ui-reimagining-build/GATE-QUESTIONS.md` (57 slots) in the docs PR, then merge to build — gate-qc PASS on attempt 2, run `graph-20260930-055958` |
 
 
 ## deferred

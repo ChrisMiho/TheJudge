@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/ui-reimagining-build` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining-build` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining-build` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260930-055958/`
-- Current node: `gate-qc` (attempt 2)
-- Next action: `/graph-kickoff PRD/work/ui-reimagining-build/` (spec-forming half in progress)
+- Current node: `gate-qc` (PASS on attempt 2) — run one parked at `owner-action`
+- Next action: the owner answers `PRD/work/ui-reimagining-build/GATE-QUESTIONS.md` in the docs PR and merges it to `main`; `graph-implement` builds it from there
 
 ## Node ledger
 
@@ -18,10 +18,16 @@
 | 3 | define | opus | ok | `0 → 143` | commit `94b0055` on `thejudge-auto/ui-reimagining-build` (pushed `d68b0d1..94b0055`): `DESIGN-BRIEF.md` (381 lines), `GATE-QUESTIONS.md` (3100 lines; 57 stable-ID blocks — 10 new reserved REQ-206..REQ-215, 47 in-place amendments across REQ/NFR-006/FLOW; 57 `- Verdict:` slots, 57 plain-language openings; `## Blocker questions` none; no new `DEC-`), README `status: refined`, marker `STATUS.refined` (only marker), board row moved fully to `## refined`; `git diff --stat origin/main HEAD -- PRD/sections` empty; worktree and launch checkout porcelain empty → questions file present, gate continues to `gate-qc` | 2026-09-30 |
 | 4 | gate-qc | sonnet | failed (FAIL) | `0 → 32` | verdict FAIL, two findings, both `PRD/sections/screen-layout.md` rows the brief redesigns but no block updates: (1) `#### Quick Question — answered workspace` (`screen-layout.md:135-143`, incl. the `Rail clearance` line 141 that still describes the corner `.portal-menu-rail` the banner header REQ-207 replaces) is not touched by the REQ-206 block's screen-layout hunk; (2) `#### In-Depth — Answered workspace` (`screen-layout.md:184-191`) is not touched by the REQ-209 block; every other checklist item PASS (57 blocks, no duplicates, new ids REQ-206..215 collision-free, 47 in-place targets exist once, no new `DEC-`, 415/415 removed lines match current text, `git diff --stat origin/main HEAD -- PRD/sections` empty); commit `129dd79` pushed (`277b18c..129dd79`): README `status: refining`, marker `STATUS.refining` (only marker), board row under `## refining`; README `## Preparation gate` rewritten FAIL + findings by the driver; worktree and launch checkout porcelain empty → loop 1 of 3 to `define` | 2026-09-30 |
 | 3 | define (attempt 2) | opus | ok | `0 → 39` | commit `b4168d4` on `thejudge-auto/ui-reimagining-build` (pushed `5ef9b02..b4168d4`): bounded correction — `GATE-QUESTIONS.md` REQ-206 block gains a `screen-layout.md` hunk `@@ -138,7 +138,7 @@` rewriting the Quick Question answered-workspace row (Purpose / Phone-Desktop / Notes, `Rail clearance` → `Header clearance` measured against the banner header REQ-207) and REQ-209 block gains `@@ -187,6 +197,6 @@` rewriting the In-Depth answered-workspace row; REQ-209 plain-language line names View Context beside the title; `DESIGN-BRIEF.md` disposition table +6 rows (screen-layout 139–143, 188–191, the `portal-menu-rail|Rail clearance` grep hit); block count still 57, no `- Verdict:` written, no new `DEC-`; both hunks' context/removed lines match current `screen-layout.md` 138–144 and 187–192 (driver spot-checked); marker `STATUS.refined` (only marker), README `status: refined`, board row moved fully to `## refined`; `git diff --stat origin/main HEAD -- PRD/sections` empty; worktree and launch checkout porcelain empty → `gate-qc` attempt 2 | 2026-09-30 |
+| 4 | gate-qc (attempt 2) | sonnet | ok (PASS) | `0 → 16` | verdict PASS, findings none; no commit (`git status --porcelain` empty at `efc5671`); every checklist item PASS — 57 blocks each with the three plain-language lines and Verdict/Reason slots, REQ-206..215 collision-free, 47 in-place targets exist once, no new `DEC-`, both answered-workspace rows now proposed (attempt-1 findings 1 and 2 fixed), every added or redesigned screen has a proposed `screen-layout.md` row; `git diff --stat origin/main HEAD -- PRD/sections` empty; marker `STATUS.refined`, board row under `## refined`; README `## Preparation gate` rewritten PASS / none by the driver; worktree and launch checkout porcelain empty → stop at gate-qc PASS: docs PR + park at `owner-action` | 2026-09-30 |
 
 ## Open gate
 
-- None
+- **Question:** answer `PRD/work/ui-reimagining-build/GATE-QUESTIONS.md` (57 verdict slots: 9 real choices with recommendations, 8 structure blocks, 40 follow-on wording amendments), then merge the docs PR to `main` to build.
+- **Evidence:** gate-qc PASS on attempt 2 (row 4 above); the proposal carries 57 `## <STABLE-ID>` blocks with complete diffs; `git diff --stat origin/main HEAD -- PRD/sections` empty.
+- **Docs PR:** <recorded below once opened>
+- **Resume:** the owner's merge of the docs PR is the build signal; `graph-implement` (the background build loop) picks the package up from `main`. To re-grade after answering without merging, `graph-gate-review` runs in this kickoff worktree; `/graph-implement PRD/work/ui-reimagining-build/` is the build half's command.
+- **Kickoff worktree:** `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining-build` stays through the park; `graph-implement` removes it at claim time.
+- **Terminal state:** PARKED — lock released (`.worktrees/.graph-run-release.json` state `PARKED`, lock deleted).
 
 ## Dispatch prompts
 
