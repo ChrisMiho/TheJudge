@@ -1,6 +1,6 @@
 # Slice D — In-depth details: stations rail, Cards shelf, card menu, placement, Stack reorder
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -64,25 +64,25 @@ together with the code:
 
 ## Acceptance criteria
 
-- [ ] D1. `npm run quality:check` passes.
-- [ ] D2. `npm --workspace apps/frontend run test` passes.
-- [ ] D3. The Cards station renders a lit shelf of real card images per zone
+- [x] D1. `npm run quality:check` passes.
+- [x] D2. `npm --workspace apps/frontend run test` passes.
+- [x] D3. The Cards station renders a lit shelf of real card images per zone
       tab, with no "View all cards" truncation.
-- [ ] D4. Dragging a Stack card reorders it; the shown order (bottom-to-top)
+- [x] D4. Dragging a Stack card reorders it; the shown order (bottom-to-top)
       is what the request sends.
-- [ ] D5. Every zone tab shows its own card count, including the Stack's.
-- [ ] D6. The Stack's shelf and card menu show BOTTOM…TOP tags.
-- [ ] D7. A carried card cannot leave the Cards station without a zone or an
+- [x] D5. Every zone tab shows its own card count, including the Stack's.
+- [x] D6. The Stack's shelf and card menu show BOTTOM…TOP tags.
+- [x] D7. A carried card cannot leave the Cards station without a zone or an
       explicit "leave out"; the gate blocks progression until every carried
       card is resolved.
-- [ ] D8. `PRD/sections/` carries REQ-209, REQ-005, REQ-006, REQ-007,
+- [x] D8. `PRD/sections/` carries REQ-209, REQ-005, REQ-006, REQ-007,
       REQ-008, REQ-018, REQ-056, FLOW-001 by intent.
-- [ ] D9 (manual). Prompt fixture shows Stack order sent exactly as shown in
+- [x] D9 (manual). Prompt fixture shows Stack order sent exactly as shown in
       the UI; non-Stack zone order has no effect on the prompt (A10).
-- [ ] D10 (manual). Browser scenario at 390×844: drag-reorder two Stack
+- [x] D10 (manual). Browser scenario at 390×844: drag-reorder two Stack
       cards by pointer/touch, confirm the shelf and the card menu both
       reflect the new BOTTOM…TOP order.
-- [ ] D11 (manual). Cleanup evidence recorded: browser closed, owned servers
+- [x] D11 (manual). Cleanup evidence recorded: browser closed, owned servers
       stopped, ports released, capture output path named.
 
 ## Verification

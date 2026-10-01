@@ -270,6 +270,51 @@ describe("buildAskAiRequest", () => {
     expect(payload.gameContext.zones?.stack).toEqual([card]);
   });
 
+  // D9/A10 (REQ-005, REQ-006, REQ-209): the Stack's shown bottom-to-top order is what the
+  // request sends — this function performs no sort of its own, so the UI's reorder (drag
+  // or the card menu's Down/Up/To top) reaches the prompt unchanged. A non-Stack zone's
+  // order is likewise sent exactly as given — it is "cosmetic" because nothing downstream
+  // assigns it meaning, not because this layer special-cases it away.
+  it("sends the Stack's cards in exactly the order given, reflecting any reorder", () => {
+    const bottom = makeCard("bottom-card");
+    const middle = makeCard("middle-card");
+    const top = makeCard("top-card");
+    const payload = buildAskAiRequest("test", {
+      ...BASE_GAME_CONTEXT,
+      zones: { stack: [bottom, middle, top] }
+    });
+    expect(payload.gameContext.zones?.stack?.map((card) => card.cardId)).toEqual([
+      "bottom-card",
+      "middle-card",
+      "top-card"
+    ]);
+
+    // Reordering the input (as the Stack's drag/menu reorder would) changes the output
+    // identically — no canonical re-sort happens in between.
+    const reordered = buildAskAiRequest("test", {
+      ...BASE_GAME_CONTEXT,
+      zones: { stack: [middle, top, bottom] }
+    });
+    expect(reordered.gameContext.zones?.stack?.map((card) => card.cardId)).toEqual([
+      "middle-card",
+      "top-card",
+      "bottom-card"
+    ]);
+  });
+
+  it("sends a non-Stack zone's cards in the order given too, with no meaning assigned to it", () => {
+    const first = makeCard("first-card");
+    const second = makeCard("second-card");
+    const payload = buildAskAiRequest("test", {
+      ...BASE_GAME_CONTEXT,
+      zones: { battlefield: [second, first] }
+    });
+    expect(payload.gameContext.zones?.battlefield?.map((card) => card.cardId)).toEqual([
+      "second-card",
+      "first-card"
+    ]);
+  });
+
   it("uses trimmed question when provided", () => {
     const payload = buildAskAiRequest("  Does this resolve?  ", {
       ...BASE_GAME_CONTEXT,

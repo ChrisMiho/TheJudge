@@ -286,8 +286,9 @@ describe("Zone collection UI", () => {
     await addCardToActiveZone(user, "opt", "Opt");
     await addCardToActiveZone(user, "lig", "Lightning Bolt");
     await selectZoneTab(user, "Stack");
-    expect(screen.getByText("bottom")).toBeInTheDocument();
-    expect(screen.getByText("top")).toBeInTheDocument();
+    // REQ-008/REQ-209: the Stack's shelf tags read BOTTOM … TOP.
+    expect(screen.getByText("BOTTOM")).toBeInTheDocument();
+    expect(screen.getByText("TOP")).toBeInTheDocument();
 
     await selectZoneTab(user, "Hand");
     await selectZoneTab(user, "Battlefield");
@@ -317,7 +318,8 @@ describe("Zone collection UI", () => {
     await advancePastZoneConfirm(user);
 
     await selectZoneTab(user, "Hand");
-    expect(screen.getByRole("button", { name: "Remove Opt from Hand" })).toBeInTheDocument();
+    // REQ-008/REQ-209: Remove lives in the card menu a tap on the card opens.
+    expect(screen.getByRole("button", { name: "Card actions for Opt" })).toBeInTheDocument();
   });
 
   it("shows waiting panel while submitting and hides the submit form", async () => {

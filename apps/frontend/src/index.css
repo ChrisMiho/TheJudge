@@ -413,6 +413,89 @@
   line-height: 1.5rem;
 }
 
+/* REQ-209: the four-station progress rail (Game · Zones · Cards · Context). A thin
+   track behind the stations, filled up to the current one; each station is its own
+   button so the rail is navigation, not just a progress readout. */
+.stations-rail {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.25rem;
+  padding-top: 0.25rem;
+}
+
+.stations-rail::before {
+  content: "";
+  position: absolute;
+  left: 12.5%;
+  right: 12.5%;
+  top: 0.9rem;
+  height: 2px;
+  background: rgb(63 63 70 / 0.7);
+  z-index: 0;
+}
+
+.stations-rail-fill {
+  position: absolute;
+  left: 12.5%;
+  top: 0.9rem;
+  height: 2px;
+  max-width: 75%;
+  background: linear-gradient(90deg, rgb(var(--accent-soft)), rgb(var(--accent-strong)));
+  z-index: 0;
+  transition: width var(--motion-slow) var(--motion-ease-out);
+}
+
+.stations-rail-station {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgb(161 161 170);
+}
+
+.stations-rail-station:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.stations-rail-node {
+  display: flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  border: 1px solid rgb(82 82 91);
+  background: rgb(24 24 27 / 0.8);
+  font-size: 0.75rem;
+  color: rgb(212 212 216);
+}
+
+.stations-rail-station[data-done="true"] .stations-rail-node {
+  border-color: rgb(var(--accent));
+  background: rgb(var(--accent));
+  color: rgb(var(--accent-contrast));
+}
+
+.stations-rail-station[aria-current="step"] {
+  color: rgb(244 244 245);
+}
+
+.stations-rail-station[aria-current="step"] .stations-rail-node {
+  border-color: rgb(var(--accent-soft));
+  box-shadow: 0 0 0 3px rgb(var(--accent-soft) / 0.25);
+}
+
 /* Horizontal left-to-right strip in add order, region-scrolling on its own x-axis rather
    than the page (DEC-151 part 3, REQ-130) — supersedes the prior 2-column vertical grid. */
 .zone-card-grid {
@@ -423,6 +506,17 @@
 .zone-card-tile {
   gap: var(--layout-compact-gap);
   padding: var(--layout-compact-gap);
+  /* REQ-005/REQ-209: the shelf reorders by pointer events; a plain swipe still scrolls
+     the shelf (`touch-pan-x` on the tile) but a held card must not also start the
+     browser's own image drag ghost under the pointer. */
+  touch-action: pan-x;
+  user-select: none;
+}
+
+.zone-card-tile img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
 }
 
 /* Full-width presentation plus enrichment controls makes row height responsive. */

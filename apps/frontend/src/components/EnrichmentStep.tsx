@@ -1,4 +1,4 @@
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, type ReactNode, useEffect, useMemo, useRef, useState } from "react";
 import {
   buildEnrichmentQueue,
   CANONICAL_ZONE_ORDER,
@@ -57,6 +57,9 @@ type EnrichmentStepProps = {
   onFollowUp: (text: string) => Promise<void>;
   onStartOver: () => void;
   historyTrigger?: ConversationHistoryTriggerDescriptor;
+  /** REQ-209: the four-station progress rail. Rendered only on the staged Context form —
+   * "the ruling is not a station; when it arrives the rail and flow give way to the chat." */
+  stationsRail?: ReactNode;
 };
 
 export function EnrichmentStep({
@@ -82,7 +85,8 @@ export function EnrichmentStep({
   frozenGameContext,
   onFollowUp,
   onStartOver,
-  historyTrigger
+  historyTrigger,
+  stationsRail
 }: EnrichmentStepProps): JSX.Element {
   const [viewMode, setViewMode] = useState<EnrichmentViewMode>("wizard");
   const [wizardIndex, setWizardIndex] = useState(0);
@@ -430,6 +434,7 @@ export function EnrichmentStep({
   return (
     <PageShell>
         <StagedStepHeader historyTrigger={historyTrigger} />
+        {stationsRail}
         <StepEyebrow stepName="Context enrichment" />
 
         <div className="flex items-center justify-between gap-3">

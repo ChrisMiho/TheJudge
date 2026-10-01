@@ -71,6 +71,8 @@ function renderPicker(
     zoneId?: ZoneId;
     cards?: ZoneCardItem[];
     onRemoveCard?: (cardId: string) => void;
+    onMoveCard?: (instanceId: string, toZone: ZoneId) => void;
+    onReorderCard?: (instanceId: string, toIndexAfterRemoval: number) => void;
   } = {}
 ) {
   const onExitToManual = vi.fn();
@@ -96,6 +98,8 @@ function renderPicker(
       addButtonLabel="Add card"
       onAddSelectedCard={() => undefined}
       onRemoveCard={pickerOverrides.onRemoveCard ?? (() => undefined)}
+      onMoveCard={pickerOverrides.onMoveCard ?? (() => undefined)}
+      onReorderCard={pickerOverrides.onReorderCard ?? (() => undefined)}
       scan={{
         isOpen: true,
         isLoading: false,
@@ -202,25 +206,28 @@ describe("ZoneCardPicker card grid", () => {
     // Tiles lay out left-to-right in add order.
     const tiles = grid?.querySelectorAll(".zone-card-tile") ?? [];
     expect(tiles).toHaveLength(2);
-    expect(within(tiles[0] as HTMLElement).getByText("bottom")).toBeInTheDocument();
-    expect(within(tiles[1] as HTMLElement).getByText("top")).toBeInTheDocument();
+    // REQ-008/REQ-209: the Stack's shelf tags read BOTTOM … TOP.
+    expect(within(tiles[0] as HTMLElement).getByText("BOTTOM")).toBeInTheDocument();
+    expect(within(tiles[1] as HTMLElement).getByText("TOP")).toBeInTheDocument();
   });
 
   it("exposes the semantic responsive hook on zone card tiles", () => {
     renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
-    const tile = screen.getByRole("button", { name: "Remove Opt from Stack" }).closest(".zone-card-tile");
+    const tile = screen.getByRole("button", { name: "Card actions for Opt" }).closest(".zone-card-tile");
     expect(tile).toHaveClass("zone-card-tile");
   });
 
   it("adds token-driven entrance and remove-exit hooks to card tiles", () => {
     renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
 
-    const removeButton = screen.getByRole("button", { name: "Remove Opt from Stack" });
-    expect(removeButton.closest(".zone-card-tile")).toHaveClass(
+    // REQ-008/REQ-209: Remove moved into the card menu; the trigger that opens it keeps
+    // the press-preview hook its "about to remove" micro-animation used.
+    const actionsButton = screen.getByRole("button", { name: "Card actions for Opt" });
+    expect(actionsButton.closest(".zone-card-tile")).toHaveClass(
       "enrichment-card-enter",
       "card-state-remove"
     );
-    expect(removeButton).toHaveClass("card-state-remove-trigger");
+    expect(actionsButton).toHaveClass("card-state-remove-trigger");
   });
 
   it("uses a compact image with a corner detail popup, no duplicated card name, and keeps controls below it (DEC-151)", async () => {
@@ -234,8 +241,9 @@ describe("ZoneCardPicker card grid", () => {
     const tile = image.closest(".zone-card-tile") as HTMLElement;
     expect(image).toHaveClass("zone-card-tile-image", "h-auto", "w-full", "object-contain");
     expect(within(tile).queryByText("Opt")).not.toBeInTheDocument();
-    expect(screen.getByText("bottom & top")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Remove Opt from Stack" })).toBeInTheDocument();
+    // REQ-008/REQ-209: one card on the Stack reads TOP (not "bottom & top").
+    expect(screen.getByText("TOP")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Card actions for Opt" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Show details for Opt" })).toBeInTheDocument();
 
     // Oracle/detail text is not stacked under the image by default — only the popup shows it.
@@ -320,6 +328,8 @@ describe("ZoneCardPicker card grid", () => {
         addButtonLabel="Add card"
         onAddSelectedCard={() => undefined}
         onRemoveCard={() => undefined}
+        onMoveCard={() => undefined}
+        onReorderCard={() => undefined}
       />
     );
 
@@ -401,8 +411,11 @@ describe("ZoneCardPicker card grid", () => {
     // D3: the fallback shows the card name only — no descriptive fields, no fetch.
     expect(within(fallback).queryByText("{2}{U}{U}")).not.toBeInTheDocument();
     expect(within(fallback).queryByText("Legendary Creature — Human Artificer")).not.toBeInTheDocument();
-    expect(screen.getByText("bottom & top")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Remove Urza, Lord High Artificer from Stack" })).toBeInTheDocument();
+    // REQ-008/REQ-209: one card on the Stack reads TOP (not "bottom & top").
+    expect(screen.getByText("TOP")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Card actions for Urza, Lord High Artificer" })
+    ).toBeInTheDocument();
   });
 
   it("replaces a failed tile image with the name-only fallback and issues no detail fetch (D3, DEC-078)", () => {
@@ -437,23 +450,87 @@ describe("ZoneCardPicker card grid", () => {
         onRemoveCard
       }
     );
-    await user.click(screen.getByRole("button", { name: "Remove Opt from Stack" }));
+    // REQ-008/REQ-209: Remove is a row in the card menu a tap on "Card actions" opens.
+    await user.click(screen.getByRole("button", { name: "Card actions for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Remove from the Stack" }));
     expect(onRemoveCard).toHaveBeenCalledTimes(1);
     expect(onRemoveCard).toHaveBeenCalledWith("iid-opt");
   });
 
-  it("renders stack position labels on tiles", () => {
+  it("renders stack position tags on tiles", () => {
     renderPicker(
       { isOpen: false },
       { cards: [makeZoneCard("opt", "Opt"), makeZoneCard("bolt", "Lightning Bolt")] }
     );
-    expect(screen.getByText("bottom")).toBeInTheDocument();
-    expect(screen.getByText("top")).toBeInTheDocument();
+    expect(screen.getByText("BOTTOM")).toBeInTheDocument();
+    expect(screen.getByText("TOP")).toBeInTheDocument();
   });
 
-  it("renders tile for a single card with 'bottom & top' label", () => {
+  it("renders tile for a single card with a TOP tag", () => {
     renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
-    expect(screen.getByText("bottom & top")).toBeInTheDocument();
+    expect(screen.getByText("TOP")).toBeInTheDocument();
+  });
+
+  it("opens the card menu on Card actions, with Move to pills and no order control for a lone card", async () => {
+    const user = userEvent.setup();
+    renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })] });
+
+    await user.click(screen.getByRole("button", { name: "Card actions for Opt" }));
+
+    expect(screen.getByTestId("zone-card-menu")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Battlefield" })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Reorder" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove from the Stack" })).toBeInTheDocument();
+  });
+
+  it("moves a card to another zone via the card menu's Move to pill", async () => {
+    const user = userEvent.setup();
+    const onMoveCard = vi.fn();
+    renderPicker(
+      { isOpen: false },
+      { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })], onMoveCard }
+    );
+
+    await user.click(screen.getByRole("button", { name: "Card actions for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Battlefield" }));
+
+    expect(onMoveCard).toHaveBeenCalledWith("iid-opt", "battlefield");
+    // Choosing an action closes the menu.
+    expect(screen.queryByTestId("zone-card-menu")).not.toBeInTheDocument();
+  });
+
+  it("reorders a Stack card via the card menu's Down/Up/To top controls", async () => {
+    const user = userEvent.setup();
+    const onReorderCard = vi.fn();
+    renderPicker(
+      { isOpen: false },
+      {
+        cards: [
+          makeZoneCard("opt", "Opt", { instanceId: "iid-opt" }),
+          makeZoneCard("bolt", "Lightning Bolt", { instanceId: "iid-bolt" }),
+          makeZoneCard("doom", "Doom Blade", { instanceId: "iid-doom" })
+        ],
+        onReorderCard
+      }
+    );
+
+    // "Lightning Bolt" is the middle card (index 1 of 3).
+    await user.click(screen.getByRole("button", { name: "Card actions for Lightning Bolt" }));
+    await user.click(screen.getByRole("button", { name: "⤒ To top" }));
+
+    expect(onReorderCard).toHaveBeenCalledWith("iid-bolt", 3);
+  });
+
+  it("opens Card details from the card menu, closing the menu first", async () => {
+    const user = userEvent.setup();
+    renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })] });
+
+    await user.click(screen.getByRole("button", { name: "Card actions for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Card details" }));
+
+    expect(screen.queryByTestId("zone-card-menu")).not.toBeInTheDocument();
+    expect(screen.getByTestId("card-detail-popup")).toBeInTheDocument();
+    expect(within(screen.getByTestId("card-detail-popup")).getByText("Opt")).toBeInTheDocument();
   });
 });
 

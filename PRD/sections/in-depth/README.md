@@ -21,7 +21,7 @@
   REQ-028, REQ-029, REQ-030, REQ-031, REQ-032, REQ-033, REQ-045, REQ-056, REQ-058,
   REQ-061, REQ-069, REQ-070, REQ-093, REQ-094, REQ-095, REQ-100, REQ-106,
   REQ-110, REQ-121, REQ-130, REQ-132, REQ-136, REQ-137, REQ-138, REQ-139,
-  REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, REQ-206, FLOW-001, FLOW-002, FLOW-003,
+  REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, REQ-206, REQ-209, FLOW-001, FLOW-002, FLOW-003,
   FLOW-004, FLOW-005, FLOW-015, NFR-001, NFR-002, NFR-006, NFR-009
 - Consumed but owned elsewhere (cited, not re-specified here): the shared
   answered-conversation workspace, View Context overlay, history drawer,
@@ -61,8 +61,26 @@ retrieval/combo machinery that other specs own.
   `in-depth`, DEC-094 / FLOW-010) reached through the shared Menu rail; it is the
   suite's primary MTG Assistant feature, not the whole app. The staged flow is a
   four-step wizard — **game context → zone confirmation → zone collection →
-  enrichment** — driven by a frontend state machine, then a submit that opens the
-  answered workspace. (FLOW-001, DEC-094)
+  enrichment**, presented as **In-depth details**' four stations (Game · Zones ·
+  Cards · Context, REQ-209) — driven by a frontend state machine, then a submit
+  that opens the answered workspace. (FLOW-001, DEC-094)
+- Built: a tappable progress rail (REQ-209) shows the four stations; a station
+  already reached (including the current one) stays tappable to return to.
+  Jumping to Context bounces back to Cards while any card carried from Ask a
+  Question is still unplaced, with a status flash naming why.
+  (`StationsRail.tsx`, REQ-209)
+- Built: cards carried from Ask a Question's "Add in-depth details" pill
+  (REQ-206) wait in a one-slot mailbox and are consumed once the walk naturally
+  reaches the Cards station (they do not skip Game or Zones). There, they are
+  placed one at a time — the card, "Which zone is it in?", a "card n of total"
+  counter, and "Leave this card out" — against every zone, not only the ones
+  picked at Zones; picking a zone adds it to the selection if it was not already
+  chosen. Nothing else on the Cards station renders, and Continue is unreachable,
+  until every carried card has a zone or is left out (REQ-018, REQ-206, REQ-209).
+  The pending queue is written into the existing mid-flight Draft slot (REQ-108)
+  alongside the rest of the staged state, so a reload mid-placement resumes
+  exactly where it left off. (`MtgAssistantApp.tsx`'s carry consumption and
+  placement handlers)
 - Built: each staged step renders the active step name as an eyebrow label above
   the step's own content, and a slim `TheJudge` / `MTG Assistant` brand block; the
   answered-state header stays brand-only with no step name. (DEC-067, REQ-045; the
@@ -142,10 +160,12 @@ retrieval/combo machinery that other specs own.
 - Built: for each selected zone the player adds card identities from local
   metadata search — search box says **Type to begin**, suggestions begin at 3
   characters, no-match shows **No matching card found**, and selecting a
-  suggestion opens a preview before an explicit Add. Stack cards preserve
-  bottom-to-top append order; a selected zone may hold zero cards individually,
-  but collection cannot continue until at least one selected zone contains a card.
-  (REQ-001, REQ-002, REQ-018, FLOW-001)
+  suggestion opens a preview before an explicit Add. Stack cards keep
+  bottom-to-top order — appended on add, then as the player reorders them; cards
+  carried from Ask a Question are each placed in a zone or left out before
+  collection can continue; a selected zone may hold zero cards individually, but
+  collection cannot continue until at least one selected zone contains a card.
+  (REQ-001, REQ-002, REQ-018, REQ-209, FLOW-001)
 - Built: zone collection shows a non-blocking nudge when the stack zone is
   selected but still empty and another selected zone already has a card — the
   player is not blocked from continuing, just prompted that the stack may be
@@ -153,20 +173,22 @@ retrieval/combo machinery that other specs own.
 - Built: the empty-state placeholder text (`Select a suggestion to preview and
   add a card to …`) is removed from zone-collection chrome; the search box and
   suggestion list are sufficient affordance on their own. (DEC-076, REQ-056)
-- Built: the stack has its own capture rules — append-only, newest card becomes
-  the top (`stack[0]` is the bottom, last element is the top, consistent across
-  UI, payload, and prompt builder), the add button reads **Begin stackening!**
-  when empty and **Add to Stack** otherwise, duplicates are blocked with a
-  "not supported yet" notice, and the stack is capped at 10 cards. The stack icon
-  shows a live count and opens a details panel listing cards bottom-to-top with
-  per-card remove and thumbnails-when-available. (DEC-004, DEC-005, DEC-006,
-  DEC-007, DEC-008, DEC-009, DEC-018, REQ-004, REQ-005, REQ-006, REQ-007, REQ-008,
-  REQ-009, REQ-010, FLOW-002, FLOW-004)
+- Built: the stack has its own capture rules — each add appends, so the newest
+  card becomes the top (`stack[0]` is the bottom, last element is the top,
+  consistent across UI, payload, and prompt builder); the player may then reorder
+  it by drag or Down / Up / To top, and the order shown is the order sent. The add
+  button reads **Begin stackening!** when empty and **Add to Stack** otherwise,
+  duplicates are blocked with a "not supported yet" notice, and the stack is
+  capped at 10 cards. The Stack tab shows a live count, and its shelf tags cards
+  BOTTOM … TOP, with per-card remove in the card menu. (DEC-004, DEC-005,
+  DEC-006, DEC-007, DEC-008, DEC-009, DEC-018, REQ-004, REQ-005, REQ-006, REQ-007,
+  REQ-008, REQ-009, REQ-010, REQ-209, FLOW-002, FLOW-004)
 - Built: added cards render in a horizontal left-to-right strip in add order with
-  horizontal region scroll (not document scroll), for every zone including stack;
-  each tile keeps Remove, stack-position label, and a card image sized to the
-  tile interior, with the corner detail popup as the read path. Non-stack cards
-  capture an owner. (DEC-151, DEC-160, REQ-130, REQ-058, FLOW-002)
+  horizontal region scroll (not document scroll), for every zone including stack,
+  with no row cap (REQ-056); each tile's **Card actions** button opens a menu
+  (Move to another zone, reorder, Card details, Remove — REQ-209) in place of a
+  direct Remove button, and the card image sizes to the tile interior. Non-stack
+  cards capture an owner. (DEC-151, DEC-160, REQ-130, REQ-058, REQ-209, FLOW-002)
 - Built: each `ZoneCardItem` carries a stable frontend-only `instanceId` assigned
   once at add time, so adding the same card twice to a non-stack zone yields two
   independent instances — removing or editing one leaves its siblings intact.

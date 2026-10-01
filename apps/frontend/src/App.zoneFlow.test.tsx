@@ -257,7 +257,8 @@ describe("Target gating and pickers", () => {
     await user.click(screen.getByRole("button", { name: "Exit scan" }));
     expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (1)");
     expect(screen.getByText("Opt")).toBeInTheDocument();
-    expect(screen.getByText("bottom & top")).toBeInTheDocument();
+    // REQ-008/REQ-209: one card on the Stack reads TOP (not "bottom & top").
+    expect(screen.getByText("TOP")).toBeInTheDocument();
   });
 
   it("tracks auto-added scans in the review bubble and removes one in a single tap", async () => {

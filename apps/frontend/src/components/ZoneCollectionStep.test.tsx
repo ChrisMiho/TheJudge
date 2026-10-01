@@ -82,6 +82,10 @@ function renderStep(
       canContinue={true}
       onFlashStatus={() => undefined}
       statusMessage={statusMessage}
+      pendingPlacementCards={[]}
+      placementTotal={0}
+      onPlaceCard={() => undefined}
+      onLeaveCardOut={() => undefined}
     />
   );
 }
@@ -151,7 +155,9 @@ describe("ZoneCollectionStep scan focus", () => {
       makeZoneCard("doom", "Doom Blade")
     ]);
 
-    const cardGrid = screen.getByText("Stack cards (5)").nextElementSibling;
+    // REQ-209: a multi-card shelf also carries a reorder hint between the count and the
+    // grid, so the grid is looked up directly rather than assumed to be the next sibling.
+    const cardGrid = document.querySelector(".zone-card-grid");
     expect(cardGrid).toHaveClass("zone-card-grid", "flex", "overflow-x-auto");
     expect(screen.getByText("Doom Blade")).toBeInTheDocument();
   });
@@ -194,14 +200,20 @@ describe("ZoneCollectionStep scan focus", () => {
         canContinue={true}
         onFlashStatus={() => undefined}
         statusMessage={null}
+        pendingPlacementCards={[]}
+        placementTotal={0}
+        onPlaceCard={() => undefined}
+        onLeaveCardOut={() => undefined}
       />
     );
 
+    // REQ-008/REQ-209: Remove now lives in the card menu a tap on the card opens.
     const grid = document.querySelector(".zone-card-grid") as HTMLElement;
-    const removals = within(grid).getAllByRole("button", { name: "Remove Opt from Battlefield" });
-    expect(removals).toHaveLength(2);
+    const actionTriggers = within(grid).getAllByRole("button", { name: "Card actions for Opt" });
+    expect(actionTriggers).toHaveLength(2);
 
-    await user.click(removals[0]!);
+    await user.click(actionTriggers[0]!);
+    await user.click(screen.getByRole("button", { name: "Remove from the Battlefield" }));
 
     expect(onZonesChange).toHaveBeenCalledWith({ battlefield: [card2] });
   });
@@ -231,6 +243,10 @@ describe("ZoneCollectionStep scan focus", () => {
         canContinue={true}
         onFlashStatus={() => undefined}
         statusMessage={null}
+        pendingPlacementCards={[]}
+        placementTotal={0}
+        onPlaceCard={() => undefined}
+        onLeaveCardOut={() => undefined}
       />
     );
 

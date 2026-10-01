@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { CANONICAL_ZONE_ORDER } from "../lib/contextFlow";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import type { ZoneId } from "../types";
@@ -14,6 +15,9 @@ type ZoneConfirmStepProps = {
   onContinue: () => void;
   statusMessage: string | null;
   historyTrigger?: ConversationHistoryTriggerDescriptor;
+  /** REQ-209: the four-station progress rail, rendered between the header and the step
+   * name. Owned by the caller (`MtgAssistantApp`). */
+  stationsRail?: ReactNode;
 };
 
 export function ZoneConfirmStep({
@@ -23,11 +27,13 @@ export function ZoneConfirmStep({
   onBack,
   onContinue,
   statusMessage,
-  historyTrigger
+  historyTrigger,
+  stationsRail
 }: ZoneConfirmStepProps): JSX.Element {
   return (
     <PageShell>
         <StagedStepHeader historyTrigger={historyTrigger} />
+        {stationsRail}
         <StepEyebrow stepName="Zone confirmation" />
         <p className="text-sm text-zinc-400">Select all zones that apply to your question.</p>
 

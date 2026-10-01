@@ -3,6 +3,7 @@ import { useNavigate } from "react-router";
 import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
 import { EnrichmentStep } from "../EnrichmentStep";
 import { StagedStepHeader } from "../StagedStepHeader";
+import { StationsRail } from "../StationsRail";
 import { StepEyebrow } from "../StepEyebrow";
 import { ZoneCollectionStep } from "../ZoneCollectionStep";
 import { ZoneConfirmStep } from "../ZoneConfirmStep";
@@ -21,6 +22,7 @@ import {
   buildAskAiRequest,
   canAdvance,
   DEFAULT_TURN_PHASE,
+  FLOW_STEPS,
   getNextStep,
   getPreviousStep,
   mergeSelectedZonesOnPhaseChange,
@@ -37,6 +39,7 @@ import {
   PlayerRosterEditor,
   type RosterPlayer
 } from "../PlayerRosterEditor";
+import { appendZoneCard, buildZoneCardFromMetadata, validateZoneCardAdd } from "../../lib/zoneCards";
 import type {
   CardMetadataItem,
   CombatStep,
@@ -162,10 +165,17 @@ export interface MtgAssistantAppProps {
 
 export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.Element {
   const navigate = useNavigate();
-  const { consumeSeed } = useAssistantSeed();
+  const { consumeSeed, consumeLookupCarry } = useAssistantSeed();
   const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
   const [flowStep, setFlowStep] = useState<FlowStepId>("game-context");
+  // REQ-209: the furthest station this walk has reached, so the rail can let a player
+  // jump back to any visited station without re-earning it; reset on Start Over.
+  const [furthestStepIndex, setFurthestStepIndex] = useState(0);
+  // REQ-018/REQ-206/REQ-209: cards carried from Ask a Question's "Add in-depth
+  // details", waiting to be placed one at a time on the Cards station.
+  const [pendingPlacementCards, setPendingPlacementCards] = useState<CardMetadataItem[]>([]);
+  const [placementTotal, setPlacementTotal] = useState(0);
   const [activePlayerCount, setActivePlayerCount] = useState(MIN_PLAYERS);
   const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>(createDefaultLifeTotals);
   const [gameContext, setGameContext] = useState<GameContext | null>(null);
@@ -226,6 +236,31 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     setPlayersDetailsExpanded(true);
   });
 
+  // REQ-206/REQ-209: the same atomic-consume, every-render pattern as the roster seed
+  // above — a lookup carry can be queued while this destination is already mounted
+  // (hidden) from an earlier visit, immediately before App.tsx switches the portal to
+  // it, so a mount-only effect would miss it.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- consumeLookupCarry clears synchronously, so state updates cannot loop; checking every render is required for a hidden mounted destination.
+  useEffect(() => {
+    const carry = consumeLookupCarry();
+    if (!carry || carry.cards.length === 0) {
+      return;
+    }
+
+    setPendingPlacementCards(carry.cards);
+    setPlacementTotal(carry.cards.length);
+    if (carry.question.trim().length > 0) {
+      setQuestion(carry.question);
+    }
+  });
+
+  // REQ-209: the rail marks a station reachable once the walk has gotten at least that
+  // far; it never regresses on its own (Start Over resets it explicitly below).
+  useEffect(() => {
+    const currentIndex = FLOW_STEPS.indexOf(flowStep);
+    setFurthestStepIndex((current) => Math.max(current, currentIndex));
+  }, [flowStep]);
+
   const wasActiveRef = useRef(isActive);
   useEffect(() => {
     if (wasActiveRef.current && !isActive) {
@@ -246,6 +281,10 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     setCombatStep(draft.combatStep);
     setConfirmedPhase(draft.confirmedPhase);
     setActivePlayer(draft.activePlayer);
+    // REQ-206/REQ-209: every carried card — placed or still waiting for a zone — is in
+    // the Draft slot, so a reload mid-placement resumes exactly where it left off.
+    setPendingPlacementCards(draft.pendingPlacementCards);
+    setPlacementTotal(draft.placementTotal);
   }
 
   // Mid-flight Draft auto-hydrate (REQ-108 / FLOW-017): this destination mounts once per
@@ -347,6 +386,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
       gameContext !== null ||
       selectedZones.length > 0 ||
       question.trim().length > 0 ||
+      pendingPlacementCards.length > 0 ||
       Object.values(zoneCardsByZone).some((cards) => (cards?.length ?? 0) > 0);
 
     if (hasStaging) {
@@ -360,7 +400,9 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         turnPhase,
         combatStep,
         confirmedPhase,
-        activePlayer
+        activePlayer,
+        pendingPlacementCards,
+        placementTotal
       });
     } else {
       clearDraft("game");
@@ -586,6 +628,57 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     flashStatus("Game context saved.");
   }
 
+  // REQ-209: the rail lets a player jump back to any station already reached. The
+  // guardrail bounces a jump to Context back to Cards while any carried card is still
+  // unplaced — nobody passes the Cards station until every carried card has a zone or
+  // is left out (D7).
+  function handleRailNavigate(step: FlowStepId): void {
+    const targetIndex = FLOW_STEPS.indexOf(step);
+    if (targetIndex > furthestStepIndex) {
+      return;
+    }
+    if (step === "enrichment" && pendingPlacementCards.length > 0) {
+      setFlowStep("zone-collection");
+      flashStatus("Give every carried card a zone first.");
+      return;
+    }
+    setFlowStep(step);
+  }
+
+  // REQ-018/REQ-206/REQ-209: places the current carried card (the head of the
+  // placement queue) into `zone`, selecting that zone if it was not already chosen,
+  // subject to the zone's own add validation (the Stack's duplicate/size limit) — a
+  // refused card stays unplaced rather than silently dropping (REQ-209).
+  function handlePlaceCarriedCard(zone: ZoneId): void {
+    const card = pendingPlacementCards[0];
+    if (!card) {
+      return;
+    }
+
+    const nextCard = buildZoneCardFromMetadata(card);
+    if (zone !== "stack") {
+      nextCard.owner = activePlayer;
+    }
+
+    const destCards = zoneCardsByZone[zone] ?? [];
+    const validation = validateZoneCardAdd(destCards, nextCard, zone);
+    if (!validation.ok) {
+      flashStatus(validation.message);
+      return;
+    }
+
+    setSelectedZones((current) => (current.includes(zone) ? current : [...current, zone]));
+    setZoneCardsByZone((current) => ({
+      ...current,
+      [zone]: appendZoneCard(destCards, nextCard)
+    }));
+    setPendingPlacementCards((current) => current.slice(1));
+  }
+
+  function handleLeaveCarriedCardOut(): void {
+    setPendingPlacementCards((current) => current.slice(1));
+  }
+
   function confirmZoneSelection(): void {
     setGameContext((current) => (current ? { ...current, selectedZones } : current));
     const nextStep = getNextStep("zone-confirm");
@@ -675,6 +768,9 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   function handleStartOver(): void {
     startOver();
     setFlowStep("game-context");
+    setFurthestStepIndex(0);
+    setPendingPlacementCards([]);
+    setPlacementTotal(0);
     setGameContext(null);
     setSelectedZones([]);
     setZoneCardsByZone({});
@@ -732,6 +828,10 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     }
   }
 
+  const stationsRail = (
+    <StationsRail currentStep={flowStep} furthestStepIndex={furthestStepIndex} onNavigate={handleRailNavigate} />
+  );
+
   let content: JSX.Element;
 
   if (flowStep === "game-context") {
@@ -741,6 +841,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
             onBrandClick={() => setBrandClickCount((c) => c + 1)}
             historyTrigger={{ onOpen: openHistory }}
           />
+          {stationsRail}
           <StepEyebrow stepName="Game context" />
           {showCatEasterEgg && (
             <div className="p-2 text-center">
@@ -950,6 +1051,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         onContinue={confirmZoneSelection}
         statusMessage={statusMessage}
         historyTrigger={{ onOpen: openHistory }}
+        stationsRail={stationsRail}
       />
     );
   } else if (flowStep === "zone-collection") {
@@ -978,6 +1080,11 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         onFlashStatus={flashStatus}
         statusMessage={statusMessage}
         historyTrigger={{ onOpen: openHistory }}
+        stationsRail={stationsRail}
+        pendingPlacementCards={pendingPlacementCards}
+        placementTotal={placementTotal}
+        onPlaceCard={handlePlaceCarriedCard}
+        onLeaveCardOut={handleLeaveCarriedCardOut}
       />
     );
   } else {
@@ -990,6 +1097,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         question={question}
         onQuestionChange={setQuestion}
         onDecryptStack={handleDecryptStack}
+        stationsRail={stationsRail}
         onBack={() => {
           const previousStep = getPreviousStep("enrichment");
           if (previousStep) {

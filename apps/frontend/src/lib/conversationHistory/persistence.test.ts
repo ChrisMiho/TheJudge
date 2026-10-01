@@ -54,6 +54,8 @@ function buildGameDraft(overrides: Partial<Omit<GameDraftState, "mode">> = {}): 
     combatStep: "declare_blockers",
     confirmedPhase: "main_1",
     activePlayer: "Player 1",
+    pendingPlacementCards: [],
+    placementTotal: 0,
     ...overrides
   };
 }
@@ -226,6 +228,35 @@ describe("Frontend - Shared", () => {
       expect(loaded).not.toBeNull();
       expect(loaded).toMatchObject(buildGameDraft());
       expect(typeof loaded?.updatedAt).toBe("string");
+    });
+
+    // REQ-206/REQ-209: every carried card waiting for a zone is in the Draft slot, so a
+    // reload mid-placement resumes exactly where it left off.
+    it("saves and reloads a game Draft's pending carried-card placement", () => {
+      saveDraft(
+        buildGameDraft({
+          pendingPlacementCards: [{ cardId: "opt", name: "Opt", imageId: "", colors: ["U"] }],
+          placementTotal: 2
+        })
+      );
+      const loaded = loadDraft("game");
+
+      expect(loaded?.pendingPlacementCards).toEqual([{ cardId: "opt", name: "Opt", imageId: "", colors: ["U"] }]);
+      expect(loaded?.placementTotal).toBe(2);
+    });
+
+    it("defaults a pre-existing game Draft with no placement fields to nothing pending", () => {
+      const legacyDraft = buildGameDraft();
+      // @ts-expect-error -- simulating a Draft stored before this pass added the fields.
+      delete legacyDraft.pendingPlacementCards;
+      // @ts-expect-error -- simulating a Draft stored before this pass added the fields.
+      delete legacyDraft.placementTotal;
+      localStorage.setItem("thejudge.conversationDraft.game", JSON.stringify({ ...legacyDraft, updatedAt: "2026-01-01T00:00:00.000Z" }));
+
+      const loaded = loadDraft("game");
+
+      expect(loaded?.pendingPlacementCards).toEqual([]);
+      expect(loaded?.placementTotal).toBe(0);
     });
 
     it("saves and reloads a lookup Draft", () => {

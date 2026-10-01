@@ -150,6 +150,13 @@ export type GameDraftState = {
   combatStep: CombatStep;
   confirmedPhase: TurnPhase | undefined;
   activePlayer: PlayerLabel;
+  /** REQ-206/REQ-209: cards carried from Ask a Question still waiting for a zone (or to
+   * be left out) — placed or not, every carried card is written here so the whole
+   * placement walk survives a reload. */
+  pendingPlacementCards: CardMetadataItem[];
+  /** The carry's original total, fixed while `pendingPlacementCards` shrinks, so a
+   * restored walk's "n / total" counter reads the same after a reload. */
+  placementTotal: number;
   updatedAt: string;
 };
 
@@ -186,6 +193,11 @@ function isValidGameDraftState(value: unknown): value is GameDraftState {
     typeof draft.combatStep === "string" &&
     (draft.confirmedPhase === undefined || typeof draft.confirmedPhase === "string") &&
     typeof draft.activePlayer === "string" &&
+    // Added by the `ui-reimagining-build` pass; a pre-existing stored draft from before
+    // this field existed has neither key, so both are optional here and default to
+    // "nothing pending" when loaded (see `loadDraft`).
+    (draft.pendingPlacementCards === undefined || Array.isArray(draft.pendingPlacementCards)) &&
+    (draft.placementTotal === undefined || typeof draft.placementTotal === "number") &&
     typeof draft.updatedAt === "string"
   );
 }
@@ -216,7 +228,14 @@ export function loadDraft(mode: ConversationHistoryMode): ConversationDraft | nu
 
     const parsed: unknown = JSON.parse(raw);
     if (mode === "game") {
-      return isValidGameDraftState(parsed) ? parsed : null;
+      if (!isValidGameDraftState(parsed)) return null;
+      // A draft stored before the `ui-reimagining-build` pass carries neither field;
+      // default to "nothing pending" rather than treating the whole draft as invalid.
+      return {
+        ...parsed,
+        pendingPlacementCards: parsed.pendingPlacementCards ?? [],
+        placementTotal: parsed.placementTotal ?? 0
+      };
     }
     return isValidLookupDraftState(parsed) ? parsed : null;
   } catch {

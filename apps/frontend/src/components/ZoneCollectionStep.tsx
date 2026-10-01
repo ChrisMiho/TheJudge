@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { CANONICAL_ZONE_ORDER } from "../lib/contextFlow";
 import { NO_MATCH_COPY } from "../lib/search";
 import { ZONE_LABELS } from "../lib/zoneLabels";
@@ -13,6 +13,7 @@ import { useAutocompleteSuggestions } from "../hooks/useAutocompleteSuggestions"
 import { useScanCapture, type ScanAddOutcome } from "../hooks/useScanCapture";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
+import { CardPresentation } from "./CardPresentation";
 import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
 import { StepEyebrow } from "./StepEyebrow";
@@ -33,6 +34,19 @@ type ZoneCollectionStepProps = {
   onFlashStatus: (message: string) => void;
   statusMessage: string | null;
   historyTrigger?: ConversationHistoryTriggerDescriptor;
+  /** REQ-209: the four-station progress rail, rendered between the header and the step
+   * name. Owned by the caller (`MtgAssistantApp`) since it alone tracks the walk's
+   * furthest-reached station across all four steps. */
+  stationsRail?: ReactNode;
+  /** REQ-018/REQ-206/REQ-209: cards carried from Ask a Question's "Add in-depth
+   * details", waiting to be placed one at a time. While non-empty this step shows the
+   * placement gate instead of the normal zone tabs/shelf, and nothing passes Cards. */
+  pendingPlacementCards: CardMetadataItem[];
+  /** The total carried this walk — stays fixed while `pendingPlacementCards` shrinks, so
+   * the counter reads "n / total" instead of resetting as cards are placed. */
+  placementTotal: number;
+  onPlaceCard: (zone: ZoneId) => void;
+  onLeaveCardOut: () => void;
 };
 
 export function ZoneCollectionStep({
@@ -49,7 +63,12 @@ export function ZoneCollectionStep({
   canContinue,
   onFlashStatus,
   statusMessage,
-  historyTrigger
+  historyTrigger,
+  stationsRail,
+  pendingPlacementCards,
+  placementTotal,
+  onPlaceCard,
+  onLeaveCardOut
 }: ZoneCollectionStepProps): JSX.Element {
   const orderedSelectedZones = useMemo(
     () => CANONICAL_ZONE_ORDER.filter((zone) => selectedZones.includes(zone)),
@@ -166,6 +185,48 @@ export function ZoneCollectionStep({
     updateZoneCards(activeZone, removeZoneCardByInstanceId(activeZoneCards, instanceId));
   }
 
+  // REQ-209: the card menu's "Move to" — the card leaves activeZone and joins toZone,
+  // subject to that zone's own add validation (e.g. the Stack's duplicate/size limit).
+  function handleMoveCard(instanceId: string, toZone: ZoneId): void {
+    if (!activeZone || toZone === activeZone) {
+      return;
+    }
+    const card = activeZoneCards.find((item) => (item.instanceId ?? item.cardId) === instanceId);
+    if (!card) {
+      return;
+    }
+    const destCards = zones[toZone] ?? [];
+    const movedCard: ZoneCardItem = toZone === "stack" ? { ...card, owner: undefined } : { ...card, owner: card.owner ?? pendingOwner };
+    const validation = validateZoneCardAdd(destCards, movedCard, toZone);
+    if (!validation.ok) {
+      onFlashStatus(validation.message);
+      return;
+    }
+    onZonesChange({
+      ...zones,
+      [activeZone]: removeZoneCardByInstanceId(activeZoneCards, instanceId),
+      [toZone]: appendZoneCard(destCards, movedCard)
+    });
+  }
+
+  // REQ-005/REQ-209: reorders a card within the active zone to `toIndexAfterRemoval` —
+  // the index in the zone's array once the moved card is already removed from it. Both
+  // the card menu's buttons and the shelf's drag reorder share this contract.
+  function handleReorderCard(instanceId: string, toIndexAfterRemoval: number): void {
+    if (!activeZone) {
+      return;
+    }
+    const cards = [...activeZoneCards];
+    const fromIndex = cards.findIndex((item) => (item.instanceId ?? item.cardId) === instanceId);
+    if (fromIndex === -1) {
+      return;
+    }
+    const [moved] = cards.splice(fromIndex, 1);
+    const clampedIndex = Math.max(0, Math.min(cards.length, toIndexAfterRemoval));
+    cards.splice(clampedIndex, 0, moved!);
+    updateZoneCards(activeZone, cards);
+  }
+
   function handleContinue(): void {
     if (
       canContinue &&
@@ -183,11 +244,77 @@ export function ZoneCollectionStep({
   const addButtonLabel =
     activeZone === "stack" ? (activeZoneCards.length === 0 ? "Begin stackening!" : "Add to Stack") : "Add card";
 
+  // REQ-018/REQ-206/REQ-209: cards carried from Ask a Question are placed one at a
+  // time; nothing else on the Cards station renders until every carried card has a
+  // zone or is left out (D7's gate).
+  if (pendingPlacementCards.length > 0) {
+    const placingCard = pendingPlacementCards[0]!;
+    const placedSoFar = placementTotal - pendingPlacementCards.length;
+
+    return (
+      <PageShell>
+        <StagedStepHeader historyTrigger={historyTrigger} />
+        {stationsRail}
+        <StepEyebrow stepName="Add cards to zones" />
+        <div
+          className="space-y-4 rounded-2xl border border-accent/40 bg-accent/10 p-4"
+          data-testid="card-placement-gate"
+        >
+          <div className="flex items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-accent-soft">
+              From your question
+            </p>
+            <button
+              type="button"
+              onClick={onLeaveCardOut}
+              className="motion-focus text-xs font-semibold text-zinc-300 underline underline-offset-2 hover:text-zinc-100"
+            >
+              Leave this card out
+            </button>
+          </div>
+
+          <div className="mx-auto w-40">
+            <CardPresentation card={placingCard} className="w-full" imageClassName="rounded-xl" />
+          </div>
+          <p className="text-center text-sm font-semibold text-zinc-100">{placingCard.name}</p>
+          <p className="text-center text-xs text-zinc-400" aria-live="polite">
+            {`Card ${placedSoFar + 1} of ${placementTotal}`}
+          </p>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
+              Which zone is it in?
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {CANONICAL_ZONE_ORDER.map((zone) => (
+                <button
+                  key={zone}
+                  type="button"
+                  onClick={() => onPlaceCard(zone)}
+                  className="ambient-accent-interactive motion-hover motion-press motion-focus rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700/80"
+                >
+                  {ZONE_LABELS[zone]}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {statusMessage && (
+          <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
+            {statusMessage}
+          </p>
+        )}
+      </PageShell>
+    );
+  }
+
   return (
     <PageShell>
       {!isScanOpen && (
         <>
           <StagedStepHeader historyTrigger={historyTrigger} />
+          {stationsRail}
           <StepEyebrow stepName="Add cards to zones" />
           <p className="text-sm text-zinc-400">
             Select a zone, then add cards by searching or scanning.
@@ -218,7 +345,9 @@ export function ZoneCollectionStep({
                     onClick={() => setActiveZoneIndex(index)}
                     className="ambient-accent-surface ambient-accent-interactive motion-hover motion-press motion-focus rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
                   >
-                    {`${ZONE_LABELS[zone]}${count > 0 ? ` (${count})` : ""}`}
+                    {/* D5: every zone tab shows its own card count, Stack included — no
+                        zero-count special case. */}
+                    {`${ZONE_LABELS[zone]} (${count})`}
                   </button>
                 );
               })}
@@ -257,6 +386,8 @@ export function ZoneCollectionStep({
               addButtonLabel={addButtonLabel}
               onAddSelectedCard={handleAddSelectedCard}
               onRemoveCard={handleRemoveCard}
+              onMoveCard={handleMoveCard}
+              onReorderCard={handleReorderCard}
               scan={{
                 isOpen: isScanOpen,
                 isLoading: scanCapture.isLoading,

@@ -67,10 +67,11 @@
   - appended card becomes the top of the stack
   - app shows brief success state such as **Stacked**
 - Constraints:
-  - stack is append-only in the core product
+  - adding always appends; after adding, the player may reorder the Stack by drag or by Down / Up / To top (REQ-209), and the array order sent is the order shown (REQ-006)
 - Dependencies:
   - stack state
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): "append-only" becomes append-on-add plus player reorder
 
 ### REQ-006
 - Title: Stack ordering consistency
@@ -79,7 +80,7 @@
 - Acceptance Criteria:
   - `stack[0]` is the bottom of the stack
   - the last item in the array is the top of the stack
-  - stack details UI displays bottom-to-top
+  - the Stack shelf tags its cards BOTTOM … TOP (REQ-209); a player's reorder rewrites the array itself, so the bottom-first meaning holds after any drag or Down / Up / To top
   - prompt builder preserves the same order
 - Constraints:
   - do not invert ordering in any layer
@@ -87,36 +88,39 @@
   - frontend stack state
   - backend prompt builder
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): follows REQ-005's player reorder
 
 ### REQ-007
 - Title: Stack icon with count
 - Priority: medium
 - Description: The app must represent the current stack with an icon that looks like stacked cards and displays the current count.
 - Acceptance Criteria:
-  - icon is visible when stack contains cards
-  - icon badge reflects current stack size
+  - the Stack's zone tab on the Cards station (REQ-209) is the icon: it shows whenever the Stack is a chosen zone
+  - the tab's count reflects the current stack size
 - Constraints:
   - keep visual treatment simple in the core product
 - Dependencies:
   - stack state
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the stacked-cards icon becomes the Stack's zone tab with its count
 
 ### REQ-008
 - Title: Stack details and removal
 - Priority: high
 - Description: Clicking the stack icon must open a details view where cards can be inspected and removed.
 - Acceptance Criteria:
-  - clicking stack icon opens a box, panel, or modal
-  - cards are listed bottom-to-top
-  - each row shows card name and remove button
+  - the Stack's shelf on the Cards station (REQ-209) is the details view; tapping a card opens its menu
+  - cards are tagged BOTTOM … TOP
+  - each card's menu shows its name and **Remove from the Stack**
   - thumbnail is shown when available
   - if thumbnail does not load, row still renders correctly
   - user can remove cards from the stack
 - Constraints:
-  - no manual reordering in the core product
+  - reordering is available by drag or Down / Up / To top (REQ-005, REQ-209)
 - Dependencies:
   - stack state
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the details box becomes the shelf plus card menu; the no-reorder constraint is lifted by REQ-005
 
 ### REQ-009
 - Title: Block duplicate stack cards
@@ -287,7 +291,8 @@
   - before input, the search box says **Type to begin**
   - suggestions begin at 3 or more typed characters
   - no-match state shows **No matching card found**
-  - stack-zone cards preserve bottom-to-top append order
+  - stack-zone cards keep bottom-to-top order: appended on add, then as the player reorders them (REQ-005)
+  - cards carried from Ask a Question are each placed in a zone, or left out, before collection can continue (REQ-206, REQ-209)
   - selected zones with zero cards are allowed individually
   - collection cannot continue until at least one selected zone contains a card
 - Constraints:
@@ -296,6 +301,7 @@
   - local card metadata
   - zone confirmation
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): follows REQ-005's reorder and REQ-206's carry
 
 ### REQ-019
 - Title: Ask AI request payload shape
@@ -1206,6 +1212,7 @@
   - automatic responsive presentation (REQ-096 / DEC-117) adjusts surrounding spacing without changing these functional caps
   - prior 2-column / 4-visible-tile zone grid superseded by DEC-151 horizontal strip
   - amended for the `ui-reimagining` pass (2026-09-24): the Easter egg's trigger widens from the game-context step to every in-scope screen under one session-wide tap count (REQ-203). The session-only scope, the asset, and the hidden-on-initial-render behaviour are unchanged, and the egg is protected scope through the redesign.
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the View all cards 4-row criterion has no subject once REQ-017 retires that mode; the review list's bound (REQ-209) replaces it
 
 ### REQ-057
 - Title: Scanner acquisition diagnostics and validation matrix
@@ -5282,3 +5289,45 @@
   - "Quick Question" in older requirements names the Ask a Question page (route `/quick-lookup`) and "In-Depth Question" names In-depth details (route `/in-depth`); older entries keep those names as internal labels rather than being rewritten
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner-approved direction-1 mockup (rounds 2–14); built by slice C of that package — `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `CardStage.tsx`, `ComposerPill.tsx`, `ConversationThread.tsx` (chip matching), `lib/portal/seedContext.tsx` (lookup-carry mailbox), `lib/portal/inDepthCarryContext.tsx` (the carry action), `App.tsx` (`handleCarryToInDepth`)
   - owner edit (2026-10-01): the Ask a Question Draft begins the moment the first card is attached, not only once a question is typed, so a carried-but-unplaced card survives a reload — see the Constraints line above and REQ-108
+
+### REQ-209
+- Title: In-depth details — four stations, the Cards shelf, and the card menu
+- Priority: high
+- Description: In-Depth Question's four staged steps become **In-depth details**: four stations on a progress rail — 1 Game · 2 Zones · 3 Cards · 4 Context — with the way forward built into each panel, a lit shelf of real card images per zone, a card menu for moving, ordering, reading and removing a card, one-at-a-time placement of cards carried from Ask a Question (REQ-206), and a review before the question. Every detail today's staged flow collects is kept.
+- Acceptance Criteria:
+  - the title reads "In-depth details"; the Menu marks Ask a Question current; a round ‹ beside the title goes back one card inside Context, then to Cards, and from station 1 back to the Ask a Question page
+  - a progress rail shows the four stations; stations already reached are tappable to return to, but Context bounces back to Cards while any carried card is unplaced; the ruling is not a station — when it arrives the rail and flow give way to the chat
+  - each station's panel keeps a Back/Continue action pair naming the next step; Back and Continue are equal width where both show
+  - **Game** is one plate under a "Game context" heading: players (a square −/+ stepper, 2–8) with names and life totals behind an expander, then turn phase (with the combat sub-step when phase is combat) and active player; one shared "More details for all players" toggle reveals each player's Poison · Energy · Experience, commander damage from each other player, and named counters with "Add a named counter" (REQ-100's synchronized state); the Additional game state notes (REQ-031) stay
+  - **Zones** shows the seven-zone checklist; at least one zone is still required (REQ-016)
+  - **Cards** gives one tab per chosen zone with its live count and a lit shelf of real card images for the chosen tab, no row cap (REQ-056); cards arrive by search, scan, or carried from Ask a Question
+  - **Stack tags**: one card reads TOP; two read BOTTOM / TOP; from three the ends read BOTTOM and TOP and the cards between count down from the top (TOP, 2ND, 3RD … BOTTOM); only the Stack wears tags
+  - **every zone reorders by drag** (a mouse drags at once; touch after a short hold, while a plain swipe still scrolls the shelf; the image never starts the browser's own image drag); the Stack also offers Down / Up / To top and other zones Left / Right; tags renumber live; Stack order is sent as shown (REQ-005, REQ-006); order in other zones is cosmetic and changes no prompt meaning
+  - **carried cards are placed one at a time**: the card as hero, "Which zone is it in?", one tile per zone, a "card n of total" counter, and "Leave this card out"; picking a zone adds it to the chosen set if it was not already there; nothing passes Cards until every carried card has a zone or is left out; a carried card the Stack refuses (duplicate or cap, REQ-009 / REQ-010) shows the existing notice and stays unplaced
+  - **a tap on a shelf card opens its menu**, built on the suite's one shared pop-up shell (REQ-208): the card's name; **Move to** as a wrap of pills for every other zone; an order control (Down/Up/To top on the Stack, Left/Right elsewhere) when the zone holds 2+ cards; **Card details** and **Remove from the <zone>** as rows
+  - **Context** is REQ-017's compact sheet per card
+  - **the review** lists each card's context in words with ✎ to jump back
+  - **the chat** is the shared workspace with the Cards strip, **View Context** beside the title, and the same bubble, wait, chips and send pill as Ask a Question; **✎ Edit** returns to the review with everything kept (the conversation is saved to history first); **↺ Start over** follows REQ-029
+  - tests cover rail navigation and the Context bounce, the carried-card guardrail and Leave out, drag and button reorder with tag renumbering, the Stack order reaching the request, and the menu's Move to and Remove
+- Constraints:
+  - every field today's staged flow collects is kept; the request contract is unchanged except as REQ-210 and REQ-211 separately decide
+  - drag reorder is built on pointer events with no drag-and-drop library (NFR-004, NFR-006)
+  - staged state stays in the destination's existing state and Draft slot (REQ-108); no new store
+- Dependencies:
+  - REQ-005
+  - REQ-006
+  - REQ-009
+  - REQ-010
+  - REQ-016
+  - REQ-017
+  - REQ-021
+  - REQ-029
+  - REQ-031
+  - REQ-100
+  - REQ-108
+  - REQ-206
+  - REQ-208
+  - FLOW-001
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup rounds 2–14
+  - built across the package's slices: slice D (this id's owning slice) builds the stations rail, the Cards shelf, carried-card placement, drag/button reorder and the card menu — `apps/frontend/src/components/StationsRail.tsx`, `ZoneCardMenu.tsx`, `ZoneCardPicker.tsx`, `ZoneCollectionStep.tsx`, `ZoneConfirmStep.tsx`, `EnrichmentStep.tsx` (rail slot), `lib/shelfDragReorder.ts`, `lib/stackTags.ts`, `portal/MtgAssistantApp.tsx` (carry consumption, placement handlers, rail guardrail); the Context sheet and review (slice E) and the chat's wait treatment (slice F) land afterward in the same package, so the description above is this id's complete intent, not a claim that slice D alone built it
