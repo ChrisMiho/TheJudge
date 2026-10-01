@@ -201,7 +201,7 @@
      - Manual search: the user finds the card by name, taps the suggestion, and **chooses the printing from that card's printing list before the card is added** — newest release first, each row showing set, collector number, both prices and a thumbnail; that printing's price applies (DEC-012, REQ-065).
      - The balancer fetches that card's printings and prices from the backend once and caches them for the session: on a manual search when the suggestion is tapped (the picker carries the loading state, and the entry then appears already priced), on a scan when the card is added (the entry shows a brief in-place loading state) (FLOW-025).
   3. The added entry shows its printing (set/collector/image), its USD price, a **foil toggle** (non-foil ↔ `usd_foil`), and a **quantity** control; the same card may be added multiple times or carry a quantity ≥ 1.
-  4. Each side total updates live as `Σ qty × (foil ? usdFoil : usd)`, and the difference between the two sides updates with an amount and which side is higher (or equal).
+  4. Each side total updates live as `Σ qty × (foil ? usdFoil : usd)`, and the two piles of gold, the verdict line naming the side ahead (or "Even"), and the dollar difference update with them (REQ-215).
   5. The user adds cards to the other side the same way, adjusts foil/quantity, and removes entries as needed until the difference reflects the trade.
   6. The user reads the balance at a glance and returns to MTG Assistant via the navigation menu when done; trade state is not persisted.
 - Edge Cases:

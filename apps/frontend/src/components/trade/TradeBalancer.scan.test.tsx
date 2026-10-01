@@ -216,9 +216,7 @@ describe("Frontend - Trade", () => {
       const entry = within(side("A")).getByRole("listitem");
       expect(entry).toHaveTextContent("Magic 2010 (M10) #146");
       expect(sideTotalText("A")).toBe("$4.00");
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent(
-        "Side A is ahead by $4.00"
-      );
+      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Side A +$4.00");
     });
 
     it("supports foil, quantity, remove and duplicates on a scanned entry", async () => {
@@ -274,7 +272,8 @@ describe("Frontend - Trade", () => {
       await user.click(
         within(side("B")).getByLabelText("Change printing for Lightning Bolt (Side B)")
       );
-      await user.click(within(side("B")).getByRole("button", { name: /Unlimited Edition/ }));
+      // Portaled to document.body (SheetShell) — document-wide query.
+      await user.click(screen.getByRole("button", { name: /Unlimited Edition.*nonfoil/i }));
 
       expect(sideTotalText("B")).toBe("$10.00");
     });
@@ -317,11 +316,12 @@ describe("Frontend - Trade", () => {
       // added — the scan path above is untouched (A11); this only reflects
       // the same pick-before-add flow every manual-search test now goes
       // through.
-      const pickerElement = await within(side("A")).findByRole("group", {
+      // Portaled to document.body (SheetShell) — document-wide query.
+      const pickerElement = await screen.findByRole("group", {
         name: "Choose a printing for Lightning Bolt"
       });
       const [firstRow] = within(pickerElement).getAllByRole("listitem");
-      await user.click(within(firstRow).getByRole("button"));
+      await user.click(within(firstRow).getByRole("button", { name: /nonfoil/i }));
 
       await waitFor(() => {
         expect(within(side("A")).queryByText("Loading price…")).not.toBeInTheDocument();

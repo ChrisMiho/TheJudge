@@ -1483,11 +1483,11 @@
 - Acceptance Criteria:
   - the view presents two sides (**Side A** and **Side B**), each an ordered list of card entries
   - each side shows a running **total** = `Σ qty × (foil ? usdFoil : usd)` across its entries, updating live as entries are added, removed, re-priced, foil-toggled, or quantity-changed
-  - the view shows the **difference** between the two totals as an amount and indicates which side is higher (or that the sides are equal)
+  - the view shows the **difference** between the two totals as an amount under a verdict line that names the side ahead in plain words, or "Even" when equal to the cent (REQ-215)
   - totals and the difference are displayed in USD
   - an entry whose selected-mode price is missing contributes **$0** to its side total and is visibly flagged per REQ-065 (distinct color + caution triangle)
   - the view is reachable from the top-level navigation menu (REQ-067) and the MTG Assistant flow is unaffected
-  - the trade state is **ephemeral**: no history, no persistence across reload, no marketplace/transaction handling, and no automated balancing suggestions
+  - the trade state is **ephemeral**: no history, no persistence across reload, no marketplace/transaction handling, and no automated balancing suggestions; a **New trade** action clears both sides after the shared confirm sheet (REQ-215, REQ-208)
   - when the view opens it issues **one fire-and-forget warm-up request** to the backend's existing health check (`GET /api/health`) alongside its `cardMetadata` load, so a cold backend wakes while the card list downloads and the player types instead of that wait landing on the first card's price fetch. It sends and reads no product data, renders no UI, and never blocks, disables, or surfaces an error on search when it fails or when no backend is running (mock-default local dev unaffected)
 - Constraints:
   - the AI answer path stays frozen: no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or `POST /api/ask-ai`. The balancer prices cards only through a read-only backend price fetch (REQ-175), and its only other backend traffic is the warm-up ping to the existing `GET /api/health`, which carries no product data in either direction; printing identity is never pushed into any prompt, rulings, or answer payload
@@ -1503,6 +1503,7 @@
   - REQ-175
 - Notes:
   - a trade side is a value list, not the stack: the duplicate-block (REQ-009/FLOW-004) and 10-card cap (REQ-010) do not apply
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the difference readout becomes REQ-215's piles and verdict line; totals and pricing unchanged
 
 ### REQ-065
 - Title: Trade card entry — printing selection, foil toggle, quantity
@@ -1513,7 +1514,7 @@
   - **scan input:** the existing scan engine identifies the card and the **scanned printing** (its `Candidate.card_id`, DEC-070) is the entry's default printing; the user can **change the printing** to any other printing of that card
   - **manual search input:** the user finds a card by name via the existing local search (DEC-012); tapping a suggestion fetches that card's printing list and shows the **printing picker in place of the suggestions**, with a brief loading state, and the entry is added carrying the printing the player taps — the choice happens **before the card is added**, and the chosen printing's price applies. Cancelling returns to the search box. If that pre-add fetch fails or the card has no printings, the card is added anyway in the $0-plus-caution state with the retry affordance, so manual search stays the permanent fallback input path
   - the **foil toggle** switches the entry's contribution between `usd` and `usd_foil`. Whenever an entry receives a printing — picked before an add, resolved from a scan, changed, or re-fetched on retry — the mode is **re-derived from that printing's own prices**: non-foil when the printing has a `usd` price, and foil only when `usd` is null and `usd_foil` is not (a new entry starts non-foil). The player may still toggle into a mode with no price, which keeps the $0-plus-caution treatment below
-  - the **printing picker** — the same component used before an add and by "Change printing" — heads with the card's printing count (`N printings`, computed from the fetched list, never from a stored field), lists printings **newest release first** (REQ-066), **region-scrolls** inside a short box instead of growing the page with the card's printing count, lazy-loads its row images, offers a **set-name/set-code filter** once a card has more than eight printings, and scrolls the currently selected printing into view when it opens
+  - the **printing picker** — the same component used before an add and by "Change printing" — opens in the shared sheet (REQ-208) with the card's art and name, one line of instruction, and one row per printing **newest release first** (REQ-066): set name, code, a thumbnail, and **Nonfoil** and **Foil** price pills; a tap on a pill picks that printing and that finish; a printing with no foil price shows a disabled Foil pill; the head counts the printings (`N printings`, computed from the fetched list, never from a stored field) and a card with one printing reads "only printing"; the body **region-scrolls** instead of growing the page with the card's printing count, lazy-loads its row images, offers a **set-name/set-code filter** once a card has more than five printings, and scrolls the currently selected printing into view when it opens
   - **quantity/multiples:** the same card (or printing) may appear multiple times on a side, via repeated adds and/or a per-entry quantity control; each unit counts toward the side total; the stack duplicate-block does not apply
   - **missing price:** when the selected foil mode has no price for the chosen printing, the entry's contribution defaults to **$0**, the entry's price is rendered in a **distinct color** from priced entries, and the entry shows a **caution-triangle** indicator communicating that the value is unknown
   - each entry can be **removed** from its side
@@ -1531,6 +1532,7 @@
   - FLOW-025
 - Notes:
   - reuses the existing scan resolver (REQ-036) and manual search (REQ-002/REQ-003) as input; the printing pick and pricing are the new layer
+  - amended for the `ui-reimagining-build` pass (2026-09-30): pills per finish, the shared sheet, and the filter threshold from eight to five printings; prices and selection rules unchanged. The picker's row shows set name and code only, not a release year — `CardPrintingPrice` (REQ-066) carries no release-date field, so "code · year" from the mockup is not shown; adding one is a backend-contract change out of this pass's scope
 
 ### REQ-066
 - Title: Printing-level price data artifact
@@ -5362,3 +5364,33 @@
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup; broadened from Battlefield-only to every zone by the owner's gate-review edit (2026-10-01) - "sometimes it does matter" on Graveyard and other zones too; use cases to be refined later
   - built by slice E: `apps/frontend/src/components/EnrichmentStep.tsx` (the box, every zone), `apps/frontend/src/lib/enrichmentFormat.ts` (`parseManaSpent` bound, `formatPrintedManaHint`), `apps/backend/src/prompt/context.ts` (`normalizeZoneItem` passthrough), `apps/backend/src/prompt/promptFormatting.ts` (`formatNonStackZoneSections` line insertion)
+
+### REQ-215
+- Title: Trade Balancer - two piles of gold, a verdict line, New trade, and named sides
+- Priority: medium
+- Description: Trade Balancer shows the balance as two piles of gold that grow with each side's value and a verdict line in plain words, adds a New trade action that asks first, and lets the players rename a side. Totals arithmetic, pricing, the price route and the ephemeral posture are unchanged (REQ-064, REQ-065).
+- Acceptance Criteria:
+  - every entry shows its card image (a tap opens the card detail); entries keep add order; changing a printing or finish edits the row in place; the foil toggle on each trade row stays
+  - two piles of gold sit on a solid panel; each pile has five relative tiers, drawn in flat gold/amber with a bronze outline and one purple gem on tiers 4-5
+  - tiers are relative: the richer side (or either, on a tie) is tier 5; the lighter side's tier is its share of the richer: 95%+ -> 5, 75%+ -> 4, 50%+ -> 3, 25%+ -> 2, under -> 1; the richer pile glows and the lighter dims a step; a tier-up drops in from above with a slight overshoot, a tier-down lifts and fades, nothing loops idle, and the piles update live; empty state (both sides empty): a bare ground line and "Add cards to weigh the trade"
+  - the verdict line under the piles, by the smaller side's share of the larger: 95%+ "Fair trade" - 85-95% "Slightly favors <side>" - 60-85% "Leans toward <side>" - under 60% "Lopsided - <side> by NN%"; "Even" when the totals are equal to the cent; the plain dollar difference sits beneath ("Side A +$1.85")
+  - a **New trade** action sits beside the title; with cards on either side it opens the shared confirm sheet (REQ-208) - "Start a new trade?", how many cards and how much value it clears, side names kept; **Keep this trade** / **Clear both sides**; with both sides empty it does nothing
+  - a side is renamed by tapping its name (a short inline text field, 1-20 characters; blank restores the default); the name is used in the verdict, the difference, and the side's own heading/search labels; it lives only as long as the trade
+  - the price date sits in the staged header's right-hand slot at 768px+ and under the title below 768px (REQ-145 copy unchanged)
+  - tests cover each tier boundary, each verdict band and Even, the New trade confirm and its no-op when empty, renaming, and totals unchanged by any of it
+- Constraints:
+  - totals, pricing, printing selection, the price route, the warm-up ping and the ephemeral no-persistence posture are unchanged (REQ-064, REQ-065, REQ-066, REQ-175); side names are not persisted
+  - the piles are drawn inline (SVG), CSS-only motion (NFR-006)
+- Dependencies:
+  - REQ-064
+  - REQ-065
+  - REQ-145
+  - REQ-204
+  - REQ-205
+  - REQ-208
+  - NFR-006
+  - FLOW-009
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the mockup also tried Add cash, Swap sides and Copy summary and removed them - none ships
+  - built by slice G: `apps/frontend/src/components/trade/TradeBalancer.tsx`, `TradeSide.tsx` (rename), `TradePile.tsx` (the five-tier SVG piles), `PrintingPicker.tsx` (shared-sheet rehost, Nonfoil/Foil pills), `apps/frontend/src/lib/trade/pricing.ts` (`pileTier`, `tradeVerdict`, `formatTradeVerdict`, `formatTradeDifference`, `normalizeSideName`), `apps/frontend/src/components/StagedStepHeader.tsx` (new optional `rightSlot` prop, additive and backward compatible)
+  - not built, out of this pass's scope: the mockup's moving sheen on a foil entry row (a decorative detail, not load-bearing for the trade's own correctness) — the existing plain Foil toggle/label is unchanged

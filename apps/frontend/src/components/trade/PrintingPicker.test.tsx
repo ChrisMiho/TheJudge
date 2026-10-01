@@ -1,7 +1,7 @@
-// Slice D: the printing picker becomes a scrollable, filterable box — a
-// count header, a ~40vh scroll region instead of growing the page, lazy row
-// images, a set filter once a card has more than eight printings, and
-// scrolling the current printing into view on open.
+// Slice D built the scrollable, filterable box. Slice G (REQ-065, owner-edited)
+// moved it onto the shared SheetShell and gave each printing a Nonfoil and a
+// Foil price pill — a tap picks the printing and the finish together — and
+// dropped the filter threshold from eight printings to five.
 
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -40,10 +40,24 @@ function manyPrintings(count: number): CardPrintingPrice[] {
 }
 
 describe("Frontend - Trade", () => {
-  describe("PrintingPicker (Slice D)", () => {
+  describe("PrintingPicker (slice G: shared sheet, Nonfoil/Foil pills)", () => {
     beforeEach(() => {
       // jsdom has no layout engine and doesn't implement scrollIntoView.
       Element.prototype.scrollIntoView = vi.fn();
+    });
+
+    it("opens in the shared sheet with the card's art and name", () => {
+      render(
+        <PrintingPicker
+          cardName="Lightning Bolt"
+          printings={[printing()]}
+          onSelect={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(screen.getByTestId("printing-picker")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /Lightning Bolt/ })).toBeInTheDocument();
     });
 
     it("D1: the header shows the printing count", () => {
@@ -59,12 +73,12 @@ describe("Frontend - Trade", () => {
       expect(screen.getByText("2 printings")).toBeInTheDocument();
     });
 
-    it("D1: a single printing reads '1 printing', not '1 printings'", () => {
+    it("D1 (owner-edited wording): a single printing reads 'only printing'", () => {
       render(
         <PrintingPicker cardName="Rare Card" printings={[printing()]} onSelect={vi.fn()} onCancel={vi.fn()} />
       );
 
-      expect(screen.getByText("1 printing")).toBeInTheDocument();
+      expect(screen.getByText("only printing")).toBeInTheDocument();
     });
 
     it("D2: the printing list sits in a scroll region, not a plain growing list", () => {
@@ -96,11 +110,11 @@ describe("Frontend - Trade", () => {
       expect(image).toHaveAttribute("loading", "lazy");
     });
 
-    it("D4: the set filter is absent at 8 or fewer printings and present above 8", () => {
+    it("the filter is absent at 5 or fewer printings and present above 5", () => {
       const { rerender } = render(
         <PrintingPicker
           cardName="Sol Ring"
-          printings={manyPrintings(8)}
+          printings={manyPrintings(5)}
           onSelect={vi.fn()}
           onCancel={vi.fn()}
         />
@@ -110,7 +124,7 @@ describe("Frontend - Trade", () => {
       rerender(
         <PrintingPicker
           cardName="Sol Ring"
-          printings={manyPrintings(9)}
+          printings={manyPrintings(6)}
           onSelect={vi.fn()}
           onCancel={vi.fn()}
         />
@@ -154,7 +168,7 @@ describe("Frontend - Trade", () => {
       render(
         <PrintingPicker
           cardName="Sol Ring"
-          printings={manyPrintings(9)}
+          printings={manyPrintings(6)}
           onSelect={vi.fn()}
           onCancel={vi.fn()}
         />
@@ -166,10 +180,10 @@ describe("Frontend - Trade", () => {
       expect(screen.getByText("No printings match that set.")).toBeInTheDocument();
     });
 
-    it("D6: the row matching selectedPrintingId gets aria-current and is scrolled into view on open", () => {
+    it("D6: the row matching selectedPrintingId/selectedFoil gets aria-current on that pill and is scrolled into view on open", () => {
       const printings = [
         printing({ id: "printing-1" }),
-        printing({ id: "printing-2", collectorNumber: "146" }),
+        printing({ id: "printing-2", collectorNumber: "146", usdFoil: 9.5 }),
         printing({ id: "printing-3", collectorNumber: "1" })
       ];
 
@@ -180,15 +194,51 @@ describe("Frontend - Trade", () => {
           onSelect={vi.fn()}
           onCancel={vi.fn()}
           selectedPrintingId="printing-2"
+          selectedFoil={true}
         />
       );
 
       const rows = screen.getAllByRole("listitem");
-      const selectedButton = within(rows[1]).getByRole("button");
-      expect(selectedButton).toHaveAttribute("aria-current", "true");
+      const foilPill = within(rows[1]).getByRole("button", { name: / foil$/i });
+      expect(foilPill).toHaveAttribute("aria-current", "true");
+      const nonfoilPill = within(rows[1]).getByRole("button", { name: /nonfoil/i });
+      expect(nonfoilPill).not.toHaveAttribute("aria-current");
       expect(rows[0].querySelector("[aria-current]")).not.toBeInTheDocument();
       expect(rows[2].querySelector("[aria-current]")).not.toBeInTheDocument();
       expect(Element.prototype.scrollIntoView).toHaveBeenCalled();
+    });
+
+    it("REQ-065: each row shows a Nonfoil and a Foil price pill; a tap picks that printing and finish", async () => {
+      const onSelect = vi.fn();
+      const user = userEvent.setup();
+      render(
+        <PrintingPicker
+          cardName="Lightning Bolt"
+          printings={[printing({ usd: 3.5, usdFoil: 12.75 })]}
+          onSelect={onSelect}
+          onCancel={vi.fn()}
+        />
+      );
+
+      await user.click(screen.getByRole("button", { name: /nonfoil/i }));
+      expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: "printing-1" }), false);
+
+      await user.click(screen.getByRole("button", { name: / foil$/i }));
+      expect(onSelect).toHaveBeenCalledWith(expect.objectContaining({ id: "printing-1" }), true);
+    });
+
+    it("REQ-065: a printing with no foil price shows a disabled Foil pill", () => {
+      render(
+        <PrintingPicker
+          cardName="Lightning Bolt"
+          printings={[printing({ usd: 3.5, usdFoil: null })]}
+          onSelect={vi.fn()}
+          onCancel={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: / foil$/i })).toBeDisabled();
+      expect(screen.getByRole("button", { name: /nonfoil/i })).toBeEnabled();
     });
   });
 });

@@ -23,7 +23,7 @@ dependencies and the complete 57-id assignment table: `GAMEPLAN.md`.
 | [D](slice-d-in-depth-stations-cards.md) | In-depth details: stations rail, Cards shelf, card menu, placement, Stack reorder | A, B, C | 8 | 11 (3) | done |
 | [E](slice-e-in-depth-context-review.md) | In-depth details: context sheet, Targets, Mana spent, review | D | 7 | 11 (3) | done |
 | [F](slice-f-wait-inscription.md) | Wait inscription | C, E | 2 | 7 (4) | done |
-| [G](slice-g-trade-balancer.md) | Trade Balancer: piles, verdict, New trade, rename, picker pills | A, B | 4 | 11 (3) | planned |
+| [G](slice-g-trade-balancer.md) | Trade Balancer: piles, verdict, New trade, rename, picker pills | A, B | 4 | 11 (3) | done |
 | [H](slice-h-card-scan-chrome.md) | Card scan chrome, with a holding list | A, B, D, G | 1 | 11 (5) | planned |
 | [I](slice-i-question-history.md) | Question History: one list, reopened live | A, B, C, D | 6 | 11 (3) | planned |
 | [J](slice-j-life-tracker-sheets.md) | Life Tracker's sheets take the look | A, B | 1 | 11 (3) | planned |

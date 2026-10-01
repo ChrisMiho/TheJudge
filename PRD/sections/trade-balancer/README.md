@@ -38,8 +38,17 @@ Assistant core loop and changes nothing about it or the AI answer path.
   across its entries, in USD, updating live as entries are added, removed,
   re-priced, foil-toggled, or quantity-changed. (REQ-064)
 - Built: the view shows the **difference** between the two totals as an amount
-  and indicates which side is higher, or that the sides are equal ("Even
-  trade"). (REQ-064)
+  under a verdict line that names the side ahead in plain words, or "Even" when
+  the totals match to the cent. (REQ-064, REQ-215)
+- Built: the balance is drawn as **two piles of gold** on a solid panel, each
+  grown through five tiers relative to the richer side (the richer — or either,
+  on a tie — is always tier 5; the lighter's tier is its share: 95%+ → 5, 75%+ →
+  4, 50%+ → 3, 25%+ → 2, under → 1), with the verdict line and the plain dollar
+  difference beneath. A **↺ New trade** action asks first through the shared
+  confirm sheet and clears both sides; a side is renamed by tapping its name,
+  for this trade only. (REQ-215, REQ-208)
+- Built: the price date sits in the staged header's right-hand slot at
+  `768px`+ and under the title below `768px`. (REQ-215, REQ-145)
 - Built: the trade state is **ephemeral** — no history, no persistence across
   reload, no marketplace or transaction handling, and no automated
   "suggest cards to balance" logic. (REQ-064)
@@ -75,12 +84,15 @@ Assistant core loop and changes nothing about it or the AI answer path.
   functional when the camera is unavailable — the surface closes and the reason
   is surfaced rather than breaking the screen. (REQ-065, FLOW-009, FLOW-025)
 - Built: the **printing picker** — the same component before an add and behind
-  "Change printing" — heads with the card's printing count (`N printings`,
-  counted from the fetched list), lists printings **newest release first**
-  (REQ-066), **region-scrolls** in a short box instead of growing the page,
-  lazy-loads its row images, filters by set name or code once a card has more
-  than eight printings, and scrolls the selected printing into view on open.
-  (REQ-065, `screen-layout.md`)
+  "Change printing" — opens in the shared sheet with the card's art and name,
+  heads with the card's printing count (`N printings`, counted from the fetched
+  list; "only printing" for one), lists printings **newest release first**
+  (REQ-066) as rows of set name, code and a thumbnail with **Nonfoil** and
+  **Foil** price pills — a tap picks that printing and finish, and a missing
+  foil price shows a disabled Foil pill — **region-scrolls** instead of growing
+  the page, lazy-loads its row images, filters by set name or code past five
+  printings, and scrolls the selected printing into view on open. (REQ-065,
+  REQ-208, `screen-layout.md`)
 - Built: the **foil toggle** switches an entry's contribution between `usd` and
   `usd_foil`. Whenever an entry receives a printing — picked before an add,
   resolved from a scan, changed, or re-fetched on retry — the mode is
@@ -161,7 +173,7 @@ Assistant core loop and changes nothing about it or the AI answer path.
   maximum is 771 printings (a basic land) and Sol Ring has 128, which
   previously rendered a 10,748 px picker on an 844 px viewport and pushed Side
   B out of reach. Row images are lazy-loaded rather than all requested on open,
-  and a set filter appears above eight printings. (REQ-065, `screen-layout.md`)
+  and a set filter appears past five printings. (REQ-065, `screen-layout.md`)
 - First-card wait: the balancer's warm-up ping on open overlaps the backend's
   cold start (measured ~4.2 s cold against ~0.2 s warm on the live price route)
   with the `cardMetadata` download and the player's typing, so the wait is

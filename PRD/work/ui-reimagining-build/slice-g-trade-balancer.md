@@ -1,6 +1,6 @@
 # Slice G — Trade Balancer: piles, verdict, New trade, rename, picker pills
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -59,30 +59,30 @@ desktop.
 
 ## Acceptance criteria
 
-- [ ] G1. `npm run quality:check` passes.
-- [ ] G2. `npm --workspace apps/frontend run test` passes.
-- [ ] G3. Each pile shows relative tiers; the verdict line reads "Fair
+- [x] G1. `npm run quality:check` passes.
+- [x] G2. `npm --workspace apps/frontend run test` passes.
+- [x] G3. Each pile shows relative tiers; the verdict line reads "Fair
       trade", "Lopsided — … by NN%", or "Even" as the dollar difference
       crosses the documented thresholds; the difference is shown beneath.
-- [ ] G4. ↺ New trade opens the shared confirm sheet before clearing either
+- [x] G4. ↺ New trade opens the shared confirm sheet before clearing either
       side.
-- [ ] G5. Tapping a side's name renames it in place.
-- [ ] G6. The printing picker (inside the shared sheet) shows a Nonfoil and
+- [x] G5. Tapping a side's name renames it in place.
+- [x] G6. The printing picker (inside the shared sheet) shows a Nonfoil and
       a Foil price pill per printing, and a set filter once more than five
       printings are listed.
-- [ ] G7. Verdict and piles update live as a card is added or removed,
+- [x] G7. Verdict and piles update live as a card is added or removed,
       without a manual refresh.
-- [ ] G8. `PRD/sections/` carries REQ-215, REQ-064, REQ-065, FLOW-009 by
+- [x] G8. `PRD/sections/` carries REQ-215, REQ-064, REQ-065, FLOW-009 by
       intent.
-- [ ] G9 (manual). REQ-202 pair: Life Tracker screenshot before/after this
+- [x] G9 (manual). REQ-202 pair: Life Tracker screenshot before/after this
       slice (it reuses `SheetShell`/`ConfirmSheet` from slice B but touches
       no shared token/stylesheet file directly) — captured at 390×844 and
       1440×900 to confirm no regression, saved to
       `docs/design/ui-reimagining/build-screenshots/g/`.
-- [ ] G10 (manual). Browser scenarios at 390×844 and 1440×900: the whole
+- [x] G10 (manual). Browser scenarios at 390×844 and 1440×900: the whole
       screen fits without horizontal scroll at both widths; the price date
       moves to the header on desktop.
-- [ ] G11 (manual). Cleanup evidence recorded: browser closed, owned
+- [x] G11 (manual). Cleanup evidence recorded: browser closed, owned
       servers stopped, ports released, capture output path named.
 
 ## Verification

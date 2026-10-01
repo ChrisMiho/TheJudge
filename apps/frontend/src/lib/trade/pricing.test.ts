@@ -7,8 +7,13 @@ import {
   entryContribution,
   entryHasMissingPrice,
   entryUnitPrice,
+  formatTradeDifference,
+  formatTradeVerdict,
   formatUsd,
+  normalizeSideName,
+  pileTier,
   sideTotal,
+  tradeVerdict,
   type TradeEntry
 } from "./pricing";
 
@@ -132,6 +137,88 @@ describe("Frontend - Trade", () => {
 
     it("B3: returns false when neither usd nor usdFoil is present", () => {
       expect(defaultFoilForPrinting(printing({ usd: null, usdFoil: null }))).toBe(false);
+    });
+  });
+
+  // REQ-215: five relative tiers, the richer side always 5.
+  describe("pileTier", () => {
+    it("is 1 when both sides are empty", () => {
+      expect(pileTier(0, 0)).toBe(1);
+    });
+
+    it("gives the richer (or tied) side tier 5", () => {
+      expect(pileTier(100, 50)).toBe(5);
+      expect(pileTier(50, 50)).toBe(5);
+      expect(pileTier(10, 0)).toBe(5);
+    });
+
+    it("tiers the lighter side by its share of the richer", () => {
+      expect(pileTier(96, 100)).toBe(5); // 95%+
+      expect(pileTier(80, 100)).toBe(4); // 75%+
+      expect(pileTier(60, 100)).toBe(3); // 50%+
+      expect(pileTier(30, 100)).toBe(2); // 25%+
+      expect(pileTier(10, 100)).toBe(1); // under 25%
+      expect(pileTier(0, 100)).toBe(1);
+    });
+  });
+
+  // REQ-215/REQ-064: verdict bands differ from the tier bands (95/85/60, not
+  // 95/75/50/25) — a coarser read than the five pile tiers.
+  describe("tradeVerdict / formatTradeVerdict", () => {
+    const sideName = (side: "A" | "B") => (side === "A" ? "Side A" : "Side B");
+
+    it("is Even only when the totals tie to the cent", () => {
+      expect(tradeVerdict(21.25, 21.25)).toEqual({ kind: "even" });
+      expect(formatTradeVerdict(tradeVerdict(0, 0), sideName)).toBe("Even");
+    });
+
+    it("is Fair trade at 95%+ share", () => {
+      expect(formatTradeVerdict(tradeVerdict(96, 100), sideName)).toBe("Fair trade");
+    });
+
+    it("Slightly favors at 85-95% share", () => {
+      expect(formatTradeVerdict(tradeVerdict(88, 100), sideName)).toBe("Slightly favors Side B");
+    });
+
+    it("Leans toward at 60-85% share", () => {
+      expect(formatTradeVerdict(tradeVerdict(70, 100), sideName)).toBe("Leans toward Side B");
+    });
+
+    it("Lopsided under 60% share, with the rounded percent behind", () => {
+      expect(formatTradeVerdict(tradeVerdict(50, 100), sideName)).toBe("Lopsided — Side B by 50%");
+      expect(formatTradeVerdict(tradeVerdict(0, 100), sideName)).toBe("Lopsided — Side B by 100%");
+    });
+
+    it("names whichever side is actually ahead", () => {
+      expect(formatTradeVerdict(tradeVerdict(100, 50), sideName)).toBe("Lopsided — Side A by 50%");
+    });
+  });
+
+  describe("formatTradeDifference", () => {
+    const sideName = (side: "A" | "B") => (side === "A" ? "Side A" : "Side B");
+
+    it("names the ahead side with a + amount", () => {
+      expect(formatTradeDifference(21.25, 19.4, sideName)).toBe("Side A +$1.85");
+      expect(formatTradeDifference(19.4, 21.25, sideName)).toBe("Side B +$1.85");
+    });
+
+    it("reads as even on a tie", () => {
+      expect(formatTradeDifference(0, 0, sideName)).toBe("Side A and Side B are even");
+    });
+  });
+
+  describe("normalizeSideName", () => {
+    it("trims to 20 characters", () => {
+      expect(normalizeSideName("A", "x".repeat(30))).toBe("x".repeat(20));
+    });
+
+    it("restores the default when blank", () => {
+      expect(normalizeSideName("A", "   ")).toBe("Side A");
+      expect(normalizeSideName("B", "")).toBe("Side B");
+    });
+
+    it("keeps a trimmed custom name", () => {
+      expect(normalizeSideName("A", "  Alex  ")).toBe("Alex");
     });
   });
 });

@@ -100,15 +100,18 @@ async function addCard(
   await user.type(search, cardName.slice(0, 5));
   await user.click(within(side(sideId)).getByRole("button", { name: new RegExp(`^${cardName}`) }));
 
-  const pickerElement = await within(side(sideId)).findByRole("group", {
+  // The printing picker now hosts on the shared SheetShell (REQ-065/REQ-208),
+  // portaled to document.body — it is not a DOM descendant of the side
+  // section, so these queries are document-wide (`screen`), not `within`.
+  const pickerElement = await screen.findByRole("group", {
     name: `Choose a printing for ${cardName}`
   });
   const [firstRow] = within(pickerElement).getAllByRole("listitem");
-  await user.click(within(firstRow).getByRole("button"));
+  await user.click(within(firstRow).getByRole("button", { name: /nonfoil/i }));
 
   await waitFor(() => {
     expect(
-      within(side(sideId)).queryByRole("group", { name: `Choose a printing for ${cardName}` })
+      screen.queryByRole("group", { name: `Choose a printing for ${cardName}` })
     ).not.toBeInTheDocument();
     expect(within(side(sideId)).queryByText("Loading price…")).not.toBeInTheDocument();
   });
@@ -119,12 +122,17 @@ async function changePrinting(
   user: ReturnType<typeof userEvent.setup>,
   sideId: "A" | "B",
   cardName: string,
-  printingLabel: string | RegExp
+  printingLabel: string | RegExp,
+  finish: "nonfoil" | "foil" = "nonfoil"
 ): Promise<void> {
   await user.click(
     within(side(sideId)).getByLabelText(new RegExp(`^Change printing for ${cardName}`))
   );
-  await user.click(within(side(sideId)).getByRole("button", { name: printingLabel }));
+  // Portaled to document.body (SheetShell) — document-wide query.
+  const row = screen.getByRole("button", {
+    name: new RegExp(`${printingLabel instanceof RegExp ? printingLabel.source : printingLabel}.*${finish}`, "i")
+  });
+  await user.click(row);
 }
 
 describe("Frontend - Trade", () => {
@@ -166,12 +174,12 @@ describe("Frontend - Trade", () => {
 
       await renderBalancer();
 
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Even trade");
+      expect(screen.getByText("Add cards to weigh the trade")).toBeInTheDocument();
       expect(screen.getByLabelText("Side A card search")).not.toBeDisabled();
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
-    it("shows a loading state for the card list, then an even trade with no snapshot line yet", async () => {
+    it("shows a loading state for the card list, then the empty-trade state with no snapshot line yet", async () => {
       render(<TradeBalancer />);
 
       expect(screen.getByText("Loading card list…")).toBeInTheDocument();
@@ -179,7 +187,7 @@ describe("Frontend - Trade", () => {
       await waitFor(() => {
         expect(screen.getByLabelText("Side A card search")).not.toBeDisabled();
       });
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Even trade");
+      expect(screen.getByText("Add cards to weigh the trade")).toBeInTheDocument();
       // Nothing has been priced yet — no bulk price snapshot to report.
       expect(screen.queryByText(/^Prices as of /)).not.toBeInTheDocument();
     });
@@ -193,11 +201,12 @@ describe("Frontend - Trade", () => {
       const entry = within(side("A")).getByRole("listitem");
       expect(entry).toHaveTextContent("Unlimited Edition (2ED) #162");
       expect(sideTotalText("A")).toBe("$10.00");
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent(
-        "Side A is ahead by $10.00"
-      );
+      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Side A +$10.00");
       await waitFor(() => {
-        expect(screen.getByText("Prices as of 5 June 2026")).toBeInTheDocument();
+        // Shown twice (REQ-215): the header's right-hand slot at 768px+ and
+        // under the title below it — jsdom renders both regardless of
+        // viewport, so this asserts on all copies rather than exactly one.
+        expect(screen.getAllByText("Prices as of 5 June 2026").length).toBeGreaterThan(0);
       });
     });
 
@@ -221,9 +230,7 @@ describe("Frontend - Trade", () => {
       await addCard(user, "A", "Lightning Bolt");
       await addCard(user, "B", "Black Lotus");
 
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent(
-        "Side B is ahead by $20.00"
-      );
+      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Side B +$20.00");
 
       await user.click(
         within(side("A")).getByLabelText("Toggle foil for Lightning Bolt (Side A)")
@@ -246,9 +253,7 @@ describe("Frontend - Trade", () => {
 
       await user.click(within(side("B")).getByLabelText("Remove Black Lotus (Side B)"));
       expect(sideTotalText("B")).toBe("$0.00");
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent(
-        "Side A is ahead by $10.00"
-      );
+      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Side A +$10.00");
     });
 
     it("flags a missing selected-mode price and counts it as $0", async () => {
@@ -330,26 +335,26 @@ describe("Frontend - Trade", () => {
       await user.click(
         within(side("A")).getByLabelText("Change printing for Lightning Bolt (Side A)")
       );
-      const pickerElement = within(side("A")).getByRole("group", {
+      const pickerElement = screen.getByRole("group", {
         name: "Choose a printing for Lightning Bolt"
       });
       const picker = within(pickerElement);
 
-      const unlimitedOption = picker.getByRole("button", { name: /Unlimited Edition \(2ED\) #162/ });
-      expect(unlimitedOption.querySelector("img")).toHaveAttribute(
+      const unlimitedRow = picker.getByText("Unlimited Edition (2ED) #162").closest("li");
+      expect(unlimitedRow?.querySelector("img")).toHaveAttribute(
         "src",
         deriveCardImageUrl("bolt-2ed")
       );
 
-      const magicOption = picker.getByRole("button", { name: /Magic 2010 \(M10\) #146/ });
-      expect(magicOption.querySelector("img")).toHaveAttribute(
+      const magicRow = picker.getByText("Magic 2010 (M10) #146").closest("li");
+      expect(magicRow?.querySelector("img")).toHaveAttribute(
         "src",
         deriveCardImageUrl("bolt-m10")
       );
       // Two distinct printings of the same card render two distinct images —
       // the image, not just text, disambiguates them.
-      expect(unlimitedOption.querySelector("img")?.getAttribute("src")).not.toBe(
-        magicOption.querySelector("img")?.getAttribute("src")
+      expect(unlimitedRow?.querySelector("img")?.getAttribute("src")).not.toBe(
+        magicRow?.querySelector("img")?.getAttribute("src")
       );
     });
 
@@ -365,9 +370,13 @@ describe("Frontend - Trade", () => {
       await renderBalancer();
       await addCard(user, "A", "Lightning Bolt");
 
-      const freshness = await screen.findByText(/^Prices as of /);
-      expect(freshness).toHaveTextContent("Prices as of 5 June 2026");
-      expect(freshness.textContent).not.toMatch(/T22:21:13\.248Z|\d{2}:\d{2}|Z$/);
+      // Shown twice (REQ-215: header slot at 768px+, below the title under it).
+      const freshnessCopies = await screen.findAllByText(/^Prices as of /);
+      expect(freshnessCopies.length).toBeGreaterThan(0);
+      for (const freshness of freshnessCopies) {
+        expect(freshness).toHaveTextContent("Prices as of 5 June 2026");
+        expect(freshness.textContent).not.toMatch(/T22:21:13\.248Z|\d{2}:\d{2}|Z$/);
+      }
     });
 
     it("degrades safely when the snapshot value is unparseable, leaving pricing intact", async () => {
@@ -403,7 +412,7 @@ describe("Frontend - Trade", () => {
       const alert = await screen.findByRole("alert");
       expect(alert).toHaveTextContent("The card list is unavailable right now.");
       expect(alert).toHaveTextContent("500");
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Even trade");
+      expect(screen.getByText("Add cards to weigh the trade")).toBeInTheDocument();
       expect(screen.getByLabelText("Side A card search")).toBeDisabled();
     });
 

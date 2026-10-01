@@ -2,7 +2,13 @@ import { useRef, useState } from "react";
 
 import { NO_MATCH_COPY } from "../../lib/search";
 import { fetchCardPrintings, type CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
-import { formatUsd, sideTotal, type TradeEntry, type TradeSideId } from "../../lib/trade/pricing";
+import {
+  formatUsd,
+  normalizeSideName,
+  sideTotal,
+  type TradeEntry,
+  type TradeSideId
+} from "../../lib/trade/pricing";
 import type { CardMetadataItem } from "../../types";
 import { ScanCameraSurface } from "../ScanCameraSurface";
 import { PrintingPicker } from "./PrintingPicker";
@@ -21,6 +27,10 @@ type PendingCard = { oracleId: string; name: string } | null;
 
 export type TradeSideProps = {
   sideId: TradeSideId;
+  /** REQ-215: the side's current name — "Side A"/"Side B" by default, or a
+   * player's own rename (1-20 characters, ephemeral — never persisted). */
+  sideName: string;
+  onRenameSide: (sideId: TradeSideId, name: string) => void;
   entries: TradeEntry[];
   cardMetadata: CardMetadataItem[];
   searchIndex: OracleSearchEntry[];
@@ -28,16 +38,24 @@ export type TradeSideProps = {
   isSearchDisabled: boolean;
   entryMetaById: Record<string, TradeEntryPricingMeta>;
   scan: TradeScan;
-  onAddByOracle: (sideId: TradeSideId, oracleId: string, name: string, preferredPrintingId?: string) => void;
+  onAddByOracle: (
+    sideId: TradeSideId,
+    oracleId: string,
+    name: string,
+    preferredPrintingId?: string,
+    preferredFoil?: boolean
+  ) => void;
   onToggleFoil: (sideId: TradeSideId, instanceId: string) => void;
   onQuantityChange: (sideId: TradeSideId, instanceId: string, quantity: number) => void;
   onRemove: (sideId: TradeSideId, instanceId: string) => void;
-  onChangePrinting: (sideId: TradeSideId, instanceId: string, printing: CardPrintingPrice) => void;
+  onChangePrinting: (sideId: TradeSideId, instanceId: string, printing: CardPrintingPrice, foil: boolean) => void;
   onRetryPricing: (instanceId: string) => void;
 };
 
 export function TradeSide({
   sideId,
+  sideName,
+  onRenameSide,
   entries,
   searchIndex,
   isMetadataLoading,
@@ -57,7 +75,9 @@ export function TradeSide({
   // Guards a pending fetch's resolution against a stale write after Cancel or
   // a second suggestion tap swapped `pendingCard` out from under it.
   const pendingOracleIdRef = useRef<string | null>(null);
-  const sideLabel = `Side ${sideId}`;
+  const [isRenaming, setIsRenaming] = useState(false);
+  const [nameDraft, setNameDraft] = useState(sideName);
+  const sideLabel = sideName;
   const total = sideTotal(entries);
   const isScanOpen = scan.activeSideId === sideId;
   const scanNotice = scan.notice?.sideId === sideId ? scan.notice.message : null;
@@ -105,12 +125,13 @@ export function TradeSide({
       });
   }
 
-  // C2: picking a printing adds the card carrying that exact printing —
-  // `preferredPrintingId` selects it once `TradeBalancer`'s own fetch
-  // resolves, which it does immediately (`fetchCardPrintings` cache hit).
-  function handleSelectPendingPrinting(printing: CardPrintingPrice): void {
+  // C2: picking a printing adds the card carrying that exact printing and
+  // finish — `preferredPrintingId`/`preferredFoil` select them once
+  // `TradeBalancer`'s own fetch resolves, which it does immediately
+  // (`fetchCardPrintings` cache hit).
+  function handleSelectPendingPrinting(printing: CardPrintingPrice, foil: boolean): void {
     if (!pendingCard) return;
-    onAddByOracle(sideId, pendingCard.oracleId, pendingCard.name, printing.id);
+    onAddByOracle(sideId, pendingCard.oracleId, pendingCard.name, printing.id, foil);
     clearPending();
     setQuery("");
   }
@@ -121,13 +142,49 @@ export function TradeSide({
     clearPending();
   }
 
+  // REQ-215: a side is renamed by tapping its name — a short inline text
+  // field (1-20 characters; blank restores the default). The name lives only
+  // as long as the trade.
+  function beginRename(): void {
+    setNameDraft(sideName);
+    setIsRenaming(true);
+  }
+
+  function commitRename(): void {
+    onRenameSide(sideId, normalizeSideName(sideId, nameDraft));
+    setIsRenaming(false);
+  }
+
   return (
     <section
       aria-label={sideLabel}
       className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
     >
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-base font-semibold text-zinc-100">{sideLabel}</h3>
+        {isRenaming ? (
+          <input
+            autoFocus
+            aria-label={`Rename ${sideLabel}`}
+            value={nameDraft}
+            maxLength={20}
+            onChange={(event) => setNameDraft(event.target.value)}
+            onBlur={commitRename}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") commitRename();
+              if (event.key === "Escape") setIsRenaming(false);
+            }}
+            className="motion-focus min-w-0 flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1 text-base font-semibold text-zinc-100"
+          />
+        ) : (
+          <button
+            type="button"
+            aria-label={`Rename ${sideLabel}`}
+            onClick={beginRename}
+            className="motion-focus rounded-lg px-1 text-base font-semibold text-zinc-100 transition hover:text-accent-soft"
+          >
+            {sideLabel}
+          </button>
+        )}
         <p className="text-sm font-semibold text-zinc-100" aria-label={`${sideLabel} total`}>
           {formatUsd(total)}
         </p>
@@ -257,8 +314,8 @@ export function TradeSide({
                 onQuantityChange(sideId, instanceId, quantity)
               }
               onRemove={(instanceId) => onRemove(sideId, instanceId)}
-              onChangePrinting={(instanceId, printing) =>
-                onChangePrinting(sideId, instanceId, printing)
+              onChangePrinting={(instanceId, printing, foil) =>
+                onChangePrinting(sideId, instanceId, printing, foil)
               }
               onRetryPricing={onRetryPricing}
             />

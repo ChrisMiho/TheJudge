@@ -1349,6 +1349,43 @@ body {
   text-align: right;
 }
 
+/* REQ-215 (ui-reimagining-build): Trade Balancer's two piles of gold. A
+ * tier-up drops in with a slight overshoot; a tier-down lifts and fades.
+ * Transform/opacity only (NFR-006); nothing loops idle — each keyframe plays
+ * once per tier transition, triggered by the caller re-keying the SVG. */
+@keyframes trade-pile-tier-drop-in {
+  0% { transform: translateY(-14px) scale(0.92); opacity: 0; }
+  70% { transform: translateY(2px) scale(1.03); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes trade-pile-tier-lift-fade {
+  0% { transform: translateY(0); opacity: 1; }
+  100% { transform: translateY(-10px); opacity: 0.55; }
+}
+
+.trade-pile-tier-up {
+  animation: trade-pile-tier-drop-in 550ms var(--motion-ease-emphasized) both;
+}
+
+.trade-pile-tier-down {
+  animation: trade-pile-tier-lift-fade var(--motion-slow) var(--motion-ease-out) both;
+}
+
+.trade-pile-surface {
+  transition:
+    filter var(--motion-base) var(--motion-ease-out),
+    opacity var(--motion-base) var(--motion-ease-out);
+}
+
+.trade-pile-richer {
+  filter: drop-shadow(0 0 6px rgb(var(--accent) / 0.45));
+}
+
+.trade-pile-lighter {
+  opacity: 0.82;
+}
+
 @keyframes scan-confirm-pop {
   0% { opacity: 0; transform: scale(0.8); }
   15% { opacity: 1; transform: scale(1.06); }
@@ -1403,7 +1440,9 @@ body {
   .wait-inscription-line-lift,
   .wait-inscription-seal-ring,
   .wait-inscription-mote,
-  .wait-inscription-bubble::after {
+  .wait-inscription-bubble::after,
+  .trade-pile-tier-up,
+  .trade-pile-tier-down {
     animation-delay: 0ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;

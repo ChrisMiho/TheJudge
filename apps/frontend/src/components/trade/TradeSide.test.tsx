@@ -57,6 +57,8 @@ function renderSide(overrides: Partial<TradeSideProps> = {}): { onAddByOracle: R
   render(
     <TradeSide
       sideId="A"
+      sideName="Side A"
+      onRenameSide={vi.fn()}
       entries={[]}
       cardMetadata={cardMetadata}
       searchIndex={searchIndex}
@@ -144,12 +146,12 @@ describe("Frontend - Trade", () => {
       const pickerElement = await screen.findByRole("group", {
         name: "Choose a printing for Lightning Bolt"
       });
-      await user.click(within(pickerElement).getByRole("button", { name: /Magic 2010/ }));
+      await user.click(within(pickerElement).getByRole("button", { name: /Magic 2010 M10 nonfoil/ }));
 
-      expect(onAddByOracle).toHaveBeenCalledWith("A", "oracle-bolt", "Lightning Bolt", "bolt-m10");
+      expect(onAddByOracle).toHaveBeenCalledWith("A", "oracle-bolt", "Lightning Bolt", "bolt-m10", false);
     });
 
-    it("C3: Cancel returns to the search box with the query text intact and no card added", async () => {
+    it("C3: Cancel (the sheet's close control) returns to the search box with the query text intact and no card added", async () => {
       vi.stubGlobal(
         "fetch",
         vi.fn(() =>
@@ -162,10 +164,10 @@ describe("Frontend - Trade", () => {
       const { onAddByOracle } = renderSide();
 
       await searchAndTapSuggestion(user, "Light", "Lightning Bolt");
-      const pickerElement = await screen.findByRole("group", {
+      await screen.findByRole("group", {
         name: "Choose a printing for Lightning Bolt"
       });
-      await user.click(within(pickerElement).getByRole("button", { name: "Cancel" }));
+      await user.click(screen.getByRole("button", { name: "Cancel choosing a printing for Lightning Bolt" }));
 
       expect(
         screen.queryByRole("group", { name: "Choose a printing for Lightning Bolt" })

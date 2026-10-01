@@ -28,7 +28,7 @@ export type TradeEntryRowProps = {
   onToggleFoil: (instanceId: string) => void;
   onQuantityChange: (instanceId: string, quantity: number) => void;
   onRemove: (instanceId: string) => void;
-  onChangePrinting: (instanceId: string, printing: CardPrintingPrice) => void;
+  onChangePrinting: (instanceId: string, printing: CardPrintingPrice, foil: boolean) => void;
   onRetryPricing: (instanceId: string) => void;
 };
 
@@ -183,9 +183,10 @@ export function TradeEntryRow({
           cardName={name}
           printings={alternatePrintings}
           selectedPrintingId={printing.id}
+          selectedFoil={entry.foil}
           onCancel={() => setIsPickerOpen(false)}
-          onSelect={(nextPrinting) => {
-            onChangePrinting(entry.instanceId, nextPrinting);
+          onSelect={(nextPrinting, foil) => {
+            onChangePrinting(entry.instanceId, nextPrinting, foil);
             setIsPickerOpen(false);
           }}
         />
