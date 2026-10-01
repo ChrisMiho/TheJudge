@@ -86,9 +86,11 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Suite navigation + Theme |
-| Phone / Desktop | Rail: corner band (hit box capped per DEC-137) when tray closed. Open tray: full-height of **visible shell side**, width per navigation DECs (not a free full-viewport panel past shell). Theme orbs on one row (DEC-152). |
-| Fit | Overlay; no page scroll. Opaque over destination content; rail Menu/History icons hidden/unclickable while open; close via outside click / Escape (DEC-140/147/150) |
-| Notes | DEC-122, DEC-133, DEC-137, DEC-147, DEC-150, DEC-152, REQ-127, REQ-131 |
+| Phone | ☰ Menu button (≥44px) at the left of the banner header. Open tray: slides in from the left, full height of the **visible shell side**; opaque over destination content |
+| Desktop/tablet | Same ☰ trigger; the open tray is a floating card inset from the viewport edges, rounded, sized to its content (not full height) |
+| Theme band | Six equal cells, each ≥40px; when six no longer fit, the band slides with an arrow at each end nudging two cells, the chosen cell scrolled into view on open; from 320px up all six fit with no arrows; Colorless's colour well and Reset to gray sit beneath, wrapping |
+| Fit | Overlay; no page scroll. The tray closes on its ✕, a tap outside it, and Escape; the ☰ trigger is covered and not hit-testable while it is open (REQ-127) |
+| Notes | DEC-122, DEC-133, DEC-137, DEC-147, DEC-150, REQ-127, REQ-131, REQ-207. The destination list is REQ-206's |
 
 #### Card detail popup (suite-wide)
 

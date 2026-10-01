@@ -21,6 +21,7 @@ import {
   createMemoryStorage,
   getUrlFromRequest,
   jsonResponse,
+  navigateToPath,
   openStackBuilder,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
@@ -36,12 +37,20 @@ async function openPortalMenu(user: ReturnType<typeof userEvent.setup>): Promise
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
 }
 
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
 async function selectDestination(
   user: ReturnType<typeof userEvent.setup>,
   destinationName: string
 ): Promise<void> {
+  if (destinationName === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = destinationName === "Quick Question" ? "Ask a Question" : destinationName;
   await openPortalMenu(user);
-  await user.click(screen.getByRole("menuitem", { name: destinationName }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
 }
 
 async function selectPalette(user: ReturnType<typeof userEvent.setup>, paletteName: string): Promise<void> {
@@ -115,7 +124,7 @@ describe("Global theme reach across destinations", () => {
     expect(screen.getByRole("button", { name: "Switch feature" }).className).toContain("portal-menu-rail");
 
     await openPortalMenu(user);
-    expect(screen.getByRole("menuitem", { name: "Quick Question" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("menuitem", { name: "Ask a Question" })).toHaveAttribute("aria-current", "true");
     expect(screen.getByRole("button", { name: "Theme: Red" })).toHaveAttribute("aria-pressed", "true");
   });
 
@@ -209,10 +218,12 @@ describe("Global theme reach across destinations", () => {
     fireEvent.change(screen.getByLabelText("Customize Colorless color"), {
       target: { value: "#0a0a0a" }
     });
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("10 10 10");
+    // REQ-099: #0a0a0a is near-black and fails the readability floors as picked, so it
+    // is lifted (hue kept) rather than applied unchanged.
+    expect(document.documentElement.style.getPropertyValue("--accent")).not.toBe("10 10 10");
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("menuitem", { name: "Quick Question" }));
+    await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "cou");
     await user.click(await screen.findByRole("button", { name: "Counterspell" }));
 

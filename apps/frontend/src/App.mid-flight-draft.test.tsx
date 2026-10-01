@@ -9,14 +9,30 @@ import {
   installMemoryLocalStorage,
   installMemorySessionStorage,
   jsonResponse,
+  navigateToPath,
   uninstallMemoryLocalStorage,
   uninstallMemorySessionStorage,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
 async function switchToDestination(user: ReturnType<typeof userEvent.setup>, label: string): Promise<void> {
+  if (label === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = label === "Quick Question" ? "Ask a Question" : label;
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name: label }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
+}
+
+// REQ-114/115/213: the dedicated "Conversation history" rail icon retires — History
+// opens from the Menu's "Question History" row instead.
+async function openHistory(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Switch feature" }));
+  await user.click(screen.getByRole("menuitem", { name: "Question History" }));
 }
 
 // A history row's select button and its Delete control (DEC-143) both mention the question
@@ -110,7 +126,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
     // still-saved Draft, so opening History exercises the Draft row rather than in-memory state.
     // Game context has no Start Over control, so simulate the disconnect a different way:
     // open History directly from the staged step and confirm the Draft row itself is present.
-    await user.click(screen.getByRole("button", { name: "Conversation history" }));
+    await openHistory(user);
     const draftRow = await screen.findByRole("button", { name: /Draft/ });
     expect(draftRow).toBeInTheDocument();
   });
@@ -170,7 +186,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await user.type(screen.getByLabelText("Magic question"), "Does lifelink trigger on deathtouch damage?");
       expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
 
       const draft = localStorage.getItem("thejudge.conversationDraft.lookup");
@@ -193,7 +209,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await advanceToBattlefieldZoneCollection(user);
       expect(localStorage.getItem("thejudge.conversationDraft.game")).toBeNull();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
 
       const draft = localStorage.getItem("thejudge.conversationDraft.game");
@@ -209,11 +225,11 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await switchToDestination(user, "Quick Question");
       await user.type(screen.getByLabelText("Magic question"), "Does trample carry over lethal damage?");
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
       expect(await screen.findByText("Earlier answer")).toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       expect(await screen.findByRole("button", { name: /Draft/ })).toBeInTheDocument();
     });
 
@@ -224,7 +240,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
 
       await switchToDestination(user, "Quick Question");
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
 
       expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();

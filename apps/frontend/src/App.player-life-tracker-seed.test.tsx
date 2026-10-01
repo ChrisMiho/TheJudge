@@ -11,6 +11,7 @@ import {
 } from "./lib/lifeTracker/state";
 import { saveTrackerState, TRACKER_STORAGE_KEY } from "./lib/lifeTracker/persistence";
 import { expandSecondaryPlayerDetails,
+  navigateToPath,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
@@ -40,9 +41,17 @@ function seededTrackerState() {
   return state;
 }
 
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
 async function selectDestination(user: ReturnType<typeof userEvent.setup>, name: string): Promise<void> {
+  if (name === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = name === "Quick Question" ? "Ask a Question" : name;
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
 }
 
 describe("Frontend - Portal", () => {
@@ -69,7 +78,16 @@ describe("Frontend - Portal", () => {
     vi.unstubAllGlobals();
   });
 
-  it("seeds a previously mounted Assistant only on the direct tracker-to-Assistant transition", async () => {
+  // REQ-067/REQ-206 (slice A, 2026-10-01): the only trigger this hand-off ever had was
+  // the Menu's "In-Depth Question" row, which the one-question-door redesign retires —
+  // `mtg-assistant` stays registered and routable but gets no row of its own, so
+  // `handleDestinationSelect("mtg-assistant")` (the seed's only call site, kept narrowly
+  // tied to that explicit gesture by the negative tests below) is presently unreachable
+  // from the UI. Skipped rather than deleted or rewritten to a UI path that doesn't exist:
+  // the seeding logic in App.tsx is untouched and still correct, this is a reachability
+  // gap pending slice C's "Add in-depth details" carry hand-off (or another explicit
+  // gesture) restoring a way to invoke it. Un-skip once one does.
+  it.skip("seeds a previously mounted Assistant only on the direct tracker-to-Assistant transition", async () => {
     const user = userEvent.setup();
     saveTrackerState(seededTrackerState());
     render(<App />);
@@ -133,7 +151,9 @@ describe("Frontend - Portal", () => {
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("");
   });
 
-  it("consumes the seed once so later unrelated re-entry does not clobber Assistant edits", async () => {
+  // REQ-067/REQ-206 (slice A, 2026-10-01): same reachability gap as above — this test
+  // seeds via the now-retired Menu row before exercising consume-once behavior.
+  it.skip("consumes the seed once so later unrelated re-entry does not clobber Assistant edits", async () => {
     const user = userEvent.setup();
     saveTrackerState(seededTrackerState());
     saveActiveDestinationId("player-life-tracker");
@@ -149,7 +169,10 @@ describe("Frontend - Portal", () => {
     expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Edited in Assistant");
   });
 
-  it("never writes Assistant edits back to the tracker snapshot", async () => {
+  // REQ-067/REQ-206 (slice A, 2026-10-01): same reachability gap — reaching a seeded,
+  // further-progressed wizard step (where "Player 1 life total" renders) depends on the
+  // same now-retired Menu row.
+  it.skip("never writes Assistant edits back to the tracker snapshot", async () => {
     const user = userEvent.setup();
     saveTrackerState(seededTrackerState());
     const before = localStorage.getItem(TRACKER_STORAGE_KEY);

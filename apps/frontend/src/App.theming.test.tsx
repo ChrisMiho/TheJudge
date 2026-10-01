@@ -205,17 +205,22 @@ describe("Theme palette changes preserve workflow state", () => {
       target: { value: "#123456" }
     });
 
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("18 52 86");
-    expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe("18 52 86");
-    expect(document.documentElement.style.getPropertyValue("--accent-soft")).toBe("18 52 86");
-    expect(document.documentElement.style.getPropertyValue("--accent-contrast")).toBe("255 255 255");
+    // REQ-099: #123456 is a near-black navy that fails both readability
+    // floors as picked, so it is lifted (hue kept) rather than applied
+    // unchanged — assert the floors hold, not a specific lifted RGB.
+    const liftedAccent = document.documentElement.style.getPropertyValue("--accent");
+    expect(liftedAccent).not.toBe("18 52 86");
+    expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe(liftedAccent);
+    expect(["255 255 255", "9 9 11"]).toContain(
+      document.documentElement.style.getPropertyValue("--accent-contrast")
+    );
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Theme: Green" }));
     expect(document.documentElement.style.getPropertyValue("--accent")).toBe("10 122 66");
 
     await user.click(screen.getByRole("button", { name: "Theme: Colorless" }));
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("18 52 86");
+    expect(document.documentElement.style.getPropertyValue("--accent")).toBe(liftedAccent);
 
     await user.click(screen.getByRole("button", { name: "Reset to gray" }));
     expect(document.documentElement.style.getPropertyValue("--accent")).toBe("82 82 91");
@@ -226,7 +231,10 @@ describe("Theme palette changes preserve workflow state", () => {
 describe("Neutral palette backdrop", () => {
   it("does not leave the app shell background biased toward blue-950", () => {
     expect(appCss).not.toContain("#172554");
-    expect(appCss).toContain("background: linear-gradient(135deg, #09090b 0%, #18181b 45%, #09090b 100%);");
+    // REQ-200: a flat dark ground, one colour per profile, no gradient — the
+    // old hard-coded gradient is gone, replaced by the `--ground` token.
+    expect(appCss).not.toMatch(/\.page-shell\s*{[^}]*linear-gradient/);
+    expect(appCss).toContain("background: rgb(var(--ground));");
   });
 });
 

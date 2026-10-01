@@ -15,15 +15,24 @@ import {
   expandSecondaryPlayerDetails,
   getUrlFromRequest,
   jsonResponse,
+  navigateToPath,
   selectZoneTab
 } from "./test/appTestHelpers";
 
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
 async function selectDestination(
   user: ReturnType<typeof userEvent.setup>,
   destinationName: string
 ): Promise<void> {
+  if (destinationName === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = destinationName === "Quick Question" ? "Ask a Question" : destinationName;
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name: destinationName }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
 }
 
 function lifeCard(player: string): HTMLElement {
@@ -74,7 +83,17 @@ describe("Frontend - Portal", () => {
     vi.unstubAllGlobals();
   });
 
-  it("carries a persisted live table through one-way Assistant handoff without cross-player or reverse-sync leaks", async () => {
+  // REQ-067/REQ-206 (slice A, 2026-10-01): the only trigger this hand-off ever had was
+  // the Menu's "In-Depth Question" row, which the one-question-door redesign retires —
+  // `mtg-assistant` stays registered and routable but gets no row of its own, so
+  // `handleDestinationSelect("mtg-assistant")` (the seed's only call site in App.tsx,
+  // kept narrowly tied to that explicit gesture — see the negative tests in
+  // App.player-life-tracker-seed.test.tsx) is presently unreachable from the UI.
+  // Skipped rather than deleted or rewritten to a UI path that doesn't exist: the
+  // seeding logic is untouched and still correct, this is a reachability gap pending
+  // slice C's "Add in-depth details" carry hand-off (or another explicit gesture)
+  // restoring a way to invoke it. Un-skip once one does.
+  it.skip("carries a persisted live table through one-way Assistant handoff without cross-player or reverse-sync leaks", async () => {
     const user = userEvent.setup();
     const firstMount = render(<App />);
 

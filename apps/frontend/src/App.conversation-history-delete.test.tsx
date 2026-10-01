@@ -15,9 +15,18 @@ import {
 
 const HISTORY_STORAGE_KEY = "thejudge.conversationHistory.entries";
 
+// REQ-067: the Menu lists one question door — "Ask a Question", not "Quick Question".
 async function switchToDestination(user: ReturnType<typeof userEvent.setup>, label: string): Promise<void> {
+  const menuLabel = label === "Quick Question" ? "Ask a Question" : label;
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name: label }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
+}
+
+// REQ-114/115/213: the dedicated "Conversation history" rail icon retires — History
+// opens from the Menu's "Question History" row instead.
+async function openHistory(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Switch feature" }));
+  await user.click(screen.getByRole("menuitem", { name: "Question History" }));
 }
 
 function seedCompletedConversation(
@@ -98,11 +107,11 @@ describe("Frontend - Quick Lookup", () => {
       render(<App />);
 
       await switchToDestination(user, "Quick Question");
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: selectEntryMatcher("Active question") }));
       expect(await screen.findByText("Active answer")).toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: /^Delete:.*Other question/ }));
       await user.click(screen.getByRole("button", { name: /^Confirm delete:.*Other question/ }));
 
@@ -122,11 +131,11 @@ describe("Frontend - Quick Lookup", () => {
       render(<App />);
 
       await switchToDestination(user, "Quick Question");
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: selectEntryMatcher("Earlier question") }));
       expect(await screen.findByText("Earlier answer")).toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: /^Delete:.*Earlier question/ }));
       await user.click(screen.getByRole("button", { name: /^Confirm delete:.*Earlier question/ }));
 
@@ -146,7 +155,7 @@ describe("Frontend - Quick Lookup", () => {
       render(<App />);
 
       await switchToDestination(user, "Quick Question");
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: /^Delete:.*Kept question/ }));
       await user.click(screen.getByRole("button", { name: /^Cancel delete:.*Kept question/ }));
 
@@ -189,11 +198,11 @@ describe("Frontend - MTG Assistant", () => {
       const user = userEvent.setup();
       render(<App />);
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: selectEntryMatcher("Earlier game question") }));
       expect(await screen.findByText("Earlier game answer")).toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       await user.click(await screen.findByRole("button", { name: /^Delete:.*Earlier game question/ }));
       await user.click(screen.getByRole("button", { name: /^Confirm delete:.*Earlier game question/ }));
 

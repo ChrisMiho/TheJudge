@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { screen, within } from "@testing-library/react";
+import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NO_MATCH_COPY } from "../lib/search";
 import type { CardDetailBlock } from "../lib/cardDetail";
@@ -150,6 +150,29 @@ export function uninstallMemorySessionStorage(): void {
  * say so here rather than depending on which destination happens to lead the registry.
  * Call after any `installMemorySessionStorage()`, so the seed lands in the storage under test.
  */
+/**
+ * REQ-067/REQ-206: `in-depth` stays registered and routable with no row of
+ * its own in the Menu (its row — Ask a Question's "Add in-depth details" —
+ * ships in slice C's carry hand-off). Mid-test navigation to it goes through
+ * the URL — the same mechanism `useActiveDestination`'s own `navigate()`
+ * uses (REQ-140/DEC-157: URL is the source of truth) — via the browser
+ * History API plus a manually dispatched `popstate`, since calling
+ * `window.history.pushState` directly does not itself notify React Router's
+ * listener (bound to `popstate`), but updates `window.location` immediately,
+ * so dispatching `popstate` afterward lets the router pick up the change.
+ */
+export async function navigateToPath(path: string): Promise<void> {
+  await act(async () => {
+    // React Router's own history state shape ({ idx, key, usr }) — a bare `{}`
+    // state confuses its internal index tracking (its own `handlePop` reads
+    // `state.idx`), so this mirrors it closely enough for the popstate it
+    // dispatches next to read as one of its own POP navigations.
+    const currentIdx = typeof window.history.state?.idx === "number" ? window.history.state.idx : 0;
+    window.history.pushState({ idx: currentIdx + 1, key: Math.random().toString(36).slice(2) }, "", path);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+}
+
 export function startOnInDepthQuestion(): void {
   try {
     globalThis.sessionStorage?.setItem("thejudge.portal.activeDestinationId", "mtg-assistant");

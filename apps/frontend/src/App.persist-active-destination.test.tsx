@@ -7,6 +7,7 @@ import {
   installMemoryLocalStorage,
   installMemorySessionStorage,
   jsonResponse,
+  navigateToPath,
   uninstallMemoryLocalStorage,
   uninstallMemorySessionStorage
 } from "./test/appTestHelpers";
@@ -86,12 +87,13 @@ describe("Frontend - Portal", () => {
 
       const searchInput = screen.getByLabelText("Card search");
       await user.type(searchInput, "lightning");
+      // REQ-067/REQ-206: `in-depth` has no Menu row of its own — reached by direct
+      // navigation instead of a menu click.
+      await navigateToPath("/in-depth");
       await user.click(screen.getByRole("button", { name: "Switch feature" }));
-      await user.click(screen.getByRole("menuitem", { name: "In-Depth Question" }));
-      await user.click(screen.getByRole("button", { name: "Switch feature" }));
-      await user.click(screen.getByRole("menuitem", { name: "Quick Question" }));
+      await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
 
-      expect(screen.getByLabelText("Card search")).toBe(searchInput);
+      expect(await screen.findByLabelText("Card search")).toBe(searchInput);
       expect(searchInput).toHaveValue("lightning");
     });
   });

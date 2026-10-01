@@ -5,19 +5,19 @@
     {
       "id": "A1",
       "statement": "npm run quality:check passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run quality:check" }
     },
     {
       "id": "A2",
       "statement": "npm --workspace apps/frontend run test passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm --workspace apps/frontend run test" }
     },
     {
       "id": "A3",
       "statement": "FeaturePortalMenu lists exactly one question door and the full REQ-067 inventory",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/portal/FeaturePortalMenu.tsx",
@@ -28,7 +28,7 @@
     {
       "id": "A4",
       "statement": "Theme band renders six 40px cells, no names, overflow arrows only when they do not fit",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/portal/ThemeSection.tsx",
@@ -39,7 +39,7 @@
     {
       "id": "A5",
       "statement": "The hamburger tap area matches its painted bounds and the Menu closes three ways",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/PageShell.tsx",
@@ -50,7 +50,7 @@
     {
       "id": "A6",
       "statement": "Custom Colorless keeps its hue and passes the REQ-200 contrast floor in all six profiles",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/lib/theme/applyPalette.ts",
@@ -61,7 +61,7 @@
     {
       "id": "A7",
       "statement": "PRD/sections carries REQ-207, REQ-099, REQ-113, REQ-114, REQ-115, REQ-127, REQ-131, REQ-067, REQ-200, REQ-116, FLOW-007, FLOW-010 by intent",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",
@@ -72,25 +72,25 @@
     {
       "id": "A8",
       "statement": "The ambient scene is CSS-only and visibly stills under prefers-reduced-motion, observed in the browser",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "A9",
       "statement": "REQ-202 Life Tracker before/after pair captured at 390x844 and 1440x900",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "A10",
       "statement": "Browser scenarios observed at 390x844 and 1440x900 for Menu geometry, Theme band fit, and colour repaint on selection",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "A11",
       "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     }
   ]

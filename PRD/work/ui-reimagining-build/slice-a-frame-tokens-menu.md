@@ -1,6 +1,6 @@
 # Slice A — Frame: tokens, ambient scene, banner header, Menu tray, Theme band, font
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -88,31 +88,31 @@ the ring rule itself is carried, not re-defined, by this slice).
 
 ## Acceptance criteria
 
-- [ ] A1. `npm run quality:check` passes.
-- [ ] A2. `npm --workspace apps/frontend run test` passes.
-- [ ] A3. `FeaturePortalMenu` lists exactly one question door ("Ask a
+- [x] A1. `npm run quality:check` passes.
+- [x] A2. `npm --workspace apps/frontend run test` passes.
+- [x] A3. `FeaturePortalMenu` lists exactly one question door ("Ask a
       Question") and the full REQ-067 inventory, with no leftover Quick
       Question / In-Depth Question split.
-- [ ] A4. The Theme band renders six 40px cells with no colour names;
+- [x] A4. The Theme band renders six 40px cells with no colour names;
       overflow arrows appear only when six cells do not fit.
-- [ ] A5. The ☰ button's hit target matches its painted bounds (REQ-114)
+- [x] A5. The ☰ button's hit target matches its painted bounds (REQ-114)
       and the Menu closes on outside tap, Escape, and re-tap (REQ-127).
-- [ ] A6. Custom Colorless renders with its hue kept and passes the REQ-200
+- [x] A6. Custom Colorless renders with its hue kept and passes the REQ-200
       contrast floor over the scene in all six profiles.
-- [ ] A7. `PRD/sections/` carries REQ-207, REQ-099, REQ-113, REQ-114,
+- [x] A7. `PRD/sections/` carries REQ-207, REQ-099, REQ-113, REQ-114,
       REQ-115, REQ-127, REQ-131, REQ-067, REQ-200, REQ-116, FLOW-007,
       FLOW-010 by intent.
-- [ ] A8 (manual). The ambient scene is CSS-only (no canvas, no animation
+- [x] A8 (manual). The ambient scene is CSS-only (no canvas, no animation
       library, no script-driven loop) and visibly stills under
       `prefers-reduced-motion: reduce`, observed in the browser.
-- [ ] A9 (manual). REQ-202 pair: Life Tracker screenshot before/after this
+- [x] A9 (manual). REQ-202 pair: Life Tracker screenshot before/after this
       slice's token and header changes, at 390×844 and 1440×900, saved to
       `docs/design/ui-reimagining/build-screenshots/a/`.
-- [ ] A10 (manual). Browser scenarios observed at 390×844 and 1440×900: Menu
+- [x] A10 (manual). Browser scenarios observed at 390×844 and 1440×900: Menu
       slides in full-height on phone / floats as a card on desktop; all six
       Theme cells fit without arrows at both widths; each colour repaints
       ground, scene and header band on selection (FLOW-007).
-- [ ] A11 (manual). Cleanup evidence recorded: browser closed, any
+- [x] A11 (manual). Cleanup evidence recorded: browser closed, any
       agent-started dev server stopped, ports released, capture output path
       named.
 

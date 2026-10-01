@@ -106,45 +106,45 @@ language live here.
 
 ### The Menu corner rail and tray
 
-- Built: the suite's single navigation affordance is a **top-left corner rail** —
-  a radial-gradient glow anchored at the header corner that fades to fully
-  transparent well inside its own box, with no border and no separate button on
-  top; the glow area itself is the trigger. Selecting it opens a **full-height
-  left tray** of the outer shell that slides in from the left edge
-  (`transform: translateX`), staying docked inline per-screen and never fixed to
-  the viewport (a `fixed` fallback survives in code only as a defensive net for a
-  hypothetical headerless destination). The brand block centers in the header row;
-  the step-name text renders as an in-flow eyebrow above each step's own content,
-  not in header chrome. (DEC-122, DEC-109, DEC-133)
-- Built: the tray lists the registered destinations in registry order — **Quick
-  Question, In-Depth Question, Life Tracker, Trade Balancer** — then the **Send
-  feedback** action entry (which opens the feedback modal without switching the
-  active destination), then the palette-only Theme section. Rows render full-bleed,
-  separated by rules that meet the tray's left wall; the active entry keeps a check
-  mark and quiet fill. Registry order also supplies the no-stored-preference
-  default: **Quick Question** leads and is the default destination. (DEC-135,
-  DEC-104, DEC-095)
-- Built: the tray fills the visible shell side (viewport ∩ shell on tall
-  scrollable pages), with matching top- and bottom-left shell radii and an optional
-  quiet, non-interactive brand mark in unused lower space. It is opaque across its
-  full painted bounds — no destination text, control, or artwork remains legible
-  through it — and its painted content does not overflow the shell/viewport bottom.
-  (DEC-133, DEC-147, REQ-113, REQ-122)
-- Built: on the two conversation-bearing destinations (In-Depth Question, Quick
-  Question) the rail splits into **side-by-side Menu + History zones** in a single
-  `2.75rem`-tall band, Menu leading and History trailing. Life Tracker and Trade
-  Balancer keep the single-zone Menu-only rail. Suite chrome's interactive box may
-  not extend past the affordance it paints: the single-zone rail's interactive box
-  is `5.5rem × 3.5rem` while its gradient keeps painting at `5.5rem × 10.5rem` as
-  `pointer-events: none` decoration; compliance is verified by hit-testing, not by
-  eye. (DEC-137, DEC-126, REQ-114, REQ-113)
-- Built: while the tray is open, neither the Menu trigger nor the History zone is
-  visible or hit-testable (`aria-hidden`, `tabIndex={-1}`, `visibility: hidden`,
-  `pointer-events: none`), and the tray fully occludes the under-rail History zone.
-  The tray closes exclusively by outside click / Escape — the rail icons are not
-  the open-state close control. Menu↔History mutual exclusivity still applies when
-  History is opened by other means. (DEC-150, DEC-140, DEC-147, REQ-115, REQ-127,
-  REQ-122)
+- Built: the suite's single navigation affordance is the **☰ Menu button** at the
+  left of a banner header — at least 44px, about a quarter larger than the former
+  corner rail on a phone and a third on desktop — with the brand centred (a
+  breathing orb with the colour's badge, the wordmark, "MTG Assistant") on a lit
+  band carrying a hairline of the colour's light and the profile's own element.
+  Selecting ☰ opens the Menu tray, which slides in from the left: full height of
+  the visible shell side below `768px`, a floating inset rounded card sized to its
+  content at `768px`+. The step-name text renders as an in-flow eyebrow above each
+  step's own content, not in header chrome. (REQ-207, DEC-109, DEC-133)
+- Built: the tray lists **Ask a Question, Question History, Life Tracker, Trade
+  Balancer** — then the **Send feedback** action entry (which opens the feedback
+  modal without switching the active destination), then the palette-only Theme
+  band. Ask a Question is `quick-lookup`'s Menu label and reads current while
+  `in-depth` is open too, since `in-depth` has no row of its own (REQ-206);
+  Question History is a fixed row, not a registry entry, opening the active
+  destination's own history trigger (REQ-213). Rows render full-bleed, separated
+  by rules that meet the tray's left wall; the active entry keeps a check mark and
+  quiet fill. The no-stored-preference default is still `quick-lookup`. (REQ-067,
+  REQ-206, REQ-213, DEC-135, DEC-104, DEC-095)
+- Built: below `768px` the tray fills the visible shell side (viewport ∩ shell on
+  tall scrollable pages), with matching top- and bottom-left shell radii; at
+  `768px`+ it is a floating card inset from the viewport edges, rounded, sized to
+  its content. Either way it is opaque across its full painted bounds — no
+  destination text, control, or artwork remains legible through it — its painted
+  content does not overflow the shell/viewport bottom, and its lower space carries
+  the colour's scene at a whisper. (DEC-133, DEC-147, REQ-113, REQ-122, REQ-207)
+- Built: every destination — including the two conversation-bearing ones, In-Depth
+  Question and Quick Question — carries the same single ☰ trigger; the former
+  split Menu + History band is retired (REQ-213: History is a Menu row, not a
+  second rail zone). Suite chrome's interactive box may not extend past the
+  affordance it paints: the ☰ button's interactive box equals its painted bounds,
+  at least 44px, with the banner's decorative band and element art
+  `pointer-events: none`; compliance is verified by hit-testing, not by eye.
+  (REQ-114, REQ-207, REQ-213)
+- Built: while the tray is open, the ☰ trigger is covered and not hit-testable
+  (`aria-hidden`, `tabIndex={-1}`, `visibility: hidden`, `pointer-events: none`).
+  The tray closes on its ✕, an outside click, or Escape; choosing Question History
+  closes the tray before its sheet opens. (DEC-150, DEC-140, DEC-147, REQ-115,
+  REQ-127, REQ-122, REQ-213)
 - Built: the active-destination choice persists across a refresh within the same
   tab via guarded `sessionStorage` (demoted to the bare-`/` fallback under
   DEC-157); each destination's staged/conversation/follow-up state still resets on
@@ -166,13 +166,14 @@ language live here.
   interpolate; no UA sniffing, JS device detection, or separate mobile/desktop
   trees. The Theme section exposes no layout/profile control. (DEC-117, REQ-096,
   NFR-011)
-- Built: the Theme section's palette orbs sit on one row within the tray; the
-  section takes a normal inset rather than the rail-clearing row inset (it sits well
-  below the rail's icon zone). (REQ-131, DEC-135)
+- Built: the Theme section is one segmented band the tray's width, six equal cells
+  (never narrower than 40px), sliding with an arrow at each end when six no longer
+  fit; it takes a normal inset rather than the rail-clearing row inset. (REQ-131,
+  REQ-207, DEC-135)
 - Built: the catalog is six globally shared MTG-color profiles, ordered **White,
   Blue, Black, Red, Green, Colorless**, with Blue the default; each supplies curated
   `accent` / `accent-strong` / `accent-soft` / `accent-contrast` values through the
-  existing four-token contract, and each orb swatch shows that profile's
+  existing four-token contract, and each Theme cell's light shows that profile's
   `accent-soft` value. Colorless alone exposes an inline full-spectrum custom-color
   input plus **Reset to gray**: a chosen custom RGB is applied to `accent` /
   `accent-strong` / `accent-soft` unchanged, with no contrast validation or
@@ -180,10 +181,12 @@ language live here.
   to other profiles and back. Loading a retired or otherwise unsupported stored
   palette ID (the former Violet/Emerald/Amber/Rose catalog) deletes that stored
   value and falls back to Blue. (DEC-119, REQ-099)
-- Built: all six Theme orbs render on a single row, with the Theme block/tray
-  extending as needed so the last orb never wraps to a second row on its own; when
-  Colorless is selected, its custom-color input and Reset control render **centered
-  underneath** the orb row rather than beside it. (DEC-152, REQ-131)
+- Built: an unchosen cell is a faint wash of its colour with its symbol in the
+  colour's light; the chosen cell is filled with the colour's light, the symbol
+  dark on it, with a small glow; no colour names or blurb (hover titles and
+  accessible names carry them). When Colorless is selected, its custom-color input
+  and Reset control render **centered underneath** the band, wrapping cleanly.
+  (DEC-152, REQ-131, REQ-207)
 
 ### The shared answered-conversation workspace
 
@@ -327,6 +330,15 @@ language live here.
   Functional wait-state motion (the ask-AI waiting panel, the inline follow-up
   spinner) predates this baseline and is unchanged by it. (DEC-079, REQ-059,
   NFR-006)
+- Built: behind every page plays the chosen colour's **ambient scene** — two
+  drifting haze sheets, a field of glowing dust, the colour's badge large, blurred
+  and faint in the centre, and the colour's element (White beams, Blue runes, Black
+  fog, Red embers, Green leaves, Colorless turning geometry) — CSS-animated with
+  transform/opacity only, one density and one opacity number per scene, still
+  under reduced motion, and at a whisper inside the Menu tray. The ground is one
+  flat colour per profile from the REQ-200 token set; one typeface (Inter,
+  self-hosted) serves titles and body; no surface carries corner decoration.
+  (REQ-207, REQ-200, REQ-201, NFR-006)
 
 ## Shared layout language
 
@@ -369,15 +381,19 @@ not product truth.
   `min(48rem, 92vw)` — 768px at a 1440px viewport (was 670px under the former `42rem`
   column), and the cap still binds on ultra-wide displays. (DEC-145, REQ-124,
   `screen-layout.md`)
-- Single-zone Menu rail (Life Tracker, Trade Balancer): interactive box `5.5rem × 3.5rem`;
-  gradient paints at `5.5rem × 10.5rem` as `pointer-events: none` decoration, so the
-  variant's appearance is byte-for-byte unchanged. (DEC-137, REQ-114)
-- Split Menu+History rail (In-Depth, Quick Question): two zones side-by-side, each
-  `2.75rem × 2.75rem`, in one `2.75rem` band — required because only 70px exists between
-  the rail top and the step eyebrow while two stacked 44px zones need 88px. (DEC-137)
-- Menu tray: full height of the visible shell side; opaque across its painted bounds;
-  painted content does not overflow the shell/viewport bottom. Theme orbs on one row.
-  (DEC-133, DEC-147, REQ-113, REQ-122, REQ-131)
+- Menu trigger: the ☰ button at the banner's left, at least 44px, interactive box
+  equal to its painted bounds; the banner's band and element art take no pointer
+  events. Superseded geometry: the single-zone corner rail (`5.5rem × 3.5rem`
+  interactive, gradient painted at `5.5rem × 10.5rem`). (REQ-114, REQ-207)
+- Superseded geometry: the split Menu+History rail (In-Depth, Quick Question) —
+  two zones side-by-side, each `2.75rem × 2.75rem`, in one `2.75rem` band. REQ-213
+  retires it: History is a Menu row, not a second rail zone, so every destination
+  carries the single ☰ trigger above. (DEC-137, REQ-114, REQ-213)
+- Menu tray: below `768px` full height of the visible shell side; at `768px`+ a
+  floating card sized to its content; opaque across its painted bounds; painted
+  content does not overflow the shell/viewport bottom. Theme band cells ≥40px,
+  sliding with arrows when six do not fit. (DEC-133, DEC-147, REQ-113, REQ-122,
+  REQ-131, REQ-207)
 - History drawer width: phone `min(22rem, 88vw)`; desktop `min(30rem, 90vw)`; left-edge
   full-height at every viewport, no `max-height` cap. Completed-history retention: 20
   entries, oldest pruned; plus at most one Draft row per destination (not counted toward

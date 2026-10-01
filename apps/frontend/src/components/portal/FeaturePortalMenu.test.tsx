@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -8,7 +8,7 @@ import { ShellBounds } from "./ShellBounds";
 import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
 import { LeftEdgeDrawerProvider } from "../../lib/portal/leftEdgeDrawerContext";
 import type { DestinationId, PortalEntry } from "../../lib/portal/types";
-import { startOnInDepthQuestion } from "../../test/appTestHelpers";
+import { navigateToPath, startOnInDepthQuestion } from "../../test/appTestHelpers";
 import { appCss, jsonResponse, getUrlFromRequest } from "../../test/appTestHelpers";
 
 const DESTINATIONS: PortalEntry[] = [
@@ -194,7 +194,10 @@ describe("FeaturePortalMenu", () => {
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
 
     const items = screen.getAllByRole("menuitem").map((item) => item.textContent);
-    expect(items).toEqual(["MTG Assistant✓", "Trade", "Demo action"]);
+    // REQ-067: a "Question History" row is always fixed right after the first entry,
+    // regardless of what entries the caller passes — see the dedicated describe block
+    // below for its own behaviour.
+    expect(items).toEqual(["MTG Assistant✓", "Question History", "Trade", "Demo action"]);
     expect(screen.getByRole("menuitem", { name: "Demo action" })).not.toHaveAttribute("aria-current");
   });
 
@@ -423,7 +426,11 @@ describe("FeaturePortalMenu", () => {
   });
 });
 
-describe("FeaturePortalMenu split rail (DEC-126)", () => {
+describe("FeaturePortalMenu single rail trigger (REQ-114/REQ-115/REQ-207)", () => {
+  // REQ-114/REQ-115/REQ-116/REQ-207: the split Menu+History rail (DEC-126) is retired —
+  // there is one ☰ trigger at every width, on every destination, whether or not the
+  // visible slot has a history trigger. History access moves into the drawer's own
+  // "Question History" row (REQ-067), covered in its own describe block below.
   function SlotHarness({ historyOnOpen }: { historyOnOpen?: () => void }): JSX.Element {
     const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>("mtg-assistant");
     return (
@@ -443,38 +450,88 @@ describe("FeaturePortalMenu split rail (DEC-126)", () => {
     );
   }
 
-  it("renders a single Menu-only zone when the visible slot has no history trigger", () => {
+  it("renders a single Menu-only trigger whether or not the visible slot has a history trigger", () => {
     render(<SlotHarness />);
-
     expect(screen.getByRole("button", { name: "Switch feature" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Conversation history" })).not.toBeInTheDocument();
   });
 
-  it("splits the rail into two sibling zones with matching stroke-SVG icons when the visible slot has a history trigger", () => {
+  it("still renders a single Menu-only trigger when the visible slot does have a history trigger", () => {
+    render(<SlotHarness historyOnOpen={vi.fn()} />);
+    const menuButton = screen.getByRole("button", { name: "Switch feature" });
+    expect(menuButton.className).toContain("portal-menu-rail");
+    expect(menuButton.className).not.toContain("portal-menu-rail-split");
+    expect(screen.queryByRole("button", { name: "Conversation history" })).not.toBeInTheDocument();
+  });
+});
+
+describe("FeaturePortalMenu Question History row (REQ-067)", () => {
+  function SlotHarness({ historyOnOpen }: { historyOnOpen?: () => void }): JSX.Element {
+    const [activeDestinationId, setActiveDestinationId] = useState<DestinationId>("mtg-assistant");
+    return (
+      <FeaturePortalMenu
+        entries={DESTINATIONS}
+        activeDestinationId={activeDestinationId}
+        onSelect={setActiveDestinationId}
+        paletteId="blue"
+        onPaletteSelect={vi.fn()}
+        colorlessCustomHex={undefined}
+        onColorlessCustomChange={vi.fn()}
+        onColorlessReset={vi.fn()}
+      >
+        <PortalSlot historyTrigger={historyOnOpen ? { onOpen: historyOnOpen } : undefined} />
+        <div>content</div>
+      </FeaturePortalMenu>
+    );
+  }
+
+  it("sits right after the first entry, ahead of every later entry", async () => {
+    const user = userEvent.setup();
     render(<SlotHarness historyOnOpen={vi.fn()} />);
 
-    const menuButton = screen.getByRole("button", { name: "Switch feature" });
-    const historyButton = screen.getByRole("button", { name: "Conversation history" });
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
 
-    expect(menuButton.closest("div")?.className).toContain("portal-menu-rail-split");
-    expect(menuButton.className).toContain("portal-menu-rail-zone");
-    expect(historyButton.className).toContain("portal-menu-rail-zone");
-    expect(menuButton.querySelector("svg")).toBeInTheDocument();
-    expect(historyButton.querySelector("svg")).toBeInTheDocument();
+    const items = screen.getAllByRole("menuitem").map((item) => item.getAttribute("aria-label"));
+    expect(items).toEqual(["MTG Assistant", "Question History", "Trade"]);
   });
 
-  it("opens the history drawer via its own zone without toggling the Menu drawer", async () => {
+  it("opens the active destination's history trigger and closes the Menu, without changing the active destination", async () => {
     const user = userEvent.setup();
     const historyOnOpen = vi.fn();
-    render(<SlotHarness historyOnOpen={historyOnOpen} />);
+    const onSelect = vi.fn();
+    render(
+      <FeaturePortalMenu
+        entries={DESTINATIONS}
+        activeDestinationId="mtg-assistant"
+        onSelect={onSelect}
+        paletteId="blue"
+        onPaletteSelect={vi.fn()}
+        colorlessCustomHex={undefined}
+        onColorlessCustomChange={vi.fn()}
+        onColorlessReset={vi.fn()}
+      >
+        <PortalSlot historyTrigger={{ onOpen: historyOnOpen }} />
+        <div>content</div>
+      </FeaturePortalMenu>
+    );
 
-    await user.click(screen.getByRole("button", { name: "Conversation history" }));
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("menuitem", { name: "Question History" }));
 
     expect(historyOnOpen).toHaveBeenCalledOnce();
+    expect(onSelect).not.toHaveBeenCalled();
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveAttribute("aria-expanded", "false");
   });
 
+  it("is present but disabled when the visible slot has no history trigger", async () => {
+    const user = userEvent.setup();
+    render(<SlotHarness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const row = screen.getByRole("menuitem", { name: "Question History" });
+    expect(row).toBeDisabled();
+  });
 });
 
 describe("FeaturePortalMenu rail-hide while open (DEC-150)", () => {
@@ -539,30 +596,24 @@ describe("FeaturePortalMenu rail-hide while open (DEC-150)", () => {
     expect(trigger.className).not.toContain("portal-menu-rail-inert");
   });
 
-  it("makes both the Menu and History zones inert while the tray is open, and restores both on close", async () => {
+  it("makes the single Menu trigger inert while the tray is open even when the visible slot has a history trigger, and restores it on close", async () => {
     const user = userEvent.setup();
     const historyOnOpen = vi.fn();
     render(<SlotHarness historyOnOpen={historyOnOpen} />);
 
     const menuButton = screen.getByRole("button", { name: "Switch feature" });
-    const historyButton = screen.getByRole("button", { name: "Conversation history" });
 
     await user.click(menuButton);
 
     expect(menuButton).toHaveAttribute("aria-hidden", "true");
     expect(menuButton).toHaveAttribute("tabindex", "-1");
-    expect(historyButton).toHaveAttribute("aria-hidden", "true");
-    expect(historyButton).toHaveAttribute("tabindex", "-1");
     expect(screen.getByRole("menu")).toBeInTheDocument();
 
-    // Belt-and-suspenders: even a direct click while inert must not open History.
-    fireEvent.click(historyButton);
-    expect(historyOnOpen).not.toHaveBeenCalled();
-
+    // The Question History row (not a second rail zone) is how history opens while the
+    // tray is open — covered in its own describe block.
     await user.keyboard("{Escape}");
 
     expect(menuButton).not.toHaveAttribute("aria-hidden");
-    expect(historyButton).not.toHaveAttribute("aria-hidden");
   });
 
   it("restores the trigger (same node) after an outside click closes the tray (only outside-click/Escape close it now)", async () => {
@@ -834,7 +885,7 @@ describe("FeaturePortalMenu decorative brand mark (REQ-113 item 4)", () => {
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
 
     const items = screen.getAllByRole("menuitem");
-    expect(items.map((item) => item.textContent)).toEqual(["MTG Assistant✓", "Trade"]);
+    expect(items.map((item) => item.textContent)).toEqual(["MTG Assistant✓", "Question History", "Trade"]);
     expect(items.some((item) => item.textContent?.includes("TheJudge"))).toBe(false);
   });
 
@@ -901,11 +952,9 @@ describe("Chrome integration", () => {
     // renders in normal flow inside the header grid, then lifts via `.portal-slot-tab`'s
     // negative margin to meet .page-card's own top border (see index.css) — rather than
     // falling back to the viewport-fixed floating tab.
-    // Game context now always supplies a historyTrigger (REQ-107), so the rail renders
-    // in its two-zone split form (see .portal-menu-rail-split) — the button's immediate
-    // parent is that split-zone wrapper, not `.portal-slot-tab` itself. Climb to the
-    // nearest `.portal-slot-tab` ancestor (present in both single- and two-zone forms)
-    // rather than the immediate parent div.
+    // REQ-114/115: the split Menu+History rail is retired — one ☰ trigger at every
+    // width, on every destination, whether or not the visible slot has a history
+    // trigger. The button's immediate parent is `.portal-slot-tab` directly.
     const portalContainerClassName = portalButton.closest(".portal-slot-tab")?.className ?? "";
     expect(portalContainerClassName).toContain("portal-slot-tab");
     expect(portalContainerClassName).not.toContain("fixed");
@@ -916,29 +965,34 @@ describe("Chrome integration", () => {
 
     const user = userEvent.setup();
     await user.click(portalButton);
-    expect(screen.getByRole("menuitem", { name: "In-Depth Question" })).toBeInTheDocument();
+    // REQ-067: `in-depth` has no row of its own; "Ask a Question" reads current instead.
+    expect(screen.getByRole("menuitem", { name: "Ask a Question" })).toHaveAttribute("aria-current", "true");
+    expect(screen.queryByRole("menuitem", { name: "In-Depth Question" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /^Theme: / }).length).toBeGreaterThan(0);
     expect(portalButton).not.toHaveTextContent("Menu");
   });
 
-  it("switches to Quick Question and back via the portal menu", async () => {
+  it("switches to Ask a Question and back to In-depth details via the portal menu / direct navigation", async () => {
     const user = userEvent.setup();
+    startOnInDepthQuestion();
     const { default: App } = await import("../../App");
     render(<App />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("menuitem", { name: "Quick Question" }));
+    await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
 
     expect(screen.getByLabelText("Card search")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("menuitem", { name: "In-Depth Question" }));
+    // REQ-067/REQ-206: `in-depth` stays registered and routable with no row of its own —
+    // reached by direct navigation (slice C's "Add in-depth details" carry, once built).
+    await navigateToPath("/in-depth");
 
-    expect(screen.getByLabelText("Card search")).not.toBeVisible();
+    await waitFor(() => expect(screen.getByLabelText("Card search")).not.toBeVisible());
   });
 
   it("keeps the portal button docked in-flow after flipping between destinations and back", async () => {
     const user = userEvent.setup();
+    startOnInDepthQuestion();
     const { default: App } = await import("../../App");
     render(<App />);
 
@@ -948,11 +1002,10 @@ describe("Chrome integration", () => {
     // now hidden inside the other, inactive destination. Re-query the button fresh after
     // each switch since portaling into a new container can replace the DOM node.
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("menuitem", { name: "Quick Question" }));
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    await user.click(screen.getByRole("menuitem", { name: "In-Depth Question" }));
+    await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
+    await navigateToPath("/in-depth");
 
-    const portalButton = screen.getByRole("button", { name: "Switch feature" });
+    const portalButton = await screen.findByRole("button", { name: "Switch feature" });
     // Same two-zone-wrapper caveat as above: climb to the nearest `.portal-slot-tab`
     // ancestor rather than the immediate parent div.
     const portalContainerClassName = portalButton.closest(".portal-slot-tab")?.className ?? "";

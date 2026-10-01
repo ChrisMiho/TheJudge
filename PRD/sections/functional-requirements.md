@@ -1546,12 +1546,12 @@
 ### REQ-067
 - Title: Feature portal — top-level app navigation
 - Priority: high
-- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — one icon-only Menu button docked in the **top-middle** of every destination header — opening the registered destinations, action entries, and palette-only Theme section. Destinations come from an extensible registry rather than shipping their own entry chrome; registered destinations include **In-Depth Question**, **Quick Question**, **Trade Balancer**, and **Life Tracker**. Switching is a frontend-only view switch that preserves each destination's in-session data (with DEC-120's presentation-only exception for In-Depth secondary-player-details), while only the active destination id persists across reload in the same tab (DEC-095 as amended by DEC-104/DEC-107/DEC-109/DEC-110/DEC-111/DEC-117/DEC-120).
+- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — one ☰ Menu button at the left of every destination's banner header (REQ-207) — opening the registered destinations, action entries, and palette-only Theme band. Destinations come from an extensible registry rather than shipping their own entry chrome; the Menu lists **Ask a Question** (`quick-lookup`, also current while `in-depth` is open), **Question History**, **Life Tracker** (`player-life-tracker`), and **Trade Balancer** (`trade-balancer`) (REQ-206, REQ-213).
 - Acceptance Criteria:
-  - an icon-only navigation Menu button sits in the **top-middle** of every destination header, docks through the destination's inline `PortalSlot`, and scrolls with that header; the viewport-fixed path remains only a defensive fallback for a future headerless destination
+  - an icon-only ☰ Menu button sits at the left of every destination's banner header (REQ-207), docks through the destination's inline `PortalSlot`, and scrolls with that header; the viewport-fixed path remains only a defensive fallback for a future headerless destination
   - the portal button, brand block, step-name column where present, and opened Menu have non-overlapping visual bounds and pointer hit areas across automatic responsive widths
   - destinations come from an **extensible registry** (a feature registers a destination entry rather than adding its own nav chrome); adding a destination requires no portal redesign
-  - opening the Menu lists **In-Depth Question** (`mtg-assistant`), **Quick Question** (`quick-lookup`), **Trade Balancer** (`trade-balancer`), and **Life Tracker** (`player-life-tracker`) with the current destination indicated
+  - opening the Menu lists **Ask a Question** (`quick-lookup`; current also while `in-depth` is open), **Question History** (an action row opening REQ-213's sheet), **Life Tracker** (`player-life-tracker`), and **Trade Balancer** (`trade-balancer`) with the current destination indicated; `in-depth` stays registered and routable with no row of its own (REQ-206)
   - the Menu may include action entries that invoke handlers without switching destination (DEC-104; v1: **Send feedback**), plus a Theme section containing palette swatches only; no layout/profile control is shown (DEC-110/DEC-117)
   - selecting a destination switches the active view; selecting the current mode is a no-op that does not reset in-progress destination data
   - switching between destinations preserves each destination's in-session data while the app stays loaded, except In-Depth secondary-player-details disclosure resets collapsed per DEC-120/REQ-100; refreshing restores only the active destination id in the same tab while each destination's internal state resets (DEC-111/REQ-090)
@@ -1576,6 +1576,7 @@
   - DEC-117/REQ-096 remove only the former density control; palette hosting, destination registry, action entries, and Menu docking remain unchanged
   - amended by DEC-122: the Menu trigger moves from a top-middle tab to a top-left corner rail, and its dropdown becomes a left-edge sliding drawer; destination registry, action entries, Theme section, in-session state preservation, and reload persistence are all unchanged, only the trigger's position and opened-panel shape are superseded
   - amended by DEC-133 / REQ-113: the open Menu panel is a full-height left tray of the outer shell (visible-bounds on tall shells, matching bottom-left radius); registry, Theme, and docking guarantees otherwise unchanged
+  - amended for the `ui-reimagining-build` pass (2026-09-30): one question door (REQ-206), Question History as a Menu row (REQ-213), and the ☰ banner trigger (REQ-207); registry, action entries, state preservation and reload persistence unchanged
 
 ### REQ-068
 - Title: Responsive scan-view layout
@@ -2377,8 +2378,8 @@
   - selecting any fixed profile immediately retints every existing accent-token consumer without resetting destination or workflow state; automated representative coverage includes In-Depth Question, Quick Question, Player Life Tracker, feature-portal chrome, and scanner accents
   - fixed-profile token use follows the existing semantic roles: accent text on dark surfaces uses `accent-soft`, accent text on light surfaces uses `accent-strong`, and text on filled accent controls uses `accent-contrast`
   - selecting Colorless with no saved custom value applies its fixed gray tokens and exposes an inline native full-spectrum color input plus `Reset to gray`
-  - choosing a custom color assigns the exact RGB unchanged to `accent`, `accent-strong`, and `accent-soft`, leaves `accent-contrast` white, applies immediately, persists separately, and is restored after switching away from and back to Colorless
-  - custom Colorless applies with no validation, warning, rejection, derived tint/shade, or contrast correction; low-contrast custom results are accepted
+  - choosing a custom color applies its hue to every token-driven surface, applies immediately, persists separately as the exact RGB picked, and is restored after switching away from and back to Colorless
+  - custom Colorless is lifted only where it would fail readability, keeping its hue: accent text and decorative dust reach at least 7:1 against the page ground, filled controls at least 2.4:1, and text on a filled control is white or near-black, whichever reads; there is no warning or rejection, and a readable pick is applied unchanged
   - `Reset to gray` removes only the saved custom RGB and immediately reapplies the fixed Colorless values
   - Violet, Emerald, Amber, and Rose are absent from the catalog; loading one of those or any unsupported selected ID deletes the stored selection and falls back to Blue
   - malformed saved custom RGB is deleted and Colorless uses its fixed gray values; unavailable storage or failed reads/writes do not block render or reset app state
@@ -2406,6 +2407,7 @@
   - the neon direction is values-only; it adds no CSS shadow, bloom, halo, animation, profile-specific component rule, or new token role
   - the refinement comparison image is preview-only and is not a shipped product asset
   - amended for the `ui-reimagining` pass (2026-09-24): REQ-200 adds surface roles per profile without changing any published hex value or the Colorless custom-RGB contract. Colorless's "artifact" reading — steel, brushed metal, a hint of warmth — is expressed through those new roles and REQ-201's motif language, not by editing Colorless's four published values
+  - amended for the `ui-reimagining-build` pass (2026-09-30): "deliberately uncorrected" custom Colorless becomes "your hue, made readable" (REQ-207); the stored value is still the exact pick, so Reset to gray and persistence are unchanged. The constraint's "no custom-Colorless contrast guarantee" is superseded by the lift above; the lift is a fixed rule, not a generated theming engine
 
 ### REQ-100
 - Title: Compact synchronized player-secondary disclosure
@@ -2736,15 +2738,15 @@
 - Priority: medium
 - Description: The open feature-portal Menu panel must read as the full left side of the outer app shell — stretching top→bottom of `.page-card` on standard destinations and the same full left-side treatment on Life Tracker's full-bleed shell — flush with the shell's bottom-left curved corner, without a partial-height cutoff and without squaring over the shell radius (DEC-133).
 - Acceptance Criteria:
-  - on a standard `.page-card` destination, the open Menu tray fills the card's left side from top to bottom even when destination/Theme content is shorter than that height
+  - below `768px`, on a standard `.page-card` destination, the open Menu tray fills the card's left side from top to bottom even when destination/Theme content is shorter than that height; at `768px`+ it is a floating card inset from the viewport edges, rounded, and sized to its content (REQ-207)
   - the tray's bottom-left corner is flush with the shell's bottom-left and uses the same bottom-left border radius as the shell so the curved edge is preserved (no square overhang into the page background)
   - when the shell is taller than the viewport, the tray sizes to the visible shell side (viewport ∩ shell) and stays flush with the on-screen top and bottom of the outer component rather than spanning the shell's full scrollable height
   - Life Tracker (full-bleed shell) receives the same full left-side height and bottom-left radius treatment as standard destinations
-  - unused lower tray space may show a quiet, non-interactive decorative TheJudge brand mark; the mark must not be a second navigation control and may be omitted only when a short shell cannot host it cleanly
-  - left-edge slide open/close, corner-rail trigger, destination/action/Theme behavior, reduced-motion, and Menu↔History mutual exclusivity remain unchanged from DEC-122/DEC-125/DEC-126
+  - unused lower tray space shows the colour's scene at a whisper over a pool of the colour's light (REQ-207); nothing there is a second navigation control
+  - left-edge slide open/close, destination/action/Theme behavior and reduced-motion remain; the trigger is REQ-207's ☰ button and History is a Menu row (REQ-213)
   - tests or stylesheet assertions cover full-shell height (or visible-bounds equivalent), matching bottom-left radius, and Life Tracker parity
 - Constraints:
-  - presentation only; shell-docked chrome (DEC-109) — tracking the shell's visible rectangle is allowed; a free-floating overlay disconnected from the shell is not
+  - presentation only; below `768px` the tray is shell-docked (DEC-109), tracking the shell's visible rectangle; at `768px`+ it is a floating card inset from the viewport edges and sized to its content (REQ-207)
   - no change to destination registry, action entries, Theme section contents, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, scan behavior, or data pipeline
   - do not redesign tray contents, consolidate EnrichmentStep brand-block JSX, or add a step-progress indicator in this requirement
 - Dependencies:
@@ -2757,25 +2759,23 @@
   - NFR-006
 - Notes:
   - follow-up to shipped `center-menu-tab-prominence` (DEC-122); EnrichmentStep brand-block consolidation remains parked
+  - amended for the `ui-reimagining-build` pass (2026-09-30): full height below `768px`, floating card at `768px`+
 
 ### REQ-114
 - Title: Suite chrome hit areas bounded to the affordance they paint
 - Priority: high
-- Description: Suite chrome must not accept taps outside the affordance it visibly paints. The feature-portal corner rail's interactive box is capped to its icon band while its radial gradient continues to paint at its current `5.5rem × 10.5rem` extent as non-interactive decoration, and the two-zone split rail's zones sit side-by-side so they clear the step-name eyebrow while holding NFR-001's per-zone touch floor (DEC-137).
+- Description: Suite chrome must not accept taps outside the affordance it visibly paints. Under the direction-1 banner header (REQ-207) the Menu trigger is the ☰ button, whose interactive box equals its painted button (at least 44px), and no header decoration — the lit band, its element art, the ambient scene — accepts pointer events.
 - Acceptance Criteria:
-  - the single-zone rail's interactive element is `5.5rem` wide × `3.5rem` tall; the region between that box and the gradient's painted extent does not accept pointer events
-  - the single-zone rail's rendered appearance is unchanged at every viewport and in every state (rest, hover, `aria-expanded`), including the top-left radius treatment, both gradient stops, and the icon's rendered position — the icon must not shift as a result of the smaller interactive box
-  - on Life Tracker, `document.elementFromPoint` over the region previously shadowed by the rail returns the player card's life control, not the Menu trigger — asserted at multiple points across the former `75 × 111` overlap, not a single sample, and the measured remaining overlap between the rail's interactive box and the "Decrease life for Player 1" control is exactly zero
-  - the split rail renders its Menu and History zones side-by-side within the rail's `5.5rem` width, each at least `2.75rem × 2.75rem`, with Menu leading and History trailing
-  - on a destination carrying a History zone, `document.elementFromPoint` over the step-name eyebrow's leading characters returns the eyebrow's own content, not a rail zone, and the rail's interactive box ends above the eyebrow's top edge
-  - both split-rail zones meet NFR-001's 44px-per-zone floor without either zone overflowing the rail's stated box
-  - the single-zone rail retains a touch target meeting NFR-001 at every viewport
+  - the ☰ button's interactive box equals its painted bounds and is at least 44px in each dimension; the banner's decorative band and element art are `pointer-events: none`
+  - on Life Tracker, `document.elementFromPoint` over the life controls nearest the header returns the life control, never the Menu trigger or header decoration, asserted at several points
+  - `document.elementFromPoint` over the step-name eyebrow's leading characters returns the eyebrow's own content, not header chrome
+  - the ☰ button meets NFR-001 at every viewport
   - no destination's content is inset, repositioned, or resized to accommodate the rail
   - verification is by hit-testing the contested regions in tests; screenshot or visual inspection alone does not satisfy this requirement
 - Constraints:
   - presentation only; the fix lives in the chrome, not in any destination's layout
   - no change to the destination registry, drawer contents, Theme section, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, or backend routes
-  - do not redesign the rail's visual language or alter its gradient values
+  - the rail's radial-gradient visual language is retired by REQ-207; this requirement's hit-area rule carries over to the ☰ button
 - Dependencies:
   - DEC-137
   - DEC-122
@@ -2790,6 +2790,7 @@
   - `3.5rem` matches the menu-row inset already used in `index.css` to clear this same icon zone
   - the single-zone rail keeps its painted `5.5rem` width because capping height alone reduces the Life Tracker overlap to zero; narrowing the width would re-center the icon 16px left, a visual change this requirement forbids
   - the side-by-side split arrangement is forced, not stylistic: only 70px exists between the rail's top and the eyebrow, while two stacked 44px zones require 88px
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the corner-rail geometry is superseded; the painted-equals-interactive rule stands
 
 ### REQ-115
 - Title: Menu tray occludes under-rail chrome when open
@@ -2814,6 +2815,7 @@
   - NFR-001
 - Notes:
   - prior "Menu trigger still toggles the tray closed" criterion is superseded by REQ-127
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the History rail zone is retired (REQ-213), so the History-occlusion criteria have no subject; the open tray still covers the ☰ trigger (REQ-127) and stays opaque over destination content (REQ-122)
 
 ### REQ-116
 - Title: Compact answered-workspace top clearance
@@ -2822,7 +2824,7 @@
 - Acceptance Criteria:
   - on resumed and freshly answered conversations at desktop and ~390×844, there is no large unused empty band between the step eyebrow/header region and View Context / first thread content attributable to oversized rail clearance
   - computed top clearance for `.adaptive-context-trigger` (or equivalent) is sized to the current side-by-side rail height, not the pre–DEC-137 stacked-rail clamp
-  - History icon/hit-target still does not overlap, clip into, or sit on the border of View Context (REQ-107)
+  - the ☰ Menu button's hit-target does not overlap, clip into, or sit on the border of View Context (REQ-107 as amended)
   - short-thread fill / Start Over reachability from REQ-109 remain satisfied
 - Constraints:
   - presentation only; no history semantics or Ask AI contract changes
@@ -3063,12 +3065,12 @@
 ### REQ-127
 - Title: Hide rail icons while Menu tray is open; outside-click close
 - Priority: high
-- Description: While the feature-portal Menu tray is open, Menu and History rail icons are not visible and not clickable; the user closes the tray by clicking/tapping outside it or pressing Escape (DEC-150).
+- Description: While the feature-portal Menu tray is open, the ☰ Menu trigger is covered and not clickable; the user closes the tray with its ✕, by clicking/tapping outside it, or by pressing Escape (DEC-150, REQ-207).
 - Acceptance Criteria:
-  - with the tray open on History-bearing and Menu-only destinations at 390×844 and 1440×900, `document.elementFromPoint` over the former Menu and History icon centers does not hit those controls
-  - Menu and History rail affordances do not paint through/over the open tray
-  - outside-click (and existing Escape) closes the tray; opening History by other means still honors Menu↔History mutual exclusivity
-  - rest-state rail (tray closed) keeps DEC-137 hit-area rules and NFR-001 floors
+  - with the tray open at 390×844 and 1440×900, `document.elementFromPoint` over the ☰ button's center does not hit it
+  - the ☰ button does not paint through or over the open tray
+  - the tray's ✕, outside-click and Escape each close it; choosing Question History closes the tray before its sheet opens
+  - the rest-state ☰ (tray closed) keeps REQ-114's hit-area rule and NFR-001's floor
 - Constraints:
   - presentation/interaction only; no registry, Theme, History persistence, or Ask AI contract changes
 - Dependencies:
@@ -3079,6 +3081,7 @@
   - REQ-115
   - NFR-001
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): one ☰ trigger, a ✕ on the tray
 
 ### REQ-128
 - Title: Suite-wide card-image detail popup
@@ -3164,12 +3167,12 @@
   - **amended during the `ui-reimagining` pass (2026-09-24)**: the strip itself was already shipped and verified live; the owner's reported friction was tile density, not a missing strip. The 160px tile is superseded by a three-tiles-visible-at-390px criterion, measured rather than chosen.
 
 ### REQ-131
-- Title: Theme orb single-row layout
+- Title: Theme band single-row layout
 - Priority: medium
-- Description: The Menu Theme section keeps all six profile orbs on one row and centers Colorless options under that row when Colorless is selected (DEC-152).
+- Description: The Menu Theme section is one six-cell band (REQ-207) that never wraps: each cell is at least 40px, and when six no longer fit the band slides with an arrow at each end; Colorless options sit centred beneath it when Colorless is selected (DEC-152).
 - Acceptance Criteria:
-  - at 390×844 and 1440×900 with the Menu tray open, the six Theme orbs share one row (the last orb is not alone on a second row)
-  - when Colorless is selected, custom color + Reset controls appear centered under the orb row
+  - at 390×844 and 1440×900 with the Menu tray open, the six Theme cells share one row with no arrows; below the width where six 40px cells fit, the band slides with an arrow at each end nudging two cells, the exhausted end's arrow fading, and the chosen cell scrolled into view on open
+  - when Colorless is selected, custom color + Reset controls appear centered under the band, wrapping cleanly
   - selecting other profiles does not show Colorless-only controls; DEC-119 catalog/persistence unchanged
 - Constraints:
   - Theme-section layout only; destination menu row geometry (DEC-135) unchanged
@@ -3179,6 +3182,7 @@
   - REQ-099
   - NFR-001
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): orbs become band cells (REQ-207)
 
 ### REQ-132
 - Title: Initial Send Request label and Enrichment ready copy
@@ -4861,7 +4865,7 @@
     `#FFFFFF` on `accent` `#0A7A42` = 5.42:1) and are floors, not targets
   - the wash never goes fully black: its darkest point stays at or above the
     measured `#09090B` luminance, so the app survives a bright game store
-  - deliberately uncorrected custom Colorless RGB (REQ-099) stays exempt from the
+  - a custom Colorless colour is lifted to REQ-099's readability floors (as amended) while keeping its hue, so it no longer sits outside them
     contrast floors, exactly as it is today
   - no token name encodes a theme mode, and no in-scope component hard-codes a
     zinc/slate colour value; adding a light theme later requires new values for
@@ -4907,6 +4911,7 @@
     block), and `sections/system-map.md`'s Theme entry
   - the contrast floors are measured current behaviour, not new quality targets:
     the redesign may not make any of the three worse than it is today
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the custom-Colorless exemption is replaced by REQ-099's readability lift, the one permitted runtime colour derivation — a fixed rule, not a contrast engine. REQ-207 is the code slice that ships this token set
 
 ### REQ-201
 - Title: Original per-colour motif kit
@@ -5155,3 +5160,43 @@
     are the baseline this requirement closes, not targets
   - the brand-mark entry also makes the REQ-203 Easter-egg trigger comfortably
     tappable
+
+### REQ-207
+- Title: Direction-1 shared chrome — banner header, Menu tray, Theme band, and the colour's ambient scene
+- Priority: high
+- Description: The shared frame every destination lives in takes the owner-approved direction-1 look and delivers the REQ-200 token set and REQ-201 motif kit in code. A banner header carries the Menu (☰) at the left and the brand centred; the Menu tray slides in from the left; Theme is a six-cell band; and a restrained, CSS-animated scene of the chosen colour's element plays behind every page.
+- Acceptance Criteria:
+  - one typeface, Inter, for body and titles (titles heavier with tighter tracking), served as a self-hosted local font file with the system stack as fallback — no runtime request to a font CDN, no display face
+  - the page ground is flat: one colour per profile from the REQ-200 token set, no gradient; neutral ground and panel fills stay the visual majority; no corner decoration, hairline bracket or flourish on any surface
+  - the header is a banner: ☰ at the left (at least 44px; about a quarter larger than today's trigger on a phone and a third on desktop), the brand centred (a breathing orb holding the colour's badge, the wordmark, "MTG Assistant") on a lit band with a hairline of the colour's light along its foot, and each profile's element drawn across the band (White low-sun rays at half strength; Blue a scatter of arcane shapes; Black fog pooling at the ends; Red a hot band with embers; Green a scatter of leaf and tree shapes; Colorless small triangles, rings, arcs, dots and crosses); the right-hand slot shows Trade Balancer's price date at `768px`+; the brand keeps the cat-wizard Easter egg (REQ-203)
+  - the Menu tray slides in from the left at every width: full height of the visible shell side below `768px`; at `768px`+ a floating card inset from the edges, rounded, sized to its content; it closes on its ✕, a tap outside it, and Escape; it stays fully opaque over destination content (REQ-122)
+  - the destination list is REQ-206's: Ask a Question, Question History (REQ-213), Life Tracker, Trade Balancer, then Send feedback past a hairline
+  - **Theme** is one segmented band the tray's width with six equal cells in catalog order (White, Blue, Black, Red, Green, Colorless): an unchosen cell is a faint wash of its colour with its symbol in the colour's light; the chosen cell is filled with the colour's light, the symbol dark on it, with a small glow; no colour names or blurb (each cell's hover title and accessible name name the colour); a cell is never narrower than 40px — when six no longer fit, the band slides with an arrow at each end nudging two cells at a time (the exhausted end's arrow fades) and the chosen cell is scrolled into view when the Menu opens; from 320px up all six fit and no arrow shows; with Colorless current, a colour well and **Reset to gray** show beneath, wrapping cleanly
+  - behind every page plays the chosen colour's **ambient scene**: two slowly drifting haze sheets, a field of glowing dust, the colour's badge large, blurred and faint in the centre, and the colour's element moving (White beams, Blue runes and constellations, Black fog and brambles, Red heat and embers, Green falling leaves, Colorless turning geometry); the same scene plays at a whisper inside the Menu tray over a pool of the colour's light fading in at its foot (Colorless's tray gets a fuller scatter of slightly brighter shapes)
+  - each scene's density and opacity are one number each, so it can be tuned down without redrawing; the scene is decorative, never carries meaning, and sits behind solid panels (the card stage, every In-depth plate) so the badge shows around them, never through them
+  - under `prefers-reduced-motion` the scene is still and every decorative motion stops (NFR-006)
+  - the REQ-200 contrast floors hold over the scene in all six profiles; a custom Colorless colour follows REQ-099
+  - every card keeps its colour-identity ring (REQ-058) on every card surface; the theme owns the glow behind a card, never its edge
+  - tests cover the band's cell floor and arrows at 280px and 390px, the tray's close paths, reduced motion stopping the scene, the font loading from the app's own origin, and the contrast floors per profile
+- Constraints:
+  - CSS-only motion (NFR-006): the scene is layered static SVG and gradients animated with CSS transforms and opacity — no script-driven animation loop, no canvas render loop, no animation library
+  - the six symbols, badges, banner elements and scene art are the app's own drawings shipped as local static files (REQ-201); no Wizards of the Coast glyph, icon font, logo, set symbol or card art
+  - the font file and scene art stay within the frontend asset budget (REQ-201, NFR-013); if a self-hosted Inter cut cannot fit, the system stack stands and no font file ships
+  - presentation only: no change to request contracts, prompts, backend routes, card metadata, or the data pipeline
+  - Life Tracker inherits this chrome, reviewed by the screenshot pair on every touching slice (REQ-202)
+- Dependencies:
+  - REQ-058
+  - REQ-099
+  - REQ-122
+  - REQ-200
+  - REQ-201
+  - REQ-202
+  - REQ-203
+  - REQ-205
+  - REQ-206
+  - REQ-213
+  - NFR-006
+  - NFR-013
+  - FLOW-007
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the approved mockup drew the element on a script-driven canvas — this build keeps the look and moves it to CSS to stay inside NFR-006

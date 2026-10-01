@@ -12,6 +12,7 @@ import {
   installMemoryLocalStorage,
   installMemorySessionStorage,
   jsonResponse,
+  navigateToPath,
   openStackBuilder,
   uninstallMemoryLocalStorage,
   uninstallMemorySessionStorage,
@@ -35,13 +36,20 @@ const coreTopics = [
   }
 ];
 
-function selectDestination(
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
+async function selectDestination(
   user: ReturnType<typeof userEvent.setup>,
   destinationName: string
 ): Promise<void> {
-  return user
-    .click(screen.getByRole("button", { name: "Switch feature" }))
-    .then(() => user.click(screen.getByRole("menuitem", { name: destinationName })));
+  if (destinationName === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = destinationName === "Quick Question" ? "Ask a Question" : destinationName;
+  await user.click(screen.getByRole("button", { name: "Switch feature" }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
 }
 
 describe("Frontend - UI flare chat motion integration", () => {

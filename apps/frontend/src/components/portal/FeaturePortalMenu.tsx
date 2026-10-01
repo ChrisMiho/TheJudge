@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { BrandMark } from "../BrandMark";
 import type { ConversationHistoryTriggerDescriptor } from "../ConversationWorkspace";
@@ -12,6 +12,25 @@ type SlotEntry = {
   node: HTMLDivElement;
   getHistoryTrigger: () => ConversationHistoryTriggerDescriptor | undefined;
 };
+
+/** REQ-213 placeholder History glyph for the Menu's "Question History" row. */
+function HistoryRowIcon(): JSX.Element {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      className="portal-menu-drawer-row-icon"
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3 3" />
+    </svg>
+  );
+}
 
 /** Three-line hamburger, matching History's stroke weight/style (DEC-126) — replaces the
     previous ☰ text glyph + scaleX stretch hack. */
@@ -34,28 +53,18 @@ function MenuIcon(): JSX.Element {
   );
 }
 
-function HistoryIcon(): JSX.Element {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="portal-menu-rail-icon"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 3" />
-    </svg>
-  );
-}
-
 export interface FeaturePortalMenuProps {
   /** Destination and action entries, rendered identically in array order (DEC-104). */
   entries: PortalEntry[];
   activeDestinationId: DestinationId;
+  /**
+   * REQ-067: a destination with no row of its own (`in-depth`, while open) reads
+   * another entry (`quick-lookup`'s "Ask a Question") as current instead. Kept
+   * distinct from `activeDestinationId` itself — which drives slot/shell-bounds
+   * visibility resolution via the `[hidden]`-ancestor check below — so aliasing
+   * the "current" row never masks a real destination switch from that check.
+   */
+  activeDestinationAliasId?: DestinationId;
   onSelect: (id: DestinationId) => void;
   paletteId: string;
   onPaletteSelect: (id: string) => void;
@@ -75,6 +84,7 @@ export interface FeaturePortalMenuProps {
 export function FeaturePortalMenu({
   entries,
   activeDestinationId,
+  activeDestinationAliasId,
   onSelect,
   paletteId,
   onPaletteSelect,
@@ -195,27 +205,54 @@ export function FeaturePortalMenu({
       className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900"
     >
       <div className="portal-menu-drawer-inner flex flex-col">
-        {entries.map((entry) => {
-          const isActive = !isPortalActionEntry(entry) && entry.id === activeDestinationId;
+        {entries.map((entry, index) => {
+          const isActive =
+            !isPortalActionEntry(entry) &&
+            (entry.id === activeDestinationId || entry.id === activeDestinationAliasId);
           return (
-            <button
-              key={entry.id}
-              type="button"
-              role="menuitem"
-              aria-label={entry.label}
-              aria-current={isActive ? "true" : undefined}
-              onClick={() => handleSelect(entry)}
-              // Full-bleed row, not an inset pill: the separator rule under each entry runs
-              // edge to edge across the drawer (the row itself carries the drawer's left
-              // text inset via `.portal-menu-drawer-row`), so the horizontal lines meet the
-              // drawer's left wall instead of stopping short of it.
-              className={`portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium transition ${
-                isActive ? "bg-zinc-800 text-zinc-100" : "text-zinc-200 hover:bg-zinc-800/70"
-              }`}
-            >
-              <span>{entry.label}</span>
-              {isActive && <span aria-hidden="true" className="ml-auto text-accent-soft">✓</span>}
-            </button>
+            <Fragment key={entry.id}>
+              <button
+                type="button"
+                role="menuitem"
+                aria-label={entry.label}
+                aria-current={isActive ? "true" : undefined}
+                onClick={() => handleSelect(entry)}
+                // Full-bleed row, not an inset pill: the separator rule under each entry runs
+                // edge to edge across the drawer (the row itself carries the drawer's left
+                // text inset via `.portal-menu-drawer-row`), so the horizontal lines meet the
+                // drawer's left wall instead of stopping short of it.
+                className={`portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium transition ${
+                  isActive ? "bg-zinc-800 text-zinc-100" : "text-zinc-200 hover:bg-zinc-800/70"
+                }`}
+              >
+                <span>{entry.label}</span>
+                {isActive && <span aria-hidden="true" className="ml-auto text-accent-soft">✓</span>}
+              </button>
+              {/* REQ-067: Question History sits right after Ask a Question, ahead of Life
+                  Tracker and Trade Balancer. Fixed at this position rather than modeled as
+                  a `PortalEntry` because its handler depends on `historyTrigger` — the
+                  currently-visible destination's own history descriptor — which only
+                  FeaturePortalMenu computes; App.tsx's entries array has no access to it.
+                  Slice I rebuilds this row's destination (REQ-213's one-list sheet); for
+                  now it opens whatever history affordance the active destination already
+                  registers, same as the former rail History icon did. */}
+              {index === 0 && (
+                <button
+                  type="button"
+                  role="menuitem"
+                  aria-label="Question History"
+                  onClick={() => {
+                    setIsOpen(false);
+                    historyTrigger?.onOpen();
+                  }}
+                  disabled={!historyTrigger}
+                  className="portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium text-zinc-200 transition hover:bg-zinc-800/70 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                >
+                  <HistoryRowIcon />
+                  <span>Question History</span>
+                </button>
+              )}
+            </Fragment>
           );
         })}
         <div className="portal-menu-drawer-section flex flex-col gap-1">
@@ -267,34 +304,12 @@ export function FeaturePortalMenu({
   // if that reference survives the open/close cycle.
   const railInertAttrs = isOpen ? { "aria-hidden": "true" as const, tabIndex: -1 } : {};
 
-  const railTrigger = historyTrigger ? (
-    <div
-      className={`portal-menu-rail portal-menu-rail-split motion-focus font-medium${
-        isOpen ? " portal-menu-rail-inert" : ""
-      }`}
-    >
-      <button
-        type="button"
-        aria-label="Switch feature"
-        aria-haspopup="true"
-        aria-expanded={false}
-        onClick={isOpen ? undefined : () => setIsOpen(true)}
-        className="portal-menu-rail-zone motion-focus border-none font-medium"
-        {...railInertAttrs}
-      >
-        <MenuIcon />
-      </button>
-      <button
-        type="button"
-        aria-label="Conversation history"
-        onClick={isOpen ? undefined : historyTrigger.onOpen}
-        className="portal-menu-rail-zone motion-focus border-none font-medium"
-        {...railInertAttrs}
-      >
-        <HistoryIcon />
-      </button>
-    </div>
-  ) : (
+  // REQ-114/REQ-115/REQ-116/REQ-207: the split Menu+History rail retires — there is
+  // one ☰ trigger (the banner header's REQ-207 Menu button) at every width, on every
+  // destination. History access moves into the drawer's own "Question History" row
+  // above; `historyTrigger` is still read (for that row), it just no longer selects
+  // between two rendered trigger shapes here.
+  const railTrigger = (
     <button
       type="button"
       aria-label="Switch feature"

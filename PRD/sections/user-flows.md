@@ -164,11 +164,11 @@
   - app is loaded
 - Main Flow:
   1. User opens the feature-portal Menu and finds its palette-only **Theme** section.
-  2. App shows White, Blue, Black, Red, Green, and Colorless in that order as named swatches, with the current profile indicated and Blue as the default.
+  2. App shows White, Blue, Black, Red, Green, and Colorless in that order as a six-cell Theme band — each cell its colour's wash and symbol, named by its hover title and accessible name rather than a visible label — with the current profile lit and Blue as the default (REQ-207).
   3. User selects a profile.
-  4. App immediately applies the selected profile to the whole surface — background wash, panel fills and edges, focus rings, the Ask AI waiting panel, and the card-detail popup — plus primary accents and the resting/hover/focus/current treatments on REQ-060's inventory, all without leaving the current workflow step (REQ-200). Player Life Tracker's own screens keep their present-day appearance; the shared chrome it inherits (menu rail, brand mark, theme section) picks up the profile like every other destination, reviewed by a screenshot pair rather than pinned (REQ-202).
+  4. App immediately applies the selected profile to the whole surface — the flat ground, the colour's ambient scene (REQ-207), panel fills and edges, focus rings, the Ask AI waiting panel, and the card-detail box — plus primary accents and the resting/hover/focus/current treatments on REQ-060's inventory, all without leaving the current workflow step (REQ-200). Player Life Tracker's table keeps its present-day appearance; the shared chrome and sheets it inherits pick up the profile like every other destination, reviewed by a screenshot pair rather than pinned (REQ-202).
   5. If the user selects Colorless, the Theme section exposes an inline full-spectrum color input and `Reset to gray`.
-  6. If the user chooses a custom color, app immediately applies the exact RGB without validation or contrast correction and remembers it independently; if the user selects Reset, app deletes only the custom value and restores fixed neutral gray.
+  6. If the user chooses a custom color, app immediately applies its hue, lifted only where it would fail readability (REQ-099 as amended), and remembers the exact pick independently; if the user selects Reset, app deletes only the custom value and restores fixed neutral gray.
   7. App stores the selected profile for the browser.
   8. On later reloads, app restores the selected profile and any remembered Colorless custom RGB before or during initial render without resetting user workflow state.
 - Edge Cases:
@@ -176,7 +176,7 @@
   - if a saved custom RGB is malformed, app deletes the custom value and uses fixed Colorless gray
   - if browser storage is unavailable or write fails, the selected profile/custom RGB may apply for the current session but app continues normally
   - selecting the current fixed profile is a no-op and does not close or reset the main gameplay workflow unless the implemented control naturally closes after selection
-  - a low-contrast custom Colorless choice is applied as chosen; the app does not warn, reject, or repair it
+  - a low-contrast custom Colorless choice is lifted to REQ-099's readability floors while keeping its hue; the app does not warn or reject it
 - Notes:
   - theme selection is frontend-only personalization and never changes submitted game context, prompt text, backend API behavior, or AI responses
   - REQ-060's inventory is the minimum that carries the restrained ambient hierarchy from DEC-081; under REQ-200 static chrome and the dominant page background are profile-driven too, bounded by REQ-200's measured contrast floors. Card-identity rings (REQ-058) stay outside the profile; Life Tracker (REQ-202) inherits the profile through shared chrome like every other destination
@@ -223,8 +223,8 @@
 - Preconditions:
   - app is loaded
 - Main Flow:
-  1. User taps the icon-only portal Menu button in the **top-middle** of the current screen's header; it is the suite's only floating/attached app-chrome affordance.
-  2. The Menu opens and lists the registered destinations — **In-Depth Question**, **Quick Question**, **Trade Balancer**, and **Life Tracker** — with the current destination indicated. It also shows the palette-only **Theme** section and any registered action entries (v1: **Send feedback**).
+  1. User taps the ☰ Menu button at the left of the current screen's banner header (REQ-207); it is the suite's only app-navigation affordance.
+  2. The Menu tray slides in and lists **Ask a Question** (current also while In-depth details is open), **Question History**, **Life Tracker**, and **Trade Balancer**, with the current destination lit; below them sit **Send feedback** and the six-cell **Theme** band (REQ-206, REQ-213).
   3. User selects another destination.
   4. App switches the active view to the selected destination without leaving the app or reloading.
   5. To return, the user opens the same Menu and selects the other destination. Palette selection may also be changed in place without switching destinations.

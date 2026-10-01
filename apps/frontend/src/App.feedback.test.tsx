@@ -82,9 +82,11 @@ describe("Frontend - Feedback", () => {
         .getAllByRole("menuitem")
         .map((item) => item.getAttribute("aria-label"));
 
+      // REQ-067: one question door ("Ask a Question", not "Quick Question"), Question
+      // History as a Menu row, and `in-depth` with no row of its own.
       expect(entryLabels).toEqual([
-        "Quick Question",
-        "In-Depth Question",
+        "Ask a Question",
+        "Question History",
         "Life Tracker",
         "Trade Balancer",
         "Send feedback"
@@ -118,7 +120,8 @@ describe("Frontend - Feedback", () => {
       await user.click(screen.getByRole("button", { name: "Close feedback" }));
       await openPortalMenu(user);
 
-      expect(screen.getByRole("menuitem", { name: "In-Depth Question" })).toHaveAttribute(
+      // REQ-067: `in-depth` has no row of its own; "Ask a Question" reads current.
+      expect(screen.getByRole("menuitem", { name: "Ask a Question" })).toHaveAttribute(
         "aria-current",
         "true"
       );
@@ -171,7 +174,7 @@ describe("Frontend - Feedback", () => {
       render(<App />);
 
       await openPortalMenu(user);
-      await user.click(screen.getByRole("menuitem", { name: "Quick Question" }));
+      await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
 
       await openFeedbackModal(user);
       const summary = await readAppStateSummary(user);

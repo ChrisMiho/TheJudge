@@ -12,13 +12,22 @@ import {
   expandSecondaryPlayerDetails,
   getUrlFromRequest,
   jsonResponse,
+  navigateToPath,
   selectZoneTab,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
 async function selectDestination(user: ReturnType<typeof userEvent.setup>, name: string): Promise<void> {
+  if (name === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = name === "Quick Question" ? "Ask a Question" : name;
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
 }
 
 function secondaryArrows(): HTMLElement[] {

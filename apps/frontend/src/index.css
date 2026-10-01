@@ -5,8 +5,11 @@
 /* Automatic mobile-first presentation. These semantic hooks share one fluid
    spacing vocabulary; viewport changes never select a different component tree. */
 .page-shell {
+  position: relative;
   min-height: 100vh;
-  background-image: linear-gradient(to bottom right, #09090b, #18181b, #09090b);
+  /* REQ-200: a flat dark ground, one colour per profile, no gradient. The
+     AmbientScene layer (REQ-207) plays behind every page's own content. */
+  background: rgb(var(--ground));
   padding-block: var(--layout-page-padding-block);
   padding-inline: var(--layout-page-padding-inline);
   color: #f4f4f5;
@@ -60,8 +63,8 @@
   flex-direction: column;
   gap: var(--layout-surface-gap);
   border-radius: 1.5rem;
-  border: 1px solid rgb(63 63 70 / 0.7);
-  background-color: rgb(24 24 27 / 0.7);
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background-color: rgb(var(--panel) / 0.7);
   padding: var(--layout-panel-padding);
 }
 
@@ -309,6 +312,22 @@
   border-top-left-radius: 1.5rem;
   border-right: 1px solid rgb(var(--accent-soft) / 0.35);
   box-shadow: 0.5rem 0 1.5rem rgb(0 0 0 / 0.25);
+}
+
+/* REQ-113/REQ-207: at 768px+ the tray stops being a full-height, shell-docked
+   panel and becomes a floating card inset from the viewport edges, rounded,
+   sized to its own content rather than the shell's full height. */
+@media (min-width: 768px) {
+  .portal-menu-drawer {
+    left: 1rem;
+    top: 1rem;
+    margin-bottom: 1rem;
+    height: auto;
+    max-height: calc(100dvh - 2rem);
+    border-radius: 1.5rem;
+    border: 1px solid rgb(var(--accent-soft) / 0.35);
+    border-right: 1px solid rgb(var(--accent-soft) / 0.35);
+  }
 }
 
 /* `min-height: 100%` (not a fixed height) stretches this flex column to the
@@ -815,14 +834,31 @@
   --layout-surface-gap: clamp(0.5rem, 1.25vw, 1rem);
   --layout-compact-gap: clamp(0.375rem, 1vw, 0.75rem);
 
-  /* Default (blue) accent tokens — mirrors the approved Blue profile so first
+  /* Default (blue) REQ-200 token set — mirrors the approved Blue profile so first
      paint matches the default palette before applyPalette.ts's effect runs.
      Overridden per-palette by applyPalette.ts via inline custom properties on
-     the document root. */
+     the document root (lib/theme/palettes.ts is the one authoritative source). */
   --accent: 3 105 161;
   --accent-strong: 29 78 216;
   --accent-soft: 125 211 252;
   --accent-contrast: 255 255 255;
+  --ground: 9 9 11;
+  --ground-wash: 3 105 161;
+  --panel: 24 24 27;
+  --panel-edge: 63 63 70;
+  --focus-ring: 125 211 252;
+
+  /* REQ-207's sheet family (shared sheet shell, card detail, printing picker,
+     Send feedback, the confirm sheet) switches at 600px — a bottom sheet
+     below it, a floating centred card from it — new and structural, scoped to
+     the sheet family only (DEC-117 / NFR-011); every other suite boundary
+     keeps 640px/768px. Declared as a token here so slice B's shared sheet
+     shell and every later consumer read one source rather than a repeated
+     magic number. CSS custom properties cannot be read by a media query
+     (`@media (min-width: var(--sheet-breakpoint))` is invalid), so this value
+     is also the canonical number a `640px`-style literal in a sheet-family
+     media query must match. */
+  --sheet-breakpoint: 600px;
 
   /* Authoritative decorative-motion vocabulary. Functional wait, scan, and
      send animations retain their independently tuned timings below. */
@@ -864,7 +900,10 @@
 
 body {
   margin: 0;
-  background: linear-gradient(135deg, #09090b 0%, #18181b 45%, #09090b 100%);
+  /* REQ-200: a flat dark ground, one colour per profile, no gradient. The
+     profile's wash, scene and badge (AmbientScene) layer on top of this
+     flat fill rather than the fill itself carrying a gradient. */
+  background: rgb(var(--ground));
   color: #e2e8f0;
   font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
   min-height: 100vh;
@@ -1114,11 +1153,154 @@ body {
   .conversation-history-overlay,
   .conversation-history-surface,
   .enrichment-card-enter,
-  .card-state-remove {
+  .card-state-remove,
+  .ambient-scene-layer {
     animation-delay: 0ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-delay: 0ms !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+/* REQ-207 / REQ-201 ambient scene — the colour's element, CSS-only (NFR-006). */
+.ambient-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  /* Behind this scope's static in-flow content (.page-card / .page-shell-bleed,
+     the Menu drawer), never through solid panels — REQ-207's "sits behind
+     solid panels so the badge shows around them, never through them". */
+  z-index: -1;
+  /* Density and opacity are each one number (REQ-207) so the whole scene can
+     be tuned without redrawing it. The tray variant plays at a whisper. */
+  --ambient-density: 1;
+  --ambient-opacity: 0.16;
+}
+
+.ambient-scene-tray {
+  --ambient-density: 0.6;
+  --ambient-opacity: 0.08;
+}
+
+/* Colorless's tray gets a fuller scatter of slightly brighter shapes (REQ-207). */
+.ambient-scene-tray.ambient-scene-motif-geometry {
+  --ambient-density: 0.85;
+  --ambient-opacity: 0.12;
+}
+
+.ambient-scene-layer {
+  position: absolute;
+  inset: 0;
+}
+
+@keyframes ambient-haze-drift-a {
+  0% { transform: translate3d(-4%, -2%, 0) scale(1.04); }
+  50% { transform: translate3d(3%, 2%, 0) scale(1.08); }
+  100% { transform: translate3d(-4%, -2%, 0) scale(1.04); }
+}
+
+@keyframes ambient-haze-drift-b {
+  0% { transform: translate3d(3%, 1%, 0) scale(1.06); }
+  50% { transform: translate3d(-3%, -2%, 0) scale(1.02); }
+  100% { transform: translate3d(3%, 1%, 0) scale(1.06); }
+}
+
+.ambient-scene-haze {
+  opacity: calc(var(--ambient-opacity) * 1.1);
+  background: radial-gradient(60% 60% at 30% 25%, rgb(var(--ground-wash) / 0.9) 0%, transparent 70%);
+  animation: ambient-haze-drift-a 48s var(--motion-ease-out) infinite;
+}
+
+.ambient-scene-haze-b {
+  background: radial-gradient(55% 55% at 72% 70%, rgb(var(--ground-wash) / 0.7) 0%, transparent 70%);
+  animation-name: ambient-haze-drift-b;
+  animation-duration: 56s;
+}
+
+@keyframes ambient-dust-drift {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -6%, 0); }
+}
+
+.ambient-scene-dust {
+  opacity: calc(var(--ambient-opacity) * var(--ambient-density) * 0.6);
+  background-image: radial-gradient(rgb(var(--ground-wash) / 0.9) 1px, transparent 1.5px);
+  background-size: 48px 48px;
+  animation: ambient-dust-drift 40s linear infinite;
+}
+
+@keyframes ambient-badge-breathe {
+  0%, 100% { opacity: calc(var(--ambient-opacity) * 1.4); transform: scale(1); }
+  50% { opacity: calc(var(--ambient-opacity) * 1.9); transform: scale(1.03); }
+}
+
+.ambient-scene-badge {
+  width: 60%;
+  height: 60%;
+  margin: auto;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  border-radius: 9999px;
+  background: radial-gradient(circle, rgb(var(--ground-wash) / 1) 0%, transparent 65%);
+  filter: blur(18px);
+  animation: ambient-badge-breathe 10s var(--motion-ease-emphasized) infinite;
+}
+
+@keyframes ambient-element-drift {
+  0% { transform: translate3d(0, 0, 0); opacity: calc(var(--ambient-opacity) * var(--ambient-density)); }
+  50% { transform: translate3d(0, -3%, 0); opacity: calc(var(--ambient-opacity) * var(--ambient-density) * 1.4); }
+  100% { transform: translate3d(0, 0, 0); opacity: calc(var(--ambient-opacity) * var(--ambient-density)); }
+}
+
+.ambient-scene-element {
+  animation: ambient-element-drift 22s var(--motion-ease-out) infinite;
+  background-repeat: repeat;
+  background-size: 120px 120px;
+}
+
+/* White — low-sun rays (REQ-207). */
+.ambient-scene-element-beams {
+  background-image: repeating-linear-gradient(
+    100deg,
+    rgb(var(--ground-wash) / 0.5) 0px,
+    rgb(var(--ground-wash) / 0.5) 2px,
+    transparent 2px,
+    transparent 64px
+  );
+}
+
+/* Blue — a scatter of arcane rune shapes (REQ-207). */
+.ambient-scene-element-runes {
+  background-image: radial-gradient(circle, rgb(var(--ground-wash) / 0.6) 2px, transparent 2.5px);
+  background-size: 72px 72px;
+}
+
+/* Black — fog pooling (REQ-207). */
+.ambient-scene-element-fog {
+  background-image: radial-gradient(80% 40% at 50% 100%, rgb(var(--ground-wash) / 0.7) 0%, transparent 70%);
+  background-size: 100% 100%;
+}
+
+/* Red — a hot band with embers (REQ-207). */
+.ambient-scene-element-embers {
+  background-image: radial-gradient(circle, rgb(var(--ground-wash) / 0.7) 1.5px, transparent 2px);
+  background-size: 54px 90px;
+}
+
+/* Green — a scatter of leaf shapes (REQ-207). */
+.ambient-scene-element-leaves {
+  background-image: radial-gradient(ellipse 10px 5px, rgb(var(--ground-wash) / 0.6) 0%, transparent 75%);
+  background-size: 64px 96px;
+}
+
+/* Colorless — turning triangles, rings, arcs, dots and crosses (REQ-207). */
+.ambient-scene-element-geometry {
+  background-image:
+    radial-gradient(circle, rgb(var(--ground-wash) / 0.55) 1.5px, transparent 2px),
+    repeating-linear-gradient(45deg, rgb(var(--ground-wash) / 0.3) 0px, transparent 1px, transparent 40px);
+  background-size: 60px 60px, 80px 80px;
 }

@@ -4,6 +4,7 @@ import { FeedbackModal } from "./components/feedback/FeedbackModal";
 import { DestinationOutlet } from "./components/portal/DestinationOutlet";
 import { FeaturePortalMenu } from "./components/portal/FeaturePortalMenu";
 import { PORTAL_DESTINATIONS } from "./components/portal/destinationRegistry";
+import type { PortalDestination } from "./lib/portal/types";
 import { useActiveDestination } from "./hooks/useActiveDestination";
 import { useThemePalette } from "./hooks/useThemePalette";
 import { feedbackFormspreeId, isMockProvider } from "./lib/env";
@@ -20,6 +21,18 @@ import type { DestinationId, PortalActionEntry } from "./lib/portal/types";
 /** Selector for the portal's own menu trigger, which stays mounted while the dropdown closes. */
 const PORTAL_TRIGGER_SELECTOR = 'button[aria-label="Switch feature"]';
 
+/**
+ * REQ-067/REQ-206: the Menu lists one question door. `mtg-assistant` (today's
+ * In-Depth Question page) stays registered and routable in `PORTAL_DESTINATIONS`
+ * (routing, `DestinationOutlet`) but gets no row of its own here — slice C's
+ * "Add in-depth details" carry hand-off is how a player reaches it. `quick-lookup`
+ * is relabeled "Ask a Question" for the Menu only; its own page copy and route
+ * are untouched by this relabel.
+ */
+const MENU_DESTINATIONS: PortalDestination[] = PORTAL_DESTINATIONS.filter(
+  (destination) => destination.id !== "mtg-assistant"
+).map((destination) => (destination.id === "quick-lookup" ? { ...destination, label: "Ask a Question" } : destination));
+
 function PortalShell(): JSX.Element {
   const { paletteId, setPalette, colorlessCustomHex, setColorlessCustom, resetColorlessCustom } =
     useThemePalette();
@@ -29,6 +42,14 @@ function PortalShell(): JSX.Element {
   const { queueSeed } = useAssistantSeed();
   const [isFeedbackModalOpen, setIsFeedbackModalOpen] = useState(false);
 
+  // Narrowly tied to an explicit "switch to Assistant via the Menu, right now"
+  // gesture — never a deep link or browser Back arriving at `mtg-assistant`
+  // (both are asserted *not* to seed; see App.player-life-tracker-seed.test.tsx).
+  // `mtg-assistant` has no Menu row of its own any more (REQ-067/REQ-206), so
+  // this handler is presently unreachable with `nextDestinationId ===
+  // "mtg-assistant"` until slice C's carry hand-off (or some other explicit
+  // gesture) calls it that way again — preserved as-is rather than
+  // generalized to "any transition", which the negative tests above rule out.
   function handleDestinationSelect(nextDestinationId: DestinationId): void {
     if (activeDestinationId === "player-life-tracker" && nextDestinationId === "mtg-assistant") {
       const trackerState = loadTrackerState();
@@ -65,8 +86,11 @@ function PortalShell(): JSX.Element {
       providerMode={isMockProvider ? "mock" : "openai"}
     >
       <FeaturePortalMenu
-        entries={[...PORTAL_DESTINATIONS, feedbackActionEntry]}
+        entries={[...MENU_DESTINATIONS, feedbackActionEntry]}
         activeDestinationId={activeDestinationId}
+        // REQ-067: Ask a Question (`quick-lookup`) reads as current while
+        // `in-depth` is open too, since it has no row of its own.
+        activeDestinationAliasId={activeDestinationId === "mtg-assistant" ? "quick-lookup" : undefined}
         onSelect={handleDestinationSelect}
         paletteId={paletteId}
         onPaletteSelect={setPalette}
