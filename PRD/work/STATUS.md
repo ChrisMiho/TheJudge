@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | All slices A–K done, 115/115 criteria true; PR #239 left `[THEJUDGE-AUTO][IN PROGRESS]` by owner direction (a look-matching pass is coming first); run `graph-20260930-055958` |
 
 ## active
 
 | Package | Note |
 | --- | --- |
+| ui-reimagining-build | Slices A–K done (115/115), PR #239 open `IN PROGRESS` by owner direction; look-matching pass next: LOOK-GAPS.md → map-out appends slices L+ → build → review compares pairs; run `graph-20260930-055958` |
 
 ## refined
 
