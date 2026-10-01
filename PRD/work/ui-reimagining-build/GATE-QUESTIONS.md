@@ -70,7 +70,7 @@ Proposed `PRD/sections/` diff (amended in place):
    (REQ-167); an add attempted past the cap is blocked with a stated limit
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-025 — Your own question opens the conversation
@@ -137,8 +137,8 @@ Proposed `PRD/sections/` diff (amended in place):
  - **`AskAiWaitingPanel` for follow-up turns — closed door.** DEC-041 replaced it
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner wrote "approved"
 
 ## REQ-099 — A custom Colorless colour is kept readable
 
@@ -168,7 +168,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-210 — Mana spent can be set on Battlefield cards (new)
@@ -219,8 +219,8 @@ Proposed `PRD/sections/` diff (new, reserved):
  - Built: In-Depth's game-context counter UI (surfaced in the roster, edited in
 ```
 
-- Verdict:
-- Reason:
+- Verdict: edit
+- Reason: Mana spent on the cards for the battlefield, graveyard, and some of the other locations that seem odd to call it out, but sometimes it does matter, so i think its fine to just include in all the zones for now, we can refine the use cases later
 
 ## REQ-211 — Copies on a Stack card (new) — recommend waiting
 
@@ -264,7 +264,7 @@ Proposed `PRD/sections/` diff (new, reserved):
 +
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-212 — Speak a question into the box (new)
@@ -306,7 +306,7 @@ Proposed `PRD/sections/` diff (new, reserved):
 +
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-017 — The per-card context form becomes one compact sheet
@@ -372,7 +372,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Zone-collection strip: fixed `w-40` / 160px tiles, image grows to fill the tile
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-021 — One Targets list that sends exactly what today's form sends
@@ -414,7 +414,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Built: mana-spent context is deterministic for every stack entry — omitted
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-005 — Players can reorder the Stack
@@ -467,7 +467,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Built: added cards render in a horizontal left-to-right strip in add order with
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -665,7 +665,7 @@ Proposed `PRD/sections/` diff (new, reserved):
  - Layout/fit: mobile-first and touch-friendly; the pre-submit stack and the
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-207 — The new frame: banner header, Menu, Theme band, and the colour's scene (new)
@@ -776,7 +776,7 @@ Proposed `PRD/sections/` diff (new, reserved):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-208 — One pop-up shape for card detail, history, printings, feedback and "are you sure?" (new)
@@ -879,7 +879,7 @@ Proposed `PRD/sections/` diff (new, reserved):
  - Built: capture fields are a category select (Bug / Suggestion / Other), a
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-209 — In-depth details: four stations, the Cards shelf and the card menu (new)
@@ -1061,7 +1061,7 @@ Proposed `PRD/sections/` diff (new, reserved):
  - Built: targets use `ContextTarget` — player targets (`targetPlayer`), card
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-213 — Question History: one list for every question, reopened live (new)
@@ -1163,7 +1163,7 @@ Proposed `PRD/sections/` diff (new, reserved):
  - Built: each completed row exposes a delete control, distinct from select-to-resume,
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-214 — The card scanner in the new frame (new)
@@ -1310,7 +1310,7 @@ Proposed `PRD/sections/` diff (new, reserved):
  - Built: printing-level scan identity stays presentation-only and is not pushed
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-215 — Trade Balancer: piles of gold, a verdict line, New trade, named sides (new)
@@ -1387,7 +1387,7 @@ Proposed `PRD/sections/` diff (new, reserved):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-202 — Life Tracker's back menus take the new look; the table stays untouched
@@ -1491,7 +1491,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -1524,7 +1524,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-007 — The Stack's count lives on its zone tab
@@ -1555,7 +1555,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-008 — Stack details live on the shelf and the card menu
@@ -1593,7 +1593,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-018 — Card collection keeps bottom-to-top order and places carried cards
@@ -1638,7 +1638,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Built: zone collection shows a non-blocking nudge when the stack zone is
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-023 — The wait inks itself in, inside the judge's bubble
@@ -1675,7 +1675,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Built: on the first success the enrichment submit form is replaced by the shared
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## NFR-006 — Motion rule: the new wait and the colour scene stay CSS-only
@@ -1701,7 +1701,7 @@ Proposed `PRD/sections/` diff (amended in place):
    - focused conversation motion (DEC-118 / REQ-098) reuses the shared CSS vocabulary, animates only newly entering content, preserves a scrolled-up reader's position, and becomes effectively immediate under reduced motion
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-029 — Start over lands on a clean Ask a Question page
@@ -1753,7 +1753,7 @@ Proposed `PRD/sections/` diff (amended in place):
    that preserves only the player roster; the former "no history persisted after
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-064 — Trade Balancer's difference gets a verdict and New trade
@@ -1796,7 +1796,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Built: the trade state is **ephemeral** — no history, no persistence across
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-065 — The printing picker gets a price pill per finish
@@ -1856,7 +1856,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - First-card wait: the balancer's warm-up ping on open overlaps the backend's
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-067 — The feature portal lists the one question door
@@ -1893,7 +1893,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-075 — Ask a Question's ruling view: your question first, cards in a strip
@@ -1937,7 +1937,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Built: when one or more cards were attached, every one of them is frozen for
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-087 — Send feedback: type as three pills, snapshot folded
@@ -1995,7 +1995,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Built: the modal reads app state only through a lazy `getFeedbackContext()`
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-100 — One "More details for all players" toggle
@@ -2019,7 +2019,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-103 — History: one list in the shared sheet, opened from the Menu
@@ -2081,7 +2081,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - View Context overlay: phone bottom sheet caps so a dismissible scrim of **≥25% of
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-107 — History is always one tap away in the Menu
@@ -2149,7 +2149,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Menu tray: full height of the visible shell side; opaque across its painted bounds;
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-113 — The Menu tray floats as a card on desktop
@@ -2218,7 +2218,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - History drawer width: phone `min(22rem, 88vw)`; desktop `min(30rem, 90vw)`; left-edge
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-114 — The ☰ button's tap area matches what it paints
@@ -2277,7 +2277,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Split Menu+History rail (In-Depth, Quick Question): two zones side-by-side, each
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-115 — Menu-over-History occlusion has nothing left to cover
@@ -2301,7 +2301,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-127 — The open Menu hides the ☰ button and closes three ways
@@ -2357,7 +2357,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Built: the active-destination choice persists across a refresh within the same
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-128 — The card detail opens in the centre on desktop
@@ -2428,7 +2428,7 @@ Proposed `PRD/sections/` diff (amended in place):
    close control laid out inside its own bounds at every width. Superseded geometry:
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-131 — Theme orbs become the six-cell Theme band
@@ -2497,7 +2497,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-132 — No separate Send Request button: send from inside the box
@@ -2563,7 +2563,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Built: the optional question field accepts up to 300 characters of raw editable
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-012 — The submit action is the send pill
@@ -2588,7 +2588,7 @@ Proposed `PRD/sections/` diff (amended in place):
    - clicking the button sends `question` and `gameContext`
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-121 — The composer row's send control has no text label
@@ -2613,7 +2613,7 @@ Proposed `PRD/sections/` diff (amended in place):
    - the submit control meets the 44px touch-target floor (NFR-001)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-200 — Colour rules: the custom Colorless exemption becomes the readability lift
@@ -2642,7 +2642,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-001 — In-depth flow steps use the four stations
@@ -2675,7 +2675,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-005 — Follow-up flow: the first question is shown
@@ -2700,7 +2700,7 @@ Proposed `PRD/sections/` diff (amended in place):
    - the answered-state screen keeps the top header slim and uses the compact context trigger plus adaptive overlay so the message log remains primary (DEC-118, REQ-097, REQ-098)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-007 — Theme flow: a six-cell band, custom Colorless kept readable
@@ -2736,7 +2736,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Notes:
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-009 — Trade flow: piles and verdict update live
@@ -2761,7 +2761,7 @@ Proposed `PRD/sections/` diff (amended in place):
    5. The user adds cards to the other side the same way, adjusts foil/quantity, and removes entries as needed until the difference reflects the trade.
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-010 — Switching destinations: the ☰ Menu and one question door
@@ -2788,7 +2788,7 @@ Proposed `PRD/sections/` diff (amended in place):
    3. User selects another destination.
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-011 — Ask a Question flow
@@ -2841,7 +2841,7 @@ Proposed `PRD/sections/` diff (amended in place):
    - reuses existing search, scan, core-topics, and the shared conversation workspace; when a card is attached the conversation is frozen on it, otherwise there is no frozen context object; follow-ups are text-only in v1
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-014 — Send feedback flow: the ☰ Menu and the shared sheet
@@ -2866,7 +2866,7 @@ Proposed `PRD/sections/` diff (amended in place):
    2. User picks a category (Bug / Suggestion / Other) and writes a message; the message is required.
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-016 — Resume from Question History
@@ -2910,7 +2910,7 @@ Proposed `PRD/sections/` diff (amended in place):
  - Notes:
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-017 — Draft flow: Question History instead of the rail
@@ -2948,7 +2948,7 @@ Proposed `PRD/sections/` diff (amended in place):
    - selecting a completed conversation with no meaningful staging present → no Draft written, matching Menu-leave's empty-staging behavior
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## FLOW-018 — Delete flow: from Question History, confirmed in the shared sheet
@@ -2992,7 +2992,7 @@ Proposed `PRD/sections/` diff (amended in place):
    - storage write fails → app does not crash; user can retry; existing guarded persistence pattern applies
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-045 — The enrichment view-mode toggle is retired
@@ -3016,7 +3016,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-056 — The View all cards row cap is retired
@@ -3040,7 +3040,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-058 — Card rings on the context sheet instead of two enrichment modes
@@ -3064,7 +3064,7 @@ Proposed `PRD/sections/` diff (amended in place):
  
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-116 — Top clearance no longer checks a History icon
@@ -3089,7 +3089,7 @@ Proposed `PRD/sections/` diff (amended in place):
    - short-thread fill / Start Over reachability from REQ-109 remain satisfied
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-136 — View Context clearance is measured against the ☰ header
@@ -3114,7 +3114,7 @@ Proposed `PRD/sections/` diff (amended in place):
    - measured vertical distance between the destination heading and the View Context trigger shrinks at both viewport bands (baseline: 32px of applied compensating margin, against a rail whose measured in-flow height is 0px)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## Blocker questions
