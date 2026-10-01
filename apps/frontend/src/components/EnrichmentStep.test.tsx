@@ -1,11 +1,16 @@
-import { cleanup, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { act, cleanup, screen } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ZoneCardItem } from "../types";
 import {
   renderEnrichment,
   renderEnrichmentWithDuplicates,
   renderStatefulEnrichmentWithDuplicates
 } from "../test/enrichmentStep";
+import {
+  getLastDictationInstance,
+  installStubSpeechRecognition,
+  makeDictationResultsEvent
+} from "../test/stubSpeechRecognition";
 
 afterEach(cleanup);
 
@@ -147,6 +152,97 @@ describe("EnrichmentStep Targets picker (REQ-021)", () => {
 
     expect(screen.getByText("Other: All players")).toBeInTheDocument();
     expect(screen.queryByText("Player: Player 1")).not.toBeInTheDocument();
+  });
+});
+
+describe("EnrichmentStep More details — Copies on a Stack card (REQ-211)", () => {
+  it("shows a More details row for a Stack card, opening a sheet with a 0-99 Copies stepper defaulting to 0", async () => {
+    const user = renderEnrichment();
+
+    const moreDetails = screen.getByRole("button", { name: "More details for Opt" });
+    expect(moreDetails).toHaveTextContent("More details");
+    expect(moreDetails).not.toHaveTextContent("copies");
+
+    await user.click(moreDetails);
+
+    expect(screen.getByRole("heading", { name: "More details" })).toBeInTheDocument();
+    expect(screen.getByText("0")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Decrease copies for Opt" })).toBeDisabled();
+  });
+
+  it("increments Copies, labels the row +N copies, and Done closes the sheet", async () => {
+    const user = renderStatefulEnrichmentWithDuplicates();
+
+    await user.click(screen.getByRole("button", { name: "More details for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Increase copies for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Increase copies for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Increase copies for Opt" }));
+
+    expect(screen.getByText("3")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Done" }));
+
+    expect(screen.queryByRole("heading", { name: "More details" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "More details for Opt" })).toHaveTextContent(
+      "More details · +3 copies"
+    );
+  });
+
+  it("clamps Copies at 99 and disables the decrease button only at 0", async () => {
+    const user = renderStatefulEnrichmentWithDuplicates();
+
+    await user.click(screen.getByRole("button", { name: "More details for Opt" }));
+    const increase = screen.getByRole("button", { name: "Increase copies for Opt" });
+    const decrease = screen.getByRole("button", { name: "Decrease copies for Opt" });
+
+    for (let i = 0; i < 99; i += 1) {
+      await user.click(increase);
+    }
+    expect(screen.getByText("99")).toBeInTheDocument();
+    expect(increase).toBeDisabled();
+
+    await user.click(decrease);
+    expect(screen.getByText("98")).toBeInTheDocument();
+    expect(decrease).not.toBeDisabled();
+  });
+});
+
+describe("EnrichmentStep Optional question dictation (REQ-212)", () => {
+  let uninstall: () => void;
+
+  beforeEach(() => {
+    uninstall = installStubSpeechRecognition();
+  });
+
+  afterEach(() => {
+    uninstall();
+  });
+
+  it("shows a mic control on the Optional question box and inserts recognised text", async () => {
+    const onQuestionChange = vi.fn();
+    const user = renderEnrichment({ question: "", onQuestionChange });
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
+
+    const mic = screen.getByTestId("dictation-mic");
+    expect(mic).toHaveAccessibleName("Dictate question");
+    await user.click(mic);
+    expect(getLastDictationInstance().start).toHaveBeenCalledTimes(1);
+
+    act(() => {
+      getLastDictationInstance().onresult!(makeDictationResultsEvent(["does trample help"]));
+    });
+
+    expect(onQuestionChange).toHaveBeenCalledWith("does trample help");
+  });
+
+  it("stops listening when Decrypt Stack is submitted mid-dictation", async () => {
+    const user = renderEnrichment({ question: "already typed" });
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
+
+    await user.click(screen.getByTestId("dictation-mic"));
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+
+    expect(getLastDictationInstance().stop).toHaveBeenCalledTimes(1);
   });
 });
 });

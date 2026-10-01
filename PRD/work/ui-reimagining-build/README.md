@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # ui-reimagining-build
 
@@ -27,7 +27,7 @@ dependencies and the complete 57-id assignment table: `GAMEPLAN.md`.
 | [H](slice-h-card-scan-chrome.md) | Card scan chrome, with a holding list | A, B, D, G | 1 | 11 (5) | done |
 | [I](slice-i-question-history.md) | Question History: one list, reopened live | A, B, C, D | 6 | 11 (3) | done |
 | [J](slice-j-life-tracker-sheets.md) | Life Tracker's sheets take the look | A, B | 1 | 11 (3) | done |
-| [K](slice-k-late-additions.md) | Late additions: dictation, Copies on a Stack card | C, E | 2 | 9 (3) | planned |
+| [K](slice-k-late-additions.md) | Late additions: dictation, Copies on a Stack card | C, E | 2 | 9 (3) | done |
 
 Implementation order is A → B → C → D → E → F → G → H → I → J → K, one agent,
 sequential (`$thejudge-implement-all PRD/work/ui-reimagining-build/`, first

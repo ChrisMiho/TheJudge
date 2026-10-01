@@ -15,7 +15,9 @@ import {
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import { useAutoGrowTextarea } from "../hooks/useAutoGrowTextarea";
+import { useDictation } from "../hooks/useDictation";
 import { ComposerSubmitButton } from "./ComposerSubmitButton";
+import { DictationMicButton } from "./DictationMicButton";
 import {
   TARGET_OPTION_ALL_PLAYERS,
   TARGET_OPTION_BOARD,
@@ -34,8 +36,11 @@ import {
 } from "./FrozenGameContextDetails";
 import { PageShell } from "./PageShell";
 import { PortalSlot } from "./portal/PortalSlot";
+import { SheetShell } from "./SheetShell";
 import { StagedStepHeader } from "./StagedStepHeader";
 import { StepEyebrow } from "./StepEyebrow";
+
+const MAX_COPIES = 99;
 
 const MAX_QUESTION_CHARS = 300;
 
@@ -109,6 +114,9 @@ export function EnrichmentStep({
   // touched" and "cleared"), so the raw text is tracked separately per card and only
   // consulted once the player has actually typed in that card's box.
   const [manaSpentDraftByKey, setManaSpentDraftByKey] = useState<Record<string, string>>({});
+  // REQ-211: the Stack-only More details sheet (today's one rare setting: Copies).
+  // One at a time, keyed by the card's own cardKey so it never opens over the wrong card.
+  const [moreDetailsOpenKey, setMoreDetailsOpenKey] = useState<string | null>(null);
 
   const enrichmentQueue = useMemo(
     () => (gameContext ? buildEnrichmentQueue({ ...gameContext, zones }) : []),
@@ -429,8 +437,88 @@ export function EnrichmentStep({
                 ＋ Add a note
               </button>
             )}
+
+            {/* REQ-211: Copies (the storm case) lives behind a rarely-used More
+                details sheet, Stack cards only — today's other controls above are
+                unaffected either way. */}
+            {isStackZone && (
+              <button
+                type="button"
+                aria-label={`More details for ${card.name}`}
+                onClick={() => setMoreDetailsOpenKey(key)}
+                className="block text-xs font-semibold text-accent-soft transition hover:text-accent-strong"
+              >
+                More details{(card.copies ?? 0) > 0 ? ` · +${card.copies} copies` : ""}
+              </button>
+            )}
           </div>
         </div>
+
+        {isStackZone && (
+          <SheetShell
+            isOpen={moreDetailsOpenKey === key}
+            onClose={() => setMoreDetailsOpenKey(null)}
+            closeLabel={`Close more details for ${card.name}`}
+            titleId={`more-details-title-${key}`}
+            testId={`more-details-${key}`}
+            head={
+              <div>
+                <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">{card.name}</p>
+                <h2 id={`more-details-title-${key}`} className="text-lg font-black text-zinc-100">
+                  More details
+                </h2>
+              </div>
+            }
+            foot={
+              <button
+                type="button"
+                onClick={() => setMoreDetailsOpenKey(null)}
+                className="motion-focus flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-accent to-accent-strong text-sm font-bold text-accent-contrast"
+              >
+                Done
+              </button>
+            }
+          >
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Copies</p>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  aria-label={`Decrease copies for ${card.name}`}
+                  onClick={() =>
+                    updateZoneCard(zone, card.instanceId ?? card.cardId, {
+                      copies: Math.max(0, (card.copies ?? 0) - 1)
+                    })
+                  }
+                  disabled={(card.copies ?? 0) <= 0}
+                  className="motion-focus inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-lg font-black text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span aria-hidden="true">−</span>
+                </button>
+                <span className="min-w-10 text-center text-lg font-black tabular-nums text-zinc-100">
+                  {card.copies ?? 0}
+                </span>
+                <button
+                  type="button"
+                  aria-label={`Increase copies for ${card.name}`}
+                  onClick={() =>
+                    updateZoneCard(zone, card.instanceId ?? card.cardId, {
+                      copies: Math.min(MAX_COPIES, (card.copies ?? 0) + 1)
+                    })
+                  }
+                  disabled={(card.copies ?? 0) >= MAX_COPIES}
+                  className="motion-focus inline-flex h-11 w-11 items-center justify-center rounded-full border border-accent-strong bg-accent-strong text-lg font-black text-accent-contrast disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  <span aria-hidden="true">+</span>
+                </button>
+              </div>
+              <p className="text-xs text-zinc-500">
+                How many copies of this spell are on the stack besides this one (0-99, the storm
+                case). 0 sends nothing.
+              </p>
+            </div>
+          </SheetShell>
+        )}
       </li>
     );
   }
@@ -448,6 +536,12 @@ export function EnrichmentStep({
   const fallbackQuestion = resolveFallbackQuestion(zones);
   const questionTextareaRef = useRef<HTMLTextAreaElement>(null);
   useAutoGrowTextarea(question, questionTextareaRef);
+  const dictation = useDictation({ value: question, onChange: onQuestionChange, maxLength: MAX_QUESTION_CHARS });
+
+  function handleDecryptSubmit(event: FormEvent): void {
+    if (dictation.isListening) dictation.stop();
+    void onDecryptStack(event);
+  }
 
   // REQ-209: the review lists each card's context in words before the question box,
   // with ✎ to jump back — built on the same frozen-context word formatting the
@@ -559,7 +653,7 @@ export function EnrichmentStep({
         ) : (
           showQuestionForm && (
             <form
-              onSubmit={(e) => void onDecryptStack(e)}
+              onSubmit={handleDecryptSubmit}
               data-accent-current="true"
               className="enrichment-question-surface space-y-3"
             >
@@ -595,7 +689,7 @@ export function EnrichmentStep({
                   <textarea
                     ref={questionTextareaRef}
                     aria-label="Optional question"
-                    placeholder="How does this resolve?"
+                    placeholder={dictation.isListening ? "Listening…" : "How does this resolve?"}
                     value={question}
                     onChange={(e) => onQuestionChange(e.target.value.slice(0, MAX_QUESTION_CHARS))}
                     rows={1}
@@ -606,16 +700,26 @@ export function EnrichmentStep({
                     <span className="pr-0.5 text-[10px] leading-none text-zinc-500 sm:text-xs">
                       {question.length}/{MAX_QUESTION_CHARS}
                     </span>
-                    <ComposerSubmitButton
-                      label="Decrypt Stack"
-                      visibleLabel="Send Request"
-                      pendingLabel="Decrypting…"
-                      isSubmitting={isSubmitting}
-                      disabled={isSubmitting || !canDecrypt}
-                      showLabelBelowSm
-                    />
+                    <div className="flex shrink-0 items-center gap-1">
+                      {dictation.isSupported && (
+                        <DictationMicButton isListening={dictation.isListening} onToggle={dictation.toggle} />
+                      )}
+                      <ComposerSubmitButton
+                        label="Decrypt Stack"
+                        visibleLabel="Send Request"
+                        pendingLabel="Decrypting…"
+                        isSubmitting={isSubmitting}
+                        disabled={isSubmitting || !canDecrypt}
+                        showLabelBelowSm
+                      />
+                    </div>
                   </div>
                 </div>
+                {dictation.error && (
+                  <p role="alert" className="text-xs text-rose-400">
+                    {dictation.error}
+                  </p>
+                )}
               </div>
             </form>
           )

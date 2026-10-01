@@ -49,6 +49,7 @@ This file captures integrations, payloads, data rules, and delivery constraints.
 - `targets?: ContextTarget[]`
 - `contextNotes?: string`
 - `manaSpent?: number` (prompt-facing fallback uses the server-resolved `manaValue` when omitted)
+- `copies?: number` (1-99) — Stack cards only (REQ-211); a non-Stack card sending it is rejected by the schema's strict unknown-key check, not a separate rule. 0 and undefined both mean "nothing to say" and are never sent
 - the descriptive block (`oracleText`, `manaCost`, `manaValue`, `typeLine`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields by `cardId` from `cardDetailByOracleId.json.br` (REQ-175, REQ-176)
 
 ### GameContext

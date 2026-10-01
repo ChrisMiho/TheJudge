@@ -117,13 +117,22 @@ export const zoneCardItemSchema = z.object({
   manaSpent: z.number().min(0).max(99).optional()
 }).strict();
 
+// REQ-211: Copies is a Stack-only field (the storm case) — `zoneCardItemSchema` above
+// stays `.strict()` with no `copies` key, so a non-Stack zone's card sending it is
+// rejected automatically by the strict-object unknown-key check, with no extra code.
+// 0 is never sent on the wire (the picker's default means "nothing to say"); only 1-99
+// reaches here.
+export const stackZoneCardItemSchema = zoneCardItemSchema.extend({
+  copies: z.number().int().min(1).max(99).optional()
+}).strict();
+
 export const lookupCardReferenceSchema = z.object({
   ...cardReferenceShape
 }).strict();
 
 const zonesSchema = z
   .object({
-    stack: z.array(zoneCardItemSchema).min(1).max(10).optional(),
+    stack: z.array(stackZoneCardItemSchema).min(1).max(10).optional(),
     battlefield: z.array(zoneCardItemSchema).min(1).max(30).optional(),
     hand: z.array(zoneCardItemSchema).min(1).max(20).optional(),
     graveyard: z.array(zoneCardItemSchema).min(1).max(30).optional(),

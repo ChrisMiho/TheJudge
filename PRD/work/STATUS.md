@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ui-reimagining-build | All slices A–K done, 115/115 criteria true; PR #239 left `[THEJUDGE-AUTO][IN PROGRESS]` by owner direction (a look-matching pass is coming first); run `graph-20260930-055958` |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Slices A–G done, H–K in build attempt 5 (cap 4000); PR #239 open `IN PROGRESS`; run `graph-20260930-055958` |
 
 ## refined
 

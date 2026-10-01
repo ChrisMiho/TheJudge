@@ -1,6 +1,6 @@
 # Slice K — Late additions: dictation, Copies on a Stack card
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -52,22 +52,22 @@ together with the code:
 
 ## Acceptance criteria
 
-- [ ] K1. `npm run quality:check` passes.
-- [ ] K2. `npm --workspace apps/frontend run test` and
+- [x] K1. `npm run quality:check` passes.
+- [x] K2. `npm --workspace apps/frontend run test` and
       `npm --workspace apps/backend run test` pass.
-- [ ] K3. The send pill has a microphone control; speaking fills the
+- [x] K3. The send pill has a microphone control; speaking fills the
       question box with the recognised text.
-- [ ] K4. A Copies field appears in the context sheet only for Stack cards.
-- [ ] K5. Copies reaches `AskAiRequest` and the assembled prompt as a named
+- [x] K4. A Copies field appears in the context sheet only for Stack cards.
+- [x] K5. Copies reaches `AskAiRequest` and the assembled prompt as a named
       field.
-- [ ] K6. `PRD/sections/` carries REQ-212 and REQ-211 by intent.
-- [ ] K7 (manual). Browser scenario: tap the mic, speak a short question
+- [x] K6. `PRD/sections/` carries REQ-212 and REQ-211 by intent.
+- [x] K7 (manual). Browser scenario: tap the mic, speak a short question
       (or simulate via the Web Speech API test hook), confirm the box
       fills; submit and confirm the ruling answers the spoken question.
-- [ ] K8 (manual). Browser scenario at 390×844: set Copies to 3 on a Stack
+- [x] K8 (manual). Browser scenario at 390×844: set Copies to 3 on a Stack
       card, submit, confirm the backend-received request (via network
       inspection or a mock-mode log) carries Copies: 3.
-- [ ] K9 (manual). Cleanup evidence recorded: browser closed, owned servers
+- [x] K9 (manual). Cleanup evidence recorded: browser closed, owned servers
       stopped, ports released, capture output path named.
 
 ## Verification
@@ -84,33 +84,33 @@ npm --workspace apps/backend run test
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified, for every slice
+- [x] Slice acceptance criteria satisfied and verified, for every slice
       A through K.
-- [ ] Tests updated; `npm run quality:check` green for touched areas.
-- [ ] Public contract unchanged unless a slice scoped a change (REQ-167's
+- [x] Tests updated; `npm run quality:check` green for touched areas.
+- [x] Public contract unchanged unless a slice scoped a change (REQ-167's
       cap bound, REQ-210's every-zone Mana spent field, REQ-211's Copies
       field — the three named `AskAiRequest`/prompt changes in
       `DESIGN-BRIEF.md` `## What it changes`; everything else leaves
       `AskAiRequest`, the prompts, the backend routes, card data and the
       data pipeline exactly as they are).
-- [ ] No secrets committed.
-- [ ] Durable outcomes promoted; `PRD/work/ui-reimagining-build/` ready to
+- [x] No secrets committed.
+- [x] Durable outcomes promoted; `PRD/work/ui-reimagining-build/` ready to
       delete.
 
 ### PRD promotion checklist (execution happens in `thejudge-cleanup`)
 
-- [ ] Every one of the 57 `GATE-QUESTIONS.md` ids (54 accept, 3 edit: REQ-210,
+- [x] Every one of the 57 `GATE-QUESTIONS.md` ids (54 accept, 3 edit: REQ-210,
       REQ-206, REQ-214) is present in `PRD/sections/` by intent — confirm
       against the GAMEPLAN's id → slice table, not by re-reading the diff.
-- [ ] REQ-206…REQ-215 (the nine new ids) are entered after REQ-205 in numeric
+- [x] REQ-206…REQ-215 (the nine new ids) are entered after REQ-205 in numeric
       order in `PRD/sections/functional-requirements.md`.
-- [ ] The amendment-set disposition table in `DESIGN-BRIEF.md` is fully
+- [x] The amendment-set disposition table in `DESIGN-BRIEF.md` is fully
       applied — every "no change" row is verified unchanged, every other row
       verified edited.
-- [ ] `system-map.md` lines naming the old rail, drawer, or labels are
+- [x] `system-map.md` lines naming the old rail, drawer, or labels are
       updated by whichever slice changed that code (`A23`), not left for
       cleanup to invent.
-- [ ] Mock mode works on every screen (final pass, after slice K).
-- [ ] The receipt names every slice's reviewable screenshot location
+- [x] Mock mode works on every screen (final pass, after slice K).
+- [x] The receipt names every slice's reviewable screenshot location
       (`docs/design/ui-reimagining/build-screenshots/<letter>/`) so the
       owner can find them after this package folder is deleted.

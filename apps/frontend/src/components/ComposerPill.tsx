@@ -1,4 +1,6 @@
 import type { Ref } from "react";
+import { DictationMicButton } from "./DictationMicButton";
+import { useDictation } from "../hooks/useDictation";
 import { SendIcon } from "./ComposerSubmitButton";
 
 const RING_RADIUS = 19;
@@ -60,6 +62,13 @@ export function ComposerPill({
   const isBright = maxLength - length <= RING_BRIGHT_THRESHOLD;
   const submitDisabled = disabled || isSubmitting;
 
+  const dictation = useDictation({ value, onChange, maxLength });
+
+  function handleSubmit(): void {
+    if (dictation.isListening) dictation.stop();
+    onSubmit();
+  }
+
   return (
     <div
       className="ambient-accent-surface ambient-accent-interactive flex items-end gap-1 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-2 pr-1 sm:gap-2 sm:pl-3 sm:pr-2"
@@ -106,11 +115,11 @@ export function ComposerPill({
         onKeyDown={(event) => {
           if (event.key === "Enter" && !event.shiftKey) {
             event.preventDefault();
-            if (!submitDisabled) onSubmit();
+            if (!submitDisabled) handleSubmit();
           }
         }}
         rows={1}
-        placeholder={placeholder}
+        placeholder={dictation.isListening ? "Listening…" : placeholder}
         disabled={isSubmitting}
         className="min-w-0 flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-sm normal-case tracking-normal text-zinc-100 placeholder:text-zinc-500 focus:outline-none disabled:opacity-60"
       />
@@ -124,36 +133,48 @@ export function ComposerPill({
             {length}/{maxLength}
           </span>
         )}
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={submitDisabled}
-          aria-label={isSubmitting ? pendingLabel : submitLabel}
-          data-testid="composer-pill-send"
-          className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-accent to-accent-strong text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {length > 0 && (
-            <svg
-              viewBox="0 0 44 44"
-              aria-hidden="true"
-              className="pointer-events-none absolute inset-0 h-full w-full -rotate-90"
-            >
-              <circle
-                cx="22"
-                cy="22"
-                r={RING_RADIUS}
-                fill="none"
-                stroke="currentColor"
-                strokeWidth={2}
-                className={isBright ? "text-accent-soft" : "text-accent-soft/40"}
-                strokeDasharray={RING_CIRCUMFERENCE}
-                strokeDashoffset={dashOffset}
-                strokeLinecap="round"
-              />
-            </svg>
+        <div className="flex shrink-0 items-center gap-1">
+          {/* REQ-212: the mic half exists only where the browser exposes speech
+              recognition; where it does not, the pill is the arrow alone, unchanged. */}
+          {dictation.isSupported && (
+            <DictationMicButton isListening={dictation.isListening} onToggle={dictation.toggle} />
           )}
-          {isSubmitting ? <span className="send-spinner" /> : <SendIcon />}
-        </button>
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={submitDisabled}
+            aria-label={isSubmitting ? pendingLabel : submitLabel}
+            data-testid="composer-pill-send"
+            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-accent to-accent-strong text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {length > 0 && (
+              <svg
+                viewBox="0 0 44 44"
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-0 h-full w-full -rotate-90"
+              >
+                <circle
+                  cx="22"
+                  cy="22"
+                  r={RING_RADIUS}
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                  className={isBright ? "text-accent-soft" : "text-accent-soft/40"}
+                  strokeDasharray={RING_CIRCUMFERENCE}
+                  strokeDashoffset={dashOffset}
+                  strokeLinecap="round"
+                />
+              </svg>
+            )}
+            {isSubmitting ? <span className="send-spinner" /> : <SendIcon />}
+          </button>
+        </div>
+        {dictation.error && (
+          <p role="alert" data-testid="composer-pill-dictation-error" className="text-[10px] leading-tight text-rose-400">
+            {dictation.error}
+          </p>
+        )}
       </div>
     </div>
   );

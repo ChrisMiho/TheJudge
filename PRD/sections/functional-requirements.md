@@ -5222,6 +5222,43 @@
   - the brand-mark entry also makes the REQ-203 Easter-egg trigger comfortably
     tappable
 
+### REQ-206
+- Title: Ask a Question — one door for every question, with the cards carried into In-depth details
+- Priority: high
+- Description: The Menu offers one question destination, **Ask a Question**, in place of the separate Quick Question and In-Depth Question rows. The Ask a Question page is today's Quick Question page (route `/quick-lookup`, `mode: "lookup"` request) recomposed around the attached cards: the front card full size on a lit stage with the one other card peeking out each side (two cards peek on one side only, never duplicated), a one-pill question box with the send inside it, and an **Add in-depth details** pill that carries the attached cards and any typed question into In-depth details (route `/in-depth`, `mode: "game"` request). The two routes, the two request modes and their prompts are unchanged; what changes is the door, the page composition, and the carry.
+- Acceptance Criteria:
+  - the Menu lists **Ask a Question** once and no longer lists Quick Question or In-Depth Question; it opens `/quick-lookup`; `/in-depth` stays addressable by deep link and by the carry, and the Menu marks Ask a Question current on both routes
+  - with no card attached there is no stage; with cards attached the front card renders full size on a solid-panel stage with the one other card peeking out each side (three or more cards peek one on each side; exactly two cards peek on one side only, so the same card is never rendered twice); a tap on a neighbour or the ‹/› arrows turns the ring
+  - ✕ Remove and ⓘ Details straddle the front card's top corners; a dark count pill reads `n / <cap>`, where the cap is REQ-167's
+  - **Add card** and **Scan** sit beside the title; the card search field stays available for typed autocomplete search and is not gated behind a separate reveal step
+  - the question box is one pill: the Add in-depth details pill at its left end (icon-only below 480px, labelled from 480px up), the text, the character count, and the send
+  - the 300-character budget (REQ-011, measured on the raw typed text per REQ-134) is drawn as a ring round the send pill's edge in the profile's accent light over a faint track, brighter in the last 30 characters and closed at 300; it starts at the top of the pill's split and runs clockwise; at 0 characters no track, fill or dot is drawn and the numeric count is hidden; there is no separate Send Request button, no bar under the box, and no hint line under the title
+  - **Add in-depth details** switches the active destination to In-depth details, carrying every attached card and the typed question (or its silent fallback); the carry is queued in a one-slot mailbox (`lib/portal/seedContext.tsx`'s `queueLookupCarry`/`consumeLookupCarry`) alongside the existing Life Tracker roster-seed mailbox; a quick-lookup visit entered directly from Life Tracker still carries the roster seed forward through this one gesture, narrowly tied to it the same way the retired direct Menu transition was (App.player-life-tracker-seed.test.tsx's negative tests: a deep link, browser Back, or a raw route jump never seeds)
+  - the answered view keeps the existing frozen-card trigger (naming the single card or the count, "N cards") opening the frozen set's read-only presentation; a card name in the judge's message that exactly matches a card attached to this conversation renders as a tappable chip (an accent-tinted, underlined inline control) that opens that card's detail directly in the thread
+  - two actions sit top-right beside the title once a ruling exists: **✎ Edit cards** returns to the pre-submit page with the cards and question exactly as they were (the conversation is already auto-saved to history, REQ-103), and **↺ Start over** clears cards, question and any locked topic to the empty page
+  - the General rules topics disclosure (REQ-079) and the locked topic pill (REQ-091) stay on the page, unchanged in behaviour
+  - tests cover the single Menu entry, turning the ring (tap and arrows, wrapping, no duplicate neighbour at exactly two cards), the carry queuing cards/question and switching the destination, the ring at 0/mid/last-30/300 characters, Edit cards restoring cards and question, and a chip opening the card detail
+- Constraints:
+  - no change to either request mode, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, or routes, except the lookup card cap (REQ-167)
+  - the carry is in-memory frontend state using the existing cross-destination hand-off pattern (`seedContext.tsx`); the Ask a Question Draft (REQ-108) begins the moment the first card is attached, and every carried card — placed in In-depth details or still waiting for a zone — is written into the Draft slot, so the whole request survives a reload
+  - keep-alive mounting and URL-as-truth routing are unchanged (DEC-157, REQ-140)
+  - In-depth details' own stations rail, Cards shelf, carried-card placement UI, and card menu (the fuller mockup direction for the `/in-depth` side of the carry) are a later slice's scope; this requirement covers the Ask a Question side — the door, the stage, the composer, and the carry mechanism — in full
+- Dependencies:
+  - REQ-011
+  - REQ-079
+  - REQ-091
+  - REQ-103
+  - REQ-108
+  - REQ-134
+  - REQ-140
+  - REQ-167
+  - REQ-207
+  - FLOW-011
+- Notes:
+  - "Quick Question" in older requirements names the Ask a Question page (route `/quick-lookup`) and "In-Depth Question" names In-depth details (route `/in-depth`); older entries keep those names as internal labels rather than being rewritten
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner-approved direction-1 mockup (rounds 2–14); built by slice C of that package — `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `CardStage.tsx`, `ComposerPill.tsx`, `ConversationThread.tsx` (chip matching), `lib/portal/seedContext.tsx` (lookup-carry mailbox), `lib/portal/inDepthCarryContext.tsx` (the carry action), `App.tsx` (`handleCarryToInDepth`)
+  - owner edit (2026-10-01): the Ask a Question Draft begins the moment the first card is attached, not only once a question is typed, so a carried-but-unplaced card survives a reload — see the Constraints line above and REQ-108
+
 ### REQ-207
 - Title: Direction-1 shared chrome — banner header, Menu tray, Theme band, and the colour's ambient scene
 - Priority: high
@@ -5291,43 +5328,6 @@
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); built by slice B of that package as `apps/frontend/src/components/SheetShell.tsx` and `ConfirmSheet.tsx`
 
-### REQ-206
-- Title: Ask a Question — one door for every question, with the cards carried into In-depth details
-- Priority: high
-- Description: The Menu offers one question destination, **Ask a Question**, in place of the separate Quick Question and In-Depth Question rows. The Ask a Question page is today's Quick Question page (route `/quick-lookup`, `mode: "lookup"` request) recomposed around the attached cards: the front card full size on a lit stage with the one other card peeking out each side (two cards peek on one side only, never duplicated), a one-pill question box with the send inside it, and an **Add in-depth details** pill that carries the attached cards and any typed question into In-depth details (route `/in-depth`, `mode: "game"` request). The two routes, the two request modes and their prompts are unchanged; what changes is the door, the page composition, and the carry.
-- Acceptance Criteria:
-  - the Menu lists **Ask a Question** once and no longer lists Quick Question or In-Depth Question; it opens `/quick-lookup`; `/in-depth` stays addressable by deep link and by the carry, and the Menu marks Ask a Question current on both routes
-  - with no card attached there is no stage; with cards attached the front card renders full size on a solid-panel stage with the one other card peeking out each side (three or more cards peek one on each side; exactly two cards peek on one side only, so the same card is never rendered twice); a tap on a neighbour or the ‹/› arrows turns the ring
-  - ✕ Remove and ⓘ Details straddle the front card's top corners; a dark count pill reads `n / <cap>`, where the cap is REQ-167's
-  - **Add card** and **Scan** sit beside the title; the card search field stays available for typed autocomplete search and is not gated behind a separate reveal step
-  - the question box is one pill: the Add in-depth details pill at its left end (icon-only below 480px, labelled from 480px up), the text, the character count, and the send
-  - the 300-character budget (REQ-011, measured on the raw typed text per REQ-134) is drawn as a ring round the send pill's edge in the profile's accent light over a faint track, brighter in the last 30 characters and closed at 300; it starts at the top of the pill's split and runs clockwise; at 0 characters no track, fill or dot is drawn and the numeric count is hidden; there is no separate Send Request button, no bar under the box, and no hint line under the title
-  - **Add in-depth details** switches the active destination to In-depth details, carrying every attached card and the typed question (or its silent fallback); the carry is queued in a one-slot mailbox (`lib/portal/seedContext.tsx`'s `queueLookupCarry`/`consumeLookupCarry`) alongside the existing Life Tracker roster-seed mailbox; a quick-lookup visit entered directly from Life Tracker still carries the roster seed forward through this one gesture, narrowly tied to it the same way the retired direct Menu transition was (App.player-life-tracker-seed.test.tsx's negative tests: a deep link, browser Back, or a raw route jump never seeds)
-  - the answered view keeps the existing frozen-card trigger (naming the single card or the count, "N cards") opening the frozen set's read-only presentation; a card name in the judge's message that exactly matches a card attached to this conversation renders as a tappable chip (an accent-tinted, underlined inline control) that opens that card's detail directly in the thread
-  - two actions sit top-right beside the title once a ruling exists: **✎ Edit cards** returns to the pre-submit page with the cards and question exactly as they were (the conversation is already auto-saved to history, REQ-103), and **↺ Start over** clears cards, question and any locked topic to the empty page
-  - the General rules topics disclosure (REQ-079) and the locked topic pill (REQ-091) stay on the page, unchanged in behaviour
-  - tests cover the single Menu entry, turning the ring (tap and arrows, wrapping, no duplicate neighbour at exactly two cards), the carry queuing cards/question and switching the destination, the ring at 0/mid/last-30/300 characters, Edit cards restoring cards and question, and a chip opening the card detail
-- Constraints:
-  - no change to either request mode, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, or routes, except the lookup card cap (REQ-167)
-  - the carry is in-memory frontend state using the existing cross-destination hand-off pattern (`seedContext.tsx`); the Ask a Question Draft (REQ-108) begins the moment the first card is attached, and every carried card — placed in In-depth details or still waiting for a zone — is written into the Draft slot, so the whole request survives a reload
-  - keep-alive mounting and URL-as-truth routing are unchanged (DEC-157, REQ-140)
-  - In-depth details' own stations rail, Cards shelf, carried-card placement UI, and card menu (the fuller mockup direction for the `/in-depth` side of the carry) are a later slice's scope; this requirement covers the Ask a Question side — the door, the stage, the composer, and the carry mechanism — in full
-- Dependencies:
-  - REQ-011
-  - REQ-079
-  - REQ-091
-  - REQ-103
-  - REQ-108
-  - REQ-134
-  - REQ-140
-  - REQ-167
-  - REQ-207
-  - FLOW-011
-- Notes:
-  - "Quick Question" in older requirements names the Ask a Question page (route `/quick-lookup`) and "In-Depth Question" names In-depth details (route `/in-depth`); older entries keep those names as internal labels rather than being rewritten
-  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner-approved direction-1 mockup (rounds 2–14); built by slice C of that package — `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `CardStage.tsx`, `ComposerPill.tsx`, `ConversationThread.tsx` (chip matching), `lib/portal/seedContext.tsx` (lookup-carry mailbox), `lib/portal/inDepthCarryContext.tsx` (the carry action), `App.tsx` (`handleCarryToInDepth`)
-  - owner edit (2026-10-01): the Ask a Question Draft begins the moment the first card is attached, not only once a question is typed, so a carried-but-unplaced card survives a reload — see the Constraints line above and REQ-108
-
 ### REQ-209
 - Title: In-depth details — four stations, the Cards shelf, and the card menu
 - Priority: high
@@ -5389,6 +5389,52 @@
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup; broadened from Battlefield-only to every zone by the owner's gate-review edit (2026-10-01) - "sometimes it does matter" on Graveyard and other zones too; use cases to be refined later
   - built by slice E: `apps/frontend/src/components/EnrichmentStep.tsx` (the box, every zone), `apps/frontend/src/lib/enrichmentFormat.ts` (`parseManaSpent` bound, `formatPrintedManaHint`), `apps/backend/src/prompt/context.ts` (`normalizeZoneItem` passthrough), `apps/backend/src/prompt/promptFormatting.ts` (`formatNonStackZoneSections` line insertion)
+
+### REQ-211
+- Title: Copies on a Stack card
+- Priority: low
+- Description: A Stack card in In-depth details' Context station may record how many copies of that spell are on the stack besides the original (storm, copy effects), through a More details sheet that slides over the card's context sheet. The count reaches the request and the prompt so the ruling can account for the copies.
+- Acceptance Criteria:
+  - a Stack card's Context sheet shows a **More details** row beside **＋ Add a note**; it opens a sheet over the card sheet holding **Copies** (a stepper, 0-99, default 0); **Done** slides it away
+  - a Stack card with copies above 0 sends an optional integer `copies` (1-99) on that card; 0 sends nothing
+  - the prompt's Stack entry for that card emits `copies: <n>` in stable formatting, right after `manaSpent`; with no copies sent the prompt is unchanged byte-for-byte
+  - the review row reads "+N copies"
+  - the request schema rejects `copies` outside 1-99 and on non-Stack cards
+  - golden fixtures and tests pin a Stack card with and without copies
+- Constraints:
+  - additive, optional field on the Stack card only; the duplicate-card block (REQ-009) and the 10-card Stack cap (REQ-010) are unchanged
+  - copies are prompt context, never validated or simulated
+- Dependencies:
+  - REQ-009
+  - REQ-010
+  - REQ-017
+  - REQ-019
+  - REQ-030
+  - REQ-209
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the owner kept it as a "Try" in mockup rounds 7-8
+  - built by slice K (2026-10-01): a stepper (−/+, 0-99) stands in for the mockup's five-row picker — same range and default, a simpler control; `apps/frontend/src/components/EnrichmentStep.tsx` (the More details sheet, built on the shared sheet shell, REQ-208), `apps/frontend/src/types.ts` (`ZoneCardItem.copies`), `apps/frontend/src/lib/contextFlow/flow.ts` (strips 0/undefined before the wire), `apps/frontend/src/components/FrozenGameContextDetails.tsx` (the "+N copies" review line), `apps/backend/src/validation/askAiRequest.ts` (`stackZoneCardItemSchema`; Stack-only is enforced by the shared schema's `.strict()` unknown-key check, not a separate rule), `apps/backend/src/prompt/context.ts` (`normalizeOptionalCopies`), `apps/backend/src/prompt/promptFormatting.ts` (`formatStackSection`'s splice)
+
+### REQ-212
+- Title: Dictate a question from the send pill
+- Priority: low
+- Description: Every question box's send pill has a microphone half beside the arrow. A tap listens through the browser's built-in speech recognition and types what is said into the box, where it counts toward the 300-character budget and can be edited before sending.
+- Acceptance Criteria:
+  - where the browser exposes speech recognition (`SpeechRecognition` or `webkitSpeechRecognition`), the send pill shows a microphone half at the left and the arrow at the right in every question box (Ask a Question, its follow-up, In-depth details' question and its follow-up); where it does not, the pill is the arrow alone and nothing else changes
+  - a tap on the mic starts listening: the mic half glows, the box reads "Listening…", and recognised words are inserted as typed text, never sent automatically; a second tap, a send, or the browser's own silence timeout stops listening
+  - dictated text is clipped at the 300-character budget exactly as typed text is (REQ-011)
+  - a denied microphone permission or a recognition error stops listening with a one-line message and leaves the typed text intact
+  - both halves meet the 44px touch floor (REQ-205) and carry accessible names ("Dictate question" / "Stop dictating", and the existing send control's own name)
+  - tests cover each question box with and without the browser API, insertion into existing text, the character cap, stopping on submit mid-dictation, and the error path, using a stubbed recognition object
+- Constraints:
+  - browser-native only: no audio reaches TheJudge's backend, no new endpoint, no speech library or dependency, and nothing is stored beyond the text in the box
+- Dependencies:
+  - REQ-011
+  - REQ-205
+  - REQ-206
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30). Some browsers process the audio in the vendor's own speech service, as keyboard dictation does; the app itself never handles audio
+  - built by slice K: `apps/frontend/src/hooks/useDictation.ts` (the shared listen/insert/error state machine) and `apps/frontend/src/components/DictationMicButton.tsx` (the shared mic control), wired into `apps/frontend/src/components/ComposerPill.tsx` (Ask a Question), `apps/frontend/src/components/FollowUpComposer.tsx` (every flow's follow-up), and `apps/frontend/src/components/EnrichmentStep.tsx` (In-depth details' own pre-submit composer)
 
 ### REQ-213
 - Title: Question History — one list for every question, reopened live

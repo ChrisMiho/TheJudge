@@ -216,6 +216,12 @@ export function formatStackSection(context: PromptContext): string {
       // Insert stack-only fields: caster after subtypes (index 6), manaSpent after targets (index 8)
       metaLines.splice(6, 0, `caster: ${formatPlayerRef(card.caster, displayNamesByPlayer)}`);
       metaLines.splice(8, 0, `manaSpent: ${card.manaSpent ?? card.manaValue}`);
+      // REQ-211: copies (the storm case) is sent only when the player set it above 0 —
+      // an untouched card adds no line, keeping every prompt that doesn't use this
+      // byte-identical. Inserted right after manaSpent, before contextNotes.
+      if (card.copies !== undefined) {
+        metaLines.splice(9, 0, `copies: ${card.copies}`);
+      }
       return [`Stack item ${index + 1} (${card.stackRole})`, `card: ${card.name}`, ...metaLines].join("\n");
     })
     .join("\n\n");

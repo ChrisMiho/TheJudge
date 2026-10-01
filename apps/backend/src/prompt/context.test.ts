@@ -466,6 +466,42 @@ describe("Backend - Ask AI", () => {
       expect(item?.manaSpent).toBe(4);
     });
 
+    it("REQ-211: omits copies from a Stack item when the request sends none", () => {
+      const context = buildPromptContext({
+        question: "?",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ],
+          turnPhase: "main_1",
+          selectedZones: ["stack"],
+          zones: { stack: createStackZoneCards(1) }
+        }
+      });
+
+      expect(context.orderedStack[0]).not.toHaveProperty("copies");
+    });
+
+    it("REQ-211: carries an explicit copies value through on a Stack item (the storm case)", () => {
+      const context = buildPromptContext({
+        question: "?",
+        gameContext: {
+          playerCount: 2,
+          players: [
+            { label: "Player 1", lifeTotal: 20 },
+            { label: "Player 2", lifeTotal: 20 }
+          ],
+          turnPhase: "main_1",
+          selectedZones: ["stack"],
+          zones: { stack: [{ ...createStackZoneCards(1)[0], copies: 5 }] }
+        }
+      });
+
+      expect(context.orderedStack[0]?.copies).toBe(5);
+    });
+
     it("normalizes populated player counters, strips zero/empty entries, and preserves request immutability", () => {
       const request: GameAskAiRequest = {
         question: "Status check",

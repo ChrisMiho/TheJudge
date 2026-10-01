@@ -84,6 +84,9 @@ export type ZoneCardItem = {
   targets?: ContextTarget[];
   contextNotes?: string;
   manaSpent?: number;
+  /** REQ-211: the storm case — how many copies of this Stack spell exist besides the
+   * original (1-99); 0/undefined sends nothing. Stack cards only. */
+  copies?: number;
 };
 
 export type GameContext = {

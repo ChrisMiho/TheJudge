@@ -78,6 +78,10 @@ export function FrozenGameContextDetails({
     if (card.manaSpent !== undefined) {
       lines.push(`Mana spent: ${card.manaSpent}`);
     }
+    // REQ-211: the storm case — copies is Stack-only, sent only above 0.
+    if (zone === "stack" && card.copies) {
+      lines.push(`+${card.copies} copies`);
+    }
     if ((card.targets ?? []).length > 0) {
       lines.push(
         `Targets: ${(card.targets ?? [])

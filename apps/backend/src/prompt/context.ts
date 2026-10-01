@@ -151,6 +151,12 @@ function normalizeOptionalManaSpent(value: number | undefined): number | undefin
   return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : undefined;
 }
 
+/** REQ-211: Copies is sent only when the player set it above 0 (1-99); anything else
+ * (undefined, 0, out of range) reaches the prompt as nothing at all. */
+function normalizeOptionalCopies(value: number | undefined): number | undefined {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 99 ? value : undefined;
+}
+
 function normalizeZoneItem(
   card: import("../types/index.js").ZoneCardItem,
   cardDetailIndex: CardDetailIndex
@@ -287,6 +293,9 @@ export function buildPromptContext(
           typeof card.manaSpent === "number" && Number.isFinite(card.manaSpent) && card.manaSpent >= 0
             ? card.manaSpent
             : normalizeOptionalNumber(detail.manaValue),
+        ...(normalizeOptionalCopies(card.copies) !== undefined
+          ? { copies: normalizeOptionalCopies(card.copies) }
+          : {}),
         stackIndex,
         stackRole: toStackRole(stackIndex, stack.length)
       };

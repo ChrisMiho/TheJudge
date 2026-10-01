@@ -88,6 +88,10 @@ export type PromptContextStackItem = {
   targets: PromptContextStackTarget[];
   contextNotes?: string;
   manaSpent: number;
+  /** REQ-211: the storm case — how many copies of this spell are on the stack besides
+   * the original. Present only when the player set it above 0; an untouched card emits
+   * no `copies` line, keeping every prompt that doesn't use this byte-identical. */
+  copies?: number;
   stackIndex: number;
   stackRole: "bottom" | "middle" | "top";
 };

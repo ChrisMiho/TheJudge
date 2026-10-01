@@ -138,6 +138,10 @@ export function buildAskAiRequest(question: string, gameContext: GameContext): Z
         const wireCard = { ...card };
         delete wireCard.instanceId;
         delete wireCard.colors;
+        // REQ-211: 0 (the picker's default, "nothing to say") sends nothing, same as
+        // never having opened More details at all — the backend schema requires 1-99
+        // when the field is present at all.
+        if (!wireCard.copies) delete wireCard.copies;
         return wireCard;
       });
     }

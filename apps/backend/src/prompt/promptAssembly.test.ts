@@ -183,6 +183,26 @@ describe("Backend - Ask AI", () => {
       expect(prompt).not.toContain("cardId:");
     });
 
+    it("REQ-211: emits copies right after manaSpent for a Stack item that sets it; omits it for one that doesn't", () => {
+      const promptWithoutCopies = buildPromptText(baseContext);
+      expect(promptWithoutCopies).not.toContain("copies:");
+
+      const contextWithCopies: PromptContext = {
+        ...baseContext,
+        orderedStack: [{ ...baseContext.orderedStack[0], copies: 3 }, baseContext.orderedStack[1]]
+      };
+      const promptWithCopies = buildPromptText(contextWithCopies);
+
+      expect(promptWithCopies).toContain("copies: 3");
+      const manaSpentIndex = promptWithCopies.indexOf("manaSpent: 1");
+      const copiesIndex = promptWithCopies.indexOf("copies: 3");
+      const contextNotesIndex = promptWithCopies.indexOf("contextNotes:");
+      expect(manaSpentIndex).toBeLessThan(copiesIndex);
+      expect(copiesIndex).toBeLessThan(contextNotesIndex);
+      // The second Stack item (no copies set) is otherwise unaffected.
+      expect(promptWithCopies).toContain("Stack item 2 (top)");
+    });
+
     it("adds a populated player's counter line without changing other general-context or stack text", () => {
       const contextWithCounters: PromptContext = {
         ...baseContext,
