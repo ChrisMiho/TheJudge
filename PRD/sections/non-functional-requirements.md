@@ -67,7 +67,8 @@
   - motion must honor `prefers-reduced-motion` (reduced or disabled decorative motion); no decorative motion is required to complete any flow
   - motion must be mobile-performance-safe (prefer transform/opacity, avoid layout thrash and main-thread jank) and must not regress NFR-001 (mobile-first) or NFR-002 (fast interaction loop)
   - scan camera surface convergence/lock/thumbs-up motion is excluded and stays as tuned (DEC-057, DEC-062, DEC-072, DEC-073)
-  - existing functional wait-state motion (DEC-031, DEC-041) is unchanged
+  - functional wait-state motion keeps its thresholds and copy (DEC-031, DEC-041); the waiting panel's inscription treatment (REQ-023 as amended) is CSS-only and reduced-motion-aware
+  - the colour's ambient scene (REQ-207) is CSS-animated layers with one density and one opacity number per scene, held still under reduced motion
   - focused conversation motion (DEC-118 / REQ-098) reuses the shared CSS vocabulary, animates only newly entering content, preserves a scrolled-up reader's position, and becomes effectively immediate under reduced motion
 - Dependencies:
   - DEC-079

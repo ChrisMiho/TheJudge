@@ -411,6 +411,7 @@
   - displayed message updates at defined second thresholds: 0s, 3s, 8s, 15s, 25s, 40s
   - submit form is restored when a response is received or an error occurs
   - message region uses `aria-live` so screen readers announce updates
+  - the panel is drawn as the judge's bubble under the colour's seal: each threshold line inks itself in letter by letter with a glow that fades, the line before lifts and fades, the elapsed clock ticks at the bubble's foot, two motes of the colour's light drift up through it, a faint dashed ring turns round the seal, and the bubble's edge breathes in the colour's light; the absurd-tone lines are set in italics; under reduced motion each line appears whole and nothing drifts or turns
 - Constraints:
   - CSS-only motion; no animation libraries
   - panel must not block card context above the form
@@ -419,6 +420,7 @@
   - NFR-006
 - Notes:
   - approved threshold copy: 0s "Consulting the stack…" (calm), 3s "Priority is passing to the LLM." (calm), 8s "The judge is reading every layer. Twice." (curious), 15s "Still waiting? The servers are scrying 1." (curious), 25s "At this point we're basically in a MUD subgame." (absurd), 40s "If this were F6, we'd have resolved by now." (absurd)
+  - amended for the `ui-reimagining-build` pass (2026-09-30): thresholds and copy unchanged; the panel takes the direction-1 inscription treatment, CSS-only (NFR-006)
 
 ### REQ-024
 - Title: Phase-scoped prompt guidance

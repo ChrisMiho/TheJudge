@@ -1,6 +1,6 @@
 # Slice F — Wait inscription
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -44,19 +44,19 @@ together with the code:
 
 ## Acceptance criteria
 
-- [ ] F1. `npm run quality:check` passes.
-- [ ] F2. `npm --workspace apps/frontend run test` passes.
-- [ ] F3. The wait renders inside the judge's bubble, replacing the
+- [x] F1. `npm run quality:check` passes.
+- [x] F2. `npm --workspace apps/frontend run test` passes.
+- [x] F3. The wait renders inside the judge's bubble, replacing the
       composer, at the existing 0/3/8/15/25/40s thresholds.
-- [ ] F4. `PRD/sections/` carries REQ-023 and NFR-006 by intent.
-- [ ] F5 (manual). Browser scenario: the wait's ink-in motion is CSS-only
+- [x] F4. `PRD/sections/` carries REQ-023 and NFR-006 by intent.
+- [x] F5 (manual). Browser scenario: the wait's ink-in motion is CSS-only
       (`transform`/`opacity`, no canvas/script loop) and stills under
       `prefers-reduced-motion: reduce`.
-- [ ] F6 (manual). No REQ-202 pair required — this slice touches only
+- [x] F6 (manual). No REQ-202 pair required — this slice touches only
       `AskAiWaitingPanel.tsx` and its own styles, not shared chrome, the
       token set, or the shared stylesheet; recorded here as the explicit
       scope decision the gameplan requires.
-- [ ] F7 (manual). Cleanup evidence recorded: browser closed, owned servers
+- [x] F7 (manual). Cleanup evidence recorded: browser closed, owned servers
       stopped, ports released, capture output path named.
 
 ## Verification

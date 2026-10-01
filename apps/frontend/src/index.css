@@ -1221,6 +1221,134 @@ body {
   animation: wait-absurd 1.4s ease-in-out infinite;
 }
 
+/* REQ-023 (ui-reimagining-build): the wait inks itself in, inside the judge's
+ * bubble, under the colour's seal — the previous threshold line lifts and fades
+ * while the new one inks in letter by letter, two motes of the colour's light
+ * drift up past a turning dashed ring, and the bubble's edge breathes. Every rule
+ * here animates only `clip-path`, `opacity`, or `transform` (NFR-006: "prefer
+ * transform/opacity, avoid layout thrash") — no layout-affecting property, no
+ * canvas, no script-driven animation loop (the elapsed clock's own per-second
+ * re-render is a plain React state tick, unrelated to these CSS keyframes).
+ */
+@keyframes wait-inscription-ink-reveal {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0 0 0 0); }
+}
+
+@keyframes wait-inscription-ink-glow {
+  0% { opacity: 0.35; }
+  60% { opacity: 1; }
+  100% { opacity: 1; }
+}
+
+.wait-inscription-line-ink {
+  animation:
+    wait-inscription-ink-reveal 900ms steps(28, end) both,
+    wait-inscription-ink-glow 900ms var(--motion-ease-out) both;
+}
+
+@keyframes wait-inscription-line-lift-away {
+  0% { transform: translateY(0); opacity: 0.85; }
+  100% { transform: translateY(-0.6rem); opacity: 0; }
+}
+
+.wait-inscription-message-stack {
+  position: relative;
+}
+
+.wait-inscription-line-lift {
+  position: absolute;
+  inset: 0;
+  animation: wait-inscription-line-lift-away var(--motion-slow) var(--motion-ease-out) both;
+}
+
+.wait-inscription-seal {
+  position: relative;
+  width: 28px;
+  height: 28px;
+}
+
+.wait-inscription-seal::before {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle,
+    rgb(var(--accent-soft) / 1) 0%,
+    rgb(var(--accent) / 1) 75%,
+    transparent 100%
+  );
+  opacity: 0.8;
+}
+
+@keyframes wait-inscription-ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+.wait-inscription-seal-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 9999px;
+  border: 1px dashed rgb(var(--accent-soft) / 1);
+  opacity: 0.55;
+  animation: wait-inscription-ring-spin 6s linear infinite;
+}
+
+@keyframes wait-inscription-mote-drift {
+  0% { transform: translate3d(0, 0, 0); opacity: 0; }
+  40% { opacity: 0.8; }
+  100% { transform: translate3d(0, -22px, 0); opacity: 0; }
+}
+
+.wait-inscription-mote {
+  position: absolute;
+  bottom: 2px;
+  width: 3px;
+  height: 3px;
+  border-radius: 9999px;
+  background: rgb(var(--accent-soft) / 1);
+  animation: wait-inscription-mote-drift 2.4s var(--motion-ease-out) infinite;
+}
+
+.wait-inscription-mote-a {
+  left: 6px;
+}
+
+.wait-inscription-mote-b {
+  right: 6px;
+  animation-delay: 1.2s;
+}
+
+/* The bubble's own `animation` property stays free for `.wait-stage-calm` /
+ * `.wait-stage-curious` / `.wait-stage-absurd` (the pre-existing functional
+ * pulse, intentionally exempt from reduced-motion — reduced-motion.test.ts) —
+ * sharing one `animation` shorthand on the same element would let whichever
+ * rule is later in the cascade silently replace the other instead of both
+ * playing. The "edge breathes" treatment is a `::after` overlay instead, with
+ * its own independent `animation`. */
+@keyframes wait-inscription-bubble-breathe {
+  0%, 100% { opacity: 0.5; box-shadow: 0 0 0 1px rgb(var(--accent) / 0.12); }
+  50% { opacity: 1; box-shadow: 0 0 0 1px rgb(var(--accent) / 0.3); }
+}
+
+.wait-inscription-bubble {
+  position: relative;
+}
+
+.wait-inscription-bubble::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  animation: wait-inscription-bubble-breathe 3.2s var(--motion-ease-emphasized) infinite;
+}
+
+.wait-inscription-clock {
+  text-align: right;
+}
+
 @keyframes scan-confirm-pop {
   0% { opacity: 0; transform: scale(0.8); }
   15% { opacity: 1; transform: scale(1.06); }
@@ -1270,7 +1398,12 @@ body {
   .conversation-history-surface,
   .enrichment-card-enter,
   .card-state-remove,
-  .ambient-scene-layer {
+  .ambient-scene-layer,
+  .wait-inscription-line-ink,
+  .wait-inscription-line-lift,
+  .wait-inscription-seal-ring,
+  .wait-inscription-mote,
+  .wait-inscription-bubble::after {
     animation-delay: 0ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
