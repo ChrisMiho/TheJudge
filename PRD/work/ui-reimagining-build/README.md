@@ -28,11 +28,28 @@ dependencies and the complete 57-id assignment table: `GAMEPLAN.md`.
 | [I](slice-i-question-history.md) | Question History: one list, reopened live | A, B, C, D | 6 | 11 (3) | done |
 | [J](slice-j-life-tracker-sheets.md) | Life Tracker's sheets take the look | A, B | 1 | 11 (3) | done |
 | [K](slice-k-late-additions.md) | Late additions: dictation, Copies on a Stack card | C, E | 2 | 9 (3) | done |
+| [L](slice-l-frame-look-match.md) | Look pass — Frame, Menu, Theme band, shared sheets take the mockup's look | A, B | — | 14 (5) | planned |
+| [M](slice-m-ask-a-question-look-match.md) | Look pass — Ask a Question takes the mockup's look | L, C | — | 11 (4) | planned |
+| [N](slice-n-in-depth-details-look-match.md) | Look pass — In-depth details takes the mockup's look | L, D, E | — | 11 (4) | planned |
+| [O](slice-o-trade-balancer-look-match.md) | Look pass — Trade Balancer takes the mockup's look | L, G | — | 11 (4) | planned |
+| [P](slice-p-card-scanner-look-match.md) | Look pass — Card scanner takes the mockup's look | L, H | — | 10 (4) | planned |
+| [Q](slice-q-life-tracker-menus-look-match.md) | Look pass — Life Tracker menus take the mockup's look | L, J | — | 11 (4) | planned |
 
 Implementation order is A → B → C → D → E → F → G → H → I → J → K, one agent,
 sequential (`$thejudge-implement-all PRD/work/ui-reimagining-build/`, first
-slice `A`). Slice K is the final slice and carries the PRD promotion
-checklist and the Ship gates block.
+slice `A`). Slice K is the final slice of the original build and carries
+that half's PRD promotion checklist and Ship gates block.
+
+The look-matching pass (L–Q, mapped by node 5 attempt 3 after the owner
+compared the build to the approved mockup and found no screen matched it —
+see `LOOK-GAPS.md`) continues the same order: L → M → N → O → P → Q, one
+agent, sequential. L restyles the shared frame every other look-matching
+slice sits inside; M, N, O, P and Q each restyle one screen on top of it and
+have no `GATE-QUESTIONS.md` id of their own. Q is the look pass's own final
+slice and carries its own Ship gates block and PRD promotion checklist (no
+new ids — nothing to apply to `PRD/sections/`). Full detail, the mockup
+source per slice, and the carried-forward owner questions: `GAMEPLAN.md`
+`## Look-matching pass` and each slice doc.
 
 ## Autonomous metadata
 

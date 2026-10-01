@@ -1,0 +1,107 @@
+{
+  "slug": "ui-reimagining-build",
+  "slice": "L",
+  "criteria": [
+    {
+      "id": "L1",
+      "statement": "npm run quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "L2",
+      "statement": "npm --workspace apps/frontend run test passes",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/frontend run test" }
+    },
+    {
+      "id": "L3",
+      "statement": "No section.page-card wrapper; header is .app-header-shaped per shell.css:63-81",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/PageShell.tsx",
+          "apps/frontend/src/index.css"
+        ]
+      }
+    },
+    {
+      "id": "L4",
+      "statement": "Brand mark renders the 38px breathing orb, gradient wordmark and uppercase tagline per shell.css:216-259",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/BrandMark.tsx"] }
+    },
+    {
+      "id": "L5",
+      "statement": "The hamburger control's painted size is 50x50 (54x54 desktop) and matches its tap area",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/PageShell.tsx"] }
+    },
+    {
+      "id": "L6",
+      "statement": "The mock-mode strip renders under the header styled per shell.css:325-332",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/MockModeBanner.tsx"] }
+    },
+    {
+      "id": "L7",
+      "statement": "The ambient scene container is fixed/inset:0/z-index:0 behind the header and content",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/AmbientScene.tsx",
+          "apps/frontend/src/index.css"
+        ]
+      }
+    },
+    {
+      "id": "L8",
+      "statement": "Menu tray is a full-height left drawer on phone, and card detail/Send feedback/Question History carry the glass sheet shell",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/portal/FeaturePortalMenu.tsx",
+          "apps/frontend/src/components/SheetShell.tsx",
+          "apps/frontend/src/components/ConfirmSheet.tsx",
+          "apps/frontend/src/components/feedback/FeedbackModal.tsx"
+        ]
+      }
+    },
+    {
+      "id": "L9",
+      "statement": "Card detail shows the art-crop hero, oracle box and three fact chips including a price chip",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/CardPresentation.tsx"] }
+    },
+    {
+      "id": "L10",
+      "statement": "REQ-202 Life Tracker before/after pair captured at 390x844 and 1440x900",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "L11",
+      "statement": "Side-by-side build/mockup pairs for the Frame screen's five states saved under docs/design/ui-reimagining/build-screenshots/l/",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "L12",
+      "statement": "Every Frame ### Differences bullet in LOOK-GAPS.md is closed or named as an owner question",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "L13",
+      "statement": "Browser scenario: mock-mode strip observed with the exact VITE_ASK_AI_PROVIDER launch form",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "L14",
+      "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

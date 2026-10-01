@@ -1,0 +1,77 @@
+{
+  "slug": "ui-reimagining-build",
+  "slice": "N",
+  "criteria": [
+    {
+      "id": "N1",
+      "statement": "npm run quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "N2",
+      "statement": "npm --workspace apps/frontend run test passes",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/frontend run test" }
+    },
+    {
+      "id": "N3",
+      "statement": "Every step renders as one .plate panel with a lit plate-next foot bar, replacing free-standing Back/Continue buttons",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/ZoneCollectionStep.tsx",
+          "apps/frontend/src/components/EnrichmentStep.tsx"
+        ]
+      }
+    },
+    {
+      "id": "N4",
+      "statement": "Stations rail shows a back button and In-depth details h1 above it, with sentence-case node labels",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/ZoneCollectionStep.tsx"] }
+    },
+    {
+      "id": "N5",
+      "statement": "Cards step shelf cards show corner widgets (no under-card actions button) and open the card menu on tap",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/ZoneCardPicker.tsx"] }
+    },
+    {
+      "id": "N6",
+      "statement": "Mana spent field appears on every zone's card context sheet, styled per the mockup field treatment",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/EnrichmentStep.tsx"] }
+    },
+    {
+      "id": "N7",
+      "statement": "Context step renders the full ctx-* grid and Review renders one collapsible plate with capped-height scrolling and zone filter pills",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/EnrichmentStep.tsx"] }
+    },
+    {
+      "id": "N8",
+      "statement": "Side-by-side build/mockup pairs for the seven In-depth details states saved under docs/design/ui-reimagining/build-screenshots/n/",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "N9",
+      "statement": "Every In-depth details ### Differences bullet in LOOK-GAPS.md is closed or named as an owner question",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "N10",
+      "statement": "Browser scenario: Game through Ruling stepped at 390x844 and 1440x900, plate-next foot bars advance correctly",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "N11",
+      "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

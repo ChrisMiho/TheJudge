@@ -1,0 +1,77 @@
+{
+  "slug": "ui-reimagining-build",
+  "slice": "O",
+  "criteria": [
+    {
+      "id": "O1",
+      "statement": "npm run quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "O2",
+      "statement": "npm --workspace apps/frontend run test passes",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/frontend run test" }
+    },
+    {
+      "id": "O3",
+      "statement": "Page fits the viewport with no page scroll at 390x844 and 1440x900",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/trade/TradeBalancer.tsx"] }
+    },
+    {
+      "id": "O4",
+      "statement": "A single scale band shows both sides' totals, pile art and a serif verdict line",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/trade/TradeBalancer.tsx",
+          "apps/frontend/src/components/trade/TradePile.tsx"
+        ]
+      }
+    },
+    {
+      "id": "O5",
+      "statement": "On phone, the two sides sit behind a side-tab pair; both show on desktop",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/trade/TradeBalancer.tsx"] }
+    },
+    {
+      "id": "O6",
+      "statement": "Each card row renders as one ~80px line (thumbnail, name, set/code/Change link, price, Foil/stepper/remove)",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/trade/TradeEntryRow.tsx"] }
+    },
+    {
+      "id": "O7",
+      "statement": "Printing picker shows an art-crop hero and price-pill rows",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/trade/PrintingPicker.tsx"] }
+    },
+    {
+      "id": "O8",
+      "statement": "Side-by-side build/mockup pairs for the default trade and printing-picker states saved under docs/design/ui-reimagining/build-screenshots/o/",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "O9",
+      "statement": "Every Trade Balancer ### Differences bullet in LOOK-GAPS.md is closed or named as the owner question",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "O10",
+      "statement": "Browser scenario: both sides filled past old-scroll length, phone side tabs, printing picker observed at 390x844 and 1440x900",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "O11",
+      "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

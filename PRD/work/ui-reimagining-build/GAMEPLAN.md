@@ -159,6 +159,100 @@ unassigned.
   `PRD/instructions/graph-workflow-contract.md` `## Propose / apply / close` —
   re-derived against current truth, not a blind patch replay.
 
+## Look-matching pass
+
+Mapped by node 5 (`plan`), attempt 3, graph run `graph-20260930-055958`
+(orchestrated, `graph is controlling`), appended after slices A–K shipped
+(PR #239, held `IN PROGRESS`). Slices A–K and their criteria files are
+untouched by this append.
+
+**Why.** The owner compared the running build against the approved
+direction-1 mockup and found the screens look nothing alike: no slice named
+its mockup page as a visual source, and none saved a mockup-paired capture.
+`PRD/work/ui-reimagining-build/LOOK-GAPS.md` records every gap, screen by
+screen, with the mockup's exact CSS file and line to reuse, plus 92
+look-gap capture pairs already saved under
+`docs/design/ui-reimagining/build-screenshots/look-gaps/`.
+
+**What a player gets, screen by screen.** The frame, Menu, Theme band and
+every shared sheet take the mockup's glass and glow (L) — every other
+screen sits inside that frame. Ask a Question collapses to a stage, a pill
+composer and a sealed ruling view (M). In-depth details becomes one lit
+plate per step with its own "Continue ›" foot, instead of several bordered
+panels (N). Trade Balancer fits one screen with a single scale band instead
+of a 2,900px scroll (O). The card scanner keeps its header and gets a real
+lock-on guide and round shutter (P). Life Tracker's menus get the mockup's
+stepper and seat-tile shapes, with the table re-confirmed untouched (Q).
+
+**The rule that resolves every mockup/requirement conflict.** Where the
+mockup's look disagrees with an already-accepted requirement, the
+requirement wins on behaviour; the look pass copies the mockup's styling to
+whatever the requirement already decided. Five such conflicts are carried
+into the relevant slice as an "Owner questions — the build follows the
+accepted requirement until answered" block, quoted verbatim from
+`LOOK-GAPS.md`, and never resolved by this plan or by the slices that build
+on it.
+
+### The six slices, in the owner's order
+
+| Slice | Title | Mockup page | Depends on |
+| --- | --- | --- | --- |
+| L | Frame: tokens, Menu, Theme band, shared sheets take the look | `shared-chrome-menu.html` + `shell.css`, `tokens.css`, `flow.css`, `ambience.css` | A, B |
+| M | Ask a Question takes the look | `quick-question.html` | L, C |
+| N | In-depth details takes the look | `in-depth-question.html` | L, D, E |
+| O | Trade Balancer takes the look | `trade-balancer.html` | L, G |
+| P | Card scanner takes the look | `card-scan.html` | L, H |
+| Q | Life Tracker menus take the look | `life-tracker-menus.html` | L, J |
+
+L is first: it restyles the shared chrome (header, Menu, Theme band,
+ambient scene, shared sheet shell, card detail) that every other
+look-matching slice sits inside. M, N, O, P and Q each restyle one screen
+built by an earlier slice (C/D+E/G/H/J respectively) and otherwise have no
+dependency on one another — they could build in any order once L lands, but
+run in the owner's listed order (L → M → N → O → P → Q) for one agent,
+sequential, matching A–K's build pattern.
+
+No slice in this pass raises a new `GATE-QUESTIONS.md` id. Each closes one
+`LOOK-GAPS.md` section and lists the exact mockup selectors, tokens and
+values it ports (file and line, no approximations). Q is the last slice: it
+carries the Ship gates block for L–Q and this pass's own PRD promotion
+checklist (no new ids; nothing to apply to `PRD/sections/`) — unlike K's
+checklist, which still covers the whole package's product truth.
+
+### Extended build order and dependencies
+
+A → B → C → D → E → F → G → H → I → J → K → **L → M → N → O → P → Q**, one
+agent, sequential, continuing the same 1200-tool-call build-node budget.
+
+### Extended verification checklist (whole package)
+
+- `npm run quality:check` green at the end of every slice, L through Q
+  included.
+- `npm --workspace apps/frontend run test` green on every look-matching
+  slice; no slice in this pass touches `apps/backend`.
+- No new `AskAiRequest`/prompt/backend-route/card-data/data-pipeline
+  change in this pass — it is look-only. The three named changes in
+  `DESIGN-BRIEF.md` `## What it changes` (REQ-167, REQ-210, REQ-211) stay
+  slices C/E/K's, not this pass's.
+- The REQ-202 Life Tracker 390×844 / 1440×900 before/after pair on slice L
+  (it touches shared chrome, the token set and the shared stylesheet); slice
+  Q additionally re-captures the Life Tracker table itself to confirm L
+  through P left it untouched, though Q does not itself touch shared
+  chrome/tokens/stylesheet and so does not carry a second mandatory
+  REQ-202 pair.
+- Every look-matching slice's side-by-side build/mockup capture pairs,
+  saved under `docs/design/ui-reimagining/build-screenshots/<letter>/`
+  (`l` through `q`), one pair per state named in the corresponding
+  `LOOK-GAPS.md` section's pairs list — the slice doc names the exact file
+  paths.
+- Mock mode works on every screen touched by a slice (manual, Playwright),
+  using the exact `VITE_ASK_AI_PROVIDER=mock ... node scripts/dev.mjs`
+  launch form slice L names (`scripts/dev.mjs` never sets that variable on
+  its own).
+- Every carried-forward owner question (slices M, N, O, P, Q) stays open at
+  the end of this pass — named in the receipt, not answered by any slice.
+
 ## Next step
 
-`$thejudge-implement-all PRD/work/ui-reimagining-build/` — first slice `A`.
+`$thejudge-implement-all PRD/work/ui-reimagining-build/` — first slice `A`
+(A–K are already `done`; the next slice this resumes at is `L`).

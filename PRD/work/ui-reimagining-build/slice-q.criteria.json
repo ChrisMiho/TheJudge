@@ -1,0 +1,77 @@
+{
+  "slug": "ui-reimagining-build",
+  "slice": "Q",
+  "criteria": [
+    {
+      "id": "Q1",
+      "statement": "npm run quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "Q2",
+      "statement": "npm --workspace apps/frontend run test passes",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/frontend run test" }
+    },
+    {
+      "id": "Q3",
+      "statement": "Game Setup shows a THIS GAME eyebrow, stepper-pill player count, outline-glow selected life pill, and joined segmented controls",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/GameSetupPanel.tsx"] }
+    },
+    {
+      "id": "Q4",
+      "statement": "Name fields remain always visible in Game Setup (no Edit names collapse)",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/GameSetupPanel.tsx"] }
+    },
+    {
+      "id": "Q5",
+      "statement": "Counters shows glyph tabs, seat-shaped commander-damage tiles with lethal-at-21, and a 3-column full-colour counters grid with top-right options",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx"] }
+    },
+    {
+      "id": "Q6",
+      "statement": "Every control, option, default and range in Game Setup and Counters matches today's values",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/portal/life-tracker/GameSetupPanel.tsx",
+          "apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx"
+        ]
+      }
+    },
+    {
+      "id": "Q7",
+      "statement": "The life-total table itself is byte-for-byte unchanged in behaviour and test coverage",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeTrackerApp.player-counters.test.tsx"] }
+    },
+    {
+      "id": "Q8",
+      "statement": "Side-by-side build/mockup pairs for Game setup, Reset confirm, Counters and Counters tab, plus the table re-check pair, saved under docs/design/ui-reimagining/build-screenshots/q/",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "Q9",
+      "statement": "Every Life Tracker menus ### Differences bullet in LOOK-GAPS.md is closed or named as the owner question; the table re-check confirms it is unaffected by L through P",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "Q10",
+      "statement": "Browser scenario: Game Setup and Counters observed at 390x844 and 1440x900, table visually identical to before this pass",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "Q11",
+      "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}
