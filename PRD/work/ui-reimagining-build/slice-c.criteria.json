@@ -1,0 +1,99 @@
+{
+  "slug": "ui-reimagining-build",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "npm run quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "C2",
+      "statement": "npm --workspace apps/frontend run test passes",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/frontend run test" }
+    },
+    {
+      "id": "C3",
+      "statement": "Menu lists one Ask a Question door; stage shows front card full size with peeking neighbours; Add card/Scan beside the title",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx",
+          "apps/frontend/src/components/CardSelectionPreview.tsx"
+        ]
+      }
+    },
+    {
+      "id": "C4",
+      "statement": "Card cap is 10, not 5; an 11th attach is rejected the same way the 6th was",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/lib/stackLimits.ts"] }
+    },
+    {
+      "id": "C5",
+      "statement": "Ruling view shows the player's own question before the ruling; card-name chips match only the conversation's attached cards",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/ConversationThread.tsx",
+          "apps/frontend/src/components/ConversationThread.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "C6",
+      "statement": "Add in-depth details carries attached cards (and the typed question only when empty) into /in-depth; Draft is written on first attach, surviving a reload",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/lib/portal/seedContext.tsx"] }
+    },
+    {
+      "id": "C7",
+      "statement": "Start over returns to a clean Ask a Question page with the player roster intact",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.test.tsx"] }
+    },
+    {
+      "id": "C8",
+      "statement": "Composer send control is a pill, send inside, no text label, 300-char ring",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/ComposerPill.tsx",
+          "apps/frontend/src/components/ComposerPill.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "C9",
+      "statement": "PRD/sections carries REQ-206, REQ-167, REQ-025, REQ-075, REQ-029, REQ-132, REQ-012, REQ-121, FLOW-005, FLOW-011 by intent",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/quick-lookup/README.md",
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/user-flows.md"
+        ]
+      }
+    },
+    {
+      "id": "C10",
+      "statement": "Golden prompt fixtures byte-identical except the REQ-167 cap bound",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C11",
+      "statement": "Browser scenario at 390x844: attach a card, reload before typing/adding in-depth details, card survives reload",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "C12",
+      "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

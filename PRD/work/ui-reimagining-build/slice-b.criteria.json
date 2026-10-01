@@ -1,0 +1,87 @@
+{
+  "slug": "ui-reimagining-build",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "npm run quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "B2",
+      "statement": "npm --workspace apps/frontend run test passes",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/frontend run test" }
+    },
+    {
+      "id": "B3",
+      "statement": "SheetShell renders as a bottom sheet below 600px and a centred floating card at/above 600px, fixed head/foot, scrolling body",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/SheetShell.tsx",
+          "apps/frontend/src/components/SheetShell.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "Card detail opens inside SheetShell, centred on desktop",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/CardPresentation.tsx"] }
+    },
+    {
+      "id": "B5",
+      "statement": "FeedbackModal is hosted on SheetShell, shows type as three pills, folds the snapshot behind a dashed row",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/feedback/FeedbackModal.tsx",
+          "apps/frontend/src/components/feedback/FeedbackModal.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "B6",
+      "statement": "ConfirmSheet exists, built on SheetShell",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/ConfirmSheet.tsx",
+          "apps/frontend/src/components/ConfirmSheet.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "B7",
+      "statement": "PRD/sections carries REQ-208, REQ-128, REQ-087 and FLOW-014 by intent",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/user-flows.md",
+          "PRD/sections/shared-chrome/README.md"
+        ]
+      }
+    },
+    {
+      "id": "B8",
+      "statement": "REQ-202 Life Tracker before/after pair captured at 390x844 and 1440x900",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "B9",
+      "statement": "Browser scenarios observed: sheet-vs-centred-card geometry across 390x844 and 1440x900, fixed head/foot, scrolling body",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "B10",
+      "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

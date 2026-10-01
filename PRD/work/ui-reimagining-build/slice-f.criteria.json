@@ -1,0 +1,58 @@
+{
+  "slug": "ui-reimagining-build",
+  "slice": "F",
+  "criteria": [
+    {
+      "id": "F1",
+      "statement": "npm run quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "F2",
+      "statement": "npm --workspace apps/frontend run test passes",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/frontend run test" }
+    },
+    {
+      "id": "F3",
+      "statement": "Wait renders inside the judge's bubble, replacing the composer, at the existing thresholds",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/AskAiWaitingPanel.tsx",
+          "apps/frontend/src/components/AskAiWaitingPanel.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "F4",
+      "statement": "PRD/sections carries REQ-023 and NFR-006 by intent",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/non-functional-requirements.md"
+        ]
+      }
+    },
+    {
+      "id": "F5",
+      "statement": "Wait's ink-in motion is CSS-only and stills under prefers-reduced-motion",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "F6",
+      "statement": "Documented decision: no REQ-202 pair required, slice scoped away from shared chrome/tokens/stylesheet",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "F7",
+      "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

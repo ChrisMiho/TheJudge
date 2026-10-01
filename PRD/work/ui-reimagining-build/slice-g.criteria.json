@@ -1,0 +1,93 @@
+{
+  "slug": "ui-reimagining-build",
+  "slice": "G",
+  "criteria": [
+    {
+      "id": "G1",
+      "statement": "npm run quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "G2",
+      "statement": "npm --workspace apps/frontend run test passes",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/frontend run test" }
+    },
+    {
+      "id": "G3",
+      "statement": "Relative tiers per pile; verdict line reads Fair trade/Lopsided NN%/Even; dollar difference shown beneath",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/trade/TradeBalancer.tsx",
+          "apps/frontend/src/components/trade/TradeBalancer.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "G4",
+      "statement": "New trade opens the shared confirm sheet before clearing either side",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/trade/TradeBalancer.tsx"] }
+    },
+    {
+      "id": "G5",
+      "statement": "Tapping a side's name renames it in place",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/trade/TradeSide.tsx",
+          "apps/frontend/src/components/trade/TradeSide.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "G6",
+      "statement": "Printing picker shows Nonfoil/Foil price pills per printing and a set filter past five printings",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/trade/PrintingPicker.tsx",
+          "apps/frontend/src/components/trade/PrintingPicker.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "G7",
+      "statement": "Verdict and piles update live as a card is added or removed",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/trade/TradeBalancer.test.tsx"] }
+    },
+    {
+      "id": "G8",
+      "statement": "PRD/sections carries REQ-215, REQ-064, REQ-065, FLOW-009 by intent",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/trade-balancer/README.md",
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/user-flows.md"
+        ]
+      }
+    },
+    {
+      "id": "G9",
+      "statement": "REQ-202 pair captured at 390x844 and 1440x900 confirming no Life Tracker regression",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "G10",
+      "statement": "Browser scenarios: no horizontal scroll at 390x844/1440x900; price date moves to header on desktop",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "G11",
+      "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

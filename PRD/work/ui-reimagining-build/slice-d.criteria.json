@@ -1,0 +1,88 @@
+{
+  "slug": "ui-reimagining-build",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "npm run quality:check passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "D2",
+      "statement": "npm --workspace apps/frontend run test passes",
+      "value": false,
+      "evidence": { "command": "npm --workspace apps/frontend run test" }
+    },
+    {
+      "id": "D3",
+      "statement": "Cards station renders a lit shelf of real card images per zone tab with no row cap",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/ZoneCardPicker.tsx",
+          "apps/frontend/src/components/ZoneCardPicker.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "D4",
+      "statement": "Dragging a Stack card reorders it; shown bottom-to-top order is what the request sends",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/ZoneCardPicker.tsx"] }
+    },
+    {
+      "id": "D5",
+      "statement": "Every zone tab shows its own card count, including the Stack's",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/ZoneCollectionStep.tsx"] }
+    },
+    {
+      "id": "D6",
+      "statement": "Stack shelf and card menu show BOTTOM...TOP tags",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/components/ZoneCardPicker.tsx"] }
+    },
+    {
+      "id": "D7",
+      "statement": "A carried card cannot leave the Cards station without a zone or an explicit leave-out",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/portal/MtgAssistantApp.tsx",
+          "apps/frontend/src/App.zoneFlow.test.tsx"
+        ]
+      }
+    },
+    {
+      "id": "D8",
+      "statement": "PRD/sections carries REQ-209, REQ-005, REQ-006, REQ-007, REQ-008, REQ-018, REQ-056, FLOW-001 by intent",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/in-depth/README.md",
+          "PRD/sections/functional-requirements.md",
+          "PRD/sections/user-flows.md"
+        ]
+      }
+    },
+    {
+      "id": "D9",
+      "statement": "Prompt fixture shows Stack order sent exactly as shown; non-Stack order has no prompt effect",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D10",
+      "statement": "Browser scenario at 390x844: drag-reorder two Stack cards, shelf and card menu reflect new order",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D11",
+      "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

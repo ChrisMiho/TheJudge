@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ui-reimagining-build | Mapped into 11 slices A–K (GAMEPLAN.md); run `graph-20260930-055958` resumes at `build` via `/graph-implement PRD/work/ui-reimagining-build/` |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Gate verdicts applied (54 accept / 3 edit: REQ-210, REQ-206, REQ-214) — run `graph-20260930-055958` resumes at `gate-qc` via `/graph-implement PRD/work/ui-reimagining-build/` |
 
 ## refining
 
