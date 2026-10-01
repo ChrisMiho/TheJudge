@@ -267,10 +267,11 @@
 - Priority: medium
 - Description: Each collected card may include prompt-facing enrichment such as caster, targets, notes, and mana spent where relevant.
 - Acceptance Criteria:
-  - app builds one ordered enrichment list across all populated zones
-  - user can optionally enter context notes per card; stack item `contextNotes` UI uses placeholder copy that names transient card-level annotations: kicker or buyback paid, X value used, counters added this turn, tapped status, gained abilities this turn
-  - user can optionally set targets using `ContextTarget`
-  - user can optionally enter mana-spent context for stack entries
+  - app builds one ordered enrichment list across all populated zones and presents it as one compact sheet per card (the card's art beside a short form, an `n / total` counter, Skip to review); the review list with a ✎ jump-back per row replaces the former View all cards list mode
+  - user can optionally enter context notes per card behind a folded **＋ Add a note** row (a card that has a note opens with it showing); the note placeholder names transient card-level annotations: kicker or buyback paid, X value used, counters added this turn, tapped status, gained abilities this turn
+  - user can optionally set targets using `ContextTarget` through one Targets picker (REQ-021) on every zone, Hand and Library included
+  - user can optionally enter mana-spent context in a plain number box prefilled with the printed mana value and hinting the printed cost, on every zone's card; an untouched box sends nothing (every zone beyond the Stack: REQ-210)
+  - fields are selects, not chips: Owner on every zone but the Stack, Cast by on the Stack
   - backend prompt context always emits deterministic mana-spent value per stack entry
   - omitted user input falls back to `manaValue`
   - prompt/mock output includes mana-spent context in stable formatting
@@ -281,6 +282,7 @@
   - backend prompt context builder
 - Notes:
   - X-spell clarity is a primary motivation for this field
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the form becomes the direction-1 context sheet (REQ-209); every field today's form carries is kept, including Targets on Hand and Library cards — the mockup's omission there is not adopted
 
 ### REQ-018
 - Title: Per-zone card collection
@@ -344,13 +346,16 @@
   - card targets include `zone`, `cardId`, and `cardName`
   - none targets use `{ kind: "none" }`
   - other targets include `targetDescription`
-  - target picker can reference players and collected zone cards
+  - one Targets picker lists No target · Just on the board (Battlefield / Command Zone) · each player by typed name · All players · every other card in context with its zone · Something else (one line); each pick becomes a removable pill (a card pill carries its thumbnail) and the picker resets to "Add another target…"
+  - picks map onto today's kinds with no contract change: a player → `{ kind: "player", targetPlayer }`; a card → `{ kind: "card", zone, cardId, cardName }`; No target → `{ kind: "none" }`; Just on the board → `{ kind: "other", targetDescription: "Just on the board" }`; All players → `{ kind: "other", targetDescription: "All players" }`; Something else → `{ kind: "other", targetDescription: <typed text, ≤200 characters> }`
+  - a target can be picked once; naming every player folds into All players; No target and Just on the board each replace every other pick; an empty list sends no targets, exactly as today; the eight-target bound is unchanged
 - Constraints:
   - public API must not expose legacy `StackTarget`
 - Dependencies:
   - enrichment UI
   - backend prompt context normalization
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the kind → value → Add rows become one picker (REQ-209); the request contract is unchanged
 
 ### REQ-022
 - Title: General game rules prompt enrichment
@@ -932,6 +937,7 @@
   - FLOW-001
 - Notes:
   - refines header chrome only; the cat-wizard image is hidden by default and revealed session-only after 10 brand-mark taps counted across every in-scope screen (DEC-076, REQ-056, REQ-203)
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the View all cards / Card-by-card toggle is retired with View all cards (REQ-017 as amended); the Context station shows one sheet per card and the review list replaces the list mode
   - amended by DEC-122: the step name moves out of the header row entirely into an eyebrow label above each step's own content heading; this requirement's step-name values, ordering, and per-step coverage stay valid, only the position clause is superseded
 
 ### REQ-046
@@ -1290,6 +1296,7 @@
   - FLOW-006
 - Notes:
   - `CardSelectionPreview` participates in DEC-151 corner detail + compact image rules; identity-ring calibration remains shared
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the enrichment modes become the one context sheet and the review (REQ-017, REQ-209); the shared presentation and identity ring apply there unchanged
 
 ### REQ-059
 - Title: App-wide UI motion & visual-feedback polish pass
@@ -2458,6 +2465,7 @@
   - NFR-001
 - Notes:
   - approved visual direction: `PRD/work/excess-ui/mock-a-nested-player-accordion.png`; the mock's generated text is non-normative
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the per-player arrows become one shared **More details for all players** toggle (REQ-209) that drives this same synchronized state; criteria that name "any player's arrow" read as that toggle, and the collapse-on-leave rule is unchanged
 
 ### REQ-101
 - Title: Feature-portal Menu tab prominence (responsive width, thicker border, medium glow)
@@ -3303,7 +3311,7 @@
 - Description: Remove the reserved dead space above the View Context trigger in the answered workspace (Quick Question and In-Depth) by giving the feature-portal corner rail a real in-flow footprint, so surrounding spacing collapses to normal layout tokens instead of a hand-tuned clearance constant.
 - Acceptance Criteria:
   - the feature-portal corner rail occupies in-flow layout space rather than reserving it through `.adaptive-context-trigger`'s `margin-top: calc(2.75rem - var(--layout-panel-padding))`; that compensating margin is deleted, not merely reduced
-  - the View Context trigger never overlaps or sits beneath the rail's interactive area at 390×844 or 1440×900, verified live with both a Menu and a History rail zone present
+  - the View Context trigger never overlaps or sits beneath the ☰ Menu button's interactive area at 390×844 or 1440×900, verified live (REQ-207)
   - measured vertical distance between the destination heading and the View Context trigger shrinks at both viewport bands (baseline: 32px of applied compensating margin, against a rail whose measured in-flow height is 0px)
   - spacing comes from the shared `--layout-surface-gap`/`.conversation-workspace` tokens rather than a one-off inline override
   - document-level scrolling in the answered workspace is no worse than the current baseline (the answered Quick Question workspace already document-scrolls at 390×844 — this requirement must not deepen it, and need not eliminate it)
@@ -3317,6 +3325,7 @@
   - DEC-141
 - Notes:
   - root cause identified live during `ui-review` refinement: the rail is `position: absolute` with a measured height of **0px**, so nothing pushes the trigger down automatically and `index.css` compensates with a magic margin. Tuning that constant treats the symptom; giving the rail a footprint removes the whole class of hand-tuned clearance values (product-owner decision, 2026-08-06).
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the feature-portal corner rail is retired for the banner header's ☰ Menu button (REQ-207); the clearance check reads "☰ Menu button" wherever it named the corner rail or the History rail zone
 
 ### REQ-137
 - Title: In-Depth player-details expand affordance correctness
@@ -5331,3 +5340,23 @@
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup rounds 2–14
   - built across the package's slices: slice D (this id's owning slice) builds the stations rail, the Cards shelf, carried-card placement, drag/button reorder and the card menu — `apps/frontend/src/components/StationsRail.tsx`, `ZoneCardMenu.tsx`, `ZoneCardPicker.tsx`, `ZoneCollectionStep.tsx`, `ZoneConfirmStep.tsx`, `EnrichmentStep.tsx` (rail slot), `lib/shelfDragReorder.ts`, `lib/stackTags.ts`, `portal/MtgAssistantApp.tsx` (carry consumption, placement handlers, rail guardrail); the Context sheet and review (slice E) and the chat's wait treatment (slice F) land afterward in the same package, so the description above is this id's complete intent, not a claim that slice D alone built it
+
+### REQ-210
+- Title: Mana spent for every zone's cards
+- Priority: low
+- Description: Every zone's card in In-depth details' Context station carries the same optional Mana spent box as a Stack card, so a question about a card that cares how much mana was spent to cast it (X, converge, sunburst), in any zone, can say so. The box is prefilled with the card's printed mana value and hints its printed cost; only a value the player changes is sent and emitted in the prompt.
+- Acceptance Criteria:
+  - the Context sheet shows a plain number box labelled Mana spent on every zone's card, prefilled with the card's printed mana value and hinting its printed cost (for example "printed {R}")
+  - a box left at its prefilled value sends no `manaSpent` for that card: a Stack card's prompt keeps today's fallback to `manaValue` (REQ-017) and a non-Stack card's prompt emits no mana-spent line, so an untouched form produces today's prompt byte-for-byte
+  - a changed value (0-99, the existing `manaSpent` bound) is sent on that card; a non-Stack card with a sent value emits `manaSpent: <n>` in its zone entry in the same stable formatting as the Stack's
+  - golden fixtures pin a non-Stack card with and without a sent value
+- Constraints:
+  - no new request field: `manaSpent` already exists on every zone card in the request schema; this adds the non-Stack prompt line and the form box, on every zone, only
+  - no mana-source legality checks (REQ-017)
+- Dependencies:
+  - REQ-017
+  - REQ-030
+  - REQ-209
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup; broadened from Battlefield-only to every zone by the owner's gate-review edit (2026-10-01) - "sometimes it does matter" on Graveyard and other zones too; use cases to be refined later
+  - built by slice E: `apps/frontend/src/components/EnrichmentStep.tsx` (the box, every zone), `apps/frontend/src/lib/enrichmentFormat.ts` (`parseManaSpent` bound, `formatPrintedManaHint`), `apps/backend/src/prompt/context.ts` (`normalizeZoneItem` passthrough), `apps/backend/src/prompt/promptFormatting.ts` (`formatNonStackZoneSections` line insertion)

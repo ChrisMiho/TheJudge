@@ -24,7 +24,6 @@ import {
   expandPlayerDetails,
   selectTurnPhase,
   advancePastZoneConfirm,
-  openEnrichmentListView,
   advancePastZoneCollection,
   advanceToContextEnrichmentFromZones,
   advanceToZoneCollectionWithZones,
@@ -186,11 +185,9 @@ describe("Game setup and zone confirmation", () => {
     expect(within(casterSelect).getByRole("option", { name: "Player 1 (Alice)" })).toHaveValue("Player 1");
     await user.selectOptions(casterSelect, "Player 2");
 
-    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "player");
-    const targetSelect = screen.getByLabelText("Player target for Opt");
-    expect(within(targetSelect).getByRole("option", { name: "Player 2 (Bob)" })).toHaveValue("Player 2");
-    await user.selectOptions(targetSelect, "Player 1");
-    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    const targetSelect = screen.getByLabelText("Add a target for Opt");
+    expect(within(targetSelect).getByRole("option", { name: "Player 2 (Bob)" })).toHaveValue("player:Player 2");
+    await user.selectOptions(targetSelect, "player:Player 1");
     expect(screen.getByText("Player: Player 1 (Alice)")).toBeInTheDocument();
 
     await clickDecryptStack(user);
@@ -295,9 +292,9 @@ describe("Zone collection UI", () => {
     await addCardToActiveZone(user, "lig", "Lightning Bolt");
 
     await advancePastZoneCollection(user);
-    await openEnrichmentListView(user);
     expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "OK — next card" }));
     expect(screen.getByLabelText("Caster for Lightning Bolt")).toBeInTheDocument();
   });
 

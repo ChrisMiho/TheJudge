@@ -298,9 +298,9 @@ describe("Target gating and pickers", () => {
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
-    expect(screen.getByLabelText("Target kind for Opt")).toBeInTheDocument();
+    expect(screen.getByLabelText("Add a target for Opt")).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
     expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("How does this resolve?")).toBeInTheDocument();
   });
@@ -317,7 +317,7 @@ describe("Target gating and pickers", () => {
     expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Continue" }));
-    await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
     expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
   });
 });

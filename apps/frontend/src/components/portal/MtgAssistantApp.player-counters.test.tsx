@@ -12,6 +12,7 @@ import {
   baseCardMetadataFixture,
   clickDecryptStack,
   expandSecondaryPlayerDetails,
+  finishEnrichmentWizard,
   getUrlFromRequest,
   jsonResponse,
   selectZoneTab
@@ -284,6 +285,7 @@ describe("Frontend - MTG Assistant", () => {
     await selectZoneTab(user, "Stack");
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
+    await finishEnrichmentWizard(user);
     await user.type(
       screen.getByPlaceholderText("How does this resolve?"),
       "What happens if this resolves?"
@@ -307,6 +309,7 @@ describe("Frontend - MTG Assistant", () => {
     expect(screen.queryByText("Opt")).not.toBeInTheDocument();
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
+    await finishEnrichmentWizard(user);
     expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("");
   });
 });

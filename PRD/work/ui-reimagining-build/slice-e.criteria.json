@@ -5,19 +5,19 @@
     {
       "id": "E1",
       "statement": "npm run quality:check passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run quality:check" }
     },
     {
       "id": "E2",
       "statement": "npm --workspace apps/frontend run test passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm --workspace apps/frontend run test" }
     },
     {
       "id": "E3",
       "statement": "Context station shows one compact sheet per card, no separate enrichment view-mode toggle; card rings are the visual cue",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/EnrichmentStep.tsx",
@@ -28,7 +28,7 @@
     {
       "id": "E4",
       "statement": "Targets picker maps onto today's four AskAiRequest target kinds; Hand/Library targeting retained",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/AdaptiveContextDialog.tsx",
@@ -39,25 +39,30 @@
     {
       "id": "E5",
       "statement": "Mana spent is editable and prefilled with the printed cost on every zone's card",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/EnrichmentStep.tsx"] }
     },
     {
       "id": "E6",
-      "statement": "One More details for all players toggle exists on the review step",
-      "value": false,
-      "evidence": { "paths": ["apps/frontend/src/components/ZoneConfirmStep.tsx"] }
+      "statement": "One More details for all players toggle exists, driving every player's secondary details in sync",
+      "value": true,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/components/PlayerRosterEditor.tsx",
+          "apps/frontend/src/components/portal/MtgAssistantApp.tsx"
+        ]
+      }
     },
     {
       "id": "E7",
       "statement": "View Context clearance is measured against the new header",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/FrozenGameContextDetails.tsx"] }
     },
     {
       "id": "E8",
       "statement": "PRD/sections carries REQ-017, REQ-021, REQ-100, REQ-045, REQ-058, REQ-210, REQ-136 by intent",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/in-depth/README.md",
@@ -68,19 +73,19 @@
     {
       "id": "E9",
       "statement": "Golden prompt fixture: untouched Mana spent sends nothing; an edited box changes only that card's line",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E10",
       "statement": "Browser scenario at 390x844: edit Mana spent on a Graveyard card, confirm it reaches the request",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "E11",
       "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     }
   ]

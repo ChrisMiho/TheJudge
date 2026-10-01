@@ -88,6 +88,7 @@ describe("Adaptive frozen context in answered state", () => {
 
     await user.selectOptions(screen.getByLabelText("Caster for Opt"), "Player 4");
     await user.type(screen.getByLabelText("Mana spent for Opt"), "4");
+    await user.click(screen.getByRole("button", { name: "Add a note for Opt" }));
     await user.type(screen.getByLabelText("Context notes for Opt"), "Cast for alternate cost");
 
     await clickDecryptStack(user);

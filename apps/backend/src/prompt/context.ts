@@ -143,6 +143,14 @@ function resolveCardDetail(cardId: string, cardDetailIndex: CardDetailIndex): Ca
   return cardDetailIndex.get(normalizeWhitespace(cardId)) ?? EMPTY_CARD_DETAIL;
 }
 
+/** REQ-210: a non-Stack card's `manaSpent` is sent only when the player actually
+ * edited it — an untouched box's `manaSpent` stays `undefined` end to end, so this
+ * returns `undefined` rather than falling back to the printed `manaValue` the way
+ * the Stack's own field does. */
+function normalizeOptionalManaSpent(value: number | undefined): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : undefined;
+}
+
 function normalizeZoneItem(
   card: import("../types/index.js").ZoneCardItem,
   cardDetailIndex: CardDetailIndex
@@ -151,6 +159,7 @@ function normalizeZoneItem(
   if (name.length === 0) return null;
   const owner = card.owner;
   const detail = resolveCardDetail(card.cardId, cardDetailIndex);
+  const manaSpent = normalizeOptionalManaSpent(card.manaSpent);
   return {
     cardId: normalizeWhitespace(card.cardId),
     name,
@@ -165,7 +174,8 @@ function normalizeZoneItem(
     keywords: normalizeOptionalList(detail.keywords),
     owner: owner && normalizeWhitespace(owner).length > 0 ? owner : undefined,
     targets: normalizeTargets(card.targets),
-    contextNotes: normalizeOptionalText(card.contextNotes) || undefined
+    contextNotes: normalizeOptionalText(card.contextNotes) || undefined,
+    ...(manaSpent !== undefined ? { manaSpent } : {})
   };
 }
 

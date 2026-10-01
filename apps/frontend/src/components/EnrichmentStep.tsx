@@ -5,13 +5,25 @@ import {
   resolveFallbackQuestion
 } from "../lib/contextFlow";
 import { getCardIdentityRingStyle } from "../lib/cardIdentityRing";
-import { formatContextTarget, hasOwnerControl, parseManaSpent } from "../lib/enrichmentFormat";
+import { fetchCardDetail, peekCardDetail } from "../lib/cardDetail";
+import {
+  formatContextTarget,
+  formatPrintedManaHint,
+  hasOwnerControl,
+  parseManaSpent
+} from "../lib/enrichmentFormat";
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import { useAutoGrowTextarea } from "../hooks/useAutoGrowTextarea";
 import { ComposerSubmitButton } from "./ComposerSubmitButton";
-import { useEnrichmentTargets } from "../hooks/useEnrichmentTargets";
-import type { ConversationMessage, ContextTarget, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
+import {
+  TARGET_OPTION_ALL_PLAYERS,
+  TARGET_OPTION_BOARD,
+  TARGET_OPTION_CUSTOM,
+  TARGET_OPTION_NONE,
+  useEnrichmentTargets
+} from "../hooks/useEnrichmentTargets";
+import type { ConversationMessage, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 import { CardPresentation } from "./CardPresentation";
 import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
@@ -28,10 +40,6 @@ import { StepEyebrow } from "./StepEyebrow";
 const MAX_QUESTION_CHARS = 300;
 
 type ContextCardEntry = { zone: ZoneId; cardId: string; cardName: string };
-
-type PendingTargetKind = ContextTarget["kind"];
-
-type EnrichmentViewMode = "wizard" | "list";
 
 type EnrichmentStepProps = {
   gameContext: GameContext | null;
@@ -88,10 +96,19 @@ export function EnrichmentStep({
   historyTrigger,
   stationsRail
 }: EnrichmentStepProps): JSX.Element {
-  const [viewMode, setViewMode] = useState<EnrichmentViewMode>("wizard");
-  const [wizardIndex, setWizardIndex] = useState(0);
-  const [wizardFinished, setWizardFinished] = useState(false);
+  // REQ-017/REQ-045: the former "View all cards" / "Card-by-card" toggle and its list
+  // mode are retired — the Context station always shows one compact sheet per card,
+  // in order, with a review (not a second list mode) once every card is reviewed.
+  const [cardIndex, setCardIndex] = useState(0);
+  const [reviewing, setReviewing] = useState(false);
   const [cardAnimKey, setCardAnimKey] = useState(0);
+  const [noteOpenByKey, setNoteOpenByKey] = useState<Record<string, boolean>>({});
+  // REQ-210: once a player edits Mana spent, the box shows exactly what they typed —
+  // including empty, mid-edit — instead of snapping back to the printed-value prefill.
+  // `manaSpent` alone can't carry that distinction (undefined means both "never
+  // touched" and "cleared"), so the raw text is tracked separately per card and only
+  // consulted once the player has actually typed in that card's box.
+  const [manaSpentDraftByKey, setManaSpentDraftByKey] = useState<Record<string, string>>({});
 
   const enrichmentQueue = useMemo(
     () => (gameContext ? buildEnrichmentQueue({ ...gameContext, zones }) : []),
@@ -113,17 +130,58 @@ export function EnrichmentStep({
   }, [zones]);
 
   const totalCards = enrichmentQueue.length;
-  const currentWizardEntry = enrichmentQueue[wizardIndex];
+  const currentEntry = enrichmentQueue[cardIndex];
 
   useEffect(() => {
-    if (wizardIndex >= totalCards && totalCards > 0) {
-      setWizardIndex(Math.max(totalCards - 1, 0));
+    if (cardIndex >= totalCards && totalCards > 0) {
+      setCardIndex(Math.max(totalCards - 1, 0));
     }
     if (totalCards === 0) {
-      setWizardFinished(false);
-      setWizardIndex(0);
+      setReviewing(false);
+      setCardIndex(0);
     }
-  }, [totalCards, wizardIndex]);
+  }, [totalCards, cardIndex]);
+
+  // REQ-210: the Mana spent box prefills with the printed mana value — the frontend
+  // carries no `manaValue` on a `ZoneCardItem` (it is resolved server-side by cardId,
+  // REQ-176), so this fetches the one currently-shown card's descriptive block
+  // on demand, the same `GET /api/cards/:oracleId` path and session cache the card
+  // detail popup already uses (REQ-175, FLOW-024) — no new endpoint.
+  const [manaDetailByCardId, setManaDetailByCardId] = useState<
+    Record<string, { manaCost: string; manaValue: number } | null>
+  >({});
+
+  useEffect(() => {
+    const cardId = currentEntry?.card.cardId;
+    if (!cardId || cardId in manaDetailByCardId) return;
+
+    const cached = peekCardDetail(cardId);
+    if (cached !== undefined) {
+      setManaDetailByCardId((m) => ({
+        ...m,
+        [cardId]: cached ? { manaCost: cached.manaCost, manaValue: cached.manaValue } : null
+      }));
+      return;
+    }
+
+    let cancelled = false;
+    fetchCardDetail(cardId)
+      .then((detail) => {
+        if (cancelled) return;
+        setManaDetailByCardId((m) => ({
+          ...m,
+          [cardId]: detail ? { manaCost: detail.manaCost, manaValue: detail.manaValue } : null
+        }));
+      })
+      .catch(() => {
+        if (cancelled) return;
+        setManaDetailByCardId((m) => ({ ...m, [cardId]: null }));
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentEntry?.card.cardId]);
 
   function cardKey(zone: ZoneId, instanceId: string): string {
     return `${zone}:${instanceId}`;
@@ -135,252 +193,253 @@ export function EnrichmentStep({
     onZonesChange({ ...zones, [zone]: updated });
   }
 
-  function removeCardFromZone(zone: ZoneId, instanceId: string): void {
-    const updated = (zones[zone] ?? []).filter((c) => c.instanceId !== instanceId);
-    onZonesChange({ ...zones, [zone]: updated });
-  }
-
   const {
-    setPendingKindByKey,
-    setPendingPlayerByKey,
-    pendingCardIdByKey,
-    setPendingCardIdByKey,
-    pendingOtherByKey,
-    setPendingOtherByKey,
-    getPendingKind,
-    getPendingPlayer,
-    handleAddTarget,
+    pendingCustomTextByKey,
+    setPendingCustomTextByKey,
+    isAwaitingCustomTarget,
+    handleSelectTargetOption,
+    handleConfirmCustomTarget,
+    handleCancelCustomTarget,
     handleRemoveTarget
   } = useEnrichmentTargets({ activePlayers, contextIndex, updateZoneCard });
 
-  function handleWizardNext(): void {
-    if (wizardIndex < totalCards - 1) {
-      setWizardIndex((current) => current + 1);
+  function goToCard(index: number): void {
+    setReviewing(false);
+    setCardIndex(index);
+    setCardAnimKey((current) => current + 1);
+  }
+
+  function handleEditFromReview(zone: ZoneId, card: ZoneCardItem): void {
+    const index = enrichmentQueue.findIndex(
+      (entry) => entry.zone === zone && (entry.card.instanceId ?? entry.card.cardId) === (card.instanceId ?? card.cardId)
+    );
+    if (index >= 0) goToCard(index);
+  }
+
+  function handleNext(): void {
+    if (cardIndex < totalCards - 1) {
+      setCardIndex((current) => current + 1);
       setCardAnimKey((current) => current + 1);
       return;
     }
-    setWizardFinished(true);
+    setReviewing(true);
   }
 
-  function renderCardRow(zone: ZoneId, card: ZoneCardItem, options?: { showRemove?: boolean }): JSX.Element {
+  function renderCompactSheet(zone: ZoneId, card: ZoneCardItem): JSX.Element {
     const key = cardKey(zone, card.instanceId ?? card.cardId);
-    const pendingKind = getPendingKind(key);
     const isStackZone = zone === "stack";
     const showsOwner = hasOwnerControl(zone);
-    const showRemove = options?.showRemove ?? true;
+    const manaDetail = manaDetailByCardId[card.cardId];
+    const manaHint = formatPrintedManaHint({ manaCost: manaDetail?.manaCost, manaValue: manaDetail?.manaValue });
+    const manaSpentDraft = manaSpentDraftByKey[key];
+    const manaDisplayValue =
+      manaSpentDraft !== undefined
+        ? manaSpentDraft
+        : card.manaSpent !== undefined
+          ? String(card.manaSpent)
+          : manaDetail?.manaValue !== undefined
+            ? String(manaDetail.manaValue)
+            : "";
+    const noteOpen = noteOpenByKey[key] ?? Boolean(card.contextNotes);
+    const otherCards = contextIndex.filter((entry) => !(entry.zone === zone && entry.cardId === card.cardId));
 
     return (
       <li
         key={key}
-        className="card-identity-ring enrichment-card-row enrichment-card-enter card-state-remove space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+        className="card-identity-ring enrichment-card-row enrichment-card-enter space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
         style={getCardIdentityRingStyle(card.colors)}
       >
-        {/* DEC-160: Enrichment is one of the four shell-column surfaces, so its image shares
-            the same content column as the staged Quick Question / zone preview cards rather
-            than the prior `.enrichment-card-presentation img { width: 51.2% }` call-site
-            scale-down. */}
-        <div className="enrichment-card-header card-shell-column mx-auto w-full">
-          <CardPresentation
-            card={card}
-            className="w-full min-w-0"
-            imageClassName="rounded"
-            actions={
-              showRemove ? (
-                <button
-                  type="button"
-                  aria-label={`Remove ${card.name}`}
-                  onClick={() => removeCardFromZone(zone, card.instanceId ?? card.cardId)}
-                  className="card-state-remove-trigger w-full rounded-lg border border-zinc-600 bg-zinc-800/70 px-2 py-1 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
-                >
-                  Remove
-                </button>
-              ) : undefined
-            }
-          />
-        </div>
+        <div className="flex gap-4">
+          {/* REQ-017: the card's art sits at a fixed width beside the form — 210px
+              desktop, 96px phone — rather than claiming the shell column's full width
+              as the former per-card row did. */}
+          <div className="enrichment-card-header w-24 shrink-0 sm:w-[210px]">
+            <CardPresentation card={card} className="w-full min-w-0" imageClassName="rounded" />
+          </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {showsOwner && (
-            <label className="flex flex-col gap-1 text-xs">
-              <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Ownership</span>
+          <div className="min-w-0 flex-1 space-y-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+              {showsOwner && (
+                <label className="flex flex-col gap-1 text-xs">
+                  <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Owner</span>
+                  <select
+                    aria-label={`Owner for ${card.name}`}
+                    value={card.owner ?? gameContext?.activePlayer ?? activePlayers[0] ?? "Player 1"}
+                    onChange={(e) =>
+                      updateZoneCard(zone, card.instanceId ?? card.cardId, { owner: e.target.value as PlayerLabel })
+                    }
+                    className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
+                  >
+                    {activePlayers.map((p) => (
+                      <option key={p} value={p}>
+                        {formatPlayerDisplayLabel(p, displayNamesByPlayer[p])}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              {isStackZone && (
+                <label className="flex flex-col gap-1 text-xs">
+                  <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Cast by</span>
+                  <select
+                    aria-label={`Caster for ${card.name}`}
+                    value={card.caster ?? activePlayers[0] ?? "Player 1"}
+                    onChange={(e) =>
+                      updateZoneCard(zone, card.instanceId ?? card.cardId, { caster: e.target.value as PlayerLabel })
+                    }
+                    className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
+                  >
+                    {activePlayers.map((p) => (
+                      <option key={p} value={p}>
+                        {formatPlayerDisplayLabel(p, displayNamesByPlayer[p])}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+              )}
+
+              {/* REQ-210 (owner-edited): Mana spent is on every zone's card now, not only
+                  the Stack, prefilled with the printed mana value; an untouched box leaves
+                  `manaSpent` undefined so nothing is sent. */}
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">
+                  Mana spent{manaHint ? <span className="ml-1 font-normal text-zinc-500">({manaHint})</span> : null}
+                </span>
+                <input
+                  aria-label={`Mana spent for ${card.name}`}
+                  type="text"
+                  inputMode="numeric"
+                  value={manaDisplayValue}
+                  onChange={(e) => {
+                    const raw = e.target.value;
+                    setManaSpentDraftByKey((c) => ({ ...c, [key]: raw }));
+                    updateZoneCard(zone, card.instanceId ?? card.cardId, { manaSpent: parseManaSpent(raw) });
+                  }}
+                  placeholder="e.g. 3"
+                  className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
+                />
+              </label>
+            </div>
+
+            <div className="space-y-2">
+              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Targets</p>
               <select
-                aria-label={`Owner for ${card.name}`}
-                value={card.owner ?? gameContext?.activePlayer ?? activePlayers[0] ?? "Player 1"}
-                onChange={(e) =>
-                  updateZoneCard(zone, card.instanceId ?? card.cardId, { owner: e.target.value as PlayerLabel })
-                }
-                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
+                aria-label={`Add a target for ${card.name}`}
+                value=""
+                onChange={(e) => handleSelectTargetOption(zone, card, key, e.target.value)}
+                className="w-full rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
               >
+                <option value="" disabled>
+                  Add another target…
+                </option>
+                <option value={TARGET_OPTION_NONE}>No target</option>
+                <option value={TARGET_OPTION_BOARD}>Just on the board</option>
                 {activePlayers.map((p) => (
-                  <option key={p} value={p}>
+                  <option key={p} value={`player:${p}`}>
                     {formatPlayerDisplayLabel(p, displayNamesByPlayer[p])}
                   </option>
                 ))}
-              </select>
-            </label>
-          )}
-
-          {isStackZone && (
-            <label className="flex flex-col gap-1 text-xs">
-              <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Caster</span>
-              <select
-                aria-label={`Caster for ${card.name}`}
-                value={card.caster ?? activePlayers[0] ?? "Player 1"}
-                onChange={(e) =>
-                  updateZoneCard(zone, card.instanceId ?? card.cardId, { caster: e.target.value as PlayerLabel })
-                }
-                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
-              >
-                {activePlayers.map((p) => (
-                  <option key={p} value={p}>
-                    {formatPlayerDisplayLabel(p, displayNamesByPlayer[p])}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
-
-          {isStackZone && (
-            <label className="flex flex-col gap-1 text-xs">
-              <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Mana spent</span>
-              <input
-                aria-label={`Mana spent for ${card.name}`}
-                type="text"
-                inputMode="numeric"
-                value={card.manaSpent !== undefined ? String(card.manaSpent) : ""}
-                onChange={(e) =>
-                  updateZoneCard(zone, card.instanceId ?? card.cardId, { manaSpent: parseManaSpent(e.target.value) })
-                }
-                placeholder="e.g. 3"
-                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
-              />
-            </label>
-          )}
-        </div>
-
-        <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Targets</p>
-          <div className="flex flex-wrap gap-2">
-            <select
-              aria-label={`Target kind for ${card.name}`}
-              value={pendingKind}
-              onChange={(e) =>
-                setPendingKindByKey((c) => ({
-                  ...c,
-                  [key]: e.target.value as PendingTargetKind
-                }))
-              }
-              className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
-            >
-              <option value="player">Player</option>
-              <option value="card">Zone card</option>
-              <option value="none">None</option>
-              <option value="other">Other</option>
-            </select>
-
-            {pendingKind === "player" && (
-              <select
-                aria-label={`Player target for ${card.name}`}
-                value={getPendingPlayer(key)}
-                onChange={(e) =>
-                  setPendingPlayerByKey((c) => ({
-                    ...c,
-                    [key]: e.target.value as PlayerLabel
-                  }))
-                }
-                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
-              >
-                {activePlayers.map((p) => (
-                  <option key={p} value={p}>
-                    {formatPlayerDisplayLabel(p, displayNamesByPlayer[p])}
-                  </option>
-                ))}
-              </select>
-            )}
-
-            {pendingKind === "card" && (
-              <select
-                aria-label={`Card target for ${card.name}`}
-                value={pendingCardIdByKey[key] ?? ""}
-                onChange={(e) => setPendingCardIdByKey((c) => ({ ...c, [key]: e.target.value }))}
-                className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
-              >
-                <option value="">Select card…</option>
-                {contextIndex.map((entry) => (
-                  <option key={`${entry.zone}:${entry.cardId}`} value={entry.cardId}>
+                <option value={TARGET_OPTION_ALL_PLAYERS}>All players</option>
+                {otherCards.map((entry) => (
+                  <option key={`${entry.zone}:${entry.cardId}`} value={`card:${entry.zone}:${entry.cardId}`}>
                     {`${ZONE_LABELS[entry.zone]}: ${entry.cardName}`}
                   </option>
                 ))}
+                <option value={TARGET_OPTION_CUSTOM}>Something else…</option>
               </select>
-            )}
 
-            {pendingKind === "other" && (
-              <input
-                aria-label={`Other target for ${card.name}`}
-                type="text"
-                value={pendingOtherByKey[key] ?? ""}
-                onChange={(e) => setPendingOtherByKey((c) => ({ ...c, [key]: e.target.value }))}
-                placeholder="Describe what this points at"
-                className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
-              />
-            )}
-
-            <button
-              type="button"
-              aria-label={`Add target for ${card.name}`}
-              onClick={() => handleAddTarget(zone, card, key)}
-              className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20"
-            >
-              Add target
-            </button>
-          </div>
-
-          {(card.targets ?? []).length > 0 && (
-            <ul className="space-y-1">
-              {(card.targets ?? []).map((target, targetIndex) => (
-                <li
-                  key={targetIndex}
-                  className="flex items-center justify-between gap-2 rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-1.5 text-xs text-zinc-300"
-                >
-                  <span>{formatContextTarget(target, displayNamesByPlayer)}</span>
+              {isAwaitingCustomTarget(key) && (
+                <div className="flex items-center gap-2">
+                  <input
+                    aria-label={`Describe the target for ${card.name}`}
+                    type="text"
+                    maxLength={200}
+                    value={pendingCustomTextByKey[key] ?? ""}
+                    onChange={(e) => setPendingCustomTextByKey((c) => ({ ...c, [key]: e.target.value }))}
+                    placeholder="Describe what this points at"
+                    className="flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
+                  />
                   <button
                     type="button"
-                    aria-label={`Remove target ${targetIndex + 1} for ${card.name}`}
-                    onClick={() => handleRemoveTarget(zone, card, targetIndex)}
-                    className="text-zinc-400 hover:text-zinc-200"
+                    aria-label={`Confirm target for ${card.name}`}
+                    onClick={() => handleConfirmCustomTarget(zone, card, key)}
+                    className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20"
                   >
-                    ×
+                    Add
                   </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+                  <button
+                    type="button"
+                    aria-label={`Cancel target for ${card.name}`}
+                    onClick={() => handleCancelCustomTarget(key)}
+                    className="text-xs text-zinc-400 hover:text-zinc-200"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              )}
 
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Context notes</span>
-          <textarea
-            aria-label={`Context notes for ${card.name}`}
-            value={card.contextNotes ?? ""}
-            onChange={(e) =>
-              updateZoneCard(zone, card.instanceId ?? card.cardId, {
-                contextNotes: e.target.value || undefined
-              })
-            }
-            rows={2}
-            placeholder="Optional notes about this card's context"
-            className="resize-none rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
-          />
-        </label>
+              {(card.targets ?? []).length > 0 && (
+                <ul className="space-y-1">
+                  {(card.targets ?? []).map((target, targetIndex) => (
+                    <li
+                      key={targetIndex}
+                      className="flex items-center justify-between gap-2 rounded-lg border border-zinc-700/50 bg-zinc-800/50 px-3 py-1.5 text-xs text-zinc-300"
+                    >
+                      <span>{formatContextTarget(target, displayNamesByPlayer)}</span>
+                      <button
+                        type="button"
+                        aria-label={`Remove target ${targetIndex + 1} for ${card.name}`}
+                        onClick={() => handleRemoveTarget(zone, card, targetIndex)}
+                        className="text-zinc-400 hover:text-zinc-200"
+                      >
+                        ×
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+
+            {/* REQ-017: the freeform note is folded behind a slim row; a card that
+                already has a note opens with it showing. */}
+            {noteOpen ? (
+              <label className="flex flex-col gap-1 text-xs">
+                <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Note</span>
+                <textarea
+                  aria-label={`Context notes for ${card.name}`}
+                  value={card.contextNotes ?? ""}
+                  onChange={(e) =>
+                    updateZoneCard(zone, card.instanceId ?? card.cardId, {
+                      contextNotes: e.target.value || undefined
+                    })
+                  }
+                  rows={2}
+                  placeholder="Optional notes about this card's context — kicker or buyback paid, X value used, counters added this turn, tapped status, gained abilities this turn"
+                  className="resize-none rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 text-sm text-zinc-100"
+                />
+              </label>
+            ) : (
+              <button
+                type="button"
+                aria-label={`Add a note for ${card.name}`}
+                onClick={() => setNoteOpenByKey((c) => ({ ...c, [key]: true }))}
+                className="text-xs font-semibold text-accent-soft transition hover:text-accent-strong"
+              >
+                ＋ Add a note
+              </button>
+            )}
+          </div>
+        </div>
       </li>
     );
   }
 
   const hasAnswer = Boolean(answer);
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
-  const showWizard = totalCards > 0 && viewMode === "wizard" && !wizardFinished;
-  const showWizardFinished = totalCards > 0 && viewMode === "wizard" && wizardFinished;
-  const showQuestionForm = !hasAnswer && (totalCards === 0 || viewMode === "list" || wizardFinished);
+  const showSheet = totalCards > 0 && !reviewing;
+  const showReview = totalCards > 0 && reviewing;
+  const showQuestionForm = !hasAnswer && (totalCards === 0 || reviewing);
   const populatedZoneSummaries = CANONICAL_ZONE_ORDER
     .map((zone) => ({ zone, count: zones[zone]?.length ?? 0 }))
     .filter(({ count }) => count > 0);
@@ -389,6 +448,12 @@ export function EnrichmentStep({
   const fallbackQuestion = resolveFallbackQuestion(zones);
   const questionTextareaRef = useRef<HTMLTextAreaElement>(null);
   useAutoGrowTextarea(question, questionTextareaRef);
+
+  // REQ-209: the review lists each card's context in words before the question box,
+  // with ✎ to jump back — built on the same frozen-context word formatting the
+  // post-answer View Context sheet uses, fed this step's own live (not yet frozen)
+  // state and an edit handler instead of a read-only one.
+  const reviewGameContext: GameContext | null = gameContext ? { ...gameContext, zones } : null;
 
   if (isConversationActive) {
     return (
@@ -437,80 +502,52 @@ export function EnrichmentStep({
         {stationsRail}
         <StepEyebrow stepName="Context enrichment" />
 
-        <div className="flex items-center justify-between gap-3">
-          {totalCards > 0 && !hasAnswer && (
-            <button
-              type="button"
-              onClick={() => {
-                if (viewMode === "wizard") {
-                  setViewMode("list");
-                } else {
-                  setViewMode("wizard");
-                  setWizardFinished(false);
-                }
-              }}
-              className="ambient-accent-surface ambient-accent-interactive rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700/80"
-            >
-              {viewMode === "wizard" ? "View all cards" : "Card-by-card"}
-            </button>
-          )}
-        </div>
-
         {totalCards === 0 ? (
           <p className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 text-sm text-zinc-300">
             Add at least one card by searching or scanning before decrypting.
           </p>
-        ) : showWizard && currentWizardEntry ? (
+        ) : showSheet && currentEntry ? (
           <div
             data-accent-current="true"
             className="enrichment-card-surface ambient-accent-surface ambient-accent-interactive space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
           >
-            <p className="text-sm text-zinc-400">
-              Card {wizardIndex + 1} of {totalCards}
-            </p>
+            <div className="flex items-center justify-between gap-3">
+              <p className="text-sm text-zinc-400">
+                Card {cardIndex + 1} of {totalCards}
+              </p>
+              <button
+                type="button"
+                onClick={() => setReviewing(true)}
+                className="text-xs font-semibold text-accent-soft transition hover:text-accent-strong"
+              >
+                Skip to review
+              </button>
+            </div>
             <ul key={cardAnimKey} className="enrichment-card-enter">
-              {renderCardRow(currentWizardEntry.zone, currentWizardEntry.card, { showRemove: false })}
+              {renderCompactSheet(currentEntry.zone, currentEntry.card)}
             </ul>
             <button
               type="button"
-              onClick={handleWizardNext}
+              onClick={handleNext}
               className="w-full rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90"
             >
-              {wizardIndex < totalCards - 1 ? "OK — next card" : "OK — finish enrichment"}
+              {cardIndex < totalCards - 1 ? "OK — next card" : "OK — finish context"}
             </button>
           </div>
-        ) : showWizardFinished ? (
+        ) : showReview && reviewGameContext ? (
           <div
             data-accent-current="false"
-            className="enrichment-card-surface ambient-accent-surface motion-success rounded-2xl border border-accent/40 bg-accent/10 p-4"
+            className="enrichment-card-surface ambient-accent-surface motion-success space-y-3 rounded-2xl border border-accent/40 bg-accent/10 p-4"
           >
-            <p className="text-sm font-semibold text-accent-soft">Ready to decrypt.</p>
-            <p className="mt-1 text-sm text-zinc-300">
-              Card context reviewed. Use View all cards to make more edits.
-            </p>
+            <p className="text-sm font-semibold text-accent-soft">Review your question&rsquo;s context.</p>
+            <FrozenGameContextDetails frozenGameContext={reviewGameContext} onEditCard={handleEditFromReview} />
             {!question.trim() && (
               <p className="mt-1 text-sm text-zinc-300">
                 No message needed — tap Send Request below when you&rsquo;re ready.
               </p>
             )}
           </div>
-        ) : (
-          <div
-            data-accent-current="true"
-            className="enrichment-card-surface ambient-accent-surface ambient-accent-interactive space-y-6 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
-          >
-            {CANONICAL_ZONE_ORDER.filter((zone) => (zones[zone]?.length ?? 0) > 0).map((zone) => (
-              <div key={zone} className="space-y-2">
-                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                  {ZONE_LABELS[zone]}
-                </p>
-                <ul className="scroll-cap-4-enrichment space-y-3">
-                  {(zones[zone] ?? []).map((card) => renderCardRow(zone, card))}
-                </ul>
-              </div>
-            ))}
-          </div>
-        )}
+        ) : null}
 
         {hasAnswer ? (
           <div className="motion-success rounded-2xl border border-accent/40 bg-accent/10 p-4">

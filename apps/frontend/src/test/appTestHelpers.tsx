@@ -261,7 +261,7 @@ export async function advancePastZoneCollection(user: ReturnType<typeof userEven
 
 export async function finishEnrichmentWizard(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   for (;;) {
-    const finishButton = screen.queryByRole("button", { name: "OK — finish enrichment" });
+    const finishButton = screen.queryByRole("button", { name: "OK — finish context" });
     if (finishButton) {
       await user.click(finishButton);
       break;

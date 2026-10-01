@@ -3,10 +3,42 @@ import {
   buildZoneScopeSentence,
   formatConversationHistorySection,
   formatGameContext,
+  formatNonStackZoneSections,
   formatSupplementalRulesSection
 } from "./promptFormatting.js";
 import type { RetrievedGameRule } from "../gameRulesRetrieval.js";
-import type { ConversationTurn, PromptContext } from "../types/index.js";
+import type { ConversationTurn, PromptContext, PromptContextZoneItem } from "../types/index.js";
+
+function makeZoneItem(overrides: Partial<PromptContextZoneItem> = {}): PromptContextZoneItem {
+  return {
+    cardId: "snapcaster-mage",
+    name: "Snapcaster Mage",
+    oracleText: "Flash.",
+    imageUrl: "",
+    manaCost: "{1}{U}",
+    manaValue: 2,
+    typeLine: "Creature — Human Wizard",
+    colors: ["U"],
+    supertypes: [],
+    subtypes: [],
+    targets: [],
+    ...overrides
+  };
+}
+
+function minimalContext(items: PromptContextZoneItem[]): PromptContext {
+  return {
+    finalQuestion: "?",
+    gameContext: {
+      playerCount: 1,
+      players: [{ label: "Player 1", lifeTotal: 20 }],
+      turnPhase: "main_1",
+      selectedZones: ["graveyard"]
+    },
+    populatedZones: [{ zoneId: "graveyard", items }],
+    orderedStack: []
+  };
+}
 
 describe("Backend - Ask AI", () => {
   describe("buildZoneScopeSentence", () => {
@@ -155,6 +187,23 @@ describe("Backend - Ask AI", () => {
       expect(section).toContain("CONVERSATION HISTORY");
       expect(section).toContain("User: What happens?");
       expect(section).toContain("Assistant: It resolves.");
+    });
+  });
+
+  describe("formatNonStackZoneSections — REQ-210 mana-spent line", () => {
+    it("emits no manaSpent line for an untouched card", () => {
+      const section = formatNonStackZoneSections(minimalContext([makeZoneItem()]));
+      expect(section).not.toContain("manaSpent");
+    });
+
+    it("emits manaSpent right after targets, before contextNotes, for an edited card", () => {
+      const section = formatNonStackZoneSections(minimalContext([makeZoneItem({ manaSpent: 4 })]));
+      expect(section).toContain("manaSpent: 4");
+      const targetsIndex = section.indexOf("targets:");
+      const manaSpentIndex = section.indexOf("manaSpent:");
+      const contextNotesIndex = section.indexOf("contextNotes:");
+      expect(targetsIndex).toBeLessThan(manaSpentIndex);
+      expect(manaSpentIndex).toBeLessThan(contextNotesIndex);
     });
   });
 });

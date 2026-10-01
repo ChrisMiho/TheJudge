@@ -106,13 +106,14 @@ describe("Theme palette changes preserve workflow state", () => {
     await waitForMetadataReady();
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
+    await finishEnrichmentWizard(user);
     await user.type(screen.getByPlaceholderText("How does this resolve?"), "Will this resolve?");
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("button", { name: "Theme: Green" }));
 
     expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("Will this resolve?");
-    expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit context for Opt" })).toBeInTheDocument();
 
     await clickDecryptStack(user);
     const requestBody = await waitFor(() => {
@@ -143,11 +144,15 @@ describe("Theme palette changes preserve workflow state", () => {
     await waitForMetadataReady();
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
+    await finishEnrichmentWizard(user);
     await user.type(screen.getByPlaceholderText("How does this resolve?"), "Does Opt resolve?");
 
+    // REQ-017: once every card is reviewed the review surface rests (its editing is
+    // done) while the question submission stays current — the former simultaneous
+    // "list mode" reading no longer applies since that mode is retired.
     const cardSurface = document.querySelector<HTMLElement>(".enrichment-card-surface");
     const questionSurface = document.querySelector<HTMLElement>(".enrichment-question-surface");
-    expect(cardSurface).toHaveAttribute("data-accent-current", "true");
+    expect(cardSurface).toHaveAttribute("data-accent-current", "false");
     expect(questionSurface).toHaveAttribute("data-accent-current", "true");
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
@@ -170,7 +175,7 @@ describe("Theme palette changes preserve workflow state", () => {
       expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue(
         "Does Opt resolve?"
       );
-      expect(cardSurface).toHaveAttribute("data-accent-current", "true");
+      expect(cardSurface).toHaveAttribute("data-accent-current", "false");
       expect(questionSurface).toHaveAttribute("data-accent-current", "true");
     }
 
@@ -278,7 +283,7 @@ describe("Accent token coverage for staged and answered semantic surfaces", () =
     await advancePastZoneCollection(user);
     await finishEnrichmentWizard(user);
 
-    const readyText = screen.getByText("Ready to decrypt.");
+    const readyText = screen.getByText(/Review your question.s context\./);
     const panel = readyText.closest("div");
     expect(panel).not.toBeNull();
     expect(panel!.className).toContain("border-accent");

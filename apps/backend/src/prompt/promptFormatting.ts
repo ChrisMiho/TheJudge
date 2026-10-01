@@ -234,14 +234,22 @@ export function formatNonStackZoneSections(context: PromptContext): string {
       const sectionHeader = ZONE_SECTION_LABEL[zone.zoneId] ?? `ZONE: ${zone.zoneId.toUpperCase()}`;
       const itemLabel = ZONE_ITEM_LABEL[zone.zoneId] ?? zone.zoneId;
       const itemsText = zone.items
-        .map((item, index) =>
-          [
+        .map((item, index) => {
+          const metaLines = formatZoneCardMetadataLines(item, displayNamesByPlayer);
+          // REQ-210: an explicitly sent mana-spent value is inserted right after
+          // targets (the same relative position the Stack's own manaSpent line
+          // takes) — an untouched card (no sent value) adds no line, so today's
+          // prompts stay byte-identical.
+          if (item.manaSpent !== undefined) {
+            metaLines.splice(7, 0, `manaSpent: ${item.manaSpent}`);
+          }
+          return [
             `${itemLabel} ${index + 1}`,
             `name: ${item.name}`,
             `owner: ${formatPlayerRef(item.owner, displayNamesByPlayer)}`,
-            ...formatZoneCardMetadataLines(item, displayNamesByPlayer)
-          ].join("\n")
-        )
+            ...metaLines
+          ].join("\n");
+        })
         .join("\n\n");
       return [sectionHeader, itemsText].join("\n");
     })

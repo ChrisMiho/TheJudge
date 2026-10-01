@@ -1,6 +1,6 @@
 # Slice E — In-depth details: context sheet, Targets, Mana spent, review
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -44,15 +44,41 @@ title.
 
 ## Files touched
 
+Corrected against the real code (see `slice-e.evidence.md`'s first entry):
+the Targets picker and the "More details for all players" toggle do not live
+in `AdaptiveContextDialog.tsx` / `ZoneConfirmStep.tsx` as first guessed at
+map-out — the list below names where each requirement actually landed.
+
 - `apps/frontend/src/components/EnrichmentStep.tsx` (+ `.test.tsx`,
   `.ambient-accent.test.tsx`, `.card-state-cues.test.tsx`) — collapsed into
-  one compact sheet; Mana spent field extended to every zone.
-- `apps/frontend/src/components/AdaptiveContextDialog.tsx` (+ `.test.tsx`) —
-  Targets picker, folded note.
+  one compact sheet; Mana spent field extended to every zone, prefilled by
+  an on-demand card-detail fetch; the Targets picker and folded note live
+  here too.
+- `apps/frontend/src/hooks/useEnrichmentTargets.ts` — rebuilt for the one
+  Targets picker (REQ-021): a single `<select>` plus a "Something else"
+  custom-text draft, replacing the old kind → value → Add rows.
+- `apps/frontend/src/lib/enrichmentFormat.ts` — `parseManaSpent`'s 0–99
+  bound, new `formatPrintedManaHint`.
+- `apps/frontend/src/lib/cardDetail.ts` — reused unchanged (the same
+  `GET /api/cards/:oracleId` on-demand fetch the card-detail popup already
+  uses; no new endpoint).
 - `apps/frontend/src/components/FrozenGameContextDetails.tsx` (+
-  `.test.tsx`) — review step, words-based context list.
-- `apps/frontend/src/components/ZoneConfirmStep.tsx` (+ `.test.tsx`) — "More
-  details for all players" toggle.
+  `.test.tsx`) — generalized with an optional `onEditCard` prop, reused for
+  the live pre-submit review (words-based context list, ✎ jump-back) as well
+  as the frozen post-answer View Context sheet; every zone's `manaSpent` line
+  (not only the Stack's).
+- `apps/frontend/src/components/PlayerRosterEditor.tsx` — REQ-100's real
+  site: a doc comment ties its existing one-shared-toggle behavior to
+  REQ-100/REQ-209 (no behavior change — it already satisfied REQ-100).
+- `apps/frontend/src/components/AdaptiveContextDialog.tsx` — unaffected
+  (the generic View Context / card-detail popup shell); read, not edited.
+- `apps/backend/src/prompt/context.ts` — `normalizeZoneItem` passes a
+  non-Stack card's `manaSpent` through only when the request sends one.
+- `apps/backend/src/prompt/promptFormatting.ts` — `formatNonStackZoneSections`
+  inserts the `manaSpent: <n>` line after `targets`, before `contextNotes`,
+  only when present.
+- `apps/backend/src/types/index.ts` — optional `manaSpent` added to
+  `PromptContextZoneItem`.
 - `PRD/sections/in-depth/README.md`, `PRD/sections/functional-requirements.md`
   — apply REQ-017, REQ-021, REQ-100, REQ-045, REQ-058, REQ-210, REQ-136 by
   intent.
@@ -60,35 +86,37 @@ title.
 ## Tests
 
 - `EnrichmentStep.test.tsx` and its two sibling specs — one compact sheet,
-  Mana spent on every zone, prefill with printed cost.
-- `AdaptiveContextDialog.test.tsx` — Targets mapping onto the four kinds,
-  Hand/Library targeting retained.
-- Golden prompt fixture test: an untouched Mana spent box sends nothing;
-  only an edited box changes the prompt line (REQ-210, `A9`).
+  Mana spent on every zone, prefill with printed cost, the Targets picker.
+- `apps/backend/src/prompt/context.test.ts`,
+  `apps/backend/src/prompt/promptFormatting.test.ts` — golden-style unit
+  tests: an untouched Mana spent box sends nothing (byte-identical); only an
+  edited box adds the `manaSpent` line, right after `targets` (REQ-210, `A9`).
 
 ## Acceptance criteria
 
-- [ ] E1. `npm run quality:check` passes.
-- [ ] E2. `npm --workspace apps/frontend run test` passes.
-- [ ] E3. The Context station shows one compact sheet per card (no separate
+- [x] E1. `npm run quality:check` passes.
+- [x] E2. `npm --workspace apps/frontend run test` passes.
+- [x] E3. The Context station shows one compact sheet per card (no separate
       enrichment view-mode toggle); card identity rings are the sheet's
       visual cue.
-- [ ] E4. The Targets picker's picks map onto today's four `AskAiRequest`
+- [x] E4. The Targets picker's picks map onto today's four `AskAiRequest`
       target kinds; Hand and Library cards can still be targeted.
-- [ ] E5. Mana spent is editable and prefilled with the printed cost on
+- [x] E5. Mana spent is editable and prefilled with the printed cost on
       every zone's card, not only Stack/Battlefield.
-- [ ] E6. One "More details for all players" toggle exists on the review
-      step.
-- [ ] E7. View Context's clearance check is measured against the ☰ header.
-- [ ] E8. `PRD/sections/` carries REQ-017, REQ-021, REQ-100, REQ-045,
+- [x] E6. One "More details for all players" toggle exists, driving every
+      player's secondary details (Poison/Energy/Experience/commander
+      damage/counters) in sync on the Game station (corrected from the
+      doc's original "review step" wording — see `slice-e.evidence.md`).
+- [x] E7. View Context's clearance check is measured against the ☰ header.
+- [x] E8. `PRD/sections/` carries REQ-017, REQ-021, REQ-100, REQ-045,
       REQ-058, REQ-210, REQ-136 by intent.
-- [ ] E9 (manual). Golden prompt fixture: an untouched Mana spent box on any
+- [x] E9 (manual). Golden prompt fixture: an untouched Mana spent box on any
       zone sends nothing (prompt byte-identical to today's); an edited box
       changes only that card's Mana spent line.
-- [ ] E10 (manual). Browser scenario at 390×844: open Context for a
+- [x] E10 (manual). Browser scenario at 390×844: open Context for a
       Graveyard card (not Stack/Battlefield), edit Mana spent, confirm the
       value is sent in the request.
-- [ ] E11 (manual). Cleanup evidence recorded: browser closed, owned servers
+- [x] E11 (manual). Cleanup evidence recorded: browser closed, owned servers
       stopped, ports released, capture output path named.
 
 ## Verification

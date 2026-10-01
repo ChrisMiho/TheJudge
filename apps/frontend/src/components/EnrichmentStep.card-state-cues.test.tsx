@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it } from "vitest";
 import type { ZoneCardItem } from "../types";
 import { card, renderEnrichment } from "../test/enrichmentStep";
@@ -18,16 +18,10 @@ describe("Card state motion cues", () => {
     expect(screen.getByRole("article")).toHaveClass("motion-enter");
   });
 
-  it("adds entrance and remove-exit hooks to enrichment rows", () => {
+  it("adds an entrance hook to the compact sheet row", () => {
     renderEnrichment();
 
-    fireEvent.click(screen.getByRole("button", { name: "View all cards" }));
-    const removeButton = screen.getByRole("button", { name: "Remove Opt" });
-    expect(removeButton.closest(".enrichment-card-row")).toHaveClass(
-      "enrichment-card-enter",
-      "card-state-remove"
-    );
-    expect(removeButton).toHaveClass("card-state-remove-trigger");
+    expect(document.querySelector(".enrichment-card-row")).toHaveClass("enrichment-card-enter");
   });
 
   it("cues existing success and error messages without changing their content", () => {

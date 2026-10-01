@@ -21,8 +21,8 @@
   REQ-028, REQ-029, REQ-030, REQ-031, REQ-032, REQ-033, REQ-045, REQ-056, REQ-058,
   REQ-061, REQ-069, REQ-070, REQ-093, REQ-094, REQ-095, REQ-100, REQ-106,
   REQ-110, REQ-121, REQ-130, REQ-132, REQ-136, REQ-137, REQ-138, REQ-139,
-  REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, REQ-206, REQ-209, FLOW-001, FLOW-002, FLOW-003,
-  FLOW-004, FLOW-005, FLOW-015, NFR-001, NFR-002, NFR-006, NFR-009
+  REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, REQ-206, REQ-209, REQ-210, FLOW-001, FLOW-002,
+  FLOW-003, FLOW-004, FLOW-005, FLOW-015, NFR-001, NFR-002, NFR-006, NFR-009
 - Consumed but owned elsewhere (cited, not re-specified here): the shared
   answered-conversation workspace, View Context overlay, history drawer,
   suite-wide card-detail popup, Menu rail (DEC-122), suite shell, and shared
@@ -206,23 +206,33 @@ retrieval/combo machinery that other specs own.
 
 ### Step 4 — Enrichment
 
-- Built: a default card-by-card wizard (OK advances) with an optional **View all
-  cards** full-list edit mode builds one ordered enrichment list across all
-  populated zones. Per card the player may optionally add a caster, targets, a
-  freeform context note, and mana-spent context for stack entries; the note
-  placeholder names transient annotations (kicker/buyback paid, X value, counters
-  added this turn, tapped status, gained abilities). (REQ-017, DEC-028, FLOW-001)
+- Built: the Context station shows one compact sheet per card across all
+  populated zones, in one ordered list: the card's art at the left (210px desktop,
+  96px phone with the form below), a small `n / total` counter, and **Skip to
+  review** in the eyebrow. Fields are selects, not chips: Owner on every zone but
+  the Stack, Cast by on the Stack, Mana spent on every zone's card (a number box
+  prefilled with the printed mana value, hinting the printed cost, REQ-210), and one Targets picker on
+  every zone. The note is folded behind a slim **＋ Add a note** row (a card with a
+  note opens with it showing); its placeholder names transient annotations
+  (kicker/buyback paid, X value, counters added this turn, tapped status, gained
+  abilities). **Finish context · next: your question** leads to the review.
+  (REQ-017, REQ-021, REQ-209, FLOW-001)
 - Built: before submit, enrichment shows a pre-decrypt summary of which
   selected zones are populated and the fallback question that will be sent if
   the player leaves the question field blank. (DEC-028, REQ-011, REQ-017)
 - Built: targets use `ContextTarget` — player targets (`targetPlayer`), card
   targets (`zone` + `cardId` + `cardName`), `{ kind: "none" }`, and freeform
   (`targetDescription`); the public API never exposes the legacy `StackTarget`.
-  Card targets remain oracle-level even for duplicate instances. (DEC-026,
-  REQ-021, REQ-061)
+  Card targets remain oracle-level even for duplicate instances. The Context sheet
+  sets them through one Targets picker whose picks map onto these kinds — Just on
+  the board, All players, and Something else ride `other` with that text.
+  (DEC-026, REQ-021, REQ-061)
 - Built: mana-spent context is deterministic for every stack entry — omitted
   input falls back to `manaValue`, and the prompt emits mana-spent in stable
-  formatting. X-spell clarity is the primary motivation. (REQ-017)
+  formatting. X-spell clarity is the primary motivation. Every zone's card carries
+  the same optional box; a non-Stack value is sent and emitted only when the
+  player changes the prefilled printed value, so an untouched box leaves the
+  prompt unchanged. (REQ-017, REQ-210)
 - Built: In-Depth's game-context counter UI (surfaced in the roster, edited in
   the expanded secondary details) uses shared row patterns: poison, energy, and
   experience are content-sized bounded selects stacked vertically at every
@@ -458,8 +468,9 @@ outcome-validated, not product truth.
   (DEC-046, REQ-022)
 - Combo variants: at most 5 selected per prompt — a relevance/noise cap
   independent of the 1,000,000-char prompt budget. (DEC-116, REQ-094, REQ-095)
-- Enrichment **View all cards** mode: at most 4 full-width edit rows per zone
-  before internal scroll. (DEC-076, REQ-056)
+- Review list: the former View all cards mode and its 4-row-per-zone scroll cap
+  are retired with it — the review lists every card's context in words, in page
+  flow, with no per-zone row cap. (REQ-017)
 - Zone-collection strip: fixed `w-40` / 160px tiles, image grows to fill the tile
   interior (≈92px → ≈144px) under DEC-160, horizontal region scroll. (DEC-151,
   DEC-160, REQ-130)

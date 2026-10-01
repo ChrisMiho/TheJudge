@@ -64,6 +64,11 @@ export type PromptContextZoneItem = {
   owner?: PlayerLabel;
   targets: PromptContextStackTarget[];
   contextNotes?: string;
+  /** REQ-210: every zone's card can carry an explicit mana-spent value now, not only
+   * the Stack. Unlike the Stack's `manaSpent` (always present, falling back to
+   * `manaValue`), this is present only when the player actually sent one — an
+   * untouched box emits no line, keeping today's prompts byte-identical. */
+  manaSpent?: number;
 };
 
 export type PromptContextStackItem = {

@@ -25,6 +25,11 @@ const COMBAT_STEP_LABELS: Record<CombatStep, string> = {
 
 type FrozenGameContextDetailsProps = {
   frozenGameContext: GameContext;
+  /** REQ-209/REQ-017: when provided, each card row also carries a ✎ "Edit" button
+   * jumping back to that card's Context sheet. Used only by the live pre-submit
+   * review (EnrichmentStep); the frozen post-answer View Context sheet renders
+   * read-only and omits this prop. */
+  onEditCard?: (zone: ZoneId, card: ZoneCardItem) => void;
 };
 
 type PopulatedZone = { zone: ZoneId; cards: ZoneCardItem[] };
@@ -52,7 +57,8 @@ export function getFrozenGameContextTriggerLabel(frozenGameContext: GameContext)
 }
 
 export function FrozenGameContextDetails({
-  frozenGameContext
+  frozenGameContext,
+  onEditCard
 }: FrozenGameContextDetailsProps): JSX.Element {
   const displayNamesByPlayer = buildPlayerDisplayNameMap(frozenGameContext.players ?? []);
   const populatedZones = getPopulatedZones(frozenGameContext);
@@ -66,7 +72,10 @@ export function FrozenGameContextDetails({
     if (zone === "stack" && card.caster) {
       lines.push(`Caster: ${formatPlayerDisplayLabel(card.caster, displayNamesByPlayer[card.caster])}`);
     }
-    if (zone === "stack" && card.manaSpent !== undefined) {
+    // REQ-210: every zone's card can carry an explicit Mana spent value now, not
+    // only the Stack; an untouched box leaves `manaSpent` undefined so this line
+    // is simply absent, same as today for a card nobody edited.
+    if (card.manaSpent !== undefined) {
       lines.push(`Mana spent: ${card.manaSpent}`);
     }
     if ((card.targets ?? []).length > 0) {
@@ -135,7 +144,19 @@ export function FrozenGameContextDetails({
                 key={`${zone}:${card.instanceId ?? card.cardId}`}
                 className="frozen-context-detail-row space-y-1 rounded-xl border border-zinc-700/60 bg-zinc-900/50 p-3 text-sm text-zinc-300"
               >
-                <p className="font-semibold text-zinc-100">{card.name}</p>
+                <div className="flex items-start justify-between gap-2">
+                  <p className="font-semibold text-zinc-100">{card.name}</p>
+                  {onEditCard && (
+                    <button
+                      type="button"
+                      aria-label={`Edit context for ${card.name}`}
+                      onClick={() => onEditCard(zone, card)}
+                      className="shrink-0 rounded-lg px-1.5 py-1 text-xs font-semibold text-accent-soft transition hover:text-accent-strong"
+                    >
+                      ✎ Edit
+                    </button>
+                  )}
+                </div>
                 {card.typeLine && <p className="text-xs text-zinc-400">{card.typeLine}</p>}
                 {card.oracleText && <p className="text-xs text-zinc-400">{card.oracleText}</p>}
                 {formatCardDetailLines(zone, card).map((line) => (

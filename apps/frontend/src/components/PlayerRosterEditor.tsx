@@ -47,7 +47,9 @@ export type PlayerRosterEditorProps = {
   onLifeTotalChange?: (player: PlayerLabel, value: string) => void;
   showLifeTotals?: boolean;
   renderPlayerExtras?: (player: RosterPlayer) => ReactNode;
-  /** Shared, controlled all-player secondary-details disclosure state. */
+  /** Shared, controlled all-player secondary-details disclosure state — REQ-100's one
+   * "More details for all players" toggle (REQ-209's Game station names it that in
+   * product terms); every player's arrow drives this same synchronized state. */
   secondaryDetailsExpanded?: boolean;
   /** Toggles the shared secondary-details state for every player card. */
   onToggleSecondaryDetails?: () => void;
