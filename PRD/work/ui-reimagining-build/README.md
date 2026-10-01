@@ -7,7 +7,7 @@ Proposed product truth, awaiting the owner's verdicts: GATE-QUESTIONS.md.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/ui-reimagining-build
+- Autonomous base: origin/main
 
 ## Preparation gate
 

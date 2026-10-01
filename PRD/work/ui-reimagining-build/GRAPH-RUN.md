@@ -1,13 +1,13 @@
 # Graph run — ui-reimagining-build
 
 - Run ID: `graph-20260930-055958`
-- Profile: `loaded (env sentinel)` — `npm run graph:preflight` printed `Profile: loaded (env sentinel)`; the driver session's parent command is `claude --settings .claude/graph-profile.json` (observed via `ps`)
-- Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/ui-reimagining-build` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining-build` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining-build` by the build half's claim)
+- Profile: spec-forming half `loaded (env sentinel)` — `npm run graph:preflight` printed `Profile: loaded (env sentinel)`; the driver session's parent command was `claude --settings .claude/graph-profile.json` (observed via `ps`). Build half (claimed 2026-10-01): `unverified` — `THEJUDGE_GRAPH_PROFILE` is unset in the build driver's session and the launch command was not stated; the committed boundary hook is the enforcer either way
+- Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)` (spec-forming half; the build half re-proves the graph canary after every `--take-lock`, recorded per node row)
+- Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/ui-reimagining-build` by the build half's claim; docs PR #238 merged at `c36b44d`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining-build` on `thejudge-auto/ui-reimagining-build-work` (rewritten from `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining-build` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260930-055958/`
-- Current node: `gate-qc` (PASS on attempt 2) — run one parked at `owner-action`
-- Next action: the owner answers `PRD/work/ui-reimagining-build/GATE-QUESTIONS.md` in the docs PR and merges it to `main`; `graph-implement` builds it from there
+- Current node: claimed by the build half — gate resolution (`graph-gate-review`) next, then `gate-qc` re-grade, then `plan → build → review → close`
+- Next action: `/graph-implement PRD/work/ui-reimagining-build/` (resumes from the `STATUS.*` marker inside the build worktree)
 
 ## Node ledger
 
