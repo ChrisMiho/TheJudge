@@ -171,11 +171,11 @@ Proposed `PRD/sections/` diff (amended in place):
 - Verdict: accept
 - Reason:
 
-## REQ-210 — Mana spent can be set on Battlefield cards (new)
+## REQ-210 — Mana spent can be set on any zone's card (new, owner-edited: every zone)
 
-**What this decides:** whether a Battlefield card gets the same "Mana spent" box a Stack card has, and whether a changed value reaches the AI.
+**What this decides:** whether every zone's card gets the same "Mana spent" box a Stack card has, and whether a changed value reaches the AI.
 
-**In plain terms:** Today only Stack cards have a Mana spent box; a blank box falls back to the card's printed mana value in the prompt (REQ-017). Some permanents care how much mana was spent to cast them (X creatures, converge, sunburst), so the mockup shows the box on Battlefield cards too, prefilled with the printed cost. Saying yes adds the box to Battlefield cards and adds a mana-spent line to that card in the prompt — only when the player changes the number. An untouched box sends nothing, so today's prompts stay byte-for-byte the same. The request already accepts the field on any card; only the prompt and the form change.
+**In plain terms:** Today only Stack cards have a Mana spent box; a blank box falls back to the card's printed mana value in the prompt (REQ-017). Some permanents and cards in other zones care how much mana was spent to cast them (X creatures, converge, sunburst), so the box goes on every zone's card, prefilled with the printed cost. Saying yes adds the box everywhere — Battlefield, Graveyard, Hand, and the rest — and adds a mana-spent line to that card in the prompt — only when the player changes the number. An untouched box sends nothing, so today's prompts stay byte-for-byte the same. The request already accepts the field on any card; only the prompt and the form change. The owner chose the broad version now and expects the use cases to be narrowed later.
 
 **What happens if you say no:** the box stays on Stack cards only.
 
@@ -189,31 +189,31 @@ Proposed `PRD/sections/` diff (new, reserved):
 @@ -5158 +5158,20 @@
  
 +### REQ-210
-+- Title: Mana spent for Battlefield cards
++- Title: Mana spent for every zone's cards
 +- Priority: low
-+- Description: A Battlefield card in In-depth details' Context station carries the same optional Mana spent box as a Stack card, so a question about a permanent that cares how much mana was spent to cast it (X, converge, sunburst) can say so. The box is prefilled with the card's printed mana value and hints its printed cost; only a value the player changes is sent and emitted in the prompt.
++- Description: Every zone's card in In-depth details' Context station carries the same optional Mana spent box as a Stack card, so a question about a card that cares how much mana was spent to cast it (X, converge, sunburst), in any zone, can say so. The box is prefilled with the card's printed mana value and hints its printed cost; only a value the player changes is sent and emitted in the prompt.
 +- Acceptance Criteria:
-+  - the Context sheet shows a plain number box labelled Mana spent on Stack and Battlefield cards only, prefilled with the card's printed mana value and hinting its printed cost (for example "printed {R}")
-+  - a box left at its prefilled value sends no `manaSpent` for that card: a Stack card's prompt keeps today's fallback to `manaValue` (REQ-017) and a Battlefield card's prompt emits no mana-spent line, so an untouched form produces today's prompt byte-for-byte
-+  - a changed value (0–99, the existing `manaSpent` bound) is sent on that card; a Battlefield card with a sent value emits `manaSpent: <n>` in its zone entry in the same stable formatting as the Stack's
-+  - golden fixtures pin a Battlefield card with and without a sent value
++  - the Context sheet shows a plain number box labelled Mana spent on every zone's card, prefilled with the card's printed mana value and hinting its printed cost (for example "printed {R}")
++  - a box left at its prefilled value sends no `manaSpent` for that card: a Stack card's prompt keeps today's fallback to `manaValue` (REQ-017) and a non-Stack card's prompt emits no mana-spent line, so an untouched form produces today's prompt byte-for-byte
++  - a changed value (0–99, the existing `manaSpent` bound) is sent on that card; a non-Stack card with a sent value emits `manaSpent: <n>` in its zone entry in the same stable formatting as the Stack's
++  - golden fixtures pin a non-Stack card with and without a sent value
 +- Constraints:
-+  - no new request field: `manaSpent` already exists on every zone card in the request schema; this adds the Battlefield prompt line and the form box only
++  - no new request field: `manaSpent` already exists on every zone card in the request schema; this adds the non-Stack prompt line and the form box, on every zone, only
 +  - no mana-source legality checks (REQ-017)
 +- Dependencies:
 +  - REQ-017
 +  - REQ-030
 +  - REQ-209
 +- Notes:
-+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup
++  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup; broadened from Battlefield-only to every zone by the owner's gate-review edit (2026-10-01) — "sometimes it does matter" on Graveyard and other zones too; use cases to be refined later
 +
 --- a/PRD/sections/in-depth/README.md
 +++ b/PRD/sections/in-depth/README.md
 @@ -202,3 +202,6 @@
    input falls back to `manaValue`, and the prompt emits mana-spent in stable
 -  formatting. X-spell clarity is the primary motivation. (REQ-017)
-+  formatting. X-spell clarity is the primary motivation. Battlefield cards carry
-+  the same optional box; a Battlefield value is sent and emitted only when the
++  formatting. X-spell clarity is the primary motivation. Every zone's card carries
++  the same optional box; a non-Stack value is sent and emitted only when the
 +  player changes the prefilled printed value, so an untouched box leaves the
 +  prompt unchanged. (REQ-017, REQ-210)
  - Built: In-Depth's game-context counter UI (surfaced in the roster, edited in
@@ -313,7 +313,7 @@ Proposed `PRD/sections/` diff (new, reserved):
 
 **What this decides:** how a card's context form looks and which fields each zone shows in In-depth details.
 
-**In plain terms:** Today a card-by-card form, plus a "View all cards" list mode, lets a player add a caster, targets, a note and — on the Stack — mana spent (REQ-017). The mockup makes it one compact sheet per card: the card's art at the left, Owner on every zone but the Stack, Cast by on the Stack, Mana spent on the Stack prefilled with the printed cost (and on the Battlefield if REQ-210 is accepted), one Targets picker, and the note folded behind "＋ Add a note". "View all cards" goes; the review list, with ✎ on each row to jump back, replaces it. One difference from the mockup: it hid Targets on Hand and Library cards. This proposal keeps Targets on every zone, because cards can target from a hand (channel abilities, for example) and dropping it would delete a detail today's form carries.
+**In plain terms:** Today a card-by-card form, plus a "View all cards" list mode, lets a player add a caster, targets, a note and — on the Stack — mana spent (REQ-017). The mockup makes it one compact sheet per card: the card's art at the left, Owner on every zone but the Stack, Cast by on the Stack, Mana spent prefilled with the printed cost on every zone (REQ-210, owner-edited to every zone), one Targets picker, and the note folded behind "＋ Add a note". "View all cards" goes; the review list, with ✎ on each row to jump back, replaces it. One difference from the mockup: it hid Targets on Hand and Library cards. This proposal keeps Targets on every zone, because cards can target from a hand (channel abilities, for example) and dropping it would delete a detail today's form carries.
 
 **What happens if you say no:** the context step keeps today's form and View all cards mode inside the new chrome.
 
@@ -333,7 +333,7 @@ Proposed `PRD/sections/` diff (amended in place):
 +  - app builds one ordered enrichment list across all populated zones and presents it as one compact sheet per card (the card's art beside a short form, an `n / total` counter, Skip to review); the review list with a ✎ jump-back per row replaces the former View all cards list mode
 +  - user can optionally enter context notes per card behind a folded **＋ Add a note** row (a card that has a note opens with it showing); the note placeholder names transient card-level annotations: kicker or buyback paid, X value used, counters added this turn, tapped status, gained abilities this turn
 +  - user can optionally set targets using `ContextTarget` through one Targets picker (REQ-021) on every zone, Hand and Library included
-+  - user can optionally enter mana-spent context for stack entries in a plain number box prefilled with the printed mana value and hinting the printed cost; an untouched box sends nothing (Battlefield cards: REQ-210)
++  - user can optionally enter mana-spent context in a plain number box prefilled with the printed mana value and hinting the printed cost, on every zone's card; an untouched box sends nothing (every zone beyond the Stack: REQ-210)
 +  - fields are selects, not chips: Owner on every zone but the Stack, Cast by on the Stack
    - backend prompt context always emits deterministic mana-spent value per stack entry
 @@ -279,2 +280,3 @@
@@ -354,8 +354,8 @@ Proposed `PRD/sections/` diff (amended in place):
 +  populated zones, in one ordered list: the card's art at the left (210px desktop,
 +  96px phone with the form below), a small `n / total` counter, and **Skip to
 +  review** in the eyebrow. Fields are selects, not chips: Owner on every zone but
-+  the Stack, Cast by on the Stack, Mana spent on the Stack (a number box prefilled
-+  with the printed mana value, hinting the printed cost), and one Targets picker on
++  the Stack, Cast by on the Stack, Mana spent on every zone's card (a number box
++  prefilled with the printed mana value, hinting the printed cost, REQ-210), and one Targets picker on
 +  every zone. The note is folded behind a slim **＋ Add a note** row (a card with a
 +  note opens with it showing); its placeholder names transient annotations
 +  (kicker/buyback paid, X value, counters added this turn, tapped status, gained
@@ -510,7 +510,7 @@ Proposed `PRD/sections/` diff (new, reserved):
 +  - tests cover the single Menu entry and current-marking on both routes, turning the ring, the carry adding only uncarried cards, the ring at 0 / 1 / 270 / 300 characters, Edit cards restoring cards and question, and a chip opening the card detail
 +- Constraints:
 +  - no change to either request mode, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, or routes, except the lookup card cap (REQ-167)
-+  - the carry is in-memory frontend state using the existing cross-destination hand-off pattern (`seedContext.tsx`); carried cards not yet placed are not written into the Draft slot (REQ-108)
++  - the carry is in-memory frontend state using the existing cross-destination hand-off pattern (`seedContext.tsx`); the Ask a Question Draft (REQ-108) begins the moment the first card is attached, and every carried card — placed in In-depth details or still waiting for a zone — is written into the Draft slot, so the whole request survives a reload
 +  - keep-alive mounting and URL-as-truth routing are unchanged (DEC-157, REQ-140)
 +- Dependencies:
 +  - REQ-011
@@ -1166,11 +1166,11 @@ Proposed `PRD/sections/` diff (new, reserved):
 - Verdict: accept
 - Reason:
 
-## REQ-214 — The card scanner in the new frame (new)
+## REQ-214 — The card scanner in the new frame, with a holding list (new, owner-edited)
 
-**What this decides:** how the card scanner looks and how a player leaves it, without changing how it recognises cards.
+**What this decides:** how the card scanner looks, how a scanned card reaches its destination, and how a player leaves it, without changing how it recognises cards.
 
-**In plain terms:** The scanner keeps everything it does today: continuous auto-scan, the lock-on, the "ding", manual capture, the Debug overlay, and the list of cards scanned this session. It is re-dressed: a lit viewfinder in the colour's light with three bands (status and count on top, the card guide in the middle, sound · credit · Debug at the foot), a camera-shutter button for manual capture, an ✕ box above the camera's top-right corner as the only way out, one count pill listing only the cards scanned in this session with Remove, and a yellow caution triangle explaining that scanning is experimental. The count pill, today only on In-Depth's zones, joins Ask a Question and Trade Balancer too. One change from the mockup: its pill said cards "join your question when you close the scanner", but today cards are added the moment they're recognised, and that stays — so the pill says where they went ("Added to the Stack").
+**In plain terms:** The scanner keeps everything it does today: continuous auto-scan, the lock-on, the "ding", manual capture, the Debug overlay, and the list of cards scanned this session. It is re-dressed: a lit viewfinder in the colour's light with three bands (status and count on top, the card guide in the middle, sound · credit · Debug at the foot), a camera-shutter button for manual capture, an ✕ box above the camera's top-right corner as the only way out, one count pill, and a yellow caution triangle explaining that scanning is experimental. The count pill, today only on In-Depth's zones, joins Ask a Question and Trade Balancer too. A scanned card now waits in the scanner's own holding list, shown by the count pill with Remove on each entry; it joins the zone or trade side only when the player closes the scanner and thereby accepts the list — not the instant it is recognised. This restores the mockup's original "join your question when you close the scanner" behaviour, which an earlier pass of this proposal had replaced with add-on-recognition.
 
 **What happens if you say no:** the scanner keeps today's "Capture" and "Exit scan" text buttons in the new colours.
 
@@ -1186,20 +1186,21 @@ Proposed `PRD/sections/` diff (new, reserved):
 +### REQ-214
 +- Title: Card scan in the direction-1 chrome
 +- Priority: medium
-+- Description: The shared camera scanner (FLOW-006) keeps its engine and behaviour and takes the direction-1 presentation on every host (In-depth details' Cards station, Ask a Question, Trade Balancer): a lit viewfinder with three non-overlapping bands, a shutter for manual capture, an ✕ as the only exit, one count pill scoped to this scanning session, an experimental-feature caution, and a themed Debug panel.
++- Description: The shared camera scanner (FLOW-006) keeps its engine and behaviour and takes the direction-1 presentation on every host (In-depth details' Cards station, Ask a Question, Trade Balancer): a lit viewfinder with three non-overlapping bands, a shutter for manual capture, an ✕ as the only exit, one count pill holding this session's scanned cards until the scanner closes, an experimental-feature caution, and a themed Debug panel.
 +- Acceptance Criteria:
 +  - the viewfinder is a frame lit in the colour's edge with three bands that never overlap: the indicator pill and the count pill on top, the card guide in the middle, sound · "Powered by Cardomancer" · Debug at the foot
 +  - the guide is a thin line of the colour's light that breathes slowly while locking (no flashing glow); the lock outline is a thin, slow marching dash of the colour's light; the indicator ("Locking on <card>" with the vote bar, "Good — hold steady", "Camera unavailable", the searching hints) is a themed pill
 +  - manual capture is a camera shutter centred in the foot band (a 54px ring of the colour's light round a 40px filled disc that sinks when pressed; accessible name "Capture"); it still reads one frame by hand, and the hint says so
 +  - the only way out is a box with an ✕ above the camera's top-right corner (accessible name "Exit scan"); the flow's ‹ back arrow is absent while the camera is open
-+  - one count pill in the frame's top right lists only cards scanned in this session, each with Remove; its foot names where they went ("Added to the Stack", "Added to Side A"); there is no separate "Adding to your question" line or "✓ n added" chip; the pill appears on every host
++  - one count pill in the frame's top right lists the scanner's own holding list for this session, each entry with Remove; its foot names the destination the list will join when the scanner closes ("Joins the Stack", "Joins Side A"); there is no "✓ n added" chip; the pill appears on every host
 +  - a yellow caution triangle beside the count opens a pop-up — "Card scanning is experimental — this feature is experimental and isn't fully functioning yet…" — with **Got it**
 +  - Debug dresses the shipped overlay in the colour: the detected outline and art region on the feed, and the live numbers (match, thresholds, frame, camera) as a grouped panel under the frame with small bars for votes, glare, sharpness and quality
-+  - every Scan button opens the scanner and returns to where it was, adding into the zone or side it left from
-+  - tests cover the exit path, the pill listing only this session's scans on each host, Remove, the caution pop-up, and that auto-add, lock and capture behaviour are unchanged
++  - closing the scanner (✕) adds every card in the holding list to the zone or side the scanner was opened from, in one step, then returns to where it was; Remove in the pill before closing drops a card from the holding list with nothing added for it
++  - every Scan button opens the scanner at an empty holding list and returns to where it was once closed
++  - tests cover the exit path committing the holding list to its destination, the pill as a per-session holding list on each host, Remove from the holding list, the caution pop-up, and that detection, lock and capture behaviour are unchanged
 +- Constraints:
-+  - presentation only: detection, fingerprint matching, lock thresholds, the stabilizer, auto-add, the ding, mute persistence and debug frame export are unchanged (DEC-052…062; NFR-006's scan-motion exclusion covers lock and confirmation motion, not the new chrome)
-+  - cards are still added to the destination the moment they are recognised; Remove in the pill removes from the destination's list, as today
++  - presentation only: detection, fingerprint matching, lock thresholds, the stabilizer, the ding, mute persistence and debug frame export are unchanged (DEC-052…062; NFR-006's scan-motion exclusion covers lock and confirmation motion, not the new chrome)
++  - a recognised card is added to the scanner's own holding list (a scan-local store), not the destination, the moment it is recognised; Remove in the pill removes from the holding list; the destination's own card list only changes when the scanner closes and commits the held cards
 +- Dependencies:
 +  - REQ-037
 +  - REQ-040
@@ -1212,7 +1213,7 @@ Proposed `PRD/sections/` diff (new, reserved):
 +  - REQ-209
 +  - FLOW-006
 +- Notes:
-+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the mockup's pill foot said cards join "when you close the scanner" — that would change today's immediate add, so the foot names the destination instead
++  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30), from the mockup's own "join your question when you close the scanner" pill foot; an earlier pass of this proposal had kept today's add-on-recognition instead, which the owner's gate-review edit (2026-10-01) reversed back to the mockup's rule
 +
 --- a/PRD/sections/screen-layout.md
 +++ b/PRD/sections/screen-layout.md
@@ -1247,18 +1248,20 @@ Proposed `PRD/sections/` diff (new, reserved):
 -  is available the entry falls back to the card name only, with no fetch triggered
 -  by image failure, so the scan-review surface stays usable offline (DEC-078).
 -  (DEC-058, DEC-078, DEC-151, REQ-040, REQ-175, FLOW-006, FLOW-024)
-+- Built: a top-right **count pill** shows the running count of this-session adds on
-+  every host and expands to a viewport-capped 320px panel listing each card with a
-+  single-tap, no-confirmation **Remove**; its foot names where the cards went. It
-+  operates on the destination's own card list (no scan-only store), and each entry
-+  uses the shared container-relative image + corner-detail presentation. The corner
-+  detail popup fetches its descriptive fields on demand by oracle id (REQ-175,
-+  FLOW-024) when opened and the network allows, degrading gracefully offline; when
-+  no image is available the entry falls back to the card name only, with no fetch
-+  triggered by image failure, so the scan-review surface stays usable offline
-+  (DEC-078). A yellow caution triangle beside it opens a pop-up saying card
-+  scanning is experimental, with Got it. (DEC-058, DEC-078, DEC-151, REQ-040,
-+  REQ-175, REQ-214, FLOW-006, FLOW-024)
++- Built: a top-right **count pill** holds this scanning session's own list of
++  scanned cards (a scan-local store, not the destination's own card list) and
++  expands to a viewport-capped 320px panel listing each card with a single-tap,
++  no-confirmation **Remove**; its foot names the destination the list joins when
++  the scanner closes. Each entry uses the shared container-relative image +
++  corner-detail presentation. The corner detail popup fetches its descriptive
++  fields on demand by oracle id (REQ-175, FLOW-024) when opened and the network
++  allows, degrading gracefully offline; when no image is available the entry
++  falls back to the card name only, with no fetch triggered by image failure, so
++  the scan-review surface stays usable offline (DEC-078). Closing the scanner
++  commits every held card to the destination's own card list in one step. A
++  yellow caution triangle beside the pill opens a pop-up saying card scanning is
++  experimental, with Got it. (DEC-058, DEC-078, DEC-151, REQ-040, REQ-175,
++  REQ-214, FLOW-006, FLOW-024)
  - Built: the scan preview and the added card's thumbnail show the **scanned
 @@ -167,2 +171,6 @@
    intercept the correction path. (DEC-060, DEC-065, REQ-041)
@@ -1304,9 +1307,10 @@ Proposed `PRD/sections/` diff (new, reserved):
 +- Built: scan is **one of two ways** to attach a card before asking a rules
 +  question — typed autocomplete search or camera scan, using the same FLOW-006
 +  engine — and card input is optional (the player may ask with no card attached).
-+  Each scan resolves to one oracle-level `CardMetadataItem` added to the card
-+  stage, up to the lookup cap (REQ-167); there are no zones, stack, or per-card
-+  enrichment controls on this page. (DEC-107, REQ-073, REQ-167, REQ-214, FLOW-011)
++  Each scan resolves to one oracle-level `CardMetadataItem` held in the scanner's
++  holding list until the scanner closes, when it joins the card stage, up to the
++  lookup cap (REQ-167); there are no zones, stack, or per-card enrichment
++  controls on this page. (DEC-107, REQ-073, REQ-167, REQ-214, FLOW-011)
  - Built: printing-level scan identity stays presentation-only and is not pushed
 ```
 

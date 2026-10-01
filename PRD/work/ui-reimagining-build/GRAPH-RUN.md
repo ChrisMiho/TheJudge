@@ -28,6 +28,90 @@
 - **Resume:** the owner's merge of the docs PR is the build signal; `graph-implement` (the background build loop) picks the package up from `main`. To re-grade after answering without merging, `graph-gate-review` runs in this kickoff worktree; `/graph-implement PRD/work/ui-reimagining-build/` is the build half's command.
 - **Kickoff worktree:** `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining-build` stays through the park; `graph-implement` removes it at claim time.
 - **Terminal state:** PARKED — lock released (`.worktrees/.graph-run-release.json` state `PARKED`, lock deleted).
+- **Resolved:** 2026-10-01, by `graph-gate-review` — 57/57 verdict slots answered (54 accept, 3 edit: REQ-210, REQ-206, REQ-214); see `## Gate verdicts` below. Package restored to `refined`; resumes at `gate-qc`.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-167` | accept | — |
+| `REQ-025` | accept | — |
+| `REQ-099` | accept | — |
+| `REQ-210` | edit | "...sometimes it does matter, so i think its fine to just include in all the zones for now, we can refine the use cases later" |
+| `REQ-211` | accept | — |
+| `REQ-212` | accept | — |
+| `REQ-017` | accept | — |
+| `REQ-021` | accept | — |
+| `REQ-005` | accept | — |
+| `REQ-206` | edit | "Start the Draft at the very beginning, when the player attaches their first card on Ask a Question, so every request survives a reload — cards carried into In-depth details included, placed or not yet placed" |
+| `REQ-207` | accept | — |
+| `REQ-208` | accept | — |
+| `REQ-209` | accept | — |
+| `REQ-213` | accept | — |
+| `REQ-214` | edit | "Scanned cards go to their own holding list inside the scanner first, and join the destination... only when the player closes the scanner and thereby accepts the list — not the instant each card is recognised. The count pill shows that holding list" |
+| `REQ-215` | accept | — |
+| `REQ-202` | accept | — |
+| `REQ-006` | accept | — |
+| `REQ-007` | accept | — |
+| `REQ-008` | accept | — |
+| `REQ-018` | accept | — |
+| `REQ-023` | accept | — |
+| `NFR-006` | accept | — |
+| `REQ-029` | accept | — |
+| `REQ-064` | accept | — |
+| `REQ-065` | accept | — |
+| `REQ-067` | accept | — |
+| `REQ-075` | accept | — |
+| `REQ-087` | accept | — |
+| `REQ-100` | accept | — |
+| `REQ-103` | accept | — |
+| `REQ-107` | accept | — |
+| `REQ-113` | accept | — |
+| `REQ-114` | accept | — |
+| `REQ-115` | accept | — |
+| `REQ-127` | accept | — |
+| `REQ-128` | accept | — |
+| `REQ-131` | accept | — |
+| `REQ-132` | accept | — |
+| `REQ-012` | accept | — |
+| `REQ-121` | accept | — |
+| `REQ-200` | accept | — |
+| `FLOW-001` | accept | — |
+| `FLOW-005` | accept | — |
+| `FLOW-007` | accept | — |
+| `FLOW-009` | accept | — |
+| `FLOW-010` | accept | — |
+| `FLOW-011` | accept | — |
+| `FLOW-014` | accept | — |
+| `FLOW-016` | accept | — |
+| `FLOW-017` | accept | — |
+| `FLOW-018` | accept | — |
+| `REQ-045` | accept | — |
+| `REQ-056` | accept | — |
+| `REQ-058` | accept | — |
+| `REQ-116` | accept | — |
+| `REQ-136` | accept | — |
+
+### Brief reconciliation
+
+- grep: `grep -rn "Mana spent on Battlefield\|Mana spent.*Battlefield only\|on Stack and Battlefield cards only" GATE-QUESTIONS.md DESIGN-BRIEF.md README.md` — zero hits after rewrite
+  - `GATE-QUESTIONS.md` REQ-210 block (title, the three plain-language lines, the diff's Title/Description/Acceptance Criteria/Constraints, the Notes line) — said "Mana spent can be set on Battlefield cards" / "shows the box on Battlefield cards too" → now "Mana spent can be set on any zone's card" / "the box goes on every zone's card" (REQ-210 edit)
+  - `GATE-QUESTIONS.md` REQ-017 block (the "In plain terms" line, one Acceptance Criteria bullet, and the `in-depth/README.md` Built bullet in its diff) — said "Mana spent on the Stack prefilled with the printed cost (and on the Battlefield if REQ-210 is accepted)" / "an untouched box sends nothing (Battlefield cards: REQ-210)" / "Mana spent on the Stack (a number box prefilled...)" → now "Mana spent prefilled with the printed cost on every zone (REQ-210, owner-edited to every zone)" / "every zone beyond the Stack: REQ-210" / "Mana spent on every zone's card (a number box prefilled..., REQ-210)" (REQ-210 edit)
+  - `DESIGN-BRIEF.md:18` — said "a changed Mana spent on a Battlefield card reaches the prompt" → now "a changed Mana spent on any zone's card reaches the prompt (REQ-210, owner-edited from Battlefield-only to every zone)" (REQ-210 edit)
+  - `DESIGN-BRIEF.md` Decisions table, REQ-210 row — said "Mana spent on Battlefield cards reaches the prompt when changed | accept" → now "Mana spent on every zone's card reaches the prompt when changed | accept (owner-edited: every zone, not just Battlefield)" (REQ-210 edit)
+  - `DESIGN-BRIEF.md` Non-goals — said "REQ-210's Battlefield prompt line" → now "REQ-210's every-zone prompt line (owner-edited from Battlefield-only)" (REQ-210 edit)
+  - `README.md` intake pointer — supersession note added: `intake/GRAPH-BRIEF.md:273` and `:477` describe Mana spent as a box on "the Stack and the Battlefield" only, superseded by the REQ-210 edit verdict (every zone)
+
+- grep: `grep -rn "not written into the Draft\|not written to the Draft\|unplaced carried cards are not written" GATE-QUESTIONS.md DESIGN-BRIEF.md README.md` — zero contradicting hits after rewrite (the one surviving hit is the owner's own `- Reason:` line in REQ-206's block, quoting the assumption it replaces, not an assertion of current truth)
+  - `GATE-QUESTIONS.md` REQ-206 block diff, Constraints bullet — said "carried cards not yet placed are not written into the Draft slot (REQ-108)" → now "the Ask a Question Draft (REQ-108) begins the moment the first card is attached, and every carried card — placed in In-depth details or still waiting for a zone — is written into the Draft slot, so the whole request survives a reload" (REQ-206 edit)
+  - `DESIGN-BRIEF.md` A4 — said "unplaced carried cards are not written to the Draft slot" → now "the Ask a Question Draft begins the moment the first card is attached, and carried cards — placed or still waiting for a zone — are written to the Draft slot so a reload survives" (REQ-206 edit)
+
+- grep: `grep -rn "cards are still added to the destination the moment\|added the moment they're recognised\|added the moment they are recognised\|no scan-only store" GATE-QUESTIONS.md DESIGN-BRIEF.md README.md` — zero contradicting hits after rewrite (the one surviving hit is the removed `-` side of REQ-214's own diff, the old text being deleted, not an assertion of current truth)
+  - `GATE-QUESTIONS.md` REQ-214 block (title, the "In plain terms" line, the diff's Description/Acceptance Criteria/Constraints/Notes, and the `scan/README.md` hunks) — said "cards are added the moment they're recognised... the pill says where they went" / "cards are still added to the destination the moment they are recognised" / "operates on the destination's own card list (no scan-only store)" / "added to the card stage" → now "a scanned card waits in the scanner's own holding list... it joins the zone or trade side only when the player closes the scanner" / "a recognised card is added to the scanner's own holding list... the destination's own card list only changes when the scanner closes" / "holds this scanning session's own list of scanned cards (a scan-local store, not the destination's own card list)... Closing the scanner commits every held card" / "held in the scanner's holding list until the scanner closes, when it joins the card stage" (REQ-214 edit)
+  - `DESIGN-BRIEF.md` Scope §5 (line 108) — said "Detection, lock, auto-add and the ding are unchanged" → now "Detection, lock and the ding are unchanged. A scanned card waits in the scanner's own holding list, shown by the count pill; it joins the zone or trade side only when the player closes the scanner, not the instant it is recognised" (REQ-214 edit)
+  - `DESIGN-BRIEF.md` A11 — said "Scanned cards are still added the moment they are recognised; the count pill's foot names the destination instead of the mockup's 'join when you close the scanner'" → now "Scanned cards wait in the scanner's own holding list, shown by the count pill, and join the destination only when the player closes the scanner — matching the mockup's own 'join when you close the scanner' pill foot" (REQ-214 edit)
+  - `DESIGN-BRIEF.md` Decisions table, REQ-214 row — said "Card scan chrome | accept" → now "Card scan chrome, with a holding list | accept (owner-edited: scanned cards wait in a holding list until the scanner closes)" (REQ-214 edit)
+  - `README.md` intake pointer — no supersession note needed: `intake/GRAPH-BRIEF.md:366` already states the holding-list rule the owner restored; it was this proposal's own earlier draft, not the intake, that was superseded
 
 ## Dispatch prompts
 
@@ -189,8 +273,31 @@ Boundaries: never edit any `thejudge-*` skill, `.claude/settings*.json`, `.claud
 
 Return, in this order, as plain text: `verdict: PASS | FAIL`; the complete findings list (or the word none), each finding naming the file and line; the checklist items with a one-line result each; `git diff --stat origin/main HEAD -- PRD/sections` output; the commit hash and push output if you committed (or the words no commit); the marker present (`ls PRD/work/ui-reimagining-build/STATUS.*`); `git status --porcelain` in the worktree (expect empty); and `cd /Users/chrismiho/Coding/Projects/TheJudge && git branch --show-current && git status --porcelain` output (expect `main` and empty). No summary beyond that.
 
+### gate-review
+
+graph is controlling.
+
+You are the `gate-review` node (attempt 1) of graph run `graph-20260930-055958`, dispatched by the `graph-implement` driver in the build half. Run the `graph-gate-review` skill (invoke it with the Skill tool: `graph-gate-review`) on the package `PRD/work/ui-reimagining-build/`. Read `.claude/skills/graph-gate-review/SKILL.md` and `PRD/instructions/graph-workflow-contract.md` (`## Propose / apply / close`, `## The two runs`) before acting.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining-build
+
+Copy that `Working directory:` line, unchanged, into every prompt you write for any subagent of your own (you should need none). Every file you read and every git command you run happens inside that worktree, on branch `thejudge-auto/ui-reimagining-build-work`, cut from `origin/main` after the owner answered and merged the docs PR #238. Never write to, commit in, stash, or switch `/Users/chrismiho/Coding/Projects/TheJudge` (the owner's launch checkout, on `main`).
+
+What the package holds: `GATE-QUESTIONS.md` with 57 `## <STABLE-ID>` blocks and 57 answered `- Verdict:` slots (the driver counted 54 accept / 3 edit, with the edits on REQ-210, REQ-206 and REQ-214 — verify from the file, never from this count); `DESIGN-BRIEF.md`; `README.md` (`status: owner-action`, marker `STATUS.owner-action`; its `## Autonomous metadata` already reads `origin/main` from the build-half claim and its `## Preparation gate` is the driver's — leave both sections as they are); `GRAPH-RUN.md` with run one's `## Open gate`; `GATE-SHOTS.md` and `gate-shots/` (the owner's reference captures, read-only, not part of the proposal); `intake/` (verbatim evidence, never edited).
+
+Do exactly what the skill says. Apply each verdict inside that id's proposed diff in `GATE-QUESTIONS.md` only — never `PRD/sections/`. For every `edit`, apply the owner's `Reason:` as the correction to that block's diff, title and plain-language lines, so the block narrates its finalized diff and not the pre-verdict proposal (a block whose title or plain-language lines still describe the superseded rule fails the re-grade, observed 2026-09-24). Reconcile `DESIGN-BRIEF.md` and the README's intake pointer to every edit: enumerate contradicting passages by a grep you quote in the `### Brief reconciliation` list (design sections, assumption rows, slice sketch, product-truth table — and any other `GATE-QUESTIONS.md` block that cross-references the edited rule), rewrite only what contradicts a verdict, in the owner's words where they gave them, and re-grep to zero contradicting hits across the package excluding `intake/` and `GRAPH-RUN.md`. Add no design. Then write `## Gate verdicts` (one row per id) with its `### Brief reconciliation` list into `GRAPH-RUN.md`, mark `## Open gate` resolved with the date and verdict count, and restore the lifecycle position: README `status: refined`, the single marker `STATUS.refined` (remove `STATUS.owner-action`), and the `PRD/work/STATUS.md` board row moved fully out of its current section into `## refined` (remove the old row, add the new one; one row total).
+
+Do not commit or push; the driver commits between nodes. Do not advance a node, dispatch any subagent, or run a `thejudge-*` skill. Do not edit `## Dispatch prompts`, `## Node ledger`, or `## Instruction ledger` in `GRAPH-RUN.md`, and do not touch `.worktrees/` files.
+
+Tool-call cap for this node: 120.
+
+Boundaries: never edit any `thejudge-*` skill, `.claude/settings*.json`, `.claude/graph-profile.json`, or `CLAUDE.md`; never touch `.secrets/`; never force-push; never merge or push to `main`.
+
+Return, in this order, as plain text, opening in plain language with what the owner decided: the verdict split; each edited id with the owner's reason quoted and what changed in its block; the complete `### Brief reconciliation` list (grep quoted; each passage as what it said → what it says now, with the verdict it follows; or the word none); the restored status (README line, marker, board row section); every file you changed (paths relative to the working directory); `git diff --stat origin/main HEAD -- PRD/sections` output (expect empty); `git status --porcelain` in the worktree; and `cd /Users/chrismiho/Coding/Projects/TheJudge && git branch --show-current && git status --porcelain` output (expect `main` and empty). End with the resume command the skill names. No summary beyond that.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "Build the agreed direction-1 UI re-imagining into the shipped app" | answered-once | shape | — |
+| "/graph-implement PRD/work/ui-reimagining-build/" | answered-once | gate-review | — |

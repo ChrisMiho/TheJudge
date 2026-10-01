@@ -15,8 +15,9 @@ accept.
 
 **What it changes:** presentation almost everywhere, plus three named changes
 to what the AI receives, each its own gate block: the Ask a Question card cap
-rises from 5 to 10 (REQ-167), a changed Mana spent on a Battlefield card reaches
-the prompt (REQ-210), and Copies on a Stack card (REQ-211, recommended to wait).
+rises from 5 to 10 (REQ-167), a changed Mana spent on any zone's card reaches
+the prompt (REQ-210, owner-edited from Battlefield-only to every zone), and
+Copies on a Stack card (REQ-211, recommended to wait).
 Everything else leaves `AskAiRequest`, the prompts, the backend routes, card
 data and the data pipeline exactly as they are. Mock mode stays the default and
 must work on every screen.
@@ -100,11 +101,14 @@ must work on every screen.
 - The whole screen fits 390×844 and 1440×900; the price date moves to the
   header on desktop.
 
-### 5. Card scan (REQ-214)
+### 5. Card scan (REQ-214, owner-edited: a holding list)
 
 - The same scanner in the new frame: lit viewfinder with three bands, a shutter,
   an ✕ exit, one count pill (now on every host), a caution pop-up, a themed
-  Debug panel. Detection, lock, auto-add and the ding are unchanged.
+  Debug panel. Detection, lock and the ding are unchanged. A scanned card waits
+  in the scanner's own holding list, shown by the count pill; it joins the zone
+  or trade side only when the player closes the scanner, not the instant it is
+  recognised.
 
 ### 6. The shared sheet, Question History, Send feedback (REQ-208, REQ-213, REQ-087)
 
@@ -159,18 +163,18 @@ stylesheet attaches the Life Tracker 390×844 and 1440×900 before/after pair
 | Card cap 5 → 10 on Ask a Question | REQ-167 | accept |
 | Show your own first question in the thread | REQ-025 | accept |
 | Keep a custom Colorless colour readable (lift, hue kept) | REQ-099 | accept |
-| Mana spent on Battlefield cards reaches the prompt when changed | REQ-210 (new) | accept |
+| Mana spent on every zone's card reaches the prompt when changed | REQ-210 (new) | accept (owner-edited: every zone, not just Battlefield) |
 | Copies on a Stack card | REQ-211 (new) | **reject for this build** |
 | Dictation from the send pill | REQ-212 (new) | accept |
 | One compact context sheet; keep Targets on Hand/Library | REQ-017 | accept |
 | One Targets picker mapped onto today's kinds | REQ-021 | accept |
 | Players can reorder the Stack | REQ-005 | accept |
-| One question door and the carry | REQ-206 (new) | accept |
+| One question door and the carry | REQ-206 (new) | accept (owner-edited: the Draft starts at the first attached card, so carried-but-unplaced cards survive a reload too) |
 | The frame, scene, Menu, Theme band | REQ-207 (new) | accept |
 | One shared sheet | REQ-208 (new) | accept |
 | In-depth details four stations | REQ-209 (new) | accept |
 | Question History one list | REQ-213 (new) | accept |
-| Card scan chrome | REQ-214 (new) | accept |
+| Card scan chrome, with a holding list | REQ-214 (new) | accept (owner-edited: scanned cards wait in a holding list until the scanner closes) |
 | Trade piles, verdict, New trade, names | REQ-215 (new) | accept |
 | Life Tracker's sheets take the look | REQ-202 | accept |
 
@@ -188,7 +192,8 @@ keep older entries from contradicting these (REQ-006/007/008/012/018/023/029/
   `PRD/sections/`.)
 - No change to prompts, backend routes, providers, card metadata, the data
   pipeline or mock/live posture, beyond REQ-167's validation bound and, if
-  accepted, REQ-210's Battlefield prompt line and REQ-211's copies field.
+  accepted, REQ-210's every-zone prompt line (owner-edited from Battlefield-only)
+  and REQ-211's copies field.
 - The mockup files and their demo scaffolding (DEMO strip, seeded cards, the
   still camera frame, demo history) never ship; the build ports the language
   into `apps/frontend`.
@@ -227,14 +232,14 @@ authority.
 | A1 | The ambient scene is CSS-animated layers, not the mockup's script/canvas loop | 1 | NFR-006 constraint "implementation stays CSS-based — no animation library"; REQ-201 "no new motion trigger or timing system" |
 | A2 | Inter ships as a self-hosted local font within the asset budget; if it cannot fit, today's system stack stands | 1, 6 | `index.css:869` already names Inter first but never loads it (no `@font-face`, no `<link>` in `index.html`); REQ-201 / NFR-013 forbid a new asset ceiling and a font CDN |
 | A3 | Ask a Question is today's `/quick-lookup` page; In-depth details is today's `/in-depth`; both routes and request modes stay | 1, 2 | REQ-140 / DEC-157 URL-as-truth; `destinationRegistry.tsx:78-107`; intake "today's two routes stay" |
-| A4 | The carry is in-memory frontend state using the existing cross-destination hand-off pattern; unplaced carried cards are not written to the Draft slot | 3, 4 | `apps/frontend/src/lib/portal/seedContext.tsx` (Life Tracker → In-Depth seed) is the only existing hand-off; Draft shapes in `lib/conversationHistory/persistence.ts:142,156` stay unchanged |
+| A4 | The carry is in-memory frontend state using the existing cross-destination hand-off pattern; the Ask a Question Draft begins the moment the first card is attached, and carried cards — placed in In-depth details or still waiting for a zone — are written to the Draft slot, so the whole request survives a reload | verdict | `apps/frontend/src/lib/portal/seedContext.tsx` (Life Tracker → In-Depth seed) is the only existing hand-off; Draft shapes in `lib/conversationHistory/persistence.ts:142,156` stay unchanged; owner's REQ-206 edit verdict (2026-10-01) |
 | A5 | The carry adds only cards not already staged or waiting, and In-depth opens at its current station; the typed question carries only when In-depth's box is empty | 5 | nothing typed or staged is lost (ladder rung 5) |
 | A6 | The General rules topics disclosure and topic pill stay on Ask a Question | 5 | REQ-079 / REQ-091 stand; the intake does not remove them |
 | A7 | Targets map onto today's four kinds; Just on the board / All players / Something else ride `other` with that text | 2 | `apps/backend/src/validation/askAiRequest.ts:69-87` (player / card / none / other, ≤8 targets); no "all players" kind exists |
 | A8 | Targets stay on Hand and Library cards, unlike the mockup | 5 | intake's own rule "every in-depth detail today's form carries is kept"; channel-style abilities target from hand. Posed openly in REQ-017's block |
 | A9 | An untouched prefilled Mana spent box sends nothing, so today's prompts are byte-identical | 2 | Stack prompt already falls back to `manaValue` (`apps/backend/src/prompt/context.ts:276-279`, `promptFormatting.ts:218`); input starts empty today (`EnrichmentStep.tsx:239-254`) |
 | A10 | Order in non-Stack zones is cosmetic | 2 | the prompt numbers non-Stack cards (`promptFormatting.ts:236-240`) but gives that order no meaning; only the Stack has an ordering instruction (`promptFormatting.ts:15`) |
-| A11 | Scanned cards are still added the moment they are recognised; the count pill's foot names the destination instead of the mockup's "join when you close the scanner" | 1, 5 | REQ-040 hands-free auto-add; the review bubble "operates on the destination's own card list (no scan-only store)" (`scan/README.md`) |
+| A11 | Scanned cards wait in the scanner's own holding list, shown by the count pill, and join the destination only when the player closes the scanner — matching the mockup's own "join when you close the scanner" pill foot | verdict | owner's REQ-214 edit verdict (2026-10-01), restoring the mockup's original rule over this proposal's earlier add-on-recognition draft |
 | A12 | The ✕ exit and the shutter keep the accessible names "Exit scan" and "Capture", so REQ-040 / REQ-056 / FLOW-006 wording stands | 3, 5 | today's buttons in `ZoneCardPicker.tsx:152-158`, `TradeSide.tsx:143-149`, `QuickLookupApp.tsx:449-455`, `ScanCameraSurface.tsx:535-541` |
 | A13 | The wait keeps its place (it replaces the question box while waiting) and gains the inscription treatment; the chat opens on the first answer as today | 1, 5 | REQ-023 / REQ-092 "waiting panel replaces the submit form"; thresholds 0/3/8/15/25/40 s in `lib/askAiWaitStages.ts` |
 | A14 | In-depth ↺ Start over lands on a clean Ask a Question page and still preserves the player roster | 1, 5 | REQ-029 roster rule; intake "goes to a clean Ask a Question" |
