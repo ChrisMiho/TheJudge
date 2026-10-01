@@ -185,18 +185,18 @@ describe("Backend - Ask AI", () => {
       return { cardId, name: cardId, oracleText: `${cardId} text` };
     }
 
-    it("accepts a bounded multi-card lookup list up to 5 cards (REQ-167)", () => {
-      const cards = ["a", "b", "c", "d", "e"].map(lookupCard);
+    it("accepts a bounded multi-card lookup list up to 10 cards (REQ-167, amended)", () => {
+      const cards = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"].map(lookupCard);
       const parsed = askAiRequestSchema.safeParse({ ...validLookupRequest(), cards });
 
       expect(parsed.success).toBe(true);
       if (parsed.success && parsed.data.mode === "lookup") {
-        expect(parsed.data.cards).toHaveLength(5);
+        expect(parsed.data.cards).toHaveLength(10);
       }
     });
 
-    it("rejects a 6th card in the lookup card list", () => {
-      const cards = ["a", "b", "c", "d", "e", "f"].map(lookupCard);
+    it("rejects an 11th card in the lookup card list", () => {
+      const cards = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"].map(lookupCard);
       const parsed = askAiRequestSchema.safeParse({ ...validLookupRequest(), cards });
 
       expect(parsed.success).toBe(false);

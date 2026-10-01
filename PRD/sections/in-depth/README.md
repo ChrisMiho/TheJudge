@@ -21,7 +21,7 @@
   REQ-028, REQ-029, REQ-030, REQ-031, REQ-032, REQ-033, REQ-045, REQ-056, REQ-058,
   REQ-061, REQ-069, REQ-070, REQ-093, REQ-094, REQ-095, REQ-100, REQ-106,
   REQ-110, REQ-121, REQ-130, REQ-132, REQ-136, REQ-137, REQ-138, REQ-139,
-  REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, FLOW-001, FLOW-002, FLOW-003,
+  REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, REQ-206, FLOW-001, FLOW-002, FLOW-003,
   FLOW-004, FLOW-005, FLOW-015, NFR-001, NFR-002, NFR-006, NFR-009
 - Consumed but owned elsewhere (cited, not re-specified here): the shared
   answered-conversation workspace, View Context overlay, history drawer,
@@ -38,7 +38,7 @@ The primary MTG Assistant loop — the destination a player opens to get a real
 ruling on a live board. Instead of one card and one question, In-Depth walks the
 player through a short staged wizard: set the game up (players, life, turn
 phase), confirm which zones matter, add the cards in each zone, optionally
-annotate them, then type a question and hit **Send Request**. Behind that button
+annotate them, then type a question and tap send. Behind that button
 runs the full Ask AI backend on its `mode: "game"` branch — the request carries a
 whole `GameContext`, the backend assembles one large prompt (general context,
 phase guidance, every populated zone with full card text, curated and retrieved
@@ -211,10 +211,10 @@ retrieval/combo machinery that other specs own.
 
 ### Submit — Decrypt Stack
 
-- Built: the initial submit control's visible label is **Send Request**; its
-  accessible name retains Decrypt Stack / Ask semantics. Enrichment ready-state
-  copy points at the button when the optional question is blank. (DEC-153,
-  REQ-132, REQ-012)
+- Built: the initial submit control is the round send pill inside the question
+  box, with no visible text label; its accessible name retains Decrypt Stack /
+  Ask semantics. Enrichment ready-state copy points at the send when the
+  optional question is blank. (DEC-153, REQ-132, REQ-012, REQ-206)
 - Built: the optional question field accepts up to 300 characters of raw editable
   text (trimmed before submit). A blank trimmed question uses a zone-aware
   fallback in request/prompt logic — **Resolve the stack** when the stack zone has
@@ -238,11 +238,12 @@ retrieval/combo machinery that other specs own.
   list and wizard context above the form stay visible. (DEC-031, REQ-023)
 - Built: on the first success the enrichment submit form is replaced by the shared
   chat-first conversation workspace (owned by `sections/shared-chrome/`). The
-  first visible bubble is the assistant's answer; the initial user question is not
-  shown but rides in `conversationHistory`. The frozen game context is reachable
-  through a compact **View Context** trigger (phase + populated-zone count)
-  opening the read-only setup/zone/card/enrichment detail as an adaptive bottom
-  sheet / side drawer. (REQ-025, DEC-040, DEC-118)
+  thread opens with the player's question as sent (the fallback when the box was
+  blank) as a right-aligned bubble, then the assistant's answer; the question also
+  rides in `conversationHistory` exactly as before. The frozen game context is
+  reachable through a compact **View Context** trigger (phase + populated-zone
+  count) opening the read-only setup/zone/card/enrichment detail as an adaptive
+  bottom sheet / side drawer. (REQ-025, DEC-040, DEC-118)
 - Built: game context, zones, cards, and enrichment are **frozen** for the
   duration of the conversation; follow-ups are text-only in v1. The docked
   composer accepts up to 300 characters, shows an inline processing spinner while
@@ -259,13 +260,15 @@ retrieval/combo machinery that other specs own.
   is ephemeral — no server-side session store — though the workspace's browser-
   local history drawer (shared chrome) can persist and resume completed
   conversations. (REQ-027, DEC-038, DEC-039, FLOW-005)
-- Built: **Start Over** is visible once the first decrypt has succeeded and no
-  request is in flight. It clears the thread and returns to the game-context step,
-  clearing staged zones/cards/question/phase, but **preserves the player roster**
-  (count, names, life, poison/energy/experience, commander damage, custom
-  counters) so a game seeded from the Player Life Tracker is not wiped. A leaving
-  conversation with at least one answer auto-saves to completed history first.
-  (REQ-029, DEC-040)
+- Built: **↺ Start over** is visible once the first decrypt has succeeded and no
+  request is in flight. It clears the conversation thread and the staged
+  zones/cards/question/phase, and lands on a clean Ask a Question page
+  (`/quick-lookup`); In-depth details' next walk starts at station 1 once the
+  player returns. It **preserves the player roster** (count, names, life,
+  poison/energy/experience, commander damage, custom counters) so a game seeded
+  from the Player Life Tracker is not wiped. A leaving conversation with at
+  least one answer auto-saves to completed history first. (REQ-029, DEC-040,
+  REQ-206)
 - Built: on any AI failure the app shows **Miho is working on it**, preserves game
   context / zones / cards / enrichment / question, keeps the previous successful
   answer visible, and offers a retry button on a 13-second cooldown. (DEC-014,
@@ -482,21 +485,24 @@ outcome-validated, not product truth.
   payload and LLM context. (DEC-035)
 - **Structured `gameStateNotes` sub-fields per feedback category — closed door.**
   DEC-043 made it a single freeform optional string. (DEC-043, REQ-031)
-- **The initial user question shown as a visible chat bubble — closed door.**
-  DEC-040 / REQ-025 hide it; it rides in `conversationHistory` only. (DEC-040,
-  REQ-025)
+- **The initial user question hidden from the thread — superseded.** DEC-040 kept
+  the thread opening on the answer alone; the `ui-reimagining-build` pass (REQ-025
+  as amended, 2026-10-01) shows the question first, as the owner's approved design
+  does. The request and history contract never changed. (DEC-040, REQ-025)
 - **`AskAiWaitingPanel` for follow-up turns — closed door.** DEC-041 replaced it
   with an inline composer spinner; the full panel shows only on the initial
   decrypt. (DEC-041, REQ-028)
 - **Start Over returning to the enrichment step with staged zones/cards preserved
-  — closed door.** REQ-029 now defines a full flow reset to the game-context step
-  that preserves only the player roster; the former "no history persisted after
-  start over" clause is also superseded by the browser-local history rules.
-  (REQ-029, DEC-124 via shared chrome)
+  — closed door.** REQ-029 now defines a full flow reset (to a clean Ask a
+  Question page since the `ui-reimagining-build` pass, REQ-206) that preserves
+  only the player roster; the former "no history persisted after start over"
+  clause is also superseded by the browser-local history rules. (REQ-029,
+  DEC-124 via shared chrome, REQ-206)
 - **Visible **Decrypt Stack** label on the initial submit control — closed door.**
-  DEC-153 made the visible label **Send Request** (the accessible name still reads
-  Decrypt Stack / Ask); the answered follow-up send stays arrow-only. (DEC-153,
-  REQ-132, REQ-012)
+  DEC-153 made the visible label **Send Request**; the `ui-reimagining-build` pass
+  (REQ-132 as amended, REQ-206) retires that visible label for the send pill the
+  accessible name retains Decrypt Stack / Ask semantics on. (DEC-153,
+  REQ-132, REQ-012, REQ-206)
 - **Two-column / four-visible-tile zone grid — closed door.** DEC-151 replaced it
   with the horizontal add-order strip. (DEC-151, REQ-130)
 - **Fixed `max-h-32` card-image cap and image-box-bound (`absolute inset-0`)

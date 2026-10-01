@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
 import { EnrichmentStep } from "../EnrichmentStep";
 import { StagedStepHeader } from "../StagedStepHeader";
@@ -160,6 +161,7 @@ export interface MtgAssistantAppProps {
 }
 
 export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.Element {
+  const navigate = useNavigate();
   const { consumeSeed } = useAssistantSeed();
   const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
@@ -665,6 +667,11 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     await submitFollowUp(text);
   }
 
+  // REQ-029 (amended for REQ-206): Start over clears In-depth details' staged state —
+  // the player roster (count, names, life, poison/energy/experience, commander damage,
+  // named counters) is untouched above, so a game seeded from Life Tracker is not
+  // wiped — and lands the player on a clean Ask a Question page; the next In-depth
+  // details walk starts at station 1 (Game) once they return.
   function handleStartOver(): void {
     startOver();
     setFlowStep("game-context");
@@ -678,6 +685,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     setActivePlayer("Player 1");
     setStatusMessage(null);
     setActiveConversationId(null);
+    navigate("/quick-lookup");
   }
 
   function openHistory(): void {

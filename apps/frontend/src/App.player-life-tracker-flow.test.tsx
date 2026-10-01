@@ -35,6 +35,16 @@ async function selectDestination(
   await user.click(screen.getByRole("menuitem", { name: menuLabel }));
 }
 
+// REQ-206 (slice C, 2026-10-01): the Life Tracker -> Assistant roster-seed hand-off's
+// only live trigger now is Ask a Question's "Add in-depth details" carry (see
+// App.player-life-tracker-seed.test.tsx for the full positive/negative coverage of this
+// gesture; this file only needs the one carry to reach the seeded Assistant).
+async function carryIntoInDepthDetails(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Switch feature" }));
+  await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
+  await user.click(screen.getByRole("button", { name: "Add in-depth details" }));
+}
+
 function lifeCard(player: string): HTMLElement {
   return screen.getByTestId(`life-card-${player}`);
 }
@@ -83,17 +93,9 @@ describe("Frontend - Portal", () => {
     vi.unstubAllGlobals();
   });
 
-  // REQ-067/REQ-206 (slice A, 2026-10-01): the only trigger this hand-off ever had was
-  // the Menu's "In-Depth Question" row, which the one-question-door redesign retires —
-  // `mtg-assistant` stays registered and routable but gets no row of its own, so
-  // `handleDestinationSelect("mtg-assistant")` (the seed's only call site in App.tsx,
-  // kept narrowly tied to that explicit gesture — see the negative tests in
-  // App.player-life-tracker-seed.test.tsx) is presently unreachable from the UI.
-  // Skipped rather than deleted or rewritten to a UI path that doesn't exist: the
-  // seeding logic is untouched and still correct, this is a reachability gap pending
-  // slice C's "Add in-depth details" carry hand-off (or another explicit gesture)
-  // restoring a way to invoke it. Un-skip once one does.
-  it.skip("carries a persisted live table through one-way Assistant handoff without cross-player or reverse-sync leaks", async () => {
+  // REQ-206 (slice C, 2026-10-01): un-skipped — reaches the seeded Assistant via Ask a
+  // Question's "Add in-depth details" carry.
+  it("carries a persisted live table through one-way Assistant handoff without cross-player or reverse-sync leaks", async () => {
     const user = userEvent.setup();
     const firstMount = render(<App />);
 
@@ -154,7 +156,7 @@ describe("Frontend - Portal", () => {
 
     const trackerSnapshot = localStorage.getItem(TRACKER_STORAGE_KEY);
     expect(trackerSnapshot).toBe(persistedBeforeReload);
-    await selectDestination(user, "In-Depth Question");
+    await carryIntoInDepthDetails(user);
 
     const assistantLife = await screen.findByLabelText("Player 1 life total");
     expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Alice");

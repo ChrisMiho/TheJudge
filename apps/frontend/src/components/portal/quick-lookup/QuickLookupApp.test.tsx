@@ -48,12 +48,30 @@ function simpleCard(cardId: string, name: string): CardFixture {
   };
 }
 
-// REQ-167: enough distinct cards to exercise the 5-card cap and a 6th blocked add.
+// REQ-167 (amended): enough distinct cards to exercise the 10-card cap and an 11th
+// blocked add.
 const giantGrowth = simpleCard("oracle-giant-growth", "Giant Growth");
 const doomBlade = simpleCard("oracle-doom-blade", "Doom Blade");
 const brainstorm = simpleCard("oracle-brainstorm", "Brainstorm");
 const wrathOfGod = simpleCard("oracle-wrath-of-god", "Wrath of God");
-const allLookupCards = [lightningBolt, counterspell, giantGrowth, doomBlade, brainstorm, wrathOfGod];
+const shock = simpleCard("oracle-shock", "Shock");
+const divination = simpleCard("oracle-divination", "Divination");
+const terror = simpleCard("oracle-terror", "Terror");
+const healingSalve = simpleCard("oracle-healing-salve", "Healing Salve");
+const opt = simpleCard("oracle-opt", "Opt");
+const allLookupCards = [
+  lightningBolt,
+  counterspell,
+  giantGrowth,
+  doomBlade,
+  brainstorm,
+  wrathOfGod,
+  shock,
+  divination,
+  terror,
+  healingSalve,
+  opt
+];
 
 const coreTopics = [
   {
@@ -209,33 +227,29 @@ describe("QuickLookupApp", () => {
     );
   });
 
-  it("renders the confirmed guidance and orders card, question, then collapsed general topics", async () => {
+  it("renders the Ask a Question title with Add card/Scan beside it, and orders the card search, question, then collapsed general topics", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
 
     expect(screen.queryByText("Browse core rules topics")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Scan a card" })).toBeInTheDocument();
 
-    const cardLabel = screen.getByText("Optional cards").closest("label");
-    expect(cardLabel).not.toBeNull();
-    expect(cardLabel).toHaveTextContent(
-      "Optional cards — Add up to 5 cards for context, or ask any Magic related question."
-    );
-
-    const cardSection = cardLabel!.closest("section");
-    const questionForm = screen.getByRole("textbox", { name: "Magic question" }).closest("form");
+    const cardSection = screen.getByRole("textbox", { name: "Card search" }).closest("section");
+    const composerPill = screen.getByTestId("composer-pill");
     const topicsHeading = await screen.findByRole("heading", {
       name: "General rules topics"
     });
     const topicsDisclosure = topicsHeading.closest("details");
 
     expect(cardSection).not.toBeNull();
-    expect(questionForm).not.toBeNull();
     expect(topicsDisclosure).not.toBeNull();
     expect(
-      cardSection!.compareDocumentPosition(questionForm!) & Node.DOCUMENT_POSITION_FOLLOWING
+      cardSection!.compareDocumentPosition(composerPill) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
     expect(
-      questionForm!.compareDocumentPosition(topicsDisclosure!) & Node.DOCUMENT_POSITION_FOLLOWING
+      composerPill.compareDocumentPosition(topicsDisclosure!) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
     expect(topicsDisclosure).not.toHaveAttribute("open");
     expect(screen.getByText("Choose a topic to start a question without calling the model.")).not.toBeVisible();
@@ -448,13 +462,14 @@ describe("QuickLookupApp", () => {
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
     const questionInput = screen.getByRole("textbox", { name: "Magic question" });
-    expect(screen.getByText("0/300")).toBeInTheDocument();
+    // REQ-206: at 0 characters the ring's count is hidden entirely, not shown as "0/300".
+    expect(screen.queryByText("0/300")).not.toBeInTheDocument();
 
     await user.type(questionInput, "x");
     expect(screen.getByText("1/300")).toBeInTheDocument();
 
     await user.clear(questionInput);
-    expect(screen.getByText("0/300")).toBeInTheDocument();
+    expect(screen.queryByText("0/300")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Ask TheJudge" })).toBeEnabled();
   });
 
@@ -467,11 +482,12 @@ describe("QuickLookupApp", () => {
     await user.click(
       await screen.findByRole("button", { name: "Add Stack and Priority to question" })
     );
-    expect(screen.getByText("0/300")).toBeInTheDocument();
+    // REQ-206: the count is hidden at 0 raw characters even with a topic locked.
+    expect(screen.queryByText("0/300")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Ask TheJudge" })).toBeEnabled();
 
     await user.click(screen.getByRole("button", { name: "Add Combat to question" }));
-    expect(screen.getByText("0/300")).toBeInTheDocument();
+    expect(screen.queryByText("0/300")).not.toBeInTheDocument();
 
     await user.type(questionInput, "Keep this detail");
     expect(screen.getByText("16/300")).toBeInTheDocument();
@@ -556,7 +572,7 @@ describe("QuickLookupApp", () => {
     expect(screen.queryByText("Consulting the stack…")).not.toBeInTheDocument();
   });
 
-  it("runs a cardless assistant-first conversation and restores core topics on start over", async () => {
+  it("runs a cardless conversation (question shown first, REQ-025) and restores core topics on start over", async () => {
     const user = userEvent.setup();
     const fetchMock = appFetchMock(["First lookup answer", "Follow-up lookup answer"]);
     vi.stubGlobal("fetch", fetchMock);
@@ -568,7 +584,7 @@ describe("QuickLookupApp", () => {
     expect(await screen.findByText("First lookup answer")).toBeInTheDocument();
     expect(screen.getAllByTestId("conversation-workspace")).toHaveLength(1);
     expect(screen.getByRole("log")).toHaveAttribute("aria-relevant", "additions text");
-    expect(screen.queryByText("How does priority work?")).not.toBeInTheDocument();
+    expect(screen.getByText("How does priority work?")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /View context:/ })).not.toBeInTheDocument();
     const initialAskRequest = fetchMock.mock.calls.find(([input]) =>
       String(input).endsWith("/api/ask-ai")
@@ -670,48 +686,61 @@ describe("QuickLookupApp", () => {
       await user.click(await screen.findByRole("button", { name }));
     }
 
-    it("adds, previews, and removes more than one card via typed search", async () => {
+    it("adds and removes more than one card via typed search, on the lit card stage", async () => {
       const user = userEvent.setup();
       vi.stubGlobal("fetch", appFetchMock([], allLookupCards));
       render(<QuickLookupApp />);
 
       await addCardByName(user, "lig", "Lightning Bolt");
+      expect(screen.getByTestId("card-stage-count")).toHaveTextContent("1 / 10");
       await addCardByName(user, "cou", "Counterspell");
+      expect(screen.getByTestId("card-stage-count")).toHaveTextContent("2 / 10");
 
+      // REQ-206: the stage shows the front card full size with its one neighbour
+      // peeking — the front card (first attached) carries the Remove control.
       expect(screen.getByRole("img", { name: "Lightning Bolt" })).toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Counterspell" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Remove Lightning Bolt" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Remove Counterspell" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Show Counterspell on the stage" })).toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Remove Lightning Bolt" }));
 
       expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
       expect(screen.getByRole("img", { name: "Counterspell" })).toBeInTheDocument();
+      expect(screen.getByTestId("card-stage-count")).toHaveTextContent("1 / 10");
     });
 
-    it("blocks an add past the 5-card cap and states the limit to the player", async () => {
+    it("blocks an add past the 10-card cap and states the limit to the player (REQ-167 amended)", async () => {
       const user = userEvent.setup();
       vi.stubGlobal("fetch", appFetchMock([], allLookupCards));
       render(<QuickLookupApp />);
 
-      await addCardByName(user, "lig", "Lightning Bolt");
-      await addCardByName(user, "cou", "Counterspell");
-      await addCardByName(user, "gia", "Giant Growth");
-      await addCardByName(user, "doo", "Doom Blade");
-      await addCardByName(user, "bra", "Brainstorm");
+      for (const [query, name] of [
+        ["lig", "Lightning Bolt"],
+        ["cou", "Counterspell"],
+        ["gia", "Giant Growth"],
+        ["doo", "Doom Blade"],
+        ["bra", "Brainstorm"],
+        ["wra", "Wrath of God"],
+        ["sho", "Shock"],
+        ["div", "Divination"],
+        ["ter", "Terror"],
+        ["hea", "Healing Salve"]
+      ] as const) {
+        await addCardByName(user, query, name);
+      }
 
-      expect(screen.queryByText(/You've added 5 cards/)).not.toBeInTheDocument();
+      expect(screen.getByTestId("card-stage-count")).toHaveTextContent("10 / 10");
+      expect(screen.queryByText(/You've added 10 cards/)).not.toBeInTheDocument();
 
       const searchInput = screen.getByRole("textbox", { name: "Card search" });
       await user.clear(searchInput);
-      await user.type(searchInput, "wra");
-      await user.click(await screen.findByRole("button", { name: "Wrath of God" }));
+      await user.type(searchInput, "opt");
+      await user.click(await screen.findByRole("button", { name: "Opt" }));
 
       expect(
-        screen.getByText("You've added 5 cards, the most one Quick Question can use. Remove a card below to add another.")
+        screen.getByText("You've added 10 cards, the most one Quick Question can use. Remove a card below to add another.")
       ).toBeInTheDocument();
-      expect(screen.queryByRole("img", { name: "Wrath of God" })).not.toBeInTheDocument();
-      expect(screen.getAllByRole("button", { name: /^Remove / })).toHaveLength(5);
+      expect(screen.queryByRole("img", { name: "Opt" })).not.toBeInTheDocument();
+      expect(screen.getByTestId("card-stage-count")).toHaveTextContent("10 / 10");
     });
 
     it("submits the full attached card list, freezes every card in context, and sends the frozen set on a follow-up", async () => {

@@ -285,5 +285,69 @@ describe("Frontend - MTG Assistant", () => {
       const table = screen.getByRole("table");
       expect(table.parentElement).toHaveClass("conversation-markdown-table-scroll");
     });
+
+    describe("card-name chips (REQ-075, REQ-206)", () => {
+      const cards = [
+        { cardId: "urza", name: "Urza, Lord High Artificer" },
+        { cardId: "opt", name: "Opt" }
+      ];
+
+      it("renders an exact card-name match in an assistant message as a tappable chip", () => {
+        const messages: ConversationMessage[] = [
+          { role: "assistant", content: "Urza, Lord High Artificer deals damage on activation." }
+        ];
+        render(<ConversationThread messages={messages} cards={cards} />);
+
+        expect(screen.getByTestId("conversation-card-chip-urza")).toHaveTextContent(
+          "Urza, Lord High Artificer"
+        );
+      });
+
+      it("matches every attached card's name independently in the same message", () => {
+        const messages: ConversationMessage[] = [
+          { role: "assistant", content: "Urza, Lord High Artificer can target Opt's caster." }
+        ];
+        render(<ConversationThread messages={messages} cards={cards} />);
+
+        expect(screen.getByTestId("conversation-card-chip-urza")).toBeInTheDocument();
+        expect(screen.getByTestId("conversation-card-chip-opt")).toBeInTheDocument();
+      });
+
+      it("calls the activation handler with the matched card's id on click", () => {
+        const onCardChipActivate = vi.fn();
+        const messages: ConversationMessage[] = [{ role: "assistant", content: "Opt draws a card." }];
+        render(<ConversationThread messages={messages} cards={cards} onCardChipActivate={onCardChipActivate} />);
+
+        fireEvent.click(screen.getByTestId("conversation-card-chip-opt"));
+        expect(onCardChipActivate).toHaveBeenCalledWith("opt");
+      });
+
+      it("does not render a chip for a name that is not in the conversation's attached cards", () => {
+        const messages: ConversationMessage[] = [
+          { role: "assistant", content: "Lightning Bolt deals 3 damage." }
+        ];
+        render(<ConversationThread messages={messages} cards={cards} />);
+
+        expect(screen.queryByTestId(/^conversation-card-chip-/)).not.toBeInTheDocument();
+        expect(screen.getByText("Lightning Bolt deals 3 damage.")).toBeInTheDocument();
+      });
+
+      it("renders no chips when no cards prop is given", () => {
+        const messages: ConversationMessage[] = [
+          { role: "assistant", content: "Urza, Lord High Artificer deals damage." }
+        ];
+        render(<ConversationThread messages={messages} />);
+
+        expect(screen.queryByTestId("conversation-card-chip-urza")).not.toBeInTheDocument();
+      });
+
+      it("never chips a name inside a user message", () => {
+        const messages: ConversationMessage[] = [{ role: "user", content: "Tell me about Opt." }];
+        render(<ConversationThread messages={messages} cards={cards} />);
+
+        expect(screen.queryByTestId("conversation-card-chip-opt")).not.toBeInTheDocument();
+        expect(screen.getByText("Tell me about Opt.")).toBeInTheDocument();
+      });
+    });
   });
 });

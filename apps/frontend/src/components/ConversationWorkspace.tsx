@@ -17,6 +17,12 @@ export type ConversationHistoryTriggerDescriptor = {
 type ConversationWorkspaceProps = {
   messages: ConversationMessage[];
   context?: ConversationContextDescriptor;
+  /** REQ-075/REQ-206: the conversation's attached cards, passed through to
+   * `ConversationThread` so an exact name match in the judge's message renders as a
+   * tappable chip. Omitted entirely by a workspace with no card-aware conversation
+   * (In-depth details' own chat keeps its existing frozen-context trigger unchanged). */
+  cards?: ReadonlyArray<{ cardId: string; name: string }>;
+  onCardChipActivate?: (cardId: string) => void;
   pendingFeedback?: ReactNode;
   error: string | null;
   canRetry: boolean;
@@ -33,6 +39,8 @@ type ConversationWorkspaceProps = {
 export function ConversationWorkspace({
   messages,
   context,
+  cards,
+  onCardChipActivate,
   pendingFeedback,
   error,
   canRetry,
@@ -63,7 +71,7 @@ export function ConversationWorkspace({
 
       {pendingFeedback}
 
-      <ConversationThread messages={messages} />
+      <ConversationThread messages={messages} cards={cards} onCardChipActivate={onCardChipActivate} />
 
       {newResponseControl}
 

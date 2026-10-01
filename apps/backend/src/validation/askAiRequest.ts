@@ -251,10 +251,12 @@ const gameAskAiRequestSchema = z.object({
   conversationHistory: conversationHistorySchema.optional()
 }).strict();
 
-// REQ-167: the single optional card generalizes to a bounded multi-card list.
-// A 6th card is rejected by `.max(5)`; zero cards and exactly one card behave
-// identically to the prior single-card shape (REQ-094 amended).
-export const MAX_LOOKUP_CARDS = 5;
+// REQ-167 (amended by the `ui-reimagining-build` pass): the single optional card
+// generalizes to a bounded multi-card list, raised from 5 to 10 — the same bound as the
+// Stack's limit (REQ-010) — so every card on the Ask a Question stage can be carried into
+// In-depth details. An 11th card is rejected by `.max(10)`; zero cards and exactly one
+// card behave identically to the prior single-card shape (REQ-094 amended).
+export const MAX_LOOKUP_CARDS = 10;
 
 const lookupAskAiRequestSchema = z.object({
   mode: z.literal("lookup"),

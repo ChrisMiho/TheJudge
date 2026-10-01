@@ -189,7 +189,7 @@ describe("Frontend - MTG Assistant", () => {
       vi.unstubAllGlobals();
     });
 
-    it("clears the workspace back to game context and does not re-save the deleted thread when deleting the active conversation", async () => {
+    it("clears the workspace, lands on Ask a Question (REQ-029 amended), and does not re-save the deleted thread when deleting the active conversation", async () => {
       seedCompletedConversation("game", {
         id: "game-active",
         hiddenInitialQuestion: "Earlier game question",
@@ -207,7 +207,7 @@ describe("Frontend - MTG Assistant", () => {
       await user.click(screen.getByRole("button", { name: /^Confirm delete:.*Earlier game question/ }));
 
       expect(screen.queryByText("Earlier game answer")).not.toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: "Game context" })).toBeVisible();
+      expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeVisible();
       expect(storedEntryIds()).toEqual([]);
     });
   });

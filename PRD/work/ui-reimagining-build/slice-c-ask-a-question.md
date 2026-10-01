@@ -1,6 +1,6 @@
 # Slice C — Ask a Question: door, stage, pill composer, ruling view, carry
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -80,32 +80,32 @@ unchanged (`A6`).
 
 ## Acceptance criteria
 
-- [ ] C1. `npm run quality:check` passes.
-- [ ] C2. `npm --workspace apps/frontend run test` passes.
-- [ ] C3. The Menu lists one "Ask a Question" door; the stage shows the
+- [x] C1. `npm run quality:check` passes.
+- [x] C2. `npm --workspace apps/frontend run test` passes.
+- [x] C3. The Menu lists one "Ask a Question" door; the stage shows the
       front card full size with a neighbour peeking each side; Add card and
       Scan sit beside the title.
-- [ ] C4. The card cap is 10, not 5; attaching an 11th card is rejected the
+- [x] C4. The card cap is 10, not 5; attaching an 11th card is rejected the
       same way the 6th is today.
-- [ ] C5. The ruling view shows the player's own question before the
+- [x] C5. The ruling view shows the player's own question before the
       ruling; card names in the ruling render as tappable chips matched only
       against the conversation's attached cards.
-- [ ] C6. **Add in-depth details** carries every attached card (and the
+- [x] C6. **Add in-depth details** carries every attached card (and the
       typed question, only when In-depth's box is empty) into `/in-depth`;
       the Draft is written the moment the first card attaches, so a reload
       before any card is placed still shows the carried cards.
-- [ ] C7. ↺ Start over returns to a clean Ask a Question page with the
+- [x] C7. ↺ Start over returns to a clean Ask a Question page with the
       player roster intact.
-- [ ] C8. The composer's send control is a pill with the send inside it, no
+- [x] C8. The composer's send control is a pill with the send inside it, no
       text label, and a 300-character ring that traces round it.
-- [ ] C9. `PRD/sections/` carries REQ-206, REQ-167, REQ-025, REQ-075,
+- [x] C9. `PRD/sections/` carries REQ-206, REQ-167, REQ-025, REQ-075,
       REQ-029, REQ-132, REQ-012, REQ-121, FLOW-005, FLOW-011 by intent.
-- [ ] C10 (manual). Golden prompt fixtures are byte-identical to today's for
+- [x] C10 (manual). Golden prompt fixtures are byte-identical to today's for
       every unchanged field; only the REQ-167 cap bound differs.
-- [ ] C11 (manual). Browser scenario observed at 390×844: attach a card,
+- [x] C11 (manual). Browser scenario observed at 390×844: attach a card,
       reload before typing or adding in-depth details — the card survives
       the reload (REQ-206 owner edit, A4).
-- [ ] C12 (manual). Cleanup evidence recorded: browser closed, owned servers
+- [x] C12 (manual). Cleanup evidence recorded: browser closed, owned servers
       stopped, ports released, capture output path named.
 
 ## Verification

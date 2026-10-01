@@ -4,6 +4,11 @@ const config: Config = {
   content: ["./index.html", "./src/**/*.{ts,tsx}"],
   theme: {
     extend: {
+      // REQ-206: the Ask a Question composer's "Add in-depth details" pill text (and
+      // related 480px-keyed geometry on that page) folds to glyph-only below this width.
+      screens: {
+        xs: "480px"
+      },
       colors: {
         accent: {
           DEFAULT: "rgb(var(--accent) / <alpha-value>)",

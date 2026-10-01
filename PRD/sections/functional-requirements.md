@@ -166,7 +166,7 @@
 - Priority: high
 - Description: The app must submit the final question and captured `gameContext` to the backend through the main action button.
 - Acceptance Criteria:
-  - the initial pre-submit action's **visible** label is **Send Request** (DEC-153 / REQ-132); the control's accessible name retains Decrypt Stack / Ask semantics
+  - the initial pre-submit action is the send pill inside the question box with no visible text label (REQ-132 as amended, REQ-206); the control's accessible name retains Decrypt Stack / Ask semantics
   - clicking the button sends `question` and `gameContext`
   - no top-level `stack` or `battlefieldContext` is sent
   - submit is allowed only when at least one selected zone has a card
@@ -431,19 +431,19 @@
 ### REQ-025
 - Title: Post-decrypt conversation thread
 - Priority: high
-- Description: After a successful Decrypt Stack, the enrichment step must replace the submit form with the shared chat-first conversation workspace, whose first visible message is the assistant's initial answer and whose frozen game context is available through an adaptive read-only context trigger/sheet/drawer.
+- Description: After a successful Decrypt Stack, the enrichment step must replace the submit form with the shared chat-first conversation workspace, whose first visible message is the player's own question as sent (including any fallback) followed by the assistant's initial answer, and whose frozen game context is available through an adaptive read-only context trigger/sheet/drawer.
 - Acceptance Criteria:
   - on first decrypt success, the submit form and Decrypt Stack button are hidden
   - answered-state header shows only **TheJudge** and omits redundant subtitle or conversation-heading copy
   - the shared workspace shows a compact game-context trigger before the message log, summarizing at least turn phase and populated-zone count
   - activating the trigger opens the full frozen setup, zones, cards, and enrichment detail in an accessible bottom sheet below `768px` or right-side drawer at `768px+`
   - open frozen context remains read-only and does not allow zone, card, or enrichment edits; close/Escape restores focus to the trigger
-  - a scrollable accessible conversation log is the workspace's dominant surface; its first visible bubble is the assistant's answer
-  - the initial user question is not shown in the thread
+  - a scrollable accessible conversation log is the workspace's dominant surface; its first visible bubble is the player's question as sent, followed by the assistant's answer
+  - the initial user question is shown in the thread as a right-aligned user bubble, exactly as sent (the zone-aware fallback when the question box was blank)
   - error/retry, composer, and Start Over occupy stable shared-workspace rows; the composer is docked within the workspace and is not fixed to the viewport
   - start over button is visible and enabled while no request is in flight
 - Constraints:
-  - thread opens with the assistant answer only; do not show the initial user question as a visible bubble
+  - the initial question bubble is presentation only: `conversationHistory` assembly, request payloads, and prompt text are unchanged
   - layout changes must not change request payloads, prompt assembly, answer rendering, or conversation-history behavior
 - Dependencies:
   - REQ-012
@@ -452,6 +452,7 @@
   - REQ-097
   - REQ-098
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-10-01): reverses the "initial question hidden" rule — the player's question now opens the thread on both question kinds (REQ-075 carries the Ask a Question side). Built in `useAskAiSubmitOrchestration.ts`, shared by both request modes: the first `visibleMessages` entry is now `{ role: "user", content: payload.question }`, ahead of the assistant's answer
 
 ### REQ-026
 - Title: Follow-up chat composer
@@ -522,7 +523,7 @@
 - Description: Users must be able to start over from an active In-Depth Question conversation, clearing the conversation and returning to the beginning of the flow so they can stage a new question from scratch, without losing their player roster.
 - Acceptance Criteria:
   - start over button is visible whenever the first decrypt has succeeded and no request is in flight
-  - clicking start over clears the conversation thread and returns the user to the game context step (first step of the flow)
+  - clicking start over clears the conversation thread and returns the user to a clean Ask a Question page (REQ-206); In-depth details' next walk starts at station 1 (Game)
   - staged game context, selected zones, zone cards, question text, and turn-phase/combat-step staging are cleared
   - player roster is preserved: player count, display names, life totals, poison/energy/experience, commander damage, and custom counters are unchanged (so a game seeded from or shared with Player Life Tracker is not wiped)
   - if the conversation being left has at least one successful answer, it is auto-saved to completed history first (REQ-103 / DEC-124)
@@ -535,9 +536,11 @@
   - REQ-103
   - REQ-107
   - REQ-108
+  - REQ-206
 - Notes:
   - superseded prior behavior of returning to the enrichment step with staged zones/cards preserved; this requirement now defines a full flow reset instead
   - the former "no conversation history is persisted after start over" clause is superseded by DEC-124/DEC-130 persistence rules
+  - amended for the `ui-reimagining-build` pass (2026-10-01): Start over lands on the one question door (Ask a Question) instead of the game-context step; roster preservation is unchanged. Built in `MtgAssistantApp.tsx`'s `handleStartOver`: the existing in-depth-local resets are unchanged and a `navigate("/quick-lookup")` call was added after them
 
 ### REQ-030
 - Title: Prompt assembly includes full card metadata in every populated zone
@@ -1784,10 +1787,10 @@
 - Description: After the first answer, Quick Question must use the same shared chat-first conversation workspace as In-Depth Question for text follow-ups under the same conversation limits, with the attached card (if any) frozen behind the adaptive read-only context trigger/sheet/drawer.
 - Acceptance Criteria:
   - on first successful answer, the surface renders the same shared workspace, conversation log, docked follow-up composer, inline processing animation, retry/error placement, New response affordance, and Start Over control as In-Depth Question (REQ-025 / REQ-026 / REQ-027 / REQ-028 / REQ-029 / REQ-097 / REQ-098)
-  - the frozen "context" is the attached card if the user resolved one before asking; otherwise there is no frozen context object (no `GameContext` either way); a card, once submitted, is frozen for the duration of the conversation and follow-ups are text-only
-  - when a card is frozen, a compact trigger naming the card opens its existing read-only card presentation in a bottom sheet below `768px` or right-side drawer at `768px+`; without a card, no empty context trigger or container is rendered
-  - the first visible thread bubble is the assistant's answer; the initial user question is included in `conversationHistory` sent to the API but is not shown as a visible bubble
-  - follow-up requests send `{ mode: "lookup", question, card: frozen (when one was attached), conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Quick Lookup defines no separate limit policy
+  - the frozen "context" is the attached card(s) — up to REQ-167's ten-card bound — if the user attached any before asking; otherwise there is no frozen context object (no `GameContext` either way); once submitted, the attached set is frozen for the duration of the conversation and follow-ups are text-only
+  - when any card is frozen, a compact trigger naming the card or stating the count (`"N cards"`) opens the frozen set's read-only card presentation in a bottom sheet below `768px` or right-side drawer at `768px+`; without a card, no empty context trigger or container is rendered; a card name in the judge's message that exactly matches an attached card renders as a tappable chip opening that card's detail directly in the thread (REQ-206)
+  - the first visible thread bubble is the player's question as sent (REQ-025 as amended), then the assistant's answer; the question is also included in `conversationHistory` sent to the API
+  - follow-up requests send `{ mode: "lookup", question, cards: frozen (the full attached set, when any were attached), conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Quick Lookup defines no separate limit policy
   - start over clears the thread and returns to the empty pre-ask state — the looked-up card, its search input, and any locked topic are cleared, and the core-topics fallback (REQ-079) is visible
   - mock-provider follow-ups append to the same thread exactly as live responses do
 - Constraints:
@@ -1802,8 +1805,11 @@
   - DEC-118
   - REQ-097
   - REQ-098
+  - REQ-167
+  - REQ-206
 - Notes:
   - during quick-lookup refinement this requirement was rewritten to merge the prior Card Lookup thread (this ID) and Rules Lookup thread (former REQ-080) into one; see REQ-080
+  - amended for the `ui-reimagining-build` pass (2026-10-01): the question shows first (REQ-025 as amended), the frozen context generalizes from one card to the attached set (REQ-167's ten-card bound), and attached-card names in the answer become tappable chips (REQ-206); the follow-up contract is otherwise unchanged
 
 ### REQ-076
 - Title: Rules Lookup entry and rules-mode request
@@ -2924,11 +2930,11 @@
 ### REQ-121
 - Title: Pre-submit composer row composition
 - Priority: high
-- Description: The Enrichment optional-question and Quick Question composers present the field as the dominant element of their row, with an inline character counter and a compact submit control, matching the answered view's follow-up composer composition (DEC-146). Initial visible label is **Send Request** per DEC-153 / REQ-132.
+- Description: The Enrichment optional-question and Ask a Question composers present the field as the dominant element of their row, with an inline character counter and a compact submit control, matching the answered view's follow-up composer composition (DEC-146). The submit control is the send pill with no visible text label (REQ-132 as amended, REQ-206).
 - Acceptance Criteria:
   - at a 390px-wide viewport the composer's text field measures at least 65% of its composer row's width (baseline defect: 136px of 340px = 40%; the answered-view follow-up composer measures 230px at the same viewport)
   - the placeholder and typed content are not clipped: the field's `scrollHeight` does not exceed its `clientHeight` at rest
-  - the submit control exposes its existing accessible name ("Ask TheJudge", "Decrypt Stack") even when the visible label is **Send Request**
+  - the submit control (the send pill, REQ-206) exposes its existing accessible name ("Ask TheJudge", "Decrypt Stack") with no visible text label
   - the submit control meets the 44px touch-target floor (NFR-001)
   - submit gating, character caps, and the zone-aware blank-question fallback are unchanged
 - Constraints:
@@ -2940,8 +2946,10 @@
   - REQ-132
   - REQ-110
   - REQ-120
+  - REQ-206
   - NFR-001
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-10-01): the visible "Send Request" label is retired for the send pill (REQ-132 as amended); the 65% width floor and submit gating are unchanged
 
 ### REQ-122
 - Title: Opaque Menu tray with painted bounds inside the shell
@@ -3191,10 +3199,10 @@
 ### REQ-132
 - Title: Initial Send Request label and Enrichment ready copy
 - Priority: medium
-- Description: The initial pre-submit Ask/Decrypt control shows visible **Send Request** text; the answered follow-up send control stays arrow/icon-only; Enrichment ready-state copy briefly directs the user to that button when the optional message is empty (DEC-153).
+- Description: Every question box sends from the round send pill inside the box (REQ-206) — there is no separate labelled **Send Request** button, and older entries' **Send Request** names this send control. Enrichment ready-state copy briefly directs the user to that control when the optional message is empty (DEC-153).
 - Acceptance Criteria:
-  - Enrichment decrypt and Quick Question first-ask submit controls show the visible label **Send Request**
-  - after the first answer, the follow-up composer send control remains arrow/icon-only
+  - the Enrichment and Ask a Question first-ask submit controls are the send pill inside the question box, with no visible text label
+  - the follow-up composer uses the same send pill
   - Enrichment ready-state helper text (when the optional question is blank) concisely tells the user to use the send button unless they add an optional message
   - REQ-121 field-width floor (≥65% of composer row at 390px) still holds
   - accessible names retain Ask/Decrypt semantics; character caps and blank-question fallback unchanged
@@ -3206,8 +3214,10 @@
   - REQ-121
   - REQ-011
   - REQ-073
+  - REQ-206
   - NFR-001
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-10-01): the visible Send Request label is retired for the send pill; accessible names and caps unchanged
 
 ### REQ-133
 - Title: Card area consolidation around the corner detail popup
@@ -3884,7 +3894,7 @@
 - Description: In Quick Question today the player attaches at most one card, and pointing the question at any other card is a gamble — the model only reliably knows the single attached card. This lets the player add every card they want to ask about (a bounded list), each resolved to its oracle identity exactly the way the single card is today, while Quick Question still carries no zones, phase, stack, life totals, or other game state. The backend enriches each attached card — full metadata including oracle text, plus its WotC rulings — and scores supplemental rule retrieval over the question plus all attached cards, so every card the player named is fully in context. The fast, no-setup experience stays; the "did it actually see the other card" gamble goes away.
 - Acceptance Criteria:
   - The lookup request carries an optional **bounded list** of cards in place of the single optional card; each entry carries only identity — `cardId` (oracle id) and `name` — and carries no zone, owner, caster, targets, or context-notes fields. The descriptive block (`oracleText`, `imageUrl`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json.br` (REQ-175, REQ-176). The per-card enrichment below is unchanged — it resolves each attached card's metadata server-side rather than from the request.
-  - The pre-submit view lets the player add, preview, and remove more than one card; an explicit cap of **5 cards** is enforced and stated to the player so the prompt stays bounded.
+  - The pre-submit view lets the player add, preview, and remove more than one card; an explicit cap of **10 cards** — the same number as the Stack's limit (REQ-010) — is enforced and stated to the player so the prompt stays bounded.
   - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings (DEC-029) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus a compact signal for every attached card — name, type line, and keyword list. It no longer scores over each card's full oracle text, which was measured to drop supplemental recall@5 from 0.577 to 0.026 on a labelled benchmark (REQ-178).
   - Combo enrichment (Commander Spellbook) adapts to the card set: the attached cards become the match instances, amending REQ-094's single-card lookup rule. A candidate qualifies when it contains at least one attached card as an exact ingredient or authoritative template match, and candidates covering more of the attached cards rank ahead of those covering fewer (attached-card coverage), applied before popularity — so "how do these cards combo" surfaces the combos using the most of the attached cards first. With exactly one card attached this is identical to today's single-card lookup; with zero cards attached, behavior is unchanged (no combo data without explicit intent and at least one card). (DEC-116/REQ-094 [amended]/REQ-095)
   - When an eligible candidate is **complete** — every ingredient slot filled by an exact or authoritative-template match across the attached cards — the answer explains that combo, with per-ingredient card state left explicitly unverified (a lookup carries no board). When a candidate is **partial** — it qualifies on at least one attached card but at least one ingredient slot is unmatched — the answer names each missing ingredient and describes what would fill that role: the missing ingredient's own card name (missing exact ingredient) or template/category description (missing template ingredient) drawn from the combo definition, so the player learns how the combo could be completed rather than getting nothing. This is a description of the missing role, **not** a card recommendation or search — no card-suggestion engine is added. Complete/partial classification for lookup and its at-most-five selection/ranking are defined in REQ-094 (amended); the answer text itself is rendered by REQ-095's existing present/missing ingredient enrichment, which already covers game and lookup candidates alike and needs no new criterion here.
@@ -3901,12 +3911,14 @@
   - REQ-072, REQ-074 (lookup validation and assembly)
   - FLOW-023
   - REQ-175, REQ-176 (the attached card's descriptive block is now resolved server-side by `cardId`, not carried on the request)
+  - REQ-010 (the Stack's cap, now shared), REQ-206
 - Notes:
   - Supersedes the single-card constraint (DEC-107 "single card", DEC-106 optional single `card`). The `card` field becomes a bounded list; the exact wire spelling (`cards` array vs. keeping `card` as an array) is a code-shape choice made at implementation — both stay back-compatible through the `mode` union.
   - Amends REQ-094's `mode: "lookup"` combo criterion: the required match instance was the single attached card; it becomes the bounded attached-card set — a candidate qualifies on containing any one attached card, and attached-card coverage ranks results ahead of popularity. REQ-094 carries the reciprocal "amended by REQ-167" note and lists REQ-167 as a dependency. The zero-card and single-card lookup cases, and all of game-mode retrieval, are unchanged.
-  - Screen-layout's "Quick Question — pre-submit" row was re-measured for the multi-card add strip on 2026-08-30 and again on 2026-09-24. The 2026-08-30 reading accepted page scroll past the composer with 2+ cards attached; the `ui-reimagining` pass withdraws that (REQ-129 as amended) and binds the attached-card region so Send Request stays in the first viewport at all five cards. That row is the authority; this note is no longer an instruction to re-measure.
+  - Screen-layout's "Quick Question — pre-submit" row was re-measured for the multi-card add strip on 2026-08-30 and again on 2026-09-24. The 2026-08-30 reading accepted page scroll past the composer with 2+ cards attached; the `ui-reimagining` pass withdrew that (REQ-129 as amended), and the `ui-reimagining-build` card stage (REQ-206) keeps the send in the first viewport at every card count up to the cap. That row is the authority; this note is no longer an instruction to re-measure.
   - Does not resolve Q-003 (lightweight game context) or Q-004 (answer-seeded second-pass retrieval); both stay open.
   - Gate review (2026-08-30) tightened the add cap from a suggested ~6 to a fixed 5, and directed that lookup-mode combo answers explain a completed combo when the attached cards fully assemble it, and otherwise name the missing piece(s) and describe what would fill them. The define loop (2026-08-30) settled those mechanics in REQ-094 (amended): "complete" = every ingredient slot filled by an exact/template match in the attached set, with REQ-094's zone/quantity checks dropped for a board-less mode; "partial" = qualifies on at least one attached card but leaves a slot unmatched; lookup selection order is complete-before-partial, then attached-card coverage, then fewer missing, then popularity, then variant id. The answer is REQ-095's existing present/missing rendering, and "what would fill the role" is the missing ingredient's own identity/template from the combo catalog, not a card recommendation. No new stable ID was needed.
+  - amended for the `ui-reimagining-build` pass (2026-09-30, 2026-10-01): the cap rises from 5 to 10 so every card on the Ask a Question stage (REQ-206) can be carried into In-depth details, whose Stack holds 10 (REQ-010). The 2026-08-30 gate review had set 5; the owner's direction-1 mockup rounds set 10. `MAX_LOOKUP_CARDS` moved to 10 in both the frontend cap and the backend request validation (`askAiRequest.ts`); the single lookup assembly loop and prompt text are unchanged
 
 ### REQ-168
 - Title: The rules guardrail stops refusing real Magic phrases like "combo"
@@ -5233,3 +5245,40 @@
   - NFR-011
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); built by slice B of that package as `apps/frontend/src/components/SheetShell.tsx` and `ConfirmSheet.tsx`
+
+### REQ-206
+- Title: Ask a Question — one door for every question, with the cards carried into In-depth details
+- Priority: high
+- Description: The Menu offers one question destination, **Ask a Question**, in place of the separate Quick Question and In-Depth Question rows. The Ask a Question page is today's Quick Question page (route `/quick-lookup`, `mode: "lookup"` request) recomposed around the attached cards: the front card full size on a lit stage with the one other card peeking out each side (two cards peek on one side only, never duplicated), a one-pill question box with the send inside it, and an **Add in-depth details** pill that carries the attached cards and any typed question into In-depth details (route `/in-depth`, `mode: "game"` request). The two routes, the two request modes and their prompts are unchanged; what changes is the door, the page composition, and the carry.
+- Acceptance Criteria:
+  - the Menu lists **Ask a Question** once and no longer lists Quick Question or In-Depth Question; it opens `/quick-lookup`; `/in-depth` stays addressable by deep link and by the carry, and the Menu marks Ask a Question current on both routes
+  - with no card attached there is no stage; with cards attached the front card renders full size on a solid-panel stage with the one other card peeking out each side (three or more cards peek one on each side; exactly two cards peek on one side only, so the same card is never rendered twice); a tap on a neighbour or the ‹/› arrows turns the ring
+  - ✕ Remove and ⓘ Details straddle the front card's top corners; a dark count pill reads `n / <cap>`, where the cap is REQ-167's
+  - **Add card** and **Scan** sit beside the title; the card search field stays available for typed autocomplete search and is not gated behind a separate reveal step
+  - the question box is one pill: the Add in-depth details pill at its left end (icon-only below 480px, labelled from 480px up), the text, the character count, and the send
+  - the 300-character budget (REQ-011, measured on the raw typed text per REQ-134) is drawn as a ring round the send pill's edge in the profile's accent light over a faint track, brighter in the last 30 characters and closed at 300; it starts at the top of the pill's split and runs clockwise; at 0 characters no track, fill or dot is drawn and the numeric count is hidden; there is no separate Send Request button, no bar under the box, and no hint line under the title
+  - **Add in-depth details** switches the active destination to In-depth details, carrying every attached card and the typed question (or its silent fallback); the carry is queued in a one-slot mailbox (`lib/portal/seedContext.tsx`'s `queueLookupCarry`/`consumeLookupCarry`) alongside the existing Life Tracker roster-seed mailbox; a quick-lookup visit entered directly from Life Tracker still carries the roster seed forward through this one gesture, narrowly tied to it the same way the retired direct Menu transition was (App.player-life-tracker-seed.test.tsx's negative tests: a deep link, browser Back, or a raw route jump never seeds)
+  - the answered view keeps the existing frozen-card trigger (naming the single card or the count, "N cards") opening the frozen set's read-only presentation; a card name in the judge's message that exactly matches a card attached to this conversation renders as a tappable chip (an accent-tinted, underlined inline control) that opens that card's detail directly in the thread
+  - two actions sit top-right beside the title once a ruling exists: **✎ Edit cards** returns to the pre-submit page with the cards and question exactly as they were (the conversation is already auto-saved to history, REQ-103), and **↺ Start over** clears cards, question and any locked topic to the empty page
+  - the General rules topics disclosure (REQ-079) and the locked topic pill (REQ-091) stay on the page, unchanged in behaviour
+  - tests cover the single Menu entry, turning the ring (tap and arrows, wrapping, no duplicate neighbour at exactly two cards), the carry queuing cards/question and switching the destination, the ring at 0/mid/last-30/300 characters, Edit cards restoring cards and question, and a chip opening the card detail
+- Constraints:
+  - no change to either request mode, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, or routes, except the lookup card cap (REQ-167)
+  - the carry is in-memory frontend state using the existing cross-destination hand-off pattern (`seedContext.tsx`); the Ask a Question Draft (REQ-108) begins the moment the first card is attached, and every carried card — placed in In-depth details or still waiting for a zone — is written into the Draft slot, so the whole request survives a reload
+  - keep-alive mounting and URL-as-truth routing are unchanged (DEC-157, REQ-140)
+  - In-depth details' own stations rail, Cards shelf, carried-card placement UI, and card menu (the fuller mockup direction for the `/in-depth` side of the carry) are a later slice's scope; this requirement covers the Ask a Question side — the door, the stage, the composer, and the carry mechanism — in full
+- Dependencies:
+  - REQ-011
+  - REQ-079
+  - REQ-091
+  - REQ-103
+  - REQ-108
+  - REQ-134
+  - REQ-140
+  - REQ-167
+  - REQ-207
+  - FLOW-011
+- Notes:
+  - "Quick Question" in older requirements names the Ask a Question page (route `/quick-lookup`) and "In-Depth Question" names In-depth details (route `/in-depth`); older entries keep those names as internal labels rather than being rewritten
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner-approved direction-1 mockup (rounds 2–14); built by slice C of that package — `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `CardStage.tsx`, `ComposerPill.tsx`, `ConversationThread.tsx` (chip matching), `lib/portal/seedContext.tsx` (lookup-carry mailbox), `lib/portal/inDepthCarryContext.tsx` (the carry action), `App.tsx` (`handleCarryToInDepth`)
+  - owner edit (2026-10-01): the Ask a Question Draft begins the moment the first card is attached, not only once a question is typed, so a carried-but-unplaced card survives a reload — see the Constraints line above and REQ-108

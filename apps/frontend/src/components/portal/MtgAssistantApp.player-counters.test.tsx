@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ZoneAskAiPayload } from "../../lib/contextFlow";
 import type { RosterSeed } from "../../lib/lifeTracker/seed";
@@ -43,18 +44,22 @@ const fourPlayerSeed: RosterSeed = {
 function renderWithSeed(seed: RosterSeed): void {
   let pendingSeed: RosterSeed | null = seed;
   render(
-    <AssistantSeedContext.Provider
-      value={{
-        queueSeed: vi.fn(),
-        consumeSeed: () => {
-          const pending = pendingSeed;
-          pendingSeed = null;
-          return pending;
-        }
-      }}
-    >
-      <MtgAssistantApp />
-    </AssistantSeedContext.Provider>
+    <MemoryRouter initialEntries={["/in-depth"]}>
+      <AssistantSeedContext.Provider
+        value={{
+          queueSeed: vi.fn(),
+          consumeSeed: () => {
+            const pending = pendingSeed;
+            pendingSeed = null;
+            return pending;
+          },
+          queueLookupCarry: vi.fn(),
+          consumeLookupCarry: () => null
+        }}
+      >
+        <MtgAssistantApp />
+      </AssistantSeedContext.Provider>
+    </MemoryRouter>
   );
 }
 

@@ -4,21 +4,65 @@ import remarkGfm from "remark-gfm";
 import { prefersReducedMotion } from "../lib/motionPreference";
 import type { ConversationMessage } from "../types";
 
-const markdownComponents: Components = {
-  a: ({ children, ...props }) => (
-    <a {...props} target="_blank" rel="noopener noreferrer">
-      {children}
-    </a>
-  ),
-  table: ({ children, ...props }) => (
-    <div className="conversation-markdown-table-scroll">
-      <table {...props}>{children}</table>
-    </div>
-  )
-};
+const CARD_CHIP_HREF_PREFIX = "#card:";
+
+/** Escapes regex metacharacters so a card's own name is matched literally. */
+function escapeForRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/** REQ-206/REQ-075: a card name in the judge's message that exactly matches a card
+ * attached to this conversation becomes a tappable chip. Rewritten as a markdown link to
+ * a `#card:<id>` pseudo-href *before* parsing, so `markdownComponents.a` below can render
+ * it as a chip button instead of an anchor — the one point in the pipeline that already
+ * sees every rendered name, so there is no separate text-walking pass to keep in sync. */
+function linkifyCardNames(content: string, cards: ReadonlyArray<{ cardId: string; name: string }>): string {
+  let result = content;
+  for (const card of cards) {
+    if (!card.name.trim()) continue;
+    const pattern = new RegExp(`\\b${escapeForRegExp(card.name)}\\b`, "g");
+    result = result.replace(pattern, (match) => `[${match}](${CARD_CHIP_HREF_PREFIX}${card.cardId})`);
+  }
+  return result;
+}
+
+function buildMarkdownComponents(onCardChipActivate?: (cardId: string) => void): Components {
+  return {
+    a: ({ children, href, ...props }) => {
+      if (href?.startsWith(CARD_CHIP_HREF_PREFIX)) {
+        const cardId = href.slice(CARD_CHIP_HREF_PREFIX.length);
+        return (
+          <button
+            type="button"
+            data-testid={`conversation-card-chip-${cardId}`}
+            onClick={() => onCardChipActivate?.(cardId)}
+            className="conversation-card-chip rounded border-b border-accent-soft bg-accent/15 px-0.5 font-semibold text-accent-soft underline decoration-accent-soft/70 transition hover:bg-accent/25"
+          >
+            {children}
+          </button>
+        );
+      }
+      return (
+        <a {...props} href={href} target="_blank" rel="noopener noreferrer">
+          {children}
+        </a>
+      );
+    },
+    table: ({ children, ...props }) => (
+      <div className="conversation-markdown-table-scroll">
+        <table {...props}>{children}</table>
+      </div>
+    )
+  };
+}
 
 type ConversationThreadProps = {
   messages: ConversationMessage[];
+  /** REQ-075/REQ-206: the conversation's attached cards — exact-name matches in an
+   * assistant message become tappable chips. Omitted (or empty) when the conversation
+   * has no attached cards; no chip rendering happens then. */
+  cards?: ReadonlyArray<{ cardId: string; name: string }>;
+  onCardChipActivate?: (cardId: string) => void;
 };
 
 type ReaderSnapshot = {
@@ -37,8 +81,13 @@ function readReaderSnapshot(container: HTMLDivElement): ReaderSnapshot {
   };
 }
 
-export function ConversationThread({ messages }: ConversationThreadProps): JSX.Element {
+export function ConversationThread({ messages, cards, onCardChipActivate }: ConversationThreadProps): JSX.Element {
   const logRef = useRef<HTMLDivElement>(null);
+  const markdownComponents = useMemo(
+    () => buildMarkdownComponents(onCardChipActivate),
+    [onCardChipActivate]
+  );
+  const hasCards = Boolean(cards && cards.length > 0);
   const previousMessageCountRef = useRef(0);
   const readerSnapshotRef = useRef<ReaderSnapshot | null>(null);
   const [animatedFromIndex, setAnimatedFromIndex] = useState(0);
@@ -158,7 +207,7 @@ export function ConversationThread({ messages }: ConversationThreadProps): JSX.E
               {message.role === "assistant" ? (
                 <div className="conversation-markdown">
                   <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                    {message.content}
+                    {hasCards ? linkifyCardNames(message.content, cards!) : message.content}
                   </ReactMarkdown>
                 </div>
               ) : (
