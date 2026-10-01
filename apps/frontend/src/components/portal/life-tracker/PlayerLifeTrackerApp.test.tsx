@@ -63,7 +63,7 @@ describe("Frontend - Shared", () => {
   });
 
   describe("PlayerLifeTrackerApp", () => {
-    it("renders portal chrome and lets names be edited from the Players section of Game Setup", async () => {
+    it("renders portal chrome and lets names be edited from the always-visible Players section of Game Setup", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
 
@@ -72,9 +72,6 @@ describe("Frontend - Shared", () => {
 
       await openGameSetup(user);
       expect(screen.getByLabelText("Player count")).toBeInTheDocument();
-      expect(screen.queryByLabelText("Player 1 display name")).not.toBeInTheDocument();
-
-      await user.click(screen.getByRole("button", { name: "Edit player names" }));
       const playerOneName = screen.getByLabelText("Player 1 display name");
 
       await user.clear(playerOneName);
@@ -254,13 +251,13 @@ describe("Frontend - Shared", () => {
 
       await openGameSetup(user);
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
-      await user.click(screen.getByRole("button", { name: "Confirm reset current game" }));
+      await user.click(screen.getByRole("button", { name: "Reset" }));
       expect(within(screen.getByTestId("life-card-Player 1")).getByText("40")).toBeInTheDocument();
       expect(localStorage.length).toBe(0);
 
       await user.click(screen.getByRole("button", { name: "Decrease player count" }));
       await user.click(screen.getByRole("button", { name: "Start new game" }));
-      await user.click(screen.getByRole("button", { name: "Confirm start new game" }));
+      await user.click(screen.getByRole("button", { name: "New game" }));
       expect(trackerCards()).toHaveLength(4);
       expect(localStorage.length).toBe(0);
     });
@@ -343,12 +340,12 @@ describe("Frontend - Shared", () => {
       await openGameSetup(user);
 
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
-      expect(screen.getByRole("button", { name: "Confirm reset current game" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Reset this game?" })).toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Close game setup" }));
       await openGameSetup(user);
 
-      expect(screen.queryByRole("button", { name: "Confirm reset current game" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "Reset this game?" })).not.toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Reset current game" })).toBeInTheDocument();
     });
 
@@ -416,7 +413,7 @@ describe("Frontend - Shared", () => {
 
       await openGameSetup(user);
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
-      await user.click(screen.getByRole("button", { name: "Confirm reset current game" }));
+      await user.click(screen.getByRole("button", { name: "Reset" }));
 
       expect(
         screen.getByRole("button", { name: "Day and night: currently day. Flip designation." })

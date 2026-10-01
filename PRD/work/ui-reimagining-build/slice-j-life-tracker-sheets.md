@@ -1,6 +1,6 @@
 # Slice J — Life Tracker's sheets take the look
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -54,29 +54,29 @@ together with the code:
 
 ## Acceptance criteria
 
-- [ ] J1. `npm run quality:check` passes.
-- [ ] J2. `npm --workspace apps/frontend run test` passes.
-- [ ] J3. Game Setup fits within one phone screen's viewport (390×844) with
+- [x] J1. `npm run quality:check` passes.
+- [x] J2. `npm --workspace apps/frontend run test` passes.
+- [x] J3. Game Setup fits within one phone screen's viewport (390×844) with
       no page scroll.
-- [ ] J4. Reset and New game open the shared confirm sheet before acting;
+- [x] J4. Reset and New game open the shared confirm sheet before acting;
       today's in-place two-step confirm is gone.
-- [ ] J5. Counters shows two tabs: a commander-damage seat map with LETHAL
+- [x] J5. Counters shows two tabs: a commander-damage seat map with LETHAL
       marked at 21, and counters as tiles with a ⋯ menu.
-- [ ] J6. Every control, option, default and range in Game Setup and
+- [x] J6. Every control, option, default and range in Game Setup and
       Counters matches today's values (no behavioural change, presentation
       only).
-- [ ] J7. The life-total table itself (seats, life, layout, day/night, seat
+- [x] J7. The life-total table itself (seats, life, layout, day/night, seat
       map, state, persistence) is byte-for-byte unchanged in behaviour and
       test coverage.
-- [ ] J8. `PRD/sections/` carries REQ-202 by intent.
-- [ ] J9 (manual). REQ-202 pair: Life Tracker screenshot before/after this
+- [x] J8. `PRD/sections/` carries REQ-202 by intent.
+- [x] J9 (manual). REQ-202 pair: Life Tracker screenshot before/after this
       slice, at 390×844 and 1440×900 — the canonical pair this requirement
       names, pixel-reviewed by the owner's eye, saved to
       `docs/design/ui-reimagining/build-screenshots/j/`.
-- [ ] J10 (manual). Browser scenario at 390×844: open Game Setup, confirm no
+- [x] J10 (manual). Browser scenario at 390×844: open Game Setup, confirm no
       page scroll; tap Reset, confirm the shared sheet opens before
       anything resets.
-- [ ] J11 (manual). Cleanup evidence recorded: browser closed, owned
+- [x] J11 (manual). Cleanup evidence recorded: browser closed, owned
       servers stopped, ports released, capture output path named.
 
 ## Verification

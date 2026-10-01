@@ -221,9 +221,13 @@ interface CommanderDamageCellProps {
   onDecrement: () => void;
 }
 
+/** REQ-202: a single source's commander damage is lethal on its own at 21+. */
+const LETHAL_COMMANDER_DAMAGE = 21;
+
 /**
  * Mirrors the life card's own +/- bands: an always-visible decrease band on top and increase band
- * on bottom, both real tap targets, no hold gesture and no options menu.
+ * on bottom, both real tap targets, no hold gesture and no options menu. Marks itself LETHAL
+ * (red edge + tag) at 21+ (REQ-202).
  */
 function CommanderDamageCell({
   name,
@@ -233,11 +237,16 @@ function CommanderDamageCell({
   onIncrement,
   onDecrement
 }: CommanderDamageCellProps): JSX.Element {
+  const isLethal = value >= LETHAL_COMMANDER_DAMAGE;
+
   return (
     <div
       data-testid={testId}
+      data-lethal={isLethal}
       style={placement}
-      className="flex flex-col overflow-hidden rounded-xl border border-accent/25 bg-accent/10"
+      className={`flex flex-col overflow-hidden rounded-xl border ${
+        isLethal ? "border-rose-500 bg-rose-500/15" : "border-accent/25 bg-accent/10"
+      }`}
     >
       <button
         type="button"
@@ -249,9 +258,20 @@ function CommanderDamageCell({
       </button>
       <div className="flex flex-col items-center gap-0.5 px-2 py-1">
         <span className="truncate text-xs font-bold text-zinc-400">{name}</span>
-        <span data-testid={`commander-value-${name}`} className="text-2xl font-black tabular-nums text-zinc-100">
+        <span
+          data-testid={`commander-value-${name}`}
+          className={`text-2xl font-black tabular-nums ${isLethal ? "text-rose-400" : "text-zinc-100"}`}
+        >
           {value}
         </span>
+        {isLethal && (
+          <span
+            data-testid={`commander-lethal-${name}`}
+            className="rounded-full bg-rose-500 px-1.5 text-[10px] font-black uppercase tracking-wide text-white"
+          >
+            Lethal
+          </span>
+        )}
       </div>
       <button
         type="button"
@@ -409,15 +429,19 @@ export function CounterPanel({
                 const cellPlacement = { gridArea: cell.gridArea, gridRow: cell.gridRow, gridColumn: cell.gridColumn };
 
                 if (cell.isSelf) {
+                  // REQ-202: "the player's own seat drawn like their card" — shows the real
+                  // life total, not a placeholder; "me" stays as a small caption underneath
+                  // so the seat is still unmistakably the opener's own.
                   return (
                     <div
                       key={cell.label}
                       data-testid={`commander-cell-${cell.label}`}
                       style={cellPlacement}
-                      className="flex flex-col items-center justify-center rounded-xl border border-accent/25 bg-accent/10 p-2"
+                      className="flex flex-col items-center justify-center rounded-xl border border-dashed border-accent/25 bg-accent/10 p-2"
                     >
                       <span className="text-xs font-bold text-zinc-400">{sourceName}</span>
-                      <span className="text-2xl font-black text-zinc-100">me</span>
+                      <span className="text-2xl font-black tabular-nums text-zinc-100">{player.life}</span>
+                      <span className="text-[0.65rem] font-semibold uppercase tracking-wide text-zinc-500">me</span>
                     </div>
                   );
                 }

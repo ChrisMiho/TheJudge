@@ -105,7 +105,6 @@ describe("Frontend - Portal", () => {
 
     await user.click(screen.getByRole("button", { name: "Open game setup" }));
     expect(screen.getByRole("dialog", { name: "Game Setup" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Edit player names" }));
     const playerOneName = screen.getByLabelText("Player 1 display name");
     await user.clear(playerOneName);
     await user.type(playerOneName, "Alice");

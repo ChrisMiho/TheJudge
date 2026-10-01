@@ -5,19 +5,19 @@
     {
       "id": "J1",
       "statement": "npm run quality:check passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run quality:check" }
     },
     {
       "id": "J2",
       "statement": "npm --workspace apps/frontend run test passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm --workspace apps/frontend run test" }
     },
     {
       "id": "J3",
       "statement": "Game Setup fits within one phone screen viewport with no page scroll",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/portal/life-tracker/GameSetupPanel.tsx",
@@ -28,13 +28,13 @@
     {
       "id": "J4",
       "statement": "Reset and New game open the shared confirm sheet before acting",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/GameSetupPanel.tsx"] }
     },
     {
       "id": "J5",
       "statement": "Counters shows two tabs: commander-damage seat map (LETHAL at 21) and counters-as-tiles with a menu",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/portal/life-tracker/CounterPanel.tsx",
@@ -45,19 +45,19 @@
     {
       "id": "J6",
       "statement": "Every control, option, default and range matches today's values",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/CounterPanel.test.tsx"] }
     },
     {
       "id": "J7",
       "statement": "The life-total table's behaviour and test coverage are unchanged",
-      "value": false,
-      "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeTrackerApp.player-counters.test.tsx"] }
+      "value": true,
+      "evidence": { "paths": ["apps/frontend/src/components/portal/life-tracker/PlayerLifeTrackerApp.test.tsx"] }
     },
     {
       "id": "J8",
       "statement": "PRD/sections carries REQ-202 by intent",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/life-tracker/README.md",
@@ -68,19 +68,19 @@
     {
       "id": "J9",
       "statement": "REQ-202 Life Tracker before/after pair captured at 390x844 and 1440x900, pixel-reviewed",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "J10",
       "statement": "Browser scenario at 390x844: Game Setup has no page scroll; Reset opens the shared sheet before resetting",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "J11",
       "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     }
   ]

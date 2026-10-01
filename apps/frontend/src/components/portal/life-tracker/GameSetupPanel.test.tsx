@@ -202,52 +202,52 @@ describe("Frontend - Shared", () => {
       expect(props.onStartingLifeChange).not.toHaveBeenCalled();
     });
 
-    it("keeps Reset and New Game as explicit actions behind a confirming second press", async () => {
+    it("asks before Reset and New Game act, through the shared confirm sheet (REQ-208)", async () => {
       const user = userEvent.setup();
       const props = renderPanel();
 
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
       expect(props.onReset).not.toHaveBeenCalled();
-      await user.click(screen.getByRole("button", { name: "Confirm reset current game" }));
+      expect(screen.getByRole("heading", { name: "Reset this game?" })).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Reset" }));
+      expect(props.onReset).toHaveBeenCalledOnce();
 
       await user.click(screen.getByRole("button", { name: "Start new game" }));
       expect(props.onNewGame).not.toHaveBeenCalled();
-      await user.click(screen.getByRole("button", { name: "Confirm start new game" }));
-
-      expect(props.onReset).toHaveBeenCalledOnce();
+      expect(screen.getByRole("heading", { name: "Start a new game?" })).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "New game" }));
       expect(props.onNewGame).toHaveBeenCalledOnce();
     });
 
-    it("announces what each pending confirm will destroy and clears the message after confirming", async () => {
+    it("names what each pending confirm will destroy, matching today's confirmation copy", async () => {
       const user = userEvent.setup();
       renderPanel();
 
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
-      expect(screen.getByRole("status")).toHaveTextContent(/every life total goes back/i);
-      expect(screen.getByRole("status")).toHaveTextContent(/players, names, and settings stay/i);
+      expect(screen.getByText(/every life total goes back/i)).toBeInTheDocument();
+      expect(screen.getByText(/players, names, and settings stay/i)).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Keep" }));
+      expect(screen.queryByRole("heading", { name: "Reset this game?" })).not.toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Start new game" }));
-      expect(screen.getByRole("status")).toHaveTextContent(/this game is discarded/i);
-
-      await user.click(screen.getByRole("button", { name: "Confirm start new game" }));
-      expect(screen.getByRole("status")).toBeEmptyDOMElement();
+      expect(screen.getByText(/this game is discarded/i)).toBeInTheDocument();
     });
 
-    it("cancels a pending Reset without firing it, and drops it when New Game is confirmed instead", async () => {
+    it("cancels a pending Reset via Keep without firing it, and lets a New Game confirm proceed instead", async () => {
       const user = userEvent.setup();
       const props = renderPanel();
 
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
-      await user.click(screen.getByRole("button", { name: "Cancel reset current game" }));
+      await user.click(screen.getByRole("button", { name: "Keep" }));
 
       expect(props.onReset).not.toHaveBeenCalled();
       expect(screen.getByRole("button", { name: "Reset current game" })).toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
       await user.click(screen.getByRole("button", { name: "Start new game" }));
-      await user.click(screen.getByRole("button", { name: "Confirm start new game" }));
+      await user.click(screen.getByRole("button", { name: "New game" }));
 
-      expect(screen.queryByRole("button", { name: "Confirm reset current game" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "Reset this game?" })).not.toBeInTheDocument();
       expect(props.onReset).not.toHaveBeenCalled();
       expect(props.onNewGame).toHaveBeenCalledOnce();
     });
@@ -276,38 +276,37 @@ describe("Frontend - Shared", () => {
       expect(screen.queryByText("Day / Night")).not.toBeInTheDocument();
     });
 
-    it("reveals per-player name inputs for exactly the current player count from the Players section", async () => {
-      const user = userEvent.setup();
+    it("shows a name input for exactly the current player count, always visible (no Edit-names disclosure)", () => {
       renderPanel({ playerCount: 2, players: FOUR_PLAYERS.slice(0, 2) });
-
-      expect(screen.queryByLabelText("Player 1 display name")).not.toBeInTheDocument();
-
-      await user.click(screen.getByRole("button", { name: "Edit player names" }));
 
       expect(screen.getByLabelText("Player 1 display name")).toBeInTheDocument();
       expect(screen.getByLabelText("Player 2 display name")).toBeInTheDocument();
       expect(screen.queryByLabelText("Player 3 display name")).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Edit player names" })).not.toBeInTheDocument();
     });
 
     it("invokes onDisplayNameChange when a name is edited", async () => {
       const user = userEvent.setup();
       const props = renderPanel({ playerCount: 2, players: FOUR_PLAYERS.slice(0, 2) });
 
-      await user.click(screen.getByRole("button", { name: "Edit player names" }));
       const nameInput = screen.getByLabelText("Player 1 display name");
       await user.type(nameInput, "!");
 
       expect(props.onDisplayNameChange).toHaveBeenCalledWith("Player 1", "Player 1!");
     });
 
-    it("uses accent-soft for dark-surface accent text and accent-contrast for the filled New Game control", async () => {
+    it("uses accent-soft for dark-surface accent text, and marks New Game as the more destructive row", async () => {
       const user = userEvent.setup();
       renderPanel();
 
-      expect(screen.getByRole("button", { name: "Edit player names" })).toHaveClass("text-accent-soft");
-      expect(screen.getByRole("button", { name: "Start new game" })).toHaveClass(
-        "bg-accent-strong",
-        "text-accent-contrast"
+      expect(screen.getByTestId("game-setup-section-players")).toHaveClass("text-accent-soft");
+      expect(screen.getByRole("button", { name: "Reset current game" }).querySelector("span")).toHaveClass(
+        "text-accent-soft"
+      );
+      // REQ-202 (matching life-tracker-menus.html's `.danger` row): New Game's glyph alone
+      // carries the destructive marking, not a solid filled button.
+      expect(screen.getByRole("button", { name: "Start new game" }).querySelector("span")).toHaveClass(
+        "text-rose-400"
       );
 
       await user.click(screen.getByRole("button", { name: "Set custom starting life" }));

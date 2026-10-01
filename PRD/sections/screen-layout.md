@@ -220,6 +220,7 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Purpose | Live table life/counters |
 | Phone / Desktop | **One-screen fit** for the life table at every player count (DEC-136); full-bleed destination chrome |
 | Fit | No page scroll for the life table; counter panel is full-height overlay (DEC-139) |
+| Sheets | Game Setup fits one phone screen; a player's Counters panel keeps its full-height overlay (DEC-139) with two tabs; Reset / New game confirm in the shared sheet (REQ-208). The table itself is pixel-untouched; every touching slice attaches the 390x844 and 1440x900 before/after pair (REQ-202) |
 | Notes | DEC-101, DEC-136, DEC-139 |
 
 #### Trade Balancer

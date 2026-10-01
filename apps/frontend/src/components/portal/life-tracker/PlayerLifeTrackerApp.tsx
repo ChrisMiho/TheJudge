@@ -1,9 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useId, useState } from "react";
 import { BrandMark } from "../../BrandMark";
-import { OverlayCloseButton } from "../../OverlayCloseButton";
 import { PageShell } from "../../PageShell";
+import { SheetShell } from "../../SheetShell";
 import type { PlayerLabel } from "../../../types";
-import { useOutsideDismiss } from "../../../hooks/useOutsideDismiss";
 import { listSeatArrangement, seatArrangement } from "../../../lib/lifeTracker/seatArrangement";
 import { useLifeTracker, type UseLifeTrackerResult } from "../../../lib/lifeTracker/useLifeTracker";
 import { PortalSlot } from "../PortalSlot";
@@ -21,71 +20,47 @@ interface GameSetupModalProps {
   onClose: () => void;
 }
 
+/** REQ-202: Game Setup takes the shared sheet shell (REQ-208) — a bottom sheet below
+ * 600px, a floating card from it up — in place of the former bespoke `fixed inset-0`
+ * overlay. Focus trap, Escape, outside-dismiss and focus-restore all come from
+ * `SheetShell` rather than being re-implemented here. */
 function GameSetupModal({ tracker, onClose }: GameSetupModalProps): JSX.Element {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const returnFocusRef = useRef<HTMLElement | null>(null);
-
-  useOutsideDismiss([dialogRef], onClose, true);
-
-  useEffect(() => {
-    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    dialogRef.current?.focus();
-
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      returnFocusRef.current?.focus();
-    };
-  }, [onClose]);
+  const titleId = useId();
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-2 sm:items-center sm:p-4">
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="game-setup-modal-title"
-        tabIndex={-1}
-        className="max-h-[94dvh] w-full max-w-xl overflow-y-auto rounded-3xl border border-zinc-700 bg-zinc-950 p-4 text-zinc-100 shadow-2xl shadow-black/40"
-      >
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Life Tracker</p>
-            <h2 id="game-setup-modal-title" className="text-xl font-black text-zinc-100">
-              Game Setup
-            </h2>
-          </div>
-          <OverlayCloseButton label="Close game setup" onClick={onClose} />
-        </header>
-
-        <div className="mt-4">
-          <GameSetupPanel
-            playerCount={tracker.state.playerCount}
-            layoutMode={tracker.state.layoutMode}
-            cardStyle={tracker.state.cardStyle}
-            startingLife={tracker.state.startingLife}
-            players={tracker.state.players.map((player) => ({
-              label: player.label,
-              displayName: player.displayName
-            }))}
-            onPlayerCountChange={tracker.setPlayerCount}
-            onLayoutModeChange={tracker.setLayoutMode}
-            onCardStyleChange={tracker.setCardStyle}
-            onStartingLifeChange={tracker.setStartingLife}
-            onDisplayNameChange={tracker.setPlayerDisplayName}
-            onReset={tracker.reset}
-            onNewGame={tracker.newGame}
-          />
+    <SheetShell
+      isOpen
+      onClose={onClose}
+      closeLabel="Close game setup"
+      titleId={titleId}
+      testId="life-tracker-game-setup"
+      head={
+        <div>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Life Tracker</p>
+          <h2 id={titleId} className="text-xl font-black text-zinc-100">
+            Game Setup
+          </h2>
         </div>
-      </div>
-    </div>
+      }
+    >
+      <GameSetupPanel
+        playerCount={tracker.state.playerCount}
+        layoutMode={tracker.state.layoutMode}
+        cardStyle={tracker.state.cardStyle}
+        startingLife={tracker.state.startingLife}
+        players={tracker.state.players.map((player) => ({
+          label: player.label,
+          displayName: player.displayName
+        }))}
+        onPlayerCountChange={tracker.setPlayerCount}
+        onLayoutModeChange={tracker.setLayoutMode}
+        onCardStyleChange={tracker.setCardStyle}
+        onStartingLifeChange={tracker.setStartingLife}
+        onDisplayNameChange={tracker.setPlayerDisplayName}
+        onReset={tracker.reset}
+        onNewGame={tracker.newGame}
+      />
+    </SheetShell>
   );
 }
 

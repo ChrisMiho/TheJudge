@@ -5009,8 +5009,11 @@
 - Description: Player Life Tracker inherits shared chrome, the REQ-200 token
   set, and shared stylesheet changes the same way every other destination
   does — the menu rail, brand mark, theme section, overlays, and page shell.
-  Life Tracker's own screens, counters, layout, and `lib/lifeTracker/` state
-  are untouched by the redesign. Every slice that touches shared chrome, the
+  Life Tracker's table (seats, life numbers, layout, day/night, the seat map),
+  its `lib/lifeTracker/` state, persistence and behaviour are untouched by the
+  redesign; the sheets that open from it (Game Setup, a player's Counters, the
+  confirm) take the shared look with every control, option, default and range
+  unchanged (REQ-208). Every slice that touches shared chrome, the
   token set, or the shared stylesheet attaches a Life Tracker before/after
   screenshot pair at 390x844 and 1440x900 to its PR, so the owner sees exactly
   what changed before merging. There is no automated pixel-diff gate; the
@@ -5028,10 +5031,12 @@
     slice on its own
   - Life Tracker's one-screen fit at every supported player count (DEC-136) and
     its full-height counter panel (DEC-139) are unaffected
-  - `lib/lifeTracker/` state, persistence, the commander-damage matrix, the
-    counter palette, day/night, Game Setup, Reset/New Game, and the one-way MTG
-    Assistant seed are untouched by the redesign packages
-  - automated coverage asserts Life Tracker's own screens, counters, layout,
+  - `lib/lifeTracker/` state, persistence, commander-damage and counter values,
+    day/night, and the one-way MTG Assistant seed are untouched; Game Setup,
+    Reset / New Game and a player's Counters change only their presentation
+    (the shared sheet, REQ-208), keeping every control, option, default and range
+    unchanged
+  - automated coverage asserts Life Tracker's table, counter values, layout,
     and `lib/lifeTracker/` state are unchanged by each redesign slice; the
     shared-chrome inheritance itself is confirmed by the screenshot pair, not
     by an automated pixel assertion
@@ -5039,7 +5044,7 @@
   - Life Tracker must not fork a shared component or add a per-destination
     override; it consumes shared chrome and the token set exactly as every
     other destination does
-  - no Life Tracker behaviour, copy, layout, or state change of any kind in the
+  - no change to Life Tracker's rules, state, or table layout of any kind in the
     redesign packages
   - the screenshot pair is a PR review attachment, not a CI job: it does not
     enter `npm run quality:check`, cannot block a merge automatically, and
@@ -5053,12 +5058,27 @@
 - Notes:
   - shared chrome changes reach Life Tracker automatically as each slice
     ships, reviewed by the screenshot pair; there is no separate deferred
-    pass for shared chrome. Life Tracker's own screens remain a distinct,
-    not-yet-scheduled redesign, same as before
+    pass for shared chrome. Life Tracker's table remains out of scope; its sheets
+    are restyled by the `ui-reimagining-build` pass
   - the baseline captures taken during refinement live in the work package's
     git-ignored `.playwright-mcp/` folder; each build slice captures its own
     before/after pair at merge time for the PR review, not as an automated
     pixel-diff gate
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the owner asked
+    for the back menus to be redrawn (mockup round 11) and approved them
+    (rounds 13-14). Game Setup becomes one phone screen — Reset life totals
+    and New game as rows that ask first through the shared confirm sheet; a
+    Players stepper (2-8) with name fields two to a row, each carrying its
+    seat number; Starting life pills (20 / 25 / 30 / 40 / Custom 1-999) under
+    Players with its rule line; Layout (Grid / List) and Card style (Ombre /
+    Flat) as a labelled pair of segmented pills. A player's Counters has two
+    tabs: Commander damage · lethal at 21 (the seat map alone — a tile per
+    other seat with name, number and one joined -/+ pill, a red edge and
+    LETHAL tag at 21, the player's own seat drawn like their card) and
+    Counters (the eleven named counters as tiles that add one on a tap and
+    light above zero, a ⋯ on each tile to take one away, set a number or
+    clear — long-press stays — and custom counters as the same tiles with a
+    remove ✕ and today's add field and three errors)
 
 ### REQ-203
 - Title: Suite-wide brand-mark Easter egg

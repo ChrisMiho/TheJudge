@@ -152,6 +152,31 @@ describe("Frontend - Shared", () => {
       expect(player8Seat.gridColumn).not.toBe(ownSeat.gridColumn);
     });
 
+    it("marks a commander-damage cell LETHAL at 21 and not below it (REQ-202)", () => {
+      const state = populatedState();
+      const atTwenty: TrackerState = {
+        ...state,
+        players: state.players.map((entry, index) =>
+          index === 0 ? { ...entry, commanderDamage: { ...entry.commanderDamage, "Player 2": 20 } } : entry
+        )
+      };
+      const { rerender } = render(<CounterPanel {...panelProps(atTwenty)} />);
+
+      expect(screen.getByTestId("commander-cell-Player 2")).toHaveAttribute("data-lethal", "false");
+      expect(screen.queryByTestId("commander-lethal-Player 2")).not.toBeInTheDocument();
+
+      const atTwentyOne: TrackerState = {
+        ...state,
+        players: state.players.map((entry, index) =>
+          index === 0 ? { ...entry, commanderDamage: { ...entry.commanderDamage, "Player 2": 21 } } : entry
+        )
+      };
+      rerender(<CounterPanel {...panelProps(atTwentyOne)} />);
+
+      expect(screen.getByTestId("commander-cell-Player 2")).toHaveAttribute("data-lethal", "true");
+      expect(screen.getByTestId("commander-lethal-Player 2")).toHaveTextContent(/lethal/i);
+    });
+
     it("renders the shared palette exactly once and increments each value independently", async () => {
       const user = userEvent.setup();
       const props = panelProps();

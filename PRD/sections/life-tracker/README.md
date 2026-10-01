@@ -47,13 +47,17 @@ game survives a phone lock or reload because it saves itself as you play.
 
 ### Counter panel and commander-damage matrix
 
-- Built: tapping a player's counter area opens that player's counter panel.
-  It tracks a per-opponent commander-damage matrix (a "me" cell marks the
-  player's own seat plus one cell per opponent), the named-counter palette —
-  Monarch, Treasure, Initiative, Poison, Ascend, Rad, Day/night, C.Tax, K.O.,
-  Energy, Exp — and user-added generic named counters.
+- Built: tapping a player's counter area opens that player's counter panel, with
+  two tabs: **Commander damage · lethal at 21** — the per-opponent seat map alone (a
+  tile per other seat with the player's name, the number and one joined `−`/`+`
+  pill; at 21 the tile's edge lights red with a small LETHAL tag; the player's own
+  seat drawn like their card, marked "your seat") — and **Counters** — the
+  named-counter palette (Monarch, Treasure, Initiative, Poison, Ascend, Rad,
+  Day/night, C.Tax, K.O., Energy, Exp) as tiles that light above zero, plus
+  user-added generic named counters as the same tiles with a remove ✕. (REQ-202)
 - Built: tap increments a named or custom counter; a hold/secondary action
-  exposes decrement and set.
+  exposes decrement and set, and a ⋯ on each counter tile opens the same row (take
+  one away, set a number, clear). (REQ-202)
 - Built: each opponent commander-damage cell exposes always-visible `−`/`+`
   bands (no hold menu). Incrementing an opponent's commander damage always
   decrements that player's life — this is always on, not a Game Setup
@@ -86,9 +90,10 @@ game survives a phone lock or reload because it saves itself as you play.
 - Built: changing player count applies the In-Depth-matching starting-life
   default (2 players → 20, 3+ players → 40) unless the user has already
   chosen a different starting life for this game.
-- Built: display names are edited from Game Setup's Edit names disclosure,
-  a tracker-local UI. In-Depth continues to use the shared
-  `PlayerRosterEditor` — the tracker does not mount it.
+- Built: display names are edited in Game Setup's name fields — compact boxes
+  carrying the seat number, two to a row under the Players stepper. In-Depth
+  continues to use the shared `PlayerRosterEditor` — the tracker does not mount
+  it. (REQ-202)
 
 ### Reset / New Game
 
@@ -97,6 +102,10 @@ game survives a phone lock or reload because it saves itself as you play.
   returns the day/night designation to day.
 - Built: New Game clears persisted game values back to starting values;
   presentation preferences (layout mode, card style) may survive New Game.
+- Built: Reset life totals and New game each ask first through the shared confirm
+  sheet (REQ-208) with today's confirmation copy; Game Setup fits one phone screen,
+  with Layout and Card style as a labelled pair of segmented pills at its foot.
+  (REQ-202)
 
 ### Persistence
 
