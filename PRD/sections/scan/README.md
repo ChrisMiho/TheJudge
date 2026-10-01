@@ -104,16 +104,29 @@ becomes the only way to add a card. It sits outside the core product loop
   the popup; the mute preference persists across reloads via `localStorage`
   (the first repo use, isolated in `lib/scan/audioPrefs.ts`, degrading to
   unmuted if storage is unavailable). (DEC-057, DEC-061, REQ-040, REQ-042)
-- Built: a top-right **scanned-cards review bubble** shows the running count of
-  this-session adds and expands to a viewport-capped 320px panel listing each
-  card with a single-tap, no-confirmation **Remove**. It operates on the
-  destination's own card list (no scan-only store), and each entry uses the
+- Built: a top-right **count pill** holds this scanning session's own list of
+  recognised-but-not-yet-added cards — a scan-local holding list, not the
+  destination's own card list — and expands to a viewport-capped 320px panel
+  listing each held card with a single-tap, no-confirmation **Remove** plus a
+  caution control explaining that scanning is experimental. Each entry uses the
   shared container-relative image + corner-detail presentation. The corner detail
   popup fetches its descriptive fields on demand by oracle id (REQ-175, FLOW-024)
   when opened and the network allows, degrading gracefully offline; when no image
   is available the entry falls back to the card name only, with no fetch triggered
-  by image failure, so the scan-review surface stays usable offline (DEC-078).
-  (DEC-058, DEC-078, DEC-151, REQ-040, REQ-175, FLOW-006, FLOW-024)
+  by image failure, so the scan-review surface stays usable offline (DEC-078). The
+  pill is built on every host that scans — In-Depth's zones, Ask a Question, and
+  Trade Balancer (REQ-214). (DEC-058, DEC-078, DEC-151, REQ-040, REQ-175, REQ-214,
+  FLOW-006, FLOW-024)
+- Built: a recognised card joins the holding list, not the destination, the
+  instant it locks; the destination's own card list changes only when the
+  scanner closes, committing every held card in one step. The same
+  duplicate/cap rule a manual add already enforces on that destination (the
+  Stack's duplicate block; Ask a Question's already-attached block and the
+  REQ-167 cap) is checked the moment a card is recognised — against the
+  destination's current cards and anything already held — so a blocked re-scan
+  still surfaces its message immediately rather than silently failing to
+  commit; Trade Balancer enforces no such rule, so every recognition is held
+  (REQ-065's duplicates-allowed behaviour is unaffected). (REQ-214)
 - Built: the scan preview and the added card's thumbnail show the **scanned
   printing's** art — not the oracle-level representative image — so on-screen
   art matches the physical card; a missing printing image falls back to the
@@ -164,7 +177,10 @@ becomes the only way to add a card. It sits outside the core product loop
   (best/runner-up distances, margin, votes accumulated/needed, phase, active
   `lockDistance`/`marginMin`). It is read-only from existing signals and its
   toggle sits outside the top-right review/remove hit area so it cannot
-  intercept the correction path. (DEC-060, DEC-065, REQ-041)
+  intercept the correction path. The metrics panel carries a themed accent
+  border, the same chrome treatment every other scan surface took; its
+  geometry, numbers and read-only posture are unchanged. (DEC-060, DEC-065,
+  REQ-041, REQ-214)
 - Built: while the overlay is enabled, the existing **Capture** button also
   exports the exact raw camera frame for detector tuning; with the overlay off
   (default) Capture behaves normally. Acquisition diagnostics extend across
@@ -179,13 +195,16 @@ becomes the only way to add a card. It sits outside the core product loop
   phones (a bounded dynamic-viewport height below `md:`; a proportion-stable
   `aspect-[3/4]` fallback at `md:` and above), with the guide, lock outline, and
   debug overlay scaling to the rendered frame and `object-cover` preserved. All
-  overlays — debug toggle, mute, Cardomancer attribution, `Exit scan` row, and
-  the review bubble — keep non-overlapping bounds and hit areas at supported
-  widths. (DEC-065, DEC-090, REQ-068, NFR-001)
+  overlays — debug toggle, mute, Cardomancer attribution, the ✕ exit box, and
+  the count pill — keep non-overlapping bounds and hit areas at supported
+  widths. (DEC-065, DEC-090, REQ-068, NFR-001, REQ-214)
 - Built: while scan is open the destination's own search input, card list, and
   outer staged-flow navigation are hidden; scan-local controls including
-  **Capture** remain, and **Exit scan** (top-right on the camera surface) is the
-  path back to manual search or normal navigation. (DEC-076, REQ-056, FLOW-006)
+  **Capture** remain, and **Exit scan** — a square box carrying an ✕, above the
+  camera's top-right corner on every host (accessible name unchanged) — is the
+  only path back to manual search or normal navigation; closing it commits the
+  holding list to the destination in one step. (DEC-076, REQ-056, REQ-214,
+  FLOW-006)
 - Built: the scanner's accent visuals (reticle, lock/progress indicator,
   confirmation popup, review bubble) restyle with the selected app palette
   rather than fixed sky/emerald — an approved presentation-only exception to
@@ -210,24 +229,33 @@ semantics, and pricing stay owned by the consuming destination, never by scan.
 
 - Built: a **Scan** entry point sits beside the manual search input on the zone
   card picker; the two share one non-wrapping row and Scan keeps the 44px touch
-  floor. This is scan's batch, hands-free home: scan → lock → auto-add into the
-  current zone → resume, card after card, until **Exit scan**. (DEC-050,
-  REQ-038, REQ-125, FLOW-006)
-- Built: an accepted scan reaches the existing preview/add/owner/duplicate-block/
-  stack-limit path and produces the same `ZoneCardItem` as a manual add; owner
-  comes from the sticky `pendingOwner` selector; stack cards land in scan order,
-  bottom-to-top. Each auto-add is an independent instance keyed on `instanceId`,
-  so scanning the same card twice yields two review entries and removal targets
-  only the chosen one. (DEC-052, DEC-056, DEC-082, REQ-038)
+  floor. This is scan's batch, hands-free home: scan → lock → hold in the
+  scanner's own list → resume, card after card, until **Exit scan** commits
+  every held card into the current zone in one step. (DEC-050, REQ-038,
+  REQ-125, REQ-214, FLOW-006)
+- Built: a held card commits through the existing preview/add/owner/
+  duplicate-block/stack-limit path and produces the same `ZoneCardItem` as a
+  manual add; owner comes from the sticky `pendingOwner` selector; held cards
+  commit in hold order, so stack cards still land bottom-to-top. The
+  duplicate/stack-limit check runs twice for the same rule — once the instant
+  a card is recognised (REQ-214, so a blocked re-scan surfaces immediately)
+  and again, structurally, at commit — not once at each. Each committed add is
+  an independent instance keyed on `instanceId`, so scanning the same card
+  twice (where the zone allows it) yields two entries and removal targets only
+  the chosen one. (DEC-052, DEC-056, DEC-082, REQ-038, REQ-214)
 
 ### Quick Question (Quick Lookup)
 
-- Built: scan is **one of two ways** to resolve the optional single card before
-  asking a rules question — typed autocomplete search or camera scan, using the
-  same FLOW-006 engine — and card input is optional (the player may ask with no
-  card attached). A scan resolves to exactly one oracle-level `CardMetadataItem`;
-  only one card is active at a time, and there are no zones, stack, or
-  per-card enrichment controls. (DEC-107, REQ-073, FLOW-011)
+- Built: scan is **one of two ways** to attach a card before asking a rules
+  question — typed autocomplete search or camera scan, using the same
+  FLOW-006 engine — and card input is optional (the player may ask with no
+  card attached). Each scan resolves to one oracle-level `CardMetadataItem`
+  held in the scanner's own list until the scanner closes, when every held
+  card joins the card stage in hold order, up to the lookup cap (REQ-167); a
+  scan past the cap, or of a card already attached or already held, is
+  blocked the instant it is recognised, the same message a manual add already
+  gives. There are no zones, stack, or per-card enrichment controls on this
+  page. (DEC-107, REQ-073, REQ-167, REQ-214, FLOW-011)
 - Built: printing-level scan identity stays presentation-only and is not pushed
   into the request, prompt, or rulings; the scan components are reused, not
   forked. (DEC-053, REQ-073)
@@ -235,10 +263,14 @@ semantics, and pricing stay owned by the consuming destination, never by scan.
 ### Trade Balancer
 
 - Built: scan is **one of two ways** to add a card to a trade side — scan or
-  manual name search. The **scanned printing** (its `Candidate.card_id`) becomes
-  the entry's default printing, and the player can change it to any other
-  printing of that card if the scanned print is wrong. Scanning is per-side and
-  one camera at a time. (DEC-087, DEC-070, REQ-065, FLOW-009)
+  manual name search. Each recognised card waits in the scanner's own holding
+  list until the scanner closes, when every held card is added to the side in
+  hold order, carrying the **scanned printing** candidates from the moment it
+  was held (its `Candidate.card_id`) as the entry's default printing; the
+  player can change it to any other printing of that card if the scanned
+  print is wrong. Scanning is per-side and one camera at a time; Trade
+  Balancer applies no duplicate or cap rule, so every held card commits.
+  (DEC-087, DEC-070, REQ-065, REQ-214, FLOW-009)
 - Built: here the printing choice carries a **price**, but printing selection is
   a pricing/display layer only — it never reaches prompt context, rulings, or a
   request payload and does not reopen the oracle-level identity model. When the

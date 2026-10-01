@@ -5365,6 +5365,39 @@
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup; broadened from Battlefield-only to every zone by the owner's gate-review edit (2026-10-01) - "sometimes it does matter" on Graveyard and other zones too; use cases to be refined later
   - built by slice E: `apps/frontend/src/components/EnrichmentStep.tsx` (the box, every zone), `apps/frontend/src/lib/enrichmentFormat.ts` (`parseManaSpent` bound, `formatPrintedManaHint`), `apps/backend/src/prompt/context.ts` (`normalizeZoneItem` passthrough), `apps/backend/src/prompt/promptFormatting.ts` (`formatNonStackZoneSections` line insertion)
 
+### REQ-214
+- Title: Card scanner: a scanner-local holding list, committed on close, with a count pill on every host
+- Priority: medium
+- Description: The shared camera scanner (FLOW-006) keeps its detection, lock and ding unchanged. A recognised card now waits in the scanner's own holding list instead of joining the destination the instant it is recognised; the list is shown by a top-right count pill, with Remove on each entry and a caution note that scanning is experimental. Closing the scanner (the "Exit scan" control, now a square box with an X above the camera's top-right corner) commits every held card to the zone or trade side it was opened from, in one step. The count pill, previously built only for In-Depth's zones, now appears on every host that scans: In-Depth's Cards station, Ask a Question, and Trade Balancer.
+- Acceptance Criteria:
+  - a recognised card is added to the scanner's own holding list, not the destination's own card list, the moment it is recognised; the destination's own list is unchanged until the scanner closes
+  - the top-right pill shows the holding list's count and expands to each held card with its own Remove; Remove drops that card from the holding list with nothing added for it
+  - closing the scanner commits every remaining held card to the zone or trade side it was opened from, in one step, then returns to where it was; every "Scan" entry point opens the scanner at an empty holding list
+  - the same duplicate/cap rule each destination already applies on a manual add (the Stack's duplicate block; Ask a Question's already-attached block and 10-card cap, REQ-167) is checked the instant a card is recognised, against both the destination's current cards and anything already held but not yet committed - not deferred to the close commit, so a blocked re-scan still surfaces its message immediately; Trade Balancer passes no such rule, so a duplicate scan is always held and committed (REQ-065's existing duplicates-allowed behaviour)
+  - the "Exit scan" control is a square box carrying an X, positioned above the camera's top-right corner on every host, with the accessible name "Exit scan" unchanged; the manual Capture control keeps the accessible name "Capture"
+  - a caution control beside the count pill opens a one-line note that card scanning is experimental, dismissed with "Got it"
+  - detection, lock, the ding, and the opt-in Debug overlay's metrics are unchanged; the Debug panel takes a themed accent border
+  - tests cover the holding-list accumulate/commit-on-close/Remove behaviour, the hold-time duplicate/cap check, and that detection/lock/capture are unchanged
+- Constraints:
+  - presentation and sequencing only: detection, fingerprint matching, lock thresholds, the stabilizer, the ding, mute persistence and debug frame export are unchanged (DEC-052...062; NFR-006's scan-motion exclusion is unaffected)
+  - no new request field or prompt change; a held-but-uncommitted card never reaches `AskAiRequest` or a trade side's totals
+- Dependencies:
+  - REQ-037
+  - REQ-040
+  - REQ-041
+  - REQ-042
+  - REQ-068
+  - REQ-065
+  - REQ-167
+  - REQ-200
+  - REQ-205
+  - REQ-206
+  - REQ-209
+  - FLOW-006
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30), from the mockup's own "join your question when you close the scanner" pill foot; an earlier pass of this proposal had kept today's add-on-recognition instead, which the owner's gate-review edit (2026-10-01) reversed back to the mockup's rule
+  - built by slice H: `apps/frontend/src/hooks/useScanCapture.ts` (the holding list, the hold-time `canHold` check, commit-on-close), `apps/frontend/src/components/ScanReviewBubble.tsx` (the count pill, the caution note, the "Joins <destination>" foot), `apps/frontend/src/components/ZoneCardPicker.tsx`, `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `apps/frontend/src/components/trade/TradeSide.tsx`, `apps/frontend/src/components/trade/useTradeScan.ts` (the three hosts wiring the ✕ exit box and the pill), `apps/frontend/src/components/ScanDebugOverlay.tsx` (the accent-bordered panel); the mockup's exact three-band viewfinder layout, the breathing guide line, the marching-dash lock outline and the 54px shutter ring are not built in this slice - the existing viewfinder, reticle and Capture button are reused and re-themed, not redrawn, since none of them is behavior the holding list depends on
+
 ### REQ-215
 - Title: Trade Balancer - two piles of gold, a verdict line, New trade, and named sides
 - Priority: medium

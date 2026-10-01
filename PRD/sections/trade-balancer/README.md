@@ -68,11 +68,16 @@ Assistant core loop and changes nothing about it or the AI answer path.
 - Built: each entry carries a chosen **printing** (printing id, set, collector
   number, non-foil `usd`, foil `usd_foil`; the image derives from the printing
   id), a **foil** flag, and a **quantity** ≥ 1. (REQ-065)
-- Built: **scan input** — the existing scan engine identifies the card and the
-  scanned printing (its `Candidate.card_id`, DEC-070) becomes the entry's
-  default printing once its price fetch resolves; the player can change the
-  printing to any other printing of that card if the scanned print is wrong.
-  Scanning is per-side and one camera at a time. (REQ-065, FLOW-009, FLOW-025)
+- Built: **scan input** — the existing scan engine identifies the card and
+  holds it in the scanner's own holding list, shown by a top-right count
+  pill with Remove on each entry; closing the scanner (a square ✕ box above
+  the camera's top-right corner) commits every held card to the side in hold
+  order. The scanned printing (its `Candidate.card_id`, DEC-070) becomes each
+  committed entry's default printing once its price fetch resolves; the
+  player can change the printing to any other printing of that card if the
+  scanned print is wrong. Scanning is per-side and one camera at a time; no
+  duplicate or cap check applies, so every held card commits. (REQ-065,
+  REQ-214, FLOW-009, FLOW-025)
 - Built: **manual search input** — the player finds a card by name via the
   shared `cardMetadata` index (REQ-174); tapping the suggestion fetches that
   card's printings and shows the **printing picker in place of the

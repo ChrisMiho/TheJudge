@@ -10,7 +10,7 @@ import {
 } from "../lib/zoneCards";
 import { useAutocompleteKeyboard } from "../hooks/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "../hooks/useAutocompleteSuggestions";
-import { useScanCapture, type ScanAddOutcome } from "../hooks/useScanCapture";
+import { useScanCapture, type HeldScanEntry, type ScanAddOutcome, type ScanHoldCheck } from "../hooks/useScanCapture";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
 import { CardPresentation } from "./CardPresentation";
@@ -78,9 +78,6 @@ export function ZoneCollectionStep({
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
   const [pendingOwner, setPendingOwner] = useState<PlayerLabel>(activePlayer);
-  // instanceIds auto-added to the active zone during the current scan session; feeds the
-  // top-right review bubble. Resets when the scan screen opens or the zone changes.
-  const [scanSessionInstanceIds, setScanSessionInstanceIds] = useState<string[]>([]);
 
   const activeZone = orderedSelectedZones[activeZoneIndex];
   const activeZoneCards = activeZone ? (zones[activeZone] ?? []) : [];
@@ -116,25 +113,38 @@ export function ZoneCollectionStep({
     onSelect: selectCard
   });
 
+  // REQ-214: the hold-time duplicate/cap check — the same `validateZoneCardAdd`
+  // rule the immediate add always ran, applied the instant a card is recognised
+  // rather than deferred to commit, so a blocked re-scan still surfaces its
+  // message right away. Checked against the zone's current cards *and* anything
+  // already in the holding list but not yet committed, so scanning the same
+  // card twice in one session is blocked exactly when a manual duplicate add
+  // would be.
+  function canHoldInActiveZone(card: CardMetadataItem, held: HeldScanEntry[]): ScanHoldCheck {
+    if (!activeZone) {
+      return { ok: false, message: "No active zone" };
+    }
+    const heldAsZoneCards = held.map((entry) => buildZoneCardFromMetadata(entry.card, entry.scanImageUrl));
+    const candidateCard = buildZoneCardFromMetadata(card);
+    if (activeZone !== "stack") {
+      candidateCard.owner = pendingOwner;
+    }
+    const validation = validateZoneCardAdd([...activeZoneCards, ...heldAsZoneCards], candidateCard, activeZone);
+    return validation.ok ? { ok: true } : { ok: false, message: validation.message };
+  }
+
   const scanCapture = useScanCapture({
     cardMetadata,
-    onScanCandidateSelected: (card, scanImageUrl) => {
-      const outcome = addCardToActiveZone(card, scanImageUrl);
-      if (outcome.added) {
-        const instanceId = outcome.instanceId;
-        if (instanceId) {
-          setScanSessionInstanceIds((ids) => (ids.includes(instanceId) ? ids : [...ids, instanceId]));
-        }
-      }
-      return outcome;
-    }
+    canHold: canHoldInActiveZone,
+    // REQ-214: invoked once per held card when the scanner closes, in hold order —
+    // the zone's own card list only changes at that point, not on recognition.
+    onScanCandidateSelected: (card, scanImageUrl) => addCardToActiveZone(card, scanImageUrl)
   });
   const closeScan = scanCapture.closeScan;
   const isScanOpen = scanCapture.isOpen;
 
   useEffect(() => {
     closeScan();
-    setScanSessionInstanceIds([]);
   }, [activeZone, closeScan]);
 
   function updateZoneCards(zoneId: ZoneId, cards: ZoneCardItem[]): void {
@@ -395,10 +405,10 @@ export function ZoneCollectionStep({
                 convergence: scanCapture.convergence,
                 addConfirmation: scanCapture.addConfirmation,
                 scanDebug: scanCapture.scanDebug,
-                sessionInstanceIds: scanSessionInstanceIds,
+                heldEntries: scanCapture.heldEntries,
+                onRemoveHeld: scanCapture.removeHeld,
                 onOpen: async () => {
                   setSelectedCard(null);
-                  setScanSessionInstanceIds([]);
                   await scanCapture.openScan();
                 },
                 onExitToManual: scanCapture.closeScan,

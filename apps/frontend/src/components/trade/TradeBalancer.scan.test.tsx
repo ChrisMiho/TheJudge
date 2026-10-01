@@ -1,3 +1,4 @@
+import { useCallback, useRef, useState } from "react";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -17,33 +18,64 @@ import { SCAN_CAMERA_UNAVAILABLE_COPY } from "./useTradeScan";
 vi.mock("../../lib/scan/loadScanMap", () => ({ loadScanMap: vi.fn() }));
 
 /**
- * Fake capture hook standing in for the real stabilizer/identifier pipeline. It
- * preserves the contract the trade wiring depends on: `onScanCandidateSelected`
- * fires synchronously inside `identify`, before the ranked printing candidates
- * are returned to the caller.
+ * Fake capture hook standing in for the real stabilizer/identifier pipeline.
+ * REQ-214: it preserves the real hook's holding-list contract — a recognised
+ * card is held (not yet added) until the scanner closes, at which point
+ * `onScanCandidateSelected` fires once per held card, in hold order, with that
+ * card's own ranked identify candidates.
  */
+type HeldEntry = { id: number; card: CardMetadataItem; scanImageUrl: string; candidates: Candidate[] };
 type ScanCaptureOptions = {
   cardMetadata: CardMetadataItem[];
-  onScanCandidateSelected: (card: CardMetadataItem, scanImageUrl: string) => unknown;
+  onScanCandidateSelected: (card: CardMetadataItem, scanImageUrl: string, candidates: Candidate[]) => unknown;
 };
 
 let lockedOracleCard: CardMetadataItem | null = null;
 let frameCandidates: Candidate[] = [];
 let capturedOptions: ScanCaptureOptions | null = null;
-
-const captureIdentify = vi.fn(async (): Promise<IdentifyResult> => {
-  if (lockedOracleCard && capturedOptions) {
-    capturedOptions.onScanCandidateSelected(lockedOracleCard, "");
-  }
-  return { matched: Boolean(lockedOracleCard), was_rotated: false, candidates: frameCandidates };
-});
-const captureOpenScan = vi.fn(async () => undefined);
-const captureCloseScan = vi.fn();
+let heldIdCounter = 0;
 const captureSetCameraStatus = vi.fn();
 
+// REQ-214: a real `useState` inside the mock, so pushing/clearing the holding
+// list re-renders the component the same way the production hook does —
+// mutating a plain module-level array would not.
 vi.mock("../../hooks/useScanCapture", () => ({
   useScanCapture: (options: ScanCaptureOptions) => {
     capturedOptions = options;
+    const [held, setHeld] = useState<HeldEntry[]>([]);
+    const heldRef = useRef<HeldEntry[]>([]);
+    heldRef.current = held;
+
+    const identify = useCallback(async (): Promise<IdentifyResult> => {
+      if (lockedOracleCard) {
+        heldIdCounter += 1;
+        const entry: HeldEntry = {
+          id: heldIdCounter,
+          card: lockedOracleCard,
+          scanImageUrl: "",
+          candidates: frameCandidates
+        };
+        setHeld((current) => [...current, entry]);
+      }
+      return { matched: Boolean(lockedOracleCard), was_rotated: false, candidates: frameCandidates };
+    }, []);
+
+    const closeScan = useCallback(() => {
+      const entries = heldRef.current;
+      setHeld([]);
+      entries.forEach((entry) => {
+        capturedOptions?.onScanCandidateSelected(entry.card, entry.scanImageUrl, entry.candidates);
+      });
+    }, []);
+
+    const removeHeld = useCallback((id: number) => {
+      setHeld((current) => current.filter((entry) => entry.id !== id));
+    }, []);
+
+    const openScan = useCallback(async () => {
+      setHeld([]);
+    }, []);
+
     return {
       isOpen: true,
       isLoading: false,
@@ -51,9 +83,11 @@ vi.mock("../../hooks/useScanCapture", () => ({
       convergence: undefined,
       addConfirmation: null,
       scanDebug: null,
-      openScan: captureOpenScan,
-      closeScan: captureCloseScan,
-      identify: captureIdentify,
+      heldEntries: held,
+      removeHeld,
+      openScan,
+      closeScan,
+      identify,
       setCameraStatus: captureSetCameraStatus,
       recordAcquisitionDiagnostic: vi.fn()
     };
@@ -166,8 +200,9 @@ async function openScan(
   });
 }
 
-/** Drives one identify frame that locks on `oracleId` with the given candidates,
- * then waits for that entry's price fetch to resolve (FLOW-025). */
+/** Drives one identify frame that recognises `oracleId` with the given candidates.
+ * REQ-214: this only adds the card to the scanner's own holding list — it does
+ * not reach the side's entries until the scanner closes (`closeSideScan`). */
 async function scanFrame(
   user: ReturnType<typeof userEvent.setup>,
   sideId: "A" | "B",
@@ -182,8 +217,17 @@ async function scanFrame(
   await user.click(within(side(sideId)).getByRole("button", { name: "Test scan frame" }));
   lockedOracleCard = null;
   frameCandidates = [];
+}
+
+/** Closes the scanner (the ✕ exit box), committing every held card to the side
+ * in one step (REQ-214), then waits for each entry's price fetch to resolve. */
+async function closeSideScan(
+  user: ReturnType<typeof userEvent.setup>,
+  sideId: "A" | "B"
+): Promise<void> {
+  await user.click(within(side(sideId)).getByRole("button", { name: "Exit scan" }));
   await waitFor(() => {
-    expect(within(side(sideId)).queryByText("Loading price…")).not.toBeInTheDocument();
+    expect(screen.queryByText("Loading price…")).not.toBeInTheDocument();
   });
 }
 
@@ -193,6 +237,7 @@ describe("Frontend - Trade", () => {
       clearCardPrintingsCache();
       vi.stubGlobal("fetch", makeFetchMock());
       loadScanMapMock.mockResolvedValue(scanMap);
+      heldIdCounter = 0;
     });
 
     afterEach(() => {
@@ -201,6 +246,28 @@ describe("Frontend - Trade", () => {
       capturedOptions = null;
       vi.unstubAllGlobals();
       vi.clearAllMocks();
+    });
+
+    it("REQ-214: a scanned card waits in the holding list and joins the side only when the scanner closes", async () => {
+      const user = userEvent.setup();
+      await renderBalancer();
+
+      await openScan(user, "A");
+      await scanFrame(user, "A", "oracle-bolt", "Lightning Bolt", [
+        { card_id: "bolt-m10", distance: 12 },
+        { card_id: "bolt-2ed", distance: 40 }
+      ]);
+
+      // Held, not yet added: the side has no entry and nothing was committed.
+      expect(within(side("A")).queryByRole("listitem")).not.toBeInTheDocument();
+      expect(capturedOptions).not.toBeNull();
+
+      await closeSideScan(user, "A");
+
+      const entry = within(side("A")).getByRole("listitem");
+      expect(entry).toHaveTextContent("Magic 2010 (M10) #146");
+      expect(sideTotalText("A")).toBe("$4.00");
+      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Side A +$4.00");
     });
 
     it("adds an entry defaulting to the scanned printing, priced from the fetched list", async () => {
@@ -212,6 +279,7 @@ describe("Frontend - Trade", () => {
         { card_id: "bolt-m10", distance: 12 },
         { card_id: "bolt-2ed", distance: 40 }
       ]);
+      await closeSideScan(user, "A");
 
       const entry = within(side("A")).getByRole("listitem");
       expect(entry).toHaveTextContent("Magic 2010 (M10) #146");
@@ -230,14 +298,13 @@ describe("Frontend - Trade", () => {
       await scanFrame(user, "A", "oracle-bolt", "Lightning Bolt", [
         { card_id: "bolt-m10", distance: 9 }
       ]);
+      await closeSideScan(user, "A");
 
       // Duplicates are allowed: no stack duplicate-block, no 10-card cap.
       expect(
         within(side("A")).getAllByRole("button", { name: /^Remove Lightning Bolt/ })
       ).toHaveLength(2);
       expect(sideTotalText("A")).toBe("$8.00");
-
-      await user.click(within(side("A")).getByRole("button", { name: "Exit scan" }));
 
       const [firstFoil] = within(side("A")).getAllByLabelText(
         "Toggle foil for Lightning Bolt (Side A)"
@@ -258,6 +325,23 @@ describe("Frontend - Trade", () => {
       expect(sideTotalText("A")).toBe("$4.00");
     });
 
+    it("drops a held card with Remove in the pill before the scanner closes, adding nothing for it", async () => {
+      const user = userEvent.setup();
+      await renderBalancer();
+
+      await openScan(user, "A");
+      await scanFrame(user, "A", "oracle-bolt", "Lightning Bolt", [
+        { card_id: "bolt-m10", distance: 12 }
+      ]);
+
+      await user.click(within(side("A")).getByRole("button", { name: /Scanned this session: 1/i }));
+      await user.click(within(side("A")).getByRole("button", { name: /Remove Lightning Bolt/i }));
+      await closeSideScan(user, "A");
+
+      expect(within(side("A")).queryByRole("listitem")).not.toBeInTheDocument();
+      expect(sideTotalText("A")).toBe("$0.00");
+    });
+
     it("re-prices a scanned entry when its printing is changed", async () => {
       const user = userEvent.setup();
       await renderBalancer();
@@ -266,9 +350,9 @@ describe("Frontend - Trade", () => {
       await scanFrame(user, "B", "oracle-bolt", "Lightning Bolt", [
         { card_id: "bolt-m10", distance: 12 }
       ]);
+      await closeSideScan(user, "B");
       expect(sideTotalText("B")).toBe("$4.00");
 
-      await user.click(within(side("B")).getByRole("button", { name: "Exit scan" }));
       await user.click(
         within(side("B")).getByLabelText("Change printing for Lightning Bolt (Side B)")
       );
@@ -287,6 +371,7 @@ describe("Frontend - Trade", () => {
         { card_id: "bolt-promo", distance: 8 },
         { card_id: "bolt-m10", distance: 30 }
       ]);
+      await closeSideScan(user, "A");
 
       const entry = within(side("A")).getByRole("listitem");
       expect(entry).toHaveTextContent("Unlimited Edition (2ED) #162");

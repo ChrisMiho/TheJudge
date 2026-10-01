@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ZoneCardPicker } from "./ZoneCardPicker";
-import type { ScanConvergence } from "../hooks/useScanCapture";
+import type { HeldScanEntry, ScanConvergence } from "../hooks/useScanCapture";
 import { clearCardDetailCache } from "../lib/cardDetail";
 import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
 
@@ -65,6 +65,10 @@ function makeMetadataCard(name: string, imageId: string): CardMetadataItem {
   };
 }
 
+function makeHeldEntry(id: number, cardId: string, name: string): HeldScanEntry {
+  return { id, card: { cardId, name, imageId: "", colors: [] }, scanImageUrl: "", candidates: [] };
+}
+
 function renderPicker(
   scanOverrides: Partial<Parameters<typeof ZoneCardPicker>[0]["scan"]> = {},
   pickerOverrides: {
@@ -107,7 +111,8 @@ function renderPicker(
         convergence: searching,
         addConfirmation: null,
         scanDebug: null,
-        sessionInstanceIds: [],
+        heldEntries: [],
+        onRemoveHeld: () => undefined,
         onOpen: () => undefined,
         onExitToManual,
         identify: () => ({ matched: false, was_rotated: false, candidates: [] }),
@@ -163,16 +168,14 @@ describe("ZoneCardPicker scan focus", () => {
     expect(document.querySelector(".zone-card-grid")).toBeNull();
   });
 
-  it("renders Exit scan above and outside the camera overlay", () => {
+  it("renders Exit scan as a box above the camera's top-right corner (REQ-214)", () => {
     renderPicker({ isOpen: true });
     const exitBtn = screen.getByRole("button", { name: "Exit scan" });
     const camera = screen.getByTestId("scan-camera");
     const cameraOverlay = camera.parentElement;
 
-    expect(exitBtn.compareDocumentPosition(camera) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(cameraOverlay).not.toContainElement(exitBtn);
-    expect(exitBtn).not.toHaveClass("absolute", "right-3", "top-3", "z-20");
-    expect(exitBtn).toHaveClass("min-h-10");
+    expect(cameraOverlay).toContainElement(exitBtn);
+    expect(exitBtn).toHaveClass("absolute", "right-3", "top-3");
   });
 
   it("Exit scan closes scan when clicked", async () => {
@@ -534,66 +537,59 @@ describe("ZoneCardPicker card grid", () => {
   });
 });
 
-describe("ZoneCardPicker scan review bubble", () => {
-  it("does not render the bubble when nothing was scanned this session", () => {
-    renderPicker({ sessionInstanceIds: [] }, { cards: [makeZoneCard("opt", "Opt")] });
+describe("ZoneCardPicker scan review bubble (REQ-214 holding list)", () => {
+  it("does not render the bubble when the holding list is empty", () => {
+    renderPicker({ heldEntries: [] }, { cards: [makeZoneCard("opt", "Opt")] });
     expect(screen.queryByLabelText(/^Scanned this session:/)).not.toBeInTheDocument();
   });
 
-  it("counts this-session adds and expands to the scanned cards", async () => {
+  it("counts the holding list and expands to the held cards, naming the destination", async () => {
     const user = userEvent.setup();
-    const optCard = makeZoneCard("opt", "Opt", { instanceId: "iid-opt" });
-    const boltCard = makeZoneCard("bolt", "Lightning Bolt", { instanceId: "iid-bolt" });
-    const manualCard = makeZoneCard("manual", "Counterspell");
     renderPicker(
-      { sessionInstanceIds: ["iid-opt", "iid-bolt"] },
-      { cards: [optCard, boltCard, manualCard] }
+      { heldEntries: [makeHeldEntry(1, "opt", "Opt"), makeHeldEntry(2, "bolt", "Lightning Bolt")] },
+      { zoneId: "stack" }
     );
 
     const counter = screen.getByLabelText("Scanned this session: 2");
     expect(counter).toBeInTheDocument();
-    expect(counter.parentElement).toHaveClass("absolute", "right-3", "top-12", "z-10");
-    // Counter reflects only this-session scans, not the manually added card.
+    expect(counter.parentElement?.parentElement).toHaveClass("absolute", "right-3", "top-12", "z-10");
+    // Counter reflects only the holding list, independent of the zone's own cards.
     expect(within(counter).getByText("2")).toBeInTheDocument();
 
     await user.click(counter);
     expect(screen.getByText("Added this session")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Opt from scan review" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Lightning Bolt from scan review" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Remove Counterspell from scan review" })).not.toBeInTheDocument();
+    expect(screen.getByText("Joins the Stack when you close the scanner")).toBeInTheDocument();
   });
 
   it("renders the review bubble counter with accent palette tokens, not a fixed hue", () => {
-    renderPicker(
-      { sessionInstanceIds: ["iid-opt"] },
-      { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })] }
-    );
+    renderPicker({ heldEntries: [makeHeldEntry(1, "opt", "Opt")] });
     const bubble = screen.getByLabelText("Scanned this session: 1");
     expect(bubble).toHaveClass("bg-accent/90", "text-accent-contrast");
     expect(bubble.className).not.toMatch(/\b(sky|emerald)-/);
   });
 
-  it("removes a scanned card in one tap via the existing removal path with no confirmation", async () => {
+  it("removing a held card calls onRemoveHeld with its holding-list id and nothing else", async () => {
     const user = userEvent.setup();
-    const onRemoveCard = vi.fn();
+    const onRemoveHeld = vi.fn();
     const confirmSpy = vi.spyOn(window, "confirm");
-    renderPicker(
-      { sessionInstanceIds: ["iid-opt"] },
-      { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })], onRemoveCard }
-    );
+    renderPicker({ heldEntries: [makeHeldEntry(7, "opt", "Opt")], onRemoveHeld });
 
     await user.click(screen.getByLabelText("Scanned this session: 1"));
     await user.click(screen.getByRole("button", { name: "Remove Opt from scan review" }));
 
-    expect(onRemoveCard).toHaveBeenCalledTimes(1);
-    expect(onRemoveCard).toHaveBeenCalledWith("iid-opt");
+    expect(onRemoveHeld).toHaveBeenCalledTimes(1);
+    expect(onRemoveHeld).toHaveBeenCalledWith(7);
     expect(confirmSpy).not.toHaveBeenCalled();
     confirmSpy.mockRestore();
   });
 
-  it("drops a card from the bubble once it leaves the zone list (live update)", () => {
-    renderPicker({ sessionInstanceIds: ["iid-opt"] }, { cards: [] });
-    expect(screen.queryByLabelText(/^Scanned this session:/)).not.toBeInTheDocument();
+  it("the holding list is independent of the zone's own card list (nothing committed until close)", () => {
+    renderPicker({ heldEntries: [makeHeldEntry(1, "opt", "Opt")] }, { cards: [] });
+    // The held card shows in the pill even though the zone's own list (`cards`) is empty —
+    // it has not joined the zone yet.
+    expect(screen.getByLabelText("Scanned this session: 1")).toBeInTheDocument();
   });
 });
 });

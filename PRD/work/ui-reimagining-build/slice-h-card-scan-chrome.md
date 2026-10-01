@@ -1,6 +1,6 @@
 # Slice H — Card scan chrome, with a holding list
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -59,30 +59,30 @@ together with the code:
 
 ## Acceptance criteria
 
-- [ ] H1. `npm run quality:check` passes.
-- [ ] H2. `npm --workspace apps/frontend run test` passes.
-- [ ] H3. A recognised card is added to the scanner's own holding list, not
+- [x] H1. `npm run quality:check` passes.
+- [x] H2. `npm --workspace apps/frontend run test` passes.
+- [x] H3. A recognised card is added to the scanner's own holding list, not
       immediately to the zone or trade side; the count pill reflects the
       holding list's size.
-- [ ] H4. Closing the scanner moves every held card into the destination
+- [x] H4. Closing the scanner moves every held card into the destination
       (zone or trade side) in one step.
-- [ ] H5. The ✕ exit control keeps the accessible name "Exit scan"; the
+- [x] H5. The ✕ exit control keeps the accessible name "Exit scan"; the
       shutter keeps "Capture" (A12).
-- [ ] H6. Detection, lock, and the ding are observably unchanged (same
+- [x] H6. Detection, lock, and the ding are observably unchanged (same
       component, re-themed only — no change to `lib/scan/detection` or
       `lib/scan/identification`).
-- [ ] H7. `PRD/sections/` carries REQ-214 (owner-edited holding-list
+- [x] H7. `PRD/sections/` carries REQ-214 (owner-edited holding-list
       wording) by intent.
-- [ ] H8 (manual). REQ-202 pair: Life Tracker screenshot before/after this
+- [x] H8 (manual). REQ-202 pair: Life Tracker screenshot before/after this
       slice's scanner chrome theming, at 390×844 and 1440×900, saved to
       `docs/design/ui-reimagining/build-screenshots/h/`.
-- [ ] H9 (manual). Browser scenario at 390×844: scan two cards into In-depth
+- [x] H9 (manual). Browser scenario at 390×844: scan two cards into In-depth
       details' Cards station without closing the scanner — both appear only
       in the holding list (count pill = 2); close the scanner — both land
       in the destination zone picker.
-- [ ] H10 (manual). Browser scenario: the same holding-then-close behaviour
+- [x] H10 (manual). Browser scenario: the same holding-then-close behaviour
       repeated with Trade Balancer as the destination.
-- [ ] H11 (manual). Cleanup evidence recorded: browser closed, owned
+- [x] H11 (manual). Cleanup evidence recorded: browser closed, owned
       servers stopped, ports released, capture output path named.
 
 ## Verification

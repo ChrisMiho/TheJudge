@@ -56,22 +56,28 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
   With no card attached there is no stage. (REQ-206)
 - Built: card input is optional and bounded to at most 10 cards (REQ-167 as
   amended). The player adds each card by typed autocomplete search
-  (REQ-001/REQ-002 behavior) or by camera scan (the shared FLOW-006 engine);
-  each add resolves to one oracle-level `CardMetadataItem`, placed on the
-  stage with its name, image, and color ring immediately; its descriptive
-  block (oracle text and full metadata) loads on demand by oracle id
-  (REQ-174, REQ-175, FLOW-024) behind a brief loading state before submit,
-  and can be removed from the stage's front position. An add attempted past
-  the cap is blocked and a stated limit message is shown to the player,
-  mirroring the existing bounded-add UX pattern (`ScanAddOutcome`, the
-  In-Depth zone-collection strip). With zero or one card attached, behavior
-  is unchanged in shape from before REQ-167. There are no zones, stack,
-  phase, or per-card enrichment-editing controls. (DEC-107, REQ-073,
-  REQ-167, REQ-206, FLOW-006, FLOW-011)
+  (REQ-001/REQ-002 behavior), which places it on the stage immediately, or by
+  camera scan (the shared FLOW-006 engine), which holds it in the scanner's
+  own holding list until the scanner closes, when every held card joins the
+  stage in hold order (REQ-214); either way each add resolves to one
+  oracle-level `CardMetadataItem`, with its name, image, and color ring shown
+  once on the stage. Its descriptive block (oracle text and full metadata)
+  loads on demand by oracle id (REQ-174, REQ-175, FLOW-024) behind a brief
+  loading state before submit, and can be removed from the stage's front
+  position. An add — typed or scanned — attempted past the cap, or of a card
+  already attached or already held, is blocked and a stated limit message is
+  shown to the player immediately, mirroring the existing bounded-add UX
+  pattern (`ScanAddOutcome`, the In-Depth zone-collection strip). With zero or
+  one card attached, behavior is unchanged in shape from before REQ-167.
+  There are no zones, stack, phase, or per-card enrichment-editing controls.
+  (DEC-107, REQ-073, REQ-167, REQ-206, REQ-214, FLOW-006, FLOW-011)
 - Built: scan here resolves to exactly one card per scan and is
   presentation-only at the printing level — the scanned printing's art never
-  reaches the request, prompt, or rulings; identity stays oracle-level.
-  (DEC-053, REQ-073)
+  reaches the request, prompt, or rulings; identity stays oracle-level. A
+  held-but-uncommitted scanned card is not yet one of the attached cards and
+  is not sent if the player submits without closing the scanner first — the
+  scanner's own Exit scan box is the only commit path (REQ-214). (DEC-053,
+  REQ-073, REQ-214)
 
 ### General rules topics browse
 

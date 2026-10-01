@@ -53,6 +53,8 @@ function mockScanCapture(isOpen: boolean): void {
     scanAcquisitionDiagnostic: null,
     blockedNotice: null,
     addConfirmation: null,
+    heldEntries: [],
+    removeHeld: vi.fn(),
     openScan: vi.fn(),
     closeScan: vi.fn(),
     rescan: vi.fn(),

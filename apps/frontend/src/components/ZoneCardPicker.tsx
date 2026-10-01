@@ -4,7 +4,7 @@ import { CardSelectionPreview } from "./CardSelectionPreview";
 import { ScanCameraSurface, type ScanCameraStatus } from "./ScanCameraSurface";
 import { ScanReviewBubble } from "./ScanReviewBubble";
 import { ZoneCardMenu } from "./ZoneCardMenu";
-import type { ScanAddConfirmation, ScanConvergence, ScanDebugMetrics } from "../hooks/useScanCapture";
+import type { HeldScanEntry, ScanAddConfirmation, ScanConvergence, ScanDebugMetrics } from "../hooks/useScanCapture";
 import type { AcquisitionFrameDiagnostic } from "../lib/scan/acquisitionDiagnostics";
 import type { IdentifyResult, RgbImage } from "../lib/scan/types";
 import { getCardIdentityRingStyle } from "../lib/cardIdentityRing";
@@ -21,8 +21,9 @@ type ZoneCardPickerScanProps = {
   convergence: ScanConvergence;
   addConfirmation: ScanAddConfirmation | null;
   scanDebug: ScanDebugMetrics | null;
-  /** instanceIds auto-added to this zone during the current scan session (review bubble). */
-  sessionInstanceIds: string[];
+  /** REQ-214: the scanner's own holding list for this session — not yet in this zone. */
+  heldEntries: HeldScanEntry[];
+  onRemoveHeld: (id: number) => void;
   onOpen: () => void | Promise<void>;
   onExitToManual: () => void;
   identify: (image: RgbImage) => IdentifyResult | Promise<IdentifyResult>;
@@ -102,14 +103,6 @@ export function ZoneCardPicker({
   const [dragOffsetX, setDragOffsetX] = useState(0);
   const shelfRef = useRef<HTMLDivElement>(null);
   const dragRef = useRef<DragState | null>(null);
-
-  // Derive the review-bubble cards from the live zone list + this-session id set,
-  // so removals (here or in the main list) drop out automatically — no scan-only store.
-  const scanSessionCards = scan
-    ? scan.sessionInstanceIds
-        .map((instanceId) => cards.find((card) => card.instanceId === instanceId))
-        .filter((card): card is ZoneCardItem => Boolean(card))
-    : [];
 
   function resolveInstanceId(card: ZoneCardItem): string {
     return card.instanceId ?? card.cardId;
@@ -231,29 +224,36 @@ export function ZoneCardPicker({
               Loading scan data...
             </p>
           ) : (
-            <div className="space-y-2">
-              <div className="flex min-h-10 items-center justify-end">
-                <button
-                  type="button"
-                  onClick={scan.onExitToManual}
-                  className="min-h-10 rounded-lg border border-zinc-600 bg-zinc-950/60 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-                >
-                  Exit scan
-                </button>
-              </div>
-              <div className="relative">
-                <ScanCameraSurface
-                  onCapture={() => undefined}
-                  identify={scan.identify}
-                  onStatusChange={scan.onCameraStatusChange}
-                  onAcquisitionDiagnostic={scan.onAcquisitionDiagnostic}
-                  convergence={scan.convergence}
-                  confirmation={scan.addConfirmation}
-                  debug={scan.scanDebug}
-                  autoScanFps={3}
-                />
-                <ScanReviewBubble cards={scanSessionCards} onRemove={onRemoveCard} />
-              </div>
+            <div className="relative">
+              <ScanCameraSurface
+                onCapture={() => undefined}
+                identify={scan.identify}
+                onStatusChange={scan.onCameraStatusChange}
+                onAcquisitionDiagnostic={scan.onAcquisitionDiagnostic}
+                convergence={scan.convergence}
+                confirmation={scan.addConfirmation}
+                debug={scan.scanDebug}
+                autoScanFps={3}
+              />
+              {/* REQ-214: a box with an ✕ above the camera's top-right corner — the only
+                  way out; closing commits the holding list below to this zone. */}
+              <button
+                type="button"
+                aria-label="Exit scan"
+                onClick={scan.onExitToManual}
+                className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-950/70 text-sm font-semibold text-zinc-200 shadow transition hover:bg-zinc-800"
+              >
+                <span aria-hidden="true">✕</span>
+              </button>
+              <ScanReviewBubble
+                entries={scan.heldEntries.map((entry) => ({
+                  id: entry.id,
+                  card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
+                  colors: entry.card.colors
+                }))}
+                onRemove={scan.onRemoveHeld}
+                destinationLabel={`the ${ZONE_LABELS[zoneId]}`}
+              />
             </div>
           )}
           {scan.error && (

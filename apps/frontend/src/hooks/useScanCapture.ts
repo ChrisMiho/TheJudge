@@ -71,11 +71,29 @@ export type ScanDebugMetrics = {
 };
 
 /**
- * One-shot signal emitted on each successful auto-add so the UI can fire a
- * momentary confirmation (thumbs-up popup). `id` is monotonic so the same card
- * added twice still re-triggers the effect.
+ * One-shot signal emitted on each successful recognition so the UI can fire a
+ * momentary confirmation (thumbs-up popup) and the ding. `id` is monotonic so
+ * the same card recognised twice still re-triggers the effect. Recognition no
+ * longer implies the card reached its destination (REQ-214) — see
+ * `HeldScanEntry` below.
  */
 export type ScanAddConfirmation = { id: number; cardName: string };
+
+/**
+ * REQ-214: a recognised card waits here, in the scanner's own holding list,
+ * until the scanner closes. `candidates` is the identify-result ranking at
+ * the moment of lock, carried along so a host that needs it at commit time
+ * (Trade Balancer's printing resolution) does not need to re-derive it from a
+ * frame that is long gone by the time the scanner closes. `id` is monotonic
+ * and scanner-local; it has no relationship to the destination's own
+ * `instanceId` scheme.
+ */
+export type HeldScanEntry = {
+  id: number;
+  card: CardMetadataItem;
+  scanImageUrl: string;
+  candidates: Candidate[];
+};
 
 const INITIAL_CONVERGENCE: ScanConvergence = {
   phase: "searching",
@@ -100,9 +118,30 @@ export type UseScanCaptureDependencies = {
   createIdentifier: (db: HashDb) => ScanIdentifier;
 };
 
+export type ScanHoldCheck = { ok: true } | { ok: false; message: string };
+
 type UseScanCaptureOptions = {
   cardMetadata: CardMetadataItem[];
-  onScanCandidateSelected: (card: CardMetadataItem, scanImageUrl: string) => ScanAddOutcome;
+  /**
+   * REQ-214: called the instant a card is recognised, before it joins the
+   * holding list — the same feedback timing a duplicate-card or cap block
+   * always had, now applied to the hold rather than the (deferred) commit.
+   * Return `{ ok: false, message }` to block the add (surfaced via
+   * `blockedNotice`, scanning resumes) without growing the holding list.
+   * Omit to accept every recognition unconditionally — Trade Balancer's
+   * duplicates-allowed, no-cap case.
+   */
+  canHold?: (card: CardMetadataItem, held: HeldScanEntry[]) => ScanHoldCheck;
+  /**
+   * REQ-214: invoked once per held card, in hold order, when the scanner
+   * closes — not when the card is recognised. `candidates` is that card's
+   * identify-result ranking at the moment it was held.
+   */
+  onScanCandidateSelected: (
+    card: CardMetadataItem,
+    scanImageUrl: string,
+    candidates: Candidate[]
+  ) => ScanAddOutcome;
   dependencies?: UseScanCaptureDependencies;
 };
 
@@ -125,6 +164,7 @@ const ACQUISITION_THRESHOLDS = {
 
 export function useScanCapture({
   cardMetadata,
+  canHold,
   onScanCandidateSelected,
   dependencies = defaultDependencies
 }: UseScanCaptureOptions) {
@@ -141,6 +181,12 @@ export function useScanCapture({
     useState<AcquisitionFrameDiagnostic | null>(null);
   const [blockedNotice, setBlockedNotice] = useState<string | null>(null);
   const [addConfirmation, setAddConfirmation] = useState<ScanAddConfirmation | null>(null);
+  // REQ-214: the scanner-local holding list. Populated on recognition, cleared on
+  // open and flushed (committed via onScanCandidateSelected, in hold order) on close.
+  const [heldEntries, setHeldEntries] = useState<HeldScanEntry[]>([]);
+  const heldEntriesRef = useRef<HeldScanEntry[]>([]);
+  heldEntriesRef.current = heldEntries;
+  const heldIdRef = useRef(0);
   const addCounterRef = useRef(0);
   const resourcesRef = useRef<ScanResources | null>(null);
   const resourcesPromiseRef = useRef<Promise<ScanResources> | null>(null);
@@ -148,6 +194,8 @@ export function useScanCapture({
   const frameSelectorRef = useRef<FrameSelector>(new FrameSelector(FRAME_SELECTOR_WINDOW_SIZE));
   const onSelectRef = useRef(onScanCandidateSelected);
   onSelectRef.current = onScanCandidateSelected;
+  const canHoldRef = useRef(canHold);
+  canHoldRef.current = canHold;
   const noCardStatusCountRef = useRef(0);
   const acquisitionDiagnosticRef = useRef<AcquisitionFrameDiagnostic | null>(null);
 
@@ -227,6 +275,7 @@ export function useScanCapture({
     setIsOpen(true);
     setIsLoading(true);
     setError(null);
+    setHeldEntries([]);
     resetScanState();
     try {
       await ensureResources();
@@ -238,11 +287,31 @@ export function useScanCapture({
     }
   }, [ensureResources, resetScanState]);
 
+  /**
+   * REQ-214: commits every held card to its destination, in hold order, then
+   * closes. A card the destination's own validation rejects (cap, duplicate)
+   * is dropped with its message surfaced via `blockedNotice`; it does not
+   * block the rest of the list from committing.
+   */
   const closeScan = useCallback((): void => {
+    const entries = heldEntriesRef.current;
+    setHeldEntries([]);
     setIsOpen(false);
     setCameraStatus("idle");
+    // Reset first: it clears blockedNotice to null, and a commit failure below
+    // (if any) must be the thing that is still visible afterward, not clobbered by it.
     resetScanState();
+    entries.forEach((entry) => {
+      const outcome = onSelectRef.current(entry.card, entry.scanImageUrl, entry.candidates);
+      if (outcome && outcome.added === false) {
+        setBlockedNotice(outcome.message);
+      }
+    });
   }, [resetScanState, setCameraStatus]);
+
+  const removeHeld = useCallback((id: number): void => {
+    setHeldEntries((entries) => entries.filter((entry) => entry.id !== id));
+  }, []);
 
   /** Discard the current lock-in and resume the auto-scan loop. */
   const rescan = useCallback((): void => {
@@ -403,11 +472,20 @@ export function useScanCapture({
         const locked = lockedEntry?.card ?? null;
         if (locked) {
           const scanImageUrl = lockedEntry?.scanImageUrl ?? deriveCardImageUrl(locked.imageId);
-          const outcome = onSelectRef.current(locked, scanImageUrl);
+          // REQ-214: the host's own duplicate/cap rule is checked now, at the
+          // same moment it always ran — before the holding list grows, not
+          // deferred to commit. Trade Balancer passes no `canHold`, so every
+          // recognition is accepted (duplicates allowed, no cap).
+          const check = canHoldRef.current?.(locked, heldEntriesRef.current) ?? { ok: true as const };
           resetScanState();
-          if (outcome && outcome.added === false) {
-            setBlockedNotice(outcome.message);
+          if (!check.ok) {
+            setBlockedNotice(check.message);
           } else {
+            heldIdRef.current += 1;
+            setHeldEntries((entries) => [
+              ...entries,
+              { id: heldIdRef.current, card: locked, scanImageUrl, candidates: votingCandidates }
+            ]);
             addCounterRef.current += 1;
             setAddConfirmation({ id: addCounterRef.current, cardName: locked.name });
           }
@@ -462,7 +540,11 @@ export function useScanCapture({
 
   const acceptCandidate = useCallback(
     (card: CardMetadataItem): void => {
-      onSelectRef.current(card, deriveCardImageUrl(card.imageId));
+      heldIdRef.current += 1;
+      setHeldEntries((entries) => [
+        ...entries,
+        { id: heldIdRef.current, card, scanImageUrl: deriveCardImageUrl(card.imageId), candidates: [] }
+      ]);
       resetScanState();
     },
     [resetScanState]
@@ -489,6 +571,8 @@ export function useScanCapture({
     scanAcquisitionDiagnostic,
     blockedNotice,
     addConfirmation,
+    heldEntries,
+    removeHeld,
     openScan,
     closeScan,
     rescan,

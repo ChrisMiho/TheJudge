@@ -196,13 +196,17 @@ retrieval/combo machinery that other specs own.
   `buildAskAiRequest` serialization boundary so the `.strict()` payload schema is
   unchanged, and it never enables duplicate stack cards. (DEC-082, REQ-061)
 - Built: the camera scanner is an optional alternate input into the current zone
-  (owned by `sections/scan/`, FLOW-006): a confident lock auto-adds the scanned
-  card through the same add path (owner, duplicate-stack block, stack cap,
-  `ZoneCardItem` output). While scan is open, zone-collection search, the card
-  list, and outer staged-flow navigation are hidden; **Exit scan** returns to
-  manual collection. Scan resolves to oracle-level identity; the scanned
+  (owned by `sections/scan/`, FLOW-006): a confident lock holds the scanned card
+  in the scanner's own holding list, not the zone's card list — the same
+  duplicate-stack/stack-cap check a manual add runs is checked the instant the
+  card is recognised, against the zone's cards and anything already held.
+  Closing the scanner (**Exit scan**, a square ✕ box above the camera's
+  top-right corner) commits every held card through the same add path (owner,
+  `ZoneCardItem` output) in one step and returns to manual collection. While
+  scan is open, zone-collection search, the card list, and outer staged-flow
+  navigation are hidden. Scan resolves to oracle-level identity; the scanned
   printing's art rides as presentation only. (DEC-050 via scan spec, DEC-070,
-  REQ-061)
+  REQ-061, REQ-214)
 
 ### Step 4 — Enrichment
 

@@ -3,7 +3,7 @@ import { useAutocompleteKeyboard } from "../../../hooks/useAutocompleteKeyboard"
 import { useAutocompleteSuggestions } from "../../../hooks/useAutocompleteSuggestions";
 import { useAskAiSubmitOrchestration } from "../../../hooks/useAskAiSubmitOrchestration";
 import { useAutoGrowTextarea } from "../../../hooks/useAutoGrowTextarea";
-import { useScanCapture } from "../../../hooks/useScanCapture";
+import { useScanCapture, type ScanHoldCheck } from "../../../hooks/useScanCapture";
 import { buildLookupAskAiRequest } from "../../../lib/contextFlow";
 import type { ConversationHistoryEntry, LookupDraftState } from "../../../lib/conversationHistory/persistence";
 import {
@@ -29,6 +29,7 @@ import { ConversationHistoryDrawer } from "../../ConversationHistoryDrawer";
 import { ConversationWorkspace } from "../../ConversationWorkspace";
 import { PageShell } from "../../PageShell";
 import { ScanCameraSurface } from "../../ScanCameraSurface";
+import { ScanReviewBubble } from "../../ScanReviewBubble";
 import { StagedStepHeader } from "../../StagedStepHeader";
 import { StepEyebrow } from "../../StepEyebrow";
 
@@ -283,14 +284,38 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
     suggestions,
     onSelect: selectCard
   });
+  // REQ-214: the hold-time duplicate/cap check — the same rule the immediate
+  // add always ran, applied the instant a card is recognised rather than
+  // deferred to commit, so a blocked re-scan or a cap hit still surfaces its
+  // message right away. Checked against the staged cards *and* anything
+  // already in the holding list but not yet committed.
+  function canHoldLookupCard(card: CardMetadataItem, held: { card: CardMetadataItem }[]): ScanHoldCheck {
+    const alreadyStaged =
+      selectedCards.some((existing) => existing.cardId === card.cardId) ||
+      held.some((entry) => entry.card.cardId === card.cardId);
+    if (alreadyStaged) {
+      const message = `${card.name} is already attached to this question.`;
+      setCardLimitMessage(message);
+      return { ok: false, message };
+    }
+    if (selectedCards.length + held.length >= MAX_LOOKUP_CARDS) {
+      const message = `You've added ${MAX_LOOKUP_CARDS} cards, the most one Quick Question can use. Remove a card below to add another.`;
+      setCardLimitMessage(message);
+      return { ok: false, message };
+    }
+    setCardLimitMessage(null);
+    return { ok: true };
+  }
+
   const scanCapture = useScanCapture({
     cardMetadata,
+    canHold: canHoldLookupCard,
+    // REQ-214: invoked once per held card when the scanner closes, in hold order —
+    // scanning no longer auto-exits after one card; the player can scan up to the
+    // lookup cap before closing, same as In-depth's zones and Trade Balancer.
     onScanCandidateSelected: (card) => {
       const outcome = addLookupCard(card);
       setCardLimitMessage(outcome.added ? null : outcome.message);
-      if (outcome.added) {
-        closeScanRef.current();
-      }
       return outcome;
     }
   });
@@ -530,16 +555,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
               Loading scan data...
             </p>
           ) : (
-            <>
-              <div className="flex min-h-10 items-center justify-end">
-                <button
-                  type="button"
-                  onClick={scanCapture.closeScan}
-                  className="min-h-10 rounded-lg border border-zinc-600 bg-zinc-950/60 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-                >
-                  Exit scan
-                </button>
-              </div>
+            <div className="relative">
               <ScanCameraSurface
                 onCapture={() => undefined}
                 identify={scanCapture.identify}
@@ -550,7 +566,26 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                 debug={scanCapture.scanDebug}
                 autoScanFps={3}
               />
-            </>
+              {/* REQ-214: a box with an ✕ above the camera's top-right corner — the only
+                  way out; closing commits the holding list below to this question. */}
+              <button
+                type="button"
+                aria-label="Exit scan"
+                onClick={scanCapture.closeScan}
+                className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-950/70 text-sm font-semibold text-zinc-200 shadow transition hover:bg-zinc-800"
+              >
+                <span aria-hidden="true">✕</span>
+              </button>
+              <ScanReviewBubble
+                entries={scanCapture.heldEntries.map((entry) => ({
+                  id: entry.id,
+                  card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
+                  colors: entry.card.colors
+                }))}
+                onRemove={scanCapture.removeHeld}
+                destinationLabel="your question"
+              />
+            </div>
           )}
           {scanCapture.error && (
             <p className="motion-error rounded-xl border border-red-500/50 bg-red-950/40 px-3 py-2 text-sm text-red-100">

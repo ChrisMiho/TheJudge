@@ -11,6 +11,7 @@ import {
 } from "../../lib/trade/pricing";
 import type { CardMetadataItem } from "../../types";
 import { ScanCameraSurface } from "../ScanCameraSurface";
+import { ScanReviewBubble } from "../ScanReviewBubble";
 import { PrintingPicker } from "./PrintingPicker";
 import { TradeEntryRow, type TradeEntryPricingMeta } from "./TradeEntryRow";
 import type { TradeScan } from "./useTradeScan";
@@ -192,33 +193,45 @@ export function TradeSide({
 
       {isScanOpen ? (
         <div className="space-y-3 rounded-xl border border-zinc-600 bg-zinc-950/40 p-3">
-          <div className="flex min-h-10 items-center justify-between gap-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-              {`Scanning onto ${sideLabel}`}
-            </p>
-            <button
-              type="button"
-              onClick={scan.closeScan}
-              className="min-h-10 rounded-lg border border-zinc-600 bg-zinc-950/60 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-            >
-              Exit scan
-            </button>
-          </div>
+          <p className="min-h-10 flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
+            {`Scanning onto ${sideLabel}`}
+          </p>
           {scan.isLoading ? (
             <p className="rounded-xl border border-zinc-700 bg-zinc-950/40 px-3 py-2 text-sm text-zinc-300">
               Loading scan data...
             </p>
           ) : (
-            <ScanCameraSurface
-              onCapture={() => undefined}
-              identify={scan.identify}
-              onStatusChange={scan.setCameraStatus}
-              onAcquisitionDiagnostic={scan.recordAcquisitionDiagnostic}
-              convergence={scan.convergence}
-              confirmation={scan.addConfirmation}
-              debug={scan.scanDebug}
-              autoScanFps={3}
-            />
+            <div className="relative">
+              <ScanCameraSurface
+                onCapture={() => undefined}
+                identify={scan.identify}
+                onStatusChange={scan.setCameraStatus}
+                onAcquisitionDiagnostic={scan.recordAcquisitionDiagnostic}
+                convergence={scan.convergence}
+                confirmation={scan.addConfirmation}
+                debug={scan.scanDebug}
+                autoScanFps={3}
+              />
+              {/* REQ-214: a box with an ✕ above the camera's top-right corner — the only
+                  way out; closing commits the holding list below to this side. */}
+              <button
+                type="button"
+                aria-label="Exit scan"
+                onClick={scan.closeScan}
+                className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-950/70 text-sm font-semibold text-zinc-200 shadow transition hover:bg-zinc-800"
+              >
+                <span aria-hidden="true">✕</span>
+              </button>
+              <ScanReviewBubble
+                entries={scan.heldEntries.map((entry) => ({
+                  id: entry.id,
+                  card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
+                  colors: entry.card.colors
+                }))}
+                onRemove={scan.removeHeld}
+                destinationLabel={sideLabel}
+              />
+            </div>
           )}
           {scan.error && (
             <p role="alert" className="text-sm text-amber-200">
