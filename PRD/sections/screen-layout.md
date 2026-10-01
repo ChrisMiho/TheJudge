@@ -92,15 +92,25 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Fit | Overlay; no page scroll. The tray closes on its ✕, a tap outside it, and Escape; the ☰ trigger is covered and not hit-testable while it is open (REQ-127) |
 | Notes | DEC-122, DEC-133, DEC-137, DEC-147, DEC-150, REQ-127, REQ-131, REQ-207. The destination list is REQ-206's |
 
+#### Shared sheet (card detail, Question History, printing picker, Send feedback, confirm)
+
+| | |
+|---|---|
+| Purpose | One overlay shell for the suite's small sheets (REQ-208) |
+| Phone | Below `600px`: bottom sheet, content-sized up to the viewport; fixed head (title, ✕) and foot (actions) |
+| Desktop/tablet | From `600px`: floating card centred in the viewport, content-sized; Question History widens to two panes (REQ-213) |
+| Fit | Overlay; only the body region-scrolls; never a second page-length scroll for the host screen |
+| Notes | REQ-208, REQ-128, REQ-142, REQ-143, REQ-205. View Context keeps its own row; Life Tracker's counter panel keeps DEC-139 |
+
 #### Card detail popup (suite-wide)
 
 | | |
 |---|---|
 | Purpose | Read oracle/local card detail without stacking it under the image |
-| Phone | Bottom sheet in the overlay family (DEC-158), **sized to its own content — not to the card image's bounding box**; opened from the top-right corner control on the image |
-| Desktop/tablet | Side panel at `768px`+ matching `AdaptiveContextDialog`'s composition; width tracks the View Context row, not a free full-viewport panel |
+| Phone | The shared sheet (REQ-208): a bottom sheet below `600px`, **sized to its own content — not to the card image's bounding box**; opened from the top-right corner control on the image |
+| Desktop/tablet | From `600px`: a floating card centred in the viewport, fading up into place; content-sized (REQ-208) |
 | Fit | Overlay; popup body may region-scroll if detail is long; the close control lays out **inside** the overlay's own bounds at every width; must not invent a second page-length scroll for the hosting step |
-| Notes | DEC-151, DEC-158, DEC-159, REQ-128, REQ-142, REQ-175, FLOW-024 — applies whenever a card image is shown across all six surfaces: Quick Question card search, In-Depth Enrichment, View Context, In-Depth zone selected-card/add preview, In-Depth zone strip, and Scan review. Superseded geometry: `absolute inset-0` over the image, measured at 92×128px holding 356px of content with its close X overflowing by 37px (DEC-158). **On-demand load state (REQ-128 / FLOW-024):** the descriptive block is fetched on first card-detail open, so the popup shows a brief loading state confined to the descriptive-content region while the already-local name, image, and color ring stay rendered and do not move. Keep it quiet and minimal — it must not introduce a branded splash, a full-overlay spinner takeover, a progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and must not resize the overlay or shift surrounding content (no layout jump when the block resolves). A minimal inline placeholder/skeleton in the descriptive region is allowed; a failed load falls soft to the name identity fallback (FLOW-001) with a retry affordance, never an error takeover |
+| Notes | DEC-151, DEC-158, DEC-159, REQ-128, REQ-142, REQ-175, REQ-208, FLOW-024 — applies whenever a card image is shown across all six surfaces: Quick Question card search, In-Depth Enrichment, View Context, In-Depth zone selected-card/add preview, In-Depth zone strip, and Scan review. Superseded geometry: `absolute inset-0` over the image, measured at 92×128px holding 356px of content with its close X overflowing by 37px (DEC-158); the `768px` side panel (DEC-158) is further superseded by REQ-208's `600px` centred card. **On-demand load state (REQ-128 / FLOW-024):** the descriptive block is fetched on first card-detail open, so the popup shows a brief loading state confined to the descriptive-content region while the already-local name, image, and color ring stay rendered and do not move. Keep it quiet and minimal — it must not introduce a branded splash, a full-overlay spinner takeover, a progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and must not resize the overlay or shift surrounding content (no layout jump when the block resolves). A minimal inline placeholder/skeleton in the descriptive region is allowed; a failed load falls soft to the name identity fallback (FLOW-001) with a retry affordance, never an error takeover |
 
 #### Conversation history drawer
 
@@ -228,9 +238,9 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Send feedback / bug report |
-| Phone / Desktop | Modal centered within viewport; width capped for readability (not full-bleed) |
+| Phone / Desktop | The shared sheet (REQ-208): bottom sheet below `600px`, floating centred card from `600px` up, width capped for readability; fixed head and foot, body scrolls |
 | Fit | Overlay; form body may region-scroll if needed |
-| Notes | DEC-105 |
+| Notes | DEC-105, REQ-087, REQ-208 |
 
 ## New-screen template
 

@@ -729,42 +729,77 @@
   padding-top: var(--layout-content-padding);
 }
 
-/* Card detail popup (DEC-158, screen-layout.md "Card detail popup"): the same overlay-family
-   composition as View Context above, so the popup is sized by its own content instead of the
-   card image's bounding box. It sits one layer above .adaptive-context-overlay because it is
-   routinely opened from the frozen card *inside* View Context; DOM order alone would carry it
-   there today, but the explicit z-index keeps that true regardless of portal mount order. */
-.card-detail-overlay {
+/* Card detail popup: superseded by the shared sheet shell below (REQ-208, REQ-128) —
+   `.card-detail-overlay` / `.card-detail-surface` / `.card-detail-header` /
+   `.card-detail-content` all retired; the popup now hosts on `.sheet-shell-*`, whose
+   `.sheet-shell-body` already owns the content-region padding and scroll. */
+
+.frozen-context-detail-row {
+  padding: var(--layout-compact-gap);
+}
+
+/* Shared sheet shell (REQ-208): the one pop-up shape for card detail, Question
+   History, the printing picker, Send feedback and the confirm sheet. A bottom
+   sheet below `--sheet-breakpoint` (600px), a floating card centred in the
+   viewport from it up; fixed head/foot, scrolling body only (DEC-117/NFR-011 —
+   structural, scoped to this overlay family). */
+.sheet-shell-overlay {
   position: fixed;
   inset: 0;
   z-index: 70;
   display: flex;
   align-items: flex-end;
+  justify-content: center;
   background: rgb(9 9 11 / 0.72);
   animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
 }
 
-.card-detail-surface {
+.sheet-shell-surface {
   width: 100%;
-  /* Height is content-driven; the cap only bounds a long oracle text into a region scroll,
-     leaving a dismissible scrim above the sheet the way View Context does. */
-  max-height: 75dvh;
-  overflow-y: auto;
+  max-height: 85dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   border-radius: 1rem 1rem 0 0;
-  padding: var(--layout-panel-padding);
   animation: adaptive-context-enter var(--motion-base) var(--motion-ease-emphasized) both;
 }
 
-.card-detail-header {
+.sheet-shell-head {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: var(--layout-panel-padding);
   padding-bottom: var(--layout-compact-gap);
+  border-bottom: 1px solid rgb(63 63 70 / 0.7);
 }
 
-.card-detail-content {
-  padding-top: var(--layout-content-padding);
+.sheet-shell-body {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: var(--layout-content-padding) var(--layout-panel-padding);
 }
 
-.frozen-context-detail-row {
-  padding: var(--layout-compact-gap);
+.sheet-shell-foot {
+  flex: 0 0 auto;
+  padding: var(--layout-panel-padding);
+  padding-top: var(--layout-compact-gap);
+  border-top: 1px solid rgb(63 63 70 / 0.7);
+}
+
+/* 600px, not the suite's 640/768 bands — REQ-207's sheet-family boundary
+   (DEC-117/NFR-011), scoped to this overlay family only. */
+@media (min-width: 600px) {
+  .sheet-shell-overlay {
+    align-items: center;
+  }
+
+  .sheet-shell-surface {
+    width: min(32rem, 90vw);
+    max-height: min(85dvh, 42rem);
+    border-radius: 1rem;
+  }
 }
 
 @media (min-width: 768px) {
@@ -779,19 +814,6 @@
   }
 
   .adaptive-context-surface {
-    width: min(30rem, 90vw);
-    max-height: none;
-    border-radius: 1rem 0 0 1rem;
-  }
-
-  /* Side panel at 768px+, tracking the View Context row's width rather than a free
-     full-viewport panel (screen-layout.md "Card detail popup"). */
-  .card-detail-overlay {
-    align-items: stretch;
-    justify-content: flex-end;
-  }
-
-  .card-detail-surface {
     width: min(30rem, 90vw);
     max-height: none;
     border-radius: 1rem 0 0 1rem;
@@ -1148,8 +1170,8 @@ body {
   .conversation-new-response,
   .adaptive-context-overlay,
   .adaptive-context-surface,
-  .card-detail-overlay,
-  .card-detail-surface,
+  .sheet-shell-overlay,
+  .sheet-shell-surface,
   .conversation-history-overlay,
   .conversation-history-surface,
   .enrichment-card-enter,

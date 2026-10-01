@@ -161,32 +161,32 @@ describe("CardPresentation", () => {
 
     await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
 
-    const overlay = screen.getByTestId("card-detail-overlay");
+    const overlay = screen.getByTestId("card-detail-popup-overlay");
     const popup = screen.getByTestId("card-detail-popup");
     const image = screen.getByRole("img", { name: "Urza, Lord High Artificer" });
 
-    // DEC-158/screen-layout.md "Card detail popup": the dialog is no longer `absolute inset-0`
-    // inside the 92x128px image box — it is a portal child of <body>, so its geometry is its
-    // own rather than the image's.
+    // DEC-158/REQ-208/screen-layout.md "Card detail popup": the dialog is no longer
+    // `absolute inset-0` inside the 92x128px image box — it is a portal child of <body> via
+    // the shared SheetShell, so its geometry is its own rather than the image's.
     expect(overlay.parentElement).toBe(document.body);
     expect(container.contains(popup)).toBe(false);
     expect(image.closest("[data-testid='card-detail-popup']")).toBeNull();
     expect(popup.parentElement).toBe(overlay);
   });
 
-  it("renders the popup as the overlay-family bottom sheet / side panel surface rather than an image-bound box", async () => {
+  it("renders the popup on the shared sheet shell — a bottom sheet below 600px, centred on desktop (REQ-128) — rather than an image-bound box", async () => {
     const user = userEvent.setup();
     render(<CardPresentation card={makeCard()} />);
 
     await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
 
-    const overlay = screen.getByTestId("card-detail-overlay");
+    const overlay = screen.getByTestId("card-detail-popup-overlay");
     const popup = screen.getByTestId("card-detail-popup");
 
-    // The responsive bottom-sheet / side-panel geometry lives in index.css on these classes,
-    // matching the AdaptiveContextDialog composition the catalog points at.
-    expect(overlay).toHaveClass("card-detail-overlay");
-    expect(popup).toHaveClass("card-detail-surface");
+    // The responsive bottom-sheet / centred-desktop-card geometry lives in index.css on
+    // these shared classes (REQ-208), replacing the popup's former private overlay family.
+    expect(overlay).toHaveClass("sheet-shell-overlay");
+    expect(popup).toHaveClass("sheet-shell-surface");
     expect(popup).not.toHaveClass("absolute", "inset-0");
     expect(popup).toHaveAttribute("role", "dialog");
     expect(popup).toHaveAttribute("aria-modal", "true");
@@ -217,7 +217,7 @@ describe("CardPresentation", () => {
     fireEvent.mouseDown(screen.getByText("Urza, Lord High Artificer", { selector: "p" }));
     expect(screen.getByTestId("card-detail-popup")).toBeInTheDocument();
 
-    fireEvent.mouseDown(screen.getByTestId("card-detail-overlay"));
+    fireEvent.mouseDown(screen.getByTestId("card-detail-popup-overlay"));
 
     expect(screen.queryByTestId("card-detail-popup")).not.toBeInTheDocument();
     expect(trigger).toHaveAttribute("aria-expanded", "false");
@@ -228,11 +228,11 @@ describe("CardPresentation", () => {
     const { unmount } = render(<CardPresentation card={makeCard()} />);
 
     await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
-    expect(document.body.querySelector("[data-testid='card-detail-overlay']")).not.toBeNull();
+    expect(document.body.querySelector("[data-testid='card-detail-popup-overlay']")).not.toBeNull();
 
     unmount();
 
-    expect(document.body.querySelector("[data-testid='card-detail-overlay']")).toBeNull();
+    expect(document.body.querySelector("[data-testid='card-detail-popup-overlay']")).toBeNull();
     expect(document.body.querySelector("[data-testid='card-detail-popup']")).toBeNull();
   });
 

@@ -1,6 +1,6 @@
 # Slice B — Shared sheet shell + confirm sheet
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -63,26 +63,26 @@ not those callers.
 
 ## Acceptance criteria
 
-- [ ] B1. `npm run quality:check` passes.
-- [ ] B2. `npm --workspace apps/frontend run test` passes.
-- [ ] B3. `SheetShell` renders as a bottom sheet below 600px and a floating
+- [x] B1. `npm run quality:check` passes.
+- [x] B2. `npm --workspace apps/frontend run test` passes.
+- [x] B3. `SheetShell` renders as a bottom sheet below 600px and a floating
       centred card at and above 600px, with a fixed head/foot and a
       scrolling body.
-- [ ] B4. Card detail opens inside `SheetShell`, centred on desktop (REQ-128).
-- [ ] B5. `FeedbackModal` is hosted on `SheetShell`, shows the feedback type
+- [x] B4. Card detail opens inside `SheetShell`, centred on desktop (REQ-128).
+- [x] B5. `FeedbackModal` is hosted on `SheetShell`, shows the feedback type
       as three pills, and folds the snapshot behind a dashed row (REQ-087).
-- [ ] B6. `ConfirmSheet` exists and is built on `SheetShell` (consumed by
+- [x] B6. `ConfirmSheet` exists and is built on `SheetShell` (consumed by
       later slices, not called from this one).
-- [ ] B7. `PRD/sections/` carries REQ-208, REQ-128, REQ-087 and FLOW-014 by
+- [x] B7. `PRD/sections/` carries REQ-208, REQ-128, REQ-087 and FLOW-014 by
       intent.
-- [ ] B8 (manual). REQ-202 pair: Life Tracker screenshot before/after this
+- [x] B8 (manual). REQ-202 pair: Life Tracker screenshot before/after this
       slice's shared-stylesheet change (the new 600px boundary), at 390×844
       and 1440×900, saved to `docs/design/ui-reimagining/build-screenshots/b/`.
-- [ ] B9 (manual). Browser scenarios observed at 390×844 and 1440×900: card
+- [x] B9 (manual). Browser scenarios observed at 390×844 and 1440×900: card
       detail and Send feedback open as a bottom sheet on phone and a
       centred floating card on desktop; the body scrolls while the head and
       foot stay fixed.
-- [ ] B10 (manual). Cleanup evidence recorded: browser closed, owned servers
+- [x] B10 (manual). Cleanup evidence recorded: browser closed, owned servers
       stopped, ports released, capture output path named.
 
 ## Verification

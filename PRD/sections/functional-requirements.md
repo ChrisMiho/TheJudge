@@ -2018,27 +2018,29 @@
 ### REQ-087
 - Title: Feedback & bug-report modal and capture
 - Priority: medium
-- Description: Selecting the **Send feedback** portal action (REQ-086) opens an accessible modal over the current screen (the user keeps their place; no view switch). The modal captures a **category** (Bug / Suggestion / Other), a **required freeform message**, and an **optional reply email**, and discloses the attached app-state snapshot (REQ-088) to the user before submit (DEC-105).
+- Description: Selecting the **Send feedback** portal action (REQ-086) opens the shared sheet (REQ-208) over the current screen (the user keeps their place; no view switch). The form captures a **category** (Bug / Suggestion / Other, as three pills), a **required freeform message**, and an **optional reply email**, and discloses the attached app-state snapshot (REQ-088) to the user before submit (DEC-105).
 - Acceptance Criteria:
-  - the modal opens over the current screen without switching the active destination or resetting in-progress state
-  - fields: a category select (Bug / Suggestion / Other), a required freeform message, and an optional reply email; blank email = anonymous
+  - the form opens in the shared sheet (REQ-208) over the current screen without switching the active destination or resetting in-progress state
+  - fields: the category as three pills (Bug · Suggestion · Other) with the message box's hint changing with it, a required freeform message, and an optional reply email; blank email = anonymous
   - validation: submit is blocked until the message is non-empty (after trim); when a reply email is present it must be a valid email format; validation messages are shown inline
-  - the modal shows a one-line disclosure that current app state is attached, plus an **expandable human-readable summary** of what is included (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment)
-  - accessibility: focus is trapped within the modal, Esc closes it, focus is restored to the trigger on close, and open/close motion is CSS-only and reduced-motion-aware (NFR-006)
-  - submit lifecycle: idle → sending → success acknowledgement or inline error; the draft (fields) is preserved on error so the user can retry
-  - the modal is theme-aware and touch-friendly on mobile (NFR-001)
+  - the form shows that current app state is attached as one dashed row, folded by default, that opens to an **expandable human-readable summary** of what is included (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment)
+  - accessibility: focus is trapped within the sheet, Esc closes it, focus is restored to the trigger on close, and open/close motion is CSS-only and reduced-motion-aware (NFR-006)
+  - submit lifecycle: idle → sending → success acknowledgement (a thank-you under the app's own mark) or inline error; the draft (fields) is preserved on error so the user can retry
+  - the form is theme-aware and touch-friendly on mobile (NFR-001)
 - Constraints:
-  - the modal reads app state only through a lazy `getFeedbackContext()` callback supplied by the app shell and never reaches into flow internals or mutates app state
+  - the form reads app state only through a lazy `getFeedbackContext()` callback supplied by the app shell and never reaches into flow internals or mutates app state
   - no persistence, auth, in-app history, or analytics; no screenshots/file uploads in v1
 - Dependencies:
   - DEC-105
   - REQ-086
   - REQ-088
+  - REQ-208
   - NFR-001
   - NFR-006
   - FLOW-014
 - Notes:
   - the expandable summary shows the same content that REQ-088 serializes for delivery
+  - amended for the `ui-reimagining-build` pass (2026-10-01): renders in the shared sheet (REQ-208); fields, validation, snapshot content and delivery unchanged
 
 ### REQ-088
 - Title: Feedback delivery and app-state snapshot
@@ -3086,10 +3088,10 @@
 ### REQ-128
 - Title: Suite-wide card-image detail popup
 - Priority: high
-- Description: Whenever a card image is displayed in the suite, a compact corner control on the image opens a dismissible, portal-hosted overlay with oracle text and other descriptive fields fetched on demand by oracle id (REQ-175, FLOW-024). The overlay follows DEC-158 and the `AdaptiveContextDialog` family: it is sized to its own content outside the image bounds, presenting as a bottom sheet below `768px` and a side panel at `768px`+ (DEC-151, DEC-158).
+- Description: Whenever a card image is displayed in the suite, a compact corner control on the image opens a dismissible, portal-hosted overlay with oracle text and other descriptive fields fetched on demand by oracle id (REQ-175, FLOW-024). The overlay is the shared sheet (REQ-208): sized to its own content outside the image bounds, a bottom sheet below `600px` and a floating card centred in the viewport from `600px` up.
 - Acceptance Criteria:
   - every suite card-image surface that shows an available image exposes the corner detail control (top-right of the image)
-  - activating the control opens a portal-hosted, content-sized overlay outside the card image's bounding box: a bottom sheet below `768px` and a side panel at `768px`+, following `screen-layout.md` → *Card detail popup (suite-wide)*
+  - activating the control opens the shared sheet (REQ-208), content-sized outside the card image's bounding box: a bottom sheet below `600px`, a floating centred card from `600px` up, following `screen-layout.md` → *Shared sheet (card detail, Question History, printing picker, Send feedback, confirm)*
   - the popup has an X close control; Escape and/or outside dismiss may match other overlays
   - stacked oracle/detail under the image is not the default path when the image is present
   - the popup fetches its descriptive contents on demand from the `GET /api/cards/:oracleId` endpoint (REQ-175, FLOW-024), showing a brief loading state whose presentation follows `PRD/sections/screen-layout.md` (a quiet in-overlay state in the descriptive-content region only — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no overlay resize or layout shift on resolve); name, image, and color ring (already local) render immediately
@@ -3102,12 +3104,14 @@
   - DEC-078
   - REQ-058
   - REQ-125
+  - REQ-208
   - NFR-001
   - REQ-174
   - REQ-175
   - FLOW-024
 - Notes:
   - **amended during the `ui-review` pass (2026-08-06)**: DEC-158 supersedes the original "popup over the card" geometry. The top-right image trigger remains; the popup's content is now fetched on demand by oracle id (REQ-175, FLOW-024) rather than read from locally carried fields, and the popup itself is portal-hosted and independent of the image bounds.
+  - amended for the `ui-reimagining-build` pass (2026-10-01): the side panel at `768px`+ becomes REQ-208's centred card from `600px`; the on-demand fetch and fallbacks are unchanged
 
 ### REQ-129
 - Title: Card image first-viewport fit ceiling
@@ -5200,3 +5204,32 @@
   - FLOW-007
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the approved mockup drew the element on a script-driven canvas — this build keeps the look and moves it to CSS to stay inside NFR-006
+
+### REQ-208
+- Title: One shared sheet for card detail, Question History, the printing picker, Send feedback, and confirmations
+- Priority: medium
+- Description: The suite's small overlays share one sheet shell so they open, size, scroll and close the same way: a bottom sheet below `600px` and a floating card centred in the viewport from `600px` up, with a fixed head and foot and only the body scrolling. The shell hosts the card-detail box (REQ-128), Question History (REQ-213), Trade Balancer's printing picker (REQ-065), Send feedback (REQ-087), and a shared confirm sheet.
+- Acceptance Criteria:
+  - one shell component presents as a bottom sheet below `600px` and as a floating card centred in the viewport from `600px` up; the head (title and ✕) and foot (actions) stay fixed and only the body region-scrolls; the sheet sizes to its content up to the viewport
+  - it opens with a short fade-up (immediate under reduced motion), traps focus, closes on ✕, Escape and a tap outside, and returns focus to its trigger (REQ-143)
+  - the card-detail box (REQ-128) and Send feedback (REQ-087) are hosted on this shell today; Question History (REQ-213) and the printing picker (REQ-065) host on it when those slices build
+  - the confirm sheet (`ConfirmSheet`) asks before a destructive action with a plain question, one line on what will be cleared, a keep action and a clear action; a caller renders it only when there is something to clear
+  - View Context keeps its own bottom sheet / right drawer at the `768px` boundary (REQ-135), and Life Tracker's counter panel keeps its full-height overlay (DEC-139)
+  - the shared close control (REQ-142) and the 44px floor (REQ-205) apply
+  - tests cover the shell at both sides of `600px`, focus trap and restore, outside dismiss, and body-only scroll with a long body
+- Constraints:
+  - one shared component; no per-overlay fork or size prop; presentation only
+  - the `600px` switch is a structural media query (DEC-117, NFR-011), not device detection; it applies to this overlay family only and the suite's `768px` phone/tablet band is unchanged
+- Dependencies:
+  - REQ-065
+  - REQ-087
+  - REQ-128
+  - REQ-135
+  - REQ-142
+  - REQ-143
+  - REQ-205
+  - REQ-213
+  - NFR-006
+  - NFR-011
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); built by slice B of that package as `apps/frontend/src/components/SheetShell.tsx` and `ConfirmSheet.tsx`

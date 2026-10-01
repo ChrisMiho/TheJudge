@@ -112,21 +112,34 @@ describe("FeedbackModal", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("renders a labelled modal dialog with the three form controls", async () => {
+  it("renders a labelled sheet dialog with the type as three pills", async () => {
     const { dialog } = await open();
 
     expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveClass("sheet-shell-surface");
     expect(within(dialog).getByRole("heading", { name: "Send feedback" })).toBeInTheDocument();
 
-    const category = screen.getByLabelText("Feedback type");
-    expect(category).toBeInstanceOf(HTMLSelectElement);
-    expect(
-      Array.from((category as HTMLSelectElement).options).map((option) => option.text)
-    ).toEqual(["Bug", "Suggestion", "Other"]);
-    expect((category as HTMLSelectElement).value).toBe("bug");
+    const bug = screen.getByRole("button", { name: "Bug" });
+    const suggestion = screen.getByRole("button", { name: "Suggestion" });
+    const other = screen.getByRole("button", { name: "Other" });
+    expect(bug).toHaveAttribute("aria-pressed", "true");
+    expect(suggestion).toHaveAttribute("aria-pressed", "false");
+    expect(other).toHaveAttribute("aria-pressed", "false");
 
     expect(screen.getByLabelText("What happened?")).toBeRequired();
     expect(screen.getByLabelText("Reply email (optional)")).toBeInTheDocument();
+  });
+
+  it("switches the selected pill and the message hint together", async () => {
+    const { user } = await open();
+
+    await user.click(screen.getByRole("button", { name: "Suggestion" }));
+    expect(screen.getByRole("button", { name: "Suggestion" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Bug" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.getByLabelText("What happened?")).toHaveAttribute(
+      "placeholder",
+      "What would make this better?"
+    );
   });
 
   it("moves focus into the dialog on open and restores it to the opener on close", async () => {
@@ -215,6 +228,14 @@ describe("FeedbackModal", () => {
     expect(submitFeedbackMock.mock.calls[0]?.[0]).not.toHaveProperty("email");
   });
 
+  it("folds the snapshot disclosure behind a dashed row", async () => {
+    await open();
+
+    const row = screen.getByTestId("feedback-snapshot-row");
+    expect(row).toHaveClass("border-dashed");
+    expect(within(row).getByText(/includes a snapshot of the app's current state/i)).toBeInTheDocument();
+  });
+
   it("always shows the disclosure line and reveals the summary on demand", async () => {
     const { user } = await open();
 
@@ -279,6 +300,9 @@ describe("FeedbackModal", () => {
     resolveSubmit?.({ status: "success" });
 
     expect(await screen.findByText("Thanks — your feedback was sent.")).toBeInTheDocument();
+    const success = screen.getByTestId("feedback-success");
+    expect(within(success).getByText("TheJudge")).toBeInTheDocument();
+    expect(screen.queryByLabelText("What happened?")).not.toBeInTheDocument();
   });
 
   it("shows an inline error and preserves the draft when delivery fails", async () => {
@@ -286,13 +310,13 @@ describe("FeedbackModal", () => {
 
     const { user } = await open();
 
-    await user.selectOptions(screen.getByLabelText("Feedback type"), "suggestion");
+    await user.click(screen.getByRole("button", { name: "Suggestion" }));
     await fillMessage(user, "Everything is on fire.");
     await user.type(screen.getByLabelText("Reply email (optional)"), "player@example.com");
     await user.click(submitButton());
 
     expect(await screen.findByText(/We couldn't send that/)).toBeInTheDocument();
-    expect(screen.getByLabelText("Feedback type")).toHaveValue("suggestion");
+    expect(screen.getByRole("button", { name: "Suggestion" })).toHaveAttribute("aria-pressed", "true");
     expect(screen.getByLabelText("What happened?")).toHaveValue("Everything is on fire.");
     expect(screen.getByLabelText("Reply email (optional)")).toHaveValue("player@example.com");
     expect(submitButton()).toBeEnabled();

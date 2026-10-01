@@ -6,8 +6,8 @@
   one-line summary, no longer an override. The cited `REQ`/`FLOW` remain the
   granular backing; keep this file correct in step with them as behavior changes,
   editing in place — never by recording a new decision.
-- Backed by: DEC-104, DEC-105, REQ-086, REQ-087, REQ-088, FLOW-014, NFR-001,
-  NFR-006
+- Backed by: DEC-104, DEC-105, REQ-086, REQ-087, REQ-088, REQ-208, FLOW-014,
+  NFR-001, NFR-006
 
 ## What it is
 
@@ -36,19 +36,22 @@ account, and no server-side storage.
 
 ### The feedback modal
 
-- Built: the modal opens over the current screen, so the user keeps their
-  place — no view switch, no reload, no loss of in-progress state. (REQ-087,
-  FLOW-014)
-- Built: capture fields are a category select (Bug / Suggestion / Other), a
-  required freeform message, and an optional reply email (blank = anonymous).
-  (DEC-105, REQ-087)
+- Built: the feedback form opens in the shared sheet (REQ-208) over the current
+  screen — a bottom sheet below `600px`, a floating centred card from `600px` up —
+  so the user keeps their place: no view switch, no reload, no loss of in-progress
+  state. (REQ-087, REQ-208, FLOW-014)
+- Built: capture fields are the category as three pills (Bug · Suggestion ·
+  Other, the message hint changing with it), a required freeform message, and an
+  optional reply email (blank = anonymous). (DEC-105, REQ-087)
 - Built: validation is inline — submit is blocked until the message is
   non-empty after trim; when a reply email is present it must be a valid email
   format. (REQ-087, FLOW-014)
-- Built: the modal is accessible and theme-aware — focus is trapped inside it,
+- Built: the sheet is accessible and theme-aware — focus is trapped inside it,
   Esc closes it, focus is restored to the portal trigger on close, and its
   open/close motion is CSS-only and reduced-motion-aware. It is touch-friendly
   on mobile. (REQ-087, NFR-001, NFR-006)
+- Built: a successful send swaps the form for a thank-you under the app's own
+  mark, inside the same sheet. (REQ-087)
 
 ### App-state snapshot and disclosure
 
@@ -57,11 +60,10 @@ account, and no server-side storage.
   conversation history (if any), provider mode (mock/live), active portal
   destination, and environment (user-agent, viewport, route, timestamp,
   build/version). (DEC-105, REQ-088)
-- Built: the snapshot is disclosed to the user before submit — a one-line
-  notice that current app state is attached, plus an expandable
-  human-readable summary showing exactly what is included. The summary shows
-  the same content that is serialized for delivery. (REQ-087, REQ-088,
-  FLOW-014)
+- Built: the snapshot is disclosed to the user before submit — one dashed row,
+  folded by default, that opens to a human-readable summary showing exactly what
+  is included. The summary shows the same content that is serialized for
+  delivery. (REQ-087, REQ-088, FLOW-014)
 - Built: the modal reads app state only through a lazy `getFeedbackContext()`
   callback the app shell supplies, built by a pure builder; the modal never
   reaches into flow internals, and building or sending the snapshot never

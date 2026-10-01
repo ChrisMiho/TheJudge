@@ -1,17 +1,10 @@
-import {
-  useCallback,
-  useEffect,
-  useId,
-  useRef,
-  useState,
-  type KeyboardEvent as ReactKeyboardEvent
-} from "react";
+import { useId, useState } from "react";
 import { useFeedbackForm, UNCONFIGURED_HINT } from "../../hooks/useFeedbackForm";
-import { useOutsideDismiss } from "../../hooks/useOutsideDismiss";
 import { summarizeFeedbackContext } from "../../lib/feedback/summarizeFeedbackContext";
 import type { FeedbackCategory } from "../../lib/feedback/submitFeedback";
 import type { FeedbackContext } from "../../lib/feedback/types";
-import { OverlayCloseButton } from "../OverlayCloseButton";
+import { BrandMark } from "../BrandMark";
+import { SheetShell } from "../SheetShell";
 
 const CATEGORY_OPTIONS: ReadonlyArray<{ value: FeedbackCategory; label: string }> = [
   { value: "bug", label: "Bug" },
@@ -19,17 +12,14 @@ const CATEGORY_OPTIONS: ReadonlyArray<{ value: FeedbackCategory; label: string }
   { value: "other", label: "Other" }
 ];
 
+const MESSAGE_HINT: Record<FeedbackCategory, string> = {
+  bug: "What went wrong?",
+  suggestion: "What would make this better?",
+  other: "What's on your mind?"
+};
+
 const DISCLOSURE_LINE =
   "Your report includes a snapshot of the app's current state (screen, in-progress question, and browser info).";
-
-const FOCUSABLE_SELECTOR = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])'
-].join(", ");
 
 export interface FeedbackModalProps {
   isOpen: boolean;
@@ -39,11 +29,10 @@ export interface FeedbackModalProps {
 }
 
 /**
- * Accessible feedback modal (REQ-087, FLOW-014, NFR-001, NFR-006).
- *
- * The dialog body is a separate component mounted only while open, so the
- * snapshot `useFeedbackForm` captures on mount is the app state at *open* time
- * and every close discards the draft rather than resurrecting a stale one.
+ * Accessible feedback sheet (REQ-087, REQ-208, FLOW-014, NFR-001, NFR-006), hosted on the
+ * shared `SheetShell`. The feedback type is three pills, the app-state disclosure folds
+ * behind one dashed row, and a successful send swaps the form for a thank-you under the
+ * app's own mark.
  */
 export function FeedbackModal({
   isOpen,
@@ -56,30 +45,20 @@ export function FeedbackModal({
   }
 
   return (
-    <FeedbackDialog
-      onClose={onClose}
-      getFeedbackContext={getFeedbackContext}
-      formspreeId={formspreeId}
-    />
+    <FeedbackDialog onClose={onClose} getFeedbackContext={getFeedbackContext} formspreeId={formspreeId} />
   );
 }
 
 type FeedbackDialogProps = Omit<FeedbackModalProps, "isOpen">;
 
-function FeedbackDialog({
-  onClose,
-  getFeedbackContext,
-  formspreeId
-}: FeedbackDialogProps): JSX.Element {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const returnFocusRef = useRef<HTMLElement | null>(null);
+function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDialogProps): JSX.Element {
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
   const form = useFeedbackForm({ getFeedbackContext, formspreeId });
   const summaryLines = summarizeFeedbackContext(form.snapshot);
 
   const baseId = useId();
   const titleId = `${baseId}-title`;
-  const categoryId = `${baseId}-category`;
+  const categoryGroupId = `${baseId}-category`;
   const messageId = `${baseId}-message`;
   const messageErrorId = `${baseId}-message-error`;
   const emailId = `${baseId}-email`;
@@ -87,105 +66,58 @@ function FeedbackDialog({
   const summaryId = `${baseId}-summary`;
   const hintId = `${baseId}-hint`;
 
-  // Focus moves into the dialog on open and returns to whatever opened it on
-  // close — the unmount cleanup is the single restore path, so it covers Escape,
-  // the close button, and the backdrop alike.
-  useEffect(() => {
-    returnFocusRef.current =
-      document.activeElement instanceof HTMLElement ? document.activeElement : null;
-
-    const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
-    (firstFocusable ?? dialogRef.current)?.focus();
-
-    return () => {
-      returnFocusRef.current?.focus();
-    };
-  }, []);
-
-  useEffect(() => {
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
-  useOutsideDismiss([dialogRef], onClose, true);
-
-  /**
-   * Focus trap: Tab off the last focusable element wraps to the first and
-   * Shift+Tab off the first wraps to the last, so focus can never escape the
-   * dialog while it is open. Anything in between keeps native tab order.
-   */
-  const handleTrapKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {
-    if (event.key !== "Tab") {
-      return;
-    }
-
-    const dialog = dialogRef.current;
-    if (!dialog) {
-      return;
-    }
-
-    const focusable = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR));
-    if (focusable.length === 0) {
-      event.preventDefault();
-      dialog.focus();
-      return;
-    }
-
-    const first = focusable[0]!;
-    const last = focusable[focusable.length - 1]!;
-    const active = document.activeElement;
-    const isInside = active instanceof HTMLElement && dialog.contains(active);
-
-    if (event.shiftKey) {
-      if (!isInside || active === first) {
-        event.preventDefault();
-        last.focus();
-      }
-      return;
-    }
-
-    if (!isInside || active === last) {
-      event.preventDefault();
-      first.focus();
-    }
-  }, []);
-
   const isSending = form.status === "sending";
-  const submitDisabled = form.isUnconfigured || isSending || form.status === "success";
+  const isSuccess = form.status === "success";
+  const submitDisabled = form.isUnconfigured || isSending || isSuccess;
 
   return (
-    <div
-      data-testid="feedback-modal-backdrop"
-      className="fixed inset-0 z-50 flex items-end justify-center bg-black/70 p-2 sm:items-center sm:p-4"
-    >
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        onKeyDown={handleTrapKeyDown}
-        className="motion-enter max-h-[94dvh] w-full max-w-xl overflow-y-auto rounded-3xl border border-zinc-700 bg-zinc-950 p-4 text-zinc-100 shadow-2xl shadow-black/40"
-      >
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Feedback</p>
-            <h2 id={titleId} className="text-xl font-black text-zinc-100">
-              Send feedback
-            </h2>
+    <SheetShell
+      isOpen
+      onClose={onClose}
+      closeLabel="Close feedback"
+      titleId={titleId}
+      testId="feedback-sheet"
+      head={
+        <>
+          <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Feedback</p>
+          <h2 id={titleId} className="text-xl font-black text-zinc-100">
+            Send feedback
+          </h2>
+        </>
+      }
+      foot={
+        isSuccess ? undefined : (
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center justify-end gap-3">
+              <button
+                type="button"
+                form={`${baseId}-form`}
+                onClick={() => void form.submit()}
+                disabled={submitDisabled}
+                aria-describedby={form.isUnconfigured ? hintId : undefined}
+                className="motion-press motion-focus min-h-[2.75rem] rounded-2xl bg-accent-strong px-4 font-bold text-accent-contrast disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isSending ? "Sending…" : "Send feedback"}
+              </button>
+            </div>
+            <p role="status" aria-live="polite" className="min-h-[1.25rem] text-sm text-zinc-300">
+              {statusMessage(form.status, form.failureStatus)}
+            </p>
           </div>
-          <OverlayCloseButton label="Close feedback" onClick={onClose} />
-        </header>
-
+        )
+      }
+    >
+      {isSuccess ? (
+        <div className="flex flex-col items-center gap-3 py-6 text-center" data-testid="feedback-success">
+          <BrandMark />
+          <p role="status" aria-live="polite" className="text-base font-semibold text-zinc-100">
+            {statusMessage(form.status, form.failureStatus)}
+          </p>
+        </div>
+      ) : (
         <form
-          className="mt-4 flex flex-col gap-4"
+          id={`${baseId}-form`}
+          className="flex flex-col gap-4"
           noValidate
           onSubmit={(event) => {
             event.preventDefault();
@@ -193,21 +125,30 @@ function FeedbackDialog({
           }}
         >
           <div className="flex flex-col gap-1">
-            <label htmlFor={categoryId} className="text-sm font-semibold text-zinc-300">
+            <span id={categoryGroupId} className="text-sm font-semibold text-zinc-300">
               Feedback type
-            </label>
-            <select
-              id={categoryId}
-              value={form.category}
-              onChange={(event) => form.setCategory(event.target.value as FeedbackCategory)}
-              className="motion-focus min-h-[2.75rem] rounded-2xl border border-zinc-700 bg-zinc-900 px-3 text-zinc-100"
-            >
-              {CATEGORY_OPTIONS.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
+            </span>
+            <div role="group" aria-labelledby={categoryGroupId} className="flex flex-wrap gap-2">
+              {CATEGORY_OPTIONS.map((option) => {
+                const selected = form.category === option.value;
+                return (
+                  <button
+                    key={option.value}
+                    type="button"
+                    aria-pressed={selected}
+                    onClick={() => form.setCategory(option.value)}
+                    className={[
+                      "motion-focus motion-press min-h-[2.75rem] rounded-full border px-4 text-sm font-bold transition",
+                      selected
+                        ? "border-accent bg-accent-strong text-accent-contrast"
+                        : "border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
+                    ].join(" ")}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           <div className="flex flex-col gap-1">
@@ -218,6 +159,7 @@ function FeedbackDialog({
               id={messageId}
               value={form.message}
               onChange={(event) => form.setMessage(event.target.value)}
+              placeholder={MESSAGE_HINT[form.category]}
               rows={5}
               required
               aria-required="true"
@@ -252,7 +194,10 @@ function FeedbackDialog({
             )}
           </div>
 
-          <div className="rounded-2xl border border-zinc-800 bg-zinc-900/60 p-3">
+          <div
+            data-testid="feedback-snapshot-row"
+            className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-900/40 p-3"
+          >
             <p className="text-sm text-zinc-400">{DISCLOSURE_LINE}</p>
             <button
               type="button"
@@ -280,24 +225,9 @@ function FeedbackDialog({
               {UNCONFIGURED_HINT}
             </p>
           )}
-
-          <div className="flex items-center justify-end gap-3">
-            <button
-              type="submit"
-              disabled={submitDisabled}
-              aria-describedby={form.isUnconfigured ? hintId : undefined}
-              className="motion-press motion-focus min-h-[2.75rem] rounded-2xl bg-accent-strong px-4 font-bold text-accent-contrast disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              {isSending ? "Sending…" : "Send feedback"}
-            </button>
-          </div>
-
-          <p role="status" aria-live="polite" className="min-h-[1.25rem] text-sm text-zinc-300">
-            {statusMessage(form.status, form.failureStatus)}
-          </p>
         </form>
-      </div>
-    </div>
+      )}
+    </SheetShell>
   );
 }
 

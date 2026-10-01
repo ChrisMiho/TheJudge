@@ -283,16 +283,16 @@ language live here.
 ### Card detail popup (suite-wide) and the shared close control
 
 - Built: whenever a card image is shown anywhere in the suite, a compact corner control
-  (top-right of the image) opens a **dismissible detail popup** carrying oracle text and
+  (top-right of the image) opens a **dismissible detail box** carrying oracle text and
   other descriptive fields fetched on demand by oracle id (REQ-175, FLOW-024) behind a
   brief loading state; a missing image keeps the name-first fallback, which shows the card
-  name only (FLOW-001). The popup renders through a portal into the `AdaptiveContextDialog`
-  overlay family — a bottom sheet below `768px`, a side panel at `768px+`, sized to its
-  **own content** — not `absolute inset-0` over the image's box. Stacked oracle/detail
+  name only (FLOW-001). The box renders in the shared sheet (REQ-208) — a bottom sheet
+  below `600px`, a floating card centred in the viewport from `600px` up — sized to its
+  **own content**, not `absolute inset-0` over the image's box. Stacked oracle/detail
   under the image is not the default density path. This is one shared component across all
   six card surfaces (Quick Question card search, In-Depth Enrichment, the card inside View
   Context, the In-Depth zone selected-card/add preview, the In-Depth zone strip, and Scan
-  review). (DEC-151, DEC-158, REQ-128)
+  review). (DEC-151, DEC-158, REQ-128, REQ-208)
 - Built: the shared `CardPresentation` renders only a small **Remove card** control beside
   the image; every other field it once showed lives in the corner popup. Its image sizes
   **relative to its container** (not a fixed pixel cap), so each surface grows to what its
@@ -316,6 +316,20 @@ language live here.
   **one shared component** whose color derives from the active theme palette, replacing the
   copy-pasted zinc chrome and the former text "Close" buttons, at or above the 44px touch
   floor. (DEC-159, DEC-156, REQ-142)
+
+### The shared sheet
+
+- Built: one `SheetShell` component — a bottom sheet below `600px`, a floating card
+  centred in the viewport from `600px` up (fading up into place), with a fixed head
+  and foot and only the body scrolling; it traps focus, closes on ✕, Escape and
+  outside tap, and restores focus. The card-detail box and Send feedback already
+  host on it (REQ-128, REQ-087); Question History and Trade Balancer's printing
+  picker host on it when those slices build (REQ-213, REQ-065). A shared
+  `ConfirmSheet`, built on `SheetShell`, asks before a destructive action with a
+  plain question, one clearing line, a keep action and a clear action, and is
+  rendered only by a caller that has something to clear; Trade Balancer's New trade
+  and Life Tracker's Reset/New game wire it up when those slices build. View
+  Context keeps its own `768px` sheet/drawer. (REQ-208, REQ-128, REQ-087)
 
 ### Decorative motion baseline
 
@@ -408,10 +422,12 @@ not product truth.
   the retired `calc(2.75rem - var(--layout-panel-padding))` rail-sized constant must not be
   reintroduced. Auto-scroll near-bottom threshold: remaining distance ≤ 64px. (DEC-141,
   REQ-116, DEC-118, `screen-layout.md`)
-- Card detail popup: bottom sheet below `768px` / side panel at `768px+`, content-sized,
-  close control laid out inside its own bounds at every width. Superseded geometry:
-  `absolute inset-0` over the image, measured **92×128px holding 356px of content** with its
-  44px close X overflowing its container by 37px. (DEC-158, DEC-151, REQ-128)
+- Card detail popup: the shared sheet (REQ-208) — bottom sheet below `600px` / floating
+  centred card from `600px`, content-sized, close control laid out inside its own bounds
+  at every width. Superseded geometry: `absolute inset-0` over the image, measured
+  **92×128px holding 356px of content** with its 44px close X overflowing its container by
+  37px (DEC-158); the `768px` side panel is further superseded by REQ-208's `600px`
+  centred card. (DEC-158, DEC-151, REQ-128, REQ-208)
 - Shared card image (all six surfaces): container-relative, aspect-preserved, uncropped —
   no `max-h-32` pixel cap; shell-column surfaces render ~300px at 390×844 (REQ-141's
   legibility floor) and grow at desktop, while the zone strip tile stays `w-40`/160px with a

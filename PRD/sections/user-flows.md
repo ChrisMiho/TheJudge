@@ -313,12 +313,12 @@
 - Preconditions:
   - app is loaded
 - Main Flow:
-  1. User opens the top-middle feature-portal menu and selects **Send feedback** (an action entry, DEC-104); the app opens the feedback modal over the current screen without switching the active destination or losing in-progress state.
-  2. User picks a category (Bug / Suggestion / Other) and writes a message; the message is required.
+  1. User opens the Menu (☰) and selects **Send feedback** (an action entry, DEC-104); the app opens the feedback form in the shared sheet over the current screen without switching the active destination (REQ-208) or losing in-progress state.
+  2. User picks a category — three pills, Bug / Suggestion / Other — and writes a message; the message is required.
   3. User optionally enters a reply email (blank = anonymous); if present, it must be a valid email format.
-  4. The modal shows a one-line disclosure that current app state is attached and, on demand, an **expandable summary** of exactly what is included (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment).
-  5. User submits; the modal goes to a sending state and posts the report plus the JSON-stringified snapshot to Formspree.
-  6. On success the modal shows an acknowledgement and can be dismissed; on error it shows an inline error and preserves the draft for retry.
+  4. The form shows a dashed row disclosing that current app state is attached and, on demand, an **expandable summary** of exactly what is included (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment).
+  5. User submits; the sheet goes to a sending state and posts the report plus the JSON-stringified snapshot to Formspree.
+  6. On success the sheet shows a thank-you under the app's own mark and can be dismissed; on error it shows an inline error and preserves the draft for retry.
 - Edge Cases:
   - message empty (after trim) → submit is blocked with an inline message-required prompt
   - reply email present but malformed → submit is blocked with an inline format prompt

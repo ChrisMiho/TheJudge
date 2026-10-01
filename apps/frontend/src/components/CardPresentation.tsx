@@ -1,9 +1,7 @@
-import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { createPortal } from "react-dom";
-import { useOutsideDismiss } from "../hooks/useOutsideDismiss";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { fetchCardDetail, peekCardDetail, type CardDetailBlock } from "../lib/cardDetail";
 import { deriveCardImageUrl } from "../lib/cardImage";
-import { OverlayCloseButton } from "./OverlayCloseButton";
+import { SheetShell } from "./SheetShell";
 
 /** The identity fields every card surface needs to render a tile — image, name, and
  * the oracle id used to fetch detail on demand (REQ-175, FLOW-024). `ZoneCardItem`
@@ -112,19 +110,17 @@ type PopupDetailState =
  * resize (`screen-layout.md`). A failed/offline fetch degrades to a retry affordance
  * without blocking the surface's other controls (Remove, etc).
  *
- * It is portaled to `document.body` rather than layered `absolute inset-0` over the
- * image. As an image-bound box it inherited the image's 92x128px geometry, squeezing
- * 356px of detail into a 66px text column and pushing its own close control 37px past
- * the dialog's right edge (DEC-158). Portaled, it takes the overlay family's own
- * geometry — content-sized bottom sheet below 768px, View Context-width side panel at
- * 768px+, per `screen-layout.md`'s "Card detail popup" row — identically on all six
- * card surfaces, with no per-surface variant, because every surface renders this one
- * component.
+ * It is hosted on the shared `SheetShell` (REQ-208, REQ-128) rather than layered
+ * `absolute inset-0` over the image. As an image-bound box it inherited the image's
+ * 92x128px geometry, squeezing 356px of detail into a 66px text column and pushing its
+ * own close control 37px past the dialog's right edge (DEC-158). Hosted on the shared
+ * shell, it takes that overlay family's own geometry — a bottom sheet below the
+ * `--sheet-breakpoint` token (600px), a floating card centred in the viewport from it
+ * up — identically on all six card surfaces, with no per-surface variant, because every
+ * surface renders this one component.
  */
 export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.Element {
   const titleId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
 
   const [state, setState] = useState<PopupDetailState>(() => {
     const cached = peekCardDetail(card.cardId);
@@ -160,60 +156,40 @@ export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.El
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useOutsideDismiss([dialogRef], onClose, true);
-
-  useEffect(() => {
-    closeRef.current?.focus();
-  }, []);
-
-  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>): void {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onClose();
-    }
-  }
-
-  return createPortal(
-    <div className="card-detail-overlay" data-testid="card-detail-overlay">
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        onKeyDown={handleKeyDown}
-        data-testid="card-detail-popup"
-        className="card-detail-surface ambient-accent-surface border border-zinc-700 bg-zinc-950 text-left text-sm text-zinc-200 shadow-2xl"
-      >
-        <div className="card-detail-header flex shrink-0 items-start justify-between gap-3 border-b border-zinc-700/70">
-          <p id={titleId} className="font-semibold text-zinc-100">
-            {card.name}
+  return (
+    <SheetShell
+      isOpen
+      onClose={onClose}
+      closeLabel={`Close details for ${card.name}`}
+      titleId={titleId}
+      testId="card-detail-popup"
+      head={
+        <p id={titleId} className="font-semibold text-zinc-100">
+          {card.name}
+        </p>
+      }
+    >
+      <div data-testid="card-detail-content">
+        {state.status === "loading" ? (
+          <p className="text-sm text-zinc-400" role="status" aria-live="polite" data-testid="card-detail-loading">
+            Loading details…
           </p>
-          <OverlayCloseButton ref={closeRef} label={`Close details for ${card.name}`} onClick={onClose} />
-        </div>
-        <div className="card-detail-content" data-testid="card-detail-content">
-          {state.status === "loading" ? (
-            <p className="text-sm text-zinc-400" role="status" aria-live="polite" data-testid="card-detail-loading">
-              Loading details…
-            </p>
-          ) : state.status === "error" ? (
-            <div className="space-y-2" data-testid="card-detail-error">
-              <p className="text-sm text-zinc-400">Details unavailable right now.</p>
-              <button
-                type="button"
-                onClick={loadDetail}
-                className="rounded-lg border border-zinc-600 bg-zinc-900/60 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-              >
-                Retry
-              </button>
-            </div>
-          ) : (
-            <CardDetailFieldsList detail={state.detail} />
-          )}
-        </div>
+        ) : state.status === "error" ? (
+          <div className="space-y-2" data-testid="card-detail-error">
+            <p className="text-sm text-zinc-400">Details unavailable right now.</p>
+            <button
+              type="button"
+              onClick={loadDetail}
+              className="rounded-lg border border-zinc-600 bg-zinc-900/60 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
+            >
+              Retry
+            </button>
+          </div>
+        ) : (
+          <CardDetailFieldsList detail={state.detail} />
+        )}
       </div>
-    </div>,
-    document.body
+    </SheetShell>
   );
 }
 
