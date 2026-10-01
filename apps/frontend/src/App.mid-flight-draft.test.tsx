@@ -40,6 +40,14 @@ async function openHistory(user: ReturnType<typeof userEvent.setup>): Promise<vo
 // exclude the delete control's "Delete: ..." name to land on the select button.
 const SELECT_HISTORY_ENTRY_NAME = /^(?!Delete:).*Earlier question/;
 
+// REQ-213: jsdom's default innerWidth (1024) is the sheet family's wide side of its
+// 600px boundary — a row tap only selects it into the reading pane; "Open conversation"
+// is the explicit resume a narrow tap would otherwise give directly.
+async function selectAndOpenHistoryEntry(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
+  await user.click(screen.getByRole("button", { name: "Open conversation" }));
+}
+
 describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
   beforeEach(() => {
     installMemoryLocalStorage();
@@ -187,7 +195,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
 
       await openHistory(user);
-      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
+      await selectAndOpenHistoryEntry(user);
 
       const draft = localStorage.getItem("thejudge.conversationDraft.lookup");
       expect(draft).not.toBeNull();
@@ -210,7 +218,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       expect(localStorage.getItem("thejudge.conversationDraft.game")).toBeNull();
 
       await openHistory(user);
-      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
+      await selectAndOpenHistoryEntry(user);
 
       const draft = localStorage.getItem("thejudge.conversationDraft.game");
       expect(draft).not.toBeNull();
@@ -226,7 +234,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await user.type(screen.getByLabelText("Magic question"), "Does trample carry over lethal damage?");
 
       await openHistory(user);
-      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
+      await selectAndOpenHistoryEntry(user);
       expect(await screen.findByText("Earlier answer")).toBeInTheDocument();
 
       await openHistory(user);
@@ -241,7 +249,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await switchToDestination(user, "Quick Question");
 
       await openHistory(user);
-      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
+      await selectAndOpenHistoryEntry(user);
 
       expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
     });

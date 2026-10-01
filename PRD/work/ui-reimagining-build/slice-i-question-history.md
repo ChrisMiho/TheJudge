@@ -1,6 +1,6 @@
 # Slice I — Question History: one list for every question, reopened live
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -61,26 +61,26 @@ together with the code:
 
 ## Acceptance criteria
 
-- [ ] I1. `npm run quality:check` passes.
-- [ ] I2. `npm --workspace apps/frontend run test` passes.
-- [ ] I3. Question History shows one list combining both question kinds,
+- [x] I1. `npm run quality:check` passes.
+- [x] I2. `npm --workspace apps/frontend run test` passes.
+- [x] I3. Question History shows one list combining both question kinds,
       labelled "n of 20", each row with a fan of card thumbnails.
-- [ ] I4. History opens from the Menu, hosted in the shared sheet; no
+- [x] I4. History opens from the Menu, hosted in the shared sheet; no
       separate History rail icon remains.
-- [ ] I5. Tapping a row reopens that conversation live in its own flow (Ask
+- [x] I5. Tapping a row reopens that conversation live in its own flow (Ask
       a Question's chat, or In-depth's with View Context).
-- [ ] I6. Each flow's Draft appears as its own row at the top of the list.
-- [ ] I7. Deleting a row asks first through the shared confirm sheet; below
+- [x] I6. Each flow's Draft appears as its own row at the top of the list.
+- [x] I7. Deleting a row asks first through the shared confirm sheet; below
       600px the row keeps its own delete control.
-- [ ] I8. `PRD/sections/` carries REQ-213, REQ-103, REQ-107, FLOW-016,
+- [x] I8. `PRD/sections/` carries REQ-213, REQ-103, REQ-107, FLOW-016,
       FLOW-017, FLOW-018 by intent.
-- [ ] I9 (manual). REQ-202 pair: Life Tracker screenshot before/after this
+- [x] I9 (manual). REQ-202 pair: Life Tracker screenshot before/after this
       slice's shared-sheet History integration, at 390×844 and 1440×900,
       saved to `docs/design/ui-reimagining/build-screenshots/i/`.
-- [ ] I10 (manual). Browser scenarios at 390×844 (single pane) and 1440×900
+- [x] I10 (manual). Browser scenarios at 390×844 (single pane) and 1440×900
       (two panes): open History from the Menu, reopen a past In-depth
       conversation, confirm it resumes live with View Context available.
-- [ ] I11 (manual). Cleanup evidence recorded: browser closed, owned
+- [x] I11 (manual). Cleanup evidence recorded: browser closed, owned
       servers stopped, ports released, capture output path named.
 
 ## Verification

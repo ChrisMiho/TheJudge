@@ -24,7 +24,7 @@
   REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, REQ-206, REQ-209, REQ-210, FLOW-001, FLOW-002,
   FLOW-003, FLOW-004, FLOW-005, FLOW-015, NFR-001, NFR-002, NFR-006, NFR-009
 - Consumed but owned elsewhere (cited, not re-specified here): the shared
-  answered-conversation workspace, View Context overlay, history drawer,
+  answered-conversation workspace, View Context overlay, Question History,
   suite-wide card-detail popup, Menu rail (DEC-122), suite shell, and shared
   layout language live in `PRD/sections/shared-chrome/`; the camera scan input path
   (FLOW-006) lives in `PRD/sections/scan/`; the rules-retrieval and
@@ -296,7 +296,7 @@ retrieval/combo machinery that other specs own.
   turns; the current follow-up text goes in `question`, not duplicated in history.
   The backend inserts a `CONVERSATION HISTORY` section before `QUESTION`. History
   is ephemeral — no server-side session store — though the workspace's browser-
-  local history drawer (shared chrome) can persist and resume completed
+  local Question History (shared chrome) can persist and resume completed
   conversations. (REQ-027, DEC-038, DEC-039, FLOW-005)
 - Built: **↺ Start over** is visible once the first decrypt has succeeded and no
   request is in flight. It clears the conversation thread and the staged
@@ -565,7 +565,7 @@ outcome-validated, not product truth.
   sampling (DEC-042 / REQ-027); answer-quality A/B on combo enrichment stays
   opt-in and informational, never a gate (DEC-161).
 - **Not owned here — consumed from other specs:** the shared answered-conversation
-  workspace, View Context overlay, history drawer, suite-wide card-detail popup,
+  workspace, View Context overlay, Question History, suite-wide card-detail popup,
   Menu rail, suite shell, mock-mode banner, routing, and the shared layout
   language are `sections/shared-chrome/`'s; the camera scan input path (FLOW-006)
   is `sections/scan/`'s; the rules-retrieval System 1/2/3 internals and the combo

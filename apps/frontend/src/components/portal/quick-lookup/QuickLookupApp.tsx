@@ -5,10 +5,9 @@ import { useAskAiSubmitOrchestration } from "../../../hooks/useAskAiSubmitOrches
 import { useAutoGrowTextarea } from "../../../hooks/useAutoGrowTextarea";
 import { useScanCapture, type ScanHoldCheck } from "../../../hooks/useScanCapture";
 import { buildLookupAskAiRequest } from "../../../lib/contextFlow";
-import type { ConversationHistoryEntry, LookupDraftState } from "../../../lib/conversationHistory/persistence";
+import type { LookupDraftState } from "../../../lib/conversationHistory/persistence";
 import {
   clearDraft,
-  deleteHistoryEntry,
   loadDraft,
   loadHistoryEntries,
   saveDraft,
@@ -17,6 +16,7 @@ import {
 import { apiBaseUrl } from "../../../lib/env";
 import { prefersReducedMotion } from "../../../lib/motionPreference";
 import { useInDepthCarry } from "../../../lib/portal/inDepthCarryContext";
+import { useAssistantSeed } from "../../../lib/portal/seedContext";
 import { NO_MATCH_COPY } from "../../../lib/search";
 import { MAX_LOOKUP_CARDS } from "../../../lib/stackLimits";
 import type { CardMetadataItem } from "../../../types";
@@ -25,7 +25,6 @@ import { CardDetailPopup } from "../../CardPresentation";
 import { CardSelectionPreview } from "../../CardSelectionPreview";
 import { CardStage } from "../../CardStage";
 import { ComposerPill } from "../../ComposerPill";
-import { ConversationHistoryDrawer } from "../../ConversationHistoryDrawer";
 import { ConversationWorkspace } from "../../ConversationWorkspace";
 import { PageShell } from "../../PageShell";
 import { ScanCameraSurface } from "../../ScanCameraSurface";
@@ -88,15 +87,17 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   const closeScanRef = useRef<() => void>(() => undefined);
   const questionContainerRef = useRef<HTMLDivElement>(null);
   const questionInputRef = useRef<HTMLTextAreaElement>(null);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [historyEntries, setHistoryEntries] = useState<ConversationHistoryEntry[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [lookupDraft, setLookupDraft] = useState<LookupDraftState | null>(null);
+  // REQ-213/FLOW-016: set when the active conversation was reached by resuming it from
+  // Question History rather than a fresh submit, so the thread can say so under the title.
+  const [reopenedFromHistory, setReopenedFromHistory] = useState(false);
   // REQ-206: the title-row "Add card" button focuses the (always-visible) search field.
   const searchInputRef = useRef<HTMLInputElement>(null);
   // REQ-075/REQ-206: a card-name chip in the ruling opens that card's detail.
   const [chipDetailCardId, setChipDetailCardId] = useState<string | null>(null);
   const { goToInDepthDetails } = useInDepthCarry();
+  const { consumeHistoryResume, consumeHistoryDeletion, consumeDraftResume, historyResumeVersion } =
+    useAssistantSeed();
   const {
     error,
     isSubmitting,
@@ -147,6 +148,38 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
     const draft = loadDraft("lookup");
     if (draft) hydrateFromLookupDraft(draft);
   }, []);
+
+  // REQ-213/FLOW-016/FLOW-017/FLOW-018: Question History now lives one level up
+  // (FeaturePortalMenu's combined sheet), so this destination's own exits for it are a
+  // mailbox it consumes rather than local drawer state. `historyResumeVersion` is the one
+  // reactive signal covering all three mailboxes — each `consume*` call below is mode-aware
+  // and a no-op when nothing matching "lookup" is pending, so this effect is safe to run on
+  // every bump regardless of which flow (or neither) the player actually acted on.
+  useEffect(() => {
+    const resumeEntry = consumeHistoryResume("lookup");
+    if (resumeEntry) {
+      // Opening a saved conversation is the third mid-flight exit (DEC-138), alongside
+      // Menu-leave and reload. Snapshot first, then restore, so a staged attempt reappears
+      // as this flow's own Draft row the next time History opens. Silent by design.
+      snapshotMidFlightDraft();
+      restoreConversation(resumeEntry);
+      setActiveConversationId(resumeEntry.id);
+      setReopenedFromHistory(true);
+      return;
+    }
+
+    const deletedId = consumeHistoryDeletion("lookup");
+    if (deletedId && deletedId === activeConversationId) {
+      handleStartOver();
+      return;
+    }
+
+    if (consumeDraftResume("lookup")) {
+      const draft = loadDraft("lookup");
+      if (draft) hydrateFromLookupDraft(draft);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to historyResumeVersion; the consume*/activeConversationId/handleStartOver/restoreConversation values are read via closure at fire time, not listed, so an unrelated render doesn't re-run this.
+  }, [historyResumeVersion]);
 
   const wasActiveForDraftRef = useRef(isActive);
 
@@ -378,6 +411,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
     setSearchInput("");
     setOpenTopicId(null);
     setActiveConversationId(null);
+    setReopenedFromHistory(false);
     closeScanRef.current();
   }
 
@@ -389,6 +423,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   function handleEditCards(): void {
     startOver();
     setActiveConversationId(null);
+    setReopenedFromHistory(false);
   }
 
   // REQ-206: Add in-depth details carries every attached card and the typed question (or
@@ -399,42 +434,6 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
     goToInDepthDetails(selectedCards, trimmedQuestion || composedQuestion);
   }
 
-  function openHistory(): void {
-    setHistoryEntries(loadHistoryEntries("lookup"));
-    setLookupDraft(loadDraft("lookup"));
-    setIsHistoryOpen(true);
-  }
-
-  function handleSelectHistoryEntry(entry: ConversationHistoryEntry): void {
-    // Opening a saved conversation is the third mid-flight exit (DEC-138), alongside
-    // Menu-leave and reload. It never changes `isActive` — this destination stays mounted
-    // and active — so the edge effect above cannot see it, and without this call
-    // restoreConversation would overwrite staged work with nothing recoverable. Snapshot
-    // first, then restore, so the staged attempt reappears as the Draft row in the same
-    // drawer the user is already looking at. Silent by design: no dialog, no notice.
-    snapshotMidFlightDraft();
-    restoreConversation(entry);
-    setActiveConversationId(entry.id);
-    setIsHistoryOpen(false);
-  }
-
-  // DEC-143/REQ-118/FLOW-018: deletes a completed entry from storage and refreshes the list
-  // first; only then, if it was the active conversation, clears the workspace by reusing the
-  // same handleStartOver path Start Over already uses. handleStartOver's own resets (not
-  // onConversationUpdated) are what run here, so the deleted thread is never re-saved.
-  function handleDeleteHistoryEntry(entry: ConversationHistoryEntry): void {
-    deleteHistoryEntry(entry.id);
-    setHistoryEntries(loadHistoryEntries("lookup"));
-    if (entry.id === activeConversationId) {
-      handleStartOver();
-    }
-  }
-
-  function handleSelectDraft(draft: LookupDraftState): void {
-    hydrateFromLookupDraft(draft);
-    setIsHistoryOpen(false);
-  }
-
   const retryLabel = retryCountdown > 0 ? `Retry in ${retryCountdown}s` : "Retry";
   const frozenLookupCards =
     frozenContext?.kind === "lookup" ? frozenContext.cards : [];
@@ -443,7 +442,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   if (isConversationActive) {
     return (
       <PageShell>
-        <StagedStepHeader historyTrigger={{ onOpen: openHistory }} />
+        <StagedStepHeader />
         <div className="flex flex-wrap items-center justify-between gap-2">
           <StepEyebrow stepName={PAGE_TITLE} />
           {!isSubmitting && !isFollowUpSubmitting && (
@@ -456,16 +455,8 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
             </button>
           )}
         </div>
-
-        <ConversationHistoryDrawer
-          isOpen={isHistoryOpen}
-          onClose={() => setIsHistoryOpen(false)}
-          entries={historyEntries}
-          activeConversationId={activeConversationId}
-          onSelectEntry={handleSelectHistoryEntry}
-          onDeleteEntry={handleDeleteHistoryEntry}
-          draft={lookupDraft ? { updatedAt: lookupDraft.updatedAt, onSelect: () => handleSelectDraft(lookupDraft) } : null}
-        />
+        {/* REQ-213/FLOW-016: reopened from Question History, not a fresh submit. */}
+        {reopenedFromHistory && <p className="text-xs text-zinc-400">Reopened from your history</p>}
 
         {chipDetailCardId &&
           (() => {
@@ -511,7 +502,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
     <PageShell>
       {!scanCapture.isOpen && (
         <>
-          <StagedStepHeader historyTrigger={{ onOpen: openHistory }} />
+          <StagedStepHeader />
           {/* REQ-206: Add card and Scan sit beside the title. */}
           <div className="flex flex-wrap items-center justify-between gap-2">
             <StepEyebrow stepName={PAGE_TITLE} />
@@ -537,16 +528,6 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
           </div>
         </>
       )}
-
-      <ConversationHistoryDrawer
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        entries={historyEntries}
-        activeConversationId={activeConversationId}
-        onSelectEntry={handleSelectHistoryEntry}
-        onDeleteEntry={handleDeleteHistoryEntry}
-        draft={lookupDraft ? { updatedAt: lookupDraft.updatedAt, onSelect: () => handleSelectDraft(lookupDraft) } : null}
-      />
 
       {scanCapture.isOpen ? (
         <section className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-3">

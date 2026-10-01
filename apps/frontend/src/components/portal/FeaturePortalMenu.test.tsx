@@ -5,7 +5,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FeaturePortalMenu } from "./FeaturePortalMenu";
 import { PortalSlot } from "./PortalSlot";
 import { ShellBounds } from "./ShellBounds";
-import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
 import { LeftEdgeDrawerProvider } from "../../lib/portal/leftEdgeDrawerContext";
 import type { DestinationId, PortalEntry } from "../../lib/portal/types";
 import { navigateToPath, startOnInDepthQuestion } from "../../test/appTestHelpers";
@@ -495,9 +494,8 @@ describe("FeaturePortalMenu Question History row (REQ-067)", () => {
     expect(items).toEqual(["MTG Assistant", "Question History", "Trade"]);
   });
 
-  it("opens the active destination's history trigger and closes the Menu, without changing the active destination", async () => {
+  it("opens the combined Question History sheet and closes the Menu, without changing the active destination (REQ-213)", async () => {
     const user = userEvent.setup();
-    const historyOnOpen = vi.fn();
     const onSelect = vi.fn();
     render(
       <FeaturePortalMenu
@@ -510,7 +508,6 @@ describe("FeaturePortalMenu Question History row (REQ-067)", () => {
         onColorlessCustomChange={vi.fn()}
         onColorlessReset={vi.fn()}
       >
-        <PortalSlot historyTrigger={{ onOpen: historyOnOpen }} />
         <div>content</div>
       </FeaturePortalMenu>
     );
@@ -518,19 +515,22 @@ describe("FeaturePortalMenu Question History row (REQ-067)", () => {
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("menuitem", { name: "Question History" }));
 
-    expect(historyOnOpen).toHaveBeenCalledOnce();
+    expect(screen.getByRole("dialog", { name: /Question History/ })).toBeInTheDocument();
     expect(onSelect).not.toHaveBeenCalled();
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
-  it("is present but disabled when the visible slot has no history trigger", async () => {
+  it("is always enabled, regardless of whether the visible slot has a history trigger of its own (REQ-103/REQ-107)", async () => {
     const user = userEvent.setup();
     render(<SlotHarness />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
 
     const row = screen.getByRole("menuitem", { name: "Question History" });
-    expect(row).toBeDisabled();
+    expect(row).not.toBeDisabled();
+
+    await user.click(row);
+    expect(screen.getByRole("dialog", { name: /Question History/ })).toBeInTheDocument();
   });
 });
 
@@ -1013,38 +1013,27 @@ describe("Chrome integration", () => {
     expect(portalContainerClassName).not.toContain("fixed");
   });
 
-  it("closes an open history drawer when the Menu opens, and vice versa, via the shared left-edge signal", async () => {
+  it("closes the Question History sheet when the Menu opens, and vice versa, via the shared left-edge signal", async () => {
+    // REQ-213: the combined-list sheet is now FeaturePortalMenu's own, opened from its
+    // "Question History" row — no separate standalone drawer to coordinate.
     const user = userEvent.setup();
 
-    function TwoDrawerHarness(): JSX.Element {
-      const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-      return (
-        <LeftEdgeDrawerProvider>
-          <Harness />
-          <button type="button" onClick={() => setIsHistoryOpen(true)}>
-            Open history
-          </button>
-          <ConversationHistoryDrawer
-            isOpen={isHistoryOpen}
-            onClose={() => setIsHistoryOpen(false)}
-            entries={[]}
-            onSelectEntry={vi.fn()}
-          />
-        </LeftEdgeDrawerProvider>
-      );
-    }
+    render(
+      <LeftEdgeDrawerProvider>
+        <Harness />
+      </LeftEdgeDrawerProvider>
+    );
 
-    render(<TwoDrawerHarness />);
-
-    await user.click(screen.getByRole("button", { name: "Open history" }));
-    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("menuitem", { name: "Question History" }));
+    expect(screen.getByRole("dialog", { name: /Question History/ })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
     expect(screen.getByRole("menu")).toBeInTheDocument();
-    expect(screen.queryByRole("dialog", { name: "Conversation history" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: /Question History/ })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Open history" }));
-    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
+    await user.click(screen.getByRole("menuitem", { name: "Question History" }));
+    expect(screen.getByRole("dialog", { name: /Question History/ })).toBeInTheDocument();
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 });

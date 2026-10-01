@@ -1,6 +1,5 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router";
-import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
 import { EnrichmentStep } from "../EnrichmentStep";
 import { StagedStepHeader } from "../StagedStepHeader";
 import { StationsRail } from "../StationsRail";
@@ -8,10 +7,9 @@ import { StepEyebrow } from "../StepEyebrow";
 import { ZoneCollectionStep } from "../ZoneCollectionStep";
 import { ZoneConfirmStep } from "../ZoneConfirmStep";
 import { logFrontendDebug } from "../../lib/debugLogger";
-import type { ConversationHistoryEntry, GameDraftState } from "../../lib/conversationHistory/persistence";
+import type { GameDraftState } from "../../lib/conversationHistory/persistence";
 import {
   clearDraft,
-  deleteHistoryEntry,
   loadDraft,
   loadHistoryEntries,
   saveDraft,
@@ -165,7 +163,14 @@ export interface MtgAssistantAppProps {
 
 export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.Element {
   const navigate = useNavigate();
-  const { consumeSeed, consumeLookupCarry } = useAssistantSeed();
+  const {
+    consumeSeed,
+    consumeLookupCarry,
+    consumeHistoryResume,
+    consumeHistoryDeletion,
+    consumeDraftResume,
+    historyResumeVersion
+  } = useAssistantSeed();
   const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
   const [flowStep, setFlowStep] = useState<FlowStepId>("game-context");
@@ -194,10 +199,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   const [secondaryDetailsExpanded, setSecondaryDetailsExpanded] = useState(false);
   const [displayNamesByPlayer, setDisplayNamesByPlayer] = useState<Record<PlayerLabel, string>>(createDefaultDisplayNames);
   const [countersByPlayer, setCountersByPlayer] = useState<AssistantCountersByPlayer>(createEmptyCountersByPlayer);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [historyEntries, setHistoryEntries] = useState<ConversationHistoryEntry[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [gameDraft, setGameDraft] = useState<GameDraftState | null>(null);
 
   // DestinationOutlet keeps previously visited destinations mounted. Running after
   // every render lets an already-mounted Assistant atomically take the one-shot seed
@@ -784,49 +786,45 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     navigate("/quick-lookup");
   }
 
-  function openHistory(): void {
-    setHistoryEntries(loadHistoryEntries("game"));
-    setGameDraft(loadDraft("game"));
-    setIsHistoryOpen(true);
-  }
-
-  function handleSelectHistoryEntry(entry: ConversationHistoryEntry): void {
-    // Opening a saved conversation is the third mid-flight exit (DEC-138), alongside
-    // Menu-leave and reload. It never changes `isActive` — this destination stays mounted
-    // and active — so the edge effect above cannot see it, and without this call
-    // restoreConversation would overwrite staged work with nothing recoverable. Snapshot
-    // first, then restore, so the staged attempt reappears as the Draft row in the same
-    // drawer the user is already looking at. Silent by design: no dialog, no notice.
-    snapshotMidFlightDraft();
-    restoreConversation(entry);
-    setActiveConversationId(entry.id);
-    setIsHistoryOpen(false);
-    // The restored conversation only renders inside EnrichmentStep, so selecting an entry
-    // from any earlier staged step (game-context, zone-confirm, zone-collection) has to
-    // move the flow there as well. Without this the drawer closed onto the step the user
-    // was already on — the conversation looked like it never opened — and then ambushed
-    // them with someone else's thread the moment they walked the flow forward to
-    // enrichment on their own. Quick Question has no equivalent bug: its whole screen is
-    // gated on `isConversationActive`, so restoring is enough there. (DEC-124)
-    setFlowStep("enrichment");
-  }
-
-  function handleSelectDraft(draft: GameDraftState): void {
-    hydrateFromGameDraft(draft);
-    setIsHistoryOpen(false);
-  }
-
-  // DEC-143/REQ-118/FLOW-018: deletes a completed entry from storage and refreshes the list
-  // first; only then, if it was the active conversation, clears the workspace by reusing the
-  // same handleStartOver path Start Over already uses. handleStartOver's own resets (not
-  // onConversationUpdated) are what run here, so the deleted thread is never re-saved.
-  function handleDeleteHistoryEntry(entry: ConversationHistoryEntry): void {
-    deleteHistoryEntry(entry.id);
-    setHistoryEntries(loadHistoryEntries("game"));
-    if (entry.id === activeConversationId) {
-      handleStartOver();
+  // REQ-213/FLOW-016/FLOW-017/FLOW-018: Question History now lives one level up
+  // (FeaturePortalMenu's combined sheet), so this destination's own exits for it are a
+  // mailbox it consumes rather than local drawer state. `historyResumeVersion` is the one
+  // reactive signal covering all three mailboxes — each `consume*` call below is mode-aware
+  // and a no-op when nothing matching "game" is pending, so this effect is safe to run on
+  // every bump regardless of which flow (or neither) the player actually acted on.
+  useEffect(() => {
+    const resumeEntry = consumeHistoryResume("game");
+    if (resumeEntry) {
+      // Opening a saved conversation is the third mid-flight exit (DEC-138), alongside
+      // Menu-leave and reload. Snapshot first, then restore, so a staged attempt reappears
+      // as this flow's own Draft row the next time History opens. Silent by design.
+      snapshotMidFlightDraft();
+      restoreConversation(resumeEntry);
+      setActiveConversationId(resumeEntry.id);
+      // The restored conversation only renders inside EnrichmentStep, so resuming an entry
+      // from any earlier staged step (game-context, zone-confirm, zone-collection) has to
+      // move the flow there as well — otherwise the sheet closed onto the step the user was
+      // already on, and then ambushed them with someone else's thread the moment they
+      // walked the flow forward to enrichment on their own. Quick Question has no
+      // equivalent: its whole screen is gated on `isConversationActive`. (DEC-124)
+      setFlowStep("enrichment");
+      return;
     }
-  }
+
+    const deletedId = consumeHistoryDeletion("game");
+    if (deletedId && deletedId === activeConversationId) {
+      // DEC-143/REQ-118/FLOW-018: handleStartOver's own resets (not onConversationUpdated)
+      // run here, so the deleted thread is never re-saved.
+      handleStartOver();
+      return;
+    }
+
+    if (consumeDraftResume("game")) {
+      const draft = loadDraft("game");
+      if (draft) hydrateFromGameDraft(draft);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to historyResumeVersion; the consume*/activeConversationId/handleStartOver/restoreConversation values are read via closure at fire time, not listed, so an unrelated render doesn't re-run this.
+  }, [historyResumeVersion]);
 
   const stationsRail = (
     <StationsRail currentStep={flowStep} furthestStepIndex={furthestStepIndex} onNavigate={handleRailNavigate} />
@@ -837,10 +835,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   if (flowStep === "game-context") {
     content = (
       <PageShell>
-          <StagedStepHeader
-            onBrandClick={() => setBrandClickCount((c) => c + 1)}
-            historyTrigger={{ onOpen: openHistory }}
-          />
+          <StagedStepHeader onBrandClick={() => setBrandClickCount((c) => c + 1)} />
           {stationsRail}
           <StepEyebrow stepName="Game context" />
           {showCatEasterEgg && (
@@ -1050,7 +1045,6 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         }}
         onContinue={confirmZoneSelection}
         statusMessage={statusMessage}
-        historyTrigger={{ onOpen: openHistory }}
         stationsRail={stationsRail}
       />
     );
@@ -1079,7 +1073,6 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         canContinue={canContinueCollection}
         onFlashStatus={flashStatus}
         statusMessage={statusMessage}
-        historyTrigger={{ onOpen: openHistory }}
         stationsRail={stationsRail}
         pendingPlacementCards={pendingPlacementCards}
         placementTotal={placementTotal}
@@ -1120,7 +1113,6 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         frozenGameContext={frozenGameContext}
         onFollowUp={handleFollowUp}
         onStartOver={handleStartOver}
-        historyTrigger={{ onOpen: openHistory }}
       />
     );
   }
@@ -1128,15 +1120,6 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   return (
     <div key={flowStep} className="motion-enter">
       {content}
-      <ConversationHistoryDrawer
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        entries={historyEntries}
-        activeConversationId={activeConversationId}
-        onSelectEntry={handleSelectHistoryEntry}
-        onDeleteEntry={handleDeleteHistoryEntry}
-        draft={gameDraft ? { updatedAt: gameDraft.updatedAt, onSelect: () => handleSelectDraft(gameDraft) } : null}
-      />
     </div>
   );
 }

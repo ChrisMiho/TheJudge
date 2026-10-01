@@ -218,38 +218,50 @@ language live here.
   `--layout-surface-gap` owns the spacing — no rail-sized compensating constant.
   History↔View Context non-overlap still holds. (DEC-141, REQ-116, DEC-129)
 
-### Conversation history drawer
+### Question History (REQ-213 — superseded the per-flow history drawer)
 
 - Built: any conversation that reaches at least one successful answer auto-saves to
   a browser-local, single-device history list, capped at the **20 most recent**
-  completed entries (a 21st prunes the oldest). Each entry stores flow/mode, the
-  frozen context snapshot (`GameContext` or attached card), the full message thread,
-  and a created/updated timestamp; reads are guarded try/catch with corrupt entries
-  dropped. Selecting an entry restores its frozen context, mode, and thread and
-  re-enables follow-ups exactly as a freshly-answered conversation. (DEC-124,
-  FLOW-016, DEC-103-precedent)
-- Built: the drawer opens from the **History zone of the Menu corner rail** on
-  In-Depth Question and Quick Question, always present — including empty history,
-  every pre-submit step, and immediately after Start Over — and must not overlap
-  View Context. It presents as a left-edge, full-height drawer at every viewport,
-  mutually exclusive with the Menu tray via `LeftEdgeDrawerContext`. Selecting a
-  saved conversation on In-Depth from any staged step lands the flow on the answered
-  workspace in the same action. (DEC-126, DEC-129, DEC-134, DEC-125, FLOW-016)
-- Built: each conversation-bearing destination keeps exactly one browser-local
-  **Draft** slot snapshotting mid-flight staging (typed question, optional card,
-  staged game/zones/enrichment, current step) so Menu navigation, reload, or opening
-  a saved conversation do not wipe pre-submit work. The drawer lists Draft as its own
-  row, distinct from completed entries; selecting it restores staged state. Draft
-  auto-hydrates the mid-flight UI on destination mount (reload or Menu return). The
-  first successful submit clears Draft and the conversation enters completed history;
-  Draft does not count toward the 20-entry cap. Opening a saved conversation from
-  mid-flight staging silently snapshots Draft first, in both destinations. (DEC-130,
-  DEC-138, FLOW-017)
-- Built: each completed row exposes a delete control, distinct from select-to-resume,
-  that confirms before removing the entry; deleting the active completed conversation
-  clears the workspace to its clean pre-answer state without re-saving the deleted
-  thread. The prune-at-20 cap is preserved; Draft rows are not deletable via this
-  control. (DEC-143, REQ-118, FLOW-018)
+  completed entries across both question kinds (a 21st prunes the oldest). Each entry
+  stores flow/mode, the frozen context snapshot (`GameContext` or attached cards), the
+  full message thread, and a created/updated timestamp; reads are guarded try/catch
+  with corrupt entries dropped. (DEC-124, FLOW-016, DEC-103-precedent)
+- Built: Question History is a Menu row directly under Ask a Question, opened on the
+  shared sheet (REQ-208), always present on every destination — including empty
+  history, every pre-submit step, and immediately after Start Over — and must not
+  overlap View Context. There is no separate History rail zone; choosing the row
+  closes the Menu tray first, so the two never overlap. The sheet lists saved
+  conversations of **both kinds in one list**, most-recent-first, each row showing a
+  small fan of the conversation's cards, the question, the ruling's first line, and a
+  meta line (kind, cards, the game context for In-depth, follow-ups, when). (DEC-126,
+  DEC-129, DEC-134, REQ-208, REQ-213, FLOW-016)
+- Built: below `600px` a tap on a row closes the sheet and reopens that conversation
+  live in its own flow immediately — the one the entry belongs to, switching
+  destination first when it is the other one. From `600px` the sheet is two panes: the
+  list (a tap only selects) and the selected conversation read in full, with **Open
+  conversation** (the same live reopen) and **Delete this question** at its foot. An
+  Ask a Question conversation reopens on the Ask a Question page with its cards in the
+  strip, the thread, and "Reopened from your history" under the title; an In-depth
+  conversation reopens in In-depth details' chat with View Context available, flow
+  advanced to the station that hosts it. (REQ-213, FLOW-016)
+- Built: each flow keeps exactly one browser-local **Draft** slot snapshotting
+  mid-flight staging (typed question, optional cards, staged game/zones/enrichment,
+  current step) so Menu navigation, reload, or opening a saved conversation do not
+  wipe pre-submit work. Question History lists each flow's Draft as its own row above
+  the saved conversations; selecting it restores that flow's staged state (switching
+  destination first when needed) and does not count toward the 20-entry cap. Draft
+  auto-hydrates the mid-flight UI on destination mount (reload or Menu return), and
+  also on an explicit Draft-row select while that destination is already active — a
+  mount-only effect would miss the latter. Opening a saved conversation from mid-flight
+  staging silently snapshots Draft first, in either flow. (DEC-130, DEC-138, FLOW-017,
+  REQ-213)
+- Built: each completed row — the row's own delete control below `600px`, or **Delete
+  this question** in the reading pane from `600px` — asks first through the shared
+  confirm sheet (REQ-208) before removing the entry; deleting the active completed
+  conversation clears its own flow's workspace to its clean pre-answer state without
+  re-saving the deleted thread, even when Question History deleted it from a different
+  flow than the one currently open. The prune-at-20 cap is preserved; Draft rows are
+  not deletable via this control. (DEC-143, REQ-118, REQ-208, FLOW-018, REQ-213)
 
 ### View Context / adaptive-context overlay
 
@@ -262,10 +274,10 @@ language live here.
   setup/zone/card/enrichment detail; Quick Question supplies a card-name trigger reusing
   the shared read-only card presentation when a card is attached, and renders no trigger
   or container without a card. (DEC-118, DEC-141)
-- Built: View Context, the History drawer, and the Menu tray all dismiss on
+- Built: View Context, Question History, and the Menu tray all dismiss on
   outside/scrim click in addition to Close and Escape, without closing on clicks inside
   the panel surface — one shared outside-click implementation across the overlay family.
-  (DEC-142, REQ-117, REQ-135)
+  (DEC-142, REQ-117, REQ-135, REQ-213)
 - Built: opening View Context on a resumed lookup card never white-screens the app —
   `CardSelectionPreview` tolerates missing/undefined `colors` / `supertypes` /
   `subtypes` and other optional fields, falling back to N/A-style empty handling instead
@@ -408,10 +420,13 @@ not product truth.
   content does not overflow the shell/viewport bottom. Theme band cells ≥40px,
   sliding with arrows when six do not fit. (DEC-133, DEC-147, REQ-113, REQ-122,
   REQ-131, REQ-207)
-- History drawer width: phone `min(22rem, 88vw)`; desktop `min(30rem, 90vw)`; left-edge
-  full-height at every viewport, no `max-height` cap. Completed-history retention: 20
-  entries, oldest pruned; plus at most one Draft row per destination (not counted toward
-  the 20). (DEC-134, DEC-124, DEC-130)
+- Question History: the shared sheet (REQ-208) — bottom sheet below `600px`, floating
+  centred card with two panes from `600px` (the list, and the selected conversation read
+  in full with Open conversation / Delete this question). Superseded geometry: a left-edge
+  full-height drawer, phone `min(22rem, 88vw)` / desktop `min(30rem, 90vw)`, no
+  `max-height` cap. Completed-history retention: 20 entries across both question kinds,
+  oldest pruned; plus at most one Draft row per flow (not counted toward the 20). (DEC-124,
+  DEC-130, DEC-134, REQ-208, REQ-213)
 - View Context overlay: phone bottom sheet caps so a dismissible scrim of **≥25% of
   viewport height** remains at 390×844 — i.e. ≤`75dvh`, tightening the shipped
   `min(85dvh, 48rem)`; desktop right drawer within workspace rules. The frozen card inside

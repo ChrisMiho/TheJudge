@@ -55,7 +55,14 @@ function renderWithSeed(seed: RosterSeed): void {
             return pending;
           },
           queueLookupCarry: vi.fn(),
-          consumeLookupCarry: () => null
+          consumeLookupCarry: () => null,
+          queueHistoryResume: vi.fn(),
+          consumeHistoryResume: () => null,
+          queueHistoryDeletion: vi.fn(),
+          consumeHistoryDeletion: () => null,
+          queueDraftResume: vi.fn(),
+          consumeDraftResume: () => false,
+          historyResumeVersion: 0
         }}
       >
         <MtgAssistantApp />

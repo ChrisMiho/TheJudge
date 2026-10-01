@@ -359,16 +359,16 @@
   - "complete candidate" does not validate mana, commander designation, card state, legality, or prose prerequisites (DEC-116)
 
 ### FLOW-016
-- Name: Resume a saved conversation from history
-- Trigger: User opens the shared conversation workspace's history drawer and selects a saved conversation
+- Name: Resume a saved conversation from Question History
+- Trigger: User opens **Question History** from the Menu and selects a saved conversation
 - Preconditions:
   - at least one conversation has previously reached a successful answer and was auto-saved (REQ-103)
 - Main Flow:
-  1. User opens the history drawer from the shared conversation workspace.
-  2. Drawer lists saved conversations most-recent-first, each showing flow, timestamp, and a preview of the first question.
-  3. User selects an entry.
-  4. If the currently active conversation has at least one successful answer, it is auto-saved to history first.
-  5. The selected entry's frozen context (game context or attached card), mode, and full message thread load into the workspace, replacing the previously active conversation.
+  1. User opens **Question History** from the Menu (REQ-213).
+  2. The shared sheet lists saved conversations of both question kinds most-recent-first, each showing a fan of its cards, the question, the ruling's first line, and a meta line (kind, cards, the game context for In-depth, follow-ups, when).
+  3. User selects an entry: below `600px` the tap reopens it; from `600px` it shows in the reading pane and **Open conversation** reopens it.
+  4. If the currently active conversation in that entry's own flow has at least one successful answer, it is auto-saved to history first.
+  5. The selected entry's frozen context (game context or attached cards), mode, and full message thread load into its own flow's workspace — an Ask a Question conversation on the Ask a Question page with "Reopened from your history" under the title, an In-depth conversation in In-depth details' chat with View Context — replacing the previously active conversation of that flow. Resuming an entry from the *other* flow switches destination to it first.
   6. The follow-up composer enables; the user can continue asking follow-ups under the same limits and frozen-context rules as a freshly-decrypted conversation.
   7. On the next successful follow-up in the resumed conversation, its history entry moves to most-recent in the list.
 - Edge Cases:
@@ -376,60 +376,63 @@
   - history list exceeds 20 entries → oldest entry is pruned automatically on the next save
   - user selects the same conversation that is already active → no-op, workspace state unchanged
   - user starts a brand-new conversation instead of resuming → existing Start Over / New conversation flow applies unchanged (DEC-040/REQ-029), with auto-save of the outgoing conversation per REQ-103; subsequent mid-flight staging after Start Over becomes/overwrites the Draft slot (REQ-108 / FLOW-017)
-  - the feature-portal Menu drawer is already open when the user opens the history drawer (or vice versa) → the previously open drawer closes first, so only one left-edge drawer is ever open at a time (DEC-125)
-  - History control is unavailable / missing after Start Over → defect; History must remain always visible on In-Depth Question and Quick Question (REQ-107 / DEC-129)
+  - choosing Question History from the Menu closes the Menu tray before the sheet opens, so the two never overlap
+  - Question History missing from the Menu → defect; it must be reachable on every destination (REQ-107, REQ-213)
 - Notes:
   - resumed frozen context stays read-only; no zone/card/enrichment editing is introduced (DEC-040 unchanged)
   - no backend, contract, or provider behavior changes; this is a frontend state-restoration flow only
   - Draft resume (pre-submit mid-flight) is FLOW-017, not this completed-conversation resume path
+  - amended for the `ui-reimagining-build` pass (2026-09-30): Question History replaces the per-flow history drawer (REQ-213); a cross-flow resume switches destination as part of the same gesture
 
 ### FLOW-017
 - Name: Preserve and resume mid-flight Draft across Menu leave and reload
-- Trigger: User stages mid-flight work on In-Depth Question or Quick Question before first successful submit, then leaves via Menu, reloads, or opens History
+- Trigger: User stages mid-flight work on In-Depth Question or Quick Question before first successful submit, then leaves via Menu, reloads, or opens Question History
 - Preconditions:
   - user is on (or returning to) In-Depth Question or Quick Question
-  - History rail is always visible on these destinations (REQ-107)
+  - Question History is reachable from the Menu on every destination (REQ-107, REQ-213)
 - Main Flow:
-  1. User stages mid-flight state (typed question, optional card, zones/enrichment, current step — anything before first successful submit). The destination's single Draft slot is written/updated and appears in History as **Draft**.
+  1. User stages mid-flight state (typed question, optional card, zones/enrichment, current step — anything before first successful submit). The destination's single Draft slot is written/updated and appears in Question History as its own **Draft** row.
   2. User may open Menu and navigate to another destination (or reload the page) without submitting; Draft remains browser-local.
   3. Returning to that destination via Menu, or reloading while that destination mounts, auto-hydrates mid-flight UI from Draft (DEC-103-style) so staged work is not lost.
-  4. User may also open History from the corner rail (including from a pre-submit step) and select **Draft** or a completed conversation (FLOW-016).
-  5. Selecting Draft restores that destination's mid-flight staged state so the user can continue toward submit.
-  5a. Selecting a *completed* conversation from a pre-submit step snapshots the current staging to the Draft slot first, then lands on that conversation (DEC-134). The staged attempt is immediately recoverable as the **Draft** row in the same drawer; no confirmation or notice interrupts the transition (DEC-138).
+  4. User may also open Question History from the Menu (including from a pre-submit step) and select **Draft** or a completed conversation (FLOW-016).
+  5. Selecting Draft restores that flow's mid-flight staged state so the user can continue toward submit — switching destination first when the Draft belongs to the other flow, then re-hydrating from storage immediately rather than waiting for a future mount (the owning flow is already mounted-but-hidden when the player started on it).
+  5a. Selecting a *completed* conversation from a pre-submit step snapshots the current staging to the Draft slot first, then lands on that conversation (DEC-134). The staged attempt is immediately recoverable as the **Draft** row in Question History; no confirmation or notice interrupts the transition (DEC-138).
   6. After Start Over from an answered conversation (completed auto-save per REQ-103), new mid-flight staging becomes/overwrites that destination's Draft (still one row). Start Over itself remains answered-only (REQ-029).
 - Edge Cases:
-  - empty completed history and no Draft → History still opens to an empty/zero-state list
-  - Draft storage corrupt → Draft dropped; History still opens; destination mounts fresh
+  - empty completed history and no Draft → Question History still opens to an empty/zero-state list
+  - Draft storage corrupt → Draft dropped; Question History still opens; destination mounts fresh
   - first successful submit while a Draft exists for the attempt → Draft cleared; conversation enters completed-history path
-  - switching to Life Tracker / Trade Balancer → those destinations have no History zone; returning to In-Depth / Quick Question restores always-on History and auto-hydrates Draft if present
+  - switching to Life Tracker / Trade Balancer → Question History stays reachable from the Menu there; returning to Ask a Question or In-depth details auto-hydrates Draft if present
   - selecting a completed conversation with no meaningful staging present → no Draft written, matching Menu-leave's empty-staging behavior
   - selecting a completed conversation while an answered conversation is already active → no Draft to maintain; restore proceeds unchanged
 - Notes:
   - one Draft per conversation-bearing destination; no unfinished backlog; no mid-flight Start Over invent (DEC-130)
   - pre-submit empty lower-half screen fill is out of scope for this flow
   - the three mid-flight exits — Menu leave, reload, and opening a saved conversation — are all Draft-covered and must behave identically in both conversation-bearing destinations (DEC-138)
+  - amended for the `ui-reimagining-build` pass (2026-09-30): Draft lives in Question History (REQ-213), not the retired rail; selecting a Draft already on its own destination re-hydrates immediately rather than relying on a mount effect
 
 ### FLOW-018
-- Name: Delete a saved conversation from history
-- Trigger: User opens the History drawer and chooses to delete a completed conversation entry
+- Name: Delete a saved conversation from Question History
+- Trigger: User opens Question History and chooses to delete a completed conversation entry
 - Preconditions:
   - at least one completed conversation exists in browser-local history (REQ-103)
-  - user is on In-Depth Question or Quick Question (History rail available)
+  - Question History is open from the Menu (REQ-213)
 - Main Flow:
-  1. User opens Conversation history from the corner rail.
-  2. User activates delete on a completed entry (not Draft).
-  3. App presents an explicit confirmation step naming that the entry will be removed.
+  1. User opens Question History from the Menu.
+  2. User activates delete on a completed entry (not Draft) — the row's own delete control below `600px`, or **Delete this question** in the reading pane from `600px`.
+  3. App asks first in the shared confirm sheet, naming the entry that will be removed (REQ-208).
   4. User confirms; app removes the entry from local storage and from the list.
-  5. If the deleted entry was the active conversation, the workspace clears to the destination's clean pre-answer state without re-saving that thread; otherwise the active workspace is unchanged.
-  6. User may close History via Close, Escape, or outside/scrim click (REQ-117).
+  5. If the deleted entry was the active conversation **in its own flow**, that flow's workspace clears to its clean pre-answer state without re-saving that thread — even when Question History was opened from the *other* flow; otherwise the active workspace is unchanged.
+  6. User may close Question History via ✕, Escape, or outside/scrim click (REQ-117, REQ-208).
 - Edge Cases:
-  - user cancels confirmation → entry remains; drawer stays open
-  - last completed entry deleted → drawer shows empty/zero-state (and Draft row if present)
+  - user cancels confirmation → entry remains; Question History stays open
+  - last completed entry deleted → Question History shows its empty state (and Draft rows if present)
   - storage write fails → app does not crash; user can retry; existing guarded persistence pattern applies
   - Draft row → no delete-via-this-flow; Draft remains overwrite/clear per FLOW-017
 - Notes:
   - frontend-only; no backend, accounts, or sync (DEC-143)
   - auto-prune at 20 completed entries remains for entries the user does not delete
+  - amended for the `ui-reimagining-build` pass (2026-09-30): delete confirms through the shared confirm sheet (REQ-208) rather than a bespoke confirm step, and reaches the active conversation's own flow even when deleted from the other flow's view of Question History (REQ-213)
 
 ### FLOW-020
 - Name: Owner halts a graph run in flight

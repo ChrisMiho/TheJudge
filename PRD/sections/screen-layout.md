@@ -112,15 +112,15 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Fit | Overlay; popup body may region-scroll if detail is long; the close control lays out **inside** the overlay's own bounds at every width; must not invent a second page-length scroll for the hosting step |
 | Notes | DEC-151, DEC-158, DEC-159, REQ-128, REQ-142, REQ-175, REQ-208, FLOW-024 — applies whenever a card image is shown across all six surfaces: Quick Question card search, In-Depth Enrichment, View Context, In-Depth zone selected-card/add preview, In-Depth zone strip, and Scan review. Superseded geometry: `absolute inset-0` over the image, measured at 92×128px holding 356px of content with its close X overflowing by 37px (DEC-158); the `768px` side panel (DEC-158) is further superseded by REQ-208's `600px` centred card. **On-demand load state (REQ-128 / FLOW-024):** the descriptive block is fetched on first card-detail open, so the popup shows a brief loading state confined to the descriptive-content region while the already-local name, image, and color ring stay rendered and do not move. Keep it quiet and minimal — it must not introduce a branded splash, a full-overlay spinner takeover, a progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and must not resize the overlay or shift surrounding content (no layout jump when the block resolves). A minimal inline placeholder/skeleton in the descriptive region is allowed; a failed load falls soft to the name identity fallback (FLOW-001) with a retry affordance, never an error takeover |
 
-#### Conversation history drawer
+#### Question History (REQ-213 — superseded the conversation history drawer)
 
 | | |
 |---|---|
-| Purpose | List/restore/delete saved conversations |
-| Phone | Left-edge full-height; width ≈ `min(22rem, 88% viewport)` (DEC-134) |
-| Desktop/tablet | Left-edge full-height; width ≈ `min(30rem, 90% viewport)` |
-| Fit | Overlay; list may region-scroll inside drawer |
-| Notes | DEC-124, DEC-134, DEC-126. Mutually exclusive with Menu tray |
+| Purpose | Question History: list, reopen and delete saved conversations of both question kinds (REQ-213) |
+| Phone | The shared sheet (REQ-208) as a bottom sheet below `600px`; one list; a tap reopens the conversation |
+| Desktop/tablet | The shared sheet as a floating centred card from `600px` up, in two panes: the list and the chosen conversation with Open conversation / Delete this question. Superseded geometry: a left-edge full-height drawer, `min(22rem, 88vw)` phone / `min(30rem, 90vw)` desktop (DEC-134) |
+| Fit | Overlay; the list and the reading pane region-scroll inside the sheet body; head and foot fixed |
+| Notes | DEC-124, DEC-126, REQ-208, REQ-213. Opened from the Menu's Question History row; no rail History zone |
 
 #### View Context / adaptive context overlay
 

@@ -1,250 +1,330 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useId, useState } from "react";
 import type { ConversationHistoryEntry } from "../lib/conversationHistory/persistence";
-import { useLeftEdgeDrawer } from "../lib/portal/leftEdgeDrawerContext";
-import { OverlayCloseButton } from "./OverlayCloseButton";
-import { useOutsideDismiss } from "../hooks/useOutsideDismiss";
+import { ConfirmSheet } from "./ConfirmSheet";
+import { SheetShell } from "./SheetShell";
 
-export type ConversationHistoryDraftDescriptor = {
+export type ConversationHistoryDraftRow = {
+  kind: "lookup" | "game";
   updatedAt: string;
-  onSelect: () => void;
+  onResume: () => void;
 };
 
 type ConversationHistoryDrawerProps = {
   isOpen: boolean;
   onClose: () => void;
+  /** Combined, most-recent-first, already capped at 20 across both kinds (REQ-213). */
   entries: ConversationHistoryEntry[];
-  activeConversationId?: string | null;
-  onSelectEntry: (entry: ConversationHistoryEntry) => void;
-  /** Mid-flight staging snapshot for the current destination, if one exists (REQ-108). Rendered
-      as a distinct "Draft" row above completed entries, separate from the 20-entry history list. */
-  draft?: ConversationHistoryDraftDescriptor | null;
-  /** Deletes one completed entry (DEC-143 / REQ-118). Omitted entirely, the Draft row never
-      gets a delete control (DEC-130/138) since it isn't part of the completed-entries map below. */
-  onDeleteEntry?: (entry: ConversationHistoryEntry) => void;
+  /** Each flow's mid-flight Draft (REQ-108), shown as its own row above the saved
+   * conversations (FLOW-017). 0, 1, or 2 rows — one per flow, only when one exists. */
+  draftRows?: ConversationHistoryDraftRow[];
+  /** Closes the sheet and hands the entry to the caller, which switches to that
+   * conversation's own flow and loads it live (REQ-213/FLOW-016). */
+  onResumeEntry: (entry: ConversationHistoryEntry) => void;
+  /** Deletes a completed entry from storage (DEC-143/REQ-118/FLOW-018). Called only
+   * after this component's own confirm step. */
+  onDeleteEntry: (entry: ConversationHistoryEntry) => void;
 };
 
-const FOCUSABLE_SELECTOR = [
-  "a[href]",
-  "button:not([disabled])",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  '[tabindex]:not([tabindex="-1"])'
-].join(",");
-
 const PREVIEW_MAX_CHARS = 80;
+/** REQ-207's sheet-family boundary (DEC-117/NFR-011) — matches `--sheet-breakpoint`
+ * in index.css. CSS custom properties can't drive a JS branch, so this literal is the
+ * canonical number that value must match. */
+const SHEET_WIDE_BREAKPOINT_PX = 600;
 
 function formatUpdatedAt(updatedAt: string): string {
   const parsed = new Date(updatedAt);
   return Number.isNaN(parsed.getTime()) ? updatedAt : parsed.toLocaleString();
 }
 
-function previewSnippet(hiddenInitialQuestion: string): string {
-  return hiddenInitialQuestion.length > PREVIEW_MAX_CHARS
-    ? `${hiddenInitialQuestion.slice(0, PREVIEW_MAX_CHARS)}…`
-    : hiddenInitialQuestion;
+function previewSnippet(text: string): string {
+  return text.length > PREVIEW_MAX_CHARS ? `${text.slice(0, PREVIEW_MAX_CHARS)}…` : text;
 }
 
+type FanCard = { name: string; imageUrl?: string };
+
+/** REQ-213: the cards a row's thumbnail fan draws from — a lookup entry's attached
+ * cards, or a game entry's cards across every zone it used, in no particular order
+ * (the fan is a glance, not a record of zone placement). */
+function cardsFromFrozenContext(context: ConversationHistoryEntry["frozenContext"]): FanCard[] {
+  if (context.kind === "lookup") {
+    return context.cards.map((card) => ({ name: card.name, imageUrl: card.imageUrl }));
+  }
+  const zones = context.gameContext.zones ?? {};
+  return Object.values(zones).flatMap(
+    (zoneCards) => zoneCards?.map((card) => ({ name: card.name, imageUrl: card.imageUrl })) ?? []
+  );
+}
+
+function firstRulingLine(entry: ConversationHistoryEntry): string | null {
+  const firstAnswer = entry.visibleMessages.find((message) => message.role === "assistant");
+  if (!firstAnswer) return null;
+  const line = firstAnswer.content.split("\n")[0] ?? "";
+  return previewSnippet(line);
+}
+
+function metaLine(entry: ConversationHistoryEntry, cardCount: number): string {
+  const kindLabel = entry.mode === "lookup" ? "Ask a Question" : "In-depth details";
+  const cardLabel = cardCount === 1 ? "1 card" : `${cardCount} cards`;
+  const followUps = Math.max(0, entry.visibleMessages.filter((message) => message.role === "user").length - 1);
+  const followUpLabel = followUps === 1 ? "1 follow-up" : `${followUps} follow-ups`;
+  const gameSuffix =
+    entry.mode === "game" && entry.frozenContext.kind === "game"
+      ? ` · ${entry.frozenContext.gameContext.players?.length ?? 0} players`
+      : "";
+  return `${kindLabel}${gameSuffix} · ${cardLabel} · ${followUpLabel} · ${formatUpdatedAt(entry.updatedAt)}`;
+}
+
+/** REQ-213: a small fan of up to three thumbnails plus a "+n" badge; a dashed empty
+ * frame when the entry carries no cards. Purely decorative (aria-hidden) — the row's
+ * own accessible name carries the question text, not the card images. */
+function CardFan({ cards }: { cards: FanCard[] }): JSX.Element {
+  if (cards.length === 0) {
+    return (
+      <span
+        aria-hidden="true"
+        className="h-10 w-7 shrink-0 rounded-md border border-dashed border-zinc-600"
+      />
+    );
+  }
+
+  const shown = cards.slice(0, 3);
+  const overflow = cards.length - shown.length;
+
+  return (
+    <span aria-hidden="true" className="flex shrink-0 items-center">
+      {shown.map((card, index) => (
+        <img
+          key={`${card.name}-${index}`}
+          src={card.imageUrl || undefined}
+          alt=""
+          className="h-10 w-7 rounded border border-zinc-700 bg-zinc-800 object-cover"
+          style={{ marginLeft: index === 0 ? 0 : "-0.6rem", zIndex: index }}
+        />
+      ))}
+      {overflow > 0 && (
+        <span className="ml-1 rounded-full bg-zinc-800 px-1.5 py-0.5 text-[10px] font-semibold text-zinc-300">
+          {`+${overflow}`}
+        </span>
+      )}
+    </span>
+  );
+}
+
+/** REQ-207/REQ-213: the sheet family's two-pane boundary is behavioral here, not just
+ * visual — below it a tap resumes immediately, from it a tap only selects into the
+ * reading pane — so it is read via `innerWidth`/`resize` rather than a CSS media query.
+ * jsdom has no `matchMedia`; `innerWidth` is always present (default 1024, i.e. wide),
+ * which is also why this hook, not a CSS class, is what the two-pane tests drive. */
+function useIsWideSheet(): boolean {
+  const [isWide, setIsWide] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth >= SHEET_WIDE_BREAKPOINT_PX : true
+  );
+
+  useEffect(() => {
+    function handleResize(): void {
+      setIsWide(window.innerWidth >= SHEET_WIDE_BREAKPOINT_PX);
+    }
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  return isWide;
+}
+
+/**
+ * REQ-213: Question History as one combined list for both question kinds, hosted on
+ * the shared sheet (REQ-208). Below `--sheet-breakpoint` a tap closes the sheet and
+ * resumes that conversation live, in its own flow; from it the sheet is two panes —
+ * the list (tap only selects) and the selected conversation read in full, with
+ * **Open conversation** (resumes, same as a narrow tap) and **Delete this question**.
+ * Below the breakpoint each row keeps its own Delete control instead. Either path
+ * confirms through the shared `ConfirmSheet` before deleting (DEC-143/REQ-118).
+ */
 export function ConversationHistoryDrawer({
   isOpen,
   onClose,
   entries,
-  activeConversationId,
-  onSelectEntry,
-  draft,
+  draftRows = [],
+  onResumeEntry,
   onDeleteEntry
 }: ConversationHistoryDrawerProps): JSX.Element | null {
   const titleId = useId();
-  const dialogRef = useRef<HTMLElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
-  const restoreFocusRef = useRef<HTMLElement | null>(null);
-  const { activeDrawer, openDrawer, closeDrawer } = useLeftEdgeDrawer();
-  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
-
-  useOutsideDismiss([dialogRef], onClose, isOpen);
+  const isWide = useIsWideSheet();
+  const [selectedEntryId, setSelectedEntryId] = useState<string | null>(null);
+  const [pendingDeleteEntry, setPendingDeleteEntry] = useState<ConversationHistoryEntry | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      openDrawer("history");
-    } else {
-      closeDrawer("history");
+    // A stale selection or pre-armed delete confirm must not reappear the next time
+    // this sheet opens.
+    if (!isOpen) {
+      setSelectedEntryId(null);
+      setPendingDeleteEntry(null);
     }
-  }, [isOpen, openDrawer, closeDrawer]);
-
-  useEffect(() => {
-    // null means "nothing has claimed the shared slot yet" (e.g. this drawer's own
-    // openDrawer("history") call hasn't round-tripped through the provider yet) — only
-    // a different drawer actually claiming the slot should force this one closed.
-    if (activeDrawer !== null && activeDrawer !== "history" && isOpen) {
-      onClose();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to the shared drawer signal; onClose/isOpen are read at fire time.
-  }, [activeDrawer]);
-
-  useEffect(() => {
-    if (isOpen) {
-      restoreFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      closeRef.current?.focus();
-      return;
-    }
-
-    restoreFocusRef.current?.focus();
-    restoreFocusRef.current = null;
-    // A stale "confirm delete?" row must not reappear pre-armed the next time this drawer opens.
-    setPendingDeleteId(null);
   }, [isOpen]);
 
-  function handleSelectEntry(entry: ConversationHistoryEntry): void {
-    if (entry.id === activeConversationId) return;
-    onSelectEntry(entry);
+  if (!isOpen) {
+    return null;
   }
 
-  function handleConfirmDelete(entry: ConversationHistoryEntry): void {
-    onDeleteEntry?.(entry);
-    setPendingDeleteId(null);
+  const selectedEntry = entries.find((entry) => entry.id === selectedEntryId) ?? null;
+
+  function resume(entry: ConversationHistoryEntry): void {
+    onResumeEntry(entry);
+    onClose();
   }
 
-  function handleDialogKeyDown(event: KeyboardEvent<HTMLElement>): void {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onClose();
-      return;
-    }
-
-    if (event.key !== "Tab") return;
-
-    const focusableElements = Array.from(
-      dialogRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR) ?? []
-    );
-    if (focusableElements.length === 0) {
-      event.preventDefault();
-      dialogRef.current?.focus();
-      return;
-    }
-
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-    const activeElement = document.activeElement;
-
-    if (event.shiftKey && (activeElement === firstElement || !dialogRef.current?.contains(activeElement))) {
-      event.preventDefault();
-      lastElement.focus();
-      return;
-    }
-
-    if (!event.shiftKey && (activeElement === lastElement || !dialogRef.current?.contains(activeElement))) {
-      event.preventDefault();
-      firstElement.focus();
+  function handleRowActivate(entry: ConversationHistoryEntry): void {
+    if (isWide) {
+      setSelectedEntryId(entry.id);
+    } else {
+      resume(entry);
     }
   }
 
-  if (!isOpen) return null;
+  function handleConfirmDelete(): void {
+    if (!pendingDeleteEntry) return;
+    onDeleteEntry(pendingDeleteEntry);
+    if (selectedEntryId === pendingDeleteEntry.id) {
+      setSelectedEntryId(null);
+    }
+    setPendingDeleteEntry(null);
+  }
 
-  return createPortal(
-    // DEC-142/REQ-117: the dimmed scrim (this root, outside the panel surface) closes the
-    // drawer via the shared useOutsideDismiss hook above, the same onClose path as
-    // Close/Escape.
-    <div className="conversation-history-overlay" data-testid="conversation-history-overlay">
-      <section
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        onKeyDown={handleDialogKeyDown}
-        className="conversation-history-surface ambient-accent-surface border border-zinc-700 bg-zinc-950 text-zinc-100 shadow-2xl"
-      >
-        <div className="adaptive-context-header flex items-center justify-between gap-3 border-b border-zinc-700/70">
-          <h2 id={titleId} className="text-base font-semibold text-zinc-100">
-            Conversation history
+  return (
+    <>
+      <SheetShell
+        isOpen={isOpen}
+        onClose={onClose}
+        closeLabel="Close Question History"
+        titleId={titleId}
+        testId="history-sheet"
+        head={
+          <h2 id={titleId} className="text-lg font-black text-zinc-100">
+            {`Question History — ${entries.length} of 20`}
           </h2>
-          <OverlayCloseButton ref={closeRef} label="Close conversation history" onClick={onClose} />
-        </div>
+        }
+      >
+        <div className={isWide ? "flex h-full min-h-0 gap-4" : "flex flex-col gap-2"}>
+          <div
+            className={
+              isWide
+                ? "flex w-full max-w-[16rem] shrink-0 flex-col gap-2 overflow-y-auto"
+                : "flex flex-col gap-2"
+            }
+          >
+            {draftRows.map((draft) => (
+              <button
+                key={draft.kind}
+                type="button"
+                onClick={draft.onResume}
+                className="w-full shrink-0 rounded-lg border border-accent/50 bg-accent/10 px-3 py-2.5 text-left text-sm text-zinc-100 transition hover:bg-accent/20"
+              >
+                <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-accent-soft">
+                  {`${draft.kind === "lookup" ? "Ask a Question" : "In-depth details"} Draft · ${formatUpdatedAt(draft.updatedAt)}`}
+                </span>
+                <span className="mt-1 block text-zinc-300">Resume where you left off</span>
+              </button>
+            ))}
 
-        <div className="adaptive-context-content">
-          {draft && (
-            <button
-              type="button"
-              onClick={draft.onSelect}
-              className="mb-2 w-full rounded-lg border border-accent/50 bg-accent/10 px-3 py-2.5 text-left text-sm text-zinc-100 transition hover:bg-accent/20"
-            >
-              <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-accent-soft">
-                Draft · {formatUpdatedAt(draft.updatedAt)}
-              </span>
-              <span className="mt-1 block text-zinc-300">Resume where you left off</span>
-            </button>
-          )}
-
-          {entries.length === 0 && !draft ? (
-            <p className="rounded-xl border border-zinc-700/70 bg-zinc-900/55 px-3 py-3 text-sm text-zinc-300">
-              No saved conversations yet
-            </p>
-          ) : entries.length === 0 ? null : (
-            <ul className="flex flex-col gap-2">
-              {entries.map((entry) => {
-                const isActive = entry.id === activeConversationId;
-                const entryLabel = `${entry.flowLabel} · ${formatUpdatedAt(entry.updatedAt)}`;
-                // Distinct from entryLabel: two entries can share a flowLabel and even an
-                // updatedAt, so the delete/confirm/cancel controls identify the row by its
-                // question content instead, the same way a sighted user reads the list.
-                const deleteEntryLabel = `${entry.flowLabel}: ${previewSnippet(entry.hiddenInitialQuestion)}`;
-                const isPendingDelete = pendingDeleteId === entry.id;
-                return (
-                  <li key={entry.id} className="flex items-stretch gap-2">
-                    <button
-                      type="button"
-                      onClick={() => handleSelectEntry(entry)}
-                      aria-current={isActive ? "true" : undefined}
-                      className={`flex-1 rounded-lg px-3 py-2.5 text-left text-sm transition ${
-                        isActive
-                          ? "bg-zinc-800 text-zinc-100"
-                          : "text-zinc-200 hover:bg-zinc-800/70"
-                      }`}
-                    >
-                      <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                        {entryLabel}
-                      </span>
-                      <span className="mt-1 block truncate">{previewSnippet(entry.hiddenInitialQuestion)}</span>
-                    </button>
-                    {onDeleteEntry &&
-                      (isPendingDelete ? (
-                        <div className="flex flex-col gap-1">
-                          <button
-                            type="button"
-                            aria-label={`Confirm delete: ${deleteEntryLabel}`}
-                            onClick={() => handleConfirmDelete(entry)}
-                            className="rounded-lg border border-red-800 bg-red-900/60 px-2 py-1 text-xs font-semibold text-red-100 transition hover:bg-red-900"
-                          >
-                            Confirm
-                          </button>
-                          <button
-                            type="button"
-                            aria-label={`Cancel delete: ${deleteEntryLabel}`}
-                            onClick={() => setPendingDeleteId(null)}
-                            className="rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700"
-                          >
-                            Cancel
-                          </button>
-                        </div>
-                      ) : (
+            {entries.length === 0 && draftRows.length === 0 ? (
+              <p className="rounded-xl border border-zinc-700/70 bg-zinc-900/55 px-3 py-3 text-sm text-zinc-300">
+                No saved conversations yet
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-2">
+                {entries.map((entry) => {
+                  const cards = cardsFromFrozenContext(entry.frozenContext);
+                  const ruling = firstRulingLine(entry);
+                  const isSelected = isWide && entry.id === selectedEntryId;
+                  const previewLabel = `${entry.mode === "lookup" ? "Ask a Question" : "In-depth"}: ${previewSnippet(entry.hiddenInitialQuestion)}`;
+                  return (
+                    <li key={entry.id} className="flex items-stretch gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleRowActivate(entry)}
+                        aria-current={isSelected ? "true" : undefined}
+                        aria-label={previewLabel}
+                        className={`flex flex-1 items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm transition ${
+                          isSelected ? "bg-zinc-800 text-zinc-100" : "text-zinc-200 hover:bg-zinc-800/70"
+                        }`}
+                      >
+                        <CardFan cards={cards} />
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate font-semibold">
+                            {previewSnippet(entry.hiddenInitialQuestion)}
+                          </span>
+                          {ruling && <span className="mt-0.5 block truncate text-zinc-400">{ruling}</span>}
+                          <span className="mt-0.5 block text-xs text-zinc-500">{metaLine(entry, cards.length)}</span>
+                        </span>
+                      </button>
+                      {!isWide && (
                         <button
                           type="button"
-                          aria-label={`Delete: ${deleteEntryLabel}`}
-                          onClick={() => setPendingDeleteId(entry.id)}
+                          aria-label={`Delete: ${previewLabel}`}
+                          onClick={() => setPendingDeleteEntry(entry)}
                           className="self-center rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700"
                         >
                           Delete
                         </button>
-                      ))}
-                  </li>
-                );
-              })}
-            </ul>
+                      )}
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+
+          {isWide && (
+            <div className="flex min-w-0 flex-1 flex-col gap-3 border-l border-zinc-700/60 pl-4">
+              {selectedEntry ? (
+                <>
+                  <div className="min-h-0 flex-1 space-y-2 overflow-y-auto">
+                    <p className="text-sm font-semibold text-zinc-100">{selectedEntry.hiddenInitialQuestion}</p>
+                    {selectedEntry.visibleMessages.map((message, index) => (
+                      <p
+                        key={index}
+                        className={message.role === "user" ? "text-sm text-zinc-300" : "text-sm text-zinc-100"}
+                      >
+                        {message.content}
+                      </p>
+                    ))}
+                  </div>
+                  <div className="flex items-center justify-end gap-3 border-t border-zinc-700/60 pt-3">
+                    <button
+                      type="button"
+                      onClick={() => setPendingDeleteEntry(selectedEntry)}
+                      className="rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2 text-sm font-semibold text-zinc-200 hover:bg-zinc-800"
+                    >
+                      Delete this question
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => resume(selectedEntry)}
+                      className="rounded-lg bg-accent-strong px-3 py-2 text-sm font-semibold text-accent-contrast"
+                    >
+                      Open conversation
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <p className="text-sm text-zinc-400">Select a question to read it here.</p>
+              )}
+            </div>
           )}
         </div>
-      </section>
-    </div>,
-    document.body
+      </SheetShell>
+
+      <ConfirmSheet
+        isOpen={pendingDeleteEntry !== null}
+        onKeep={() => setPendingDeleteEntry(null)}
+        onConfirm={handleConfirmDelete}
+        question={
+          pendingDeleteEntry ? `Delete "${previewSnippet(pendingDeleteEntry.hiddenInitialQuestion)}"?` : "Delete this question?"
+        }
+        detail="This removes it from Question History for good."
+        confirmLabel="Delete"
+        testId="history-delete-confirm"
+      />
+    </>
   );
 }

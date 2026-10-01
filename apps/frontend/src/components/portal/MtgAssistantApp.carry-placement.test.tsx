@@ -19,7 +19,14 @@ function renderWithCarry(carry: LookupCarrySeed | null): void {
             const pending = pendingCarry;
             pendingCarry = null;
             return pending;
-          }
+          },
+          queueHistoryResume: vi.fn(),
+          consumeHistoryResume: () => null,
+          queueHistoryDeletion: vi.fn(),
+          consumeHistoryDeletion: () => null,
+          queueDraftResume: vi.fn(),
+          consumeDraftResume: () => false,
+          historyResumeVersion: 0
         }}
       >
         <MtgAssistantApp />

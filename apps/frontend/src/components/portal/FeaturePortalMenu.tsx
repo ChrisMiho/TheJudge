@@ -1,9 +1,17 @@
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { BrandMark } from "../BrandMark";
+import { ConversationHistoryDrawer, type ConversationHistoryDraftRow } from "../ConversationHistoryDrawer";
 import type { ConversationHistoryTriggerDescriptor } from "../ConversationWorkspace";
 import { useOutsideDismiss } from "../../hooks/useOutsideDismiss";
+import {
+  deleteHistoryEntry,
+  loadDraft,
+  loadHistoryEntries,
+  type ConversationHistoryEntry
+} from "../../lib/conversationHistory/persistence";
 import { useLeftEdgeDrawer } from "../../lib/portal/leftEdgeDrawerContext";
+import { useAssistantSeed } from "../../lib/portal/seedContext";
 import { PortalSlotContext } from "../../lib/portal/slotContext";
 import { isPortalActionEntry, type DestinationId, type PortalEntry } from "../../lib/portal/types";
 import { ThemeSection } from "./ThemeSection";
@@ -94,6 +102,8 @@ export function FeaturePortalMenu({
   children
 }: FeaturePortalMenuProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [historyEntries, setHistoryEntries] = useState<ConversationHistoryEntry[]>([]);
   const [slotEntries, setSlotEntries] = useState<SlotEntry[]>([]);
   const [visibleSlotEntry, setVisibleSlotEntry] = useState<SlotEntry | null>(null);
   const [shellBoundsEntries, setShellBoundsEntries] = useState<HTMLDivElement[]>([]);
@@ -101,6 +111,59 @@ export function FeaturePortalMenu({
   const containerRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const { activeDrawer, openDrawer, closeDrawer } = useLeftEdgeDrawer();
+  const { queueHistoryResume, queueHistoryDeletion, queueDraftResume } = useAssistantSeed();
+
+  function openHistory(): void {
+    setHistoryEntries(loadHistoryEntries());
+    setIsHistoryOpen(true);
+  }
+
+  // REQ-213/FLOW-016: hands the entry to the owning flow's own resume mailbox and
+  // switches to its destination — `mtg-assistant` has no Menu row of its own
+  // (REQ-067/REQ-206), so an In-depth entry is routed there directly rather than
+  // through `onSelect`'s normal destination-id path.
+  function handleResumeHistoryEntry(entry: ConversationHistoryEntry): void {
+    queueHistoryResume(entry);
+    onSelect(entry.mode === "lookup" ? "quick-lookup" : "mtg-assistant");
+  }
+
+  // DEC-143/REQ-118/FLOW-018: deletes from storage, refreshes this sheet's own list, and
+  // notifies the owning flow in case the deleted entry was its active conversation — that
+  // flow clears its view without re-saving the deleted thread (its own onConversationUpdated
+  // path never fires for a clear, only for a fresh/followed-up submit).
+  function handleDeleteHistoryEntry(entry: ConversationHistoryEntry): void {
+    deleteHistoryEntry(entry.id);
+    setHistoryEntries(loadHistoryEntries());
+    queueHistoryDeletion({ id: entry.id, mode: entry.mode });
+  }
+
+  const lookupDraft = loadDraft("lookup");
+  const gameDraft = loadDraft("game");
+  const historyDraftRows: ConversationHistoryDraftRow[] = [
+    ...(gameDraft
+      ? [{ kind: "game" as const, updatedAt: gameDraft.updatedAt, onResume: () => handleResumeGameDraft() }]
+      : []),
+    ...(lookupDraft
+      ? [{ kind: "lookup" as const, updatedAt: lookupDraft.updatedAt, onResume: () => handleResumeLookupDraft() }]
+      : [])
+  ];
+
+  // Drafts have no saved `ConversationHistoryEntry` id to queue through the same
+  // resume mailbox as a completed entry — `queueDraftResume` just tells the owning
+  // flow "re-read your own Draft now" (REQ-108/FLOW-017's existing `loadDraft`/
+  // hydrate pair already does the rest); switching destination alone would miss the
+  // case where the player opened History from the flow that already owns the Draft.
+  function handleResumeGameDraft(): void {
+    setIsHistoryOpen(false);
+    queueDraftResume("game");
+    onSelect("mtg-assistant");
+  }
+
+  function handleResumeLookupDraft(): void {
+    setIsHistoryOpen(false);
+    queueDraftResume("lookup");
+    onSelect("quick-lookup");
+  }
 
   useEffect(() => {
     if (isOpen) {
@@ -158,9 +221,6 @@ export function FeaturePortalMenu({
   }, [shellBoundsEntries, activeDestinationId]);
 
   const effectiveSlotNode = visibleSlotEntry?.node ?? null;
-  // Read at render time (not cached in state) — the visible slot's own render already
-  // committed its latest historyTrigger into the ref this getter reads.
-  const historyTrigger = visibleSlotEntry?.getHistoryTrigger();
 
   // The drawer may be portaled into a shell-bounds node elsewhere in the DOM (not a
   // descendant of containerRef), so a click landing inside it must not read as "outside".
@@ -228,14 +288,12 @@ export function FeaturePortalMenu({
                 <span>{entry.label}</span>
                 {isActive && <span aria-hidden="true" className="ml-auto text-accent-soft">✓</span>}
               </button>
-              {/* REQ-067: Question History sits right after Ask a Question, ahead of Life
-                  Tracker and Trade Balancer. Fixed at this position rather than modeled as
-                  a `PortalEntry` because its handler depends on `historyTrigger` — the
-                  currently-visible destination's own history descriptor — which only
-                  FeaturePortalMenu computes; App.tsx's entries array has no access to it.
-                  Slice I rebuilds this row's destination (REQ-213's one-list sheet); for
-                  now it opens whatever history affordance the active destination already
-                  registers, same as the former rail History icon did. */}
+              {/* REQ-067/REQ-213: Question History sits right after Ask a Question, ahead of
+                  Life Tracker and Trade Balancer. Fixed at this position rather than modeled
+                  as a `PortalEntry` because it opens this component's own sheet state, not a
+                  destination switch. Always enabled — the combined list (REQ-103/REQ-107)
+                  no longer depends on the currently-visible destination registering a
+                  history trigger of its own. */}
               {index === 0 && (
                 <button
                   type="button"
@@ -243,10 +301,9 @@ export function FeaturePortalMenu({
                   aria-label="Question History"
                   onClick={() => {
                     setIsOpen(false);
-                    historyTrigger?.onOpen();
+                    openHistory();
                   }}
-                  disabled={!historyTrigger}
-                  className="portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium text-zinc-200 transition hover:bg-zinc-800/70 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:bg-transparent"
+                  className="portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium text-zinc-200 transition hover:bg-zinc-800/70"
                 >
                   <HistoryRowIcon />
                   <span>Question History</span>
@@ -307,8 +364,8 @@ export function FeaturePortalMenu({
   // REQ-114/REQ-115/REQ-116/REQ-207: the split Menu+History rail retires — there is
   // one ☰ trigger (the banner header's REQ-207 Menu button) at every width, on every
   // destination. History access moves into the drawer's own "Question History" row
-  // above; `historyTrigger` is still read (for that row), it just no longer selects
-  // between two rendered trigger shapes here.
+  // above, which now opens this component's own combined-list sheet (REQ-213)
+  // directly rather than selecting between two rendered trigger shapes here.
   const railTrigger = (
     <button
       type="button"
@@ -343,6 +400,14 @@ export function FeaturePortalMenu({
       {effectiveSlotNode ? createPortal(trigger, effectiveSlotNode) : trigger}
       {visibleShellBoundsNode && drawer ? createPortal(drawer, visibleShellBoundsNode) : null}
       <div className={effectiveSlotNode ? undefined : "pt-44"}>{children}</div>
+      <ConversationHistoryDrawer
+        isOpen={isHistoryOpen}
+        onClose={() => setIsHistoryOpen(false)}
+        entries={historyEntries}
+        draftRows={historyDraftRows}
+        onResumeEntry={handleResumeHistoryEntry}
+        onDeleteEntry={handleDeleteHistoryEntry}
+      />
     </PortalSlotContext.Provider>
   );
 }

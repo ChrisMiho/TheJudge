@@ -1,12 +1,23 @@
-import { cleanup, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { useState } from "react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConversationHistoryEntry } from "../lib/conversationHistory/persistence";
-import { appCss } from "../test/appTestHelpers";
-import { ConversationHistoryDrawer } from "./ConversationHistoryDrawer";
+import { ConversationHistoryDrawer, type ConversationHistoryDraftRow } from "./ConversationHistoryDrawer";
 
-afterEach(cleanup);
+const DEFAULT_INNER_WIDTH = window.innerWidth;
+
+/** jsdom defaults `innerWidth` to 1024 (wide/two-pane); set it explicitly for a test
+ * that needs narrow/single-pane behavior, matching the sheet family's own 600px
+ * boundary (REQ-207/REQ-213). */
+function setViewportWidth(width: number): void {
+  Object.defineProperty(window, "innerWidth", { writable: true, configurable: true, value: width });
+  window.dispatchEvent(new Event("resize"));
+}
+
+afterEach(() => {
+  cleanup();
+  setViewportWidth(DEFAULT_INNER_WIDTH);
+});
 
 function buildEntry(overrides: Partial<ConversationHistoryEntry> = {}): ConversationHistoryEntry {
   return {
@@ -22,294 +33,285 @@ function buildEntry(overrides: Partial<ConversationHistoryEntry> = {}): Conversa
   };
 }
 
-function Harness({
-  entries,
-  activeConversationId,
-  onSelectEntry
-}: {
-  entries: ConversationHistoryEntry[];
-  activeConversationId?: string | null;
-  onSelectEntry: (entry: ConversationHistoryEntry) => void;
-}): JSX.Element {
-  const [isOpen, setIsOpen] = useState(false);
-  return (
-    <>
-      <button type="button" onClick={() => setIsOpen(true)}>
-        Open history trigger
-      </button>
-      <ConversationHistoryDrawer
-        isOpen={isOpen}
-        onClose={() => setIsOpen(false)}
-        entries={entries}
-        activeConversationId={activeConversationId}
-        onSelectEntry={onSelectEntry}
-      />
-    </>
-  );
-}
+describe("Frontend - Conversation history drawer (REQ-213)", () => {
+  describe("Shared shape", () => {
+    it("renders nothing when closed", () => {
+      render(
+        <ConversationHistoryDrawer isOpen={false} onClose={vi.fn()} entries={[]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />
+      );
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    });
 
-describe("Frontend - Conversation history drawer", () => {
-  it("renders nothing when closed", () => {
-    render(
-      <ConversationHistoryDrawer isOpen={false} onClose={vi.fn()} entries={[]} onSelectEntry={vi.fn()} />
-    );
+    it("shows an empty state and the n-of-20 head when there are no saved conversations or drafts", () => {
+      render(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />);
 
-    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(screen.getByRole("dialog", { name: "Question History — 0 of 20" })).toBeInTheDocument();
+      expect(screen.getByText("No saved conversations yet")).toBeInTheDocument();
+    });
+
+    it("heads with the combined count, both kinds included", () => {
+      render(
+        <ConversationHistoryDrawer
+          isOpen
+          onClose={vi.fn()}
+          entries={[
+            buildEntry({ id: "a" }),
+            buildEntry({
+              id: "b",
+              mode: "game",
+              frozenContext: { kind: "game", gameContext: { playerCount: 2, players: [], turnPhase: "main_1" } }
+            })
+          ]}
+          onResumeEntry={vi.fn()}
+          onDeleteEntry={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole("dialog", { name: "Question History — 2 of 20" })).toBeInTheDocument();
+    });
+
+    it("shows each row's meta line, truncated question preview, and first ruling line", () => {
+      const longQuestion =
+        "How does hexproof interact with equipment auras and other opposing spells that try to target this creature across several turns?";
+      render(
+        <ConversationHistoryDrawer
+          isOpen
+          onClose={vi.fn()}
+          entries={[buildEntry({ hiddenInitialQuestion: longQuestion })]}
+          onResumeEntry={vi.fn()}
+          onDeleteEntry={vi.fn()}
+        />
+      );
+
+      expect(screen.getByText(new RegExp(`^${longQuestion.slice(0, 80)}…$`))).toBeInTheDocument();
+      expect(screen.getByText("Hexproof restricts opposing targets.")).toBeInTheDocument();
+      expect(screen.getByText(/^Ask a Question/)).toBeInTheDocument();
+    });
+
+    it("draws a dashed empty frame when an entry carries no cards, and a +n badge past three", () => {
+      const noCards = buildEntry({ id: "no-cards" });
+      const manyCards = buildEntry({
+        id: "many-cards",
+        hiddenInitialQuestion: "A card-heavy question",
+        frozenContext: {
+          kind: "lookup",
+          cards: [
+            { cardId: "a", name: "Opt", imageUrl: "https://img/opt.jpg" },
+            { cardId: "b", name: "Bolt", imageUrl: "https://img/bolt.jpg" },
+            { cardId: "c", name: "Ponder", imageUrl: "https://img/ponder.jpg" },
+            { cardId: "d", name: "Shock", imageUrl: "https://img/shock.jpg" }
+          ]
+        }
+      });
+      render(
+        <ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[noCards, manyCards]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />
+      );
+
+      // SheetShell portals to document.body, outside the local render container.
+      expect(document.querySelector(".border-dashed")).toBeInTheDocument();
+      expect(screen.getByText("+1")).toBeInTheDocument();
+      expect(document.querySelectorAll("img").length).toBe(3);
+    });
   });
 
-  it("shows an empty state when there are no saved conversations", () => {
-    render(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[]} onSelectEntry={vi.fn()} />);
+  describe("Narrow (<600px): a tap resumes immediately", () => {
+    beforeEach(() => setViewportWidth(390));
 
-    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
-    expect(screen.getByText("No saved conversations yet")).toBeInTheDocument();
+    it("tapping a row resumes that entry and closes the sheet", async () => {
+      const user = userEvent.setup();
+      const onResumeEntry = vi.fn();
+      const onClose = vi.fn();
+      const entry = buildEntry();
+      render(
+        <ConversationHistoryDrawer isOpen onClose={onClose} entries={[entry]} onResumeEntry={onResumeEntry} onDeleteEntry={vi.fn()} />
+      );
+
+      await user.click(screen.getByText(/^How does hexproof/));
+
+      expect(onResumeEntry).toHaveBeenCalledWith(entry);
+      expect(onClose).toHaveBeenCalledOnce();
+    });
+
+    it("keeps a per-row Delete control; confirming deletes, cancelling leaves it", async () => {
+      const user = userEvent.setup();
+      const onDeleteEntry = vi.fn();
+      const entry = buildEntry();
+      render(
+        <ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[entry]} onResumeEntry={vi.fn()} onDeleteEntry={onDeleteEntry} />
+      );
+
+      await user.click(screen.getByRole("button", { name: /^Delete: Ask a Question/ }));
+      const confirmSheet = screen.getByTestId("history-delete-confirm");
+      expect(within(confirmSheet).getByText(/How does hexproof/)).toBeInTheDocument();
+
+      await user.click(within(confirmSheet).getByRole("button", { name: "Keep" }));
+      expect(onDeleteEntry).not.toHaveBeenCalled();
+      expect(screen.getByText(/^How does hexproof/)).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: /^Delete: Ask a Question/ }));
+      await user.click(within(screen.getByTestId("history-delete-confirm")).getByRole("button", { name: "Delete" }));
+      expect(onDeleteEntry).toHaveBeenCalledWith(entry);
+    });
+
+    it("does not render the wide reading pane or Open conversation/Delete this question", () => {
+      render(
+        <ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[buildEntry()]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />
+      );
+
+      expect(screen.queryByRole("button", { name: "Open conversation" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Delete this question" })).not.toBeInTheDocument();
+    });
   });
 
-  it("lists entries with flow label, timestamp, and a truncated question preview", () => {
-    const longQuestion =
-      "How does hexproof interact with equipment auras and other opposing spells that try to target this creature across several turns?";
-    render(
-      <ConversationHistoryDrawer
-        isOpen
-        onClose={vi.fn()}
-        entries={[buildEntry({ hiddenInitialQuestion: longQuestion })]}
-        onSelectEntry={vi.fn()}
-      />
-    );
+  describe("From 600px: two panes — select, then act", () => {
+    beforeEach(() => setViewportWidth(1024));
 
-    expect(screen.getByText(/Quick Question/)).toBeInTheDocument();
-    expect(screen.getByText(new RegExp(`^${longQuestion.slice(0, 80)}…$`))).toBeInTheDocument();
+    it("tapping a row only selects it; the full conversation reads in the pane without resuming", async () => {
+      const user = userEvent.setup();
+      const onResumeEntry = vi.fn();
+      const onClose = vi.fn();
+      const entry = buildEntry();
+      render(
+        <ConversationHistoryDrawer isOpen onClose={onClose} entries={[entry]} onResumeEntry={onResumeEntry} onDeleteEntry={vi.fn()} />
+      );
+
+      await user.click(screen.getByText(/^How does hexproof/));
+
+      expect(onResumeEntry).not.toHaveBeenCalled();
+      expect(onClose).not.toHaveBeenCalled();
+      // The ruling line now appears twice — once in the row's own preview, once in the
+      // pane's full read — so assert via the pane's own action buttons instead.
+      expect(screen.getAllByText("Hexproof restricts opposing targets.")).toHaveLength(2);
+      expect(screen.getByRole("button", { name: "Open conversation" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Delete this question" })).toBeInTheDocument();
+    });
+
+    it("no per-row Delete control at this width — only the pane's Delete this question", async () => {
+      const user = userEvent.setup();
+      render(
+        <ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[buildEntry()]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />
+      );
+
+      expect(screen.queryByRole("button", { name: /^Delete: Ask a Question/ })).not.toBeInTheDocument();
+
+      await user.click(screen.getByText(/^How does hexproof/));
+      expect(screen.getByRole("button", { name: "Delete this question" })).toBeInTheDocument();
+    });
+
+    it("Open conversation resumes the selected entry and closes the sheet", async () => {
+      const user = userEvent.setup();
+      const onResumeEntry = vi.fn();
+      const onClose = vi.fn();
+      const entry = buildEntry();
+      render(
+        <ConversationHistoryDrawer isOpen onClose={onClose} entries={[entry]} onResumeEntry={onResumeEntry} onDeleteEntry={vi.fn()} />
+      );
+
+      await user.click(screen.getByText(/^How does hexproof/));
+      await user.click(screen.getByRole("button", { name: "Open conversation" }));
+
+      expect(onResumeEntry).toHaveBeenCalledWith(entry);
+      expect(onClose).toHaveBeenCalledOnce();
+    });
+
+    it("Delete this question confirms, then deletes the selected entry", async () => {
+      const user = userEvent.setup();
+      const onDeleteEntry = vi.fn();
+      const entry = buildEntry();
+      render(
+        <ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[entry]} onResumeEntry={vi.fn()} onDeleteEntry={onDeleteEntry} />
+      );
+
+      await user.click(screen.getByText(/^How does hexproof/));
+      await user.click(screen.getByRole("button", { name: "Delete this question" }));
+      await user.click(within(screen.getByTestId("history-delete-confirm")).getByRole("button", { name: "Delete" }));
+
+      expect(onDeleteEntry).toHaveBeenCalledWith(entry);
+    });
+
+    it("shows a placeholder in the pane until a row is selected", () => {
+      render(
+        <ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[buildEntry()]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />
+      );
+
+      expect(screen.getByText("Select a question to read it here.")).toBeInTheDocument();
+    });
   });
 
-  it("calls onSelectEntry for a non-active entry and no-ops for the active entry", async () => {
-    const user = userEvent.setup();
-    const onSelectEntry = vi.fn();
-    const activeEntry = buildEntry({ id: "active-entry", hiddenInitialQuestion: "Active question" });
-    const otherEntry = buildEntry({ id: "other-entry", hiddenInitialQuestion: "Other question" });
+  describe("Draft rows (FLOW-017)", () => {
+    it("shows up to one row per flow above the saved conversations, and resumes immediately at any width", async () => {
+      const user = userEvent.setup();
+      const onResumeLookup = vi.fn();
+      const onResumeGame = vi.fn();
+      const draftRows: ConversationHistoryDraftRow[] = [
+        { kind: "game", updatedAt: "2026-01-03T00:00:00.000Z", onResume: onResumeGame },
+        { kind: "lookup", updatedAt: "2026-01-04T00:00:00.000Z", onResume: onResumeLookup }
+      ];
+      render(
+        <ConversationHistoryDrawer
+          isOpen
+          onClose={vi.fn()}
+          entries={[buildEntry()]}
+          draftRows={draftRows}
+          onResumeEntry={vi.fn()}
+          onDeleteEntry={vi.fn()}
+        />
+      );
 
-    render(
-      <ConversationHistoryDrawer
-        isOpen
-        onClose={vi.fn()}
-        entries={[activeEntry, otherEntry]}
-        activeConversationId="active-entry"
-        onSelectEntry={onSelectEntry}
-      />
-    );
+      const rows = screen.getAllByRole("button", { name: /Draft/ });
+      expect(rows).toHaveLength(2);
 
-    await user.click(screen.getByText("Active question"));
-    expect(onSelectEntry).not.toHaveBeenCalled();
+      await user.click(screen.getByText(/Ask a Question Draft/));
+      expect(onResumeLookup).toHaveBeenCalledOnce();
+    });
 
-    await user.click(screen.getByText("Other question"));
-    expect(onSelectEntry).toHaveBeenCalledWith(otherEntry);
+    it("shows a Draft row instead of the empty state when there are no completed entries", () => {
+      render(
+        <ConversationHistoryDrawer
+          isOpen
+          onClose={vi.fn()}
+          entries={[]}
+          draftRows={[{ kind: "lookup", updatedAt: "2026-01-03T00:00:00.000Z", onResume: vi.fn() }]}
+          onResumeEntry={vi.fn()}
+          onDeleteEntry={vi.fn()}
+        />
+      );
+
+      expect(screen.getByRole("button", { name: /Draft/ })).toBeInTheDocument();
+      expect(screen.queryByText("No saved conversations yet")).not.toBeInTheDocument();
+    });
+
+    it("renders no Draft row when none is passed", () => {
+      render(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />);
+
+      expect(screen.queryByRole("button", { name: /Draft/ })).not.toBeInTheDocument();
+    });
   });
 
-  it("traps focus, closes on Escape, and restores focus to whatever triggered it", async () => {
-    const user = userEvent.setup();
-    const onSelectEntry = vi.fn();
+  describe("Sheet lifecycle", () => {
+    it("closes on Escape via the shared SheetShell", async () => {
+      const user = userEvent.setup();
+      const onClose = vi.fn();
+      render(<ConversationHistoryDrawer isOpen onClose={onClose} entries={[]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />);
 
-    render(<Harness entries={[buildEntry()]} onSelectEntry={onSelectEntry} />);
+      await user.keyboard("{Escape}");
+      expect(onClose).toHaveBeenCalledOnce();
+    });
 
-    const trigger = screen.getByRole("button", { name: "Open history trigger" });
-    await user.click(trigger);
+    it("forgets the selected row and any pending delete confirm the next time it opens", () => {
+      setViewportWidth(1024);
+      const entry = buildEntry();
+      const { rerender } = render(
+        <ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[entry]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />
+      );
 
-    const dialog = screen.getByRole("dialog", { name: "Conversation history" });
-    const close = within(dialog).getByRole("button", { name: "Close conversation history" });
-    const entryButton = within(dialog).getByRole("button", { name: /Quick Question/ });
-    expect(close).toHaveFocus();
+      fireEvent.click(screen.getByText(/^How does hexproof/));
+      expect(screen.getByRole("button", { name: "Open conversation" })).toBeInTheDocument();
 
-    entryButton.focus();
-    await user.tab();
-    expect(close).toHaveFocus();
+      rerender(<ConversationHistoryDrawer isOpen={false} onClose={vi.fn()} entries={[entry]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />);
+      rerender(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[entry]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />);
 
-    await user.tab({ shift: true });
-    expect(entryButton).toHaveFocus();
-
-    await user.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog", { name: "Conversation history" })).not.toBeInTheDocument();
-    expect(trigger).toHaveFocus();
-  });
-
-  it("closes and restores focus when the dimmed scrim outside the panel is activated", async () => {
-    const user = userEvent.setup();
-    render(<Harness entries={[buildEntry()]} onSelectEntry={vi.fn()} />);
-
-    const trigger = screen.getByRole("button", { name: "Open history trigger" });
-    await user.click(trigger);
-
-    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
-    await user.click(screen.getByTestId("conversation-history-overlay"));
-
-    expect(screen.queryByRole("dialog", { name: "Conversation history" })).not.toBeInTheDocument();
-    expect(trigger).toHaveFocus();
-  });
-
-  it("does not close when activating the panel surface itself", async () => {
-    const user = userEvent.setup();
-    render(<Harness entries={[buildEntry()]} onSelectEntry={vi.fn()} />);
-
-    await user.click(screen.getByRole("button", { name: "Open history trigger" }));
-    const dialog = screen.getByRole("dialog", { name: "Conversation history" });
-
-    await user.click(within(dialog).getByText("Conversation history"));
-    expect(screen.getByRole("dialog", { name: "Conversation history" })).toBeInTheDocument();
-  });
-
-  it("shows a distinct Draft row above completed entries when a Draft exists", () => {
-    const onSelect = vi.fn();
-    render(
-      <ConversationHistoryDrawer
-        isOpen
-        onClose={vi.fn()}
-        entries={[buildEntry()]}
-        onSelectEntry={vi.fn()}
-        draft={{ updatedAt: "2026-01-03T00:00:00.000Z", onSelect }}
-      />
-    );
-
-    expect(screen.getByRole("button", { name: /Draft/ })).toBeInTheDocument();
-    expect(screen.queryByText("No saved conversations yet")).not.toBeInTheDocument();
-  });
-
-  it("calls the Draft's onSelect when the Draft row is clicked", async () => {
-    const user = userEvent.setup();
-    const onSelect = vi.fn();
-    render(
-      <ConversationHistoryDrawer
-        isOpen
-        onClose={vi.fn()}
-        entries={[]}
-        onSelectEntry={vi.fn()}
-        draft={{ updatedAt: "2026-01-03T00:00:00.000Z", onSelect }}
-      />
-    );
-
-    await user.click(screen.getByRole("button", { name: /Draft/ }));
-    expect(onSelect).toHaveBeenCalledTimes(1);
-  });
-
-  it("shows the Draft row instead of the empty state when there are no completed entries", () => {
-    render(
-      <ConversationHistoryDrawer
-        isOpen
-        onClose={vi.fn()}
-        entries={[]}
-        onSelectEntry={vi.fn()}
-        draft={{ updatedAt: "2026-01-03T00:00:00.000Z", onSelect: vi.fn() }}
-      />
-    );
-
-    expect(screen.getByRole("button", { name: /Draft/ })).toBeInTheDocument();
-    expect(screen.queryByText("No saved conversations yet")).not.toBeInTheDocument();
-  });
-
-  it("renders no Draft row and the ordinary empty state when no Draft is passed", () => {
-    render(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[]} onSelectEntry={vi.fn()} />);
-
-    expect(screen.queryByRole("button", { name: /Draft/ })).not.toBeInTheDocument();
-    expect(screen.getByText("No saved conversations yet")).toBeInTheDocument();
-  });
-
-  it("renders no delete control when onDeleteEntry is not passed", () => {
-    render(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[buildEntry()]} onSelectEntry={vi.fn()} />);
-
-    expect(screen.queryByRole("button", { name: /^Delete:/ })).not.toBeInTheDocument();
-  });
-
-  it("gives the Draft row no delete control even when onDeleteEntry is passed", () => {
-    render(
-      <ConversationHistoryDrawer
-        isOpen
-        onClose={vi.fn()}
-        entries={[]}
-        onSelectEntry={vi.fn()}
-        onDeleteEntry={vi.fn()}
-        draft={{ updatedAt: "2026-01-03T00:00:00.000Z", onSelect: vi.fn() }}
-      />
-    );
-
-    expect(screen.queryByRole("button", { name: /^Delete:/ })).not.toBeInTheDocument();
-  });
-
-  it("requires confirmation before deleting, leaving storage and the list unchanged on cancel", async () => {
-    const user = userEvent.setup();
-    const onDeleteEntry = vi.fn();
-    const entry = buildEntry();
-    render(
-      <ConversationHistoryDrawer
-        isOpen
-        onClose={vi.fn()}
-        entries={[entry]}
-        onSelectEntry={vi.fn()}
-        onDeleteEntry={onDeleteEntry}
-      />
-    );
-
-    await user.click(screen.getByRole("button", { name: /^Delete: Quick Question/ }));
-    expect(screen.getByRole("button", { name: /^Confirm delete: Quick Question/ })).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: /^Cancel delete: Quick Question/ }));
-    expect(onDeleteEntry).not.toHaveBeenCalled();
-    expect(screen.getByRole("button", { name: /^Delete: Quick Question/ })).toBeInTheDocument();
-    expect(screen.getByText(/Quick Question/)).toBeInTheDocument();
-  });
-
-  it("deletes the entry on confirm and it disappears from the list immediately", async () => {
-    const user = userEvent.setup();
-    const onDeleteEntry = vi.fn();
-    const entry = buildEntry();
-    render(
-      <ConversationHistoryDrawer
-        isOpen
-        onClose={vi.fn()}
-        entries={[entry]}
-        onSelectEntry={vi.fn()}
-        onDeleteEntry={onDeleteEntry}
-      />
-    );
-
-    await user.click(screen.getByRole("button", { name: /^Delete: Quick Question/ }));
-    await user.click(screen.getByRole("button", { name: /^Confirm delete: Quick Question/ }));
-
-    expect(onDeleteEntry).toHaveBeenCalledWith(entry);
-  });
-
-  it("leaves a non-active entry's row deletable without touching the active row", async () => {
-    const user = userEvent.setup();
-    const onDeleteEntry = vi.fn();
-    const activeEntry = buildEntry({ id: "active-entry", hiddenInitialQuestion: "Active question" });
-    const otherEntry = buildEntry({ id: "other-entry", hiddenInitialQuestion: "Other question" });
-    render(
-      <ConversationHistoryDrawer
-        isOpen
-        onClose={vi.fn()}
-        entries={[activeEntry, otherEntry]}
-        activeConversationId="active-entry"
-        onSelectEntry={vi.fn()}
-        onDeleteEntry={onDeleteEntry}
-      />
-    );
-
-    const deleteButtons = screen.getAllByRole("button", { name: /^Delete: Quick Question/ });
-    await user.click(deleteButtons[1]);
-    await user.click(screen.getByRole("button", { name: /^Confirm delete: Quick Question/ }));
-
-    expect(onDeleteEntry).toHaveBeenCalledWith(otherEntry);
-    expect(onDeleteEntry).not.toHaveBeenCalledWith(activeEntry);
-  });
-
-  // DEC-134: a left-edge, full-height drawer at every viewport, not a bottom sheet below
-  // 768px. Content-sized bottom sheets left a screen of empty scrim above a one-entry list.
-  it("presents as a left-edge full-height drawer at every viewport", () => {
-    expect(appCss).toMatch(
-      /\.conversation-history-overlay \{[^}]*align-items: stretch;[^}]*justify-content: flex-start;[^}]*\}/
-    );
-    expect(appCss).toMatch(
-      /\.conversation-history-surface \{[^}]*border-radius: 0 1rem 1rem 0;[^}]*\}/
-    );
-    // No max-height cap anywhere: `align-items: stretch` is what gives it full height.
-    expect(appCss).not.toMatch(/\.conversation-history-surface \{[^}]*max-height:/);
-    expect(appCss).toMatch(
-      /@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.conversation-history-surface/
-    );
+      expect(screen.getByText("Select a question to read it here.")).toBeInTheDocument();
+    });
   });
 });

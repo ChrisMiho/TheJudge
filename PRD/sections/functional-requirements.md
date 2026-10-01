@@ -2523,28 +2523,27 @@
   - narrows `technical-design-rules.md`'s "preserve plain-text core product response output" constraint to the API/contract layer only
 
 ### REQ-103
-- Title: Persistent conversation history list and drawer
+- Title: Persistent conversation history list, as one Question History sheet
 - Priority: high
-- Description: In-Depth Question and Quick Question must offer a left history drawer (always-on History rail, including pre-submit steps) listing auto-saved past conversations and any mid-flight **Draft**, persisted browser-locally on the current device, so a user can browse conversations from earlier in the session or a previous visit.
+- Description: Both question flows share one **Question History** (REQ-213), opened from the Menu, listing auto-saved past conversations of both kinds and any mid-flight **Draft**, persisted browser-locally on the current device, so a user can browse conversations from earlier in the session or a previous visit.
 - Acceptance Criteria:
   - any conversation that reaches at least one successful answer auto-saves to a browser-local history list; saving happens on first answer and updates on each subsequent follow-up in that conversation
-  - a history drawer, opened from the shared conversation workspace, lists saved conversations most-recent-first, each showing originating flow, timestamp, and the first question as a preview snippet
-  - the list is capped at the 20 most recent conversations; saving a 21st entry prunes the oldest
+  - Question History (REQ-213), opened from the Menu, lists saved conversations of both question kinds most-recent-first, each showing its cards, the question, the ruling's first line, and a meta line
+  - the list is capped at the 20 most recent conversations across both kinds; saving a 21st entry prunes the oldest
   - leaving an active conversation with at least one successful answer (via Start Over / New conversation) auto-saves it to history before clearing the workspace
   - storage reads are guarded; a missing, corrupted, or invalid stored value is dropped without breaking the app, mirroring the existing theme-preference fallback pattern
-  - the drawer opens/closes with an explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger on close (outside/scrim dismiss added by REQ-117 / DEC-142; user delete by REQ-118 / DEC-143)
+  - the history sheet opens from the Menu, closes with ✕, Escape and outside tap, contains keyboard focus while open, and returns focus to its trigger on close (REQ-208; user delete by REQ-118 / DEC-143)
   - no server-side store, account system, or cross-device sync is introduced; history is scoped to one browser on one device
-  - the drawer's trigger is a small icon integrated into the feature-portal Menu's corner rail (DEC-122), stacked below the Menu icon within the same fluid-height ambient glow hit-area, and is always rendered on In-Depth Question and Quick Question (DEC-129), including when the list is empty and after Start Over
-  - below `768px` the drawer presents as a bottom sheet; at `768px`+ it presents as a left-side drawer, mirroring DEC-118's context sheet/drawer breakpoint and affordance types (DEC-125)
-  - opening the history drawer while the feature-portal Menu drawer is open closes the Menu drawer first, and vice versa, so the left edge never shows two overlapping panels (DEC-125)
-  - saved-conversation entries render as plain, unboxed grouped rows with a quiet active/hover highlight rather than a bordered card per entry (DEC-126)
-  - when a mid-flight Draft exists for the destination, the drawer shows a distinct **Draft** row (REQ-108 / DEC-130) in addition to completed conversations
+  - the trigger is the Menu's **Question History** row, directly under Ask a Question, on every destination (REQ-213)
+  - it presents in the shared sheet: a bottom sheet below `600px`, a floating centred card with two panes from `600px` up (REQ-208, REQ-213)
+  - choosing Question History closes the Menu tray before its sheet opens, so the two never overlap
+  - saved-conversation rows show a fan of the conversation's cards, the question, the ruling's first line, and one meta line (REQ-213)
+  - each flow's mid-flight Draft shows as a distinct **Draft** row above the saved conversations (REQ-108 / DEC-130)
 - Constraints:
   - frontend-only, browser-local persistence; no backend endpoint or contract change
   - reuse the DEC-103 (Player Life Tracker) persistence pattern rather than introducing new storage infrastructure
 - Dependencies:
   - DEC-124
-  - DEC-125
   - DEC-126
   - DEC-129
   - DEC-130
@@ -2553,8 +2552,11 @@
   - DEC-103
   - REQ-107
   - REQ-108
+  - REQ-208
+  - REQ-213
 - Notes:
   - trigger placement and entry row styling refined by DEC-126; always-on visibility and Draft slot added by DEC-129/DEC-130
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the drawer becomes Question History in the shared sheet (REQ-213); persistence, cap, auto-save and Draft rules unchanged
 
 ### REQ-104
 - Title: Resume a saved conversation
@@ -2622,18 +2624,18 @@
   - restores the missing REQ-106 body referenced by DEC-128 / FLOW-001 / the absorbed roster package; desktop alignment coverage added in the 2026-08-05 re-refinement
 
 ### REQ-107
-- Title: Always-visible History rail without View Context overlap
+- Title: Question History always one tap away, without View Context overlap
 - Priority: high
-- Description: On In-Depth Question and Quick Question, the History corner-rail control must always be available (including empty history and after Start Over), and must not overlap the answered-state View Context trigger or its chrome at any supported viewport.
+- Description: Question History must always be reachable from every destination through the Menu's Question History row (REQ-213), including with empty history and after Start Over; the banner header's ☰ button must not overlap the answered-state View Context trigger or its chrome at any supported viewport.
 - Acceptance Criteria:
-  - History rail zone is visible on every In-Depth Question and Quick Question screen state (all pre-submit steps and the answered workspace), including when no completed conversations or Draft exist
+  - the Menu's Question History row is present on every destination and every screen state, including when no completed conversations or Draft exist
   - immediately after Start Over, History remains visible and openable without requiring a new successful submit
   - opening History with an empty list shows an empty/zero-state drawer rather than hiding or disabling the control
-  - at desktop widths and at ~390×844 mobile widths, the History icon/hit-target does not overlap, clip into, or sit on the border of the View Context trigger
+  - at desktop widths and at ~390×844 mobile widths, the ☰ button's hit-target does not overlap, clip into, or sit on the border of the View Context trigger
   - answered-workspace top clearance used to satisfy the prior criterion must not leave a large empty band after DEC-137's shorter side-by-side rail (REQ-116 / DEC-141)
-  - Life Tracker and Trade Balancer continue to show Menu-only rails (no History zone)
+  - every destination shows the same ☰ header control; no destination shows a History rail zone
 - Constraints:
-  - presentation and availability only; drawer open/close, breakpoint sheet/drawer, and Menu mutual exclusivity remain DEC-125
+  - presentation and availability only; the history sheet's shape is REQ-208's
   - no Ask AI contract or backend change
 - Dependencies:
   - DEC-129
@@ -2642,7 +2644,10 @@
   - DEC-141
   - REQ-103
   - REQ-116
+  - REQ-208
+  - REQ-213
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the History rail zone is retired; availability moves to the Menu row (REQ-213)
 
 ### REQ-108
 - Title: Mid-flight Draft slot in conversation history
@@ -5364,6 +5369,34 @@
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup; broadened from Battlefield-only to every zone by the owner's gate-review edit (2026-10-01) - "sometimes it does matter" on Graveyard and other zones too; use cases to be refined later
   - built by slice E: `apps/frontend/src/components/EnrichmentStep.tsx` (the box, every zone), `apps/frontend/src/lib/enrichmentFormat.ts` (`parseManaSpent` bound, `formatPrintedManaHint`), `apps/backend/src/prompt/context.ts` (`normalizeZoneItem` passthrough), `apps/backend/src/prompt/promptFormatting.ts` (`formatNonStackZoneSections` line insertion)
+
+### REQ-213
+- Title: Question History — one list for every question, reopened live
+- Priority: medium
+- Description: Question History is a Menu row directly under Ask a Question that opens the shared sheet (REQ-208) with one list of the last 20 saved conversations from both question kinds, each row reopening its conversation live in its own flow. It replaces the per-flow History drawer and the retired History rail zone.
+- Acceptance Criteria:
+  - the list holds both kinds (Ask a Question and In-depth details) most-recent-first from the one existing store, capped at 20 across both (a 21st prunes the oldest); the head shows the title and "n of 20"; each flow's Draft (REQ-108) shows as its own row above the saved conversations
+  - every row shows the conversation's cards as a small fan of thumbnails (three, then "+n"; a dashed frame for none), the question, the first line of the ruling, and one meta line (Ask a Question or In-depth details · cards · the game context for In-depth · follow-ups · when)
+  - below `600px` a tap closes the sheet and reopens that conversation live in its own flow — an Ask a Question conversation on the Ask a Question page with its cards in the strip, the thread, and "Reopened from your history" under the title; an In-depth conversation in In-depth details' chat with View Context — with the follow-up box ready
+  - from `600px` the sheet has two panes: the list (a tap only selects), and the chosen conversation read in full with **Open conversation** and **Delete this question** at its foot; below `600px` each row keeps its own Delete control instead; deleting confirms first through the shared confirm sheet (REQ-208) and deleting the active conversation clears it without re-saving (REQ-118)
+  - opening a conversation from mid-flight staging snapshots the Draft first, as today (REQ-108)
+  - tests cover the merged list across both kinds, the cap, reopening each kind into its own flow, the two-pane layout from `600px`, and delete (confirm/cancel, active vs. non-active)
+- Constraints:
+  - frontend-only, browser-local; no storage key, entry shape or cap change — only the per-flow list filter is removed
+  - no request or prompt change
+- Dependencies:
+  - REQ-103
+  - REQ-104
+  - REQ-107
+  - REQ-108
+  - REQ-118
+  - REQ-206
+  - REQ-207
+  - REQ-208
+  - FLOW-016
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30)
+  - built by slice I: `apps/frontend/src/components/ConversationHistoryDrawer.tsx` (the combined list, drafts, two-pane reading, delete), `apps/frontend/src/components/portal/FeaturePortalMenu.tsx` (owns the sheet, the always-enabled Question History row, resume/delete wiring), `apps/frontend/src/lib/portal/seedContext.tsx` (the resume/deletion/draft-resume mailboxes a cross-destination hand-off needs), `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx` and `apps/frontend/src/components/portal/MtgAssistantApp.tsx` (each consumes its own mode's mailbox and keeps its existing `restoreConversation`/Draft-hydrate logic)
 
 ### REQ-214
 - Title: Card scanner: a scanner-local holding list, committed on close, with a count pill on every host
