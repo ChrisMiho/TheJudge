@@ -13,7 +13,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Mapped into 11 slices A–K (GAMEPLAN.md); run `graph-20260930-055958` resumes at `build` via `/graph-implement PRD/work/ui-reimagining-build/` |
 
 ## refined
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ui-reimagining-build | Build parked after slice A (1 of 11 done, PR #239 open, `IN PROGRESS`): the builder stopped with 10 slices untouched and 427 of 1200 calls spent on A alone — the package needs several build attempts under the current cap; see `GRAPH-RUN.md` `## Open gate` for the one-line resolve + `/graph-implement PRD/work/ui-reimagining-build/` |
 
 
 ## deferred
