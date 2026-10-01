@@ -665,8 +665,8 @@ Proposed `PRD/sections/` diff (new, reserved):
  - Layout/fit: mobile-first and touch-friendly; the pre-submit stack and the
 ```
 
-- Verdict: accept
-- Reason:
+- Verdict: edit
+- Reason: Start the Draft at the very beginning, when the player attaches their first card on Ask a Question, so every request survives a reload — cards carried into In-depth details included, placed or not yet placed. Better for the player: it saves time and effort, and since history is stored locally on their own device they can clear it on their own schedule. (Owner, 2026-10-01; replaces the brief's assumption that unplaced carried cards are not written to the Draft.)
 
 ## REQ-207 — The new frame: banner header, Menu, Theme band, and the colour's scene (new)
 
@@ -1310,8 +1310,8 @@ Proposed `PRD/sections/` diff (new, reserved):
  - Built: printing-level scan identity stays presentation-only and is not pushed
 ```
 
-- Verdict: accept
-- Reason:
+- Verdict: edit
+- Reason: Scanned cards go to their own holding list inside the scanner first, and join the destination (zone or trade side) only when the player closes the scanner and thereby accepts the list — not the instant each card is recognised. The count pill shows that holding list. (Owner, 2026-10-01; replaces today's add-on-recognition rule for the scanner's new frame.)
 
 ## REQ-215 — Trade Balancer: piles of gold, a verdict line, New trade, named sides (new)
 
