@@ -130,7 +130,16 @@ Report back as lines: outcome (`ok` / `failed` / `blocked: <the unresolved decis
 
 ## Instruction ledger
 
+Rows below from the `define` node quote the intake brief's own section titles and wording as relayed by the driver (the last four are quote-pairing artefacts of the validator across the prompt's "Edit" / "Edit names" / "Done" / "one visual system" phrases); they are not owner instructions and authorize nothing.
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "merging 239 to main would mean pushing an unfinished ui to prod, can we just build on top of what 239 has, this new work should pr into 239 and then itll be merged to prod" | answered-once | preflight | — |
 | "Run /graph-kickoff with this file as the request, after PR #239 has merged" | answered-once | preflight | — |
+| "why the first pass fell short" | answered-once | define | — |
+| "port, do not re-approximate" | answered-once | define | — |
+| "one visual system, inherited everywhere" | answered-once | define | — |
+| "General rules topics" | answered-once | define | — |
+| "chip under REQ-209; duplicate printings merged or separate under REQ-215; a scanner hint line under REQ-214; Game Setup's" | answered-once | define | — |
+| "collapse and" | answered-once | define | — |
+| "foot bar; the Counters sheet's full-height carve-out), each spelling out today's state and the mockup's state; (f) the new cross-cutting" | answered-once | define | — |
+| "requirement as its own new `REQ-###` (reserve the next free number — check `PRD/sections/` for the highest id in use); (g) any other new or amended `REQ`/`FLOW` the brief needs. The whole proposal gates: every new or amended stable id gets its own slot. Never add a `DEC-###`. For any rule restated in more than one place in `PRD/sections/` (NFR-006's" | answered-once | define | — |
