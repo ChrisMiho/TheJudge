@@ -16,16 +16,22 @@ type PageShellProps = {
    * instead of the suite's default 48rem — `quick-question.html:17` and
    * `in-depth-question.html:14` both override `.page-content` this way;
    * Ask a Question (slice M) and In-depth details (slice N) are the two
-   * destinations that opt in.
+   * destinations that opt in. "wide-fit" (look-matching pass, slice O): a
+   * wider column (`trade-balancer.html`'s own `56rem` override, wider than
+   * the suite's `48rem` default) that fits the viewport instead of scrolling
+   * — `.page-shell-fit` gives `<main>` a flex column exactly `100dvh` tall so
+   * `.page-content-wide-fit` (a flex child) gets the exact remainder below
+   * the header/banner with no JS measurement, and only Trade Balancer's own
+   * scrolling entry lists move. Trade Balancer (slice O) is its one adopter.
    */
-  variant?: "standard" | "full-bleed" | "narrow";
+  variant?: "standard" | "full-bleed" | "narrow" | "wide-fit";
 };
 
 export function PageShell({ children, variant = "standard" }: PageShellProps): JSX.Element {
   const motif = useActiveThemeMotif();
 
   return (
-    <main className="page-shell">
+    <main className={variant === "wide-fit" ? "page-shell page-shell-fit" : "page-shell"}>
       {/* REQ-207: the chosen colour's ambient scene plays behind every page, behind
           solid panels (`.page-content` / `.page-shell-bleed`'s own content), decorative
           only. One instance per PageShell keeps it inside this destination's own
@@ -49,7 +55,15 @@ export function PageShell({ children, variant = "standard" }: PageShellProps): J
           <ShellBounds />
         </div>
       ) : (
-        <div className={variant === "narrow" ? "page-content page-content-narrow" : "page-content"}>
+        <div
+          className={
+            variant === "narrow"
+              ? "page-content page-content-narrow"
+              : variant === "wide-fit"
+                ? "page-content page-content-wide-fit"
+                : "page-content"
+          }
+        >
           {children}
           <ShellBounds />
         </div>

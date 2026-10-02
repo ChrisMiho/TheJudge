@@ -134,7 +134,12 @@ export function TradePile({ tier, isRicher, transition, animationKey }: TradePil
       aria-label={`Pile of gold, tier ${tier} of 5${isRicher ? ", the richer side" : ""}`}
       data-testid="trade-pile"
       data-tier={tier}
-      className={`trade-pile-surface relative mx-auto h-24 w-20 ${isRicher ? "trade-pile-richer" : "trade-pile-lighter"}`}
+      // Look-matching pass (slice O): sized per `trade-balancer.html:58-71`'s
+      // `.pile` (132x73 phone, 196x109 desktop via `.tb-piles` media query),
+      // replacing the fixed 80x96px box — the tier artwork itself (gold/bronze
+      // flat shapes, a purple gem) is unchanged; LOOK-GAPS.md's own gap here is
+      // the scale band's layout, not this SVG's drawing.
+      className={`trade-pile-surface tb-pile relative mx-auto ${isRicher ? "trade-pile-richer" : "trade-pile-lighter"}`}
     >
       <svg
         key={animationKey}

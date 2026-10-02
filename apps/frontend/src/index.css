@@ -75,6 +75,29 @@
   min-height: 100vh;
 }
 
+/* Look-matching pass (slice O), requirement 1: Trade Balancer fits the
+   viewport instead of scrolling (`trade-balancer.html:16-20`'s `.tb`) — no JS
+   chrome measurement (the mockup's own `fit()`): `.page-shell-fit` makes
+   `<main>` a flex column exactly `100dvh` tall (padding included, `box-sizing:
+   border-box` from Tailwind's preflight), so its one flex child,
+   `.page-content-wide-fit`, resolves `height: 100%` to exactly the viewport —
+   header, banner, and this screen's own `flow-head`/`.tb-scale` take their
+   natural height as flex children that don't grow, and `.tb` (below) takes
+   the remainder via `flex: 1`. Only `.tb-entries` (further below) scrolls. */
+.page-shell-fit {
+  height: 100dvh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content-wide-fit {
+  max-width: min(56rem, 94vw);
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* Look-matching pass (slice L): the sticky, full-bleed banner header
    (`shell.css:63-81`'s `.app-header`), ported onto `StagedStepHeader`'s
    existing `1fr auto 1fr` grid (REQ-139's PortalSlot column, the centred
@@ -1294,6 +1317,23 @@
 .flow-head .attach {
   display: flex;
   gap: 0.4rem;
+}
+
+/* Look-matching pass (slice O): Trade Balancer's "↺ New trade" chip
+   (`trade-balancer.html:214`'s `.head-tools`), sharing `.flow-head`'s own
+   row with the title and the phone-only price date. */
+.flow-head-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+/* The phone-only price date (`.flow-head .asof`, requirement 3) drops to its
+   own full-width row under the title/New-trade row, instead of squeezing
+   between them. */
+.flow-head .asof {
+  flex: 1 0 100%;
+  order: 3;
 }
 
 .icon-chip {
@@ -3179,6 +3219,495 @@ body {
 
 .trade-pile-lighter {
   opacity: 0.82;
+}
+
+/* Look-matching pass (slice O): Trade Balancer's screen, ported from
+   `trade-balancer.html` — the scale band (totals, piles, verdict), side
+   tabs/columns, one-line entry rows, and the side foot. `.icon-chip` (slice
+   M) and `.search-pop`/`.search-row`/`.search-results` (slice M) are reused
+   as-is for the "＋ Add card"/"▣ Scan" row and its popover — no new chip or
+   search-field classes here. */
+.tb {
+  display: flex;
+  flex-direction: column;
+  gap: 0.55rem;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/* `trade-balancer.html:30-42` the scale: both sides' totals and piles in one
+   band, replacing the gold-pile verdict panel. */
+.tb-scale {
+  position: relative;
+  flex: 0 0 auto;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.8rem 0.5rem;
+  border-radius: 0.9rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--panel) / 0.8);
+}
+
+.tb-pan {
+  display: grid;
+  gap: 0;
+  min-width: 0;
+}
+
+.tb-pan.b {
+  text-align: right;
+}
+
+.tb-pan-label {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a1a1aa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tb-pan-total {
+  font-size: 1.35rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  line-height: 1.15;
+  transition: color 200ms ease;
+}
+
+.tb-pan[data-heavy="true"] .tb-pan-total {
+  color: rgb(var(--accent-soft));
+  text-shadow: 0 0 18px rgb(var(--accent-soft) / 0.6);
+}
+
+.tb-pan-count {
+  font-size: 0.68rem;
+  color: #a1a1aa;
+}
+
+.tb-piles-wrap {
+  display: grid;
+  justify-items: center;
+  gap: 0.1rem;
+  min-width: 200px;
+}
+
+.tb-piles {
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+.tb-pile {
+  width: 132px;
+  height: 73px;
+}
+
+.tb-verdict {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.25;
+  margin-top: 0.05rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-style: italic;
+  letter-spacing: 0.01em;
+  color: #e2e8f0;
+}
+
+.tb-verdict small {
+  display: block;
+  font-family: inherit;
+  font-style: normal;
+  font-weight: 600;
+  font-size: 0.72rem;
+  color: #a1a1aa;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0;
+}
+
+@media (min-width: 768px) {
+  .tb-scale {
+    padding: 0.6rem 1.1rem;
+  }
+  .tb-pan-total {
+    font-size: 1.6rem;
+  }
+  .tb-piles-wrap {
+    min-width: 320px;
+  }
+  .tb-piles {
+    gap: 1.2rem;
+  }
+  .tb-pile {
+    width: 196px;
+    height: 109px;
+  }
+}
+
+@media (max-width: 767px) {
+  .tb-scale {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.2rem 0.5rem;
+    padding-top: 0.4rem;
+  }
+  .tb-piles-wrap {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    min-width: 0;
+  }
+}
+
+/* `trade-balancer.html:84-93` side tabs on phone, two columns on desktop
+   (REQ-204). */
+.tb-side-tabs {
+  display: flex;
+  gap: 0.4rem;
+  flex: 0 0 auto;
+}
+
+.tb-side-tabs button {
+  flex: 1;
+  min-height: 42px;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: transparent;
+  color: #a1a1aa;
+  font-size: 0.88rem;
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.tb-side-tabs button b {
+  color: rgb(var(--accent-soft));
+  font-variant-numeric: tabular-nums;
+}
+
+.tb-side-tabs button[aria-selected="true"] {
+  color: #f4f4f5;
+  border-color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.22);
+  box-shadow: 0 0 16px -8px rgb(var(--accent-soft));
+}
+
+.tb-sides {
+  display: grid;
+  gap: 0.6rem;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.tb-side {
+  display: none;
+  flex-direction: column;
+  min-height: 0;
+  gap: 0.5rem;
+  padding: 0.6rem 0.7rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--panel) / 0.8);
+}
+
+.tb-side[data-active="true"] {
+  display: flex;
+}
+
+@media (min-width: 768px) {
+  .tb-side-tabs {
+    display: none;
+  }
+  .tb-sides {
+    grid-template-columns: 1fr 1fr;
+  }
+  .tb-side {
+    display: flex !important;
+  }
+}
+
+.tb-side-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex: 0 0 auto;
+}
+
+.tb-side-attach {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.tb-entries {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 2px 2px 2px 0;
+}
+
+.tb-entry {
+  display: grid;
+  grid-template-columns: 44px 1fr auto;
+  gap: 0.55rem;
+  align-items: center;
+  padding: 0.4rem 0.45rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground) / 0.45);
+}
+
+.tb-entry-card {
+  width: 44px;
+  height: 61px;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+.tb-entry-info {
+  min-width: 0;
+  display: grid;
+  gap: 0.12rem;
+}
+
+.tb-entry-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tb-entry-printing {
+  font-size: 0.7rem;
+  color: #a1a1aa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tb-entry-printing-link {
+  background: transparent;
+  border: 0;
+  color: rgb(var(--accent-soft));
+  font-size: 0.7rem;
+  padding: 0;
+  cursor: pointer;
+  text-decoration: underline dotted;
+}
+
+.tb-entry-printing-link:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.tb-entry-printing-only {
+  color: #a1a1aa;
+}
+
+.tb-entry-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  margin-top: 0.1rem;
+}
+
+.tb-entry-ctl {
+  min-width: 30px;
+  min-height: 30px;
+  padding: 0 0.4rem;
+  border-radius: 0.45rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 0.74rem;
+  cursor: pointer;
+}
+
+.tb-entry-ctl[aria-pressed="true"] {
+  border-color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.24);
+  color: rgb(var(--accent-soft));
+}
+
+.tb-entry-ctl:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.tb-entry-qty {
+  min-width: 1.3rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.82rem;
+}
+
+.tb-entry-money {
+  display: grid;
+  justify-items: end;
+  gap: 0.05rem;
+  align-self: start;
+}
+
+.tb-entry-line {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+}
+
+.tb-entry-unit {
+  font-size: 0.66rem;
+  color: #a1a1aa;
+  white-space: nowrap;
+}
+
+.tb-entry-remove {
+  border: 0;
+  background: transparent;
+  color: #a1a1aa;
+  cursor: pointer;
+  font-size: 0.85rem;
+  min-width: 30px;
+  min-height: 30px;
+  margin-top: 0.1rem;
+}
+
+.tb-entry-remove:hover {
+  color: #f4f4f5;
+}
+
+.tb-entry-empty {
+  padding: 1.2rem 1rem;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #a1a1aa;
+  border: 1px dashed rgb(var(--accent-soft) / 0.45);
+  border-radius: 0.75rem;
+}
+
+.tb-side-foot {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #a1a1aa;
+  border-top: 1px solid rgb(var(--panel-edge) / 0.7);
+  padding-top: 0.45rem;
+  flex: 0 0 auto;
+}
+
+.tb-side-foot b {
+  color: #f4f4f5;
+  font-size: 1rem;
+  font-variant-numeric: tabular-nums;
+  margin-left: 0.4rem;
+}
+
+/* The printing picker's rows (REQ-065) — paired with slice L's
+   `.card-detail-hero*` for the art-crop header above (`PrintingPicker.tsx`). */
+.tb-printing-list {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.tb-printing-row {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 0.7rem;
+  align-items: center;
+  padding: 0.55rem 0.6rem;
+  border-radius: 0.8rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground) / 0.4);
+}
+
+.tb-printing-row[data-current="true"] {
+  border-color: rgb(var(--accent-soft) / 0.55);
+  background: rgb(var(--accent) / 0.14);
+}
+
+.tb-printing-thumb {
+  width: 44px;
+  height: 61px;
+  border-radius: 3px;
+  object-fit: contain;
+}
+
+.tb-printing-set {
+  display: grid;
+  gap: 0.3rem;
+  min-width: 0;
+}
+
+.tb-printing-set-name {
+  font-weight: 600;
+  font-size: 0.88rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tb-printing-set-name small {
+  display: block;
+  font-weight: 500;
+  color: #a1a1aa;
+  font-size: 0.7rem;
+  letter-spacing: 0.04em;
+  margin-top: 0.1rem;
+}
+
+.tb-printing-finishes {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.tb-finish {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 32px;
+  padding: 0 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-variant-numeric: tabular-nums;
+}
+
+.tb-finish small {
+  color: #a1a1aa;
+  font-size: 0.68rem;
+}
+
+.tb-finish b {
+  font-weight: 700;
+}
+
+.tb-finish[aria-current="true"] {
+  border-color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.26);
+  box-shadow: 0 0 12px -5px rgb(var(--accent-soft));
+}
+
+.tb-finish[aria-current="true"] b {
+  color: rgb(var(--accent-soft));
+}
+
+.tb-finish:disabled {
+  opacity: 0.45;
+  cursor: default;
 }
 
 @keyframes scan-confirm-pop {

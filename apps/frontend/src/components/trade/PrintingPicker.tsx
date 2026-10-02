@@ -75,22 +75,36 @@ export function PrintingPicker({
       closeLabel={`Cancel choosing a printing for ${cardName}`}
       titleId={titleId}
       testId="printing-picker"
-      head={
-        <div className="flex items-center gap-3">
+    >
+      {/* Look-matching pass (slice O), requirement 9: an art-crop hero with the
+          card's name over it (`trade-balancer.html`'s `#pp-art`/`#pp-title`),
+          reusing slice L's `.card-detail-hero*` shell — the same classes
+          `CardPresentation.tsx`'s own card-detail popup uses, so this picker
+          and the card-detail popup share one visual family rather than a
+          second hero built from scratch. The mockup's hero also shows the
+          card's mana cost (`#pp-cost`, from its own demo data's `card.cost`
+          field); `CardPrintingPrice` carries no mana-cost field — fetching one
+          would be a backend-contract change out of this look-only slice's
+          scope (`DESIGN-BRIEF.md`'s non-goal), so the hero here shows the art
+          and name only, with no sourceless cost line. */}
+      <div className="card-detail-hero-wrap">
+        <div className="card-detail-hero">
           {cardImageUrl && (
-            <img src={cardImageUrl} alt="" aria-hidden="true" className="h-10 w-auto shrink-0 rounded object-contain" />
+            <img src={cardImageUrl} alt="" aria-hidden="true" className="card-detail-hero-img" />
           )}
-          <div>
-            <h2 id={titleId} className="text-base font-semibold text-zinc-100">
-              {`Choose a printing — ${cardName}`}
+          <div className="card-detail-hero-title">
+            <h2 id={titleId} className="card-detail-hero-name">
+              {cardName}
             </h2>
-            <p className="text-xs text-zinc-400">{printingCountLabel(printings.length)}</p>
           </div>
         </div>
-      }
-    >
+      </div>
+
       <div className="space-y-2" aria-label={`Choose a printing for ${cardName}`} role="group">
-        <p className="px-1 text-xs text-zinc-400">Tap Nonfoil or Foil to pick that printing and finish.</p>
+        <p className="pp-lede px-1 text-xs text-zinc-400">
+          Tap a price to use that printing and finish.
+        </p>
+        <p className="px-1 text-xs text-zinc-400">{printingCountLabel(printings.length)}</p>
 
         {showFilter && (
           <input
@@ -111,7 +125,7 @@ export function PrintingPicker({
           // D2: region-scrolls at ~5-6 rows, capped near 40vh, instead of
           // growing the page with the card's printing count (Sol Ring: 128;
           // corpus max 771) — REQ-065, screen-layout.md.
-          <ul className="flex max-h-[40vh] flex-col gap-1 overflow-y-auto">
+          <ul className="tb-printing-list flex max-h-[40vh] flex-col gap-1 overflow-y-auto">
             {visiblePrintings.map((printing) => {
               // REQ-066/REQ-174 (Slice D): each printing's image derives from its
               // own Scryfall id — printings of the same card look different
@@ -125,51 +139,47 @@ export function PrintingPicker({
                 <li
                   key={printing.id}
                   ref={isNonfoilSelected || isFoilSelected ? selectedRowRef : undefined}
-                  className="flex flex-wrap items-center justify-between gap-2 rounded-lg px-2 py-2 text-left text-sm text-zinc-200"
+                  data-current={printing.id === selectedPrintingId ? "true" : undefined}
+                  className="tb-printing-row"
                 >
-                  <span className="flex min-w-0 items-center gap-2">
-                    {imageUrl && (
-                      <img
-                        src={imageUrl}
-                        alt=""
-                        aria-hidden="true"
-                        loading="lazy"
-                        className="h-10 w-auto shrink-0 rounded object-contain"
-                      />
-                    )}
-                    <span className="font-medium">
-                      {`${printing.setName} (${printing.set.toUpperCase()}) #${printing.collectorNumber}`}
+                  {imageUrl && (
+                    <img
+                      src={imageUrl}
+                      alt=""
+                      aria-hidden="true"
+                      loading="lazy"
+                      className="tb-printing-thumb"
+                    />
+                  )}
+                  <div className="tb-printing-set">
+                    <span className="tb-printing-set-name">
+                      {printing.setName}
+                      <small>{`${printing.set.toUpperCase()} · #${printing.collectorNumber}`}</small>
                     </span>
-                  </span>
-                  <span className="flex shrink-0 gap-1">
-                    <button
-                      type="button"
-                      aria-label={`${printing.setName} ${printing.set.toUpperCase()} nonfoil`}
-                      aria-current={isNonfoilSelected ? "true" : undefined}
-                      onClick={() => onSelect(printing, false)}
-                      className={`min-h-10 rounded-lg border px-2 py-1.5 text-xs font-semibold transition ${
-                        isNonfoilSelected
-                          ? "border-accent/70 bg-accent/20 text-accent-soft"
-                          : "border-zinc-600 bg-zinc-950/60 text-zinc-200 hover:bg-zinc-700"
-                      }`}
-                    >
-                      {`Nonfoil ${printing.usd === null ? "— no price" : formatUsd(printing.usd)}`}
-                    </button>
-                    <button
-                      type="button"
-                      aria-label={`${printing.setName} ${printing.set.toUpperCase()} foil`}
-                      aria-current={isFoilSelected ? "true" : undefined}
-                      disabled={!hasFoilPrice}
-                      onClick={() => onSelect(printing, true)}
-                      className={`min-h-10 rounded-lg border px-2 py-1.5 text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-40 ${
-                        isFoilSelected
-                          ? "border-accent/70 bg-accent/20 text-accent-soft"
-                          : "border-zinc-600 bg-zinc-950/60 text-zinc-200 hover:bg-zinc-700"
-                      }`}
-                    >
-                      {`Foil ${printing.usdFoil === null ? "— no price" : formatUsd(printing.usdFoil)}`}
-                    </button>
-                  </span>
+                    <span className="tb-printing-finishes">
+                      <button
+                        type="button"
+                        aria-label={`${printing.setName} ${printing.set.toUpperCase()} nonfoil`}
+                        aria-current={isNonfoilSelected ? "true" : undefined}
+                        onClick={() => onSelect(printing, false)}
+                        className="tb-finish"
+                      >
+                        <small>Nonfoil</small>
+                        <b>{printing.usd === null ? "— no price" : formatUsd(printing.usd)}</b>
+                      </button>
+                      <button
+                        type="button"
+                        aria-label={`${printing.setName} ${printing.set.toUpperCase()} foil`}
+                        aria-current={isFoilSelected ? "true" : undefined}
+                        disabled={!hasFoilPrice}
+                        onClick={() => onSelect(printing, true)}
+                        className="tb-finish"
+                      >
+                        <small>Foil</small>
+                        <b>{printing.usdFoil === null ? "— no price" : formatUsd(printing.usdFoil)}</b>
+                      </button>
+                    </span>
+                  </div>
                 </li>
               );
             })}

@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ConfirmSheet } from "../ConfirmSheet";
 import { PageShell } from "../PageShell";
 import { StagedStepHeader } from "../StagedStepHeader";
-import { StepEyebrow } from "../StepEyebrow";
 import { apiBaseUrl } from "../../lib/env";
 import { fetchCardPrintings, type CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
 import {
@@ -125,6 +124,11 @@ export function TradeBalancer(): JSX.Element {
   const [snapshotDate, setSnapshotDate] = useState<string | null>(null);
   const [sideNames, setSideNames] = useState<Record<TradeSideId, string>>({ A: "Side A", B: "Side B" });
   const [isNewTradeConfirmOpen, setIsNewTradeConfirmOpen] = useState(false);
+  // Look-matching pass (slice O), requirement 5: on phone, one side shows at a
+  // time behind a tab pair (`trade-balancer.html:84-93`); both always show on
+  // desktop (CSS media query) regardless of this state. Both `TradeSide`
+  // instances stay mounted either way, so switching tabs loses no side state.
+  const [activeSideTab, setActiveSideTab] = useState<TradeSideId>("A");
   const nextInstanceIdRef = useRef(0);
 
   useEffect(() => {
@@ -325,9 +329,22 @@ export function TradeBalancer(): JSX.Element {
   const verdictCopy = formatTradeVerdict(verdict, sideName);
   const differenceCopy = formatTradeDifference(totalA, totalB, sideName);
   const bothSidesEmpty = entriesBySide.A.length === 0 && entriesBySide.B.length === 0;
+  // Look-matching pass (slice O), requirement 4: the scale band's own verdict
+  // line reads "Add cards to weigh the trade" at $0/$0 — `verdictCopy` above
+  // (`tradeVerdict`'s "Even" case) is correct once either side has a card.
+  const scaleVerdictCopy = bothSidesEmpty ? "Add cards to weigh the trade" : verdictCopy;
+  const countA = entriesBySide.A.reduce((sum, entry) => sum + entry.quantity, 0);
+  const countB = entriesBySide.B.reduce((sum, entry) => sum + entry.quantity, 0);
+  const countLabel = (count: number) => `${count} card${count === 1 ? "" : "s"}`;
 
   const tierA: PileTier = pileTier(totalA, totalB);
   const tierB: PileTier = pileTier(totalB, totalA);
+  // `.pan[data-heavy]` (the heavier side's glowing total) tracks the same
+  // "richer" reading the piles already use — tied at $0 or any other amount
+  // reads neither side as heavy, matching `trade-balancer.html`'s own
+  // `heavy = ta === tb ? null : ...`.
+  const isHeavyA = totalA !== totalB && tierA >= tierB;
+  const isHeavyB = totalA !== totalB && tierB >= tierA;
 
   // REQ-215: a tier-up drops in with a slight overshoot, a tier-down lifts and
   // fades — tracked per side so each pile's SVG re-keys and replays its own
@@ -392,7 +409,7 @@ export function TradeBalancer(): JSX.Element {
   };
 
   return (
-    <PageShell>
+    <PageShell variant="wide-fit">
       <StagedStepHeader
         rightSlot={
           snapshotCopy ? (
@@ -402,54 +419,115 @@ export function TradeBalancer(): JSX.Element {
           ) : undefined
         }
       />
-      <div className="flex items-center justify-between gap-3">
-        <StepEyebrow stepName="Trade Balancer" />
-        <button
-          type="button"
-          aria-label="New trade"
-          disabled={bothSidesEmpty}
-          onClick={openNewTradeConfirm}
-          className="min-h-10 shrink-0 rounded-xl border border-zinc-600 bg-zinc-900/60 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          ↺ New trade
-        </button>
-      </div>
-
-      <section className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
-        {bothSidesEmpty ? (
-          <div className="space-y-2 text-center">
-            <div className="trade-pile-ground mx-auto h-1 w-40 rounded-full bg-zinc-700/70" aria-hidden="true" />
-            <p className="text-sm text-zinc-400">Add cards to weigh the trade</p>
+      {/* Look-matching pass (slice O): `trade-balancer.html`'s `.tb` — the
+          title row, the scale band, the phone side tabs, and the two sides —
+          takes the screen's remaining height below the header (`.tb` in
+          index.css) and scrolls nowhere itself; only `.tb-entries` below
+          does. */}
+      <section className="tb">
+        <div className="flow-head">
+          <h1>Trade Balancer</h1>
+          {/* Requirement 3: the price date sits under the title, not inside
+              the scale/verdict band — shown here for phone; the header's own
+              `rightSlot` above covers desktop (REQ-215's existing dual
+              placement, unchanged by this slice). */}
+          {snapshotCopy && (
+            <p className="asof text-xs text-zinc-500 md:hidden">{`Prices as of ${snapshotCopy}`}</p>
+          )}
+          <div className="flow-head-tools">
+            <button
+              type="button"
+              aria-label="New trade"
+              disabled={bothSidesEmpty}
+              onClick={openNewTradeConfirm}
+              className="icon-chip"
+            >
+              <span className="glyph" aria-hidden="true">
+                ↺
+              </span>
+              New trade
+            </button>
           </div>
-        ) : (
-          <>
-            <div className="grid grid-cols-2 gap-4">
+        </div>
+
+        {/* Requirement 4: one scale band — both sides' totals, pile art, and a
+            serif verdict line — replacing the old gold-pile verdict panel. */}
+        <div className="tb-scale">
+          <div className="tb-pan a" data-heavy={isHeavyA ? "true" : "false"}>
+            <span className="tb-pan-label">{sideNames.A}</span>
+            <span className="tb-pan-total" aria-label="Side A total (scale)">
+              {formatUsd(totalA)}
+            </span>
+            {!bothSidesEmpty && <span className="tb-pan-count">{countLabel(countA)}</span>}
+          </div>
+          <div className="tb-piles-wrap">
+            <div className="tb-piles" aria-hidden="true">
               <TradePile tier={tierA} isRicher={tierA >= tierB} transition={pileAnim.A.transition} animationKey={pileAnim.A.key} />
               <TradePile tier={tierB} isRicher={tierB >= tierA} transition={pileAnim.B.transition} animationKey={pileAnim.B.key} />
             </div>
-            <div className="text-center">
-              <p className="text-lg font-semibold text-zinc-100" aria-label="Trade verdict">
-                {verdictCopy}
-              </p>
-              <p className="text-sm text-zinc-300" aria-label="Trade difference">
-                {differenceCopy}
-              </p>
+            <div className="tb-verdict" aria-live="polite">
+              <span aria-label="Trade verdict">{scaleVerdictCopy}</span>
+              {!bothSidesEmpty && (
+                <small aria-label="Trade difference">{differenceCopy}</small>
+              )}
             </div>
-          </>
-        )}
+          </div>
+          <div className="tb-pan b" data-heavy={isHeavyB ? "true" : "false"}>
+            <span className="tb-pan-label">{sideNames.B}</span>
+            <span className="tb-pan-total" aria-label="Side B total (scale)">
+              {formatUsd(totalB)}
+            </span>
+            {!bothSidesEmpty && <span className="tb-pan-count">{countLabel(countB)}</span>}
+          </div>
+        </div>
+
         {isMetadataLoading && <p className="text-sm text-zinc-400">Loading card list…</p>}
         {metadataLoadError && (
           <p role="alert" className="text-sm text-amber-200">
             {metadataLoadError}
           </p>
         )}
-        {snapshotCopy && <p className="text-xs text-zinc-500 md:hidden">{`Prices as of ${snapshotCopy}`}</p>}
-      </section>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <TradeSide sideId="A" sideName={sideNames.A} entries={entriesBySide.A} {...sideProps} />
-        <TradeSide sideId="B" sideName={sideNames.B} entries={entriesBySide.B} {...sideProps} />
-      </div>
+        {/* Requirement 5: on phone, the two sides sit behind a tab pair; CSS
+            hides this row and shows both `TradeSide` columns on desktop. */}
+        <div className="tb-side-tabs" role="tablist" aria-label="Trade side">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeSideTab === "A"}
+            onClick={() => setActiveSideTab("A")}
+          >
+            <span>{sideNames.A}</span>
+            <b>{formatUsd(totalA)}</b>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeSideTab === "B"}
+            onClick={() => setActiveSideTab("B")}
+          >
+            <span>{sideNames.B}</span>
+            <b>{formatUsd(totalB)}</b>
+          </button>
+        </div>
+
+        <div className="tb-sides">
+          <TradeSide
+            sideId="A"
+            sideName={sideNames.A}
+            isActiveOnPhone={activeSideTab === "A"}
+            entries={entriesBySide.A}
+            {...sideProps}
+          />
+          <TradeSide
+            sideId="B"
+            sideName={sideNames.B}
+            isActiveOnPhone={activeSideTab === "B"}
+            entries={entriesBySide.B}
+            {...sideProps}
+          />
+        </div>
+      </section>
 
       <ConfirmSheet
         isOpen={isNewTradeConfirmOpen}

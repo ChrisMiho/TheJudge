@@ -32,6 +32,11 @@ export type TradeSideProps = {
    * player's own rename (1-20 characters, ephemeral — never persisted). */
   sideName: string;
   onRenameSide: (sideId: TradeSideId, name: string) => void;
+  /** Look-matching pass (slice O): on phone, only the active side's section
+   * shows (`.tb-side[data-active]`, `trade-balancer.html:84-93`'s side tabs);
+   * both always show on desktop (CSS media query). Both sides stay mounted
+   * regardless, so neither side's state is lost switching tabs. */
+  isActiveOnPhone: boolean;
   entries: TradeEntry[];
   cardMetadata: CardMetadataItem[];
   searchIndex: OracleSearchEntry[];
@@ -57,6 +62,7 @@ export function TradeSide({
   sideId,
   sideName,
   onRenameSide,
+  isActiveOnPhone,
   entries,
   searchIndex,
   isMetadataLoading,
@@ -70,6 +76,12 @@ export function TradeSide({
   onChangePrinting,
   onRetryPricing
 }: TradeSideProps): JSX.Element {
+  // Look-matching pass (slice O), requirement 8: the search now opens from the
+  // "＋ Add card" chip (`flow.css`'s `.icon-chip`, the same control slice M
+  // built) instead of sitting permanently visible — the same change slice M
+  // made to Ask a Question's own card search. Stays open across several adds
+  // (no auto-close on select), so a sequence of adds takes one open tap.
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [pendingCard, setPendingCard] = useState<PendingCard>(null);
   const [pendingPrintings, setPendingPrintings] = useState<CardPrintingPrice[] | null>(null);
@@ -159,9 +171,10 @@ export function TradeSide({
   return (
     <section
       aria-label={sideLabel}
-      className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
+      className="tb-side"
+      data-active={isActiveOnPhone ? "true" : "false"}
     >
-      <div className="flex items-baseline justify-between gap-3">
+      <div className="tb-side-head">
         {isRenaming ? (
           <input
             autoFocus
@@ -181,15 +194,47 @@ export function TradeSide({
             type="button"
             aria-label={`Rename ${sideLabel}`}
             onClick={beginRename}
-            className="motion-focus rounded-lg px-1 text-base font-semibold text-zinc-100 transition hover:text-accent-soft"
+            className="motion-focus truncate rounded-lg px-1 text-base font-semibold text-zinc-100 transition hover:text-accent-soft"
           >
             {sideLabel}
           </button>
         )}
-        <p className="text-sm font-semibold text-zinc-100" aria-label={`${sideLabel} total`}>
-          {formatUsd(total)}
-        </p>
+        {!isScanOpen && (
+          <div className="tb-side-attach">
+            <button
+              type="button"
+              aria-label="Add card"
+              aria-expanded={isSearchOpen}
+              disabled={isInputDisabled}
+              onClick={() => setIsSearchOpen((open) => !open)}
+              className="icon-chip"
+            >
+              <span className="glyph" aria-hidden="true">
+                ＋
+              </span>
+              Add card
+            </button>
+            <button
+              type="button"
+              aria-label={`Scan a card onto ${sideLabel}`}
+              disabled={isInputDisabled}
+              onClick={() => scan.openScan(sideId)}
+              className="icon-chip"
+            >
+              <span className="glyph" aria-hidden="true">
+                ▣
+              </span>
+              Scan
+            </button>
+          </div>
+        )}
       </div>
+
+      {scanNotice && (
+        <p role="status" className="text-sm text-amber-200">
+          {scanNotice}
+        </p>
+      )}
 
       {isScanOpen ? (
         <div className="space-y-3 rounded-xl border border-zinc-600 bg-zinc-950/40 p-3">
@@ -240,82 +285,66 @@ export function TradeSide({
           )}
         </div>
       ) : (
-        <div className="space-y-2">
-          <label className="block text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-            <span>Add a card</span>
-            <span className="mt-2 grid gap-2 normal-case tracking-normal sm:grid-cols-[1fr_auto] sm:items-center">
+        isSearchOpen && (
+          <section className="search-pop" aria-label={`Add a card to ${sideLabel}`}>
+            <div className="search-row">
+              <span className="glyph" aria-hidden="true">
+                ⌕
+              </span>
               <input
                 aria-label={`${sideLabel} card search`}
                 value={query}
                 disabled={isInputDisabled}
                 onChange={(event) => setQuery(event.target.value)}
-                className="w-full rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm font-normal normal-case tracking-normal text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                className="field"
                 placeholder={
                   isMetadataLoading
                     ? "Loading card list…"
                     : `Type at least ${MIN_TRADE_SEARCH_LENGTH} characters`
                 }
               />
-              <button
-                type="button"
-                aria-label={`Scan a card onto ${sideLabel}`}
-                disabled={isInputDisabled}
-                onClick={() => scan.openScan(sideId)}
-                className="min-h-10 rounded-xl border border-accent/70 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent-soft transition hover:bg-accent/25 disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                Scan
-              </button>
-            </span>
-          </label>
-          {scanNotice && (
-            <p role="status" className="text-sm text-amber-200">
-              {scanNotice}
-            </p>
-          )}
-        </div>
-      )}
+            </div>
 
-      {!isScanOpen && pendingCard && (
-        <div className="rounded-xl border border-zinc-600 bg-zinc-800/70 p-2">
-          {pendingPrintings === null ? (
-            <p className="px-2 py-1 text-sm text-zinc-400">Loading printings…</p>
-          ) : (
-            <PrintingPicker
-              cardName={pendingCard.name}
-              printings={pendingPrintings}
-              onSelect={handleSelectPendingPrinting}
-              onCancel={handleCancelPending}
-            />
-          )}
-        </div>
-      )}
-
-      {!isScanOpen && showSuggestionPanel && (
-        <div className="rounded-xl border border-zinc-600 bg-zinc-800/70 p-2">
-          {suggestions.length === 0 ? (
-            <p className="px-2 py-1 text-sm text-zinc-400">{NO_MATCH_COPY}</p>
-          ) : (
-            <ul className="flex flex-col gap-1">
-              {suggestions.map((suggestion) => (
-                <li key={suggestion.oracleId}>
-                  <button
-                    type="button"
-                    onClick={() => handleSuggestionTap(suggestion.oracleId, suggestion.name)}
-                    className="flex min-h-11 w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-sm text-zinc-200 transition hover:bg-zinc-700 hover:text-accent-soft"
-                  >
-                    {suggestion.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+            {pendingCard ? (
+              <div className="search-results">
+                {pendingPrintings === null ? (
+                  <p className="px-2 py-1 text-sm text-zinc-400">Loading printings…</p>
+                ) : (
+                  <PrintingPicker
+                    cardName={pendingCard.name}
+                    printings={pendingPrintings}
+                    onSelect={handleSelectPendingPrinting}
+                    onCancel={handleCancelPending}
+                  />
+                )}
+              </div>
+            ) : (
+              showSuggestionPanel && (
+                <div className="search-results">
+                  {suggestions.length === 0 ? (
+                    <p className="px-2 py-1 text-sm text-zinc-400">{NO_MATCH_COPY}</p>
+                  ) : (
+                    suggestions.map((suggestion) => (
+                      <button
+                        key={suggestion.oracleId}
+                        type="button"
+                        onClick={() => handleSuggestionTap(suggestion.oracleId, suggestion.name)}
+                      >
+                        <span>{suggestion.name}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              )
+            )}
+          </section>
+        )
       )}
 
       {entries.length === 0 ? (
-        <p className="text-sm text-zinc-400">No cards on this side yet.</p>
+        <p className="tb-entry-empty">No cards on this side yet — add one, or scan it.</p>
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="tb-entries">
           {entries.map((entry) => (
             <TradeEntryRow
               key={entry.instanceId}
@@ -335,6 +364,11 @@ export function TradeSide({
           ))}
         </ul>
       )}
+
+      <div className="tb-side-foot">
+        <span>{`${sideLabel} total `}</span>
+        <b aria-label={`${sideLabel} total`}>{formatUsd(total)}</b>
+      </div>
     </section>
   );
 }

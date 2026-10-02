@@ -59,6 +59,7 @@ function renderSide(overrides: Partial<TradeSideProps> = {}): { onAddByOracle: R
       sideId="A"
       sideName="Side A"
       onRenameSide={vi.fn()}
+      isActiveOnPhone
       entries={[]}
       cardMetadata={cardMetadata}
       searchIndex={searchIndex}
@@ -78,11 +79,23 @@ function renderSide(overrides: Partial<TradeSideProps> = {}): { onAddByOracle: R
   return { onAddByOracle };
 }
 
+/** Look-matching pass (slice O), requirement 8: the card search now opens
+ * from the "Add card" chip instead of sitting permanently visible — the same
+ * change slice M made to Ask a Question's own card search. A no-op once
+ * already open. */
+async function openSideSearch(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  if (screen.queryByLabelText("Side A card search")) {
+    return;
+  }
+  await user.click(screen.getByRole("button", { name: "Add card" }));
+}
+
 async function searchAndTapSuggestion(
   user: ReturnType<typeof userEvent.setup>,
   query: string,
   suggestionName: string
 ): Promise<void> {
+  await openSideSearch(user);
   const search = screen.getByLabelText("Side A card search");
   await user.type(search, query);
   await user.click(screen.getByRole("button", { name: suggestionName }));

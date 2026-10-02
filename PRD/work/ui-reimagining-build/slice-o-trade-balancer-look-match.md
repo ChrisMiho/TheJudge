@@ -1,6 +1,6 @@
 # Slice O — Trade Balancer takes the look
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -100,35 +100,35 @@ Carried verbatim from LOOK-GAPS.md's `## Trade Balancer`
 
 ## Acceptance criteria
 
-- [ ] O1. `npm run quality:check` passes.
-- [ ] O2. `npm --workspace apps/frontend run test` passes.
-- [ ] O3. The page fits the viewport with no page scroll at 390×844 and
+- [x] O1. `npm run quality:check` passes.
+- [x] O2. `npm --workspace apps/frontend run test` passes.
+- [x] O3. The page fits the viewport with no page scroll at 390×844 and
       1440×900, in `TradeBalancer.tsx`.
-- [ ] O4. A single scale band shows both sides' totals, pile art and a
+- [x] O4. A single scale band shows both sides' totals, pile art and a
       serif verdict line, replacing the gold-pile verdict panel, in
       `TradeBalancer.tsx` and `TradePile.tsx`.
-- [ ] O5. On phone, the two sides sit behind a "Side A $X | Side B $Y" tab
+- [x] O5. On phone, the two sides sit behind a "Side A $X | Side B $Y" tab
       pair; both show on desktop, in `TradeBalancer.tsx`.
-- [ ] O6. Each card row renders as one ~80px line (thumbnail, name,
+- [x] O6. Each card row renders as one ~80px line (thumbnail, name,
       set/code/Change link, price, Foil/stepper/✕), in `TradeEntryRow.tsx`.
-- [ ] O7. The printing picker shows an art-crop hero and price-pill rows,
+- [x] O7. The printing picker shows an art-crop hero and price-pill rows,
       in `PrintingPicker.tsx`.
-- [ ] O8 (manual). Side-by-side pairs saved under
+- [x] O8 (manual). Side-by-side pairs saved under
       `docs/design/ui-reimagining/build-screenshots/o/`, build next to
       mockup, Blue, at 390×844 and 1440×900: the default trade
       (`trade-balancer-build-*.png`, `trade-balancer-mockup-*.png`) and the
       printing picker open (`trade-balancer-printing-build-*.png`,
       `trade-balancer-printing-mockup-*.png`) — 8 files, matching
       LOOK-GAPS.md's Trade Balancer pairs list.
-- [ ] O9 (manual). Each pair in O8 was compared side by side against the
+- [x] O9 (manual). Each pair in O8 was compared side by side against the
       build at the matching state; every `### Differences` bullet under
       LOOK-GAPS.md's `## Trade Balancer` is closed, or is the owner
       question above (never resolved past the stated interim reading).
-- [ ] O10 (manual). Browser scenario at 390×844 and 1440×900: add cards to
+- [x] O10 (manual). Browser scenario at 390×844 and 1440×900: add cards to
       both sides until the page would have scrolled under the old layout,
       confirm it still fits; on phone, switch the side tabs; open the
       printing picker and confirm the art-crop hero and price pills render.
-- [ ] O11 (manual). Cleanup evidence recorded: browser closed, owned dev
+- [x] O11 (manual). Cleanup evidence recorded: browser closed, owned dev
       server(s) stopped, ports released, disposable captures under
       `PRD/work/ui-reimagining-build/.playwright-mcp/` named.
 

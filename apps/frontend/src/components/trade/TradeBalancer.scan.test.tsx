@@ -179,10 +179,25 @@ function sideTotalText(sideId: "A" | "B"): string {
   return within(side(sideId)).getByLabelText(`Side ${sideId} total`).textContent ?? "";
 }
 
+/** Look-matching pass (slice O), requirement 8 (a deviation from this slice's
+ * stated files-touched list, needed because this file's own `renderBalancer`
+ * shares the same "search visible at mount" assumption `TradeBalancer.test.tsx`
+ * had): the card search now opens from the "Add card" chip instead of sitting
+ * permanently visible. A no-op once already open. */
+async function openSideSearch(
+  user: ReturnType<typeof userEvent.setup>,
+  sideId: "A" | "B"
+): Promise<void> {
+  if (within(side(sideId)).queryByLabelText(`Side ${sideId} card search`)) {
+    return;
+  }
+  await user.click(within(side(sideId)).getByRole("button", { name: "Add card" }));
+}
+
 async function renderBalancer(): Promise<void> {
   render(<TradeBalancer />);
   await waitFor(() => {
-    expect(screen.getByLabelText("Side A card search")).not.toBeDisabled();
+    expect(within(side("A")).getByRole("button", { name: "Add card" })).not.toBeDisabled();
   });
 }
 
@@ -265,7 +280,7 @@ describe("Frontend - Trade", () => {
       await closeSideScan(user, "A");
 
       const entry = within(side("A")).getByRole("listitem");
-      expect(entry).toHaveTextContent("Magic 2010 (M10) #146");
+      expect(entry).toHaveTextContent("Magic 2010 · M10");
       expect(sideTotalText("A")).toBe("$4.00");
       expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Side A +$4.00");
     });
@@ -282,7 +297,7 @@ describe("Frontend - Trade", () => {
       await closeSideScan(user, "A");
 
       const entry = within(side("A")).getByRole("listitem");
-      expect(entry).toHaveTextContent("Magic 2010 (M10) #146");
+      expect(entry).toHaveTextContent("Magic 2010 · M10");
       expect(sideTotalText("A")).toBe("$4.00");
       expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Side A +$4.00");
     });
@@ -374,7 +389,7 @@ describe("Frontend - Trade", () => {
       await closeSideScan(user, "A");
 
       const entry = within(side("A")).getByRole("listitem");
-      expect(entry).toHaveTextContent("Unlimited Edition (2ED) #162");
+      expect(entry).toHaveTextContent("Unlimited Edition · 2ED");
       expect(sideTotalText("A")).toBe("$10.00");
     });
 
@@ -392,6 +407,7 @@ describe("Frontend - Trade", () => {
         within(side("A")).queryByRole("button", { name: "Test scan frame" })
       ).not.toBeInTheDocument();
 
+      await openSideSearch(user, "A");
       const search = within(side("A")).getByLabelText("Side A card search");
       expect(search).not.toBeDisabled();
       await user.type(search, "Light");
