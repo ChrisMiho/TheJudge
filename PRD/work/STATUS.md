@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [ui-look-translation](ui-look-translation/) | Built: all 6 slices done (A–F); code PR #241 on `thejudge-auto/ui-look-translation-work`, awaiting the owner's side-by-side review |
 
 ## active
 
