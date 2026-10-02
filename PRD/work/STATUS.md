@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [ui-look-translation](ui-look-translation/) | Built: all 6 slices done (A–F); code PR #241 on `thejudge-auto/ui-look-translation-work`, awaiting the owner's side-by-side review |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| [ui-look-translation](ui-look-translation/) | Mapped out: 6 slices (A Frame, B Ask a Question, C In-depth details, D Trade Balancer, E Card scanner, F Life Tracker menus); run `graph-20261002-122813`, code PR targets PR #239's branch |
 
 ## refined
 

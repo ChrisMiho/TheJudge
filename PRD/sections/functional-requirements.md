@@ -1939,8 +1939,8 @@
   - each opponent commander-damage cell exposes always-visible `−`/`+` bands (no hold menu); band thickness follows REQ-112
   - incrementing an opponent's commander damage also decrements that player's life (always on; not a Game Setup toggle)
   - counter values persist with the game per DEC-103
-  - the panel's surface fills the available shell height rather than sizing to its content, joining the Menu tray and history drawer's overlay family, and scrolls internally when its content exceeds that height (DEC-139)
-  - no dead scrim band remains above the panel at any player count
+  - the panel is hosted on the suite's shared sheet (REQ-208) and sized to its content like every other sheet — a bottom sheet below `600px` and a floating centred card from `600px` up, never taller than the viewport, with only its body scrolling when the content is taller; this replaces the former full-height overlay (DEC-139)
+  - its two tabs (Commander damage · Counters) and every counter, value, range and control are unchanged (REQ-202)
 - Constraints:
   - counters are captured values only; no automatic rules resolution beyond the explicit commander-damage→life convenience (DEC-013)
   - the surface-geometry clause is presentation only; it introduces no new counter types and no change to DEC-102's contract, DEC-103 persistence, or REQ-085's seed handoff
@@ -1950,9 +1950,11 @@
   - REQ-081
   - REQ-083
   - REQ-112
+  - REQ-208
 - Notes:
   - "all trackable player counters" per product direction; commander damage is per-opponent
   - the palette's per-player “Day/night” counter is distinct from the game-wide day/night designation (REQ-111)
+  - amended by `ui-look-translation` (2026-10-02): the content-sized shared sheet replaces the full-height overlay, matching the mockup (the first build's owner question 7)
 
 ### REQ-083
 - Title: GameContext per-player counter contract extension
@@ -4067,7 +4069,7 @@
 - Constraints:
   - pure frontend/presentation: no backend, no provider path, no `GameContext` seed contract (DEC-102), no persistence shape (DEC-103); mock-default keeps working
   - preserve always-on commander-damage-decrements-life, the panel opponent cells' `−`/`+` bands (~53px, REQ-112), the "me" self-cell, and seat rotation as the sole life-zone orientation input (DEC-136)
-  - do not reopen the counter-panel overlay/tray shape (DEC-139) — change only the matrix arrangement inside the panel, never its height or overlay treatment
+  - do not reopen the counter-panel overlay/tray shape — change only the matrix arrangement inside the panel, never its height or overlay treatment (this bound REQ-173's own change; the panel's shape is now REQ-082's content-sized shared sheet)
   - the on-card map counter-rotates against the card rotation (DEC-136 rotates the life-number content), and its glyphs counter-rotate back so the numbers face the seated player — never leave the map to rotate with the card
 - Dependencies:
   - REQ-081
@@ -5027,13 +5029,17 @@
   - the owner reviews the pair on the PR and approves or requests changes;
     there is no automated diff threshold and no pixel count that blocks the
     slice on its own
-  - Life Tracker's one-screen fit at every supported player count (DEC-136) and
-    its full-height counter panel (DEC-139) are unaffected
+  - Life Tracker's one-screen fit at every supported player count (DEC-136) is
+    unaffected; a player's Counters panel is the content-sized shared sheet
+    (REQ-082 as amended)
   - `lib/lifeTracker/` state, persistence, commander-damage and counter values,
     day/night, and the one-way MTG Assistant seed are untouched; Game Setup,
     Reset / New Game and a player's Counters change only their presentation
     (the shared sheet, REQ-208), keeping every control, option, default and range
-    unchanged
+    unchanged, except that Game Setup's name fields sit behind an **Edit names ▾**
+    collapse (closed when the sheet opens) and the sheet gains a **Done ›** foot bar
+    that closes it; every Game Setup change still applies as it is made, and ✕,
+    Escape and a tap outside still close the sheet (REQ-081, FLOW-013)
   - automated coverage asserts Life Tracker's table, counter values, layout,
     and `lib/lifeTracker/` state are unchanged by each redesign slice; the
     shared-chrome inheritance itself is confirmed by the screenshot pair, not
@@ -5066,7 +5072,8 @@
     for the back menus to be redrawn (mockup round 11) and approved them
     (rounds 13-14). Game Setup becomes one phone screen — Reset life totals
     and New game as rows that ask first through the shared confirm sheet; a
-    Players stepper (2-8) with name fields two to a row, each carrying its
+    Players stepper (2-8) with an **Edit names ▾** collapse (closed when the
+    sheet opens) holding the name fields two to a row, each carrying its
     seat number; Starting life pills (20 / 25 / 30 / 40 / Custom 1-999) under
     Players with its rule line; Layout (Grid / List) and Card style (Ombre /
     Flat) as a labelled pair of segmented pills. A player's Counters has two
@@ -5077,6 +5084,7 @@
     light above zero, a ⋯ on each tile to take one away, set a number or
     clear — long-press stays — and custom counters as the same tiles with a
     remove ✕ and today's add field and three errors)
+  - amended by `ui-look-translation` (2026-10-02): Game Setup's Edit names ▾ collapse and Done › foot bar, matching the mockup and REQ-081 / FLOW-013 (the first build's owner question 6)
 
 ### REQ-203
 - Title: Suite-wide brand-mark Easter egg
@@ -5311,7 +5319,7 @@
   - it opens with a short fade-up (immediate under reduced motion), traps focus, closes on ✕, Escape and a tap outside, and returns focus to its trigger (REQ-143)
   - the card-detail box (REQ-128) and Send feedback (REQ-087) are hosted on this shell today; Question History (REQ-213) and the printing picker (REQ-065) host on it when those slices build
   - the confirm sheet (`ConfirmSheet`) asks before a destructive action with a plain question, one line on what will be cleared, a keep action and a clear action; a caller renders it only when there is something to clear
-  - View Context keeps its own bottom sheet / right drawer at the `768px` boundary (REQ-135), and Life Tracker's counter panel keeps its full-height overlay (DEC-139)
+  - View Context keeps its own bottom sheet / right drawer at the `768px` boundary (REQ-135); Life Tracker's counter panel is hosted on this shell (REQ-082 as amended)
   - the shared close control (REQ-142) and the 44px floor (REQ-205) apply
   - tests cover the shell at both sides of `600px`, focus trap and restore, outside dismiss, and body-only scroll with a long body
 - Constraints:

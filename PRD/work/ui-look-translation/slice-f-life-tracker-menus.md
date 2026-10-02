@@ -1,6 +1,6 @@
 # Slice F — Life Tracker menus
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -42,22 +42,22 @@ Also touched:
 
 Threshold for this slice: differing fraction at most 0.04 per pair (initial; measure first, lower it only with evidence, never raise it to or above 0.05). States to pair: game-setup, reset-confirm, counters, counters-tab, table-recheck.
 
-- [ ] **F1** Side-by-side pairs exist at 390x844 and 1440x900 for every state (game-setup, reset-confirm, counters, counters-tab, table-recheck) in docs/design/ui-reimagining/build-screenshots/translation/life-tracker-menus/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated
-- [ ] **F2** `node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/life-tracker-menus/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.04 (itself below 0.05); every mask region is named with a reason
-- [ ] **F3** `npm run quality:check` is green
-- [ ] **F4** `npm --workspace apps/frontend run test` is green
-- [ ] **F5** `npm --workspace apps/backend run test` is green
-- [ ] **F6** REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md
-- [ ] **F7** REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md
-- [ ] **F8** Profile-switch pair: the game-setup state in two different Theme colours at 390x844 is saved as `game-setup-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/life-tracker-menus/, with every element recoloured and none left behind (observed)
-- [ ] **F9** Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice
-- [ ] **F10** Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/life-tracker-menus/ (absolute paths) is recorded in DIFF-RESULTS.md
-- [ ] **F11** Game Setup shows an Edit names disclosure that starts closed and a Done bar that only closes the sheet; every control, option, default and range is unchanged (tests plus observation)
-- [ ] **F12** The Counters sheet is content-sized, with no fixed tall frame, at both viewports (observed)
-- [ ] **F13** `git diff --stat BASE..HEAD` over `lib/lifeTracker/`, `PlayerLifeCard.tsx` and `PlayerLifeTrackerApp.tsx` is empty
-- [ ] **F14** The table re-check pair is saved at both widths with a diff number recorded for information only
-- [ ] **F15** `CounterPanel.tsx` carries no `zinc-` class (grep count 0)
-- [ ] **F16** `PRD/sections/` carries the REQ-202 and REQ-082 edits, each applied once
+- [x] **F1** Side-by-side pairs exist at 390x844 and 1440x900 for every state (game-setup, reset-confirm, counters, counters-tab, table-recheck) in docs/design/ui-reimagining/build-screenshots/translation/life-tracker-menus/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated
+- [x] **F2** `node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/life-tracker-menus/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.04 (itself below 0.05); every mask region is named with a reason
+- [x] **F3** `npm run quality:check` is green
+- [x] **F4** `npm --workspace apps/frontend run test` is green
+- [x] **F5** `npm --workspace apps/backend run test` is green
+- [x] **F6** REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md
+- [x] **F7** REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md
+- [x] **F8** Profile-switch pair: the game-setup state in two different Theme colours at 390x844 is saved as `game-setup-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/life-tracker-menus/, with every element recoloured and none left behind (observed)
+- [x] **F9** Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice
+- [x] **F10** Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/life-tracker-menus/ (absolute paths) is recorded in DIFF-RESULTS.md
+- [x] **F11** Game Setup shows an Edit names disclosure that starts closed and a Done bar that only closes the sheet; every control, option, default and range is unchanged (tests plus observation)
+- [x] **F12** The Counters sheet is content-sized, with no fixed tall frame, at both viewports (observed)
+- [x] **F13** `git diff --stat BASE..HEAD` over `lib/lifeTracker/`, `PlayerLifeCard.tsx` and `PlayerLifeTrackerApp.tsx` is empty
+- [x] **F14** The table re-check pair is saved at both widths with a diff number recorded for information only
+- [x] **F15** `CounterPanel.tsx` carries no `zinc-` class (grep count 0)
+- [x] **F16** `PRD/sections/` carries the REQ-202 and REQ-082 edits, each applied once
 
 ## Verification
 

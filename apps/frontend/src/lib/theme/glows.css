@@ -50,6 +50,9 @@
   --cs-shadow-9: 0 16px 40px -14px #000, 0 0 30px -8px var(--accent-soft);
   --caution: #facc15;
   --viewfinder-ground: #0b0b0d;
+  --lt-shadow-1: inset 0 0 0 1px color-mix(in srgb, var(--accent-soft) 45%, transparent);
+  --lt-shadow-3: 0 0 18px -6px rgba(255, 77, 109, 0.7);
+  --lethal: #ff4d6d;
   --pos-ground: color-mix(in srgb, var(--surface-ground) 92%, transparent);
   --card-back: #111;
 }

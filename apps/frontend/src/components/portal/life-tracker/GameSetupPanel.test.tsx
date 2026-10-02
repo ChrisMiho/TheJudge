@@ -2,6 +2,7 @@ import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentProps } from "react";
 import { describe, expect, it, vi } from "vitest";
+import { SheetShell } from "../../SheetShell";
 import { GameSetupPanel } from "./GameSetupPanel";
 
 const FOUR_PLAYERS = [
@@ -276,41 +277,91 @@ describe("Frontend - Shared", () => {
       expect(screen.queryByText("Day / Night")).not.toBeInTheDocument();
     });
 
-    it("shows a name input for exactly the current player count, always visible (no Edit-names disclosure)", () => {
+    // REQ-202: the name fields sit behind an "Edit names ▾" collapse that starts closed.
+    it("keeps the name fields behind an Edit names collapse that starts closed", async () => {
+      const user = userEvent.setup();
       renderPanel({ playerCount: 2, players: FOUR_PLAYERS.slice(0, 2) });
 
+      const toggle = screen.getByRole("button", { name: "Edit names ▾" });
+      expect(toggle).toHaveAttribute("aria-expanded", "false");
+      expect(screen.queryByLabelText("Player 1 display name")).not.toBeInTheDocument();
+
+      await user.click(toggle);
+
+      expect(screen.getByRole("button", { name: "Hide names ▴" })).toHaveAttribute("aria-expanded", "true");
+      // One name field for exactly the current player count.
       expect(screen.getByLabelText("Player 1 display name")).toBeInTheDocument();
       expect(screen.getByLabelText("Player 2 display name")).toBeInTheDocument();
       expect(screen.queryByLabelText("Player 3 display name")).not.toBeInTheDocument();
-      expect(screen.queryByRole("button", { name: "Edit player names" })).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Hide names ▴" }));
+      expect(screen.queryByLabelText("Player 1 display name")).not.toBeInTheDocument();
+    });
+
+    // REQ-202: the Done bar only closes the sheet; every change already applied as it was made.
+    it("renders a Done bar that closes the sheet it sits in and changes nothing", async () => {
+      const user = userEvent.setup();
+      const onClose = vi.fn();
+      const props = {
+        playerCount: 4,
+        layoutMode: "grid" as const,
+        cardStyle: "gradient" as const,
+        startingLife: 40,
+        players: FOUR_PLAYERS,
+        onPlayerCountChange: vi.fn(),
+        onLayoutModeChange: vi.fn(),
+        onCardStyleChange: vi.fn(),
+        onStartingLifeChange: vi.fn(),
+        onDisplayNameChange: vi.fn(),
+        onReset: vi.fn(),
+        onNewGame: vi.fn()
+      };
+      render(
+        <SheetShell isOpen onClose={onClose} closeLabel="Close game setup" titleId="t">
+          <h2 id="t">Game Setup</h2>
+          <GameSetupPanel {...props} />
+        </SheetShell>
+      );
+
+      await user.click(screen.getByRole("button", { name: "Done" }));
+
+      expect(onClose).toHaveBeenCalledTimes(1);
+      for (const callback of [
+        props.onPlayerCountChange,
+        props.onLayoutModeChange,
+        props.onCardStyleChange,
+        props.onStartingLifeChange,
+        props.onDisplayNameChange,
+        props.onReset,
+        props.onNewGame
+      ]) {
+        expect(callback).not.toHaveBeenCalled();
+      }
     });
 
     it("invokes onDisplayNameChange when a name is edited", async () => {
       const user = userEvent.setup();
       const props = renderPanel({ playerCount: 2, players: FOUR_PLAYERS.slice(0, 2) });
 
+      await user.click(screen.getByRole("button", { name: "Edit names ▾" }));
       const nameInput = screen.getByLabelText("Player 1 display name");
       await user.type(nameInput, "!");
 
       expect(props.onDisplayNameChange).toHaveBeenCalledWith("Player 1", "Player 1!");
     });
 
-    it("uses accent-soft for dark-surface accent text, and marks New Game as the more destructive row", async () => {
+    it("marks New Game as the more destructive row and lays the sheet out in the mockup's order", async () => {
       const user = userEvent.setup();
       renderPanel();
 
-      expect(screen.getByTestId("game-setup-section-players")).toHaveClass("text-accent-soft");
-      expect(screen.getByRole("button", { name: "Reset current game" }).querySelector("span")).toHaveClass(
-        "text-accent-soft"
-      );
-      // REQ-202 (matching life-tracker-menus.html's `.danger` row): New Game's glyph alone
-      // carries the destructive marking, not a solid filled button.
-      expect(screen.getByRole("button", { name: "Start new game" }).querySelector("span")).toHaveClass(
-        "text-rose-400"
-      );
+      expect(screen.getByTestId("game-setup-section-players")).toHaveTextContent("Players");
+      // REQ-202 (matching life-tracker-menus.html's `.danger` row): New Game's row carries the
+      // destructive marking, not a solid filled button.
+      expect(screen.getByRole("button", { name: "Start new game" })).toHaveClass("danger");
+      expect(screen.getByRole("button", { name: "Reset current game" })).not.toHaveClass("danger");
 
       await user.click(screen.getByRole("button", { name: "Set custom starting life" }));
-      expect(screen.getByRole("button", { name: "Apply custom starting life" })).toHaveClass("text-accent-soft");
+      expect(screen.getByRole("button", { name: "Apply custom starting life" })).toHaveClass("ok");
     });
 
   });

@@ -63,7 +63,7 @@ describe("Frontend - Shared", () => {
   });
 
   describe("PlayerLifeTrackerApp", () => {
-    it("renders portal chrome and lets names be edited from the always-visible Players section of Game Setup", async () => {
+    it("renders portal chrome and lets names be edited from Game Setup\u0027s Edit names collapse", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
 
@@ -72,6 +72,7 @@ describe("Frontend - Shared", () => {
 
       await openGameSetup(user);
       expect(screen.getByLabelText("Player count")).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Edit names ▾" }));
       const playerOneName = screen.getByLabelText("Player 1 display name");
 
       await user.clear(playerOneName);

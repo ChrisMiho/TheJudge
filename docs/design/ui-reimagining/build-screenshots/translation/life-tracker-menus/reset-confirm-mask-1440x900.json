@@ -1,0 +1,26 @@
+{
+ "contentBox": {
+  "x": 528,
+  "y": 384,
+  "width": 384,
+  "height": 132
+ },
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 900
+  },
+  {
+   "name": "confirm copy and focus ring",
+   "reason": "the shared confirm component keeps its own wording (no starting-life figure, 'Keep'/'Reset' labels, no glyph) and the mockup focuses its first button on open; this is copy and focus ring, not look",
+   "x": 528,
+   "y": 414,
+   "width": 384,
+   "height": 102
+  }
+ ]
+}

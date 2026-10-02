@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # ui-look-translation
 
@@ -30,7 +30,7 @@ Plan: `GAMEPLAN.md`. Criteria: `slice-<letter>.criteria.json`.
 | C In-depth details | `slice-c-in-depth-details.md` | `in-depth-question.html` | A | REQ-209 | done |
 | D Trade Balancer | `slice-d-trade-balancer.md` | `trade-balancer.html` | A | REQ-215 | done |
 | E Card scanner | `slice-e-card-scanner.md` | `card-scan.html` | A | REQ-214 | done |
-| F Life Tracker menus | `slice-f-life-tracker-menus.md` | `life-tracker-menus.html` | A | REQ-202, REQ-082 | planned |
+| F Life Tracker menus | `slice-f-life-tracker-menus.md` | `life-tracker-menus.html` | A | REQ-202, REQ-082 | done |
 
 ## Implementation map
 

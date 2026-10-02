@@ -100,7 +100,7 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Phone | Below `600px`: bottom sheet, content-sized up to the viewport; fixed head (title, ✕) and foot (actions) |
 | Desktop/tablet | From `600px`: floating card centred in the viewport, content-sized; Question History widens to two panes (REQ-213) |
 | Fit | Overlay; only the body region-scrolls; never a second page-length scroll for the host screen |
-| Notes | REQ-208, REQ-128, REQ-142, REQ-143, REQ-205. View Context keeps its own row; Life Tracker's counter panel keeps DEC-139 |
+| Notes | REQ-208, REQ-128, REQ-142, REQ-143, REQ-205. View Context keeps its own row; Life Tracker's counter panel is hosted here too (REQ-082) |
 
 #### Card detail popup (suite-wide)
 
@@ -219,9 +219,9 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 |---|---|
 | Purpose | Live table life/counters |
 | Phone / Desktop | **One-screen fit** for the life table at every player count (DEC-136); full-bleed destination chrome |
-| Fit | No page scroll for the life table; counter panel is full-height overlay (DEC-139) |
-| Sheets | Game Setup fits one phone screen; a player's Counters panel keeps its full-height overlay (DEC-139) with two tabs; Reset / New game confirm in the shared sheet (REQ-208). The table itself is pixel-untouched; every touching slice attaches the 390x844 and 1440x900 before/after pair (REQ-202) |
-| Notes | DEC-101, DEC-136, DEC-139 |
+| Fit | No page scroll for the life table; the counter panel is the content-sized shared sheet (REQ-082, REQ-208) |
+| Sheets | Game Setup fits one phone screen, with names behind an Edit names ▾ collapse and a Done › foot bar; a player's Counters panel is the content-sized shared sheet (REQ-082, REQ-208) with two tabs; Reset / New game confirm in the shared sheet (REQ-208). The table itself is pixel-untouched; every touching slice attaches the 390x844 and 1440x900 before/after pair (REQ-202) |
+| Notes | DEC-101, DEC-136, DEC-139 (retired by REQ-082 as amended), REQ-082 |
 
 #### Trade Balancer
 

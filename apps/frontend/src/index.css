@@ -4361,19 +4361,136 @@ body {
   animation: cs-lock-outline-march 2.4s linear infinite;
 }
 
-/* Look-matching pass (slice Q): Life Tracker's Game Setup and Counters
-   sheets, ported from `life-tracker-menus.html`'s own `lt-`-prefixed
-   classes (not renamed for reuse here — they are the mockup's own names).
-   The table itself (`PlayerLifeTrackerApp`/`PlayerLifeCard`) is untouched
-   (REQ-202). */
+/* Life Tracker's Game Setup and Counters sheets (ui-look-translation, slice F): a port of
+   `life-tracker-menus.html`'s own stylesheet, with every colour, surface and shadow read from the
+   token layer (REQ-216). The mockup's generic names (`.stepper`, `.seg`, `.link`, `.seat`, `.tile`)
+   are scoped under `.lt-scope` so they cannot reach the other screens' controls of the same name.
+   The table itself (`PlayerLifeTrackerApp`, `PlayerLifeCard`) is untouched (REQ-202). */
 
-.lt-rows {
+.lt-sheet {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+.lt-head {
+  flex: 0 0 auto;
+  padding: 1.1rem 3.2rem 0.7rem 1rem;
+  border-bottom: 1px solid var(--surface-edge);
+}
+
+@media (max-width: 599px) {
+  .lt-head {
+    padding-top: 1.4rem;
+  }
+}
+
+.lt-head small {
+  display: block;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-soft);
+}
+
+.lt-head h2 {
+  margin: 0.1rem 0 0;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.lt-head h2 .life {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.lt-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.8rem 1rem 1rem;
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  scrollbar-width: thin;
+}
+
+.lt-foot {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  min-height: 52px;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-top: 1px solid var(--surface-edge);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 24%, transparent), color-mix(in srgb, var(--accent) 6%, transparent));
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.lt-foot:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 38%, transparent), color-mix(in srgb, var(--accent) 12%, transparent));
+}
+
+.lt-foot .chev {
+  color: var(--accent-soft);
+  font-size: 1.2rem;
+}
+
+.lt-scope .lt-sec {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.lt-scope .lt-sec > .lbl {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.lt-scope .lt-sec.custom-section {
+  margin-top: 1rem;
+}
+
+.lt-scope .lt-sec > .lbl small {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.72rem;
+}
+
+@media (min-width: 600px) {
+  .lt-sheet.drawer-panel {
+    width: min(32rem, 92vw);
+    max-height: min(44rem, calc(100dvh - 3rem));
+    overflow: hidden;
+  }
+  .lt-sheet .lt-body {
+    max-height: none;
+  }
+}
+
+.lt-scope .lt-rows {
   display: grid;
   gap: 0.15rem;
   margin: 0 -0.35rem;
 }
 
-.lt-rows button {
+.lt-scope .lt-rows button {
   display: grid;
   grid-template-columns: 30px 1fr auto;
   align-items: center;
@@ -4385,52 +4502,56 @@ body {
   border: 1px solid transparent;
   border-radius: 0.7rem;
   background: transparent;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-weight: 500;
   font-size: 0.92rem;
   cursor: pointer;
   transition: background 150ms ease;
 }
 
-.lt-rows button:hover,
-.lt-rows button:focus-visible {
+.lt-scope .lt-rows button:hover, .lt-scope .lt-rows button:focus-visible {
   background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
-.lt-rows .glyph {
+.lt-scope .lt-rows .glyph {
   width: 30px;
   height: 30px;
   display: grid;
   place-items: center;
+  color: var(--accent-soft);
   font-size: 1.05rem;
 }
 
-.lt-rows .words {
+.lt-scope .lt-rows .words {
   display: grid;
   gap: 0.05rem;
+  min-width: 0;
 }
 
-.lt-rows .words small {
+.lt-scope .lt-rows .words small {
   font-weight: 400;
   font-size: 0.74rem;
+  color: var(--text-muted);
 }
 
-.lt-rows .chev {
+.lt-scope .lt-rows .chev {
   color: var(--accent-soft);
 }
 
-/* the stepper: − count + on one pill (`life-tracker-menus.html:70-75`) */
+.lt-scope .lt-rows button.danger .glyph {
+  color: var(--status-error);
+}
 
-.lt-stepper {
+.lt-scope .stepper {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  border: 1px solid var(--surface-edge);
   background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   overflow: hidden;
 }
 
-.lt-stepper button {
+.lt-scope .stepper button {
   width: 46px;
   height: 44px;
   border: 0;
@@ -4440,93 +4561,111 @@ body {
   cursor: pointer;
 }
 
-.lt-stepper button:hover:not(:disabled) {
+.lt-scope .stepper button:hover:not(:disabled) {
   background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
-.lt-stepper button:disabled {
+.lt-scope .stepper button:disabled {
   opacity: 0.35;
   cursor: default;
 }
 
-.lt-stepper .val {
+.lt-scope .stepper .val {
   min-width: 6.5rem;
-  display: block;
   text-align: center;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-display);
   font-size: 1rem;
-  color: #e2e8f0;
 }
 
-.lt-stepper .val small {
+.lt-scope .stepper .val small {
   display: block;
   font-weight: 500;
   font-size: 0.66rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
+  font-family: var(--font-body);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-/* name fields: two to a row, the seat number inside at the left
-   (`life-tracker-menus.html:83-84` `.names`) — always visible here (Q4). */
+.lt-scope .players-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
 
-.lt-names {
-  display: grid;
+.lt-scope .link {
+  background: transparent;
+  border: 0;
+  color: var(--accent-soft);
+  font-size: 0.8rem;
+  cursor: pointer;
+  min-height: 36px;
+  padding: 0 0.3rem;
+}
+
+.lt-scope .names {
+  display: none;
   grid-template-columns: 1fr 1fr;
   gap: 0.4rem;
 }
 
-.lt-names label {
+.lt-scope .names[data-open="true"] {
+  display: grid;
+}
+
+.lt-scope .names label {
   display: flex;
   align-items: center;
   min-height: 42px;
   border-radius: 0.6rem;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  border: 1px solid var(--surface-edge);
   background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   overflow: hidden;
   transition: border-color 150ms ease;
 }
 
-.lt-names label:focus-within {
+.lt-scope .names label:focus-within {
   border-color: var(--accent-soft);
 }
 
-.lt-names .num {
+.lt-scope .names .num {
   flex: 0 0 2rem;
   text-align: center;
   font-size: 0.7rem;
   font-weight: 700;
   color: var(--accent-soft);
+  font-family: var(--font-display);
 }
 
-.lt-names input {
+.lt-scope .names input {
   flex: 1 1 0;
   min-width: 0;
   border: 0;
   background: transparent;
-  color: #e2e8f0;
+  color: var(--text-primary);
+  font: inherit;
   font-size: 0.9rem;
   padding: 0 0.5rem 0 0;
   outline: none;
 }
 
-/* one segmented pill for a two-way choice (`life-tracker-menus.html:90-95` `.seg`) */
+.lt-scope .names input::placeholder {
+  color: var(--text-muted);
+}
 
-.lt-seg {
+.lt-scope .seg {
   display: inline-flex;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  border: 1px solid var(--surface-edge);
   overflow: hidden;
   background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
 }
 
-.lt-seg.full {
-  display: flex;
-  width: 100%;
-}
-
-.lt-seg button {
+.lt-scope .seg button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4536,81 +4675,157 @@ body {
   padding: 0 0.9rem;
   border: 0;
   background: transparent;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 0.86rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 }
 
-.lt-seg button + button {
-  border-left: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+.lt-scope .seg button + button {
+  border-left: 1px solid var(--surface-edge);
 }
 
-.lt-seg button .glyph {
+.lt-scope .seg button .glyph {
   color: var(--accent-soft);
   font-size: 1rem;
 }
 
-.lt-seg button[aria-pressed="true"],
-.lt-seg button[aria-selected="true"] {
-  color: #e2e8f0;
-  background: color-mix(in srgb, var(--accent) 24%, transparent);
-  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-soft) 45%, transparent);
+.lt-scope .seg button[aria-pressed="true"], .lt-scope .seg button[aria-selected="true"] {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel));
+  box-shadow: var(--lt-shadow-1);
 }
 
-.lt-pair {
+.lt-scope .seg.full {
+  display: flex;
+}
+
+.lt-scope .pair {
   display: grid;
   gap: 0.6rem;
 }
 
-@media (min-width: 600px) {.lt-pair {
+@media (min-width: 600px) {
+  .lt-scope .pair {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-.lt-pair-sub small {
-  display: block;
-  margin-bottom: 0.35rem;
+.lt-scope .pair .sub {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.lt-scope .pair .sub small {
   font-size: 0.66rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
-/* starting life: presets as pills (`life-tracker-menus.html:102-107` `.life-pills`) */
-
-.lt-life-pills {
+.lt-scope .life-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
   align-items: center;
 }
 
-/* ---- Counters: the seat map (`life-tracker-menus.html:126-144`) ---- */
+.lt-scope .life-pills button {
+  min-width: 3.2rem;
+  min-height: 42px;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
 
-.lt-seat-map {
+.lt-scope .life-pills button:hover {
+  border-color: var(--accent-soft);
+}
+
+.lt-scope .life-pills button[aria-pressed="true"] {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel));
+  color: var(--accent-soft);
+  box-shadow: var(--idq-shadow-act-1);
+}
+
+.lt-scope .life-pills .custom {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.lt-scope .life-custom {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.lt-scope .life-custom[data-show="true"] {
+  display: flex;
+}
+
+.lt-scope .life-custom .field {
+  width: 6rem;
+  min-height: 42px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.lt-scope .life-custom .ok {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 30%, var(--surface-panel));
+  color: var(--accent-soft);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.lt-scope .life-custom .err {
+  font-size: 0.74rem;
+  color: var(--status-error);
+}
+
+.lt-scope .life-note {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.lt-scope .seat-map {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
 }
 
-.lt-seat {
+.lt-scope .seat {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 0.3rem;
+  gap: 0.2rem;
   min-height: 104px;
   padding: 0.5rem 0.55rem;
   border-radius: 0.8rem;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
-  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 18%, transparent), var(--surface-panel));
+  border: 1px solid var(--surface-edge);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 18%, var(--surface-panel)), var(--surface-panel));
   position: relative;
   overflow: hidden;
 }
 
-.lt-seat-who {
+.lt-scope .seat .who {
   font-size: 0.74rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-weight: 600;
   letter-spacing: 0.02em;
   display: flex;
@@ -4619,49 +4834,47 @@ body {
   gap: 0.3rem;
 }
 
-.lt-seat-tag {
+.lt-scope .seat .who .tag {
   font-size: 0.58rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #ff8fa3;
-  border: 1px solid rgba(255, 77, 109, 0.55);
+  color: var(--status-error);
+  border: 1px solid color-mix(in srgb, var(--lethal) 55%, transparent);
   border-radius: 999px;
   padding: 0.1rem 0.4rem;
 }
 
-.lt-seat[data-lethal="true"] {
-  border-color: rgba(255, 77, 109, 0.6);
-  box-shadow: 0 0 18px -6px rgba(255, 77, 109, 0.7);
+.lt-scope .seat[data-lethal="true"] {
+  border-color: color-mix(in srgb, var(--lethal) 60%, transparent);
+  box-shadow: var(--lt-shadow-3);
 }
 
-.lt-seat-dmg {
+.lt-scope .seat .dmg {
   display: grid;
   place-items: center;
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 1.9rem;
   letter-spacing: -0.02em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: #e2e8f0;
 }
 
-.lt-seat-dmg[data-lethal="true"] {
-  color: #ff8fa3;
-  text-shadow: 0 0 16px rgba(255, 77, 109, 0.6);
+.lt-scope .seat .dmg[data-lethal="true"] {
+  color: var(--status-error);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--lethal) 60%, transparent);
 }
 
-/* − and + as one joined pill, as the Players stepper is */
-
-.lt-seat-bands {
+.lt-scope .seat .bands {
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  border: 1px solid var(--surface-edge);
   background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   overflow: hidden;
 }
 
-.lt-seat-bands button {
+.lt-scope .seat .bands button {
   min-height: 36px;
   border: 0;
   background: transparent;
@@ -4670,98 +4883,87 @@ body {
   cursor: pointer;
 }
 
-.lt-seat-bands button + button {
-  border-left: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+.lt-scope .seat .bands button + button {
+  border-left: 1px solid var(--surface-edge);
 }
 
-.lt-seat-bands button:hover:not(:disabled) {
+.lt-scope .seat .bands button:hover:not(:disabled) {
   background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
-.lt-seat-bands button:disabled {
+.lt-scope .seat .bands button:disabled {
   opacity: 0.35;
   cursor: default;
 }
 
-/* your own seat, drawn like your card on the table */
-
-.lt-seat-me {
+.lt-scope .seat.me {
   background: color-mix(in srgb, var(--surface-ground) 40%, transparent);
   border-style: dashed;
 }
 
-.lt-seat-me .lt-seat-who {
+.lt-scope .seat.me .who {
   color: var(--accent-soft);
 }
 
-.lt-seat-me .lt-seat-dmg {
-  color: #a1a1aa;
+.lt-scope .seat.me .dmg {
+  color: var(--text-muted);
   opacity: 0.7;
 }
 
-.lt-seat-you {
+.lt-scope .seat.me .you {
   text-align: center;
   font-size: 0.68rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
+  min-height: 36px;
   display: grid;
   place-items: center;
 }
 
-/* the counter tiles (`life-tracker-menus.html:146-150` `.tiles`/`.tile`) */
-
-.lt-tiles {
+.lt-scope .tiles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.45rem;
 }
 
-@media (min-width: 600px) {.lt-tiles {
+@media (min-width: 600px) {
+  .lt-scope .tiles {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
-.lt-tile {
+.lt-scope .tile {
   position: relative;
-  border-radius: 0.8rem;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
-  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
-  color: #e2e8f0;
-  text-align: center;
-  transition:
-    border-color 160ms ease,
-    background 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.lt-tile:hover {
-  border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
-}
-
-.lt-tile[data-on="true"] {
-  border-color: var(--accent-soft);
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
-  box-shadow:
-    0 0 18px -6px color-mix(in srgb, var(--accent) 85%, transparent),
-    inset 0 0 14px -10px var(--accent-soft);
-}
-
-.lt-tile-main {
   display: grid;
   grid-template-rows: auto auto auto;
   justify-items: center;
   gap: 0.15rem;
-  width: 100%;
   min-height: 84px;
   padding: 0.55rem 0.4rem 0.45rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
+  color: var(--text-primary);
   cursor: pointer;
+  text-align: center;
+  transition: all 160ms ease;
 }
 
-.lt-tile-icon {
+.lt-scope .tile:hover {
+  border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
+}
+
+.lt-scope .tile[data-on="true"] {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
+  box-shadow: var(--idq-shadow-15);
+}
+
+.lt-scope .tile .ico {
   font-size: 1.3rem;
   line-height: 1;
 }
 
-.lt-tile-name {
+.lt-scope .tile .nm {
   font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
@@ -4770,19 +4972,20 @@ body {
   max-width: 100%;
 }
 
-.lt-tile-n {
+.lt-scope .tile .n {
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 1.15rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
-.lt-tile[data-on="true"] .lt-tile-n {
+.lt-scope .tile[data-on="true"] .n {
   color: var(--accent-soft);
 }
 
-.lt-tile-more {
+.lt-scope .tile .more {
   position: absolute;
   top: 2px;
   right: 2px;
@@ -4791,15 +4994,260 @@ body {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 0.9rem;
   cursor: pointer;
   line-height: 1;
 }
 
-.lt-tile-more:hover {
-  color: #e2e8f0;
+.lt-scope .tile .more:hover {
+  color: var(--text-primary);
   background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.lt-scope .tile[data-open="true"] {
+  border-color: var(--accent-soft);
+}
+
+.lt-scope .tile.pulse .n {
+  animation: tick 320ms ease;
+}
+
+@keyframes tick {
+  30% { transform: translateY(-4px) scale(1.15); }
+}
+
+.lt-scope .tile-tools {
+  display: none;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  font-size: 0.82rem;
+}
+
+.lt-scope .tile-tools[data-show="true"] {
+  display: flex;
+}
+
+.lt-scope .tile-tools b {
+  margin-right: auto;
+}
+
+.lt-scope .tile-tools .stepper button {
+  width: 40px;
+  height: 38px;
+}
+
+.lt-scope .tile-tools .stepper .val {
+  min-width: 2.6rem;
+  font-size: 0.95rem;
+}
+
+.lt-scope .tile-tools .field {
+  width: 4.4rem;
+  min-height: 38px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.lt-scope .tile-tools .btn {
+  min-height: 38px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.lt-scope .tile-tools .btn.danger:hover {
+  border-color: var(--status-error);
+  color: var(--status-error);
+}
+
+.lt-scope .tiles .tile.custom .rm {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.lt-scope .tiles .tile.custom .rm:hover {
+  color: var(--status-error);
+}
+
+.lt-scope .add-counter {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.4rem;
+}
+
+.lt-scope .add-counter .field {
+  min-height: 42px;
+}
+
+.lt-scope .add-counter .btn {
+  min-height: 42px;
+}
+
+.lt-scope .add-err {
+  font-size: 0.74rem;
+  color: var(--status-error);
+  margin: 0;
+}
+
+.lt-scope .add-err[hidden] {
+  display: none;
+}
+
+.lt-scope .hint {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.lt-scope .lt-tab[hidden] {
+  display: none;
+}
+
+/* tile structure: the app's tile is a box holding the tap area and the ⋯ button side by side */
+.lt-scope .tile {
+  display: block;
+  cursor: default;
+}
+
+.lt-scope .tile-main {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.lt-scope .tiles .tile.custom .rm {
+  left: 2px;
+  right: auto;
+}
+
+.lt-scope .tile .options {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--surface-edge);
+  font-size: 0.8rem;
+}
+
+.lt-scope .tile .options form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem;
+}
+
+.lt-scope .tile .options .field {
+  min-height: 38px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.lt-scope .tile .options .btn {
+  min-height: 38px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+/* the Game Setup sheet is hosted by the frozen table file (REQ-202), which hands the shared sheet its own
+   head: the sheet takes the mockup's `.lt-sheet` and `.lt-head` shape through the sheet's test id */
+[data-testid="life-tracker-game-setup"].drawer-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+@media (min-width: 600px) {
+  [data-testid="life-tracker-game-setup"].drawer-panel {
+    width: min(32rem, 92vw);
+    max-height: min(44rem, calc(100dvh - 3rem));
+    overflow: hidden;
+  }
+}
+
+[data-testid="life-tracker-game-setup"] .sheet-legacy-head {
+  flex: 0 0 auto;
+  padding: 1.1rem 3.2rem 0.7rem 1rem;
+  border-bottom: 1px solid var(--surface-edge);
+}
+
+@media (max-width: 599px) {
+  [data-testid="life-tracker-game-setup"] .sheet-legacy-head {
+    padding-top: 1.4rem;
+  }
+}
+
+[data-testid="life-tracker-game-setup"] .sheet-legacy-head p {
+  display: block;
+  margin: 0;
+  line-height: normal;
+  font-size: 0.66rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-soft);
+}
+
+[data-testid="life-tracker-game-setup"] .sheet-legacy-head h2 {
+  margin: 0.1rem 0 0;
+  line-height: normal;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+[data-testid="life-tracker-game-setup"] .sheet-legacy-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0;
+}
+
+[data-testid="life-tracker-game-setup"] .lt-scope.lt-body {
+  overflow: visible;
+}
+
+.lt-scope.lt-body {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  padding: 0.8rem 1rem 1rem;
+}
+
+/* the Done bar closes the sheet; inside the Game Setup body it stays at the foot of the visible sheet */
+.lt-scope .lt-foot {
+  position: sticky;
+  bottom: -1rem;
+  margin: 0 -1rem -1rem;
+  width: auto;
+}
+
+.lt-note-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--status-error);
 }
 
 @keyframes send-spin {
