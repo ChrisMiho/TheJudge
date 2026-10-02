@@ -4033,6 +4033,440 @@ body {
   background: rgb(var(--accent) / 0.18);
 }
 
+/* Look-matching pass (slice Q): Life Tracker's Game Setup and Counters
+   sheets, ported from `life-tracker-menus.html`'s own `lt-`-prefixed
+   classes (not renamed for reuse here — they are the mockup's own names).
+   The table itself (`PlayerLifeTrackerApp`/`PlayerLifeCard`) is untouched
+   (REQ-202). */
+.lt-rows {
+  display: grid;
+  gap: 0.15rem;
+  margin: 0 -0.35rem;
+}
+
+.lt-rows button {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 50px;
+  padding: 0.35rem 0.6rem;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 0.7rem;
+  background: transparent;
+  color: #e2e8f0;
+  font-weight: 500;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.lt-rows button:hover,
+.lt-rows button:focus-visible {
+  background: rgb(var(--accent) / 0.12);
+}
+
+.lt-rows .glyph {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  font-size: 1.05rem;
+}
+
+.lt-rows .words {
+  display: grid;
+  gap: 0.05rem;
+}
+
+.lt-rows .words small {
+  font-weight: 400;
+  font-size: 0.74rem;
+}
+
+.lt-rows .chev {
+  color: rgb(var(--accent-soft));
+}
+
+/* the stepper: − count + on one pill (`life-tracker-menus.html:70-75`) */
+.lt-stepper {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground) / 0.45);
+  overflow: hidden;
+}
+
+.lt-stepper button {
+  width: 46px;
+  height: 44px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--accent-soft));
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.lt-stepper button:hover:not(:disabled) {
+  background: rgb(var(--accent) / 0.18);
+}
+
+.lt-stepper button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.lt-stepper .val {
+  min-width: 6.5rem;
+  display: block;
+  text-align: center;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-size: 1rem;
+  color: #e2e8f0;
+}
+
+.lt-stepper .val small {
+  display: block;
+  font-weight: 500;
+  font-size: 0.66rem;
+  color: #a1a1aa;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* name fields: two to a row, the seat number inside at the left
+   (`life-tracker-menus.html:83-84` `.names`) — always visible here (Q4). */
+.lt-names {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.lt-names label {
+  display: flex;
+  align-items: center;
+  min-height: 42px;
+  border-radius: 0.6rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground) / 0.45);
+  overflow: hidden;
+  transition: border-color 150ms ease;
+}
+
+.lt-names label:focus-within {
+  border-color: rgb(var(--accent-soft));
+}
+
+.lt-names .num {
+  flex: 0 0 2rem;
+  text-align: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: rgb(var(--accent-soft));
+}
+
+.lt-names input {
+  flex: 1 1 0;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #e2e8f0;
+  font-size: 0.9rem;
+  padding: 0 0.5rem 0 0;
+  outline: none;
+}
+
+/* one segmented pill for a two-way choice (`life-tracker-menus.html:90-95` `.seg`) */
+.lt-seg {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  overflow: hidden;
+  background: rgb(var(--ground) / 0.45);
+}
+
+.lt-seg.full {
+  display: flex;
+  width: 100%;
+}
+
+.lt-seg button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  flex: 1 1 0;
+  min-height: 42px;
+  padding: 0 0.9rem;
+  border: 0;
+  background: transparent;
+  color: #a1a1aa;
+  font-size: 0.86rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.lt-seg button + button {
+  border-left: 1px solid rgb(var(--panel-edge) / 0.7);
+}
+
+.lt-seg button .glyph {
+  color: rgb(var(--accent-soft));
+  font-size: 1rem;
+}
+
+.lt-seg button[aria-pressed="true"],
+.lt-seg button[aria-selected="true"] {
+  color: #e2e8f0;
+  background: rgb(var(--accent) / 0.24);
+  box-shadow: inset 0 0 0 1px rgb(var(--accent-soft) / 0.45);
+}
+
+.lt-pair {
+  display: grid;
+  gap: 0.6rem;
+}
+
+@media (min-width: 600px) {
+  .lt-pair {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.lt-pair-sub small {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a1a1aa;
+}
+
+/* starting life: presets as pills (`life-tracker-menus.html:102-107` `.life-pills`) */
+.lt-life-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+/* ---- Counters: the seat map (`life-tracker-menus.html:126-144`) ---- */
+.lt-seat-map {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.lt-seat {
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  gap: 0.3rem;
+  min-height: 104px;
+  padding: 0.5rem 0.55rem;
+  border-radius: 0.8rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: linear-gradient(160deg, rgb(var(--accent) / 0.18), rgb(var(--panel)));
+  position: relative;
+  overflow: hidden;
+}
+
+.lt-seat-who {
+  font-size: 0.74rem;
+  color: #a1a1aa;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.3rem;
+}
+
+.lt-seat-tag {
+  font-size: 0.58rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ff8fa3;
+  border: 1px solid rgba(255, 77, 109, 0.55);
+  border-radius: 999px;
+  padding: 0.1rem 0.4rem;
+}
+
+.lt-seat[data-lethal="true"] {
+  border-color: rgba(255, 77, 109, 0.6);
+  box-shadow: 0 0 18px -6px rgba(255, 77, 109, 0.7);
+}
+
+.lt-seat-dmg {
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 1.9rem;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #e2e8f0;
+}
+
+.lt-seat-dmg[data-lethal="true"] {
+  color: #ff8fa3;
+  text-shadow: 0 0 16px rgba(255, 77, 109, 0.6);
+}
+
+/* − and + as one joined pill, as the Players stepper is */
+.lt-seat-bands {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground) / 0.45);
+  overflow: hidden;
+}
+
+.lt-seat-bands button {
+  min-height: 36px;
+  border: 0;
+  background: transparent;
+  color: rgb(var(--accent-soft));
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.lt-seat-bands button + button {
+  border-left: 1px solid rgb(var(--panel-edge) / 0.7);
+}
+
+.lt-seat-bands button:hover:not(:disabled) {
+  background: rgb(var(--accent) / 0.18);
+}
+
+.lt-seat-bands button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+/* your own seat, drawn like your card on the table */
+.lt-seat-me {
+  background: rgb(var(--ground) / 0.4);
+  border-style: dashed;
+}
+
+.lt-seat-me .lt-seat-who {
+  color: rgb(var(--accent-soft));
+}
+
+.lt-seat-me .lt-seat-dmg {
+  color: #a1a1aa;
+  opacity: 0.7;
+}
+
+.lt-seat-you {
+  text-align: center;
+  font-size: 0.68rem;
+  color: #a1a1aa;
+  display: grid;
+  place-items: center;
+}
+
+/* the counter tiles (`life-tracker-menus.html:146-150` `.tiles`/`.tile`) */
+.lt-tiles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.45rem;
+}
+
+@media (min-width: 600px) {
+  .lt-tiles {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.lt-tile {
+  position: relative;
+  border-radius: 0.8rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground) / 0.45);
+  color: #e2e8f0;
+  text-align: center;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.lt-tile:hover {
+  border-color: rgb(var(--accent-soft) / 0.55);
+}
+
+.lt-tile[data-on="true"] {
+  border-color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.22);
+  box-shadow:
+    0 0 18px -6px rgb(var(--accent) / 0.85),
+    inset 0 0 14px -10px rgb(var(--accent-soft));
+}
+
+.lt-tile-main {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  gap: 0.15rem;
+  width: 100%;
+  min-height: 84px;
+  padding: 0.55rem 0.4rem 0.45rem;
+  cursor: pointer;
+}
+
+.lt-tile-icon {
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+.lt-tile-name {
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.lt-tile-n {
+  font-weight: 800;
+  font-size: 1.15rem;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: #a1a1aa;
+}
+
+.lt-tile[data-on="true"] .lt-tile-n {
+  color: rgb(var(--accent-soft));
+}
+
+.lt-tile-more {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #a1a1aa;
+  font-size: 0.9rem;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.lt-tile-more:hover {
+  color: #e2e8f0;
+  background: rgb(var(--accent) / 0.2);
+}
+
 @keyframes send-spin {
   to {
     transform: rotate(360deg);

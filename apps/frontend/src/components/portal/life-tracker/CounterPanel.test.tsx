@@ -63,7 +63,10 @@ describe("Frontend - Shared", () => {
       const trigger = screen.getByRole("button", { name: "Open Alice counters" });
 
       await user.click(trigger);
-      expect(screen.getByRole("dialog", { name: "Counters for Player 1 (Alice)" })).toBeInTheDocument();
+      // Look-matching pass (slice Q): the title is "Counters · <player>" plus
+      // a muted "<life> life" caption (both make up the dialog's accessible
+      // name via aria-labelledby).
+      expect(screen.getByRole("dialog", { name: "Counters · Player 1 (Alice) 40 life" })).toBeInTheDocument();
       await user.click(screen.getByRole("button", { name: "Close counters" }));
 
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -89,7 +92,9 @@ describe("Frontend - Shared", () => {
 
       const matrix = screen.getByRole("group", { name: "Commander damage by source" });
       expect(within(matrix).getAllByTestId(/^commander-cell-/)).toHaveLength(4);
-      expect(within(matrix).getByText("me")).toBeInTheDocument();
+      // Look-matching pass (slice Q): "your seat · life total" replaces the
+      // old bare "me" caption.
+      expect(within(matrix).getByText("your seat · life total")).toBeInTheDocument();
       expect(within(matrix).getByText("Player 2")).toBeInTheDocument();
       expect(within(matrix).queryByRole("button", { name: /Player 1/ })).not.toBeInTheDocument();
       expect(within(matrix).queryByRole("button", { name: /Options for/ })).not.toBeInTheDocument();
@@ -101,17 +106,17 @@ describe("Frontend - Shared", () => {
       expect(props.onAdjustCommanderDamage).toHaveBeenCalledWith("Player 1", "Player 2", -1);
     });
 
-    it("renders commander damage decrease/increase bands at the widened tap-target height", () => {
+    it("renders commander damage decrease/increase as one joined stepper pill (look-matching pass, slice Q)", () => {
       const props = panelProps();
       render(<CounterPanel {...props} />);
 
       const matrix = screen.getByRole("group", { name: "Commander damage by source" });
-      expect(
-        within(matrix).getByRole("button", { name: "Decrease commander damage from Player 2" })
-      ).toHaveClass("min-h-[53px]");
-      expect(
-        within(matrix).getByRole("button", { name: "Increase commander damage from Player 2" })
-      ).toHaveClass("min-h-[53px]");
+      const decrease = within(matrix).getByRole("button", { name: "Decrease commander damage from Player 2" });
+      const increase = within(matrix).getByRole("button", { name: "Increase commander damage from Player 2" });
+      // `.lt-seat-bands` (index.css) is the joined −|+ pill at the seat's
+      // foot, replacing the old always-visible full-height top/bottom bands.
+      expect(decrease.closest(".lt-seat-bands")).not.toBeNull();
+      expect(increase.closest(".lt-seat-bands")).toBe(decrease.closest(".lt-seat-bands"));
     });
 
     it("sizes the commander-damage matrix to the active layout's real columns/rows, not a hardcoded grid-cols-2", () => {
@@ -142,7 +147,7 @@ describe("Frontend - Shared", () => {
       const player8Seat = layout.seats.find((seat) => seat.label === "Player 8")!;
 
       const meCell = screen.getByTestId("commander-cell-Player 1");
-      expect(meCell).toHaveTextContent("me");
+      expect(meCell).toHaveTextContent("your seat · life total");
       expect(meCell.className).not.toContain("min-h-36");
       expect(meCell).toHaveStyle({ gridRow: ownSeat.gridRow, gridColumn: ownSeat.gridColumn });
 
@@ -292,10 +297,16 @@ describe("Frontend - Shared", () => {
       render(<CounterPanel {...props} />);
 
       expect(screen.getByText("Life Tracker")).toHaveClass("text-accent-soft");
-      expect(screen.getByRole("tab", { name: "Player" })).toHaveClass("text-accent-soft");
+      // Look-matching pass (slice Q): the active tab's own accent styling now
+      // comes from `.lt-seg button[aria-selected="true"]` (index.css), not a
+      // Tailwind utility class — asserted structurally (the shared segmented
+      // control, `aria-selected`) instead of a literal colour class.
+      const commanderTab = screen.getByRole("tab", { name: "Commander damage" });
+      expect(commanderTab.closest(".lt-seg")).not.toBeNull();
+      expect(commanderTab).toHaveAttribute("aria-selected", "true");
 
       await user.click(screen.getByRole("tab", { name: "Counters" }));
-      expect(screen.getByRole("tab", { name: "Counters" })).toHaveClass("text-accent-soft");
+      expect(screen.getByRole("tab", { name: "Counters" })).toHaveAttribute("aria-selected", "true");
       expect(screen.getByTestId("counter-label-poison")).toHaveClass("text-accent-soft");
 
       await user.type(screen.getByRole("textbox", { name: "Custom counter name" }), "Shield");

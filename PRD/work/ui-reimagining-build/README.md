@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # ui-reimagining-build
 
@@ -33,7 +33,7 @@ dependencies and the complete 57-id assignment table: `GAMEPLAN.md`.
 | [N](slice-n-in-depth-details-look-match.md) | Look pass — In-depth details takes the mockup's look | L, D, E | — | 11 (4) | done |
 | [O](slice-o-trade-balancer-look-match.md) | Look pass — Trade Balancer takes the mockup's look | L, G | — | 11 (4) | done |
 | [P](slice-p-card-scanner-look-match.md) | Look pass — Card scanner takes the mockup's look | L, H | — | 10 (4) | done |
-| [Q](slice-q-life-tracker-menus-look-match.md) | Look pass — Life Tracker menus take the mockup's look | L, J | — | 11 (4) | planned |
+| [Q](slice-q-life-tracker-menus-look-match.md) | Look pass — Life Tracker menus take the mockup's look | L, J | — | 11 (4) | done |
 
 Implementation order is A → B → C → D → E → F → G → H → I → J → K, one agent,
 sequential (`$thejudge-implement-all PRD/work/ui-reimagining-build/`, first

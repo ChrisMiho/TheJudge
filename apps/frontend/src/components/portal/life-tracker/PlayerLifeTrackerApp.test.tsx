@@ -278,7 +278,9 @@ describe("Frontend - Shared", () => {
       render(<PlayerLifeTrackerApp />);
 
       await user.click(screen.getByRole("button", { name: "Open counters for Player 2" }));
-      expect(screen.getByRole("dialog", { name: "Counters for Player 2" })).toBeInTheDocument();
+      // Look-matching pass (slice Q): "Counters · <player>" plus a muted
+      // "<life> life" caption.
+      expect(screen.getByRole("dialog", { name: "Counters · Player 2 40 life" })).toBeInTheDocument();
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       await user.click(screen.getByRole("button", { name: "Options for Poison" }));
       await user.click(screen.getByRole("button", { name: "Decrease Poison" }));

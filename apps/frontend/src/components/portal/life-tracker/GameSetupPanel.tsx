@@ -35,13 +35,16 @@ const STARTING_LIFE_PRESETS = [20, 25, 30, 40] as const;
 const MIN_CUSTOM_STARTING_LIFE = 1;
 const MAX_CUSTOM_STARTING_LIFE = 999;
 
-const PILL_BASE =
-  "motion-focus min-h-11 rounded-full border px-3 text-sm font-black tabular-nums transition";
-const PILL_SELECTED = "border-accent-strong bg-accent-strong text-accent-contrast shadow-sm";
-const PILL_UNSELECTED = "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800";
-
-function pillClassName(isSelected: boolean): string {
-  return `${PILL_BASE} ${isSelected ? PILL_SELECTED : PILL_UNSELECTED}`;
+// Look-matching pass (slice Q), requirement 1: the starting-life pills take
+// `life-tracker-menus.html:102-107`'s `.life-pills button` look — an
+// outline glow (border/fill/text all accent-soft) in place of the old solid
+// `accent-strong` fill.
+function lifePillClassName(isSelected: boolean): string {
+  return `motion-focus min-h-11 min-w-11 rounded-full border px-3 text-sm font-black tabular-nums transition ${
+    isSelected
+      ? "border-accent-soft bg-accent/24 text-accent-soft shadow-[0_0_14px_-5px_rgb(var(--accent)/0.8)]"
+      : "border-zinc-700 bg-zinc-900 text-zinc-100 hover:border-accent-soft"
+  }`;
 }
 
 export function GameSetupPanel({
@@ -99,49 +102,39 @@ export function GameSetupPanel({
 
   return (
     <section aria-label="Game setup controls" className="divide-y divide-zinc-700/70">
+      {/* Look-matching pass (slice Q), requirement 1: rows take
+          `life-tracker-menus.html:213-214`'s `.lt-rows` grid (30px glyph
+          column / words / chevron) in place of the prior ad hoc grid —
+          wording, the "THIS GAME" grouping below, and the danger-glyph
+          marking are unchanged from the existing look. */}
       <div className="pb-4">
-        {/* REQ-202, matching docs/design/ui-reimagining/direction-1/life-tracker-menus.html's
-            `.lt-rows`: tray-style rows (glyph / title+description / chevron), not a solid
-            filled button — New Game's glyph alone marks it as the more destructive of the
-            two ("danger", mockup's `#ff8fa3` ~ rose-400 here). */}
-        <button
-          type="button"
-          aria-label="Reset current game"
-          onClick={() => setPendingAction("reset")}
-          className="motion-focus grid min-h-[50px] w-full grid-cols-[1.75rem_1fr_auto] items-center gap-3 rounded-lg px-1 text-left transition hover:bg-zinc-800/70"
-        >
-          <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center text-base text-accent-soft">
-            ↺
-          </span>
-          <span className="min-w-0">
-            <span className="block text-sm font-bold text-zinc-100">Reset life totals</span>
-            <span className="block text-xs font-normal text-zinc-500">
-              Back to starting life, counters cleared. Names stay.
+        <p className="mb-1 px-1 text-[0.68rem] font-bold uppercase tracking-[0.1em] text-zinc-500">This game</p>
+        <div className="lt-rows">
+          <button type="button" aria-label="Reset current game" onClick={() => setPendingAction("reset")}>
+            <span aria-hidden="true" className="glyph text-accent-soft">
+              ↺
             </span>
-          </span>
-          <span aria-hidden="true" className="text-accent-soft">
-            ›
-          </span>
-        </button>
-        <button
-          type="button"
-          aria-label="Start new game"
-          onClick={() => setPendingAction("new-game")}
-          className="motion-focus grid min-h-[50px] w-full grid-cols-[1.75rem_1fr_auto] items-center gap-3 rounded-lg px-1 text-left transition hover:bg-zinc-800/70"
-        >
-          <span aria-hidden="true" className="flex h-7 w-7 items-center justify-center text-base text-rose-400">
-            ✦
-          </span>
-          <span className="min-w-0">
-            <span className="block text-sm font-bold text-zinc-100">New game</span>
-            <span className="block text-xs font-normal text-zinc-500">
-              4 players at 40, names and counters cleared.
+            <span className="words min-w-0">
+              <span className="block text-sm font-bold text-zinc-100">Reset life totals</span>
+              <small className="block text-zinc-500">Back to starting life, counters cleared. Names stay.</small>
             </span>
-          </span>
-          <span aria-hidden="true" className="text-accent-soft">
-            ›
-          </span>
-        </button>
+            <span aria-hidden="true" className="chev">
+              ›
+            </span>
+          </button>
+          <button type="button" aria-label="Start new game" className="danger" onClick={() => setPendingAction("new-game")}>
+            <span aria-hidden="true" className="glyph text-rose-400">
+              ✦
+            </span>
+            <span className="words min-w-0">
+              <span className="block text-sm font-bold text-zinc-100">New game</span>
+              <small className="block text-zinc-500">4 players at 40, names and counters cleared.</small>
+            </span>
+            <span aria-hidden="true" className="chev">
+              ›
+            </span>
+          </button>
+        </div>
       </div>
 
       <div className="py-4">
@@ -154,44 +147,53 @@ export function GameSetupPanel({
           </span>
           Players
         </p>
-        <div className="flex items-center gap-3" aria-label="Player count">
-          <button
-            type="button"
-            aria-label="Decrease player count"
-            onClick={() => onPlayerCountChange(playerCount - 1)}
-            disabled={playerCount === MIN_PLAYER_COUNT}
-            className="motion-focus inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-lg font-black text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            <span aria-hidden="true">−</span>
-          </button>
-          <span className="min-w-8 text-center text-lg font-black tabular-nums text-zinc-100">{playerCount}</span>
-          <button
-            type="button"
-            aria-label="Increase player count"
-            onClick={() => onPlayerCountChange(playerCount + 1)}
-            disabled={playerCount === MAX_PLAYER_COUNT}
-            className="motion-focus inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-accent-strong bg-accent-strong text-lg font-black text-accent-contrast transition hover:bg-accent disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-900 disabled:text-zinc-100 disabled:opacity-50"
-          >
-            <span aria-hidden="true">+</span>
-          </button>
+        {/* Requirement 1: one joined stepper pill (`.stepper`,
+            `life-tracker-menus.html:70-75`) in place of the separate −/+
+            circles. The mockup pairs this with an "Edit names ▾" toggle that
+            collapses the name fields; per the owner question below (Q4,
+            carried from LOOK-GAPS), that toggle is not adopted — slice J's
+            own reading is that it is a leftover from an earlier mockup
+            round, so the fields below stay unconditionally visible and no
+            toggle control is added here. */}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="lt-stepper" aria-label="Player count">
+            <button
+              type="button"
+              aria-label="Decrease player count"
+              onClick={() => onPlayerCountChange(playerCount - 1)}
+              disabled={playerCount === MIN_PLAYER_COUNT}
+            >
+              <span aria-hidden="true">−</span>
+            </button>
+            <span className="val">
+              <span>{playerCount}</span>
+              <small>players</small>
+            </span>
+            <button
+              type="button"
+              aria-label="Increase player count"
+              onClick={() => onPlayerCountChange(playerCount + 1)}
+              disabled={playerCount === MAX_PLAYER_COUNT}
+            >
+              <span aria-hidden="true">+</span>
+            </button>
+          </div>
         </div>
 
         {/* REQ-202: name fields are always visible, two to a row, each carrying its seat
-            number — superseding the former "Edit names" disclosure toggle. */}
-        <div className="mt-3 grid grid-cols-2 gap-2">
+            number — superseding the former "Edit names" disclosure toggle. Restyled per
+            `life-tracker-menus.html:83-84`'s `.names` (requirement 4: the owner question's
+            "Edit names ▾" toggle is not adopted — these never collapse). */}
+        <div className="lt-names mt-3">
           {players.map((player) => (
-            <label
-              key={player.label}
-              className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-2 py-2"
-            >
-              <span className="shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                {player.label.replace("Player ", "P")}
+            <label key={player.label}>
+              <span aria-hidden="true" className="num">
+                {player.label.replace("Player ", "")}
               </span>
               <input
                 aria-label={`${player.label} display name`}
                 value={player.displayName}
                 onChange={(event) => onDisplayNameChange(player.label, event.target.value)}
-                className="motion-focus min-h-9 w-full min-w-0 rounded-md border border-zinc-700 bg-zinc-950 px-2 text-sm text-zinc-100"
               />
             </label>
           ))}
@@ -205,7 +207,7 @@ export function GameSetupPanel({
           </span>
           Starting life
         </p>
-        <div className="flex flex-wrap gap-2" aria-label="Starting life presets">
+        <div className="lt-life-pills" aria-label="Starting life presets">
           {STARTING_LIFE_PRESETS.map((preset) => {
             const isSelected = startingLife === preset;
             return (
@@ -219,7 +221,7 @@ export function GameSetupPanel({
                   setIsEditingStartingLifeCustom(false);
                   onStartingLifeChange(preset);
                 }}
-                className={`${pillClassName(isSelected)} min-w-11`}
+                className={lifePillClassName(isSelected)}
               >
                 {preset}
               </button>
@@ -267,7 +269,7 @@ export function GameSetupPanel({
               aria-label="Set custom starting life"
               aria-pressed={isCustomStartingLife}
               onClick={beginCustomLifeEdit}
-              className={`${pillClassName(isCustomStartingLife)} min-w-11`}
+              className={lifePillClassName(isCustomStartingLife)}
             >
               {isCustomStartingLife ? startingLife : "Custom"}
             </button>
@@ -282,11 +284,15 @@ export function GameSetupPanel({
         )}
       </div>
 
+      {/* Requirement 1: joined segmented controls (`.seg.full`,
+          `life-tracker-menus.html:237-238`) in place of the separate pill
+          pair — one label per control, no group label above both (matching
+          the mockup's own round-13 note). */}
       <div className="py-4">
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-zinc-500">Layout</p>
-            <div className="grid grid-cols-2 gap-2" aria-label="Layout mode">
+        <div className="lt-pair">
+          <div className="lt-pair-sub">
+            <small>Layout</small>
+            <div className="lt-seg full" aria-label="Layout">
               {(["grid", "list"] as const).map((mode) => {
                 const isSelected = layoutMode === mode;
                 const label = mode === "grid" ? "Grid" : "List";
@@ -297,9 +303,8 @@ export function GameSetupPanel({
                     aria-label={`Use ${mode} layout`}
                     aria-pressed={isSelected}
                     onClick={() => onLayoutModeChange(mode)}
-                    className={`${pillClassName(isSelected)} inline-flex items-center justify-center gap-2`}
                   >
-                    <span aria-hidden="true" className="text-base leading-none">
+                    <span aria-hidden="true" className="glyph">
                       {mode === "grid" ? "▦" : "☷"}
                     </span>
                     {label}
@@ -309,9 +314,9 @@ export function GameSetupPanel({
             </div>
           </div>
 
-          <div>
-            <p className="mb-2 text-xs font-bold uppercase tracking-[0.08em] text-zinc-500">Card style</p>
-            <div className="grid grid-cols-2 gap-2" aria-label="Card style">
+          <div className="lt-pair-sub">
+            <small>Card style</small>
+            <div className="lt-seg full" aria-label="Card style">
               {(["gradient", "flat"] as const).map((style) => {
                 const isSelected = cardStyle === style;
                 return (
@@ -321,9 +326,8 @@ export function GameSetupPanel({
                     aria-label={`Use ${style} card style`}
                     aria-pressed={isSelected}
                     onClick={() => onCardStyleChange(style)}
-                    className={`${pillClassName(isSelected)} inline-flex items-center justify-center gap-2`}
                   >
-                    <span aria-hidden="true" className="text-base leading-none">
+                    <span aria-hidden="true" className="glyph">
                       {style === "gradient" ? "◐" : "●"}
                     </span>
                     {style === "gradient" ? "Ombre" : "Flat"}

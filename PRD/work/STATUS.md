@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ui-reimagining-build | Slices A–Q all done (look-matching pass L–Q: 68/68 criteria); PR #239 open `IN PROGRESS`, held for owner review of every screen pair; 5 carried owner questions (M, N, O, P, Q — one each) open; run `graph-20260930-055958` |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Slices A–K done; look-matching pass L–N done (36/68 criteria), O–Q planned (5 owner questions carried); PR #239 open `IN PROGRESS`; `build` attempt 8 from slice O; run `graph-20260930-055958` |
 
 ## refined
 

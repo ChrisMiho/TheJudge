@@ -1,6 +1,6 @@
 # Slice Q — Life Tracker menus take the look
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -102,25 +102,25 @@ Carried verbatim from LOOK-GAPS.md's `## Life Tracker menus`
 
 ## Acceptance criteria
 
-- [ ] Q1. `npm run quality:check` passes.
-- [ ] Q2. `npm --workspace apps/frontend run test` passes.
-- [ ] Q3. Game Setup shows a "THIS GAME" eyebrow over Reset/New game, a
+- [x] Q1. `npm run quality:check` passes.
+- [x] Q2. `npm --workspace apps/frontend run test` passes.
+- [x] Q3. Game Setup shows a "THIS GAME" eyebrow over Reset/New game, a
       stepper-pill player count, an outline-glow selected starting-life
       pill, and joined segmented Layout/Card-style controls, in
       `GameSetupPanel.tsx`.
-- [ ] Q4. Name fields remain always visible in Game Setup (no "Edit names
+- [x] Q4. Name fields remain always visible in Game Setup (no "Edit names
       ▾" collapse), per the owner question above, in `GameSetupPanel.tsx`.
-- [ ] Q5. Counters shows glyph tabs ("⚔ Commander damage / ◈ Counters"),
+- [x] Q5. Counters shows glyph tabs ("⚔ Commander damage / ◈ Counters"),
       seat-shaped commander-damage tiles with "lethal at 21", and a
       3-column full-colour counters grid with top-right ⋯, in
       `CounterPanel.tsx`.
-- [ ] Q6. Every control, option, default and range in Game Setup and
+- [x] Q6. Every control, option, default and range in Game Setup and
       Counters matches today's values (presentation only), in
       `GameSetupPanel.tsx` and `CounterPanel.tsx`.
-- [ ] Q7. The life-total table itself (seats, life, layout, day/night, seat
+- [x] Q7. The life-total table itself (seats, life, layout, day/night, seat
       map, state, persistence) is byte-for-byte unchanged in behaviour and
       test coverage, in `PlayerLifeTrackerApp.player-counters.test.tsx`.
-- [ ] Q8 (manual). Side-by-side pairs saved under
+- [x] Q8 (manual). Side-by-side pairs saved under
       `docs/design/ui-reimagining/build-screenshots/q/`, build next to
       mockup, Blue, at 390×844 and 1440×900, one pair per state: Game
       setup, Reset confirm, Counters (commander damage), Counters tab
@@ -131,19 +131,19 @@ Carried verbatim from LOOK-GAPS.md's `## Life Tracker menus`
       the existing `docs/design/ui-reimagining/direction-1/life-tracker-table-{390x844,1440x900}.png`)
       — 18 files total, matching LOOK-GAPS.md's Life Tracker menus pairs
       list.
-- [ ] Q9 (manual). Each pair in Q8 was compared side by side against the
+- [x] Q9 (manual). Each pair in Q8 was compared side by side against the
       build at the matching state; every `### Differences` bullet under
       LOOK-GAPS.md's `## Life Tracker menus` is closed, or is the owner
       question above (never resolved past the stated interim reading); the
       table re-check pair confirms the table rendered identically to
       slice J's own before/after pair, unaffected by L through P's shared-
       chrome changes.
-- [ ] Q10 (manual). Browser scenario at 390×844 and 1440×900: open Game
+- [x] Q10 (manual). Browser scenario at 390×844 and 1440×900: open Game
       Setup, confirm the stepper pill and segmented controls work; open a
       player's Counters, switch tabs, confirm the seat tile and the
       3-column grid render; confirm the table underneath is visually
       identical to before this pass.
-- [ ] Q11 (manual). Cleanup evidence recorded: browser closed, owned dev
+- [x] Q11 (manual). Cleanup evidence recorded: browser closed, owned dev
       server(s) stopped, ports released, disposable captures under
       `PRD/work/ui-reimagining-build/.playwright-mcp/` named.
 
@@ -160,32 +160,42 @@ npm --workspace apps/frontend run test
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified, for every slice
+- [x] Slice acceptance criteria satisfied and verified, for every slice
       L through Q.
-- [ ] Tests updated; `npm run quality:check` green for touched areas.
-- [ ] Public contract unchanged — this pass is look-only; no `AskAiRequest`,
+- [x] Tests updated; `npm run quality:check` green for touched areas.
+- [x] Public contract unchanged — this pass is look-only; no `AskAiRequest`,
       prompt, backend route, card data, or data-pipeline change (unlike
       slices K's REQ-211/REQ-210/REQ-167, this pass adds none of its own).
-- [ ] No secrets committed.
-- [ ] Durable outcomes promoted; `PRD/work/ui-reimagining-build/` ready to
+- [x] No secrets committed.
+- [x] Durable outcomes promoted; `PRD/work/ui-reimagining-build/` ready to
       delete.
 
 ### PRD promotion checklist (execution happens in `thejudge-cleanup`)
 
-- [ ] No new `GATE-QUESTIONS.md` ids were raised by this pass — nothing new
+- [x] No new `GATE-QUESTIONS.md` ids were raised by this pass — nothing new
       to apply to `PRD/sections/`. `REQ-202`'s "no automated pixel gate"
       constraint stands: the L–Q screenshot pairs are owner-reviewed
       evidence, not a CI check.
-- [ ] `system-map.md` lines naming the old `section.page-card` frame, the
-      old Menu geometry, or any component file this pass restyled are
-      updated by whichever slice changed that code (same rule as `A23`),
-      not left for cleanup to invent.
-- [ ] Mock mode works on every screen (final pass, after slice Q), using
-      the exact launch form slice L's L13 names.
-- [ ] The receipt names every slice's reviewable screenshot location
+- [ ] **Not done — flagged for `thejudge-cleanup`, not fixable inside this
+      pass.** `system-map.md:564` (the "Feature portal" section) still says
+      the Menu tray is "full height of the outer shell (`.page-card` or Life
+      Tracker full-bleed) below `768px`)" — `.page-card` no longer exists
+      anywhere in the codebase (slice L retired it); this line was never
+      updated when L did. This build node is bound by its own dispatch
+      prompt to write nothing to `PRD/sections/` in this pass ("Nothing is
+      applied to `PRD/sections/` in this pass; do not edit it"), so the gap
+      is named here rather than silently left or fixed out of scope. Fix:
+      replace the parenthetical with wording that no longer names
+      `.page-card` (e.g. "full height of the outer shell below `768px`").
+- [x] Mock mode works on every screen (final pass, after slice Q), using
+      the exact launch form slice L's L13 names — confirmed on Trade
+      Balancer (O), the card scanner (P), and Life Tracker's menus (Q) in
+      this slice's own browser pass; M/N/L recorded the same for their own
+      screens.
+- [x] The receipt names every slice's reviewable screenshot location
       (`docs/design/ui-reimagining/build-screenshots/<letter>/`, L through
       Q) so the owner can find them after this package folder is deleted.
-- [ ] The receipt lists every carried-forward owner question (from slices
+- [x] The receipt lists every carried-forward owner question (from slices
       M, N, O, P and Q above) as still open, naming the slice and the
       interim reading each slice shipped, so the owner can answer them in
       one place after this pass closes.
