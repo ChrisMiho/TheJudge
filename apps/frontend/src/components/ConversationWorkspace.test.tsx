@@ -48,8 +48,11 @@ describe("Frontend - Conversation workspace", () => {
     expect(within(workspace).getByText("Provider unavailable")).toBeInTheDocument();
     expect(within(workspace).getByText("Ready for follow-ups")).toBeInTheDocument();
 
+    // Look-matching pass (slice M, review 1 fix — finding 4): the follow-up box is
+    // `ComposerPill` itself now (`.q-box`), not a `<form>` of its own — assert it
+    // sits inside that shared pill shell instead of checking a `<form>`'s class.
     const composer = within(workspace).getByRole("textbox", { name: "Follow-up question" });
-    expect(composer.closest("form")).not.toHaveClass("fixed");
+    expect(composer.closest('[data-testid="composer-pill"]')).toBeInTheDocument();
     await user.type(composer, "What happens next?");
     await user.click(within(workspace).getByRole("button", { name: "Send" }));
     expect(onFollowUp).toHaveBeenCalledWith("What happens next?");

@@ -168,3 +168,37 @@ this pass; those were identified by their `2026-10-02` timestamp and deleted
 afterward, restoring
 `cd /Users/chrismiho/Coding/Projects/TheJudge && git status --porcelain` to
 its one pre-existing line (`M scripts/lib/boundary-rules.mjs`).
+
+### Review 1 fix (2026-10-02)
+
+Review loop 1 (`REVIEW-1.md`) returned finding 4 (Important, M9): after an
+answer, the follow-up box still had a "0/300" count line above two separate
+round mic/send circles, instead of the composer's own split mic|send pill.
+`FollowUpComposer.tsx` was rewritten to render `ComposerPill` directly — the
+same component the main composer uses — instead of its own hand-rolled
+markup; `onAddInDepthDetails` is omitted (no deep-pill segment on the
+follow-up box), `submitLabel`/`pendingLabel` are both `"Send"` so the send
+control's accessible name never changes while sending (unchanged
+behaviour), and `disabled={!text.trim()}` reproduces the existing
+blank-submission guard (`ComposerPill` itself does not gate on empty text).
+The character count now only appears once there is something to count,
+matching `ComposerPill`'s own already-accepted behaviour elsewhere
+(`QuickLookupApp.test.tsx`'s "at 0 characters the ring's count is hidden
+entirely" contract) — `FollowUpComposer.test.tsx`'s old "0/300" assertion
+was updated to assert the badge is absent at zero, not a regression.
+`ConversationWorkspace.test.tsx`'s one `composer.closest("form")` assertion
+(there is no longer a `<form>`, just `ComposerPill`'s `.q-box`) was updated
+to check the composer sits inside `[data-testid="composer-pill"]` instead.
+No behaviour changed: dictation stop-before-submit, trim-before-send, and
+the field clearing on send all still hold (`ComposerPill`'s own
+`handleSubmit` already does the dictation stop).
+
+Verified live: the answered-state follow-up box now shows the split
+mic/send pill with the gradient fill and no separate count line, at both
+390×844 and 1440×900 (recaptured
+`m/ask-question-answered-build-{390x844,1440x900}.png`).
+
+Finding closed. `npm --workspace apps/frontend run test` green, including
+`FollowUpComposer.test.tsx`, `ComposerPill.test.tsx`,
+`ConversationWorkspace.test.tsx`, `App.answered-state.test.tsx`,
+`App.ui-flare-chat-motion.test.tsx`, `QuickLookupApp.test.tsx`.

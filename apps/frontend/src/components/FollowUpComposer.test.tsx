@@ -12,15 +12,15 @@ afterEach(cleanup);
 
 describe("Frontend - Conversation composer", () => {
   describe("FollowUpComposer", () => {
-    it("renders as a rounded pill with a visually-hidden accessible label", () => {
+    it("renders as the shared composer pill with a visually-hidden accessible label", () => {
       render(<FollowUpComposer isSubmitting={false} onSubmit={vi.fn(async () => undefined)} />);
 
-      const composer = screen.getByRole("textbox", { name: "Follow-up question" });
-      // REQ-212: the right side now stacks a character count above the send (and, where
-      // supported, mic) controls, matching ComposerPill's own shape — the pill is no
-      // longer a single flat row, but keeps the same rounded family.
-      expect(composer.closest("form")?.className).toContain("rounded-3xl");
-      expect(screen.getByText("Follow-up question")).toHaveClass("sr-only");
+      // Look-matching pass (slice M, review 1 fix — finding 4): the follow-up box is
+      // now `ComposerPill` itself (`.q-box`, `flow.css:187-216`), the same split
+      // mic/send pill the main composer uses — no separate `<form>` wrapper of its
+      // own any more.
+      expect(screen.getByTestId("composer-pill")).toBeInTheDocument();
+      expect(screen.getByRole("textbox", { name: "Follow-up question" })).toBeInTheDocument();
     });
 
     it("renders a circular icon send control instead of a text label", () => {
@@ -29,7 +29,6 @@ describe("Frontend - Conversation composer", () => {
       const sendButton = screen.getByRole("button", { name: "Send" });
       expect(sendButton).not.toHaveTextContent("Send");
       expect(sendButton.querySelector("svg")).toBeInTheDocument();
-      expect(sendButton.className).toContain("rounded-full");
     });
 
     it("blocks blank submission and submits trimmed text, clearing the input", async () => {
@@ -59,9 +58,12 @@ describe("Frontend - Conversation composer", () => {
       expect(composer).toHaveValue("a".repeat(300));
       expect(screen.getByText("300/300")).toBeInTheDocument();
 
-      // The count tracks the raw editable value, so clearing returns it to zero.
+      // Look-matching pass (slice M, review 1 fix — finding 4): `ComposerPill` only
+      // shows the count badge once there is something to count (REQ-206's
+      // content-sized composer — an empty box carries no "0/300"), so clearing the
+      // field hides the badge instead of showing "0/300".
       await user.clear(composer);
-      expect(screen.getByText("0/300")).toBeInTheDocument();
+      expect(screen.queryByText(/\/300/)).not.toBeInTheDocument();
       await user.type(composer, "abc");
       expect(screen.getByText("3/300")).toBeInTheDocument();
     });
