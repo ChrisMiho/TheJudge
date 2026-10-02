@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [ui-look-translation](ui-look-translation/) | Port the direction-1 mockup's stylesheet layer and ambient scene so each screen matches it; builds on PR #239 |
 
 ## owner-action
 
