@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/ui-reimagining-build-work` (the branch the code PR targets — the owner's base override, never `origin/main`; rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-look-translation` (branch `thejudge-auto/ui-look-translation-work`, cut from `origin/thejudge-auto/ui-reimagining-build-work` at `071a56f`; rewritten by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261002-122813/`
-- Current node: `claim` (build half; gate resolution next)
+- Current node: `gate-qc` (attempt 3 — re-grade after gate resolution)
 - Next action: `/graph-implement PRD/work/ui-look-translation/` with the base override (queue read, worktree cut, code PR target = `origin/thejudge-auto/ui-reimagining-build-work`)
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | failed | `0 → 21` | FAIL, 3 findings + 1 minor (REQ-216 grep has no home for TS/TSX colours; REQ-214 hint line lacks a `screen-layout.md` clause; pixel-comparison script has no owner/path/signature); commit `ef55982`: `STATUS.refining`, board row → `## refining`; findings recorded under README `## Preparation gate`; loop 1 of 3 → define attempt 2 | 2026-10-02 |
 | 3 | define (attempt 2) | opus | ok | `0 → 43` | commit `7df89a3`: REQ-216 block + brief gain a colour-home table (token layer = `tokens.css` + `lib/theme/`; named exemptions: canvas scene, pile art, scanner debug, identity ring, Life Tracker table) and the exact audit command; REQ-214 block gains the `screen-layout.md:213` Chrome-row hunk; pixel script named `scripts/compare-screenshot-pair.mjs` (pngjs, mask JSON shape, `DIFF-RESULTS.md`); A21–A24 added; 14 verdict slots still blank; `STATUS.refined`, board row → `## refined` | 2026-10-02 |
 | 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 14` | PASS; all three attempt-1 findings verified against files (audit command run: a1=40 real hits, a2 over HEAD..HEAD=0; `screen-layout.md:213` hunk verbatim; pixel-script criterion command-bearing); one non-blocking minor (brief's owner paragraph counts five look rules, the table has four); no files changed, no commit; run stops at gate-qc PASS → publish + docs PR + `owner-action` | 2026-10-02 |
+| — | gate-review | opus | ok | `0 → 53` | commit `d0c4cb2` on `thejudge-auto/ui-look-translation-work` (worktree `.worktrees/implement-ui-look-translation`): 14 verdicts applied inside `GATE-QUESTIONS.md` — 13 accept / 1 edit / 0 reject; REQ-079 block rewritten to the retire path (7 quoted greps, 69 disposition rows, 107 diff lines checked against `PRD/sections`, 0 mismatches), 13 accept blocks untouched; `DESIGN-BRIEF.md` lines 191/251/321/401 reconciled, README supersession note for intake A6 (line 162); `STATUS.owner-action → STATUS.refined`, board row → `## refined`; `## Open gate` RESOLVED, `## Gate verdicts` + `### Brief reconciliation` written; `git diff --stat 79e7a1b..d0c4cb2 -- PRD/sections apps` empty; worktree clean | 2026-10-02 |
 
 ## Open gate
 
@@ -259,6 +260,39 @@ If you changed any file, commit on the branch in the working directory with expl
 Boundaries: never edit `PRD/sections/`, code, any `thejudge-*` skill, `.claude/`, or `CLAUDE.md`; never stash, reset, force-push, or remove a worktree; never remove `.worktrees/.graph-run.lock` or `.worktrees/.graph-stop`; never retry a denied command — report it verbatim instead; never fill a verdict slot or decide a product question; never start, stop, or reuse ports 5273, 3100, or 5300. Tool-call budget: 60; prefer targeted greps over whole-file reads.
 
 Report back as lines: verdict (PASS or FAIL), how each prior finding checked out (one line each), the complete new findings list (or `none`), any fix you made (or `none`), the status marker and board state after, the commit hash if any, and `git status --short` of the working directory after.
+
+### gate-review
+
+graph is controlling.
+
+You are the gate-resolution node (`gate-review`) of graph run `graph-20261002-122813`, build half. Follow the skill at `.claude/skills/graph-gate-review/SKILL.md` exactly. Read it in full first, then the sections `## Propose / apply / close` and `## The two runs` of `PRD/instructions/graph-workflow-contract.md`, and `PRD/instructions/plain-language-standard.md`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-look-translation
+
+Copy that `Working directory:` line, unchanged and on its own line, into every prompt you write for any subagent — but do not spawn any: verify directly, no forks, no sleeping or polling. Every file you read, write, or commit is under that directory. Never touch `/Users/chrismiho/Coding/Projects/TheJudge` itself (the owner's launch checkout). Use `cd <path> && git …`, never `git -C`.
+
+Package: `PRD/work/ui-look-translation/` (marker `STATUS.owner-action`, parked at gate-qc PASS). Branch, already checked out in the working directory: `thejudge-auto/ui-look-translation-work`, cut from `origin/thejudge-auto/ui-reimagining-build-work` (PR #239's branch) by the owner's decision — this package's code PR targets that branch, not `main`. The checkout's `PRD/sections/` is current product truth and already carries the 57 ids PR #239 applied.
+
+The gate: `GATE-QUESTIONS.md` carries 14 `## <STABLE-ID>` blocks (NFR-006, REQ-207, REQ-216 new, FLOW-011, REQ-124, REQ-079, REQ-070, REQ-206, REQ-167, REQ-209, REQ-215, REQ-214, REQ-202, REQ-082), every verdict slot filled by the owner on 2026-10-02: 13 `accept`, 1 `edit` (REQ-079). Confirm that by parsing the file; refuse if any slot is blank or malformed.
+
+The one edit, REQ-079. The block proposed keeping the General rules topics panel directly under the question box; the owner's `- Reason:` says retire, and tells you to apply the retire path the block itself spells out under *What happens if you say no*: `build` removes the panel from Ask a Question, REQ-079 is marked retired, and REQ-091 (the locked topic pill, reachable only from a topic row), REQ-206's line that keeps both, REQ-073's layout line, FLOW-011 steps 2 and 4, FLOW-023 step 2, and the `quick-lookup` spec are amended. Do this inside the REQ-079 block only:
+- Rewrite the block's proposed diff from the keep path to the retire path. The diff must be complete, never a summary — one hunk per touched passage, against the current text of this checkout's `PRD/sections/`.
+- Re-enumerate the amendment set at line level by greps you quote in the block (never from memory): the block's own `grep -rn 'General rules topics' PRD/sections` minus `decisions.md`, plus greps for `REQ-079`, `REQ-091`, `Use this topic`, `locked topic`, and `topic pill` across `PRD/sections` (including `system-map.md`, `screen-layout.md`, `user-flows.md`, `quick-lookup/README.md`). Give every hit a disposition row (amend / retire / keep, with why). The block's existing table has rows marked keep that now change under retire — redo every row.
+- Where the retire path leaves an amendment's exact shape open, take the reading that adds no new behaviour: the locked topic pill's only entry point is a topic row, so with the panel gone REQ-091 is amended to record that no entry point remains and the pill no longer appears — never invent a new way to reach it. State that reading in plain words in the block and in the `### Brief reconciliation` list so gate-qc and the owner can see it.
+- Keep the three plain-language lines at the top of the block but make them describe the retire the owner chose, and update the mask note: with no panel there is no masked strip in the screenshot comparisons.
+- The 13 `accept` blocks: touch nothing.
+
+Then reconcile the design record in the same pass, per the skill's step 4. Grep `DESIGN-BRIEF.md` and `README.md` (quote the grep) for `General rules topics`, `REQ-079`, `REQ-091`, `topic`, `mask`, and rewrite every passage that still states the panel is kept — design sections, assumption rows (A6 and any other), the look-rules table and the owner paragraph, the slice sketch, the per-slice acceptance criteria that mask the panel strip, the product-truth-changes list — to the owner's retire rule, citing the REQ-079 verdict as evidence. Re-run the grep across the package (excluding `intake/` and `GRAPH-RUN.md`) and require zero contradicting hits before resolving. `intake/GRAPH-BRIEF-2-look-translation.md` line 162 (A6) states the panel was kept: `intake/` is never edited — extend the README's pointer sentence with one supersession note naming that passage and the REQ-079 verdict. Add no design. Leave the brief's known minor (its owner paragraph counts five look rules where the table has four) alone unless a retire rewrite touches that very sentence; name it in your report either way.
+
+Write to `GRAPH-RUN.md` only these: a `## Gate verdicts` section (table: Stable ID | Verdict | Reason, one row per id, the edit's reason quoted) with its `### Brief reconciliation` list (the greps quoted; every rewritten passage as what it said → what it says now → the verdict), placed before `## Dispatch prompts`; and `## Open gate` marked resolved with today's date and the verdict count (13 accept / 1 edit / 0 reject). Do not touch the ledger header lines, `## Node ledger`, `## Dispatch prompts`, or `## Instruction ledger` — the driver owns those.
+
+Restore the status: `status: refined` at the top of `README.md`; replace `STATUS.owner-action` with `STATUS.refined` (exactly one `STATUS.*` file); move the package's row in `PRD/work/STATUS.md` from the `## owner-action` table to the `## refined` table (remove from the old, add to the new) with a note that the 14 verdicts are applied and the run re-enters at gate-qc. Do not touch `## Autonomous metadata` or `## Preparation gate` in the README.
+
+Commit on the branch in the working directory with explicit paths only (`git add PRD/work/ui-look-translation PRD/work/STATUS.md` — never `-A`, `--all`, or `.`), message starting `graph(ui-look-translation): gate-review — 13 accept, 1 edit (REQ-079 retired)`, ending with the line `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`. Do not push.
+
+Boundaries: never edit `PRD/sections/`, code, any `thejudge-*` skill, `.claude/`, or `CLAUDE.md`; never stash, reset, force-push, or remove a worktree; never remove `.worktrees/.graph-run.lock` or `.worktrees/.graph-stop`; never retry a denied command — report it verbatim instead; never invent, infer, or override a verdict; never advance a node or dispatch a subagent. Stay lean: targeted greps and sed ranges over whole-file reads of the large specs; aim well under 100 tool calls.
+
+Report back as lines, plain language, no commentary: outcome (`ok` / `refused: <why>`), the verdict split, the REQ-079 retire diff's hunk list (file:line → change) and the disposition count, the REQ-091 reading you applied, the brief reconciliation list (each passage: said → says now), the README supersession note, the status marker and board state after, the commit hash, and `git status --short` of the working directory after the commit.
 
 ## Instruction ledger
 
