@@ -132,12 +132,12 @@ describe("Frontend - Feedback", () => {
       render(<App />);
 
       await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-      expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeVisible();
+      expect(screen.getByRole("heading", { name: "Zones in play" })).toBeVisible();
 
       await openFeedbackModal(user);
       await user.click(screen.getByRole("button", { name: "Close feedback" }));
 
-      expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeVisible();
+      expect(screen.getByRole("heading", { name: "Zones in play" })).toBeVisible();
     });
 
     it("discloses the MTG Assistant's live flow slice at the step the modal was opened", async () => {

@@ -310,6 +310,10 @@ retrieval/combo machinery that other specs own.
   from the Player Life Tracker is not wiped. A leaving conversation with at
   least one answer auto-saves to completed history first. (REQ-029, DEC-040,
   REQ-206)
+- Built: **✎ Edit** sits beside View Context and ↺ Start over once a ruling
+  exists. It returns to the review with the game context, every card's details
+  and the question kept; the answered conversation is already saved to Question
+  History, and the next send starts a new conversation. (REQ-209)
 - Built: on any AI failure the app shows **Miho is working on it**, preserves game
   context / zones / cards / enrichment / question, keeps the previous successful
   answer visible, and offers a retry button on a 13-second cooldown. (DEC-014,

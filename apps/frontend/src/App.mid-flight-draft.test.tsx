@@ -84,7 +84,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
     const firstMount = render(<App />);
 
     await advanceToBattlefieldZoneCollection(user);
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeVisible();
 
     await switchToDestination(user, "Quick Question");
     expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeVisible();
@@ -96,7 +96,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
     render(<App />);
 
     await switchToDestination(user, "In-Depth Question");
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeVisible();
   });
 
   it("restores Quick Question staging on a fresh mount after Menu-leave, via Draft", async () => {
@@ -128,7 +128,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
 
     await switchToDestination(user, "In-Depth Question");
     // Back within the same session: in-memory state already shows the staged step directly.
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeVisible();
 
     // Start Over to clear the in-memory view back to game-context without touching the
     // still-saved Draft, so opening History exercises the Draft row rather than in-memory state.

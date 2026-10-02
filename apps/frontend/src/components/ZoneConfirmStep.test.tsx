@@ -21,7 +21,7 @@ describe("ZoneConfirmStep", () => {
     );
 
     expect(
-      screen.getByText("Select all zones that apply to your question.")
+      screen.getByText("Select every zone your question touches.")
     ).toBeInTheDocument();
     expect(
       screen.queryByText(

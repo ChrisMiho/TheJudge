@@ -24,4 +24,34 @@
      the same in every profile so a problem never reads as a Theme accent. */
   --status-error: #ff8fa3;
   --status-warn: #fde68a;
+
+  /* In-depth details' literal shadows (ui-look-translation, slice C) and its fixed surfaces */
+  --idq-shadow-2: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent);
+  --idq-shadow-3: 0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent), 0 0 14px color-mix(in srgb, var(--accent-soft) 50%, transparent);
+  --idq-shadow-4: 0 0 0 6px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 26px color-mix(in srgb, var(--accent-soft) 80%, transparent);
+  --idq-shadow-5: 0 12px 30px -18px rgba(0, 0, 0, 0.9);
+  --idq-shadow-6: 0 0 22px -6px color-mix(in srgb, var(--accent) 85%, transparent), inset 0 0 18px -10px var(--accent-soft);
+  --idq-shadow-8: 0 10px 24px -10px color-mix(in srgb, var(--accent) 70%, #000);
+  --idq-shadow-9: 0 22px 40px -14px #000, 0 0 0 2px var(--accent-soft);
+  --idq-shadow-13: 0 12px 28px -12px color-mix(in srgb, var(--accent) 80%, #000), 0 0 30px -8px color-mix(in srgb, var(--accent) 55%, transparent);
+  --idq-shadow-15: 0 0 18px -6px color-mix(in srgb, var(--accent) 85%, transparent), inset 0 0 14px -10px var(--accent-soft);
+  --idq-shadow-act-1: 0 0 14px -5px color-mix(in srgb, var(--accent) 80%, transparent);
+  --dialog-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+  --pos-ground: color-mix(in srgb, var(--surface-ground) 92%, transparent);
+  --card-back: #111;
+}
+
+/* the Cards step's shelf tile width, and the placed-card summon's start offset */
+.shelf {
+  --tile-w: 124px;
+}
+
+@media (min-width: 720px) {
+  .shelf {
+    --tile-w: 150px;
+  }
+}
+
+.ctx-art .hero {
+  --ring-w: 1px;
 }

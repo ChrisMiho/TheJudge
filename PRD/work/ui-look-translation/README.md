@@ -27,7 +27,7 @@ Plan: `GAMEPLAN.md`. Criteria: `slice-<letter>.criteria.json`.
 | --- | --- | --- | --- | --- | --- |
 | A Frame | `slice-a-frame.md` | `shared-chrome-menu.html` | none | NFR-006, REQ-207, REQ-216 | done |
 | B Ask a Question | `slice-b-ask-a-question.md` | `quick-question.html` | A | FLOW-011, REQ-124, REQ-079 (retire), REQ-070, REQ-206, REQ-167 | done |
-| C In-depth details | `slice-c-in-depth-details.md` | `in-depth-question.html` | A | REQ-209 | planned |
+| C In-depth details | `slice-c-in-depth-details.md` | `in-depth-question.html` | A | REQ-209 | done |
 | D Trade Balancer | `slice-d-trade-balancer.md` | `trade-balancer.html` | A | REQ-215 | planned |
 | E Card scanner | `slice-e-card-scanner.md` | `card-scan.html` | A | REQ-214 | planned |
 | F Life Tracker menus | `slice-f-life-tracker-menus.md` | `life-tracker-menus.html` | A | REQ-202, REQ-082 | planned |

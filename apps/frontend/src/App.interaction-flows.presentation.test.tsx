@@ -122,13 +122,15 @@ describe("Interaction flows - zone card presentation", () => {
     await advancePastZoneCollection(user);
 
     const image = screen.getByRole("img", { name: "Lightning Bolt" });
-    expect(image).toHaveClass("h-auto", "w-full", "object-contain");
 
+    // The sheet's art is the mockup's `.card.hero`, wearing the identity ring (REQ-058).
     const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
-    expect(row).toHaveClass("enrichment-card-row", "card-identity-ring");
-    expect(row).toHaveStyle("--card-identity-ring: rgb(239 68 68 / 0.55)");
+    expect(row).toHaveClass("enrichment-card-row");
+    const hero = image.closest(".hero");
+    expect(hero).toHaveClass("card-identity-ring");
+    expect(hero).toHaveStyle("--card-identity-ring: rgb(239 68 68 / 0.55)");
 
-    const header = image.closest(".enrichment-card-header");
+    const header = image.closest(".hero");
     expect(header).not.toBeNull();
     expect(within(header as HTMLElement).queryByText("Lightning Bolt")).not.toBeInTheDocument();
     expect(within(header as HTMLElement).queryByText("Stack")).not.toBeInTheDocument();
@@ -169,14 +171,13 @@ describe("Interaction flows - zone card presentation", () => {
     await advanceToContextEnrichmentFromZones(user);
 
     const image = screen.getByRole("img", { name: "Lightning Bolt" });
-    expect(image).toHaveClass("h-auto", "w-full", "object-contain");
 
     const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
 
     fireEvent.error(image);
 
     const fallback = within(row as HTMLElement).getByTestId("card-presentation-fallback");
-    expect(fallback).toHaveClass("w-full");
+    expect(fallback).toHaveClass("fallback");
     expect(within(fallback).getByText("Lightning Bolt")).toBeInTheDocument();
     // D3: the fallback shows the card name only — no descriptive fields, no detail fetch.
     expect(within(fallback).queryByText("Instant")).not.toBeInTheDocument();
@@ -204,13 +205,14 @@ describe("Interaction flows - zone card presentation", () => {
     const row = screen.getByLabelText("Caster for Opt").closest("li");
     const fallback = within(row as HTMLElement).getByTestId("card-presentation-fallback");
     expect(screen.queryByRole("img", { name: "Opt" })).not.toBeInTheDocument();
-    expect(fallback).toHaveClass("w-full");
+    expect(fallback).toHaveClass("fallback");
     expect(within(fallback).getByText("Opt")).toBeInTheDocument();
     expect(within(fallback).queryByText("Instant")).not.toBeInTheDocument();
     expect(within(fallback).queryByText("Scry 1, then draw a card.")).not.toBeInTheDocument();
     expect(within(fallback).queryByText("Legendary")).not.toBeInTheDocument();
-    expect(row).toHaveClass("card-identity-ring");
-    expect(row).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
+    const hero = fallback.closest(".hero");
+    expect(hero).toHaveClass("card-identity-ring");
+    expect(hero).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
   });
 
   it("walks zone cards in enrichment order (bottom-to-top), one sheet at a time", async () => {

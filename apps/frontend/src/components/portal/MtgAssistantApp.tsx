@@ -56,7 +56,10 @@ const MIN_PLAYERS = MIN_PLAYER_ROSTER_SIZE;
 const MAX_PLAYERS = MAX_PLAYER_ROSTER_SIZE;
 const DUEL_STARTING_LIFE_TOTAL = "20";
 const MULTIPLAYER_STARTING_LIFE_TOTAL = "40";
-const PLAYER_OPTIONS: PlayerLabel[] = Array.from({ length: MAX_PLAYERS }, (_, index) => `Player ${index + 1}` as PlayerLabel);
+const PLAYER_OPTIONS: PlayerLabel[] = Array.from(
+  { length: MAX_PLAYERS },
+  (_, index) => `Player ${index + 1}` as PlayerLabel
+);
 
 type ScalarCounterField = "poison" | "energy" | "experience";
 
@@ -102,16 +105,6 @@ function createEmptyCountersByPlayer(): AssistantCountersByPlayer {
   });
   return countersByPlayer;
 }
-
-/**
- * One grouped row for every player counter: a content-sized leading element, one declared
- * gap, then the value control. The previous `grid-cols-[1fr_auto]` rows gave the label all
- * leftover width, so the label text and its input sat up to 457px apart on desktop and read
- * as two unrelated controls (REQ-137).
- */
-const COUNTER_ROW_CLASS = "flex min-w-0 items-center gap-2";
-const COUNTER_AMOUNT_INPUT_CLASS =
-  "motion-focus w-20 shrink-0 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100";
 
 /** Fixed ranges for the scalar counters; every value in range is offered explicitly. */
 const SCALAR_COUNTER_MAX: Record<ScalarCounterField, number> = {
@@ -196,7 +189,8 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   const showCatEasterEgg = brandClickCount >= 10;
   const [playersDetailsExpanded, setPlayersDetailsExpanded] = useState(false);
   const [secondaryDetailsExpanded, setSecondaryDetailsExpanded] = useState(false);
-  const [displayNamesByPlayer, setDisplayNamesByPlayer] = useState<Record<PlayerLabel, string>>(createDefaultDisplayNames);
+  const [displayNamesByPlayer, setDisplayNamesByPlayer] =
+    useState<Record<PlayerLabel, string>>(createDefaultDisplayNames);
   const [countersByPlayer, setCountersByPlayer] = useState<AssistantCountersByPlayer>(createEmptyCountersByPlayer);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
 
@@ -537,12 +531,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     }));
   }
 
-  function updateNamedCounter(
-    player: PlayerLabel,
-    counterId: string,
-    field: "name" | "amount",
-    value: string
-  ): void {
+  function updateNamedCounter(player: PlayerLabel, counterId: string, field: "name" | "amount", value: string): void {
     setCountersByPlayer((current) => ({
       ...current,
       [player]: {
@@ -785,6 +774,16 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     navigate("/quick-lookup");
   }
 
+  // REQ-209: the ruling's ✎ Edit returns to the review with the game context, every card's
+  // details and the question exactly as they were. The conversation is already saved to
+  // Question History (every successful answer auto-saves via onConversationUpdated, REQ-103),
+  // so only the answered thread itself leaves the screen; the next send starts a new
+  // conversation. Unlike Start Over, nothing staged is cleared.
+  function handleEditContext(): void {
+    startOver();
+    setActiveConversationId(null);
+  }
+
   // REQ-213/FLOW-016/FLOW-017/FLOW-018: Question History now lives one level up
   // (FeaturePortalMenu's combined sheet), so this destination's own exits for it are a
   // mailbox it consumes rather than local drawer state. `historyResumeVersion` is the one
@@ -840,14 +839,33 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     navigate("/quick-lookup");
   }
 
+  // `in-depth-question.html`'s order above the plate: the flow head (round back button + h1),
+  // the carry note while carried cards wait, then the rail.
   const stationsRail = (
     <>
-      <div className="idq-flow-head">
-        <button type="button" className="icon-round motion-focus" aria-label="Back" title="Back" onClick={handleHeaderBack}>
-          <span aria-hidden="true">‹</span>
-        </button>
-        <h1>In-depth details</h1>
+      <div className="flow-head">
+        <div className="lead">
+          <button
+            type="button"
+            className="icon-round motion-focus"
+            aria-label="Back"
+            title="Back"
+            onClick={handleHeaderBack}
+          >
+            <span aria-hidden="true">‹</span>
+          </button>
+          <h1>In-depth details</h1>
+        </div>
       </div>
+      {pendingPlacementCards.length > 0 && (
+        <p className="carry-note">
+          <b>
+            {placementTotal} {placementTotal === 1 ? "card" : "cards"}
+          </b>{" "}
+          came along with your question — set the game up, then step 3 asks for each one&rsquo;s zone, one card at a
+          time.
+        </p>
+      )}
       <StationsRail currentStep={flowStep} furthestStepIndex={furthestStepIndex} onNavigate={handleRailNavigate} />
     </>
   );
@@ -856,13 +874,14 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
 
   if (flowStep === "game-context") {
     content = (
-      <PageShell>
-          <StagedStepHeader onBrandClick={() => setBrandClickCount((c) => c + 1)} />
+      <PageShell variant="narrow">
+        <StagedStepHeader onBrandClick={() => setBrandClickCount((c) => c + 1)} />
+        <section className="idq">
           {stationsRail}
           {showCatEasterEgg && (
             <div className="p-2 text-center">
               {emptyStateImageFailed ? (
-                <p className="text-2xl font-semibold text-zinc-200">Cat wizard</p>
+                <p className="text-2xl font-semibold">Cat wizard</p>
               ) : (
                 <img
                   src={EMPTY_STATE_IMAGE_URL}
@@ -873,183 +892,174 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
               )}
             </div>
           )}
-          {/* Look-matching pass (slice N), requirement 4: Players in game and Turn
-              phase/Active player share one `.plate`, with `.plate-next` as the only
-              way forward — "Back" was never offered on this, the first station;
-              the header's own ‹ covers it now. */}
-          <div className="plate">
-            <h2>Game context</h2>
-            <p className="lede">Who is playing, and where the turn is.</p>
-            <p className="text-xs text-zinc-400">Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.</p>
+          {/* `in-depth-question.html`'s step 1: Players in game and Turn phase/Active player
+              share one `.plate`, with `.plate-next` as the only way forward. */}
+          <section className="idq-step" aria-label="Game context">
+            <div className="plate">
+              <h2>Game context</h2>
+              <p className="lede">
+                Who is playing, and where the turn is. Tap the arrow to name the players and set life — 2 players start
+                at 20, 3+ at 40.
+              </p>
 
-            <PlayerRosterEditor
-              players={rosterPlayers}
-              playerCount={activePlayerCount}
-              isExpanded={playersDetailsExpanded}
-              onToggleExpanded={toggleOuterRosterDetails}
-              onAddPlayer={addPlayer}
-              onRemovePlayer={removePlayer}
-              onDisplayNameChange={updateDisplayName}
-              onLifeTotalChange={updateLifeTotal}
-              showLifeTotals
-              secondaryDetailsExpanded={secondaryDetailsExpanded}
-              onToggleSecondaryDetails={toggleSecondaryDetails}
-              renderPlayerExtras={(player) => {
-                const playerCounters = countersByPlayer[player.label];
-                return (
-                  <div className="space-y-3 border-t border-zinc-700/70 pt-3">
-                    {/* Stacked at every width: three bounded selects side by side squeezed
+              <PlayerRosterEditor
+                players={rosterPlayers}
+                playerCount={activePlayerCount}
+                isExpanded={playersDetailsExpanded}
+                onToggleExpanded={toggleOuterRosterDetails}
+                onAddPlayer={addPlayer}
+                onRemovePlayer={removePlayer}
+                onDisplayNameChange={updateDisplayName}
+                onLifeTotalChange={updateLifeTotal}
+                showLifeTotals
+                secondaryDetailsExpanded={secondaryDetailsExpanded}
+                onToggleSecondaryDetails={toggleSecondaryDetails}
+                renderPlayerExtras={(player) => {
+                  const playerCounters = countersByPlayer[player.label];
+                  return (
+                    <>
+                      {/* Stacked at every width: three bounded selects side by side squeezed
                         each control below its own legible width (REQ-138). */}
-                    <div className="flex flex-col gap-2">
-                      {(["poison", "energy", "experience"] as const).map((field) => (
-                        <label key={field} className={COUNTER_ROW_CLASS}>
-                          {/* One declared label width across the three stacked rows, so the
-                              selects line up instead of stepping with each label's length. */}
-                          <span className="w-20 shrink-0 truncate text-xs font-semibold capitalize text-zinc-300">
+                      <div className="counters">
+                        {(["poison", "energy", "experience"] as const).map((field) => (
+                          <label key={field}>
                             {field}
-                          </span>
-                          <select
-                            aria-label={`${player.label} ${field}`}
-                            value={playerCounters[field]}
-                            onChange={(event) => updateScalarCounter(player.label, field, event.target.value)}
-                            className="motion-focus w-auto shrink-0 rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 font-semibold text-zinc-100"
-                          >
-                            <option value="">Unset</option>
-                            {scalarCounterOptions(field, playerCounters[field]).map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      ))}
-                    </div>
+                            <select
+                              aria-label={`${player.label} ${field}`}
+                              value={playerCounters[field]}
+                              onChange={(event) => updateScalarCounter(player.label, field, event.target.value)}
+                              className="field"
+                            >
+                              <option value="">Unset</option>
+                              {scalarCounterOptions(field, playerCounters[field]).map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        ))}
+                      </div>
 
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                        Commander damage
-                      </p>
+                      <span className="lbl">Commander damage</span>
                       {activePlayers
                         .filter((source) => source !== player.label)
                         .map((source) => (
-                          <label key={source} className={COUNTER_ROW_CLASS}>
-                            <span className="min-w-0 truncate text-zinc-300">From {source}</span>
+                          <label key={source} className="cmd-row">
+                            <span>From {source}</span>
                             <input
                               aria-label={`${player.label} commander damage from ${source}`}
                               value={playerCounters.commanderDamage[source] ?? ""}
-                              onChange={(event) =>
-                                updateCommanderDamage(player.label, source, event.target.value)
-                              }
+                              onChange={(event) => updateCommanderDamage(player.label, source, event.target.value)}
                               inputMode="numeric"
-                              className={COUNTER_AMOUNT_INPUT_CLASS}
+                              placeholder="0"
+                              className="field amt"
                             />
                           </label>
                         ))}
-                    </div>
 
-                    {playerCounters.counters.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                          Named counters
-                        </p>
-                        {playerCounters.counters.map((counter) => {
-                          const accessibleName = counter.name.trim() || counter.id;
-                          return (
-                            <div key={counter.id} className={COUNTER_ROW_CLASS}>
-                              <input
-                                aria-label={`${player.label} counter ${accessibleName} name`}
-                                value={counter.name}
-                                onChange={(event) =>
-                                  updateNamedCounter(player.label, counter.id, "name", event.target.value)
-                                }
-                                className="motion-focus min-w-0 flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
-                              />
-                              <input
-                                aria-label={`${player.label} counter ${accessibleName} amount`}
-                                value={counter.amount}
-                                onChange={(event) =>
-                                  updateNamedCounter(player.label, counter.id, "amount", event.target.value)
-                                }
-                                inputMode="numeric"
-                                className={COUNTER_AMOUNT_INPUT_CLASS}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              }}
-            />
-            <div className="ambient-accent-surface ambient-accent-interactive space-y-3">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="flex flex-col gap-2 text-sm">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Turn phase</span>
-                <select
-                  aria-label="Turn phase"
-                  value={turnPhase}
-                  onChange={(event) => setTurnPhase(event.target.value as TurnPhase)}
-                  className="select-chevron motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
-                >
-                  {TURN_PHASE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex flex-col gap-2 text-sm">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Active player</span>
-                <select
-                  aria-label="Active player"
-                  value={activePlayer}
-                  onChange={(event) => setActivePlayer(event.target.value as PlayerLabel)}
-                  className="select-chevron motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
-                >
-                  {activePlayers.map((player) => (
-                    <option key={player} value={player}>
-                      {formatPlayerDisplayLabel(player, displayNamesByPlayer[player])}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
-            {turnPhase === "combat" && (
-              <label className="flex flex-col gap-2 text-sm">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Combat step</span>
-                <select
-                  aria-label="Combat step"
-                  value={combatStep}
-                  onChange={(event) => setCombatStep(event.target.value as CombatStep)}
-                  className="select-chevron motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
-                >
-                  {COMBAT_STEP_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-            </div>
+                      {playerCounters.counters.length > 0 && (
+                        <>
+                          <span className="lbl">Named counters</span>
+                          {playerCounters.counters.map((counter) => {
+                            const accessibleName = counter.name.trim() || counter.id;
+                            return (
+                              <div key={counter.id} className="named-row">
+                                <input
+                                  aria-label={`${player.label} counter ${accessibleName} name`}
+                                  value={counter.name}
+                                  onChange={(event) =>
+                                    updateNamedCounter(player.label, counter.id, "name", event.target.value)
+                                  }
+                                  placeholder="Counter name"
+                                  className="field"
+                                />
+                                <input
+                                  aria-label={`${player.label} counter ${accessibleName} amount`}
+                                  value={counter.amount}
+                                  onChange={(event) =>
+                                    updateNamedCounter(player.label, counter.id, "amount", event.target.value)
+                                  }
+                                  inputMode="numeric"
+                                  placeholder="0"
+                                  className="field amt"
+                                />
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
+                    </>
+                  );
+                }}
+              />
+              <div className="paired ambient-accent-surface ambient-accent-interactive">
+                <label>
+                  Turn phase
+                  <select
+                    aria-label="Turn phase"
+                    value={turnPhase}
+                    onChange={(event) => setTurnPhase(event.target.value as TurnPhase)}
+                    className="field motion-focus"
+                  >
+                    {TURN_PHASE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Active player
+                  <select
+                    aria-label="Active player"
+                    value={activePlayer}
+                    onChange={(event) => setActivePlayer(event.target.value as PlayerLabel)}
+                    className="field"
+                  >
+                    {activePlayers.map((player) => (
+                      <option key={player} value={player}>
+                        {formatPlayerDisplayLabel(player, displayNamesByPlayer[player])}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {turnPhase === "combat" && (
+                  <label>
+                    Combat step
+                    <select
+                      aria-label="Combat step"
+                      value={combatStep}
+                      onChange={(event) => setCombatStep(event.target.value as CombatStep)}
+                      className="field"
+                    >
+                      {COMBAT_STEP_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </div>
 
-            <button
-              type="button"
-              onClick={confirmGameContext}
-              className="plate-next motion-hover motion-press motion-focus"
-            >
-              <span>Confirm game context</span>
-              <span className="chev" aria-hidden="true">
-                ›
-              </span>
-            </button>
-          </div>
-          {statusMessage && (
-            <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
-              {statusMessage}
-            </p>
-          )}
+              <button
+                type="button"
+                aria-label="Confirm game context"
+                onClick={confirmGameContext}
+                className="plate-next motion-hover motion-press motion-focus"
+              >
+                <span>
+                  Continue<small>next: which zones are in play</small>
+                </span>
+                <span className="chev" aria-hidden="true">
+                  ›
+                </span>
+              </button>
+            </div>
+            {statusMessage && <p className="idq-status">{statusMessage}</p>}
+          </section>
+        </section>
       </PageShell>
     );
   } else if (flowStep === "zone-confirm") {
@@ -1142,6 +1152,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         frozenGameContext={frozenGameContext}
         onFollowUp={handleFollowUp}
         onStartOver={handleStartOver}
+        onEditRequest={handleEditContext}
       />
     );
   }

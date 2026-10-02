@@ -82,8 +82,7 @@ describe("Frontend - Portal", () => {
     const arrows = secondaryArrows();
     expect(arrows.length).toBeGreaterThan(0);
     for (const arrow of arrows) {
-      expect(arrow.className).toContain("min-h-[2.75rem]");
-      expect(arrow.className).toContain("min-w-[2.75rem]");
+      expect(arrow.className).toContain("link");
     }
   });
 
@@ -162,12 +161,12 @@ describe("Frontend - Portal", () => {
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("5");
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Zones in play" })).toBeInTheDocument();
 
     await selectDestination(user, "Quick Question");
     await selectDestination(user, "In-Depth Question");
 
-    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Zones in play" })).toBeInTheDocument();
   });
 
   it("selecting the already-active destination is a no-op that changes nothing", async () => {

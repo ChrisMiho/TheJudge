@@ -17,7 +17,7 @@ import {
 import type { ConversationMessage, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import { AdaptiveContextDialog } from "./AdaptiveContextDialog";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
-import { CardPresentation } from "./CardPresentation";
+import { CardHero } from "./CardHero";
 import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
 import { ConversationWorkspace } from "./ConversationWorkspace";
 import { FrozenGameContextDetails, getFrozenGameContextTriggerLabel } from "./FrozenGameContextDetails";
@@ -57,6 +57,9 @@ type EnrichmentStepProps = {
   frozenGameContext: GameContext | null;
   onFollowUp: (text: string) => Promise<void>;
   onStartOver: () => void;
+  /** REQ-209: the ruling's ✎ Edit — back to the review with everything kept; the caller clears
+   * only the answered thread (already saved to Question History), never the staged context. */
+  onEditRequest: () => void;
   historyTrigger?: ConversationHistoryTriggerDescriptor;
   /** REQ-209: the four-station progress rail. Rendered only on the staged Context form —
    * "the ruling is not a station; when it arrives the rail and flow give way to the chat." */
@@ -85,6 +88,7 @@ export function EnrichmentStep({
   frozenGameContext,
   onFollowUp,
   onStartOver,
+  onEditRequest,
   historyTrigger,
   stationsRail
 }: EnrichmentStepProps): JSX.Element {
@@ -161,7 +165,7 @@ export function EnrichmentStep({
   // on demand, the same `GET /api/cards/:oracleId` path and session cache the card
   // detail popup already uses (REQ-175, FLOW-024) — no new endpoint.
   const [manaDetailByCardId, setManaDetailByCardId] = useState<
-    Record<string, { manaCost: string; manaValue: number } | null>
+    Record<string, { manaCost: string; manaValue: number; typeLine: string } | null>
   >({});
 
   useEffect(() => {
@@ -172,7 +176,7 @@ export function EnrichmentStep({
     if (cached !== undefined) {
       setManaDetailByCardId((m) => ({
         ...m,
-        [cardId]: cached ? { manaCost: cached.manaCost, manaValue: cached.manaValue } : null
+        [cardId]: cached ? { manaCost: cached.manaCost, manaValue: cached.manaValue, typeLine: cached.typeLine } : null
       }));
       return;
     }
@@ -183,7 +187,9 @@ export function EnrichmentStep({
         if (cancelled) return;
         setManaDetailByCardId((m) => ({
           ...m,
-          [cardId]: detail ? { manaCost: detail.manaCost, manaValue: detail.manaValue } : null
+          [cardId]: detail
+            ? { manaCost: detail.manaCost, manaValue: detail.manaValue, typeLine: detail.typeLine }
+            : null
         }));
       })
       .catch(() => {
@@ -252,7 +258,13 @@ export function EnrichmentStep({
     if (targets.length === 1 && targets[0]!.kind === "none") {
       bits.push("no specific target");
     } else if (targets.length > 0) {
-      bits.push(`targets ${targets.map((target) => formatContextTarget(target, displayNamesByPlayer)).join(", ")}`);
+      bits.push(
+        `targets ${targets
+          .map((target) =>
+            target.kind === "card" ? target.cardName : formatContextTarget(target, displayNamesByPlayer)
+          )
+          .join(", ")}`
+      );
     }
     if (card.contextNotes) {
       bits.push(`“${card.contextNotes}”`);
@@ -286,25 +298,16 @@ export function EnrichmentStep({
             : "";
     const noteOpen = noteOpenByKey[key] ?? Boolean(card.contextNotes);
     const otherCards = contextIndex.filter((entry) => !(entry.zone === zone && entry.cardId === card.cardId));
+    const typeLine = manaDetail?.typeLine || card.typeLine;
+    const printedCost = manaDetail?.manaCost || card.manaCost;
+    const copies = card.copies ?? 0;
 
     return (
-      <li
-        key={key}
-        // Look-matching pass (slice N), requirement 8: the context-sheet grid
-        // (`in-depth-question.html:255-277` `.ctx-sheet`/`.ctx-art`/`.ctx-head`) — art
-        // beside a zone/name head at top, the form spanning full width below. The
-        // bordered-box shell is dropped here since the card sheet now sits flush
-        // inside the step's own outer `.plate` (requirement 3).
-        className="card-identity-ring ctx-sheet enrichment-card-row enrichment-card-enter"
-        style={getCardIdentityRingStyle(card.colors)}
-      >
+      <li key={key} className="enrichment-card-row enrichment-card-enter">
+        {/* `in-depth-question.html`'s `#wizard-plate`: the card's art at the left (210px desktop,
+            96px phone — REQ-017), the zone / name / counter head beside it, the form below. */}
         <div className="ctx-art">
-          {/* REQ-017: the card's art sits at a fixed width beside the form — 210px
-              desktop, 96px phone — rather than claiming the shell column's full width
-              as the former per-card row did. */}
-          <div className="hero enrichment-card-header">
-            <CardPresentation card={card} className="w-full min-w-0" imageClassName="rounded" />
-          </div>
+          <CardHero card={card} />
         </div>
         <div className="ctx-head">
           <div className="eyebrow">
@@ -314,19 +317,27 @@ export function EnrichmentStep({
             </button>
           </div>
           <h2>{card.name}</h2>
-          {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 8:
-              the card's type line (`.sub`, `in-depth-question.html:271`). */}
-          {card.typeLine && <div className="sub">{card.typeLine}</div>}
-          {/* Requirement 8: the "N / M cards" counter moves into the head row
-              (`.counter`, `in-depth-question.html:290-299`). "Card N of M" stays as
-              sr-only text so the existing getByText("Card N of M") assertions keep
-              resolving — same information, now also carried visually by the badge. */}
-          <span className="ctx-counter" aria-hidden="true">
-            {cardIndex + 1}&nbsp;/&nbsp;{totalCards}
-            <small>cards</small>
-          </span>
-          <span className="sr-only">
-            Card {cardIndex + 1} of {totalCards}
+          {typeLine ? (
+            <div className="sub">
+              {typeLine}
+              {printedCost ? (
+                <>
+                  {" · "}
+                  <span>{printedCost}</span>
+                </>
+              ) : null}
+            </div>
+          ) : null}
+          {/* "Card N of M" stays as sr-only text so the existing getByText("Card N of M")
+              assertions keep resolving — same information, carried visually by the badge. */}
+          <span className="counter" aria-live="polite">
+            <span aria-hidden="true">
+              {cardIndex + 1}&nbsp;/&nbsp;{totalCards}
+            </span>
+            <small aria-hidden="true">cards</small>
+            <span className="sr-only">
+              Card {cardIndex + 1} of {totalCards}
+            </span>
           </span>
         </div>
 
@@ -334,7 +345,7 @@ export function EnrichmentStep({
           <div className="ctx-grid">
             {showsOwner && (
               <label>
-                <span>Owner</span>
+                <span className="t">Owner</span>
                 <select
                   aria-label={`Owner for ${card.name}`}
                   value={card.owner ?? gameContext?.activePlayer ?? activePlayers[0] ?? "Player 1"}
@@ -354,7 +365,7 @@ export function EnrichmentStep({
 
             {isStackZone && (
               <label>
-                <span>Cast by</span>
+                <span className="t">Cast by</span>
                 <select
                   aria-label={`Caster for ${card.name}`}
                   value={card.caster ?? activePlayers[0] ?? "Player 1"}
@@ -376,7 +387,7 @@ export function EnrichmentStep({
                   the Stack, prefilled with the printed mana value; an untouched box leaves
                   `manaSpent` undefined so nothing is sent. */}
             <label>
-              <span className="t">Mana spent{manaHint ? <small>({manaHint})</small> : null}</span>
+              <span className="t">Mana spent{manaHint ? <small>{manaHint}</small> : null}</span>
               <input
                 aria-label={`Mana spent for ${card.name}`}
                 type="text"
@@ -394,38 +405,41 @@ export function EnrichmentStep({
           </div>
 
           <div className="targets">
-            <p className="lbl">Targets</p>
-            {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 8:
-                targets render as pills, with a thumbnail, above the picker
-                (`in-depth-question.html:291-296`) — moved here from below the
-                select; the mockup's own target-naming logic never actually puts a
-                thumbnail in a pill, so this adds one only where the data already
-                carries an image: a "card" target resolved against this card's own
-                zone list. */}
+            <span className="lbl">
+              <span className="t">
+                Targets<small>leave blank if it has none</small>
+              </span>
+            </span>
+            {/* Chosen targets sit above the picker as pills; a "card" target resolved against a
+                zone list carries that card's thumbnail. */}
             {(card.targets ?? []).length > 0 && (
-              <ul className="target-list">
+              <div className="target-list">
                 {(card.targets ?? []).map((target, targetIndex) => {
-                  const targetImageUrl =
-                    target.kind === "card" ? zones[target.zone]?.find((c) => c.cardId === target.cardId)?.imageUrl : undefined;
+                  const targetCard =
+                    target.kind === "card" ? zones[target.zone]?.find((c) => c.cardId === target.cardId) : undefined;
                   return (
-                    <li key={targetIndex} className="target-pill">
-                      {targetImageUrl && (
-                        <span className="thumb" aria-hidden="true">
-                          <img src={targetImageUrl} alt="" />
+                    <span key={targetIndex} className="pill">
+                      {targetCard?.imageUrl && (
+                        <span
+                          className="thumb card-identity-ring"
+                          style={getCardIdentityRingStyle(targetCard.colors)}
+                          aria-hidden="true"
+                        >
+                          <img src={targetCard.imageUrl} alt="" />
                         </span>
                       )}
-                      <span>{formatContextTarget(target, displayNamesByPlayer)}</span>
+                      {target.kind === "card" ? target.cardName : formatContextTarget(target, displayNamesByPlayer)}
                       <button
                         type="button"
                         aria-label={`Remove target ${targetIndex + 1} for ${card.name}`}
                         onClick={() => handleRemoveTarget(zone, card, targetIndex)}
                       >
-                        ×
+                        ✕
                       </button>
-                    </li>
+                    </span>
                   );
                 })}
-              </ul>
+              </div>
             )}
             <select
               aria-label={`Add a target for ${card.name}`}
@@ -434,7 +448,7 @@ export function EnrichmentStep({
               className="field"
             >
               <option value="" disabled>
-                Add another target…
+                {(card.targets ?? []).length > 0 ? "Add another target…" : "Choose a target…"}
               </option>
               <option value={TARGET_OPTION_NONE}>No target</option>
               <option value={TARGET_OPTION_BOARD}>Just on the board</option>
@@ -453,7 +467,7 @@ export function EnrichmentStep({
             </select>
 
             {isAwaitingCustomTarget(key) && (
-              <div className="flex items-center gap-2">
+              <div className="custom-target">
                 <input
                   aria-label={`Describe the target for ${card.name}`}
                   type="text"
@@ -467,7 +481,7 @@ export function EnrichmentStep({
                   type="button"
                   aria-label={`Confirm target for ${card.name}`}
                   onClick={() => handleConfirmCustomTarget(zone, card, key)}
-                  className="rounded-lg border border-accent/50 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20"
+                  className="btn"
                 >
                   Add
                 </button>
@@ -475,7 +489,7 @@ export function EnrichmentStep({
                   type="button"
                   aria-label={`Cancel target for ${card.name}`}
                   onClick={() => handleCancelCustomTarget(key)}
-                  className="text-xs text-zinc-400 hover:text-zinc-200"
+                  className="link"
                 >
                   Cancel
                 </button>
@@ -487,7 +501,9 @@ export function EnrichmentStep({
                 already has a note opens with it showing. */}
           {noteOpen && (
             <label>
-              <span>Note</span>
+              <span className="t">
+                Note<small>optional</small>
+              </span>
               <textarea
                 aria-label={`Context notes for ${card.name}`}
                 value={card.contextNotes ?? ""}
@@ -503,11 +519,7 @@ export function EnrichmentStep({
             </label>
           )}
 
-          {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 8:
-              Add a note / More details become two dashed rows sharing one line
-              (`.ctx-tail`/`.more-row`, `in-depth-question.html:361-374`). Behaviour
-              is unchanged: the note still hides this row once open (same as
-              before), and REQ-211's Copies sheet still opens from the same click. */}
+          {/* Add a note / More details are two dashed rows sharing one line (`.ctx-tail`). */}
           <div className="ctx-tail">
             {!noteOpen && (
               <button
@@ -517,7 +529,10 @@ export function EnrichmentStep({
                 className="more-row note-row"
               >
                 <span>
-                  <span aria-hidden="true">＋</span> Add a note
+                  <span className="glyph" aria-hidden="true">
+                    ＋
+                  </span>{" "}
+                  Add a note
                 </span>
               </button>
             )}
@@ -532,7 +547,12 @@ export function EnrichmentStep({
                 onClick={() => setMoreDetailsOpenKey(key)}
                 className="more-row"
               >
-                <span>More details{(card.copies ?? 0) > 0 ? ` · +${card.copies} copies` : ""}</span>
+                <span>
+                  More details{" "}
+                  <span className="set">
+                    {copies > 0 ? <b>{`${copies} ${copies === 1 ? "copy" : "copies"}`}</b> : null}
+                  </span>
+                </span>
                 <span className="up" aria-hidden="true">
                   ▴
                 </span>
@@ -550,56 +570,48 @@ export function EnrichmentStep({
             testId={`more-details-${key}`}
             head={
               <div>
-                <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">{card.name}</p>
-                <h2 id={`more-details-title-${key}`} className="text-lg font-black text-zinc-100">
+                <p className="lbl">{card.name}</p>
+                <h2 id={`more-details-title-${key}`} className="text-lg font-bold">
                   More details
                 </h2>
               </div>
             }
             foot={
-              <button
-                type="button"
-                onClick={() => setMoreDetailsOpenKey(null)}
-                className="motion-focus flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-accent to-accent-strong text-sm font-bold text-accent-contrast"
-              >
+              <button type="button" onClick={() => setMoreDetailsOpenKey(null)} className="btn primary w-full">
                 Done
               </button>
             }
           >
-            <div className="space-y-2">
-              <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Copies</p>
-              <div className="flex items-center gap-3">
+            <div className="act-body">
+              <span className="lbl">Copies</span>
+              <div className="seg" role="group" aria-label="Copies">
                 <button
                   type="button"
                   aria-label={`Decrease copies for ${card.name}`}
                   onClick={() =>
                     updateZoneCard(zone, card.instanceId ?? card.cardId, {
-                      copies: Math.max(0, (card.copies ?? 0) - 1)
+                      copies: Math.max(0, copies - 1)
                     })
                   }
-                  disabled={(card.copies ?? 0) <= 0}
-                  className="motion-focus inline-flex h-11 w-11 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-lg font-black text-zinc-100 disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={copies <= 0}
                 >
                   <span aria-hidden="true">−</span>
                 </button>
-                <span className="min-w-10 text-center text-lg font-black tabular-nums text-zinc-100">
-                  {card.copies ?? 0}
-                </span>
+                <span className="copies-value">{copies}</span>
                 <button
                   type="button"
                   aria-label={`Increase copies for ${card.name}`}
                   onClick={() =>
                     updateZoneCard(zone, card.instanceId ?? card.cardId, {
-                      copies: Math.min(MAX_COPIES, (card.copies ?? 0) + 1)
+                      copies: Math.min(MAX_COPIES, copies + 1)
                     })
                   }
-                  disabled={(card.copies ?? 0) >= MAX_COPIES}
-                  className="motion-focus inline-flex h-11 w-11 items-center justify-center rounded-full border border-accent-strong bg-accent-strong text-lg font-black text-accent-contrast disabled:cursor-not-allowed disabled:opacity-50"
+                  disabled={copies >= MAX_COPIES}
                 >
                   <span aria-hidden="true">+</span>
                 </button>
               </div>
-              <p className="text-xs text-zinc-500">
+              <p className="text-muted text-xs">
                 How many copies of this spell are on the stack besides this one (0-99, the storm case). 0 sends nothing.
               </p>
             </div>
@@ -639,299 +651,294 @@ export function EnrichmentStep({
   if (isConversationActive) {
     return (
       <PageShell variant="narrow">
-        {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 10:
-              the ruling takes the Ask a Question ruling view's own chrome (slice
-              M) in full now — a "◈ View context" chip plus the round ↺ sit
-              together in the chat-head's own `.tools` row (same pattern as
-              `QuickLookupApp`'s "✎ Edit cards" + ↺), and a CARDS thumbnail strip
-              replaces the full-width "VIEW CONTEXT" panel below the head. The
-              dialog itself (every game-state/zone/card detail) is unchanged —
-              only its trigger moved and shrank. */}
+        {/* The ruling takes the Ask a Question ruling view's own chrome in full: the chat head
+            carries ◈ View context, ✎ Edit and the round ↺ together in its `.tools` row, and a
+            CARDS thumbnail strip sits below it. The dialog itself (every game-state / zone /
+            card detail) is unchanged — only its trigger is the small chip. */}
         <StagedStepHeader historyTrigger={historyTrigger} />
-        <div className="chat-head">
-          <h1>Ask a Question</h1>
-          {!isSubmitting && !isFollowUpSubmitting && (
-            <div className="tools">
-              {frozenGameContext && (
-                <AdaptiveContextDialog
-                  triggerVariant="chip"
-                  triggerLabel={getFrozenGameContextTriggerLabel(frozenGameContext)}
-                  dialogLabel="Frozen game context"
+        <section className="chat" aria-label="Conversation">
+          <div className="chat-head">
+            <h1>Ask a Question</h1>
+            {!isSubmitting && !isFollowUpSubmitting && (
+              <div className="tools">
+                {frozenGameContext && (
+                  <AdaptiveContextDialog
+                    triggerVariant="chip"
+                    triggerLabel={getFrozenGameContextTriggerLabel(frozenGameContext)}
+                    dialogLabel="Frozen game context"
+                  >
+                    <FrozenGameContextDetails frozenGameContext={frozenGameContext} />
+                  </AdaptiveContextDialog>
+                )}
+                {/* REQ-209: back to the review with the game context, every card's details and the
+                    question exactly as they were; the answered thread leaves the screen, already
+                    saved to Question History. */}
+                <button
+                  type="button"
+                  onClick={onEditRequest}
+                  title="Change the cards or their details, then ask again"
+                  className="icon-chip motion-focus"
                 >
-                  <FrozenGameContextDetails frozenGameContext={frozenGameContext} />
-                </AdaptiveContextDialog>
-              )}
-              <button
-                type="button"
-                onClick={onStartOver}
-                aria-label="Start over — clears everything"
-                title="Start over — clears everything"
-                className="chat-icon-round motion-focus"
-              >
-                <span aria-hidden="true">↺</span>
-              </button>
+                  <span className="glyph" aria-hidden="true">
+                    ✎
+                  </span>
+                  Edit
+                </button>
+                <button
+                  type="button"
+                  onClick={onStartOver}
+                  aria-label="Start over — clears everything"
+                  title="Start over — clears everything"
+                  className="icon-round motion-focus"
+                >
+                  <span aria-hidden="true">↺</span>
+                </button>
+              </div>
+            )}
+          </div>
+
+          {frozenGameContext && (
+            <div className="chat-cards">
+              <span className="lbl">Cards</span>
+              {CANONICAL_ZONE_ORDER.flatMap((zone) => frozenGameContext.zones?.[zone] ?? []).map((card) => (
+                <span
+                  key={card.instanceId ?? card.cardId}
+                  className="thumb card-identity-ring"
+                  style={getCardIdentityRingStyle(card.colors)}
+                  aria-hidden="true"
+                >
+                  {card.imageUrl ? <img src={card.imageUrl} alt="" /> : null}
+                </span>
+              ))}
             </div>
           )}
-        </div>
 
-        {frozenGameContext && (
-          <div className="chat-cards">
-            <span className="lbl">Cards</span>
-            {CANONICAL_ZONE_ORDER.flatMap((zone) => frozenGameContext.zones?.[zone] ?? []).map((card) => (
-              <span key={card.instanceId ?? card.cardId} className="thumb" aria-hidden="true">
-                {card.imageUrl ? <img src={card.imageUrl} alt="" /> : null}
-              </span>
-            ))}
-          </div>
-        )}
-
-        <ConversationWorkspace
-          messages={visibleMessages}
-          pendingFeedback={isSubmitting ? <AskAiWaitingPanel isSubmitting={isSubmitting} /> : undefined}
-          error={error}
-          canRetry={canRetry}
-          retryLabel={retryLabel}
-          onRetry={onRetry}
-          isFollowUpSubmitting={isFollowUpSubmitting}
-          onFollowUp={onFollowUp}
-          onStartOver={onStartOver}
-          // The round ↺ in the head above now carries Start Over (requirement 10);
-          // the old text button under the follow-up box is retired.
-          showStartOver={false}
-          statusMessage={statusMessage}
-        />
+          <ConversationWorkspace
+            messages={visibleMessages}
+            pendingFeedback={isSubmitting ? <AskAiWaitingPanel isSubmitting={isSubmitting} /> : undefined}
+            error={error}
+            canRetry={canRetry}
+            retryLabel={retryLabel}
+            onRetry={onRetry}
+            isFollowUpSubmitting={isFollowUpSubmitting}
+            onFollowUp={onFollowUp}
+            onStartOver={onStartOver}
+            // The round ↺ in the head above carries Start Over; the old text button under the
+            // follow-up box is retired.
+            showStartOver={false}
+            statusMessage={statusMessage}
+          />
+        </section>
       </PageShell>
     );
   }
 
   return (
-    <PageShell>
+    <PageShell variant="narrow">
       <StagedStepHeader historyTrigger={historyTrigger} />
-      {stationsRail}
-      {/* Kept as a plain, visually-hidden-in-spirit heading: the mockup's Context step
-            has no generic eyebrow of its own (each plate's own h2 carries the card name
-            instead), but several integration tests use this exact heading as their "we
-            are on the Context station" marker. */}
-      <h2 className="sr-only">Context enrichment</h2>
+      <section className="idq">
+        {stationsRail}
+        {/* Kept as a plain, visually-hidden heading: the mockup's Context step has no generic
+            eyebrow of its own (each plate's own h2 carries the card name instead), but several
+            integration tests use this exact heading as their "we are on the Context station"
+            marker. */}
+        <h2 className="sr-only">Context enrichment</h2>
 
-      {totalCards === 0 ? (
-        <p className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 text-sm text-zinc-300">
-          Add at least one card by searching or scanning before decrypting.
-        </p>
-      ) : showSheet && currentEntry ? (
-        // Look-matching pass (slice N), requirement 3/8: one `.plate` (`#wizard-plate`,
-        // `in-depth-question.html:531-562`), its own way forward as the `.plate-next`
-        // foot ("Next card ›" / "OK — finish context" keeps its existing text —
-        // behaviour is unchanged, only the shell and foot style are new).
-        <div
-          data-accent-current="true"
-          className="plate enrichment-card-surface ambient-accent-surface ambient-accent-interactive"
-        >
-          <ul key={cardAnimKey} className="enrichment-card-enter">
-            {renderCompactSheet(currentEntry.zone, currentEntry.card)}
-          </ul>
-          <button type="button" onClick={handleNext} className="plate-next motion-hover motion-press motion-focus">
-            <span>{cardIndex < totalCards - 1 ? "OK — next card" : "OK — finish context"}</span>
-            <span className="chev" aria-hidden="true">
-              ›
-            </span>
-          </button>
-        </div>
-      ) : showReview && reviewGameContext ? (
-        // Look-matching pass (slice N), requirement 9: one plate, "Context reviewed ·
-        // N cards · Collapse ▴" (`in-depth-question.html:576-582`), with a
-        // capped-height scrolling list and zone filter pills.
-        <div
-          data-accent-current="false"
-          className="plate enrichment-card-surface ambient-accent-surface motion-success"
-        >
-          <p className="lede" style={{ margin: "0 0 0.5rem" }}>
-            Review your question&rsquo;s context.
-          </p>
-          <div className="review-plate-head">
-            <h2 style={{ margin: 0, textTransform: "none", fontSize: "1rem", color: "#e2e8f0" }}>
-              Context reviewed · {totalCards} {totalCards === 1 ? "card" : "cards"}
-            </h2>
-            <button type="button" className="link" onClick={() => setReviewCollapsed((c) => !c)}>
-              {reviewCollapsed ? "Expand ▾" : "Collapse ▴"}
-            </button>
-          </div>
-          {!reviewCollapsed && (
-            <>
-              {/* Look-matching pass (slice N), requirement 9: one-line rows — a
-                  30×42 thumbnail, name, zone tag, "cast by · targets" line, and a
-                  ✎ icon (`in-depth-question.html:1135-1140` `.row`). */}
-              <div className="review-list" ref={reviewListRef}>
-                {enrichmentQueue.map(({ zone, card }) => {
-                  const key = cardKey(zone, card.instanceId ?? card.cardId);
-                  const imageUrl = card.imageUrl?.trim() || undefined;
-                  return (
-                    <div
-                      key={key}
-                      className="review-row"
-                      data-dimmed={reviewZoneFilter != null && reviewZoneFilter !== zone}
-                      data-hit={reviewZoneFilter != null && reviewZoneFilter === zone}
-                    >
-                      {imageUrl ? (
-                        <img src={imageUrl} alt="" className="h-[42px] w-[30px] rounded object-cover" />
-                      ) : (
-                        <span aria-hidden="true" className="h-[42px] w-[30px] rounded bg-zinc-800" />
-                      )}
-                      <div className="min-w-0">
-                        <span className="font-semibold text-zinc-100">{card.name}</span>{" "}
-                        <span className="text-[0.68rem] font-semibold uppercase tracking-[0.08em] text-accent-soft">
-                          {ZONE_LABELS[zone]}
-                        </span>
-                        <p className="truncate text-xs text-zinc-400">{summarizeReviewCard(zone, card)}</p>
-                      </div>
+        <section className="idq-step" aria-label="Card context">
+          {totalCards === 0 ? (
+            <div className="plate">
+              <p className="lede">Add at least one card by searching or scanning before decrypting.</p>
+            </div>
+          ) : showSheet && currentEntry ? (
+            // `#wizard-plate`: one plate, its own way forward as the `.plate-next` foot.
+            <div
+              data-accent-current="true"
+              className="plate wizard-plate enrichment-card-surface ambient-accent-surface ambient-accent-interactive"
+            >
+              <ul key={cardAnimKey} className="enrichment-card-enter wizard-card-list">
+                {renderCompactSheet(currentEntry.zone, currentEntry.card)}
+              </ul>
+              <button
+                type="button"
+                aria-label={cardIndex < totalCards - 1 ? "OK — next card" : "OK — finish context"}
+                onClick={handleNext}
+                className="plate-next ctx-nav motion-hover motion-press motion-focus"
+              >
+                {cardIndex < totalCards - 1 ? (
+                  <span>Next card</span>
+                ) : (
+                  <span>
+                    Finish context<small>next: your question</small>
+                  </span>
+                )}
+                <span className="chev" aria-hidden="true">
+                  ›
+                </span>
+              </button>
+            </div>
+          ) : showReview && reviewGameContext ? (
+            // `#review-plate`: "Context reviewed · N cards · Collapse ▴", a capped-height scrolling
+            // list of one-line rows, and the zone filter pills at the foot.
+            <div
+              data-accent-current="false"
+              className="plate enrichment-card-surface ambient-accent-surface motion-success"
+            >
+              <div className="review-head">
+                <h2>
+                  Context reviewed · {totalCards} {totalCards === 1 ? "card" : "cards"}
+                </h2>
+                <button
+                  type="button"
+                  className="link"
+                  aria-expanded={!reviewCollapsed}
+                  onClick={() => setReviewCollapsed((c) => !c)}
+                >
+                  {reviewCollapsed ? "Expand ▾" : "Collapse ▴"}
+                </button>
+              </div>
+              {reviewCollapsed && (
+                <p className="review-sum">{enrichmentQueue.map(({ card }) => card.name).join(" · ")}</p>
+              )}
+              {!reviewCollapsed && (
+                <>
+                  {/* One-line rows: a 30×42 thumbnail, name, zone tag, the "cast by · targets" line,
+                    and a ✎ icon (`.review .row`). */}
+                  <div
+                    className="review"
+                    ref={reviewListRef}
+                    data-zone={reviewZoneFilter ?? undefined}
+                    data-more-below={reviewListOverflowing}
+                  >
+                    {enrichmentQueue.map(({ zone, card }) => {
+                      const key = cardKey(zone, card.instanceId ?? card.cardId);
+                      const imageUrl = card.imageUrl?.trim() || undefined;
+                      return (
+                        <div key={key} className="row" data-hit={reviewZoneFilter != null && reviewZoneFilter === zone}>
+                          <span
+                            className="thumb card-identity-ring"
+                            style={getCardIdentityRingStyle(card.colors)}
+                            aria-hidden="true"
+                          >
+                            {imageUrl ? <img src={imageUrl} alt="" /> : null}
+                          </span>
+                          <div className="min-w-0">
+                            <span className="nm">{card.name}</span> <span className="zone">{ZONE_LABELS[zone]}</span>
+                            <span className="what">{summarizeReviewCard(zone, card)}</span>
+                          </div>
+                          <button
+                            type="button"
+                            className="edit"
+                            aria-label={`Edit context for ${card.name}`}
+                            onClick={() => handleEditFromReview(zone, card)}
+                          >
+                            ✎
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {reviewListOverflowing && (
+                    <p className="review-count-line">
+                      {totalCards} {totalCards === 1 ? "card" : "cards"} · scroll the list for the rest
+                    </p>
+                  )}
+                  {populatedZoneSummaries.length > 1 && (
+                    <div className="review-filters" role="group" aria-label="Pick out a zone's cards">
                       <button
                         type="button"
-                        aria-label={`Edit context for ${card.name}`}
-                        onClick={() => handleEditFromReview(zone, card)}
-                        className="shrink-0 rounded-lg px-1.5 py-1 text-xs font-semibold text-accent-soft transition hover:text-accent-strong"
+                        aria-pressed={reviewZoneFilter == null}
+                        onClick={() => setReviewZoneFilter(null)}
                       >
-                        ✎
+                        All<b>{totalCards}</b>
                       </button>
+                      {populatedZoneSummaries.map(({ zone, count }) => (
+                        <button
+                          key={zone}
+                          type="button"
+                          aria-pressed={reviewZoneFilter === zone}
+                          onClick={() => setReviewZoneFilter(reviewZoneFilter === zone ? null : zone)}
+                        >
+                          {ZONE_LABELS[zone]}
+                          <b>{count}</b>
+                        </button>
+                      ))}
                     </div>
-                  );
-                })}
-              </div>
-              {reviewListOverflowing && (
-                <p className="mt-1 text-xs text-zinc-500">
-                  {totalCards} {totalCards === 1 ? "card" : "cards"} · scroll the list for the rest
-                </p>
+                  )}
+                </>
               )}
-              {populatedZoneSummaries.length > 1 && (
-                <div className="review-filters" role="group" aria-label="Pick out a zone's cards">
-                  <button
-                    type="button"
-                    className="review-filter-pill"
-                    aria-pressed={reviewZoneFilter == null}
-                    onClick={() => setReviewZoneFilter(null)}
-                  >
-                    All<b>{totalCards}</b>
-                  </button>
-                  {populatedZoneSummaries.map(({ zone, count }) => (
-                    <button
-                      key={zone}
-                      type="button"
-                      className="review-filter-pill"
-                      aria-pressed={reviewZoneFilter === zone}
-                      onClick={() => setReviewZoneFilter(reviewZoneFilter === zone ? null : zone)}
-                    >
-                      {ZONE_LABELS[zone]}
-                      <b>{count}</b>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </>
-          )}
-          {!question.trim() && (
-            // Look-matching pass (slice N, review 2 fix — Minor 5): the control this
-            // points at is the icon-only split pill now (`ComposerPill`,
-            // `submitLabel="Decrypt Stack"`, requirement 9) — it has no visible "Send
-            // Request" label any more, so the copy names the control by sight (the
-            // arrow) instead of a label that no longer exists. The accessible name
-            // ("Decrypt Stack") is unchanged.
-            <p className="mt-1 text-sm text-zinc-300">
-              No message needed — tap the arrow below when you&rsquo;re ready.
-            </p>
-          )}
-        </div>
-      ) : null}
-
-      {hasAnswer ? (
-        <div className="motion-success rounded-2xl border border-accent/40 bg-accent/10 p-4">
-          <p className="text-sm font-semibold text-accent-soft">Answer</p>
-          <p className="mt-2 whitespace-pre-wrap text-sm text-zinc-200">{answer}</p>
-        </div>
-      ) : isSubmitting ? (
-        <AskAiWaitingPanel isSubmitting={isSubmitting} />
-      ) : (
-        showQuestionForm && (
-          // Look-matching pass (slice N, review 1 fix — finding 3), requirement 9:
-          // "YOUR QUESTION — optional" with the same split-pill composer slice M
-          // built for Ask a Question (`ComposerPill`), replacing the "OPTIONAL
-          // QUESTION" box and its separate mic/send circles. Requirement 9: no
-          // separate summary panel — the zone-by-zone bullet list only still
-          // renders for the zero-cards edge case (nothing else on this screen
-          // names the zones then); once `reviewing` is true with cards present,
-          // the review plate above already shows every card's own zone tag plus
-          // the zone filter pills with their counts, so repeating the same
-          // information here in a second shape would be the redundant panel
-          // requirement 9 retires.
-          <div data-accent-current="true" className="enrichment-question-surface space-y-3">
-            {totalCards === 0 ? (
-              <div className="space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
-                <p className="text-sm font-semibold text-zinc-100">Sending to TheJudge</p>
-                <ul className="space-y-1 text-sm text-zinc-300">
-                  {populatedZoneSummaries.map(({ zone, count }) => (
-                    <li key={zone}>
-                      {ZONE_LABELS[zone]}: {count} {count === 1 ? "card" : "cards"}
-                    </li>
-                  ))}
-                  {stackSelectedButEmpty && <li className="text-zinc-400">Stack: selected, no cards added</li>}
-                </ul>
-              </div>
-            ) : (
-              stackSelectedButEmpty && (
-                // The review plate above already names every populated zone and its
-                // count via its own per-card tags and filter pills (requirement 9:
-                // no duplicate summary panel) — but it never lists a zone with 0
-                // cards, so this one line is the only place "Stack: selected, no
-                // cards added" still appears once there is something to review.
-                <p className="text-xs text-zinc-400">Stack: selected, no cards added</p>
-              )
-            )}
-            <div className="composer">
-              <span className="lbl q-lbl">
-                Your question
-                {!question.trim() && (
-                  <small>optional — blank asks &ldquo;{fallbackQuestion}&rdquo;</small>
-                )}
-              </span>
-              <ComposerPill
-                value={question}
-                onChange={onQuestionChange}
-                onSubmit={handleComposerSubmit}
-                maxLength={MAX_QUESTION_CHARS}
-                placeholder="How does this resolve?"
-                textareaAriaLabel="Optional question"
-                submitLabel="Decrypt Stack"
-                pendingLabel="Decrypting…"
-                isSubmitting={isSubmitting}
-                disabled={isSubmitting || !canDecrypt}
-                textareaRef={questionTextareaRef}
-                surfaceClassName="ambient-accent-surface ambient-accent-interactive"
-              />
             </div>
-          </div>
-        )
-      )}
+          ) : null}
 
-      {error && (
-        <div className="motion-error space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
-          <p className="text-sm text-rose-300">{error}</p>
-          <button
-            type="button"
-            disabled={!canRetry}
-            onClick={() => void onRetry()}
-            className="rounded-xl border border-rose-500/50 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {retryLabel}
-          </button>
-        </div>
-      )}
+          {hasAnswer ? (
+            <div className="plate motion-success">
+              <h2>Answer</h2>
+              <p className="whitespace-pre-wrap">{answer}</p>
+            </div>
+          ) : isSubmitting ? (
+            <AskAiWaitingPanel isSubmitting={isSubmitting} />
+          ) : (
+            showQuestionForm && (
+              // "YOUR QUESTION — optional" with the same split-pill composer Ask a Question uses
+              // (`ComposerPill`). The zone-by-zone list only renders for the zero-cards edge case
+              // (nothing else on this screen names the zones then); once a review is showing, its
+              // own zone tags and filter pills already say it.
+              <div data-accent-current="true" className="enrichment-question-surface idq">
+                {totalCards === 0 ? (
+                  <div className="plate">
+                    <h2>Sending to TheJudge</h2>
+                    <ul>
+                      {populatedZoneSummaries.map(({ zone, count }) => (
+                        <li key={zone}>
+                          {ZONE_LABELS[zone]}: {count} {count === 1 ? "card" : "cards"}
+                        </li>
+                      ))}
+                      {stackSelectedButEmpty && <li className="lede">Stack: selected, no cards added</li>}
+                    </ul>
+                  </div>
+                ) : (
+                  stackSelectedButEmpty && (
+                    // The review plate above never lists a zone with 0 cards, so this one line is
+                    // the only place "Stack: selected, no cards added" still appears once there is
+                    // something to review.
+                    <p className="carry-note">Stack: selected, no cards added</p>
+                  )
+                )}
+                <div className="composer">
+                  <span className="lbl q-lbl">
+                    Your question
+                    {!question.trim() && <small>optional — blank asks &ldquo;{fallbackQuestion}&rdquo;</small>}
+                  </span>
+                  <ComposerPill
+                    value={question}
+                    onChange={onQuestionChange}
+                    onSubmit={handleComposerSubmit}
+                    maxLength={MAX_QUESTION_CHARS}
+                    placeholder="How does this resolve?"
+                    textareaAriaLabel="Optional question"
+                    submitLabel="Decrypt Stack"
+                    pendingLabel="Decrypting…"
+                    isSubmitting={isSubmitting}
+                    disabled={isSubmitting || !canDecrypt}
+                    textareaRef={questionTextareaRef}
+                    surfaceClassName="ambient-accent-surface ambient-accent-interactive"
+                  />
+                </div>
+              </div>
+            )
+          )}
 
-      {statusMessage && (
-        <p className="motion-success rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
-          {statusMessage}
-        </p>
-      )}
+          {error && (
+            <div className="plate motion-error">
+              <p className="idq-error">{error}</p>
+              <button type="button" disabled={!canRetry} onClick={() => void onRetry()} className="btn">
+                {retryLabel}
+              </button>
+            </div>
+          )}
 
-      {/* Look-matching pass (slice N), requirement 3: the free-standing "Back to
-            zones" button is retired — the shared header ‹ is the only way back now. */}
+          {statusMessage && <p className="idq-status motion-success">{statusMessage}</p>}
+        </section>
+      </section>
     </PageShell>
   );
 }

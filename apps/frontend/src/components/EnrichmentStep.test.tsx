@@ -4,7 +4,8 @@ import type { ZoneCardItem } from "../types";
 import {
   renderEnrichment,
   renderEnrichmentWithDuplicates,
-  renderStatefulEnrichmentWithDuplicates
+  renderStatefulEnrichmentWithDuplicates,
+  singlePlayerGameContext
 } from "../test/enrichmentStep";
 import {
   getLastDictationInstance,
@@ -36,12 +37,13 @@ describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
     expect(button).not.toHaveTextContent("Decrypt Stack");
   });
 
-  it("adds a concise send-button pointer to the ready-state copy when the question is blank", async () => {
+  it("leaves the review without a send-button pointer: the mockup's own line is the question label", async () => {
     const user = renderEnrichment({ question: "" });
 
     await user.click(screen.getByRole("button", { name: "OK — finish context" }));
 
-    expect(screen.getByText(/tap the arrow below/i)).toBeInTheDocument();
+    expect(screen.queryByText(/tap the arrow below/i)).not.toBeInTheDocument();
+    expect(screen.getByText(/optional — blank asks/i)).toBeInTheDocument();
   });
 
   it("omits the send-button pointer from the ready-state copy when the question is non-blank", async () => {
@@ -88,7 +90,7 @@ describe("EnrichmentStep compact sheet (REQ-017)", () => {
     const user = renderEnrichment();
     await user.click(screen.getByRole("button", { name: "Skip to review" }));
 
-    expect(screen.getByText(/Review your question.s context\./)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Context reviewed · 1 card/ })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Edit context for Opt" })).toBeInTheDocument();
   });
 
@@ -192,7 +194,7 @@ describe("EnrichmentStep More details — Copies on a Stack card (REQ-211)", () 
 
     expect(screen.queryByRole("heading", { name: "More details" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "More details for Opt" })).toHaveTextContent(
-      "More details · +3 copies"
+      "More details 3 copies"
     );
   });
 
@@ -212,6 +214,42 @@ describe("EnrichmentStep More details — Copies on a Stack card (REQ-211)", () 
     await user.click(decrease);
     expect(screen.getByText("98")).toBeInTheDocument();
     expect(decrease).not.toBeDisabled();
+  });
+});
+
+describe("EnrichmentStep ruling ✎ Edit (REQ-209)", () => {
+  it("renders the ✎ Edit chip beside View context and Start over once a ruling exists, and reports a tap", async () => {
+    const onEditRequest = vi.fn();
+    const onStartOver = vi.fn();
+    const user = renderEnrichment({
+      isConversationActive: true,
+      answer: "Initial answer",
+      visibleMessages: [{ role: "assistant", content: "Initial answer" }],
+      frozenGameContext: singlePlayerGameContext,
+      onEditRequest,
+      onStartOver
+    });
+
+    const edit = screen.getByRole("button", { name: "Edit" });
+    expect(edit).toHaveClass("icon-chip");
+    const tools = edit.closest(".tools") as HTMLElement;
+    expect(tools).toContainElement(screen.getByRole("button", { name: /View context:/ }));
+    expect(tools).toContainElement(screen.getByRole("button", { name: "Start over — clears everything" }));
+
+    await user.click(edit);
+    expect(onEditRequest).toHaveBeenCalledTimes(1);
+    // Edit leaves the staged context alone: it never calls Start over.
+    expect(onStartOver).not.toHaveBeenCalled();
+  });
+
+  it("hides the chip while the ruling is still being written", () => {
+    renderEnrichment({
+      isConversationActive: true,
+      isSubmitting: true,
+      frozenGameContext: singlePlayerGameContext
+    });
+
+    expect(screen.queryByRole("button", { name: "Edit" })).not.toBeInTheDocument();
   });
 });
 

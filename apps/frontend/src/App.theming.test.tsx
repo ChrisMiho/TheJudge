@@ -291,8 +291,8 @@ describe("Accent token coverage for staged and answered semantic surfaces", () =
     // shell, matching the mockup's own `#review-plate` — no special accent tint), with
     // the zone filter pills reading the active palette's `--accent-soft` directly
     // rather than a fixed Tailwind hue.
-    const readyText = screen.getByText(/Review your question.s context\./);
-    const panel = readyText.closest("div");
+    const readyText = screen.getByRole("heading", { name: /Context reviewed/ });
+    const panel = readyText.closest(".plate");
     expect(panel).not.toBeNull();
     expect(panel!.className).toContain("plate");
     expect(panel!.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);

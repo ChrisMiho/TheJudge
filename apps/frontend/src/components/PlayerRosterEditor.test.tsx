@@ -142,10 +142,9 @@ describe("PlayerRosterEditor", () => {
       expect(triangle).not.toBeNull();
       expect(triangle!.querySelector("polygon")).not.toBeNull();
       expect(triangle!.getAttribute("aria-hidden")).toBe("true");
-      expect(control.textContent).toBe("");
-      expect(control.className).toContain("min-h-[2.75rem]");
-      // The triangle is the painted mass — no rectangular border/fill around it.
-      expect(control.className).not.toMatch(/\bborder-zinc|\bbg-zinc/);
+      // The roster toggle carries the count beside its triangle (the mockup's `.expander`); the
+      // secondary arrow is the triangle alone.
+      expect(control.textContent).toBe(control === rosterToggle ? "2 players" : "");
     }
 
     // Both controls share one treatment, so the painted geometry is identical.
@@ -172,8 +171,8 @@ describe("PlayerRosterEditor", () => {
 
     for (const name of ["Show player details", "Remove last player", "Add player"]) {
       const button = screen.getByRole("button", { name });
-      expect(button.className).toContain("min-h-[2.75rem]");
-      expect(button.className).toContain("min-w-[3.5rem]");
+      // `.btn` carries the 44px floor (REQ-205); `.stepper` is 44px wide.
+      expect(button.className).toContain("btn");
     }
   });
 
@@ -295,8 +294,7 @@ describe("PlayerRosterEditor", () => {
     expect(arrows).toHaveLength(2);
     for (const arrow of arrows) {
       expect(arrow).toHaveAttribute("aria-expanded", "false");
-      expect(arrow.className).toContain("min-h-[2.75rem]");
-      expect(arrow.className).toContain("min-w-[2.75rem]");
+      expect(arrow.className).toContain("link");
       expect(arrow).toHaveAccessibleName("Show secondary details for all players");
     }
   });

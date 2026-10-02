@@ -117,12 +117,10 @@ export function AdaptiveContextDialog({
           aria-haspopup="dialog"
           aria-expanded={isOpen}
           onClick={openDialog}
-          className="adaptive-context-trigger ambient-accent-surface ambient-accent-interactive w-full rounded-xl border border-zinc-700/70 bg-zinc-900/55 px-4 py-3 text-left text-sm font-semibold text-zinc-100"
+          className="adaptive-context-trigger ambient-accent-surface ambient-accent-interactive"
         >
-          <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-            View context
-          </span>
-          <span className="mt-1 block">{triggerLabel}</span>
+          <span className="adaptive-context-trigger-label">View context</span>
+          <span className="adaptive-context-trigger-value">{triggerLabel}</span>
         </button>
       )}
 
@@ -140,10 +138,10 @@ export function AdaptiveContextDialog({
               tabIndex={-1}
               data-accent-current="true"
               onKeyDown={handleDialogKeyDown}
-              className="adaptive-context-surface ambient-accent-surface border border-zinc-700 bg-zinc-950 text-zinc-100 shadow-2xl"
+              className="adaptive-context-surface ambient-accent-surface"
             >
-              <div className="adaptive-context-header flex items-center justify-between gap-3 border-b border-zinc-700/70">
-                <h2 id={titleId} className="text-base font-semibold text-zinc-100">
+              <div className="adaptive-context-header">
+                <h2 id={titleId}>
                   {dialogLabel}
                 </h2>
                 <OverlayCloseButton

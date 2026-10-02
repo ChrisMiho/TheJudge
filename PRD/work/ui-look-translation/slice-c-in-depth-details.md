@@ -1,6 +1,6 @@
 # Slice C — In-depth details
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -48,23 +48,23 @@ Also touched:
 
 ## Acceptance criteria
 
-Threshold for this slice: differing fraction at most 0.04 per pair (initial; measure first, lower it only with evidence, never raise it to or above 0.05). States to pair: game, zones, cards, placing, context, review, ruling.
+Threshold for this slice: differing fraction at most 0.04 per pair (measured maximum 0.0302 at tolerance 12; kept at 0.04, never raised to or above 0.05). States to pair: game, zones, cards, placing, context, review, ruling.
 
-- [ ] **C1** Side-by-side pairs exist at 390x844 and 1440x900 for every state (game, zones, cards, placing, context, review, ruling) in docs/design/ui-reimagining/build-screenshots/translation/in-depth/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated
-- [ ] **C2** `node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/in-depth/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.04 (itself below 0.05); every mask region is named with a reason
-- [ ] **C3** `npm run quality:check` is green
-- [ ] **C4** `npm --workspace apps/frontend run test` is green
-- [ ] **C5** `npm --workspace apps/backend run test` is green
-- [ ] **C6** REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md
-- [ ] **C7** REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md
-- [ ] **C8** Profile-switch pair: the cards state in two different Theme colours at 390x844 is saved as `cards-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/in-depth/, with every element recoloured and none left behind (observed)
-- [ ] **C9** Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice
-- [ ] **C10** Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/in-depth/ (absolute paths) is recorded in DIFF-RESULTS.md
-- [ ] **C11** The ruling shows a pencil Edit chip that returns to the review with every input kept, and the conversation is saved to Question History first (test plus observation)
-- [ ] **C12** Each of the seven states (Game, Zones, Cards with 6 cards in 3 zones, Placing with carried cards, Context with a target, Review with filter pills, Ruling) renders in mockup DOM order and every zone stays one tap away (REQ-018)
-- [ ] **C13** `EnrichmentStep.tsx` no longer carries `#e2e8f0` (grep count 0)
-- [ ] **C14** REQ-058 identity rings still render on every enrichment row (existing tests pass; observed in the Review pair)
-- [ ] **C15** `PRD/sections/` carries the REQ-209 edit, applied once
+- [x] **C1** Side-by-side pairs exist at 390x844 and 1440x900 for every state (game, zones, cards, placing, context, review, ruling) in docs/design/ui-reimagining/build-screenshots/translation/in-depth/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated
+- [x] **C2** `node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/in-depth/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.04 (itself below 0.05); every mask region is named with a reason
+- [x] **C3** `npm run quality:check` is green
+- [x] **C4** `npm --workspace apps/frontend run test` is green
+- [x] **C5** `npm --workspace apps/backend run test` is green
+- [x] **C6** REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md
+- [x] **C7** REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md
+- [x] **C8** Profile-switch pair: the cards state in two different Theme colours at 390x844 is saved as `cards-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/in-depth/, with every element recoloured and none left behind (observed)
+- [x] **C9** Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice
+- [x] **C10** Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/in-depth/ (absolute paths) is recorded in DIFF-RESULTS.md
+- [x] **C11** The ruling shows a pencil Edit chip that returns to the review with every input kept, and the conversation is saved to Question History first (test plus observation)
+- [x] **C12** Each of the seven states (Game, Zones, Cards with 6 cards in 3 zones, Placing with carried cards, Context with a target, Review with filter pills, Ruling) renders in mockup DOM order and every zone stays one tap away (REQ-018)
+- [x] **C13** `EnrichmentStep.tsx` no longer carries `#e2e8f0` (grep count 0)
+- [x] **C14** REQ-058 identity rings still render on every enrichment row (existing tests pass; observed in the Review pair)
+- [x] **C15** `PRD/sections/` carries the REQ-209 edit, applied once
 
 ## Verification
 
@@ -83,3 +83,10 @@ git diff -U0 "$BASE"..HEAD -- apps/frontend/src \
   | SKIP="$SKIP" awk '/^\+\+\+ /{f=substr($0,7); keep=(f !~ ENVIRON["SKIP"]); next} keep && /^\+/' \
   | grep -cE "$PAT"
 ```
+
+## Named deviations (recorded in `translation/in-depth/DIFF-RESULTS.md`)
+
+- REQ-018 over the mockup: the placing view shows all seven zones at once, not behind "Other zones ▾"; the mockup side of the pair is captured with it opened.
+- REQ-205 over the mockup: Context fields 44px (mockup 42px); small controls get a transparent 44px halo; the zone tabs stay 40px (a halo would be clipped by their scrolling strip) — for the owner's review.
+- REQ-137 and REQ-138 over the mockup's roster grids; REQ-100's per-player arrows kept.
+- REQ-208: the card menu stays on the shared pop-up shell, not the mockup's desktop pop-over; Copies stays a stepper inside the shared pop-up.

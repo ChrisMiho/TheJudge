@@ -177,9 +177,9 @@ describe("Interaction flows - submission and retry", () => {
 
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Zones in play" })).toBeInTheDocument();
     await advancePastZoneConfirm(user);
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeInTheDocument();
   });
 
   it("captures battlefield context and submits it in ask-ai payload", async () => {

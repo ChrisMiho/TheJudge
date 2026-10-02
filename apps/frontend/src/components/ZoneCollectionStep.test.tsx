@@ -162,7 +162,7 @@ describe("ZoneCollectionStep scan focus", () => {
     // REQ-209: a multi-card shelf also carries a reorder hint between the count and the
     // grid, so the grid is looked up directly rather than assumed to be the next sibling.
     const cardGrid = document.querySelector(".zone-card-grid");
-    expect(cardGrid).toHaveClass("zone-card-grid", "flex", "overflow-x-auto");
+    expect(cardGrid).toHaveClass("zone-card-grid", "shelf");
     expect(screen.getByText("Doom Blade")).toBeInTheDocument();
   });
 

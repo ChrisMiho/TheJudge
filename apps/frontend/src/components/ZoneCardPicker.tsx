@@ -1,5 +1,5 @@
-import { useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent } from "react";
-import { CardDetailPopup, CardPresentation } from "./CardPresentation";
+import { useRef, useState, type KeyboardEvent, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { CardDetailPopup } from "./CardPresentation";
 import { CardSelectionPreview } from "./CardSelectionPreview";
 import { ScanCameraSurface, type ScanCameraStatus } from "./ScanCameraSurface";
 import { ScanReviewBubble } from "./ScanReviewBubble";
@@ -67,6 +67,9 @@ type ZoneCardPickerProps = {
    * shelf's drag reorder use, so a button press and a drag land identically. */
   onReorderCard: (instanceId: string, toIndexAfterRemoval: number) => void;
   scan?: ZoneCardPickerScanProps;
+  /** The shelf's own way forward (the `.plate-next` foot) — it sits inside the same `.stage`
+   * as the shelf, as in `in-depth-question.html`'s `#shelf-stage`. */
+  children?: ReactNode;
 };
 
 type DragState = {
@@ -100,7 +103,8 @@ export function ZoneCardPicker({
   onRemoveCard,
   onMoveCard,
   onReorderCard,
-  scan
+  scan,
+  children
 }: ZoneCardPickerProps): JSX.Element {
   const isScanOpen = scan?.isOpen ?? false;
   const [menuInstanceId, setMenuInstanceId] = useState<string | null>(null);
@@ -180,19 +184,13 @@ export function ZoneCardPicker({
   }
 
   return (
-    <div data-accent-current="true" className="ambient-accent-surface space-y-4">
-      {!isScanOpen && zoneId === "stack" && (
-        <p className="text-xs text-zinc-400">
-          Stack order is bottom to top. The first card you add is the bottom; each new card is added on top.
-        </p>
-      )}
-
+    // `display: contents` wrapper: the picker as a whole is the current ambient-accent surface
+    // (the shared contract), while its search, preview and stage keep the mockup's own boxes.
+    <div data-accent-current="true" className="ambient-accent-surface idq-picker">
       {!isScanOpen && isSearchOpen && (
-        // Look-matching pass (slice N, review 1 fix — finding 3), requirement 6:
-        // the search popover (`in-depth-question.html:516-522`'s `.search-pop`/
-        // `.search-row`) — opened from the caller's own "＋ Add card" chip now,
-        // so Scan (previously inline here) moved to that same row under the rail.
-        <div className="search-pop" id="zone-card-search-pop">
+        // `in-depth-question.html`'s `.search-pop`/`.search-row`, opened from the caller's own
+        // "＋ Add card" chip: it sits between the shelf hint and the stage, as there.
+        <div className="search-pop open" id="zone-card-search-pop">
           <div className="search-row">
             <span className="glyph" aria-hidden="true">
               ⌕
@@ -209,9 +207,9 @@ export function ZoneCardPicker({
           {showSuggestions && (
             <div className="search-results">
               {isMetadataLoading ? (
-                <p className="px-2 py-1 text-sm text-zinc-400">Loading cards...</p>
+                <p className="px-2 py-1 text-sm">Loading cards...</p>
               ) : suggestions.length === 0 ? (
-                <p className="px-2 py-1 text-sm text-zinc-400">{noMatchCopy}</p>
+                <p className="px-2 py-1 text-sm">{noMatchCopy}</p>
               ) : (
                 suggestions.map((card, index) => (
                   <button
@@ -230,61 +228,14 @@ export function ZoneCardPicker({
         </div>
       )}
 
-      {isScanOpen && scan && (
-        <div className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-3">
-          {scan.isLoading ? (
-            <p className="rounded-xl border border-zinc-700 bg-zinc-950/40 px-3 py-2 text-sm text-zinc-300">
-              Loading scan data...
-            </p>
-          ) : (
-            <div className="relative">
-              <ScanCameraSurface
-                onCapture={() => undefined}
-                identify={scan.identify}
-                onStatusChange={scan.onCameraStatusChange}
-                onAcquisitionDiagnostic={scan.onAcquisitionDiagnostic}
-                convergence={scan.convergence}
-                confirmation={scan.addConfirmation}
-                debug={scan.scanDebug}
-                autoScanFps={3}
-              />
-              {/* REQ-214: a box with an ✕ above the camera's top-right corner — the only
-                  way out; closing commits the holding list below to this zone. */}
-              <button
-                type="button"
-                aria-label="Exit scan"
-                onClick={scan.onExitToManual}
-                className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-950/70 text-sm font-semibold text-zinc-200 shadow transition hover:bg-zinc-800"
-              >
-                <span aria-hidden="true">✕</span>
-              </button>
-              <ScanReviewBubble
-                entries={scan.heldEntries.map((entry) => ({
-                  id: entry.id,
-                  card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
-                  colors: entry.card.colors
-                }))}
-                onRemove={scan.onRemoveHeld}
-                destinationLabel={`the ${ZONE_LABELS[zoneId]}`}
-              />
-            </div>
-          )}
-          {scan.error && (
-            <p className="motion-error rounded-xl border border-red-500/50 bg-red-950/40 px-3 py-2 text-sm text-red-100">
-              {scan.error}
-            </p>
-          )}
-        </div>
-      )}
-
       {!isScanOpen && selectedCard && zoneId !== "stack" && (
-        <label className="flex flex-col gap-1 text-xs">
-          <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Card owner</span>
+        <label className="ctx-form">
+          <span className="t">Card owner</span>
           <select
             aria-label={`Owner for ${selectedCard.name}`}
             value={pendingOwner}
             onChange={(event) => onPendingOwnerChange(event.target.value as PlayerLabel)}
-            className="rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+            className="field"
           >
             {activePlayers.map((player) => (
               <option key={player} value={player}>
@@ -299,128 +250,196 @@ export function ZoneCardPicker({
         <CardSelectionPreview
           card={selectedCard}
           action={
-            <button
-              type="button"
-              onClick={onAddSelectedCard}
-              className="min-h-11 rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2 text-sm font-semibold text-accent-contrast shadow-md transition hover:opacity-90"
-            >
+            <button type="button" onClick={onAddSelectedCard} className="btn primary">
               {addButtonLabel}
             </button>
           }
         />
       )}
 
-      {/* Look-matching pass (slice N, review 2 fix — finding 1): the bordered box
-          round the shelf is dropped — the mockup's `.stage` (`in-depth-question.html:523`)
-          holds the shelf plainly, with no nested border of its own, and the shelf-hint
-          immediately above it (`ZoneCollectionStep.tsx`) is no longer rendered in here
-          either, since it now sits above the plate too. The "<Zone> cards (N)" sub-header
-          already retired at review 1 — the zone tab pill (`ZoneCollectionStep.tsx`)
-          shows this zone's own count in accent-soft, right next to the zone it names. */}
-      {!isScanOpen && cards.length > 0 && (
-        <div ref={shelfRef} className="zone-card-grid flex gap-2 overflow-x-auto pb-1">
-          {cards.map((card, index) => {
-            const instanceId = resolveInstanceId(card);
-            const isDragging = draggingInstanceId === instanceId;
-            return (
-              <div
-                key={card.instanceId ?? `${zoneId}-${card.cardId}-${index}`}
-                data-shelf-instance-id={instanceId}
-                // Look-matching pass (slice N), requirement 6/N5: the tile itself is the
-                // "Card actions" trigger now (`in-depth-question.html:174-195` `.shelf
-                // .card` — a tap opens the menu), replacing the old under-card text
-                // button; the accessible name is unchanged so this stays the same control
-                // by name, not a new one. ✕/ⓘ corner widgets below are quick actions that
-                // bypass the menu, matching `:233-243` `.card-widget`.
-                role="button"
-                tabIndex={0}
-                aria-label={`Card actions for ${card.name}`}
-                aria-haspopup="dialog"
-                aria-expanded={menuInstanceId === instanceId}
-                onClick={() => {
-                  if (!dragRef.current?.dragging) setMenuInstanceId(instanceId);
-                }}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" || event.key === " ") {
-                    event.preventDefault();
-                    setMenuInstanceId(instanceId);
-                  }
-                }}
-                className="card-identity-ring shelf-card zone-card-tile enrichment-card-enter card-state-remove relative flex w-40 shrink-0 cursor-pointer select-none touch-pan-x flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
-                style={{
-                  ...getCardIdentityRingStyle(card.colors),
-                  transform: isDragging ? `translateX(${dragOffsetX}px) translateY(-6px) scale(1.03)` : undefined,
-                  zIndex: isDragging ? 20 : undefined,
-                  transition: isDragging ? "none" : undefined
-                }}
-                onPointerDown={(event) => handlePointerDown(event, instanceId)}
-                onPointerMove={handlePointerMove}
-                onPointerUp={handlePointerUp}
-                onPointerCancel={handlePointerCancel}
-              >
-                {zoneId === "stack" && (
-                  <span className="shelf-card-pos" data-top={index === cards.length - 1}>
-                    {stackPositionTag(index, cards.length)}
-                  </span>
-                )}
+      {/* `#shelf-stage`: the shelf and the way forward on one panel. The stage always mounts —
+          it also holds the scan camera while scanning — and the foot hides during a scan. */}
+      <div className="stage" data-accent-current="true">
+        {isScanOpen && scan && (
+          <div className="scan-panel">
+            {scan.isLoading ? (
+              <p className="px-3 py-2 text-sm">Loading scan data...</p>
+            ) : (
+              <div className="relative">
+                <ScanCameraSurface
+                  onCapture={() => undefined}
+                  identify={scan.identify}
+                  onStatusChange={scan.onCameraStatusChange}
+                  onAcquisitionDiagnostic={scan.onAcquisitionDiagnostic}
+                  convergence={scan.convergence}
+                  confirmation={scan.addConfirmation}
+                  debug={scan.scanDebug}
+                  autoScanFps={3}
+                />
+                {/* REQ-214: a box with an ✕ above the camera's top-right corner — the only
+                    way out; closing commits the holding list below to this zone. */}
                 <button
                   type="button"
-                  aria-label={`Remove ${card.name}`}
-                  onClick={(event) => {
-                    event.stopPropagation();
-                    onRemoveCard(instanceId);
-                  }}
-                  className="shelf-card-widget remove card-state-remove-trigger motion-focus"
+                  aria-label="Exit scan"
+                  onClick={scan.onExitToManual}
+                  className="icon-round absolute right-3 top-3 z-10"
                 >
-                  <span aria-hidden="true">×</span>
+                  <span aria-hidden="true">✕</span>
                 </button>
-                {/* DEC-160/REQ-130: the tile keeps its fixed w-40 footprint and its place in
-                    the horizontal strip; only the image inside it grows, from the shared
-                    92px render to roughly the tile's interior width. `CardPresentation`
-                    already draws its own ⓘ corner widget and detail popup (requirement 6's
-                    second widget) — this tile adds only the ✕ beside it. */}
-                <CardPresentation card={card} className="w-full" imageClassName="zone-card-tile-image rounded" />
-                {/* Both overlays stop propagation so a click inside them never bubbles back
-                    up to the tile's own onClick (which would immediately reopen the menu
-                    it is in the middle of closing). */}
-                {menuInstanceId === instanceId && (
-                  <div onClick={(event) => event.stopPropagation()}>
-                    <ZoneCardMenu
-                      isOpen
-                      onClose={() => setMenuInstanceId(null)}
-                      card={card}
-                      zoneId={zoneId}
-                      cardIndex={index}
-                      cardCount={cards.length}
-                      onMoveTo={(toZone) => {
-                        setMenuInstanceId(null);
-                        onMoveCard(instanceId, toZone);
-                      }}
-                      onReorder={(toIndexAfterRemoval) => {
-                        setMenuInstanceId(null);
-                        onReorderCard(instanceId, toIndexAfterRemoval);
-                      }}
-                      onShowDetails={() => {
-                        setMenuInstanceId(null);
-                        setDetailInstanceId(instanceId);
-                      }}
-                      onRemove={() => {
-                        setMenuInstanceId(null);
+                <ScanReviewBubble
+                  entries={scan.heldEntries.map((entry) => ({
+                    id: entry.id,
+                    card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
+                    colors: entry.card.colors
+                  }))}
+                  onRemove={scan.onRemoveHeld}
+                  destinationLabel={`the ${ZONE_LABELS[zoneId]}`}
+                />
+              </div>
+            )}
+            {scan.error && (
+              <p className="motion-error idq-error" role="alert">
+                {scan.error}
+              </p>
+            )}
+          </div>
+        )}
+
+        {!isScanOpen && (
+          <div ref={shelfRef} className="shelf zone-card-grid" data-stack={zoneId === "stack"}>
+            {cards.length === 0 ? (
+              <div className="empty">
+                <div>
+                  <strong>{zoneId === "stack" ? "Begin stackening!" : `Nothing in ${ZONE_LABELS[zoneId]} yet`}</strong>
+                  Add a card with search or scan.
+                </div>
+              </div>
+            ) : (
+              cards.map((card, index) => {
+                const instanceId = resolveInstanceId(card);
+                const isDragging = draggingInstanceId === instanceId;
+                return (
+                  <div
+                    key={card.instanceId ?? `${zoneId}-${card.cardId}-${index}`}
+                    data-shelf-instance-id={instanceId}
+                    data-front="true"
+                    // The tile itself is the "Card actions" trigger (a tap opens the menu); the
+                    // ✕ and ⓘ corner widgets are quick actions that bypass it.
+                    role="button"
+                    tabIndex={0}
+                    aria-label={`Card actions for ${card.name}`}
+                    aria-haspopup="dialog"
+                    aria-expanded={menuInstanceId === instanceId}
+                    onClick={() => {
+                      if (!dragRef.current?.dragging) setMenuInstanceId(instanceId);
+                    }}
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        setMenuInstanceId(instanceId);
+                      }
+                    }}
+                    className={`card card-identity-ring zone-card-tile enrichment-card-enter card-state-remove${isDragging ? " dragging" : ""}`}
+                    style={{
+                      ...getCardIdentityRingStyle(card.colors),
+                      transform: isDragging ? `translate(${dragOffsetX}px, -8px) scale(1.04)` : undefined
+                    }}
+                    onPointerDown={(event) => handlePointerDown(event, instanceId)}
+                    onPointerMove={handlePointerMove}
+                    onPointerUp={handlePointerUp}
+                    onPointerCancel={handlePointerCancel}
+                  >
+                    <ShelfCardImage card={card} />
+                    {zoneId === "stack" && (
+                      <span className="pos" data-top={index === cards.length - 1}>
+                        {stackPositionTag(index, cards.length)}
+                      </span>
+                    )}
+                    <button
+                      type="button"
+                      aria-label={`Remove ${card.name}`}
+                      onClick={(event) => {
+                        event.stopPropagation();
                         onRemoveCard(instanceId);
                       }}
-                    />
+                      className="card-widget remove card-state-remove-trigger motion-focus"
+                    >
+                      <span aria-hidden="true">✕</span>
+                    </button>
+                    <button
+                      type="button"
+                      aria-label={`Show details for ${card.name}`}
+                      aria-haspopup="dialog"
+                      aria-expanded={detailInstanceId === instanceId}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        setDetailInstanceId(instanceId);
+                      }}
+                      className="card-widget info"
+                    >
+                      <span aria-hidden="true">ⓘ</span>
+                    </button>
+                    {/* Both overlays stop propagation so a click inside them never bubbles back
+                        up to the tile's own onClick (which would immediately reopen the menu
+                        it is in the middle of closing). */}
+                    {menuInstanceId === instanceId && (
+                      <div onClick={(event) => event.stopPropagation()}>
+                        <ZoneCardMenu
+                          isOpen
+                          onClose={() => setMenuInstanceId(null)}
+                          card={card}
+                          zoneId={zoneId}
+                          cardIndex={index}
+                          cardCount={cards.length}
+                          onMoveTo={(toZone) => {
+                            setMenuInstanceId(null);
+                            onMoveCard(instanceId, toZone);
+                          }}
+                          onReorder={(toIndexAfterRemoval) => {
+                            setMenuInstanceId(null);
+                            onReorderCard(instanceId, toIndexAfterRemoval);
+                          }}
+                          onShowDetails={() => {
+                            setMenuInstanceId(null);
+                            setDetailInstanceId(instanceId);
+                          }}
+                          onRemove={() => {
+                            setMenuInstanceId(null);
+                            onRemoveCard(instanceId);
+                          }}
+                        />
+                      </div>
+                    )}
+                    {detailInstanceId === instanceId && (
+                      <div onClick={(event) => event.stopPropagation()}>
+                        <CardDetailPopup card={card} onClose={() => setDetailInstanceId(null)} />
+                      </div>
+                    )}
                   </div>
-                )}
-                {detailInstanceId === instanceId && (
-                  <div onClick={(event) => event.stopPropagation()}>
-                    <CardDetailPopup card={card} onClose={() => setDetailInstanceId(null)} />
-                  </div>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      )}
+                );
+              })
+            )}
+          </div>
+        )}
+        {children}
+      </div>
     </div>
   );
+}
+
+/** A shelf tile's art: the card's own image, or — when none loads — its name alone
+ * (`flow.css`'s `.card .fallback`), reading no descriptive field and fetching nothing (D3). */
+function ShelfCardImage({ card }: { card: ZoneCardItem }): JSX.Element {
+  const [failed, setFailed] = useState(false);
+  const imageUrl = card.imageUrl?.trim() || undefined;
+  if (!imageUrl || failed) {
+    return (
+      <div className="fallback" data-testid="card-presentation-fallback">
+        <div>
+          <strong>{card.name}</strong>
+        </div>
+      </div>
+    );
+  }
+  return <img src={imageUrl} alt={card.name} className="zone-card-tile-image" onError={() => setFailed(true)} />;
 }

@@ -5348,8 +5348,8 @@
   - **a tap on a shelf card opens its menu**, built on the suite's one shared pop-up shell (REQ-208): the card's name; **Move to** as a wrap of pills for every other zone; an order control (Down/Up/To top on the Stack, Left/Right elsewhere) when the zone holds 2+ cards; **Card details** and **Remove from the <zone>** as rows
   - **Context** is REQ-017's compact sheet per card
   - **the review** lists each card's context in words with ✎ to jump back
-  - **the chat** is the shared workspace with the Cards strip, **View Context** beside the title, and the same bubble, wait, chips and send pill as Ask a Question; **✎ Edit** returns to the review with everything kept (the conversation is saved to history first); **↺ Start over** follows REQ-029
-  - tests cover rail navigation and the Context bounce, the carried-card guardrail and Leave out, drag and button reorder with tag renumbering, the Stack order reaching the request, and the menu's Move to and Remove
+  - **the chat** is the shared workspace with the Cards strip, **View Context** beside the title, and the same bubble, wait, chips and send pill as Ask a Question; **✎ Edit** renders beside View Context and ↺ Start over once a ruling exists and, mirroring Ask a Question's ✎ Edit cards (REQ-206), returns to the review with the game context, every card's details and the question exactly as they were — the answered conversation leaves the screen, already saved to Question History (REQ-103, REQ-213), and the next send starts a new conversation; **↺ Start over** follows REQ-029
+  - tests cover rail navigation and the Context bounce, the carried-card guardrail and Leave out, drag and button reorder with tag renumbering, the Stack order reaching the request, the menu's Move to and Remove, and ✎ Edit rendering once a ruling exists and returning to the review with everything kept and the conversation saved
 - Constraints:
   - every field today's staged flow collects is kept; the request contract is unchanged except as REQ-210 and REQ-211 separately decide
   - drag reorder is built on pointer events with no drag-and-drop library (NFR-004, NFR-006)
@@ -5365,13 +5365,16 @@
   - REQ-029
   - REQ-031
   - REQ-100
+  - REQ-103
   - REQ-108
   - REQ-206
   - REQ-208
+  - REQ-213
   - FLOW-001
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup rounds 2–14
   - built across the package's slices: slice D (this id's owning slice) builds the stations rail, the Cards shelf, carried-card placement, drag/button reorder and the card menu — `apps/frontend/src/components/StationsRail.tsx`, `ZoneCardMenu.tsx`, `ZoneCardPicker.tsx`, `ZoneCollectionStep.tsx`, `ZoneConfirmStep.tsx`, `EnrichmentStep.tsx` (rail slot), `lib/shelfDragReorder.ts`, `lib/stackTags.ts`, `portal/MtgAssistantApp.tsx` (carry consumption, placement handlers, rail guardrail); the Context sheet and review (slice E) and the chat's wait treatment (slice F) land afterward in the same package, so the description above is this id's complete intent, not a claim that slice D alone built it
+  - amended by `ui-look-translation` (2026-10-02): the ✎ Edit chip renders and mirrors Ask a Question's ✎ Edit cards (the first build's owner question 3; that build drew no Edit control)
 
 ### REQ-210
 - Title: Mana spent for every zone's cards

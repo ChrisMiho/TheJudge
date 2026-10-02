@@ -208,7 +208,8 @@ describe("ZoneCardPicker card grid", () => {
     );
     const grid = document.querySelector(".zone-card-grid");
     expect(grid).not.toBeNull();
-    expect(grid).toHaveClass("flex", "overflow-x-auto");
+    // `.shelf` is the mockup's own horizontal, region-scrolling strip.
+    expect(grid).toHaveClass("shelf");
     expect(grid).not.toHaveClass("grid", "grid-cols-2");
 
     // Tiles lay out left-to-right in add order.
@@ -248,7 +249,7 @@ describe("ZoneCardPicker card grid", () => {
 
     const image = screen.getByRole("img", { name: "Opt" });
     const tile = image.closest(".zone-card-tile") as HTMLElement;
-    expect(image).toHaveClass("zone-card-tile-image", "h-auto", "w-full", "object-contain");
+    expect(image).toHaveClass("zone-card-tile-image");
     expect(within(tile).queryByText("Opt")).not.toBeInTheDocument();
     // REQ-008/REQ-209: one card on the Stack reads TOP (not "bottom & top").
     expect(screen.getByText("TOP")).toBeInTheDocument();
@@ -268,7 +269,7 @@ describe("ZoneCardPicker card grid", () => {
     expect(screen.getByRole("img", { name: "Opt" })).toBeInTheDocument();
   });
 
-  it("keeps strip tiles at their fixed w-40 footprint while the image inside grows", () => {
+  it("keeps strip tiles on the mockup's fixed-width shelf while the image fills the tile", () => {
     renderPicker(
       { isOpen: false },
       {
@@ -281,16 +282,17 @@ describe("ZoneCardPicker card grid", () => {
 
     const tiles = document.querySelectorAll(".zone-card-tile");
     expect(tiles).toHaveLength(2);
-    // REQ-130/DEC-160: only the image grows. The tile keeps its fixed width and the strip
-    // stays one horizontal region-scrolling row in add order.
+    // REQ-130/DEC-160: the tile is the mockup's `.shelf .card` (a fixed `--tile-w` width, set by
+    // the shelf) and the image inside fills it; the strip stays one horizontal region-scrolling
+    // row in add order.
     tiles.forEach((tile) => {
-      expect(tile).toHaveClass("w-40", "shrink-0");
+      expect(tile).toHaveClass("card");
       const image = within(tile as HTMLElement).getByRole("img");
-      expect(image).toHaveClass("w-full");
+      expect(image).toHaveClass("zone-card-tile-image");
       expect(image.className).not.toMatch(/max-h-|\bw-auto\b/);
     });
     const grid = document.querySelector(".zone-card-grid");
-    expect(grid).toHaveClass("flex", "overflow-x-auto");
+    expect(grid).toHaveClass("shelf");
     expect(within(tiles[0] as HTMLElement).getByRole("img", { name: "Opt" })).toBeInTheDocument();
     expect(
       within(tiles[1] as HTMLElement).getByRole("img", { name: "Lightning Bolt" })
@@ -358,7 +360,7 @@ describe("ZoneCardPicker card grid", () => {
     expect(
       image.compareDocumentPosition(addButton) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
-    expect(addButton).toHaveClass("min-h-11");
+    expect(addButton).toHaveClass("btn", "primary");
   });
 
   it("does not duplicate the owner label on an image-bearing non-stack card", () => {
@@ -413,7 +415,7 @@ describe("ZoneCardPicker card grid", () => {
 
     const fallback = screen.getByTestId("card-presentation-fallback");
     const tile = fallback.closest(".zone-card-tile");
-    expect(fallback).toHaveClass("w-full");
+    expect(fallback).toHaveClass("fallback");
     expect(tile).toHaveClass("card-identity-ring");
     expect(tile).toHaveStyle(
       "--card-identity-ring: linear-gradient(90deg, rgb(248 231 185 / 0.55), rgb(14 165 233 / 0.55))"

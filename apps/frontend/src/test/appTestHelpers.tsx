@@ -402,7 +402,7 @@ export async function addCardToStack(
 }
 
 export async function clickDecryptStack(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  if (screen.queryByRole("heading", { name: "Add cards to zones" })) {
+  if (screen.queryByRole("region", { name: "Add cards to zones" })) {
     await advancePastZoneCollection(user);
   }
   if (!screen.queryByRole("button", { name: "Decrypt Stack" })) {

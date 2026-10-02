@@ -14,7 +14,8 @@ export type RosterPlayer = {
  * One disclosure treatment for every roster arrow: a full-size triangle whose painted
  * mass is the control, rotated rather than swapped for a second glyph. The previous
  * U+25B8/U+25BE text glyphs rendered as a few pixels of ink inside a wide boxed button,
- * so the box read as the control and the arrow was barely legible (REQ-135).
+ * so the box read as the control and the arrow was barely legible (REQ-135). The mockup's
+ * `.chev` (`in-depth-question.html`'s `.players-row .expander .chev`) rotates the same way.
  */
 function DisclosureTriangle({ isExpanded }: { isExpanded: boolean }): JSX.Element {
   return (
@@ -22,19 +23,12 @@ function DisclosureTriangle({ isExpanded }: { isExpanded: boolean }): JSX.Elemen
       aria-hidden="true"
       focusable="false"
       viewBox="0 0 16 16"
-      className={`h-5 w-5 fill-current transition-transform${isExpanded ? " rotate-90" : ""}`}
+      className={`chev h-3 w-3 fill-current transition-transform${isExpanded ? " rotate-90" : ""}`}
     >
       <polygon points="4,1 14,8 4,15" />
     </svg>
   );
 }
-
-/**
- * Shared disclosure-button chrome: a 44px-minimum hit area with no border or fill, so the
- * triangle above is the only painted mass.
- */
-const DISCLOSURE_CONTROL_CLASS =
-  "motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] items-center justify-center rounded-lg text-zinc-300 transition hover:text-zinc-50";
 
 export type PlayerRosterEditorProps = {
   players: RosterPlayer[];
@@ -80,84 +74,76 @@ export function PlayerRosterEditor({
   const extrasVisible = secondaryDisclosureControlled ? secondaryDetailsExpanded : true;
   return (
     <>
-      <div className="ambient-accent-surface ambient-accent-interactive flex items-center justify-between gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2">
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label={isExpanded ? "Hide player details" : "Show player details"}
-            aria-expanded={isExpanded}
-            onClick={onToggleExpanded}
-            className={`${DISCLOSURE_CONTROL_CLASS} min-w-[3.5rem]`}
-          >
-            <DisclosureTriangle isExpanded={isExpanded} />
-          </button>
-          <span className="text-sm font-semibold text-zinc-100">
+      <div className="players-row ambient-accent-surface ambient-accent-interactive">
+        <button
+          type="button"
+          aria-label={isExpanded ? "Hide player details" : "Show player details"}
+          aria-expanded={isExpanded}
+          onClick={onToggleExpanded}
+          className="btn expander motion-hover motion-press motion-focus"
+        >
+          <DisclosureTriangle isExpanded={isExpanded} />
+          <strong>
             {playerCount} {playerCount === 1 ? "player" : "players"}
-          </span>
-        </div>
-        <div className="flex gap-2">
-          <button
-            type="button"
-            aria-label="Remove last player"
-            onClick={onRemovePlayer}
-            disabled={playerCount <= MIN_PLAYER_ROSTER_SIZE}
-            className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-zinc-500 bg-zinc-800/70 px-4 py-1.5 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            −
-          </button>
-          <button
-            type="button"
-            aria-label="Add player"
-            onClick={onAddPlayer}
-            disabled={playerCount >= MAX_PLAYER_ROSTER_SIZE}
-            className="motion-hover motion-press motion-focus inline-flex min-h-[2.75rem] min-w-[3.5rem] items-center justify-center rounded-lg border border-accent/50 bg-accent/10 px-4 py-1.5 text-xs font-semibold text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            +
-          </button>
-        </div>
+          </strong>
+        </button>
+        <button
+          type="button"
+          aria-label="Remove last player"
+          onClick={onRemovePlayer}
+          disabled={playerCount <= MIN_PLAYER_ROSTER_SIZE}
+          className="btn stepper motion-hover motion-press motion-focus"
+        >
+          −
+        </button>
+        <button
+          type="button"
+          aria-label="Add player"
+          onClick={onAddPlayer}
+          disabled={playerCount >= MAX_PLAYER_ROSTER_SIZE}
+          className="btn stepper add motion-hover motion-press motion-focus"
+        >
+          +
+        </button>
       </div>
 
       {isExpanded && (
-        <div className="space-y-2">
+        <div className="roster" data-open="true" data-more={secondaryDetailsExpanded}>
           {players.map((player) => {
             const secondaryRegionId = `player-secondary-details-${player.label.replace(/\s+/g, "-").toLowerCase()}`;
             return (
-              <div
-                key={player.label}
-                className="space-y-2 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2 text-sm"
-              >
+              <div key={player.label} className="player-card">
                 {/* `min-w-0` on the row and on the growing name column: a flex child defaults
                     to `min-width: auto`, so the name input's intrinsic width acted as a floor
                     and pushed the row wider than its panel at phone widths — the row measured
                     322px inside a 288px box and the disclosure control rendered past the
                     panel's right border (DEC-128, REQ-106). */}
-                <div className="flex min-w-0 items-center gap-2">
-                  <label className="flex min-w-0 flex-1 flex-col gap-1">
-                    <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                      {player.label} name
-                    </span>
+                <div className="player min-w-0">
+                  <label className="min-w-0">
+                    {player.label} name
                     <input
                       aria-label={`${player.label} display name`}
                       value={player.displayName}
                       onChange={(event) => onDisplayNameChange(player.label, event.target.value)}
-                      className="motion-focus w-full min-w-0 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
+                      placeholder={player.label}
+                      className="field name w-full min-w-0"
                     />
                   </label>
                   {showLifeTotals && (
-                    <label className="flex flex-col items-end gap-1">
-                      <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                        Life total
-                      </span>
+                    <label>
+                      Life
                       <input
                         aria-label={`${player.label} life total`}
                         value={player.lifeTotal ?? ""}
                         onChange={(event) => onLifeTotalChange?.(player.label, event.target.value)}
                         inputMode="numeric"
-                        className="motion-focus w-20 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100"
+                        className="field life"
                       />
                     </label>
                   )}
-                  {renderPlayerExtras && secondaryDisclosureControlled && (
+                </div>
+                {renderPlayerExtras && secondaryDisclosureControlled && (
+                  <div className="player-more">
                     <button
                       type="button"
                       aria-expanded={secondaryDetailsExpanded}
@@ -168,14 +154,14 @@ export function PlayerRosterEditor({
                           : "Show secondary details for all players"
                       }
                       onClick={onToggleSecondaryDetails}
-                      className={`${DISCLOSURE_CONTROL_CLASS} min-w-[2.75rem] shrink-0`}
+                      className="link motion-focus"
                     >
                       <DisclosureTriangle isExpanded={secondaryDetailsExpanded} />
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
                 {renderPlayerExtras && extrasVisible && (
-                  <div id={secondaryRegionId} role="group" className="space-y-2">
+                  <div id={secondaryRegionId} role="group" className="extras">
                     {renderPlayerExtras(player)}
                   </div>
                 )}
