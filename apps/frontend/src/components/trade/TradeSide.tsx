@@ -171,10 +171,10 @@ export function TradeSide({
   return (
     <section
       aria-label={sideLabel}
-      className="tb-side"
+      className="side"
       data-active={isActiveOnPhone ? "true" : "false"}
     >
-      <div className="tb-side-head">
+      <div className="side-head">
         {isRenaming ? (
           <input
             autoFocus
@@ -187,20 +187,20 @@ export function TradeSide({
               if (event.key === "Enter") commitRename();
               if (event.key === "Escape") setIsRenaming(false);
             }}
-            className="motion-focus min-w-0 flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1 text-base font-semibold text-zinc-100"
+            className="name motion-focus"
           />
         ) : (
           <button
             type="button"
             aria-label={`Rename ${sideLabel}`}
             onClick={beginRename}
-            className="motion-focus truncate rounded-lg px-1 text-base font-semibold text-zinc-100 transition hover:text-accent-soft"
+            className="name motion-focus"
           >
             {sideLabel}
           </button>
         )}
         {!isScanOpen && (
-          <div className="tb-side-attach">
+          <div className="attach">
             <button
               type="button"
               aria-label="Add card"
@@ -231,20 +231,16 @@ export function TradeSide({
       </div>
 
       {scanNotice && (
-        <p role="status" className="text-sm text-amber-200">
+        <p role="status" className="tb-note">
           {scanNotice}
         </p>
       )}
 
       {isScanOpen ? (
-        <div className="space-y-3 rounded-xl border border-zinc-600 bg-zinc-950/40 p-3">
-          <p className="min-h-10 flex items-center text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-            {`Scanning onto ${sideLabel}`}
-          </p>
+        <div className="scan-panel">
+          <p className="scan-title">{`Scanning onto ${sideLabel}`}</p>
           {scan.isLoading ? (
-            <p className="rounded-xl border border-zinc-700 bg-zinc-950/40 px-3 py-2 text-sm text-zinc-300">
-              Loading scan data...
-            </p>
+            <p className="tb-note">Loading scan data...</p>
           ) : (
             <div className="relative">
               <ScanCameraSurface
@@ -263,7 +259,7 @@ export function TradeSide({
                 type="button"
                 aria-label="Exit scan"
                 onClick={scan.closeScan}
-                className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-950/70 text-sm font-semibold text-zinc-200 shadow transition hover:bg-zinc-800"
+                className="icon-round absolute right-3 top-3 z-10"
               >
                 <span aria-hidden="true">✕</span>
               </button>
@@ -279,14 +275,14 @@ export function TradeSide({
             </div>
           )}
           {scan.error && (
-            <p role="alert" className="text-sm text-amber-200">
+            <p role="alert" className="idq-error">
               {scan.error}
             </p>
           )}
         </div>
       ) : (
         isSearchOpen && (
-          <section className="search-pop" aria-label={`Add a card to ${sideLabel}`}>
+          <section className="search-pop open" aria-label={`Add a card to ${sideLabel}`}>
             <div className="search-row">
               <span className="glyph" aria-hidden="true">
                 ⌕
@@ -308,7 +304,7 @@ export function TradeSide({
             {pendingCard ? (
               <div className="search-results">
                 {pendingPrintings === null ? (
-                  <p className="px-2 py-1 text-sm text-zinc-400">Loading printings…</p>
+                  <p className="tb-note">Loading printings…</p>
                 ) : (
                   <PrintingPicker
                     cardName={pendingCard.name}
@@ -322,7 +318,7 @@ export function TradeSide({
               showSuggestionPanel && (
                 <div className="search-results">
                   {suggestions.length === 0 ? (
-                    <p className="px-2 py-1 text-sm text-zinc-400">{NO_MATCH_COPY}</p>
+                    <p className="tb-note">{NO_MATCH_COPY}</p>
                   ) : (
                     suggestions.map((suggestion) => (
                       <button
@@ -342,9 +338,9 @@ export function TradeSide({
       )}
 
       {entries.length === 0 ? (
-        <p className="tb-entry-empty">No cards on this side yet — add one, or scan it.</p>
+        <p className="entry-empty">No cards on this side yet — add one, or scan it.</p>
       ) : (
-        <ul className="tb-entries">
+        <ul className="entries">
           {entries.map((entry) => (
             <TradeEntryRow
               key={entry.instanceId}
@@ -365,7 +361,7 @@ export function TradeSide({
         </ul>
       )}
 
-      <div className="tb-side-foot">
+      <div className="side-foot">
         <span>{`${sideLabel} total `}</span>
         <b aria-label={`${sideLabel} total`}>{formatUsd(total)}</b>
       </div>

@@ -1,6 +1,6 @@
 # Slice D — Trade Balancer
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -42,21 +42,21 @@ Also touched:
 
 ## Acceptance criteria
 
-Threshold for this slice: differing fraction at most 0.04 per pair (initial; measure first, lower it only with evidence, never raise it to or above 0.05). States to pair: default-trade, printing-picker.
+Threshold for this slice: differing fraction at most 0.04 per pair (measured maximum 0.0148 at tolerance 12; kept at 0.04, never raised to or above 0.05). States to pair: default-trade, printing-picker.
 
-- [ ] **D1** Side-by-side pairs exist at 390x844 and 1440x900 for every state (default-trade, printing-picker) in docs/design/ui-reimagining/build-screenshots/translation/trade-balancer/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated
-- [ ] **D2** `node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/trade-balancer/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.04 (itself below 0.05); every mask region is named with a reason
-- [ ] **D3** `npm run quality:check` is green
-- [ ] **D4** `npm --workspace apps/frontend run test` is green
-- [ ] **D5** `npm --workspace apps/backend run test` is green
-- [ ] **D6** REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md
-- [ ] **D7** REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md
-- [ ] **D8** Profile-switch pair: the default-trade state in two different Theme colours at 390x844 is saved as `default-trade-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/trade-balancer/, with every element recoloured and none left behind (observed)
-- [ ] **D9** Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice
-- [ ] **D10** Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/trade-balancer/ (absolute paths) is recorded in DIFF-RESULTS.md
-- [ ] **D11** Adding the same printing and finish twice shows one row with quantity 2, a different printing or finish a separate row, and both side totals match the unmerged sum (test plus observation)
-- [ ] **D12** Both sides of the default trade and the printing picker render in mockup DOM order with REQ-215 tiers and verdict bands
-- [ ] **D13** `PRD/sections/` carries the REQ-215 edit, applied once
+- [x] **D1** Side-by-side pairs exist at 390x844 and 1440x900 for every state (default-trade, printing-picker) in docs/design/ui-reimagining/build-screenshots/translation/trade-balancer/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated
+- [x] **D2** `node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/trade-balancer/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.04 (itself below 0.05); every mask region is named with a reason
+- [x] **D3** `npm run quality:check` is green
+- [x] **D4** `npm --workspace apps/frontend run test` is green
+- [x] **D5** `npm --workspace apps/backend run test` is green
+- [x] **D6** REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md
+- [x] **D7** REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md
+- [x] **D8** Profile-switch pair: the default-trade state in two different Theme colours at 390x844 is saved as `default-trade-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/trade-balancer/, with every element recoloured and none left behind (observed)
+- [x] **D9** Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice
+- [x] **D10** Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/trade-balancer/ (absolute paths) is recorded in DIFF-RESULTS.md
+- [x] **D11** Adding the same printing and finish twice shows one row with quantity 2, a different printing or finish a separate row, and both side totals match the unmerged sum (test plus observation)
+- [x] **D12** Both sides of the default trade and the printing picker render in mockup DOM order with REQ-215 tiers and verdict bands
+- [x] **D13** `PRD/sections/` carries the REQ-215 edit, applied once
 
 ## Verification
 
@@ -75,3 +75,9 @@ git diff -U0 "$BASE"..HEAD -- apps/frontend/src \
   | SKIP="$SKIP" awk '/^\+\+\+ /{f=substr($0,7); keep=(f !~ ENVIRON["SKIP"]); next} keep && /^\+/' \
   | grep -cE "$PAT"
 ```
+
+## Named deviations (recorded in `translation/trade-balancer/DIFF-RESULTS.md`)
+
+- REQ-065 over the mockup: a search result opens the printing picker before the card is added.
+- The pile artwork (`TradePile`) is the app's own and is masked in the pairs; the price date line is masked (the app's date copy is pinned by tests).
+- The picker's hero and rows omit the mana cost and release year (the price route carries neither).

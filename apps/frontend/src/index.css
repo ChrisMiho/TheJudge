@@ -316,7 +316,11 @@ html {
    clip just moved one box up, where it costs nothing to look at. */
 
 .page-content-wide-fit {
+  width: min(56rem, 94vw);
   max-width: min(56rem, 94vw);
+  padding: 0.6rem 0 0;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
 }
@@ -3056,12 +3060,10 @@ body {
   opacity: 0.82;
 }
 
-/* Look-matching pass (slice O): Trade Balancer's screen, ported from
-   `trade-balancer.html` — the scale band (totals, piles, verdict), side
-   tabs/columns, one-line entry rows, and the side foot. `.icon-chip` (slice
-   M) and `.search-pop`/`.search-row`/`.search-results` (slice M) are reused
-   as-is for the "＋ Add card"/"▣ Scan" row and its popover — no new chip or
-   search-field classes here. */
+/* Trade Balancer (ui-look-translation, slice D): a port of `trade-balancer.html`'s own stylesheet,
+   selector for selector, with every colour, surface and shadow read from the token layer
+   (REQ-216). The screen fits the viewport through `.page-shell-fit` (above), not the mockup's
+   measured `--chrome`; the pile artwork (`TradePile`) stays as it was. */
 
 .tb {
   display: flex;
@@ -3071,11 +3073,40 @@ body {
   min-height: 0;
 }
 
-/* `trade-balancer.html:30-42` the scale: both sides' totals and piles in one
-   band, replacing the gold-pile verdict panel. */
+@media (min-width: 720px) {
+  .tb {
+    margin-bottom: 2.25rem;
+  }
+}
 
-.tb-scale {
+@media (max-width: 719px) {
+  .tb {
+    padding-bottom: 0.6rem;
+  }
+}
+
+.asof {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.flow-head .asof {
+  display: none;
+}
+
+@media (max-width: 719px) {
+  .header-side .asof {
+    display: none;
+  }
+  .flow-head .asof {
+    display: inline;
+  }
+}
+
+.scale {
   position: relative;
+  overflow: hidden;
   flex: 0 0 auto;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -3083,69 +3114,78 @@ body {
   gap: 0.5rem;
   padding: 0.55rem 0.8rem 0.5rem;
   border-radius: 0.9rem;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
-  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-panel);
 }
 
-.tb-pan {
+.scale > * {
+  position: relative;
+  z-index: 1;
+}
+
+.pan {
   display: grid;
   gap: 0;
   min-width: 0;
 }
 
-.tb-pan.b {
+.pan.b {
   text-align: right;
 }
 
-.tb-pan-label {
+.pan .label {
   font-size: 0.64rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #a1a1aa;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.tb-pan-total {
+.pan .total {
   font-size: 1.35rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
   line-height: 1.15;
   transition: color 200ms ease;
+  font-family: var(--font-display);
 }
 
-.tb-pan[data-heavy="true"] .tb-pan-total {
+.pan[data-heavy="true"] .total {
   color: var(--accent-soft);
   text-shadow: 0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent);
 }
 
-.tb-pan-count {
+.pan .count {
   font-size: 0.68rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
-.tb-piles-wrap {
+.piles-wrap {
   display: grid;
   justify-items: center;
   gap: 0.1rem;
   min-width: 200px;
 }
 
-.tb-piles {
+.piles {
   display: flex;
   align-items: flex-end;
   justify-content: center;
   gap: 0.4rem;
 }
 
-.tb-pile {
-  width: 132px;
-  height: 73px;
+.pile {
+  width: 120px;
+  height: 67px;
+  display: block;
+  overflow: visible;
+  transition: filter 300ms ease, opacity 300ms ease;
 }
 
-.tb-verdict {
+.verdict {
   font-size: 0.9rem;
   font-weight: 700;
   text-align: center;
@@ -3154,71 +3194,75 @@ body {
   font-family: Georgia, "Times New Roman", serif;
   font-style: italic;
   letter-spacing: 0.01em;
-  color: #e2e8f0;
 }
 
-.tb-verdict small {
+.verdict[data-even="true"] {
+  color: var(--accent-soft);
+}
+
+.verdict small {
   display: block;
-  font-family: inherit;
+  font-family: var(--font-body);
   font-style: normal;
   font-weight: 600;
   font-size: 0.72rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
 
-@media (min-width: 768px) {.tb-scale {
+@media (min-width: 720px) {
+  .scale {
     padding: 0.6rem 1.1rem;
   }
-
-.tb-pan-total {
+  .pan .total {
     font-size: 1.6rem;
   }
-
-.tb-piles-wrap {
+  .piles-wrap {
     min-width: 320px;
   }
-
-.tb-piles {
-    gap: 1.2rem;
-  }
-
-.tb-pile {
+  .pile {
     width: 196px;
     height: 109px;
   }
+  .piles {
+    gap: 1.2rem;
+  }
 }
 
-@media (max-width: 767px) {.tb-scale {
+@media (max-width: 719px) {
+  .scale {
     grid-template-columns: 1fr 1fr;
     gap: 0.2rem 0.5rem;
     padding-top: 0.4rem;
   }
-
-.tb-piles-wrap {
+  .piles-wrap {
     grid-column: 1 / -1;
     grid-row: 1;
     min-width: 0;
   }
+  .pile {
+    width: 132px;
+    height: 73px;
+  }
+  .piles {
+    gap: 0.6rem;
+  }
 }
 
-/* `trade-balancer.html:84-93` side tabs on phone, two columns on desktop
-   (REQ-204). */
-
-.tb-side-tabs {
+.side-tabs {
   display: flex;
   gap: 0.4rem;
   flex: 0 0 auto;
 }
 
-.tb-side-tabs button {
+.side-tabs button {
   flex: 1;
   min-height: 42px;
   border-radius: 0.7rem;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  border: 1px solid var(--surface-edge);
   background: transparent;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 0.88rem;
   cursor: pointer;
   display: flex;
@@ -3227,54 +3271,56 @@ body {
   align-items: center;
 }
 
-.tb-side-tabs button b {
+.side-tabs button b {
   color: var(--accent-soft);
   font-variant-numeric: tabular-nums;
 }
 
-.tb-side-tabs button[aria-selected="true"] {
-  color: #f4f4f5;
+.side-tabs button[aria-selected="true"] {
+  color: var(--text-primary);
   border-color: var(--accent-soft);
-  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
   box-shadow: var(--glow-soft-16);
 }
 
-.tb-sides {
+.sides {
   display: grid;
   gap: 0.6rem;
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.tb-side {
+.side {
   display: none;
+}
+
+.side[data-active="true"] {
+  display: flex;
+}
+
+@media (min-width: 720px) {
+  .side-tabs {
+    display: none;
+  }
+  .sides {
+    grid-template-columns: 1fr 1fr;
+  }
+  .side {
+    display: flex !important;
+  }
+}
+
+.side {
   flex-direction: column;
   min-height: 0;
   gap: 0.5rem;
   padding: 0.6rem 0.7rem;
   border-radius: 1rem;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
-  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-panel);
 }
 
-.tb-side[data-active="true"] {
-  display: flex;
-}
-
-@media (min-width: 768px) {.tb-side-tabs {
-    display: none;
-  }
-
-.tb-sides {
-    grid-template-columns: 1fr 1fr;
-  }
-
-.tb-side {
-    display: flex !important;
-  }
-}
-
-.tb-side-head {
+.side-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3282,46 +3328,105 @@ body {
   flex: 0 0 auto;
 }
 
-.tb-side-attach {
+.side-head .name {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed transparent;
+  color: var(--text-primary);
+  padding: 0.1rem 0;
+  width: 8rem;
+  min-width: 0;
+}
+
+.side-head .name:hover, .side-head .name:focus {
+  border-bottom-color: var(--accent-soft);
+  outline: none;
+}
+
+.side-head .attach {
   display: flex;
   gap: 0.35rem;
 }
 
-.tb-entries {
-  display: flex;
-  flex-direction: column;
+.side-head .icon-chip {
+  min-height: 38px;
+  font-size: 0.8rem;
+  padding: 0 0.6rem;
+}
+
+.side .search-pop {
+  flex: 0 0 auto;
+}
+
+.side .search-results {
+  max-height: 108px;
+}
+
+.entries {
+  display: grid;
   gap: 0.4rem;
+  align-content: start;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   padding: 2px 2px 2px 0;
+  scrollbar-width: thin;
 }
 
-.tb-entry {
+.entry {
   display: grid;
   grid-template-columns: 44px 1fr auto;
   gap: 0.55rem;
   align-items: center;
   padding: 0.4rem 0.45rem;
   border-radius: 0.7rem;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  border: 1px solid var(--surface-edge);
   background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
+  animation: msg-in 260ms ease both;
 }
 
-.tb-entry-card {
+.entry .card {
+  position: relative;
   width: 44px;
   height: 61px;
   border-radius: 4px;
-  object-fit: contain;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--tb-shadow-2);
 }
 
-.tb-entry-info {
+.entry .card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.entry[data-foil="true"] .card::after {
+  content: "";
+  position: absolute;
+  inset: -40% -60%;
+  background: var(--foil-sheen);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: foil 3.2s ease-in-out infinite;
+}
+
+@keyframes foil {
+  0%, 100% { transform: translateX(-30%);
+  } 50% { transform: translateX(30%);
+  };
+}
+
+.entry .info {
   min-width: 0;
   display: grid;
   gap: 0.12rem;
 }
 
-.tb-entry-name {
+.entry .nm {
   font-weight: 600;
   font-size: 0.88rem;
   white-space: nowrap;
@@ -3329,15 +3434,15 @@ body {
   text-overflow: ellipsis;
 }
 
-.tb-entry-printing {
+.entry .printing {
   font-size: 0.7rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.tb-entry-printing-link {
+.entry .printing button {
   background: transparent;
   border: 0;
   color: var(--accent-soft);
@@ -3347,76 +3452,70 @@ body {
   text-decoration: underline dotted;
 }
 
-.tb-entry-printing-link:disabled {
-  opacity: 0.5;
-  cursor: default;
+.entry .printing .only {
+  color: var(--text-muted);
 }
 
-.tb-entry-printing-only {
-  color: #a1a1aa;
-}
-
-.tb-entry-controls {
+.entry .controls {
   display: flex;
   align-items: center;
   gap: 0.25rem;
   margin-top: 0.1rem;
 }
 
-.tb-entry-ctl {
+.entry .ctl {
   min-width: 30px;
   min-height: 30px;
   padding: 0 0.4rem;
   border-radius: 0.45rem;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  border: 1px solid var(--surface-edge);
   background: transparent;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 0.74rem;
   cursor: pointer;
 }
 
-.tb-entry-ctl[aria-pressed="true"] {
+.entry .ctl[aria-pressed="true"] {
   border-color: var(--accent-soft);
-  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel));
   color: var(--accent-soft);
 }
 
-.tb-entry-ctl:disabled {
+.entry .ctl:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-.tb-entry-qty {
+.entry .qty {
   min-width: 1.3rem;
   text-align: center;
   font-variant-numeric: tabular-nums;
   font-size: 0.82rem;
 }
 
-.tb-entry-money {
+.entry .money {
   display: grid;
   justify-items: end;
   gap: 0.05rem;
   align-self: start;
 }
 
-.tb-entry-line {
+.entry .money .line {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-size: 0.95rem;
-  color: #e2e8f0;
 }
 
-.tb-entry-unit {
+.entry .money .unit {
   font-size: 0.66rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   white-space: nowrap;
 }
 
-.tb-entry-remove {
+.entry .x {
   border: 0;
   background: transparent;
-  color: #a1a1aa;
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 0.85rem;
   min-width: 30px;
@@ -3424,75 +3523,112 @@ body {
   margin-top: 0.1rem;
 }
 
-.tb-entry-remove:hover {
-  color: #f4f4f5;
+.entry .x:hover {
+  color: var(--text-primary);
 }
 
-.tb-entry-empty {
+.entry-empty {
   padding: 1.2rem 1rem;
   text-align: center;
   font-size: 0.85rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   border: 1px dashed color-mix(in srgb, var(--accent-soft) 45%, transparent);
   border-radius: 0.75rem;
 }
 
-.tb-side-foot {
+.side-foot {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   font-size: 0.8rem;
-  color: #a1a1aa;
-  border-top: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  color: var(--text-muted);
+  border-top: 1px solid var(--surface-edge);
   padding-top: 0.45rem;
   flex: 0 0 auto;
 }
 
-.tb-side-foot b {
-  color: #f4f4f5;
+.side-foot b {
+  color: var(--text-primary);
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-display);
   margin-left: 0.4rem;
 }
 
-/* The printing picker's rows (REQ-065) — paired with slice L's
-   `.card-detail-hero*` for the art-crop header above (`PrintingPicker.tsx`). */
+.flow-head .head-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
 
-.tb-printing-list {
+@media (max-width: 719px) {
+  .flow-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.1rem 0.5rem;
+  }
+  .flow-head h1 {
+    grid-column: 1;
+  }
+  .flow-head .head-tools {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .flow-head .asof {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+.pp-filter {
+  margin: 0 0 0.2rem;
+}
+
+.pp-filter[hidden] {
+  display: none;
+}
+
+.pp-lede {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.printing-list {
   display: grid;
   gap: 0.45rem;
 }
 
-.tb-printing-row {
+.printing-row {
   display: grid;
   grid-template-columns: 44px 1fr;
   gap: 0.7rem;
   align-items: center;
   padding: 0.55rem 0.6rem;
   border-radius: 0.8rem;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  border: 1px solid var(--surface-edge);
   background: color-mix(in srgb, var(--surface-ground) 40%, transparent);
 }
 
-.tb-printing-row[data-current="true"] {
+.printing-row[data-current="true"] {
   border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
-  background: color-mix(in srgb, var(--accent) 14%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-panel));
 }
 
-.tb-printing-thumb {
+.printing-row .thumb {
   width: 44px;
   height: 61px;
   border-radius: 3px;
-  object-fit: contain;
 }
 
-.tb-printing-set {
+.printing-row .set {
   display: grid;
   gap: 0.3rem;
   min-width: 0;
 }
 
-.tb-printing-set-name {
+.printing-row .set .n {
   font-weight: 600;
   font-size: 0.88rem;
   white-space: nowrap;
@@ -3500,57 +3636,177 @@ body {
   text-overflow: ellipsis;
 }
 
-.tb-printing-set-name small {
+.printing-row .set .n small {
   display: block;
   font-weight: 500;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 0.7rem;
   letter-spacing: 0.04em;
   margin-top: 0.1rem;
 }
 
-.tb-printing-finishes {
+.printing-row .finishes {
   display: flex;
   gap: 0.35rem;
 }
 
-.tb-finish {
+.finish {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   min-height: 32px;
   padding: 0 0.6rem;
   border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  border: 1px solid var(--surface-edge);
   background: transparent;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 0.78rem;
   cursor: pointer;
   font-variant-numeric: tabular-nums;
 }
 
-.tb-finish small {
-  color: #a1a1aa;
+.finish small {
+  color: var(--text-muted);
   font-size: 0.68rem;
 }
 
-.tb-finish b {
+.finish b {
   font-weight: 700;
 }
 
-.tb-finish[aria-current="true"] {
+.finish[aria-pressed="true"] {
   border-color: var(--accent-soft);
-  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  background: color-mix(in srgb, var(--accent) 26%, var(--surface-panel));
   box-shadow: var(--glow-soft-12);
 }
 
-.tb-finish[aria-current="true"] b {
+.finish[aria-pressed="true"] b {
   color: var(--accent-soft);
 }
 
-.tb-finish:disabled {
+.finish:disabled {
   opacity: 0.45;
   cursor: default;
+}
+
+.finish.foil::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--foil-dot);
+}
+
+/* Trade Balancer pieces the mockup page does not draw */
+
+/* REQ-205 wins over the mockup's small controls: a transparent halo makes each hit area 44px
+   without changing the look. */
+.entry .ctl,
+.entry .x,
+.entry .printing button,
+.finish,
+.side-tabs button,
+.side-head .icon-chip,
+.side-head .name,
+.flow-head .head-tools .icon-chip {
+  position: relative;
+}
+
+.entry .ctl::after,
+.entry .x::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+}
+
+.entry .printing button::after {
+  content: "";
+  position: absolute;
+  inset: -14px -4px;
+}
+
+.finish::after {
+  content: "";
+  position: absolute;
+  inset: -6px 0;
+}
+
+.side-tabs button::after {
+  content: "";
+  position: absolute;
+  inset: -1px 0;
+}
+
+.side-head .icon-chip::after,
+.flow-head .head-tools .icon-chip::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+}
+
+.side-head .name::after {
+  content: "";
+  position: absolute;
+  inset: -11px 0;
+}
+
+.tb-note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.side .scan-panel {
+  display: grid;
+  gap: 0.75rem;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.side .scan-title {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.side-head .name {
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+}
+
+.entry .card {
+  display: block;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.entry-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--status-warn) 45%, transparent);
+  background: color-mix(in srgb, var(--status-warn) 8%, transparent);
+  color: var(--status-warn);
+  font-size: 0.74rem;
+}
+
+.entry-error p {
+  margin: 0;
+}
+
+.entry .money .line.missing {
+  color: var(--status-warn);
 }
 
 @keyframes scan-confirm-pop {
