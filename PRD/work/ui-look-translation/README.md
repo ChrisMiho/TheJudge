@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # ui-look-translation
 
@@ -18,3 +18,23 @@ Design: `DESIGN-BRIEF.md`. Proposal for the define gate: `GATE-QUESTIONS.md` (14
 - Quality-check: PASS
 - Checked artifact: `PRD/work/ui-look-translation/DESIGN-BRIEF.md`
 - Findings: none (attempt 3, 2026-10-02 — re-grade after the owner's 14 verdicts were applied: brief and REQ-079 retire block agree, retire diff complete and line-level against this checkout (92 removed lines matched, `screen-layout.md` zero hits), 13 accept blocks unchanged, per-slice criteria concrete, REQ-216 cited; trivial fix applied: brief owner paragraph counts four look rules, not five)
+
+## Slices
+
+Plan: `GAMEPLAN.md`. Criteria: `slice-<letter>.criteria.json`.
+
+| Slice | Doc | Mockup page | Depends on | Gate blocks applied |
+| --- | --- | --- | --- | --- |
+| A Frame | `slice-a-frame.md` | `shared-chrome-menu.html` | none | NFR-006, REQ-207, REQ-216 |
+| B Ask a Question | `slice-b-ask-a-question.md` | `quick-question.html` | A | FLOW-011, REQ-124, REQ-079 (retire), REQ-070, REQ-206, REQ-167 |
+| C In-depth details | `slice-c-in-depth-details.md` | `in-depth-question.html` | A | REQ-209 |
+| D Trade Balancer | `slice-d-trade-balancer.md` | `trade-balancer.html` | A | REQ-215 |
+| E Card scanner | `slice-e-card-scanner.md` | `card-scan.html` | A | REQ-214 |
+| F Life Tracker menus | `slice-f-life-tracker-menus.md` | `life-tracker-menus.html` | A | REQ-202, REQ-082 |
+
+## Implementation map
+
+- Stylesheet layer: `apps/frontend/src/styles/{tokens,shell,flow,ambience}.css` (A); scene: `components/AmbientScene.tsx` (A); header and shared sheets (A).
+- Compare script: `scripts/compare-screenshot-pair.mjs` and `.test.mjs` (A).
+- Screens: Ask a Question (B), In-depth (C), Trade Balancer (D), scanner (E), Life Tracker menus (F).
+- Captures and `DIFF-RESULTS.md`: `docs/design/ui-reimagining/build-screenshots/translation/<screen>/` (outside `PRD/work/`).
