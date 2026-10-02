@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [ui-look-translation](ui-look-translation/) | Brief + 14 gate blocks ready: port the direction-1 mockup's stylesheets and canvas scene so each screen matches it; builds on PR #239 |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [ui-look-translation](ui-look-translation/) | Quality-check FAIL: REQ-216 grep exemption, scanner screen-layout row, pixel-script owner; builds on PR #239 |
 
 ## ideation
 
