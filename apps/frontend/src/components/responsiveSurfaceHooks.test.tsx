@@ -49,15 +49,22 @@ describe("Frontend - Responsive surface hooks", () => {
     expect(appCss).toMatch(/--layout-surface-gap:\s*clamp\([^;]+\);/);
     expect(appCss).toMatch(/--layout-compact-gap:\s*clamp\([^;]+\);/);
     expect(appCss).toMatch(/\.page-shell \{[^}]*var\(--layout-page-padding-inline\)/s);
-    expect(appCss).toMatch(/\.page-card \{[^}]*gap:\s*var\(--layout-surface-gap\)/s);
-    expect(appCss).toMatch(/\.page-card \{[^}]*padding:\s*var\(--layout-panel-padding\)/s);
+    // Look-matching pass (slice L): `.page-content` replaces `.page-card` (no more
+    // bordered card frame) but keeps the same spacing vocabulary.
+    expect(appCss).toMatch(/\.page-content \{[^}]*gap:\s*var\(--layout-surface-gap\)/s);
+    expect(appCss).toMatch(/\.page-content \{[^}]*padding:\s*var\(--layout-panel-padding\)/s);
     expect(appCss).toMatch(/\.panel-inner \{[^}]*var\(--layout-content-padding\)/s);
   });
 
   it("uses automatic mobile-first rules with no density selector", () => {
     expect(appCss).not.toContain("data-layout-density");
-    expect(appCss).toMatch(/\.page-shell\[data-mock-banner="true"\] \{[^}]*var\(--layout-page-padding-block\)/s);
-    expect(appCss).toMatch(/\.portal-slot-tab \{[^}]*var\(--layout-panel-padding\)/s);
+    // Look-matching pass (slice L): the mock-mode banner moved into normal flow
+    // (under `.app-header`) and no longer needs a measured-height shell offset —
+    // `.page-shell[data-mock-banner="true"]`/`--mock-banner-height` (REQ-123) retire
+    // with the fixed positioning that required them.
+    expect(appCss).not.toContain('[data-mock-banner="true"]');
+    expect(appCss).not.toContain("--mock-banner-height");
+    expect(appCss).toMatch(/\.portal-slot-tab \{[^}]*margin:\s*0/s);
     expect(appCss).toMatch(/\.staged-step-brand \{[^}]*clamp\(/s);
     expect(appCss).toMatch(/\.step-eyebrow \{[^}]*clamp\(/s);
   });

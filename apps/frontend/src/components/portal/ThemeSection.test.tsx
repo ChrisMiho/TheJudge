@@ -32,16 +32,20 @@ describe("Frontend - Theme", () => {
     });
 
     // REQ-131/REQ-207 A4: the band's six cells are never narrower than 40px.
-    it("renders every cell at least 40px, inside a single scrollable band track", () => {
+    // Look-matching pass (slice L): cells are 46px tall (shell.css:614-657's
+    // `.theme-orb`) — only the height changed, the 40px width/touch-target
+    // floor is unchanged.
+    it("renders every cell at least 40px wide and 46px tall, inside a single scrollable band track", () => {
       renderThemeSection();
 
       const band = screen.getByRole("group", { name: "Theme palettes" });
       expect(band.className).toContain("overflow-x-auto");
+      expect(band.className).toContain("theme-band-track");
 
       for (const palette of PALETTES) {
         const cell = screen.getByRole("button", { name: `Theme: ${palette.name}` });
         expect(cell.parentElement).toBe(band);
-        expect(cell).toHaveStyle({ minWidth: "40px", width: "40px", height: "40px" });
+        expect(cell).toHaveStyle({ minWidth: "40px", width: "40px", height: "46px" });
       }
     });
 

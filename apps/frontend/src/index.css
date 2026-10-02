@@ -7,65 +7,172 @@
 .page-shell {
   position: relative;
   min-height: 100vh;
-  /* REQ-200: a flat dark ground, one colour per profile, no gradient. The
-     AmbientScene layer (REQ-207) plays behind every page's own content. */
-  background: rgb(var(--ground));
+  /* Look-matching pass (slice L): a faint wash tint, not a flat single colour —
+     `shell.css:31-37`'s `background: var(--surface-wash)` ported onto this
+     suite's own per-profile tokens (`--ground-wash` already carries the
+     colour's hue; `--surface-wash` mixes a small slice of it into the ground
+     rather than the vivid full-strength tone `--ground-wash` is elsewhere,
+     e.g. the AmbientScene haze). The AmbientScene layer (REQ-207) plays
+     behind every page's own content, now as a true fixed viewport layer
+     (see `.ambient-scene` below) rather than scoped to this shell's box. */
+  background: color-mix(in srgb, rgb(var(--ground-wash)) 12%, rgb(var(--ground)));
   padding-block: var(--layout-page-padding-block);
   padding-inline: var(--layout-page-padding-inline);
   color: #f4f4f5;
 }
 
 /* Mock-mode banner — persistent, non-dismissible bar shown only when the app is
-   built/run with the mock AI provider. Static, high-contrast, no motion. */
+   built/run with the mock AI provider. Static, high-contrast, no motion.
+   Look-matching pass (slice L): restyled per `shell.css:325-332` and moved into
+   normal flow directly under `.app-header` (StagedStepHeader renders it) —
+   no longer `position: fixed` with a measured-height shell offset (REQ-123's
+   prior measured-clearance custom property and data attribute retire with
+   it: a static banner needs no clearance calculation). The full-bleed breakout
+   (`width: 100vw` / negative `margin-inline`) matches the header's own, so the
+   strip spans the viewport edge to edge exactly as the mockup's document-root
+   sibling does, even though it is technically nested inside the width-capped
+   `.page-content` column. */
 .mock-mode-banner {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 20;   /* below the Menu's z-30 so it stays on top and clickable */
-  padding: 0.5rem 1rem;
-  background-color: rgb(var(--accent-strong));
-  color: rgb(var(--accent-contrast));
-  border-bottom: 1px solid rgb(var(--accent-soft) / 0.6);
+  position: static;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  padding: 0.35rem 0.6rem;
+  background-color: rgb(var(--accent) / 0.2);
+  color: #f4f4f5;
+  border-bottom: 1px solid rgb(var(--accent-soft) / 0.35);
   text-align: center;
-  font-size: 0.8125rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.02em;
 }
 
-/* Offset shell content so the fixed banner never covers the header. Applied
-   only in mock builds; live builds render no banner and no offset.
-
-   The offset tracks the banner's measured height (published as
-   `--mock-banner-height` by `MockModeBanner`) rather than assuming one. A
-   hardcoded 2rem cleared the banner only while its copy fit on one line; at
-   phone widths the copy wraps and the banner measures ~3.5rem, so the shell
-   under-reserved and the fixed banner covered header controls on destinations
-   whose header sits at the top of their content — Life Tracker's Menu trigger
-   lost 24px, Trade Balancer's 11px (REQ-123). The 2rem fallback keeps the
-   pre-measurement first paint identical to before. */
-.page-shell[data-mock-banner="true"] {
-  padding-top: calc(var(--layout-page-padding-block) + var(--mock-banner-height, 2rem));
-}
-
-.page-card {
+/* Look-matching pass (slice L): replaces `.page-card` — no more bordered,
+   backgrounded, rounded card frame (shell.css:814-819's `.page-content`
+   ported). The width cap, centring, and vertical rhythm between the header
+   and the rest of a destination's content are unchanged from `.page-card`
+   (`--layout-surface-gap` gap, `--layout-panel-padding` vertical padding) —
+   this slice is a look pass, not a spacing pass, and the fluid cap rationale
+   below is `.page-card`'s own (DEC-145, REQ-124), carried over unchanged. */
+.page-content {
   position: relative;
   margin-left: auto;
   margin-right: auto;
   display: flex;
   width: 100%;
-  /* Fluid cap rather than a fixed 42rem column: at 1440px the old cap left 770px (53%)
-     of the viewport unused. 48rem is a deliberate, restrained step up — wider settings
-     were built and reviewed, and past roughly this width the staged steps have no content
-     that grows to use it, so single full-width controls ("Confirm game context") stretch
-     into bands. `min()` keeps the cap binding on ultra-wide displays (DEC-145, REQ-124). */
   max-width: min(48rem, 92vw);
   flex-direction: column;
   gap: var(--layout-surface-gap);
-  border-radius: 1.5rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background-color: rgb(var(--panel) / 0.7);
-  padding: var(--layout-panel-padding);
+  padding: var(--layout-panel-padding) 0;
+  /* Look-matching pass (slice L): a floor, not a fixed height — a short
+     destination (e.g. Ask a Question's empty state) still gives
+     `.portal-shell-bounds` (anchored to this box, REQ-113) a full-viewport
+     clip region for the open Menu tray, instead of clipping it part-way down
+     the screen at this content's own short height (LOOK-GAPS.md: "the Menu
+     opens inside the old card and is clipped by it … ends at y≈360" — the
+     old card had the same short-content problem; removing it alone does not
+     fix this). Taller content still grows past this floor exactly as before. */
+  min-height: 100vh;
+}
+
+/* Look-matching pass (slice L): the sticky, full-bleed banner header
+   (`shell.css:63-81`'s `.app-header`), ported onto `StagedStepHeader`'s
+   existing `1fr auto 1fr` grid (REQ-139's PortalSlot column, the centred
+   brand, the optional `rightSlot`) — same shape, so no structural change to
+   that grid, only to its own styling and placement. `width: 100vw` plus the
+   negative `margin-inline` breaks the header out of `.page-content`'s
+   width-capped, centred column so it spans the full viewport edge to edge
+   (matching the mockup's header, which is a document-root sibling of the
+   content column) while staying a normal in-flow child — `position: sticky`
+   then pins it to the viewport top as the rest of the page scrolls under it,
+   exactly as a true document-root sticky header would. */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+  min-height: 64px;
+  padding: 0.4rem 0.6rem;
+  background:
+    radial-gradient(40% 140% at 50% 120%, rgb(var(--accent) / 0.42) 0%, transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, rgb(var(--accent-strong)) 28%, rgb(var(--ground))) 0%, color-mix(in srgb, rgb(var(--panel)) 94%, transparent) 100%);
+  border-bottom: 1px solid rgb(var(--accent-soft) / 0.38);
+  box-shadow: 0 10px 30px -18px rgb(var(--accent) / 0.7);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+@media (min-width: 768px) {
+  .app-header {
+    min-height: 68px;
+  }
+}
+
+/* Brand mark, restyled per `shell.css:216-259`: a breathing orb showing the
+   active colour's motif, a gradient wordmark, and an uppercase tagline below
+   it — replacing the plain gradient-text-only mark. `BrandMark` reads the
+   motif itself via `useActiveThemeMotif` (REQ-201) so every mount (header,
+   Menu tray brand row, feedback success state) shows the current colour with
+   no prop threading. */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  line-height: 1.05;
+}
+
+.brand-mark .orb {
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  color: #f4f4f5;
+  /* No motif image asset exists in this codebase (see BrandMark.tsx's own
+     comment) — a radial accent wash stands in for the mockup's per-colour
+     `motifs/<colour>.svg`, with `MotifGlyph` (the Theme band's own simple
+     shape-per-profile SVG) centred on top via `currentColor`. */
+  background: radial-gradient(circle at 35% 30%, rgb(var(--accent-soft) / 0.9), rgb(var(--accent)) 70%), rgb(var(--ground));
+  box-shadow:
+    0 0 0 1px rgb(var(--accent-soft) / 0.55),
+    0 0 18px rgb(var(--accent) / 0.75);
+  animation: orb-breathe 4.5s ease-in-out infinite;
+}
+
+@keyframes orb-breathe {
+  0%, 100% { box-shadow: 0 0 0 1px rgb(var(--accent-soft) / 0.55), 0 0 14px rgb(var(--accent) / 0.65); }
+  50% { box-shadow: 0 0 0 1px rgb(var(--accent-soft) / 0.85), 0 0 26px rgb(var(--accent) / 0.95); }
+}
+
+.brand-mark .brand-text {
+  display: grid;
+  text-align: left;
+}
+
+.brand-mark .wordmark {
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
+  background: linear-gradient(90deg, rgb(var(--accent-soft)), color-mix(in srgb, rgb(var(--accent-soft)) 45%, #e2e8f0));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-mark .tagline {
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #a1a1aa;
+  margin-top: 0.15rem;
 }
 
 /* Quiet route-chunk placeholder (DEC-157 / NFR-014). The normal PageShell and
@@ -85,19 +192,25 @@
    no border, radius, or padding of its own, so full-bleed's existing
    rendered layout stays pixel-identical to before this wrapper existed. It
    exists purely so full-bleed destinations get the same `ShellBounds`
-   positioning/clipping anchor `.page-card` gets (REQ-113). */
+   positioning/clipping anchor `.page-content` gets (REQ-113). */
 .page-shell-bleed {
   display: block;
   width: 100%;
   position: relative;
+  /* Same floor as `.page-content` above, for the same reason (the Menu
+     tray's full-height clip region) — Life Tracker's own table is already
+     tall, so this rarely binds, but it costs nothing to keep both variants
+     consistent. */
+  min-height: 100vh;
 }
 
 /* Registered by `ShellBounds` (one per `PageShell`) as the Menu drawer's
    portal target and clip box: sized to the shell's real content box via
    `inset: 0` (out of flow, so it never inflates that box's height), clipped
    at the shell's actual edges, and following whatever radius the shell
-   itself has (`.page-card`'s 1.5rem, or full-bleed's unset/0) with no
-   per-variant hardcoding — this is what produces the matching bottom-left
+   itself has (`.page-content`'s unset/0 since slice L retired the bordered
+   card frame, or full-bleed's unset/0) with no per-variant hardcoding — this
+   is what produces the matching bottom-left
    radius for free. `pointer-events: none` keeps the box itself from
    intercepting clicks on real shell content around/behind it; the drawer
    portaled inside re-enables `pointer-events: auto` for itself. */
@@ -109,16 +222,19 @@
   pointer-events: none;
 }
 
-/* Lifts and shifts the inline feature-portal corner rail (rendered in normal flow
-   inside the header's left grid column, see FeaturePortalMenu/PortalSlot) so it
-   sits flush with .page-card's own top-left border — the negated mirror of
-   .page-card's fluid padding on both sides, so the rail (and the drawer, itself
-   anchored to this same container) meet the card's edges with no gap at any
-   viewport width. The previous top-middle tab only needed the vertical half of
-   this (nothing to its left to be flush with); the corner rail needs both. */
+/* Look-matching pass (slice L): no corner to flush against any more — the
+   rail sits inside `.app-header`'s own left grid column exactly like
+   `BrandMark` sits in the centre one, with the header's own `0.4rem 0.6rem`
+   padding (`.app-header` above) governing its inset instead of a negated
+   mirror of a card's padding. Before this slice, the rail was absolutely
+   lifted by `-var(--layout-panel-padding)` on both axes to meet the old
+   `.page-card`'s top-left border (DEC-122/REQ-139); that card is gone, and
+   the same lift against the header's much smaller padding would push the ☰
+   button outside the header's own box. Kept as an empty, documented hook
+   (rather than deleted outright) since `FeaturePortalMenu`/its tests still
+   reference the class name for the portal container itself. */
 .portal-slot-tab {
-  margin-top: calc(var(--layout-panel-padding) * -1);
-  margin-left: calc(var(--layout-panel-padding) * -1);
+  margin: 0;
 }
 
 /* Feature-portal corner rail (DEC-122, bounded by DEC-137): the trigger reads as
@@ -148,51 +264,43 @@
    Absolutely positioning it took the band out of flow, which is why the answered
    workspace had to reserve matching clearance above "View context" with a one-off
    `.adaptive-context-trigger` margin. In flow, the header row itself accounts for the
-   band and the shared `--layout-surface-gap` tokens own everything below it. `relative`
-   (rather than `static`) keeps the rail a positioning context for its decorative
-   ::before glow and keeps `z-index: 3` meaningful. The corner lift stays on
-   `.portal-slot-tab`, so the flush top-left placement is unchanged. */
+   band and the shared `--layout-surface-gap` tokens own everything below it.
+
+   Look-matching pass (slice L): the box itself is now the painted extent too
+   — `shell.css:287-301`'s `.app-header .menu-toggle` sizing (50px, 54px at
+   768px+) — replacing DEC-137's split "5.5rem x 3.5rem interactive band
+   inside a 5.5rem x 10.5rem decorative glow" shape. DEC-137 existed to keep
+   the glow's corner-flush appearance against the old `.page-card` border
+   without extending the *tappable* area over destination content below it;
+   `.app-header` is now a fixed-height row with its own background (above),
+   so there is no card corner to flush against and no destination content
+   for an oversized glow to sit over. `position: relative` / `z-index: 3`
+   stay (still a header control above the ambient scene), though neither
+   anchors a decorative ::before layer any more. */
 .portal-menu-rail {
   position: relative;
   z-index: 3;
-  width: 5.5rem;
-  height: 3.5rem;
-  display: flex;
-  align-items: flex-start;
+  width: 50px;
+  height: 50px;
+  min-width: 50px;
+  min-height: 50px;
+  display: inline-flex;
+  align-items: center;
   justify-content: center;
-  padding-top: 1rem;
-  font-size: 1.05rem;
-  color: rgb(212 212 216);
-  /* Matches .page-card's own border-radius so the rail's square corner never
-     pokes past the card's rounded edge into the page background behind it. */
-  border-top-left-radius: 1.5rem;
-  transition: color var(--motion-fast) var(--motion-ease-out);
+  font-size: 1.4rem;
+  color: rgb(244 244 245);
+  border-radius: 0.6rem;
+  transition: background-color var(--motion-fast) var(--motion-ease-out);
 }
 
-/* The rail's painted glow, decoupled from its hit area (DEC-137). Keeps the
-   single-zone rail's original 5.5rem x 10.5rem extent so the corner's appearance
-   is unchanged; `pointer-events: none` is the whole point of the element. The
-   negative z-index stays contained by .portal-menu-rail's own stacking context
-   (it sets z-index: 3), so the glow sits behind the icon without escaping behind
-   the shell. */
-.portal-menu-rail::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 5.5rem;
-  height: 10.5rem;
-  z-index: -1;
-  pointer-events: none;
-  border-top-left-radius: inherit;
-  background-image: radial-gradient(
-    120% 120% at 0% 0%,
-    rgb(var(--accent-strong) / 0.22) 0%,
-    rgb(var(--accent-strong) / 0.11) 30%,
-    rgb(var(--accent-strong) / 0.03) 55%,
-    rgb(var(--accent-strong) / 0) 78%
-  );
-  transition: background-image var(--motion-fast) var(--motion-ease-out);
+@media (min-width: 768px) {
+  .portal-menu-rail {
+    width: 54px;
+    height: 54px;
+    min-width: 54px;
+    min-height: 54px;
+    font-size: 1.5rem;
+  }
 }
 
 /* Shared sizing for both rail icons (DEC-126) — matching inline stroke-SVGs
@@ -204,23 +312,13 @@
   height: 1.35rem;
 }
 
-/* Hover/expanded darkens the same gradient, which now lives on ::before. The
-   colour half stays on the element itself so the icon still brightens. */
-.portal-menu-rail:hover::before,
-.portal-menu-rail:has([aria-expanded="true"])::before,
-.portal-menu-rail[aria-expanded="true"]::before {
-  background-image: radial-gradient(
-    120% 120% at 0% 0%,
-    rgb(var(--accent-strong) / 0.32) 0%,
-    rgb(var(--accent-strong) / 0.16) 30%,
-    rgb(var(--accent-strong) / 0.05) 55%,
-    rgb(var(--accent-strong) / 0) 78%
-  );
-}
-
+/* Hover/expanded now darkens the button's own background-color directly —
+   there is no decorative ::before layer left to carry a gradient (see the
+   rail's own comment above). */
 .portal-menu-rail:hover,
 .portal-menu-rail:has([aria-expanded="true"]),
 .portal-menu-rail[aria-expanded="true"] {
+  background-color: rgb(var(--accent) / 0.14);
   color: rgb(244 244 245);
 }
 
@@ -299,19 +397,79 @@
    the viewport, `.portal-shell-bounds`'s `overflow: hidden` clips the excess
    at the shell's real (shorter) bottom edge — the same clip that produces
    the matching bottom-left radius there. `pointer-events: auto` re-enables
-   interaction, since the clip box itself is `pointer-events: none`. */
+   interaction, since the clip box itself is `pointer-events: none`.
+
+   Look-matching pass (slice L): width and surface restyled per
+   `shell.css:347-366`'s `.menu-tray` (`min(20rem, 86vw)`, the two-stop
+   gradient background, the stronger drop shadow) — `position: sticky`,
+   `left/top: 0`, `height: 100dvh`, `overflow-y: auto` and the portal/clip
+   mechanics above (REQ-113) are unchanged; only the painted surface moves.
+   `isolation: isolate` keeps `.portal-menu-drawer-flair`'s own negative
+   z-index glow contained to this box rather than escaping behind the shell
+   it's portaled into. */
 .portal-menu-drawer {
   position: sticky;
   left: 0;
   top: 0;
   z-index: 2;
-  width: 16rem;
+  width: min(20rem, 86vw);
   height: 100dvh;
   overflow-y: auto;
   pointer-events: auto;
+  isolation: isolate;
   border-top-left-radius: 1.5rem;
+  background:
+    radial-gradient(90% 30% at 0% 100%, rgb(var(--accent) / 0.28) 0%, transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, rgb(var(--panel)) 96%, transparent), color-mix(in srgb, rgb(var(--panel)) 92%, rgb(var(--ground))));
   border-right: 1px solid rgb(var(--accent-soft) / 0.35);
-  box-shadow: 0.5rem 0 1.5rem rgb(0 0 0 / 0.25);
+  box-shadow: 24px 0 60px -30px rgb(var(--accent) / 0.6);
+}
+
+/* Look-matching pass (slice L): the dimming/blur layer behind the open tray
+   (`shell.css:336-345`'s `.menu-tray-backdrop`) — a new, purely decorative
+   sibling (`aria-hidden`, `pointer-events: none`) alongside the drawer.
+   Dismissing the Menu by clicking outside it already works through the
+   existing document-level outside-click handler (`useOutsideDismiss` in
+   `FeaturePortalMenu.tsx`), so this layer only needs to paint, never to
+   receive the click. */
+.portal-menu-drawer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  pointer-events: none;
+}
+
+/* Look-matching pass (slice L): the foot-of-tray glow (`shell.css:374-388`'s
+   `.tray-flair::after`) — the static-plus-one-keyframe CSS pool of the
+   colour's light the Theme block sits above, reproduced per
+   `DESIGN-BRIEF.md`'s non-goal A1: the mockup's canvas-drawn falling-leaves/
+   runes/fog shapes (`ambience.js` `mountFlair`) are script/canvas animation
+   and are not ported — only the CSS glow is. `inset: 0` + negative z-index
+   stay inside `.portal-menu-drawer`'s own `isolation: isolate` stacking
+   context (above), so the glow never escapes behind the shell the drawer is
+   portaled into. */
+.portal-menu-drawer-flair {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(90% 28% at 30% 104%, rgb(var(--accent) / 0.4) 0%, transparent 70%);
+  animation: portal-menu-drawer-flair-twinkle 6s ease-in-out infinite alternate;
+}
+
+@keyframes portal-menu-drawer-flair-twinkle {
+  from { opacity: 0.55; }
+  to { opacity: 0.9; }
+}
+
+/* Look-matching pass (slice L): the divider before the Menu's one action
+   entry (Send feedback) — `shell.css:540-543`'s `.tray-divider`. */
+.portal-menu-drawer-divider {
+  height: 1px;
+  margin: 0.25rem 1rem;
+  background: linear-gradient(90deg, rgb(var(--accent-soft) / 0.38), transparent);
 }
 
 /* REQ-113/REQ-207: at 768px+ the tray stops being a full-height, shell-docked
@@ -349,13 +507,43 @@
    narrow rail but left the first row's label starting underneath the wider desktop band,
    which read as the Menu trigger sitting on top of the first destination (DEC-147). */
 .portal-menu-drawer-row {
+  position: relative;
   padding: 0.5rem 0.75rem 0.5rem 3.5rem;
+}
+
+/* Look-matching pass (slice L): fixes a real, pre-existing bug LOOK-GAPS.md
+   caught — this class was referenced on the Question History row's icon
+   (FeaturePortalMenu.tsx) but never defined, so the inline SVG rendered at
+   its unconstrained natural size (~100px tall in the capture) instead of a
+   glyph. `shell.css:477-550`'s 28px glyph column fixes the size and doubles
+   as this slice's intended look-match. */
+.portal-menu-drawer-row-icon {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  color: rgb(var(--accent-soft));
 }
 
 @media (min-width: 640px) {
   .portal-menu-drawer-row {
     padding-left: 5.5rem;
   }
+}
+
+/* Look-matching pass (slice L): the current row's left accent bar
+   (`shell.css:517-527`'s `.tray-nav-list button[aria-current="page"]::before`)
+   — the existing `bg-zinc-800` active fill (FeaturePortalMenu.tsx) stays;
+   this adds the glowing bar the mockup draws beside it. */
+.portal-menu-drawer-row[aria-current="true"]::before {
+  content: "";
+  position: absolute;
+  left: 0.4rem;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 3px;
+  background: rgb(var(--accent-soft));
+  box-shadow: 0 0 12px rgb(var(--accent-soft) / 0.8);
 }
 
 /* Theme block: sits well below the rail's icon zone, so it takes a normal inset (a
@@ -397,6 +585,18 @@
   border: 1px solid rgb(63 63 70 / 0.7);
   background-color: rgb(24 24 27 / 0.55);
   padding: var(--layout-content-padding);
+}
+
+/* Look-matching pass (slice L): the Theme band's pill container
+   (`shell.css:571-592`'s `.theme-orbs`) — the existing scroll-arrow/snap
+   mechanics (ThemeSection.tsx) are unchanged; this wraps the same track in
+   the mockup's pill chrome. */
+.theme-band-track {
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground) / 0.6);
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 2px 10px -6px rgb(0 0 0 / 0.8);
 }
 
 .panel-inner > * + * {
@@ -828,6 +1028,175 @@
    `.card-detail-content` all retired; the popup now hosts on `.sheet-shell-*`, whose
    `.sheet-shell-body` already owns the content-region padding and scroll. */
 
+/* Look-matching pass (slice L, requirement #10): the card detail popup's new
+   hero/typeline/oracle/facts layout, ported from `flow.css:280-317`'s
+   `.detail-panel`. `.sheet-shell-body`'s own padding already wraps
+   `.card-detail-body`, so this hero sits full-bleed inside it via a negative
+   margin equal to that padding, matching the mockup's art filling the sheet's
+   top edge to edge. */
+.card-detail-hero-wrap {
+  display: flex;
+  flex-direction: column;
+}
+
+.card-detail-hero {
+  position: relative;
+  height: 160px;
+  margin: calc(var(--layout-content-padding) * -1) calc(var(--layout-panel-padding) * -1) 0;
+  overflow: hidden;
+  background: rgb(var(--ground));
+}
+
+@media (min-width: 768px) {
+  .card-detail-hero {
+    height: 190px;
+  }
+}
+
+.card-detail-hero-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 30%;
+  display: block;
+  filter: saturate(1.1);
+}
+
+.card-detail-hero-title {
+  position: absolute;
+  left: var(--layout-panel-padding);
+  right: calc(var(--layout-panel-padding) + 2.5rem);
+  bottom: 0.6rem;
+  z-index: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.card-detail-hero-title::before {
+  content: "";
+  position: absolute;
+  inset: -160px calc(var(--layout-panel-padding) * -1) -0.6rem calc(var(--layout-panel-padding) * -1);
+  z-index: -1;
+  background: linear-gradient(180deg, rgb(9 9 11 / 0.15) 0%, transparent 35%, rgb(var(--panel) / 0.4) 75%, rgb(var(--panel)) 100%);
+}
+
+.card-detail-hero-name {
+  margin: 0;
+  font-size: 1.25rem;
+  line-height: 1.1;
+  color: #f4f4f5;
+  text-shadow: 0 2px 12px rgb(0 0 0 / 0.8);
+}
+
+.card-detail-hero-cost {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: rgb(var(--accent-soft));
+  text-shadow: 0 1px 8px rgb(0 0 0 / 0.8);
+  white-space: nowrap;
+}
+
+.card-detail-body {
+  display: grid;
+  gap: 0.7rem;
+  padding-top: 0.5rem;
+}
+
+.card-detail-typeline {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0;
+  font-size: 0.86rem;
+  color: #a1a1aa;
+}
+
+.card-detail-color-dot {
+  width: 10px;
+  height: 10px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.5);
+}
+
+.card-detail-oracle {
+  position: relative;
+  margin: 0;
+  padding: 0.85rem 0.95rem;
+  border-radius: 0.6rem;
+  background: rgb(var(--ground) / 0.55);
+  border: 1px solid rgb(var(--accent-soft) / 0.28);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.card-detail-facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.card-detail-fact {
+  min-width: 0;
+  padding: 0.45rem 0.6rem;
+  border-radius: 0.55rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground) / 0.35);
+}
+
+.card-detail-fact dt {
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #a1a1aa;
+  margin-bottom: 0.15rem;
+}
+
+.card-detail-fact dd {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.86rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-detail-fact-price dd {
+  color: rgb(var(--accent-soft));
+}
+
+/* Look-matching pass (slice L): Question History row trimmings —
+   `shell.css:786-789`'s `.mode-chip` / `.h-chev` / `.history-foot`. */
+.mode-chip {
+  display: inline-block;
+  padding: 0.02rem 0.45rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgb(var(--accent-soft));
+  border: 1px solid rgb(var(--accent-soft) / 0.4);
+  background: rgb(var(--accent) / 0.14);
+}
+
+.h-chev {
+  flex: 0 0 auto;
+  color: rgb(var(--accent-soft));
+  font-size: 1.1rem;
+  line-height: 1;
+}
+
+.history-foot {
+  padding: 0.4rem 0.25rem 0;
+  font-size: 0.68rem;
+  color: #a1a1aa;
+  border-top: 1px solid rgb(var(--panel-edge) / 0.7);
+}
+
 .frozen-context-detail-row {
   padding: var(--layout-compact-gap);
 }
@@ -845,17 +1214,53 @@
   align-items: flex-end;
   justify-content: center;
   background: rgb(9 9 11 / 0.72);
+  /* Look-matching pass (slice L): the page behind blurs, not only dims
+     (`shell.css:433-447`'s `.sheet-backdrop`). */
+  backdrop-filter: blur(2px);
   animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
 }
 
+/* Look-matching pass (slice L): the glass shell every sheet adopter (card
+   detail, Send feedback, Question History, the confirm sheet, the printing
+   picker) now shares — `shell.css:872-915`'s `.drawer-panel` surface (the
+   corner accent glow, the blurred/saturated glass, the accent-soft hairline
+   border, the stacked shadow) plus `shell.css:917-935`'s mobile grab handle.
+   `width`, `max-height`, `display`, `flex-direction`, `overflow` and
+   `border-radius` are unchanged from before this slice — only the painted
+   surface and the handle are new. */
 .sheet-shell-surface {
+  position: relative;
   width: 100%;
   max-height: 85dvh;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   border-radius: 1rem 1rem 0 0;
+  background:
+    radial-gradient(90% 40% at 100% 0%, rgb(var(--accent) / 0.26) 0%, transparent 70%),
+    rgb(var(--panel) / 0.82);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  border: 1px solid rgb(var(--accent-soft) / 0.32);
+  box-shadow:
+    0 30px 80px -30px rgb(0 0 0 / 1),
+    0 0 60px -20px rgb(var(--accent) / 0.7),
+    inset 0 1px 0 rgb(255 255 255 / 0.08);
   animation: adaptive-context-enter var(--motion-base) var(--motion-ease-emphasized) both;
+}
+
+/* Grab handle — mobile bottom-sheet only (hidden at >=600px below). */
+.sheet-shell-surface::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  left: 50%;
+  width: 40px;
+  height: 4px;
+  margin-left: -20px;
+  border-radius: 4px;
+  background: rgb(244 244 245 / 0.3);
+  z-index: 3;
 }
 
 .sheet-shell-head {
@@ -893,6 +1298,10 @@
     width: min(32rem, 90vw);
     max-height: min(85dvh, 42rem);
     border-radius: 1rem;
+  }
+
+  .sheet-shell-surface::before {
+    display: none;
   }
 }
 
@@ -1451,16 +1860,23 @@ body {
   }
 }
 
-/* REQ-207 / REQ-201 ambient scene — the colour's element, CSS-only (NFR-006). */
+/* REQ-207 / REQ-201 ambient scene — the colour's element, CSS-only (NFR-006).
+   Look-matching pass (slice L): `position: fixed` / `z-index: 0`, ported from
+   `ambience.css:32-37`'s `.ambience` — a true viewport layer behind the
+   banner header, the mock-mode strip and `.page-content`/`.page-shell-bleed`
+   alike, rather than scoped inside this destination's own box. Previously
+   `position: absolute` inside `.page-shell` with `z-index: -1` painted the
+   scene one layer *below* that box's own background colour, so it never
+   showed in any capture (LOOK-GAPS.md's "the single biggest 'doesn't look
+   like it' gap"). Still behind every solid panel (REQ-207's "sits behind
+   solid panels so the badge shows around them, never through them") because
+   those panels paint their own background above z-index: 0. */
 .ambient-scene {
-  position: absolute;
+  position: fixed;
   inset: 0;
   overflow: hidden;
   pointer-events: none;
-  /* Behind this scope's static in-flow content (.page-card / .page-shell-bleed,
-     the Menu drawer), never through solid panels — REQ-207's "sits behind
-     solid panels so the badge shows around them, never through them". */
-  z-index: -1;
+  z-index: 0;
   /* Density and opacity are each one number (REQ-207) so the whole scene can
      be tuned without redrawing it. The tray variant plays at a whisper. */
   --ambient-density: 1;

@@ -258,87 +258,104 @@ export function FeaturePortalMenu({
   }
 
   const drawer = isOpen ? (
-    <div
-      ref={drawerRef}
-      role="menu"
-      aria-label="Feature destinations"
-      className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900"
-    >
-      <div className="portal-menu-drawer-inner flex flex-col">
-        {entries.map((entry, index) => {
-          const isActive =
-            !isPortalActionEntry(entry) &&
-            (entry.id === activeDestinationId || entry.id === activeDestinationAliasId);
-          return (
-            <Fragment key={entry.id}>
-              <button
-                type="button"
-                role="menuitem"
-                aria-label={entry.label}
-                aria-current={isActive ? "true" : undefined}
-                onClick={() => handleSelect(entry)}
-                // Full-bleed row, not an inset pill: the separator rule under each entry runs
-                // edge to edge across the drawer (the row itself carries the drawer's left
-                // text inset via `.portal-menu-drawer-row`), so the horizontal lines meet the
-                // drawer's left wall instead of stopping short of it.
-                className={`portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium transition ${
-                  isActive ? "bg-zinc-800 text-zinc-100" : "text-zinc-200 hover:bg-zinc-800/70"
-                }`}
-              >
-                <span>{entry.label}</span>
-                {isActive && <span aria-hidden="true" className="ml-auto text-accent-soft">✓</span>}
-              </button>
-              {/* REQ-067/REQ-213: Question History sits right after Ask a Question, ahead of
-                  Life Tracker and Trade Balancer. Fixed at this position rather than modeled
-                  as a `PortalEntry` because it opens this component's own sheet state, not a
-                  destination switch. Always enabled — the combined list (REQ-103/REQ-107)
-                  no longer depends on the currently-visible destination registering a
-                  history trigger of its own. */}
-              {index === 0 && (
+    <Fragment>
+      {/* Look-matching pass (slice L): the dimming/blur layer behind the open tray
+          (shell.css:336-345's `.menu-tray-backdrop`) — purely decorative, so it adds
+          no role and cannot change any menuitem-focused query above. Dismissing by
+          clicking outside the drawer already works through `useOutsideDismiss`. */}
+      <div aria-hidden="true" className="portal-menu-drawer-backdrop" />
+      <div
+        ref={drawerRef}
+        role="menu"
+        aria-label="Feature destinations"
+        className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900"
+      >
+        {/* Look-matching pass (slice L): the colour's quiet glow at the tray's foot
+            (shell.css:374-388's `.tray-flair::after`) — the canvas-drawn shapes
+            `ambience.js` layers under it are script/canvas animation, a stated
+            non-goal (DESIGN-BRIEF.md's non-goal A1), and are not ported. */}
+        <div aria-hidden="true" className="portal-menu-drawer-flair" />
+        <div className="portal-menu-drawer-inner flex flex-col">
+          {entries.map((entry, index) => {
+            const isActive =
+              !isPortalActionEntry(entry) &&
+              (entry.id === activeDestinationId || entry.id === activeDestinationAliasId);
+            return (
+              <Fragment key={entry.id}>
+                {/* Look-matching pass (slice L): a divider ahead of the Menu's one
+                    action entry (Send feedback) — shell.css:540-543's `.tray-divider`. */}
+                {isPortalActionEntry(entry) && (
+                  <div aria-hidden="true" className="portal-menu-drawer-divider" />
+                )}
                 <button
                   type="button"
                   role="menuitem"
-                  aria-label="Question History"
-                  onClick={() => {
-                    setIsOpen(false);
-                    openHistory();
-                  }}
-                  className="portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium text-zinc-200 transition hover:bg-zinc-800/70"
+                  aria-label={entry.label}
+                  aria-current={isActive ? "true" : undefined}
+                  onClick={() => handleSelect(entry)}
+                  // Full-bleed row, not an inset pill: the separator rule under each entry runs
+                  // edge to edge across the drawer (the row itself carries the drawer's left
+                  // text inset via `.portal-menu-drawer-row`), so the horizontal lines meet the
+                  // drawer's left wall instead of stopping short of it.
+                  className={`portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium transition ${
+                    isActive ? "bg-zinc-800 text-zinc-100" : "text-zinc-200 hover:bg-zinc-800/70"
+                  }`}
                 >
-                  <HistoryRowIcon />
-                  <span>Question History</span>
+                  <span>{entry.label}</span>
+                  {isActive && <span aria-hidden="true" className="ml-auto text-accent-soft">✓</span>}
                 </button>
-              )}
-            </Fragment>
-          );
-        })}
-        <div className="portal-menu-drawer-section flex flex-col gap-1">
-          <p className="pb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">Theme</p>
-          <ThemeSection
-            paletteId={paletteId}
-            onSelect={handlePaletteSelect}
-            colorlessCustomHex={colorlessCustomHex}
-            onColorlessCustomChange={onColorlessCustomChange}
-            onColorlessReset={onColorlessReset}
-          />
-        </div>
-        {/* Quiet decorative brand mark (REQ-113 item 4): pinned toward the bottom of any
-            leftover vertical space via `mt-auto` in this flex column (drawer-inner stretches
-            to the drawer's full height, see .portal-menu-drawer-inner's min-height: 100%) —
-            not immediately after the last entry. `aria-hidden` and no onClick (plain BrandMark,
-            not the header's button variant) keep it out of the drawer's own `role="menu"`
-            semantics entirely: it isn't a menuitem and doesn't affect menuitem queries.
-            `.portal-menu-drawer-brand`'s `pointer-events: none` (index.css) means it never
-            intercepts clicks meant for entries/Theme/scroll above it. No height-detection
-            logic decides whether this renders — a shell too short to host it cleanly is
-            handled by the same `.portal-shell-bounds` overflow: hidden clip that produces the
-            matching bottom-left radius (slice A), which simply clips this off along with the
-            rest of the drawer's excess height. */}
-        <div aria-hidden="true" className="portal-menu-drawer-brand mt-auto pt-3">
-          <BrandMark />
+                {/* REQ-067/REQ-213: Question History sits right after Ask a Question, ahead of
+                    Life Tracker and Trade Balancer. Fixed at this position rather than modeled
+                    as a `PortalEntry` because it opens this component's own sheet state, not a
+                    destination switch. Always enabled — the combined list (REQ-103/REQ-107)
+                    no longer depends on the currently-visible destination registering a
+                    history trigger of its own. */}
+                {index === 0 && (
+                  <button
+                    type="button"
+                    role="menuitem"
+                    aria-label="Question History"
+                    onClick={() => {
+                      setIsOpen(false);
+                      openHistory();
+                    }}
+                    className="portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium text-zinc-200 transition hover:bg-zinc-800/70"
+                  >
+                    <HistoryRowIcon />
+                    <span>Question History</span>
+                  </button>
+                )}
+              </Fragment>
+            );
+          })}
+          <div className="portal-menu-drawer-section flex flex-col gap-1">
+            <p className="pb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">Theme</p>
+            <ThemeSection
+              paletteId={paletteId}
+              onSelect={handlePaletteSelect}
+              colorlessCustomHex={colorlessCustomHex}
+              onColorlessCustomChange={onColorlessCustomChange}
+              onColorlessReset={onColorlessReset}
+            />
+          </div>
+          {/* Quiet decorative brand mark (REQ-113 item 4): pinned toward the bottom of any
+              leftover vertical space via `mt-auto` in this flex column (drawer-inner stretches
+              to the drawer's full height, see .portal-menu-drawer-inner's min-height: 100%) —
+              not immediately after the last entry. `aria-hidden` and no onClick (plain BrandMark,
+              not the header's button variant) keep it out of the drawer's own `role="menu"`
+              semantics entirely: it isn't a menuitem and doesn't affect menuitem queries.
+              `.portal-menu-drawer-brand`'s `pointer-events: none` (index.css) means it never
+              intercepts clicks meant for entries/Theme/scroll above it. No height-detection
+              logic decides whether this renders — a shell too short to host it cleanly is
+              handled by the same `.portal-shell-bounds` overflow: hidden clip that produces the
+              matching bottom-left radius (slice A), which simply clips this off along with the
+              rest of the drawer's excess height. */}
+          <div aria-hidden="true" className="portal-menu-drawer-brand mt-auto pt-3">
+            <BrandMark />
+          </div>
         </div>
       </div>
-    </div>
+    </Fragment>
   ) : null;
 
   // The drawer portals into the resolved shell-bounds node (REQ-113's full-height/visible-bounds

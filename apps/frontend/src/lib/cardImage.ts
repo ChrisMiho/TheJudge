@@ -21,3 +21,29 @@ export function deriveCardImageUrl(printingId: string | undefined | null): strin
   }
   return `https://cards.scryfall.io/normal/front/${trimmed[0]}/${trimmed[1]}/${trimmed}.jpg`;
 }
+
+/**
+ * Look-matching pass (slice L): the card detail popup's art-crop hero
+ * (`flow.css:281-283`'s `.detail-panel .art`) reads Scryfall's `art_crop`
+ * image variant instead of `normal` — same CDN layout, same printing id, no
+ * new data source. Falls back to the empty string exactly like
+ * `deriveCardImageUrl` so a missing/short id renders no `<img>` at all.
+ */
+export function deriveCardArtCropUrl(printingId: string | undefined | null): string {
+  const trimmed = printingId?.trim() ?? "";
+  if (trimmed.length < 2) {
+    return "";
+  }
+  return `https://cards.scryfall.io/art_crop/front/${trimmed[0]}/${trimmed[1]}/${trimmed}.jpg`;
+}
+
+/**
+ * Same art-crop swap, for a caller that already holds a full rendered
+ * `normal`-size url (`ZoneCardItem`/the frozen lookup wire card) rather than
+ * a bare printing id — both shapes resolve to the same Scryfall CDN host, so
+ * the `/normal/` path segment is simply swapped for `/art_crop/`.
+ */
+export function deriveCardArtCropFromImageUrl(imageUrl: string | undefined | null): string {
+  const trimmed = imageUrl?.trim() ?? "";
+  return trimmed.includes("/normal/") ? trimmed.replace("/normal/", "/art_crop/") : "";
+}

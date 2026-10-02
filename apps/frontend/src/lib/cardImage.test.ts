@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { deriveCardImageUrl } from "./cardImage";
+import { deriveCardArtCropFromImageUrl, deriveCardArtCropUrl, deriveCardImageUrl } from "./cardImage";
 
 describe("Frontend - Shared - deriveCardImageUrl", () => {
   it("derives the normal-size front-face url from a single-faced printing's real Scryfall id", () => {
@@ -39,5 +39,35 @@ describe("Frontend - Shared - deriveCardImageUrl", () => {
     expect(deriveCardImageUrl(null)).toBe("");
     expect(deriveCardImageUrl("")).toBe("");
     expect(deriveCardImageUrl("a")).toBe("");
+  });
+});
+
+describe("Frontend - Shared - deriveCardArtCropUrl (slice L)", () => {
+  it("derives the art_crop-size front-face url from a printing id, same CDN layout as the normal-size derivation", () => {
+    expect(deriveCardArtCropUrl("0277c0b1-da97-49c1-a539-7fbaa1f77419")).toBe(
+      "https://cards.scryfall.io/art_crop/front/0/2/0277c0b1-da97-49c1-a539-7fbaa1f77419.jpg"
+    );
+  });
+
+  it("returns an empty string for a missing, empty, or too-short id, never throwing", () => {
+    expect(deriveCardArtCropUrl(undefined)).toBe("");
+    expect(deriveCardArtCropUrl(null)).toBe("");
+    expect(deriveCardArtCropUrl("")).toBe("");
+    expect(deriveCardArtCropUrl("a")).toBe("");
+  });
+});
+
+describe("Frontend - Shared - deriveCardArtCropFromImageUrl (slice L)", () => {
+  it("swaps the /normal/ path segment of an already-rendered image url for /art_crop/", () => {
+    expect(
+      deriveCardArtCropFromImageUrl("https://cards.scryfall.io/normal/front/0/2/0277c0b1.jpg")
+    ).toBe("https://cards.scryfall.io/art_crop/front/0/2/0277c0b1.jpg");
+  });
+
+  it("returns an empty string when the url has no /normal/ segment, missing, or empty, never throwing", () => {
+    expect(deriveCardArtCropFromImageUrl(undefined)).toBe("");
+    expect(deriveCardArtCropFromImageUrl(null)).toBe("");
+    expect(deriveCardArtCropFromImageUrl("")).toBe("");
+    expect(deriveCardArtCropFromImageUrl("https://cards.scryfall.io/art_crop/front/0/2/x.jpg")).toBe("");
   });
 });

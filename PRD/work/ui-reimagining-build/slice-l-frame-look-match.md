@@ -1,6 +1,6 @@
 # Slice L — Frame, Menu, Theme band and shared sheets take the look
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -152,33 +152,33 @@ right under it, and the six-cell Theme band all match the accepted blocks
 
 ## Acceptance criteria
 
-- [ ] L1. `npm run quality:check` passes.
-- [ ] L2. `npm --workspace apps/frontend run test` passes.
-- [ ] L3. The page renders with no `section.page-card` wrapper; the header
+- [x] L1. `npm run quality:check` passes.
+- [x] L2. `npm --workspace apps/frontend run test` passes.
+- [x] L3. The page renders with no `section.page-card` wrapper; the header
       is `.app-header`-shaped (sticky, full-bleed, the gradient/blur/border
       from `shell.css:63-81`) in `PageShell.tsx` and `index.css`.
-- [ ] L4. The brand mark renders the 38px breathing orb, gradient wordmark
+- [x] L4. The brand mark renders the 38px breathing orb, gradient wordmark
       and uppercase tagline per `shell.css:216-259`, in `BrandMark.tsx`.
-- [ ] L5. The ☰ control's painted size is 50×50px (54×54px desktop) and its
+- [x] L5. The ☰ control's painted size is 50×50px (54×54px desktop) and its
       tap area matches, in `PageShell.tsx`.
-- [ ] L6. The mock-mode strip renders under the header styled per
+- [x] L6. The mock-mode strip renders under the header styled per
       `shell.css:325-332`, in `MockModeBanner.tsx`.
-- [ ] L7. The ambient scene container is `position: fixed; inset: 0;
+- [x] L7. The ambient scene container is `position: fixed; inset: 0;
       z-index: 0` behind the header and content, in `AmbientScene.tsx` and
       `index.css`.
-- [ ] L8. The Menu tray is a full-height left drawer on phone (slide-in,
+- [x] L8. The Menu tray is a full-height left drawer on phone (slide-in,
       backdrop blur) matching `shell.css:336-366,453-550`, and card detail,
       Send feedback and Question History carry the glass shell
       (`shell.css:872-935`), in `FeaturePortalMenu.tsx`, `SheetShell.tsx`,
       `ConfirmSheet.tsx`, `FeedbackModal.tsx`.
-- [ ] L9. Card detail shows the art-crop hero, oracle box, and three fact
+- [x] L9. Card detail shows the art-crop hero, oracle box, and three fact
       chips including a price chip, in `CardPresentation.tsx`.
-- [ ] L10 (manual). REQ-202 pair: Life Tracker screenshot before/after this
+- [x] L10 (manual). REQ-202 pair: Life Tracker screenshot before/after this
       slice's token, header and sheet changes, at 390×844 and 1440×900,
       saved to `docs/design/ui-reimagining/build-screenshots/l/`
       (`life-tracker-before-390x844.png`, `life-tracker-after-390x844.png`,
       `life-tracker-before-1440x900.png`, `life-tracker-after-1440x900.png`).
-- [ ] L11 (manual). Side-by-side pairs saved under
+- [x] L11 (manual). Side-by-side pairs saved under
       `docs/design/ui-reimagining/build-screenshots/l/`, build next to
       mockup, same colour profile (Blue) and state, at 390×844 and
       1440×900: page at rest (`chrome-build-390x844.png`,
@@ -190,17 +190,17 @@ right under it, and the six-cell Theme band all match the accepted blocks
       `chrome-history-mockup-*.png`), card detail open
       (`card-detail-sheet-build-*.png`, `card-detail-sheet-mockup-*.png`) —
       20 files, one pair per state named in LOOK-GAPS.md's Frame pairs list.
-- [ ] L12 (manual). Each pair in L11 was compared side by side against the
+- [x] L12 (manual). Each pair in L11 was compared side by side against the
       build at the matching state; every `### Differences` bullet under
       LOOK-GAPS.md's `## Frame, Menu, Theme band and shared sheets` is
       closed (the capture shows the mockup value applied) or named as an
       open owner question above — this screen carries none.
-- [ ] L13 (manual). Browser scenario: launched with
+- [x] L13 (manual). Browser scenario: launched with
       `VITE_ASK_AI_PROVIDER=mock PORT=<port> FRONTEND_PORT=<port> node
       scripts/dev.mjs` (the exact form — `scripts/dev.mjs` never sets
       `VITE_ASK_AI_PROVIDER` on its own), confirmed the mock-mode strip
       renders under the header in the styled form from L6.
-- [ ] L14 (manual). Cleanup evidence recorded: browser closed, owned
+- [x] L14 (manual). Cleanup evidence recorded: browser closed, owned
       dev server(s) stopped, ports released (not 5273/3100, the owner's
       ports — this slice's Playwright pass uses its own ports), disposable
       captures under `PRD/work/ui-reimagining-build/.playwright-mcp/`

@@ -49,6 +49,12 @@ export interface SheetShellProps {
  * Portaled to `document.body`, like the overlay family it replaces (REQ-142's close
  * control, REQ-143's focus trap/outside-dismiss/Escape/focus-restore, all reused here
  * rather than re-implemented per adopter).
+ *
+ * Look-matching pass (slice L): `.sheet-shell-overlay`/`.sheet-shell-surface`
+ * (index.css) take the mockup's glass shell — backdrop blur, a corner accent
+ * glow, an accent-soft hairline border, and a mobile grab handle — with no
+ * markup change here; every adopter (`CardDetailPopup`, `FeedbackModal`,
+ * `ConversationHistoryDrawer`, `ConfirmSheet`) inherits it for free.
  */
 export function SheetShell(props: SheetShellProps): JSX.Element | null {
   if (!props.isOpen) {

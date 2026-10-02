@@ -199,8 +199,15 @@ export function ConversationHistoryDrawer({
         titleId={titleId}
         testId="history-sheet"
         head={
+          // Look-matching pass (slice L): the mockup shows the title plus a muted
+          // count (`shell.css:760-762`'s `.h-head h2` / `.h-head .n`) rather than
+          // one combined string — the count's own `<span>` carries that lighter
+          // style here, nested inside the SAME heading element so the dialog's
+          // accessible name (wired to this one `id`) stays the exact combined
+          // string every existing caller already asserts.
           <h2 id={titleId} className="text-lg font-black text-zinc-100">
-            {`Question History — ${entries.length} of 20`}
+            {"Question History "}
+            <span className="text-sm font-semibold text-zinc-400">{`— ${entries.length} of 20`}</span>
           </h2>
         }
       >
@@ -254,8 +261,21 @@ export function ConversationHistoryDrawer({
                             {previewSnippet(entry.hiddenInitialQuestion)}
                           </span>
                           {ruling && <span className="mt-0.5 block truncate text-zinc-400">{ruling}</span>}
-                          <span className="mt-0.5 block text-xs text-zinc-500">{metaLine(entry, cards.length)}</span>
+                          <span className="mt-0.5 flex flex-wrap items-center gap-1 text-xs text-zinc-500">
+                            {/* Look-matching pass (slice L): a mode badge
+                                (`shell.css:786`'s `.mode-chip`) — purely decorative
+                                here, since the row's own `aria-label` above already
+                                carries the row's full accessible name regardless of
+                                this inner content. */}
+                            <span aria-hidden="true" className="mode-chip">
+                              {entry.mode === "lookup" ? "QUICK" : "IN-DEPTH"}
+                            </span>
+                            {metaLine(entry, cards.length)}
+                          </span>
                         </span>
+                        {/* Look-matching pass (slice L): the row's trailing chevron
+                            (`shell.css:787`'s `.h-chev`). */}
+                        <span aria-hidden="true" className="h-chev">›</span>
                       </button>
                       {!isWide && (
                         <button
@@ -272,6 +292,12 @@ export function ConversationHistoryDrawer({
                 })}
               </ul>
             )}
+            {/* Look-matching pass (slice L): the foot note
+                (`flow.js:412`'s `.history-foot` text, verbatim). */}
+            <p className="history-foot">
+              Your last 20 answered questions are kept on this device. Open one to keep the
+              conversation going.
+            </p>
           </div>
 
           {isWide && (

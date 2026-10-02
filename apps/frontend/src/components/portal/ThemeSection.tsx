@@ -13,7 +13,9 @@ export interface ThemeSectionProps {
 /** REQ-201 motif glyph, one simple original shape per profile — never a Wizards of the
     Coast mana symbol or icon font. Purely decorative inside a themed cell: the cell's own
     `aria-label`/`title` (REQ-131) carries the colour name, not this shape. */
-function MotifGlyph({ motif }: { motif: Palette["motif"] }): JSX.Element {
+/** Exported so `BrandMark` (slice L) can draw the same shape inside its orb —
+ * one glyph source for both, no duplicated SVG paths. */
+export function MotifGlyph({ motif }: { motif: Palette["motif"] }): JSX.Element {
   const common = {
     viewBox: "0 0 24 24",
     "aria-hidden": "true" as const,
@@ -63,6 +65,10 @@ function MotifGlyph({ motif }: { motif: Palette["motif"] }): JSX.Element {
 }
 
 const CELL_MIN_WIDTH_PX = 40;
+/** Look-matching pass (slice L): cells are 46px tall (`shell.css:614-657`'s
+ * `.theme-orb`), slightly taller than they are wide — only the height changed,
+ * the 40px width/touch-target floor (REQ-131/REQ-207) is unchanged. */
+const CELL_HEIGHT_PX = 46;
 
 function ThemeBandCell({
   palette,
@@ -93,7 +99,7 @@ function ThemeBandCell({
       style={{
         minWidth: CELL_MIN_WIDTH_PX,
         width: CELL_MIN_WIDTH_PX,
-        height: CELL_MIN_WIDTH_PX,
+        height: CELL_HEIGHT_PX,
         backgroundColor: isActive ? palette.swatch : `${palette.swatch}26` /* ~15% wash */,
         color: isActive ? undefined : palette.swatch
       }}
@@ -177,7 +183,10 @@ export function ThemeSection({
           role="group"
           aria-label="Theme palettes"
           onScroll={updateArrowState}
-          className="flex flex-1 snap-x gap-1 overflow-x-auto scroll-smooth"
+          // Look-matching pass (slice L): the mockup's pill container
+          // (`theme-band-track`, shell.css:571-592's `.theme-orbs`) — the
+          // scroll/snap/gap mechanics are unchanged.
+          className="theme-band-track flex flex-1 snap-x gap-1 overflow-x-auto scroll-smooth"
         >
           {PALETTES.map((palette) => (
             <ThemeBandCell

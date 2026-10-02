@@ -32,6 +32,14 @@ const MOTIF_LABEL: Record<Palette["motif"], string> = {
  * opacity animation only (NFR-006) — no canvas, no animation library, no
  * script-driven loop; `prefers-reduced-motion: reduce` stops every layer
  * (index.css's shared reduced-motion block).
+ *
+ * Look-matching pass (slice L): the markup/props here are unchanged — only
+ * `.ambient-scene`'s own CSS moved, from `position: absolute` scoped inside
+ * this destination's `PageShell` box to `position: fixed; inset: 0` over the
+ * whole viewport (`ambience.css:32-37`'s `.ambience`), behind the banner
+ * header and every page's content alike. Before this, the layer painted
+ * behind its host box's own background colour and never showed in any
+ * capture — LOOK-GAPS.md's "the single biggest 'doesn't look like it' gap".
  */
 export function AmbientScene({ motif, variant = "page" }: AmbientSceneProps): JSX.Element {
   return (

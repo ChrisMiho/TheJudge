@@ -23,6 +23,10 @@ export interface ConfirmSheetProps {
  * totals / New game (slice J). Callers never render this sheet when there is nothing to
  * clear: `isOpen` is the caller's own "is there anything to lose" guard, not a prop this
  * component evaluates itself.
+ *
+ * Look-matching pass (slice L): takes `SheetShell`'s new glass shell with no
+ * markup change of its own (slice J already matched this sheet's words and
+ * its Keep/Reset buttons to the mockup; only the shared surface moved).
  */
 export function ConfirmSheet({
   isOpen,

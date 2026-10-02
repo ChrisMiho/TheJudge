@@ -6,10 +6,10 @@ import type { FeedbackContext } from "../../lib/feedback/types";
 import { BrandMark } from "../BrandMark";
 import { SheetShell } from "../SheetShell";
 
-const CATEGORY_OPTIONS: ReadonlyArray<{ value: FeedbackCategory; label: string }> = [
-  { value: "bug", label: "Bug" },
-  { value: "suggestion", label: "Suggestion" },
-  { value: "other", label: "Other" }
+const CATEGORY_OPTIONS: ReadonlyArray<{ value: FeedbackCategory; label: string; glyph: string }> = [
+  { value: "bug", label: "Bug", glyph: "✕" },
+  { value: "suggestion", label: "Suggestion", glyph: "✦" },
+  { value: "other", label: "Other", glyph: "…" }
 ];
 
 const MESSAGE_HINT: Record<FeedbackCategory, string> = {
@@ -125,7 +125,10 @@ function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDi
           }}
         >
           <div className="flex flex-col gap-1">
-            <span id={categoryGroupId} className="text-sm font-semibold text-zinc-300">
+            <span
+              id={categoryGroupId}
+              className="text-xs font-semibold uppercase tracking-[0.1em] text-zinc-400"
+            >
               Feedback type
             </span>
             <div role="group" aria-labelledby={categoryGroupId} className="flex flex-wrap gap-2">
@@ -137,13 +140,17 @@ function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDi
                     type="button"
                     aria-pressed={selected}
                     onClick={() => form.setCategory(option.value)}
+                    // Look-matching pass (slice L): a glyph per type (shell.css:707's
+                    // `.fb-pill`) and an outlined/glowing selected state in place of the
+                    // previous solid fill, matching the mockup's unfilled, lit pills.
                     className={[
-                      "motion-focus motion-press min-h-[2.75rem] rounded-full border px-4 text-sm font-bold transition",
+                      "motion-focus motion-press flex min-h-[2.75rem] items-center gap-1.5 rounded-full border px-4 text-sm font-bold transition",
                       selected
-                        ? "border-accent bg-accent-strong text-accent-contrast"
+                        ? "border-accent-soft bg-accent/15 text-zinc-100 shadow-[0_0_0.875rem_-0.3125rem_rgb(var(--accent)/0.8)]"
                         : "border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
                     ].join(" ")}
                   >
+                    <span aria-hidden="true" className="text-accent-soft">{option.glyph}</span>
                     {option.label}
                   </button>
                 );
@@ -198,16 +205,32 @@ function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDi
             data-testid="feedback-snapshot-row"
             className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-900/40 p-3"
           >
-            <p className="text-sm text-zinc-400">{DISCLOSURE_LINE}</p>
-            <button
-              type="button"
-              aria-expanded={isSummaryExpanded}
-              aria-controls={summaryId}
-              onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
-              className="motion-focus mt-2 min-h-[2.75rem] rounded-2xl border border-zinc-700 bg-zinc-800 px-3 text-sm font-semibold text-zinc-200 hover:bg-zinc-700"
-            >
-              {isSummaryExpanded ? "Hide app-state details" : "Show app-state details"}
-            </button>
+            {/* Look-matching pass (slice L): one dashed row (shell.css:716-720's
+                `.fb-snap-row`) — the disclosure line and the toggle sit side by
+                side instead of stacked on their own lines. The toggle keeps its
+                existing accessible name exactly ("Show/Hide app-state details");
+                only its visual chrome shrinks to a trailing chevron-style control
+                and its own text becomes the row's own (invisible-label) click
+                target rather than a separate full-width button below the text. */}
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-sm text-zinc-400">
+                <span aria-hidden="true" className="text-accent-soft">◈</span> {DISCLOSURE_LINE}
+              </p>
+              <button
+                type="button"
+                aria-expanded={isSummaryExpanded}
+                aria-controls={summaryId}
+                onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
+                className="motion-focus flex min-h-[2.75rem] shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-accent-soft hover:bg-zinc-800"
+              >
+                <span className="whitespace-nowrap">
+                  {isSummaryExpanded ? "Hide app-state details" : "Show app-state details"}
+                </span>
+                <span aria-hidden="true" className={isSummaryExpanded ? "rotate-180 transition" : "transition"}>
+                  ▾
+                </span>
+              </button>
+            </div>
             {isSummaryExpanded && (
               <dl id={summaryId} data-testid="feedback-app-state-summary" className="mt-3 grid gap-1 text-sm">
                 {summaryLines.map((line) => (

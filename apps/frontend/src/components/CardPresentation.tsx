@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { fetchCardDetail, peekCardDetail, type CardDetailBlock } from "../lib/cardDetail";
-import { deriveCardImageUrl } from "../lib/cardImage";
+import { getCardIdentityRing } from "../lib/cardIdentityRing";
+import { deriveCardArtCropFromImageUrl, deriveCardArtCropUrl, deriveCardImageUrl } from "../lib/cardImage";
+import { fetchCardPrintings, peekCardPrintings } from "../lib/trade/fetchCardPrintings";
 import { SheetShell } from "./SheetShell";
 
 /** The identity fields every card surface needs to render a tile — image, name, and
@@ -41,52 +43,94 @@ const EMPTY_CARD_DETAIL: CardDetailBlock = {
   subtypes: []
 };
 
-function CardDetailFieldsList({ detail }: { detail: CardDetailBlock }): JSX.Element {
+/** A representative USD price for the fact chip (slice L, requirement #10):
+ * the first printing's non-foil price, falling back to its foil price, then
+ * to the next printing — the cheapest-available reading, not a specific
+ * printing's price (the suite's six card surfaces show one generic card, not
+ * a chosen printing). `undefined` when no printing carries either price. */
+function representativePrice(printings: ReadonlyArray<{ usd: number | null; usdFoil: number | null }> | undefined): number | undefined {
+  for (const printing of printings ?? []) {
+    const price = printing.usd ?? printing.usdFoil;
+    if (price !== null && price !== undefined) {
+      return price;
+    }
+  }
+  return undefined;
+}
+
+function formatUsd(amount: number): string {
+  return `$${amount.toFixed(2)}`;
+}
+
+/**
+ * Look-matching pass (slice L, requirement #10): the card detail popup takes
+ * `flow.css:280-317`'s `.detail-panel` — an art-crop hero with the name and
+ * mana cost over it, a type line with a colour-identity dot (reusing
+ * `getCardIdentityRing`, the same source `CardPresentation`'s own card-tile
+ * ring already draws from — no new colour mapping), the oracle text in a lit
+ * box, and three fact chips (Mana value, Subtypes, Price). Price reads the
+ * same `GET /api/cards/:oracleId/prices` endpoint Trade Balancer's printing
+ * picker and the card scanner's match confirmation already call (no new API
+ * route) — a representative (cheapest-available) printing price, since this
+ * popup shows one generic card, not a chosen printing. */
+function CardDetailFieldsList({
+  card,
+  detail,
+  price,
+  titleId
+}: {
+  card: CardPresentationCard;
+  detail: CardDetailBlock;
+  price: number | undefined;
+  titleId: string;
+}): JSX.Element {
+  const artCropUrl =
+    deriveCardArtCropUrl(card.imageId) || deriveCardArtCropFromImageUrl(card.imageUrl) || undefined;
+  const identityRing = getCardIdentityRing(detail.colors);
+
   return (
-    <dl className="space-y-1">
-      {hasText(detail.manaCost) ? (
-        <div>
-          <dt className="font-medium">Mana cost</dt>
-          <dd>{detail.manaCost}</dd>
+    <div className="card-detail-hero-wrap" data-testid="card-detail-fields">
+      <div className="card-detail-hero">
+        {artCropUrl ? (
+          <img src={artCropUrl} alt="" aria-hidden="true" className="card-detail-hero-img" />
+        ) : null}
+        <div className="card-detail-hero-title">
+          <h3 id={titleId} className="card-detail-hero-name">{card.name}</h3>
+          {hasText(detail.manaCost) ? (
+            <span className="card-detail-hero-cost">{detail.manaCost}</span>
+          ) : null}
         </div>
-      ) : null}
-      {detail.manaValue !== undefined ? (
-        <div>
-          <dt className="font-medium">Mana value</dt>
-          <dd>{detail.manaValue}</dd>
-        </div>
-      ) : null}
-      {hasText(detail.typeLine) ? (
-        <div>
-          <dt className="font-medium">Type</dt>
-          <dd>{detail.typeLine}</dd>
-        </div>
-      ) : null}
-      {hasText(detail.oracleText) ? (
-        <div>
-          <dt className="font-medium">Oracle text</dt>
-          <dd className="whitespace-pre-wrap">{detail.oracleText}</dd>
-        </div>
-      ) : null}
-      {detail.colors?.length ? (
-        <div>
-          <dt className="font-medium">Colors</dt>
-          <dd>{detail.colors.join(", ")}</dd>
-        </div>
-      ) : null}
-      {detail.supertypes?.length ? (
-        <div>
-          <dt className="font-medium">Supertypes</dt>
-          <dd>{detail.supertypes.join(", ")}</dd>
-        </div>
-      ) : null}
-      {detail.subtypes?.length ? (
-        <div>
-          <dt className="font-medium">Subtypes</dt>
-          <dd>{detail.subtypes.join(", ")}</dd>
-        </div>
-      ) : null}
-    </dl>
+      </div>
+      <div className="card-detail-body">
+        {hasText(detail.typeLine) ? (
+          <p className="card-detail-typeline">
+            <span
+              aria-hidden="true"
+              className="card-detail-color-dot"
+              style={{ background: identityRing }}
+            />
+            <span>{detail.typeLine}</span>
+          </p>
+        ) : null}
+        {hasText(detail.oracleText) ? (
+          <p className="card-detail-oracle whitespace-pre-wrap">{detail.oracleText}</p>
+        ) : null}
+        <dl className="card-detail-facts">
+          <div className="card-detail-fact">
+            <dt>Mana value</dt>
+            <dd>{detail.manaValue}</dd>
+          </div>
+          <div className="card-detail-fact">
+            <dt>Subtypes</dt>
+            <dd>{detail.subtypes?.length ? detail.subtypes.join(", ") : "—"}</dd>
+          </div>
+          <div className="card-detail-fact card-detail-fact-price">
+            <dt>Price</dt>
+            <dd>{price !== undefined ? formatUsd(price) : "—"}</dd>
+          </div>
+        </dl>
+      </div>
+    </div>
   );
 }
 
@@ -128,6 +172,19 @@ export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.El
   });
   const startedLoadedRef = useRef(state.status === "loaded");
 
+  // Look-matching pass (slice L): the fact chip's price, read from the same
+  // `GET /api/cards/:oracleId/prices` endpoint Trade Balancer and the card
+  // scanner already call (`lib/trade/fetchCardPrintings.ts`) — a separate,
+  // independently cached fetch from the oracle-id detail block above, so a
+  // slow/failed price lookup never blocks or retries the descriptive fields.
+  // `undefined` (no price found or still loading) renders the chip's "—"
+  // placeholder rather than an error state — this popup's other fields stay
+  // useful with no price at all (REQ-175's existing degrade pattern).
+  const [price, setPrice] = useState<number | undefined>(() => {
+    const cached = peekCardPrintings(card.cardId);
+    return cached !== undefined ? representativePrice(cached?.printings) : undefined;
+  });
+
   const loadDetail = useCallback(() => {
     setState({ status: "loading" });
     let cancelled = false;
@@ -156,6 +213,26 @@ export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.El
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    if (peekCardPrintings(card.cardId) !== undefined) {
+      return undefined;
+    }
+    let cancelled = false;
+    fetchCardPrintings(card.cardId)
+      .then((block) => {
+        if (cancelled) return;
+        setPrice(representativePrice(block?.printings));
+      })
+      .catch(() => {
+        // Price is a nice-to-have fact chip, not a gate — a failed lookup just
+        // keeps the chip's "—" placeholder, with no retry affordance of its own.
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <SheetShell
       isOpen
@@ -164,9 +241,17 @@ export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.El
       titleId={titleId}
       testId="card-detail-popup"
       head={
-        <p id={titleId} className="font-semibold text-zinc-100">
-          {card.name}
-        </p>
+        // Look-matching pass (slice L): once loaded, the name renders visibly
+        // inside the art-crop hero below (`flow.css`'s `.detail-panel .art h2`),
+        // which then carries `titleId` itself — rendering it a second time here
+        // would duplicate both the DOM id and the visible text. Before that (the
+        // loading/error states, which show no hero), this `sr-only` title is the
+        // dialog's only accessible name.
+        state.status === "loaded" ? undefined : (
+          <p id={titleId} className="sr-only">
+            {card.name}
+          </p>
+        )
       }
     >
       <div data-testid="card-detail-content">
@@ -186,7 +271,7 @@ export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.El
             </button>
           </div>
         ) : (
-          <CardDetailFieldsList detail={state.detail} />
+          <CardDetailFieldsList card={card} detail={state.detail} price={price} titleId={titleId} />
         )}
       </div>
     </SheetShell>

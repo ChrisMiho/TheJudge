@@ -157,7 +157,8 @@ describe("DestinationOutlet", () => {
 
     const fallback = screen.getByRole("status", { name: "Loading destination" });
     expect(fallback).toBeVisible();
-    expect(fallback.closest(".page-card")).not.toBeNull();
+    // Look-matching pass (slice L): `.page-content` replaces the old bordered `.page-card`.
+    expect(fallback.closest(".page-content")).not.toBeNull();
     expect(screen.getByTestId("alpha-input")).toHaveValue("retained");
     expect(screen.getByTestId("alpha-input").closest("[hidden]")).not.toBeNull();
 

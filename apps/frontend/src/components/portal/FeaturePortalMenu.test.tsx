@@ -267,25 +267,23 @@ describe("FeaturePortalMenu", () => {
     expect(button.className).not.toContain("bg-zinc-900");
   });
 
-  it("darkens the same rail gradient on hover/expanded instead of adding a border or separate chrome layer", () => {
-    // The gradient lives on the decorative ::before layer (DEC-137) rather than on the
-    // button itself, so both the base and hover assertions read that layer.
-    const baseBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail::before {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail::before {"))
-    );
+  it("darkens the rail's own background on hover/expanded instead of adding a border or separate chrome layer (slice L)", () => {
+    // Look-matching pass (slice L): the rail is now a flat 50x50/54x54 icon button
+    // sized to match `.app-header .menu-toggle` (shell.css:287-301) — DEC-137's
+    // decorative ::before glow layer retires with the old corner-rail-in-card shape
+    // it existed for (see the rail's own comment in index.css), so the hover/expanded
+    // state now darkens the button's own background-color directly.
     const hoverBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail:hover::before"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail:hover::before"))
+      appCss.indexOf('.portal-menu-rail[aria-expanded="true"] {'),
+      appCss.indexOf("}", appCss.indexOf('.portal-menu-rail[aria-expanded="true"] {'))
     );
 
-    expect(baseBlock).toMatch(/radial-gradient\(/);
-    expect(hoverBlock).toContain('[aria-expanded="true"]');
-    expect(hoverBlock).toMatch(/radial-gradient\(/);
+    expect(hoverBlock).toContain("background-color");
     expect(hoverBlock).not.toContain("border");
+    expect(appCss).not.toContain(".portal-menu-rail::before");
   });
 
-  it("gives the rail a real in-flow footprint while keeping its flush top-left placement", () => {
+  it("gives the rail a real in-flow footprint, with no corner-flush lift now that there is no card border (slice L)", () => {
     const railBlock = appCss.slice(
       appCss.indexOf(".portal-menu-rail {"),
       appCss.indexOf("}", appCss.indexOf(".portal-menu-rail {"))
@@ -299,14 +297,15 @@ describe("FeaturePortalMenu", () => {
     // needs a compensating clearance above View Context.
     expect(railBlock).toContain("position: relative");
     expect(railBlock).not.toContain("position: absolute");
-    // The decorative glow still anchors to the rail, so it stays a positioning context.
     expect(railBlock).toContain("z-index: 3");
-    // The corner lift that keeps the rail flush with .page-card's border is unchanged.
-    expect(slotBlock).toContain("margin-top: calc(var(--layout-panel-padding) * -1)");
-    expect(slotBlock).toContain("margin-left: calc(var(--layout-panel-padding) * -1)");
+    // Look-matching pass (slice L): the rail sits inside `.app-header`'s own left grid
+    // column/padding now, like BrandMark sits in the centre one — no negated mirror of
+    // a card's padding is needed to meet a card border that no longer exists.
+    expect(slotBlock).toContain("margin: 0");
+    expect(slotBlock).not.toContain("--layout-panel-padding");
   });
 
-  it("keeps the interactive band at the 44px floor in both rail forms", () => {
+  it("sizes the rail to the header's own ☰ control at every width (slice L: 50px, 54px at 768px+)", () => {
     render(<Harness />);
     const menuOnly = screen.getByRole("button", { name: "Switch feature" });
     expect(menuOnly.className).toContain("portal-menu-rail");
@@ -315,46 +314,15 @@ describe("FeaturePortalMenu", () => {
       appCss.indexOf(".portal-menu-rail {"),
       appCss.indexOf("}", appCss.indexOf(".portal-menu-rail {"))
     );
-    const splitBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail-split {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-split {"))
-    );
-    const zoneBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail-zone {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-zone {"))
+    const desktopBlock = appCss.slice(
+      appCss.indexOf("@media (min-width: 768px) {\n  .portal-menu-rail {"),
+      appCss.indexOf("}", appCss.indexOf("@media (min-width: 768px) {\n  .portal-menu-rail {"))
     );
 
-    expect(railBlock).toContain("height: 3.5rem");
-    expect(splitBlock).toContain("height: 2.75rem");
-    expect(zoneBlock).toContain("min-height: 2.75rem");
-    expect(zoneBlock).toContain("min-width: 2.75rem");
-  });
-
-  it("paints the rail gradient from a non-interactive layer so the glow cannot intercept taps", () => {
-    // DEC-137/REQ-114: the gradient keeps its original 5.5rem x 10.5rem painted extent, but
-    // that extent is decoration only — the button's own box is the icon band. Before this,
-    // the button *was* the 10.5rem box, and its invisible lower two-thirds sat at z-index 3
-    // over destination content.
-    const decorativeBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail::before {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail::before {"))
-    );
-    const railBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail {"))
-    );
-
-    expect(decorativeBlock).toContain("pointer-events: none");
-    expect(decorativeBlock).toContain("height: 10.5rem");
-    expect(decorativeBlock).toContain("width: 5.5rem");
-
-    // The interactive box is the icon band, not the painted extent.
-    expect(railBlock).toContain("height: 3.5rem");
-    expect(railBlock).not.toContain("height: 10.5rem");
-    // Width is deliberately unchanged: the icon is centred in it, and narrowing would
-    // shift the icon left. Height is the dimension that clears destination content.
-    expect(railBlock).toContain("width: 5.5rem");
-    expect(railBlock).not.toMatch(/radial-gradient\(/);
+    expect(railBlock).toContain("width: 50px");
+    expect(railBlock).toContain("height: 50px");
+    expect(desktopBlock).toContain("width: 54px");
+    expect(desktopBlock).toContain("height: 54px");
   });
 
   it("lays the split rail's two zones side by side so they clear the step eyebrow at the touch-target floor", () => {
@@ -826,10 +794,11 @@ describe("FeaturePortalMenu shell-bounds tray geometry (REQ-113)", () => {
     expect(screen.getByRole("menu")).toBeInTheDocument();
   });
 
-  it("gives .page-card a positioning context and .portal-shell-bounds a full-inset clip box matching the shell's radius", () => {
+  it("gives .page-content a positioning context and .portal-shell-bounds a full-inset clip box matching the shell's radius", () => {
+    // Look-matching pass (slice L): `.page-content` replaces the old bordered `.page-card`.
     const pageCardBlock = appCss.slice(
-      appCss.indexOf(".page-card {"),
-      appCss.indexOf("}", appCss.indexOf(".page-card {"))
+      appCss.indexOf(".page-content {"),
+      appCss.indexOf("}", appCss.indexOf(".page-content {"))
     );
     expect(pageCardBlock).toContain("position: relative");
 

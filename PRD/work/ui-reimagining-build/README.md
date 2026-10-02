@@ -28,7 +28,7 @@ dependencies and the complete 57-id assignment table: `GAMEPLAN.md`.
 | [I](slice-i-question-history.md) | Question History: one list, reopened live | A, B, C, D | 6 | 11 (3) | done |
 | [J](slice-j-life-tracker-sheets.md) | Life Tracker's sheets take the look | A, B | 1 | 11 (3) | done |
 | [K](slice-k-late-additions.md) | Late additions: dictation, Copies on a Stack card | C, E | 2 | 9 (3) | done |
-| [L](slice-l-frame-look-match.md) | Look pass — Frame, Menu, Theme band, shared sheets take the mockup's look | A, B | — | 14 (5) | planned |
+| [L](slice-l-frame-look-match.md) | Look pass — Frame, Menu, Theme band, shared sheets take the mockup's look | A, B | — | 14 (5) | done |
 | [M](slice-m-ask-a-question-look-match.md) | Look pass — Ask a Question takes the mockup's look | L, C | — | 11 (4) | planned |
 | [N](slice-n-in-depth-details-look-match.md) | Look pass — In-depth details takes the mockup's look | L, D, E | — | 11 (4) | planned |
 | [O](slice-o-trade-balancer-look-match.md) | Look pass — Trade Balancer takes the mockup's look | L, G | — | 11 (4) | planned |
