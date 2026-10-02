@@ -6,7 +6,7 @@ right; the app still does not look like the mockup.
 
 **What you need to do:** Decide. Answer each block in `GATE-QUESTIONS.md` with
 accept, edit or reject. There are fourteen: the ambient scene, the header, the
-new "one visual system" rule, five look rules the mockup needs, and the seven
+new "one visual system" rule, four look rules the mockup needs, and the seven
 small questions the first run left open.
 
 **What it changes:** how every redesigned screen looks. Behaviour changes only
