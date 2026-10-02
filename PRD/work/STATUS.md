@@ -13,7 +13,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Slices A–K done; look-matching pass L done (14/68 criteria), M–Q planned (5 owner questions carried); PR #239 open `IN PROGRESS`; `build` attempt 7 from slice M; run `graph-20260930-055958` |
+| ui-reimagining-build | Slices A–K done; look-matching pass L–N done (36/68 criteria), O–Q planned (5 owner questions carried); PR #239 open `IN PROGRESS`; `build` attempt 8 from slice O; run `graph-20260930-055958` |
 
 ## refined
 
