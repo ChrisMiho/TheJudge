@@ -21,7 +21,7 @@ A feature-portal destination for the short ask, now the Menu's single
 **Ask a Question** door (REQ-206): the player either has one or more cards in
 mind or doesn't, and wants a fast Magic rules answer without staging a whole
 game. They optionally attach up to 10 cards — each by typed search or camera
-scan — then type a question (or pick a rules topic), and get
+scan — then type a question, and get
 a plain-text answer in the same conversation chrome the main MTG Assistant flow
 uses. Behind that one screen runs the entire Ask AI backend: the request rides
 the shared `POST /api/ask-ai` endpoint on a `mode: "lookup"` branch, the
@@ -46,13 +46,13 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
   the active destination there. (DEC-107, REQ-073, REQ-206, FLOW-011)
 - Built: the pre-submit view is laid out top to bottom as the title row (**Add
   card** and **Scan** beside it), the card stage when any card is attached,
-  the one-pill Question box, then the "General rules topics" outer
-  disclosure. (REQ-073, DEC-112, REQ-206)
+  the two-row Question box. (REQ-073, DEC-112, REQ-206)
 - Built: the card stage renders when any card is attached — the front card
   full size on a lit panel, with the one other card peeking at each side (two
   cards peek on one side only, so the same card never renders twice); ←/›
   arrows and a tap on a neighbour turn the ring; ✕ Remove and ⓘ Details
-  straddle the front card's top corners; a dark count pill reads `n / 10`.
+  straddle the front card's top corners; a row of position dots lights the front
+  card's place in the ring.
   With no card attached there is no stage. (REQ-206)
 - Built: card input is optional and bounded to at most 10 cards (REQ-167 as
   amended). The player adds each card by typed autocomplete search
@@ -79,47 +79,33 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
   scanner's own Exit scan box is the only commit path (REQ-214). (DEC-053,
   REQ-073, REQ-214)
 
-### General rules topics browse
+### General rules topics browse (retired)
 
-- Built: below the Question field sits a collapsed-by-default "General rules
-  topics" outer disclosure whose summary stays visible in every pre-submit state
-  — attaching a card or typing into the Question field does not hide it.
-  Expanding it reveals a short set of core rules topics (the stack & priority,
-  targeting, combat, layers) built from the same curated `gameRulesByTopic`
-  excerpts the prompt uses — one source of truth, no hand-authored second copy.
-  (REQ-079, DEC-112)
-- Built: topic rows are collapsed by default, each showing its title, a "Use
-  this topic" button, and an expand/collapse toggle without expanding the row;
-  expanding one row reveals its rule numbers and excerpt and auto-collapses any
-  other open topic (accordion — at most one excerpt visible at a time). Reading a
-  topic is fully client-side with no AI call. (REQ-079, DEC-112)
-- Built: "Use this topic" locks that topic's fixed phrase (`Tell me about
-  {Topic}.`) into a non-editable pill inline with the Question field's label,
-  with its own remove control; only one pill may be locked at a time and picking
-  a different topic swaps it without touching text already typed. It also
-  smooth-scrolls to the Question field and focuses the textarea. (REQ-091,
-  DEC-112)
+- Retired by `ui-look-translation` (2026-10-02) on the owner's gate verdict:
+  Ask a Question no longer shows the "General rules topics" panel — the
+  direction-1 mockup was made without it on purpose. A topic row was the
+  locked topic pill's only entry point, so the pill no longer appears and
+  nothing replaces it. (REQ-079 retired, REQ-091 as amended)
 
 ### Composing and submitting the question
 
-- Built: the freeform textarea stays independently editable at all times as
-  optional supplementary context; locking, swapping, or removing a pill never
-  overwrites it. Submit is enabled whenever a pill is locked, at least one card
-  is attached, or the textarea has non-empty trimmed text. (REQ-091, DEC-112)
+- Built: the freeform textarea stays editable at all times. Submit is enabled
+  whenever at least one card is attached or the textarea has non-empty trimmed
+  text. (REQ-091, DEC-112)
 - Built: on submit the wire `question` string is composed client-side — the
-  pill phrase plus trimmed textarea text (space-joined) when both are present;
-  the pill phrase alone; the textarea alone when no pill is locked; or, when no
-  pill is locked and the textarea is empty but one or more cards are attached,
+  trimmed textarea text when it is non-empty; or, when the textarea is empty
+  but one or more cards are attached,
   the silent fallback `Tell me about {Card Name}.` for a single card or
   `Tell me about {Card A}, {Card B} and {Card C}.` for several (never shown to
   the user). (REQ-091, REQ-167, FLOW-011)
 - Built: the visible counter, the textarea `maxLength`, and the submit gate all
   measure the raw editable textarea content, not the composed string, so an
-  empty field with a card or topic attached reads `0/300` and a full
+  empty field with a card attached reads `0/300` and a full
   300-character question stays submittable. (REQ-091 as amended by REQ-134,
   REQ-011)
-- Built: the Question box is one pill — the Add in-depth details pill at its
-  left end, the text, the character count, and the round send pill. One line
+- Built: the Question box has two rows — the text on top, the Add in-depth
+  details chip at the bottom-left and the round mic|send pill at the
+  bottom-right, with the character count where the mockup places it. One line
   of text is one row; typed content grows the box up to the space available
   before bottom chrome, capped so the page itself never scrolls from field
   growth. (DEC-146, DEC-131, REQ-110, REQ-121, REQ-206)
@@ -135,10 +121,10 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
 ### Initial submit wait
 
 - Built: while the initial submit is in flight and no answer has arrived, the
-  Question form (label, pill, textarea, counter, submit button) is hidden and
+  Question form (label, textarea, counter, submit button) is hidden and
   the existing `AskAiWaitingPanel` (live elapsed timer, threshold messages,
-  REQ-023) renders in its place. The Optional card section and the General rules
-  topics disclosure stay visible and interactive throughout. (DEC-114, REQ-092)
+  REQ-023) renders in its place. The Optional card section stays visible and
+  interactive throughout. (DEC-114, REQ-092)
 - Built: on error the Question form reappears alongside the retry affordance; on
   success the pre-submit view swaps to the shared conversation workspace.
   (DEC-114, REQ-092)
@@ -334,12 +320,13 @@ as the current shipped configuration, not product truth.
 
 - Wire question bound: `questionSchema` accepts up to 600 characters (min 0).
   This carries the composed string — the raw textarea is capped at the product
-  300 by the frontend, and 600 covers the locked-pill prefix or the silent
-  `Tell me about {Card Name}.` fallback the client composes on top. (REQ-134,
+  300 by the frontend, and 600 covers the silent `Tell me about {Card Name}.`
+  fallback the client composes (the locked-pill prefix it was also sized for is
+  retired with REQ-079). (REQ-134,
   REQ-091, `askAiRequest.ts`)
 - Frontend display cap: the visible counter, textarea `maxLength`, and submit
   gate measure the raw editable textarea at 300 characters (REQ-011); the
-  composed wire value may exceed 300 by the prefix, accepted against DEC-042's
+  composed wire value may exceed 300, accepted against DEC-042's
   1,000,000-char prompt budget. (REQ-091 as amended by REQ-134)
 - Conversation limits: 1–20 turns, alternating roles starting with user and
   ending with assistant, per-message cap — shared with the main flow, not a
@@ -411,6 +398,10 @@ as the current shipped configuration, not product truth.
   DEC-106 union was shaped so a small amount of surrounding game context could be
   added to the card branch additively later; v1 keeps the card branch strictly
   single-card with no `gameContext`. Tracked as Q-003; open, not decided here.
+- **General rules topics panel on Ask a Question (REQ-079) — closed door.**
+  Retired by the owner's `ui-look-translation` gate verdict (2026-10-02): the
+  direction-1 mockup was made without it on purpose. Its locked topic pill
+  (REQ-091) went with it, since a topic row was the pill's only entry point.
 - **Deferred, not cut:** mid-conversation card/zone-context editing —
   follow-ups are text-only in v1 with the attached card, if any, frozen for the
   conversation.
@@ -421,9 +412,10 @@ The frontend destination and lookup-local UI live under
 `apps/frontend/src/components/portal/quick-lookup/` (`QuickLookupApp.tsx`),
 registered in `apps/frontend/src/components/portal/destinationRegistry.tsx`; it
 reuses the shared `apps/frontend/src/components/{ConversationWorkspace,AdaptiveContextDialog}.tsx`,
-the submit orchestration hook `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts`,
-and the committed core-topics browse artifact
-`apps/frontend/public/data/gameRulesCoreTopics.json`. The full backend path runs
+and the submit orchestration hook `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts`.
+The committed core-topics browse artifact
+`apps/frontend/public/data/gameRulesCoreTopics.json` is still written by the data
+build but no longer read by the page (REQ-079 retired). The full backend path runs
 through `apps/backend/src/validation/askAiRequest.ts` (the `mode: "lookup"`
 branch), `apps/backend/src/prompt/` (`preparation.ts`, `promptAssembly.ts`,
 `context.ts`, `mtgReference.ts`, `phaseGuidance.ts`),

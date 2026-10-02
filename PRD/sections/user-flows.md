@@ -245,40 +245,41 @@
 - Trigger: User opens **Ask a Question** from the Menu (FLOW-010) to ask about one or more cards, or ask a freeform Magic rules question, without staging any game state
 - Preconditions:
   - app is loaded
-  - local card metadata and the committed core-topics browse data are available
+  - local card metadata is available
   - for scan input: the device has a usable camera with permission and the fingerprint library loads on first scan (FLOW-006)
 - Main Flow:
   1. User selects Ask a Question from the Menu; the app switches to the question page (frontend-only, no reload).
-  2. The pre-submit view shows, top to bottom: the title with **Add card** and **Scan** beside it, the card stage when any card is attached (the front card full size, the one other card peeking at each side), the one-pill question box (Add in-depth details · text · count · send), then a collapsed-by-default "General rules topics" outer disclosure whose summary stays visible whatever else is on the page; expanding it reveals a short list of core rules topics the user can read locally with no AI call.
+  2. The pre-submit view shows, top to bottom: the title with **Add card** and **Scan** beside it, the card stage when any card is attached (the front card full size, the one other card peeking at each side), the two-row question box (the text on top; the Add in-depth details chip at the bottom-left and the mic|send pill at the bottom-right).
   3. User optionally attaches cards, up to the lookup cap (REQ-167), by typed autocomplete search (REQ-001/REQ-002 behavior) or by scanning (FLOW-006 engine); each is a single oracle-level card shown on the stage with its image when available. The user may instead skip card input, or tap **Add in-depth details** to carry the cards and any typed question into In-depth details (REQ-206, FLOW-001).
-  4. After expanding the outer "General rules topics" disclosure, each topic row shows its title, a "Use this topic" button, and an expand/collapse toggle without needing to expand the row; expanding a row reveals that topic's rule numbers and excerpt and auto-collapses any other open topic (accordion). Tapping "Use this topic" locks that topic's phrase (`Tell me about {Topic}.`) into a non-editable pill next to the Question field's label (with its own remove control), smooth-scrolls the view to the Question field, and focuses the textarea; any text the user already typed in the textarea is preserved as optional supplementary context (REQ-091).
-  5. User enters or continues a freeform question (subject to the same 300-character cap as the main flow, which measures the **raw editable textarea content** — the locked pill phrase and the silent card-name fallback are composed at submit time and do not consume that budget, REQ-091 as amended by REQ-134) and submits, with or without a card attached and with or without a locked topic pill.
-  6. Frontend sends `{ mode: "lookup", question, cards? }` to `POST /api/ask-ai`; `question` is the client-composed string (the locked pill phrase plus any supplementary text, the text alone when no pill is locked, or — when no pill is locked and the box is empty but cards are attached — the silent `Tell me about {Card Name}.` fallback, per REQ-091); `cards` is present only if any were attached; no `gameContext` is sent.
+  4. (Retired by `ui-look-translation`, 2026-10-02, on the owner's gate verdict.) This step was the General rules topics panel and its topic pill. The panel is removed from Ask a Question (REQ-079 retired); a topic row was the pill's only entry point, so the pill no longer appears (REQ-091 as amended). The step number is kept so steps 5–10 keep theirs.
+  5. User enters a freeform question (subject to the same 300-character cap as the main flow, which measures the **raw editable textarea content** — the silent card-name fallback is composed at submit time and does not consume that budget, REQ-091 as amended by REQ-134) and submits, with or without a card attached.
+  6. Frontend sends `{ mode: "lookup", question, cards? }` to `POST /api/ask-ai`; `question` is the client-composed string (the typed text, or — when the box is empty but cards are attached — the silent `Tell me about {Card Name}.` fallback, per REQ-091); `cards` is present only if any were attached; no `gameContext` is sent.
   7. Backend assembles one lookup-mode prompt: question-driven rules retrieval (MTG reference block, always-on core game-rules topics, System 3 supplemental) always runs; when a card is attached, per-card enrichment (WotC rulings, full metadata incl. oracle text, and a System 3 query extended with that card's name, type line, and keywords — not its oracle text, REQ-178) layers in; game-state-only sections are always omitted. Off-domain questions get the "confused rules lookup" persona response rather than a direct answer. Backend returns a plain-text answer.
-  7a. While the request is in flight and no answer has arrived yet, the Question form is hidden and replaced in place by the waiting panel (live elapsed timer, escalating messages); the card stage and the General rules topics disclosure stay visible and interactive throughout (DEC-114).
+  7a. While the request is in flight and no answer has arrived yet, the Question form is hidden and replaced in place by the waiting panel (live elapsed timer, escalating messages); the card stage stays visible and interactive throughout (DEC-114).
   8. Frontend replaces the waiting/pre-submit view with the shared chat-first workspace: the player's question as sent, then the assistant's answer (REQ-025 as amended). When any card was attached, a compact card-context trigger opens its read-only presentation (naming the single card or the count, "N cards") in a mobile bottom sheet or desktop right drawer; a card name in the answer that matches an attached card renders as a tappable chip opening that card's detail (REQ-206); without a card, no context trigger renders.
   9. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "lookup", question, cards: frozen (if any were attached), conversationHistory }` under the same conversation limits as the main flow.
-  10. User may tap **✎ Edit cards** to return to the pre-submit page with the cards and question kept, or **↺ Start over** to clear the thread, the cards, the question and any locked topic pill and return to the empty page; the collapsed outer "General rules topics" summary remains visible either way.
+  10. User may tap **✎ Edit cards** to return to the pre-submit page with the cards and question kept, or **↺ Start over** to clear the thread, the cards and the question and return to the empty page.
 - Edge Cases:
-  - if no pill is locked, the question is blank after trimming, and no card is attached, submit is blocked; if a card is attached in that same state, submit is enabled and the composed question silently falls back to `Tell me about {Card Name}.` (REQ-091); the collapsed outer "General rules topics" summary remains visible regardless (it is not a fallback state, per REQ-079)
+  - if the question is blank after trimming and no card is attached, submit is blocked; if a card is attached in that same state, submit is enabled and the composed question silently falls back to `Tell me about {Card Name}.` (REQ-091)
   - adding an 11th card is blocked with a stated limit message (REQ-167 as amended)
-  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved cards/question/pill, retry with cooldown; the Question form reappears (waiting panel removed) alongside the error and retry affordance (DEC-114)
+  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved cards/question, retry with cooldown; the Question form reappears (waiting panel removed) alongside the error and retry affordance (DEC-114)
   - if the follow-up request fails, the error is shown and retry resubmits with the same frozen cards (if any) and history (FLOW-005)
   - if history chars exceed the shared cap, oldest turns are truncated first (REQ-027)
   - in mock provider mode, the assistant bubble still appends in the same thread and its answer contains the exact assembled LLM-facing prompt for that submitted message
   - scan input inherits FLOW-006 behavior (permission fallback to manual search, scanned-printing art as presentation only); each scan resolves to one card added to the stage rather than into a zone
   - an off-domain question (with or without a card attached) gets the "confused rules lookup" persona response (DEC-108), not a direct answer
-  - selecting a second topic before submitting swaps the locked pill without touching any text already typed in the textarea (REQ-091)
+
   - if a later answer arrives while the reader is farther than 64px from the bottom, the log preserves reading position and shows New response; activating it scrolls to and places keyboard focus on the newest assistant message without clearing any composer draft (REQ-098)
 - Notes:
   - Ask a Question carries no zones, stack, phase, or other game state (DEC-107, REQ-167); it is not a full Comprehensive Rules browser and not official judge authority (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-002 / DEC-013)
-  - reuses existing search, scan, core-topics, and the shared conversation workspace; when a card is attached the conversation is frozen on the attached set, otherwise there is no frozen context object; follow-ups are text-only in v1
+  - reuses existing search, scan, and the shared conversation workspace; when a card is attached the conversation is frozen on the attached set, otherwise there is no frozen context object; follow-ups are text-only in v1
   - shares the main flow's conversation and text limits; Quick Lookup defines no separate limit policy
   - no answer-seeded second-pass retrieval in v1 (deferred, tracked as Q-004); the model still surfaces relevant verbatim rules from the first-pass provided set
   - a future option to attach optional lightweight game context to the card branch is tracked as Q-003 and is out of v1 scope
-  - the "General rules topics" section's placement, always-rendered collapsed outer summary, nested row-level accordion disclosure, and the "Use this topic" locked-pill mechanism were confirmed during quick-question-ui-refinement (DEC-112 / REQ-091)
+  - the "General rules topics" section's placement, always-rendered collapsed outer summary, nested row-level accordion disclosure, and the "Use this topic" locked-pill mechanism were confirmed during quick-question-ui-refinement (DEC-112 / REQ-091); all four were retired by `ui-look-translation` (2026-10-02) on the owner's gate verdict — the panel is removed from Ask a Question (REQ-079 retired) and the pill has no entry point left (REQ-091 as amended)
   - during quick-lookup refinement this flow was rewritten to merge the prior separate Card Lookup flow (this ID) and Rules Lookup flow (former FLOW-012) into one; see FLOW-012
   - DEC-118 / REQ-097 / REQ-098 refine answered-state presentation and scrolling only; lookup request/prompt behavior is unchanged
+  - amended by `ui-look-translation` (2026-10-02): the pre-submit question box takes the direction-1 mockup's two-row shape; what it does is unchanged
 
 ### FLOW-012
 - Name: Look up a rules concept and ask a question
@@ -516,13 +517,13 @@
 - Trigger: In Quick Question the player wants to ask how two or more specific cards interact, without staging a game
 - Preconditions:
   - app is loaded
-  - local card metadata and the committed core-topics browse data are available
+  - local card metadata is available
   - for scan input: the device has a usable camera with permission and the fingerprint library loads on first scan (FLOW-006)
 - Main Flow:
   1. User opens Quick Question from the feature portal; the app switches to the lookup view (frontend-only, no reload).
-  2. The pre-submit view shows, top to bottom: the card-attach control — now able to hold more than one card — then the Question field, then the collapsed-by-default "General rules topics" disclosure.
+  2. The pre-submit view shows, top to bottom: the card-attach control — now able to hold more than one card — then the Question field (the "General rules topics" disclosure that followed it is retired, REQ-079).
   3. User adds each card they want to discuss by typed autocomplete search (REQ-001/REQ-002) or by camera scan (FLOW-006); each resolves to one oracle-level card, previewed then added, and each can be removed. Adds are capped at the stated bound (REQ-167).
-  4. User types the question (or locks a topic pill, REQ-091) and submits; the request carries the list of attached cards and no game state.
+  4. User types the question and submits; the request carries the list of attached cards and no game state.
   5. Backend assembles one lookup-mode prompt: per-card full metadata and per-card WotC rulings for every attached card, System 3 supplemental retrieval scored over the question plus each attached card's name, type line, and keywords — not its full oracle text (REQ-178) — and combo enrichment over the card set when explicit combo intent is present; game-state-only sections stay omitted (REQ-167 / DEC-107).
   6. The answer opens the shared chat-first workspace; the frozen context shows all attached cards; follow-ups are text-only with the card set frozen and send `{ mode: "lookup", question, cards: frozen, conversationHistory }`.
 - Edge Cases:

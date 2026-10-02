@@ -1,0 +1,36 @@
+{
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 844
+  },
+  {
+   "name": "closed bottom sheets glow",
+   "reason": "the mockup keeps its three closed bottom sheets mounted just below the screen and their accent glow bleeds up into the bottom edge on a phone; the app mounts a sheet only while open",
+   "x": 0,
+   "y": 796,
+   "width": 390,
+   "height": 48
+  },
+  {
+   "name": "question box",
+   "reason": "REQ-205 wins over the mockup: the In-depth chip and the mic|send pill paint 44px (the mockup's are 40px), so the box is 4px taller and its shape differs",
+   "x": 14,
+   "y": 455,
+   "width": 361,
+   "height": 112
+  },
+  {
+   "name": "search results",
+   "reason": "live data: the app lists matches from the whole card corpus, the mockup filters a ten-card demo shortlist",
+   "x": 14,
+   "y": 296,
+   "width": 361,
+   "height": 152
+  }
+ ]
+}

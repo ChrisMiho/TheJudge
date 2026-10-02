@@ -12,7 +12,7 @@ const VIEWPORT_BOTTOM_MARGIN_PX = 24;
  * question, Quick Question's question) — DEC-131 prefers one shared implementation over two
  * divergent per-field ones. Accepts the caller's own `<textarea>` ref (rather than returning
  * a new one) so a call site that already needs the element for something else — Quick
- * Question focuses it after a topic selection — doesn't have to merge two refs. The field
+ * Question hands it to the composer pill — doesn't have to merge two refs. The field
  * grows with its content and shrinks back down as content is removed, capped so it never
  * grows past the viewport's own bottom edge and forces a document/page scroll. The
  * character-count cap itself is unrelated and stays owned by each call site

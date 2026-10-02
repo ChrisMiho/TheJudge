@@ -21,7 +21,9 @@ describe("Frontend - CardStage (REQ-206)", () => {
     expect(screen.getByRole("img", { name: "Urza, Lord High Artificer" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Previous card" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Next card" })).not.toBeInTheDocument();
-    expect(screen.getByTestId("card-stage-count")).toHaveTextContent("1 / 10");
+    // one card: no ring to turn, so no dots either — only the accessible position
+    expect(screen.getByTestId("card-stage-count")).toHaveAccessibleName("Card 1 of 1");
+    expect(screen.getByTestId("card-stage-count").querySelectorAll("span")).toHaveLength(0);
   });
 
   it("peeks a neighbour on each side with three or more cards attached", () => {
@@ -36,7 +38,12 @@ describe("Frontend - CardStage (REQ-206)", () => {
     expect(screen.getByRole("img", { name: "Alpha" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Show Charlie on the stage" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Show Bravo on the stage" })).toBeInTheDocument();
-    expect(screen.getByTestId("card-stage-count")).toHaveTextContent("3 / 10");
+    // position dots replace the old `n / cap` pill (REQ-206): one per card, the front card's lit
+    const dots = screen.getByTestId("card-stage-count");
+    expect(dots).toHaveAccessibleName("Card 1 of 3");
+    expect(dots.querySelectorAll("span[data-on]")).toHaveLength(3);
+    expect(dots.querySelector('span[data-on="true"]')).toBe(dots.querySelectorAll("span[data-on]")[0]);
+    expect(dots).not.toHaveTextContent("10");
   });
 
   it("turns the ring on a tap of a neighbour", async () => {
@@ -51,6 +58,32 @@ describe("Frontend - CardStage (REQ-206)", () => {
 
     await user.click(screen.getByRole("button", { name: "Show Bravo on the stage" }));
     expect(screen.getByRole("img", { name: "Bravo" })).toBeInTheDocument();
+    // the lit dot follows the front card
+    expect(screen.getByTestId("card-stage-count")).toHaveAccessibleName("Card 2 of 3");
+    expect(screen.getByTestId("card-stage-count").querySelectorAll("span[data-on]")[1]).toHaveAttribute("data-on", "true");
+  });
+
+  it("turns the ring to a card as it is added, as the mockup does", () => {
+    const { rerender } = render(<CardStage cards={[card("a", "Alpha")]} cap={10} onRemove={vi.fn()} />);
+    rerender(<CardStage cards={[card("a", "Alpha"), card("b", "Bravo")]} cap={10} onRemove={vi.fn()} />);
+
+    expect(screen.getByTestId("card-stage-count")).toHaveAccessibleName("Card 2 of 2");
+    expect(screen.getByRole("button", { name: "Remove Bravo" })).toBeInTheDocument();
+  });
+
+  it("places cards by their signed distance from the front card and renders only the three on stage", () => {
+    const { container } = render(
+      <CardStage
+        cards={[card("a", "A"), card("b", "B"), card("c", "C"), card("d", "D"), card("e", "E")]}
+        cap={10}
+        onRemove={vi.fn()}
+      />
+    );
+
+    const placed = Array.from(container.querySelectorAll<HTMLElement>(".ring .card"));
+    expect(placed).toHaveLength(3);
+    expect(placed.map((el) => el.style.getPropertyValue("--d")).sort()).toEqual(["-1", "0", "1"]);
+    expect(container.querySelectorAll('.card[data-front="true"]')).toHaveLength(1);
   });
 
   it("peeks the one other card only once with exactly two cards attached, never on both sides", () => {

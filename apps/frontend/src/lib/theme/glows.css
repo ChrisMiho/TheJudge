@@ -19,4 +19,9 @@
   --ring-breathe-rest: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
   --ring-breathe-peak: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
   --stroke-bright: color-mix(in srgb, var(--accent-soft) 55%, #fff);
+
+  /* Status colours: the mockup's error pink (shell.css's `.fb-err`) and a warm note colour,
+     the same in every profile so a problem never reads as a Theme accent. */
+  --status-error: #ff8fa3;
+  --status-warn: #fde68a;
 }

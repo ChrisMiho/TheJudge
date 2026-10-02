@@ -1,6 +1,6 @@
 # Slice B — Ask a Question
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -52,25 +52,25 @@ Also touched:
 
 ## Acceptance criteria
 
-Threshold for this slice: differing fraction at most 0.04 per pair (initial; measure first, lower it only with evidence, never raise it to or above 0.05). States to pair: default-with-cards, add-card-search, answered-follow-up.
+Threshold for this slice: differing fraction at most 0.02 per pair (measured maximum 0.0174 at tolerance 12; lowered from the planner's 0.04 on that evidence, never raised to or above 0.05). States to pair: default-with-cards, add-card-search, answered-follow-up.
 
-- [ ] **B1** Side-by-side pairs exist at 390x844 and 1440x900 for every state (default-with-cards, add-card-search, answered-follow-up) in docs/design/ui-reimagining/build-screenshots/translation/ask-question/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated
-- [ ] **B2** `node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/ask-question/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.04 (itself below 0.05); every mask region is named with a reason
-- [ ] **B3** `npm run quality:check` is green
-- [ ] **B4** `npm --workspace apps/frontend run test` is green
-- [ ] **B5** `npm --workspace apps/backend run test` is green
-- [ ] **B6** REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md
-- [ ] **B7** REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md
-- [ ] **B8** Profile-switch pair: the default-with-cards state in two different Theme colours at 390x844 is saved as `default-with-cards-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/ask-question/, with every element recoloured and none left behind (observed)
-- [ ] **B9** Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice
-- [ ] **B10** Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/ask-question/ (absolute paths) is recorded in DIFF-RESULTS.md
-- [ ] **B11** `QuickLookupApp` shows no General rules topics panel and no locked topic pill in any state; no `CORE_TOPICS_URL` fetch is made (grep of the file is empty for `coreTopics|lockedTopic|CORE_TOPICS`)
-- [ ] **B12** Ask a Question's composer is two rows at both viewports (text on top; In-depth chip bottom-left, mic|send pill bottom-right) and the front card is centred on the stage with neighbours peeking, observed in the browser and recorded
-- [ ] **B13** Position dots replace the `n / 10` pill; at two cards no duplicate neighbour renders; the 10-card cap, the 300-character ring and dictation still work (observed)
-- [ ] **B14** The Add-card search opens before three characters on Ask a Question and still waits for three on every other search (test names recorded)
-- [ ] **B15** The REQ-079 retire amendment set is applied in `PRD/sections/`: the grep `grep -rn 'REQ-079' PRD/sections` and the six quoted greps in the REQ-079 block show every 'amend' row amended and every 'retire' row retired, none left on the pre-retire wording
-- [ ] **B16** `PRD/sections/` carries the FLOW-011, REQ-124, REQ-070, REQ-206 and REQ-167 edits, each applied once
-- [ ] **B17** The helper text on Ask a Question matches the mockup's wording and placement (side-by-side read, differences listed)
+- [x] **B1** Side-by-side pairs exist at 390x844 and 1440x900 for every state (default-with-cards, add-card-search, answered-follow-up) in docs/design/ui-reimagining/build-screenshots/translation/ask-question/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated
+- [x] **B2** `node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/ask-question/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.02 (itself below 0.05); every mask region is named with a reason
+- [x] **B3** `npm run quality:check` is green
+- [x] **B4** `npm --workspace apps/frontend run test` is green
+- [x] **B5** `npm --workspace apps/backend run test` is green
+- [x] **B6** REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md
+- [x] **B7** REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md
+- [x] **B8** Profile-switch pair: the default-with-cards state in two different Theme colours at 390x844 is saved as `default-with-cards-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/ask-question/, with every element recoloured and none left behind (observed)
+- [x] **B9** Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice
+- [x] **B10** Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/ask-question/ (absolute paths) is recorded in DIFF-RESULTS.md
+- [x] **B11** `QuickLookupApp` shows no General rules topics panel and no locked topic pill in any state; no `CORE_TOPICS_URL` fetch is made (grep of the file is empty for `coreTopics|lockedTopic|CORE_TOPICS`)
+- [x] **B12** Ask a Question's composer is two rows at both viewports (text on top; In-depth chip bottom-left, mic|send pill bottom-right) and the front card is centred on the stage with neighbours peeking, observed in the browser and recorded
+- [x] **B13** Position dots replace the `n / 10` pill; at two cards no duplicate neighbour renders; the 10-card cap, the 300-character ring and dictation still work (observed)
+- [x] **B14** The Add-card search opens before three characters on Ask a Question and still waits for three on every other search (test names recorded)
+- [x] **B15** The REQ-079 retire amendment set is applied in `PRD/sections/`: the grep `grep -rn 'REQ-079' PRD/sections` and the six quoted greps in the REQ-079 block show every 'amend' row amended and every 'retire' row retired, none left on the pre-retire wording
+- [x] **B16** `PRD/sections/` carries the FLOW-011, REQ-124, REQ-070, REQ-206 and REQ-167 edits, each applied once
+- [x] **B17** The helper text on Ask a Question matches the mockup's wording and placement (side-by-side read, differences listed)
 
 ## Verification
 

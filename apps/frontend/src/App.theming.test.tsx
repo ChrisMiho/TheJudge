@@ -316,10 +316,10 @@ describe("Accent token coverage for staged and answered semantic surfaces", () =
 
     const bubble = userMessage.closest("div");
     expect(bubble).not.toBeNull();
-    // Look-matching pass (slice M): restyled to `.msg-you` (flow.css), which reads the
-    // active palette's `--accent`/`--accent-strong` custom properties rather than a fixed
-    // Tailwind accent utility.
-    expect(bubble!.className).toContain("msg-you");
+    // The mockup's `.msg.you` (flow.css), which reads the active palette's
+    // `--accent`/`--accent-strong` tokens rather than a fixed Tailwind accent utility.
+    expect(bubble!.className).toContain("msg");
+    expect(bubble!.className).toContain("you");
     expect(bubble!.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
   });
 

@@ -165,7 +165,6 @@ export type LookupDraftState = {
   /** REQ-167: the single optional card generalizes to a bounded (max 5) list. */
   selectedCards: CardMetadataItem[];
   question: string;
-  lockedTopic: { id: string; title: string } | null;
   updatedAt: string;
 };
 
@@ -210,7 +209,6 @@ function isValidLookupDraftState(value: unknown): value is LookupDraftState {
     draft.mode === "lookup" &&
     Array.isArray(draft.selectedCards) &&
     typeof draft.question === "string" &&
-    (draft.lockedTopic === null || (typeof draft.lockedTopic === "object" && draft.lockedTopic !== null)) &&
     typeof draft.updatedAt === "string"
   );
 }

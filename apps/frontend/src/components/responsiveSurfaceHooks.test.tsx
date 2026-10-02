@@ -76,7 +76,6 @@ describe("Frontend - Responsive surface hooks", () => {
       ".scroll-cap-4-enrichment",
       ".enrichment-card-row",
       ".scan-video",
-      ".conversation-thread",
       ".conversation-workspace",
       ".adaptive-context-surface"
     ]) {
@@ -104,7 +103,7 @@ describe("Frontend - Responsive surface hooks", () => {
     expect(screen.getAllByText("Opt").length).toBeGreaterThan(0);
 
     rerender(<ConversationThread messages={messages} />);
-    expect(screen.getByText("The stack resolves.").closest(".conversation-thread")).not.toBeNull();
+    expect(screen.getByText("The stack resolves.").closest(".thread")).not.toBeNull();
 
     rerender(
       <AdaptiveContextDialog

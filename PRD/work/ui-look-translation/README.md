@@ -26,7 +26,7 @@ Plan: `GAMEPLAN.md`. Criteria: `slice-<letter>.criteria.json`.
 | Slice | Doc | Mockup page | Depends on | Gate blocks applied | Status |
 | --- | --- | --- | --- | --- | --- |
 | A Frame | `slice-a-frame.md` | `shared-chrome-menu.html` | none | NFR-006, REQ-207, REQ-216 | done |
-| B Ask a Question | `slice-b-ask-a-question.md` | `quick-question.html` | A | FLOW-011, REQ-124, REQ-079 (retire), REQ-070, REQ-206, REQ-167 | planned |
+| B Ask a Question | `slice-b-ask-a-question.md` | `quick-question.html` | A | FLOW-011, REQ-124, REQ-079 (retire), REQ-070, REQ-206, REQ-167 | done |
 | C In-depth details | `slice-c-in-depth-details.md` | `in-depth-question.html` | A | REQ-209 | planned |
 | D Trade Balancer | `slice-d-trade-balancer.md` | `trade-balancer.html` | A | REQ-215 | planned |
 | E Card scanner | `slice-e-card-scanner.md` | `card-scan.html` | A | REQ-214 | planned |

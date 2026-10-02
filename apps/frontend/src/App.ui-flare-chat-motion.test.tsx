@@ -227,7 +227,7 @@ describe("Frontend - UI flare chat motion integration", () => {
       screen.getByRole("button", { name: "Start over — clears the cards and the question" })
     );
     expect(screen.queryByRole("heading", { name: "Lightning Bolt" })).not.toBeInTheDocument();
-    expect(await screen.findByRole("heading", { name: "General rules topics" })).toBeInTheDocument();
+    expect(await screen.findByRole("textbox", { name: "Magic question" })).toBeInTheDocument();
 
     expect(localStorage.getItem(legacyDensityKey)).toBe("slim");
     expect(document.documentElement).not.toHaveAttribute("data-layout-density");

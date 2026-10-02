@@ -7,6 +7,8 @@ import type { CardDetailBlock } from "../lib/cardDetail";
 import type { CardMetadataItem } from "../types";
 
 export const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
+export const flowCss = readFileSync(resolve(process.cwd(), "src/styles/flow.css"), "utf8");
+export const shellCss = readFileSync(resolve(process.cwd(), "src/styles/shell.css"), "utf8");
 
 /**
  * Test-fixture shape: the slim up-front `CardMetadataItem` fields (REQ-174)

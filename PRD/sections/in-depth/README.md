@@ -139,9 +139,11 @@ retrieval/combo machinery that other specs own.
   add-player, and remove-last-player each meet a 44×44px touch target, the
   expander is a prominent triangle, and the add/remove pair reads `−` (remove)
   left / `+` (add) right. (DEC-091, REQ-069)
-- Built: the "Players in game" helper reads exactly `Tap ▾ to set names and life
-  totals — 2 players start at 20, 3+ at 40.`; the count-driven starting-life
-  behavior (2 → 20, 3+ → 40) is unchanged, this is copy only. (DEC-092, REQ-070)
+- Built: the "Players in game" helper reads as the In-depth details mockup's Game
+  station shows it (REQ-070's redesigned-screens exception; before this pass it
+  read exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at
+  40.`); the count-driven starting-life behavior (2 → 20, 3+ → 40) is unchanged,
+  this is copy only. (DEC-092, REQ-070)
 
 ### Step 2 — Zone confirmation
 
@@ -151,9 +153,10 @@ retrieval/combo machinery that other specs own.
   or off; selections are stored in `gameContext.selectedZones`, and at least one
   zone is required to continue. Phase defaults are UX hints, not legality rules.
   (REQ-016, DEC-024, DEC-035)
-- Built: the zone-confirmation helper reads exactly `Select all zones that apply
-  to your question.`; the prior turn-phase-defaults clause was intentionally
-  dropped. (DEC-092, REQ-070)
+- Built: the zone-confirmation helper reads as the In-depth details mockup's
+  Zones station shows it (REQ-070's redesigned-screens exception; before this
+  pass it read exactly `Select all zones that apply to your question.`). (DEC-092,
+  REQ-070)
 
 ### Step 3 — Zone collection
 

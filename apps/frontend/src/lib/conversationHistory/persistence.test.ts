@@ -67,7 +67,6 @@ function buildLookupDraft(
     mode: "lookup",
     selectedCards: [],
     question: "Does trample interact with deathtouch?",
-    lockedTopic: null,
     ...overrides
   };
 }

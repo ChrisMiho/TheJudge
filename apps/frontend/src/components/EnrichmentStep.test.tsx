@@ -20,12 +20,12 @@ describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
   // composer is now `ComposerPill` — the same icon-only send control every other
   // `ComposerPill` in the app uses (no visible label at any width), retiring
   // DEC-153's visible "Send Request" label for this one composer specifically.
-  it("renders the Decrypt Stack control icon-only, matching every other composer pill", async () => {
+  it("renders the Decrypt Stack control as the mockup's ➤ glyph only, matching every other composer pill", async () => {
     const user = renderEnrichment();
     await user.click(screen.getByRole("button", { name: "OK — finish context" }));
 
     const button = screen.getByRole("button", { name: "Decrypt Stack" });
-    expect(button.textContent?.trim()).toBe("");
+    expect(button.textContent?.trim()).toBe("➤");
   });
 
   it("keeps the Decrypt Stack accessible name distinct from the visible label", async () => {
@@ -59,7 +59,7 @@ describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
     expect(screen.getByRole("textbox", { name: "Optional question" })).toHaveValue(
       "Does this resolve?"
     );
-    expect(screen.getByText("18/300")).toBeInTheDocument();
+    expect(screen.getByText("18 / 300")).toBeInTheDocument();
   });
 
   // Look-matching pass (slice N, review 1 fix — finding 3): `ComposerPill` hides
@@ -70,7 +70,7 @@ describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
     const user = renderEnrichment({ question: "" });
     await user.click(screen.getByRole("button", { name: "OK — finish context" }));
 
-    expect(screen.queryByText("0/300")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "0");
   });
 });
 

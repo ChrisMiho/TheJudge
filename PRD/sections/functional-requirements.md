@@ -1662,10 +1662,11 @@
 - Priority: low
 - Description: Sharpen the existing on-screen helper statements that under-explain how to use a screen, so a first-time user understands the control and its behavior from one concise line. This is a copy-only pass that enhances text already rendered; it adds no net-new guidance text, tooltips, popovers, onboarding chrome, or intro lines, and it leaves self-explanatory screens and the playful themed labels/buttons unchanged (DEC-092).
 - Acceptance Criteria:
-  - the game-context "Players in game" helper text reads exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.` (replacing `2 players start at 20 life. 3+ players default to 40 life.`), naming the `▾` expander control while preserving the 20/40 defaults behavior in a single line
-  - the zone-confirmation helper text reads exactly `Select all zones that apply to your question.` (replacing `Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.`); the prior turn-phase-defaults clause is intentionally dropped
+  - the game-context "Players in game" helper text reads exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.` (replacing `2 players start at 20 life. 3+ players default to 40 life.`), naming the `▾` expander control while preserving the 20/40 defaults behavior in a single line; on the redesigned In-depth details Game station the mockup's wording governs instead (redesigned-screens exception below)
+  - the zone-confirmation helper text reads exactly `Select all zones that apply to your question.` (replacing `Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.`); the prior turn-phase-defaults clause is intentionally dropped; on the redesigned In-depth details Zones station the mockup's wording governs instead (redesigned-screens exception below)
   - no other on-screen guidance/helper text is changed: the "Add cards to zones" helper, the context-enrichment screen (other than its ready-state helper text, whose pointer to the send control is governed by DEC-153/REQ-132 rather than this preserve), the answered/follow-up view, the scan on-open state, the stack-order note, the tuned scan cause-hints, and the fallback-question note are byte-for-byte unchanged
-  - no net-new guidance text is introduced anywhere — no new intro/orientation lines, tooltips, popovers, coachmarks, modals, or onboarding flow
+  - redesigned-screens exception (`ui-look-translation`, 2026-10-02): on Ask a Question (REQ-206), In-depth details (REQ-209), Trade Balancer (REQ-215), the card scanner's chrome (REQ-214) and Life Tracker's Game Setup and Counters sheets (REQ-202), guidance and helper text — its wording, its placement, and whether a line appears at all — follows that screen's approved mockup page under `docs/design/ui-reimagining/direction-1/`. Where the mockup page shows no such line, none renders (for example the In-depth Cards step's "Add cards to zones" heading and lede, and the stack-order note `Stack order is bottom to top. The first card you add is the bottom; each new card is added on top.`); where it shows one, its wording is the mockup's. On these screens the byte-for-byte preserve still holds for the tuned scan condition-aware cause-hints and the scanner's `locking` / `camera-error` state copy (REQ-052, REQ-071), the waiting panel's thresholds and copy (DEC-031, DEC-041), and every control's accessible name
+  - no net-new guidance text is introduced anywhere — no new intro/orientation lines, tooltips, popovers, coachmarks, modals, or onboarding flow — except a line a redesigned screen's mockup page shows (exception above)
   - the `▾`/`▸` expander control referenced by the enhanced game-context copy retains its existing `aria-label`/`aria-expanded` semantics and toggle behavior (REQ-069); the copy change is text-only
   - tests assert the two enhanced strings render on their respective screens and that the replaced strings no longer appear
 - Constraints:
@@ -1686,6 +1687,7 @@
 - Notes:
   - triggered by post-AWS-release feedback that the per-screen usage statements were not landing; scope was deliberately narrowed by the product owner from a broad per-screen rewrite to enhancing only the two helper lines that under-explain, leaving self-explanatory screens alone
   - DEC-153 supersedes this requirement's prior blanket preserve of the visible **Decrypt Stack** submit label for the initial pre-submit control only, and additionally carves out the Enrichment ready-state helper text's pointer to that control from this requirement's byte-for-byte preserve of the context-enrichment screen
+  - amended by `ui-look-translation` (2026-10-02): the redesigned-screens exception above. The decision-index row DEC-092 that first set this preserve is retired, so the rule is amended here
 
 ### REQ-071
 - Title: Remove redundant searching-state label to clear mute-toggle overlap
@@ -1750,10 +1752,10 @@
   - when a card is resolved, its name, image when available, and oracle text (including full metadata) are shown before the user submits a question, and the user can remove or replace it before submitting
   - only one card is active at a time; there are no zones, stack, phase, multi-card setup, or per-card enrichment-editing controls
   - a freeform question field accepts up to the same character cap as the main flow question (REQ-011)
-  - the pre-submit view's guidance copy reads exactly **"Add a card for context or ask any Magic related question."**, shown inline as a suffix on the "Optional card" label after an em dash (e.g. "OPTIONAL CARD — Add a card for context or ask any Magic related question."), not as a standalone line under the header (DEC-113)
-  - the pre-submit view is laid out top to bottom as: optional card-attach control, then the Question field, then the "General rules topics" outer disclosure (REQ-079), whose collapsed summary remains visible regardless of whether a card is attached or the question field already has text
+  - the pre-submit view's guidance copy follows the Ask a Question mockup page (REQ-070's redesigned-screens exception); the redesigned page carries no hint line under the title (REQ-206), so the former inline suffix "Add a card for context or ask any Magic related question." on the "Optional card" label no longer renders (today's build already omits it)
+  - the pre-submit view is laid out top to bottom as: optional card-attach control, then the Question field (the "General rules topics" disclosure that followed it is retired, REQ-079)
 - Constraints:
-  - reuse existing search, scan, card-presentation, and core-topics components; do not fork new identity or metadata models
+  - reuse existing search, scan, and card-presentation components; do not fork new identity or metadata models
   - printing-level scan identity stays presentation-only and is not pushed into the request, prompt, or rulings (DEC-053)
 - Dependencies:
   - DEC-107
@@ -1768,6 +1770,7 @@
   - during quick-lookup refinement this requirement was rewritten to merge the prior separate Card Lookup entry (this ID) and Rules Lookup entry (former REQ-076) into one destination; see REQ-076
   - during quick-question-ui-refinement, the guidance-copy wording and the card/question/topics section order were confirmed (DEC-112); the prior "empty state shows the fallback" framing is superseded by REQ-079's always-rendered collapsed outer disclosure
   - during ui-refinement, the guidance copy's placement moved from a standalone line under the header to inline with the "Optional card" label (DEC-113); the wording itself and the section order are unchanged
+  - amended by `ui-look-translation` (2026-10-02): the "General rules topics" disclosure after the Question field is retired on the owner's gate verdict (REQ-079)
 
 ### REQ-074
 - Title: Quick Lookup prompt assembly and domain guardrail
@@ -1809,7 +1812,7 @@
   - when any card is frozen, a compact trigger naming the card or stating the count (`"N cards"`) opens the frozen set's read-only card presentation in a bottom sheet below `768px` or right-side drawer at `768px+`; without a card, no empty context trigger or container is rendered; a card name in the judge's message that exactly matches an attached card renders as a tappable chip opening that card's detail directly in the thread (REQ-206)
   - the first visible thread bubble is the player's question as sent (REQ-025 as amended), then the assistant's answer; the question is also included in `conversationHistory` sent to the API
   - follow-up requests send `{ mode: "lookup", question, cards: frozen (the full attached set, when any were attached), conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Quick Lookup defines no separate limit policy
-  - start over clears the thread and returns to the empty pre-ask state — the looked-up card, its search input, and any locked topic are cleared, and the core-topics fallback (REQ-079) is visible
+  - start over clears the thread and returns to the empty pre-ask state — the looked-up card and its search input are cleared (the core-topics panel is retired, REQ-079)
   - mock-provider follow-ups append to the same thread exactly as live responses do
 - Constraints:
   - reuse the shared workspace and existing conversation/card components; no new conversation-limit constants, duplicated context formatting, or divergent chrome
@@ -1864,20 +1867,11 @@
 
 ### REQ-079
 - Title: General rules topics browse fallback
-- Priority: medium
-- Description: Quick Lookup must offer a small always-local list of core rules topics (labeled "General rules topics") the user can read with no AI call, built from the same curated rules excerpts the prompt uses and positioned below the Question field. Its outer disclosure summary remains visible regardless of card/question state while the topic list is collapsed by default.
+- Priority: —
+- Description: Retired by the owner's `ui-look-translation` gate verdict (2026-10-02). Ask a Question no longer offers the "General rules topics" panel: the direction-1 mockup was made without it on purpose. The panel's one action, locking a topic phrase into the question, has no entry point left (REQ-091 as amended).
 - Acceptance Criteria:
-  - the pre-submit view shows a collapsed-by-default outer "General rules topics" disclosure below the Question field; expanding it reveals a short set of core rules topics (e.g. the stack & priority, targeting, combat, layers)
-  - the outer disclosure's summary is always visible — attaching a card and/or typing into the question field does not hide it — while its helper copy and topic list stay hidden when collapsed
-  - topic rows are collapsed by default: each row shows its title, an action button (REQ-091), and an expand/collapse toggle, all visible without expanding
-  - expanding a row reveals that topic's rule numbers and excerpt; opening one topic auto-collapses any other currently-open topic (accordion — at most one excerpt visible at a time)
-  - the topic content is a committed frontend subset of the same curated `gameRulesByTopic` excerpts used by prompt assembly (single source of truth; no hand-authored second copy)
-  - reading (expanding) a topic is fully client-side with no backend call and no AI cost
-  - the topic row's action button behavior (locking a phrase into the question) is specified by REQ-091; it does not itself call the model
-  - the list is a discoverability fallback, not a full Comprehensive Rules browser
+  - retired — Ask a Question renders no "General rules topics" disclosure, topic list or topic row in any state (pre-submit, waiting, error, answered, after Start over)
 - Constraints:
-  - frontend-bundled static data (DEC-012 pattern); no runtime rules sync and no new endpoint
-  - do not fork or hand-author rules text that could drift from the curated corpus
 - Dependencies:
   - DEC-107
   - DEC-112
@@ -1888,6 +1882,7 @@
   - the committed core-topics subset is regenerated from the curated manifest by the existing data build; topic selection is a build-time sign-off like DEC-030
   - during quick-lookup refinement this requirement's dependency moved from DEC-099 (Rules Lookup, superseded) to DEC-107 (Quick Lookup); its content is otherwise unchanged
   - during the quick-question-ui-refinement work this requirement's section title ("Browse core rules topics" → "General rules topics"), placement (below the Question field), always-rendered outer-summary gate change, collapsed outer disclosure, and nested row-level accordion were confirmed (DEC-112); the row action button's behavior superseded its original "pre-fills a freely editable textarea" criterion — see REQ-091
+  - retired by `ui-look-translation` (2026-10-02) on the owner's gate verdict: "retire. Remove the General rules topics panel from Ask a Question; the mockup was made without it on purpose." Amended alongside: REQ-073 (page order), REQ-075 (Start over), REQ-091 (no entry point left), REQ-092 (the wait), REQ-206 (the page), FLOW-011, FLOW-023, `quick-lookup/README.md`, and the system map's Quick Lookup summary. The committed frontend topic list and the data build that writes it are left as they are; the backend's curated rules topics that every prompt uses are unchanged.
 
 ### REQ-080
 - Title: Rules Lookup conversation thread and limits
@@ -2145,19 +2140,13 @@
 ### REQ-091
 - Title: Locked topic-phrase pill in Quick Lookup's general rules topics
 - Priority: medium
-- Description: Selecting a topic in Quick Lookup's "General rules topics" section (REQ-079) locks that topic's fixed phrase into a non-editable pill inline with the Question field, rather than pre-filling the freeform textarea, so the topic choice always reaches the submitted question while the user can still add their own supplementary text.
+- Description: Selecting a topic in Quick Lookup's "General rules topics" section (REQ-079) locked that topic's fixed phrase into a non-editable pill inline with the Question field. A topic row was the pill's only entry point; with REQ-079 retired (2026-10-02), no entry point remains and the pill no longer appears. No other way to lock a phrase replaces it. What stays in force is how the question is composed with no pill: the typed text, or the silent card-name fallback when the box is empty and a card is attached.
 - Acceptance Criteria:
-  - each topic row's action button reads "Use this topic" (renamed from "Ask about this"); its label and `aria-label` communicate adding to the question, not submitting
-  - tapping "Use this topic" adds a pill inline next to the Question field's label showing the literal, non-editable phrase `Tell me about {Topic}.`
-  - the pill has its own visible remove control; activating it clears the locked phrase and returns the Question field to its plain (no-pill) state
-  - only one topic pill may be locked at a time; tapping a different topic's "Use this topic" replaces the current pill without altering any text already typed in the textarea
-  - the textarea remains available and editable at all times as optional supplementary context; its content is never overwritten by locking, swapping, or removing a pill
-  - the textarea's placeholder text changes while a pill is locked, inviting optional additional detail or an as-is submit (e.g. "Add anything specific — or leave this blank and just ask.")
-  - submit is enabled whenever a pill is locked, a card is attached, or the textarea has non-empty trimmed text — not only on non-empty textarea content
-  - tapping "Use this topic" smooth-scrolls the view so the Question field (with its new pill) is visible, and focuses the textarea
-  - on submit, the request's `question` value is composed client-side with no `AskAiRequest` shape change: the pill phrase plus the trimmed textarea content (space-joined) when both are present; the pill phrase alone when the textarea is empty; the trimmed textarea content alone when no pill is locked and the textarea is non-empty; or, when no pill is locked, the textarea is empty, and a card is attached, the silent fallback phrase `Tell me about {Card Name}.` (not shown to the user; mirrors the locked-pill's phrasing convention and the game-context flow's existing silent-fallback-question precedent)
-  - the shared 300-character cap (REQ-011) and the visible character counter both measure the **raw editable textarea content** — not the composed string; the locked pill phrase and the silent card fallback are composed at submit time and do not consume the user's budget (amended by REQ-134)
-  - a locked topic pill and an attached card may both be present at submit time; the collapsed outer general-rules-topics summary remains rendered (REQ-079) whether or not a pill is locked
+  - the locked topic pill never appears: there is no topic row and no other control that locks a phrase into the question (REQ-079 retired); the "Use this topic" button, the pill and its remove control, the one-pill swap rule, the locked-pill placeholder and the scroll-to-question are retired with it
+  - the textarea remains available and editable at all times
+  - submit is enabled whenever a card is attached or the textarea has non-empty trimmed text — not only on non-empty textarea content
+  - on submit, the request's `question` value is composed client-side with no `AskAiRequest` shape change: the trimmed textarea content when it is non-empty; or, when the textarea is empty and a card is attached, the silent fallback phrase `Tell me about {Card Name}.` (not shown to the user; it keeps the retired pill's phrasing convention and the game-context flow's existing silent-fallback-question precedent)
+  - the shared 300-character cap (REQ-011) and the visible character counter both measure the **raw editable textarea content** — not the composed string; the silent card fallback is composed at submit time and does not consume the user's budget (amended by REQ-134)
 - Constraints:
   - no `AskAiRequest` shape or backend prompt-assembly contract change; composition is frontend-only string concatenation
   - **amended on ship (2026-08-11)**: one Zod bound did have to move. `questionSchema` was `boundedText(300, 0)`, which rejected the composed string once the composed-length submit gate was removed; it is now `boundedText(600, 0)`. No field, request shape, route, or prompt-assembly behavior changed — see REQ-134's ship correction for the measurement
@@ -2169,16 +2158,17 @@
 - Notes:
   - supersedes REQ-079's prior "ask about this pre-fills an editable textarea" acceptance criterion for the topic-row action button; REQ-079 was amended alongside this requirement
   - **amended during the `ui-review` pass (2026-08-06)**: the cap/counter criterion originally read "the shared 300-character cap (REQ-011) applies to the composed question string, and the visible character counter reflects the composed length". Live measurement showed that rule produces three user-visible defects — an empty field reporting the prefix length (`22/300` with a topic locked), a counter that rises when the user backspaces to empty (the silent card fallback replaces the empty string), and an unreachable submit state (`323/300` with **Send Request** disabled while `maxLength` caps raw input at 300). Product-owner decision: the counter and the submit gate both measure raw editable text. The composed string may therefore exceed 300 by the pill phrase — accepted. Composition itself (pill phrase + trimmed text, silent fallbacks, single-pill rule) is unchanged. See REQ-134, including its 2026-08-11 ship correction: the wire bound in `askAiRequest.ts` is 600 characters, because the original "no downstream limit is at risk" reasoning cited DEC-042's prompt budget and missed the request schema's own 300-character bound.
+  - amended by `ui-look-translation` (2026-10-02): REQ-079 is retired on the owner's gate verdict, so the topic row — this pill's only entry point — is gone. The pill no longer appears and no new entry point is added; the textarea, submit, composition and counter criteria keep only their no-pill cases, which are unchanged. The `questionSchema` 600-character wire bound is unchanged.
 
 ### REQ-092
 - Title: Quick Lookup submit wait feedback
 - Priority: medium
 - Description: While Quick Lookup's initial submit is in flight (before the first answer arrives), the app must hide the Question form and show the existing decrypt wait feedback panel in its place, matching the in-depth flow's own submit-wait pattern.
 - Acceptance Criteria:
-  - while a Quick Lookup submit is in flight and no answer has yet arrived, the Question form (label, locked-topic pill if present, textarea, character counter, submit button) is not rendered
+  - while a Quick Lookup submit is in flight and no answer has yet arrived, the Question form (label, textarea, character counter, submit button) is not rendered
   - `AskAiWaitingPanel` (REQ-023: live elapsed timer, `aria-live` threshold-based messages) renders in the Question form's place during the wait
   - the Optional card section (search/attach control, selected-card preview) remains visible and interactive during the wait
-  - the "General rules topics" outer disclosure remains visible and interactive during the wait; expanding/collapsing a topic or locking/swapping/removing a topic pill during the wait does not affect the in-flight request
+
   - the Question form reappears in place of the waiting panel as soon as the request resolves with an error, alongside the existing error/retry affordance
   - on success, the pre-submit view is replaced by the existing post-answer conversation view (REQ-025-style swap), unchanged by this requirement
 - Constraints:
@@ -2191,6 +2181,7 @@
   - REQ-075
 - Notes:
   - added during ui-refinement to close a gap: REQ-023 specifies this pattern for the in-depth flow's `EnrichmentStep`, and REQ-075 covers Quick Lookup's conversation once an answer exists, but the pre-first-answer wait state on Quick Lookup's own submit form was previously unspecified and had drifted from the REQ-023 pattern
+  - amended by `ui-look-translation` (2026-10-02): the "General rules topics" disclosure that stayed live during the wait is retired (REQ-079), and the locked topic pill no longer appears (REQ-091)
 
 ### REQ-093
 - Title: Committed Commander Spellbook combo corpus
@@ -2450,7 +2441,7 @@
   - closing the outer **Players in game** disclosure resets the secondary state; reopening it shows all active player cards in their compact state
   - switching from In-Depth Question to another destination and back resets secondary details collapsed while preserving the outer roster-disclosure state, player count, display names, life totals, all counter values, current staged-flow step, and every other in-progress destination value
   - expanding, collapsing, closing/reopening the outer disclosure, and completing a destination round trip never mutate the eventual `gameContext.players` values submitted for unchanged inputs
-  - the helper copy remains exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.`; no new visible guidance text is introduced
+  - the helper copy remains exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.`, or on the redesigned Game station the mockup's wording (REQ-070's redesigned-screens exception); no other new visible guidance text is introduced
   - automated coverage verifies compact default rendering, synchronized expand from more than one player's arrow, synchronized collapse, add/remove behavior, outer-disclosure reset, destination-return reset, value preservation, accessible shared state, and minimum touch sizing
 - Constraints:
   - frontend presentation/local disclosure state only; no change to player validation, starting-life defaults, `AskAiRequest`, Zod schemas, `GameContext`, tracker persistence/seed semantics, prompt assembly, providers, backend routes, card metadata, scanner behavior, or data pipeline
@@ -3022,6 +3013,7 @@
 - Description: The desktop shell scales past the fixed `42rem` column to a modest fluid cap so paired controls have room, without single full-width controls stretching into content-less bands (DEC-145). Vertical space below staged-step content is deliberately retained.
 - Acceptance Criteria:
   - the shell width is `min(48rem, 92vw)`; at 1440x900 the measured shell width is 768px (baseline: 670px)
+  - on the direction-1 redesigned screens (Ask a Question, In-depth details, Trade Balancer, the card scanner's chrome, Life Tracker's sheets) a screen's content column inside the shell takes the width its mockup page draws, never wider than the shell; the shell's own width and cap above are unchanged and remain the ceiling
   - the cap still binds on ultra-wide viewports: at 2560px wide the shell does not exceed 48rem (768px)
   - a full-width primary control inside the shell ("Confirm game context") measures no more than ~720px at 1440x900, so it still reads as a button rather than a band (rejected settings measured 976px at 64rem and 1277px at 90rem)
   - mobile presentation at 390x844 is unchanged by this requirement
@@ -3041,6 +3033,7 @@
 - Notes:
   - width was chosen by comparing to-scale mocks of 42/48/64/90rem; rendered CTA width, not percentage of viewport filled, was the deciding measure
   - amended for the `ui-reimagining` pass (2026-09-24): the "no theme/typography/brand redesign" constraint is scoped to this requirement's own change. The `min(48rem, 92vw)` cap and its 768px-at-1440px measurement are unchanged and still bind the redesign
+  - amended by `ui-look-translation` (2026-10-02): the 48rem cap stays the ceiling, but a redesigned screen's content column follows its mockup page's own width inside it; the first build's review measured In-depth details' mockup column at 36rem (576px) at 1440×900 against the app's 768px
 
 ### REQ-125
 - Title: Reachable add action in card detail
@@ -3920,6 +3913,7 @@
 - Acceptance Criteria:
   - The lookup request carries an optional **bounded list** of cards in place of the single optional card; each entry carries only identity — `cardId` (oracle id) and `name` — and carries no zone, owner, caster, targets, or context-notes fields. The descriptive block (`oracleText`, `imageUrl`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json.br` (REQ-175, REQ-176). The per-card enrichment below is unchanged — it resolves each attached card's metadata server-side rather than from the request.
   - The pre-submit view lets the player add, preview, and remove more than one card; an explicit cap of **10 cards** — the same number as the Stack's limit (REQ-010) — is enforced and stated to the player so the prompt stays bounded.
+  - On Ask a Question (REQ-206) the Add-card search opens its result list before three characters are typed, at the threshold the direction-1 mockup's own search uses (`docs/design/ui-reimagining/direction-1/flow.js`, read at build and recorded in this requirement's Notes); every other card search in the suite keeps its three-character minimum. Which card resolves, and what the request carries, are unchanged.
   - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings (DEC-029) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus a compact signal for every attached card — name, type line, and keyword list. It no longer scores over each card's full oracle text, which was measured to drop supplemental recall@5 from 0.577 to 0.026 on a labelled benchmark (REQ-178).
   - Combo enrichment (Commander Spellbook) adapts to the card set: the attached cards become the match instances, amending REQ-094's single-card lookup rule. A candidate qualifies when it contains at least one attached card as an exact ingredient or authoritative template match, and candidates covering more of the attached cards rank ahead of those covering fewer (attached-card coverage), applied before popularity — so "how do these cards combo" surfaces the combos using the most of the attached cards first. With exactly one card attached this is identical to today's single-card lookup; with zero cards attached, behavior is unchanged (no combo data without explicit intent and at least one card). (DEC-116/REQ-094 [amended]/REQ-095)
   - When an eligible candidate is **complete** — every ingredient slot filled by an exact or authoritative-template match across the attached cards — the answer explains that combo, with per-ingredient card state left explicitly unverified (a lookup carries no board). When a candidate is **partial** — it qualifies on at least one attached card but at least one ingredient slot is unmatched — the answer names each missing ingredient and describes what would fill that role: the missing ingredient's own card name (missing exact ingredient) or template/category description (missing template ingredient) drawn from the combo definition, so the player learns how the combo could be completed rather than getting nothing. This is a description of the missing role, **not** a card recommendation or search — no card-suggestion engine is added. Complete/partial classification for lookup and its at-most-five selection/ranking are defined in REQ-094 (amended); the answer text itself is rendered by REQ-095's existing present/missing ingredient enrichment, which already covers game and lookup candidates alike and needs no new criterion here.
@@ -3944,6 +3938,7 @@
   - Does not resolve Q-003 (lightweight game context) or Q-004 (answer-seeded second-pass retrieval); both stay open.
   - Gate review (2026-08-30) tightened the add cap from a suggested ~6 to a fixed 5, and directed that lookup-mode combo answers explain a completed combo when the attached cards fully assemble it, and otherwise name the missing piece(s) and describe what would fill them. The define loop (2026-08-30) settled those mechanics in REQ-094 (amended): "complete" = every ingredient slot filled by an exact/template match in the attached set, with REQ-094's zone/quantity checks dropped for a board-less mode; "partial" = qualifies on at least one attached card but leaves a slot unmatched; lookup selection order is complete-before-partial, then attached-card coverage, then fewer missing, then popularity, then variant id. The answer is REQ-095's existing present/missing rendering, and "what would fill the role" is the missing ingredient's own identity/template from the combo catalog, not a card recommendation. No new stable ID was needed.
   - amended for the `ui-reimagining-build` pass (2026-09-30, 2026-10-01): the cap rises from 5 to 10 so every card on the Ask a Question stage (REQ-206) can be carried into In-depth details, whose Stack holds 10 (REQ-010). The 2026-08-30 gate review had set 5; the owner's direction-1 mockup rounds set 10. `MAX_LOOKUP_CARDS` moved to 10 in both the frontend cap and the backend request validation (`askAiRequest.ts`); the single lookup assembly loop and prompt text are unchanged
+  - amended by `ui-look-translation` (2026-10-02): Ask a Question's search threshold (the first build's owner question 2). Recorded at build from the mockup's script: the mockup's own search (`quick-question.html`'s `renderSearch`, with `flow.js`) has no minimum — it filters its ten-card demo shortlist on whatever is typed — and the real corpus holds tens of thousands of cards, so Ask a Question's Add-card search lists matches from the first character typed (a threshold of one) and lists nothing for an empty box; the other searches keep three
 
 ### REQ-168
 - Title: The rules guardrail stops refusing real Magic phrases like "combo"
@@ -5228,19 +5223,19 @@
 ### REQ-206
 - Title: Ask a Question — one door for every question, with the cards carried into In-depth details
 - Priority: high
-- Description: The Menu offers one question destination, **Ask a Question**, in place of the separate Quick Question and In-Depth Question rows. The Ask a Question page is today's Quick Question page (route `/quick-lookup`, `mode: "lookup"` request) recomposed around the attached cards: the front card full size on a lit stage with the one other card peeking out each side (two cards peek on one side only, never duplicated), a one-pill question box with the send inside it, and an **Add in-depth details** pill that carries the attached cards and any typed question into In-depth details (route `/in-depth`, `mode: "game"` request). The two routes, the two request modes and their prompts are unchanged; what changes is the door, the page composition, and the carry.
+- Description: The Menu offers one question destination, **Ask a Question**, in place of the separate Quick Question and In-Depth Question rows. The Ask a Question page is today's Quick Question page (route `/quick-lookup`, `mode: "lookup"` request) recomposed around the attached cards: the front card full size on a lit stage with the one other card peeking out each side (two cards peek on one side only, never duplicated), a two-row question box with the send inside it, and an **Add in-depth details** pill that carries the attached cards and any typed question into In-depth details (route `/in-depth`, `mode: "game"` request). The two routes, the two request modes and their prompts are unchanged; what changes is the door, the page composition, and the carry.
 - Acceptance Criteria:
   - the Menu lists **Ask a Question** once and no longer lists Quick Question or In-Depth Question; it opens `/quick-lookup`; `/in-depth` stays addressable by deep link and by the carry, and the Menu marks Ask a Question current on both routes
   - with no card attached there is no stage; with cards attached the front card renders full size on a glass stage (REQ-207) with the one other card peeking out each side (three or more cards peek one on each side; exactly two cards peek on one side only, so the same card is never rendered twice); a tap on a neighbour or the ‹/› arrows turns the ring
-  - ✕ Remove and ⓘ Details straddle the front card's top corners; a dark count pill reads `n / <cap>`, where the cap is REQ-167's
+  - ✕ Remove and ⓘ Details straddle the front card's top corners; a row of position dots, one per attached card with the front card's dot lit, shows where the player is in the ring, placed and drawn as the mockup page shows it, with the accessible name "Card <n> of <total>"; there is no `n / <cap>` count pill, and the cap (REQ-167) is stated by the existing message when the player tries to add past it
   - **Add card** and **Scan** sit beside the title; the card search field stays available for typed autocomplete search and is not gated behind a separate reveal step
-  - the question box is one pill: the Add in-depth details pill at its left end (icon-only below 480px, labelled from 480px up), the text, the character count, and the send
+  - the question box has two rows, as the mockup page draws it: the text on top; the Add in-depth details chip at the bottom-left (labelled or icon-only at each width as the mockup shows) and the send pill, with its microphone half (REQ-212), at the bottom-right; the character count sits where the mockup places it
   - the 300-character budget (REQ-011, measured on the raw typed text per REQ-134) is drawn as a ring round the send pill's edge in the profile's accent light over a faint track, brighter in the last 30 characters and closed at 300; it starts at the top of the pill's split and runs clockwise; at 0 characters no track, fill or dot is drawn and the numeric count is hidden; there is no separate Send Request button, no bar under the box, and no hint line under the title
   - **Add in-depth details** switches the active destination to In-depth details, carrying every attached card and the typed question (or its silent fallback); the carry is queued in a one-slot mailbox (`lib/portal/seedContext.tsx`'s `queueLookupCarry`/`consumeLookupCarry`) alongside the existing Life Tracker roster-seed mailbox; a quick-lookup visit entered directly from Life Tracker still carries the roster seed forward through this one gesture, narrowly tied to it the same way the retired direct Menu transition was (App.player-life-tracker-seed.test.tsx's negative tests: a deep link, browser Back, or a raw route jump never seeds)
   - the answered view keeps the existing frozen-card trigger (naming the single card or the count, "N cards") opening the frozen set's read-only presentation; a card name in the judge's message that exactly matches a card attached to this conversation renders as a tappable chip (an accent-tinted, underlined inline control) that opens that card's detail directly in the thread
-  - two actions sit top-right beside the title once a ruling exists: **✎ Edit cards** returns to the pre-submit page with the cards and question exactly as they were (the conversation is already auto-saved to history, REQ-103), and **↺ Start over** clears cards, question and any locked topic to the empty page
-  - the General rules topics disclosure (REQ-079) and the locked topic pill (REQ-091) stay on the page, unchanged in behaviour
-  - tests cover the single Menu entry, turning the ring (tap and arrows, wrapping, no duplicate neighbour at exactly two cards), the carry queuing cards/question and switching the destination, the ring at 0/mid/last-30/300 characters, Edit cards restoring cards and question, and a chip opening the card detail
+  - two actions sit top-right beside the title once a ruling exists: **✎ Edit cards** returns to the pre-submit page with the cards and question exactly as they were (the conversation is already auto-saved to history, REQ-103), and **↺ Start over** clears cards and question to the empty page
+  - the General rules topics disclosure (REQ-079) is retired and is not on the page in any state; the locked topic pill (REQ-091) has no entry point left and never appears
+  - tests cover the single Menu entry, turning the ring (tap and arrows, wrapping, no duplicate neighbour at exactly two cards, the lit position dot following the front card), the carry queuing cards/question and switching the destination, the ring at 0/mid/last-30/300 characters, Edit cards restoring cards and question, and a chip opening the card detail
 - Constraints:
   - no change to either request mode, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, or routes, except the lookup card cap (REQ-167)
   - the carry is in-memory frontend state using the existing cross-destination hand-off pattern (`seedContext.tsx`); the Ask a Question Draft (REQ-108) begins the moment the first card is attached, and every carried card — placed in In-depth details or still waiting for a zone — is written into the Draft slot, so the whole request survives a reload
@@ -5261,6 +5256,8 @@
   - "Quick Question" in older requirements names the Ask a Question page (route `/quick-lookup`) and "In-Depth Question" names In-depth details (route `/in-depth`); older entries keep those names as internal labels rather than being rewritten
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner-approved direction-1 mockup (rounds 2–14); built by slice C of that package — `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `CardStage.tsx`, `ComposerPill.tsx`, `ConversationThread.tsx` (chip matching), `lib/portal/seedContext.tsx` (lookup-carry mailbox), `lib/portal/inDepthCarryContext.tsx` (the carry action), `App.tsx` (`handleCarryToInDepth`)
   - owner edit (2026-10-01): the Ask a Question Draft begins the moment the first card is attached, not only once a question is typed, so a carried-but-unplaced card survives a reload — see the Constraints line above and REQ-108
+  - amended by `ui-look-translation` (2026-10-02): the owner's gate verdict retired the General rules topics panel (REQ-079) — the mockup was made without it on purpose — so the page no longer carries it or the locked topic pill
+  - amended by `ui-look-translation` (2026-10-02): position dots replace the count pill, matching the mockup (the first build's owner question 1)
 
 ### REQ-207
 - Title: Direction-1 shared chrome — banner header, Menu tray, Theme band, and the colour's ambient scene

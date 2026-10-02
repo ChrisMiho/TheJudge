@@ -1,7 +1,7 @@
 import type { KeyboardEvent } from "react";
 import { useCallback, useEffect, useState } from "react";
 
-const DEFAULT_MIN_QUERY_LENGTH = 3;
+import { DEFAULT_MIN_QUERY_LENGTH } from "../lib/search";
 
 type UseAutocompleteKeyboardParams<T> = {
   query: string;

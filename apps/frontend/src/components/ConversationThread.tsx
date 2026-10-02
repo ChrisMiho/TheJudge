@@ -1,10 +1,8 @@
 import { useLayoutEffect, useMemo, useRef, useState, type UIEvent } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { useActiveThemeMotif } from "../hooks/useActiveThemeMotif";
 import { prefersReducedMotion } from "../lib/motionPreference";
 import type { ConversationMessage } from "../types";
-import { MotifGlyph } from "./portal/ThemeSection";
 
 const CARD_CHIP_HREF_PREFIX = "#card:";
 
@@ -38,7 +36,7 @@ function buildMarkdownComponents(onCardChipActivate?: (cardId: string) => void):
             type="button"
             data-testid={`conversation-card-chip-${cardId}`}
             onClick={() => onCardChipActivate?.(cardId)}
-            className="conversation-card-chip rounded border-b border-accent-soft bg-accent/15 px-0.5 font-semibold text-accent-soft underline decoration-accent-soft/70 transition hover:bg-accent/25"
+            className="conversation-card-chip ref"
           >
             {children}
           </button>
@@ -83,7 +81,6 @@ function readReaderSnapshot(container: HTMLDivElement): ReaderSnapshot {
 
 export function ConversationThread({ messages, cards, onCardChipActivate }: ConversationThreadProps): JSX.Element {
   const logRef = useRef<HTMLDivElement>(null);
-  const motif = useActiveThemeMotif();
   const markdownComponents = useMemo(() => buildMarkdownComponents(onCardChipActivate), [onCardChipActivate]);
   const hasCards = Boolean(cards && cards.length > 0);
   const previousMessageCountRef = useRef(0);
@@ -182,7 +179,7 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
         aria-relevant="additions text"
         aria-atomic="false"
         onScroll={handleScroll}
-        className="conversation-thread flex flex-col gap-3 overflow-y-auto p-4"
+        className="thread conversation-thread"
       >
         {messages.map((message, index) => {
           const entranceClassName = index >= animatedFromIndex ? " conversation-message-enter" : "";
@@ -194,13 +191,11 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
                 key={index}
                 data-conversation-message-index={index}
                 tabIndex={isNewestAssistant ? -1 : undefined}
-                className={`conversation-message msg-judge${entranceClassName}`}
+                className={`conversation-message msg judge${entranceClassName}`}
               >
-                <span className="msg-judge-seal" aria-hidden="true">
-                  <MotifGlyph motif={motif} />
-                </span>
-                <div className="msg-judge-bubble">
-                  <span className="msg-judge-who">TheJudge</span>
+                <span className="seal" aria-hidden="true" />
+                <div>
+                  <span className="who">TheJudge</span>
                   <div className="conversation-markdown">
                     <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
                       {hasCards ? linkifyCardNames(message.content, cards!) : message.content}
@@ -215,9 +210,9 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
             <div
               key={index}
               data-conversation-message-index={index}
-              className={`conversation-message msg-you${entranceClassName}`}
+              className={`conversation-message msg you${entranceClassName}`}
             >
-              <p className="whitespace-pre-wrap">{message.content}</p>
+              {message.content}
             </div>
           );
         })}
@@ -227,7 +222,7 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
         <button
           type="button"
           onClick={handleNewResponse}
-          className="conversation-new-response ambient-accent-surface ambient-accent-interactive rounded-xl border border-accent/40 bg-zinc-900/90 px-4 py-2.5 text-sm font-semibold text-accent-soft"
+          className="conversation-new-response btn ambient-accent-surface ambient-accent-interactive"
         >
           New response
         </button>
