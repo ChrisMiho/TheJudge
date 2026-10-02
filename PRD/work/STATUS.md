@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [ui-look-translation](ui-look-translation/) | The owner's 14 verdicts are applied (13 accept, 1 edit: the General rules topics panel is retired from Ask a Question, REQ-079); the run re-enters at gate-qc via `/graph-implement PRD/work/ui-look-translation/` — run `graph-20261002-122813`, code PR targets PR #239's branch |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [ui-look-translation](ui-look-translation/) | Answer `PRD/work/ui-look-translation/GATE-QUESTIONS.md` (14 slots) in the docs PR into PR #239's branch, then merge to build — gate-qc PASS on attempt 2, run `graph-20261002-122813` |
 
 
 ## deferred

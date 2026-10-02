@@ -22,12 +22,59 @@
 
 ## Open gate
 
-- State: `PARKED` at `owner-action` after gate-qc PASS (attempt 2; one define loop used of three).
+- State: `RESOLVED` 2026-10-02 by `graph-gate-review` — 14 verdicts applied: 13 accept / 1 edit / 0 reject (REQ-079 retired; see `## Gate verdicts`). Status restored to `refined`; the run re-enters at `gate-qc`.
+- Previously: `PARKED` at `owner-action` after gate-qc PASS (attempt 2; one define loop used of three).
 - Ask: answer `PRD/work/ui-look-translation/GATE-QUESTIONS.md` — 14 `accept | edit | reject` slots (NFR-006, REQ-207, REQ-216 new, FLOW-011, REQ-124, REQ-079, REQ-070, REQ-206, REQ-167, REQ-209, REQ-215, REQ-214, REQ-202, REQ-082) — in the docs PR, then merge it to build.
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/240 (`gh pr create --base thejudge-auto/ui-reimagining-build-work --head thejudge-auto/ui-look-translation`, opened 2026-10-02) — base `thejudge-auto/ui-reimagining-build-work` (PR #239's branch), not `main`, by the owner's decision on 2026-10-02: merging #239 to `main` would ship an unfinished UI to prod, so this work stacks on #239 and lands with it.
 - Build-half caveat: `graph-implement` reads its queue from `origin/main` and cuts `implement-<slug>` from `origin/main`. This package's base is `origin/thejudge-auto/ui-reimagining-build-work`; the build half must be run with that base (queue read and worktree cut from that branch, code PR into it) or it will not see the merged proposal.
-- Minor left for gate-review: `DESIGN-BRIEF.md`'s owner paragraph counts five look rules; the proposal table has four (FLOW-011, REQ-124, REQ-079, REQ-070).
+- Minor left for gate-review: `DESIGN-BRIEF.md`'s owner paragraph counts five look rules; the proposal table has four (FLOW-011, REQ-124, REQ-079, REQ-070). Left as is at gate-review: no retire rewrite touched that sentence.
 - Resume: `/graph-implement PRD/work/ui-look-translation/` once every slot is answered and the docs PR is merged.
+
+## Gate verdicts
+
+Applied by `graph-gate-review` on 2026-10-02 from the owner's answered
+`GATE-QUESTIONS.md`: 13 accept, 1 edit, 0 reject. The one edit retires the
+"General rules topics" panel from Ask a Question.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `NFR-006` | accept | — |
+| `REQ-207` | accept | — |
+| `REQ-216` | accept | — |
+| `FLOW-011` | accept | — |
+| `REQ-124` | accept | — |
+| `REQ-079` | edit | "retire. Remove the General rules topics panel from Ask a Question; the mockup was made without it on purpose. Apply the retire path the block spells out (REQ-079 retired; REQ-091, REQ-206, REQ-073, FLOW-011 steps 2 and 4, FLOW-023 step 2 and the quick-lookup spec amended)." |
+| `REQ-070` | accept | — |
+| `REQ-206` | accept | — |
+| `REQ-167` | accept | — |
+| `REQ-209` | accept | — |
+| `REQ-215` | accept | — |
+| `REQ-214` | accept | — |
+| `REQ-202` | accept | — |
+| `REQ-082` | accept | — |
+
+The REQ-079 block in `GATE-QUESTIONS.md` now carries the retire path: its
+three plain lines describe the retire, its amendment set is re-enumerated by
+seven quoted greps (69 disposition rows: 35 amend, 12 retire, 22 keep), and its
+diff is complete against this branch's `PRD/sections/`. Reading applied to the
+locked topic pill (REQ-091): a topic row was its only entry point, so with the
+panel gone no entry point remains and the pill no longer appears — no new way
+to reach it is added; the no-pill composition (typed text, or the silent
+card-name fallback) is unchanged. The frontend topic data file and its data
+build are left as they are (outside the retire path). The 13 accept blocks are
+untouched.
+
+### Brief reconciliation
+
+- grep: `grep -nE 'General rules topics|REQ-079|REQ-091|topic|mask' DESIGN-BRIEF.md README.md IDEA.md`
+- `DESIGN-BRIEF.md:191` (screens table, Ask a Question row) — said the rebuilt components include "the General rules topics plate if kept" → now says the General rules topics panel is removed (REQ-079 retired by the owner's verdict) (REQ-079 edit)
+- `DESIGN-BRIEF.md:251` (acceptance every slice carries, mask format) — listed "A17's topics plate" as an example mask region → example dropped; Ask a Question pairs have no panel strip to mask (REQ-079 edit)
+- `DESIGN-BRIEF.md:321` (proposed product-truth changes table) — said "amended: Keep the General rules topics panel on Ask a Question, directly under the composer" → now says "retired (owner's `edit`)": the panel is retired, the locked topic pill (REQ-091) loses its only entry point and no longer appears with no new way in, and REQ-073, REQ-075, REQ-092, REQ-206, FLOW-011, FLOW-023 and the `quick-lookup` spec are amended (REQ-079 edit)
+- `DESIGN-BRIEF.md:401` (A17) — said the panel is kept under the composer as one collapsed plate, a named mask in Ask a Question pairs, on ladder rung 5 → now says the panel is retired, the pill no longer appears (no new entry point), and no mask is needed; evidence is the owner's REQ-079 verdict, rung `owner` (REQ-079 edit)
+- `README.md` pointer — supersession note added: the intake's item 3, "A6 — General rules topics" (`intake/GRAPH-BRIEF-2-look-translation.md:162`, "The first gate kept this panel on Ask a Question"), is superseded by the owner's REQ-079 verdict (`edit`: retire). The brief's own A6 (contrast over glass) is unrelated and untouched.
+- `README.md:10` — said the proposal had "verdict slots blank" → now says the 14 blocks were answered on 2026-10-02 (13 accept, 1 edit) and applied
+- Re-run of the grep (package minus `intake/` and `GRAPH-RUN.md`): zero hits still state the panel is kept. Remaining hits are the retire rows above, the mask mechanics unrelated to the panel (`DESIGN-BRIEF.md:222`–`:253`, A4, A5, A8), `DESIGN-BRIEF.md:332` (the intake's recommendation, "owner's call", recorded as history), `GATE-QUESTIONS.md:8` (names the panel as a decided topic), and the accepted FLOW-011 block's hunk at `GATE-QUESTIONS.md:495`–`:496`, which changes only "one-pill" → "two-row" on `quick-lookup/README.md:49`; the REQ-079 diff removes that line's topics clause separately (noted in both its table and its hunk header). The FLOW-011 block was accepted and is left untouched.
+- Not changed: the brief's owner paragraph (`DESIGN-BRIEF.md:8`–`:10`) still counts "five look rules" where the table has four; no retire rewrite touched that sentence, so the known minor stands.
 
 ## Dispatch prompts
 

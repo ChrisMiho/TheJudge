@@ -565,73 +565,404 @@ grep -rn "48rem\|36rem" PRD/sections | grep -v '^PRD/sections/decisions.md'
 - Reason: Match each mockup page's column width. (owner, 2026-10-02)
 ---
 
-## REQ-079 — keep the "General rules topics" panel, directly under the question box
+## REQ-079 — retire the "General rules topics" panel from Ask a Question (owner's edit)
 
-**What this decides:** whether the "General rules topics" panel stays on Ask a
-Question in the new look, and where it sits — or is retired.
+**What this decides:** that the "General rules topics" panel leaves Ask a
+Question for good — the owner's answer to this block was `edit`: retire
+(2026-10-02).
 
-**In plain terms:** "General rules topics" is a collapsed list under the
+**In plain terms:** "General rules topics" was a collapsed list under the
 question box of core rules (the stack and priority, targeting, combat, layers)
-that a player can read on the spot, with no AI call; each row also has "Use this
-topic", which locks that topic's phrase into the question as a pill (REQ-091).
-The first run's gate kept it on the redesigned page; the mockup has no such
-panel, and nobody recorded why it was kept. This proposal keeps it, because
-taking away something players can use today needs your say-so: it sits directly
-under the question box as one collapsed glass plate in the shared style
-(REQ-216), the one element on Ask a Question the mockup does not draw. Its
-behaviour is unchanged. In the side-by-side screenshot comparisons its strip is a
-named mask (left out of the pixel count), since the mockup has nothing there.
+that a player could read on the spot, with no AI call; each row also had "Use
+this topic", which locked that topic's phrase into the question as a pill
+(REQ-091). The mockup was drawn without the panel on purpose, so `build`
+removes it: Ask a Question shows no topic list in any state. A topic row was
+the pill's only way in, so the pill goes too — it never appears, and nothing
+new replaces it. A player still types a question, or attaches cards and sends
+with an empty box (the app then quietly asks "Tell me about {card}." for them,
+as today). In the side-by-side screenshot comparisons there is no panel, so no
+strip is masked for it.
 
-**What happens if you say no:** the panel stays where it is today, below the
-question box, with no placement or styling rule from this run. **To retire it
-instead,** answer `edit` with "retire": `build` then removes the panel from Ask a
-Question, marks REQ-079 retired, and amends the locked topic pill (REQ-091,
-reachable only from a topic row), REQ-206's line that keeps both, REQ-073's
-layout line, FLOW-011 steps 2 and 4, FLOW-023 step 2, and the `quick-lookup`
-spec.
+**What happens if you say no:** nothing left to answer — this block records
+the owner's retire. The alternative it replaced was keeping the panel directly
+under the question box as one collapsed glass plate, its strip masked in the
+screenshot comparisons.
 
-- Recommendation (the intake's): owner's call — the intake does not know why the
+- Recommendation (the intake's): owner's call — the intake did not know why the
   panel was kept.
+- Owner's verdict, applied by gate-review on 2026-10-02: `edit` — "retire.
+  Remove the General rules topics panel from Ask a Question; the mockup was
+  made without it on purpose." The diff below is the retire path this block
+  spelled out before the verdict (REQ-079 retired; REQ-091, REQ-206, REQ-073,
+  FLOW-011 steps 2 and 4, FLOW-023 step 2 and the `quick-lookup` spec amended).
+  It replaces the earlier keep-path diff in full.
 
-**Amendment set.** Grep, line level:
+**Readings applied where the retire path leaves the shape open.** Each takes
+the reading that adds no new behaviour.
+
+1. **The locked topic pill (REQ-091).** Its only entry point was a topic row.
+   With the panel gone, REQ-091 is amended to record that no entry point
+   remains and the pill no longer appears. No other way to lock a phrase is
+   added. What stays in force is how the question is composed with no pill:
+   the typed text, or — box empty, cards attached — the silent
+   `Tell me about {Card Name}.` fallback, both unchanged.
+2. **Entries beyond the named list.** REQ-075 (Start over), REQ-092 (the
+   wait), FLOW-011 steps 5, 6, 7a, 10 and its edge cases and notes, FLOW-023's
+   precondition and step 4, and the system map's Quick Lookup summary each
+   still say the panel or the pill is there. Each is amended only to drop the
+   panel or the pill; nothing else in them changes.
+3. **The topic data.** The committed frontend topic list
+   (`apps/frontend/public/data/gameRulesCoreTopics.json`) and the data build
+   that writes it (`scripts/build-game-rules.mjs`) are outside the retire path
+   and stay as they are; Ask a Question simply stops reading the file.
+   Removing it is separate work, not this verdict. The backend's curated rules
+   topics, which every prompt uses, are untouched.
+4. **History.** Notes and closed doors that record what the panel or pill once
+   did stay as history; a retire note is added beside them, and REQ-079 and
+   REQ-091 keep their ids (a retired id is never reused).
+
+**Amendment set.** Greps, line level, run against this branch's
+`PRD/sections/` (decisions index excluded). The seventh catches the pill and
+topic-data wording the first six miss. `screen-layout.md` has zero hits in all
+seven (its Ask a Question rows never named the panel).
 
 ```
-grep -rn "General rules topics" PRD/sections | grep -v '^PRD/sections/decisions.md'
+grep -rn 'General rules topics' PRD/sections | grep -v '^PRD/sections/decisions.md'
+grep -rn 'REQ-079' PRD/sections | grep -v '^PRD/sections/decisions.md'
+grep -rn 'REQ-091' PRD/sections | grep -v '^PRD/sections/decisions.md'
+grep -rn 'Use this topic' PRD/sections | grep -v '^PRD/sections/decisions.md'
+grep -rn 'locked topic' PRD/sections | grep -v '^PRD/sections/decisions.md'
+grep -rn 'topic pill' PRD/sections | grep -v '^PRD/sections/decisions.md'
+grep -rn 'question/pill\|label, pill\|pill is locked\|pill phrase\|removing a pill\|core-topics\|pick a rules topic\|topic attached\|topics disclosure\|locked-pill\|locked pill' PRD/sections | grep -v '^PRD/sections/decisions.md'
 ```
 
-| Hit | Disposition |
-| --- | --- |
-| `functional-requirements.md:1870` (REQ-079, placement) | amend |
-| `functional-requirements.md:5239` (REQ-206, keeps the panel) | amend |
-| `quick-lookup/README.md:84` (Built line, placement; non-hit continuation of the `:82` section) | amend |
-| `functional-requirements.md:1754` (REQ-073 layout order), `user-flows.md:252` (FLOW-011), `:523` (FLOW-023) | keep — already put the panel after the question box |
-| `functional-requirements.md:1866`, `:1868`, `:1871`, `:1890` (REQ-079 title, description, summary rule, history) | keep |
-| `functional-requirements.md:2148`, `:2181` (REQ-091) | keep — the locked pill is unchanged |
-| `user-flows.md:254`, `:258`, `:261`, `:263`, `:279`, `system-map.md:536`, `quick-lookup/README.md:49`, `:82` | keep — behaviour and order unchanged |
+Every hit, one row each (a line several greps hit appears once). "Non-hit
+continuation" marks a line no grep matches that sits inside an amended
+passage. Every row the earlier keep-path table marked keep has been redone.
 
-**Proposed diff.**
+| Hit | Entry | Disposition | Why |
+| --- | --- | --- | --- |
+| `user-flows.md:248` | FLOW-011 precondition | amend | no step reads the topic browse data any more |
+| `user-flows.md:252` | FLOW-011 step 2 | amend (clause) | drops the panel from the page order; FLOW-011's accepted question-box clause on this line is separate |
+| `user-flows.md:254` | FLOW-011 step 4 | retire | the panel-and-pill step; number kept with a retired marker so steps 5–10 keep their numbers |
+| `user-flows.md:255` | FLOW-011 step 5 | amend | drops the pill from the budget and submit sentences |
+| `user-flows.md:256` | FLOW-011 step 6 | amend | composition without the pill (typed text or card fallback) |
+| `user-flows.md:258` | FLOW-011 step 7a | amend (clause) | the panel no longer stays live during the wait |
+| `user-flows.md:261` | FLOW-011 step 10 | amend | Start over has no pill to clear; no panel summary to show |
+| `user-flows.md:263` | FLOW-011 edge case | amend | submit rule without the pill; panel clause dropped |
+| `user-flows.md:265` | FLOW-011 edge case | amend (clause) | "preserved cards/question/pill" — no pill to preserve |
+| `user-flows.md:271` | FLOW-011 edge case | retire | second-topic swap has no entry point; line deleted |
+| `user-flows.md:275` | FLOW-011 note | amend (clause) | drops "core-topics" from the reuse list |
+| `user-flows.md:279` | FLOW-011 note | amend | history kept; the retire is recorded after it |
+| `user-flows.md:519` | FLOW-023 precondition | amend | as `:248` |
+| `user-flows.md:523` | FLOW-023 step 2 | amend | drops the panel from the page order |
+| `user-flows.md:525` | FLOW-023 step 4 | amend | "(or locks a topic pill, REQ-091)" has no entry point |
+| `system-map.md:536` | Quick Lookup summary | amend (clauses) | drops the panel-and-pill sentence, "or topic", "by the prefix", and the panel during the wait |
+| `system-map.md:537` (non-hit) | Quick Lookup "Lives in" | keep | a file list, not a behaviour claim; the topic file still exists and is still written (reading 3) |
+| `system-map.md:538` | Quick Lookup "Backed by" | keep | lineage; REQ-079 (retired) and REQ-091 (amended) keep their ids |
+| `functional-requirements.md:166` | REQ-011 note | keep | the counter measures typed text — unchanged |
+| `functional-requirements.md:1754` | REQ-073 layout order | amend | the panel after the Question field is retired |
+| `functional-requirements.md:1756` | REQ-073 constraint | amend (clause) | drops "core-topics components" from the reuse list |
+| `functional-requirements.md:1766` | REQ-073 dependency | keep | lineage |
+| `functional-requirements.md:1769` | REQ-073 note | keep | history; a retire note is appended to the Notes |
+| `functional-requirements.md:1812` | REQ-075 Start over | amend | no locked topic to clear; no panel shown after Start over |
+| `functional-requirements.md:1865` | REQ-079 heading | keep | stable id |
+| `functional-requirements.md:1866` | REQ-079 title | keep | names what was retired |
+| `functional-requirements.md:1867` (non-hit) | REQ-079 priority | retire | becomes `—`, as other retired entries |
+| `functional-requirements.md:1868` | REQ-079 description | retire | replaced by the retire statement |
+| `functional-requirements.md:1870`, `:1872`, `:1876` | REQ-079 criteria | retire | replaced by one retired criterion |
+| `functional-requirements.md:1871`, `:1873`–`:1875`, `:1877` (non-hit) | REQ-079 criteria | retire | as above |
+| `functional-requirements.md:1879`, `:1880` (non-hit) | REQ-079 constraints | retire | no panel left to constrain |
+| `functional-requirements.md:1884` | REQ-079 dependency | keep | lineage |
+| `functional-requirements.md:1888` | REQ-079 note | keep | history |
+| `functional-requirements.md:1890` | REQ-079 note | keep | history; the retire note is appended after it |
+| `functional-requirements.md:2145` | REQ-091 heading | keep | stable id |
+| `functional-requirements.md:2148` | REQ-091 description | amend | records that no entry point remains and the pill no longer appears (reading 1) |
+| `functional-requirements.md:2150`, `:2151`, `:2153`, `:2155`, `:2157`, `:2160` | REQ-091 pill criteria | retire | no entry point; replaced by one criterion that the pill never appears |
+| `functional-requirements.md:2152` (non-hit) | REQ-091 pill remove control | retire | as above |
+| `functional-requirements.md:2154` | REQ-091 textarea | amend | keeps "editable at all times"; drops the pill clause |
+| `functional-requirements.md:2156` | REQ-091 submit gate | amend | keeps its no-pill cases |
+| `functional-requirements.md:2158` | REQ-091 composition | amend | keeps its no-pill cases |
+| `functional-requirements.md:2159` | REQ-091 cap and counter | amend (clause) | drops "the locked pill phrase and" |
+| `functional-requirements.md:2166` | REQ-091 dependency | keep | lineage |
+| `functional-requirements.md:2170`, `:2171` | REQ-091 notes | keep | history; the amendment note is appended after them |
+| `functional-requirements.md:2178` | REQ-092 hidden form | amend (clause) | drops "locked-topic pill if present" |
+| `functional-requirements.md:2181` | REQ-092 panel during the wait | retire | the panel is gone; line deleted, note appended |
+| `functional-requirements.md:3273` | REQ-134 description | keep | REQ-134's rule — the counter counts only typed text — holds; the locked-prefix case simply no longer arises |
+| `functional-requirements.md:3282`–`:3285`, `:3289`, `:3293` | REQ-134 constraints, dependency, notes | keep | the ship record of the counter fix; it describes REQ-091 as it stood then, and REQ-091's new note records the change |
+| `functional-requirements.md:5238` | REQ-206 Start over | amend (clause) | no locked topic to clear |
+| `functional-requirements.md:5239` | REQ-206 keeps the panel | amend | the panel is retired; the pill never appears |
+| `functional-requirements.md:5248`, `:5249` | REQ-206 dependencies | keep | the amended `:5239` still cites both |
+| `quick-lookup/README.md:13` | Backed by | keep | lineage |
+| `quick-lookup/README.md:24` | What it is | amend (clause) | drops "(or pick a rules topic)" |
+| `quick-lookup/README.md:49` | pre-submit layout | amend (clause) | drops the panel; FLOW-011's accepted "one-pill → two-row" clause on this line is separate |
+| `quick-lookup/README.md:82` | `### General rules topics browse` | retire | heading marked retired; its three Built bullets (`:84`–`:101`) replaced by one retired bullet |
+| `quick-lookup/README.md:90`, `:95`, `:96`, `:100` | that section's Built bullets | retire | as `:82` |
+| `quick-lookup/README.md:106`, `:107`, `:108` | textarea and submit gate | amend | keeps the no-pill cases |
+| `quick-lookup/README.md:110`, `:111`, `:112`, `:115` | composition | amend | keeps the no-pill cases (single- and multi-card fallback unchanged) |
+| `quick-lookup/README.md:118` | counter | amend (clause) | "a card or topic attached" → "a card attached" |
+| `quick-lookup/README.md:119` | counter citation | keep | citation only |
+| `quick-lookup/README.md:138` | wait: hidden form | amend (clause) | drops "pill" |
+| `quick-lookup/README.md:141` | wait: panel stays live | amend | the panel is gone |
+| `quick-lookup/README.md:337` | wire bound calibration | amend | the 600 bound is unchanged; the locked-pill prefix it was also sized for is gone |
+| `quick-lookup/README.md:339` | wire bound citation | keep | citation only |
+| `quick-lookup/README.md:342` (non-hit) | display cap calibration | amend (clause) | drops "by the prefix" |
+| `quick-lookup/README.md:343` | display cap citation | keep | citation only |
+| `quick-lookup/README.md:392`, `:393`, `:395`, `:397` | closed doors | keep | history; a new closed door records the panel's retirement |
+| `quick-lookup/README.md:425` | Where it lives | amend | the page no longer reads the topic file; the file is still written (reading 3) |
+| `quick-lookup/README.md:436` | Where it lives | keep | the topic file is still emitted by `scripts/build-game-rules.mjs` |
+
+**Proposed diff.** Against this branch's `PRD/sections/` (PR #239's applied
+truth). `build` applies it by intent, with the code that removes the panel.
 
 ```diff
-# PRD/sections/functional-requirements.md — REQ-079, Acceptance Criteria
+# PRD/sections/functional-requirements.md — REQ-079 (lines 1865–1890): retired
+ ### REQ-079
+ - Title: General rules topics browse fallback
+-- Priority: medium
+-- Description: Quick Lookup must offer a small always-local list of core rules topics (labeled "General rules topics") the user can read with no AI call, built from the same curated rules excerpts the prompt uses and positioned below the Question field. Its outer disclosure summary remains visible regardless of card/question state while the topic list is collapsed by default.
++- Priority: —
++- Description: Retired by the owner's `ui-look-translation` gate verdict (2026-10-02). Ask a Question no longer offers the "General rules topics" panel: the direction-1 mockup was made without it on purpose. The panel's one action, locking a topic phrase into the question, has no entry point left (REQ-091 as amended).
+ - Acceptance Criteria:
 -  - the pre-submit view shows a collapsed-by-default outer "General rules topics" disclosure below the Question field; expanding it reveals a short set of core rules topics (e.g. the stack & priority, targeting, combat, layers)
-+  - the pre-submit view shows a collapsed-by-default outer "General rules topics" disclosure directly below the question box, drawn as one collapsed plate in the shared visual system (REQ-216) — the one element of the redesigned Ask a Question page the direction-1 mockup does not draw; expanding it reveals a short set of core rules topics (e.g. the stack & priority, targeting, combat, layers)
-@@ REQ-079, Notes
-+  - amended by `ui-look-translation` (2026-10-02): kept on the redesigned Ask a Question page, directly under the question box as one shared plate; the mockup has no such panel
+-  - the outer disclosure's summary is always visible — attaching a card and/or typing into the question field does not hide it — while its helper copy and topic list stay hidden when collapsed
+-  - topic rows are collapsed by default: each row shows its title, an action button (REQ-091), and an expand/collapse toggle, all visible without expanding
+-  - expanding a row reveals that topic's rule numbers and excerpt; opening one topic auto-collapses any other currently-open topic (accordion — at most one excerpt visible at a time)
+-  - the topic content is a committed frontend subset of the same curated `gameRulesByTopic` excerpts used by prompt assembly (single source of truth; no hand-authored second copy)
+-  - reading (expanding) a topic is fully client-side with no backend call and no AI cost
+-  - the topic row's action button behavior (locking a phrase into the question) is specified by REQ-091; it does not itself call the model
+-  - the list is a discoverability fallback, not a full Comprehensive Rules browser
++  - retired — Ask a Question renders no "General rules topics" disclosure, topic list or topic row in any state (pre-submit, waiting, error, answered, after Start over)
+ - Constraints:
+-  - frontend-bundled static data (DEC-012 pattern); no runtime rules sync and no new endpoint
+-  - do not fork or hand-author rules text that could drift from the curated corpus
+ - Dependencies:
+@@ REQ-079, Notes — append after line 1890
++  - retired by `ui-look-translation` (2026-10-02) on the owner's gate verdict: "retire. Remove the General rules topics panel from Ask a Question; the mockup was made without it on purpose." Amended alongside: REQ-073 (page order), REQ-075 (Start over), REQ-091 (no entry point left), REQ-092 (the wait), REQ-206 (the page), FLOW-011, FLOW-023, `quick-lookup/README.md`, and the system map's Quick Lookup summary. The committed frontend topic list and the data build that writes it are left as they are; the backend's curated rules topics that every prompt uses are unchanged.
 ```
 
 ```diff
-# PRD/sections/functional-requirements.md — REQ-206, Acceptance Criteria
+# PRD/sections/functional-requirements.md — REQ-091 (lines 2145–2171): no entry point left, the pill no longer appears
+-- Description: Selecting a topic in Quick Lookup's "General rules topics" section (REQ-079) locks that topic's fixed phrase into a non-editable pill inline with the Question field, rather than pre-filling the freeform textarea, so the topic choice always reaches the submitted question while the user can still add their own supplementary text.
++- Description: Selecting a topic in Quick Lookup's "General rules topics" section (REQ-079) locked that topic's fixed phrase into a non-editable pill inline with the Question field. A topic row was the pill's only entry point; with REQ-079 retired (2026-10-02), no entry point remains and the pill no longer appears. No other way to lock a phrase replaces it. What stays in force is how the question is composed with no pill: the typed text, or the silent card-name fallback when the box is empty and a card is attached.
+ - Acceptance Criteria:
+-  - each topic row's action button reads "Use this topic" (renamed from "Ask about this"); its label and `aria-label` communicate adding to the question, not submitting
+-  - tapping "Use this topic" adds a pill inline next to the Question field's label showing the literal, non-editable phrase `Tell me about {Topic}.`
+-  - the pill has its own visible remove control; activating it clears the locked phrase and returns the Question field to its plain (no-pill) state
+-  - only one topic pill may be locked at a time; tapping a different topic's "Use this topic" replaces the current pill without altering any text already typed in the textarea
+-  - the textarea remains available and editable at all times as optional supplementary context; its content is never overwritten by locking, swapping, or removing a pill
+-  - the textarea's placeholder text changes while a pill is locked, inviting optional additional detail or an as-is submit (e.g. "Add anything specific — or leave this blank and just ask.")
+-  - submit is enabled whenever a pill is locked, a card is attached, or the textarea has non-empty trimmed text — not only on non-empty textarea content
+-  - tapping "Use this topic" smooth-scrolls the view so the Question field (with its new pill) is visible, and focuses the textarea
+-  - on submit, the request's `question` value is composed client-side with no `AskAiRequest` shape change: the pill phrase plus the trimmed textarea content (space-joined) when both are present; the pill phrase alone when the textarea is empty; the trimmed textarea content alone when no pill is locked and the textarea is non-empty; or, when no pill is locked, the textarea is empty, and a card is attached, the silent fallback phrase `Tell me about {Card Name}.` (not shown to the user; mirrors the locked-pill's phrasing convention and the game-context flow's existing silent-fallback-question precedent)
+-  - the shared 300-character cap (REQ-011) and the visible character counter both measure the **raw editable textarea content** — not the composed string; the locked pill phrase and the silent card fallback are composed at submit time and do not consume the user's budget (amended by REQ-134)
+-  - a locked topic pill and an attached card may both be present at submit time; the collapsed outer general-rules-topics summary remains rendered (REQ-079) whether or not a pill is locked
++  - the locked topic pill never appears: there is no topic row and no other control that locks a phrase into the question (REQ-079 retired); the "Use this topic" button, the pill and its remove control, the one-pill swap rule, the locked-pill placeholder and the scroll-to-question are retired with it
++  - the textarea remains available and editable at all times
++  - submit is enabled whenever a card is attached or the textarea has non-empty trimmed text — not only on non-empty textarea content
++  - on submit, the request's `question` value is composed client-side with no `AskAiRequest` shape change: the trimmed textarea content when it is non-empty; or, when the textarea is empty and a card is attached, the silent fallback phrase `Tell me about {Card Name}.` (not shown to the user; it keeps the retired pill's phrasing convention and the game-context flow's existing silent-fallback-question precedent)
++  - the shared 300-character cap (REQ-011) and the visible character counter both measure the **raw editable textarea content** — not the composed string; the silent card fallback is composed at submit time and does not consume the user's budget (amended by REQ-134)
+@@ REQ-091, Notes — append after line 2171
++  - amended by `ui-look-translation` (2026-10-02): REQ-079 is retired on the owner's gate verdict, so the topic row — this pill's only entry point — is gone. The pill no longer appears and no new entry point is added; the textarea, submit, composition and counter criteria keep only their no-pill cases, which are unchanged. The `questionSchema` 600-character wire bound is unchanged.
+```
+
+```diff
+# PRD/sections/functional-requirements.md — REQ-092 (lines 2178, 2181, Notes)
+-  - while a Quick Lookup submit is in flight and no answer has yet arrived, the Question form (label, locked-topic pill if present, textarea, character counter, submit button) is not rendered
++  - while a Quick Lookup submit is in flight and no answer has yet arrived, the Question form (label, textarea, character counter, submit button) is not rendered
+@@ line 2181 — deleted
+-  - the "General rules topics" outer disclosure remains visible and interactive during the wait; expanding/collapsing a topic or locking/swapping/removing a topic pill during the wait does not affect the in-flight request
+@@ REQ-092, Notes — append after line 2193
++  - amended by `ui-look-translation` (2026-10-02): the "General rules topics" disclosure that stayed live during the wait is retired (REQ-079), and the locked topic pill no longer appears (REQ-091)
+```
+
+```diff
+# PRD/sections/functional-requirements.md — REQ-073 (lines 1754, 1756, Notes)
+-  - the pre-submit view is laid out top to bottom as: optional card-attach control, then the Question field, then the "General rules topics" outer disclosure (REQ-079), whose collapsed summary remains visible regardless of whether a card is attached or the question field already has text
++  - the pre-submit view is laid out top to bottom as: optional card-attach control, then the Question field (the "General rules topics" disclosure that followed it is retired, REQ-079)
+@@ line 1756, clause
+-reuse existing search, scan, card-presentation, and core-topics components
++reuse existing search, scan, and card-presentation components
+@@ REQ-073, Notes — append after line 1771
++  - amended by `ui-look-translation` (2026-10-02): the "General rules topics" disclosure after the Question field is retired on the owner's gate verdict (REQ-079)
+```
+
+```diff
+# PRD/sections/functional-requirements.md — REQ-075 (line 1812)
+-  - start over clears the thread and returns to the empty pre-ask state — the looked-up card, its search input, and any locked topic are cleared, and the core-topics fallback (REQ-079) is visible
++  - start over clears the thread and returns to the empty pre-ask state — the looked-up card and its search input are cleared (the core-topics panel is retired, REQ-079)
+```
+
+```diff
+# PRD/sections/functional-requirements.md — REQ-206 (lines 5238, 5239, Notes)
+@@ line 5238, clause
+-and **↺ Start over** clears cards, question and any locked topic to the empty page
++and **↺ Start over** clears cards and question to the empty page
+@@ line 5239
 -  - the General rules topics disclosure (REQ-079) and the locked topic pill (REQ-091) stay on the page, unchanged in behaviour
-+  - the General rules topics disclosure (REQ-079) and the locked topic pill (REQ-091) stay on the page, unchanged in behaviour; the disclosure sits directly below the question box as one collapsed plate (REQ-079)
++  - the General rules topics disclosure (REQ-079) is retired and is not on the page in any state; the locked topic pill (REQ-091) has no entry point left and never appears
+@@ REQ-206, Notes — append after line 5260
++  - amended by `ui-look-translation` (2026-10-02): the owner's gate verdict retired the General rules topics panel (REQ-079) — the mockup was made without it on purpose — so the page no longer carries it or the locked topic pill
 ```
 
 ```diff
-# PRD/sections/quick-lookup/README.md — ### General rules topics browse
+# PRD/sections/user-flows.md — FLOW-011 (lines 248–279)
+@@ Preconditions, line 248
+-  - local card metadata and the committed core-topics browse data are available
++  - local card metadata is available
+@@ Main Flow step 2 (line 252), clause — FLOW-011's accepted block rewrites the question-box clause earlier on this line; this clause is separate
+-, then a collapsed-by-default "General rules topics" outer disclosure whose summary stays visible whatever else is on the page; expanding it reveals a short list of core rules topics the user can read locally with no AI call.
++.
+@@ step 4 (line 254)
+-  4. After expanding the outer "General rules topics" disclosure, each topic row shows its title, a "Use this topic" button, and an expand/collapse toggle without needing to expand the row; expanding a row reveals that topic's rule numbers and excerpt and auto-collapses any other open topic (accordion). Tapping "Use this topic" locks that topic's phrase (`Tell me about {Topic}.`) into a non-editable pill next to the Question field's label (with its own remove control), smooth-scrolls the view to the Question field, and focuses the textarea; any text the user already typed in the textarea is preserved as optional supplementary context (REQ-091).
++  4. (Retired by `ui-look-translation`, 2026-10-02, on the owner's gate verdict.) This step was the General rules topics panel and its topic pill. The panel is removed from Ask a Question (REQ-079 retired); a topic row was the pill's only entry point, so the pill no longer appears (REQ-091 as amended). The step number is kept so steps 5–10 keep theirs.
+@@ step 5 (line 255)
+-  5. User enters or continues a freeform question (subject to the same 300-character cap as the main flow, which measures the **raw editable textarea content** — the locked pill phrase and the silent card-name fallback are composed at submit time and do not consume that budget, REQ-091 as amended by REQ-134) and submits, with or without a card attached and with or without a locked topic pill.
++  5. User enters a freeform question (subject to the same 300-character cap as the main flow, which measures the **raw editable textarea content** — the silent card-name fallback is composed at submit time and does not consume that budget, REQ-091 as amended by REQ-134) and submits, with or without a card attached.
+@@ step 6 (line 256)
+-  6. Frontend sends `{ mode: "lookup", question, cards? }` to `POST /api/ask-ai`; `question` is the client-composed string (the locked pill phrase plus any supplementary text, the text alone when no pill is locked, or — when no pill is locked and the box is empty but cards are attached — the silent `Tell me about {Card Name}.` fallback, per REQ-091); `cards` is present only if any were attached; no `gameContext` is sent.
++  6. Frontend sends `{ mode: "lookup", question, cards? }` to `POST /api/ask-ai`; `question` is the client-composed string (the typed text, or — when the box is empty but cards are attached — the silent `Tell me about {Card Name}.` fallback, per REQ-091); `cards` is present only if any were attached; no `gameContext` is sent.
+@@ step 7a (line 258), clause
+-the card stage and the General rules topics disclosure stay visible and interactive throughout (DEC-114)
++the card stage stays visible and interactive throughout (DEC-114)
+@@ step 10 (line 261)
+-  10. User may tap **✎ Edit cards** to return to the pre-submit page with the cards and question kept, or **↺ Start over** to clear the thread, the cards, the question and any locked topic pill and return to the empty page; the collapsed outer "General rules topics" summary remains visible either way.
++  10. User may tap **✎ Edit cards** to return to the pre-submit page with the cards and question kept, or **↺ Start over** to clear the thread, the cards and the question and return to the empty page.
+@@ Edge Cases (line 263)
+-  - if no pill is locked, the question is blank after trimming, and no card is attached, submit is blocked; if a card is attached in that same state, submit is enabled and the composed question silently falls back to `Tell me about {Card Name}.` (REQ-091); the collapsed outer "General rules topics" summary remains visible regardless (it is not a fallback state, per REQ-079)
++  - if the question is blank after trimming and no card is attached, submit is blocked; if a card is attached in that same state, submit is enabled and the composed question silently falls back to `Tell me about {Card Name}.` (REQ-091)
+@@ Edge Cases (line 265), clause
+-preserved cards/question/pill
++preserved cards/question
+@@ Edge Cases (line 271) — deleted
+-  - selecting a second topic before submitting swaps the locked pill without touching any text already typed in the textarea (REQ-091)
+@@ Notes (line 275), clause
+-reuses existing search, scan, core-topics, and the shared conversation workspace
++reuses existing search, scan, and the shared conversation workspace
+@@ Notes (line 279)
+-  - the "General rules topics" section's placement, always-rendered collapsed outer summary, nested row-level accordion disclosure, and the "Use this topic" locked-pill mechanism were confirmed during quick-question-ui-refinement (DEC-112 / REQ-091)
++  - the "General rules topics" section's placement, always-rendered collapsed outer summary, nested row-level accordion disclosure, and the "Use this topic" locked-pill mechanism were confirmed during quick-question-ui-refinement (DEC-112 / REQ-091); all four were retired by `ui-look-translation` (2026-10-02) on the owner's gate verdict — the panel is removed from Ask a Question (REQ-079 retired) and the pill has no entry point left (REQ-091 as amended)
+```
+
+```diff
+# PRD/sections/user-flows.md — FLOW-023 (lines 519, 523, 525)
+-  - local card metadata and the committed core-topics browse data are available
++  - local card metadata is available
+@@ step 2 (line 523)
+-  2. The pre-submit view shows, top to bottom: the card-attach control — now able to hold more than one card — then the Question field, then the collapsed-by-default "General rules topics" disclosure.
++  2. The pre-submit view shows, top to bottom: the card-attach control — now able to hold more than one card — then the Question field (the "General rules topics" disclosure that followed it is retired, REQ-079).
+@@ step 4 (line 525)
+-  4. User types the question (or locks a topic pill, REQ-091) and submits; the request carries the list of attached cards and no game state.
++  4. User types the question and submits; the request carries the list of attached cards and no game state.
+```
+
+```diff
+# PRD/sections/system-map.md — ## Quick Lookup, Summary (line 536), four clauses
+-A collapsed, fully local six-topic "General rules topics" disclosure stays below the Question field; nested rows use accordion disclosure, and "Use this topic" locks a removable fixed-phrase pill that is composed client-side with optional free text into the existing `question` string. 
++
+@@ clause
+-so an empty field with a card or topic attached reads `0/300`
++so an empty field with a card attached reads `0/300`
+@@ clause
+-the composed wire value may therefore exceed 300 by the prefix, and
++the composed wire value may exceed 300, and
+@@ clause
+-while the Optional card and General rules topics sections remain available
++while the Optional card section remains available
+```
+
+```diff
+# PRD/sections/quick-lookup/README.md
+@@ ## What it is (line 24), clause
+-scan — then type a question (or pick a rules topic), and get
++scan — then type a question, and get
+@@ pre-submit layout (lines 49–50) — FLOW-011's accepted "one-pill" → "two-row" clause on line 49 is separate
+-  the one-pill Question box, then the "General rules topics" outer
+-  disclosure. (REQ-073, DEC-112, REQ-206)
++  the one-pill Question box. (REQ-073, DEC-112, REQ-206)
+@@ ### General rules topics browse (lines 82–101)
+-### General rules topics browse
++### General rules topics browse (retired)
+ 
 -- Built: below the Question field sits a collapsed-by-default "General rules
 -  topics" outer disclosure whose summary stays visible in every pre-submit state
-+- Built: directly below the Question box sits a collapsed-by-default "General
-+  rules topics" outer disclosure, drawn as one plate in the shared visual system
-+  (REQ-216), whose summary stays visible in every pre-submit state
+-  — attaching a card or typing into the Question field does not hide it.
+-  Expanding it reveals a short set of core rules topics (the stack & priority,
+-  targeting, combat, layers) built from the same curated `gameRulesByTopic`
+-  excerpts the prompt uses — one source of truth, no hand-authored second copy.
+-  (REQ-079, DEC-112)
+-- Built: topic rows are collapsed by default, each showing its title, a "Use
+-  this topic" button, and an expand/collapse toggle without expanding the row;
+-  expanding one row reveals its rule numbers and excerpt and auto-collapses any
+-  other open topic (accordion — at most one excerpt visible at a time). Reading a
+-  topic is fully client-side with no AI call. (REQ-079, DEC-112)
+-- Built: "Use this topic" locks that topic's fixed phrase (`Tell me about
+-  {Topic}.`) into a non-editable pill inline with the Question field's label,
+-  with its own remove control; only one pill may be locked at a time and picking
+-  a different topic swaps it without touching text already typed. It also
+-  smooth-scrolls to the Question field and focuses the textarea. (REQ-091,
+-  DEC-112)
++- Retired by `ui-look-translation` (2026-10-02) on the owner's gate verdict:
++  Ask a Question no longer shows the "General rules topics" panel — the
++  direction-1 mockup was made without it on purpose. A topic row was the
++  locked topic pill's only entry point, so the pill no longer appears and
++  nothing replaces it. (REQ-079 retired, REQ-091 as amended)
+@@ ### Composing and submitting the question (lines 105–118)
+-- Built: the freeform textarea stays independently editable at all times as
+-  optional supplementary context; locking, swapping, or removing a pill never
+-  overwrites it. Submit is enabled whenever a pill is locked, at least one card
+-  is attached, or the textarea has non-empty trimmed text. (REQ-091, DEC-112)
+-- Built: on submit the wire `question` string is composed client-side — the
+-  pill phrase plus trimmed textarea text (space-joined) when both are present;
+-  the pill phrase alone; the textarea alone when no pill is locked; or, when no
+-  pill is locked and the textarea is empty but one or more cards are attached,
++- Built: the freeform textarea stays editable at all times. Submit is enabled
++  whenever at least one card is attached or the textarea has non-empty trimmed
++  text. (REQ-091, DEC-112)
++- Built: on submit the wire `question` string is composed client-side — the
++  trimmed textarea text when it is non-empty; or, when the textarea is empty
++  but one or more cards are attached,
+   the silent fallback `Tell me about {Card Name}.` for a single card or
+   `Tell me about {Card A}, {Card B} and {Card C}.` for several (never shown to
+   the user). (REQ-091, REQ-167, FLOW-011)
+ - Built: the visible counter, the textarea `maxLength`, and the submit gate all
+   measure the raw editable textarea content, not the composed string, so an
+-  empty field with a card or topic attached reads `0/300` and a full
++  empty field with a card attached reads `0/300` and a full
+@@ ### Initial submit wait (lines 137–141)
+ - Built: while the initial submit is in flight and no answer has arrived, the
+-  Question form (label, pill, textarea, counter, submit button) is hidden and
++  Question form (label, textarea, counter, submit button) is hidden and
+   the existing `AskAiWaitingPanel` (live elapsed timer, threshold messages,
+-  REQ-023) renders in its place. The Optional card section and the General rules
+-  topics disclosure stay visible and interactive throughout. (DEC-114, REQ-092)
++  REQ-023) renders in its place. The Optional card section stays visible and
++  interactive throughout. (DEC-114, REQ-092)
+@@ calibration (lines 336–342)
+   This carries the composed string — the raw textarea is capped at the product
+-  300 by the frontend, and 600 covers the locked-pill prefix or the silent
+-  `Tell me about {Card Name}.` fallback the client composes on top. (REQ-134,
++  300 by the frontend, and 600 covers the silent `Tell me about {Card Name}.`
++  fallback the client composes (the locked-pill prefix it was also sized for is
++  retired with REQ-079). (REQ-134,
+   REQ-091, `askAiRequest.ts`)
+ - Frontend display cap: the visible counter, textarea `maxLength`, and submit
+   gate measure the raw editable textarea at 300 characters (REQ-011); the
+-  composed wire value may exceed 300 by the prefix, accepted against DEC-042's
++  composed wire value may exceed 300, accepted against DEC-042's
+@@ closed doors — insert after line 400
++- **General rules topics panel on Ask a Question (REQ-079) — closed door.**
++  Retired by the owner's `ui-look-translation` gate verdict (2026-10-02): the
++  direction-1 mockup was made without it on purpose. Its locked topic pill
++  (REQ-091) went with it, since a topic row was the pill's only entry point.
+@@ ## Where it lives (lines 424–426)
+-the submit orchestration hook `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts`,
+-and the committed core-topics browse artifact
+-`apps/frontend/public/data/gameRulesCoreTopics.json`. The full backend path runs
++and the submit orchestration hook `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts`.
++The committed core-topics browse artifact
++`apps/frontend/public/data/gameRulesCoreTopics.json` is still written by the data
++build but no longer read by the page (REQ-079 retired). The full backend path runs
 ```
 
 - Verdict: edit
