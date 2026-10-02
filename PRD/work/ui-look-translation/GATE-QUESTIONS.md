@@ -143,9 +143,8 @@ scene art as static files).
    flat colour per profile from the REQ-200 token set; one typeface (Inter,
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Match the mockup's living scene. For the screenshot comparisons, seed the scene so a reduced-motion still frame is identical from run to run; mask the scene region only as a last resort, since masking it drops most of the atmosphere out of the number. (owner, 2026-10-02)
 ---
 
 ## REQ-207 — the header touches the top of the screen, and panels are glass
@@ -280,9 +279,8 @@ Also amended: REQ-207's contrast line (`functional-requirements.md:5276`).
 +  padding) — at least 44px, about a quarter larger than the former
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Match the mockup: header at the top edge, glass panels. (owner, 2026-10-02)
 ---
 
 ## REQ-216 — one visual system, inherited by every screen (new)
@@ -422,9 +420,8 @@ git diff -U0 "$BASE"..HEAD -- apps/frontend/src \
 +  - REQ-216 extends this requirement's one-source rule from colours to every style value (surface, radius, shadow, glow, type size, spacing) and fixes the order the shared stylesheets layer in; the roles above resolve to its ported token layer
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Accepted as written. The rule is rooted in one unified UI theme and scheme: one shared palette and style system every screen inherits, switched in one place. (owner, 2026-10-02)
 ---
 
 ## FLOW-011 — Ask a Question's question box takes the mockup's two-row shape
@@ -505,9 +502,8 @@ grep -rn "one-pill\|one pill\|question box is\|Question box" PRD/sections | grep
 +  bottom-right, with the character count where the mockup places it. One line
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Match the mockup's two-row question box. (owner, 2026-10-02)
 ---
 
 ## REQ-124 — a redesigned screen's column takes its mockup width on desktop
@@ -565,9 +561,8 @@ grep -rn "48rem\|36rem" PRD/sections | grep -v '^PRD/sections/decisions.md'
 +  - **tablet/desktop:** shell ≈ **92%** of viewport width, capped at `min(48rem, 92vw)` (DEC-145 / REQ-124). Tune the rem cap in product truth when mocks prove a different reading width; do not jump to edge-to-edge without a catalog/DEC update. On the direction-1 redesigned screens a screen's content column takes its mockup page's own width inside this cap (REQ-124).
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Match each mockup page's column width. (owner, 2026-10-02)
 ---
 
 ## REQ-079 — keep the "General rules topics" panel, directly under the question box
@@ -639,9 +634,8 @@ grep -rn "General rules topics" PRD/sections | grep -v '^PRD/sections/decisions.
 +  (REQ-216), whose summary stays visible in every pre-submit state
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: edit
+- Reason: retire. Remove the General rules topics panel from Ask a Question; the mockup was made without it on purpose. Apply the retire path the block spells out (REQ-079 retired; REQ-091, REQ-206, REQ-073, FLOW-011 steps 2 and 4, FLOW-023 step 2 and the quick-lookup spec amended). (owner, 2026-10-02)
 ---
 
 ## REQ-070 — helper text on the redesigned screens follows the mockup
@@ -752,9 +746,8 @@ grep -rn "reads exactly\|remains exactly\|byte-for-byte unchanged\|no net-new gu
 +Pre-submit guidance copy follows the Ask a Question mockup page (REQ-070's redesigned-screens exception); today none renders.
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Helper text on the redesigned screens follows the mockup. (owner, 2026-10-02)
 ---
 
 ## REQ-206 — position dots replace the `n / 10` card counter (owner question 1)
@@ -821,9 +814,8 @@ states it.
 +a row of position dots lights the front card's place
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Position dots, as the mockup shows. (owner, 2026-10-02)
 ---
 
 ## REQ-167 — Ask a Question's card search opens before three letters (owner question 2)
@@ -872,9 +864,8 @@ new rule into REQ-167, the Ask a Question card-list requirement.
 +  - amended by `ui-look-translation` (2026-10-02): Ask a Question's search threshold (the first build's owner question 2); `build` records the mockup's number here
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Use the mockup's own search threshold, read from its script at build. (owner, 2026-10-02)
 ---
 
 ## REQ-209 — the ruling's ✎ Edit button appears and goes back to the review (owner question 3)
@@ -1011,9 +1002,8 @@ Notes, and a new Built line in `trade-balancer/README.md`.
 +  printing or finish stays its own row. Totals are unchanged. (REQ-065, REQ-215)
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Merge repeat adds into one row with a quantity, as the mockup shows. (owner, 2026-10-02)
 ---
 
 ## REQ-214 — the scanner gets the mockup's hint line (owner question 5)
@@ -1091,9 +1081,8 @@ and a new Built line in `scan/README.md`.
 +| Chrome | A square ✕ exit box sits above the camera's top-right corner on every host (accessible name "Exit scan"); the count pill (and, when open, its caution note) sits beneath it, non-overlapping; the opt-in Debug panel keeps its own bottom-left placement with a themed accent border (REQ-214); when the mockup's scanner page carries the hint line, one line of static text sits under the camera frame in the mockup's position — text, not a control, never overlapping the camera frame, the count pill or the review list (REQ-214, REQ-070) |
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Whatever the mockup's scanner page has is what we need: add its hint line in its words if it has one, add nothing if it does not. (owner, 2026-10-02)
 ---
 
 ## REQ-202 — Game Setup gets "Edit names ▾" and a "Done ›" bar (owner question 6)
@@ -1176,9 +1165,8 @@ additions).
 +Game Setup fits one phone screen, with names behind an Edit names ▾ collapse and a Done › foot bar;
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Edit names collapse and Done bar, as the mockup shows. (owner, 2026-10-02)
 ---
 
 ## REQ-082 — the Counters sheet becomes content-sized like every other sheet (owner question 7)
@@ -1317,5 +1305,5 @@ grep -rn "DEC-139\|full-height\|full height" PRD/sections | grep -v '^PRD/sectio
 +  sheet rather than a bespoke bottom sheet.
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Content-sized Counters sheet, as the mockup shows; the earlier full-height decision is knowingly reopened. (owner, 2026-10-02)
