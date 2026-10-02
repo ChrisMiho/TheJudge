@@ -3,11 +3,11 @@
 - Run ID: `graph-20261002-122813`
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent); graph canary denied (nohup true)`
-- Autonomous base: `origin/thejudge-auto/ui-look-translation`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-look-translation`
+- Autonomous base: `origin/thejudge-auto/ui-reimagining-build-work` (the branch the code PR targets — the owner's base override, never `origin/main`; rewritten by the build half's claim)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-look-translation` (branch `thejudge-auto/ui-look-translation-work`, cut from `origin/thejudge-auto/ui-reimagining-build-work` at `071a56f`; rewritten by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261002-122813/`
-- Current node: `owner-action` (parked at gate-qc PASS)
-- Next action: answer `PRD/work/ui-look-translation/GATE-QUESTIONS.md` (14 slots) in the docs PR, merge it into `thejudge-auto/ui-reimagining-build-work`, then `/graph-implement PRD/work/ui-look-translation/` with the base override noted under `## Open gate`
+- Current node: `claim` (build half; gate resolution next)
+- Next action: `/graph-implement PRD/work/ui-look-translation/` with the base override (queue read, worktree cut, code PR target = `origin/thejudge-auto/ui-reimagining-build-work`)
 
 ## Node ledger
 
@@ -228,3 +228,4 @@ Rows below from the `define` node quote the intake brief's own section titles an
 | "collapse and" | answered-once | define | — |
 | "foot bar; the Counters sheet's full-height carve-out), each spelling out today's state and the mockup's state; (f) the new cross-cutting" | answered-once | define | — |
 | "requirement as its own new `REQ-###` (reserve the next free number — check `PRD/sections/` for the highest id in use); (g) any other new or amended `REQ`/`FLOW` the brief needs. The whole proposal gates: every new or amended stable id gets its own slot. Never add a `DEC-###`. For any rule restated in more than one place in `PRD/sections/` (NFR-006's" | answered-once | define | — |
+| "base is origin/thejudge-auto/ui-reimagining-build-work, not origin/main: read the queue from it, cut the build worktree from it, and open the code PR into it" | answered-once | claim | — |
