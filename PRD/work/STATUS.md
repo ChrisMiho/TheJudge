@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ui-reimagining-build | Slices A–Q done; review 2 RETURN TO BUILD finding 1 fixed (In-depth Cards step: Add card / Scan row, zone tabs and the lit shelf hint now sit above the plate, not inside it — `slice-n.evidence.md`), plus Minors 2/3/5/6; `build` attempt 10 (last loop); PR #239 open `IN PROGRESS` awaiting review 3; run `graph-20260930-055958` |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Slices A–Q done; review 2 RETURN TO BUILD on one Important gap (In-depth Cards step: Add card / Scan row inside the plate — `REVIEW-2.md`); `build` attempt 10 narrow fix (last loop), then review 3; PR #239 open `IN PROGRESS`; run `graph-20260930-055958` |
 
 ## refined
 

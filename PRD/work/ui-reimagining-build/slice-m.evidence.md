@@ -202,3 +202,17 @@ Finding closed. `npm --workspace apps/frontend run test` green, including
 `FollowUpComposer.test.tsx`, `ComposerPill.test.tsx`,
 `ConversationWorkspace.test.tsx`, `App.answered-state.test.tsx`,
 `App.ui-flare-chat-motion.test.tsx`, `QuickLookupApp.test.tsx`.
+
+### Review 2 fix (2026-10-02) — Minor 6
+
+`index.css`'s global `.attach { margin-top: -0.2rem }` (the In-depth Cards
+step's own pull-up, `in-depth-question.html:72`'s `.idq > .attach`) had no
+scoping, so it also reached this screen's `.flow-head .attach`
+(`QuickLookupApp.tsx:591`) — that more specific rule sets no margin of its
+own, so nothing overrode it, and Ask a Question's composer head shifted up by
+the same 3px it was never meant to move. Fixed by moving the margin onto a new
+`.idq-attach` class, added only to the In-depth row's own element
+(`ZoneCollectionStep.tsx`); `.attach` keeps display/gap only now. This
+screen's pairs were not retaken — nothing here was visibly off by more than
+the few px the finding named, and the fix removes the leak rather than
+changing this screen's own look.

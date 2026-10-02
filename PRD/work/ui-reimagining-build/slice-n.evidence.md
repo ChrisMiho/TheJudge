@@ -348,3 +348,76 @@ frontend-only change).
 
 Finding 3 closed except the one carried owner question above (Ruling's
 "✎ Edit").
+
+### Review 2 fix (2026-10-02)
+
+Review loop 2 (`REVIEW-2.md`) returned new finding 1 (Important, N9 /
+requirement 6 and N3): on the In-depth Cards step, the ＋ Add card / ▣ Scan
+row and the zone tabs were still inside the step's `.plate`, and the shelf
+still sat in a nested bordered box inside `ZoneCardPicker` — contradicting the
+step's own comment and the mockup's actual DOM order
+(`in-depth-question.html:442-524`: rail → `.attach` → zone tabs → lit shelf
+hint → `.search-pop` → `.stage` holding only the shelf and its `.plate-next`
+foot). Review 1's "closed" claim for this bullet did not hold once reviewed
+against that order. Fixed:
+
+- **`ZoneCollectionStep.tsx`**: the `.attach` row (lines ~361–391 before this
+  fix) now renders as a sibling above the `.plate`, immediately after the
+  rail — matching the mockup's own `.idq > .attach` position. The "Add cards
+  to zones" heading/lede and the zone-tab pills (or the "No zones selected"
+  fallback) moved up with it, inline-styled to the same values `.plate
+  h2`/`.plate .lede` use (those selectors need a `.plate` ancestor the
+  heading no longer has) so the look is unchanged. The lit `⇄` shelf-hint
+  (2+ cards) also moved here, above the plate. The `.plate` itself (still
+  opening where it did) now holds only `ZoneCardPicker` (search/owner-select/
+  preview/shelf) and the `.plate-next` Continue foot.
+- **`ZoneCardPicker.tsx`**: the `rounded-2xl border border-zinc-700/70
+  bg-zinc-900/55 p-4` wrapper around the shelf is dropped — the shelf grid
+  (`.zone-card-grid`) now renders directly, with no border of its own,
+  matching the mockup's plain `.stage`. The shelf-hint paragraph that used to
+  render inside this box was removed (it now lives in `ZoneCollectionStep`,
+  above the plate, per the bullet above).
+- No test changes were needed for this move: every test that checks for the
+  "Add cards to zones" heading, the zone tabs, or the attach row's buttons
+  asserts by accessible role/name/text only, never by DOM ancestry, so none
+  of them coupled to the old nesting.
+
+Minor 5 (N, Review step stale copy) fixed in the same pass:
+`EnrichmentStep.tsx:832`'s "No message needed — tap Send Request below when
+you're ready" named a control ("Send Request") that no longer exists — the
+control is now the icon-only split pill (`ComposerPill`, `submitLabel="Decrypt
+Stack"`, requirement 9). Reworded to "No message needed — tap the arrow below
+when you're ready," which names the control by sight instead of a stale
+label; the control's own accessible name ("Decrypt Stack") is unchanged.
+`EnrichmentStep.test.tsx`'s two assertions on the old phrase were updated to
+match the new one.
+
+Minors 2 and 3 (N, stale captures) fixed: recaptured
+`n/in-depth-{cards,place,context,review}-build-{390x844,1440x900}.png` (8
+files) in the LOOK-GAPS state — Cards with Stack 2 / Battlefield 2 / Hand 2
+(the lit shelf-hint now shows), Placing reached via Ask a Question's "Add
+in-depth details" carry path with 3 cards (the carry note shows above the
+rail), Context with Lightning Bolt targeting Battlefield: Llanowar Elves (the
+target-pill thumbnail shows), Review with all 6 cards across three zones (the
+All/Stack/Battlefield/Hand filter pills show). `n/in-depth-game-*` and
+`n/in-depth-ruling-*` were not retaken — this fix touches neither screen.
+
+Verified live (mock mode, 390×844 and 1440×900): the Cards step now shows, top
+to bottom — rail, ＋ Add card/▣ Scan row, "Add cards to zones" heading, pill
+zone tabs, the lit ⇄ shelf hint, then one plate holding only the shelf and the
+Continue foot, with no border around the shelf. Compared side by side against
+`n/in-depth-cards-mockup-{390x844,1440x900}.png`: the order and shape now
+match.
+
+`npm run quality:check` passes (589/589 script tests); `npm --workspace
+apps/frontend run test` passes (146 files, 1486/1486, including
+`ZoneCollectionStep.test.tsx`, `ZoneCardPicker.test.tsx`,
+`EnrichmentStep.test.tsx`, and every `App.*`/`MtgAssistantApp.*` integration
+test that exercises the Cards or Review step); `npm --workspace apps/backend
+run test` passes (519/519, unaffected — frontend-only change).
+
+Finding 1 closed. Minors 2, 3 and 5 closed. (Minor 6 — the global `.attach`
+margin leaking into Ask a Question — is recorded in `slice-m.evidence.md`,
+since it touches `index.css` and `QuickLookupApp.tsx`'s screen, not this
+slice's own files. Minors 4 and 7 were out of scope for this pass and are
+untouched.)

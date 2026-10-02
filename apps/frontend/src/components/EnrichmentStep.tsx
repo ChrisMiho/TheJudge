@@ -828,8 +828,14 @@ export function EnrichmentStep({
             </>
           )}
           {!question.trim() && (
+            // Look-matching pass (slice N, review 2 fix — Minor 5): the control this
+            // points at is the icon-only split pill now (`ComposerPill`,
+            // `submitLabel="Decrypt Stack"`, requirement 9) — it has no visible "Send
+            // Request" label any more, so the copy names the control by sight (the
+            // arrow) instead of a label that no longer exists. The accessible name
+            // ("Decrypt Stack") is unchanged.
             <p className="mt-1 text-sm text-zinc-300">
-              No message needed — tap Send Request below when you&rsquo;re ready.
+              No message needed — tap the arrow below when you&rsquo;re ready.
             </p>
           )}
         </div>

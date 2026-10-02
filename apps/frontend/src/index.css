@@ -1355,6 +1355,16 @@
 .attach {
   display: flex;
   gap: 0.5rem;
+}
+
+/* Look-matching pass (slice N, review 2 fix — Minor 6): the `-0.2rem` pull-up
+   is `in-depth-question.html:72`'s own `.idq > .attach` value, specific to the
+   In-depth row that sits directly under the rail — it was on the bare
+   `.attach` rule above, which also reaches Ask a Question's `.flow-head
+   .attach` (that rule sets no margin of its own, so nothing there overrode
+   it) and shifted its composer head by the same amount. Scoped here, on the
+   In-depth row's own second class, so Ask a Question's head is unchanged. */
+.idq-attach {
   margin-top: -0.2rem;
 }
 

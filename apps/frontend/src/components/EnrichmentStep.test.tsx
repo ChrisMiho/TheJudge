@@ -41,7 +41,7 @@ describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
 
     await user.click(screen.getByRole("button", { name: "OK — finish context" }));
 
-    expect(screen.getByText(/tap Send Request/i)).toBeInTheDocument();
+    expect(screen.getByText(/tap the arrow below/i)).toBeInTheDocument();
   });
 
   it("omits the send-button pointer from the ready-state copy when the question is non-blank", async () => {
@@ -49,7 +49,7 @@ describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
 
     await user.click(screen.getByRole("button", { name: "OK — finish context" }));
 
-    expect(screen.queryByText(/tap Send Request/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/tap the arrow below/i)).not.toBeInTheDocument();
   });
 
   it("counts the raw bound question value rather than any composed string", async () => {

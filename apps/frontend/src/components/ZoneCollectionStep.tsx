@@ -358,81 +358,105 @@ export function ZoneCollectionStep({
         </>
       )}
 
-      {/* Look-matching pass (slice N), requirement 3/6: the whole step is one `.plate`,
-          with `.plate-next` as its own way forward — the old free-standing Back/Continue
-          pair is retired (the header's ‹ covers Back now). Zone tabs become pills with
-          an accent-soft count (`in-depth-question.html:141-144`). */}
+      {/* Look-matching pass (slice N, review 2 fix — finding 1): the mockup's own DOM
+          order (`in-depth-question.html:442-524`) puts the rail, the `.attach` row,
+          the zone tabs and the lit shelf hint all above the shelf's own panel — the
+          `.stage`/`.plate` there holds nothing but the shelf and its `.plate-next`
+          foot. Lifted here to match: none of the four are inside `.plate` any more. */}
+      {!isScanOpen && activeZone && (
+        // Look-matching pass (slice N, review 2 fix — Minor 6): `idq-attach` carries
+        // the `-0.2rem` pull-up (`index.css`) scoped to this row alone, so Ask a
+        // Question's own `.flow-head .attach` is unaffected.
+        <div className="attach idq-attach">
+          {/* `aria-label` disambiguates this toggle from the zone's own confirm
+              button (also named "Add card" for non-Stack zones, unchanged) —
+              visible text stays the mockup's own "Add card" either way. */}
+          <button
+            type="button"
+            aria-label={`Add a card to ${ZONE_LABELS[activeZone]}`}
+            aria-expanded={isSearchOpen}
+            aria-controls="zone-card-search-pop"
+            onClick={() => setIsSearchOpen((open) => !open)}
+            className="icon-chip motion-focus"
+          >
+            <span className="glyph" aria-hidden="true">
+              ＋
+            </span>{" "}
+            Add card
+          </button>
+          <button type="button" onClick={() => void handleOpenScan()} className="icon-chip motion-focus">
+            <span className="glyph" aria-hidden="true">
+              ▣
+            </span>{" "}
+            Scan
+          </button>
+        </div>
+      )}
+
+      {!isScanOpen && (
+        <>
+          {/* Inline-styled rather than `.plate h2`/`.plate .lede` (those selectors need a
+              `.plate` ancestor): this heading/lede pair now sits above the plate, matching
+              the mockup's own eyebrow treatment without reintroducing a `.plate` wrapper
+              the mockup's Cards step does not have at this position. */}
+          <h2 className="text-[0.74rem] font-semibold uppercase tracking-[0.1em] text-zinc-400">
+            Add cards to zones
+          </h2>
+          <p className="-mt-1 mb-2 text-[0.82rem] text-zinc-400">
+            Select a zone, then add cards by searching or scanning.
+          </p>
+
+          {orderedSelectedZones.length === 0 ? (
+            <p className="text-sm text-zinc-300">
+              No zones selected. Continue when you are ready to enrich context or ask a timing question.
+            </p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {orderedSelectedZones.map((zone, index) => {
+                const count = zones[zone]?.length ?? 0;
+                const isActive = index === activeZoneIndex;
+                return (
+                  <button
+                    key={zone}
+                    type="button"
+                    aria-label={`Zone tab: ${ZONE_LABELS[zone]}`}
+                    aria-pressed={isActive}
+                    data-accent-current={isActive}
+                    onClick={() => setActiveZoneIndex(index)}
+                    className="zone-tab-pill ambient-accent-surface ambient-accent-interactive motion-hover motion-press motion-focus"
+                  >
+                    {/* D5: every zone tab shows its own card count, Stack included — no
+                        zero-count special case. */}
+                    {ZONE_LABELS[zone]}
+                    <b>{count}</b>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </>
+      )}
+
+      {/* The lit reorder hint (`in-depth-question.html:515` `#shelf-hint`, 2+ cards
+          only) — lifted out of `ZoneCardPicker` so it sits above the plate too,
+          instead of inside the shelf's now-unbordered inner box. */}
+      {!isScanOpen && activeZone && activeZoneCards.length > 1 && (
+        <p className="shelf-hint flex items-start gap-2 text-xs text-accent-soft">
+          <span aria-hidden="true">{"⇄"}</span>
+          <span>
+            {activeZone === "stack"
+              ? "Top resolves first, then 2nd, 3rd… down to the bottom. Drag a card to reorder it (hold first on a phone), or open its menu for Down / Up / To top."
+              : "Drag a card to reorder the shelf (hold first on a phone), or open its menu for Left / Right. Order here is cosmetic."}
+          </span>
+        </p>
+      )}
+
       {/* The plate always mounts (`ZoneCardPicker` owns its own internal scan-camera
-          view and must stay mounted while scanning); only the header/zone-tabs/foot
-          hide during scan, same as before this slice. */}
+          view and must stay mounted while scanning); only the foot hides during scan,
+          same as before this slice. It now holds only the shelf (via `ZoneCardPicker`)
+          and the `.plate-next` foot — the zone tabs, `.attach` row and shelf hint moved
+          above, matching the mockup's own `.stage`. */}
       <div className="plate">
-        {!isScanOpen && (
-          <>
-            <h2>Add cards to zones</h2>
-            <p className="lede">Select a zone, then add cards by searching or scanning.</p>
-
-            {orderedSelectedZones.length === 0 ? (
-              <p className="text-sm text-zinc-300">
-                No zones selected. Continue when you are ready to enrich context or ask a timing question.
-              </p>
-            ) : (
-              <div className="flex flex-wrap gap-2">
-                {orderedSelectedZones.map((zone, index) => {
-                  const count = zones[zone]?.length ?? 0;
-                  const isActive = index === activeZoneIndex;
-                  return (
-                    <button
-                      key={zone}
-                      type="button"
-                      aria-label={`Zone tab: ${ZONE_LABELS[zone]}`}
-                      aria-pressed={isActive}
-                      data-accent-current={isActive}
-                      onClick={() => setActiveZoneIndex(index)}
-                      className="zone-tab-pill ambient-accent-surface ambient-accent-interactive motion-hover motion-press motion-focus"
-                    >
-                      {/* D5: every zone tab shows its own card count, Stack included — no
-                          zero-count special case. */}
-                      {ZONE_LABELS[zone]}
-                      <b>{count}</b>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 6:
-            ＋ Add card / ▣ Scan as a row of their own under the rail
-            (`in-depth-question.html:452-455`'s `.attach`), not inside the shelf
-            plate. */}
-        {!isScanOpen && activeZone && (
-          <div className="attach">
-            {/* `aria-label` disambiguates this toggle from the zone's own confirm
-                button (also named "Add card" for non-Stack zones, unchanged) —
-                visible text stays the mockup's own "Add card" either way. */}
-            <button
-              type="button"
-              aria-label={`Add a card to ${ZONE_LABELS[activeZone]}`}
-              aria-expanded={isSearchOpen}
-              aria-controls="zone-card-search-pop"
-              onClick={() => setIsSearchOpen((open) => !open)}
-              className="icon-chip motion-focus"
-            >
-              <span className="glyph" aria-hidden="true">
-                ＋
-              </span>{" "}
-              Add card
-            </button>
-            <button type="button" onClick={() => void handleOpenScan()} className="icon-chip motion-focus">
-              <span className="glyph" aria-hidden="true">
-                ▣
-              </span>{" "}
-              Scan
-            </button>
-          </div>
-        )}
-
         {activeZone && (
           <ZoneCardPicker
             zoneId={activeZone}
