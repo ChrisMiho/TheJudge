@@ -934,9 +934,8 @@ Notes, and a new Built line in `in-depth/README.md`.
 +  History, and the next send starts a new conversation. (REQ-209)
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Show the Edit button as the mockup does. When the player edits the cards or the game context, the chat answer leaves the screen while they do that; it stays saved in Question History, and the next send is a fresh question, exactly as Ask a Question's Edit cards works today. (owner, 2026-10-02)
 ---
 
 ## REQ-215 — the same printing added twice becomes one row with a quantity (owner question 4)
