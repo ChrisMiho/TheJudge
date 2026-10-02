@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/ui-reimagining-build` by the build half's claim; docs PR #238 merged at `c36b44d`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining-build` on `thejudge-auto/ui-reimagining-build-work` (rewritten from `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-reimagining-build` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20260930-055958/`
-- Current node: look pass (owner direction after slice K): `build` attempt 8 (slices O–Q, from O) — attempt 6 finished L, attempt 7 finished M and N (2026-10-02) and stopped clean before O. Marker `STATUS.active`. Then `review` (pairs compared) → `close`
-- Next action: the driver re-dispatches `### build (attempt 8 — look-matching slices O–Q)` under the same owner instruction (quoted in `## Instruction ledger`: don't cut the pass short); on a resume from a fresh session, `/graph-implement PRD/work/ui-reimagining-build/` enters at `build` (`STATUS.active` + `GAMEPLAN.md`) from the first slice the README table lists as `planned`. The launch checkout still carries the owner's uncommitted cap edit (` M scripts/lib/boundary-rules.mjs`, build cap 4000) — leave it until PR #239 merges
+- Current node: `review` (node 7) — build attempts 6, 7, 8 finished the look pass L–Q (2026-10-02); every slice A–Q `done`, 183/183 criteria self-reported, marker `STATUS.ship-ready`. Review compares every screen with its mockup pair per the owner's instruction, then `close`
+- Next action: the driver dispatches `### review` (opus, cap 120); on APPROVE → `close` (`thejudge-cleanup` on this branch), on Critical/Important → `build` (max two loops). PR #239 stays `IN PROGRESS` until the owner marks it READY. The launch checkout still carries the owner's uncommitted cap edit (` M scripts/lib/boundary-rules.mjs`, build cap 4000) — leave it until PR #239 merges
 
 ## Node ledger
 
@@ -34,6 +34,7 @@
 | 5 | plan (attempt 3 — append) | sonnet | ok | `0 → 56` | commit `02b21b5` on `thejudge-auto/ui-reimagining-build-work` (pushed `dbe39d1..02b21b5`): six look-matching slices appended — L frame/Menu/Theme band/sheets (`shared-chrome-menu.html` + the four shared stylesheets, carries the REQ-202 pair), M Ask a Question (`quick-question.html`), N In-depth details (`in-depth-question.html`), O Trade Balancer (`trade-balancer.html`), P Card scanner (`card-scan.html`), Q Life Tracker menus (`life-tracker-menus.html`, carries the look-pass Ship gates); each names its mockup page as visual source, cites exact `file:line` values to reuse, requires `npm run quality:check` + the frontend test command, a side-by-side capture-pair criterion with exact paths (L 20, M 12, N 28, O 8, P 6, Q 18 files, matching `LOOK-GAPS.md`), and a `manual` every-difference-closed-or-carried criterion; five owner questions carried verbatim, none resolved; mock-mode launch form `VITE_ASK_AI_PROVIDER=mock PORT=<port> FRONTEND_PORT=<port> node scripts/dev.mjs` named; `GAMEPLAN.md` `## Look-matching pass` + build order A→…→Q, README rows L–Q `planned`, board note; driver-parsed `slice-{l..q}.criteria.json`: 68 criteria, 25 manual, 0 `true`; slices A–K untouched; marker `STATUS.active`; worktree porcelain empty after the commit; launch checkout `main`, ` M scripts/lib/boundary-rules.mjs` only → the owner asked to stop at this boundary (usage at 98%); the usage limit reset before the park was committed, so the run continues → `build` attempt 6 from slice L | 2026-10-01 |
 | 6 | build (attempt 6 — look pass) | sonnet | failed (slice L done; M–Q not started) | `0 → 403` | fresh driver session: lock re-taken at the launch root (`node scripts/graph-preflight.mjs --take-lock --slug ui-reimagining-build --run-id graph-20260930-055958 --pid 18745`), run-state `build/6` written before dispatch, graph canary `nohup true` denied (`nohup-wrapper`, already-denied-this-run form), `graph-ledger-check` ok, origin tip `5b1e8f8` = local before dispatch; milestone `828ebf0` `feat(ui-reimagining-build): complete slice L` pushed, remote tip = local: frame / Menu tray / Theme band / shared sheets take the direction-1 look (`PageShell`, `FeaturePortalMenu`, `ThemeSection`, `SheetShell`, `ConfirmSheet`, `OverlayCloseButton`, `AmbientScene`, `BrandMark`, `CardPresentation`, `index.css`, `cardImage.ts`; new `PageShell.test.tsx`); criteria L 14/14 (5 manual, dated lines in `slice-l.evidence.md`), look-pass total 14/68, self-reported (evidence log 0 entries, known gap); 24 pair files under `docs/design/ui-reimagining/build-screenshots/l/` (chrome, chrome-menu, chrome-feedback, chrome-history, card-detail-sheet × build/mockup × 390x844/1440x900, plus the REQ-202 life-tracker before/after pair); two differences carried, not closed: per-destination Menu row icons (no cited icon source) and the canvas-drawn tray foot flair (brief non-goal A1); one mockup-vs-requirement conflict resolved in the requirement's favour: REQ-142's palette-derived close-button colour kept, mockup's rounded-square shape taken; `git diff --stat origin/main HEAD -- PRD/sections` unchanged (13 files +1079/−519); dev servers 3121/5301 + static 4611 as tracked tasks, stopped via TaskStop, `lsof` empty, `browser_close` confirmed, owner's 5273/3100/5300 untouched; builder used `git stash push` + `git stash apply` for the before/after capture and left `stash@{0}` "slice-L before/after capture" in the shared stash list (drop/pop denied to a run — the owner drops it); return-side: launch porcelain identical before and after (` M scripts/lib/boundary-rules.mjs`), `git diff --name-only 5b1e8f8..HEAD` → 50 paths, `classifyBuildWrites` → `ok`; 617,605 subagent tokens, 399 tool uses; builder stopped clean before M citing context; no blocker, no product question → re-dispatch attempt 7 from slice M under the same owner instruction | 2026-10-02 |
 | 6 | build (attempt 7 — look pass) | sonnet | failed (slices M, N done; O–Q not started) | `0 → 958` | run-state `build/7` written before dispatch, graph canary `nohup true` denied (already-denied-this-run form), `graph-ledger-check` ok, origin tip `694e375` = local before dispatch; milestones `86be03d` (slice M: Ask a Question takes the direction-1 look — door, stage, composer pill, ruling bubbles; 32 files; criteria M 11/11, 4 manual, dated lines in `slice-m.evidence.md`; 12 pair files under `build-screenshots/m/`; both `LOOK-GAPS.md` Ask a Question conflicts — stage count pill vs position dots under REQ-167, Add card list before 3 typed characters — carried verbatim as owner questions, requirement followed; one conflict resolved in the brief's favour per `DESIGN-BRIEF.md`, recorded in the evidence file) and `92a24e8` (slice N: In-depth details takes the look — Game/Zones/Cards/Context/Review each one lit card with its own Continue bar, shelf corner buttons, context sheet with art beside the form, compact filterable Review list, ruling reuses the chat look; `EnrichmentStep`, `FrozenGameContextDetails`, `ZoneCardPicker`, `ZoneCollectionStep`, `ZoneConfirmStep`, `MtgAssistantApp`, `index.css` + tests; criteria N 11/11, 4 manual; 28 pair files under `build-screenshots/n/`; REQ-210 Mana-spent-on-every-zone and REQ-206 carried-cards questions followed as accepted; one new mockup-vs-requirement conflict found and resolved in the requirement's favour — the mockup folds non-preselected zones behind "Other zones ▾", which breaks REQ-018 (every zone one tap away) and its test, so the fold was built, reverted, and the pair kept as evidence; two live bugs fixed en route — a mismatched JSX tag and a click-blocking grid overlap), both pushed, remote tip = local; look-pass total 36/68 (self-reported; evidence log 0 entries, known gap); `git diff --stat 02b21b5 HEAD -- PRD/sections` empty (no truth edits this pass); dev servers 4101/4102 + static 4103 as tracked tasks, started twice (recaptures), stopped via TaskStop both times, `lsof` empty, `browser_close` confirmed, owner's 5273/3100/5300 untouched; 78 Playwright MCP transient files in the launch checkout's ignored `.playwright-mcp/` removed by exact timestamp, pre-existing files left; no stash used; return-side: launch porcelain identical before and after (` M scripts/lib/boundary-rules.mjs`), `git diff --name-only 694e375..HEAD` → 79 paths, `classifyBuildWrites` → `ok`; 527,741 subagent tokens, 957 tool uses; builder stopped clean before O citing scope (O, P, Q each comparable to N); no blocker, no product question → re-dispatch attempt 8 from slice O under the same owner instruction | 2026-10-02 |
+| 6 | build (attempt 8 — look pass) | sonnet | ok (slices O, P, Q done; `ship-ready` reached; PR held at `IN PROGRESS` by owner direction) | `0 → 556` | run-state `build/8` written before dispatch, graph canary `nohup true` denied (already-denied-this-run form), `graph-ledger-check` ok, origin tip `360eda6` = local before dispatch; milestones `e138f5f` (slice O: Trade Balancer takes the look — `TradeBalancer`, `TradeSide`, `TradePile`, `TradeEntryRow`, `PrintingPicker` + tests; criteria O 11/11, 4 manual; 8 pair files under `build-screenshots/o/`; carried: duplicate printing stays a separate row, not a quantity bump), `e8c012e` (slice P: Card scanner takes the look — `ScanCameraSurface`, `ScanCardOutline`, `ScanReviewBubble`, `ScanDebugOverlay`, `QuickLookupApp`, `PageShell` + tests; criteria P 10/10, 4 manual; 6 files under `build-screenshots/p/` incl. 2 camera-error mockup references copied from look-gaps; carried, corrected: no scanner hint line exists in the build to keep, so the owner question is re-asked as whether to add one under REQ-214), `43f3afc` (slice Q: Life Tracker menus take the look — `GameSetupPanel`, `CounterPanel` + tests; criteria Q 11/11, 4 manual; 18 files under `build-screenshots/q/`; carried: Edit names / Done foot bar left as slice J built it; Ship gates L–Q checked; new finding flagged not fixed: `PRD/sections/system-map.md:564` still names the retired `.page-card` frame — left for cleanup, build bound not to write `PRD/sections/` in this pass), all pushed, remote tip = local; look pass 68/68, package total 183/183 (self-reported; evidence log 0 entries, known gap); README `status: ship-ready`, marker `STATUS.ship-ready` (only marker; `STATUS.active` renamed), board row moved fully to `## ship-ready`; PR #239 OPEN, MERGEABLE, title `[THEJUDGE-AUTO][IN PROGRESS]` unchanged; `git diff --stat 02b21b5 HEAD -- PRD/sections` empty; dev servers 4661/3161/5361, 4671/3171/5371, 4681/3181/5381 as tracked tasks, stopped via TaskStop, `lsof` empty, `browser_close` confirmed, owner's 5273/3100/5300 untouched; 71 Playwright MCP transient files in the launch checkout's ignored `.playwright-mcp/` removed by timestamp; no stash used; return-side: launch porcelain identical before and after (` M scripts/lib/boundary-rules.mjs`), `git diff --name-only 360eda6..HEAD` → 66 paths, `classifyBuildWrites` → `ok`; 940,118 subagent tokens, 551 tool uses → `review` | 2026-10-02 |
 
 ## Open gate
 
@@ -585,6 +586,247 @@ Tool-call cap for this node: 4000.
 Boundaries: never edit any `thejudge-*` skill, `.claude/settings*.json`, `.claude/graph-profile.json`, or `CLAUDE.md`; never touch `.secrets/`; never run `npm run data:refresh` or any Scryfall refresh; never force-push; never merge or push to `main`; never merge or close a PR.
 
 Return, in this order, as plain text: `outcome: ok | failed`; the PR URL and its current title; one line per slice you completed with its milestone commit hash, its criteria tally (`true`/total, manual count), and the pair files saved, then the next slice to start if any; the differences you could not close and carried as owner questions; the full list of every path you wrote or deleted, relative to the working directory; the dev servers you started and the evidence they were stopped; `git diff --stat origin/main HEAD -- PRD/sections` output (expect unchanged from `02b21b5`); `ls PRD/work/ui-reimagining-build/STATUS.*`; the board row's section; `git status --porcelain` in the worktree (expect empty) and `git rev-parse HEAD origin/thejudge-auto/ui-reimagining-build-work` (expect equal); and `cd /Users/chrismiho/Coding/Projects/TheJudge && git branch --show-current && git status --porcelain` output (expect `main` and exactly ` M scripts/lib/boundary-rules.mjs`). No summary beyond that.
+
+### review
+
+graph is controlling.
+
+You are node 7 (`review`), attempt 1, of graph run `graph-20260930-055958`, dispatched by the `graph-implement` driver in the build half. You are a fresh-context, no-write reviewer: you hold no `Write`, `Edit`, or `NotebookEdit`, you never saw the build node's transcript, and you change nothing in the repository. Use Bash only for read-only commands, the test commands named below, and for composing comparison images into the scratch folder named below (outside the repository). You grade the work against the slices' own stated acceptance criteria, quoted at the end of this brief, and nothing else.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-reimagining-build
+
+Copy that `Working directory:` line, unchanged, into every prompt you write for any subagent of your own (you should need none). Never write to, commit in, stash, or switch `/Users/chrismiho/Coding/Projects/TheJudge` (the owner's launch checkout, on `main`; it carries one deliberate uncommitted edit to `scripts/lib/boundary-rules.mjs`). Never start or touch ports 5273, 3100, or 5300 (the owner's own servers). You do not need a dev server: every comparison is between saved capture files.
+
+What you are reviewing: PR https://github.com/ChrisMiho/TheJudge/pull/239, the branch `thejudge-auto/ui-reimagining-build-work` against `origin/main` (`git diff --stat origin/main...HEAD`). It rebuilds the app's look to the approved direction-1 mockup (`docs/design/ui-reimagining/direction-1/`) in seventeen slices: A–K built the behaviour and applied 57 accepted product-truth ids to `PRD/sections/` (REQ-206..REQ-215 new; the rest in-place amendments, all approved in `PRD/work/ui-reimagining-build/GATE-QUESTIONS.md`); L–Q are a look-matching pass, one slice per screen, each naming its mockup page as the visual source. The package is `PRD/work/ui-reimagining-build/` (slice docs `slice-<letter>-*.md`, criteria `slice-<letter>.criteria.json`, evidence `slice-<letter>.evidence.md`, `LOOK-GAPS.md`, `GAMEPLAN.md`, `DESIGN-BRIEF.md`). Side-by-side pairs live under `docs/design/ui-reimagining/build-screenshots/<letter>/` (L 24 files, M 12, N 28, O 8, P 6, Q 18; `-build-` next to `-mockup-` at `390x844` and `1440x900`). The PR title is `[THEJUDGE-AUTO][IN PROGRESS] …` and stays so: the owner holds READY.
+
+The owner's standing instruction for this review, quoted: "Review must compare each screen with its mockup pair, not just check the tests, and send back any screen that doesn't match." And: "Where the mockup and an accepted requirement disagree, the requirement wins on behaviour." So a screen "doesn't match" when a `### Differences` bullet in `LOOK-GAPS.md` for that screen is still visible in the build capture and is neither closed nor carried as an owner question in that slice's evidence file. A difference that follows an accepted requirement over the mockup (the owner's edits REQ-206, REQ-210, REQ-214 post-date the mockup; REQ-018 every zone one tap away; REQ-142 palette-derived close-button colour; REQ-167 stage count pill) is correct, not a finding. The five carried owner questions (one each in M, N, O, P, Q, listed in each evidence file under its owner-questions heading) are open by design: do not re-open them, do not grade them.
+
+Severity rule, binding: Critical = a stated criterion is false in fact (a test command fails, a named pair file is missing, a `PRD/sections/` id the slice claims applied is absent, behaviour broken), or a correctness break. Important = a screen that does not match its pair on a point `LOOK-GAPS.md` listed and the slice neither closed nor carried. Minor = a preference, a style note, a polish nit, or anything outside the slices' stated criteria. A preference is never Critical or Important and never sends the run back to `build`; a reviewer with a loop budget and an incentive to look useful will manufacture findings, so hold the line.
+
+Method, within your 120-tool-call cap (spend it deliberately; batch reads with one Bash `cat`/`sed` over several files where you can):
+1. Confirm the tree: `git branch --show-current` (expect `thejudge-auto/ui-reimagining-build-work`), `git status --porcelain` (expect empty), `git rev-parse HEAD origin/thejudge-auto/ui-reimagining-build-work` (expect equal, `43f3afc…`).
+2. Run the verification the slices name: `npm run quality:check`, the frontend test command and the backend test command (take the exact commands from `slice-q-life-tracker-menus-look-match.md` / `slice-k-late-additions.md` `## Verification`). Record pass/fail with counts. A red suite is Critical.
+3. Read `LOOK-GAPS.md` in full, then `slice-l.evidence.md` through `slice-q.evidence.md`.
+4. Compare the pairs. Compose, per slice and per viewport, one side-by-side image with Python PIL (available as `python3 -c "from PIL import Image …"`) that places each `-build-` capture beside its `-mockup-` capture, writing only into `/private/tmp/claude-501/-Users-chrismiho-Coding-Projects-TheJudge/128764ac-2229-4adc-be8a-12dd87efe53f/scratchpad/review-montages/` (create it; nothing under the repository). Then Read each composed image (the Read tool shows images) — twelve Reads cover every pair at both viewports. Where a montage is too dense to judge, Read the individual pair files for that state. For each screen and state, record match / mismatch and, for a mismatch, which `LOOK-GAPS.md` bullet it is and whether the evidence file carried it.
+5. Confirm the look pass applied nothing to `PRD/sections/` (`git diff --stat 02b21b5 HEAD -- PRD/sections` empty) and that the A–K truth is present: `git diff origin/main...HEAD -- PRD/sections/functional-requirements.md | grep -c '^+### REQ-2[01][0-9]'` or equivalent, expecting REQ-206..REQ-215 all added once.
+6. Spot-check slices A–K against their criteria by reading their evidence files and the relevant diff hunks, not by re-running every browser scenario. Known, already-recorded facts you need not re-find: the hook's evidence log holds 0 entries for this run (the criteria files are self-reported; the contract's known build-half gap); slice Q's evidence names one stale line, `PRD/sections/system-map.md:564` still mentions the retired `.page-card` frame, left for `thejudge-cleanup` — treat it as Minor.
+7. Check the boundaries held: no force-push, no merge into `main`, only one PR, explicit-path staging (read the slice commit messages, `git log --oneline origin/main..HEAD`).
+
+Tool-call cap for this node: 120.
+
+Boundaries: never edit any file in either checkout; never edit any `thejudge-*` skill, `.claude/settings*.json`, `.claude/graph-profile.json`, or `CLAUDE.md`; never touch `.secrets/`; never run `npm run data:refresh` or any Scryfall refresh; never force-push; never merge or push anything; never merge, close, retitle, or comment on a PR; never `pkill`, `killall`, `nohup`, or an untracked `&`.
+
+Return, in this order, as plain text:
+- `verdict: APPROVE | RETURN TO BUILD | PARK` — APPROVE when no Critical or Important finding stands; RETURN TO BUILD when at least one does and a builder can fix it from the slice docs and tests; PARK when a Critical finding needs a product decision.
+- Findings, most severe first, each as: severity · slice · criterion id · one-sentence defect · evidence (file:line, capture file name, or command output).
+- A per-screen pair table: screen · state · viewport · match/mismatch · LOOK-GAPS bullet (if mismatch) · carried? (yes/no).
+- Test results with counts (quality:check, frontend, backend).
+- The `PRD/sections` checks (step 5) with their outputs.
+- `git status --porcelain` in the worktree after you finish (expect empty: you wrote nothing) and `cd /Users/chrismiho/Coding/Projects/TheJudge && git branch --show-current && git status --porcelain` (expect `main` and exactly ` M scripts/lib/boundary-rules.mjs`).
+No summary beyond that.
+
+Acceptance criteria, quoted from every slice's criteria file (id · statement):
+
+Slice A:
+- A1 · npm run quality:check passes
+- A2 · npm --workspace apps/frontend run test passes
+- A3 · FeaturePortalMenu lists exactly one question door and the full REQ-067 inventory
+- A4 · Theme band renders six 40px cells, no names, overflow arrows only when they do not fit
+- A5 · The hamburger tap area matches its painted bounds and the Menu closes three ways
+- A6 · Custom Colorless keeps its hue and passes the REQ-200 contrast floor in all six profiles
+- A7 · PRD/sections carries REQ-207, REQ-099, REQ-113, REQ-114, REQ-115, REQ-127, REQ-131, REQ-067, REQ-200, REQ-116, FLOW-007, FLOW-010 by intent
+- A8 · The ambient scene is CSS-only and visibly stills under prefers-reduced-motion, observed in the browser (manual)
+- A9 · REQ-202 Life Tracker before/after pair captured at 390x844 and 1440x900 (manual)
+- A10 · Browser scenarios observed at 390x844 and 1440x900 for Menu geometry, Theme band fit, and colour repaint on selection (manual)
+- A11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice B:
+- B1 · npm run quality:check passes
+- B2 · npm --workspace apps/frontend run test passes
+- B3 · SheetShell renders as a bottom sheet below 600px and a centred floating card at/above 600px, fixed head/foot, scrolling body
+- B4 · Card detail opens inside SheetShell, centred on desktop
+- B5 · FeedbackModal is hosted on SheetShell, shows type as three pills, folds the snapshot behind a dashed row
+- B6 · ConfirmSheet exists, built on SheetShell
+- B7 · PRD/sections carries REQ-208, REQ-128, REQ-087 and FLOW-014 by intent
+- B8 · REQ-202 Life Tracker before/after pair captured at 390x844 and 1440x900 (manual)
+- B9 · Browser scenarios observed: sheet-vs-centred-card geometry across 390x844 and 1440x900, fixed head/foot, scrolling body (manual)
+- B10 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice C:
+- C1 · npm run quality:check passes
+- C2 · npm --workspace apps/frontend run test passes
+- C3 · Menu lists one Ask a Question door; stage shows front card full size with peeking neighbours; Add card/Scan beside the title
+- C4 · Card cap is 10, not 5; an 11th attach is rejected the same way the 6th was
+- C5 · Ruling view shows the player's own question before the ruling; card-name chips match only the conversation's attached cards
+- C6 · Add in-depth details carries attached cards (and the typed question only when empty) into /in-depth; Draft is written on first attach, surviving a reload
+- C7 · Start over returns to a clean Ask a Question page with the player roster intact
+- C8 · Composer send control is a pill, send inside, no text label, 300-char ring
+- C9 · PRD/sections carries REQ-206, REQ-167, REQ-025, REQ-075, REQ-029, REQ-132, REQ-012, REQ-121, FLOW-005, FLOW-011 by intent
+- C10 · Golden prompt fixtures byte-identical except the REQ-167 cap bound (manual)
+- C11 · Browser scenario at 390x844: attach a card, reload before typing/adding in-depth details, card survives reload (manual)
+- C12 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice D:
+- D1 · npm run quality:check passes
+- D2 · npm --workspace apps/frontend run test passes
+- D3 · Cards station renders a lit shelf of real card images per zone tab with no row cap
+- D4 · Dragging a Stack card reorders it; shown bottom-to-top order is what the request sends
+- D5 · Every zone tab shows its own card count, including the Stack's
+- D6 · Stack shelf and card menu show BOTTOM...TOP tags
+- D7 · A carried card cannot leave the Cards station without a zone or an explicit leave-out
+- D8 · PRD/sections carries REQ-209, REQ-005, REQ-006, REQ-007, REQ-008, REQ-018, REQ-056, FLOW-001 by intent
+- D9 · Prompt fixture shows Stack order sent exactly as shown; non-Stack order has no prompt effect (manual)
+- D10 · Browser scenario at 390x844: drag-reorder two Stack cards, shelf and card menu reflect new order (manual)
+- D11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice E:
+- E1 · npm run quality:check passes
+- E2 · npm --workspace apps/frontend run test passes
+- E3 · Context station shows one compact sheet per card, no separate enrichment view-mode toggle; card rings are the visual cue
+- E4 · Targets picker maps onto today's four AskAiRequest target kinds; Hand/Library targeting retained
+- E5 · Mana spent is editable and prefilled with the printed cost on every zone's card
+- E6 · One More details for all players toggle exists, driving every player's secondary details in sync
+- E7 · View Context clearance is measured against the new header
+- E8 · PRD/sections carries REQ-017, REQ-021, REQ-100, REQ-045, REQ-058, REQ-210, REQ-136 by intent
+- E9 · Golden prompt fixture: untouched Mana spent sends nothing; an edited box changes only that card's line (manual)
+- E10 · Browser scenario at 390x844: edit Mana spent on a Graveyard card, confirm it reaches the request (manual)
+- E11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice F:
+- F1 · npm run quality:check passes
+- F2 · npm --workspace apps/frontend run test passes
+- F3 · Wait renders inside the judge's bubble, replacing the composer, at the existing thresholds
+- F4 · PRD/sections carries REQ-023 and NFR-006 by intent
+- F5 · Wait's ink-in motion is CSS-only and stills under prefers-reduced-motion (manual)
+- F6 · Documented decision: no REQ-202 pair required, slice scoped away from shared chrome/tokens/stylesheet (manual)
+- F7 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice G:
+- G1 · npm run quality:check passes
+- G2 · npm --workspace apps/frontend run test passes
+- G3 · Relative tiers per pile; verdict line reads Fair trade/Lopsided NN%/Even; dollar difference shown beneath
+- G4 · New trade opens the shared confirm sheet before clearing either side
+- G5 · Tapping a side's name renames it in place
+- G6 · Printing picker shows Nonfoil/Foil price pills per printing and a set filter past five printings
+- G7 · Verdict and piles update live as a card is added or removed
+- G8 · PRD/sections carries REQ-215, REQ-064, REQ-065, FLOW-009 by intent
+- G9 · REQ-202 pair captured at 390x844 and 1440x900 confirming no Life Tracker regression (manual)
+- G10 · Browser scenarios: no horizontal scroll at 390x844/1440x900; price date moves to header on desktop (manual)
+- G11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice H:
+- H1 · npm run quality:check passes
+- H2 · npm --workspace apps/frontend run test passes
+- H3 · Recognised card is added to the scanner's own holding list; count pill reflects its size
+- H4 · Closing the scanner moves every held card into the destination in one step
+- H5 · Exit scan and Capture accessible names are unchanged
+- H6 · Detection, lock and the ding are observably unchanged (re-themed only)
+- H7 · PRD/sections carries REQ-214 (owner-edited holding-list wording) by intent
+- H8 · REQ-202 pair captured at 390x844 and 1440x900 for the scanner chrome theming (manual)
+- H9 · Browser scenario at 390x844: scan two cards into In-depth, both wait in holding list (count=2), close scanner, both land in zone picker (manual)
+- H10 · Browser scenario: same holding-then-close behaviour with Trade Balancer as destination (manual)
+- H11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice I:
+- I1 · npm run quality:check passes
+- I2 · npm --workspace apps/frontend run test passes
+- I3 · Question History shows one combined list labelled n of 20, rows with a card-thumbnail fan
+- I4 · History opens from the Menu hosted in the shared sheet; no separate rail icon remains
+- I5 · Tapping a row reopens that conversation live in its own flow
+- I6 · Each flow's Draft appears as its own row at the top of the list
+- I7 · Deleting a row asks through the shared confirm sheet; below 600px the row keeps a delete control
+- I8 · PRD/sections carries REQ-213, REQ-103, REQ-107, FLOW-016, FLOW-017, FLOW-018 by intent
+- I9 · REQ-202 pair captured at 390x844 and 1440x900 for the shared-sheet History integration (manual)
+- I10 · Browser scenarios at 390x844 (single pane) and 1440x900 (two panes): reopen a past In-depth conversation live with View Context (manual)
+- I11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice J:
+- J1 · npm run quality:check passes
+- J2 · npm --workspace apps/frontend run test passes
+- J3 · Game Setup fits within one phone screen viewport with no page scroll
+- J4 · Reset and New game open the shared confirm sheet before acting
+- J5 · Counters shows two tabs: commander-damage seat map (LETHAL at 21) and counters-as-tiles with a menu
+- J6 · Every control, option, default and range matches today's values
+- J7 · The life-total table's behaviour and test coverage are unchanged
+- J8 · PRD/sections carries REQ-202 by intent
+- J9 · REQ-202 Life Tracker before/after pair captured at 390x844 and 1440x900, pixel-reviewed (manual)
+- J10 · Browser scenario at 390x844: Game Setup has no page scroll; Reset opens the shared sheet before resetting (manual)
+- J11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice K:
+- K1 · npm run quality:check passes
+- K2 · npm --workspace apps/frontend run test and npm --workspace apps/backend run test pass
+- K3 · Send pill has a mic control; speaking fills the question box with recognised text
+- K4 · Copies field appears in the context sheet only for Stack cards
+- K5 · Copies reaches AskAiRequest and the assembled prompt as a named field
+- K6 · PRD/sections carries REQ-212 and REQ-211 by intent
+- K7 · Browser scenario: speak a question via the mic control, box fills, ruling answers it (manual)
+- K8 · Browser scenario at 390x844: set Copies to 3 on a Stack card, confirm the request carries Copies: 3 (manual)
+- K9 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice L:
+- L1 · npm run quality:check passes
+- L2 · npm --workspace apps/frontend run test passes
+- L3 · No section.page-card wrapper; header is .app-header-shaped per shell.css:63-81
+- L4 · Brand mark renders the 38px breathing orb, gradient wordmark and uppercase tagline per shell.css:216-259
+- L5 · The hamburger control's painted size is 50x50 (54x54 desktop) and matches its tap area
+- L6 · The mock-mode strip renders under the header styled per shell.css:325-332
+- L7 · The ambient scene container is fixed/inset:0/z-index:0 behind the header and content
+- L8 · Menu tray is a full-height left drawer on phone, and card detail/Send feedback/Question History carry the glass sheet shell
+- L9 · Card detail shows the art-crop hero, oracle box and three fact chips including a price chip
+- L10 · REQ-202 Life Tracker before/after pair captured at 390x844 and 1440x900 (manual)
+- L11 · Side-by-side build/mockup pairs for the Frame screen's five states saved under docs/design/ui-reimagining/build-screenshots/l/ (manual)
+- L12 · Every Frame ### Differences bullet in LOOK-GAPS.md is closed or named as an owner question (manual)
+- L13 · Browser scenario: mock-mode strip observed with the exact VITE_ASK_AI_PROVIDER launch form (manual)
+- L14 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice M:
+- M1 · npm run quality:check passes
+- M2 · npm --workspace apps/frontend run test passes
+- M3 · Page shows exactly three things (stage, composer, ruling view), no permanent search panel
+- M4 · Stage matches flow.css:52-99 sizing and front-card glow, with 40px round arrows
+- M5 · Composer is one .q-box shell with icon-chip Add/Scan and a split mic/send pill with the budget ring
+- M6 · Ruling view shows a CARDS thumbnail strip, right-aligned question bubble and a sealed judge bubble with card-name chips
+- M7 · The VIEW CONTEXT panel does not render on Ask a Question
+- M8 · Side-by-side build/mockup pairs for the three Ask a Question states saved under docs/design/ui-reimagining/build-screenshots/m/ (manual)
+- M9 · Every Ask a Question ### Differences bullet in LOOK-GAPS.md is closed or named as an owner question (manual)
+- M10 · Browser scenario: stage/neighbours, search-pop from Add card, and ruling-view CARDS strip/bubbles observed at 390x844 and 1440x900 (manual)
+- M11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice N:
+- N1 · npm run quality:check passes
+- N2 · npm --workspace apps/frontend run test passes
+- N3 · Every step renders as one .plate panel with a lit plate-next foot bar, replacing free-standing Back/Continue buttons
+- N4 · Stations rail shows a back button and In-depth details h1 above it, with sentence-case node labels
+- N5 · Cards step shelf cards show corner widgets (no under-card actions button) and open the card menu on tap
+- N6 · Mana spent field appears on every zone's card context sheet, styled per the mockup field treatment
+- N7 · Context step renders the full ctx-* grid and Review renders one collapsible plate with capped-height scrolling and zone filter pills
+- N8 · Side-by-side build/mockup pairs for the seven In-depth details states saved under docs/design/ui-reimagining/build-screenshots/n/ (manual)
+- N9 · Every In-depth details ### Differences bullet in LOOK-GAPS.md is closed or named as an owner question (manual)
+- N10 · Browser scenario: Game through Ruling stepped at 390x844 and 1440x900, plate-next foot bars advance correctly (manual)
+- N11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice O:
+- O1 · npm run quality:check passes
+- O2 · npm --workspace apps/frontend run test passes
+- O3 · Page fits the viewport with no page scroll at 390x844 and 1440x900
+- O4 · A single scale band shows both sides' totals, pile art and a serif verdict line
+- O5 · On phone, the two sides sit behind a side-tab pair; both show on desktop
+- O6 · Each card row renders as one ~80px line (thumbnail, name, set/code/Change link, price, Foil/stepper/remove)
+- O7 · Printing picker shows an art-crop hero and price-pill rows
+- O8 · Side-by-side build/mockup pairs for the default trade and printing-picker states saved under docs/design/ui-reimagining/build-screenshots/o/ (manual)
+- O9 · Every Trade Balancer ### Differences bullet in LOOK-GAPS.md is closed or named as the owner question (manual)
+- O10 · Browser scenario: both sides filled past old-scroll length, phone side tabs, printing picker observed at 390x844 and 1440x900 (manual)
+- O11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice P:
+- P1 · npm run quality:check passes
+- P2 · npm --workspace apps/frontend run test passes
+- P3 · Header and mock-mode strip stay visible on the scan screen, with a Scan a card h1 and a 44px exit
+- P4 · Viewfinder is one panel with corner-ticked guide, marching lock outline, and a Locking-on indicator with a vote bar
+- P5 · Foot row shows a mute pill, a 54px round shutter, and a Debug pill, replacing the rectangular Capture button
+- P6 · The holding-count pill and its hint text are unchanged from slice H
+- P7 · Side-by-side build/mockup pair for the locking-on state saved under docs/design/ui-reimagining/build-screenshots/p/, plus the carried-forward camera-error mockup references (manual)
+- P8 · Every Card scanner ### Differences bullet in LOOK-GAPS.md is closed or named as the owner question (manual)
+- P9 · Browser scenario: scanner opened from Ask a Question, header stays visible, guide/lock-outline/foot-row observed at 390x844 and 1440x900, no page scroll (manual)
+- P10 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
+Slice Q:
+- Q1 · npm run quality:check passes
+- Q2 · npm --workspace apps/frontend run test passes
+- Q3 · Game Setup shows a THIS GAME eyebrow, stepper-pill player count, outline-glow selected life pill, and joined segmented controls
+- Q4 · Name fields remain always visible in Game Setup (no Edit names collapse)
+- Q5 · Counters shows glyph tabs, seat-shaped commander-damage tiles with lethal-at-21, and a 3-column full-colour counters grid with top-right options
+- Q6 · Every control, option, default and range in Game Setup and Counters matches today's values
+- Q7 · The life-total table itself is byte-for-byte unchanged in behaviour and test coverage
+- Q8 · Side-by-side build/mockup pairs for Game setup, Reset confirm, Counters and Counters tab, plus the table re-check pair, saved under docs/design/ui-reimagining/build-screenshots/q/ (manual)
+- Q9 · Every Life Tracker menus ### Differences bullet in LOOK-GAPS.md is closed or named as the owner question; the table re-check confirms it is unaffected by L through P (manual)
+- Q10 · Browser scenario: Game Setup and Counters observed at 390x844 and 1440x900, table visually identical to before this pass (manual)
+- Q11 · Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named (manual)
 
 ## Instruction ledger
 
