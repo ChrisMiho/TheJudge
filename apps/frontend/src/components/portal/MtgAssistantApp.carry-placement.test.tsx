@@ -120,9 +120,11 @@ describe("Frontend - MTG Assistant", () => {
       // Both carried cards resolved: the normal Cards station appears, the Stack and
       // Battlefield zones were auto-selected by placement alongside the pre-selected
       // Hand, and each card landed where it was placed.
-      expect(await screen.findByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (1)");
-      expect(screen.getByRole("button", { name: "Zone tab: Battlefield" })).toHaveTextContent("Battlefield (1)");
-      expect(screen.getByRole("button", { name: "Zone tab: Hand" })).toHaveTextContent("Hand (0)");
+      // Look-matching pass (slice N): zone tabs are pills with the count in its own
+      // bold span now (`in-depth-question.html:141-144`), not a "(N)" suffix.
+      expect(await screen.findByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack1");
+      expect(screen.getByRole("button", { name: "Zone tab: Battlefield" })).toHaveTextContent("Battlefield1");
+      expect(screen.getByRole("button", { name: "Zone tab: Hand" })).toHaveTextContent("Hand0");
       expect(screen.getByText("Opt")).toBeInTheDocument();
     });
 

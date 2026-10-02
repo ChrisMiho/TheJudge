@@ -3,7 +3,6 @@ import { useNavigate } from "react-router";
 import { EnrichmentStep } from "../EnrichmentStep";
 import { StagedStepHeader } from "../StagedStepHeader";
 import { StationsRail } from "../StationsRail";
-import { StepEyebrow } from "../StepEyebrow";
 import { ZoneCollectionStep } from "../ZoneCollectionStep";
 import { ZoneConfirmStep } from "../ZoneConfirmStep";
 import { logFrontendDebug } from "../../lib/debugLogger";
@@ -826,8 +825,31 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to historyResumeVersion; the consume*/activeConversationId/handleStartOver/restoreConversation values are read via closure at fire time, not listed, so an unrelated render doesn't re-run this.
   }, [historyResumeVersion]);
 
+  // Look-matching pass (slice N), requirement 1: a round back button plus the page's
+  // own "In-depth details" h1, above the rail, shared by every staged step (the rail
+  // itself hides on the ruling, so this header is gone there too). Requirement 3
+  // retires every per-step free-standing "Back" button in favour of this one control —
+  // station 1 has no previous station, so it leaves In-depth details for Ask a
+  // Question, the screen a player arrived from.
+  function handleHeaderBack(): void {
+    const previousStep = getPreviousStep(flowStep);
+    if (previousStep) {
+      setFlowStep(previousStep);
+      return;
+    }
+    navigate("/quick-lookup");
+  }
+
   const stationsRail = (
-    <StationsRail currentStep={flowStep} furthestStepIndex={furthestStepIndex} onNavigate={handleRailNavigate} />
+    <>
+      <div className="idq-flow-head">
+        <button type="button" className="icon-round motion-focus" aria-label="Back" title="Back" onClick={handleHeaderBack}>
+          <span aria-hidden="true">‹</span>
+        </button>
+        <h1>In-depth details</h1>
+      </div>
+      <StationsRail currentStep={flowStep} furthestStepIndex={furthestStepIndex} onNavigate={handleRailNavigate} />
+    </>
   );
 
   let content: JSX.Element;
@@ -837,7 +859,6 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
       <PageShell>
           <StagedStepHeader onBrandClick={() => setBrandClickCount((c) => c + 1)} />
           {stationsRail}
-          <StepEyebrow stepName="Game context" />
           {showCatEasterEgg && (
             <div className="p-2 text-center">
               {emptyStateImageFailed ? (
@@ -852,8 +873,13 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
               )}
             </div>
           )}
-          <div className="panel-inner">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Players in game</p>
+          {/* Look-matching pass (slice N), requirement 4: Players in game and Turn
+              phase/Active player share one `.plate`, with `.plate-next` as the only
+              way forward — "Back" was never offered on this, the first station;
+              the header's own ‹ covers it now. */}
+          <div className="plate">
+            <h2>Game context</h2>
+            <p className="lede">Who is playing, and where the turn is.</p>
             <p className="text-xs text-zinc-400">Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.</p>
 
             <PlayerRosterEditor
@@ -956,8 +982,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
                 );
               }}
             />
-          </div>
-          <div className="panel-inner ambient-accent-surface ambient-accent-interactive">
+            <div className="ambient-accent-surface ambient-accent-interactive space-y-3">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <label className="flex flex-col gap-2 text-sm">
                 <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Turn phase</span>
@@ -1007,15 +1032,19 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
                 </select>
               </label>
             )}
-          </div>
+            </div>
 
-          <button
-            type="button"
-            onClick={confirmGameContext}
-            className="motion-hover motion-press motion-focus rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast"
-          >
-            Confirm game context
-          </button>
+            <button
+              type="button"
+              onClick={confirmGameContext}
+              className="plate-next motion-hover motion-press motion-focus"
+            >
+              <span>Confirm game context</span>
+              <span className="chev" aria-hidden="true">
+                ›
+              </span>
+            </button>
+          </div>
           {statusMessage && (
             <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
               {statusMessage}

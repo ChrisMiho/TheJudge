@@ -209,12 +209,16 @@ describe("Answered-state layout integration", () => {
     expect(await screen.findByText("Initial answer")).toBeInTheDocument();
   }
 
-  it("shows only the TheJudge header without MTG Assistant or Conversation heading", async () => {
+  it("shows the shared TheJudge header and an Ask a Question chat-head, without a Conversation heading", async () => {
     const user = userEvent.setup();
     await reachAnsweredState(user);
 
+    // Look-matching pass (slice N), requirement 10: the ruling now takes the shared
+    // `.app-header` (brand + tagline, same as every other destination) plus its own
+    // `.chat-head` "Ask a Question" — the old header that hid the tagline here alone is
+    // retired.
     expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
-    expect(screen.queryByText("MTG Assistant")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Conversation" })).not.toBeInTheDocument();
   });
 
@@ -229,7 +233,8 @@ describe("Answered-state layout integration", () => {
       Node.DOCUMENT_POSITION_FOLLOWING
     );
     expect(within(workspace).getAllByRole("textbox", { name: "Follow-up question" })).toHaveLength(1);
-    expect(within(workspace).getAllByRole("button", { name: "Start Over" })).toHaveLength(1);
+    // Look-matching pass (slice N): Start Over is the chat-head's own round ↺ now,
+    // outside the conversation workspace (requirement 10) — see the dedicated test below.
   });
 
   it("appends follow-up bubbles below the context trigger without a waiting panel", async () => {
@@ -258,7 +263,9 @@ describe("Answered-state layout integration", () => {
     const user = userEvent.setup();
     await reachAnsweredState(user);
 
-    const startOver = screen.getByRole("button", { name: "Start Over" });
+    // Look-matching pass (slice N), requirement 10: Start Over is the chat-head's
+    // round ↺ now, not a text button under the follow-up box.
+    const startOver = screen.getByRole("button", { name: "Start over — clears everything" });
     expect(startOver).toBeInTheDocument();
     expect(startOver).toBeEnabled();
   });

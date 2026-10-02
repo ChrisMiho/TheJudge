@@ -30,7 +30,7 @@ dependencies and the complete 57-id assignment table: `GAMEPLAN.md`.
 | [K](slice-k-late-additions.md) | Late additions: dictation, Copies on a Stack card | C, E | 2 | 9 (3) | done |
 | [L](slice-l-frame-look-match.md) | Look pass — Frame, Menu, Theme band, shared sheets take the mockup's look | A, B | — | 14 (5) | done |
 | [M](slice-m-ask-a-question-look-match.md) | Look pass — Ask a Question takes the mockup's look | L, C | — | 11 (4) | done |
-| [N](slice-n-in-depth-details-look-match.md) | Look pass — In-depth details takes the mockup's look | L, D, E | — | 11 (4) | planned |
+| [N](slice-n-in-depth-details-look-match.md) | Look pass — In-depth details takes the mockup's look | L, D, E | — | 11 (4) | done |
 | [O](slice-o-trade-balancer-look-match.md) | Look pass — Trade Balancer takes the mockup's look | L, G | — | 11 (4) | planned |
 | [P](slice-p-card-scanner-look-match.md) | Look pass — Card scanner takes the mockup's look | L, H | — | 10 (4) | planned |
 | [Q](slice-q-life-tracker-menus-look-match.md) | Look pass — Life Tracker menus take the mockup's look | L, J | — | 11 (4) | planned |

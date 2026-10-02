@@ -91,7 +91,10 @@ describe("Theme palette changes preserve workflow state", () => {
 
     expect(document.documentElement.dataset.theme).toBe("white");
     expect(document.documentElement.style.getPropertyValue("--accent")).toBe("237 231 214");
-    expect(screen.getByRole("button", { name: "Confirm game context" }).className).toContain("from-accent");
+    // Look-matching pass (slice N): restyled to `.plate-next` (flow.css), which reads the
+    // active palette's `--accent`/`--accent-strong` custom properties directly rather than
+    // a fixed Tailwind gradient utility.
+    expect(screen.getByRole("button", { name: "Confirm game context" }).className).toContain("plate-next");
   });
 
   it("does not reset game setup, zones, cards, question, or conversation state when the palette changes", async () => {
@@ -130,7 +133,7 @@ describe("Theme palette changes preserve workflow state", () => {
     await user.click(screen.getByRole("button", { name: "Theme: Blue" }));
 
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
   });
 
   it("retints all six palettes without changing an in-progress flow or its current surfaces", async () => {
@@ -230,7 +233,7 @@ describe("Theme palette changes preserve workflow state", () => {
     await user.click(screen.getByRole("button", { name: "Reset to gray" }));
     expect(document.documentElement.style.getPropertyValue("--accent")).toBe("82 82 91");
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
   });
 });
 describe("Neutral palette backdrop", () => {
@@ -283,12 +286,14 @@ describe("Accent token coverage for staged and answered semantic surfaces", () =
     await advancePastZoneCollection(user);
     await finishEnrichmentWizard(user);
 
+    // Look-matching pass (slice N): restyled to `.plate` (flow.css's neutral panel
+    // shell, matching the mockup's own `#review-plate` — no special accent tint), with
+    // the zone filter pills reading the active palette's `--accent-soft` directly
+    // rather than a fixed Tailwind hue.
     const readyText = screen.getByText(/Review your question.s context\./);
     const panel = readyText.closest("div");
     expect(panel).not.toBeNull();
-    expect(panel!.className).toContain("border-accent");
-    expect(panel!.className).toContain("bg-accent");
-    expect(readyText.className).toContain("text-accent-soft");
+    expect(panel!.className).toContain("plate");
     expect(panel!.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
   });
 
@@ -329,7 +334,7 @@ describe("Accent token coverage for staged and answered semantic surfaces", () =
     await user.click(screen.getByRole("button", { name: "Theme: Green" }));
 
     expect(screen.getByText("The stack resolves.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
   });
 });

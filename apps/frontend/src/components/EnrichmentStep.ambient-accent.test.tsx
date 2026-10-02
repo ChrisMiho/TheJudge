@@ -73,7 +73,8 @@ describe("Ambient accent surfaces", () => {
     expect(screen.getByText("Initial answer").closest(".conversation-thread")).not.toHaveClass(
       "ambient-accent-surface"
     );
-    expect(screen.getByRole("button", { name: "Start Over" })).not.toHaveClass(
+    // Look-matching pass (slice N): Start Over is the chat-head's round ↺ now.
+    expect(screen.getByRole("button", { name: "Start over — clears everything" })).not.toHaveClass(
       "ambient-accent-surface"
     );
   });

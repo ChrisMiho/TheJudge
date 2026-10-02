@@ -30,6 +30,15 @@ type FrozenGameContextDetailsProps = {
    * review (EnrichmentStep); the frozen post-answer View Context sheet renders
    * read-only and omits this prop. */
   onEditCard?: (zone: ZoneId, card: ZoneCardItem) => void;
+  /**
+   * Look-matching pass (slice N), requirement 9: zone filter pills
+   * (`in-depth-question.html:410-424` `.review-filters`) that dim every row outside
+   * the picked zone. Omitted entirely by the frozen post-answer "View context"
+   * dialog — only the live pre-submit review (`EnrichmentStep`) opts in, alongside
+   * `onEditCard`, so the read-only dialog keeps rendering zero buttons.
+   */
+  zoneFilter?: ZoneId | null;
+  onZoneFilterChange?: (zone: ZoneId | null) => void;
 };
 
 type PopulatedZone = { zone: ZoneId; cards: ZoneCardItem[] };
@@ -58,11 +67,14 @@ export function getFrozenGameContextTriggerLabel(frozenGameContext: GameContext)
 
 export function FrozenGameContextDetails({
   frozenGameContext,
-  onEditCard
+  onEditCard,
+  zoneFilter,
+  onZoneFilterChange
 }: FrozenGameContextDetailsProps): JSX.Element {
   const displayNamesByPlayer = buildPlayerDisplayNameMap(frozenGameContext.players ?? []);
   const populatedZones = getPopulatedZones(frozenGameContext);
   const players = frozenGameContext.players ?? [];
+  const totalCardCount = populatedZones.reduce((sum, { cards }) => sum + cards.length, 0);
 
   function formatCardDetailLines(zone: ZoneId, card: ZoneCardItem): string[] {
     const lines: string[] = [];
@@ -134,6 +146,31 @@ export function FrozenGameContextDetails({
         </section>
       )}
 
+      {onZoneFilterChange && populatedZones.length > 1 && (
+        <div className="review-filters" role="group" aria-label="Pick out a zone's cards">
+          <button
+            type="button"
+            className="review-filter-pill"
+            aria-pressed={zoneFilter == null}
+            onClick={() => onZoneFilterChange(null)}
+          >
+            All<b>{totalCardCount}</b>
+          </button>
+          {populatedZones.map(({ zone, cards }) => (
+            <button
+              key={zone}
+              type="button"
+              className="review-filter-pill"
+              aria-pressed={zoneFilter === zone}
+              onClick={() => onZoneFilterChange(zoneFilter === zone ? null : zone)}
+            >
+              {ZONE_LABELS[zone]}
+              <b>{cards.length}</b>
+            </button>
+          ))}
+        </div>
+      )}
+
       {populatedZones.map(({ zone, cards }) => (
         <section key={zone} className="space-y-2" aria-labelledby={`frozen-context-zone-${zone}`}>
           <h3
@@ -146,7 +183,9 @@ export function FrozenGameContextDetails({
             {cards.map((card) => (
               <li
                 key={`${zone}:${card.instanceId ?? card.cardId}`}
-                className="frozen-context-detail-row space-y-1 rounded-xl border border-zinc-700/60 bg-zinc-900/50 p-3 text-sm text-zinc-300"
+                data-dimmed={zoneFilter != null && zoneFilter !== zone}
+                data-hit={zoneFilter != null && zoneFilter === zone}
+                className="frozen-context-detail-row context-review-row space-y-1 rounded-xl border border-zinc-700/60 bg-zinc-900/50 p-3 text-sm text-zinc-300"
               >
                 <div className="flex items-start justify-between gap-2">
                   <p className="font-semibold text-zinc-100">{card.name}</p>

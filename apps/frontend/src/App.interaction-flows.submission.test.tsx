@@ -53,11 +53,15 @@ describe("Interaction flows - submission and retry", () => {
     expect(screen.queryByPlaceholderText("How does this resolve?")).not.toBeInTheDocument();
     expect(screen.queryByText("Optional question")).not.toBeInTheDocument();
 
+    // Look-matching pass (slice N), requirement 10: the ruling now takes the shared
+    // `.app-header` (brand + tagline, same as every other destination) plus its own
+    // `.chat-head` "Ask a Question" — the old header that hid the tagline here alone is
+    // retired.
     expect(screen.queryByRole("heading", { name: "Conversation" })).not.toBeInTheDocument();
-    expect(screen.queryByText("MTG Assistant")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
   });
 
   it("enforces retry cooldown and keeps context through repeated failures", async () => {

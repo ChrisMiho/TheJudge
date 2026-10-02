@@ -42,7 +42,9 @@ describe("Interaction flows - zone card presentation", () => {
     await addCardToStack(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
 
-    await user.click(screen.getByRole("button", { name: "Back to zones" }));
+    // Look-matching pass (slice N), requirement 3: the per-step "Back to zones" button
+    // is retired — the shared header's ‹ (above the rail) is the only way back now.
+    await user.click(screen.getByRole("button", { name: "Back" }));
     await user.click(screen.getByRole("button", { name: "Card actions for Opt" }));
     await user.click(screen.getByRole("button", { name: "Remove from the Stack" }));
     await user.click(screen.getByRole("button", { name: "Station 4: Context" }));
@@ -98,7 +100,7 @@ describe("Interaction flows - zone card presentation", () => {
     await addCardToStack(user, "opt", "Opt");
     await addCardToStack(user, "cou", "Counterspell");
 
-    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (2)");
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack2");
 
     await advanceToContextEnrichmentFromZones(user);
     expect(screen.getByText("Card 1 of 2")).toBeInTheDocument();
@@ -242,7 +244,7 @@ describe("Interaction flows - zone card presentation", () => {
     await user.click(screen.getByRole("button", { name: "Add to Stack" }));
 
     expect(await screen.findByText("Duplicate cards are not supported in MVP1.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (1)");
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack1");
 
     await advanceToContextEnrichmentFromZones(user);
     expect(screen.queryAllByLabelText(/^Caster for /)).toHaveLength(1);
@@ -288,13 +290,13 @@ describe("Interaction flows - zone card presentation", () => {
       await addCardToStack(user, card.name, card.name);
     }
 
-    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (10)");
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack10");
 
     await selectCard(user, manyCards[10].name, manyCards[10].name);
     await user.click(screen.getByRole("button", { name: "Add to Stack" }));
 
     expect(await screen.findByText("MVP stack limit reached (10 cards).")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (10)");
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack10");
 
     await advanceToContextEnrichmentFromZones(user);
     for (let index = 0; index < 10; index += 1) {

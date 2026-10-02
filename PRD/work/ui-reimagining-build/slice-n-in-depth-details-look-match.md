@@ -1,6 +1,6 @@
 # Slice N — In-depth details takes the look
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -150,44 +150,47 @@ Carried verbatim from LOOK-GAPS.md's `## In-depth details`
 
 ## Acceptance criteria
 
-- [ ] N1. `npm run quality:check` passes.
-- [ ] N2. `npm --workspace apps/frontend run test` passes.
-- [ ] N3. Every step (Game, Zones, Cards, Context, Review) renders as one
+- [x] N1. `npm run quality:check` passes.
+- [x] N2. `npm --workspace apps/frontend run test` passes.
+- [x] N3. Every step (Game, Zones, Cards, Context, Review) renders as one
       `.plate`-shaped panel with a lit `.plate-next` foot bar replacing the
       old free-standing Back/Continue buttons, in `ZoneCollectionStep.tsx`
       and `EnrichmentStep.tsx`.
-- [ ] N4. The stations rail shows a ‹ back button and "In-depth details"
+- [x] N4. The stations rail shows a ‹ back button and "In-depth details"
       `h1` above it, and sentence-case node labels, in
       `ZoneCollectionStep.tsx`.
-- [ ] N5. The Cards step's shelf cards show ✕/ⓘ corner widgets (no
+- [x] N5. The Cards step's shelf cards show ✕/ⓘ corner widgets (no
       under-card "Card actions" button) and open the existing card menu on
       tap, in `ZoneCardPicker.tsx`.
-- [ ] N6. The Mana spent field appears on every zone's card context sheet
+- [x] N6. The Mana spent field appears on every zone's card context sheet
       (REQ-210, per the owner question above), styled per the mockup's
       field treatment, in `EnrichmentStep.tsx`.
-- [ ] N7. The Context step renders the full `.ctx-*` grid (art, head row
+- [x] N7. The Context step renders the full `.ctx-*` grid (art, head row
       with counter, Cast by/Mana spent pair, Targets pills with thumbnail,
       dashed Add-a-note/More-details rows) and the Review step renders one
       collapsible plate with the capped-height scrolling list and zone
       filter pills, in `EnrichmentStep.tsx`.
-- [ ] N8 (manual). Side-by-side pairs saved under
+- [x] N8 (manual). Side-by-side pairs saved under
       `docs/design/ui-reimagining/build-screenshots/n/`, build next to
       mockup, Blue, at 390×844 and 1440×900, one pair per state: Game,
       Zones, Cards, Placing, Context, Review, Ruling
       (`in-depth-{game,zones,cards,place,context,review,ruling}-{build,mockup}-{390x844,1440x900}.png`)
       — 28 files, matching LOOK-GAPS.md's In-depth details pairs list.
-- [ ] N9 (manual). Each pair in N8 was compared side by side against the
+- [x] N9 (manual). Each pair in N8 was compared side by side against the
       build at the matching state; every `### Differences` bullet under
       LOOK-GAPS.md's `## In-depth details` is closed, or is one of the two
       owner questions above (never resolved past the stated interim
-      reading).
-- [ ] N10 (manual). Browser scenario at 390×844 and 1440×900: step through
+      reading). See `slice-n.evidence.md` for the full disposition, plus one
+      additional conflict found and resolved (Step 3 Placing's "Other
+      zones ▾" would have broken REQ-018 — reverted to keep behaviour
+      unchanged).
+- [x] N10 (manual). Browser scenario at 390×844 and 1440×900: step through
       Game → Zones → Cards (reorder the Stack, open a card's menu) → place
       a carried card → Context (set Targets and Mana spent on a Hand card)
       → Review (collapse the list, filter by zone) → submit, confirming
       each plate's foot bar advances correctly and the ruling view matches
       slice M's bubble styling.
-- [ ] N11 (manual). Cleanup evidence recorded: browser closed, owned dev
+- [x] N11 (manual). Cleanup evidence recorded: browser closed, owned dev
       server(s) stopped, ports released, disposable captures under
       `PRD/work/ui-reimagining-build/.playwright-mcp/` named.
 

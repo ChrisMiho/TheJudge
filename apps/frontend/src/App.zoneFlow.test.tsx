@@ -255,7 +255,7 @@ describe("Target gating and pickers", () => {
     expect(screen.getByLabelText("Mock scan camera")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Exit scan" }));
-    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (1)");
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack1");
     expect(screen.getByText("Opt")).toBeInTheDocument();
     // REQ-008/REQ-209: one card on the Stack reads TOP (not "bottom & top").
     expect(screen.getByText("TOP")).toBeInTheDocument();

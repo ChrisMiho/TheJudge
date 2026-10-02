@@ -101,7 +101,11 @@
   padding: 0.4rem 0.6rem;
   background:
     radial-gradient(40% 140% at 50% 120%, rgb(var(--accent) / 0.42) 0%, transparent 70%),
-    linear-gradient(180deg, color-mix(in srgb, rgb(var(--accent-strong)) 28%, rgb(var(--ground))) 0%, color-mix(in srgb, rgb(var(--panel)) 94%, transparent) 100%);
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, rgb(var(--accent-strong)) 28%, rgb(var(--ground))) 0%,
+      color-mix(in srgb, rgb(var(--panel)) 94%, transparent) 100%
+    );
   border-bottom: 1px solid rgb(var(--accent-soft) / 0.38);
   box-shadow: 0 10px 30px -18px rgb(var(--accent) / 0.7);
   backdrop-filter: blur(8px);
@@ -139,7 +143,8 @@
      comment) — a radial accent wash stands in for the mockup's per-colour
      `motifs/<colour>.svg`, with `MotifGlyph` (the Theme band's own simple
      shape-per-profile SVG) centred on top via `currentColor`. */
-  background: radial-gradient(circle at 35% 30%, rgb(var(--accent-soft) / 0.9), rgb(var(--accent)) 70%), rgb(var(--ground));
+  background:
+    radial-gradient(circle at 35% 30%, rgb(var(--accent-soft) / 0.9), rgb(var(--accent)) 70%), rgb(var(--ground));
   box-shadow:
     0 0 0 1px rgb(var(--accent-soft) / 0.55),
     0 0 18px rgb(var(--accent) / 0.75);
@@ -147,8 +152,17 @@
 }
 
 @keyframes orb-breathe {
-  0%, 100% { box-shadow: 0 0 0 1px rgb(var(--accent-soft) / 0.55), 0 0 14px rgb(var(--accent) / 0.65); }
-  50% { box-shadow: 0 0 0 1px rgb(var(--accent-soft) / 0.85), 0 0 26px rgb(var(--accent) / 0.95); }
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 1px rgb(var(--accent-soft) / 0.55),
+      0 0 14px rgb(var(--accent) / 0.65);
+  }
+  50% {
+    box-shadow:
+      0 0 0 1px rgb(var(--accent-soft) / 0.85),
+      0 0 26px rgb(var(--accent) / 0.95);
+  }
 }
 
 .brand-mark .brand-text {
@@ -420,7 +434,11 @@
   border-top-left-radius: 1.5rem;
   background:
     radial-gradient(90% 30% at 0% 100%, rgb(var(--accent) / 0.28) 0%, transparent 70%),
-    linear-gradient(180deg, color-mix(in srgb, rgb(var(--panel)) 96%, transparent), color-mix(in srgb, rgb(var(--panel)) 92%, rgb(var(--ground))));
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, rgb(var(--panel)) 96%, transparent),
+      color-mix(in srgb, rgb(var(--panel)) 92%, rgb(var(--ground)))
+    );
   border-right: 1px solid rgb(var(--accent-soft) / 0.35);
   box-shadow: 24px 0 60px -30px rgb(var(--accent) / 0.6);
 }
@@ -460,8 +478,12 @@
 }
 
 @keyframes portal-menu-drawer-flair-twinkle {
-  from { opacity: 0.55; }
-  to { opacity: 0.9; }
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 0.9;
+  }
 }
 
 /* Look-matching pass (slice L): the divider before the Menu's one action
@@ -596,7 +618,9 @@
   border-radius: 999px;
   border: 1px solid rgb(var(--panel-edge) / 0.7);
   background: rgb(var(--ground) / 0.6);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.04), 0 2px 10px -6px rgb(0 0 0 / 0.8);
+  box-shadow:
+    inset 0 1px 0 rgb(255 255 255 / 0.04),
+    0 2px 10px -6px rgb(0 0 0 / 0.8);
 }
 
 .panel-inner > * + * {
@@ -656,10 +680,11 @@
   background: transparent;
   border: none;
   padding: 0.25rem 0.1rem;
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  /* Look-matching pass (slice N): sentence case at 0.72rem, not the old
+     uppercase/tracked label (`in-depth-question.html:27-29`) — only the
+     current station's label takes weight 600/`--text-primary`, below. */
+  font-size: 0.72rem;
+  font-weight: 400;
   color: rgb(161 161 170);
 }
 
@@ -670,15 +695,16 @@
 
 .stations-rail-node {
   display: flex;
-  height: 1.75rem;
-  width: 1.75rem;
+  height: 26px;
+  width: 26px;
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  border: 1px solid rgb(82 82 91);
-  background: rgb(24 24 27 / 0.8);
-  font-size: 0.75rem;
-  color: rgb(212 212 216);
+  border: 2px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground));
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: rgb(161 161 170);
 }
 
 .stations-rail-station[data-done="true"] .stations-rail-node {
@@ -689,11 +715,30 @@
 
 .stations-rail-station[aria-current="step"] {
   color: rgb(244 244 245);
+  font-weight: 600;
 }
 
 .stations-rail-station[aria-current="step"] .stations-rail-node {
   border-color: rgb(var(--accent-soft));
-  box-shadow: 0 0 0 3px rgb(var(--accent-soft) / 0.25);
+  color: rgb(var(--accent-soft));
+  box-shadow:
+    0 0 0 4px rgb(var(--accent) / 0.3),
+    0 0 18px rgb(var(--accent-soft) / 0.6);
+  animation: node-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes node-pulse {
+  0%,
+  100% {
+    box-shadow:
+      0 0 0 4px rgb(var(--accent) / 0.3),
+      0 0 14px rgb(var(--accent-soft) / 0.5);
+  }
+  50% {
+    box-shadow:
+      0 0 0 6px rgb(var(--accent) / 0.22),
+      0 0 26px rgb(var(--accent-soft) / 0.8);
+  }
 }
 
 /* Horizontal left-to-right strip in add order, region-scrolling on its own x-axis rather
@@ -1079,7 +1124,13 @@
   position: absolute;
   inset: -160px calc(var(--layout-panel-padding) * -1) -0.6rem calc(var(--layout-panel-padding) * -1);
   z-index: -1;
-  background: linear-gradient(180deg, rgb(9 9 11 / 0.15) 0%, transparent 35%, rgb(var(--panel) / 0.4) 75%, rgb(var(--panel)) 100%);
+  background: linear-gradient(
+    180deg,
+    rgb(9 9 11 / 0.15) 0%,
+    transparent 35%,
+    rgb(var(--panel) / 0.4) 75%,
+    rgb(var(--panel)) 100%
+  );
 }
 
 .card-detail-hero-name {
@@ -1258,7 +1309,9 @@
   color: #e2e8f0;
   font-size: 0.85rem;
   cursor: pointer;
-  transition: border-color 150ms ease, background 150ms ease;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
 }
 
 .icon-chip:hover {
@@ -1602,7 +1655,9 @@
   color: #e2e8f0;
   font-size: 0.8rem;
   font-weight: 600;
-  transition: background 150ms ease, border-color 150ms ease;
+  transition:
+    background 150ms ease,
+    border-color 150ms ease;
 }
 
 .q-box .deep:disabled {
@@ -1719,7 +1774,9 @@
 .send-ring .fill {
   stroke: rgb(var(--accent-soft));
   filter: drop-shadow(0 0 3px rgb(var(--accent-soft) / 0.7));
-  transition: stroke-dasharray 120ms ease, stroke 200ms ease;
+  transition:
+    stroke-dasharray 120ms ease,
+    stroke 200ms ease;
 }
 
 .send-ring .fill.bright {
@@ -1875,6 +1932,594 @@
   margin-bottom: 0.2rem;
 }
 
+/* Look-matching pass (slice N): In-depth details takes the mockup's look —
+   `in-depth-question.html`'s `.plate`/`.plate-next` shell every step sits in,
+   the rail's sentence-case current-node styling and header back button, zone
+   tile glow, shelf card corner widgets, and the `.ctx-*` context-sheet grid.
+   The ruling view reuses slice M's `.chat-head`/`.msg-*` classes directly. */
+
+/* the round back button + "In-depth details" h1 above the rail
+   (`in-depth-question.html:438` `.flow-head .lead`) */
+.idq-flow-head {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.idq-flow-head h1 {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: #e2e8f0;
+}
+
+@media (min-width: 768px) {
+  .idq-flow-head h1 {
+    font-size: 1.35rem;
+  }
+}
+
+.icon-round {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--panel) / 0.8);
+  color: #e2e8f0;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.icon-round:hover {
+  border-color: rgb(var(--accent-soft));
+}
+
+/* a themed panel used by every In-depth details step — the same solid fill
+   as the Ask a Question stage and the chat bubble (`in-depth-question.html:80-87`) */
+.plate {
+  position: relative;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--panel));
+  box-shadow: 0 12px 30px -18px rgb(0 0 0 / 0.9);
+}
+
+.plate h2 {
+  margin: 0 0 0.6rem;
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a1a1aa;
+}
+
+.plate .lede {
+  margin: -0.3rem 0 0.7rem;
+  font-size: 0.82rem;
+  color: #a1a1aa;
+}
+
+/* the way forward is the plate's own lit foot bar, replacing free-standing
+   Back/Continue buttons (`in-depth-question.html:55-66`) */
+.plate-next {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  width: calc(100% + 1.8rem);
+  margin: 0.9rem -0.9rem -0.9rem;
+  padding: 0.7rem 1rem;
+  min-height: 52px;
+  border: 0;
+  border-top: 1px solid rgb(var(--panel-edge) / 0.7);
+  border-radius: 0 0 1rem 1rem;
+  background: linear-gradient(90deg, rgb(var(--accent) / 0.24), rgb(var(--accent) / 0.06));
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  text-align: left;
+  transition: background 150ms ease;
+}
+
+.plate-next:hover:not(:disabled),
+.plate-next:focus-visible {
+  background: linear-gradient(90deg, rgb(var(--accent) / 0.38), rgb(var(--accent) / 0.12));
+}
+
+.plate-next:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.plate-next small {
+  font-weight: 500;
+  color: #a1a1aa;
+  font-size: 0.78rem;
+  margin-left: 0.45rem;
+}
+
+.plate-next .chev {
+  color: rgb(var(--accent-soft));
+  font-size: 1.3rem;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+
+/* the stage-shaped shelf container (Cards step) uses the stage's own
+   plate-next inset (`in-depth-question.html:66`) */
+.stage .plate-next {
+  margin: 0.4rem -0.5rem -0.6rem;
+  width: calc(100% + 1rem);
+  border-radius: 0 0 1.1rem 1.1rem;
+}
+
+/* step 2 — zone tiles glow when checked (`in-depth-question.html:125-138`) */
+.zone-tile {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 52px;
+  padding: 0.4rem 0.6rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground) / 0.55);
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: all 180ms ease;
+  overflow: hidden;
+}
+
+.zone-tile[data-checked="true"] {
+  border-color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.22);
+  box-shadow:
+    0 0 22px -6px rgb(var(--accent) / 0.85),
+    inset 0 0 18px -10px rgb(var(--accent-soft));
+}
+
+.zone-tile .mark {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  border-radius: 999px;
+  border: 1.5px solid rgb(var(--panel-edge) / 0.7);
+  display: grid;
+  place-items: center;
+  font-size: 0.65rem;
+  color: rgb(var(--accent-contrast));
+  transition: all 180ms ease;
+}
+
+.zone-tile[data-checked="true"] .mark {
+  background: rgb(var(--accent-soft));
+  border-color: rgb(var(--accent-soft));
+  color: rgb(var(--ground));
+  box-shadow: 0 0 10px rgb(var(--accent-soft));
+}
+
+/* step 3 — zone tabs as pills with an accent-soft count (`in-depth-question.html:141-144`) */
+.zone-tab-pill {
+  flex: 0 0 auto;
+  min-height: 40px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--panel));
+  color: #a1a1aa;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+
+.zone-tab-pill b {
+  color: rgb(var(--accent-soft));
+  font-weight: 600;
+  margin-left: 0.25rem;
+}
+
+.zone-tab-pill[aria-pressed="true"] {
+  color: #e2e8f0;
+  border-color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.22);
+}
+
+/* the lit reorder hint above the shelf (`in-depth-question.html:169-173`) */
+.shelf-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(var(--accent-soft) / 0.32);
+  background: rgb(var(--accent) / 0.12);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: #e2e8f0;
+}
+
+/* shelf card corner widgets, reusing the Ask a Question stage's own shape
+   (`in-depth-question.html:233-243`) */
+.shelf-card {
+  position: relative;
+}
+
+.shelf-card-widget {
+  position: absolute;
+  top: -12px;
+  z-index: 5;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--accent-soft) / 0.45);
+  background: rgb(9 9 11 / 0.92);
+  color: #f4f4f5;
+  font-size: 0.72rem;
+  font-weight: 600;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow:
+    0 2px 10px rgb(0 0 0 / 0.6),
+    0 0 12px -4px rgb(var(--accent) / 0.8);
+}
+
+.shelf-card-widget.info {
+  right: -6px;
+  color: rgb(var(--accent-soft));
+}
+
+.shelf-card-widget.remove {
+  left: -6px;
+}
+
+.shelf-card-widget:hover {
+  border-color: rgb(var(--accent-soft));
+}
+
+/* the Stack's order tag straddles the card's bottom edge */
+.shelf-card-pos {
+  position: absolute;
+  left: 50%;
+  bottom: -9px;
+  transform: translateX(-50%);
+  z-index: 5;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  background: rgb(9 9 11 / 0.92);
+  color: rgb(var(--accent-soft));
+  border: 1px solid rgb(var(--accent-soft) / 0.5);
+  box-shadow: 0 0 10px -2px rgb(var(--accent) / 0.8);
+  white-space: nowrap;
+}
+
+/* step 4 — the context-sheet grid: art beside a compact form
+   (`in-depth-question.html:255-277`) */
+.ctx-sheet {
+  display: grid;
+  grid-template-columns: 96px 1fr;
+  grid-template-areas: "art head" "form form" "nav nav";
+  gap: 0.7rem 0.8rem;
+  align-items: start;
+}
+
+@media (min-width: 720px) {
+  .ctx-sheet {
+    grid-template-columns: 210px 1fr;
+    grid-template-areas: "art head" "art form" "nav nav";
+    gap: 0.7rem 1.1rem;
+  }
+}
+
+.ctx-art {
+  grid-area: art;
+  display: grid;
+  gap: 0.5rem;
+  justify-items: center;
+}
+
+.ctx-art .hero {
+  position: relative;
+  width: 96px;
+  cursor: pointer;
+}
+
+@media (min-width: 720px) {
+  .ctx-art .hero {
+    width: 210px;
+  }
+}
+
+.ctx-head {
+  grid-area: head;
+  min-width: 0;
+  display: grid;
+  gap: 0.15rem;
+  align-content: start;
+}
+
+/* `.eyebrow` is reused outside `.ctx-head` too, for the Context step's own
+   plate-level "Card N of M" + "Skip to review" row
+   (`in-depth-question.html:534`) — kept un-scoped so both apply. */
+.eyebrow {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a1a1aa;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.eyebrow .link {
+  background: transparent;
+  border: 0;
+  color: rgb(var(--accent-soft));
+  font-size: 0.68rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0.3rem 0;
+  min-height: 0;
+}
+
+.ctx-head h2 {
+  margin: 0.1rem 0 0;
+  font-size: 1.2rem;
+  line-height: 1.15;
+  letter-spacing: -0.015em;
+  color: #e2e8f0;
+  font-weight: 700;
+  text-transform: none;
+}
+
+.ctx-head .sub {
+  font-size: 0.8rem;
+  color: #a1a1aa;
+}
+
+.ctx-counter {
+  display: inline-flex;
+  align-items: baseline;
+  justify-content: center;
+  justify-self: start;
+  margin-top: 0.4rem;
+  white-space: nowrap;
+  min-width: 3.4rem;
+  min-height: 30px;
+  padding: 0 0.6rem;
+  border-radius: 0.5rem;
+  border: 1px solid rgb(var(--accent-soft) / 0.45);
+  background: rgb(var(--accent) / 0.18);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: rgb(var(--accent-soft));
+}
+
+.ctx-counter small {
+  font-weight: 500;
+  color: #a1a1aa;
+  margin-left: 0.3rem;
+  font-size: 0.68rem;
+}
+
+.ctx-form {
+  grid-area: form;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.ctx-nav {
+  grid-area: nav;
+}
+
+.ctx-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.55rem;
+}
+
+.ctx-form label,
+.ctx-form .lbl {
+  display: grid;
+  gap: 0.28rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a1a1aa;
+}
+
+.ctx-form .t {
+  display: flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+}
+
+.ctx-form .t small {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.7rem;
+}
+
+.ctx-form .field {
+  min-height: 42px;
+  font-size: 0.92rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--ground) / 0.6);
+  color: #e2e8f0;
+  padding: 0.4rem 0.6rem;
+}
+
+/* targets: one picker, chosen targets sit above it as pills
+   (`in-depth-question.html:276-277`) */
+.targets {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.target-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.target-list:empty {
+  display: none;
+}
+
+/* targets as pills with the card's thumbnail (`in-depth-question.html:291-296`) */
+.target-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 32px;
+  padding: 0 0.25rem 0 0.6rem;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--accent-soft) / 0.55);
+  background: rgb(var(--accent) / 0.24);
+  color: #e2e8f0;
+  font-size: 0.8rem;
+}
+
+.target-pill button {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #a1a1aa;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+}
+
+.target-pill button:hover {
+  color: #e2e8f0;
+  background: rgb(var(--accent) / 0.3);
+}
+
+/* step 4 review: one plate, capped-height scroll, zone filter pills
+   (`in-depth-question.html:301-319`, `:410-424`) */
+.review-plate-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.review-plate-head .link {
+  background: transparent;
+  border: 0;
+  color: rgb(var(--accent-soft));
+  font-size: 0.72rem;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 0.3rem;
+}
+
+.review-list {
+  display: grid;
+  gap: 0.35rem;
+  max-height: 34dvh;
+  overflow-y: auto;
+  padding-right: 2px;
+  margin-top: 0.5rem;
+}
+
+.review-row {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 0.6rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  font-size: 0.84rem;
+  background: rgb(var(--ground) / 0.35);
+  transition:
+    opacity 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.review-row[data-dimmed="true"] {
+  opacity: 0.38;
+}
+
+.review-row[data-hit="true"] {
+  opacity: 1;
+  border-color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.16);
+  box-shadow: 0 0 18px -6px rgb(var(--accent) / 0.85);
+}
+
+.review-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin: 0.6rem 0 0;
+}
+
+.review-filter-pill {
+  min-height: 32px;
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--panel));
+  color: #e2e8f0;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.review-filter-pill b {
+  color: rgb(var(--accent-soft));
+  margin-left: 0.2rem;
+}
+
+.review-filter-pill[aria-pressed="true"] {
+  border-color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.3);
+  box-shadow: 0 0 14px -4px rgb(var(--accent) / 0.8);
+}
+
+/* `FrozenGameContextDetails`' own richer (multi-line) row shape keeps its existing
+   bordered-card layout — only the filter dim/hit treatment is shared with
+   `.review-row` above (`in-depth-question.html:418-420`). */
+.context-review-row {
+  transition:
+    opacity 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.context-review-row[data-dimmed="true"] {
+  opacity: 0.38;
+}
+
+.context-review-row[data-hit="true"] {
+  opacity: 1;
+  border-color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.16);
+  box-shadow: 0 0 18px -6px rgb(var(--accent) / 0.85);
+}
+
 /* Shared sheet shell (REQ-208): the one pop-up shape for card detail, Question
    History, the printing picker, Send feedback and the confirm sheet. A bottom
    sheet below `--sheet-breakpoint` (600px), a floating card centred in the
@@ -1911,8 +2556,7 @@
   overflow: hidden;
   border-radius: 1rem 1rem 0 0;
   background:
-    radial-gradient(90% 40% at 100% 0%, rgb(var(--accent) / 0.26) 0%, transparent 70%),
-    rgb(var(--panel) / 0.82);
+    radial-gradient(90% 40% at 100% 0%, rgb(var(--accent) / 0.26) 0%, transparent 70%), rgb(var(--panel) / 0.82);
   backdrop-filter: blur(18px) saturate(1.3);
   -webkit-backdrop-filter: blur(18px) saturate(1.3);
   border: 1px solid rgb(var(--accent-soft) / 0.32);
@@ -2104,7 +2748,13 @@ body {
      flat fill rather than the fill itself carrying a gradient. */
   background: rgb(var(--ground));
   color: #e2e8f0;
-  font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    Segoe UI,
+    Roboto,
+    sans-serif;
   min-height: 100vh;
 }
 
@@ -2182,7 +2832,8 @@ body {
 }
 
 @keyframes motion-success {
-  0%, 100% {
+  0%,
+  100% {
     opacity: 1;
     transform: scale(1);
   }
@@ -2193,7 +2844,8 @@ body {
 }
 
 @keyframes motion-error {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateX(0);
   }
   35% {
@@ -2278,18 +2930,35 @@ body {
 }
 
 @keyframes wait-calm {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.75; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.75;
+  }
 }
 
 @keyframes wait-curious {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.75; }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.75;
+  }
 }
 
 @keyframes wait-absurd {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.75; transform: scale(0.97); }
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.75;
+    transform: scale(0.97);
+  }
 }
 
 .wait-stage-calm {
@@ -2314,14 +2983,24 @@ body {
  * re-render is a plain React state tick, unrelated to these CSS keyframes).
  */
 @keyframes wait-inscription-ink-reveal {
-  from { clip-path: inset(0 100% 0 0); }
-  to { clip-path: inset(0 0 0 0); }
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
 }
 
 @keyframes wait-inscription-ink-glow {
-  0% { opacity: 0.35; }
-  60% { opacity: 1; }
-  100% { opacity: 1; }
+  0% {
+    opacity: 0.35;
+  }
+  60% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 1;
+  }
 }
 
 .wait-inscription-line-ink {
@@ -2331,8 +3010,14 @@ body {
 }
 
 @keyframes wait-inscription-line-lift-away {
-  0% { transform: translateY(0); opacity: 0.85; }
-  100% { transform: translateY(-0.6rem); opacity: 0; }
+  0% {
+    transform: translateY(0);
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(-0.6rem);
+    opacity: 0;
+  }
 }
 
 .wait-inscription-message-stack {
@@ -2356,17 +3041,14 @@ body {
   position: absolute;
   inset: 4px;
   border-radius: 9999px;
-  background: radial-gradient(
-    circle,
-    rgb(var(--accent-soft) / 1) 0%,
-    rgb(var(--accent) / 1) 75%,
-    transparent 100%
-  );
+  background: radial-gradient(circle, rgb(var(--accent-soft) / 1) 0%, rgb(var(--accent) / 1) 75%, transparent 100%);
   opacity: 0.8;
 }
 
 @keyframes wait-inscription-ring-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .wait-inscription-seal-ring {
@@ -2379,9 +3061,17 @@ body {
 }
 
 @keyframes wait-inscription-mote-drift {
-  0% { transform: translate3d(0, 0, 0); opacity: 0; }
-  40% { opacity: 0.8; }
-  100% { transform: translate3d(0, -22px, 0); opacity: 0; }
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: 0;
+  }
+  40% {
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate3d(0, -22px, 0);
+    opacity: 0;
+  }
 }
 
 .wait-inscription-mote {
@@ -2411,8 +3101,15 @@ body {
  * playing. The "edge breathes" treatment is a `::after` overlay instead, with
  * its own independent `animation`. */
 @keyframes wait-inscription-bubble-breathe {
-  0%, 100% { opacity: 0.5; box-shadow: 0 0 0 1px rgb(var(--accent) / 0.12); }
-  50% { opacity: 1; box-shadow: 0 0 0 1px rgb(var(--accent) / 0.3); }
+  0%,
+  100% {
+    opacity: 0.5;
+    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.12);
+  }
+  50% {
+    opacity: 1;
+    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.3);
+  }
 }
 
 .wait-inscription-bubble {
@@ -2437,14 +3134,29 @@ body {
  * Transform/opacity only (NFR-006); nothing loops idle — each keyframe plays
  * once per tier transition, triggered by the caller re-keying the SVG. */
 @keyframes trade-pile-tier-drop-in {
-  0% { transform: translateY(-14px) scale(0.92); opacity: 0; }
-  70% { transform: translateY(2px) scale(1.03); opacity: 1; }
-  100% { transform: translateY(0) scale(1); opacity: 1; }
+  0% {
+    transform: translateY(-14px) scale(0.92);
+    opacity: 0;
+  }
+  70% {
+    transform: translateY(2px) scale(1.03);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
 }
 
 @keyframes trade-pile-tier-lift-fade {
-  0% { transform: translateY(0); opacity: 1; }
-  100% { transform: translateY(-10px); opacity: 0.55; }
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-10px);
+    opacity: 0.55;
+  }
 }
 
 .trade-pile-tier-up {
@@ -2470,11 +3182,24 @@ body {
 }
 
 @keyframes scan-confirm-pop {
-  0% { opacity: 0; transform: scale(0.8); }
-  15% { opacity: 1; transform: scale(1.06); }
-  30% { transform: scale(1); }
-  70% { opacity: 1; }
-  100% { opacity: 0; transform: scale(0.96); }
+  0% {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  15% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+  30% {
+    transform: scale(1);
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.96);
+  }
 }
 
 .scan-confirm-popup {
@@ -2482,7 +3207,9 @@ body {
 }
 
 @keyframes send-spin {
-  to { transform: rotate(360deg); }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .send-spinner {
@@ -2574,15 +3301,27 @@ body {
 }
 
 @keyframes ambient-haze-drift-a {
-  0% { transform: translate3d(-4%, -2%, 0) scale(1.04); }
-  50% { transform: translate3d(3%, 2%, 0) scale(1.08); }
-  100% { transform: translate3d(-4%, -2%, 0) scale(1.04); }
+  0% {
+    transform: translate3d(-4%, -2%, 0) scale(1.04);
+  }
+  50% {
+    transform: translate3d(3%, 2%, 0) scale(1.08);
+  }
+  100% {
+    transform: translate3d(-4%, -2%, 0) scale(1.04);
+  }
 }
 
 @keyframes ambient-haze-drift-b {
-  0% { transform: translate3d(3%, 1%, 0) scale(1.06); }
-  50% { transform: translate3d(-3%, -2%, 0) scale(1.02); }
-  100% { transform: translate3d(3%, 1%, 0) scale(1.06); }
+  0% {
+    transform: translate3d(3%, 1%, 0) scale(1.06);
+  }
+  50% {
+    transform: translate3d(-3%, -2%, 0) scale(1.02);
+  }
+  100% {
+    transform: translate3d(3%, 1%, 0) scale(1.06);
+  }
 }
 
 .ambient-scene-haze {
@@ -2598,8 +3337,12 @@ body {
 }
 
 @keyframes ambient-dust-drift {
-  0% { transform: translate3d(0, 0, 0); }
-  100% { transform: translate3d(0, -6%, 0); }
+  0% {
+    transform: translate3d(0, 0, 0);
+  }
+  100% {
+    transform: translate3d(0, -6%, 0);
+  }
 }
 
 .ambient-scene-dust {
@@ -2610,8 +3353,15 @@ body {
 }
 
 @keyframes ambient-badge-breathe {
-  0%, 100% { opacity: calc(var(--ambient-opacity) * 1.4); transform: scale(1); }
-  50% { opacity: calc(var(--ambient-opacity) * 1.9); transform: scale(1.03); }
+  0%,
+  100% {
+    opacity: calc(var(--ambient-opacity) * 1.4);
+    transform: scale(1);
+  }
+  50% {
+    opacity: calc(var(--ambient-opacity) * 1.9);
+    transform: scale(1.03);
+  }
 }
 
 .ambient-scene-badge {
@@ -2629,9 +3379,18 @@ body {
 }
 
 @keyframes ambient-element-drift {
-  0% { transform: translate3d(0, 0, 0); opacity: calc(var(--ambient-opacity) * var(--ambient-density)); }
-  50% { transform: translate3d(0, -3%, 0); opacity: calc(var(--ambient-opacity) * var(--ambient-density) * 1.4); }
-  100% { transform: translate3d(0, 0, 0); opacity: calc(var(--ambient-opacity) * var(--ambient-density)); }
+  0% {
+    transform: translate3d(0, 0, 0);
+    opacity: calc(var(--ambient-opacity) * var(--ambient-density));
+  }
+  50% {
+    transform: translate3d(0, -3%, 0);
+    opacity: calc(var(--ambient-opacity) * var(--ambient-density) * 1.4);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    opacity: calc(var(--ambient-opacity) * var(--ambient-density));
+  }
 }
 
 .ambient-scene-element {
@@ -2680,5 +3439,7 @@ body {
   background-image:
     radial-gradient(circle, rgb(var(--ground-wash) / 0.55) 1.5px, transparent 2px),
     repeating-linear-gradient(45deg, rgb(var(--ground-wash) / 0.3) 0px, transparent 1px, transparent 40px);
-  background-size: 60px 60px, 80px 80px;
+  background-size:
+    60px 60px,
+    80px 80px;
 }

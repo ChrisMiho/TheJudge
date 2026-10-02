@@ -215,8 +215,9 @@ describe("Frontend - UI flare chat motion integration", () => {
     expect(screen.getByRole("button", { name: /View context: Pre Combat Main Phase/ })).toBeVisible();
     // REQ-029 (amended for REQ-206): Start over clears In-depth details' own staging and
     // lands on a clean Ask a Question page — which, kept mounted, still shows whatever
-    // Quick Question's own state already was (here, its answered follow-up).
-    await user.click(screen.getByRole("button", { name: "Start Over" }));
+    // Quick Question's own state already was (here, its answered follow-up). Look-matching
+    // pass (slice N): In-depth's own Start Over is the chat-head's round ↺ now.
+    await user.click(screen.getByRole("button", { name: "Start over — clears everything" }));
     expect(sessionStorage.getItem(activeDestinationKey)).toBe("quick-lookup");
     expect(screen.getByText(quickFollowUpAnswer)).toBeVisible();
 

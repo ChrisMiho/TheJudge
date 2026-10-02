@@ -300,7 +300,7 @@ describe("Frontend - MTG Assistant", () => {
     await clickDecryptStack(user);
 
     expect(await screen.findByText("ok")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Start Over" }));
+    await user.click(screen.getByRole("button", { name: "Start over — clears everything" }));
 
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
     expect(await screen.findByLabelText("Player 1 display name")).toHaveValue("Alice");

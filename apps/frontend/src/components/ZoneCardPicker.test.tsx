@@ -223,14 +223,15 @@ describe("ZoneCardPicker card grid", () => {
   it("adds token-driven entrance and remove-exit hooks to card tiles", () => {
     renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
 
-    // REQ-008/REQ-209: Remove moved into the card menu; the trigger that opens it keeps
-    // the press-preview hook its "about to remove" micro-animation used.
+    // Look-matching pass (slice N): the tile itself is the "Card actions" trigger now
+    // (requirement 6); the quick ✕ corner widget (`in-depth-question.html:233-243`)
+    // keeps the press-preview hook the "about to remove" micro-animation used.
     const actionsButton = screen.getByRole("button", { name: "Card actions for Opt" });
     expect(actionsButton.closest(".zone-card-tile")).toHaveClass(
       "enrichment-card-enter",
       "card-state-remove"
     );
-    expect(actionsButton).toHaveClass("card-state-remove-trigger");
+    expect(screen.getByRole("button", { name: "Remove Opt" })).toHaveClass("card-state-remove-trigger");
   });
 
   it("uses a compact image with a corner detail popup, no duplicated card name, and keeps controls below it (DEC-151)", async () => {

@@ -112,11 +112,9 @@ describe("ZoneCollectionStep scan focus", () => {
       "motion-press",
       "motion-focus"
     );
-    expect(screen.getByRole("button", { name: "Back" })).toHaveClass(
-      "motion-hover",
-      "motion-press",
-      "motion-focus"
-    );
+    // Look-matching pass (slice N), requirement 3: the per-step "Back" button is
+    // retired — the caller's shared header ‹ is the only way back now.
+    expect(screen.queryByRole("button", { name: "Back" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Continue" })).toHaveClass(
       "motion-hover",
       "motion-press",

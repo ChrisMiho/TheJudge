@@ -174,10 +174,7 @@ export function ZoneCardPicker({
   }
 
   return (
-    <div
-      data-accent-current="true"
-      className="ambient-accent-surface space-y-4 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4"
-    >
+    <div data-accent-current="true" className="ambient-accent-surface space-y-4">
       {!isScanOpen && zoneId === "stack" && (
         <p className="text-xs text-zinc-400">
           Stack order is bottom to top. The first card you add is the bottom; each new card is added on top.
@@ -347,7 +344,27 @@ export function ZoneCardPicker({
                 <div
                   key={card.instanceId ?? `${zoneId}-${card.cardId}-${index}`}
                   data-shelf-instance-id={instanceId}
-                  className="card-identity-ring zone-card-tile enrichment-card-enter card-state-remove relative flex w-40 shrink-0 select-none touch-pan-x flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
+                  // Look-matching pass (slice N), requirement 6/N5: the tile itself is the
+                  // "Card actions" trigger now (`in-depth-question.html:174-195` `.shelf
+                  // .card` — a tap opens the menu), replacing the old under-card text
+                  // button; the accessible name is unchanged so this stays the same control
+                  // by name, not a new one. ✕/ⓘ corner widgets below are quick actions that
+                  // bypass the menu, matching `:233-243` `.card-widget`.
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Card actions for ${card.name}`}
+                  aria-haspopup="dialog"
+                  aria-expanded={menuInstanceId === instanceId}
+                  onClick={() => {
+                    if (!dragRef.current?.dragging) setMenuInstanceId(instanceId);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault();
+                      setMenuInstanceId(instanceId);
+                    }
+                  }}
+                  className="card-identity-ring shelf-card zone-card-tile enrichment-card-enter card-state-remove relative flex w-40 shrink-0 cursor-pointer select-none touch-pan-x flex-col gap-1 rounded-xl border border-zinc-700/80 bg-zinc-950/40 p-2"
                   style={{
                     ...getCardIdentityRingStyle(card.colors),
                     transform: isDragging ? `translateX(${dragOffsetX}px) translateY(-6px) scale(1.03)` : undefined,
@@ -360,58 +377,62 @@ export function ZoneCardPicker({
                   onPointerCancel={handlePointerCancel}
                 >
                   {zoneId === "stack" && (
-                    <span className="zone-card-tile-pos absolute -top-2 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-full border border-accent/60 bg-zinc-950 px-2 py-0.5 text-[0.6rem] font-bold tracking-wide text-accent-soft">
+                    <span className="shelf-card-pos" data-top={index === cards.length - 1}>
                       {stackPositionTag(index, cards.length)}
                     </span>
                   )}
+                  <button
+                    type="button"
+                    aria-label={`Remove ${card.name}`}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      onRemoveCard(instanceId);
+                    }}
+                    className="shelf-card-widget remove card-state-remove-trigger motion-focus"
+                  >
+                    <span aria-hidden="true">×</span>
+                  </button>
                   {/* DEC-160/REQ-130: the tile keeps its fixed w-40 footprint and its place in
                       the horizontal strip; only the image inside it grows, from the shared
-                      92px render to roughly the tile's interior width. */}
-                  <CardPresentation
-                    card={card}
-                    className="w-full"
-                    imageClassName="zone-card-tile-image rounded"
-                    actions={
-                      <button
-                        type="button"
-                        aria-label={`Card actions for ${card.name}`}
-                        aria-haspopup="dialog"
-                        aria-expanded={menuInstanceId === instanceId}
-                        onClick={() => setMenuInstanceId(instanceId)}
-                        className="card-state-remove-trigger w-full rounded-lg border border-zinc-600 px-2 py-1 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-                      >
-                        Card actions
-                      </button>
-                    }
-                  />
+                      92px render to roughly the tile's interior width. `CardPresentation`
+                      already draws its own ⓘ corner widget and detail popup (requirement 6's
+                      second widget) — this tile adds only the ✕ beside it. */}
+                  <CardPresentation card={card} className="w-full" imageClassName="zone-card-tile-image rounded" />
+                  {/* Both overlays stop propagation so a click inside them never bubbles back
+                      up to the tile's own onClick (which would immediately reopen the menu
+                      it is in the middle of closing). */}
                   {menuInstanceId === instanceId && (
-                    <ZoneCardMenu
-                      isOpen
-                      onClose={() => setMenuInstanceId(null)}
-                      card={card}
-                      zoneId={zoneId}
-                      cardIndex={index}
-                      cardCount={cards.length}
-                      onMoveTo={(toZone) => {
-                        setMenuInstanceId(null);
-                        onMoveCard(instanceId, toZone);
-                      }}
-                      onReorder={(toIndexAfterRemoval) => {
-                        setMenuInstanceId(null);
-                        onReorderCard(instanceId, toIndexAfterRemoval);
-                      }}
-                      onShowDetails={() => {
-                        setMenuInstanceId(null);
-                        setDetailInstanceId(instanceId);
-                      }}
-                      onRemove={() => {
-                        setMenuInstanceId(null);
-                        onRemoveCard(instanceId);
-                      }}
-                    />
+                    <div onClick={(event) => event.stopPropagation()}>
+                      <ZoneCardMenu
+                        isOpen
+                        onClose={() => setMenuInstanceId(null)}
+                        card={card}
+                        zoneId={zoneId}
+                        cardIndex={index}
+                        cardCount={cards.length}
+                        onMoveTo={(toZone) => {
+                          setMenuInstanceId(null);
+                          onMoveCard(instanceId, toZone);
+                        }}
+                        onReorder={(toIndexAfterRemoval) => {
+                          setMenuInstanceId(null);
+                          onReorderCard(instanceId, toIndexAfterRemoval);
+                        }}
+                        onShowDetails={() => {
+                          setMenuInstanceId(null);
+                          setDetailInstanceId(instanceId);
+                        }}
+                        onRemove={() => {
+                          setMenuInstanceId(null);
+                          onRemoveCard(instanceId);
+                        }}
+                      />
+                    </div>
                   )}
                   {detailInstanceId === instanceId && (
-                    <CardDetailPopup card={card} onClose={() => setDetailInstanceId(null)} />
+                    <div onClick={(event) => event.stopPropagation()}>
+                      <CardDetailPopup card={card} onClose={() => setDetailInstanceId(null)} />
+                    </div>
                   )}
                 </div>
               );

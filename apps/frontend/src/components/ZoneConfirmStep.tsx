@@ -5,12 +5,15 @@ import type { ZoneId } from "../types";
 import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
 import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
-import { StepEyebrow } from "./StepEyebrow";
 
 type ZoneConfirmStepProps = {
   selectedZones: ZoneId[];
   canContinue: boolean;
   onZoneToggle: (zone: ZoneId) => void;
+  /** Look-matching pass (slice N), requirement 3: the per-step "Back" button is
+   * retired — the shared header's ‹ (rendered by the caller, above `stationsRail`)
+   * is the only way back now. Kept in the prop contract so the caller's wiring is
+   * unchanged; this component simply no longer renders a control that calls it. */
   onBack: () => void;
   onContinue: () => void;
   statusMessage: string | null;
@@ -24,7 +27,6 @@ export function ZoneConfirmStep({
   selectedZones,
   canContinue,
   onZoneToggle,
-  onBack,
   onContinue,
   statusMessage,
   historyTrigger,
@@ -34,50 +36,55 @@ export function ZoneConfirmStep({
     <PageShell>
         <StagedStepHeader historyTrigger={historyTrigger} />
         {stationsRail}
-        <StepEyebrow stepName="Zone confirmation" />
-        <p className="text-sm text-zinc-400">Select all zones that apply to your question.</p>
+        {/* Look-matching pass (slice N), requirement 3: one `.plate` holding the zone
+            grid, with `.plate-next` as its own way forward (`in-depth-question.html:486-493`). */}
+        <div className="plate">
+          <h2>Zone confirmation</h2>
+          <p className="lede">Select all zones that apply to your question.</p>
 
-        <div className="grid grid-cols-1 gap-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 sm:grid-cols-2">
-          {CANONICAL_ZONE_ORDER.map((zone) => {
-            const checked = selectedZones.includes(zone);
-            return (
-              <label
-                key={zone}
-                data-accent-current={checked}
-                className="ambient-accent-surface ambient-accent-interactive motion-hover motion-press flex min-h-[2.75rem] cursor-pointer items-center gap-3 rounded-xl border border-zinc-700/80 bg-zinc-950/40 px-3 py-2.5 text-sm transition hover:bg-zinc-800/50"
-              >
-                <input
-                  type="checkbox"
-                  aria-label={`Zone: ${ZONE_LABELS[zone]}`}
-                  checked={checked}
-                  onChange={() => onZoneToggle(zone)}
-                  className="motion-focus h-4 w-4 shrink-0 rounded border-zinc-500 accent-accent"
-                />
-                <span className="font-medium text-zinc-100">{ZONE_LABELS[zone]}</span>
-              </label>
-            );
-          })}
-        </div>
+          <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
+            {CANONICAL_ZONE_ORDER.map((zone) => {
+              const checked = selectedZones.includes(zone);
+              return (
+                <label
+                  key={zone}
+                  data-accent-current={checked}
+                  data-checked={checked}
+                  className="zone-tile ambient-accent-surface ambient-accent-interactive motion-hover motion-press"
+                >
+                  <input
+                    type="checkbox"
+                    aria-label={`Zone: ${ZONE_LABELS[zone]}`}
+                    checked={checked}
+                    onChange={() => onZoneToggle(zone)}
+                    className="motion-focus sr-only"
+                  />
+                  <span className="mark" aria-hidden="true">
+                    {checked ? "✓" : ""}
+                  </span>
+                  <span className="font-medium text-zinc-100">{ZONE_LABELS[zone]}</span>
+                </label>
+              );
+            })}
+          </div>
 
-        {!canContinue && (
-          <p className="text-xs text-amber-300/90">Select at least one zone to continue.</p>
-        )}
+          {!canContinue && (
+            <p className="mt-2 text-xs text-amber-300/90">Select at least one zone to continue.</p>
+          )}
 
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="motion-hover motion-press motion-focus rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
-          >
-            Back
-          </button>
           <button
             type="button"
             onClick={onContinue}
             disabled={!canContinue}
-            className="motion-hover motion-press motion-focus rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="plate-next motion-hover motion-press motion-focus"
           >
-            Continue
+            <span>
+              Continue
+              <small aria-hidden="true">next: the cards in each zone</small>
+            </span>
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
           </button>
         </div>
 
