@@ -1,4 +1,4 @@
-status: refining
+status: refined
 
 # ui-look-translation
 

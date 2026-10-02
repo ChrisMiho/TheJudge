@@ -150,9 +150,34 @@ and **every slice cites REQ-216**.
   every screen, sheet and overlay at once.
 - **Hard-coded values are defects.** A hex colour, an `rgb(…)`, a one-off
   shadow, a fixed Tailwind palette colour, or a local `--my-panel-bg` inside a
-  component is a finding, not a style note.
+  component is a finding, not a style note — outside the named exemptions
+  below.
 
 Review grades REQ-216 with the same weight as the pixel comparison.
+
+### Where the colours that live in code today go
+
+Some colours sit in TypeScript today, not in a stylesheet. A grep on
+2026-10-02 over `apps/frontend/src` (hex, `rgb(`/`hsl(` with literal numbers,
+fixed Tailwind palette classes; tests excluded) found them in the files below.
+Each gets one home. **Token layer** means the ported `tokens.css` plus
+`apps/frontend/src/lib/theme/`, the code that switches the colour profile and
+derives the custom Colorless colour (REQ-099) (A21). **Exempt** means the file
+is on the audit's named allowlist (acceptance item 5) for the reason given.
+Every exemption keeps today's behaviour; the owner may `edit` the list at the
+REQ-216 gate block (A22).
+
+| What the player sees | Where it lives today (under `apps/frontend/src/`) | Home | Why |
+| --- | --- | --- | --- |
+| The six Theme colours and their swatches | `lib/theme/palettes.ts` (swatch hexes, channel values), `lib/theme/applyPalette.ts` (sets the variables) | token layer | It is the profile switch, REQ-200's one token source today. Any value it holds that `tokens.css` also defines must equal it, checked by a test the frame slice adds. |
+| The background scene | `components/AmbientScene.tsx` (CSS today; the canvas port carries colours per profile) | exempt | A canvas draws with colour strings, not stylesheet variables. Its colours are the mockup's `ambience.js` values, copied unchanged, keyed by profile so a Theme change still recolours the scene, and kept in this one file. |
+| The trade pile's gold, bronze and gem artwork | `components/trade/TradePile.tsx` (`GOLD`, `GOLD_DARK`, `BRONZE`, `GEM`) | exempt | An illustration of fixed materials that looks the same in every Theme today, and keeps doing so. |
+| The scanner's developer debug outline and read-region overlay | `components/ScanCardOutline.tsx` (the `debug` stroke only; the lock-on outline already reads `--accent-soft`), `components/ScanDebugOverlay.tsx` | exempt | Opt-in, developer-only diagnostics, fixed so they read against any profile; the code itself marks the debug outline "developer-only, not part of this look pass". |
+| Each card's colour-identity ring | `lib/cardIdentityRing.ts` (five colour values, silver grey, and the `--card-identity-ring` property) | exempt | The ring comes from the card's own colours, never from the profile (REQ-058; REQ-200: "card-identity rings stay derived from card colours and independent of the profile"). |
+| The Life Tracker table | `components/portal/life-tracker/PlayerLifeCard.tsx`, `PlayerLifeTrackerApp.tsx` (fixed `zinc-` classes) | exempt | Out of scope and pixel-unchanged (REQ-202). |
+| In-depth details' enrichment heading | `components/EnrichmentStep.tsx` (inline `color: "#e2e8f0"`) | token layer | Plain primary text (REQ-200's primary-text role); the In-depth slice swaps it for the token. |
+| The scanner's dimmed surround | `components/ScanCameraSurface.tsx` (the viewfinder's `rgba(15,23,42,0.35)` shadow) | token layer | Scanner chrome; the scanner slice moves it. |
+| Everything else: fixed `zinc-`/`slate-` classes and one-off `shadow-[…]` values across the redesigned components, and `index.css`'s 106 hex literals | many files | token layer or the ported stylesheets | Ordinary redesigned chrome; each screen's slice moves its own values as it rebuilds that screen. |
 
 ## Screens, and how each is ported
 
@@ -160,7 +185,7 @@ One slice per mockup page, in this order, after the frame slice. Every screen
 uses the token and shell layers; the "Flow layer" column says whether it also
 uses `flow.css`. Mockup pages live under `docs/design/ui-reimagining/direction-1/`.
 
-| Screen | Mockup page (visual source) | States to pair | Flow layer | Rebuilt in mockup DOM order | Behaviour rules that win | Gate blocks |
+| Screen | Mockup page (visual source) | States to pair | Flow layer | Rebuilt in mockup DOM order | Behaviour rules that win | Gate blocks (REQ-216 binds every row except the Life Tracker table) |
 | --- | --- | --- | --- | --- | --- | --- |
 | Frame: header, ambient scene, Menu tray, Theme band, shared sheets (card detail, Send feedback, Question History) | `shared-chrome-menu.html` | at rest; Menu open; Send feedback; Question History with rows; card detail | yes (plates, pills inside sheets) | `PageShell` + `StagedStepHeader` (header outside page padding), `FeaturePortalMenu`, `ThemeSection`, `AmbientScene` (canvas port), `SheetShell`, `ConfirmSheet`, `ConversationHistoryDrawer`, the Send feedback and card-detail sheets | REQ-122 opaque tray; REQ-123 mock banner; REQ-205 44px floor; REQ-213 history list; REQ-142 close colour | NFR-006, REQ-207, REQ-216 |
 | Ask a Question | `quick-question.html` | default with cards; Add-card search open; answered with follow-up | yes (stage, composer, pills) | `QuickLookupApp`, `CardStage`, `ComposerPill`, `ConversationThread`, the General rules topics plate if kept | REQ-206 (no duplicate neighbour at two cards, the carry, the Draft); REQ-167 cap of 10; REQ-011/REQ-134 300-character ring; REQ-212 dictation | FLOW-011, REQ-079, REQ-206, REQ-167, REQ-070, REQ-124 |
@@ -175,7 +200,8 @@ uses `flow.css`. Mockup pages live under `docs/design/ui-reimagining/direction-1
 The first slice is the frame. It ports the stylesheet layer (`tokens.css` →
 `shell.css` → `flow.css` / `ambience.css`) and the ambient scene, puts the
 header at the top edge, and switches surfaces to glass, **before any screen is
-touched**. Every later slice then only re-orders its screen's DOM onto layers
+touched**. It also creates the pixel-comparison script every later slice runs
+(acceptance item 2). Every later slice then only re-orders its screen's DOM onto layers
 that already exist.
 
 After the frame, one slice per screen in the table's order. Each slice names
@@ -190,11 +216,46 @@ slice's own criteria.
 1. **Side-by-side pairs.** Every state in the screens table, build next to
    mockup, same colour profile and state, at 390×844 and 1440×900, saved under
    `docs/design/ui-reimagining/build-screenshots/translation/<screen>/`.
-2. **A pixel comparison per pair, not a reading.** A script (PIL is available to
-   `python3`) diffs the build capture against the mockup capture inside the
-   content box and reports the differing fraction. The slice sets its own
-   threshold in its doc, below 5%, and records the number. Card art and live
-   data regions may be masked, and every mask is named. The 5% ceiling is the
+2. **A pixel comparison per pair, not a reading.** A script diffs the build
+   capture against the mockup capture inside the content box and reports the
+   differing fraction. The slice sets its own threshold in its doc, below 5%,
+   and records the number. Card art and live data regions may be masked, and
+   every mask is named.
+   - **Owner and path.** The frame slice creates
+     `scripts/compare-screenshot-pair.mjs` and its test
+     `scripts/compare-screenshot-pair.test.mjs`, which `npm run test:scripts`
+     already runs (`scripts/*.test.mjs`). It reads PNGs with `pngjs`, already a
+     root devDependency, so nothing new is installed (A24).
+   - **Usage.** `node scripts/compare-screenshot-pair.mjs --build <build.png>
+     --mockup <mockup.png> [--mask <mask.json>] [--tolerance <0-255>]`. The two
+     PNGs must be the same pixel size; if not, it exits non-zero and prints
+     both sizes. `--tolerance` is the per-channel difference a pixel may have
+     and still count as matching; it defaults to `0`, and a slice that uses
+     another value records it beside its threshold.
+   - **Output.** One JSON line on stdout: `{"build", "mockup", "mask"
+     (path or null), "tolerance", "comparedPixels", "maskedPixels",
+     "differingPixels", "differingFraction"}`. `differingFraction` is
+     `differingPixels / comparedPixels`, counting only pixels inside the
+     content box and outside every mask region.
+   - **Files beside each pair**, in
+     `docs/design/ui-reimagining/build-screenshots/translation/<screen>/`,
+     named the way the first run named its pairs (`life-tracker-after-390x844.png`):
+     `<state>-build-<viewport>.png`, `<state>-mockup-<viewport>.png` and, when
+     the pair needs one, `<state>-mask-<viewport>.json`, where `<viewport>` is
+     `390x844` or `1440x900`.
+   - **Mask format.** JSON: `{"contentBox": {"x", "y", "width", "height"},
+     "regions": [{"name", "reason", "x", "y", "width", "height"}]}`.
+     Coordinates are the capture's own pixels; regions are rectangles;
+     `contentBox` is optional (the whole capture when absent); every region
+     carries a name and a reason (for example card art, live data, A4's opaque
+     tray, A5's touch floor, A8's banner, A17's topics plate).
+   - **Where the number goes.** Each slice adds one row per pair to
+     `translation/<screen>/DIFF-RESULTS.md` (pair, mask file or none,
+     tolerance, differing fraction, the slice's threshold) and cites that file
+     in its slice doc. It sits beside the pairs, outside `PRD/work/`, so the
+     package's close does not delete it.
+
+   The 5% ceiling is the
    intake's figure and has not been measured; this brief sets no other number.
    Each slice measures its own pairs first and sets its threshold from that
    evidence; a pair that cannot get under the ceiling for a reason the slice
@@ -206,12 +267,35 @@ slice's own criteria.
    threshold, and treats "matched the bullets" as no defence. The build node's
    hook evidence log earns nothing (known gap), so review is the real integrity
    gate.
-5. **Shared-system audit, two checks (REQ-216).** (a) A grep over the slice's
-   touched files for hard-coded colours, shadows and local tokens —
-   `#[0-9a-fA-F]{3,8}`, `rgb(`, `hsl(`, a `--` variable declared outside the
-   ported layers, and fixed Tailwind palette classes such as `zinc-` and
-   `slate-` (already barred by REQ-200) — returns zero hits outside the token
-   layer; the slice records the command and its count. (b) A profile-switch
+5. **Shared-system audit, two checks (REQ-216).** (a) A search for
+   hard-coded style values, run two ways, each recorded with its command and a
+   count that must be zero: **(a1)** the whole of every TS/TSX file of the
+   components the slice rebuilds (its row in the screens table; map-out lists
+   the files), and **(a2)** every line the slice adds anywhere under
+   `apps/frontend/src`, which covers `index.css` and any file it edits without
+   rebuilding (A23). Both skip the token layer, the ported stylesheets, tests,
+   and the exempt files in "Where the colours that live in code today go". The
+   patterns: a hex colour; `rgb(`/`rgba(`/`hsl(`/`hsla(` with a literal number
+   (`rgb(var(--accent))` reads a token and is not a hit); a fixed Tailwind
+   palette class (`zinc-`, `slate-` and the rest of Tailwind's default palette
+   names; REQ-200 already bars zinc/slate); a one-off shadow (`shadow-[…]`, or
+   `box-shadow:` with literal lengths); and a custom property declared or set
+   outside the token layer (`--name:`, `setProperty(`). The command, verbatim,
+   with `BASE` the commit the slice started from and `FILES` its rebuilt
+   components' paths:
+
+   ```sh
+   PAT='#[0-9a-fA-F]{3,8}\b|rgba?\( *[0-9.]|hsla?\( *[0-9.]|\b(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-[0-9]{2,3}\b|shadow-\[|box-shadow: *-?[0-9]|--[a-zA-Z][a-zA-Z0-9-]*"? *:|setProperty\('
+   SKIP='\.test\.tsx?$|/(tokens|shell|flow|ambience)\.css$|^apps/frontend/src/lib/theme/|^apps/frontend/src/components/AmbientScene\.tsx$|^apps/frontend/src/components/trade/TradePile\.tsx$|^apps/frontend/src/components/(ScanCardOutline|ScanDebugOverlay)\.tsx$|^apps/frontend/src/lib/cardIdentityRing\.ts$|^apps/frontend/src/components/portal/life-tracker/(PlayerLifeCard|PlayerLifeTrackerApp)\.tsx$'
+   # (a1) rebuilt components, whole file
+   printf '%s\n' $FILES | grep -vE "$SKIP" | while read -r f; do cat "$f"; done | grep -cE "$PAT"
+   # (a2) every added line under apps/frontend/src
+   git diff -U0 "$BASE"..HEAD -- apps/frontend/src \
+     | SKIP="$SKIP" awk '/^\+\+\+ /{f=substr($0,7); keep=(f !~ ENVIRON["SKIP"]); next} keep && /^\+/' \
+     | grep -cE "$PAT"
+   ```
+
+   (b) A profile-switch
    pair: the slice's main state in two different Theme colours at 390×844,
    saved beside the other pairs, showing every element recoloured and none left
    behind. Review treats a hit in (a) or a left-behind element in (b) as
@@ -240,7 +324,7 @@ Nothing is written to `PRD/sections/` until `build` applies the accepted ones.
 | REQ-167 | amended | Owner question 2: Ask a Question's card search opens before three characters. |
 | REQ-209 | amended | Owner question 3: the ruling's ✎ Edit chip renders and returns to the review. |
 | REQ-215 | amended | Owner question 4: adding the same printing twice merges into one row with a quantity. |
-| REQ-214 | amended | Owner question 5: the scanner gets the mockup's hint line. |
+| REQ-214 | amended | Owner question 5: the scanner gets the mockup's hint line (also the scanner's Chrome row in `screen-layout.md`). |
 | REQ-202 | amended | Owner question 6: Game Setup gets an "Edit names ▾" collapse and a "Done ›" foot bar. |
 | REQ-082 | amended | Owner question 7: the Counters sheet becomes content-sized like every other sheet. |
 
@@ -318,6 +402,10 @@ player sees, 6 nothing new without scope).
 | A18 | REQ-124's column change uses only the one measured mockup width the receipt gives (In-depth details, 36rem / 576px at 1440×900); each other screen's slice measures its own. | Receipt, review 1 Minor notes. | 4 |
 | A19 | Ported stylesheets are loaded so Tailwind's base layer cannot override them; the exact folder and import order are map-out's call. | `apps/frontend/src/index.css` begins with `@tailwind base`. | 3 |
 | A20 | The answered Ask a Question composer and In-depth details' follow-up composer follow their own mockup states; this proposal only changes the pre-submit composer's written shape. | FLOW-011 / REQ-206 describe the pre-submit box; `screen-layout.md:152` describes the answered composer separately. | 4 |
+| A21 | The token layer is the ported `tokens.css` plus `apps/frontend/src/lib/theme/` (the profile switch and the REQ-099 custom-Colorless derivation); any value in `lib/theme/` that `tokens.css` also defines must equal it, checked by a test. | `lib/theme/palettes.ts` holds the six profiles' swatches and channel values and `applyPalette.ts` sets `--accent` … `--focus-ring` today; REQ-200: "one authoritative frontend source for the token set"; REQ-099's derivation runs in code. | 3 |
+| A22 | Five kinds of colour stay in code by name, as today: the background scene's canvas colours (`AmbientScene.tsx`), the trade pile artwork (`TradePile.tsx`), the scanner's debug outline and overlay (`ScanCardOutline.tsx` debug stroke, `ScanDebugOverlay.tsx`), the identity ring (`cardIdentityRing.ts`), and the Life Tracker table (`PlayerLifeCard.tsx`, `PlayerLifeTrackerApp.tsx`). Moving the scene's or the pile's colours into token variables is the alternative; the owner may `edit` the REQ-216 block to choose it. | Grep of 2026-10-02 (hit list in "Where the colours that live in code today go"); REQ-058 and REQ-200's identity-ring constraint; REQ-202; `ScanCardOutline.tsx` comment "developer-only, not part of this look pass". | 5 |
+| A23 | The hard-coded-value audit runs two ways: whole file over the components a slice rebuilds, added lines only everywhere else. | `index.css` holds 106 hex literals spread across every screen's selectors (`.tb-`, `.lt-`, `.cs-` and others), and a Life Tracker menus slice may edit `PlayerLifeTrackerApp.tsx`; a whole-file grep of every touched file would charge the first slice that edits `index.css` with later screens' values. | 4 |
+| A24 | The pixel-comparison script is a Node `.mjs` script on `pngjs`, not a `python3`/PIL script; the per-pixel tolerance defaults to `0`. | Root `package.json` devDependencies carry `pngjs` (used by `scripts/build-card-hashes.mjs` and `scripts/build-scan-vectors.mjs`); `scripts/` holds no Python file; `test:scripts` runs `scripts/*.test.mjs`. | 3, 6 |
 
 ## Risks for planning
 

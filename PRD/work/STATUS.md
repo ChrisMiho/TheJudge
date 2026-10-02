@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [ui-look-translation](ui-look-translation/) | Refinement attempt 2 resolved the gate-qc findings (colour exemptions + audit command, scanner layout row, pixel-script owner); awaiting re-check; builds on PR #239 |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| [ui-look-translation](ui-look-translation/) | Quality-check FAIL: REQ-216 grep exemption, scanner screen-layout row, pixel-script owner; builds on PR #239 |
 
 ## ideation
 

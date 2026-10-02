@@ -310,6 +310,14 @@ kind of style value. The Life Tracker table stays untouched (REQ-202). Each slic
 proves the rule with two checks: a search of its files for typed-in colours that
 must come back empty, and a screenshot of its main screen in two Theme colours.
 
+A few colours cannot come from a stylesheet, so they stay in code, by name, the
+way they are today: the background scene's drawing (a canvas paints with colour
+values, not style names), the trade pile's gold, bronze and gem artwork (fixed
+materials that look the same in every Theme), the scanner's developer-only
+debug outlines, each card's colour-identity ring (it comes from the card, never
+the Theme — REQ-058), and the Life Tracker table (left exactly as it is —
+REQ-202). The search skips those files and nothing else.
+
 **What happens if you say no:** REQ-200's colour-only rule stays the only one;
 screens may keep their own spacing, shadow and radius values, and slices are not
 held to the two shared-system checks.
@@ -327,6 +335,47 @@ grep -rhoE 'REQ-[0-9]{3}' PRD/sections | sort -u | tail -1
 returns `REQ-215`, so `REQ-216` is reserved here. One cross-reference is added
 to REQ-200's Notes; no other line restates this rule.
 
+**Where the colours that live in code today go.** A grep on 2026-10-02 over
+`apps/frontend/src` (hex, `rgb(`/`hsl(` with literal numbers, fixed Tailwind
+palette classes; tests excluded) found colours in TypeScript in these files
+(paths under `apps/frontend/src/`). The **token layer** is the ported
+`tokens.css` plus `lib/theme/` (the profile switch and the custom-Colorless
+derivation, REQ-099). **Exempt** files are skipped by the audit for the reason
+given.
+
+| Colour | File today | Home | Reason |
+| --- | --- | --- | --- |
+| The six Theme colours and swatches | `lib/theme/palettes.ts`, `lib/theme/applyPalette.ts` | token layer | The profile switch; any value it shares with `tokens.css` must equal it, checked by a test |
+| Background scene | `components/AmbientScene.tsx` (canvas port) | exempt | A canvas paints with colour strings; the mockup's `ambience.js` values, copied unchanged and keyed by profile, kept in this one file |
+| Trade pile artwork | `components/trade/TradePile.tsx` (`GOLD`, `GOLD_DARK`, `BRONZE`, `GEM`) | exempt | Fixed materials, the same in every Theme, as today |
+| Scanner debug outline and overlay | `components/ScanCardOutline.tsx` (`debug` stroke; the lock-on outline already reads `--accent-soft`), `components/ScanDebugOverlay.tsx` | exempt | Opt-in developer diagnostics, fixed to read against any profile |
+| Card colour-identity ring | `lib/cardIdentityRing.ts` | exempt | Derived from the card, never the profile (REQ-058; REQ-200's identity-ring constraint) |
+| Life Tracker table | `components/portal/life-tracker/PlayerLifeCard.tsx`, `PlayerLifeTrackerApp.tsx` | exempt | Pixel-unchanged (REQ-202) |
+| Enrichment heading | `components/EnrichmentStep.tsx` (inline `color: "#e2e8f0"`) | token layer | Primary text (REQ-200's primary-text role) |
+| Scanner's dimmed surround | `components/ScanCameraSurface.tsx` (`rgba(15,23,42,0.35)` shadow) | token layer | Scanner chrome |
+| Fixed `zinc-`/`slate-` classes, one-off `shadow-[…]` values, `index.css`'s 106 hex literals | many files | token layer or ported stylesheets | Ordinary redesigned chrome, moved by each screen's slice |
+
+**You may `edit` the exemptions.** Each one keeps today's behaviour, the
+safest reading (design brief A21, A22). If you would rather the scene's or the
+pile's colours move into shared token values too, answer `edit` and say which.
+
+**Audit command** (each slice records it and its two counts; the design
+brief's acceptance item 5 carries the same text). `BASE` is the commit the
+slice started from; `FILES` lists the TS/TSX files of the components it
+rebuilds. (a1) checks those files whole; (a2) checks every line the slice adds
+anywhere under `apps/frontend/src` (design brief A23).
+
+```sh
+PAT='#[0-9a-fA-F]{3,8}\b|rgba?\( *[0-9.]|hsla?\( *[0-9.]|\b(slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)-[0-9]{2,3}\b|shadow-\[|box-shadow: *-?[0-9]|--[a-zA-Z][a-zA-Z0-9-]*"? *:|setProperty\('
+SKIP='\.test\.tsx?$|/(tokens|shell|flow|ambience)\.css$|^apps/frontend/src/lib/theme/|^apps/frontend/src/components/AmbientScene\.tsx$|^apps/frontend/src/components/trade/TradePile\.tsx$|^apps/frontend/src/components/(ScanCardOutline|ScanDebugOverlay)\.tsx$|^apps/frontend/src/lib/cardIdentityRing\.ts$|^apps/frontend/src/components/portal/life-tracker/(PlayerLifeCard|PlayerLifeTrackerApp)\.tsx$'
+# (a1) rebuilt components, whole file
+printf '%s\n' $FILES | grep -vE "$SKIP" | while read -r f; do cat "$f"; done | grep -cE "$PAT"
+# (a2) every added line under apps/frontend/src
+git diff -U0 "$BASE"..HEAD -- apps/frontend/src \
+  | SKIP="$SKIP" awk '/^\+\+\+ /{f=substr($0,7); keep=(f !~ ENVIRON["SKIP"]); next} keep && /^\+/' \
+  | grep -cE "$PAT"
+```
+
 **Proposed diff.**
 
 ```diff
@@ -336,13 +385,14 @@ to REQ-200's Notes; no other line restates this rule.
 +- Priority: high
 +- Description: Every redesigned screen, sheet, overlay and panel takes its look from one shared visual system ported from the approved direction-1 mockup (`docs/design/ui-reimagining/direction-1/`). One token layer — the mockup's `tokens.css`, ported once — is the only place a colour, surface, radius, shadow, glow, type size or spacing value is defined, with the six colour profiles as one set of variables switched in one place. Shell styles (`shell.css`, `ambience.css`: header, Menu, Theme band, sheets, the ambient scene) build on the tokens; flow styles (`flow.css`: stage, composer, plates, pills) build on both. Nothing carries its own palette, its own profile or its own copy of a shared style, so choosing a Theme colour recolours everything at once.
 +- Acceptance Criteria:
-+  - the mockup's `tokens.css` is ported once, with its variable names and values, as the app's only token source; REQ-200's roles (page ground, colour wash, raised panel fill, panel edge, focus ring, primary text, muted text, filled-accent text) resolve to the ported variables rather than carrying values of their own
++  - the mockup's `tokens.css` is ported once, with its variable names and values, as the app's only token source; REQ-200's roles (page ground, colour wash, raised panel fill, panel edge, focus ring, primary text, muted text, filled-accent text) resolve to the ported variables rather than carrying values of their own; the theme code that switches the profile and derives the custom Colorless colour (`apps/frontend/src/lib/theme/`) belongs to this token layer, and any value it holds that `tokens.css` also defines is equal to it, checked by a test
 +  - the six colour profiles live in that one token layer and switch in one place; a value the mockup does not supply (the custom Colorless colour, REQ-099) is derived the way the mockup derives its six profiles, never chosen by eye
 +  - styles layer in one order — tokens, then shell (`shell.css`, `ambience.css`), then flow (`flow.css`), then a screen's own selectors; a screen's own selector may use what those layers set but may not redefine it; a style two screens need moves up a layer instead of being written twice
 +  - a screen gets a sheet, a confirm, a composer, a card stage, a plate or a foot bar only through the shared components (`SheetShell`, `ConfirmSheet`, `ComposerPill`, `CardStage`, the shared plate and foot bar); a variant extends the shared one with a modifier and never forks a local copy
 +  - choosing a Theme colour in the Menu (FLOW-007) recolours every screen, sheet and overlay at once, with no element left on the previous colour or on a fixed one
-+  - outside the ported token, shell, flow and ambience layers, no redesigned component or stylesheet declares a hex colour, an `rgb(…)` or `hsl(…)` value, a one-off shadow, a fixed Tailwind palette colour (such as `zinc-` or `slate-`, already barred by REQ-200), or a custom property of its own; a hit is a defect
-+  - every slice that touches a redesigned screen records (a) a grep of its touched files for the patterns above, with the command and a count of zero outside the ported layers, and (b) a profile-switch pair — its main state at 390×844 in two Theme colours — showing every element recoloured and none left behind; review treats a hit in (a) or a left-behind element in (b) as Important
++  - outside the token layer, the ported shell, flow and ambience stylesheets, and the named exemptions below, no redesigned component or stylesheet declares a hex colour, an `rgb(…)` or `hsl(…)` value with literal numbers, a one-off shadow (a Tailwind `shadow-[…]` value or a `box-shadow` with literal lengths), a fixed Tailwind palette colour (such as `zinc-` or `slate-`, already barred by REQ-200), or a custom property of its own; a hit is a defect
++  - colours that cannot come from a stylesheet stay in code only in these named files (under `apps/frontend/src/`), each for its reason: the background scene's canvas drawing (`components/AmbientScene.tsx` — a canvas paints with colour strings; its colours are the mockup's `ambience.js` values copied unchanged and keyed by profile); the trade pile's gold, bronze and gem artwork (`components/trade/TradePile.tsx` — fixed materials, the same in every Theme); the scanner's opt-in developer debug outline and overlay (the `debug` stroke in `components/ScanCardOutline.tsx`, and `components/ScanDebugOverlay.tsx` — diagnostics fixed to read against any profile); each card's colour-identity ring (`lib/cardIdentityRing.ts` — derived from the card, never the profile, REQ-058); and the Life Tracker table (`components/portal/life-tracker/PlayerLifeCard.tsx`, `PlayerLifeTrackerApp.tsx` — pixel-unchanged, REQ-202); every other colour in a TS/TSX file lives in the token layer
++  - every slice that touches a redesigned screen records (a) a search for the patterns above, with the command and a count of zero, over the whole of each component it rebuilds and over every line it adds anywhere under `apps/frontend/src`, skipping the token layer, the ported stylesheets, tests and the named exemptions, and (b) a profile-switch pair — its main state at 390×844 in two Theme colours — showing every element recoloured and none left behind; review treats a hit in (a) or a left-behind element in (b) as Important
 +- Constraints:
 +  - presentation only; no change to request contracts, prompts, backend routes, card metadata, the data pipeline, or any behaviour another requirement sets
 +  - Life Tracker's table stays pixel-unchanged and outside this requirement's ported layers (REQ-202); its sheets inherit the system like every other sheet
@@ -1001,6 +1051,17 @@ grep -rn -i "hint line\|close the scanner\|Joins <" PRD/sections | grep -v '^PRD
 | `functional-requirements.md:5235` (REQ-206, "no hint line under the title") | keep — Ask a Question's title, not the scanner |
 | `functional-requirements.md:5497`, `:5498` (REQ-214 notes) | keep |
 
+The hint line changes the scanner screen's shape, so its layout row is checked
+too:
+
+```
+grep -n "^| Chrome | A square ✕ exit box" PRD/sections/screen-layout.md
+```
+
+| Hit | Disposition |
+| --- | --- |
+| `screen-layout.md:213` (Scan camera surface, Chrome row) | amend — add the hint line beneath the camera frame |
+
 Also amended, though not grep hits: REQ-214's criteria, tests line and Notes,
 and a new Built line in `scan/README.md`.
 
@@ -1022,6 +1083,12 @@ and a new Built line in `scan/README.md`.
 +- Built: a one-line hint under the viewfinder, worded as the mockup's scanner
 +  page words it, tells the player that held cards join their destination when
 +  the scanner closes. (REQ-214, REQ-070)
+```
+
+```diff
+# PRD/sections/screen-layout.md — Scan camera surface, Chrome row
+-| Chrome | A square ✕ exit box sits above the camera's top-right corner on every host (accessible name "Exit scan"); the count pill (and, when open, its caution note) sits beneath it, non-overlapping; the opt-in Debug panel keeps its own bottom-left placement with a themed accent border (REQ-214) |
++| Chrome | A square ✕ exit box sits above the camera's top-right corner on every host (accessible name "Exit scan"); the count pill (and, when open, its caution note) sits beneath it, non-overlapping; the opt-in Debug panel keeps its own bottom-left placement with a themed accent border (REQ-214); when the mockup's scanner page carries the hint line, one line of static text sits under the camera frame in the mockup's position — text, not a control, never overlapping the camera frame, the count pill or the review list (REQ-214, REQ-070) |
 ```
 
 - Verdict:
