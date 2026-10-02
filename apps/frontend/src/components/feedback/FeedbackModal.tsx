@@ -159,7 +159,12 @@ function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDi
           </div>
 
           <div className="flex flex-col gap-1">
-            <label htmlFor={messageId} className="text-sm font-semibold text-zinc-300">
+            {/* Look-matching pass (slice L, review 1 fix — finding 6): uppercase eyebrow
+                label (shell.css's `.fb-field .t`), same accessible text as before. */}
+            <label
+              htmlFor={messageId}
+              className="text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-zinc-400"
+            >
               What happened?
             </label>
             <textarea
@@ -167,7 +172,7 @@ function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDi
               value={form.message}
               onChange={(event) => form.setMessage(event.target.value)}
               placeholder={MESSAGE_HINT[form.category]}
-              rows={5}
+              rows={4}
               required
               aria-required="true"
               aria-invalid={form.messageError !== null}
@@ -182,7 +187,12 @@ function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDi
           </div>
 
           <div className="flex flex-col gap-1">
-            <label htmlFor={emailId} className="text-sm font-semibold text-zinc-300">
+            {/* Look-matching pass (slice L, review 1 fix — finding 6): uppercase eyebrow
+                label (shell.css's `.fb-field .t`), same accessible text as before. */}
+            <label
+              htmlFor={emailId}
+              className="text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-zinc-400"
+            >
               Reply email (optional)
             </label>
             <input
@@ -205,15 +215,16 @@ function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDi
             data-testid="feedback-snapshot-row"
             className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-900/40 p-3"
           >
-            {/* Look-matching pass (slice L): one dashed row (shell.css:716-720's
-                `.fb-snap-row`) — the disclosure line and the toggle sit side by
-                side instead of stacked on their own lines. The toggle keeps its
-                existing accessible name exactly ("Show/Hide app-state details");
-                only its visual chrome shrinks to a trailing chevron-style control
-                and its own text becomes the row's own (invisible-label) click
-                target rather than a separate full-width button below the text. */}
-            <div className="flex items-start justify-between gap-2">
-              <p className="text-sm text-zinc-400">
+            {/* Look-matching pass (slice L, review 1 fix — finding 6): one true
+                single-line row (shell.css:721's `.fb-snap-row`) — the disclosure
+                text truncates to one line (`min-w-0 truncate`, the flex item needs
+                `min-w-0` for `truncate` to shrink below its content width) and the
+                toggle shrinks to a bare chevron, matching the mockup's "◈ … ▾"
+                row. The toggle keeps its existing accessible name exactly
+                ("Show/Hide app-state details") as a visually-hidden (`sr-only`)
+                span — no behaviour change, only the painted row. */}
+            <div className="flex items-center justify-between gap-2">
+              <p className="min-w-0 flex-1 truncate text-sm text-zinc-400">
                 <span aria-hidden="true" className="text-accent-soft">◈</span> {DISCLOSURE_LINE}
               </p>
               <button
@@ -221,9 +232,9 @@ function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDi
                 aria-expanded={isSummaryExpanded}
                 aria-controls={summaryId}
                 onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
-                className="motion-focus flex min-h-[2.75rem] shrink-0 items-center gap-1 rounded-lg px-2 text-xs font-semibold text-accent-soft hover:bg-zinc-800"
+                className="motion-focus flex min-h-[2.75rem] shrink-0 items-center justify-center rounded-lg px-2 text-accent-soft hover:bg-zinc-800"
               >
-                <span className="whitespace-nowrap">
+                <span className="sr-only">
                   {isSummaryExpanded ? "Hide app-state details" : "Show app-state details"}
                 </span>
                 <span aria-hidden="true" className={isSummaryExpanded ? "rotate-180 transition" : "transition"}>

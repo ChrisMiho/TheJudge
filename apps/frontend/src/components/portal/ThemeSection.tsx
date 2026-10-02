@@ -174,6 +174,17 @@ export function ThemeSection({
           aria-label="Scroll Theme band left"
           onClick={() => nudge(-1)}
           hidden={!canScrollLeft}
+          // Look-matching pass (slice L, review 1 fix — finding 2): the `hidden`
+          // attribute alone does not hide this element — Tailwind's `grid`
+          // utility (an author rule) sits later in the generated stylesheet
+          // than preflight's `[hidden] { display: none }` at the same
+          // specificity, so it wins and the arrow stayed painted (and sized)
+          // even when there was nothing to scroll, stealing width from the
+          // track and causing a real overflow (the clipped sixth cell the
+          // reviewer saw). The inline `style` always wins over any class, so
+          // it hides the box for real while the `hidden` attribute stays for
+          // the existing "stays mounted, just inert" test contract.
+          style={{ display: canScrollLeft ? "grid" : "none" }}
           className="motion-focus grid h-6 w-5 shrink-0 place-items-center text-zinc-400 hover:text-zinc-200"
         >
           <span aria-hidden="true">‹</span>
@@ -185,8 +196,12 @@ export function ThemeSection({
           onScroll={updateArrowState}
           // Look-matching pass (slice L): the mockup's pill container
           // (`theme-band-track`, shell.css:571-592's `.theme-orbs`) — the
-          // scroll/snap/gap mechanics are unchanged.
-          className="theme-band-track flex flex-1 snap-x gap-1 overflow-x-auto scroll-smooth"
+          // scroll/snap mechanics are unchanged; review 1 fix (finding 2)
+          // tightens the gap from 4px to the mockup's 2px
+          // (`shell.css:571-592`'s `.theme-orbs` gap) now that the arrows
+          // above/below genuinely stop taking space when hidden, so all six
+          // cells fit the 320px tray with room to spare.
+          className="theme-band-track flex flex-1 snap-x gap-[2px] overflow-x-auto scroll-smooth"
         >
           {PALETTES.map((palette) => (
             <ThemeBandCell
@@ -202,6 +217,7 @@ export function ThemeSection({
           aria-label="Scroll Theme band right"
           onClick={() => nudge(1)}
           hidden={!canScrollRight}
+          style={{ display: canScrollRight ? "grid" : "none" }}
           className="motion-focus grid h-6 w-5 shrink-0 place-items-center text-zinc-400 hover:text-zinc-200"
         >
           <span aria-hidden="true">›</span>

@@ -133,3 +133,47 @@ loosened, to assert the new look in place of the retired one) plus a new
 - The Menu tray's canvas-drawn foot flair (`ambience.js`'s falling shapes) —
   explicitly out of scope per `DESIGN-BRIEF.md`'s non-goal A1 (script/canvas
   animation); the static CSS glow it sits over is built.
+
+### Review 1 fix (2026-10-02)
+
+Review loop 1 (`REVIEW-1.md`) returned two findings against this slice.
+
+- Finding 2 (Critical, L8/L12): with the Menu open, `.app-header`
+  (`z-index: 20`) painted over `.portal-menu-drawer` (`z-index: 2`), because
+  `.portal-shell-bounds` — the clip box the drawer and its backdrop portal
+  into — had `z-index: auto`, so its contents were compared against the
+  header in the header's own stacking context and always lost. Fixed by
+  giving `.portal-shell-bounds` `z-index: 21` (`apps/frontend/src/index.css`),
+  one above the header, so the whole portaled subtree now paints on top.
+  Verified live: "Ask a Question" and "Question History" are fully visible
+  and tappable with the tray open at both 390×844 and 1440×900 (recaptured
+  `l/chrome-menu-build-{390x844,1440x900}.png`).
+  - Same finding also named the Theme band's ‹ › arrows and a clipped sixth
+    cell inside the 320px tray. Root cause: the `hidden` attribute on the
+    scroll-arrow buttons (`ThemeSection.tsx`) did nothing, because Tailwind's
+    `grid` utility class (an author rule) sits later in the generated
+    stylesheet than preflight's `[hidden] { display: none }` at the same
+    specificity, so the arrows stayed painted and sized even with nothing to
+    scroll — stealing width from the track and causing the real overflow the
+    reviewer saw. Fixed with an inline `style={{ display: ... }}` on both
+    arrows (inline styles always win), plus tightening the track's gap from
+    4px to the mockup's 2px (`gap-[2px]`) now that the arrows genuinely stop
+    taking space when hidden. Verified live: all six cells fit with no
+    arrows at 320–390px and at 1440px.
+- Finding 6 (Important, L12): Send feedback still had sentence-case labels, a
+  tall two-part snapshot block with a separate "Show/Hide app-state details"
+  button, and started high on the screen. Fixed in `FeedbackModal.tsx`:
+  "What happened?" and "Reply email (optional)" now use the uppercase-eyebrow
+  style `Feedback type` already had; the snapshot row is now one truncated
+  line (`min-w-0 truncate`) with the toggle shrunk to a bare chevron (its
+  "Show/Hide app-state details" accessible name kept as an `sr-only` span, so
+  no behaviour or test-facing name changed); the textarea dropped from 5 to 4
+  rows to match the mockup. The sheet is now visibly content-sized at both
+  widths (recaptured `l/chrome-feedback-build-{390x844,1440x900}.png`) —
+  centred and compact on desktop, starting well down the screen on phone,
+  rather than the prior tall block.
+
+Both findings closed. `FollowUpComposer.test.tsx`-style scrutiny doesn't apply
+here, but `ThemeSection.test.tsx` and `FeedbackModal.test.tsx` stay green
+unchanged (same accessible names, same behaviour) — see `npm --workspace
+apps/frontend run test` in the node's terminal report.
