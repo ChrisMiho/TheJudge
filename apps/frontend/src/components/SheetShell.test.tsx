@@ -9,6 +9,7 @@ import { SheetShell } from "./SheetShell";
 afterEach(cleanup);
 
 const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
+const shellCss = readFileSync(resolve(process.cwd(), "src/styles/shell.css"), "utf8");
 
 function renderShell(onClose: () => void) {
   return render(
@@ -37,7 +38,41 @@ describe("Frontend - SheetShell", () => {
     expect(screen.getByRole("dialog")).toBeInTheDocument();
   });
 
-  it("separates head, body and foot into fixed/scrolling regions", () => {
+  it("renders the mockup's panel: a backdrop, then an aside.drawer-panel with the ✕ first and the caller's own markup after it", () => {
+    render(
+      <SheetShell
+        isOpen
+        onClose={vi.fn()}
+        closeLabel="Close example"
+        titleId="example-title"
+        panelId="example-panel"
+        panelClassName="example-panel"
+        testId="example-sheet"
+      >
+        <h2 id="example-title">Example head</h2>
+        <p>Body</p>
+      </SheetShell>
+    );
+
+    const dialog = screen.getByTestId("example-sheet");
+    expect(dialog.tagName).toBe("ASIDE");
+    expect(dialog).toHaveClass("drawer-panel", "example-panel");
+    expect(dialog).toHaveAttribute("id", "example-panel");
+    expect(dialog.firstElementChild).toHaveClass("icon-btn", "overlay-close");
+    expect(screen.getByTestId("example-sheet-overlay")).toHaveClass("sheet-backdrop");
+    expect(within(dialog).getByText("Example head")).toBeInTheDocument();
+  });
+
+  it("can omit the ✕ (the confirm sheet has none: Keep, Esc and the backdrop dismiss it)", () => {
+    render(
+      <SheetShell isOpen onClose={vi.fn()} closeLabel="Close example" titleId="t" showCloseButton={false} testId="example-sheet">
+        <h2 id="t">Example</h2>
+      </SheetShell>
+    );
+    expect(screen.queryByRole("button", { name: "Close example" })).not.toBeInTheDocument();
+  });
+
+  it("still renders legacy head, body and foot regions for sheets not yet ported", () => {
     render(
       <SheetShell
         isOpen
@@ -53,21 +88,9 @@ describe("Frontend - SheetShell", () => {
     );
 
     const dialog = screen.getByTestId("example-sheet");
-    expect(dialog).toHaveClass("sheet-shell-surface");
-    const head = screen.getByTestId("example-sheet-head");
-    const body = screen.getByTestId("example-sheet-body");
-    const foot = screen.getByTestId("example-sheet-foot");
-    expect(head).toHaveClass("sheet-shell-head");
-    expect(body).toHaveClass("sheet-shell-body");
-    expect(foot).toHaveClass("sheet-shell-foot");
-    expect(within(head).getByText("Example head")).toBeInTheDocument();
-    expect(within(body).getByText("Scrolling body")).toBeInTheDocument();
-    expect(within(foot).getByRole("button", { name: "Confirm" })).toBeInTheDocument();
-  });
-
-  it("omits the foot region entirely when none is supplied", () => {
-    renderShell(vi.fn());
-    expect(screen.queryByTestId("example-sheet-foot")).not.toBeInTheDocument();
+    expect(within(dialog).getByText("Example head").closest(".sheet-legacy-head")).not.toBeNull();
+    expect(within(dialog).getByText("Scrolling body").closest(".sheet-legacy-body")).not.toBeNull();
+    expect(within(dialog).getByRole("button", { name: "Confirm" }).closest(".sheet-legacy-foot")).not.toBeNull();
   });
 
   it("traps focus, closes on Escape and the close control, and restores the trigger", async () => {
@@ -127,43 +150,15 @@ describe("Frontend - SheetShell", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("is a bottom sheet below the sheet-family 600px breakpoint and a centred floating card from it", () => {
-    expect(appCss).toMatch(/\.sheet-shell-overlay \{[^}]*align-items: flex-end;[^}]*justify-content: center;[^}]*\}/);
-    expect(appCss).toMatch(
-      /@media \(min-width: 600px\) \{[\s\S]*\.sheet-shell-overlay \{[^}]*align-items: center;[^}]*\}[\s\S]*\.sheet-shell-surface \{[^}]*width: min\(/
+  it("is a bottom sheet on a phone and a centred floating glass card from 768px (shell.css's .drawer-panel)", () => {
+    expect(shellCss).toMatch(/\.drawer-panel \{[^}]*top: 50%;[^}]*left: 50%;[^}]*backdrop-filter: blur\(18px\)/);
+    expect(shellCss).toMatch(
+      /@media \(max-width: 767px\) \{\s*\.drawer-panel \{[^}]*bottom: 0;[^}]*max-height: 88dvh;[^}]*transform: translateY\(100%\)/
     );
   });
 
-  it("keeps the head and foot fixed with only the body region scrolling", () => {
-    const surfaceBlock = appCss.slice(
-      appCss.indexOf(".sheet-shell-surface {"),
-      appCss.indexOf("}", appCss.indexOf(".sheet-shell-surface {"))
-    );
-    expect(surfaceBlock).toContain("display: flex");
-    expect(surfaceBlock).toContain("flex-direction: column");
-    expect(surfaceBlock).toContain("overflow: hidden");
-
-    const headBlock = appCss.slice(
-      appCss.indexOf(".sheet-shell-head {"),
-      appCss.indexOf("}", appCss.indexOf(".sheet-shell-head {"))
-    );
-    expect(headBlock).toContain("flex: 0 0 auto");
-
-    const bodyBlock = appCss.slice(
-      appCss.indexOf(".sheet-shell-body {"),
-      appCss.indexOf("}", appCss.indexOf(".sheet-shell-body {"))
-    );
-    expect(bodyBlock).toContain("flex: 1 1 auto");
-    expect(bodyBlock).toContain("overflow-y: auto");
-
-    const footBlock = appCss.slice(
-      appCss.indexOf(".sheet-shell-foot {"),
-      appCss.indexOf("}", appCss.indexOf(".sheet-shell-foot {"))
-    );
-    expect(footBlock).toContain("flex: 0 0 auto");
-  });
-
-  it("honors prefers-reduced-motion for both overlay and surface", () => {
-    expect(appCss).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[\s\S]*\.sheet-shell-overlay,[\s\S]*\.sheet-shell-surface/);
+  it("slides and fades only through transforms and opacity, and holds still under prefers-reduced-motion", () => {
+    expect(shellCss).toMatch(/\.drawer-panel \{[^}]*transition: transform 0\.26s[^}]*opacity 0\.18s/);
+    expect(appCss).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[^}]*\.drawer-panel,[^}]*\.sheet-backdrop[^}]*transition: none/);
   });
 });

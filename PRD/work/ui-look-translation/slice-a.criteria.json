@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "Side-by-side pairs exist at 390x844 and 1440x900 for every state (at-rest, menu-open, send-feedback, question-history, card-detail) in docs/design/ui-reimagining/build-screenshots/translation/frame/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "docs/design/ui-reimagining/build-screenshots/translation/frame/"
@@ -15,7 +15,7 @@
     {
       "id": "A2",
       "statement": "`node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/frame/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.03 (itself below 0.05); every mask region is named with a reason",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "node scripts/compare-screenshot-pair\\.mjs",
         "paths": [
@@ -26,7 +26,7 @@
     {
       "id": "A3",
       "statement": "`npm run quality:check` is green",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }
@@ -34,7 +34,7 @@
     {
       "id": "A4",
       "statement": "`npm --workspace apps/frontend run test` is green",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/frontend run test"
       }
@@ -42,7 +42,7 @@
     {
       "id": "A5",
       "statement": "`npm --workspace apps/backend run test` is green",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run test"
       }
@@ -50,7 +50,7 @@
     {
       "id": "A6",
       "statement": "REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep -cE .*PAT"
       }
@@ -58,7 +58,7 @@
     {
       "id": "A7",
       "statement": "REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git diff -U0 .*apps/frontend/src"
       }
@@ -66,7 +66,7 @@
     {
       "id": "A8",
       "statement": "Profile-switch pair: the menu-open state in two different Theme colours at 390x844 is saved as `menu-open-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/frame/, with every element recoloured and none left behind (observed)",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "docs/design/ui-reimagining/build-screenshots/translation/frame/"
@@ -76,7 +76,7 @@
     {
       "id": "A9",
       "statement": "Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "docs/design/ui-reimagining/build-screenshots/translation/life-tracker-table/"
@@ -86,7 +86,7 @@
     {
       "id": "A10",
       "statement": "Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/frame/ (absolute paths) is recorded in DIFF-RESULTS.md",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -94,7 +94,7 @@
     {
       "id": "A11",
       "statement": "`node --test scripts/compare-screenshot-pair.test.mjs` passes and `npm run test:scripts` is green",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "node --test scripts/compare-screenshot-pair|npm run test:scripts"
       }
@@ -102,7 +102,7 @@
     {
       "id": "A12",
       "statement": "`scripts/compare-screenshot-pair.mjs` run on two PNGs prints one JSON line with exactly the keys `build, mockup, mask, tolerance, comparedPixels, maskedPixels, differingPixels, differingFraction`, and exits non-zero printing both sizes on a size mismatch",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "node scripts/compare-screenshot-pair\\.mjs"
       }
@@ -110,7 +110,7 @@
     {
       "id": "A13",
       "statement": "`tokens.css`, `shell.css`, `flow.css`, `ambience.css` exist under `apps/frontend/src/styles/` with the mockup's selectors and values, loaded in the order tokens, shell, flow",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/styles/tokens.css",
@@ -123,7 +123,7 @@
     {
       "id": "A14",
       "statement": "`AmbientScene` draws the ported `ambience.js` renderer on one fixed canvas, recolours on a Theme change, paints one still frame under emulated reduced motion, and no second scene component or library exists",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/components/AmbientScene.tsx",
@@ -134,7 +134,7 @@
     {
       "id": "A15",
       "statement": "At 390x844 and 1440x900 the header's top edge is at y=0 (measured with the browser's bounding box, value recorded in DIFF-RESULTS.md) in every state",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -142,7 +142,7 @@
     {
       "id": "A16",
       "statement": "Menu tray alpha is 1 (REQ-122), the mock banner still renders (REQ-123), and every control paints at least 44px (REQ-205); each is observed in the browser at both viewports and any mockup difference is a named mask",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -150,7 +150,7 @@
     {
       "id": "A17",
       "statement": "`PRD/sections/` carries the NFR-006, REQ-207 and REQ-216 edits, each applied once, by intent against current truth",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/non-functional-requirements.md",

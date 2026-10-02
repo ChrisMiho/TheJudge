@@ -1,35 +1,42 @@
-import type { Palette } from "./palettes";
+import { getPaletteById, type Palette } from "./palettes";
 
-const accentVarNames = {
-  accent: "--accent",
-  accentStrong: "--accent-strong",
-  accentSoft: "--accent-soft",
-  accentContrast: "--accent-contrast",
-  ground: "--ground",
-  groundWash: "--ground-wash",
-  panel: "--panel",
-  panelEdge: "--panel-edge",
-  focusRing: "--focus-ring"
-} as const;
+const customVarNames = ["--accent", "--accent-strong", "--accent-soft", "--accent-contrast", "--wash-tint", "--focus-ring"] as const;
+
+function triplet(channels: string): string {
+  const hex = channels
+    .split(" ")
+    .map((part) => Number(part).toString(16).padStart(2, "0"))
+    .join("");
+  return `#${hex}`;
+}
 
 /**
- * Sets the active palette's `data-theme` attribute and REQ-200 token-set CSS
- * variables on the document root. Touches document-root styling only — never
- * reads or mutates flow/scan/conversation state. `data-theme` also selects
- * which AmbientScene motif (REQ-201) renders, via `palette.motif` read by the
- * scene component rather than a second attribute.
+ * Selects the active profile on the document root. The six profiles' values
+ * live in `styles/tokens.css` under `[data-profile="<id>"]` (REQ-216: one token
+ * source), so a built-in profile only sets the attribute and clears any custom
+ * Colorless override. A custom Colorless colour (REQ-099) is derived by
+ * `resolveColorlessPalette` and written as inline overrides of the same
+ * variables, the way the mockup's `applyCustom` does, plus `data-accent` so the
+ * ambient scene restarts on the new colour. Touches document-root styling only.
  */
 export function applyPalette(palette: Palette): void {
   const root = document.documentElement;
   root.dataset.theme = palette.id;
   root.dataset.themeMotif = palette.motif;
-  root.style.setProperty(accentVarNames.accent, palette.accent);
-  root.style.setProperty(accentVarNames.accentStrong, palette.accentStrong);
-  root.style.setProperty(accentVarNames.accentSoft, palette.accentSoft);
-  root.style.setProperty(accentVarNames.accentContrast, palette.accentContrast);
-  root.style.setProperty(accentVarNames.ground, palette.ground);
-  root.style.setProperty(accentVarNames.groundWash, palette.groundWash);
-  root.style.setProperty(accentVarNames.panel, palette.panel);
-  root.style.setProperty(accentVarNames.panelEdge, palette.panelEdge);
-  root.style.setProperty(accentVarNames.focusRing, palette.focusRing);
+  root.setAttribute("data-profile", palette.id);
+  const base = getPaletteById(palette.id);
+  const custom = base !== undefined && palette.swatch !== base.swatch;
+  if (!custom) {
+    for (const name of customVarNames) root.style.removeProperty(name);
+    root.removeAttribute("data-accent");
+    return;
+  }
+  const accent = triplet(palette.accent);
+  root.style.setProperty("--accent", accent);
+  root.style.setProperty("--accent-strong", triplet(palette.accentStrong));
+  root.style.setProperty("--accent-soft", triplet(palette.accentSoft));
+  root.style.setProperty("--accent-contrast", triplet(palette.accentContrast));
+  root.style.setProperty("--wash-tint", `color-mix(in srgb, ${accent} 16%, #0c0c0d)`);
+  root.style.setProperty("--focus-ring", triplet(palette.accentSoft));
+  root.setAttribute("data-accent", palette.swatch);
 }

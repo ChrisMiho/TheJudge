@@ -58,6 +58,13 @@ function representativePrice(printings: ReadonlyArray<{ usd: number | null; usdF
   return undefined;
 }
 
+const COLOR_NAMES: Record<string, string> = { W: "White", U: "Blue", B: "Black", R: "Red", G: "Green" };
+
+function colorsLabel(colors: readonly string[]): string {
+  const names = colors.map((color) => COLOR_NAMES[color]).filter(Boolean);
+  return names.length > 0 ? names.join(", ") : "Colorless";
+}
+
 function formatUsd(amount: number): string {
   return `$${amount.toFixed(2)}`;
 }
@@ -86,49 +93,42 @@ function CardDetailFieldsList({
 }): JSX.Element {
   const artCropUrl =
     deriveCardArtCropUrl(card.imageId) || deriveCardArtCropFromImageUrl(card.imageUrl) || undefined;
-  const identityRing = getCardIdentityRing(detail.colors);
 
   return (
-    <div className="card-detail-hero-wrap" data-testid="card-detail-fields">
-      <div className="card-detail-hero">
-        {artCropUrl ? (
-          <img src={artCropUrl} alt="" aria-hidden="true" className="card-detail-hero-img" />
-        ) : null}
-        <div className="card-detail-hero-title">
-          <h3 id={titleId} className="card-detail-hero-name">{card.name}</h3>
-          {hasText(detail.manaCost) ? (
-            <span className="card-detail-hero-cost">{detail.manaCost}</span>
-          ) : null}
+    <div data-testid="card-detail-fields" className="detail-fields">
+      <div className="art">
+        {artCropUrl ? <img src={artCropUrl} alt="" aria-hidden="true" /> : null}
+        <div className="title">
+          <h2 id={titleId}>{card.name}</h2>
+          {hasText(detail.manaCost) ? <span className="cost">{detail.manaCost}</span> : null}
         </div>
       </div>
-      <div className="card-detail-body">
+      <div className="body">
         {hasText(detail.typeLine) ? (
-          <p className="card-detail-typeline">
-            <span
-              aria-hidden="true"
-              className="card-detail-color-dot"
-              style={{ background: identityRing }}
-            />
-            <span>{detail.typeLine}</span>
-          </p>
+          <div className="typeline">
+            <b>{detail.typeLine}</b>
+            <span>·</span>
+            <span className="pips" aria-hidden="true">
+              <i style={{ background: getCardIdentityRing(detail.colors) }} />
+            </span>
+            <span>{colorsLabel(detail.colors)}</span>
+          </div>
         ) : null}
-        {hasText(detail.oracleText) ? (
-          <p className="card-detail-oracle whitespace-pre-wrap">{detail.oracleText}</p>
-        ) : null}
-        <dl className="card-detail-facts">
-          <div className="card-detail-fact">
-            <dt>Mana value</dt>
-            <dd>{detail.manaValue}</dd>
+        {hasText(detail.oracleText) ? <p className="oracle whitespace-pre-wrap">{detail.oracleText}</p> : null}
+        <div className="facts">
+          <div className="fact">
+            <small>Mana value</small>
+            <b>{detail.manaValue}</b>
           </div>
-          <div className="card-detail-fact">
-            <dt>Subtypes</dt>
-            <dd>{detail.subtypes?.length ? detail.subtypes.join(", ") : "—"}</dd>
+          <div className="fact">
+            <small>Subtypes</small>
+            <b>{detail.subtypes?.length ? detail.subtypes.join(", ") : "—"}</b>
           </div>
-          <div className="card-detail-fact card-detail-fact-price">
-            <dt>Price</dt>
-            <dd>{price !== undefined ? formatUsd(price) : "—"}</dd>
+          <div className="fact price">
+            <small>Price</small>
+            <b>{price !== undefined ? formatUsd(price) : "—"}</b>
           </div>
-        </dl>
+        </div>
       </div>
     </div>
   );
@@ -239,34 +239,28 @@ export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.El
       onClose={onClose}
       closeLabel={`Close details for ${card.name}`}
       titleId={titleId}
+      panelClassName="detail-panel"
       testId="card-detail-popup"
-      head={
-        // Look-matching pass (slice L): once loaded, the name renders visibly
-        // inside the art-crop hero below (`flow.css`'s `.detail-panel .art h2`),
-        // which then carries `titleId` itself — rendering it a second time here
-        // would duplicate both the DOM id and the visible text. Before that (the
-        // loading/error states, which show no hero), this `sr-only` title is the
-        // dialog's only accessible name.
-        state.status === "loaded" ? undefined : (
-          <p id={titleId} className="sr-only">
-            {card.name}
-          </p>
-        )
-      }
     >
+      {/* Once loaded, the name renders visibly inside the art hero below (`.detail-panel .art h2`),
+          which then carries `titleId` itself; before that (loading/error, no hero) this
+          `sr-only` title is the dialog's only accessible name. */}
+      {state.status === "loaded" ? null : (
+        <p id={titleId} className="sr-only">
+          {card.name}
+        </p>
+      )}
       <div data-testid="card-detail-content">
         {state.status === "loading" ? (
-          <p className="text-sm text-zinc-400" role="status" aria-live="polite" data-testid="card-detail-loading">
-            Loading details…
-          </p>
+          <div className="body">
+            <p className="text-muted" role="status" aria-live="polite" data-testid="card-detail-loading">
+              Loading details…
+            </p>
+          </div>
         ) : state.status === "error" ? (
-          <div className="space-y-2" data-testid="card-detail-error">
-            <p className="text-sm text-zinc-400">Details unavailable right now.</p>
-            <button
-              type="button"
-              onClick={loadDetail}
-              className="rounded-lg border border-zinc-600 bg-zinc-900/60 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-            >
+          <div className="body" data-testid="card-detail-error">
+            <p className="text-muted">Details unavailable right now.</p>
+            <button type="button" onClick={loadDetail} className="btn">
               Retry
             </button>
           </div>
@@ -330,7 +324,7 @@ export function CardPresentation({
             aria-haspopup="dialog"
             aria-expanded={detailOpen}
             onClick={() => setDetailOpen(true)}
-            className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-full bg-zinc-950/85 text-base font-semibold leading-none text-zinc-100 shadow-md transition hover:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-accent-soft"
+            className="card-presentation-info"
           >
             <span aria-hidden="true">ⓘ</span>
           </button>
@@ -342,13 +336,13 @@ export function CardPresentation({
         // (DEC-078's offline no-fetch-on-failure guarantee preserved).
         <div
           className={joinClasses(
-            "w-full text-sm text-zinc-200",
+            "card-presentation-fallback w-full text-sm",
             imageFailed ? "motion-error" : undefined,
             fallbackClassName
           )}
           data-testid="card-presentation-fallback"
         >
-          <p className="font-semibold text-zinc-100">{card.name}</p>
+          <p className="card-presentation-fallback-name">{card.name}</p>
         </div>
       )}
       {actions ? (

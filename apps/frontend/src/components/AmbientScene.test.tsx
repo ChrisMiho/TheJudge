@@ -1,5 +1,5 @@
-import { render, screen } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { AmbientScene } from "./AmbientScene";
 import { PALETTES } from "../lib/theme/palettes";
@@ -19,47 +19,117 @@ function mockMatchMedia(prefersReduced: boolean): void {
   );
 }
 
+type CallLog = { name: string; args: unknown[] }[];
+
+/** A 2D context that records every call and answers gradient/measure requests. */
+function createRecordingContext(log: CallLog): CanvasRenderingContext2D {
+  const gradient = { addColorStop: vi.fn() };
+  const target: Record<string, unknown> = {};
+  return new Proxy(target, {
+    get(_target, property: string) {
+      if (property in target) return target[property];
+      return (...args: unknown[]) => {
+        log.push({ name: property, args });
+        if (property.startsWith("create") && property.endsWith("Gradient")) return gradient;
+        return undefined;
+      };
+    },
+    set(_target, property: string, value: unknown) {
+      target[property] = value;
+      return true;
+    }
+  }) as unknown as CanvasRenderingContext2D;
+}
+
 describe("Frontend - AmbientScene", () => {
-  afterEach(() => {
-    vi.unstubAllGlobals();
+  let log: CallLog;
+
+  beforeEach(() => {
+    log = [];
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(
+      () => createRecordingContext(log) as unknown as RenderingContext
+    );
+    document.documentElement.setAttribute("data-profile", "blue");
   });
 
-  it("renders a decorative, non-interactive scene for every profile's motif", () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    document.documentElement.removeAttribute("data-profile");
+  });
+
+  it("renders the mockup's page layer: two haze sheets and one fixed canvas, decorative and non-interactive", () => {
     for (const palette of PALETTES) {
-      const { unmount } = render(<AmbientScene motif={palette.motif} />);
+      const { container, unmount } = render(<AmbientScene motif={palette.motif} />);
       const scene = screen.getByTestId("ambient-scene");
       expect(scene).toHaveAttribute("aria-hidden", "true");
       expect(scene.dataset.motif).toBe(palette.motif);
-      expect(scene.className).toContain(`ambient-scene-motif-${palette.motif}`);
+      expect(scene).toHaveClass("ambience");
+      expect(container.querySelectorAll(".haze").length).toBe(2);
+      expect(container.querySelectorAll("canvas").length).toBe(1);
+      expect(scene.querySelectorAll("button, a, input, [role]").length).toBe(0);
       unmount();
     }
   });
 
-  it("renders at full strength behind the page by default and at a whisper inside the tray", () => {
+  it("renders at full strength behind the page by default and as the Menu tray's whisper copy in the tray", () => {
     const { rerender } = render(<AmbientScene motif="runes" />);
     expect(screen.getByTestId("ambient-scene").dataset.variant).toBe("page");
 
     rerender(<AmbientScene motif="runes" variant="tray" />);
-    expect(screen.getByTestId("ambient-scene").dataset.variant).toBe("tray");
+    const tray = screen.getByTestId("ambient-scene");
+    expect(tray.dataset.variant).toBe("tray");
+    expect(tray).toHaveClass("tray-flair");
+    expect(tray.querySelector("canvas.flair-canvas")).not.toBeNull();
   });
 
-  it("is purely decorative: no interactive element, nothing but aria-hidden layers", () => {
-    render(<AmbientScene motif="geometry" />);
-    const scene = screen.getByTestId("ambient-scene");
-    expect(scene.querySelectorAll("button, a, input, [role]").length).toBe(0);
-  });
-
-  it("stops animating under prefers-reduced-motion (CSS-level: the shared reduced-motion rule names .ambient-scene-layer)", async () => {
+  it("paints one still frame under prefers-reduced-motion and schedules no animation", () => {
     mockMatchMedia(true);
-    render(<AmbientScene motif="embers" />);
-    const scene = screen.getByTestId("ambient-scene");
-    const layers = scene.querySelectorAll(".ambient-scene-layer");
-    expect(layers.length).toBeGreaterThan(0);
-    // jsdom does not apply index.css, so this asserts the hook (the shared class
-    // name the reduced-motion media block in index.css selects), not the
-    // computed style; the CSS-level freeze is exercised manually at A8.
-    for (const layer of layers) {
-      expect(layer.className).toContain("ambient-scene-layer");
-    }
+    const raf = vi.spyOn(window, "requestAnimationFrame");
+    render(<AmbientScene motif="runes" />);
+
+    expect(log.some((call) => call.name === "clearRect")).toBe(true);
+    expect(log.some((call) => call.name === "arc")).toBe(true);
+    expect(raf).not.toHaveBeenCalled();
+  });
+
+  it("paints the identical still frame every time under reduced motion (seeded)", () => {
+    mockMatchMedia(true);
+    const first = render(<AmbientScene motif="runes" />);
+    const firstFrame = JSON.stringify(log.filter((call) => call.name === "arc"));
+    first.unmount();
+    log.length = 0;
+    render(<AmbientScene motif="runes" />);
+
+    expect(JSON.stringify(log.filter((call) => call.name === "arc"))).toBe(firstFrame);
+  });
+
+  it("keeps animating when motion is allowed", () => {
+    mockMatchMedia(false);
+    const raf = vi.spyOn(window, "requestAnimationFrame").mockReturnValue(1);
+    render(<AmbientScene motif="runes" />);
+
+    expect(raf).toHaveBeenCalled();
+  });
+
+  it("redraws in the new colour when the Theme changes the profile", async () => {
+    mockMatchMedia(true);
+    render(<AmbientScene motif="runes" />);
+    const before = log.length;
+
+    document.documentElement.setAttribute("data-profile", "red");
+
+    await waitFor(() => expect(log.length).toBeGreaterThan(before));
+  });
+
+  it("stops its loop when it unmounts", () => {
+    mockMatchMedia(false);
+    vi.spyOn(window, "requestAnimationFrame").mockReturnValue(7);
+    const cancel = vi.spyOn(window, "cancelAnimationFrame");
+    const { unmount } = render(<AmbientScene motif="runes" />);
+
+    unmount();
+
+    expect(cancel).toHaveBeenCalledWith(7);
   });
 });

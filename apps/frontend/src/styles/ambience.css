@@ -1,0 +1,204 @@
+/*
+ * ambience.css — the colour's personality, painted behind every screen.
+ *
+ * Round 5 (owner: "the rays of light just isn't the vibe … something more
+ * subtle, magical and mystical, like a moving haze or dust, or smoke"):
+ * the light fields are gone. One fixed layer under the page, three parts:
+ *   .ambience .haze     two sheets of soft, blurred colour that drift past
+ *                       each other very slowly — the haze / smoke
+ *   .ambience::after    the colour's badge, huge and faint, drifting
+ *   #ambience-canvas    magical dust drawn by ambience.js — fine motes that
+ *                       twinkle and drift on a slow current
+ * Everything obeys prefers-reduced-motion: the layer still paints, nothing
+ * moves. Card art still wins because it is the only sharp, saturated thing.
+ *
+ * Round 6: the ground under all this is flat (tokens.css); the haze is
+ * softer so the page reads flat with movement in it, Black's haze and dust
+ * are turned up so it visibly moves like the other five, and Colorless takes
+ * its colours from the accent tokens so a custom colour carries into it.
+ * Round 7: the canvas also plays each colour's element (ambience.js) — the
+ * green canopy and its falling leaves, blue bubbles and waves, black fog and
+ * wisps, red heat, white beams, colorless shapes. The badge behind the page
+ * is fainter still so the element reads.
+ * Round 8: the badge moves out from under the content into the open space
+ * (the gutter beside the column; the foot of a phone), where it can be seen.
+ * Blue's element is arcane now (runes, a spell circle, constellations), Black
+ * gains brambles and a moon, Green's limbs are redrawn.
+ * Round 9: the badge is back in the centre — larger, a little blurred, part of
+ * the atmosphere rather than a thing beside the content; the stage and the
+ * plates are solid panels now, so it shows around them, never through them.
+ */
+
+.ambience {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.ambience .haze,
+.ambience::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  pointer-events: none;
+}
+
+/* two sheets of haze: each is a few large soft blobs, blurred, on its own slow path */
+.ambience .haze {
+  filter: blur(46px) saturate(1.1);
+  opacity: 0.62;
+  animation: haze-a 46s ease-in-out infinite alternate;
+  transform-origin: 50% 50%;
+}
+.ambience .haze.b {
+  opacity: 0.5;
+  animation: haze-b 64s ease-in-out infinite alternate;
+}
+@keyframes haze-a {
+  from { transform: translate3d(-4%, -2%, 0) rotate(-2deg) scale(1); }
+  to { transform: translate3d(4%, 3%, 0) rotate(2deg) scale(1.08); }
+}
+@keyframes haze-b {
+  from { transform: translate3d(3%, 2%, 0) rotate(1.5deg) scale(1.06); }
+  to { transform: translate3d(-4%, -3%, 0) rotate(-1.5deg) scale(1); }
+}
+
+/* the badge (round 9: "making the image larger, centered, and maybe a bit
+   blurry … the image/logo isn't a focus for the app, it's part of the
+   atmosphere of the profile"): it sits in the centre of the screen behind
+   everything, big and soft — blurred a little, faint — and the content panels
+   are solid now (flow.css), so it shows around them rather than through them.
+   Round 8's off-to-the-side placement is gone. It still turns very slowly. */
+.ambience::after {
+  --badge: min(108vh, 100vw, 1040px);
+  inset: auto;
+  width: var(--badge);
+  height: var(--badge);
+  left: calc(50% - var(--badge) / 2);
+  top: calc(52% - var(--badge) / 2);
+  background: var(--motif) center / contain no-repeat;
+  opacity: 0.26;
+  filter: blur(6px) saturate(1.1);
+  -webkit-mask-image: radial-gradient(closest-side, #000 80%, transparent 100%);
+  mask-image: radial-gradient(closest-side, #000 80%, transparent 100%);
+  animation: badge-drift 70s ease-in-out infinite alternate;
+}
+@keyframes badge-drift {
+  from { transform: translate3d(0, -2.5%, 0) rotate(-6deg); }
+  to { transform: translate3d(0, 2.5%, 0) rotate(6deg); }
+}
+@media (max-width: 1099px) {
+  .ambience::after {
+    --badge: min(140vw, 700px);
+    top: calc(50% - var(--badge) / 2);
+    opacity: 0.22;
+  }
+}
+
+#ambience-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 1;
+  mix-blend-mode: screen;
+}
+
+/* the page content always sits above the ambience (fixed overlays — trays,
+   sheets, side panels — carry their own z-index and must keep position: fixed) */
+.mock-mode-banner,
+.page-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* ---- per colour: the haze colours only; the motion is shared ---- */
+[data-profile="white"] .ambience .haze {
+  background:
+    radial-gradient(38% 30% at 22% 24%, rgba(250, 248, 242, 0.16), transparent 70%),
+    radial-gradient(34% 28% at 74% 62%, rgba(237, 231, 214, 0.14), transparent 70%),
+    radial-gradient(50% 36% at 50% 100%, rgba(176, 163, 130, 0.22), transparent 70%);
+}
+[data-profile="white"] .ambience .haze.b {
+  background:
+    radial-gradient(30% 26% at 66% 18%, rgba(250, 248, 242, 0.12), transparent 70%),
+    radial-gradient(44% 30% at 30% 78%, rgba(237, 231, 214, 0.12), transparent 70%);
+}
+
+[data-profile="blue"] .ambience .haze {
+  background:
+    radial-gradient(40% 32% at 24% 30%, rgba(0, 80, 216, 0.42), transparent 70%),
+    radial-gradient(34% 28% at 76% 58%, rgba(56, 225, 255, 0.16), transparent 70%),
+    radial-gradient(52% 36% at 50% 104%, rgba(30, 58, 156, 0.5), transparent 70%);
+}
+[data-profile="blue"] .ambience .haze.b {
+  background:
+    radial-gradient(30% 26% at 70% 16%, rgba(56, 225, 255, 0.12), transparent 70%),
+    radial-gradient(44% 30% at 28% 80%, rgba(0, 80, 216, 0.34), transparent 70%);
+}
+
+/* Black (round 6): brighter violet sheets so the motion reads — before, its
+   haze was a near-black violet and the page looked still */
+[data-profile="black"] .ambience .haze {
+  opacity: 0.8;
+  background:
+    radial-gradient(40% 32% at 26% 28%, rgba(124, 58, 237, 0.55), transparent 70%),
+    radial-gradient(30% 26% at 72% 56%, rgba(199, 125, 255, 0.3), transparent 70%),
+    radial-gradient(54% 36% at 50% 104%, rgba(124, 58, 237, 0.42), transparent 70%);
+}
+[data-profile="black"] .ambience .haze.b {
+  opacity: 0.7;
+  background:
+    radial-gradient(28% 24% at 68% 16%, rgba(199, 125, 255, 0.26), transparent 70%),
+    radial-gradient(44% 30% at 30% 80%, rgba(124, 58, 237, 0.4), transparent 70%);
+}
+
+[data-profile="red"] .ambience .haze {
+  background:
+    radial-gradient(40% 32% at 26% 32%, rgba(193, 2, 48, 0.36), transparent 70%),
+    radial-gradient(30% 26% at 74% 54%, rgba(255, 77, 109, 0.16), transparent 70%),
+    radial-gradient(56% 38% at 50% 106%, rgba(122, 4, 36, 0.9), transparent 70%);
+}
+[data-profile="red"] .ambience .haze.b {
+  background:
+    radial-gradient(28% 24% at 70% 18%, rgba(255, 77, 109, 0.12), transparent 70%),
+    radial-gradient(44% 30% at 30% 82%, rgba(193, 2, 48, 0.3), transparent 70%);
+}
+
+[data-profile="green"] .ambience .haze {
+  background:
+    radial-gradient(40% 32% at 24% 28%, rgba(10, 122, 66, 0.42), transparent 70%),
+    radial-gradient(30% 26% at 74% 56%, rgba(74, 255, 160, 0.14), transparent 70%),
+    radial-gradient(54% 36% at 50% 104%, rgba(10, 92, 51, 0.8), transparent 70%);
+}
+[data-profile="green"] .ambience .haze.b {
+  background:
+    radial-gradient(28% 24% at 68% 16%, rgba(74, 255, 160, 0.1), transparent 70%),
+    radial-gradient(44% 30% at 30% 80%, rgba(10, 122, 66, 0.32), transparent 70%);
+}
+
+/* Colorless reads the accent tokens, so a custom colour (round 6) tints the haze */
+[data-profile="colorless"] .ambience .haze {
+  background:
+    radial-gradient(40% 32% at 24% 28%, color-mix(in srgb, var(--accent-soft) 22%, transparent), transparent 70%),
+    radial-gradient(30% 26% at 74% 56%, color-mix(in srgb, var(--accent-soft) 10%, transparent), transparent 70%),
+    radial-gradient(54% 36% at 50% 104%, color-mix(in srgb, var(--accent) 50%, transparent), transparent 70%);
+}
+[data-profile="colorless"] .ambience .haze.b {
+  background:
+    radial-gradient(28% 24% at 68% 16%, color-mix(in srgb, var(--accent-soft) 9%, transparent), transparent 70%),
+    radial-gradient(44% 30% at 30% 80%, color-mix(in srgb, var(--accent-soft) 18%, transparent), transparent 70%);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ambience .haze,
+  .ambience::after {
+    animation: none !important;
+  }
+  #ambience-canvas {
+    display: none;
+  }
+}

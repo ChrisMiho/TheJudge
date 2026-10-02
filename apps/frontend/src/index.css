@@ -1,78 +1,159 @@
-@tailwind base;
 @tailwind components;
+
 @tailwind utilities;
+
+/* REQ-207: one typeface, Inter, self-hosted (a single variable latin file, 48 KB) with the
+   system stack as fallback in the token layer's `--font-body`; no request to a font CDN. */
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/inter-latin.woff2") format("woff2");
+}
 
 /* Automatic mobile-first presentation. These semantic hooks share one fluid
    spacing vocabulary; viewport changes never select a different component tree. */
+
+/* The mockup sets no line height (shell.css), so text takes the browser's `normal`;
+   Tailwind's preflight would otherwise set 1.5 on the root. */
+
+html {
+  line-height: normal;
+}
+
 .page-shell {
   position: relative;
-  min-height: 100vh;
-  /* Look-matching pass (slice L): a faint wash tint, not a flat single colour —
-     `shell.css:31-37`'s `background: var(--surface-wash)` ported onto this
-     suite's own per-profile tokens (`--ground-wash` already carries the
-     colour's hue; `--surface-wash` mixes a small slice of it into the ground
-     rather than the vivid full-strength tone `--ground-wash` is elsewhere,
-     e.g. the AmbientScene haze). The AmbientScene layer (REQ-207) plays
-     behind every page's own content, now as a true fixed viewport layer
-     (see `.ambient-scene` below) rather than scoped to this shell's box. */
-  background: color-mix(in srgb, rgb(var(--ground-wash)) 12%, rgb(var(--ground)));
-  padding-block: var(--layout-page-padding-block);
-  padding-inline: var(--layout-page-padding-inline);
-  color: #f4f4f5;
-}
-
-/* Mock-mode banner — persistent, non-dismissible bar shown only when the app is
-   built/run with the mock AI provider. Static, high-contrast, no motion.
-   Look-matching pass (slice L): restyled per `shell.css:325-332` and moved into
-   normal flow directly under `.app-header` (StagedStepHeader renders it) —
-   no longer `position: fixed` with a measured-height shell offset (REQ-123's
-   prior measured-clearance custom property and data attribute retire with
-   it: a static banner needs no clearance calculation). The full-bleed breakout
-   (`width: 100vw` / negative `margin-inline`) matches the header's own, so the
-   strip spans the viewport edge to edge exactly as the mockup's document-root
-   sibling does, even though it is technically nested inside the width-capped
-   `.page-content` column. */
-.mock-mode-banner {
-  position: static;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  padding: 0.35rem 0.6rem;
-  background-color: rgb(var(--accent) / 0.2);
-  color: #f4f4f5;
-  border-bottom: 1px solid rgb(var(--accent-soft) / 0.35);
-  text-align: center;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-/* Look-matching pass (slice L): replaces `.page-card` — no more bordered,
-   backgrounded, rounded card frame (shell.css:814-819's `.page-content`
-   ported). The width cap, centring, and vertical rhythm between the header
-   and the rest of a destination's content are unchanged from `.page-card`
-   (`--layout-surface-gap` gap, `--layout-panel-padding` vertical padding) —
-   this slice is a look pass, not a spacing pass, and the fluid cap rationale
-   below is `.page-card`'s own (DEC-145, REQ-124), carried over unchanged. */
-.page-content {
-  position: relative;
-  margin-left: auto;
-  margin-right: auto;
   display: flex;
-  width: 100%;
-  max-width: min(48rem, 92vw);
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--surface-wash);
+  color: var(--text-primary);
+}
+
+/* The header slot (`StagedStepHeader` portals the banner header and the
+   mock-mode strip into it): no box of its own, so the sticky header pins to
+   the shell and sits at the top edge (REQ-207). */
+
+.page-shell-header {
+  display: contents;
+}
+
+/* The open Menu tray's host: no box of its own; it carries `data-tray-open`, which
+   `shell.css` keys the tray's slide and its backdrop's fade on. */
+
+.menu-tray-host {
+  display: contents;
+}
+
+/* DEC-150: while the tray is open the ☰ is neither visible nor hit-testable (the component
+   marks it aria-hidden for exactly that span). */
+
+.menu-toggle[aria-hidden="true"] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* REQ-122: the open tray is opaque over the page: a solid ground sits under the mockup's
+   glass gradients, so no page pixel shows through its painted bounds. */
+
+.menu-tray {
+  background-color: var(--surface-ground);
+}
+
+/* REQ-142 wins over the mockup's plain close glyph: the overlay ✕ takes the active
+   colour's light. */
+
+.drawer-panel .overlay-close {
+  color: var(--accent-soft);
+}
+
+/* Sheets still composed as head + body + foot by their screen's slice (printing picker,
+   zone card menu, enrichment dialogs) until that slice ports them to the mockup's own
+   inner markup. */
+
+.sheet-legacy-head {
+  display: flex;
+  align-items: center;
+  padding: 1rem 3.2rem 0.5rem 1rem;
+}
+
+.sheet-legacy-body {
+  padding: 0.5rem 1rem 1rem;
+}
+
+.sheet-legacy-foot {
+  padding: 0.6rem 1rem 1rem;
+  border-top: 1px solid var(--surface-edge);
+}
+
+/* Question History, below 600px: each row keeps its own Delete (REQ-213/DEC-143), a small
+   text control tucked into the row's lower right so the rows keep the mockup's height. */
+
+/* REQ-205: the feedback type pills paint at least 44px (the mockup's are 40px); the
+   negative block margin keeps the sheet's layout exactly the mockup's. */
+.fb-pill {
+  min-height: 44px;
+  margin-block: -2px;
+}
+
+/* The card tile's ⓘ details control and its name-only fallback (CardPresentation), on the
+   shared tokens. The control is a 44px glass disc in the tile's top-right corner. */
+.card-presentation-info {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-ground) 85%, transparent);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.card-presentation-info:hover {
+  background: var(--surface-panel);
+}
+
+.card-presentation-fallback {
+  color: var(--text-primary);
+}
+
+.card-presentation-fallback-name {
+  font-weight: 600;
+}
+
+.history-item {
+  position: relative;
+}
+
+.history-item-delete {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.35rem;
+  min-height: 44px;
+  padding: 0 0.4rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  cursor: pointer;
+}
+
+/* The column's own layout (shell.css gives it width, centring and padding):
+   a flex column with the suite's vertical rhythm between a screen's regions. */
+
+.page-content {
+  display: flex;
   flex-direction: column;
   gap: var(--layout-surface-gap);
-  padding: var(--layout-panel-padding) 0;
-  /* Look-matching pass (slice L): a floor, not a fixed height — a short
-     destination (e.g. Ask a Question's empty state) still gives
-     `.portal-shell-bounds` (anchored to this box, REQ-113) a full-viewport
-     clip region for the open Menu tray, instead of clipping it part-way down
-     the screen at this content's own short height (LOOK-GAPS.md: "the Menu
-     opens inside the old card and is clipped by it … ends at y≈360" — the
-     old card had the same short-content problem; removing it alone does not
-     fix this). Taller content still grows past this floor exactly as before. */
-  min-height: 100vh;
 }
 
 /* Look-matching pass (slice O), requirement 1: Trade Balancer fits the
@@ -84,6 +165,7 @@
    header, banner, and this screen's own `flow-head`/`.tb-scale` take their
    natural height as flex children that don't grow, and `.tb` (below) takes
    the remainder via `flex: 1`. Only `.tb-entries` (further below) scrolls. */
+
 .page-shell-fit {
   height: 100dvh;
   overflow: hidden;
@@ -102,6 +184,7 @@
    `<main>`'s own edges, which are the viewport's edges (no side padding wide
    enough to matter at these widths), so the page still never scrolls — the
    clip just moved one box up, where it costs nothing to look at. */
+
 .page-content-wide-fit {
   max-width: min(56rem, 94vw);
   height: 100%;
@@ -113,129 +196,36 @@
    height-fit behaviour `.page-content-wide-fit` uses above). Review 1 fix
    (finding 1): no `overflow: hidden` here either, for the same reason as
    `.page-content-wide-fit` above — `.page-shell-fit` keeps the no-scroll fit. */
+
 .page-content-narrow-fit {
   height: 100%;
   min-height: 0;
 }
 
-/* Look-matching pass (slice L): the sticky, full-bleed banner header
-   (`shell.css:63-81`'s `.app-header`), ported onto `StagedStepHeader`'s
-   existing `1fr auto 1fr` grid (REQ-139's PortalSlot column, the centred
-   brand, the optional `rightSlot`) — same shape, so no structural change to
-   that grid, only to its own styling and placement. `width: 100vw` plus the
-   negative `margin-inline` breaks the header out of `.page-content`'s
-   width-capped, centred column so it spans the full viewport edge to edge
-   (matching the mockup's header, which is a document-root sibling of the
-   content column) while staying a normal in-flow child — `position: sticky`
-   then pins it to the viewport top as the rest of the page scrolls under it,
-   exactly as a true document-root sticky header would. */
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  min-height: 64px;
-  padding: 0.4rem 0.6rem;
-  background:
-    radial-gradient(40% 140% at 50% 120%, rgb(var(--accent) / 0.42) 0%, transparent 70%),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, rgb(var(--accent-strong)) 28%, rgb(var(--ground))) 0%,
-      color-mix(in srgb, rgb(var(--panel)) 94%, transparent) 100%
-    );
-  border-bottom: 1px solid rgb(var(--accent-soft) / 0.38);
-  box-shadow: 0 10px 30px -18px rgb(var(--accent) / 0.7);
-  backdrop-filter: blur(8px);
-  overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .app-header {
+@media (min-width: 768px) {.app-header {
     min-height: 68px;
   }
-}
-
-/* Brand mark, restyled per `shell.css:216-259`: a breathing orb showing the
-   active colour's motif, a gradient wordmark, and an uppercase tagline below
-   it — replacing the plain gradient-text-only mark. `BrandMark` reads the
-   motif itself via `useActiveThemeMotif` (REQ-201) so every mount (header,
-   Menu tray brand row, feedback success state) shows the current colour with
-   no prop threading. */
-.brand-mark {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  line-height: 1.05;
-}
-
-.brand-mark .orb {
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  color: #f4f4f5;
-  /* No motif image asset exists in this codebase (see BrandMark.tsx's own
-     comment) — a radial accent wash stands in for the mockup's per-colour
-     `motifs/<colour>.svg`, with `MotifGlyph` (the Theme band's own simple
-     shape-per-profile SVG) centred on top via `currentColor`. */
-  background:
-    radial-gradient(circle at 35% 30%, rgb(var(--accent-soft) / 0.9), rgb(var(--accent)) 70%), rgb(var(--ground));
-  box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.55),
-    0 0 18px rgb(var(--accent) / 0.75);
-  animation: orb-breathe 4.5s ease-in-out infinite;
 }
 
 @keyframes orb-breathe {
   0%,
   100% {
     box-shadow:
-      0 0 0 1px rgb(var(--accent-soft) / 0.55),
-      0 0 14px rgb(var(--accent) / 0.65);
+      0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent),
+      0 0 14px color-mix(in srgb, var(--accent) 65%, transparent);
   }
   50% {
     box-shadow:
-      0 0 0 1px rgb(var(--accent-soft) / 0.85),
-      0 0 26px rgb(var(--accent) / 0.95);
+      0 0 0 1px color-mix(in srgb, var(--accent-soft) 85%, transparent),
+      0 0 26px color-mix(in srgb, var(--accent) 95%, transparent);
   }
-}
-
-.brand-mark .brand-text {
-  display: grid;
-  text-align: left;
-}
-
-.brand-mark .wordmark {
-  font-weight: 800;
-  font-size: 1.2rem;
-  letter-spacing: -0.01em;
-  background: linear-gradient(90deg, rgb(var(--accent-soft)), color-mix(in srgb, rgb(var(--accent-soft)) 45%, #e2e8f0));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.brand-mark .tagline {
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #a1a1aa;
-  margin-top: 0.15rem;
 }
 
 /* Quiet route-chunk placeholder (DEC-157 / NFR-014). The normal PageShell and
    StagedStepHeader stay present while the destination module arrives; this
    token-sized content region prevents the card from collapsing without
    inventing viewport fill or motion for a sub-second code fetch. */
+
 .destination-load-fallback {
   display: grid;
   min-height: calc(
@@ -250,6 +240,12 @@
    rendered layout stays pixel-identical to before this wrapper existed. It
    exists purely so full-bleed destinations get the same `ShellBounds`
    positioning/clipping anchor `.page-content` gets (REQ-113). */
+
+.page-shell-bleed-content {
+  padding-block: var(--layout-page-padding-block);
+  padding-inline: var(--layout-page-padding-inline);
+}
+
 .page-shell-bleed {
   display: block;
   width: 100%;
@@ -259,32 +255,6 @@
      tall, so this rarely binds, but it costs nothing to keep both variants
      consistent. */
   min-height: 100vh;
-}
-
-/* Registered by `ShellBounds` (one per `PageShell`) as the Menu drawer's
-   portal target and clip box: sized to the shell's real content box via
-   `inset: 0` (out of flow, so it never inflates that box's height), clipped
-   at the shell's actual edges, and following whatever radius the shell
-   itself has (`.page-content`'s unset/0 since slice L retired the bordered
-   card frame, or full-bleed's unset/0) with no per-variant hardcoding — this
-   is what produces the matching bottom-left
-   radius for free. `pointer-events: none` keeps the box itself from
-   intercepting clicks on real shell content around/behind it; the drawer
-   portaled inside re-enables `pointer-events: auto` for itself. */
-.portal-shell-bounds {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  border-radius: inherit;
-  pointer-events: none;
-  /* Look-matching pass (slice L, review 1 fix — finding 2): `z-index: auto` (the
-     prior value) let `.app-header`'s own `z-index: 20` (sticky, a stacking
-     context) paint above whatever the Menu drawer portals in here, because this
-     box's children are compared in `.app-header`'s own ancestor stacking context,
-     not a new one of this box's own. One above the header's 20 is enough to put
-     the portaled drawer and its backdrop back on top, matching the mockup (the
-     Ask a Question row was unreachable and History was clipped in half). */
-  z-index: 21;
 }
 
 /* Look-matching pass (slice L): no corner to flush against any more — the
@@ -298,361 +268,18 @@
    button outside the header's own box. Kept as an empty, documented hook
    (rather than deleted outright) since `FeaturePortalMenu`/its tests still
    reference the class name for the portal container itself. */
+
+.portal-slot,
+.portal-slot-tab {
+  display: flex;
+}
+
 .portal-slot-tab {
   margin: 0;
 }
 
-/* Feature-portal corner rail (DEC-122, bounded by DEC-137): the trigger reads as
-   the radial-gradient glow area — no border, no separate button/pill layered on
-   top — anchored at the rail's own top-left corner and fading to fully
-   transparent well inside the painted extent so it never reads as a clipped,
-   pasted-on box (the earlier hard-edged-rectangle attempt this replaced).
-
-   DEC-137 splits *painted* extent from *interactive* extent. The gradient
-   reaches full transparency at 78% of its own box, so the element that paints it
-   was mostly invisible-but-tappable chrome sitting at z-index 3 above real
-   destination content: on Life Tracker it shadowed 75x111px (8,325px^2) of the
-   "Decrease life for Player 1" control, turning a life tap into a Menu open
-   mid-game. The gradient therefore moves to a `pointer-events: none`
-   ::before that keeps the exact painted extent it always had, while the button
-   itself shrinks to the icon band that actually accepts taps.
-
-   Height — not width — is the dimension that fixes this: destination content on
-   Life Tracker begins just below the icon band, so capping height drops the
-   overlap to zero while width is free. The 5.5rem width is deliberately KEPT:
-   the icon is centred in it, and narrowing the box to the icon's own width would
-   re-centre the icon 16px to the left, which DEC-137 explicitly does not accept.
-   See REQ-114 — compliance here is hit-tested, not eyeballed.
-
-   Position (REQ-139): the rail is `relative`, not `absolute`, so its
-   interactive band is a real in-flow box inside the header's left grid column.
-   Absolutely positioning it took the band out of flow, which is why the answered
-   workspace had to reserve matching clearance above "View context" with a one-off
-   `.adaptive-context-trigger` margin. In flow, the header row itself accounts for the
-   band and the shared `--layout-surface-gap` tokens own everything below it.
-
-   Look-matching pass (slice L): the box itself is now the painted extent too
-   — `shell.css:287-301`'s `.app-header .menu-toggle` sizing (50px, 54px at
-   768px+) — replacing DEC-137's split "5.5rem x 3.5rem interactive band
-   inside a 5.5rem x 10.5rem decorative glow" shape. DEC-137 existed to keep
-   the glow's corner-flush appearance against the old `.page-card` border
-   without extending the *tappable* area over destination content below it;
-   `.app-header` is now a fixed-height row with its own background (above),
-   so there is no card corner to flush against and no destination content
-   for an oversized glow to sit over. `position: relative` / `z-index: 3`
-   stay (still a header control above the ambient scene), though neither
-   anchors a decorative ::before layer any more. */
-.portal-menu-rail {
-  position: relative;
-  z-index: 3;
-  width: 50px;
-  height: 50px;
-  min-width: 50px;
-  min-height: 50px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  color: rgb(244 244 245);
-  border-radius: 0.6rem;
-  transition: background-color var(--motion-fast) var(--motion-ease-out);
-}
-
-@media (min-width: 768px) {
-  .portal-menu-rail {
-    width: 54px;
-    height: 54px;
-    min-width: 54px;
-    min-height: 54px;
-    font-size: 1.5rem;
-  }
-}
-
-/* Shared sizing for both rail icons (DEC-126) — matching inline stroke-SVGs
-   (Menu's three-line hamburger, History's clock-in-circle) instead of the
-   previous mixed text-glyph/scaleX-stretch approach. */
-.portal-menu-rail-icon {
-  display: block;
-  width: 1.35rem;
-  height: 1.35rem;
-}
-
-/* Hover/expanded now darkens the button's own background-color directly —
-   there is no decorative ::before layer left to carry a gradient (see the
-   rail's own comment above). */
-.portal-menu-rail:hover,
-.portal-menu-rail:has([aria-expanded="true"]),
-.portal-menu-rail[aria-expanded="true"] {
-  background-color: rgb(var(--accent) / 0.14);
-  color: rgb(244 244 245);
-}
-
-/* Two-zone variant (DEC-126, rearranged by DEC-137): once a destination has a
-   history trigger, the rail's ambient-glow area hosts two equal-weight sibling
-   zones — Menu leading, History trailing — instead of Menu alone.
-
-   DEC-126 stacked these zones and used a fluid clamp() height to hold NFR-001's
-   44px-per-zone floor. That cannot work: only ~70px of vertical space exists
-   between the rail's top and the step-name eyebrow below it, while two stacked
-   44px zones need 88px. The clamp resolved to ~76px at 430px wide, so the zones
-   overflowed their own rail by 12px and that overflow landed on the eyebrow —
-   the floor was being met only by spilling onto destination content.
-
-   Side-by-side resolves both constraints at once: two 2.75rem zones fit the
-   rail's existing 5.5rem width exactly, the band is 2.75rem tall, and it clears
-   the eyebrow by ~26px. The clamp() is retired because the constraint that
-   motivated it is gone. */
-.portal-menu-rail-split {
-  height: 2.75rem;
-  padding: 0;
-  flex-direction: row;
-  align-items: stretch;
-}
-
-/* The split rail keeps its own original painted extent, unchanged — only the
-   arrangement of the zones inside it moves. */
-.portal-menu-rail-split::before {
-  height: clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem);
-}
-
-.portal-menu-rail-zone {
-  flex: 1;
-  min-width: 2.75rem;
-  min-height: 2.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-/* Separator follows the arrangement: a vertical rule between side-by-side zones
-   where DEC-126's stacked pair used a horizontal one. */
-.portal-menu-rail-zone + .portal-menu-rail-zone {
-  border-left: 1px solid rgb(var(--accent-soft) / 0.35);
-}
-
-/* DEC-150/REQ-127: while the Menu tray is open, the corner-rail Menu trigger (and, on
-   History-bearing destinations, the History zone) must not paint through or remain
-   hit-testable above the open tray, and must not be reachable by keyboard. The rail stays
-   mounted (same DOM node) rather than being removed, so other chrome that restores focus to
-   it by reference across the open/close cycle keeps working; visibility: hidden removes it
-   from paint and from elementFromPoint hit-testing while pointer-events: none is
-   belt-and-suspenders. */
-.portal-menu-rail-inert {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-/* Full-height drawer sliding in from the left edge (DEC-122, amended by
-   DEC-133): overlays from the same top-left corner as the rail (so it reads
-   as originating from the rail, not dropping from a header seam),
-   transform-only motion (see .portal-menu-drawer-motion). Its own left
-   column of content clears the rail's icon zone via
-   .portal-menu-drawer-inner's left padding.
-   `position: sticky; top: 0` (not `absolute`) so that, when portaled into
-   the resolved `.portal-shell-bounds` node (REQ-113), the drawer tracks the
-   on-screen top of the outer shell while a tall/scrollable destination
-   scrolls, instead of a fixed point in the document. `height: 100dvh` is a
-   viewport-scale cap, not a fixed rem guess: on a shell taller than the
-   viewport the drawer fills the visible portion; on a shell shorter than
-   the viewport, `.portal-shell-bounds`'s `overflow: hidden` clips the excess
-   at the shell's real (shorter) bottom edge — the same clip that produces
-   the matching bottom-left radius there. `pointer-events: auto` re-enables
-   interaction, since the clip box itself is `pointer-events: none`.
-
-   Look-matching pass (slice L): width and surface restyled per
-   `shell.css:347-366`'s `.menu-tray` (`min(20rem, 86vw)`, the two-stop
-   gradient background, the stronger drop shadow) — `position: sticky`,
-   `left/top: 0`, `height: 100dvh`, `overflow-y: auto` and the portal/clip
-   mechanics above (REQ-113) are unchanged; only the painted surface moves.
-   `isolation: isolate` keeps `.portal-menu-drawer-flair`'s own negative
-   z-index glow contained to this box rather than escaping behind the shell
-   it's portaled into. */
-.portal-menu-drawer {
-  position: sticky;
-  left: 0;
-  top: 0;
-  z-index: 2;
-  width: min(20rem, 86vw);
-  height: 100dvh;
-  overflow-y: auto;
-  pointer-events: auto;
-  isolation: isolate;
-  border-top-left-radius: 1.5rem;
-  background:
-    radial-gradient(90% 30% at 0% 100%, rgb(var(--accent) / 0.28) 0%, transparent 70%),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, rgb(var(--panel)) 96%, transparent),
-      color-mix(in srgb, rgb(var(--panel)) 92%, rgb(var(--ground)))
-    );
-  border-right: 1px solid rgb(var(--accent-soft) / 0.35);
-  box-shadow: 24px 0 60px -30px rgb(var(--accent) / 0.6);
-}
-
-/* Look-matching pass (slice L): the dimming/blur layer behind the open tray
-   (`shell.css:336-345`'s `.menu-tray-backdrop`) — a new, purely decorative
-   sibling (`aria-hidden`, `pointer-events: none`) alongside the drawer.
-   Dismissing the Menu by clicking outside it already works through the
-   existing document-level outside-click handler (`useOutsideDismiss` in
-   `FeaturePortalMenu.tsx`), so this layer only needs to paint, never to
-   receive the click. */
-.portal-menu-drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(2px);
-  pointer-events: none;
-}
-
-/* Look-matching pass (slice L): the foot-of-tray glow (`shell.css:374-388`'s
-   `.tray-flair::after`) — the static-plus-one-keyframe CSS pool of the
-   colour's light the Theme block sits above, reproduced per
-   `DESIGN-BRIEF.md`'s non-goal A1: the mockup's canvas-drawn falling-leaves/
-   runes/fog shapes (`ambience.js` `mountFlair`) are script/canvas animation
-   and are not ported — only the CSS glow is. `inset: 0` + negative z-index
-   stay inside `.portal-menu-drawer`'s own `isolation: isolate` stacking
-   context (above), so the glow never escapes behind the shell the drawer is
-   portaled into. */
-.portal-menu-drawer-flair {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(90% 28% at 30% 104%, rgb(var(--accent) / 0.4) 0%, transparent 70%);
-  animation: portal-menu-drawer-flair-twinkle 6s ease-in-out infinite alternate;
-}
-
-@keyframes portal-menu-drawer-flair-twinkle {
-  from {
-    opacity: 0.55;
-  }
-  to {
-    opacity: 0.9;
-  }
-}
-
-/* Look-matching pass (slice L): the divider before the Menu's one action
-   entry (Send feedback) — `shell.css:540-543`'s `.tray-divider`. */
-.portal-menu-drawer-divider {
-  height: 1px;
-  margin: 0.25rem 1rem;
-  background: linear-gradient(90deg, rgb(var(--accent-soft) / 0.38), transparent);
-}
-
-/* REQ-113/REQ-207: at 768px+ the tray stops being a full-height, shell-docked
-   panel and becomes a floating card inset from the viewport edges, rounded,
-   sized to its own content rather than the shell's full height. */
-@media (min-width: 768px) {
-  .portal-menu-drawer {
-    left: 1rem;
-    top: 1rem;
-    margin-bottom: 1rem;
-    height: auto;
-    max-height: calc(100dvh - 2rem);
-    border-radius: 1.5rem;
-    border: 1px solid rgb(var(--accent-soft) / 0.35);
-    border-right: 1px solid rgb(var(--accent-soft) / 0.35);
-  }
-}
-
-/* `min-height: 100%` (not a fixed height) stretches this flex column to the
-   drawer's full 100dvh on short content — giving the brand mark's `mt-auto`
-   (below) leftover space to pin against — while still letting it grow past
-   100% when entries + Theme content is taller, so the drawer's own
-   `overflow-y: auto` scrolls that excess exactly as before. */
-.portal-menu-drawer-inner {
-  min-height: 100%;
-  /* No horizontal padding: entry rows and the Theme block carry their own insets so
-     their separator rules stay full-bleed and meet the drawer's left wall. */
-  padding: 0.75rem 0 0.75rem 0;
-}
-
-/* One menu entry: the left inset that clears the corner rail's icon zone lives on the
-   row itself rather than on the drawer's padding box, so the row's bottom border spans
-   the drawer edge to edge. The inset tracks the rail's own painted width at each
-   breakpoint (DEC-137 caps the split rail at 5.5rem x 3.5rem): a flat 3.5rem cleared the
-   narrow rail but left the first row's label starting underneath the wider desktop band,
-   which read as the Menu trigger sitting on top of the first destination (DEC-147). */
-.portal-menu-drawer-row {
-  position: relative;
-  padding: 0.5rem 0.75rem 0.5rem 3.5rem;
-}
-
-/* Look-matching pass (slice L): fixes a real, pre-existing bug LOOK-GAPS.md
-   caught — this class was referenced on the Question History row's icon
-   (FeaturePortalMenu.tsx) but never defined, so the inline SVG rendered at
-   its unconstrained natural size (~100px tall in the capture) instead of a
-   glyph. `shell.css:477-550`'s 28px glyph column fixes the size and doubles
-   as this slice's intended look-match. */
-.portal-menu-drawer-row-icon {
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-  color: rgb(var(--accent-soft));
-}
-
-@media (min-width: 640px) {
-  .portal-menu-drawer-row {
-    padding-left: 5.5rem;
-  }
-}
-
-/* Look-matching pass (slice L): the current row's left accent bar
-   (`shell.css:517-527`'s `.tray-nav-list button[aria-current="page"]::before`)
-   — the existing `bg-zinc-800` active fill (FeaturePortalMenu.tsx) stays;
-   this adds the glowing bar the mockup draws beside it. */
-.portal-menu-drawer-row[aria-current="true"]::before {
-  content: "";
-  position: absolute;
-  left: 0.4rem;
-  top: 20%;
-  bottom: 20%;
-  width: 3px;
-  border-radius: 3px;
-  background: rgb(var(--accent-soft));
-  box-shadow: 0 0 12px rgb(var(--accent-soft) / 0.8);
-}
-
-/* Theme block: sits well below the rail's icon zone, so it takes a normal inset (a
-   3.5rem one would squeeze the 5-swatch grid). The last entry row's own bottom border
-   is the rule above it, so this block adds no second line of its own. */
-.portal-menu-drawer-section {
-  padding: 0.75rem 0.75rem 0 0.75rem;
-}
-
-/* Quiet decorative brand mark (REQ-113 item 4, DEC-133): non-interactive
-   (`pointer-events: none` — belt-and-suspenders alongside the `aria-hidden`
-   marker element and BrandMark's no-onClick plain-text rendering) and
-   visually muted so it reads as ambient chrome, not another action. No
-   height-detection logic decides whether this renders — a short shell
-   clips it via `.portal-shell-bounds`'s `overflow: hidden` (slice A), the
-   same mechanism that clips the rest of the drawer's excess height. */
-.portal-menu-drawer-brand {
-  pointer-events: none;
-  opacity: 0.35;
-  text-align: center;
-}
-
-@keyframes portal-menu-drawer-enter {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-.portal-menu-drawer-motion {
-  animation: portal-menu-drawer-enter var(--motion-fast) var(--motion-ease-out) both;
-}
-
 /* Inner panel — standard bordered content block; absorbs space-y */
+
 .panel-inner {
   border-radius: 1rem;
   border: 1px solid rgb(63 63 70 / 0.7);
@@ -660,27 +287,8 @@
   padding: var(--layout-content-padding);
 }
 
-/* Look-matching pass (slice L): the Theme band's pill container
-   (`shell.css:571-592`'s `.theme-orbs`) — the existing scroll-arrow/snap
-   mechanics (ThemeSection.tsx) are unchanged; this wraps the same track in
-   the mockup's pill chrome. */
-.theme-band-track {
-  padding: 3px;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.6);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.04),
-    0 2px 10px -6px rgb(0 0 0 / 0.8);
-}
-
 .panel-inner > * + * {
   margin-top: var(--layout-compact-gap);
-}
-
-.staged-step-brand {
-  font-size: clamp(1.5rem, 3vw + 0.75rem, 1.875rem);
-  line-height: 1.2;
 }
 
 .step-eyebrow {
@@ -691,6 +299,7 @@
 /* REQ-209: the four-station progress rail (Game · Zones · Cards · Context). A thin
    track behind the stations, filled up to the current one; each station is its own
    button so the rail is navigation, not just a progress readout. */
+
 .stations-rail {
   position: relative;
   display: grid;
@@ -716,7 +325,7 @@
   top: 0.9rem;
   height: 2px;
   max-width: 75%;
-  background: linear-gradient(90deg, rgb(var(--accent-soft)), rgb(var(--accent-strong)));
+  background: linear-gradient(90deg, var(--accent-soft), var(--accent-strong));
   z-index: 0;
   transition: width var(--motion-slow) var(--motion-ease-out);
 }
@@ -751,17 +360,17 @@
   align-items: center;
   justify-content: center;
   border-radius: 9999px;
-  border: 2px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground));
+  border: 2px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: var(--surface-ground);
   font-size: 0.68rem;
   font-weight: 700;
   color: rgb(161 161 170);
 }
 
 .stations-rail-station[data-done="true"] .stations-rail-node {
-  border-color: rgb(var(--accent));
-  background: rgb(var(--accent));
-  color: rgb(var(--accent-contrast));
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--accent-contrast);
 }
 
 .stations-rail-station[aria-current="step"] {
@@ -770,11 +379,11 @@
 }
 
 .stations-rail-station[aria-current="step"] .stations-rail-node {
-  border-color: rgb(var(--accent-soft));
-  color: rgb(var(--accent-soft));
+  border-color: var(--accent-soft);
+  color: var(--accent-soft);
   box-shadow:
-    0 0 0 4px rgb(var(--accent) / 0.3),
-    0 0 18px rgb(var(--accent-soft) / 0.6);
+    0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent);
   animation: node-pulse 2.6s ease-in-out infinite;
 }
 
@@ -782,18 +391,19 @@
   0%,
   100% {
     box-shadow:
-      0 0 0 4px rgb(var(--accent) / 0.3),
-      0 0 14px rgb(var(--accent-soft) / 0.5);
+      0 0 0 4px color-mix(in srgb, var(--accent) 30%, transparent),
+      0 0 14px color-mix(in srgb, var(--accent-soft) 50%, transparent);
   }
   50% {
     box-shadow:
-      0 0 0 6px rgb(var(--accent) / 0.22),
-      0 0 26px rgb(var(--accent-soft) / 0.8);
+      0 0 0 6px color-mix(in srgb, var(--accent) 22%, transparent),
+      0 0 26px color-mix(in srgb, var(--accent-soft) 80%, transparent);
   }
 }
 
 /* Horizontal left-to-right strip in add order, region-scrolling on its own x-axis rather
    than the page (DEC-151 part 3, REQ-130) — supersedes the prior 2-column vertical grid. */
+
 .zone-card-grid {
   --zone-card-grid-gap: var(--layout-compact-gap);
   gap: var(--zone-card-grid-gap);
@@ -816,6 +426,7 @@
 }
 
 /* Full-width presentation plus enrichment controls makes row height responsive. */
+
 .scroll-cap-4-enrichment {
   --enrichment-card-row-gap: var(--layout-compact-gap);
   max-height: 70dvh;
@@ -835,6 +446,7 @@
    full-column image forces page scroll on the hosting step, which REQ-129 makes the
    binding constraint on all of DEC-160's growth. Recorded on the Quick Question pre-submit,
    View Context, and In-Depth zone collection rows of screen-layout.md. */
+
 .card-shell-column {
   max-width: min(100%, 20rem);
 }
@@ -847,18 +459,18 @@
    than a component fork or a reinstated shared `max-h-32`. Recorded on the Quick Question
    pre-submit, In-Depth Enrichment, View Context, and In-Depth zone collection rows of
    screen-layout.md. */
+
 .card-shell-column img {
   width: auto;
   max-height: 25dvh;
   margin-inline: auto;
 }
 
-@media (min-width: 768px) {
-  .card-shell-column {
+@media (min-width: 768px) {.card-shell-column {
     max-width: 24rem;
   }
 
-  .card-shell-column img {
+.card-shell-column img {
     max-height: 42dvh;
   }
 }
@@ -902,13 +514,13 @@
    original full-width treatment at the sm breakpoint via Tailwind's sm:self-stretch —
    desktop keeps its existing sizing. min-height guarantees the NFR-001 44px touch
    target floor holds at the smaller mobile padding/font size too. */
+
 .conversation-start-over {
   min-height: 44px;
   padding-block: 0.5rem;
 }
 
-@media (min-width: 640px) {
-  .conversation-start-over {
+@media (min-width: 640px) {.conversation-start-over {
     padding-block: 0.625rem;
   }
 }
@@ -1002,13 +614,13 @@
 }
 
 .conversation-markdown a {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
 
 .conversation-markdown blockquote {
-  border-left: 2px solid rgb(var(--accent) / 0.4);
+  border-left: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
   padding-left: 0.75em;
   color: #d4d4d8;
 }
@@ -1044,48 +656,9 @@
    2.75rem band). The rail is now in flow (see .portal-menu-rail), so the header
    accounts for its band and the shared --layout-surface-gap owns this spacing. Only
    the NFR-001 touch-target floor remains. */
+
 .adaptive-context-trigger {
   min-height: 44px;
-}
-
-/* History drawer (DEC-125, amended by DEC-134): a left-edge, full-height drawer at every
-   viewport rather than a bottom sheet below 768px. As a bottom sheet it sized itself to its
-   content, so a short list (one saved conversation, or an empty one) rendered a small strip
-   pinned to the bottom under a screen's worth of empty scrim — read as dead space, not as a
-   panel. It also sits behind the same corner-rail zone as the Menu drawer, which is a
-   left-edge full-height drawer at every width; matching that geometry makes the two rail
-   zones open the same shape of surface. The 768px+ presentation is unchanged. */
-.conversation-history-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  display: flex;
-  align-items: stretch;
-  justify-content: flex-start;
-  background: rgb(9 9 11 / 0.72);
-  animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
-}
-
-.conversation-history-surface {
-  width: min(22rem, 88vw);
-  overflow-y: auto;
-  border-radius: 0 1rem 1rem 0;
-  padding: var(--layout-panel-padding);
-  /* Slides in from the left edge it is anchored to, like the Menu drawer — the shared
-     `adaptive-context-enter` rises from the bottom, which only read correctly while this
-     was a bottom sheet. */
-  animation: conversation-history-enter var(--motion-base) var(--motion-ease-emphasized) both;
-}
-
-@keyframes conversation-history-enter {
-  from {
-    opacity: 0;
-    transform: translateX(-1.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
 }
 
 .adaptive-context-overlay {
@@ -1094,7 +667,7 @@
   z-index: 60;
   display: flex;
   align-items: flex-end;
-  background: rgb(9 9 11 / 0.72);
+  background: color-mix(in srgb, var(--surface-ground) 72%, transparent);
   animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
 }
 
@@ -1102,6 +675,7 @@
    min(85dvh, 48rem)) so a dismissible scrim of >=25% viewport height stays
    reachable above the sheet at 390x844, rather than reading as page content
    showing through. */
+
 .adaptive-context-surface {
   width: 100%;
   max-height: 75dvh;
@@ -1117,186 +691,6 @@
 
 .adaptive-context-content {
   padding-top: var(--layout-content-padding);
-}
-
-/* Card detail popup: superseded by the shared sheet shell below (REQ-208, REQ-128) —
-   `.card-detail-overlay` / `.card-detail-surface` / `.card-detail-header` /
-   `.card-detail-content` all retired; the popup now hosts on `.sheet-shell-*`, whose
-   `.sheet-shell-body` already owns the content-region padding and scroll. */
-
-/* Look-matching pass (slice L, requirement #10): the card detail popup's new
-   hero/typeline/oracle/facts layout, ported from `flow.css:280-317`'s
-   `.detail-panel`. `.sheet-shell-body`'s own padding already wraps
-   `.card-detail-body`, so this hero sits full-bleed inside it via a negative
-   margin equal to that padding, matching the mockup's art filling the sheet's
-   top edge to edge. */
-.card-detail-hero-wrap {
-  display: flex;
-  flex-direction: column;
-}
-
-.card-detail-hero {
-  position: relative;
-  height: 160px;
-  margin: calc(var(--layout-content-padding) * -1) calc(var(--layout-panel-padding) * -1) 0;
-  overflow: hidden;
-  background: rgb(var(--ground));
-}
-
-@media (min-width: 768px) {
-  .card-detail-hero {
-    height: 190px;
-  }
-}
-
-.card-detail-hero-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  display: block;
-  filter: saturate(1.1);
-}
-
-.card-detail-hero-title {
-  position: absolute;
-  left: var(--layout-panel-padding);
-  right: calc(var(--layout-panel-padding) + 2.5rem);
-  bottom: 0.6rem;
-  z-index: 1;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.card-detail-hero-title::before {
-  content: "";
-  position: absolute;
-  inset: -160px calc(var(--layout-panel-padding) * -1) -0.6rem calc(var(--layout-panel-padding) * -1);
-  z-index: -1;
-  background: linear-gradient(
-    180deg,
-    rgb(9 9 11 / 0.15) 0%,
-    transparent 35%,
-    rgb(var(--panel) / 0.4) 75%,
-    rgb(var(--panel)) 100%
-  );
-}
-
-.card-detail-hero-name {
-  margin: 0;
-  font-size: 1.25rem;
-  line-height: 1.1;
-  color: #f4f4f5;
-  text-shadow: 0 2px 12px rgb(0 0 0 / 0.8);
-}
-
-.card-detail-hero-cost {
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: rgb(var(--accent-soft));
-  text-shadow: 0 1px 8px rgb(0 0 0 / 0.8);
-  white-space: nowrap;
-}
-
-.card-detail-body {
-  display: grid;
-  gap: 0.7rem;
-  padding-top: 0.5rem;
-}
-
-.card-detail-typeline {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0;
-  font-size: 0.86rem;
-  color: #a1a1aa;
-}
-
-.card-detail-color-dot {
-  width: 10px;
-  height: 10px;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.5);
-}
-
-.card-detail-oracle {
-  position: relative;
-  margin: 0;
-  padding: 0.85rem 0.95rem;
-  border-radius: 0.6rem;
-  background: rgb(var(--ground) / 0.55);
-  border: 1px solid rgb(var(--accent-soft) / 0.28);
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.card-detail-facts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.4rem;
-  margin: 0;
-}
-
-.card-detail-fact {
-  min-width: 0;
-  padding: 0.45rem 0.6rem;
-  border-radius: 0.55rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.35);
-}
-
-.card-detail-fact dt {
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #a1a1aa;
-  margin-bottom: 0.15rem;
-}
-
-.card-detail-fact dd {
-  margin: 0;
-  font-weight: 600;
-  font-size: 0.86rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-detail-fact-price dd {
-  color: rgb(var(--accent-soft));
-}
-
-/* Look-matching pass (slice L): Question History row trimmings —
-   `shell.css:786-789`'s `.mode-chip` / `.h-chev` / `.history-foot`. */
-.mode-chip {
-  display: inline-block;
-  padding: 0.02rem 0.45rem;
-  border-radius: 999px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgb(var(--accent-soft));
-  border: 1px solid rgb(var(--accent-soft) / 0.4);
-  background: rgb(var(--accent) / 0.14);
-}
-
-.h-chev {
-  flex: 0 0 auto;
-  color: rgb(var(--accent-soft));
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
-.history-foot {
-  padding: 0.4rem 0.25rem 0;
-  font-size: 0.68rem;
-  color: #a1a1aa;
-  border-top: 1px solid rgb(var(--panel-edge) / 0.7);
 }
 
 .frozen-context-detail-row {
@@ -1315,6 +709,7 @@
 /* `quick-question.html:17` / `in-depth-question.html:14`: both flows cap
    their page column at 36rem instead of the suite's default 48rem
    (`.page-content` above). */
+
 .page-content-narrow {
   max-width: min(36rem, 92vw);
 }
@@ -1336,8 +731,7 @@
   white-space: nowrap;
 }
 
-@media (min-width: 768px) {
-  .flow-head h1 {
+@media (min-width: 768px) {.flow-head h1 {
     font-size: 1.35rem;
   }
 }
@@ -1352,6 +746,7 @@
    rather than nested in a `.flow-head` (`in-depth-question.html:72`'s
    `.idq > .attach` — lower specificity than `.flow-head .attach` above, so it
    only ever applies where that more specific rule does not). */
+
 .attach {
   display: flex;
   gap: 0.5rem;
@@ -1364,6 +759,7 @@
    .attach` (that rule sets no margin of its own, so nothing there overrode
    it) and shifted its composer head by the same amount. Scoped here, on the
    In-depth row's own second class, so Ask a Question's head is unchanged. */
+
 .idq-attach {
   margin-top: -0.2rem;
 }
@@ -1371,6 +767,7 @@
 /* Look-matching pass (slice O): Trade Balancer's "↺ New trade" chip
    (`trade-balancer.html:214`'s `.head-tools`), sharing `.flow-head`'s own
    row with the title and the phone-only price date. */
+
 .flow-head-tools {
   display: flex;
   align-items: center;
@@ -1380,6 +777,7 @@
 /* The phone-only price date (`.flow-head .asof`, requirement 3) drops to its
    own full-width row under the title/New-trade row, instead of squeezing
    between them. */
+
 .flow-head .asof {
   flex: 1 0 100%;
   order: 3;
@@ -1393,8 +791,8 @@
   min-height: 44px;
   padding: 0 0.7rem;
   border-radius: 0.6rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
   color: #e2e8f0;
   font-size: 0.85rem;
   cursor: pointer;
@@ -1404,12 +802,12 @@
 }
 
 .icon-chip:hover {
-  border-color: rgb(var(--accent));
+  border-color: var(--accent);
 }
 
 .icon-chip[aria-expanded="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .icon-chip:disabled {
@@ -1418,12 +816,13 @@
 }
 
 .icon-chip .glyph {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 1.05rem;
   line-height: 1;
 }
 
 /* the card stage (`flow.css:52-99`) */
+
 .aq-stage {
   position: relative;
   display: flex;
@@ -1432,8 +831,8 @@
   gap: 0.4rem;
   padding: 1.1rem 0.5rem 0.6rem;
   border-radius: 1.1rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel));
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: var(--surface-panel);
   box-shadow: 0 12px 30px -18px rgb(0 0 0 / 0.9);
   overflow: hidden;
 }
@@ -1461,8 +860,7 @@
     filter 320ms ease;
 }
 
-@media (min-width: 768px) {
-  .aq-card {
+@media (min-width: 768px) {.aq-card {
     width: 280px;
   }
 }
@@ -1470,7 +868,7 @@
 .aq-card[data-front="true"] {
   box-shadow:
     0 18px 36px -14px rgb(0 0 0 / 0.85),
-    0 0 28px -10px rgb(var(--accent) / 0.45);
+    0 0 28px -10px color-mix(in srgb, var(--accent) 45%, transparent);
 }
 
 .aq-card[data-neighbor="true"] {
@@ -1499,8 +897,8 @@
   width: 32px;
   height: 32px;
   border-radius: 999px;
-  border: 1px solid rgb(var(--accent-soft) / 0.45);
-  background: rgb(9 9 11 / 0.92);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 45%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 92%, transparent);
   color: #f4f4f5;
   font-size: 0.85rem;
   font-weight: 600;
@@ -1509,12 +907,12 @@
   place-items: center;
   box-shadow:
     0 2px 10px rgb(0 0 0 / 0.6),
-    0 0 12px -4px rgb(var(--accent) / 0.8);
+    0 0 12px -4px color-mix(in srgb, var(--accent) 80%, transparent);
 }
 
 .aq-card-widget.info {
   right: -8px;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .aq-card-widget.remove {
@@ -1522,7 +920,7 @@
 }
 
 .aq-card-widget:hover {
-  border-color: rgb(var(--accent-soft));
+  border-color: var(--accent-soft);
   background: rgb(24 24 27 / 0.98);
 }
 
@@ -1534,8 +932,8 @@
   width: 40px;
   height: 40px;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.82);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 82%, transparent);
   color: #e2e8f0;
   font-size: 1.15rem;
   line-height: 1;
@@ -1543,7 +941,7 @@
 }
 
 .aq-arrow:hover {
-  border-color: rgb(var(--accent-soft));
+  border-color: var(--accent-soft);
 }
 
 .aq-dots {
@@ -1555,7 +953,7 @@
   min-height: 24px;
   padding: 0 0.65rem;
   border-radius: 999px;
-  background: rgb(9 9 11 / 0.72);
+  background: color-mix(in srgb, var(--surface-ground) 72%, transparent);
   border: 1px solid rgb(226 232 240 / 0.12);
   backdrop-filter: blur(4px);
 }
@@ -1568,8 +966,8 @@
 }
 
 .aq-dots .dot[data-on="true"] {
-  background: rgb(var(--accent-soft));
-  box-shadow: 0 0 6px rgb(var(--accent-soft));
+  background: var(--accent-soft);
+  box-shadow: var(--glow-dot);
 }
 
 .aq-dots .n {
@@ -1582,6 +980,7 @@
 }
 
 /* card search, opened from + Add card (`flow.css:169-182`) */
+
 .search-pop {
   display: grid;
   gap: 0.35rem;
@@ -1596,8 +995,8 @@
   min-height: 44px;
   padding: 0 0.8rem 0 2.2rem;
   border-radius: 0.8rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
   color: #e2e8f0;
   font-size: 0.9rem;
 }
@@ -1611,7 +1010,7 @@
   left: 0.8rem;
   top: 50%;
   transform: translateY(-50%);
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .search-results {
@@ -1639,8 +1038,8 @@
 
 .search-results button:hover,
 .search-results button[data-active="true"] {
-  border-color: rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--accent) / 0.1);
+  border-color: color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
 }
 
 .search-results .thumb {
@@ -1668,6 +1067,7 @@
 }
 
 /* the composer: search-pop + q-box share one wrapper (`flow.css:187-216`) */
+
 .composer {
   display: grid;
   gap: 0.6rem;
@@ -1677,6 +1077,7 @@
 /* Look-matching pass (slice N, review 1 fix — finding 3): the Review step's
    "Your question — optional" eyebrow above the composer
    (`in-depth-question.html:584-585` `.q-lbl`). */
+
 .composer .q-lbl {
   margin: -0.15rem 0 -0.35rem 0.2rem;
   font-size: 0.68rem;
@@ -1703,16 +1104,16 @@
   min-width: 0;
   padding: 0.45rem 0.45rem 0.45rem 1.05rem;
   border-radius: 1.6rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.78);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 78%, transparent);
   box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.06),
-    0 8px 24px -16px rgb(var(--accent) / 0.8);
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 6%, transparent),
+    0 8px 24px -16px color-mix(in srgb, var(--accent) 80%, transparent);
   transition: border-color 150ms ease;
 }
 
 .q-box:focus-within {
-  border-color: rgb(var(--accent-soft) / 0.55);
+  border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
 }
 
 .q-box textarea {
@@ -1759,8 +1160,8 @@
   border-radius: 999px;
   cursor: pointer;
   white-space: nowrap;
-  border: 1px solid rgb(var(--accent-soft) / 0.4);
-  background: rgb(var(--accent) / 0.16);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
   color: #e2e8f0;
   font-size: 0.8rem;
   font-weight: 600;
@@ -1775,15 +1176,15 @@
 }
 
 .q-box .deep .glyph {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 1rem;
   line-height: 1;
 }
 
 .q-box .deep:hover:not(:disabled),
 .q-box .deep:focus-visible {
-  background: rgb(var(--accent) / 0.28);
-  border-color: rgb(var(--accent-soft));
+  background: color-mix(in srgb, var(--accent) 28%, transparent);
+  border-color: var(--accent-soft);
 }
 
 /* the split mic/send pill with its 300-char budget ring (`flow.css:224-260`).
@@ -1791,6 +1192,7 @@
    (DESIGN-BRIEF.md: "the requirement wins on behaviour") — each half is 44px
    (Tailwind `h-11 w-11` on the buttons themselves), so the pill is 88px wide
    rather than the mockup's 80px; the ring geometry below is scaled to match. */
+
 .send-pair {
   flex: 0 0 auto;
   display: inline-flex;
@@ -1798,14 +1200,14 @@
   height: 44px;
   border-radius: 999px;
   overflow: hidden;
-  background: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-strong)));
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong));
   color: #fff;
-  box-shadow: 0 6px 16px -8px rgb(var(--accent) / 0.9);
+  box-shadow: var(--lift-send);
   transition: box-shadow 150ms ease;
 }
 
 .send-pair:hover {
-  box-shadow: 0 8px 20px -8px rgb(var(--accent));
+  box-shadow: var(--lift-send-hover);
 }
 
 .send-pair button {
@@ -1834,7 +1236,7 @@
 }
 
 .send-pair-mic[aria-pressed="true"] {
-  background: rgb(var(--accent-soft) / 0.38);
+  background: color-mix(in srgb, var(--accent-soft) 38%, transparent);
   animation: mic-listen 1.1s ease-in-out infinite;
 }
 
@@ -1844,7 +1246,7 @@
     box-shadow: inset 0 0 0 0 transparent;
   }
   50% {
-    box-shadow: inset 0 0 14px rgb(var(--accent-soft) / 0.8);
+    box-shadow: inset 0 0 14px color-mix(in srgb, var(--accent-soft) 80%, transparent);
   }
 }
 
@@ -1881,19 +1283,20 @@
 }
 
 .send-ring .fill {
-  stroke: rgb(var(--accent-soft));
-  filter: drop-shadow(0 0 3px rgb(var(--accent-soft) / 0.7));
+  stroke: var(--accent-soft);
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-soft) 70%, transparent));
   transition:
     stroke-dasharray 120ms ease,
     stroke 200ms ease;
 }
 
 .send-ring .fill.bright {
-  stroke: color-mix(in srgb, rgb(var(--accent-soft)) 55%, #fff);
-  filter: drop-shadow(0 0 5px rgb(var(--accent-soft)));
+  stroke: var(--stroke-bright);
+  filter: drop-shadow(0 0 5px var(--accent-soft));
 }
 
 /* the ruling conversation head and cards strip (`flow.css:345-352`) */
+
 .chat-head {
   display: flex;
   align-items: center;
@@ -1909,8 +1312,7 @@
   color: #e2e8f0;
 }
 
-@media (min-width: 768px) {
-  .chat-head h1 {
+@media (min-width: 768px) {.chat-head h1 {
     font-size: 1.35rem;
   }
 }
@@ -1929,15 +1331,15 @@
   height: 38px;
   flex: 0 0 auto;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
   color: #e2e8f0;
   font-size: 1rem;
   cursor: pointer;
 }
 
 .chat-icon-round:hover {
-  border-color: rgb(var(--accent-soft));
+  border-color: var(--accent-soft);
 }
 
 .chat-cards {
@@ -1946,8 +1348,8 @@
   gap: 0.45rem;
   padding: 0.4rem 0.6rem;
   border-radius: 0.8rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.6);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 60%, transparent);
   overflow-x: auto;
 }
 
@@ -1981,6 +1383,7 @@
 }
 
 /* the message bubbles (`flow.css:355-374`) */
+
 .msg-you {
   max-width: 86%;
   align-self: flex-end;
@@ -1989,11 +1392,11 @@
   border-top-right-radius: 0.3rem;
   background: linear-gradient(
     180deg,
-    color-mix(in srgb, rgb(var(--accent)) 85%, rgb(var(--accent-strong))),
-    rgb(var(--accent-strong))
+    color-mix(in srgb, var(--accent) 85%, var(--accent-strong)),
+    var(--accent-strong)
   );
   color: #fff;
-  box-shadow: 0 8px 22px -12px rgb(var(--accent) / 0.9);
+  box-shadow: var(--lift-message);
   font-size: 0.94rem;
   line-height: 1.5;
 }
@@ -2013,8 +1416,8 @@
   padding: 0.65rem 0.95rem;
   border-radius: 1.1rem;
   border-top-left-radius: 0.3rem;
-  background: rgb(var(--panel));
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: var(--surface-panel);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   box-shadow: 0 8px 22px -14px rgb(0 0 0 / 0.9);
 }
 
@@ -2023,13 +1426,13 @@
   height: 30px;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: rgb(var(--ground));
+  background: var(--surface-ground);
   box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.55),
-    0 0 14px rgb(var(--accent) / 0.7);
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent),
+    0 0 14px color-mix(in srgb, var(--accent) 70%, transparent);
   display: grid;
   place-items: center;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .msg-judge-who {
@@ -2037,7 +1440,7 @@
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   margin-bottom: 0.2rem;
 }
 
@@ -2049,6 +1452,7 @@
 
 /* the round back button + "In-depth details" h1 above the rail
    (`in-depth-question.html:438` `.flow-head .lead`) */
+
 .idq-flow-head {
   display: flex;
   align-items: center;
@@ -2063,14 +1467,14 @@
   color: #e2e8f0;
 }
 
-@media (min-width: 768px) {
-  .idq-flow-head h1 {
+@media (min-width: 768px) {.idq-flow-head h1 {
     font-size: 1.35rem;
   }
 }
 
 /* Look-matching pass (slice N, review 1 fix — finding 3), requirement 7: the
    carry note above the rail (`in-depth-question.html:75-76` `.carry-note`). */
+
 .carry-note {
   margin: -0.2rem 0 0;
   font-size: 0.8rem;
@@ -2078,38 +1482,19 @@
 }
 
 .carry-note b {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-weight: 600;
-}
-
-.icon-round {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
-  color: #e2e8f0;
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.icon-round:hover {
-  border-color: rgb(var(--accent-soft));
 }
 
 /* a themed panel used by every In-depth details step — the same solid fill
    as the Ask a Question stage and the chat bubble (`in-depth-question.html:80-87`) */
+
 .plate {
   position: relative;
   padding: 0.9rem;
   border-radius: 1rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel));
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: var(--surface-panel);
   box-shadow: 0 12px 30px -18px rgb(0 0 0 / 0.9);
 }
 
@@ -2130,6 +1515,7 @@
 
 /* the way forward is the plate's own lit foot bar, replacing free-standing
    Back/Continue buttons (`in-depth-question.html:55-66`) */
+
 .plate-next {
   display: flex;
   align-items: center;
@@ -2140,9 +1526,9 @@
   padding: 0.7rem 1rem;
   min-height: 52px;
   border: 0;
-  border-top: 1px solid rgb(var(--panel-edge) / 0.7);
+  border-top: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   border-radius: 0 0 1rem 1rem;
-  background: linear-gradient(90deg, rgb(var(--accent) / 0.24), rgb(var(--accent) / 0.06));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 24%, transparent), color-mix(in srgb, var(--accent) 6%, transparent));
   color: #e2e8f0;
   font-weight: 600;
   font-size: 0.92rem;
@@ -2153,7 +1539,7 @@
 
 .plate-next:hover:not(:disabled),
 .plate-next:focus-visible {
-  background: linear-gradient(90deg, rgb(var(--accent) / 0.38), rgb(var(--accent) / 0.12));
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 38%, transparent), color-mix(in srgb, var(--accent) 12%, transparent));
 }
 
 .plate-next:disabled {
@@ -2169,7 +1555,7 @@
 }
 
 .plate-next .chev {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 1.3rem;
   line-height: 1;
   flex: 0 0 auto;
@@ -2181,11 +1567,12 @@
    regardless of stylesheet order, without touching any other `<select>` in
    the app (e.g. the Context step's own `.ctx-form .field` selects, already
    styled by a different, already-specific rule). */
+
 select.select-chevron {
   appearance: none;
   background-image:
-    linear-gradient(45deg, transparent 50%, rgb(var(--accent-soft)) 50%),
-    linear-gradient(135deg, rgb(var(--accent-soft)) 50%, transparent 50%);
+    linear-gradient(45deg, transparent 50%, var(--accent-soft) 50%),
+    linear-gradient(135deg, var(--accent-soft) 50%, transparent 50%);
   background-position:
     calc(100% - 1.1rem) 50%,
     calc(100% - 0.8rem) 50%;
@@ -2196,6 +1583,7 @@ select.select-chevron {
 
 /* the stage-shaped shelf container (Cards step) uses the stage's own
    plate-next inset (`in-depth-question.html:66`) */
+
 .stage .plate-next {
   margin: 0.4rem -0.5rem -0.6rem;
   width: calc(100% + 1rem);
@@ -2203,6 +1591,7 @@ select.select-chevron {
 }
 
 /* step 2 — zone tiles glow when checked (`in-depth-question.html:125-138`) */
+
 .zone-tile {
   position: relative;
   display: flex;
@@ -2211,8 +1600,8 @@ select.select-chevron {
   min-height: 52px;
   padding: 0.4rem 0.6rem;
   border-radius: 0.7rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.55);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 55%, transparent);
   cursor: pointer;
   font-size: 0.88rem;
   transition: all 180ms ease;
@@ -2220,11 +1609,11 @@ select.select-chevron {
 }
 
 .zone-tile[data-checked="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
   box-shadow:
-    0 0 22px -6px rgb(var(--accent) / 0.85),
-    inset 0 0 18px -10px rgb(var(--accent-soft));
+    0 0 22px -6px color-mix(in srgb, var(--accent) 85%, transparent),
+    inset 0 0 18px -10px var(--accent-soft);
 }
 
 .zone-tile .mark {
@@ -2232,55 +1621,57 @@ select.select-chevron {
   height: 18px;
   flex: 0 0 auto;
   border-radius: 999px;
-  border: 1.5px solid rgb(var(--panel-edge) / 0.7);
+  border: 1.5px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   display: grid;
   place-items: center;
   font-size: 0.65rem;
-  color: rgb(var(--accent-contrast));
+  color: var(--accent-contrast);
   transition: all 180ms ease;
 }
 
 .zone-tile[data-checked="true"] .mark {
-  background: rgb(var(--accent-soft));
-  border-color: rgb(var(--accent-soft));
-  color: rgb(var(--ground));
-  box-shadow: 0 0 10px rgb(var(--accent-soft));
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+  color: var(--surface-ground);
+  box-shadow: var(--glow-soft-10);
 }
 
 /* step 3 — zone tabs as pills with an accent-soft count (`in-depth-question.html:141-144`) */
+
 .zone-tab-pill {
   flex: 0 0 auto;
   min-height: 40px;
   padding: 0.3rem 0.8rem;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel));
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: var(--surface-panel);
   color: #a1a1aa;
   font-size: 0.82rem;
   cursor: pointer;
 }
 
 .zone-tab-pill b {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-weight: 600;
   margin-left: 0.25rem;
 }
 
 .zone-tab-pill[aria-pressed="true"] {
   color: #e2e8f0;
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 /* the lit reorder hint above the shelf (`in-depth-question.html:169-173`) */
+
 .shelf-hint {
   display: flex;
   align-items: flex-start;
   gap: 0.55rem;
   padding: 0.5rem 0.75rem;
   border-radius: 0.7rem;
-  border: 1px solid rgb(var(--accent-soft) / 0.32);
-  background: rgb(var(--accent) / 0.12);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   font-size: 0.8rem;
   line-height: 1.4;
   color: #e2e8f0;
@@ -2288,6 +1679,7 @@ select.select-chevron {
 
 /* shelf card corner widgets, reusing the Ask a Question stage's own shape
    (`in-depth-question.html:233-243`) */
+
 .shelf-card {
   position: relative;
 }
@@ -2299,8 +1691,8 @@ select.select-chevron {
   width: 26px;
   height: 26px;
   border-radius: 999px;
-  border: 1px solid rgb(var(--accent-soft) / 0.45);
-  background: rgb(9 9 11 / 0.92);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 45%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 92%, transparent);
   color: #f4f4f5;
   font-size: 0.72rem;
   font-weight: 600;
@@ -2309,12 +1701,12 @@ select.select-chevron {
   place-items: center;
   box-shadow:
     0 2px 10px rgb(0 0 0 / 0.6),
-    0 0 12px -4px rgb(var(--accent) / 0.8);
+    0 0 12px -4px color-mix(in srgb, var(--accent) 80%, transparent);
 }
 
 .shelf-card-widget.info {
   right: -6px;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .shelf-card-widget.remove {
@@ -2322,10 +1714,11 @@ select.select-chevron {
 }
 
 .shelf-card-widget:hover {
-  border-color: rgb(var(--accent-soft));
+  border-color: var(--accent-soft);
 }
 
 /* the Stack's order tag straddles the card's bottom edge */
+
 .shelf-card-pos {
   position: absolute;
   left: 50%;
@@ -2337,15 +1730,16 @@ select.select-chevron {
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  background: rgb(9 9 11 / 0.92);
-  color: rgb(var(--accent-soft));
-  border: 1px solid rgb(var(--accent-soft) / 0.5);
-  box-shadow: 0 0 10px -2px rgb(var(--accent) / 0.8);
+  background: color-mix(in srgb, var(--surface-ground) 92%, transparent);
+  color: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 50%, transparent);
+  box-shadow: var(--glow-accent-10);
   white-space: nowrap;
 }
 
 /* step 4 — the context-sheet grid: art beside a compact form
    (`in-depth-question.html:255-277`) */
+
 .ctx-sheet {
   display: grid;
   grid-template-columns: 96px 1fr;
@@ -2354,8 +1748,7 @@ select.select-chevron {
   align-items: start;
 }
 
-@media (min-width: 720px) {
-  .ctx-sheet {
+@media (min-width: 720px) {.ctx-sheet {
     grid-template-columns: 210px 1fr;
     grid-template-areas: "art head" "art form" "nav nav";
     gap: 0.7rem 1.1rem;
@@ -2375,8 +1768,7 @@ select.select-chevron {
   cursor: pointer;
 }
 
-@media (min-width: 720px) {
-  .ctx-art .hero {
+@media (min-width: 720px) {.ctx-art .hero {
     width: 210px;
   }
 }
@@ -2392,6 +1784,7 @@ select.select-chevron {
 /* `.eyebrow` is reused outside `.ctx-head` too, for the Context step's own
    plate-level "Card N of M" + "Skip to review" row
    (`in-depth-question.html:534`) — kept un-scoped so both apply. */
+
 .eyebrow {
   font-size: 0.68rem;
   text-transform: uppercase;
@@ -2406,7 +1799,7 @@ select.select-chevron {
 .eyebrow .link {
   background: transparent;
   border: 0;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 0.68rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2441,12 +1834,12 @@ select.select-chevron {
   min-height: 30px;
   padding: 0 0.6rem;
   border-radius: 0.5rem;
-  border: 1px solid rgb(var(--accent-soft) / 0.45);
-  background: rgb(var(--accent) / 0.18);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
   font-size: 0.82rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .ctx-counter small {
@@ -2499,14 +1892,15 @@ select.select-chevron {
   min-height: 42px;
   font-size: 0.92rem;
   border-radius: 0.6rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.6);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 60%, transparent);
   color: #e2e8f0;
   padding: 0.4rem 0.6rem;
 }
 
 /* targets: one picker, chosen targets sit above it as pills
    (`in-depth-question.html:276-277`) */
+
 .targets {
   display: grid;
   gap: 0.35rem;
@@ -2525,6 +1919,7 @@ select.select-chevron {
 /* Look-matching pass (slice N, review 1 fix — finding 3), requirement 8: Add a
    note / More details as two dashed rows sharing one line
    (`in-depth-question.html:361-374`). */
+
 .ctx-tail {
   display: flex;
   gap: 0.5rem;
@@ -2540,7 +1935,7 @@ select.select-chevron {
   min-height: 44px;
   padding: 0.35rem 0.7rem;
   border-radius: 0.7rem;
-  border: 1px dashed rgb(var(--accent-soft) / 0.35);
+  border: 1px dashed color-mix(in srgb, var(--accent-soft) 35%, transparent);
   background: transparent;
   color: #a1a1aa;
   font-size: 0.84rem;
@@ -2557,12 +1952,12 @@ select.select-chevron {
 .more-row:hover,
 .more-row:focus-visible {
   border-style: solid;
-  border-color: rgb(var(--accent-soft));
+  border-color: var(--accent-soft);
   color: #e2e8f0;
 }
 
 .more-row .up {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .note-row[aria-expanded="true"] {
@@ -2571,6 +1966,7 @@ select.select-chevron {
 }
 
 /* targets as pills with the card's thumbnail (`in-depth-question.html:291-296`) */
+
 .target-pill {
   display: inline-flex;
   align-items: center;
@@ -2578,14 +1974,15 @@ select.select-chevron {
   min-height: 32px;
   padding: 0 0.25rem 0 0.6rem;
   border-radius: 999px;
-  border: 1px solid rgb(var(--accent-soft) / 0.55);
-  background: rgb(var(--accent) / 0.24);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
   color: #e2e8f0;
   font-size: 0.8rem;
 }
 
 /* Look-matching pass (slice N, review 1 fix — finding 3): the target pill's own
    card thumbnail (`in-depth-question.html:296`'s `.pill .thumb`). */
+
 .target-pill .thumb {
   width: 16px;
   height: 22px;
@@ -2616,11 +2013,12 @@ select.select-chevron {
 
 .target-pill button:hover {
   color: #e2e8f0;
-  background: rgb(var(--accent) / 0.3);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 /* step 4 review: one plate, capped-height scroll, zone filter pills
    (`in-depth-question.html:301-319`, `:410-424`) */
+
 .review-plate-head {
   display: flex;
   align-items: center;
@@ -2631,7 +2029,7 @@ select.select-chevron {
 .review-plate-head .link {
   background: transparent;
   border: 0;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 0.72rem;
   cursor: pointer;
   min-height: 32px;
@@ -2654,9 +2052,9 @@ select.select-chevron {
   gap: 0.6rem;
   padding: 0.35rem 0.45rem;
   border-radius: 0.6rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   font-size: 0.84rem;
-  background: rgb(var(--ground) / 0.35);
+  background: color-mix(in srgb, var(--surface-ground) 35%, transparent);
   transition:
     opacity 180ms ease,
     border-color 180ms ease,
@@ -2670,9 +2068,9 @@ select.select-chevron {
 
 .review-row[data-hit="true"] {
   opacity: 1;
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.16);
-  box-shadow: 0 0 18px -6px rgb(var(--accent) / 0.85);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  box-shadow: var(--glow-accent-18);
 }
 
 .review-filters {
@@ -2686,27 +2084,28 @@ select.select-chevron {
   min-height: 32px;
   padding: 0.15rem 0.7rem;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel));
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: var(--surface-panel);
   color: #e2e8f0;
   font-size: 0.76rem;
   cursor: pointer;
 }
 
 .review-filter-pill b {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   margin-left: 0.2rem;
 }
 
 .review-filter-pill[aria-pressed="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.3);
-  box-shadow: 0 0 14px -4px rgb(var(--accent) / 0.8);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+  box-shadow: var(--glow-accent-14);
 }
 
 /* `FrozenGameContextDetails`' own richer (multi-line) row shape keeps its existing
    bordered-card layout — only the filter dim/hit treatment is shared with
    `.review-row` above (`in-depth-question.html:418-420`). */
+
 .context-review-row {
   transition:
     opacity 180ms ease,
@@ -2721,133 +2120,25 @@ select.select-chevron {
 
 .context-review-row[data-hit="true"] {
   opacity: 1;
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.16);
-  box-shadow: 0 0 18px -6px rgb(var(--accent) / 0.85);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 16%, transparent);
+  box-shadow: var(--glow-accent-18);
 }
 
-/* Shared sheet shell (REQ-208): the one pop-up shape for card detail, Question
-   History, the printing picker, Send feedback and the confirm sheet. A bottom
-   sheet below `--sheet-breakpoint` (600px), a floating card centred in the
-   viewport from it up; fixed head/foot, scrolling body only (DEC-117/NFR-011 —
-   structural, scoped to this overlay family). */
-.sheet-shell-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
-  display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  background: rgb(9 9 11 / 0.72);
-  /* Look-matching pass (slice L): the page behind blurs, not only dims
-     (`shell.css:433-447`'s `.sheet-backdrop`). */
-  backdrop-filter: blur(2px);
-  animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
-}
-
-/* Look-matching pass (slice L): the glass shell every sheet adopter (card
-   detail, Send feedback, Question History, the confirm sheet, the printing
-   picker) now shares — `shell.css:872-915`'s `.drawer-panel` surface (the
-   corner accent glow, the blurred/saturated glass, the accent-soft hairline
-   border, the stacked shadow) plus `shell.css:917-935`'s mobile grab handle.
-   `width`, `max-height`, `display`, `flex-direction`, `overflow` and
-   `border-radius` are unchanged from before this slice — only the painted
-   surface and the handle are new. */
-.sheet-shell-surface {
-  position: relative;
-  width: 100%;
-  max-height: 85dvh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 1rem 1rem 0 0;
-  background:
-    radial-gradient(90% 40% at 100% 0%, rgb(var(--accent) / 0.26) 0%, transparent 70%), rgb(var(--panel) / 0.82);
-  backdrop-filter: blur(18px) saturate(1.3);
-  -webkit-backdrop-filter: blur(18px) saturate(1.3);
-  border: 1px solid rgb(var(--accent-soft) / 0.32);
-  box-shadow:
-    0 30px 80px -30px rgb(0 0 0 / 1),
-    0 0 60px -20px rgb(var(--accent) / 0.7),
-    inset 0 1px 0 rgb(255 255 255 / 0.08);
-  animation: adaptive-context-enter var(--motion-base) var(--motion-ease-emphasized) both;
-}
-
-/* Grab handle — mobile bottom-sheet only (hidden at >=600px below). */
-.sheet-shell-surface::before {
-  content: "";
-  position: absolute;
-  top: 6px;
-  left: 50%;
-  width: 40px;
-  height: 4px;
-  margin-left: -20px;
-  border-radius: 4px;
-  background: rgb(244 244 245 / 0.3);
-  z-index: 3;
-}
-
-.sheet-shell-head {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: var(--layout-panel-padding);
-  padding-bottom: var(--layout-compact-gap);
-  border-bottom: 1px solid rgb(63 63 70 / 0.7);
-}
-
-.sheet-shell-body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: var(--layout-content-padding) var(--layout-panel-padding);
-}
-
-.sheet-shell-foot {
-  flex: 0 0 auto;
-  padding: var(--layout-panel-padding);
-  padding-top: var(--layout-compact-gap);
-  border-top: 1px solid rgb(63 63 70 / 0.7);
-}
-
-/* 600px, not the suite's 640/768 bands — REQ-207's sheet-family boundary
-   (DEC-117/NFR-011), scoped to this overlay family only. */
-@media (min-width: 600px) {
-  .sheet-shell-overlay {
-    align-items: center;
-  }
-
-  .sheet-shell-surface {
-    width: min(32rem, 90vw);
-    max-height: min(85dvh, 42rem);
-    border-radius: 1rem;
-  }
-
-  .sheet-shell-surface::before {
-    display: none;
-  }
-}
-
-@media (min-width: 768px) {
-  .scan-video {
+@media (min-width: 768px) {.scan-video {
     aspect-ratio: 3 / 4;
     max-height: none;
   }
 
-  .adaptive-context-overlay {
+.adaptive-context-overlay {
     align-items: stretch;
     justify-content: flex-end;
   }
 
-  .adaptive-context-surface {
+.adaptive-context-surface {
     width: min(30rem, 90vw);
     max-height: none;
     border-radius: 1rem 0 0 1rem;
-  }
-
-  .conversation-history-surface {
-    width: min(30rem, 90vw);
   }
 }
 
@@ -2883,20 +2174,6 @@ select.select-chevron {
   --layout-surface-gap: clamp(0.5rem, 1.25vw, 1rem);
   --layout-compact-gap: clamp(0.375rem, 1vw, 0.75rem);
 
-  /* Default (blue) REQ-200 token set — mirrors the approved Blue profile so first
-     paint matches the default palette before applyPalette.ts's effect runs.
-     Overridden per-palette by applyPalette.ts via inline custom properties on
-     the document root (lib/theme/palettes.ts is the one authoritative source). */
-  --accent: 3 105 161;
-  --accent-strong: 29 78 216;
-  --accent-soft: 125 211 252;
-  --accent-contrast: 255 255 255;
-  --ground: 9 9 11;
-  --ground-wash: 3 105 161;
-  --panel: 24 24 27;
-  --panel-edge: 63 63 70;
-  --focus-ring: 125 211 252;
-
   /* REQ-207's sheet family (shared sheet shell, card detail, printing picker,
      Send feedback, the confirm sheet) switches at 600px — a bottom sheet
      below it, a floating centred card from it — new and structural, scoped to
@@ -2919,11 +2196,12 @@ select.select-chevron {
 }
 
 /* Ambient accent surface contract */
+
 .ambient-accent-surface {
-  border-color: rgb(var(--accent) / 0.24);
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
   box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.04),
-    0 0.5rem 1.5rem rgb(var(--accent-strong) / 0.05);
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 4%, transparent),
+    0 0.5rem 1.5rem color-mix(in srgb, var(--accent-strong) 5%, transparent);
   transition:
     border-color var(--motion-base) var(--motion-ease-out),
     box-shadow var(--motion-base) var(--motion-ease-out);
@@ -2933,18 +2211,19 @@ select.select-chevron {
 .ambient-accent-interactive:focus-visible,
 .ambient-accent-interactive:focus-within,
 .ambient-accent-interactive:not(:disabled):active {
-  border-color: rgb(var(--accent) / 0.44);
+  border-color: color-mix(in srgb, var(--accent) 44%, transparent);
   box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.08),
-    0 0.5rem 1.5rem rgb(var(--accent-strong) / 0.1);
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 8%, transparent),
+    0 0.5rem 1.5rem color-mix(in srgb, var(--accent-strong) 10%, transparent);
 }
 
 .ambient-accent-surface[data-accent-current="true"] {
-  border-color: rgb(var(--accent) / 0.58);
+  border-color: color-mix(in srgb, var(--accent) 58%, transparent);
   box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.12),
-    0 0.5rem 1.5rem rgb(var(--accent-strong) / 0.14);
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 12%, transparent),
+    0 0.5rem 1.5rem color-mix(in srgb, var(--accent-strong) 14%, transparent);
 }
+
 /* End ambient accent surface contract */
 
 body {
@@ -2952,7 +2231,7 @@ body {
   /* REQ-200: a flat dark ground, one colour per profile, no gradient. The
      profile's wash, scene and badge (AmbientScene) layer on top of this
      flat fill rather than the fill itself carrying a gradient. */
-  background: rgb(var(--ground));
+  background: var(--surface-ground);
   color: #e2e8f0;
   font-family:
     Inter,
@@ -2969,8 +2248,8 @@ body {
 }
 
 ::selection {
-  background: rgb(var(--accent-strong));
-  color: rgb(var(--accent-contrast));
+  background: var(--accent-strong);
+  color: var(--accent-contrast);
 }
 
 @keyframes motion-enter {
@@ -3070,11 +2349,6 @@ body {
   animation: motion-exit var(--motion-fast) var(--motion-ease-out) both;
 }
 
-/* Feature portal dropdown open motion — reuses the motion-enter keyframe timing. */
-.portal-menu-motion {
-  animation: motion-enter var(--motion-fast) var(--motion-ease-out) both;
-}
-
 .motion-hover,
 .motion-press,
 .motion-focus {
@@ -3088,7 +2362,7 @@ body {
 }
 
 .motion-focus:focus-visible {
-  outline: 2px solid rgb(var(--accent-soft));
+  outline: 2px solid var(--accent-soft);
   outline-offset: 2px;
   transform: scale(1.01);
 }
@@ -3188,6 +2462,7 @@ body {
  * canvas, no script-driven animation loop (the elapsed clock's own per-second
  * re-render is a plain React state tick, unrelated to these CSS keyframes).
  */
+
 @keyframes wait-inscription-ink-reveal {
   from {
     clip-path: inset(0 100% 0 0);
@@ -3247,7 +2522,7 @@ body {
   position: absolute;
   inset: 4px;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgb(var(--accent-soft) / 1) 0%, rgb(var(--accent) / 1) 75%, transparent 100%);
+  background: radial-gradient(circle, var(--accent-soft) 0%, var(--accent) 75%, transparent 100%);
   opacity: 0.8;
 }
 
@@ -3261,7 +2536,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  border: 1px dashed rgb(var(--accent-soft) / 1);
+  border: 1px dashed var(--accent-soft);
   opacity: 0.55;
   animation: wait-inscription-ring-spin 6s linear infinite;
 }
@@ -3286,7 +2561,7 @@ body {
   width: 3px;
   height: 3px;
   border-radius: 9999px;
-  background: rgb(var(--accent-soft) / 1);
+  background: var(--accent-soft);
   animation: wait-inscription-mote-drift 2.4s var(--motion-ease-out) infinite;
 }
 
@@ -3306,15 +2581,16 @@ body {
  * rule is later in the cascade silently replace the other instead of both
  * playing. The "edge breathes" treatment is a `::after` overlay instead, with
  * its own independent `animation`. */
+
 @keyframes wait-inscription-bubble-breathe {
   0%,
   100% {
     opacity: 0.5;
-    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.12);
+    box-shadow: var(--ring-breathe-rest);
   }
   50% {
     opacity: 1;
-    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.3);
+    box-shadow: var(--ring-breathe-peak);
   }
 }
 
@@ -3339,6 +2615,7 @@ body {
  * tier-up drops in with a slight overshoot; a tier-down lifts and fades.
  * Transform/opacity only (NFR-006); nothing loops idle — each keyframe plays
  * once per tier transition, triggered by the caller re-keying the SVG. */
+
 @keyframes trade-pile-tier-drop-in {
   0% {
     transform: translateY(-14px) scale(0.92);
@@ -3380,7 +2657,7 @@ body {
 }
 
 .trade-pile-richer {
-  filter: drop-shadow(0 0 6px rgb(var(--accent) / 0.45));
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 45%, transparent));
 }
 
 .trade-pile-lighter {
@@ -3393,6 +2670,7 @@ body {
    M) and `.search-pop`/`.search-row`/`.search-results` (slice M) are reused
    as-is for the "＋ Add card"/"▣ Scan" row and its popover — no new chip or
    search-field classes here. */
+
 .tb {
   display: flex;
   flex-direction: column;
@@ -3403,6 +2681,7 @@ body {
 
 /* `trade-balancer.html:30-42` the scale: both sides' totals and piles in one
    band, replacing the gold-pile verdict panel. */
+
 .tb-scale {
   position: relative;
   flex: 0 0 auto;
@@ -3412,8 +2691,8 @@ body {
   gap: 0.5rem;
   padding: 0.55rem 0.8rem 0.5rem;
   border-radius: 0.9rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
 }
 
 .tb-pan {
@@ -3446,8 +2725,8 @@ body {
 }
 
 .tb-pan[data-heavy="true"] .tb-pan-total {
-  color: rgb(var(--accent-soft));
-  text-shadow: 0 0 18px rgb(var(--accent-soft) / 0.6);
+  color: var(--accent-soft);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent);
 }
 
 .tb-pan-count {
@@ -3497,32 +2776,35 @@ body {
   letter-spacing: 0;
 }
 
-@media (min-width: 768px) {
-  .tb-scale {
+@media (min-width: 768px) {.tb-scale {
     padding: 0.6rem 1.1rem;
   }
-  .tb-pan-total {
+
+.tb-pan-total {
     font-size: 1.6rem;
   }
-  .tb-piles-wrap {
+
+.tb-piles-wrap {
     min-width: 320px;
   }
-  .tb-piles {
+
+.tb-piles {
     gap: 1.2rem;
   }
-  .tb-pile {
+
+.tb-pile {
     width: 196px;
     height: 109px;
   }
 }
 
-@media (max-width: 767px) {
-  .tb-scale {
+@media (max-width: 767px) {.tb-scale {
     grid-template-columns: 1fr 1fr;
     gap: 0.2rem 0.5rem;
     padding-top: 0.4rem;
   }
-  .tb-piles-wrap {
+
+.tb-piles-wrap {
     grid-column: 1 / -1;
     grid-row: 1;
     min-width: 0;
@@ -3531,6 +2813,7 @@ body {
 
 /* `trade-balancer.html:84-93` side tabs on phone, two columns on desktop
    (REQ-204). */
+
 .tb-side-tabs {
   display: flex;
   gap: 0.4rem;
@@ -3541,7 +2824,7 @@ body {
   flex: 1;
   min-height: 42px;
   border-radius: 0.7rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   background: transparent;
   color: #a1a1aa;
   font-size: 0.88rem;
@@ -3553,15 +2836,15 @@ body {
 }
 
 .tb-side-tabs button b {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-variant-numeric: tabular-nums;
 }
 
 .tb-side-tabs button[aria-selected="true"] {
   color: #f4f4f5;
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
-  box-shadow: 0 0 16px -8px rgb(var(--accent-soft));
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  box-shadow: var(--glow-soft-16);
 }
 
 .tb-sides {
@@ -3578,22 +2861,23 @@ body {
   gap: 0.5rem;
   padding: 0.6rem 0.7rem;
   border-radius: 1rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
 }
 
 .tb-side[data-active="true"] {
   display: flex;
 }
 
-@media (min-width: 768px) {
-  .tb-side-tabs {
+@media (min-width: 768px) {.tb-side-tabs {
     display: none;
   }
-  .tb-sides {
+
+.tb-sides {
     grid-template-columns: 1fr 1fr;
   }
-  .tb-side {
+
+.tb-side {
     display: flex !important;
   }
 }
@@ -3628,8 +2912,8 @@ body {
   align-items: center;
   padding: 0.4rem 0.45rem;
   border-radius: 0.7rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.45);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
 }
 
 .tb-entry-card {
@@ -3664,7 +2948,7 @@ body {
 .tb-entry-printing-link {
   background: transparent;
   border: 0;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 0.7rem;
   padding: 0;
   cursor: pointer;
@@ -3692,7 +2976,7 @@ body {
   min-height: 30px;
   padding: 0 0.4rem;
   border-radius: 0.45rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   background: transparent;
   color: #e2e8f0;
   font-size: 0.74rem;
@@ -3700,9 +2984,9 @@ body {
 }
 
 .tb-entry-ctl[aria-pressed="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.24);
-  color: rgb(var(--accent-soft));
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: var(--accent-soft);
 }
 
 .tb-entry-ctl:disabled {
@@ -3757,7 +3041,7 @@ body {
   text-align: center;
   font-size: 0.85rem;
   color: #a1a1aa;
-  border: 1px dashed rgb(var(--accent-soft) / 0.45);
+  border: 1px dashed color-mix(in srgb, var(--accent-soft) 45%, transparent);
   border-radius: 0.75rem;
 }
 
@@ -3767,7 +3051,7 @@ body {
   align-items: center;
   font-size: 0.8rem;
   color: #a1a1aa;
-  border-top: 1px solid rgb(var(--panel-edge) / 0.7);
+  border-top: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   padding-top: 0.45rem;
   flex: 0 0 auto;
 }
@@ -3781,6 +3065,7 @@ body {
 
 /* The printing picker's rows (REQ-065) — paired with slice L's
    `.card-detail-hero*` for the art-crop header above (`PrintingPicker.tsx`). */
+
 .tb-printing-list {
   display: grid;
   gap: 0.45rem;
@@ -3793,13 +3078,13 @@ body {
   align-items: center;
   padding: 0.55rem 0.6rem;
   border-radius: 0.8rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.4);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 40%, transparent);
 }
 
 .tb-printing-row[data-current="true"] {
-  border-color: rgb(var(--accent-soft) / 0.55);
-  background: rgb(var(--accent) / 0.14);
+  border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
 }
 
 .tb-printing-thumb {
@@ -3844,7 +3129,7 @@ body {
   min-height: 32px;
   padding: 0 0.6rem;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   background: transparent;
   color: #e2e8f0;
   font-size: 0.78rem;
@@ -3862,13 +3147,13 @@ body {
 }
 
 .tb-finish[aria-current="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.26);
-  box-shadow: 0 0 12px -5px rgb(var(--accent-soft));
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 26%, transparent);
+  box-shadow: var(--glow-soft-12);
 }
 
 .tb-finish[aria-current="true"] b {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .tb-finish:disabled {
@@ -3906,11 +3191,12 @@ body {
    outline, a top-left "Locking on <card>" indicator, and a foot row
    (mute/shutter/Debug) replacing the full-width rectangular Capture button
    and the old bottom-center-absolute Debug pill. */
+
 .cs-viewfinder {
   position: relative;
   overflow: hidden;
   border-radius: 1.1rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   background: #0b0b0d;
 }
 
@@ -3920,8 +3206,8 @@ body {
    keeps the `md:aspect-[3/4]` video inside the viewport (requirement 7): a
    576px-wide panel would stand 768px tall; capped to 504px it stands 672px,
    the clamp's own ceiling. */
-@media (min-width: 768px) {
-  .cs-viewfinder {
+
+@media (min-width: 768px) {.cs-viewfinder {
     /* The video inside (`md:aspect-[3/4] md:h-auto`, untouched/test-pinned)
        derives its height from this width, so the width is solved backwards
        from the same viewport-bounded height the phone clamp already uses
@@ -3942,7 +3228,7 @@ body {
   position: absolute;
   width: 16px;
   height: 16px;
-  border: 2px solid rgb(var(--accent-soft) / 0.85);
+  border: 2px solid color-mix(in srgb, var(--accent-soft) 85%, transparent);
 }
 
 .cs-guide-tick-tl {
@@ -3980,10 +3266,10 @@ body {
 @keyframes cs-guide-breathe {
   0%,
   100% {
-    border-color: rgb(var(--accent-soft) / 0.55);
+    border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
   }
   50% {
-    border-color: rgb(var(--accent-soft) / 0.85);
+    border-color: color-mix(in srgb, var(--accent-soft) 85%, transparent);
   }
 }
 
@@ -4010,8 +3296,8 @@ body {
   gap: 0.3rem;
   padding: 0.5rem 0.75rem;
   border-radius: 0.8rem;
-  background: rgb(9 9 11 / 0.78);
-  border: 1px solid rgb(var(--accent-soft) / 0.3);
+  background: color-mix(in srgb, var(--surface-ground) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 30%, transparent);
   backdrop-filter: blur(6px);
   font-size: 0.8rem;
   font-weight: 600;
@@ -4030,13 +3316,13 @@ body {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, rgb(var(--accent)), rgb(var(--accent-soft)));
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft));
   transition: width 150ms ease;
 }
 
 .cs-indicator-n {
   font-size: 0.7rem;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-variant-numeric: tabular-nums;
 }
 
@@ -4058,7 +3344,7 @@ body {
   padding: 0 0.5rem;
   border-radius: 999px;
   border: 1px solid rgb(244 244 245 / 0.14);
-  background: rgb(9 9 11 / 0.7);
+  background: color-mix(in srgb, var(--surface-ground) 70%, transparent);
   color: #f4f4f5;
   font-size: 0.85rem;
   cursor: pointer;
@@ -4072,11 +3358,11 @@ body {
   cursor: pointer;
   display: grid;
   place-items: center;
-  border: 2px solid rgb(var(--accent-soft) / 0.88);
-  background: rgb(9 9 11 / 0.55);
+  border: 2px solid color-mix(in srgb, var(--accent-soft) 88%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 55%, transparent);
   box-shadow:
-    0 0 0 3px rgb(9 9 11 / 0.45),
-    0 0 18px -4px rgb(var(--accent-soft) / 0.7);
+    0 0 0 3px color-mix(in srgb, var(--surface-ground) 45%, transparent),
+    0 0 18px -4px color-mix(in srgb, var(--accent-soft) 70%, transparent);
   transition: transform 120ms ease;
 }
 
@@ -4086,7 +3372,7 @@ body {
   height: 40px;
   border-radius: 999px;
   display: block;
-  background: radial-gradient(circle at 38% 34%, rgb(var(--accent-soft)), rgb(var(--accent)) 60%, rgb(var(--accent)));
+  background: radial-gradient(circle at 38% 34%, var(--accent-soft), var(--accent) 60%, var(--accent));
   transition: transform 120ms ease;
 }
 
@@ -4107,7 +3393,7 @@ body {
   padding: 0 0.7rem;
   border-radius: 999px;
   border: 1px solid rgb(244 244 245 / 0.14);
-  background: rgb(9 9 11 / 0.7);
+  background: color-mix(in srgb, var(--surface-ground) 70%, transparent);
   color: #a1a1aa;
   font-size: 0.68rem;
   font-weight: 600;
@@ -4115,9 +3401,9 @@ body {
 }
 
 .cs-debug-toggle[aria-pressed="true"] {
-  border-color: rgb(var(--accent-soft));
-  color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
+  border-color: var(--accent-soft);
+  color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
 }
 
 .cs-credit {
@@ -4152,7 +3438,7 @@ body {
   height: 44px;
   border-radius: 999px;
   border: 1px solid rgb(250 204 21 / 0.55);
-  background: rgb(9 9 11 / 0.78);
+  background: color-mix(in srgb, var(--surface-ground) 78%, transparent);
   color: #facc15;
   cursor: pointer;
   backdrop-filter: blur(6px);
@@ -4174,8 +3460,8 @@ body {
   width: 44px;
   height: 44px;
   border-radius: 0.7rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.85);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 85%, transparent);
   color: #e2e8f0;
   font-size: 1.15rem;
   cursor: pointer;
@@ -4186,8 +3472,8 @@ body {
 
 .cs-scan-exit:hover,
 .cs-scan-exit:focus-visible {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.18);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 /* Look-matching pass (slice Q): Life Tracker's Game Setup and Counters
@@ -4195,6 +3481,7 @@ body {
    classes (not renamed for reuse here — they are the mockup's own names).
    The table itself (`PlayerLifeTrackerApp`/`PlayerLifeCard`) is untouched
    (REQ-202). */
+
 .lt-rows {
   display: grid;
   gap: 0.15rem;
@@ -4222,7 +3509,7 @@ body {
 
 .lt-rows button:hover,
 .lt-rows button:focus-visible {
-  background: rgb(var(--accent) / 0.12);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
 .lt-rows .glyph {
@@ -4244,16 +3531,17 @@ body {
 }
 
 .lt-rows .chev {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 /* the stepper: − count + on one pill (`life-tracker-menus.html:70-75`) */
+
 .lt-stepper {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.45);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   overflow: hidden;
 }
 
@@ -4262,13 +3550,13 @@ body {
   height: 44px;
   border: 0;
   background: transparent;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 1.2rem;
   cursor: pointer;
 }
 
 .lt-stepper button:hover:not(:disabled) {
-  background: rgb(var(--accent) / 0.18);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .lt-stepper button:disabled {
@@ -4297,6 +3585,7 @@ body {
 
 /* name fields: two to a row, the seat number inside at the left
    (`life-tracker-menus.html:83-84` `.names`) — always visible here (Q4). */
+
 .lt-names {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -4308,14 +3597,14 @@ body {
   align-items: center;
   min-height: 42px;
   border-radius: 0.6rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.45);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   overflow: hidden;
   transition: border-color 150ms ease;
 }
 
 .lt-names label:focus-within {
-  border-color: rgb(var(--accent-soft));
+  border-color: var(--accent-soft);
 }
 
 .lt-names .num {
@@ -4323,7 +3612,7 @@ body {
   text-align: center;
   font-size: 0.7rem;
   font-weight: 700;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .lt-names input {
@@ -4338,12 +3627,13 @@ body {
 }
 
 /* one segmented pill for a two-way choice (`life-tracker-menus.html:90-95` `.seg`) */
+
 .lt-seg {
   display: inline-flex;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   overflow: hidden;
-  background: rgb(var(--ground) / 0.45);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
 }
 
 .lt-seg.full {
@@ -4369,19 +3659,19 @@ body {
 }
 
 .lt-seg button + button {
-  border-left: 1px solid rgb(var(--panel-edge) / 0.7);
+  border-left: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
 }
 
 .lt-seg button .glyph {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 1rem;
 }
 
 .lt-seg button[aria-pressed="true"],
 .lt-seg button[aria-selected="true"] {
   color: #e2e8f0;
-  background: rgb(var(--accent) / 0.24);
-  box-shadow: inset 0 0 0 1px rgb(var(--accent-soft) / 0.45);
+  background: color-mix(in srgb, var(--accent) 24%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-soft) 45%, transparent);
 }
 
 .lt-pair {
@@ -4389,8 +3679,7 @@ body {
   gap: 0.6rem;
 }
 
-@media (min-width: 600px) {
-  .lt-pair {
+@media (min-width: 600px) {.lt-pair {
     grid-template-columns: 1fr 1fr;
   }
 }
@@ -4405,6 +3694,7 @@ body {
 }
 
 /* starting life: presets as pills (`life-tracker-menus.html:102-107` `.life-pills`) */
+
 .lt-life-pills {
   display: flex;
   flex-wrap: wrap;
@@ -4413,6 +3703,7 @@ body {
 }
 
 /* ---- Counters: the seat map (`life-tracker-menus.html:126-144`) ---- */
+
 .lt-seat-map {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -4426,8 +3717,8 @@ body {
   min-height: 104px;
   padding: 0.5rem 0.55rem;
   border-radius: 0.8rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: linear-gradient(160deg, rgb(var(--accent) / 0.18), rgb(var(--panel)));
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 18%, transparent), var(--surface-panel));
   position: relative;
   overflow: hidden;
 }
@@ -4475,12 +3766,13 @@ body {
 }
 
 /* − and + as one joined pill, as the Players stepper is */
+
 .lt-seat-bands {
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.45);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   overflow: hidden;
 }
 
@@ -4488,17 +3780,17 @@ body {
   min-height: 36px;
   border: 0;
   background: transparent;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 1.1rem;
   cursor: pointer;
 }
 
 .lt-seat-bands button + button {
-  border-left: 1px solid rgb(var(--panel-edge) / 0.7);
+  border-left: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
 }
 
 .lt-seat-bands button:hover:not(:disabled) {
-  background: rgb(var(--accent) / 0.18);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
 .lt-seat-bands button:disabled {
@@ -4507,13 +3799,14 @@ body {
 }
 
 /* your own seat, drawn like your card on the table */
+
 .lt-seat-me {
-  background: rgb(var(--ground) / 0.4);
+  background: color-mix(in srgb, var(--surface-ground) 40%, transparent);
   border-style: dashed;
 }
 
 .lt-seat-me .lt-seat-who {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .lt-seat-me .lt-seat-dmg {
@@ -4530,14 +3823,14 @@ body {
 }
 
 /* the counter tiles (`life-tracker-menus.html:146-150` `.tiles`/`.tile`) */
+
 .lt-tiles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.45rem;
 }
 
-@media (min-width: 600px) {
-  .lt-tiles {
+@media (min-width: 600px) {.lt-tiles {
     grid-template-columns: repeat(4, 1fr);
   }
 }
@@ -4545,8 +3838,8 @@ body {
 .lt-tile {
   position: relative;
   border-radius: 0.8rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.45);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   color: #e2e8f0;
   text-align: center;
   transition:
@@ -4556,15 +3849,15 @@ body {
 }
 
 .lt-tile:hover {
-  border-color: rgb(var(--accent-soft) / 0.55);
+  border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
 }
 
 .lt-tile[data-on="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
   box-shadow:
-    0 0 18px -6px rgb(var(--accent) / 0.85),
-    inset 0 0 14px -10px rgb(var(--accent-soft));
+    0 0 18px -6px color-mix(in srgb, var(--accent) 85%, transparent),
+    inset 0 0 14px -10px var(--accent-soft);
 }
 
 .lt-tile-main {
@@ -4601,7 +3894,7 @@ body {
 }
 
 .lt-tile[data-on="true"] .lt-tile-n {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .lt-tile-more {
@@ -4621,7 +3914,7 @@ body {
 
 .lt-tile-more:hover {
   color: #e2e8f0;
-  background: rgb(var(--accent) / 0.2);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
 }
 
 @keyframes send-spin {
@@ -4641,36 +3934,7 @@ body {
   vertical-align: middle;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .motion-enter,
-  .motion-exit,
-  .motion-hover,
-  .motion-press,
-  .motion-focus,
-  .motion-success,
-  .motion-error,
-  .portal-menu-motion,
-  .portal-menu-drawer-motion,
-  .ambient-accent-surface,
-  .conversation-workspace-handoff,
-  .conversation-message-enter,
-  .conversation-new-response,
-  .adaptive-context-overlay,
-  .adaptive-context-surface,
-  .sheet-shell-overlay,
-  .sheet-shell-surface,
-  .conversation-history-overlay,
-  .conversation-history-surface,
-  .enrichment-card-enter,
-  .card-state-remove,
-  .ambient-scene-layer,
-  .wait-inscription-line-ink,
-  .wait-inscription-line-lift,
-  .wait-inscription-seal-ring,
-  .wait-inscription-mote,
-  .wait-inscription-bubble::after,
-  .trade-pile-tier-up,
-  .trade-pile-tier-down {
+@media (prefers-reduced-motion: reduce) {.motion-enter, .motion-exit, .motion-hover, .motion-press, .motion-focus, .motion-success, .motion-error, .ambient-accent-surface, .conversation-workspace-handoff, .conversation-message-enter, .conversation-new-response, .adaptive-context-overlay, .adaptive-context-surface, .enrichment-card-enter, .card-state-remove, .wait-inscription-line-ink, .wait-inscription-line-lift, .wait-inscription-seal-ring, .wait-inscription-mote, .wait-inscription-bubble::after, .trade-pile-tier-up, .trade-pile-tier-down {
     animation-delay: 0ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -4679,185 +3943,13 @@ body {
   }
 }
 
-/* REQ-207 / REQ-201 ambient scene — the colour's element, CSS-only (NFR-006).
-   Look-matching pass (slice L): `position: fixed` / `z-index: 0`, ported from
-   `ambience.css:32-37`'s `.ambience` — a true viewport layer behind the
-   banner header, the mock-mode strip and `.page-content`/`.page-shell-bleed`
-   alike, rather than scoped inside this destination's own box. Previously
-   `position: absolute` inside `.page-shell` with `z-index: -1` painted the
-   scene one layer *below* that box's own background colour, so it never
-   showed in any capture (LOOK-GAPS.md's "the single biggest 'doesn't look
-   like it' gap"). Still behind every solid panel (REQ-207's "sits behind
-   solid panels so the badge shows around them, never through them") because
-   those panels paint their own background above z-index: 0. */
-.ambient-scene {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-  /* Density and opacity are each one number (REQ-207) so the whole scene can
-     be tuned without redrawing it. The tray variant plays at a whisper. */
-  --ambient-density: 1;
-  --ambient-opacity: 0.16;
-}
+/* Sheets, the Menu tray and their backdrops hold still under reduced motion: they appear
+   in place instead of sliding or fading. */
 
-.ambient-scene-tray {
-  --ambient-density: 0.6;
-  --ambient-opacity: 0.08;
-}
-
-/* Colorless's tray gets a fuller scatter of slightly brighter shapes (REQ-207). */
-.ambient-scene-tray.ambient-scene-motif-geometry {
-  --ambient-density: 0.85;
-  --ambient-opacity: 0.12;
-}
-
-.ambient-scene-layer {
-  position: absolute;
-  inset: 0;
-}
-
-@keyframes ambient-haze-drift-a {
-  0% {
-    transform: translate3d(-4%, -2%, 0) scale(1.04);
+@media (prefers-reduced-motion: reduce) {.drawer-panel,
+  .sheet-backdrop,
+  .menu-tray,
+  .menu-tray-backdrop {
+    transition: none;
   }
-  50% {
-    transform: translate3d(3%, 2%, 0) scale(1.08);
-  }
-  100% {
-    transform: translate3d(-4%, -2%, 0) scale(1.04);
-  }
-}
-
-@keyframes ambient-haze-drift-b {
-  0% {
-    transform: translate3d(3%, 1%, 0) scale(1.06);
-  }
-  50% {
-    transform: translate3d(-3%, -2%, 0) scale(1.02);
-  }
-  100% {
-    transform: translate3d(3%, 1%, 0) scale(1.06);
-  }
-}
-
-.ambient-scene-haze {
-  opacity: calc(var(--ambient-opacity) * 1.1);
-  background: radial-gradient(60% 60% at 30% 25%, rgb(var(--ground-wash) / 0.9) 0%, transparent 70%);
-  animation: ambient-haze-drift-a 48s var(--motion-ease-out) infinite;
-}
-
-.ambient-scene-haze-b {
-  background: radial-gradient(55% 55% at 72% 70%, rgb(var(--ground-wash) / 0.7) 0%, transparent 70%);
-  animation-name: ambient-haze-drift-b;
-  animation-duration: 56s;
-}
-
-@keyframes ambient-dust-drift {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-  100% {
-    transform: translate3d(0, -6%, 0);
-  }
-}
-
-.ambient-scene-dust {
-  opacity: calc(var(--ambient-opacity) * var(--ambient-density) * 0.6);
-  background-image: radial-gradient(rgb(var(--ground-wash) / 0.9) 1px, transparent 1.5px);
-  background-size: 48px 48px;
-  animation: ambient-dust-drift 40s linear infinite;
-}
-
-@keyframes ambient-badge-breathe {
-  0%,
-  100% {
-    opacity: calc(var(--ambient-opacity) * 1.4);
-    transform: scale(1);
-  }
-  50% {
-    opacity: calc(var(--ambient-opacity) * 1.9);
-    transform: scale(1.03);
-  }
-}
-
-.ambient-scene-badge {
-  width: 60%;
-  height: 60%;
-  margin: auto;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  border-radius: 9999px;
-  background: radial-gradient(circle, rgb(var(--ground-wash) / 1) 0%, transparent 65%);
-  filter: blur(18px);
-  animation: ambient-badge-breathe 10s var(--motion-ease-emphasized) infinite;
-}
-
-@keyframes ambient-element-drift {
-  0% {
-    transform: translate3d(0, 0, 0);
-    opacity: calc(var(--ambient-opacity) * var(--ambient-density));
-  }
-  50% {
-    transform: translate3d(0, -3%, 0);
-    opacity: calc(var(--ambient-opacity) * var(--ambient-density) * 1.4);
-  }
-  100% {
-    transform: translate3d(0, 0, 0);
-    opacity: calc(var(--ambient-opacity) * var(--ambient-density));
-  }
-}
-
-.ambient-scene-element {
-  animation: ambient-element-drift 22s var(--motion-ease-out) infinite;
-  background-repeat: repeat;
-  background-size: 120px 120px;
-}
-
-/* White — low-sun rays (REQ-207). */
-.ambient-scene-element-beams {
-  background-image: repeating-linear-gradient(
-    100deg,
-    rgb(var(--ground-wash) / 0.5) 0px,
-    rgb(var(--ground-wash) / 0.5) 2px,
-    transparent 2px,
-    transparent 64px
-  );
-}
-
-/* Blue — a scatter of arcane rune shapes (REQ-207). */
-.ambient-scene-element-runes {
-  background-image: radial-gradient(circle, rgb(var(--ground-wash) / 0.6) 2px, transparent 2.5px);
-  background-size: 72px 72px;
-}
-
-/* Black — fog pooling (REQ-207). */
-.ambient-scene-element-fog {
-  background-image: radial-gradient(80% 40% at 50% 100%, rgb(var(--ground-wash) / 0.7) 0%, transparent 70%);
-  background-size: 100% 100%;
-}
-
-/* Red — a hot band with embers (REQ-207). */
-.ambient-scene-element-embers {
-  background-image: radial-gradient(circle, rgb(var(--ground-wash) / 0.7) 1.5px, transparent 2px);
-  background-size: 54px 90px;
-}
-
-/* Green — a scatter of leaf shapes (REQ-207). */
-.ambient-scene-element-leaves {
-  background-image: radial-gradient(ellipse 10px 5px, rgb(var(--ground-wash) / 0.6) 0%, transparent 75%);
-  background-size: 64px 96px;
-}
-
-/* Colorless — turning triangles, rings, arcs, dots and crosses (REQ-207). */
-.ambient-scene-element-geometry {
-  background-image:
-    radial-gradient(circle, rgb(var(--ground-wash) / 0.55) 1.5px, transparent 2px),
-    repeating-linear-gradient(45deg, rgb(var(--ground-wash) / 0.3) 0px, transparent 1px, transparent 40px);
-  background-size:
-    60px 60px,
-    80px 80px;
 }

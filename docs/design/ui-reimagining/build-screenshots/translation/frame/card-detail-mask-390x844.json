@@ -1,0 +1,44 @@
+{
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 844
+  },
+  {
+   "name": "closed bottom sheets glow",
+   "reason": "the mockup keeps its three closed bottom sheets mounted just below the screen and their accent glow bleeds up into the bottom edge on a phone; the app mounts a sheet only while open",
+   "x": 0,
+   "y": 796,
+   "width": 390,
+   "height": 48
+  },
+  {
+   "name": "overlay close button",
+   "reason": "REQ-142: the close glyph takes the active profile's light; the mockup's is plain white",
+   "x": 337,
+   "y": 528,
+   "width": 46,
+   "height": 46
+  },
+  {
+   "name": "price",
+   "reason": "live data: the app reads the current price, the mockup shows a fixed demo price",
+   "x": 268,
+   "y": 801,
+   "width": 96,
+   "height": 18
+  },
+  {
+   "name": "colour pip",
+   "reason": "REQ-058 identity ring colour, drawn from the card's colours",
+   "x": 84,
+   "y": 691,
+   "width": 12,
+   "height": 12
+  }
+ ]
+}

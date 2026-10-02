@@ -2,6 +2,7 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useState,
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode
 } from "react";
@@ -26,15 +27,21 @@ export interface SheetShellProps {
   onClose: () => void;
   /** Accessible name for the fixed ✕ control, e.g. "Close feedback". */
   closeLabel: string;
-  /** Id placed on the element inside `head` that carries the visible title, wired to
+  /** Id of the element inside the sheet that carries the visible title, wired to
    * `aria-labelledby` here so the caller never repeats the id wiring. */
   titleId: string;
-  /** Fixed head region content (to the left of the ✕), e.g. an eyebrow + heading. */
-  head?: ReactNode;
-  /** Scrolling body content. */
+  /** The ported stylesheet keys some sheets by id (`#feedback-modal`, `#history-drawer`). */
+  panelId?: string;
+  /** The ✕ close control (default true). The confirm sheet has none: Keep, Esc and the backdrop dismiss it. */
+  showCloseButton?: boolean;
+  /** The sheet's modifier class beside `drawer-panel` (`feedback-panel`, `history-panel`,
+   * `detail-panel`, `confirm-panel`) — a variant extends the shared sheet, never forks it. */
+  panelClassName?: string;
+  /** The sheet's own inner markup, in the mockup's DOM order. */
   children: ReactNode;
-  /** Fixed foot region content (actions). Omitted entirely when not supplied — no
-   * empty foot band renders. */
+  /** Legacy head/foot regions (pre-port callers still composing a head + body + foot):
+   * rendered above and below `children`. Ported sheets leave both unset. */
+  head?: ReactNode;
   foot?: ReactNode;
   testId?: string;
 }
@@ -70,19 +77,32 @@ function SheetShellDialog({
   onClose,
   closeLabel,
   titleId,
+  panelId,
+  showCloseButton = true,
+  panelClassName,
   head,
   children,
   foot,
   testId
 }: SheetShellDialogProps): JSX.Element {
-  const dialogRef = useRef<HTMLDivElement>(null);
+  const dialogRef = useRef<HTMLElement>(null);
+  // The ported stylesheet slides/fades a sheet in on `data-open`; it flips to true one frame after mount.
+  const [isShown, setIsShown] = useState(false);
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setIsShown(true));
+    return () => cancelAnimationFrame(frame);
+  }, []);
   const returnFocusRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     returnFocusRef.current =
       document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
-    const firstFocusable = dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
+    // A control marked `data-autofocus` (the feedback message box) takes focus first,
+    // as the mockup's sheets do; otherwise the first focusable control does.
+    const firstFocusable =
+      dialogRef.current?.querySelector<HTMLElement>("[data-autofocus]") ??
+      dialogRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR);
     (firstFocusable ?? dialogRef.current)?.focus();
 
     return () => {
@@ -105,7 +125,7 @@ function SheetShellDialog({
 
   useOutsideDismiss([dialogRef], onClose, true);
 
-  const handleTrapKeyDown = useCallback((event: ReactKeyboardEvent<HTMLDivElement>) => {
+  const handleTrapKeyDown = useCallback((event: ReactKeyboardEvent<HTMLElement>) => {
     if (event.key !== "Tab") {
       return;
     }
@@ -142,31 +162,31 @@ function SheetShellDialog({
   }, []);
 
   return createPortal(
-    <div className="sheet-shell-overlay" data-testid={testId ? `${testId}-overlay` : "sheet-shell-overlay"}>
+    <>
       <div
+        aria-hidden="true"
+        className="sheet-backdrop"
+        data-open={isShown}
+        data-testid={testId ? `${testId}-overlay` : "sheet-shell-overlay"}
+      />
+      <aside
         ref={dialogRef}
+        id={panelId}
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         tabIndex={-1}
         onKeyDown={handleTrapKeyDown}
         data-testid={testId ?? "sheet-shell"}
-        className="sheet-shell-surface ambient-accent-surface border border-zinc-700 bg-zinc-950 text-zinc-100 shadow-2xl"
+        data-open={isShown}
+        className={panelClassName ? `drawer-panel ${panelClassName}` : "drawer-panel"}
       >
-        <div className="sheet-shell-head" data-testid={testId ? `${testId}-head` : "sheet-shell-head"}>
-          <div className="min-w-0 flex-1">{head}</div>
-          <OverlayCloseButton label={closeLabel} onClick={onClose} />
-        </div>
-        <div className="sheet-shell-body" data-testid={testId ? `${testId}-body` : "sheet-shell-body"}>
-          {children}
-        </div>
-        {foot ? (
-          <div className="sheet-shell-foot" data-testid={testId ? `${testId}-foot` : "sheet-shell-foot"}>
-            {foot}
-          </div>
-        ) : null}
-      </div>
-    </div>,
+        {showCloseButton ? <OverlayCloseButton label={closeLabel} onClick={onClose} /> : null}
+        {head ? <div className="sheet-legacy-head">{head}</div> : null}
+        {head || foot ? <div className="sheet-legacy-body">{children}</div> : children}
+        {foot ? <div className="sheet-legacy-foot">{foot}</div> : null}
+      </aside>
+    </>,
     document.body
   );
 }

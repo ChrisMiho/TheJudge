@@ -74,6 +74,6 @@ describe("Frontend - Automatic responsive presentation", () => {
     // REQ-114/115/207: the split Menu+History rail retires — one ☰ trigger at every
     // width, on every destination, whether or not a historyTrigger is supplied. This
     // just confirms the trigger survives the resize still wired onto that class.
-    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveClass("portal-menu-rail");
+    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveClass("menu-toggle");
   });
 });

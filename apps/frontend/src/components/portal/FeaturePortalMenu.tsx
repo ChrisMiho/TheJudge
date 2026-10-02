@@ -1,5 +1,6 @@
 import { Fragment, useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
+import { AmbientScene } from "../AmbientScene";
 import { BrandMark } from "../BrandMark";
 import { ConversationHistoryDrawer, type ConversationHistoryDraftRow } from "../ConversationHistoryDrawer";
 import type { ConversationHistoryTriggerDescriptor } from "../ConversationWorkspace";
@@ -14,6 +15,7 @@ import { useLeftEdgeDrawer } from "../../lib/portal/leftEdgeDrawerContext";
 import { useAssistantSeed } from "../../lib/portal/seedContext";
 import { PortalSlotContext } from "../../lib/portal/slotContext";
 import { isPortalActionEntry, type DestinationId, type PortalEntry } from "../../lib/portal/types";
+import { DEFAULT_PALETTE, getPaletteById } from "../../lib/theme/palettes";
 import { ThemeSection } from "./ThemeSection";
 
 type SlotEntry = {
@@ -21,45 +23,23 @@ type SlotEntry = {
   getHistoryTrigger: () => ConversationHistoryTriggerDescriptor | undefined;
 };
 
-/** REQ-213 placeholder History glyph for the Menu's "Question History" row. */
-function HistoryRowIcon(): JSX.Element {
+/** The mockup's card silhouette, worn by the Ask a Question row (`flow.js`'s CARD_GLYPH). */
+function CardGlyph(): JSX.Element {
   return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="portal-menu-drawer-row-icon"
-    >
-      <circle cx="12" cy="12" r="9" />
-      <path d="M12 7v5l3 3" />
+    <svg viewBox="0 0 20 20" aria-hidden="true">
+      <rect x="4" y="2" width="12" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      <rect x="6.5" y="4.5" width="7" height="5" rx="1" fill="currentColor" opacity="0.85" />
+      <path d="M6.5 12.5 h7 M6.5 15 h4.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" />
     </svg>
   );
 }
 
-/** Three-line hamburger, matching History's stroke weight/style (DEC-126) — replaces the
-    previous ☰ text glyph + scaleX stretch hack. */
-function MenuIcon(): JSX.Element {
-  return (
-    <svg
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth={2}
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-      className="portal-menu-rail-icon"
-    >
-      <line x1="4" y1="7" x2="20" y2="7" />
-      <line x1="4" y1="12" x2="20" y2="12" />
-      <line x1="4" y1="17" x2="20" y2="17" />
-    </svg>
-  );
-}
+/** The glyph in front of each Menu row, by destination id (the mockup's `dest` table). */
+const ROW_GLYPHS: Record<string, JSX.Element | string> = {
+  "quick-lookup": <CardGlyph />,
+  "player-life-tracker": "♥",
+  "trade-balancer": "⚖"
+};
 
 export interface FeaturePortalMenuProps {
   /** Destination and action entries, rendered identically in array order (DEC-104). */
@@ -106,8 +86,6 @@ export function FeaturePortalMenu({
   const [historyEntries, setHistoryEntries] = useState<ConversationHistoryEntry[]>([]);
   const [slotEntries, setSlotEntries] = useState<SlotEntry[]>([]);
   const [visibleSlotEntry, setVisibleSlotEntry] = useState<SlotEntry | null>(null);
-  const [shellBoundsEntries, setShellBoundsEntries] = useState<HTMLDivElement[]>([]);
-  const [visibleShellBoundsNode, setVisibleShellBoundsNode] = useState<HTMLDivElement | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
   const { activeDrawer, openDrawer, closeDrawer } = useLeftEdgeDrawer();
@@ -195,14 +173,6 @@ export function FeaturePortalMenu({
     setSlotEntries((current) => current.filter((entry) => entry.node !== node));
   }, []);
 
-  const registerShellBounds = useCallback((node: HTMLDivElement) => {
-    setShellBoundsEntries((current) => (current.includes(node) ? current : [...current, node]));
-  }, []);
-
-  const unregisterShellBounds = useCallback((node: HTMLDivElement) => {
-    setShellBoundsEntries((current) => current.filter((entry) => entry !== node));
-  }, []);
-
   // DestinationOutlet keeps inactive destinations mounted and hides them via the `hidden`
   // attribute (for in-session state preservation) instead of unmounting — so a destination's
   // <PortalSlot /> registers once on mount and stays registered while hidden, and more than one
@@ -213,14 +183,8 @@ export function FeaturePortalMenu({
     setVisibleSlotEntry(slotEntries.find((entry) => entry.node.closest("[hidden]") === null) ?? null);
   }, [slotEntries, activeDestinationId]);
 
-  // Same visibility resolution as slots (each PageShell's ShellBounds node registers once
-  // and stays registered while its destination is hidden-but-mounted) — more than one can be
-  // registered once multiple destinations have been visited.
-  useEffect(() => {
-    setVisibleShellBoundsNode(shellBoundsEntries.find((node) => node.closest("[hidden]") === null) ?? null);
-  }, [shellBoundsEntries, activeDestinationId]);
-
   const effectiveSlotNode = visibleSlotEntry?.node ?? null;
+  const paletteMotif = (getPaletteById(paletteId) ?? DEFAULT_PALETTE).motif;
 
   // The drawer may be portaled into a shell-bounds node elsewhere in the DOM (not a
   // descendant of containerRef), so a click landing inside it must not read as "outside".
@@ -257,53 +221,61 @@ export function FeaturePortalMenu({
     onPaletteSelect(id);
   }
 
+  // The tray slides in once mounted: `shell.css` keys its transform and its
+  // backdrop's fade on `[data-tray-open="true"]`, so the host flips from "false"
+  // to "true" one frame after mount.
+  const [isTrayShown, setIsTrayShown] = useState(false);
+  useEffect(() => {
+    if (!isOpen) {
+      setIsTrayShown(false);
+      return;
+    }
+    const frame = requestAnimationFrame(() => setIsTrayShown(true));
+    return () => cancelAnimationFrame(frame);
+  }, [isOpen]);
+
   const drawer = isOpen ? (
-    <Fragment>
-      {/* Look-matching pass (slice L): the dimming/blur layer behind the open tray
-          (shell.css:336-345's `.menu-tray-backdrop`) — purely decorative, so it adds
-          no role and cannot change any menuitem-focused query above. Dismissing by
-          clicking outside the drawer already works through `useOutsideDismiss`. */}
-      <div aria-hidden="true" className="portal-menu-drawer-backdrop" />
-      <div
-        ref={drawerRef}
-        role="menu"
-        aria-label="Feature destinations"
-        className="portal-menu-drawer portal-menu-drawer-motion bg-zinc-900"
-      >
-        {/* Look-matching pass (slice L): the colour's quiet glow at the tray's foot
-            (shell.css:374-388's `.tray-flair::after`) — the canvas-drawn shapes
-            `ambience.js` layers under it are script/canvas animation, a stated
-            non-goal (DESIGN-BRIEF.md's non-goal A1), and are not ported. */}
-        <div aria-hidden="true" className="portal-menu-drawer-flair" />
-        <div className="portal-menu-drawer-inner flex flex-col">
+    <div className="menu-tray-host" data-tray-open={isTrayShown}>
+      <div aria-hidden="true" className="menu-tray-backdrop" />
+      <nav ref={drawerRef} role="menu" aria-label="Feature destinations" className="menu-tray">
+        <div className="tray-brand">
+          <BrandMark decorative />
+          <button type="button" className="icon-btn" aria-label="Close menu" onClick={() => setIsOpen(false)}>
+            ✕
+          </button>
+        </div>
+        <ul className="tray-nav-list" role="presentation">
           {entries.map((entry, index) => {
             const isActive =
               !isPortalActionEntry(entry) &&
               (entry.id === activeDestinationId || entry.id === activeDestinationAliasId);
             return (
               <Fragment key={entry.id}>
-                {/* Look-matching pass (slice L): a divider ahead of the Menu's one
-                    action entry (Send feedback) — shell.css:540-543's `.tray-divider`. */}
+                {/* The divider ahead of the Menu's one action entry (Send feedback). */}
                 {isPortalActionEntry(entry) && (
-                  <div aria-hidden="true" className="portal-menu-drawer-divider" />
+                  <li role="presentation">
+                    <div aria-hidden="true" className="tray-divider" />
+                  </li>
                 )}
-                <button
-                  type="button"
-                  role="menuitem"
-                  aria-label={entry.label}
-                  aria-current={isActive ? "true" : undefined}
-                  onClick={() => handleSelect(entry)}
-                  // Full-bleed row, not an inset pill: the separator rule under each entry runs
-                  // edge to edge across the drawer (the row itself carries the drawer's left
-                  // text inset via `.portal-menu-drawer-row`), so the horizontal lines meet the
-                  // drawer's left wall instead of stopping short of it.
-                  className={`portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium transition ${
-                    isActive ? "bg-zinc-800 text-zinc-100" : "text-zinc-200 hover:bg-zinc-800/70"
-                  }`}
-                >
-                  <span>{entry.label}</span>
-                  {isActive && <span aria-hidden="true" className="ml-auto text-accent-soft">✓</span>}
-                </button>
+                <li role="presentation">
+                  <button
+                    type="button"
+                    role="menuitem"
+                    aria-label={entry.label}
+                    aria-current={isActive ? "page" : undefined}
+                    onClick={() => handleSelect(entry)}
+                  >
+                    <span aria-hidden="true" className="glyph">
+                      {isPortalActionEntry(entry) ? "✎" : (ROW_GLYPHS[entry.id] ?? "")}
+                    </span>
+                    <span>{entry.label}</span>
+                    {isActive && (
+                      <span aria-hidden="true" className="here">
+                        ✓
+                      </span>
+                    )}
+                  </button>
+                </li>
                 {/* REQ-067/REQ-213: Question History sits right after Ask a Question, ahead of
                     Life Tracker and Trade Balancer. Fixed at this position rather than modeled
                     as a `PortalEntry` because it opens this component's own sheet state, not a
@@ -311,111 +283,77 @@ export function FeaturePortalMenu({
                     no longer depends on the currently-visible destination registering a
                     history trigger of its own. */}
                 {index === 0 && (
-                  <button
-                    type="button"
-                    role="menuitem"
-                    aria-label="Question History"
-                    onClick={() => {
-                      setIsOpen(false);
-                      openHistory();
-                    }}
-                    className="portal-menu-drawer-row flex min-h-[2.75rem] items-center gap-3 border-b border-zinc-700/60 text-left text-sm font-medium text-zinc-200 transition hover:bg-zinc-800/70"
-                  >
-                    <HistoryRowIcon />
-                    <span>Question History</span>
-                  </button>
+                  <li role="presentation">
+                    <button
+                      type="button"
+                      role="menuitem"
+                      aria-label="Question History"
+                      onClick={() => {
+                        setIsOpen(false);
+                        openHistory();
+                      }}
+                    >
+                      <span aria-hidden="true" className="glyph">
+                        ◷
+                      </span>
+                      <span>Question History</span>
+                    </button>
+                  </li>
                 )}
               </Fragment>
             );
           })}
-          <div className="portal-menu-drawer-section flex flex-col gap-1">
-            <p className="pb-1.5 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">Theme</p>
-            <ThemeSection
-              paletteId={paletteId}
-              onSelect={handlePaletteSelect}
-              colorlessCustomHex={colorlessCustomHex}
-              onColorlessCustomChange={onColorlessCustomChange}
-              onColorlessReset={onColorlessReset}
-            />
-          </div>
-          {/* Quiet decorative brand mark (REQ-113 item 4): pinned toward the bottom of any
-              leftover vertical space via `mt-auto` in this flex column (drawer-inner stretches
-              to the drawer's full height, see .portal-menu-drawer-inner's min-height: 100%) —
-              not immediately after the last entry. `aria-hidden` and no onClick (plain BrandMark,
-              not the header's button variant) keep it out of the drawer's own `role="menu"`
-              semantics entirely: it isn't a menuitem and doesn't affect menuitem queries.
-              `.portal-menu-drawer-brand`'s `pointer-events: none` (index.css) means it never
-              intercepts clicks meant for entries/Theme/scroll above it. No height-detection
-              logic decides whether this renders — a shell too short to host it cleanly is
-              handled by the same `.portal-shell-bounds` overflow: hidden clip that produces the
-              matching bottom-left radius (slice A), which simply clips this off along with the
-              rest of the drawer's excess height. */}
-          <div aria-hidden="true" className="portal-menu-drawer-brand mt-auto pt-3">
-            <BrandMark />
-          </div>
-        </div>
-      </div>
-    </Fragment>
+        </ul>
+        <h3>Theme</h3>
+        <ThemeSection
+          paletteId={paletteId}
+          onSelect={handlePaletteSelect}
+          colorlessCustomHex={colorlessCustomHex}
+          onColorlessCustomChange={onColorlessCustomChange}
+          onColorlessReset={onColorlessReset}
+        />
+        {/* The colour's own element plays at a whisper behind the rows (REQ-207): the
+            mockup's `.tray-flair`, the same renderer as the page scene at low density. */}
+        <AmbientScene motif={paletteMotif} variant="tray" />
+      </nav>
+    </div>
   ) : null;
 
-  // The drawer portals into the resolved shell-bounds node (REQ-113's full-height/visible-bounds
-  // tray) when one is registered and visible. When none is registered — isolated component
-  // tests, a hypothetical headerless/shell-less destination — it falls back to rendering inline
-  // here, exactly as it always has, so every existing case without a PageShell/ShellBounds
-  // ancestor keeps passing unmodified.
-  // DEC-150: while the tray is open, the rail's Menu/History trigger(s) are not visible and
-  // not clickable. This amends DEC-140's "trigger stays interactive so the user can close it"
-  // clause: closing now goes exclusively through the outside-click/Escape handlers above.
-  // The rail stays mounted (same DOM node identity) rather than being conditionally
-  // unmounted: `visibility: hidden` on `.portal-menu-rail-inert` removes it from paint and
-  // from `elementFromPoint` hit-testing (browsers exclude invisible elements from hit-testing
-  // and the tab order automatically), `pointer-events: none` is belt-and-suspenders, and
-  // `aria-hidden`/`tabIndex={-1}` on each interactive button are a further explicit guard —
-  // the same proven pattern this package's own prior DEC-140 History-inert treatment used.
-  // Keeping the same node mounted (instead of `isOpen ? null : ...`) matters beyond DEC-150
-  // itself: other app chrome (e.g. the feedback modal opened via this same Menu) restores
-  // keyboard focus to "the portal trigger" by DOM reference after closing, which only works
-  // if that reference survives the open/close cycle.
+  // REQ-114/REQ-115/REQ-116/REQ-207: there is one ☰ trigger (the banner header's
+  // Menu button, `.menu-toggle`) at every width, on every destination. History
+  // access is the tray's own "Question History" row, which opens this
+  // component's combined-list sheet (REQ-213). DEC-150: while the tray is open
+  // the trigger is not visible and not clickable (`aria-hidden`/`tabIndex` are a
+  // guard; the open tray's backdrop covers it); it stays mounted — same DOM node —
+  // so keyboard focus can be restored to it by reference after closing.
   const railInertAttrs = isOpen ? { "aria-hidden": "true" as const, tabIndex: -1 } : {};
 
-  // REQ-114/REQ-115/REQ-116/REQ-207: the split Menu+History rail retires — there is
-  // one ☰ trigger (the banner header's REQ-207 Menu button) at every width, on every
-  // destination. History access moves into the drawer's own "Question History" row
-  // above, which now opens this component's own combined-list sheet (REQ-213)
-  // directly rather than selecting between two rendered trigger shapes here.
   const railTrigger = (
     <button
       type="button"
+      className="menu-toggle motion-focus"
       aria-label="Switch feature"
       aria-haspopup="true"
       aria-expanded={false}
       onClick={isOpen ? undefined : () => setIsOpen(true)}
-      className={`portal-menu-rail motion-focus border-none font-medium${
-        isOpen ? " portal-menu-rail-inert" : ""
-      }`}
       {...railInertAttrs}
     >
-      <MenuIcon />
+      ☰
     </button>
   );
 
   const trigger = (
-    <div
-      ref={containerRef}
-      className={effectiveSlotNode ? "portal-slot-tab relative" : "fixed left-0 top-0 z-30"}
-    >
+    <div ref={containerRef} className={effectiveSlotNode ? "portal-slot-tab" : "fixed left-0 top-0 z-30"}>
       {railTrigger}
-
-      {!visibleShellBoundsNode && drawer}
     </div>
   );
 
   return (
     <PortalSlotContext.Provider
-      value={{ registerSlot, unregisterSlot, registerShellBounds, unregisterShellBounds }}
+      value={{ registerSlot, unregisterSlot }}
     >
       {effectiveSlotNode ? createPortal(trigger, effectiveSlotNode) : trigger}
-      {visibleShellBoundsNode && drawer ? createPortal(drawer, visibleShellBoundsNode) : null}
+      {drawer ? createPortal(drawer, document.body) : null}
       <div className={effectiveSlotNode ? undefined : "pt-44"}>{children}</div>
       <ConversationHistoryDrawer
         isOpen={isHistoryOpen}

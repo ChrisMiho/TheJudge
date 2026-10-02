@@ -26,12 +26,7 @@ export const OverlayCloseButton = forwardRef<HTMLButtonElement, OverlayCloseButt
         type="button"
         aria-label={label}
         onClick={onClick}
-        className={[
-          "motion-focus flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-accent/40 bg-zinc-900/60 text-lg font-semibold leading-none text-accent-soft transition hover:border-accent/70 hover:bg-accent/15",
-          className
-        ]
-          .filter(Boolean)
-          .join(" ")}
+        className={["icon-btn overlay-close motion-focus", className].filter(Boolean).join(" ")}
       >
         <span aria-hidden="true">✕</span>
       </button>

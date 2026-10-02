@@ -1,6 +1,6 @@
 # Slice A — Frame
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -59,25 +59,25 @@ Also touched:
 
 ## Acceptance criteria
 
-Threshold for this slice: differing fraction at most 0.03 per pair (initial; measure first, lower it only with evidence, never raise it to or above 0.05). States to pair: at-rest, menu-open, send-feedback, question-history, card-detail.
+Threshold for this slice: differing fraction at most 0.03 per pair (initial; measured maximum 0.0152 at tolerance 12, kept at 0.03; never raised to or above 0.05). States to pair: at-rest, menu-open, send-feedback, question-history, card-detail.
 
-- [ ] **A1** Side-by-side pairs exist at 390x844 and 1440x900 for every state (at-rest, menu-open, send-feedback, question-history, card-detail) in docs/design/ui-reimagining/build-screenshots/translation/frame/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated
-- [ ] **A2** `node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/frame/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.03 (itself below 0.05); every mask region is named with a reason
-- [ ] **A3** `npm run quality:check` is green
-- [ ] **A4** `npm --workspace apps/frontend run test` is green
-- [ ] **A5** `npm --workspace apps/backend run test` is green
-- [ ] **A6** REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md
-- [ ] **A7** REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md
-- [ ] **A8** Profile-switch pair: the menu-open state in two different Theme colours at 390x844 is saved as `menu-open-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/frame/, with every element recoloured and none left behind (observed)
-- [ ] **A9** Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice
-- [ ] **A10** Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/frame/ (absolute paths) is recorded in DIFF-RESULTS.md
-- [ ] **A11** `node --test scripts/compare-screenshot-pair.test.mjs` passes and `npm run test:scripts` is green
-- [ ] **A12** `scripts/compare-screenshot-pair.mjs` run on two PNGs prints one JSON line with exactly the keys `build, mockup, mask, tolerance, comparedPixels, maskedPixels, differingPixels, differingFraction`, and exits non-zero printing both sizes on a size mismatch
-- [ ] **A13** `tokens.css`, `shell.css`, `flow.css`, `ambience.css` exist under `apps/frontend/src/styles/` with the mockup's selectors and values, loaded in the order tokens, shell, flow
-- [ ] **A14** `AmbientScene` draws the ported `ambience.js` renderer on one fixed canvas, recolours on a Theme change, paints one still frame under emulated reduced motion, and no second scene component or library exists
-- [ ] **A15** At 390x844 and 1440x900 the header's top edge is at y=0 (measured with the browser's bounding box, value recorded in DIFF-RESULTS.md) in every state
-- [ ] **A16** Menu tray alpha is 1 (REQ-122), the mock banner still renders (REQ-123), and every control paints at least 44px (REQ-205); each is observed in the browser at both viewports and any mockup difference is a named mask
-- [ ] **A17** `PRD/sections/` carries the NFR-006, REQ-207 and REQ-216 edits, each applied once, by intent against current truth
+- [x] **A1** Side-by-side pairs exist at 390x844 and 1440x900 for every state (at-rest, menu-open, send-feedback, question-history, card-detail) in docs/design/ui-reimagining/build-screenshots/translation/frame/, named `<state>-build-<viewport>.png` and `<state>-mockup-<viewport>.png` (plus `<state>-mask-<viewport>.json` where a mask is used), same profile and state on both sides, reduced motion emulated
+- [x] **A2** `node scripts/compare-screenshot-pair.mjs --build ... --mockup ...` is run on every pair and each row (pair, mask file or none, tolerance, differing fraction, threshold) is in docs/design/ui-reimagining/build-screenshots/translation/frame/DIFF-RESULTS.md; every differingFraction is at or below the slice threshold 0.03 (itself below 0.05); every mask region is named with a reason
+- [x] **A3** `npm run quality:check` is green
+- [x] **A4** `npm --workspace apps/frontend run test` is green
+- [x] **A5** `npm --workspace apps/backend run test` is green
+- [x] **A6** REQ-216 audit (a1): the brief's verbatim command over this slice's rebuilt components (the `FILES` list below) prints 0; command and count recorded in DIFF-RESULTS.md
+- [x] **A7** REQ-216 audit (a2): the brief's verbatim command over every line added under `apps/frontend/src` since `BASE` prints 0; command and count recorded in DIFF-RESULTS.md
+- [x] **A8** Profile-switch pair: the menu-open state in two different Theme colours at 390x844 is saved as `menu-open-profile-<name>-build-390x844.png` (two names) in docs/design/ui-reimagining/build-screenshots/translation/frame/, with every element recoloured and none left behind (observed)
+- [x] **A9** Life Tracker table before/after pair (REQ-202) is saved at both widths under `translation/life-tracker-table/`; the owner reviews it and no pixel count blocks the slice
+- [x] **A10** Cleanup evidence: the Playwright browser is closed (`browser_close`), the build server and the mockup server this slice started are stopped, their ports (never 5273, 3100 or 5300) are released (`lsof -i :<port>` empty), and the capture path docs/design/ui-reimagining/build-screenshots/translation/frame/ (absolute paths) is recorded in DIFF-RESULTS.md
+- [x] **A11** `node --test scripts/compare-screenshot-pair.test.mjs` passes and `npm run test:scripts` is green
+- [x] **A12** `scripts/compare-screenshot-pair.mjs` run on two PNGs prints one JSON line with exactly the keys `build, mockup, mask, tolerance, comparedPixels, maskedPixels, differingPixels, differingFraction`, and exits non-zero printing both sizes on a size mismatch
+- [x] **A13** `tokens.css`, `shell.css`, `flow.css`, `ambience.css` exist under `apps/frontend/src/styles/` with the mockup's selectors and values, loaded in the order tokens, shell, flow
+- [x] **A14** `AmbientScene` draws the ported `ambience.js` renderer on one fixed canvas, recolours on a Theme change, paints one still frame under emulated reduced motion, and no second scene component or library exists
+- [x] **A15** At 390x844 and 1440x900 the header's top edge is at y=0 (measured with the browser's bounding box, value recorded in DIFF-RESULTS.md) in every state
+- [x] **A16** Menu tray alpha is 1 (REQ-122), the mock banner still renders (REQ-123), and every control paints at least 44px (REQ-205); each is observed in the browser at both viewports and any mockup difference is a named mask
+- [x] **A17** `PRD/sections/` carries the NFR-006, REQ-207 and REQ-216 edits, each applied once, by intent against current truth
 
 ## Verification
 

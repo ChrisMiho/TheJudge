@@ -128,7 +128,7 @@ describe("Interaction flows - search and game context", () => {
 
   it("defines a visible focus treatment for the shared motion utility", () => {
     expect(appCss).toMatch(
-      /\.motion-focus:focus-visible\s*\{[^}]*outline:\s*2px solid rgb\(var\(--accent-soft\)\);[^}]*outline-offset:\s*2px;/
+      /\.motion-focus:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--accent-soft\);[^}]*outline-offset:\s*2px;/
     );
   });
 

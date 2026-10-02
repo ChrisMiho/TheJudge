@@ -34,6 +34,7 @@ import {
   appCss,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
+import { appliedAccentTriple } from "./test/appliedTheme";
 
 let fetchMock: ReturnType<typeof vi.fn>;
 let metadataFixture: CardMetadataItem[] = [];
@@ -90,7 +91,7 @@ describe("Theme palette changes preserve workflow state", () => {
     await user.click(screen.getByRole("button", { name: "Theme: White" }));
 
     expect(document.documentElement.dataset.theme).toBe("white");
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("237 231 214");
+    expect(appliedAccentTriple("--accent")).toBe("237 231 214");
     // Look-matching pass (slice N): restyled to `.plate-next` (flow.css), which reads the
     // active palette's `--accent`/`--accent-strong` custom properties directly rather than
     // a fixed Tailwind gradient utility.
@@ -163,14 +164,14 @@ describe("Theme palette changes preserve workflow state", () => {
       await user.click(screen.getByRole("button", { name: `Theme: ${palette.name}` }));
 
       expect(document.documentElement.dataset.theme).toBe(palette.id);
-      expect(document.documentElement.style.getPropertyValue("--accent")).toBe(palette.accent);
-      expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe(
+      expect(appliedAccentTriple("--accent")).toBe(palette.accent);
+      expect(appliedAccentTriple("--accent-strong")).toBe(
         palette.accentStrong
       );
-      expect(document.documentElement.style.getPropertyValue("--accent-soft")).toBe(
+      expect(appliedAccentTriple("--accent-soft")).toBe(
         palette.accentSoft
       );
-      expect(document.documentElement.style.getPropertyValue("--accent-contrast")).toBe(
+      expect(appliedAccentTriple("--accent-contrast")).toBe(
         palette.accentContrast
       );
       expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
@@ -207,7 +208,7 @@ describe("Theme palette changes preserve workflow state", () => {
     await user.click(screen.getByRole("button", { name: "Theme: Colorless" }));
 
     expect(document.documentElement.dataset.theme).toBe("colorless");
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("82 82 91");
+    expect(appliedAccentTriple("--accent")).toBe("82 82 91");
 
     fireEvent.change(screen.getByLabelText("Customize Colorless color"), {
       target: { value: "#123456" }
@@ -216,22 +217,22 @@ describe("Theme palette changes preserve workflow state", () => {
     // REQ-099: #123456 is a near-black navy that fails both readability
     // floors as picked, so it is lifted (hue kept) rather than applied
     // unchanged — assert the floors hold, not a specific lifted RGB.
-    const liftedAccent = document.documentElement.style.getPropertyValue("--accent");
+    const liftedAccent = appliedAccentTriple("--accent");
     expect(liftedAccent).not.toBe("18 52 86");
-    expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe(liftedAccent);
+    expect(appliedAccentTriple("--accent-strong")).toBe(liftedAccent);
     expect(["255 255 255", "9 9 11"]).toContain(
-      document.documentElement.style.getPropertyValue("--accent-contrast")
+      appliedAccentTriple("--accent-contrast")
     );
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Theme: Green" }));
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("10 122 66");
+    expect(appliedAccentTriple("--accent")).toBe("10 122 66");
 
     await user.click(screen.getByRole("button", { name: "Theme: Colorless" }));
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe(liftedAccent);
+    expect(appliedAccentTriple("--accent")).toBe(liftedAccent);
 
     await user.click(screen.getByRole("button", { name: "Reset to gray" }));
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("82 82 91");
+    expect(appliedAccentTriple("--accent")).toBe("82 82 91");
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
   });
@@ -240,9 +241,9 @@ describe("Neutral palette backdrop", () => {
   it("does not leave the app shell background biased toward blue-950", () => {
     expect(appCss).not.toContain("#172554");
     // REQ-200: a flat dark ground, one colour per profile, no gradient — the
-    // old hard-coded gradient is gone, replaced by the `--ground` token.
+    // old hard-coded gradient is gone, replaced by the `--surface-wash` token.
     expect(appCss).not.toMatch(/\.page-shell\s*{[^}]*linear-gradient/);
-    expect(appCss).toContain("background: rgb(var(--ground));");
+    expect(appCss).toContain("background: var(--surface-wash);");
   });
 });
 

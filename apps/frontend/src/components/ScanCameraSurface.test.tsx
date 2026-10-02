@@ -546,7 +546,7 @@ describe("Frontend - Card Scan", () => {
       const outline = screen.getByTestId("scan-card-outline");
       // Look-matching pass (slice P): the affirmative lock outline now reads
       // the colour's accent-soft token instead of a fixed hue.
-      expect(outline.querySelector("polygon")).toHaveAttribute("stroke", "rgb(var(--accent-soft))");
+      expect(outline.querySelector("polygon")).toHaveAttribute("stroke", "var(--accent-soft)");
       expect(screen.queryByTestId("scan-debug-overlay")).not.toBeInTheDocument();
       expect(screen.queryByTestId("scan-debug-geometry")).not.toBeInTheDocument();
     });

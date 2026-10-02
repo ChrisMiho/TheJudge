@@ -1,0 +1,22 @@
+/*
+ * Glow and shadow tokens (REQ-216): the one-off shadows the app's own stylesheets used to
+ * spell out with literal lengths, named once here beside the profile tokens so no component
+ * stylesheet carries a literal shadow of its own. Every colour comes from the active
+ * profile's tokens (tokens.css), so a Theme change recolours them.
+ */
+
+:root {
+  --glow-dot: 0 0 6px var(--accent-soft);
+  --glow-soft-10: 0 0 10px var(--accent-soft);
+  --glow-soft-12: 0 0 12px -5px var(--accent-soft);
+  --glow-soft-16: 0 0 16px -8px var(--accent-soft);
+  --glow-accent-10: 0 0 10px -2px color-mix(in srgb, var(--accent) 80%, transparent);
+  --glow-accent-14: 0 0 14px -4px color-mix(in srgb, var(--accent) 80%, transparent);
+  --glow-accent-18: 0 0 18px -6px color-mix(in srgb, var(--accent) 85%, transparent);
+  --lift-send: 0 6px 16px -8px color-mix(in srgb, var(--accent) 90%, transparent);
+  --lift-send-hover: 0 8px 20px -8px var(--accent);
+  --lift-message: 0 8px 22px -12px color-mix(in srgb, var(--accent) 90%, transparent);
+  --ring-breathe-rest: 0 0 0 1px color-mix(in srgb, var(--accent) 12%, transparent);
+  --ring-breathe-peak: 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent);
+  --stroke-bright: color-mix(in srgb, var(--accent-soft) 55%, #fff);
+}

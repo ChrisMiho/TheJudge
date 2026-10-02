@@ -1,0 +1,52 @@
+{
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 844
+  },
+  {
+   "name": "closed bottom sheets glow",
+   "reason": "the mockup keeps its three closed bottom sheets mounted just below the screen and their accent glow bleeds up into the bottom edge on a phone; the app mounts a sheet only while open",
+   "x": 0,
+   "y": 796,
+   "width": 390,
+   "height": 48
+  },
+  {
+   "name": "overlay close button",
+   "reason": "REQ-142: the close glyph takes the active profile's light; the mockup's is plain white",
+   "x": 337,
+   "y": 355,
+   "width": 46,
+   "height": 46
+  },
+  {
+   "name": "feedback type pills",
+   "reason": "REQ-205: the pills paint 44px tall (the mockup's are 40px); a negative block margin keeps the layout the mockup's",
+   "x": 15,
+   "y": 418,
+   "width": 74,
+   "height": 46
+  },
+  {
+   "name": "feedback type pills",
+   "reason": "REQ-205: the pills paint 44px tall (the mockup's are 40px); a negative block margin keeps the layout the mockup's",
+   "x": 92,
+   "y": 418,
+   "width": 123,
+   "height": 46
+  },
+  {
+   "name": "feedback type pills",
+   "reason": "REQ-205: the pills paint 44px tall (the mockup's are 40px); a negative block margin keeps the layout the mockup's",
+   "x": 219,
+   "y": 418,
+   "width": 88,
+   "height": 46
+  }
+ ]
+}

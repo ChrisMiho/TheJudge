@@ -18,17 +18,13 @@ describe("StagedStepHeader", () => {
   it("exposes semantic hooks for automatic responsive typography", () => {
     render(<StagedStepHeader />);
 
-    expect(screen.getByRole("heading", { name: "TheJudge" })).toHaveClass("staged-step-brand");
+    expect(screen.getByRole("heading", { name: "TheJudge" })).toHaveClass("brand-mark");
   });
 
   it("adds shared interaction feedback when the brand is clickable", () => {
     render(<StagedStepHeader onBrandClick={() => undefined} />);
 
-    expect(screen.getByRole("button", { name: "TheJudge" })).toHaveClass(
-      "motion-hover",
-      "motion-press",
-      "motion-focus"
-    );
+    expect(screen.getByRole("button", { name: "TheJudge" })).toHaveClass("brand-mark", "motion-press");
   });
 
   it("threads an optional historyTrigger into its PortalSlot registration", () => {
@@ -37,7 +33,7 @@ describe("StagedStepHeader", () => {
     const onOpen = vi.fn();
 
     render(
-      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot, registerShellBounds: vi.fn(), unregisterShellBounds: vi.fn() }}>
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
         <StagedStepHeader historyTrigger={{ onOpen }} />
       </PortalSlotContext.Provider>
     );

@@ -46,32 +46,20 @@ export function ConfirmSheet({
       onClose={onKeep}
       closeLabel={`Keep — don't ${confirmLabel.toLowerCase()}`}
       titleId={titleId}
+      panelClassName="confirm-panel"
+      showCloseButton={false}
       testId={testId}
-      head={
-        <h2 id={titleId} className="text-lg font-black text-zinc-100">
-          {question}
-        </h2>
-      }
-      foot={
-        <div className="flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onKeep}
-            className="motion-press motion-focus min-h-[2.75rem] rounded-2xl border border-zinc-700 bg-zinc-900 px-4 font-bold text-zinc-200 hover:bg-zinc-800"
-          >
-            {keepLabel}
-          </button>
-          <button
-            type="button"
-            onClick={onConfirm}
-            className="motion-press motion-focus min-h-[2.75rem] rounded-2xl bg-accent-strong px-4 font-bold text-accent-contrast"
-          >
-            {confirmLabel}
-          </button>
-        </div>
-      }
     >
-      <p className="text-sm text-zinc-300">{detail}</p>
+      <h2 id={titleId}>{question}</h2>
+      <p>{detail}</p>
+      <div className="row">
+        <button type="button" className="btn" onClick={onKeep}>
+          {keepLabel}
+        </button>
+        <button type="button" className="btn go" onClick={onConfirm}>
+          {confirmLabel}
+        </button>
+      </div>
     </SheetShell>
   );
 }

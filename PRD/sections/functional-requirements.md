@@ -4953,6 +4953,7 @@
   - the contrast floors are measured current behaviour, not new quality targets:
     the redesign may not make any of the three worse than it is today
   - amended for the `ui-reimagining-build` pass (2026-09-30): the custom-Colorless exemption is replaced by REQ-099's readability lift, the one permitted runtime colour derivation — a fixed rule, not a contrast engine. REQ-207 is the code slice that ships this token set
+  - REQ-216 extends this requirement's one-source rule from colours to every style value (surface, radius, shadow, glow, type size, spacing) and fixes the order the shared stylesheets layer in; the roles above resolve to its ported token layer
 
 ### REQ-201
 - Title: Original per-colour motif kit
@@ -4976,7 +4977,9 @@
   - motifs are decorative: no motif is the sole carrier of meaning, state, or an
     action, and removing one leaves every control usable and labelled
   - motifs respect `prefers-reduced-motion` through the existing CSS motion
-    baseline (NFR-006); no new motion trigger or timing system is introduced
+    baseline, and the ambient scene through its canvas renderer's still frame
+    (NFR-006); no new motion trigger or timing system is introduced beyond that
+    one renderer's own frame loop
   - the brand mark may keep, adapt, or replace today's gradient text wordmark,
     and whatever it becomes keeps the Easter-egg tap trigger (REQ-203)
 - Constraints:
@@ -5228,7 +5231,7 @@
 - Description: The Menu offers one question destination, **Ask a Question**, in place of the separate Quick Question and In-Depth Question rows. The Ask a Question page is today's Quick Question page (route `/quick-lookup`, `mode: "lookup"` request) recomposed around the attached cards: the front card full size on a lit stage with the one other card peeking out each side (two cards peek on one side only, never duplicated), a one-pill question box with the send inside it, and an **Add in-depth details** pill that carries the attached cards and any typed question into In-depth details (route `/in-depth`, `mode: "game"` request). The two routes, the two request modes and their prompts are unchanged; what changes is the door, the page composition, and the carry.
 - Acceptance Criteria:
   - the Menu lists **Ask a Question** once and no longer lists Quick Question or In-Depth Question; it opens `/quick-lookup`; `/in-depth` stays addressable by deep link and by the carry, and the Menu marks Ask a Question current on both routes
-  - with no card attached there is no stage; with cards attached the front card renders full size on a solid-panel stage with the one other card peeking out each side (three or more cards peek one on each side; exactly two cards peek on one side only, so the same card is never rendered twice); a tap on a neighbour or the ‹/› arrows turns the ring
+  - with no card attached there is no stage; with cards attached the front card renders full size on a glass stage (REQ-207) with the one other card peeking out each side (three or more cards peek one on each side; exactly two cards peek on one side only, so the same card is never rendered twice); a tap on a neighbour or the ‹/› arrows turns the ring
   - ✕ Remove and ⓘ Details straddle the front card's top corners; a dark count pill reads `n / <cap>`, where the cap is REQ-167's
   - **Add card** and **Scan** sit beside the title; the card search field stays available for typed autocomplete search and is not gated behind a separate reveal step
   - the question box is one pill: the Add in-depth details pill at its left end (icon-only below 480px, labelled from 480px up), the text, the character count, and the send
@@ -5262,23 +5265,24 @@
 ### REQ-207
 - Title: Direction-1 shared chrome — banner header, Menu tray, Theme band, and the colour's ambient scene
 - Priority: high
-- Description: The shared frame every destination lives in takes the owner-approved direction-1 look and delivers the REQ-200 token set and REQ-201 motif kit in code. A banner header carries the Menu (☰) at the left and the brand centred; the Menu tray slides in from the left; Theme is a six-cell band; and a restrained, CSS-animated scene of the chosen colour's element plays behind every page.
+- Description: The shared frame every destination lives in takes the owner-approved direction-1 look and delivers the REQ-200 token set and REQ-201 motif kit in code. A banner header carries the Menu (☰) at the left and the brand centred; the Menu tray slides in from the left; Theme is a six-cell band; and a restrained scene of the chosen colour's element, drawn by the canvas renderer ported from the mockup (NFR-006), plays behind every page.
 - Acceptance Criteria:
   - one typeface, Inter, for body and titles (titles heavier with tighter tracking), served as a self-hosted local font file with the system stack as fallback — no runtime request to a font CDN, no display face
   - the page ground is flat: one colour per profile from the REQ-200 token set, no gradient; neutral ground and panel fills stay the visual majority; no corner decoration, hairline bracket or flourish on any surface
   - the header is a banner: ☰ at the left (at least 44px; about a quarter larger than today's trigger on a phone and a third on desktop), the brand centred (a breathing orb holding the colour's badge, the wordmark, "MTG Assistant") on a lit band with a hairline of the colour's light along its foot, and each profile's element drawn across the band (White low-sun rays at half strength; Blue a scatter of arcane shapes; Black fog pooling at the ends; Red a hot band with embers; Green a scatter of leaf and tree shapes; Colorless small triangles, rings, arcs, dots and crosses); the right-hand slot shows Trade Balancer's price date at `768px`+; the brand keeps the cat-wizard Easter egg (REQ-203)
+  - the banner header sits flush with the top edge of the viewport — its top at y=0 at every width — and the page's own padding applies only to the content below it, never wrapping or offsetting the header; in mock provider mode the mock-mode banner keeps its place directly under the header (REQ-123)
   - the Menu tray slides in from the left at every width: full height of the visible shell side below `768px`; at `768px`+ a floating card inset from the edges, rounded, sized to its content; it closes on its ✕, a tap outside it, and Escape; it stays fully opaque over destination content (REQ-122)
   - the destination list is REQ-206's: Ask a Question, Question History (REQ-213), Life Tracker, Trade Balancer, then Send feedback past a hairline
   - **Theme** is one segmented band the tray's width with six equal cells in catalog order (White, Blue, Black, Red, Green, Colorless): an unchosen cell is a faint wash of its colour with its symbol in the colour's light; the chosen cell is filled with the colour's light, the symbol dark on it, with a small glow; no colour names or blurb (each cell's hover title and accessible name name the colour); a cell is never narrower than 40px — when six no longer fit, the band slides with an arrow at each end nudging two cells at a time (the exhausted end's arrow fades) and the chosen cell is scrolled into view when the Menu opens; from 320px up all six fit and no arrow shows; with Colorless current, a colour well and **Reset to gray** show beneath, wrapping cleanly
-  - behind every page plays the chosen colour's **ambient scene**: two slowly drifting haze sheets, a field of glowing dust, the colour's badge large, blurred and faint in the centre, and the colour's element moving (White beams, Blue runes and constellations, Black fog and brambles, Red heat and embers, Green falling leaves, Colorless turning geometry); the same scene plays at a whisper inside the Menu tray over a pool of the colour's light fading in at its foot (Colorless's tray gets a fuller scatter of slightly brighter shapes)
-  - each scene's density and opacity are one number each, so it can be tuned down without redrawing; the scene is decorative, never carries meaning, and sits behind solid panels (the card stage, every In-depth plate) so the badge shows around them, never through them
-  - under `prefers-reduced-motion` the scene is still and every decorative motion stops (NFR-006)
-  - the REQ-200 contrast floors hold over the scene in all six profiles; a custom Colorless colour follows REQ-099
+  - behind every page plays the chosen colour's **ambient scene**: two slowly drifting haze sheets, a field of glowing dust, the colour's badge large, blurred and faint in the centre, and the colour's element moving (White beams, Blue runes and constellations, Black fog and brambles, Red heat and embers, Green falling leaves, Colorless turning geometry), as the ported mockup renderer draws each one; the same scene plays at a whisper inside the Menu tray over a pool of the colour's light fading in at its foot (Colorless's tray gets a fuller scatter of slightly brighter shapes)
+  - each scene's density and opacity are one number each, so it can be tuned down without redrawing; the scene is decorative and never carries meaning; panels (the card stage, every In-depth plate, the Trade Balancer piles' panel and every other panel surface) take the mockup's own surface values from the shared token layer (REQ-216) — translucent glass wherever the mockup draws glass — so the scene reads through them; the open Menu tray stays fully opaque (REQ-122)
+  - under `prefers-reduced-motion` the scene paints one still frame and runs no animation loop, and every decorative motion stops (NFR-006)
+  - the REQ-200 contrast floors hold over the scene in all six profiles, including text on glass panels with the scene behind them; a custom Colorless colour follows REQ-099
   - every card keeps its colour-identity ring (REQ-058) on every card surface; the theme owns the glow behind a card, never its edge
-  - tests cover the band's cell floor and arrows at 280px and 390px, the tray's close paths, reduced motion stopping the scene, the font loading from the app's own origin, and the contrast floors per profile
+  - tests cover the band's cell floor and arrows at 280px and 390px, the tray's close paths, reduced motion stopping the scene, the header's top edge at 0 at 390×844 and 1440×900, the font loading from the app's own origin, and the contrast floors per profile
 - Constraints:
-  - CSS-only motion (NFR-006): the scene is layered static SVG and gradients animated with CSS transforms and opacity — no script-driven animation loop, no canvas render loop, no animation library
-  - the six symbols, badges, banner elements and scene art are the app's own drawings shipped as local static files (REQ-201); no Wizards of the Coast glyph, icon font, logo, set symbol or card art
+  - motion (NFR-006): the scene is the one hand-written canvas renderer ported from the mockup's `ambience.js`, mounted once as `AmbientScene` (page and Menu-tray variants) on a fixed canvas behind the page and driven by the active colour profile; no animation library; every other decorative motion in the frame stays CSS transforms and opacity
+  - the six symbols, badges, banner elements and scene art are the app's own drawings, shipped as local static files or drawn by the ported scene renderer from the app's own code (REQ-201); no Wizards of the Coast glyph, icon font, logo, set symbol or card art
   - the font file and scene art stay within the frontend asset budget (REQ-201, NFR-013); if a self-hosted Inter cut cannot fit, the system stack stands and no font file ships
   - presentation only: no change to request contracts, prompts, backend routes, card metadata, or the data pipeline
   - Life Tracker inherits this chrome, reviewed by the screenshot pair on every touching slice (REQ-202)
@@ -5298,6 +5302,8 @@
   - FLOW-007
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the approved mockup drew the element on a script-driven canvas — this build keeps the look and moves it to CSS to stay inside NFR-006
+  - amended by `ui-look-translation` (2026-10-02): the scene returns to the mockup's own canvas renderer under NFR-006's ambient-scene exception; the CSS-only haze it replaces is retired
+  - amended by `ui-look-translation` (2026-10-02): the header sits at the top edge outside the page padding (the first build's reviews measured a band of about 20px at 390×844 and 48px at 1440×900 above it), and panels take the mockup's glass surfaces instead of solid fills
 
 ### REQ-208
 - Title: One shared sheet for card detail, Question History, the printing picker, Send feedback, and confirmations
@@ -5503,7 +5509,7 @@
 - Description: Trade Balancer shows the balance as two piles of gold that grow with each side's value and a verdict line in plain words, adds a New trade action that asks first, and lets the players rename a side. Totals arithmetic, pricing, the price route and the ephemeral posture are unchanged (REQ-064, REQ-065).
 - Acceptance Criteria:
   - every entry shows its card image (a tap opens the card detail); entries keep add order; changing a printing or finish edits the row in place; the foil toggle on each trade row stays
-  - two piles of gold sit on a solid panel; each pile has five relative tiers, drawn in flat gold/amber with a bronze outline and one purple gem on tiers 4-5
+  - two piles of gold sit on a glass panel (REQ-207); each pile has five relative tiers, drawn in flat gold/amber with a bronze outline and one purple gem on tiers 4-5
   - tiers are relative: the richer side (or either, on a tie) is tier 5; the lighter side's tier is its share of the richer: 95%+ -> 5, 75%+ -> 4, 50%+ -> 3, 25%+ -> 2, under -> 1; the richer pile glows and the lighter dims a step; a tier-up drops in from above with a slight overshoot, a tier-down lifts and fades, nothing loops idle, and the piles update live; empty state (both sides empty): a bare ground line and "Add cards to weigh the trade"
   - the verdict line under the piles, by the smaller side's share of the larger: 95%+ "Fair trade" - 85-95% "Slightly favors <side>" - 60-85% "Leans toward <side>" - under 60% "Lopsided - <side> by NN%"; "Even" when the totals are equal to the cent; the plain dollar difference sits beneath ("Side A +$1.85")
   - a **New trade** action sits beside the title; with cards on either side it opens the shared confirm sheet (REQ-208) - "Start a new trade?", how many cards and how much value it clears, side names kept; **Keep this trade** / **Clear both sides**; with both sides empty it does nothing
@@ -5526,3 +5532,38 @@
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the mockup also tried Add cash, Swap sides and Copy summary and removed them - none ships
   - built by slice G: `apps/frontend/src/components/trade/TradeBalancer.tsx`, `TradeSide.tsx` (rename), `TradePile.tsx` (the five-tier SVG piles), `PrintingPicker.tsx` (shared-sheet rehost, Nonfoil/Foil pills), `apps/frontend/src/lib/trade/pricing.ts` (`pileTier`, `tradeVerdict`, `formatTradeVerdict`, `formatTradeDifference`, `normalizeSideName`), `apps/frontend/src/components/StagedStepHeader.tsx` (new optional `rightSlot` prop, additive and backward compatible)
   - not built, out of this pass's scope: the mockup's moving sheen on a foil entry row (a decorative detail, not load-bearing for the trade's own correctness) — the existing plain Foil toggle/label is unchanged
+
+### REQ-216
+- Title: One visual system, inherited by every screen
+- Priority: high
+- Description: Every redesigned screen, sheet, overlay and panel takes its look from one shared visual system ported from the approved direction-1 mockup (`docs/design/ui-reimagining/direction-1/`). One token layer — the mockup's `tokens.css`, ported once — is the only place a colour, surface, radius, shadow, glow, type size or spacing value is defined, with the six colour profiles as one set of variables switched in one place. Shell styles (`shell.css`, `ambience.css`: header, Menu, Theme band, sheets, the ambient scene) build on the tokens; flow styles (`flow.css`: stage, composer, plates, pills) build on both. Nothing carries its own palette, its own profile or its own copy of a shared style, so choosing a Theme colour recolours everything at once.
+- Acceptance Criteria:
+  - the mockup's `tokens.css` is ported once, with its variable names and values, as the app's only token source; REQ-200's roles (page ground, colour wash, raised panel fill, panel edge, focus ring, primary text, muted text, filled-accent text) resolve to the ported variables rather than carrying values of their own; the theme code that switches the profile and derives the custom Colorless colour (`apps/frontend/src/lib/theme/`) belongs to this token layer, and any value it holds that `tokens.css` also defines is equal to it, checked by a test
+  - the six colour profiles live in that one token layer and switch in one place; a value the mockup does not supply (the custom Colorless colour, REQ-099) is derived the way the mockup derives its six profiles, never chosen by eye
+  - styles layer in one order — tokens, then shell (`shell.css`, `ambience.css`), then flow (`flow.css`), then a screen's own selectors; a screen's own selector may use what those layers set but may not redefine it; a style two screens need moves up a layer instead of being written twice
+  - a screen gets a sheet, a confirm, a composer, a card stage, a plate or a foot bar only through the shared components (`SheetShell`, `ConfirmSheet`, `ComposerPill`, `CardStage`, the shared plate and foot bar); a variant extends the shared one with a modifier and never forks a local copy
+  - choosing a Theme colour in the Menu (FLOW-007) recolours every screen, sheet and overlay at once, with no element left on the previous colour or on a fixed one
+  - outside the token layer, the ported shell, flow and ambience stylesheets, and the named exemptions below, no redesigned component or stylesheet declares a hex colour, an `rgb(…)` or `hsl(…)` value with literal numbers, a one-off shadow (a Tailwind `shadow-[…]` value or a `box-shadow` with literal lengths), a fixed Tailwind palette colour (such as `zinc-` or `slate-`, already barred by REQ-200), or a custom property of its own; a hit is a defect
+  - colours that cannot come from a stylesheet stay in code only in these named files (under `apps/frontend/src/`), each for its reason: the background scene's canvas drawing (`components/AmbientScene.tsx` — a canvas paints with colour strings; its colours are the mockup's `ambience.js` values copied unchanged and keyed by profile); the trade pile's gold, bronze and gem artwork (`components/trade/TradePile.tsx` — fixed materials, the same in every Theme); the scanner's opt-in developer debug outline and overlay (the `debug` stroke in `components/ScanCardOutline.tsx`, and `components/ScanDebugOverlay.tsx` — diagnostics fixed to read against any profile); each card's colour-identity ring (`lib/cardIdentityRing.ts` — derived from the card, never the profile, REQ-058); and the Life Tracker table (`components/portal/life-tracker/PlayerLifeCard.tsx`, `PlayerLifeTrackerApp.tsx` — pixel-unchanged, REQ-202); every other colour in a TS/TSX file lives in the token layer
+  - every slice that touches a redesigned screen records (a) a search for the patterns above, with the command and a count of zero, over the whole of each component it rebuilds and over every line it adds anywhere under `apps/frontend/src`, skipping the token layer, the ported stylesheets, tests and the named exemptions, and (b) a profile-switch pair — its main state at 390×844 in two Theme colours — showing every element recoloured and none left behind; review treats a hit in (a) or a left-behind element in (b) as Important
+- Constraints:
+  - presentation only; no change to request contracts, prompts, backend routes, card metadata, the data pipeline, or any behaviour another requirement sets
+  - Life Tracker's table stays pixel-unchanged and outside this requirement's ported layers (REQ-202); its sheets inherit the system like every other sheet
+  - card art and each card's colour-identity ring stay derived from the card, never from the profile (REQ-058)
+  - no theming framework and no new dependency (REQ-200)
+- Dependencies:
+  - REQ-058
+  - REQ-099
+  - REQ-200
+  - REQ-201
+  - REQ-202
+  - REQ-206
+  - REQ-207
+  - REQ-208
+  - REQ-209
+  - REQ-214
+  - REQ-215
+  - NFR-006
+  - FLOW-007
+- Notes:
+  - reserved and proposed by the `ui-look-translation` package (2026-10-02) from the owner's rule of 2026-10-02: one shared visual system that every screen, sheet, overlay and panel inherits, with nothing carrying its own palette, its own profile, or its own flow of styles. Written because the first build re-typed mockup values into the app's own tokens and every re-typing drifted

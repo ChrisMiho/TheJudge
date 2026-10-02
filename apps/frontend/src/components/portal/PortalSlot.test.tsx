@@ -12,7 +12,7 @@ describe("PortalSlot", () => {
     const unregisterSlot = vi.fn();
 
     const { unmount } = render(
-      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot, registerShellBounds: vi.fn(), unregisterShellBounds: vi.fn() }}>
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
         <PortalSlot />
       </PortalSlotContext.Provider>
     );
@@ -32,7 +32,7 @@ describe("PortalSlot", () => {
     const onOpen = vi.fn();
 
     const { rerender } = render(
-      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot, registerShellBounds: vi.fn(), unregisterShellBounds: vi.fn() }}>
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
         <PortalSlot />
       </PortalSlotContext.Provider>
     );
@@ -41,7 +41,7 @@ describe("PortalSlot", () => {
     expect(getHistoryTrigger()).toBeUndefined();
 
     rerender(
-      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot, registerShellBounds: vi.fn(), unregisterShellBounds: vi.fn() }}>
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
         <PortalSlot historyTrigger={{ onOpen }} />
       </PortalSlotContext.Provider>
     );
@@ -51,17 +51,17 @@ describe("PortalSlot", () => {
     expect(getHistoryTrigger()).toEqual({ onOpen });
   });
 
-  it("renders a self-start alignment override for the host header grid", () => {
+  it("renders a flex box in the header's left column", () => {
     const registerSlot = vi.fn();
     const unregisterSlot = vi.fn();
 
     const { container } = render(
-      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot, registerShellBounds: vi.fn(), unregisterShellBounds: vi.fn() }}>
+      <PortalSlotContext.Provider value={{ registerSlot, unregisterSlot }}>
         <PortalSlot />
       </PortalSlotContext.Provider>
     );
 
-    expect(container.querySelector("div.self-start")).toBeInTheDocument();
+    expect(container.querySelector("div.portal-slot")).toBeInTheDocument();
   });
 });
 });

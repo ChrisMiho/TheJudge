@@ -40,7 +40,7 @@ Assistant core loop and changes nothing about it or the AI answer path.
 - Built: the view shows the **difference** between the two totals as an amount
   under a verdict line that names the side ahead in plain words, or "Even" when
   the totals match to the cent. (REQ-064, REQ-215)
-- Built: the balance is drawn as **two piles of gold** on a solid panel, each
+- Built: the balance is drawn as **two piles of gold** on a glass panel, each
   grown through five tiers relative to the richer side (the richer — or either,
   on a tie — is always tier 5; the lighter's tier is its share: 95%+ → 5, 75%+ →
   4, 50%+ → 3, 25%+ → 2, under → 1), with the verdict line and the plain dollar

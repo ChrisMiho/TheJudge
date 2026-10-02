@@ -178,7 +178,7 @@ describe("CardPresentation", () => {
     expect(overlay.parentElement).toBe(document.body);
     expect(container.contains(popup)).toBe(false);
     expect(image.closest("[data-testid='card-detail-popup']")).toBeNull();
-    expect(popup.parentElement).toBe(overlay);
+    expect(popup.parentElement).toBe(document.body);
   });
 
   it("renders the popup on the shared sheet shell — a bottom sheet below 600px, centred on desktop (REQ-128) — rather than an image-bound box", async () => {
@@ -190,10 +190,10 @@ describe("CardPresentation", () => {
     const overlay = screen.getByTestId("card-detail-popup-overlay");
     const popup = screen.getByTestId("card-detail-popup");
 
-    // The responsive bottom-sheet / centred-desktop-card geometry lives in index.css on
-    // these shared classes (REQ-208), replacing the popup's former private overlay family.
-    expect(overlay).toHaveClass("sheet-shell-overlay");
-    expect(popup).toHaveClass("sheet-shell-surface");
+    // The responsive bottom-sheet / centred-desktop-card geometry lives in shell.css on
+    // these shared classes (REQ-208): `.sheet-backdrop` behind an `aside.drawer-panel.detail-panel`.
+    expect(overlay).toHaveClass("sheet-backdrop");
+    expect(popup).toHaveClass("drawer-panel", "detail-panel");
     expect(popup).not.toHaveClass("absolute", "inset-0");
     expect(popup).toHaveAttribute("role", "dialog");
     expect(popup).toHaveAttribute("aria-modal", "true");
@@ -387,8 +387,8 @@ describe("CardDetailPopup", () => {
     render(<CardDetailPopup card={makeCard()} onClose={vi.fn()} />);
 
     await waitFor(() => expect(screen.getByText("{2}{U}{U}")).toBeInTheDocument());
-    const typeline = screen.getByText("Legendary Creature — Human Artificer").closest("p");
-    const dot = typeline?.querySelector(".card-detail-color-dot");
+    const typeline = screen.getByText("Legendary Creature — Human Artificer").closest(".typeline");
+    const dot = typeline?.querySelector(".pips i");
     expect(dot).not.toBeNull();
     // U + W, two colours: getCardIdentityRing returns a linear-gradient, not a flat colour.
     expect((dot as HTMLElement).style.background).toMatch(/linear-gradient/);
@@ -399,7 +399,7 @@ describe("CardDetailPopup", () => {
     render(<CardDetailPopup card={makeCard({ imageUrl: scryfallUrl })} onClose={vi.fn()} />);
 
     await waitFor(() => expect(screen.getByText("{2}{U}{U}")).toBeInTheDocument());
-    const hero = document.querySelector(".card-detail-hero-img");
+    const hero = document.querySelector(".detail-panel .art img");
     expect(hero).toHaveAttribute("src", "https://cards.scryfall.io/art_crop/front/0/2/urza.jpg");
   });
 

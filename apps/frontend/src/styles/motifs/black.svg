@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Black motif: a badge of decay — a skull drawn in line, wrapped in thorns with ink dripping below">
+  <defs>
+    <radialGradient id="k-glow" cx="50%" cy="46%" r="55%"><stop offset="0" stop-color="#c77dff" stop-opacity="0.5"/><stop offset="0.5" stop-color="#7c3aed" stop-opacity="0.2"/><stop offset="1" stop-color="#2e1a47" stop-opacity="0"/></radialGradient>
+    <linearGradient id="k-drip" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c77dff" stop-opacity="0.9"/><stop offset="1" stop-color="#7c3aed" stop-opacity="0"/></linearGradient>
+  </defs>
+  <circle cx="100" cy="96" r="98" fill="url(#k-glow)"/>
+  <g fill="none" stroke="#c77dff" stroke-linecap="round">
+    <path d="M36 118 A66 66 0 0 1 100 30 A66 66 0 0 1 164 118" stroke-width="3" opacity="0.85"/>
+    <path d="M46 138 A70 70 0 0 1 40 100" stroke-width="2" opacity="0.5"/>
+    <path d="M154 138 A70 70 0 0 0 160 100" stroke-width="2" opacity="0.5"/>
+  </g>
+  <g fill="#c77dff"><path d="M100 30 l-4 -12 l9 8 z"/><path d="M62 46 l-11 -6 l12 -1 z"/><path d="M138 46 l11 -6 l-12 -1 z"/><path d="M40 84 l-12 -3 l10 -6 z"/><path d="M160 84 l12 -3 l-10 -6 z"/><path d="M42 122 l-12 4 l8 6 z"/><path d="M158 122 l12 4 l-8 6 z"/></g>
+  <g fill="none" stroke="url(#k-drip)" stroke-width="3" stroke-linecap="round"><path d="M78 140 v 26"/><path d="M92 144 v 40"/><path d="M108 144 v 30"/><path d="M122 140 v 20"/></g>
+  <g fill="#c77dff"><circle cx="78" cy="168" r="2.4"/><circle cx="92" cy="186" r="2.6"/><circle cx="108" cy="176" r="2.2"/><circle cx="122" cy="162" r="2"/></g>
+  <circle cx="100" cy="96" r="47" fill="#0e0e11" stroke="#c77dff" stroke-opacity="0.4" stroke-width="2"/>
+  <circle cx="100" cy="96" r="43" fill="none" stroke="#c77dff" stroke-width="1" opacity="0.35"/>
+  <g transform="translate(60 56) scale(0.8)" color="#f3e4ff"><path d="M30 52 A20 22 0 1 1 70 52 V60 Q70 66 64 66 V77 H36 V66 Q30 66 30 60 Z" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linejoin="round"/><path d="M43 66 V77 M50 66 V77 M57 66 V77" stroke="currentColor" stroke-width="2.4"/><ellipse cx="41" cy="51" rx="6" ry="5.5" fill="currentColor"/><ellipse cx="59" cy="51" rx="6" ry="5.5" fill="currentColor"/><path d="M50 55 l-3.5 7 h7 z" fill="currentColor"/><path d="M48 31 l5 6 l-3 5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></g>
+</svg>
