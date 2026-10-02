@@ -18,6 +18,7 @@ import {
   selectTurnPhase,
   advanceToBattlefieldZoneCollection,
   openStackBuilder,
+  openZoneCardSearch,
   readSuggestionNamesFromPanel,
   appCss
 } from "./test/appTestHelpers";
@@ -34,8 +35,9 @@ describe("Interaction flows - search and game context", () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
+    await openZoneCardSearch(user, "Stack");
 
-    const searchInput = screen.getByPlaceholderText("Type to begin");
+    const searchInput = screen.getByPlaceholderText("Search for a card to add");
     await user.type(searchInput, "op");
     expect(screen.queryByRole("button", { name: "Opt" })).not.toBeInTheDocument();
 
@@ -156,8 +158,9 @@ describe("Interaction flows - search and game context", () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
+    await openZoneCardSearch(user, "Stack");
 
-    const searchInput = screen.getByPlaceholderText("Type to begin");
+    const searchInput = screen.getByPlaceholderText("Search for a card to add");
     await user.type(searchInput, "lig");
     expect(await screen.findByRole("button", { name: "Lightning Bolt" })).toBeInTheDocument();
 
@@ -174,6 +177,7 @@ describe("Interaction flows - search and game context", () => {
     render(<App />);
 
     await advanceToBattlefieldZoneCollection(user);
+    await openZoneCardSearch(user, "Battlefield");
 
     const battlefieldSearchInput = screen.getByLabelText("Battlefield search input");
     await user.type(battlefieldSearchInput, "lig");
@@ -238,7 +242,8 @@ describe("Interaction flows - search and game context", () => {
 
     const stackView = render(<App />);
     await openStackBuilder(user);
-    const stackInput = screen.getByPlaceholderText("Type to begin");
+    await openZoneCardSearch(user, "Stack");
+    const stackInput = screen.getByPlaceholderText("Search for a card to add");
 
     await user.type(stackInput, "sw");
     expect(readSuggestionNamesFromPanel(stackInput)).toEqual([]);
@@ -263,6 +268,7 @@ describe("Interaction flows - search and game context", () => {
 
     const battlefieldView = render(<App />);
     await advanceToBattlefieldZoneCollection(user);
+    await openZoneCardSearch(user, "Battlefield");
     const battlefieldInput = screen.getByLabelText("Battlefield search input");
 
     await user.type(battlefieldInput, "sw");

@@ -7,6 +7,12 @@ type AdaptiveContextDialogProps = {
   triggerLabel: string;
   dialogLabel: string;
   children: ReactNode;
+  /** Look-matching pass (slice N, review 1 fix — finding 3): "panel" (default,
+   * unchanged) is the full-width bordered trigger. "chip" renders the mockup's
+   * small `.icon-chip` ("◈ View context", `in-depth-question.html:598`) for a
+   * caller placing it inside its own `.chat-head .tools` row. The accessible
+   * name is identical in both variants. */
+  triggerVariant?: "panel" | "chip";
 };
 
 const FOCUSABLE_SELECTOR = [
@@ -21,7 +27,8 @@ const FOCUSABLE_SELECTOR = [
 export function AdaptiveContextDialog({
   triggerLabel,
   dialogLabel,
-  children
+  children,
+  triggerVariant = "panel"
 }: AdaptiveContextDialogProps): JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
   const titleId = useId();
@@ -87,20 +94,37 @@ export function AdaptiveContextDialog({
 
   return (
     <>
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-label={`View context: ${triggerLabel}`}
-        aria-haspopup="dialog"
-        aria-expanded={isOpen}
-        onClick={openDialog}
-        className="adaptive-context-trigger ambient-accent-surface ambient-accent-interactive w-full rounded-xl border border-zinc-700/70 bg-zinc-900/55 px-4 py-3 text-left text-sm font-semibold text-zinc-100"
-      >
-        <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
+      {triggerVariant === "chip" ? (
+        <button
+          ref={triggerRef}
+          type="button"
+          aria-label={`View context: ${triggerLabel}`}
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
+          onClick={openDialog}
+          className="icon-chip motion-focus"
+        >
+          <span className="glyph" aria-hidden="true">
+            ◈
+          </span>
           View context
-        </span>
-        <span className="mt-1 block">{triggerLabel}</span>
-      </button>
+        </button>
+      ) : (
+        <button
+          ref={triggerRef}
+          type="button"
+          aria-label={`View context: ${triggerLabel}`}
+          aria-haspopup="dialog"
+          aria-expanded={isOpen}
+          onClick={openDialog}
+          className="adaptive-context-trigger ambient-accent-surface ambient-accent-interactive w-full rounded-xl border border-zinc-700/70 bg-zinc-900/55 px-4 py-3 text-left text-sm font-semibold text-zinc-100"
+        >
+          <span className="block text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
+            View context
+          </span>
+          <span className="mt-1 block">{triggerLabel}</span>
+        </button>
+      )}
 
       {isOpen &&
         createPortal(

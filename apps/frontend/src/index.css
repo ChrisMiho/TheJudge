@@ -1347,6 +1347,17 @@
   gap: 0.4rem;
 }
 
+/* Look-matching pass (slice N, review 1 fix — finding 3): the In-depth Cards
+   step's own ＋ Add card / ▣ Scan row, a direct child of the step column
+   rather than nested in a `.flow-head` (`in-depth-question.html:72`'s
+   `.idq > .attach` — lower specificity than `.flow-head .attach` above, so it
+   only ever applies where that more specific rule does not). */
+.attach {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: -0.2rem;
+}
+
 /* Look-matching pass (slice O): Trade Balancer's "↺ New trade" chip
    (`trade-balancer.html:214`'s `.head-tools`), sharing `.flow-head`'s own
    row with the title and the phone-only price date. */
@@ -1651,6 +1662,26 @@
   display: grid;
   gap: 0.6rem;
   min-width: 0;
+}
+
+/* Look-matching pass (slice N, review 1 fix — finding 3): the Review step's
+   "Your question — optional" eyebrow above the composer
+   (`in-depth-question.html:584-585` `.q-lbl`). */
+.composer .q-lbl {
+  margin: -0.15rem 0 -0.35rem 0.2rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #a1a1aa;
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.composer .q-lbl small {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.7rem;
 }
 
 .q-box {
@@ -2028,6 +2059,19 @@
   }
 }
 
+/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 7: the
+   carry note above the rail (`in-depth-question.html:75-76` `.carry-note`). */
+.carry-note {
+  margin: -0.2rem 0 0;
+  font-size: 0.8rem;
+  color: #a1a1aa;
+}
+
+.carry-note b {
+  color: rgb(var(--accent-soft));
+  font-weight: 600;
+}
+
 .icon-round {
   display: inline-flex;
   align-items: center;
@@ -2119,6 +2163,25 @@
   font-size: 1.3rem;
   line-height: 1;
   flex: 0 0 auto;
+}
+
+/* Look-matching pass (slice N, review 1 fix — finding 3): the Game step's
+   custom select chevron (`in-depth-question.html:121-122`) — an
+   element+class selector, so it always beats a single Tailwind utility class
+   regardless of stylesheet order, without touching any other `<select>` in
+   the app (e.g. the Context step's own `.ctx-form .field` selects, already
+   styled by a different, already-specific rule). */
+select.select-chevron {
+  appearance: none;
+  background-image:
+    linear-gradient(45deg, transparent 50%, rgb(var(--accent-soft)) 50%),
+    linear-gradient(135deg, rgb(var(--accent-soft)) 50%, transparent 50%);
+  background-position:
+    calc(100% - 1.1rem) 50%,
+    calc(100% - 0.8rem) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
 }
 
 /* the stage-shaped shelf container (Cards step) uses the stage's own
@@ -2449,6 +2512,54 @@
   display: none;
 }
 
+/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 8: Add a
+   note / More details as two dashed rows sharing one line
+   (`in-depth-question.html:361-374`). */
+.ctx-tail {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.more-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 44px;
+  padding: 0.35rem 0.7rem;
+  border-radius: 0.7rem;
+  border: 1px dashed rgb(var(--accent-soft) / 0.35);
+  background: transparent;
+  color: #a1a1aa;
+  font-size: 0.84rem;
+  cursor: pointer;
+  text-align: left;
+}
+
+.more-row > span {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.more-row:hover,
+.more-row:focus-visible {
+  border-style: solid;
+  border-color: rgb(var(--accent-soft));
+  color: #e2e8f0;
+}
+
+.more-row .up {
+  color: rgb(var(--accent-soft));
+}
+
+.note-row[aria-expanded="true"] {
+  border-style: solid;
+  color: #e2e8f0;
+}
+
 /* targets as pills with the card's thumbnail (`in-depth-question.html:291-296`) */
 .target-pill {
   display: inline-flex;
@@ -2461,6 +2572,23 @@
   background: rgb(var(--accent) / 0.24);
   color: #e2e8f0;
   font-size: 0.8rem;
+}
+
+/* Look-matching pass (slice N, review 1 fix — finding 3): the target pill's own
+   card thumbnail (`in-depth-question.html:296`'s `.pill .thumb`). */
+.target-pill .thumb {
+  width: 16px;
+  height: 22px;
+  border-radius: 2px;
+  overflow: hidden;
+  flex: 0 0 auto;
+}
+
+.target-pill .thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .target-pill button {

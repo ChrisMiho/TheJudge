@@ -79,6 +79,10 @@ export function ZoneCollectionStep({
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
   const [pendingOwner, setPendingOwner] = useState<PlayerLabel>(activePlayer);
+  // Look-matching pass (slice N, review 1 fix — finding 3), requirement 6: the
+  // search popover opens from the ＋ Add card chip under the rail now, instead
+  // of sitting permanently visible inside the plate.
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const activeZone = orderedSelectedZones[activeZoneIndex];
   const activeZoneCards = activeZone ? (zones[activeZone] ?? []) : [];
@@ -93,6 +97,7 @@ export function ZoneCollectionStep({
     setSearchInput("");
     setSelectedCard(null);
     setPendingOwner(activePlayer);
+    setIsSearchOpen(false);
   }, [activeZone, activePlayer]);
 
   const suggestions = useAutocompleteSuggestions({
@@ -239,6 +244,15 @@ export function ZoneCollectionStep({
     updateZoneCards(activeZone, cards);
   }
 
+  // Look-matching pass (slice N, review 1 fix — finding 3): named so both the
+  // new `.attach` row's own Scan button and `ZoneCardPicker`'s `scan.onOpen`
+  // (passed through for the scanner's own internal affordances) share one path.
+  async function handleOpenScan(): Promise<void> {
+    setSelectedCard(null);
+    setIsSearchOpen(false);
+    await scanCapture.openScan();
+  }
+
   function handleContinue(): void {
     if (canContinue && selectedZones.includes("stack") && (zones.stack?.length ?? 0) === 0) {
       onFlashStatus(
@@ -262,6 +276,15 @@ export function ZoneCollectionStep({
     return (
       <PageShell>
         <StagedStepHeader historyTrigger={historyTrigger} />
+        {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 7:
+            the carry note above the rail (`in-depth-question.html:75-76`). All
+            seven zones still render below as directly tappable buttons — REQ-018
+            is unchanged, only this note and the card's type line (below) are new. */}
+        <p className="carry-note">
+          <b>{placementTotal}</b> {placementTotal === 1 ? "card" : "cards"} came along with your
+          question — set the game up, then this station asks for each one's zone, one card at a
+          time.
+        </p>
         {stationsRail}
         {/* Look-matching pass (slice N), requirement 7: the placing view takes the
             context-sheet layout (`in-depth-question.html:498-510`) — art on the left, a
@@ -280,6 +303,12 @@ export function ZoneCollectionStep({
               </button>
             </p>
             <h2>{placingCard.name}</h2>
+            {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 7:
+                the mockup's type line (`.sub`, `in-depth-question.html:503`) is not
+                added here — `placingCard` is `CardMetadataItem` (REQ-174's slim
+                up-front fields: cardId/name/imageId/colors only), which never
+                carries a type line at this point in the flow; inventing one would
+                mean a new fetch this look-only pass does not add. */}
             <span className="ctx-counter" aria-live="polite">
               {`Card ${placedSoFar + 1} of ${placementTotal}`}
             </span>
@@ -373,6 +402,37 @@ export function ZoneCollectionStep({
           </>
         )}
 
+        {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 6:
+            ＋ Add card / ▣ Scan as a row of their own under the rail
+            (`in-depth-question.html:452-455`'s `.attach`), not inside the shelf
+            plate. */}
+        {!isScanOpen && activeZone && (
+          <div className="attach">
+            {/* `aria-label` disambiguates this toggle from the zone's own confirm
+                button (also named "Add card" for non-Stack zones, unchanged) —
+                visible text stays the mockup's own "Add card" either way. */}
+            <button
+              type="button"
+              aria-label={`Add a card to ${ZONE_LABELS[activeZone]}`}
+              aria-expanded={isSearchOpen}
+              aria-controls="zone-card-search-pop"
+              onClick={() => setIsSearchOpen((open) => !open)}
+              className="icon-chip motion-focus"
+            >
+              <span className="glyph" aria-hidden="true">
+                ＋
+              </span>{" "}
+              Add card
+            </button>
+            <button type="button" onClick={() => void handleOpenScan()} className="icon-chip motion-focus">
+              <span className="glyph" aria-hidden="true">
+                ▣
+              </span>{" "}
+              Scan
+            </button>
+          </div>
+        )}
+
         {activeZone && (
           <ZoneCardPicker
             zoneId={activeZone}
@@ -381,6 +441,7 @@ export function ZoneCollectionStep({
             displayNamesByPlayer={displayNamesByPlayer}
             pendingOwner={pendingOwner}
             onPendingOwnerChange={setPendingOwner}
+            isSearchOpen={isSearchOpen}
             searchInput={searchInput}
             onSearchInputChange={setSearchInput}
             onSearchKeyDown={keyboard.handleKeyDown}
@@ -394,6 +455,9 @@ export function ZoneCollectionStep({
             activeSuggestionIndex={keyboard.activeIndex}
             onSuggestionHover={keyboard.setActiveIndex}
             onSuggestionSelect={(card) => {
+              // Keeps the search popover open (unchanged behaviour, DEC-160): the
+              // field now shows the selected card's exact canonical name, with the
+              // preview/Add action below it, until the player adds it or dismisses.
               selectCard(card);
               keyboard.closeSuggestions();
             }}
@@ -412,10 +476,7 @@ export function ZoneCollectionStep({
               scanDebug: scanCapture.scanDebug,
               heldEntries: scanCapture.heldEntries,
               onRemoveHeld: scanCapture.removeHeld,
-              onOpen: async () => {
-                setSelectedCard(null);
-                await scanCapture.openScan();
-              },
+              onOpen: handleOpenScan,
               onExitToManual: scanCapture.closeScan,
               identify: scanCapture.identify,
               onCameraStatusChange: scanCapture.setCameraStatus,

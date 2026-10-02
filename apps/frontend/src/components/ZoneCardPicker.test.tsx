@@ -77,6 +77,11 @@ function renderPicker(
     onRemoveCard?: (cardId: string) => void;
     onMoveCard?: (instanceId: string, toZone: ZoneId) => void;
     onReorderCard?: (instanceId: string, toIndexAfterRemoval: number) => void;
+    // Look-matching pass (slice N, review 1 fix — finding 3): search now opens
+    // from the caller's own ＋ Add card chip — default true here so every
+    // existing search-visible assertion below keeps resolving without having
+    // to open it first; tests of the closed state pass `false` explicitly.
+    isSearchOpen?: boolean;
   } = {}
 ) {
   const onExitToManual = vi.fn();
@@ -88,6 +93,7 @@ function renderPicker(
       displayNamesByPlayer={{ "Player 1": undefined } as never}
       pendingOwner="Player 1"
       onPendingOwnerChange={() => undefined}
+      isSearchOpen={pickerOverrides.isSearchOpen ?? true}
       searchInput=""
       onSearchInputChange={() => undefined}
       onSearchKeyDown={() => undefined}
@@ -140,12 +146,11 @@ describe("ZoneCardPicker scan chrome", () => {
     expect(screen.queryByText(/^Camera:/)).not.toBeInTheDocument();
   });
 
-  it("renders the Scan confirm control with accent palette tokens, not a hardcoded emerald hue", () => {
-    renderPicker({ isOpen: false });
-    const scanButton = screen.getByRole("button", { name: "Scan" });
-    expect(scanButton).toHaveClass("border-accent/70", "bg-accent/15", "text-accent-soft", "hover:bg-accent/25");
-    expect(scanButton.className).not.toMatch(/emerald/);
-  });
+  // Look-matching pass (slice N, review 1 fix — finding 3): the Scan trigger moved
+  // out of this component entirely, into the caller's own ＋ Add card / ▣ Scan row
+  // under the rail (`ZoneCollectionStep`'s `.attach`, styled by the shared
+  // `.icon-chip` class — accent tokens come from that shared CSS now, not an
+  // inline Tailwind utility list local to this component).
 
   it("never renders a manual-entry prompt or 'Use manual search' button", () => {
     renderPicker();
@@ -292,21 +297,22 @@ describe("ZoneCardPicker card grid", () => {
     ).toBeInTheDocument();
   });
 
-  it("puts search and the labeled Scan control on one non-wrapping row with a 44px touch floor", () => {
+  // Look-matching pass (slice N, review 1 fix — finding 3): search is now the
+  // mockup's own popover (`.search-pop`/`.search-row`), opened from the
+  // caller's ＋ Add card chip rather than sharing a row with an inline Scan
+  // button (Scan moved to that same caller's `.attach` row).
+  it("renders the search field inside the search-pop popover when open", () => {
     renderPicker({ isOpen: false });
 
     const input = screen.getByLabelText("Stack search input");
-    const scanButton = screen.getByRole("button", { name: "Scan" });
-    const row = input.parentElement as HTMLElement;
+    expect(input).toHaveClass("field");
+    expect(input.closest(".search-pop")).not.toBeNull();
+  });
 
-    // REQ-125: one row at every width — the prior `sm:grid-cols-[1fr_auto]` stacked them
-    // below 640px, pushing the selected-card preview and its Add action further down phone.
-    expect(row).toContainElement(scanButton);
-    expect(row).toHaveClass("grid", "grid-cols-[1fr_auto]", "items-center");
-    expect(row.className).not.toMatch(/sm:grid-cols/);
-    expect(scanButton).toHaveTextContent("Scan");
-    expect(scanButton).toHaveClass("min-h-11", "whitespace-nowrap");
-    expect(input).toHaveClass("min-h-11", "min-w-0");
+  it("renders no search field when the search popover is closed", () => {
+    renderPicker({ isOpen: false }, { isSearchOpen: false });
+
+    expect(screen.queryByLabelText("Stack search input")).not.toBeInTheDocument();
   });
 
   it("renders the selected-card preview as a shell-column image with Add below and no duplicate title", () => {
@@ -318,6 +324,7 @@ describe("ZoneCardPicker card grid", () => {
         displayNamesByPlayer={{ "Player 1": undefined } as never}
         pendingOwner="Player 1"
         onPendingOwnerChange={() => undefined}
+        isSearchOpen
         searchInput="Opt"
         onSearchInputChange={() => undefined}
         onSearchKeyDown={() => undefined}

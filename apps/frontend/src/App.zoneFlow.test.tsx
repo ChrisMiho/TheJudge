@@ -144,7 +144,13 @@ async function openStackZoneCollection(user: ReturnType<typeof userEvent.setup>)
 }
 
 async function selectStackCard(user: ReturnType<typeof userEvent.setup>, query: string, cardName: string): Promise<void> {
-  const searchInput = screen.getByPlaceholderText("Type to begin");
+  // Look-matching pass (slice N, review 1 fix — finding 3): search opens from its
+  // own ＋ Add card chip now, instead of sitting permanently visible.
+  const chip = screen.queryByRole("button", { name: /^Add a card to /, expanded: false });
+  if (chip) {
+    await user.click(chip);
+  }
+  const searchInput = screen.getByPlaceholderText("Search for a card to add");
   await user.clear(searchInput);
   await user.type(searchInput, query);
   await user.click(await screen.findByRole("button", { name: cardName }));
@@ -199,6 +205,7 @@ describe("Target gating and pickers", () => {
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     await user.click(screen.getByRole("button", { name: "Continue" }));
     await user.click(screen.getByRole("button", { name: "Zone tab: Battlefield" }));
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 

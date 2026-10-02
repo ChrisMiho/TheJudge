@@ -43,8 +43,9 @@ describe("Interaction flows - stack and target context", () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
+    await user.click(screen.getByRole("button", { name: "Add a card to Stack" }));
 
-    await user.type(screen.getByPlaceholderText("Type to begin"), "opt");
+    await user.type(screen.getByPlaceholderText("Search for a card to add"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     expect(screen.queryByLabelText("Entry target kind")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Entry context notes")).not.toBeInTheDocument();
@@ -57,6 +58,7 @@ describe("Interaction flows - stack and target context", () => {
     const user = userEvent.setup();
     render(<App />);
     await advanceToBattlefieldZoneCollection(user);
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
@@ -67,8 +69,9 @@ describe("Interaction flows - stack and target context", () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
+    await user.click(screen.getByRole("button", { name: "Add a card to Stack" }));
 
-    await user.type(screen.getByPlaceholderText("Type to begin"), "opt");
+    await user.type(screen.getByPlaceholderText("Search for a card to add"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
     await advanceToContextEnrichment(user);
@@ -359,8 +362,16 @@ describe("Interaction flows - stack and target context", () => {
     await advancePastZoneCollection(user);
     await finishEnrichmentWizard(user);
 
-    expect(screen.getByText("Sending to TheJudge")).toBeInTheDocument();
-    expect(screen.getByText("Battlefield: 1 card")).toBeInTheDocument();
+    // Look-matching pass (slice N, review 1 fix — finding 3), requirement 9: with
+    // cards present, the review plate above already names every populated zone
+    // (here, Lightning Bolt's own "Battlefield" row tag and the "Context
+    // reviewed · 1 card" head) — the old separate "Sending to TheJudge" summary
+    // panel is retired as the duplicate requirement 9 names. The Stack-selected-
+    // but-empty note is the one piece of information nothing else shows, so it
+    // still renders on its own.
+    expect(screen.queryByText("Sending to TheJudge")).not.toBeInTheDocument();
+    expect(screen.getByText("Context reviewed · 1 card")).toBeInTheDocument();
+    expect(screen.getByText("Battlefield")).toBeInTheDocument();
     expect(screen.getByText("Stack: selected, no cards added")).toBeInTheDocument();
     expect(screen.getByText(/Explain the interaction with the provided game state/)).toBeInTheDocument();
     expect(screen.queryByText(/No question\? Uses fallback: “Resolve the stack”/)).not.toBeInTheDocument();

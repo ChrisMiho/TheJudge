@@ -388,6 +388,7 @@ describe("Interaction flows - submission and retry", () => {
     render(<App />);
 
     await advanceToBattlefieldZoneCollection(user);
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
     const battlefieldSearchInput = screen.getByLabelText("Battlefield search input");
     expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
 
@@ -410,6 +411,7 @@ describe("Interaction flows - submission and retry", () => {
     expect(screen.queryByRole("button", { name: "Add battlefield target" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add battlefield item" })).not.toBeInTheDocument();
 
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 

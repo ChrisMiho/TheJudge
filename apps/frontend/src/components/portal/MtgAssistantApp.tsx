@@ -990,7 +990,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
                   aria-label="Turn phase"
                   value={turnPhase}
                   onChange={(event) => setTurnPhase(event.target.value as TurnPhase)}
-                  className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+                  className="select-chevron motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
                 >
                   {TURN_PHASE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
@@ -1005,7 +1005,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
                   aria-label="Active player"
                   value={activePlayer}
                   onChange={(event) => setActivePlayer(event.target.value as PlayerLabel)}
-                  className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+                  className="select-chevron motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
                 >
                   {activePlayers.map((player) => (
                     <option key={player} value={player}>
@@ -1022,7 +1022,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
                   aria-label="Combat step"
                   value={combatStep}
                   onChange={(event) => setCombatStep(event.target.value as CombatStep)}
-                  className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
+                  className="select-chevron motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
                 >
                   {COMBAT_STEP_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>

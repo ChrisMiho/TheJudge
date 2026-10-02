@@ -238,3 +238,113 @@ it) and this slice is explicitly presentation-only.
   files this session produced (57 from the first pass, 21 from the
   re-verification pass) were removed by exact timestamp, leaving every
   pre-existing file in that folder untouched.
+
+### Review 1 fix (2026-10-02)
+
+Review loop 1 (`REVIEW-1.md`) returned finding 3 (Important, N9): six of this
+slice's own requirements were marked closed in the evidence above without the
+code matching — the LOOK-GAPS bullets for Game's native selects, the Cards
+step's in-plate search/HAND CARDS sub-panel, Placing's missing carry note,
+Context's nested box with no type line/counter/More-details row, Review's old
+summary-panel composer, and the Ruling's VIEW CONTEXT panel were all still
+exactly as LOOK-GAPS first found them. Fixed, one per finding-3 bullet:
+
+- **Game (requirement 4), custom chevron selects.** `MtgAssistantApp.tsx`'s
+  Turn phase / Active player / Combat step `<select>`s now carry a
+  `select-chevron` class (`index.css`, an element+class selector so it always
+  beats a single Tailwind utility class) painting the mockup's accent-soft
+  double-chevron in place of the browser-native arrow. The Game step was
+  already one `.plate` with a `.plate-next` foot from an earlier attempt —
+  confirmed, not re-built.
+- **Cards (requirement 6), ＋ Add / ▣ Scan row, no in-plate search or HAND
+  CARDS sub-panel.** `ZoneCollectionStep.tsx` now renders a `.attach` row
+  (new CSS rule, since the mockup's own is scoped `.flow-head .attach` for
+  Ask a Question only) under the rail with the zone's own "Add a card to
+  `<Zone>`"/"Scan" chips; `isSearchOpen` state gates `ZoneCardPicker`'s search
+  field, now the mockup's `.search-pop`/`.search-row` popover (new
+  `isSearchOpen` prop), opened only from that chip. The "`<Zone>` cards (N)"
+  sub-header is removed — the zone tab pill already carries that count.
+- **Placing (requirement 7), carry note.** A `.carry-note` line ("N cards
+  came along with your question…", new CSS) now sits above the rail on the
+  placing view. The mockup's type line was **not** added: `placingCard` is
+  `CardMetadataItem` (REQ-174's slim up-front fields — `cardId`/`name`/
+  `imageId`/`colors` only, confirmed by reading `types.ts`), which never
+  carries a type line at this point in the flow; adding one would mean a new
+  fetch, out of scope for a look-only pass. All seven zones still render as
+  directly-tappable buttons — REQ-018 unchanged.
+- **Context (requirement 8), type line/counter/More details/target
+  thumbnail.** `EnrichmentStep.tsx`'s per-card head row now carries the zone
+  eyebrow + "Skip to review" (moved up from a separate row above the plate),
+  the card name, and a `.ctx-counter` "N / M · cards" badge (REQ-210's
+  Mana-spent-on-every-zone edit is unchanged — Cast by/Mana spent were
+  already side by side from an earlier attempt). "Add a note" and "More
+  details" are now two `.more-row`/`.ctx-tail` dashed rows sharing one line
+  (new CSS) in place of two stacked text links. Targets render as pills
+  *above* the picker select now (moved, not duplicated — the old second
+  render site was deleted); a thumbnail is shown only for `kind: "card"`
+  targets, resolved against this card's own zone list (`zones[target.zone]
+  .find(...)`) — the mockup's own target-naming script never actually puts a
+  thumbnail in a pill for any target kind, so this is the one place this
+  pass used judgement rather than a cited value; flagged here, not hidden.
+  The card's own type line (a separate ask, no data available — see Placing
+  above) was not added to this head row either, for the same reason.
+- **Review (requirement 9), split-pill composer, no separate summary
+  panel.** The "OPTIONAL QUESTION" box (a `<form>`, separate mic/send
+  circles, a visible "Send Request" label) is now `ComposerPill` — the same
+  component Ask a Question's composer and the follow-up box use — under a
+  "YOUR QUESTION" eyebrow (`.q-lbl`, new CSS), icon-only send control
+  (retiring DEC-153's visible label for this one composer, matching every
+  other `ComposerPill` in the app). The "Sending to TheJudge" bullet summary
+  is now gated to the zero-cards state only: once `reviewing` is true with
+  cards present, the review plate above (already built, not touched this
+  pass) names every populated zone via its own per-card tags and filter
+  pills, so repeating the same counts in a second shape would be the
+  duplicate panel requirement 9 retires. The one piece of information
+  nothing else shows — "Stack: selected, no cards added" — still renders on
+  its own line whenever that is true, cards or no cards, since a 0-count
+  zone never appears in the review plate's own pills.
+- **Ruling (requirement 10), View context / Edit head chips, CARDS strip.**
+  The ruling head now shows a "◈ View context" chip (`AdaptiveContextDialog`'s
+  new `triggerVariant="chip"`, reusing the exact same dialog/content — only
+  the trigger's shell changed) beside the round ↺, inside a `.tools` row
+  (`in-depth-question.html`'s own shape), and a `.chat-cards` CARDS strip
+  (thumbnails from `frozenGameContext.zones`) replaces the old full-width
+  "VIEW CONTEXT" panel. **"✎ Edit" was not added** — this is a genuine
+  owner question, not a style gap: today the only way out of the ruling is
+  Start Over, which clears `gameContext`/`zones`/`question` entirely;
+  `useAskAiSubmitOrchestration.ts` exposes no "clear the answer but keep the
+  staged game context" action, and `FrozenGameContextDetails` is called with
+  no `onEditCard` handler either. Building "Edit" would mean adding new
+  orchestration behaviour this look-only pass does not invent unreviewed.
+
+**Owner question (carried, not resolved):** should "✎ Edit" return to the
+In-depth review with the game context and every card's details intact
+(mirroring Ask a Question's own "✎ Edit cards"), and if so, what should it do
+with an already-sent answer/follow-up thread — keep it, or clear it the way
+Start Over does? Until answered, the ruling head shows only "◈ View context"
+and ↺; no Edit control is rendered (nothing non-functional ships).
+
+Verified live (mock mode, 390×844 and 1440×900): Game's selects show the
+accent chevron; Cards shows pill zone tabs, the ＋ Add card/▣ Scan row, a
+shelf card with ✕/ⓘ corner widgets and a bottom-edge TOP tag, no permanent
+search field; Context shows the zone eyebrow/name/counter head row, Cast
+by/Mana spent side by side, and the two dashed Add-a-note/More-details rows;
+Review shows one "Context reviewed · N cards" plate with per-card zone tags
+and the split-pill composer below it, no "Sending to TheJudge" panel; Ruling
+shows "Ask a Question" / "◈ View context" / ↺ in the head with the CARDS
+strip above the thread. Recaptured
+`n/in-depth-{game,cards,context,review,ruling}-build-{390x844,1440x900}.png`
+(10 files; Zones and Placing captures are unchanged from the original pass —
+neither screen's look changed in this fix, since Zones was not flagged and
+Placing's only change, the carry note, sits above content those captures
+already show in full).
+
+`npm run quality:check` passes (589/589 script tests); `npm --workspace
+apps/frontend run test` passes (1486/1486, including every test this fix
+pass touched: `EnrichmentStep.test.tsx`, `ZoneCollectionStep.test.tsx`,
+`ZoneCardPicker.test.tsx`, `PlayerRosterEditor`-adjacent suites untouched);
+`npm --workspace apps/backend run test` passes (519/519, unaffected —
+frontend-only change).
+
+Finding 3 closed except the one carried owner question above (Ruling's
+"✎ Edit").

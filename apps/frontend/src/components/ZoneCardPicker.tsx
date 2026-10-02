@@ -38,6 +38,11 @@ type ZoneCardPickerProps = {
   displayNamesByPlayer: Record<PlayerLabel, string | undefined>;
   pendingOwner: PlayerLabel;
   onPendingOwnerChange: (owner: PlayerLabel) => void;
+  /** Look-matching pass (slice N, review 1 fix — finding 3), requirement 6: the
+   * search field now opens from the caller's own "＋ Add card" chip (a row of
+   * its own under the rail, `in-depth-question.html:452-455`'s `.attach`)
+   * rather than sitting permanently visible inside this plate. */
+  isSearchOpen: boolean;
   searchInput: string;
   onSearchInputChange: (value: string) => void;
   onSearchKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
@@ -78,6 +83,7 @@ export function ZoneCardPicker({
   displayNamesByPlayer,
   pendingOwner,
   onPendingOwnerChange,
+  isSearchOpen,
   searchInput,
   onSearchInputChange,
   onSearchKeyDown,
@@ -181,37 +187,47 @@ export function ZoneCardPicker({
         </p>
       )}
 
-      {!isScanOpen && (
-        <label className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-          {`${ZONE_LABELS[zoneId]} search`}
-          {/* REQ-125/DEC-160: search and the labeled Scan share one non-wrapping row at every
-              width — search flexes, Scan keeps its label and a 44px touch floor. The prior
-              `sm:grid-cols-[1fr_auto]` collapsed to a single column below 640px, stacking
-              Scan under search and pushing the selected-card preview and its Add action a row
-              further down the phone viewport. */}
-          <span className="mt-2 grid grid-cols-[1fr_auto] items-center gap-2 normal-case tracking-normal">
+      {!isScanOpen && isSearchOpen && (
+        // Look-matching pass (slice N, review 1 fix — finding 3), requirement 6:
+        // the search popover (`in-depth-question.html:516-522`'s `.search-pop`/
+        // `.search-row`) — opened from the caller's own "＋ Add card" chip now,
+        // so Scan (previously inline here) moved to that same row under the rail.
+        <div className="search-pop" id="zone-card-search-pop">
+          <div className="search-row">
+            <span className="glyph" aria-hidden="true">
+              ⌕
+            </span>
             <input
               aria-label={`${ZONE_LABELS[zoneId]} search input`}
               value={searchInput}
               onChange={(event) => onSearchInputChange(event.target.value)}
               onKeyDown={onSearchKeyDown}
-              className="min-h-11 w-full min-w-0 rounded-xl border border-zinc-600 bg-zinc-800/80 px-3 py-2 text-sm"
-              placeholder="Type to begin"
+              className="field"
+              placeholder="Search for a card to add"
             />
-            {scan && (
-              <button
-                type="button"
-                onClick={(event) => {
-                  event.preventDefault();
-                  void scan.onOpen();
-                }}
-                className="min-h-11 whitespace-nowrap rounded-xl border border-accent/70 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent-soft transition hover:bg-accent/25"
-              >
-                Scan
-              </button>
-            )}
-          </span>
-        </label>
+          </div>
+          {showSuggestions && (
+            <div className="search-results">
+              {isMetadataLoading ? (
+                <p className="px-2 py-1 text-sm text-zinc-400">Loading cards...</p>
+              ) : suggestions.length === 0 ? (
+                <p className="px-2 py-1 text-sm text-zinc-400">{noMatchCopy}</p>
+              ) : (
+                suggestions.map((card, index) => (
+                  <button
+                    key={`${zoneId}-${card.cardId}`}
+                    type="button"
+                    onClick={() => onSuggestionSelect(card)}
+                    onMouseEnter={() => onSuggestionHover(index)}
+                    data-active={activeSuggestionIndex === index}
+                  >
+                    {card.name}
+                  </button>
+                ))
+              )}
+            </div>
+          )}
+        </div>
       )}
 
       {isScanOpen && scan && (
@@ -261,33 +277,6 @@ export function ZoneCardPicker({
         </div>
       )}
 
-      {!isScanOpen && showSuggestions && (
-        <div className="rounded-xl border border-zinc-600 bg-zinc-800/70 p-2">
-          {isMetadataLoading ? (
-            <p className="px-2 py-1 text-sm text-zinc-400">Loading cards...</p>
-          ) : suggestions.length === 0 ? (
-            <p className="px-2 py-1 text-sm text-zinc-400">{noMatchCopy}</p>
-          ) : (
-            <ul className="flex flex-col gap-1">
-              {suggestions.map((card, index) => (
-                <li key={`${zoneId}-${card.cardId}`}>
-                  <button
-                    type="button"
-                    onClick={() => onSuggestionSelect(card)}
-                    onMouseEnter={() => onSuggestionHover(index)}
-                    className={`w-full rounded-lg px-2 py-2 text-left text-sm text-zinc-200 transition hover:text-accent-soft ${
-                      activeSuggestionIndex === index ? "bg-zinc-700 text-accent-soft" : "hover:bg-zinc-700"
-                    }`}
-                  >
-                    {card.name}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      )}
-
       {!isScanOpen && selectedCard && zoneId !== "stack" && (
         <label className="flex flex-col gap-1 text-xs">
           <span className="font-semibold uppercase tracking-[0.08em] text-zinc-300">Card owner</span>
@@ -323,9 +312,10 @@ export function ZoneCardPicker({
 
       {!isScanOpen && cards.length > 0 && (
         <div className="space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-            {`${ZONE_LABELS[zoneId]} cards (${cards.length})`}
-          </p>
+          {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 6:
+              the "<Zone> cards (N)" sub-header retires — the zone tab pill
+              (`ZoneCollectionStep.tsx`) already shows this zone's own count in
+              accent-soft, right next to the zone it names. */}
           {cards.length > 1 && (
             <p className="shelf-hint flex items-start gap-2 text-xs text-accent-soft">
               <span aria-hidden="true">{"⇄"}</span>

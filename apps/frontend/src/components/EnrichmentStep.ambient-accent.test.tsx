@@ -56,8 +56,12 @@ describe("Ambient accent surfaces", () => {
 
     const workspace = screen.getByTestId("conversation-workspace");
     expect(workspace).toHaveClass("conversation-workspace");
+    // Look-matching pass (slice N, review 1 fix — finding 3), requirement 10: the
+    // trigger is now the mockup's small "◈ View context" chip in the chat-head's
+    // own tools row, not the full-width ambient-accent panel — the same
+    // icon-chip shape QuickLookupApp's own "Edit cards" chip already uses.
     const contextTrigger = screen.getByRole("button", { name: /View context:/ });
-    expect(contextTrigger).toHaveClass("ambient-accent-surface", "ambient-accent-interactive");
+    expect(contextTrigger).toHaveClass("icon-chip");
     await user.click(contextTrigger);
     expect(screen.getByRole("dialog", { name: "Frozen game context" })).toHaveClass(
       "ambient-accent-surface"

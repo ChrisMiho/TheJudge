@@ -21,6 +21,7 @@ import {
   getUrlFromRequest,
   normalizeHeaders,
   openStackBuilder,
+  openZoneCardSearch,
   selectCard,
   addCardToStack,
   clickDecryptStack,
@@ -82,6 +83,7 @@ describe("Adaptive frozen context in answered state", () => {
     await user.click(screen.getByRole("button", { name: "Add player" }));
     await user.click(screen.getByRole("button", { name: "Add player" }));
     await openStackBuilder(user);
+    await openZoneCardSearch(user, "Stack");
     await selectCard(user, "opt", "Opt");
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
     await advanceToContextEnrichment(user);
@@ -222,12 +224,15 @@ describe("Answered-state layout integration", () => {
     expect(screen.queryByRole("heading", { name: "Conversation" })).not.toBeInTheDocument();
   });
 
-  it("renders the context trigger before the conversation thread in one shared workspace", async () => {
+  it("renders the context trigger in the chat head, before the conversation thread", async () => {
     const user = userEvent.setup();
     await reachAnsweredState(user);
 
+    // Look-matching pass (slice N, review 1 fix — finding 3), requirement 10: the
+    // "◈ View context" trigger now lives in the chat-head's own tools row,
+    // alongside Start Over, rather than inside the conversation workspace.
     const workspace = screen.getByTestId("conversation-workspace");
-    const trigger = within(workspace).getByRole("button", { name: /View context:/ });
+    const trigger = screen.getByRole("button", { name: /View context:/ });
     const firstAnswer = screen.getByText("Initial answer");
     expect(trigger.compareDocumentPosition(firstAnswer) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING

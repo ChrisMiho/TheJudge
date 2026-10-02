@@ -255,13 +255,14 @@ describe("Interaction flows - zone card presentation", () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
+    await user.click(screen.getByRole("button", { name: "Add a card to Stack" }));
 
-    const searchInput = screen.getByPlaceholderText("Type to begin");
+    const searchInput = screen.getByPlaceholderText("Search for a card to add");
     await user.type(searchInput, "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     await user.click(screen.getByRole("button", { name: "Begin stackening!" }));
 
-    expect(screen.getByPlaceholderText("Type to begin")).toHaveValue("");
+    expect(screen.getByPlaceholderText("Search for a card to add")).toHaveValue("");
     expect(screen.queryByRole("heading", { name: "Opt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add to Stack" })).not.toBeInTheDocument();
   });

@@ -139,6 +139,10 @@ describe("ZoneCollectionStep scan focus", () => {
 
     expect(stackTab).toHaveAttribute("data-accent-current", "false");
     expect(battlefieldTab).toHaveAttribute("data-accent-current", "true");
+
+    // Look-matching pass (slice N, review 1 fix — finding 3): search now opens
+    // from its own ＋ Add card chip, and closes again on every zone change.
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
     expect(screen.getByLabelText("Battlefield search input").closest(".ambient-accent-surface")).toHaveAttribute(
       "data-accent-current",
       "true"
@@ -250,6 +254,9 @@ describe("ZoneCollectionStep scan focus", () => {
       />
     );
 
+    // Look-matching pass (slice N, review 1 fix — finding 3): search opens
+    // from its own ＋ Add card chip now.
+    await user.click(screen.getByRole("button", { name: "Add a card to Stack" }));
     const search = screen.getByLabelText("Stack search input");
     await user.type(search, "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));

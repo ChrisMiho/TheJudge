@@ -16,12 +16,16 @@ afterEach(cleanup);
 
 describe("Frontend - MTG Assistant", () => {
 describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
-  it("shows a visible 'Send Request' label on the initial decrypt submit control", async () => {
+  // Look-matching pass (slice N, review 1 fix — finding 3), requirement 9: this
+  // composer is now `ComposerPill` — the same icon-only send control every other
+  // `ComposerPill` in the app uses (no visible label at any width), retiring
+  // DEC-153's visible "Send Request" label for this one composer specifically.
+  it("renders the Decrypt Stack control icon-only, matching every other composer pill", async () => {
     const user = renderEnrichment();
     await user.click(screen.getByRole("button", { name: "OK — finish context" }));
 
     const button = screen.getByRole("button", { name: "Decrypt Stack" });
-    expect(button).toHaveTextContent("Send Request");
+    expect(button.textContent?.trim()).toBe("");
   });
 
   it("keeps the Decrypt Stack accessible name distinct from the visible label", async () => {
@@ -58,11 +62,15 @@ describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
     expect(screen.getByText("18/300")).toBeInTheDocument();
   });
 
-  it("shows an empty count when the bound question value is blank", async () => {
+  // Look-matching pass (slice N, review 1 fix — finding 3): `ComposerPill` hides
+  // the count badge entirely at 0 characters (the same rule already shipped for
+  // every other `ComposerPill` in the app, e.g. REQ-206's "ring's count is
+  // hidden entirely" contract) rather than showing "0/300".
+  it("shows no count badge when the bound question value is blank", async () => {
     const user = renderEnrichment({ question: "" });
     await user.click(screen.getByRole("button", { name: "OK — finish context" }));
 
-    expect(screen.getByText("0/300")).toBeInTheDocument();
+    expect(screen.queryByText("0/300")).not.toBeInTheDocument();
   });
 });
 

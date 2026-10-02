@@ -6,9 +6,7 @@ import { formatContextTarget, formatPrintedManaHint, hasOwnerControl, parseManaS
 import { buildPlayerDisplayNameMap, formatPlayerDisplayLabel } from "../lib/playerLabels";
 import { ZONE_LABELS } from "../lib/zoneLabels";
 import { useAutoGrowTextarea } from "../hooks/useAutoGrowTextarea";
-import { useDictation } from "../hooks/useDictation";
-import { ComposerSubmitButton } from "./ComposerSubmitButton";
-import { DictationMicButton } from "./DictationMicButton";
+import { ComposerPill } from "./ComposerPill";
 import {
   TARGET_OPTION_ALL_PLAYERS,
   TARGET_OPTION_BOARD,
@@ -17,6 +15,7 @@ import {
   useEnrichmentTargets
 } from "../hooks/useEnrichmentTargets";
 import type { ConversationMessage, GameContext, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
+import { AdaptiveContextDialog } from "./AdaptiveContextDialog";
 import { AskAiWaitingPanel } from "./AskAiWaitingPanel";
 import { CardPresentation } from "./CardPresentation";
 import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
@@ -310,8 +309,25 @@ export function EnrichmentStep({
         <div className="ctx-head">
           <div className="eyebrow">
             <span>{ZONE_LABELS[zone]}</span>
+            <button type="button" className="link" onClick={() => setReviewing(true)}>
+              Skip to review
+            </button>
           </div>
           <h2>{card.name}</h2>
+          {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 8:
+              the card's type line (`.sub`, `in-depth-question.html:271`). */}
+          {card.typeLine && <div className="sub">{card.typeLine}</div>}
+          {/* Requirement 8: the "N / M cards" counter moves into the head row
+              (`.counter`, `in-depth-question.html:290-299`). "Card N of M" stays as
+              sr-only text so the existing getByText("Card N of M") assertions keep
+              resolving — same information, now also carried visually by the badge. */}
+          <span className="ctx-counter" aria-hidden="true">
+            {cardIndex + 1}&nbsp;/&nbsp;{totalCards}
+            <small>cards</small>
+          </span>
+          <span className="sr-only">
+            Card {cardIndex + 1} of {totalCards}
+          </span>
         </div>
 
         <div className="ctx-form min-w-0">
@@ -379,6 +395,38 @@ export function EnrichmentStep({
 
           <div className="targets">
             <p className="lbl">Targets</p>
+            {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 8:
+                targets render as pills, with a thumbnail, above the picker
+                (`in-depth-question.html:291-296`) — moved here from below the
+                select; the mockup's own target-naming logic never actually puts a
+                thumbnail in a pill, so this adds one only where the data already
+                carries an image: a "card" target resolved against this card's own
+                zone list. */}
+            {(card.targets ?? []).length > 0 && (
+              <ul className="target-list">
+                {(card.targets ?? []).map((target, targetIndex) => {
+                  const targetImageUrl =
+                    target.kind === "card" ? zones[target.zone]?.find((c) => c.cardId === target.cardId)?.imageUrl : undefined;
+                  return (
+                    <li key={targetIndex} className="target-pill">
+                      {targetImageUrl && (
+                        <span className="thumb" aria-hidden="true">
+                          <img src={targetImageUrl} alt="" />
+                        </span>
+                      )}
+                      <span>{formatContextTarget(target, displayNamesByPlayer)}</span>
+                      <button
+                        type="button"
+                        aria-label={`Remove target ${targetIndex + 1} for ${card.name}`}
+                        onClick={() => handleRemoveTarget(zone, card, targetIndex)}
+                      >
+                        ×
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
             <select
               aria-label={`Add a target for ${card.name}`}
               value=""
@@ -433,28 +481,11 @@ export function EnrichmentStep({
                 </button>
               </div>
             )}
-
-            {(card.targets ?? []).length > 0 && (
-              <ul className="target-list">
-                {(card.targets ?? []).map((target, targetIndex) => (
-                  <li key={targetIndex} className="target-pill">
-                    <span>{formatContextTarget(target, displayNamesByPlayer)}</span>
-                    <button
-                      type="button"
-                      aria-label={`Remove target ${targetIndex + 1} for ${card.name}`}
-                      onClick={() => handleRemoveTarget(zone, card, targetIndex)}
-                    >
-                      ×
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
           </div>
 
           {/* REQ-017: the freeform note is folded behind a slim row; a card that
                 already has a note opens with it showing. */}
-          {noteOpen ? (
+          {noteOpen && (
             <label>
               <span>Note</span>
               <textarea
@@ -470,30 +501,44 @@ export function EnrichmentStep({
                 className="field resize-none"
               />
             </label>
-          ) : (
-            <button
-              type="button"
-              aria-label={`Add a note for ${card.name}`}
-              onClick={() => setNoteOpenByKey((c) => ({ ...c, [key]: true }))}
-              className="text-xs font-semibold text-accent-soft transition hover:text-accent-strong"
-            >
-              ＋ Add a note
-            </button>
           )}
 
-          {/* REQ-211: Copies (the storm case) lives behind a rarely-used More
-                details sheet, Stack cards only — today's other controls above are
-                unaffected either way. */}
-          {isStackZone && (
-            <button
-              type="button"
-              aria-label={`More details for ${card.name}`}
-              onClick={() => setMoreDetailsOpenKey(key)}
-              className="block text-xs font-semibold text-accent-soft transition hover:text-accent-strong"
-            >
-              More details{(card.copies ?? 0) > 0 ? ` · +${card.copies} copies` : ""}
-            </button>
-          )}
+          {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 8:
+              Add a note / More details become two dashed rows sharing one line
+              (`.ctx-tail`/`.more-row`, `in-depth-question.html:361-374`). Behaviour
+              is unchanged: the note still hides this row once open (same as
+              before), and REQ-211's Copies sheet still opens from the same click. */}
+          <div className="ctx-tail">
+            {!noteOpen && (
+              <button
+                type="button"
+                aria-label={`Add a note for ${card.name}`}
+                onClick={() => setNoteOpenByKey((c) => ({ ...c, [key]: true }))}
+                className="more-row note-row"
+              >
+                <span>
+                  <span aria-hidden="true">＋</span> Add a note
+                </span>
+              </button>
+            )}
+
+            {/* REQ-211: Copies (the storm case) lives behind a rarely-used More
+                  details sheet, Stack cards only — today's other controls above are
+                  unaffected either way. */}
+            {isStackZone && (
+              <button
+                type="button"
+                aria-label={`More details for ${card.name}`}
+                onClick={() => setMoreDetailsOpenKey(key)}
+                className="more-row"
+              >
+                <span>More details{(card.copies ?? 0) > 0 ? ` · +${card.copies} copies` : ""}</span>
+                <span className="up" aria-hidden="true">
+                  ▴
+                </span>
+              </button>
+            )}
+          </div>
         </div>
 
         {isStackZone && (
@@ -577,11 +622,12 @@ export function EnrichmentStep({
   const fallbackQuestion = resolveFallbackQuestion(zones);
   const questionTextareaRef = useRef<HTMLTextAreaElement>(null);
   useAutoGrowTextarea(question, questionTextareaRef);
-  const dictation = useDictation({ value: question, onChange: onQuestionChange, maxLength: MAX_QUESTION_CHARS });
-
-  function handleDecryptSubmit(event: FormEvent): void {
-    if (dictation.isListening) dictation.stop();
-    void onDecryptStack(event);
+  // Look-matching pass (slice N, review 1 fix — finding 3): dictation now lives
+  // entirely inside `ComposerPill` (its own `handleSubmit` already stops
+  // dictation before calling `onSubmit`), so this step no longer needs its own
+  // `useDictation` instance for the question field.
+  function handleComposerSubmit(): void {
+    void onDecryptStack({ preventDefault: () => undefined } as unknown as FormEvent);
   }
 
   // REQ-209: the review lists each card's context in words before the question box,
@@ -593,40 +639,54 @@ export function EnrichmentStep({
   if (isConversationActive) {
     return (
       <PageShell variant="narrow">
-        {/* Look-matching pass (slice N), requirement 10: the ruling takes the Ask a
-              Question ruling view's own chrome (slice M) — the shared `.app-header`
-              instead of the old ad-hoc gradient-"TheJudge" header, and a `.chat-head`
-              with the round ↺ replacing the bottom text "Start Over". The existing
-              "View context" trigger (`AdaptiveContextDialog`, below) is unchanged —
-              In-depth's context (game state, zones, every card's details) does not
-              collapse to a CARDS strip the way Ask a Question's does. */}
+        {/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 10:
+              the ruling takes the Ask a Question ruling view's own chrome (slice
+              M) in full now — a "◈ View context" chip plus the round ↺ sit
+              together in the chat-head's own `.tools` row (same pattern as
+              `QuickLookupApp`'s "✎ Edit cards" + ↺), and a CARDS thumbnail strip
+              replaces the full-width "VIEW CONTEXT" panel below the head. The
+              dialog itself (every game-state/zone/card detail) is unchanged —
+              only its trigger moved and shrank. */}
         <StagedStepHeader historyTrigger={historyTrigger} />
         <div className="chat-head">
           <h1>Ask a Question</h1>
           {!isSubmitting && !isFollowUpSubmitting && (
-            <button
-              type="button"
-              onClick={onStartOver}
-              aria-label="Start over — clears everything"
-              title="Start over — clears everything"
-              className="chat-icon-round motion-focus"
-            >
-              <span aria-hidden="true">↺</span>
-            </button>
+            <div className="tools">
+              {frozenGameContext && (
+                <AdaptiveContextDialog
+                  triggerVariant="chip"
+                  triggerLabel={getFrozenGameContextTriggerLabel(frozenGameContext)}
+                  dialogLabel="Frozen game context"
+                >
+                  <FrozenGameContextDetails frozenGameContext={frozenGameContext} />
+                </AdaptiveContextDialog>
+              )}
+              <button
+                type="button"
+                onClick={onStartOver}
+                aria-label="Start over — clears everything"
+                title="Start over — clears everything"
+                className="chat-icon-round motion-focus"
+              >
+                <span aria-hidden="true">↺</span>
+              </button>
+            </div>
           )}
         </div>
 
+        {frozenGameContext && (
+          <div className="chat-cards">
+            <span className="lbl">Cards</span>
+            {CANONICAL_ZONE_ORDER.flatMap((zone) => frozenGameContext.zones?.[zone] ?? []).map((card) => (
+              <span key={card.instanceId ?? card.cardId} className="thumb" aria-hidden="true">
+                {card.imageUrl ? <img src={card.imageUrl} alt="" /> : null}
+              </span>
+            ))}
+          </div>
+        )}
+
         <ConversationWorkspace
           messages={visibleMessages}
-          context={
-            frozenGameContext
-              ? {
-                  triggerLabel: getFrozenGameContextTriggerLabel(frozenGameContext),
-                  dialogLabel: "Frozen game context",
-                  content: <FrozenGameContextDetails frozenGameContext={frozenGameContext} />
-                }
-              : undefined
-          }
           pendingFeedback={isSubmitting ? <AskAiWaitingPanel isSubmitting={isSubmitting} /> : undefined}
           error={error}
           canRetry={canRetry}
@@ -667,14 +727,6 @@ export function EnrichmentStep({
           data-accent-current="true"
           className="plate enrichment-card-surface ambient-accent-surface ambient-accent-interactive"
         >
-          <div className="eyebrow">
-            <span>
-              Card {cardIndex + 1} of {totalCards}
-            </span>
-            <button type="button" className="link" onClick={() => setReviewing(true)}>
-              Skip to review
-            </button>
-          </div>
           <ul key={cardAnimKey} className="enrichment-card-enter">
             {renderCompactSheet(currentEntry.zone, currentEntry.card)}
           </ul>
@@ -792,70 +844,63 @@ export function EnrichmentStep({
         <AskAiWaitingPanel isSubmitting={isSubmitting} />
       ) : (
         showQuestionForm && (
-          <form
-            onSubmit={handleDecryptSubmit}
-            data-accent-current="true"
-            className="enrichment-question-surface space-y-3"
-          >
-            <div className="space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
-              <p className="text-sm font-semibold text-zinc-100">Sending to TheJudge</p>
-              <ul className="space-y-1 text-sm text-zinc-300">
-                {populatedZoneSummaries.map(({ zone, count }) => (
-                  <li key={zone}>
-                    {ZONE_LABELS[zone]}: {count} {count === 1 ? "card" : "cards"}
-                  </li>
-                ))}
-                {stackSelectedButEmpty && <li className="text-zinc-400">Stack: selected, no cards added</li>}
-              </ul>
-              {!question.trim() && (
-                <p className="text-xs text-zinc-400">No question? Uses fallback: &ldquo;{fallbackQuestion}&rdquo;</p>
-              )}
-            </div>
-            <div className="space-y-2">
-              <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Optional question</span>
-              {/* Tighter inset and gaps below `sm` keep the field the dominant element of
-                    the row at phone widths (DEC-146, REQ-121); `sm+` keeps today's spacing.
-                    The counter stacks above the submit control (rather than sitting beside it
-                    as a third flex sibling) so DEC-153's every-width visible "Send Request"
-                    label does not spend its own row-width budget starving the field back below
-                    REQ-121's 65% floor. */}
-              <div className="ambient-accent-surface ambient-accent-interactive flex items-end gap-1 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-2 pr-1 sm:gap-2 sm:pl-4 sm:pr-2">
-                <textarea
-                  ref={questionTextareaRef}
-                  aria-label="Optional question"
-                  placeholder={dictation.isListening ? "Listening…" : "How does this resolve?"}
-                  value={question}
-                  onChange={(e) => onQuestionChange(e.target.value.slice(0, MAX_QUESTION_CHARS))}
-                  rows={1}
-                  maxLength={MAX_QUESTION_CHARS}
-                  className="min-w-0 flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none"
-                />
-                <div className="flex shrink-0 flex-col items-end gap-0.5">
-                  <span className="pr-0.5 text-[10px] leading-none text-zinc-500 sm:text-xs">
-                    {question.length}/{MAX_QUESTION_CHARS}
-                  </span>
-                  <div className="flex shrink-0 items-center gap-1">
-                    {dictation.isSupported && (
-                      <DictationMicButton isListening={dictation.isListening} onToggle={dictation.toggle} />
-                    )}
-                    <ComposerSubmitButton
-                      label="Decrypt Stack"
-                      visibleLabel="Send Request"
-                      pendingLabel="Decrypting…"
-                      isSubmitting={isSubmitting}
-                      disabled={isSubmitting || !canDecrypt}
-                      showLabelBelowSm
-                    />
-                  </div>
-                </div>
+          // Look-matching pass (slice N, review 1 fix — finding 3), requirement 9:
+          // "YOUR QUESTION — optional" with the same split-pill composer slice M
+          // built for Ask a Question (`ComposerPill`), replacing the "OPTIONAL
+          // QUESTION" box and its separate mic/send circles. Requirement 9: no
+          // separate summary panel — the zone-by-zone bullet list only still
+          // renders for the zero-cards edge case (nothing else on this screen
+          // names the zones then); once `reviewing` is true with cards present,
+          // the review plate above already shows every card's own zone tag plus
+          // the zone filter pills with their counts, so repeating the same
+          // information here in a second shape would be the redundant panel
+          // requirement 9 retires.
+          <div data-accent-current="true" className="enrichment-question-surface space-y-3">
+            {totalCards === 0 ? (
+              <div className="space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
+                <p className="text-sm font-semibold text-zinc-100">Sending to TheJudge</p>
+                <ul className="space-y-1 text-sm text-zinc-300">
+                  {populatedZoneSummaries.map(({ zone, count }) => (
+                    <li key={zone}>
+                      {ZONE_LABELS[zone]}: {count} {count === 1 ? "card" : "cards"}
+                    </li>
+                  ))}
+                  {stackSelectedButEmpty && <li className="text-zinc-400">Stack: selected, no cards added</li>}
+                </ul>
               </div>
-              {dictation.error && (
-                <p role="alert" className="text-xs text-rose-400">
-                  {dictation.error}
-                </p>
-              )}
+            ) : (
+              stackSelectedButEmpty && (
+                // The review plate above already names every populated zone and its
+                // count via its own per-card tags and filter pills (requirement 9:
+                // no duplicate summary panel) — but it never lists a zone with 0
+                // cards, so this one line is the only place "Stack: selected, no
+                // cards added" still appears once there is something to review.
+                <p className="text-xs text-zinc-400">Stack: selected, no cards added</p>
+              )
+            )}
+            <div className="composer">
+              <span className="lbl q-lbl">
+                Your question
+                {!question.trim() && (
+                  <small>optional — blank asks &ldquo;{fallbackQuestion}&rdquo;</small>
+                )}
+              </span>
+              <ComposerPill
+                value={question}
+                onChange={onQuestionChange}
+                onSubmit={handleComposerSubmit}
+                maxLength={MAX_QUESTION_CHARS}
+                placeholder="How does this resolve?"
+                textareaAriaLabel="Optional question"
+                submitLabel="Decrypt Stack"
+                pendingLabel="Decrypting…"
+                isSubmitting={isSubmitting}
+                disabled={isSubmitting || !canDecrypt}
+                textareaRef={questionTextareaRef}
+                surfaceClassName="ambient-accent-surface ambient-accent-interactive"
+              />
             </div>
-          </form>
+          </div>
         )
       )}
 
