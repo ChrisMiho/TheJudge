@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [ui-look-translation](ui-look-translation/) | Refinement attempt 2 resolved the gate-qc findings (colour exemptions + audit command, scanner layout row, pixel-script owner); awaiting re-check; builds on PR #239 |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [ui-look-translation](ui-look-translation/) | Answer `PRD/work/ui-look-translation/GATE-QUESTIONS.md` (14 slots) in the docs PR into PR #239's branch, then merge to build — gate-qc PASS on attempt 2, run `graph-20261002-122813` |
 
 
 ## deferred

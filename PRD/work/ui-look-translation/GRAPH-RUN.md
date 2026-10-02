@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/ui-look-translation`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-look-translation`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261002-122813/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/ui-look-translation/`
+- Current node: `owner-action` (parked at gate-qc PASS)
+- Next action: answer `PRD/work/ui-look-translation/GATE-QUESTIONS.md` (14 slots) in the docs PR, merge it into `thejudge-auto/ui-reimagining-build-work`, then `/graph-implement PRD/work/ui-look-translation/` with the base override noted under `## Open gate`
 
 ## Node ledger
 
@@ -18,10 +18,16 @@
 | 3 | define | opus | ok | `3 → 73` | commit `0affcc6`: `DESIGN-BRIEF.md` (378 lines, 20 assumptions A1–A20), `GATE-QUESTIONS.md` (14 blocks: NFR-006, REQ-207, REQ-216 new, FLOW-011, REQ-124, REQ-079, REQ-070, REQ-206, REQ-167, REQ-209, REQ-215, REQ-214, REQ-202, REQ-082; 14 blank verdict slots; no blocker questions), `STATUS.refined`, board row → `## refined`; `git diff --stat 5ab3f95..HEAD -- PRD/sections apps` empty; gate: proposal present → continue to gate-qc | 2026-10-02 |
 | 4 | gate-qc | sonnet | failed | `0 → 21` | FAIL, 3 findings + 1 minor (REQ-216 grep has no home for TS/TSX colours; REQ-214 hint line lacks a `screen-layout.md` clause; pixel-comparison script has no owner/path/signature); commit `ef55982`: `STATUS.refining`, board row → `## refining`; findings recorded under README `## Preparation gate`; loop 1 of 3 → define attempt 2 | 2026-10-02 |
 | 3 | define (attempt 2) | opus | ok | `0 → 43` | commit `7df89a3`: REQ-216 block + brief gain a colour-home table (token layer = `tokens.css` + `lib/theme/`; named exemptions: canvas scene, pile art, scanner debug, identity ring, Life Tracker table) and the exact audit command; REQ-214 block gains the `screen-layout.md:213` Chrome-row hunk; pixel script named `scripts/compare-screenshot-pair.mjs` (pngjs, mask JSON shape, `DIFF-RESULTS.md`); A21–A24 added; 14 verdict slots still blank; `STATUS.refined`, board row → `## refined` | 2026-10-02 |
+| 4 | gate-qc (attempt 2) | sonnet | ok | `0 → 14` | PASS; all three attempt-1 findings verified against files (audit command run: a1=40 real hits, a2 over HEAD..HEAD=0; `screen-layout.md:213` hunk verbatim; pixel-script criterion command-bearing); one non-blocking minor (brief's owner paragraph counts five look rules, the table has four); no files changed, no commit; run stops at gate-qc PASS → publish + docs PR + `owner-action` | 2026-10-02 |
 
 ## Open gate
 
-- None
+- State: `PARKED` at `owner-action` after gate-qc PASS (attempt 2; one define loop used of three).
+- Ask: answer `PRD/work/ui-look-translation/GATE-QUESTIONS.md` — 14 `accept | edit | reject` slots (NFR-006, REQ-207, REQ-216 new, FLOW-011, REQ-124, REQ-079, REQ-070, REQ-206, REQ-167, REQ-209, REQ-215, REQ-214, REQ-202, REQ-082) — in the docs PR, then merge it to build.
+- Docs PR: (recorded below once opened) — base `thejudge-auto/ui-reimagining-build-work` (PR #239's branch), not `main`, by the owner's decision on 2026-10-02: merging #239 to `main` would ship an unfinished UI to prod, so this work stacks on #239 and lands with it.
+- Build-half caveat: `graph-implement` reads its queue from `origin/main` and cuts `implement-<slug>` from `origin/main`. This package's base is `origin/thejudge-auto/ui-reimagining-build-work`; the build half must be run with that base (queue read and worktree cut from that branch, code PR into it) or it will not see the merged proposal.
+- Minor left for gate-review: `DESIGN-BRIEF.md`'s owner paragraph counts five look rules; the proposal table has four (FLOW-011, REQ-124, REQ-079, REQ-070).
+- Resume: `/graph-implement PRD/work/ui-look-translation/` once every slot is answered and the docs PR is merged.
 
 ## Dispatch prompts
 
@@ -182,6 +188,30 @@ Commit on the branch in the working directory with explicit paths only (`git add
 Boundaries: never edit `PRD/sections/`, code, any `thejudge-*` skill, `.claude/`, or `CLAUDE.md`; never stash, reset, force-push, or remove a worktree; never remove `.worktrees/.graph-run.lock` or `.worktrees/.graph-stop`; never retry a denied command — report it verbatim instead; never fill a verdict slot; never start, stop, or reuse ports 5273, 3100, or 5300. Tool-call budget: 150; prefer targeted greps over whole-file reads.
 
 Report back as lines: outcome (`ok` / `failed` / `blocked: <the unresolved decision>`), how each of the three findings and the minor was resolved (one line each, naming the file and block or section), any new assumptions added, the status marker and board move, the commit hash, and `git status --short` of the working directory after.
+
+### gate-qc (attempt 2)
+
+graph is controlling.
+
+You are node 4 (`gate-qc`), attempt 2, of graph run `graph-20261002-122813` — a re-grade after refinement attempt 2 resolved attempt 1's findings. Follow the skill at `.claude/skills/thejudge-quality-check/SKILL.md` in its orchestrated mode (`graph is controlling`). Read it in full first, then `PRD/instructions/preparation-contract.md`, and the `## Propose / apply / close` and `## The two runs` sections of `PRD/instructions/graph-workflow-contract.md`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-look-translation
+
+Copy that `Working directory:` line, unchanged and on its own line, into every prompt you write for any subagent. Every file you read, write, or commit is under that directory. Never touch `/Users/chrismiho/Coding/Projects/TheJudge` itself (the owner's launch checkout). Use `cd <path> && git …`, never `git -C`.
+
+Package: `PRD/work/ui-look-translation/` (status: refined). Run id: `graph-20261002-122813`. Branch, already checked out: `thejudge-auto/ui-look-translation`, cut from `origin/thejudge-auto/ui-reimagining-build-work` (the open PR #239 branch) by the owner's decision; its docs PR targets that branch, not `main`. The checkout's `PRD/sections/` is current product truth and already carries the 57 ids PR #239 applied.
+
+Grade `PRD/work/ui-look-translation/DESIGN-BRIEF.md` for PRD alignment and agent-readiness, with `GATE-QUESTIONS.md` (14 proposed blocks, every verdict slot blank by design — the owner answers them later) as the proposed truth the brief relies on. Refinement wrote no `PRD/sections/` edits, so grade against current truth plus the proposal, and treat a blank verdict slot as correct, never as a finding. The intake at `intake/GRAPH-BRIEF-2-look-translation.md` is evidence, not authority; do not open any document it cites outside this checkout's `PRD/`, `apps/`, and `scripts/` trees.
+
+Attempt 1's findings are recorded under `## Preparation gate` in `README.md`. Refinement attempt 2 (commit `7df89a3`) says it resolved them: a colour-home table and exact audit command in the brief and the REQ-216 block, a `screen-layout.md` Chrome-row hunk in the REQ-214 block, and a named pixel-comparison script (`scripts/compare-screenshot-pair.mjs`, its usage, mask shape, and results file) owned by the frame slice, plus the Gate-blocks column header. Verify each resolution against the files, not the claim: run the recorded audit command yourself and confirm it behaves as the brief says; grep that every removed/context line in the two changed blocks' diffs exists verbatim in `PRD/sections/`; confirm the pixel-script criterion is now concrete enough for map-out to emit a command-bearing criterion. Then re-run the full checklist on the whole brief, since a resolution can introduce a new gap. Apply the skill's own standard: a FAIL needs a finding that blocks PRD alignment or agent-readiness, not a preference.
+
+Emit an explicit PASS or FAIL. On FAIL, return the complete issue list (every issue, with the brief line or block it concerns and what would resolve it), set `status: refining` in `README.md`, replace `STATUS.refined` with `STATUS.refining` (exactly one `STATUS.*`), and move the board row in `PRD/work/STATUS.md` from `## refined` to `## refining` (remove from the old table, add to the new). On PASS, change no status. Make no fix without listing it in your report. Never create a GAMEPLAN or slice docs. Do not touch `## Autonomous metadata`, `## Preparation gate`, or `GRAPH-RUN.md` — the driver owns those.
+
+If you changed any file, commit on the branch in the working directory with explicit paths only (`git add PRD/work/ui-look-translation PRD/work/STATUS.md` — never `-A`, `--all`, or `.`), message starting `docs(ui-look-translation): quality-check attempt 2`, ending with the line `Co-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>`. Do not push.
+
+Boundaries: never edit `PRD/sections/`, code, any `thejudge-*` skill, `.claude/`, or `CLAUDE.md`; never stash, reset, force-push, or remove a worktree; never remove `.worktrees/.graph-run.lock` or `.worktrees/.graph-stop`; never retry a denied command — report it verbatim instead; never fill a verdict slot or decide a product question; never start, stop, or reuse ports 5273, 3100, or 5300. Tool-call budget: 60; prefer targeted greps over whole-file reads.
+
+Report back as lines: verdict (PASS or FAIL), how each prior finding checked out (one line each), the complete new findings list (or `none`), any fix you made (or `none`), the status marker and board state after, the commit hash if any, and `git status --short` of the working directory after.
 
 ## Instruction ledger
 
