@@ -562,7 +562,7 @@ describe("ZoneCardPicker scan review bubble (REQ-214 holding list)", () => {
 
     const counter = screen.getByLabelText("Scanned this session: 2");
     expect(counter).toBeInTheDocument();
-    expect(counter.parentElement?.parentElement).toHaveClass("absolute", "right-3", "top-12", "z-10");
+    expect(counter.closest(".vf-top-right")).not.toBeNull();
     // Counter reflects only the holding list, independent of the zone's own cards.
     expect(within(counter).getByText("2")).toBeInTheDocument();
 
@@ -573,10 +573,10 @@ describe("ZoneCardPicker scan review bubble (REQ-214 holding list)", () => {
     expect(screen.getByText("Joins the Stack when you close the scanner")).toBeInTheDocument();
   });
 
-  it("renders the review bubble counter with accent palette tokens, not a fixed hue", () => {
+  it("renders the review bubble counter as the mockup's .pill, reading the active colour's tokens", () => {
     renderPicker({ heldEntries: [makeHeldEntry(1, "opt", "Opt")] });
     const bubble = screen.getByLabelText("Scanned this session: 1");
-    expect(bubble).toHaveClass("bg-accent/90", "text-accent-contrast");
+    expect(bubble).toHaveClass("pill");
     expect(bubble.className).not.toMatch(/\b(sky|emerald)-/);
   });
 

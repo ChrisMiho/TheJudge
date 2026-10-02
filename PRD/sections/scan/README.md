@@ -117,6 +117,9 @@ becomes the only way to add a card. It sits outside the core product loop
   pill is built on every host that scans — In-Depth's zones, Ask a Question, and
   Trade Balancer (REQ-214). (DEC-058, DEC-078, DEC-151, REQ-040, REQ-175, REQ-214,
   FLOW-006, FLOW-024)
+- Built: a one-line hint under the viewfinder, worded as the mockup's scanner
+  page words it — "Auto-scan is on: a confident match adds the card and keeps
+  scanning. The shutter reads one frame by hand." (REQ-214, REQ-070)
 - Built: a recognised card joins the holding list, not the destination, the
   instant it locks; the destination's own card list changes only when the
   scanner closes, committing every held card in one step. The same

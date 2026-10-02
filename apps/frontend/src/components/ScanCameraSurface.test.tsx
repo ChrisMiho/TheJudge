@@ -56,23 +56,28 @@ describe("Frontend - Card Scan", () => {
       expect(document.querySelector("video")).toHaveClass("scan-video");
     });
 
-    it("uses a bounded viewport-responsive frame height without the fixed aspect ratio", () => {
+    it("sizes the camera video inside the mockup's viewfinder panel (the panel owns the height)", () => {
       render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
       const video = document.querySelector("video");
 
-      expect(video).toHaveClass(
-        "h-[clamp(20rem,calc(100dvh-17rem),42rem)]",
-        "!max-h-none",
-        "w-full",
-        "object-cover"
-      );
+      expect(video?.closest(".viewfinder")).not.toBeNull();
+      expect(video).toHaveClass("scan-video");
     });
 
-    it("falls back to proportion-stable aspect-ratio sizing at the md breakpoint and above", () => {
+    // REQ-214: the mockup's one-line hint under the frame — text, not a control, on every host.
+    it("shows the hint line under the viewfinder, after the credit, as plain text", () => {
       render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-      const video = document.querySelector("video");
+      const hint = screen.getByText(
+        "Auto-scan is on: a confident match adds the card and keeps scanning. The shutter reads one frame by hand."
+      );
 
-      expect(video).toHaveClass("md:aspect-[3/4]", "md:h-auto", "md:!max-h-none");
+      expect(hint.tagName).toBe("P");
+      expect(hint).toHaveClass("scan-hint");
+      expect(hint.closest(".viewfinder")).toBeNull();
+      expect(hint.closest("button")).toBeNull();
+      expect(screen.getByText("Powered by Cardomancer").compareDocumentPosition(hint)).toBe(
+        Node.DOCUMENT_POSITION_FOLLOWING
+      );
     });
 
     it("renders no indicator text while searching with no hint, nudge, or cue active", () => {
@@ -264,15 +269,15 @@ describe("Frontend - Card Scan", () => {
 
   describe("Debug overlay toggle", () => {
     // Look-matching pass (slice P), requirement 5: Debug moved off its old
-    // bottom-center-absolute position into the foot row (`.cs-vf-foot`,
+    // bottom-center-absolute position into the foot row (`.vf-foot`,
     // `card-scan.html:76-85`), alongside mute and the shutter — it no longer
     // needs its own absolute-position guard now that the row itself places it.
     it("puts the debug toggle in the foot row, beside mute and the shutter", () => {
       render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
       const button = screen.getByRole("button", { name: "Debug" });
-      const foot = button.closest(".cs-vf-foot");
+      const foot = button.closest(".vf-foot");
 
-      expect(button).toHaveClass("cs-debug-toggle");
+      expect(button).toHaveClass("debug-toggle");
       expect(foot).not.toBeNull();
       expect(foot).toContainElement(screen.getByRole("button", { name: "Mute scan sound" }));
       expect(foot).toContainElement(screen.getByRole("button", { name: "Capture" }));
@@ -285,15 +290,15 @@ describe("Frontend - Card Scan", () => {
       const mute = screen.getByRole("button", { name: "Mute scan sound" });
       const watermark = screen.getByText("Powered by Cardomancer");
       const debug = screen.getByRole("button", { name: "Debug" });
-      const viewfinder = guide.closest(".cs-viewfinder");
+      const viewfinder = guide.closest(".viewfinder");
 
       expect(guide).not.toContainElement(mute);
       expect(guide).not.toContainElement(debug);
-      expect(mute).toHaveClass("cs-mute");
+      expect(mute).toHaveClass("mute");
       // The credit is a sibling paragraph after the viewfinder panel, not
       // absolutely anchored inside the guide or the camera feed any more.
       expect(watermark.tagName).toBe("P");
-      expect(watermark).toHaveClass("cs-credit");
+      expect(watermark).toHaveClass("credit");
       expect(viewfinder).not.toBeNull();
       expect(viewfinder).not.toContainElement(watermark);
     });
@@ -330,34 +335,35 @@ describe("Frontend - Card Scan", () => {
       expect(screen.queryByText("👍")).not.toBeInTheDocument();
     });
 
-    it("renders the thumbs-up popup with accent palette tokens and no hardcoded hue", () => {
-      render(
+    it("renders the thumbs-up popup as the mockup's .confirm, keyed by the scanner's added state", () => {
+      const { container } = render(
         <ScanCameraSurface
           onCapture={() => undefined}
           convergence={searching}
           confirmation={{ id: 1, cardName: "Opt" }}
         />
       );
-      const popup = screen.getByText("Added Opt").closest("div");
+      const popup = screen.getByText("Added Opt").closest(".confirm");
 
-      expect(popup).toHaveClass("bg-accent/90", "text-accent-contrast");
-      expect(popup?.className).not.toMatch(/\b(sky|emerald)-/);
+      expect(popup).not.toBeNull();
+      expect(popup).toHaveAttribute("role", "status");
+      expect(container.querySelector(".scan")).toHaveAttribute("data-state", "added");
     });
   });
 
   describe("Scanner palette surfaces", () => {
-    it("reticle border uses accent-soft token, not a fixed hue", () => {
+    it("the guide is the mockup's .guide, whose border and dim read the active colour's tokens", () => {
       const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} />);
-      const reticle = container.querySelector(".rounded-xl.border-2");
-      expect(reticle).toHaveClass("border-accent-soft/90");
-      expect(reticle?.className).not.toMatch(/\b(sky|emerald)-/);
+      const guide = container.querySelector('[data-testid="scan-alignment-guide"]');
+      expect(guide).toHaveClass("guide");
+      expect(guide?.className).not.toMatch(/\b(sky|emerald)-/);
     });
 
-    it("lock progress fill uses accent token, not a fixed hue", () => {
+    it("lock progress fill is the indicator's own bar", () => {
       const { container } = render(<ScanCameraSurface onCapture={() => undefined} convergence={locking} />);
-      const fill = container.querySelector("span.block.h-full");
-      expect(fill).toHaveClass("bg-accent");
-      expect(fill?.className).not.toMatch(/\b(sky|emerald)-/);
+      const fill = container.querySelector(".indicator .bar i");
+      expect(fill).not.toBeNull();
+      expect(container.querySelector(".scan")).toHaveAttribute("data-state", "locking");
     });
   });
 

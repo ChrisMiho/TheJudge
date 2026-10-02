@@ -5481,8 +5481,9 @@
   - the same duplicate/cap rule each destination already applies on a manual add (the Stack's duplicate block; Ask a Question's already-attached block and 10-card cap, REQ-167) is checked the instant a card is recognised, against both the destination's current cards and anything already held but not yet committed - not deferred to the close commit, so a blocked re-scan still surfaces its message immediately; Trade Balancer passes no such rule, so a duplicate scan is always held and committed (REQ-065's existing duplicates-allowed behaviour)
   - the "Exit scan" control is a square box carrying an X, positioned above the camera's top-right corner on every host, with the accessible name "Exit scan" unchanged; the manual Capture control keeps the accessible name "Capture"
   - a caution control beside the count pill opens a one-line note that card scanning is experimental, dismissed with "Got it"
+  - a one-line static hint under the viewfinder, in the wording and position the mockup's scanner page (`docs/design/ui-reimagining/direction-1/card-scan.html`) shows (today: "Auto-scan is on: a confident match adds the card and keeps scanning. The shutter reads one frame by hand."); it is text, not a control, and is an allowed exception to REQ-070's no-net-new-guidance rule; if the mockup page carries no such line, none renders
   - detection, lock, the ding, and the opt-in Debug overlay's metrics are unchanged; the Debug panel takes a themed accent border
-  - tests cover the holding-list accumulate/commit-on-close/Remove behaviour, the hold-time duplicate/cap check, and that detection/lock/capture are unchanged
+  - tests cover the holding-list accumulate/commit-on-close/Remove behaviour, the hold-time duplicate/cap check, the hint line on every host, and that detection/lock/capture are unchanged
 - Constraints:
   - presentation and sequencing only: detection, fingerprint matching, lock thresholds, the stabilizer, the ding, mute persistence and debug frame export are unchanged (DEC-052...062; NFR-006's scan-motion exclusion is unaffected)
   - no new request field or prompt change; a held-but-uncommitted card never reaches `AskAiRequest` or a trade side's totals
@@ -5502,6 +5503,7 @@
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30), from the mockup's own "join your question when you close the scanner" pill foot; an earlier pass of this proposal had kept today's add-on-recognition instead, which the owner's gate-review edit (2026-10-01) reversed back to the mockup's rule
   - built by slice H: `apps/frontend/src/hooks/useScanCapture.ts` (the holding list, the hold-time `canHold` check, commit-on-close), `apps/frontend/src/components/ScanReviewBubble.tsx` (the count pill, the caution note, the "Joins <destination>" foot), `apps/frontend/src/components/ZoneCardPicker.tsx`, `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `apps/frontend/src/components/trade/TradeSide.tsx`, `apps/frontend/src/components/trade/useTradeScan.ts` (the three hosts wiring the ✕ exit box and the pill), `apps/frontend/src/components/ScanDebugOverlay.tsx` (the accent-bordered panel); the mockup's exact three-band viewfinder layout, the breathing guide line, the marching-dash lock outline and the 54px shutter ring are not built in this slice - the existing viewfinder, reticle and Capture button are reused and re-themed, not redrawn, since none of them is behavior the holding list depends on
+  - amended by `ui-look-translation` (2026-10-02): the mockup's hint line (the first build's owner question 5; that build had none)
 
 ### REQ-215
 - Title: Trade Balancer - two piles of gold, a verdict line, New trade, and named sides

@@ -429,52 +429,52 @@ export function ScanCameraSurface({
     saveScanAudioMuted(next)
   }
 
+  // The scanner's state in the mockup's own words (`card-scan.html`'s `[data-state]`): the stylesheet
+  // keys the guide's breathing, the thumbs-up and the camera-error look off it.
+  const scanState =
+    status === "camera-error"
+      ? "camera-error"
+      : popup
+        ? "added"
+        : isLocking
+          ? "locking"
+          : searchingNudge || inZoneCue
+            ? "nudge"
+            : "searching"
+
   return (
-    <section className={`space-y-2 ${className}`}>
-      {/* Look-matching pass (slice P), requirement 2/7: one panel (no nested
-          frames, `card-scan.html:21-23` `.viewfinder`), fit to the same
-          viewport-bounded height the video itself already clamps to (the
-          video's own height classes are untouched below — req 7's "fits the
-          viewport" is this panel sizing to its video, not a new height rule). */}
-      <div className="cs-viewfinder relative">
-        <video
-          ref={videoRef}
-          className="scan-video h-[clamp(20rem,calc(100dvh-17rem),42rem)] !max-h-none w-full bg-zinc-950 object-cover md:aspect-[3/4] md:h-auto md:!max-h-none"
-          muted
-          playsInline
-        />
+    <section className={`scan ${className}`} data-state={scanState} data-debug={debugEnabled}>
+      <div className="viewfinder">
+        <video ref={videoRef} className="scan-video" muted playsInline />
         <audio ref={audioRef} src="/assets/scanSuccess.wav" preload="auto" />
 
-        {/* Requirement 3: the guide — a thin accent border with four corner
-            ticks, breathing while locking — dims everything outside it via
-            the same box-shadow spread the prior reticle used (`card-scan.html:58-66`). */}
-        <div
-          className={`pointer-events-none absolute left-1/2 top-[74px] aspect-[745/1040] -translate-x-1/2 rounded-xl border-2 border-accent-soft/90 shadow-[0_0_0_999px_rgba(15,23,42,0.35)] ${isLocking ? "cs-guide-breathe" : ""}`}
-          style={{ height: "calc(100% - 74px - 52px)" }}
-          data-testid="scan-alignment-guide"
-        >
-          <span className="cs-guide-tick cs-guide-tick-tl" aria-hidden="true" />
-          <span className="cs-guide-tick cs-guide-tick-tr" aria-hidden="true" />
-          <span className="cs-guide-tick cs-guide-tick-bl" aria-hidden="true" />
-          <span className="cs-guide-tick cs-guide-tick-br" aria-hidden="true" />
+        {/* The guide: a thin accent border with four corner ticks, breathing while locking; it dims
+            everything outside it through the box-shadow spread (`card-scan.html`'s `.guide`). */}
+        <div className="guide" data-testid="scan-alignment-guide">
+          <span className="tick tl" aria-hidden="true" />
+          <span className="tick tr" aria-hidden="true" />
+          <span className="tick bl" aria-hidden="true" />
+          <span className="tick br" aria-hidden="true" />
         </div>
 
-        {/* Requirement 4: "Locking on <card>" + vote bar, top-left — unchanged
-            text/aria contract, restyled container (`card-scan.html:93-101`
-            `.indicator`). */}
-        <div role="status" aria-live="polite" className="cs-indicator">
-          {indicatorText && <span>{indicatorText}</span>}
+        {/* "Locking on <card>" + the vote bar, top-left — the text and aria contract are unchanged. */}
+        <div role="status" aria-live="polite" className="indicator" hidden={!indicatorText}>
+          {indicatorText && (
+            <span>
+              {!isLocking && status !== "camera-error" && <span className="dot" aria-hidden="true" />}
+              {indicatorText}
+            </span>
+          )}
           {isLocking && (
-            <span className="flex items-center gap-2">
-              <span className="cs-indicator-bar">
-                <span
-                  className="cs-indicator-bar-fill block h-full bg-accent transition-[width] duration-150"
+            <span className="votes">
+              <span className="bar">
+                <i
                   style={{
                     width: `${Math.min(100, Math.round((convergence!.votes / Math.max(1, convergence!.votesNeeded)) * 100))}%`
                   }}
                 />
               </span>
-              <span className="cs-indicator-n">{`${convergence!.votes}/${convergence!.votesNeeded}`}</span>
+              <span className="n">{`${convergence!.votes}/${convergence!.votesNeeded}`}</span>
             </span>
           )}
         </div>
@@ -498,38 +498,30 @@ export function ScanCameraSurface({
         )}
 
         {popup && (
-          <div
-            key={popup.id}
-            role="status"
-            aria-live="polite"
-            className="scan-confirm-popup pointer-events-none absolute inset-0 flex items-center justify-center"
-          >
-            <div className="flex flex-col items-center gap-1 rounded-2xl bg-accent/90 px-5 py-4 text-accent-contrast shadow-lg">
-              <span className="text-4xl" aria-hidden="true">
+          <div key={popup.id} role="status" aria-live="polite" className="confirm scan-confirm-popup">
+            <div>
+              <span className="up" aria-hidden="true">
                 👍
               </span>
-              <span className="text-sm font-semibold">{`Added ${popup.cardName}`}</span>
+              <span>{`Added ${popup.cardName}`}</span>
             </div>
           </div>
         )}
 
-        {/* Requirement 5: the foot row — mute, the round shutter (replacing the
-            full-width "Capture" button), and Debug (moved off its old
-            bottom-center-absolute position into this row) — `card-scan.html:76-85`
-            `.vf-foot`. Both "Mute scan sound"/"Unmute scan sound" and "Capture"
-            keep their exact accessible names (DESIGN-BRIEF.md A12); the
-            shutter's visible glyph is decorative, not the accessible name. */}
-        <div className="cs-vf-foot">
+        {/* The foot band: sound at the left, the round shutter in the middle, Debug at the right.
+            "Mute scan sound"/"Unmute scan sound" and "Capture" keep their exact accessible names
+            (DESIGN-BRIEF.md A12); the shutter's disc is decoration. */}
+        <div className="vf-foot">
           <button
             type="button"
             onClick={handleMutedChange}
             aria-pressed={muted}
             aria-label={muted ? "Unmute scan sound" : "Mute scan sound"}
-            className="cs-mute"
+            className="mute"
           >
             <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
           </button>
-          <button type="button" onClick={() => void scanCurrentFrame(true)} aria-label="Capture" className="cs-shutter" />
+          <button type="button" onClick={() => void scanCurrentFrame(true)} aria-label="Capture" className="shutter" />
           <button
             type="button"
             onClick={() =>
@@ -540,15 +532,17 @@ export function ScanCameraSurface({
               })
             }
             aria-pressed={debugEnabled}
-            className="cs-debug-toggle"
+            className="debug-toggle"
           >
             Debug
           </button>
         </div>
       </div>
-      {/* Requirement 5: the credit moves under the panel (`card-scan.html:216`
-          `.credit`), replacing its old anchor inside the guide. */}
-      <p className="cs-credit">Powered by Cardomancer</p>
+      <p className="credit">Powered by Cardomancer</p>
+      {/* REQ-214: the mockup's one-line hint under the frame — text, not a control. */}
+      <p className="scan-hint">
+        Auto-scan is on: a confident match adds the card and keeps scanning. The shutter reads one frame by hand.
+      </p>
       <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
     </section>
   )

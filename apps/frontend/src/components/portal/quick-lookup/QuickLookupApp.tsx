@@ -66,10 +66,7 @@ function CardThumbImage({ card }: { card: { name: string; imageUrl?: string; ima
   const imageUrl = card.imageUrl?.trim() || deriveCardImageUrl(card.imageId) || undefined;
   if (!imageUrl) {
     return (
-      <span
-        aria-hidden="true"
-        className="thumb-fallback"
-      >
+      <span aria-hidden="true" className="thumb-fallback">
         {card.name.slice(0, 2).toUpperCase()}
       </span>
     );
@@ -378,10 +375,10 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
 
   const normalizedSearchLength = searchInput.trim().length;
   const showSuggestionPanel =
-    normalizedSearchLength >= ADD_CARD_MIN_QUERY_LENGTH && (isMetadataLoading || keyboard.isOpen || suggestions.length === 0);
+    normalizedSearchLength >= ADD_CARD_MIN_QUERY_LENGTH &&
+    (isMetadataLoading || keyboard.isOpen || suggestions.length === 0);
   const trimmedQuestion = question.trim();
-  const composedQuestion =
-    trimmedQuestion || composeCardsFallbackQuestion(selectedCards);
+  const composedQuestion = trimmedQuestion || composeCardsFallbackQuestion(selectedCards);
   const hasQuestionContent = selectedCards.length > 0 || trimmedQuestion.length > 0;
   // The counter, the textarea cap, and this gate all measure the raw editable text.
   // `composedQuestion` may legitimately exceed the cap when the silent card fallback
@@ -450,88 +447,88 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
       <PageShell variant="narrow">
         <StagedStepHeader />
         <section className="chat" aria-label="Conversation">
-        <div className="chat-head">
-          <h1>{PAGE_TITLE}</h1>
-          {!isSubmitting && !isFollowUpSubmitting && (
-            <div className="tools">
-              <button
-                type="button"
-                onClick={handleEditCards}
-                title="Change the cards or the question, then ask again"
-                className="icon-chip"
-              >
+          <div className="chat-head">
+            <h1>{PAGE_TITLE}</h1>
+            {!isSubmitting && !isFollowUpSubmitting && (
+              <div className="tools">
+                <button
+                  type="button"
+                  onClick={handleEditCards}
+                  title="Change the cards or the question, then ask again"
+                  className="icon-chip"
+                >
+                  <span className="glyph" aria-hidden="true">
+                    ✎
+                  </span>
+                  Edit cards
+                </button>
+                <button
+                  type="button"
+                  onClick={handleStartOver}
+                  aria-label="Start over — clears the cards and the question"
+                  title="Start over — clears the cards and the question"
+                  className="icon-round"
+                >
+                  <span aria-hidden="true">↺</span>
+                </button>
+              </div>
+            )}
+          </div>
+          {/* REQ-213/FLOW-016: reopened from Question History, not a fresh submit. */}
+          {reopenedFromHistory && (
+            <p className="from-history">
+              <span>
                 <span className="glyph" aria-hidden="true">
-                  ✎
-                </span>
-                Edit cards
-              </button>
-              <button
-                type="button"
-                onClick={handleStartOver}
-                aria-label="Start over — clears the cards and the question"
-                title="Start over — clears the cards and the question"
-                className="icon-round"
-              >
-                <span aria-hidden="true">↺</span>
-              </button>
-            </div>
+                  ◷
+                </span>{" "}
+                Reopened from your history
+              </span>
+            </p>
           )}
-        </div>
-        {/* REQ-213/FLOW-016: reopened from Question History, not a fresh submit. */}
-        {reopenedFromHistory && (
-          <p className="from-history">
-            <span>
-              <span className="glyph" aria-hidden="true">
-                ◷
-              </span>{" "}
-              Reopened from your history
-            </span>
-          </p>
-        )}
 
-        {/* Look-matching pass (slice M), requirement 11: the CARDS thumbnail strip
+          {/* Look-matching pass (slice M), requirement 11: the CARDS thumbnail strip
             (`flow.css:345-352` `.chat-cards`) replaces the "VIEW CONTEXT · N cards" panel on
             this screen — that panel belongs to In-depth details only (slice N). A tap opens
             the same corner `CardDetailPopup` the stage and the search results use. */}
-        {frozenLookupCards.length > 0 && (
-          <div className="chat-cards">
-            <span className="lbl">Cards</span>
-            {frozenLookupCards.map((card) => (
-              <button
-                key={card.cardId}
-                type="button"
-                className="thumb tap card-identity-ring"
-                style={getCardIdentityRingStyle(cardMetadata.find((entry) => entry.cardId === card.cardId)?.colors)}
-                aria-label={`View ${card.name}`}
-                onClick={() => setChipDetailCardId(card.cardId)}
-              >
-                <ChatCardThumb card={card} />
-              </button>
-            ))}
-          </div>
-        )}
+          {frozenLookupCards.length > 0 && (
+            <div className="chat-cards">
+              <span className="lbl">Cards</span>
+              {frozenLookupCards.map((card) => (
+                <button
+                  key={card.cardId}
+                  type="button"
+                  className="thumb tap card-identity-ring"
+                  style={getCardIdentityRingStyle(cardMetadata.find((entry) => entry.cardId === card.cardId)?.colors)}
+                  aria-label={`View ${card.name}`}
+                  onClick={() => setChipDetailCardId(card.cardId)}
+                >
+                  <ChatCardThumb card={card} />
+                </button>
+              ))}
+            </div>
+          )}
 
-        {chipDetailCardId &&
-          (() => {
-            const chipCard = frozenLookupCards.find((card) => card.cardId === chipDetailCardId);
-            return chipCard ? <CardDetailPopup card={chipCard} onClose={() => setChipDetailCardId(null)} /> : null;
-          })()}
+          {chipDetailCardId &&
+            (() => {
+              const chipCard = frozenLookupCards.find((card) => card.cardId === chipDetailCardId);
+              return chipCard ? <CardDetailPopup card={chipCard} onClose={() => setChipDetailCardId(null)} /> : null;
+            })()}
 
-        <ConversationWorkspace
-          messages={visibleMessages}
-          cards={frozenLookupCards}
-          onCardChipActivate={setChipDetailCardId}
-          error={error}
-          canRetry={canRetry}
-          retryLabel={retryLabel}
-          onRetry={() => submitLookup("retry")}
-          isFollowUpSubmitting={isFollowUpSubmitting}
-          onFollowUp={submitFollowUp}
-          onStartOver={handleStartOver}
-          // The round ↺ in the head above now carries Start Over (requirement 11);
-          // the old text button under the follow-up box is retired.
-          showStartOver={false}
-        />
+          <ConversationWorkspace
+            messages={visibleMessages}
+            cards={frozenLookupCards}
+            onCardChipActivate={setChipDetailCardId}
+            error={error}
+            canRetry={canRetry}
+            retryLabel={retryLabel}
+            onRetry={() => submitLookup("retry")}
+            isFollowUpSubmitting={isFollowUpSubmitting}
+            onFollowUp={submitFollowUp}
+            onStartOver={handleStartOver}
+            // The round ↺ in the head above now carries Start Over (requirement 11);
+            // the old text button under the follow-up box is retired.
+            showStartOver={false}
+          />
         </section>
       </PageShell>
     );
@@ -552,87 +549,84 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
           (`card-scan.html:21-23`'s `.flow-head`) in place of "Ask a
           Question" + Add card/Scan while the camera is open. */}
       <StagedStepHeader />
-      {scanCapture.isOpen && (
-        <div className="flow-head">
-          <h1>Scan a card</h1>
-          <button type="button" aria-label="Exit scan" onClick={scanCapture.closeScan} className="cs-scan-exit">
-            <span aria-hidden="true">✕</span>
-          </button>
-        </div>
-      )}
-
       {scanCapture.isOpen ? (
-        <section className="space-y-3">
-          {scanCapture.isLoading ? (
-            <p className="aq-note">
-              Loading scan data...
-            </p>
-          ) : (
-            <div className="relative">
-              <ScanCameraSurface
-                onCapture={() => undefined}
-                identify={scanCapture.identify}
-                onStatusChange={scanCapture.setCameraStatus}
-                onAcquisitionDiagnostic={scanCapture.recordAcquisitionDiagnostic}
-                convergence={scanCapture.convergence}
-                confirmation={scanCapture.addConfirmation}
-                debug={scanCapture.scanDebug}
-                autoScanFps={3}
-              />
-              <ScanReviewBubble
-                entries={scanCapture.heldEntries.map((entry) => ({
-                  id: entry.id,
-                  card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
-                  colors: entry.card.colors
-                }))}
-                onRemove={scanCapture.removeHeld}
-                destinationLabel="your question"
-              />
-            </div>
-          )}
-          {scanCapture.error && (
-            <p className="motion-error aq-error">
-              {scanCapture.error}
-            </p>
-          )}
-        </section>
-      ) : (
-        <section className="qq" data-searching={isSearchOpen ? "true" : "false"}>
-        <div className="flow-head">
-          <h1>{PAGE_TITLE}</h1>
-          <div className="attach">
-            <button
-              type="button"
-              onClick={toggleSearch}
-              aria-expanded={isSearchOpen}
-              aria-controls="aq-search-pop"
-              className="icon-chip"
-            >
-              <span className="glyph" aria-hidden="true">
-                ＋
-              </span>
-              Add card
-            </button>
-            <button
-              type="button"
-              aria-label="Scan a card"
-              onClick={() => void scanCapture.openScan()}
-              disabled={selectedCards.length >= MAX_LOOKUP_CARDS}
-              className="icon-chip"
-            >
-              <span className="glyph" aria-hidden="true">
-                ▣
-              </span>
-              Scan
+        <div className="idq">
+          <div className="flow-head">
+            <h1>Scan a card</h1>
+            <button type="button" aria-label="Exit scan" onClick={scanCapture.closeScan} className="scan-exit">
+              <span aria-hidden="true">✕</span>
             </button>
           </div>
+          <section>
+            {scanCapture.isLoading ? (
+              <p className="aq-note">Loading scan data...</p>
+            ) : (
+              <div className="relative">
+                <ScanCameraSurface
+                  onCapture={() => undefined}
+                  identify={scanCapture.identify}
+                  onStatusChange={scanCapture.setCameraStatus}
+                  onAcquisitionDiagnostic={scanCapture.recordAcquisitionDiagnostic}
+                  convergence={scanCapture.convergence}
+                  confirmation={scanCapture.addConfirmation}
+                  debug={scanCapture.scanDebug}
+                  autoScanFps={3}
+                />
+                <ScanReviewBubble
+                  entries={scanCapture.heldEntries.map((entry) => ({
+                    id: entry.id,
+                    card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
+                    colors: entry.card.colors
+                  }))}
+                  onRemove={scanCapture.removeHeld}
+                  destinationLabel="your question"
+                />
+              </div>
+            )}
+            {scanCapture.error && <p className="motion-error aq-error">{scanCapture.error}</p>}
+          </section>
         </div>
+      ) : (
+        <section className="qq" data-searching={isSearchOpen ? "true" : "false"}>
+          <div className="flow-head">
+            <h1>{PAGE_TITLE}</h1>
+            <div className="attach">
+              <button
+                type="button"
+                onClick={toggleSearch}
+                aria-expanded={isSearchOpen}
+                aria-controls="aq-search-pop"
+                className="icon-chip"
+              >
+                <span className="glyph" aria-hidden="true">
+                  ＋
+                </span>
+                Add card
+              </button>
+              <button
+                type="button"
+                aria-label="Scan a card"
+                onClick={() => void scanCapture.openScan()}
+                disabled={selectedCards.length >= MAX_LOOKUP_CARDS}
+                className="icon-chip"
+              >
+                <span className="glyph" aria-hidden="true">
+                  ▣
+                </span>
+                Scan
+              </button>
+            </div>
+          </div>
 
           {selectedCards.length > 0 && <CardStage cards={selectedCards} cap={MAX_LOOKUP_CARDS} onRemove={removeCard} />}
           {selectedCards.length > 0 && (
             <div className="strip" aria-label="Attached cards">
               {selectedCards.map((card) => (
-                <span key={card.cardId} className="thumb card-identity-ring" style={getCardIdentityRingStyle(card.colors)}>
+                <span
+                  key={card.cardId}
+                  className="thumb card-identity-ring"
+                  style={getCardIdentityRingStyle(card.colors)}
+                >
                   <CardThumbImage card={card} />
                 </span>
               ))}
