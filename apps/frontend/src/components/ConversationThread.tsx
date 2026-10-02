@@ -1,8 +1,10 @@
 import { useLayoutEffect, useMemo, useRef, useState, type UIEvent } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useActiveThemeMotif } from "../hooks/useActiveThemeMotif";
 import { prefersReducedMotion } from "../lib/motionPreference";
 import type { ConversationMessage } from "../types";
+import { MotifGlyph } from "./portal/ThemeSection";
 
 const CARD_CHIP_HREF_PREFIX = "#card:";
 
@@ -75,18 +77,14 @@ const NEAR_BOTTOM_THRESHOLD_PX = 64;
 function readReaderSnapshot(container: HTMLDivElement): ReaderSnapshot {
   return {
     scrollTop: container.scrollTop,
-    nearBottom:
-      container.scrollHeight - container.scrollTop - container.clientHeight <=
-      NEAR_BOTTOM_THRESHOLD_PX
+    nearBottom: container.scrollHeight - container.scrollTop - container.clientHeight <= NEAR_BOTTOM_THRESHOLD_PX
   };
 }
 
 export function ConversationThread({ messages, cards, onCardChipActivate }: ConversationThreadProps): JSX.Element {
   const logRef = useRef<HTMLDivElement>(null);
-  const markdownComponents = useMemo(
-    () => buildMarkdownComponents(onCardChipActivate),
-    [onCardChipActivate]
-  );
+  const motif = useActiveThemeMotif();
+  const markdownComponents = useMemo(() => buildMarkdownComponents(onCardChipActivate), [onCardChipActivate]);
   const hasCards = Boolean(cards && cards.length > 0);
   const previousMessageCountRef = useRef(0);
   const readerSnapshotRef = useRef<ReaderSnapshot | null>(null);
@@ -134,8 +132,7 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
       scrollToLatest(container);
       setShowNewResponse(false);
     } else if (messages.length > previousMessageCount) {
-      const readerSnapshot =
-        readerSnapshotRef.current ?? readReaderSnapshot(container);
+      const readerSnapshot = readerSnapshotRef.current ?? readReaderSnapshot(container);
       setAnimatedFromIndex(previousMessageCount);
 
       if (readerSnapshot.nearBottom) {
@@ -188,31 +185,39 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
         className="conversation-thread flex flex-col gap-3 overflow-y-auto p-4"
       >
         {messages.map((message, index) => {
-          const roleClassName =
-            message.role === "assistant"
-              ? "max-w-[85%] self-start text-sm text-zinc-100"
-              : "max-w-[85%] self-end rounded-2xl rounded-tr-sm bg-accent-strong px-4 py-3 text-sm text-accent-contrast";
-          const entranceClassName =
-            index >= animatedFromIndex ? " conversation-message-enter" : "";
-          const isNewestAssistant =
-            message.role === "assistant" && index === latestAssistantIndex;
+          const entranceClassName = index >= animatedFromIndex ? " conversation-message-enter" : "";
+          const isNewestAssistant = message.role === "assistant" && index === latestAssistantIndex;
+
+          if (message.role === "assistant") {
+            return (
+              <div
+                key={index}
+                data-conversation-message-index={index}
+                tabIndex={isNewestAssistant ? -1 : undefined}
+                className={`conversation-message msg-judge${entranceClassName}`}
+              >
+                <span className="msg-judge-seal" aria-hidden="true">
+                  <MotifGlyph motif={motif} />
+                </span>
+                <div className="msg-judge-bubble">
+                  <span className="msg-judge-who">TheJudge</span>
+                  <div className="conversation-markdown">
+                    <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                      {hasCards ? linkifyCardNames(message.content, cards!) : message.content}
+                    </ReactMarkdown>
+                  </div>
+                </div>
+              </div>
+            );
+          }
 
           return (
             <div
               key={index}
               data-conversation-message-index={index}
-              tabIndex={isNewestAssistant ? -1 : undefined}
-              className={`conversation-message ${roleClassName}${entranceClassName}`}
+              className={`conversation-message msg-you${entranceClassName}`}
             >
-              {message.role === "assistant" ? (
-                <div className="conversation-markdown">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
-                    {hasCards ? linkifyCardNames(message.content, cards!) : message.content}
-                  </ReactMarkdown>
-                </div>
-              ) : (
-                <p className="whitespace-pre-wrap">{message.content}</p>
-              )}
+              <p className="whitespace-pre-wrap">{message.content}</p>
             </div>
           );
         })}

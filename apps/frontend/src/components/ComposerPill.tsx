@@ -3,8 +3,14 @@ import { DictationMicButton } from "./DictationMicButton";
 import { useDictation } from "../hooks/useDictation";
 import { SendIcon } from "./ComposerSubmitButton";
 
-const RING_RADIUS = 19;
-const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+/**
+ * `flow.css:69` — the capsule-shaped ring traced round the send pill, drawn with
+ * `pathLength={100}` so a percentage of the 300-character budget maps directly to
+ * `strokeDasharray`. Scaled from the mockup's 80×40 pill to this suite's 88×44
+ * (REQ-205's 44px touch floor — see `.send-pair` in `index.css`): inset 4px, each half
+ * 44px tall, so the capsule's straight run spans x=26..70 at y=4/48 with a 22px radius.
+ */
+const SEND_RING_PATH = "M26 4 H70 A22 22 0 0 1 70 48 H26 A22 22 0 0 1 26 4 Z";
 /** REQ-206: the ring brightens over the last 30 of the 300-character budget. */
 const RING_BRIGHT_THRESHOLD = 30;
 
@@ -38,6 +44,11 @@ export interface ComposerPillProps {
  * no separate labelled submit button and no visible "Send Request" text; the send
  * control's accessible name carries the existing Ask/Decrypt semantics with no visible
  * label (REQ-132 as amended).
+ *
+ * Look-matching pass (slice M): restyled to `flow.css:187-274`'s `.composer`/`.q-box`/
+ * `.deep`/`.send-pair`/`.send-wrap`/`.send-ring` — a split mic/send pill in place of two
+ * separate round buttons, with the 300-character budget drawn as a capsule ring round
+ * the pill's own edge instead of a circle round the send button alone.
  */
 export function ComposerPill({
   value,
@@ -58,7 +69,6 @@ export function ComposerPill({
 }: ComposerPillProps): JSX.Element {
   const length = value.length;
   const progress = maxLength > 0 ? Math.min(length / maxLength, 1) : 0;
-  const dashOffset = RING_CIRCUMFERENCE * (1 - progress);
   const isBright = maxLength - length <= RING_BRIGHT_THRESHOLD;
   const submitDisabled = disabled || isSubmitting;
 
@@ -70,10 +80,7 @@ export function ComposerPill({
   }
 
   return (
-    <div
-      className="ambient-accent-surface ambient-accent-interactive flex items-end gap-1 rounded-3xl border border-zinc-700/70 bg-zinc-900/55 py-2 pl-2 pr-1 sm:gap-2 sm:pl-3 sm:pr-2"
-      data-testid="composer-pill"
-    >
+    <div className="q-box" data-testid="composer-pill">
       {onAddInDepthDetails && (
         <button
           type="button"
@@ -81,26 +88,15 @@ export function ComposerPill({
           disabled={addInDepthDetailsDisabled}
           aria-label={addInDepthDetailsLabel}
           data-testid="composer-pill-in-depth"
-          className="flex h-11 shrink-0 items-center justify-center gap-1.5 rounded-full border border-accent/60 bg-accent/10 px-2.5 text-accent-soft transition hover:bg-accent/20 disabled:cursor-not-allowed disabled:opacity-50 xs:px-3"
+          className="deep motion-focus"
         >
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth={2}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            aria-hidden="true"
-            className="h-4 w-4 shrink-0"
-          >
-            <rect x="3" y="4" width="14" height="18" rx="2" />
-            <path d="M17 9h4" />
-            <path d="M19 7v4" />
-          </svg>
+          <span className="glyph" aria-hidden="true">
+            ◈
+          </span>
           {/* The label text hides below 480px (REQ-206: "glyph only below 480px"); the
-              accessible name above always carries the full text regardless of width. */}
-          <span aria-hidden="true" className="hidden whitespace-nowrap text-xs font-semibold xs:inline">
-            In-depth details
+                accessible name above always carries the full text regardless of width. */}
+          <span aria-hidden="true" className="hidden whitespace-nowrap xs:inline">
+            In-depth
           </span>
         </button>
       )}
@@ -121,23 +117,36 @@ export function ComposerPill({
         rows={1}
         placeholder={dictation.isListening ? "Listening…" : placeholder}
         disabled={isSubmitting}
-        className="min-w-0 flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-sm normal-case tracking-normal text-zinc-100 placeholder:text-zinc-500 focus:outline-none disabled:opacity-60"
       />
 
-      <div className="flex shrink-0 flex-col items-center gap-0.5">
+      {length > 0 && (
+        <span data-testid="composer-pill-count" className="q-count">
+          {length}/{maxLength}
+        </span>
+      )}
+
+      <span className="send-wrap">
         {length > 0 && (
-          <span
-            data-testid="composer-pill-count"
-            className="pr-0.5 text-[10px] leading-none text-zinc-400 sm:text-xs"
-          >
-            {length}/{maxLength}
-          </span>
+          <svg className="send-ring" data-testid="composer-pill-ring" viewBox="0 0 96 52" aria-hidden="true">
+            <path className="track" d={SEND_RING_PATH} pathLength={100} />
+            <path
+              className={isBright ? "fill bright" : "fill"}
+              d={SEND_RING_PATH}
+              pathLength={100}
+              strokeDasharray={`${progress * 100} 100`}
+            />
+          </svg>
         )}
-        <div className="flex shrink-0 items-center gap-1">
+        <span className="send-pair">
           {/* REQ-212: the mic half exists only where the browser exposes speech
-              recognition; where it does not, the pill is the arrow alone, unchanged. */}
+                recognition; where it does not, the pill is the arrow alone, unchanged. */}
           {dictation.isSupported && (
-            <DictationMicButton isListening={dictation.isListening} onToggle={dictation.toggle} />
+            <DictationMicButton
+              isListening={dictation.isListening}
+              onToggle={dictation.toggle}
+              variant="flat"
+              sizeClassName="h-11 w-11"
+            />
           )}
           <button
             type="button"
@@ -145,37 +154,17 @@ export function ComposerPill({
             disabled={submitDisabled}
             aria-label={isSubmitting ? pendingLabel : submitLabel}
             data-testid="composer-pill-send"
-            className="relative flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-accent to-accent-strong text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+            className="h-11 w-11"
           >
-            {length > 0 && (
-              <svg
-                viewBox="0 0 44 44"
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-0 h-full w-full -rotate-90"
-              >
-                <circle
-                  cx="22"
-                  cy="22"
-                  r={RING_RADIUS}
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                  className={isBright ? "text-accent-soft" : "text-accent-soft/40"}
-                  strokeDasharray={RING_CIRCUMFERENCE}
-                  strokeDashoffset={dashOffset}
-                  strokeLinecap="round"
-                />
-              </svg>
-            )}
             {isSubmitting ? <span className="send-spinner" /> : <SendIcon />}
           </button>
-        </div>
-        {dictation.error && (
-          <p role="alert" data-testid="composer-pill-dictation-error" className="text-[10px] leading-tight text-rose-400">
-            {dictation.error}
-          </p>
-        )}
-      </div>
+        </span>
+      </span>
+      {dictation.error && (
+        <p role="alert" data-testid="composer-pill-dictation-error" className="text-[10px] leading-tight text-rose-400">
+          {dictation.error}
+        </p>
+      )}
     </div>
   );
 }

@@ -1,6 +1,6 @@
 # Slice M — Ask a Question takes the look
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -129,20 +129,20 @@ Carried verbatim from LOOK-GAPS.md's `## Ask a Question`
 
 ## Acceptance criteria
 
-- [ ] M1. `npm run quality:check` passes.
-- [ ] M2. `npm --workspace apps/frontend run test` passes.
-- [ ] M3. The page shows exactly three things — stage, composer, ruling
+- [x] M1. `npm run quality:check` passes.
+- [x] M2. `npm --workspace apps/frontend run test` passes.
+- [x] M3. The page shows exactly three things — stage, composer, ruling
       view — with no permanent search panel, in `QuickLookupApp.tsx`.
-- [ ] M4. The stage matches `flow.css:52-99` sizing and the front-card glow,
+- [x] M4. The stage matches `flow.css:52-99` sizing and the front-card glow,
       with 40px round arrows, in `CardStage.tsx`.
-- [ ] M5. The composer is one `.q-box` shell with an icon-chip Add/Scan row
+- [x] M5. The composer is one `.q-box` shell with an icon-chip Add/Scan row
       and a split mic/send pill with the budget ring, in `ComposerPill.tsx`.
-- [ ] M6. The ruling view shows a CARDS thumbnail strip, a right-aligned
+- [x] M6. The ruling view shows a CARDS thumbnail strip, a right-aligned
       question bubble, and a sealed judge bubble with card-name chips, in
       `ConversationThread.tsx`.
-- [ ] M7. The "VIEW CONTEXT · N cards" panel does not render on Ask a
+- [x] M7. The "VIEW CONTEXT · N cards" panel does not render on Ask a
       Question (retired per requirement 11), in `QuickLookupApp.tsx`.
-- [ ] M8 (manual). Side-by-side pairs saved under
+- [x] M8 (manual). Side-by-side pairs saved under
       `docs/design/ui-reimagining/build-screenshots/m/`, build next to
       mockup, Blue, at 390×844 and 1440×900: empty question with five cards
       attached (`ask-question-build-*.png`, `ask-question-mockup-*.png`),
@@ -151,18 +151,18 @@ Carried verbatim from LOOK-GAPS.md's `## Ask a Question`
       (`ask-question-answered-build-*.png`,
       `ask-question-answered-mockup-*.png`) — 12 files, one pair per state
       named in LOOK-GAPS.md's Ask a Question pairs list.
-- [ ] M9 (manual). Each pair in M8 was compared side by side against the
+- [x] M9 (manual). Each pair in M8 was compared side by side against the
       build at the matching state; every `### Differences` bullet under
       LOOK-GAPS.md's `## Ask a Question` is closed, or is one of the two
       owner questions above (never resolved past the stated interim
       reading).
-- [ ] M10 (manual). Browser scenario at 390×844 and 1440×900: attach five
+- [x] M10 (manual). Browser scenario at 390×844 and 1440×900: attach five
       cards, confirm the front card and dimmed neighbours render per
       requirement 3; tap ＋ Add card, type 3 characters, confirm
       `.search-pop` opens inside the composer; submit a question and
       confirm the ruling view's CARDS strip and bubbles render per
       requirement 10.
-- [ ] M11 (manual). Cleanup evidence recorded: browser closed, owned dev
+- [x] M11 (manual). Cleanup evidence recorded: browser closed, owned dev
       server(s) stopped, ports released, disposable captures under
       `PRD/work/ui-reimagining-build/.playwright-mcp/` named.
 

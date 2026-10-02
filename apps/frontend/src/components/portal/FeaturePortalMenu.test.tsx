@@ -950,6 +950,9 @@ describe("Chrome integration", () => {
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
 
+    // Look-matching pass (slice M): the card search opens from "＋ Add card"
+    // (requirement 1) instead of sitting permanently visible.
+    await user.click(screen.getByRole("button", { name: "Add card" }));
     expect(screen.getByLabelText("Card search")).toBeInTheDocument();
 
     // REQ-067/REQ-206: `in-depth` stays registered and routable with no row of its own —

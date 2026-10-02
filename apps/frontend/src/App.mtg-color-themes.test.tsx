@@ -133,6 +133,9 @@ describe("Global theme reach across destinations", () => {
     render(<App />);
     await selectDestination(user, "Quick Question");
 
+    // Look-matching pass (slice M): the card search opens from "＋ Add card"
+    // (requirement 1) instead of sitting permanently visible.
+    await user.click(screen.getByRole("button", { name: "Add card" }));
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     await user.type(screen.getByRole("textbox", { name: "Magic question" }), "Does it draw a card?");
@@ -142,7 +145,9 @@ describe("Global theme reach across destinations", () => {
     expectRootTokens(paletteFor("green"));
     expect(screen.getByTestId("card-presentation-fallback")).toHaveTextContent("Opt");
     expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("Does it draw a card?");
-    expect(screen.getByRole("button", { name: "Scan a card" }).className).toContain("border-accent/70");
+    // Restyled to `.icon-chip` (flow.css), which reads the active palette's CSS custom
+    // properties rather than a fixed Tailwind accent utility (look-matching pass, slice M).
+    expect(screen.getByRole("button", { name: "Scan a card" })).toHaveClass("icon-chip");
   });
 
   it("retints Player Life Tracker without resetting life, counter, or setup state", async () => {
@@ -224,6 +229,7 @@ describe("Global theme reach across destinations", () => {
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
 
     await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
+    await user.click(screen.getByRole("button", { name: "Add card" }));
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "cou");
     await user.click(await screen.findByRole("button", { name: "Counterspell" }));
 

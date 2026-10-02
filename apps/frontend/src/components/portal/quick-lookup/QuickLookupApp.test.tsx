@@ -199,6 +199,16 @@ async function openGeneralRulesTopics(
   );
 }
 
+/** Look-matching pass (slice M), requirement 1: the card search now opens from the
+ * "＋ Add card" chip instead of sitting permanently visible. A no-op once already open,
+ * so a sequence of several adds (REQ-167) takes one open, not one per card. */
+async function openCardSearch(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  if (screen.queryByRole("textbox", { name: "Card search" })) {
+    return;
+  }
+  await user.click(screen.getByRole("button", { name: "Add card" }));
+}
+
 describe("Frontend - Quick Lookup", () => {
 describe("QuickLookupApp", () => {
   beforeEach(() => {
@@ -235,6 +245,11 @@ describe("QuickLookupApp", () => {
     expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Scan a card" })).toBeInTheDocument();
+
+    // Look-matching pass (slice M): the card search is collapsed behind "＋ Add card"
+    // until opened (requirement 1).
+    expect(screen.queryByRole("textbox", { name: "Card search" })).not.toBeInTheDocument();
+    await openCardSearch(user);
 
     const cardSection = screen.getByRole("textbox", { name: "Card search" }).closest("section");
     const composerPill = screen.getByTestId("composer-pill");
@@ -355,6 +370,7 @@ describe("QuickLookupApp", () => {
   it("resolves one card from autocomplete and supports removal", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
+    await openCardSearch(user);
 
     const searchInput = screen.getByRole("textbox", { name: "Card search" });
     await user.type(searchInput, "lig");
@@ -383,19 +399,22 @@ describe("QuickLookupApp", () => {
   it("shows the shared no-match copy for a three-character query", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
+    await openCardSearch(user);
 
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "zzz");
 
     expect(await screen.findByText(NO_MATCH_COPY)).toBeInTheDocument();
   });
 
-  it("uses accent palette tokens for the Scan and Ask controls, not a fixed hue", async () => {
+  it("uses palette-driven styling for the Scan and Ask controls, not a fixed hue (look-matching pass, slice M)", async () => {
     render(<QuickLookupApp />);
 
     const scanButton = screen.getByRole("button", { name: "Scan a card" });
     const askButton = screen.getByRole("button", { name: "Ask TheJudge" });
-    expect(scanButton).toHaveClass("border-accent/70", "bg-accent/15", "text-accent-soft");
-    expect(askButton).toHaveClass("from-accent", "to-accent-strong", "text-accent-contrast");
+    // Restyled to `.icon-chip`/`.send-pair` (flow.css), which read the active palette's
+    // CSS custom properties (`--accent`/`--accent-soft`/`--accent-strong`) rather than a
+    // fixed Tailwind hue utility.
+    expect(scanButton).toHaveClass("icon-chip");
     expect(scanButton.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
     expect(askButton.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
   });
@@ -457,6 +476,7 @@ describe("QuickLookupApp", () => {
   it("counts the editable text rather than the silent card fallback", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
+    await openCardSearch(user);
 
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
@@ -500,6 +520,7 @@ describe("QuickLookupApp", () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<QuickLookupApp onSubmit={onSubmit} />);
+    await openCardSearch(user);
 
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
@@ -531,6 +552,11 @@ describe("QuickLookupApp", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
     render(<QuickLookupApp />);
+    // Look-matching pass (slice M): the card search lives beside the composer in one
+    // shared wrapper, independent of the submit state — opened once here, it stays
+    // available while the answer loads below, same as it did permanently before this
+    // slice.
+    await openCardSearch(user);
 
     await user.type(
       screen.getByRole("textbox", { name: "Magic question" }),
@@ -610,7 +636,7 @@ describe("QuickLookupApp", () => {
       ]
     });
 
-    await user.click(screen.getByRole("button", { name: "Start Over" }));
+    await user.click(screen.getByRole("button", { name: "Start over — clears the cards and the question" }));
 
     expect(screen.queryByText("First lookup answer")).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("");
@@ -623,6 +649,7 @@ describe("QuickLookupApp", () => {
     const fetchMock = appFetchMock(["Card lookup answer", "Card follow-up answer"]);
     vi.stubGlobal("fetch", fetchMock);
     render(<QuickLookupApp />);
+    await openCardSearch(user);
 
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
@@ -637,14 +664,13 @@ describe("QuickLookupApp", () => {
     expect(screen.getAllByTestId("conversation-workspace")).toHaveLength(1);
     expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: "View context: Lightning Bolt" })
-    );
-    const contextDialog = screen.getByRole("dialog", { name: "Card context" });
-    // The frozen card inside View Context is the same consolidated shell-column image.
-    expect(contextDialog).toContainElement(screen.getByRole("img", { name: "Lightning Bolt" }));
+    // Look-matching pass (slice M), requirement 11: the "VIEW CONTEXT" trigger is
+    // retired here in favour of the CARDS thumbnail strip — a tap on the one thumbnail
+    // opens the same corner card-detail popup the stage uses.
+    await user.click(screen.getByRole("button", { name: "View Lightning Bolt" }));
+    expect(await screen.findByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Close card context" }));
+    await user.click(screen.getByRole("button", { name: "Close details for Lightning Bolt" }));
     const initialAskRequest = fetchMock.mock.calls.find(([input]) =>
       String(input).endsWith("/api/ask-ai")
     );
@@ -667,7 +693,7 @@ describe("QuickLookupApp", () => {
       cards: [toWireCard(lightningBolt)]
     });
 
-    await user.click(screen.getByRole("button", { name: "Start Over" }));
+    await user.click(screen.getByRole("button", { name: "Start over — clears the cards and the question" }));
 
     expect(screen.queryByText("Card lookup answer")).not.toBeInTheDocument();
     expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
@@ -680,6 +706,7 @@ describe("QuickLookupApp", () => {
 
   describe("multi-card lookup (REQ-167)", () => {
     async function addCardByName(user: ReturnType<typeof userEvent.setup>, query: string, name: string): Promise<void> {
+      await openCardSearch(user);
       const searchInput = screen.getByRole("textbox", { name: "Card search" });
       await user.clear(searchInput);
       await user.type(searchInput, query);
@@ -762,12 +789,12 @@ describe("QuickLookupApp", () => {
         cards: [toWireCard(lightningBolt), toWireCard(counterspell)]
       });
 
-      const contextTrigger = screen.getByRole("button", { name: "View context: 2 cards" });
-      await user.click(contextTrigger);
-      const contextDialog = screen.getByRole("dialog", { name: "Card context" });
-      expect(contextDialog).toContainElement(screen.getByRole("img", { name: "Lightning Bolt" }));
-      expect(contextDialog).toContainElement(screen.getByRole("img", { name: "Counterspell" }));
-      await user.click(screen.getByRole("button", { name: "Close card context" }));
+      // Look-matching pass (slice M), requirement 11: both cards show in the CARDS strip,
+      // each its own tappable thumbnail opening the shared card-detail popup.
+      expect(screen.getByRole("button", { name: "View Lightning Bolt" })).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "View Counterspell" }));
+      expect(await screen.findByRole("heading", { name: "Counterspell" })).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Close details for Counterspell" }));
 
       await user.type(screen.getByRole("textbox", { name: "Follow-up question" }), "What if both resolve?");
       await user.click(screen.getByRole("button", { name: "Send" }));

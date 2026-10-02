@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConversationMessage } from "../types";
 import { ConversationThread } from "./ConversationThread";
@@ -203,7 +203,7 @@ describe("Frontend - MTG Assistant", () => {
       expect(scrollToMock).toHaveBeenLastCalledWith({ top: 640, behavior: "auto" });
     });
 
-    it("renders a solid, high-contrast user bubble and plain flowing assistant text with no bubble background", () => {
+    it("renders the question as an accent bubble and the judge's reply in a sealed bubble with its own label (look-matching pass, slice M)", () => {
       render(
         <ConversationThread
           messages={[
@@ -213,15 +213,18 @@ describe("Frontend - MTG Assistant", () => {
         />
       );
 
-      const assistantBubble = screen
+      const judgeMessage = screen
         .getByText("The stack resolves.")
         .closest("[data-conversation-message-index]");
-      const userBubble = screen.getByText("What about hexproof?").parentElement;
-      expect(userBubble).toHaveClass("bg-accent-strong", "text-accent-contrast");
-      expect(userBubble?.className).not.toContain("bg-accent-strong/30");
-      expect(userBubble?.className).not.toContain("border");
-      expect(assistantBubble?.className).not.toMatch(/\bbg-/);
-      expect(assistantBubble).not.toHaveClass("text-accent-contrast");
+      const userMessage = screen
+        .getByText("What about hexproof?")
+        .closest("[data-conversation-message-index]");
+      expect(judgeMessage).toHaveClass("msg-judge");
+      expect(within(judgeMessage as HTMLElement).getByText("TheJudge")).toBeInTheDocument();
+      expect(
+        (judgeMessage as HTMLElement).querySelector(".msg-judge-bubble")
+      ).toContainElement(screen.getByText("The stack resolves."));
+      expect(userMessage).toHaveClass("msg-you");
     });
 
     it("renders assistant markdown syntax as structured elements", () => {

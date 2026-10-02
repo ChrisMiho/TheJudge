@@ -22,6 +22,14 @@ export interface DictationMicButtonProps {
   onToggle: () => void;
   /** Defaults to 44px (REQ-205's touch floor), matching the send control beside it. */
   sizeClassName?: string;
+  /**
+   * "standalone" (default): its own rounded border/background, used wherever the mic
+   * sits on its own (`EnrichmentStep`). "flat" (look-matching pass, slice M): no border
+   * or background of its own — for use inside `.send-pair`
+   * (`ComposerPill`/`FollowUpComposer`), which supplies the pill's own surface, the
+   * mic/send divider, and the `[aria-pressed="true"]` glow (`flow.css:224-239`).
+   */
+  variant?: "standalone" | "flat";
 }
 
 /**
@@ -33,8 +41,18 @@ export interface DictationMicButtonProps {
 export function DictationMicButton({
   isListening,
   onToggle,
-  sizeClassName = "h-11 w-11"
+  sizeClassName = "h-11 w-11",
+  variant = "standalone"
 }: DictationMicButtonProps): JSX.Element {
+  const variantClassName =
+    variant === "flat"
+      ? "send-pair-mic text-current"
+      : `rounded-full border ${
+          isListening
+            ? "border-accent-soft bg-accent-soft/20 text-accent-soft"
+            : "border-zinc-700/70 bg-zinc-800/60 text-accent-soft hover:bg-zinc-700/60"
+        }`;
+
   return (
     <button
       type="button"
@@ -42,11 +60,7 @@ export function DictationMicButton({
       aria-label={isListening ? "Stop dictating" : "Dictate question"}
       aria-pressed={isListening}
       data-testid="dictation-mic"
-      className={`flex shrink-0 items-center justify-center rounded-full border transition ${sizeClassName} ${
-        isListening
-          ? "border-accent-soft bg-accent-soft/20 text-accent-soft"
-          : "border-zinc-700/70 bg-zinc-800/60 text-accent-soft hover:bg-zinc-700/60"
-      }`}
+      className={`flex shrink-0 items-center justify-center transition ${sizeClassName} ${variantClassName}`}
     >
       <MicIcon />
     </button>

@@ -91,10 +91,10 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     );
 
     expect(screen.queryByTestId("composer-pill-count")).not.toBeInTheDocument();
-    expect(screen.getByTestId("composer-pill-send").querySelector("circle")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("composer-pill-ring")).not.toBeInTheDocument();
   });
 
-  it("draws the ring and the count once text is present, brighter in the last 30 characters", () => {
+  it("draws the budget ring and the count once text is present, brighter in the last 30 characters", () => {
     const { rerender } = render(
       <ComposerPill
         value="Does trample interact with deathtouch"
@@ -109,9 +109,10 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     );
 
     expect(screen.getByTestId("composer-pill-count")).toHaveTextContent("37/300");
-    const circle = screen.getByTestId("composer-pill-send").querySelector("circle");
-    expect(circle).toBeInTheDocument();
-    expect(circle).toHaveClass("text-accent-soft/40");
+    const ring = screen.getByTestId("composer-pill-ring");
+    const fillPath = ring.querySelector("path.fill");
+    expect(fillPath).toBeInTheDocument();
+    expect(fillPath).not.toHaveClass("bright");
 
     rerender(
       <ComposerPill
@@ -126,7 +127,7 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
       />
     );
 
-    expect(screen.getByTestId("composer-pill-send").querySelector("circle")).toHaveClass("text-accent-soft");
+    expect(screen.getByTestId("composer-pill-ring").querySelector("path.fill")).toHaveClass("bright");
   });
 
   it("hides the Add in-depth details segment entirely when the callback is omitted", () => {

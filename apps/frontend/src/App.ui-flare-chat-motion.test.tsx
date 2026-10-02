@@ -150,6 +150,9 @@ describe("Frontend - UI flare chat motion integration", () => {
     expect(sessionStorage.getItem(activeDestinationKey)).toBe("quick-lookup");
     expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeInTheDocument();
 
+    // Look-matching pass (slice M): the card search opens from "＋ Add card"
+    // (requirement 1) instead of sitting permanently visible.
+    await user.click(screen.getByRole("button", { name: "Add card" }));
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
     const initialQuickQuestion = "Can Lightning Bolt target a planeswalker?";
@@ -162,30 +165,19 @@ describe("Frontend - UI flare chat motion integration", () => {
     await waitFor(() => expect(screen.getByRole("log")).toHaveTextContent(quickAnswer));
     // REQ-025 (amended): the player's own question opens the thread as the first bubble.
     expect(screen.getByText(initialQuickQuestion)).toBeInTheDocument();
-    const quickTrigger = screen.getByRole("button", {
-      name: "View context: Lightning Bolt"
-    });
+    // Look-matching pass (slice M), requirement 11: the "VIEW CONTEXT" trigger is
+    // retired on Ask a Question in favour of the CARDS thumbnail strip — a tap on its one
+    // thumbnail opens the same corner card-detail popup directly (no intermediate
+    // read-only context dialog).
+    const quickTrigger = screen.getByRole("button", { name: "View Lightning Bolt" });
     await user.click(quickTrigger);
-    const cardContextDialog = screen.getByRole("dialog", { name: "Card context" });
-    expect(cardContextDialog).toBeInTheDocument();
-    // Oracle text is not stacked under the image by default (DEC-151) — it is reached via
-    // the suite-wide corner detail popup, including from inside this read-only context
-    // dialog. DEC-158 portals that popup out to <body>, so it layers over View Context
-    // instead of being squeezed into the frozen card's box, and each surface closes back
-    // in its own order.
-    await user.click(within(cardContextDialog).getByRole("button", { name: "Show details for Lightning Bolt" }));
     const cardDetailPopup = screen.getByTestId("card-detail-popup");
-    expect(cardContextDialog).not.toContainElement(cardDetailPopup);
     await waitFor(() =>
       expect(cardDetailPopup).toHaveTextContent("Lightning Bolt deals 3 damage to any target.")
     );
 
     await user.click(screen.getByRole("button", { name: "Close details for Lightning Bolt" }));
     expect(screen.queryByTestId("card-detail-popup")).not.toBeInTheDocument();
-    expect(cardContextDialog).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Close card context" }));
-    expect(quickTrigger).toHaveFocus();
 
     const quickWorkspace = screen.getByRole("heading", { name: "Ask a Question" })
       .closest("main")
@@ -228,7 +220,11 @@ describe("Frontend - UI flare chat motion integration", () => {
     expect(sessionStorage.getItem(activeDestinationKey)).toBe("quick-lookup");
     expect(screen.getByText(quickFollowUpAnswer)).toBeVisible();
 
-    await user.click(screen.getByRole("button", { name: "Start Over" }));
+    // Look-matching pass (slice M): Quick Question's own Start Over is now the round ↺
+    // in its chat-head (requirement 11), not a text button.
+    await user.click(
+      screen.getByRole("button", { name: "Start over — clears the cards and the question" })
+    );
     expect(screen.queryByRole("heading", { name: "Lightning Bolt" })).not.toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "General rules topics" })).toBeInTheDocument();
 

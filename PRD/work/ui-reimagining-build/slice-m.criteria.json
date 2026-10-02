@@ -5,67 +5,67 @@
     {
       "id": "M1",
       "statement": "npm run quality:check passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm run quality:check" }
     },
     {
       "id": "M2",
       "statement": "npm --workspace apps/frontend run test passes",
-      "value": false,
+      "value": true,
       "evidence": { "command": "npm --workspace apps/frontend run test" }
     },
     {
       "id": "M3",
       "statement": "Page shows exactly three things (stage, composer, ruling view), no permanent search panel",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx"] }
     },
     {
       "id": "M4",
       "statement": "Stage matches flow.css:52-99 sizing and front-card glow, with 40px round arrows",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/CardStage.tsx"] }
     },
     {
       "id": "M5",
       "statement": "Composer is one .q-box shell with icon-chip Add/Scan and a split mic/send pill with the budget ring",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/ComposerPill.tsx"] }
     },
     {
       "id": "M6",
       "statement": "Ruling view shows a CARDS thumbnail strip, right-aligned question bubble and a sealed judge bubble with card-name chips",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/ConversationThread.tsx"] }
     },
     {
       "id": "M7",
       "statement": "The VIEW CONTEXT panel does not render on Ask a Question",
-      "value": false,
+      "value": true,
       "evidence": { "paths": ["apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx"] }
     },
     {
       "id": "M8",
       "statement": "Side-by-side build/mockup pairs for the three Ask a Question states saved under docs/design/ui-reimagining/build-screenshots/m/",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "M9",
       "statement": "Every Ask a Question ### Differences bullet in LOOK-GAPS.md is closed or named as an owner question",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "M10",
       "statement": "Browser scenario: stage/neighbours, search-pop from Add card, and ruling-view CARDS strip/bubbles observed at 390x844 and 1440x900",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     },
     {
       "id": "M11",
       "statement": "Cleanup evidence recorded: browser closed, owned servers stopped, ports released, capture path named",
-      "value": false,
+      "value": true,
       "evidence": { "manual": true }
     }
   ]

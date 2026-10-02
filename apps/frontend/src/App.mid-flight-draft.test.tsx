@@ -87,7 +87,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
     expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeVisible();
 
     await switchToDestination(user, "Quick Question");
-    expect(screen.getByLabelText("Card search")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeVisible();
 
     // Storage persists (installMemoryLocalStorage backs it with a module-level map), but the
     // React tree does not: unmounting and rendering a fresh <App /> is the only way to prove
@@ -123,7 +123,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
 
     await advanceToBattlefieldZoneCollection(user);
     await switchToDestination(user, "Quick Question");
-    const firstMountAfterLeave = screen.getByLabelText("Card search");
+    const firstMountAfterLeave = screen.getByRole("heading", { name: "Ask a Question" });
     expect(firstMountAfterLeave).toBeVisible();
 
     await switchToDestination(user, "In-Depth Question");

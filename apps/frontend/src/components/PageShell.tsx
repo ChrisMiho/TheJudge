@@ -11,9 +11,14 @@ type PageShellProps = {
    * column (look-matching pass, slice L: no more bordered `.page-card`
    * frame). "full-bleed" keeps the `.page-shell` background/ambient-scene
    * chrome but lets the caller's content use the full viewport width (e.g. a
-   * live tabletop life-table view).
+   * live tabletop life-table view). "narrow" (look-matching pass, slice M):
+   * the same width-capped column, pinned to the mockup's 36rem content cap
+   * instead of the suite's default 48rem — `quick-question.html:17` and
+   * `in-depth-question.html:14` both override `.page-content` this way;
+   * Ask a Question (slice M) and In-depth details (slice N) are the two
+   * destinations that opt in.
    */
-  variant?: "standard" | "full-bleed";
+  variant?: "standard" | "full-bleed" | "narrow";
 };
 
 export function PageShell({ children, variant = "standard" }: PageShellProps): JSX.Element {
@@ -44,7 +49,7 @@ export function PageShell({ children, variant = "standard" }: PageShellProps): J
           <ShellBounds />
         </div>
       ) : (
-        <div className="page-content">
+        <div className={variant === "narrow" ? "page-content page-content-narrow" : "page-content"}>
           {children}
           <ShellBounds />
         </div>

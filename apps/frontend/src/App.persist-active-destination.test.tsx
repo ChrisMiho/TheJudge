@@ -38,7 +38,10 @@ describe("Frontend - Portal", () => {
     it("opens registry-first Quick Question when bare root has no stored destination", async () => {
       render(<App />);
 
-      expect(screen.getByLabelText("Card search")).toBeVisible();
+      // Look-matching pass (slice M): "Card search" is now collapsed behind "＋ Add
+      // card" (requirement 1) — the "Ask a Question" heading is the destination's
+      // reliable always-rendered marker instead.
+      expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeVisible();
       expect(screen.queryByRole("heading", { name: "Game context" })).not.toBeInTheDocument();
       await waitFor(() => expect(window.location.pathname).toBe("/quick-lookup"));
     });
@@ -50,7 +53,7 @@ describe("Frontend - Portal", () => {
       render(<App />);
 
       expect(screen.getByRole("heading", { name: "Game context" })).toBeVisible();
-      expect(screen.queryByLabelText("Card search")).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "Ask a Question" })).not.toBeInTheDocument();
     });
 
     it("uses the valid stored destination when the URL is bare root", async () => {
@@ -59,7 +62,7 @@ describe("Frontend - Portal", () => {
       render(<App />);
 
       expect(screen.getByRole("heading", { name: "Game context" })).toBeVisible();
-      expect(screen.queryByLabelText("Card search")).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "Ask a Question" })).not.toBeInTheDocument();
       await waitFor(() => expect(window.location.pathname).toBe("/in-depth"));
     });
 
@@ -68,7 +71,7 @@ describe("Frontend - Portal", () => {
 
       render(<App />);
 
-      expect(screen.getByLabelText("Card search")).toBeVisible();
+      expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeVisible();
       expect(screen.queryByRole("heading", { name: "Game context" })).not.toBeInTheDocument();
       await waitFor(() => expect(window.location.pathname).toBe("/quick-lookup"));
     });
@@ -87,6 +90,9 @@ describe("Frontend - Portal", () => {
       const user = userEvent.setup();
       render(<App />);
 
+      // Look-matching pass (slice M): the card search opens from "＋ Add card"
+      // (requirement 1) instead of sitting permanently visible.
+      await user.click(screen.getByRole("button", { name: "Add card" }));
       const searchInput = screen.getByLabelText("Card search");
       await user.type(searchInput, "lightning");
       // REQ-067/REQ-206: `in-depth` has no Menu row of its own — reached by direct
@@ -147,7 +153,7 @@ describe("Frontend - Portal", () => {
       render(<App />);
 
       // Starts on Ask a Question (the registry-first default), not In-depth.
-      expect(await screen.findByLabelText("Card search")).toBeVisible();
+      expect(await screen.findByRole("heading", { name: "Ask a Question" })).toBeVisible();
 
       await user.click(screen.getByRole("button", { name: "Switch feature" }));
       await user.click(screen.getByRole("menuitem", { name: "Question History" }));
