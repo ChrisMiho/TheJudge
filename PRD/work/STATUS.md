@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Slices A–Q done; review 1 RETURN TO BUILD findings 1–6 fixed in `build` attempt 9 (2 Critical: header/☰ clipped at desktop on Trade Balancer + scanner, header over the open Menu; 4 Important look gaps in L, M, N — Q's finding carried as an owner question, not a code change); recaptured pairs saved; full suite green (frontend 1486/1486, backend 519/519, quality:check 589/589); PR #239 open `IN PROGRESS`, awaiting review 2; run `graph-20260930-055958` |
 
 ## active
 
 | Package | Note |
 | --- | --- |
+| ui-reimagining-build | Slices A–Q done; review 2 RETURN TO BUILD on one Important gap (In-depth Cards step: Add card / Scan row inside the plate — `REVIEW-2.md`); `build` attempt 10 narrow fix (last loop), then review 3; PR #239 open `IN PROGRESS`; run `graph-20260930-055958` |
 
 ## refined
 
