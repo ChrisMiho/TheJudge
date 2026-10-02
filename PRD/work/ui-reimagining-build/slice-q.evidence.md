@@ -157,3 +157,54 @@ the fix is a one-line wording change removing the `.page-card` mention.
   classes added are the mockup's own class names, carried over rather than
   renamed, matching the precedent `tb-`/`cs-` prefixes set in slices O/P
   where the mockup's own names were available to reuse directly.
+
+### Review 1 fix (2026-10-02)
+
+Review loop 1 (`REVIEW-1.md`) returned finding 5 (Important, Q9): the
+Counters sheet still fills the whole screen and hides the table, where the
+mockup uses a content-sized bottom sheet (phone) or a content-sized centred
+card (desktop).
+
+Verified before changing anything, per this pass's own rule. `CounterPanel.tsx`
+(lines 344-359) is not built on the shared `SheetShell` the rest of the
+overlay family uses; it is its own `position: fixed inset-0 ... items-stretch`
+surface, and the comment directly above it cites why: "DEC-139: the panel
+belongs to the same overlay family as the Menu tray (DEC-133) and the history
+drawer (DEC-134), so its surface fills the available height instead of sizing
+to its content ... `items-stretch` at every viewport mirrors that decision."
+
+That is current, accepted product truth, not a stale comment: `PRD/sections/
+screen-layout.md`'s "Shared sheet" row — the authoritative layout catalog
+DEC-149 requires UI work to read — describes every other sheet in the family
+as "content-sized," then carries an explicit carve-out in its own Notes column:
+**"Life Tracker's counter panel keeps DEC-139."** `PRD/sections/
+functional-requirements.md`'s REQ-143 Notes read the same amended-DEC-142
+history the same way: DEC-139 "moved `CounterPanel` into the full-height
+overlay family," retiring an earlier premise that treated it as sheet-shaped.
+
+Making the Counters panel content-sized, as the finding asks, would reverse
+this specific, current, cross-referenced decision — not close a look gap
+LOOK-GAPS.md itself flagged as conflict-free. LOOK-GAPS.md's own "Conflicts
+with accepted requirements" for Life Tracker menus does not mention sheet
+height at all (it only raised "Edit names ▾" and the "Done ›" foot bar,
+both already resolved by slice J). This is new research this pass surfaced
+by reading `CounterPanel.tsx`'s own cited decision before changing it, per
+this pass's "verify it yourself before changing it" instruction.
+
+Per this pass's own rule — "a difference you cannot close is carried only as
+a genuine owner question ... never as a builder's own decision" — this is
+carried as an owner question rather than implemented:
+
+**Owner question:** Should the Life Tracker Counters panel give up its
+DEC-139 full-height carve-out and join the rest of the shared-sheet family as
+a content-sized bottom sheet (phone) / centred card (desktop), matching the
+direction-1 mockup? Saying yes means editing `PRD/sections/screen-layout.md`'s
+"Shared sheet" row (dropping the DEC-139 exception) and `REQ-143`'s Notes,
+not just restyling `CounterPanel.tsx`. Until answered, this slice leaves
+`CounterPanel.tsx` exactly as it is — full height, DEC-139's own shape — and
+the life-total table underneath (Q7) is untouched either way.
+
+No code changed for this finding. No pair was recaptured (nothing visual
+changed); the existing `q/life-tracker-counters-build-*` and
+`q/life-tracker-counters-tab-build-*` captures still show the current,
+accepted-pending-this-question shape.
