@@ -13,7 +13,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Slices A–K done; look-matching slices L–Q mapped (0/68 criteria, 5 owner questions carried); PR #239 open `IN PROGRESS`; session handoff — next `/graph-implement PRD/work/ui-reimagining-build/` enters at `build` attempt 6 from slice L; run `graph-20260930-055958` |
+| ui-reimagining-build | Slices A–K done; look-matching pass L done (14/68 criteria), M–Q planned (5 owner questions carried); PR #239 open `IN PROGRESS`; `build` attempt 7 from slice M; run `graph-20260930-055958` |
 
 ## refined
 
