@@ -100,4 +100,4 @@ Report back as lines: outcome (`ok` / `failed` / `NO ACTIONABLE PACKAGE`), the c
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "merging 239 to main would mean pushing an unfinished ui to prod, can we just build on top of what 239 has, this new work should pr into 239 and then itll be merged to prod" | answered-once | preflight | — |
-| "Run /graph-kickoff with this file as the request, after PR #239 has merged" (intake brief, handoff section) | answered-once | preflight | — |
+| "Run /graph-kickoff with this file as the request, after PR #239 has merged" | answered-once | preflight | — |
