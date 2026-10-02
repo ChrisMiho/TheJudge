@@ -2,14 +2,14 @@
 
 Screen: Ask a Question (pre-submit with five cards, the Add-card search open, the answered view with a follow-up typed). Visual source: `docs/design/ui-reimagining/direction-1/quick-question.html`.
 
-Slice threshold: differing fraction at most 0.02 per pair (below the 0.05 ceiling; measured maximum 0.0174 at tolerance 12, so the planner's starting 0.04 is lowered to 0.02). Tolerance 12 per channel on every pair.
+Slice threshold: differing fraction at most 0.02 per pair (below the 0.05 ceiling; measured maximum 0.0174 at tolerance 12 before the review-1 re-capture of default-with-cards (now 0.0063 and 0.0053; the largest is add-card-search 1440x900 at 0.0104), so the planner's starting 0.04 is lowered to 0.02). Tolerance 12 per channel on every pair.
 
 How the pairs are made: the same as `translation/frame/DIFF-RESULTS.md` (build in mock mode on 5411, a seeded-scene copy of the mockup on 5413, reduced motion, Blue, Playwright). The five cards are Lightning Bolt, Sol Ring, Llanowar Elves, Swords to Plowshares and Counterspell (the mockup's first five), with Lightning Bolt in front. The mockup's own scaffolding (`.demo-bar`, `.foot-note`, the phone `DEMO` tab) is hidden on the mockup side. Capture-only CSS that fixes a height on both sides: the Add-card result list at 150px (the app lists live matches, the mockup filters a demo shortlist) and the conversation thread at 320px (the mock provider's answer is a long dump of the prompt, the mockup's is two short paragraphs).
 
 | Pair | Mask file | Tolerance | Differing fraction (pixels / compared) | Threshold | Result |
 | --- | --- | --- | --- | --- | --- |
-| default-with-cards 390x844 | default-with-cards-mask-390x844.json | 12 | 0.01738 (3714 / 213720) | 0.02 | PASS |
-| default-with-cards 1440x900 | default-with-cards-mask-1440x900.json | 12 | 0.00996 (11832 / 1187586) | 0.02 | PASS |
+| default-with-cards 390x844 | default-with-cards-mask-390x844.json | 12 | 0.00631 (1348 / 213720) | 0.02 | PASS |
+| default-with-cards 1440x900 | default-with-cards-mask-1440x900.json | 12 | 0.00529 (6286 / 1187586) | 0.02 | PASS |
 | add-card-search 390x844 | add-card-search-mask-390x844.json | 12 | 0.00239 (404 / 168880) | 0.02 | PASS |
 | add-card-search 1440x900 | add-card-search-mask-1440x900.json | 12 | 0.01036 (11437 / 1103776) | 0.02 | PASS |
 | answered-follow-up 390x844 | answered-follow-up-mask-390x844.json | 12 | 0.00005 (5 / 110881) | 0.02 | PASS |
@@ -33,6 +33,8 @@ How the pairs are made: the same as `translation/frame/DIFF-RESULTS.md` (build i
 - B12 literal wording versus the mockup: the criterion says the composer is two rows at both viewports. At 390x844 it is (text on top; In-depth chip bottom-left; mic|send pill bottom-right). At 1440x900 one line of text keeps the chip, the text and the pill in one row, exactly as the mockup draws it, because `flow.css` gives the box its two-row shape only when the text needs a second line (`:has(textarea.grown)`). The mockup wins on look, so the build follows it and the pair passes; the literal "two rows at both viewports" is not met at desktop width. Review decides.
 - B17 helper text (REQ-070), side by side with the mockup: the question box hint is "What would you like to know?" in both (shortened in tiers on a narrow box by the same measurement the mockup uses); the Add-card field hint is "Search for a card to add" in both; the title row, the stage, the dots and the box carry no hint line in either. Differences: a conversation reopened from Question History reads "Reopened from your history" (the mockup adds the mode, how long ago and the game context); the mockup's Add-card results list shows each card's type, the app does not.
 - The mock provider's answer shown in the thread is a dump of the prompt, not a ruling; it is a mock-mode artefact, not a layout difference.
+
+Review 1 re-capture: the two default-with-cards build captures were taken before the `.ring { box-shadow: none }` fix and showed a blue box the shipped code does not draw; both were re-taken from the current build (own ports 5421/3421, mock mode, Blue, reduced motion, same five cards and steps, same masks, tolerance 12) and the rows above updated (0.01738 to 0.00631 and 0.00996 to 0.00529). The mockup captures are unchanged.
 
 ## B8 — profile-switch pair
 

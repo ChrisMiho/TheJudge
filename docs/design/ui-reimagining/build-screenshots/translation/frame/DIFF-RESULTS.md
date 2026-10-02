@@ -58,7 +58,7 @@ Pairs live beside this file as `<state>-build-<viewport>.png`, `<state>-mockup-<
 
 ## A9 — Life Tracker table (REQ-202), for the owner's review
 
-`translation/life-tracker-table/before-build-<viewport>.png` is the table as PR #239's tip rendered it (copied from `build-screenshots/q/`), `after-build-<viewport>.png` is the table now. The cards, counters and layout are the table's own and unchanged; the banner under the shared header is now the mockup's 41px strip and the brand mark is the mockup's, so the table starts about 12px higher on a phone. The page padding around the table is kept. No pixel count blocks the slice.
+`translation/life-tracker-table/before-build-<viewport>.png` is the table as PR #239's tip rendered it (copied from `build-screenshots/q/`), `after-build-<viewport>.png` is the table now. The cards, counters and layout are the table's own and unchanged; the banner is now the mockup's 41px strip and sits under the shared header on every page except the Life Tracker, where in mock mode it sits above the table's own header (the table's header is frozen by REQ-202); whether the Life Tracker banner should move under the shared header is an open owner question and the brand mark is the mockup's, so the table starts about 12px higher on a phone. The page padding around the table is kept. No pixel count blocks the slice.
 
 ## A6 and A7 — REQ-216 audit (the brief's verbatim command)
 

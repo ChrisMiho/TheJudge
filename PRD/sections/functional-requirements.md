@@ -5541,7 +5541,7 @@
 - Notes:
   - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the mockup also tried Add cash, Swap sides and Copy summary and removed them - none ships
   - built by slice G: `apps/frontend/src/components/trade/TradeBalancer.tsx`, `TradeSide.tsx` (rename), `TradePile.tsx` (the five-tier SVG piles), `PrintingPicker.tsx` (shared-sheet rehost, Nonfoil/Foil pills), `apps/frontend/src/lib/trade/pricing.ts` (`pileTier`, `tradeVerdict`, `formatTradeVerdict`, `formatTradeDifference`, `normalizeSideName`), `apps/frontend/src/components/StagedStepHeader.tsx` (new optional `rightSlot` prop, additive and backward compatible)
-  - not built, out of this pass's scope: the mockup's moving sheen on a foil entry row (a decorative detail, not load-bearing for the trade's own correctness) — the existing plain Foil toggle/label is unchanged
+  - built by `ui-look-translation` (2026-10-02): the mockup's foil sheen on a foil entry row (`index.css`, `var(--foil-sheen)`); the Foil toggle/label is unchanged
   - amended by `ui-look-translation` (2026-10-02): a repeat add of the same printing and finish merges into one row's quantity, matching the mockup (the first build's owner question 4); totals are unchanged
 
 ### REQ-216

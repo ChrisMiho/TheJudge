@@ -101,7 +101,7 @@
     },
     {
       "id": "B12",
-      "statement": "Ask a Question's composer is two rows at both viewports (text on top; In-depth chip bottom-left, mic|send pill bottom-right) and the front card is centred on the stage with neighbours peeking, observed in the browser and recorded",
+      "statement": "Ask a Question's composer is two rows once the question text wraps, as the mockup draws it (single row at 1440 with short text; text on top, In-depth chip bottom-left, mic|send pill bottom-right when wrapped) and the front card is centred on the stage with neighbours peeking, observed in the browser and recorded",
       "value": true,
       "evidence": {
         "manual": true

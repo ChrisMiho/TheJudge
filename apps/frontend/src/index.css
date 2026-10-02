@@ -416,8 +416,8 @@ html {
 
 .panel-inner {
   border-radius: 1rem;
-  border: 1px solid rgb(63 63 70 / 0.7);
-  background-color: rgb(24 24 27 / 0.55);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background-color: color-mix(in srgb, var(--surface-panel) 55%, transparent);
   padding: var(--layout-content-padding);
 }
 
@@ -559,7 +559,7 @@ html {
 .conversation-markdown h6 {
   font-weight: 600;
   line-height: 1.3;
-  color: #f4f4f5;
+  color: var(--text-primary);
 }
 
 .conversation-markdown h1 {
@@ -604,7 +604,7 @@ html {
 
 .conversation-markdown code {
   border-radius: 0.25rem;
-  background-color: rgb(63 63 70 / 0.6);
+  background-color: color-mix(in srgb, var(--surface-edge) 60%, var(--surface-panel));
   padding: 0.125em 0.35em;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.875em;
@@ -613,7 +613,7 @@ html {
 .conversation-markdown pre {
   overflow-x: auto;
   border-radius: 0.5rem;
-  background-color: rgb(24 24 27 / 0.85);
+  background-color: color-mix(in srgb, var(--surface-ground) 85%, transparent);
   padding: 0.75em 1em;
 }
 
@@ -631,7 +631,7 @@ html {
 .conversation-markdown blockquote {
   border-left: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
   padding-left: 0.75em;
-  color: #d4d4d8;
+  color: var(--text-muted);
 }
 
 .conversation-markdown-table-scroll {
@@ -646,14 +646,14 @@ html {
 
 .conversation-markdown th,
 .conversation-markdown td {
-  border: 1px solid rgb(63 63 70 / 0.7);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   padding: 0.35em 0.6em;
   text-align: left;
 }
 
 .conversation-markdown th {
   font-weight: 600;
-  background-color: rgb(63 63 70 / 0.35);
+  background-color: color-mix(in srgb, var(--surface-edge) 35%, transparent);
 }
 
 /* "View context" is the first element inside the answered .conversation-workspace,
@@ -829,43 +829,7 @@ html {
   }
 }
 
-.chat-icon-round {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
-  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
-  color: #e2e8f0;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.chat-icon-round:hover {
-  border-color: var(--accent-soft);
-}
-
 /* the message bubbles (`flow.css:355-374`) */
-
-.msg-you {
-  max-width: 86%;
-  align-self: flex-end;
-  padding: 0.65rem 0.95rem;
-  border-radius: 1.1rem;
-  border-top-right-radius: 0.3rem;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, var(--accent) 85%, var(--accent-strong)),
-    var(--accent-strong)
-  );
-  color: #fff;
-  box-shadow: var(--lift-message);
-  font-size: 0.94rem;
-  line-height: 1.5;
-}
 
 .msg-judge {
   max-width: 86%;
@@ -876,15 +840,6 @@ html {
   align-items: start;
   font-size: 0.94rem;
   line-height: 1.5;
-}
-
-.msg-judge-bubble {
-  padding: 0.65rem 0.95rem;
-  border-radius: 1.1rem;
-  border-top-left-radius: 0.3rem;
-  background: var(--surface-panel);
-  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
-  box-shadow: 0 8px 22px -14px rgb(0 0 0 / 0.9);
 }
 
 .msg-judge-seal {
@@ -5260,8 +5215,8 @@ body {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 2px solid color-mix(in srgb, var(--text-on-accent) 30%, transparent);
+  border-top-color: var(--text-on-accent);
   border-radius: 50%;
   animation: send-spin 0.7s linear infinite;
   vertical-align: middle;
