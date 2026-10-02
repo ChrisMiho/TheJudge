@@ -98,6 +98,15 @@
   overflow: hidden;
 }
 
+/* Look-matching pass (slice P): the scanner's own fit, at the "narrow" 36rem
+   width (`.page-content-narrow` already sets `max-width`; this only adds the
+   height-fit behaviour `.page-content-wide-fit` uses above). */
+.page-content-narrow-fit {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
 /* Look-matching pass (slice L): the sticky, full-bleed banner header
    (`shell.css:63-81`'s `.app-header`), ported onto `StagedStepHeader`'s
    existing `1fr auto 1fr` grid (REQ-139's PortalSlot column, the centred
@@ -3733,6 +3742,295 @@ body {
 
 .scan-confirm-popup {
   animation: scan-confirm-pop 1.4s ease-out forwards;
+}
+
+/* Look-matching pass (slice P): the card scanner, ported from `card-scan.html`
+   — one panel (no nested frames), a corner-ticked guide with a marching lock
+   outline, a top-left "Locking on <card>" indicator, and a foot row
+   (mute/shutter/Debug) replacing the full-width rectangular Capture button
+   and the old bottom-center-absolute Debug pill. */
+.cs-viewfinder {
+  position: relative;
+  overflow: hidden;
+  border-radius: 1.1rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: #0b0b0d;
+}
+
+/* `card-scan.html:19-20`: the column narrows further at desktop (31.5rem,
+   not the host page's own 36rem cap) specifically "so the ✕ sits right over
+   its corner" — the panel's own width, not the page's. This is also what
+   keeps the `md:aspect-[3/4]` video inside the viewport (requirement 7): a
+   576px-wide panel would stand 768px tall; capped to 504px it stands 672px,
+   the clamp's own ceiling. */
+@media (min-width: 768px) {
+  .cs-viewfinder {
+    /* The video inside (`md:aspect-[3/4] md:h-auto`, untouched/test-pinned)
+       derives its height from this width, so the width is solved backwards
+       from the same viewport-bounded height the phone clamp already uses
+       (`h-[clamp(20rem,calc(100dvh-17rem),42rem)]`) — an 18rem chrome
+       deduction here, not 17rem, because this host's header/banner/title
+       row plus page padding (rather than the phone clamp's own video-only
+       budget) sit above the panel too. `min()` with the mockup's literal
+       31.5rem keeps a short viewport from growing the panel past it.
+       Replacing the clamp's own 17rem is not open to this slice (shared by
+       every `ScanCameraSurface` host, including phone, where it already
+       fits exactly). */
+    max-width: min(31.5rem, calc(clamp(20rem, calc(100dvh - 18rem), 42rem) * 0.75));
+    margin-inline: auto;
+  }
+}
+
+.cs-guide-tick {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgb(var(--accent-soft) / 0.85);
+}
+
+.cs-guide-tick-tl {
+  left: -2px;
+  top: -2px;
+  border-right: 0;
+  border-bottom: 0;
+  border-top-left-radius: 0.8rem;
+}
+
+.cs-guide-tick-tr {
+  right: -2px;
+  top: -2px;
+  border-left: 0;
+  border-bottom: 0;
+  border-top-right-radius: 0.8rem;
+}
+
+.cs-guide-tick-bl {
+  left: -2px;
+  bottom: -2px;
+  border-right: 0;
+  border-top: 0;
+  border-bottom-left-radius: 0.8rem;
+}
+
+.cs-guide-tick-br {
+  right: -2px;
+  bottom: -2px;
+  border-left: 0;
+  border-top: 0;
+  border-bottom-right-radius: 0.8rem;
+}
+
+@keyframes cs-guide-breathe {
+  0%,
+  100% {
+    border-color: rgb(var(--accent-soft) / 0.55);
+  }
+  50% {
+    border-color: rgb(var(--accent-soft) / 0.85);
+  }
+}
+
+.cs-guide-breathe {
+  animation: cs-guide-breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes cs-lock-outline-march {
+  to {
+    stroke-dashoffset: -32;
+  }
+}
+
+.cs-lock-outline-march {
+  animation: cs-lock-outline-march 2.4s linear infinite;
+}
+
+.cs-indicator {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.6rem;
+  max-width: calc(100% - 10rem);
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.8rem;
+  background: rgb(9 9 11 / 0.78);
+  border: 1px solid rgb(var(--accent-soft) / 0.3);
+  backdrop-filter: blur(6px);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #f4f4f5;
+}
+
+.cs-indicator-bar {
+  width: 88px;
+  height: 6px;
+  border-radius: 999px;
+  background: rgb(161 161 170 / 0.3);
+  overflow: hidden;
+}
+
+.cs-indicator-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgb(var(--accent)), rgb(var(--accent-soft)));
+  transition: width 150ms ease;
+}
+
+.cs-indicator-n {
+  font-size: 0.7rem;
+  color: rgb(var(--accent-soft));
+  font-variant-numeric: tabular-nums;
+}
+
+.cs-vf-foot {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.55rem;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.cs-mute {
+  min-width: 36px;
+  min-height: 30px;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  border: 1px solid rgb(244 244 245 / 0.14);
+  background: rgb(9 9 11 / 0.7);
+  color: #f4f4f5;
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.cs-shutter {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  padding: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  border: 2px solid rgb(var(--accent-soft) / 0.88);
+  background: rgb(9 9 11 / 0.55);
+  box-shadow:
+    0 0 0 3px rgb(9 9 11 / 0.45),
+    0 0 18px -4px rgb(var(--accent-soft) / 0.7);
+  transition: transform 120ms ease;
+}
+
+.cs-shutter::before {
+  content: "";
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: block;
+  background: radial-gradient(circle at 38% 34%, rgb(var(--accent-soft)), rgb(var(--accent)) 60%, rgb(var(--accent)));
+  transition: transform 120ms ease;
+}
+
+.cs-shutter:hover::before {
+  transform: scale(1.05);
+}
+
+.cs-shutter:active::before {
+  transform: scale(0.86);
+}
+
+.cs-shutter:active {
+  transform: scale(0.97);
+}
+
+.cs-debug-toggle {
+  min-height: 30px;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgb(244 244 245 / 0.14);
+  background: rgb(9 9 11 / 0.7);
+  color: #a1a1aa;
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.cs-debug-toggle[aria-pressed="true"] {
+  border-color: rgb(var(--accent-soft));
+  color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.22);
+}
+
+.cs-credit {
+  margin: 0.5rem 0 0;
+  text-align: center;
+  color: rgb(161 161 170 / 0.8);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.cs-hint {
+  margin: 0.15rem 0 0;
+  font-size: 0.78rem;
+  color: #a1a1aa;
+}
+
+.cs-vf-top-right {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.6rem;
+  z-index: 3;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+}
+
+.cs-caution {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid rgb(250 204 21 / 0.55);
+  background: rgb(9 9 11 / 0.78);
+  color: #facc15;
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  box-shadow: 0 0 14px -6px rgb(250 204 21 / 0.8);
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.cs-caution:hover,
+.cs-caution:focus-visible {
+  border-color: #facc15;
+  background: rgb(250 204 21 / 0.14);
+}
+
+.cs-scan-exit {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 0.7rem;
+  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  background: rgb(var(--panel) / 0.85);
+  color: #e2e8f0;
+  font-size: 1.15rem;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease;
+}
+
+.cs-scan-exit:hover,
+.cs-scan-exit:focus-visible {
+  border-color: rgb(var(--accent-soft));
+  background: rgb(var(--accent) / 0.18);
 }
 
 @keyframes send-spin {

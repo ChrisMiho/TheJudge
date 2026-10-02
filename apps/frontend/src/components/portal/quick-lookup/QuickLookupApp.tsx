@@ -564,44 +564,61 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   }
 
   return (
-    <PageShell variant="narrow">
-      {!scanCapture.isOpen && (
-        <>
-          <StagedStepHeader />
-          <div className="flow-head">
-            <h1>{PAGE_TITLE}</h1>
-            <div className="attach">
-              <button
-                type="button"
-                onClick={toggleSearch}
-                aria-expanded={isSearchOpen}
-                aria-controls="aq-search-pop"
-                className="icon-chip motion-focus"
-              >
-                <span className="glyph" aria-hidden="true">
-                  ＋
-                </span>
-                Add card
-              </button>
-              <button
-                type="button"
-                aria-label="Scan a card"
-                onClick={() => void scanCapture.openScan()}
-                disabled={selectedCards.length >= MAX_LOOKUP_CARDS}
-                className="icon-chip motion-focus"
-              >
-                <span className="glyph" aria-hidden="true">
-                  ▣
-                </span>
-                Scan
-              </button>
-            </div>
+    // Requirement 7: while scanning, this screen takes the same `100dvh`
+    // fit Trade Balancer's scale screen uses (slice O), at the narrow 36rem
+    // width instead of wide-fit's 56rem — the non-scanning state keeps
+    // plain "narrow" (it scrolls by design, e.g. with topics open).
+    <PageShell variant={scanCapture.isOpen ? "narrow-fit" : "narrow"}>
+      {/* Look-matching pass (slice P), requirement 1 (deviation from this
+          slice's own files-touched list — see slice-p.evidence.md): the
+          header and mock-mode strip now stay visible while scanning, instead
+          of unmounting (the only repro LOOK-GAPS found for "the build hides
+          the header and brand entirely" was this screen's own scan entry).
+          The row under it swaps to the scanner's own title + exit
+          (`card-scan.html:21-23`'s `.flow-head`) in place of "Ask a
+          Question" + Add card/Scan while the camera is open. */}
+      <StagedStepHeader />
+      {scanCapture.isOpen ? (
+        <div className="flow-head">
+          <h1>Scan a card</h1>
+          <button type="button" aria-label="Exit scan" onClick={scanCapture.closeScan} className="cs-scan-exit">
+            <span aria-hidden="true">✕</span>
+          </button>
+        </div>
+      ) : (
+        <div className="flow-head">
+          <h1>{PAGE_TITLE}</h1>
+          <div className="attach">
+            <button
+              type="button"
+              onClick={toggleSearch}
+              aria-expanded={isSearchOpen}
+              aria-controls="aq-search-pop"
+              className="icon-chip motion-focus"
+            >
+              <span className="glyph" aria-hidden="true">
+                ＋
+              </span>
+              Add card
+            </button>
+            <button
+              type="button"
+              aria-label="Scan a card"
+              onClick={() => void scanCapture.openScan()}
+              disabled={selectedCards.length >= MAX_LOOKUP_CARDS}
+              className="icon-chip motion-focus"
+            >
+              <span className="glyph" aria-hidden="true">
+                ▣
+              </span>
+              Scan
+            </button>
           </div>
-        </>
+        </div>
       )}
 
       {scanCapture.isOpen ? (
-        <section className="space-y-3 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-3">
+        <section className="space-y-3">
           {scanCapture.isLoading ? (
             <p className="rounded-xl border border-zinc-700 bg-zinc-950/40 px-3 py-2 text-sm text-zinc-300">
               Loading scan data...
@@ -618,16 +635,6 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                 debug={scanCapture.scanDebug}
                 autoScanFps={3}
               />
-              {/* REQ-214: a box with an ✕ above the camera's top-right corner — the only
-                  way out; closing commits the holding list below to this question. */}
-              <button
-                type="button"
-                aria-label="Exit scan"
-                onClick={scanCapture.closeScan}
-                className="absolute right-3 top-3 z-10 flex h-8 w-8 items-center justify-center rounded-lg border border-zinc-600 bg-zinc-950/70 text-sm font-semibold text-zinc-200 shadow transition hover:bg-zinc-800"
-              >
-                <span aria-hidden="true">✕</span>
-              </button>
               <ScanReviewBubble
                 entries={scanCapture.heldEntries.map((entry) => ({
                   id: entry.id,

@@ -263,30 +263,39 @@ describe("Frontend - Card Scan", () => {
   };
 
   describe("Debug overlay toggle", () => {
-    it("keeps the debug toggle out of the top-right review control area", () => {
+    // Look-matching pass (slice P), requirement 5: Debug moved off its old
+    // bottom-center-absolute position into the foot row (`.cs-vf-foot`,
+    // `card-scan.html:76-85`), alongside mute and the shutter — it no longer
+    // needs its own absolute-position guard now that the row itself places it.
+    it("puts the debug toggle in the foot row, beside mute and the shutter", () => {
       render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
       const button = screen.getByRole("button", { name: "Debug" });
+      const foot = button.closest(".cs-vf-foot");
 
-      expect(button).not.toHaveClass("right-3");
-      expect(button).not.toHaveClass("top-3");
-      expect(button).toHaveClass("bottom-3", "left-1/2", "-translate-x-1/2");
-      expect(button).not.toHaveClass("-tranzinc-x-1/2");
+      expect(button).toHaveClass("cs-debug-toggle");
+      expect(foot).not.toBeNull();
+      expect(foot).toContainElement(screen.getByRole("button", { name: "Mute scan sound" }));
+      expect(foot).toContainElement(screen.getByRole("button", { name: "Capture" }));
     });
 
-    it("anchors mute and watermark inside the guide without sharing the debug anchor", () => {
+    it("keeps mute, the shutter, and Debug out of the guide; the credit sits under the panel, not inside it", () => {
       render(<ScanCameraSurface onCapture={() => undefined} convergence={searching} debug={debugMetrics} />);
 
       const guide = screen.getByTestId("scan-alignment-guide");
       const mute = screen.getByRole("button", { name: "Mute scan sound" });
       const watermark = screen.getByText("Powered by Cardomancer");
       const debug = screen.getByRole("button", { name: "Debug" });
+      const viewfinder = guide.closest(".cs-viewfinder");
 
-      expect(guide).toContainElement(mute);
-      expect(mute).toHaveClass("absolute", "left-2", "top-2", "pointer-events-auto", "opacity-90");
-      expect(guide).toContainElement(watermark);
-      expect(watermark).toHaveClass("absolute", "bottom-2", "left-1/2", "-translate-x-1/2", "opacity-90");
-      expect(watermark).not.toHaveClass("right-3", "bottom-3");
-      expect(debug.parentElement).not.toBe(guide);
+      expect(guide).not.toContainElement(mute);
+      expect(guide).not.toContainElement(debug);
+      expect(mute).toHaveClass("cs-mute");
+      // The credit is a sibling paragraph after the viewfinder panel, not
+      // absolutely anchored inside the guide or the camera feed any more.
+      expect(watermark.tagName).toBe("P");
+      expect(watermark).toHaveClass("cs-credit");
+      expect(viewfinder).not.toBeNull();
+      expect(viewfinder).not.toContainElement(watermark);
     });
 
     it("defaults the debug overlay off (toggle present, overlay not rendered)", () => {
@@ -535,7 +544,9 @@ describe("Frontend - Card Scan", () => {
       });
 
       const outline = screen.getByTestId("scan-card-outline");
-      expect(outline.querySelector("polygon")).toHaveAttribute("stroke", "#34d399");
+      // Look-matching pass (slice P): the affirmative lock outline now reads
+      // the colour's accent-soft token instead of a fixed hue.
+      expect(outline.querySelector("polygon")).toHaveAttribute("stroke", "rgb(var(--accent-soft))");
       expect(screen.queryByTestId("scan-debug-overlay")).not.toBeInTheDocument();
       expect(screen.queryByTestId("scan-debug-geometry")).not.toBeInTheDocument();
     });

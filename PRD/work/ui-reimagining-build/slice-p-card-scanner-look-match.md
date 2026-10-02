@@ -1,6 +1,6 @@
 # Slice P — Card scanner takes the look
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -95,20 +95,20 @@ Carried verbatim from LOOK-GAPS.md's `## Card scanner`
 
 ## Acceptance criteria
 
-- [ ] P1. `npm run quality:check` passes.
-- [ ] P2. `npm --workspace apps/frontend run test` passes.
-- [ ] P3. The header and mock-mode strip remain visible on the scan screen,
+- [x] P1. `npm run quality:check` passes.
+- [x] P2. `npm --workspace apps/frontend run test` passes.
+- [x] P3. The header and mock-mode strip remain visible on the scan screen,
       with a "Scan a card" `h1` and a 44px ✕ exit, in
       `ScanCameraSurface.tsx`.
-- [ ] P4. The viewfinder is one panel (no nested frames) with corner-ticked
+- [x] P4. The viewfinder is one panel (no nested frames) with corner-ticked
       guide, marching lock outline, and a "Locking on <card>" indicator
       with a vote bar, in `ScanCameraSurface.tsx`.
-- [ ] P5. The foot row shows a mute pill, a 54px round shutter, and a Debug
+- [x] P5. The foot row shows a mute pill, a 54px round shutter, and a Debug
       pill, replacing the rectangular Capture button, in
       `ScanCameraSurface.tsx`.
-- [ ] P6. The "✓ N" holding-count pill and its hint text are unchanged from
+- [x] P6. The "✓ N" holding-count pill and its hint text are unchanged from
       slice H (per the owner question above), in `ScanCameraSurface.tsx`.
-- [ ] P7 (manual). Side-by-side pair saved under
+- [x] P7 (manual). Side-by-side pair saved under
       `docs/design/ui-reimagining/build-screenshots/p/`, build next to
       mockup, Blue, at 390×844 and 1440×900, for the "locking on" state
       (`card-scan-build-*.png`, `card-scan-mockup-*.png`) — 4 files. The
@@ -118,15 +118,15 @@ Carried verbatim from LOOK-GAPS.md's `## Card scanner`
       `card-scan-camera-error-mockup-1440x900.png`) are carried forward
       unchanged from `docs/design/ui-reimagining/build-screenshots/look-gaps/`
       — 6 files total, matching LOOK-GAPS.md's Card scanner pairs list.
-- [ ] P8 (manual). The pair in P7 was compared side by side against the
+- [x] P8 (manual). The pair in P7 was compared side by side against the
       build; every `### Differences` bullet under LOOK-GAPS.md's `## Card
       scanner` is closed, or is the owner question above (never resolved
       past the stated interim reading).
-- [ ] P9 (manual). Browser scenario at 390×844 and 1440×900: open the
+- [x] P9 (manual). Browser scenario at 390×844 and 1440×900: open the
       scanner from Ask a Question, confirm the header stays visible, the
       guide and lock outline render, the foot row's shutter and mute
       controls are reachable, and the page does not scroll.
-- [ ] P10 (manual). Cleanup evidence recorded: browser closed, owned dev
+- [x] P10 (manual). Cleanup evidence recorded: browser closed, owned dev
       server(s) stopped, ports released, disposable captures under
       `PRD/work/ui-reimagining-build/.playwright-mcp/` named.
 

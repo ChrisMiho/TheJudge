@@ -48,10 +48,23 @@ describe("Frontend - Card Scan", () => {
       expect(polygon).toHaveAttribute("stroke", "#38bdf8");
     });
 
-    it("applies the affirmative stroke for the affirmative variant", () => {
+    it("applies the affirmative stroke for the affirmative variant, from the accent-soft token (look-matching pass, slice P)", () => {
       render(<ScanCardOutline corners={corners} frameWidth={640} frameHeight={800} variant="affirmative" />);
       const polygon = screen.getByTestId("scan-card-outline").querySelector("polygon");
-      expect(polygon).toHaveAttribute("stroke", "#34d399");
+      expect(polygon).toHaveAttribute("stroke", "rgb(var(--accent-soft))");
+      expect(polygon?.className.baseVal).not.toMatch(/\b(sky|emerald)-/);
+    });
+
+    it("marches the affirmative outline's dashes; the debug outline has no dash pattern", () => {
+      render(<ScanCardOutline corners={corners} frameWidth={640} frameHeight={800} variant="affirmative" />);
+      const affirmative = screen.getByTestId("scan-card-outline").querySelector("polygon");
+      expect(affirmative).toHaveAttribute("stroke-dasharray", "10 6");
+      expect(affirmative?.classList.contains("cs-lock-outline-march")).toBe(true);
+
+      cleanup();
+      render(<ScanCardOutline corners={corners} frameWidth={640} frameHeight={800} variant="debug" />);
+      const debug = screen.getByTestId("scan-card-outline").querySelector("polygon");
+      expect(debug).not.toHaveAttribute("stroke-dasharray");
     });
   });
 });

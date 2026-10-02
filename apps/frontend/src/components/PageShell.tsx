@@ -23,15 +23,22 @@ type PageShellProps = {
    * `.page-content-wide-fit` (a flex child) gets the exact remainder below
    * the header/banner with no JS measurement, and only Trade Balancer's own
    * scrolling entry lists move. Trade Balancer (slice O) is its one adopter.
+   * "narrow-fit" (look-matching pass, slice P): the same `100dvh` fit
+   * behaviour at the "narrow" 36rem width instead of "wide-fit"'s 56rem —
+   * the scanner (`card-scan.html`'s own `.page-content` override is also
+   * 36rem) needs the fit without the wider column. Ask a Question's scan
+   * state (slice P) is its one adopter, swapping in only while scanning;
+   * its own non-scanning state keeps plain "narrow" (that state already
+   * scrolls by design, e.g. with General rules topics open).
    */
-  variant?: "standard" | "full-bleed" | "narrow" | "wide-fit";
+  variant?: "standard" | "full-bleed" | "narrow" | "wide-fit" | "narrow-fit";
 };
 
 export function PageShell({ children, variant = "standard" }: PageShellProps): JSX.Element {
   const motif = useActiveThemeMotif();
 
   return (
-    <main className={variant === "wide-fit" ? "page-shell page-shell-fit" : "page-shell"}>
+    <main className={variant === "wide-fit" || variant === "narrow-fit" ? "page-shell page-shell-fit" : "page-shell"}>
       {/* REQ-207: the chosen colour's ambient scene plays behind every page, behind
           solid panels (`.page-content` / `.page-shell-bleed`'s own content), decorative
           only. One instance per PageShell keeps it inside this destination's own
@@ -61,7 +68,9 @@ export function PageShell({ children, variant = "standard" }: PageShellProps): J
               ? "page-content page-content-narrow"
               : variant === "wide-fit"
                 ? "page-content page-content-wide-fit"
-                : "page-content"
+                : variant === "narrow-fit"
+                  ? "page-content page-content-narrow page-content-narrow-fit"
+                  : "page-content"
           }
         >
           {children}

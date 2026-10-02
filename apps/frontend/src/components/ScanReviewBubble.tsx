@@ -60,16 +60,33 @@ export function ScanReviewBubble({ entries, onRemove, destinationLabel }: ScanRe
         </button>
       </div>
       {cautionOpen && (
+        // Look-matching pass (slice P): restyled per `card-scan.html`'s
+        // `.caution-panel` — an icon + heading, two lines (what the feature
+        // is, and the search fallback), then "Got it". The trigger itself
+        // (the ⚠ button above) is unchanged.
         <div
           role="alertdialog"
           aria-label="Card scanning is experimental"
-          className="w-72 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-amber-400/60 bg-zinc-950/95 p-3 text-left text-sm text-zinc-100 shadow-xl"
+          className="w-80 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-amber-400/45 bg-zinc-950/95 p-4 text-left shadow-xl"
         >
-          <p>Card scanning is experimental — this feature is experimental and isn't fully functioning yet…</p>
+          <div className="mb-2 flex items-center gap-2.5">
+            <span
+              aria-hidden="true"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-amber-400/55 bg-zinc-950/70 text-amber-400"
+            >
+              ⚠
+            </span>
+            <h2 className="text-base font-semibold text-zinc-100">Card scanning is experimental</h2>
+          </div>
+          <p className="text-sm leading-relaxed text-zinc-100">
+            This feature is experimental and isn&apos;t fully functioning yet. It may miss a card, read the
+            wrong one, or need a few tries — check what it adds before you ask.
+          </p>
+          <p className="mt-1.5 text-xs text-zinc-400">You can always add a card by search instead.</p>
           <button
             type="button"
             onClick={() => setCautionOpen(false)}
-            className="mt-2 w-full rounded-lg border border-zinc-600 bg-zinc-900/70 px-3 py-1.5 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-800"
+            className="mt-3 w-full rounded-lg border border-zinc-600 bg-zinc-900/70 px-3 py-1.5 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-800"
           >
             Got it
           </button>

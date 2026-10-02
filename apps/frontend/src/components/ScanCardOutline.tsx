@@ -21,9 +21,15 @@ function pointsAttr(points: Point[]): string {
   return points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")
 }
 
+// Look-matching pass (slice P), requirement 3: the always-on locking outline
+// (`affirmative`) takes `card-scan.html:88-90`'s `.lock-outline` — the
+// colour's own accent-soft token (not a fixed hue) with marching dashes
+// (`stroke-dasharray: 10 6`, the `march` keyframe as `.cs-lock-outline-march`
+// in index.css). The opt-in debug overlay's own diagnostic outline (`debug`)
+// is unchanged — it is developer-only, not part of this look pass.
 const STROKE_BY_VARIANT: Record<ScanCardOutlineVariant, string> = {
   debug: "#38bdf8",
-  affirmative: "#34d399"
+  affirmative: "rgb(var(--accent-soft))"
 }
 
 export function ScanCardOutline({ corners, frameWidth, frameHeight, variant }: ScanCardOutlineProps): JSX.Element | null {
@@ -42,6 +48,8 @@ export function ScanCardOutline({ corners, frameWidth, frameHeight, variant }: S
         fill="none"
         stroke={STROKE_BY_VARIANT[variant]}
         strokeWidth={2}
+        strokeDasharray={variant === "affirmative" ? "10 6" : undefined}
+        className={variant === "affirmative" ? "cs-lock-outline-march" : undefined}
         vectorEffect="non-scaling-stroke"
       />
     </svg>

@@ -87,9 +87,11 @@ describe("Frontend - Card Scan", () => {
 
       expect(screen.queryByText(/Card scanning is experimental/)).not.toBeInTheDocument();
       await user.click(screen.getByRole("button", { name: "Card scanning is experimental" }));
-      expect(
-        screen.getByText(/Card scanning is experimental — this feature is experimental/)
-      ).toBeInTheDocument();
+      // Look-matching pass (slice P): the pop-up's heading and body are now
+      // separate elements (`card-scan.html`'s `.caution-panel` shape), not one
+      // combined sentence.
+      expect(screen.getByRole("heading", { name: "Card scanning is experimental" })).toBeInTheDocument();
+      expect(screen.getByText(/isn't fully functioning yet/)).toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Got it" }));
       expect(screen.queryByText(/isn't fully functioning yet/)).not.toBeInTheDocument();
