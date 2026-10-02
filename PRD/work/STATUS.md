@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Slices A–Q all done (look-matching pass L–Q: 68/68 criteria); PR #239 open `IN PROGRESS`, held for owner review of every screen pair; 5 carried owner questions (M, N, O, P, Q — one each) open; run `graph-20260930-055958` |
 
 ## active
 
 | Package | Note |
 | --- | --- |
+| ui-reimagining-build | Slices A–Q done; review 1 RETURN TO BUILD (2 Critical: clipped header/☰ at desktop on Trade Balancer + scanner, header over the open Menu; 4 Important look gaps in L, M, N, Q — `REVIEW-1.md`); `build` attempt 9 fix pass, then review 2; PR #239 open `IN PROGRESS`; run `graph-20260930-055958` |
 
 ## refined
 
