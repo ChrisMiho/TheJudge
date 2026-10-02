@@ -124,3 +124,27 @@ its one pre-existing line (`M scripts/lib/boundary-rules.mjs`).
   `Change`/`only printing` split, already a pattern `PrintingPicker.tsx` had
   for the picker's own header count). No test asserted the disabled-button
   state this replaces.
+
+### Review 1 fix (2026-10-02)
+
+Review loop 1 (`REVIEW-1.md`) returned finding 1 (Critical, shared with slice
+P): at 1440×900 the full-bleed sticky header and its ☰ were clipped, with no
+Menu reachable on Trade Balancer. Root cause confirmed exactly as the
+reviewer named it: `.page-content-wide-fit` (`apps/frontend/src/index.css`)
+set `overflow: hidden` on the column the header sits inside, and that
+column's own `max-width: min(56rem, 94vw)` is narrower than the viewport at
+1440px — the header's full-bleed negative-margin breakout was clipped to
+this box's own edges instead of reaching the viewport edge. Fixed by
+removing `overflow: hidden` from `.page-content-wide-fit`; `.page-shell-fit`
+(the `<main>` one level up) still clips at its own edges, which coincide
+with the viewport's, so the no-page-scroll fit (O3) is unchanged and the
+header now reaches the real viewport edge.
+
+Verified live at 1440×900: the header is full-bleed with ☰ at its left, the
+page still fits the viewport with no scrollbar, and the scale/verdict panel
+and both sides render exactly as before. Recaptured
+`o/trade-balancer-build-{390x844,1440x900}.png` (390×844 was already correct
+per the reviewer and is unchanged by this fix; recaptured anyway for a
+consistent pair). O3 re-verified true by the recapture.
+
+Finding closed.
