@@ -162,3 +162,24 @@ its one pre-existing line (`M scripts/lib/boundary-rules.mjs`).
   inside the guide) were rewritten to assert the new foot-row placement
   instead of being deleted, since the underlying behaviour (Debug reachable,
   mute reachable, the credit visible) still needs a regression guard.
+
+### Review 1 fix (2026-10-02)
+
+Review loop 1 (`REVIEW-1.md`) returned finding 1 (Critical, shared with slice
+O): at 1440×900 the scanner's full-bleed header and ☰ were clipped. Same
+root cause as slice O: `.page-content-narrow-fit` set `overflow: hidden` on
+a column narrower (36rem) than the viewport, clipping the header's
+full-bleed breakout to that column's own edges. Fixed by removing
+`overflow: hidden` from `.page-content-narrow-fit` in
+`apps/frontend/src/index.css` — `.page-shell-fit` (shared with slice O)
+still clips at `<main>`'s own viewport-wide edges, so the no-page-scroll fit
+(P9) is unchanged.
+
+Verified live at 1440×900: "Scan a card" header, ☰, and the 44px ✕ exit all
+render full-bleed and reachable, with the viewfinder panel fitting the
+viewport exactly as before. Recaptured
+`p/card-scan-build-{390x844,1440x900}.png` (390×844 was already correct per
+the reviewer and is unchanged by this fix; recaptured anyway for a
+consistent pair). P3 and P9 re-verified true by the recapture.
+
+Finding closed.
