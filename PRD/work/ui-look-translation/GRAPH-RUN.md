@@ -24,7 +24,7 @@
 
 - State: `PARKED` at `owner-action` after gate-qc PASS (attempt 2; one define loop used of three).
 - Ask: answer `PRD/work/ui-look-translation/GATE-QUESTIONS.md` — 14 `accept | edit | reject` slots (NFR-006, REQ-207, REQ-216 new, FLOW-011, REQ-124, REQ-079, REQ-070, REQ-206, REQ-167, REQ-209, REQ-215, REQ-214, REQ-202, REQ-082) — in the docs PR, then merge it to build.
-- Docs PR: (recorded below once opened) — base `thejudge-auto/ui-reimagining-build-work` (PR #239's branch), not `main`, by the owner's decision on 2026-10-02: merging #239 to `main` would ship an unfinished UI to prod, so this work stacks on #239 and lands with it.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/240 (`gh pr create --base thejudge-auto/ui-reimagining-build-work --head thejudge-auto/ui-look-translation`, opened 2026-10-02) — base `thejudge-auto/ui-reimagining-build-work` (PR #239's branch), not `main`, by the owner's decision on 2026-10-02: merging #239 to `main` would ship an unfinished UI to prod, so this work stacks on #239 and lands with it.
 - Build-half caveat: `graph-implement` reads its queue from `origin/main` and cuts `implement-<slug>` from `origin/main`. This package's base is `origin/thejudge-auto/ui-reimagining-build-work`; the build half must be run with that base (queue read and worktree cut from that branch, code PR into it) or it will not see the merged proposal.
 - Minor left for gate-review: `DESIGN-BRIEF.md`'s owner paragraph counts five look rules; the proposal table has four (FLOW-011, REQ-124, REQ-079, REQ-070).
 - Resume: `/graph-implement PRD/work/ui-look-translation/` once every slot is answered and the docs PR is merged.
