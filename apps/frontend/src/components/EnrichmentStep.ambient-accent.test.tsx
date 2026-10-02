@@ -67,7 +67,9 @@ describe("Ambient accent surfaces", () => {
       "true"
     );
 
-    const composer = screen.getByPlaceholderText("Ask a follow-up…").closest("form");
+    // Look-matching pass (slice M, review 1 fix — finding 4): the follow-up box is
+    // ComposerPill's `.q-box` now, not a `<form>` of its own.
+    const composer = screen.getByPlaceholderText("Ask a follow-up…").closest('[data-testid="composer-pill"]');
     expect(composer).toHaveClass("ambient-accent-surface", "ambient-accent-interactive");
     expect(composer).toHaveAttribute("data-accent-current", "false");
     expect(screen.getByText("Initial answer").closest(".conversation-thread")).not.toHaveClass(

@@ -35,6 +35,15 @@ export interface ComposerPillProps {
   addInDepthDetailsLabel?: string;
   textareaId?: string;
   textareaRef?: Ref<HTMLTextAreaElement>;
+  /** Extra class names merged onto the root `.q-box` surface — e.g. the ambient-accent
+   * surface contract (`ambient-accent-surface ambient-accent-interactive`) a caller wants
+   * this pill to carry. `.q-box`'s own `border`/`box-shadow` stay the base; a later class's
+   * `border-color`/`box-shadow` (same specificity, later in the stylesheet) overrides only
+   * those, so the pill's own shape/padding/radius never changes. */
+  surfaceClassName?: string;
+  /** Passed straight through to the root `.q-box` as `data-accent-current`, for the same
+   * ambient-accent contract. Omit entirely to render no attribute. */
+  accentCurrent?: boolean;
 }
 
 /**
@@ -65,7 +74,9 @@ export function ComposerPill({
   addInDepthDetailsDisabled = false,
   addInDepthDetailsLabel = "Add in-depth details",
   textareaId,
-  textareaRef
+  textareaRef,
+  surfaceClassName,
+  accentCurrent
 }: ComposerPillProps): JSX.Element {
   const length = value.length;
   const progress = maxLength > 0 ? Math.min(length / maxLength, 1) : 0;
@@ -80,7 +91,11 @@ export function ComposerPill({
   }
 
   return (
-    <div className="q-box" data-testid="composer-pill">
+    <div
+      className={surfaceClassName ? `q-box ${surfaceClassName}` : "q-box"}
+      data-testid="composer-pill"
+      {...(accentCurrent === undefined ? {} : { "data-accent-current": accentCurrent })}
+    >
       {onAddInDepthDetails && (
         <button
           type="button"
