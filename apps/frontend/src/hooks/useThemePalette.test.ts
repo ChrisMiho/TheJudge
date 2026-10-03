@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { contrastRatio, DEFAULT_PALETTE_ID } from "../lib/theme/palettes";
 import { useThemePalette } from "./useThemePalette";
+import { appliedAccentTriple } from "../test/appliedTheme";
 
 function createMemoryStorage(): Storage {
   const map = new Map<string, string>();
@@ -85,7 +86,7 @@ describe("useThemePalette", () => {
 
     expect(result.current.paletteId).toBe("colorless");
     expect(result.current.palette.accent).toBe("82 82 91");
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("82 82 91");
+    expect(appliedAccentTriple("--accent")).toBe("82 82 91");
   });
 
   it("setColorlessCustom keeps the custom hue, lifted to the REQ-099/REQ-200 readability floors", () => {
@@ -107,11 +108,11 @@ describe("useThemePalette", () => {
     expect(contrastRatio(result.current.palette.accent, ground)).toBeGreaterThanOrEqual(2.4);
     expect(contrastRatio(result.current.palette.accentStrong, ground)).toBeGreaterThanOrEqual(2.4);
     expect(["255 255 255", "9 9 11"]).toContain(result.current.palette.accentContrast);
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe(result.current.palette.accent);
-    expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe(
+    expect(appliedAccentTriple("--accent")).toBe(result.current.palette.accent);
+    expect(appliedAccentTriple("--accent-strong")).toBe(
       result.current.palette.accentStrong
     );
-    expect(document.documentElement.style.getPropertyValue("--accent-soft")).toBe(
+    expect(appliedAccentTriple("--accent-soft")).toBe(
       result.current.palette.accentSoft
     );
     // The stored value is still the exact pick (REQ-099: "the stored value is
@@ -186,7 +187,7 @@ describe("useThemePalette", () => {
 
     expect(result.current.paletteId).toBe("colorless");
     expect(result.current.colorlessCustomHex).toBe("#123456");
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe(result.current.palette.accent);
+    expect(appliedAccentTriple("--accent")).toBe(result.current.palette.accent);
   });
 });
 });

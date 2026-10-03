@@ -15,7 +15,6 @@ import {
 } from "../../../lib/conversationHistory/persistence";
 import { apiBaseUrl } from "../../../lib/env";
 import { deriveCardImageUrl } from "../../../lib/cardImage";
-import { prefersReducedMotion } from "../../../lib/motionPreference";
 import { useInDepthCarry } from "../../../lib/portal/inDepthCarryContext";
 import { useAssistantSeed } from "../../../lib/portal/seedContext";
 import { NO_MATCH_COPY } from "../../../lib/search";
@@ -24,6 +23,7 @@ import type { CardMetadataItem } from "../../../types";
 import { AskAiWaitingPanel } from "../../AskAiWaitingPanel";
 import { CardDetailPopup } from "../../CardPresentation";
 import { CardStage } from "../../CardStage";
+import { getCardIdentityRingStyle } from "../../../lib/cardIdentityRing";
 import { ComposerPill } from "../../ComposerPill";
 import { ConversationWorkspace } from "../../ConversationWorkspace";
 import { PageShell } from "../../PageShell";
@@ -35,13 +35,19 @@ const FLOW_LABEL = "Quick Question";
 const PAGE_TITLE = "Ask a Question";
 
 const CARD_METADATA_URL = "/data/cardMetadata.json";
-const CORE_TOPICS_URL = "/data/gameRulesCoreTopics.json";
+/** REQ-167: Ask a Question's Add-card search lists matches from the first character typed. The
+ * mockup's own search (`quick-question.html`'s `renderSearch`) has no minimum — it filters its demo
+ * shortlist on whatever is typed — and the real corpus has tens of thousands of cards, so an empty
+ * box lists nothing. Every other card search keeps three (`DEFAULT_MIN_QUERY_LENGTH`). */
+const ADD_CARD_MIN_QUERY_LENGTH = 1;
 const MAX_QUESTION_LENGTH = 300;
+/** The hint shortens in tiers as the box narrows (the mockup's `data-placeholders`). */
+const QUESTION_PLACEHOLDER_TIERS = ["What would you like to know?", "Ask your question…", "Ask…"];
 const RETRY_COOLDOWN_SECONDS = 13;
 
 /**
- * The silent fallback question when only card(s) are attached and no locked
- * topic or typed text exists. A single card renders exactly as before
+ * The silent fallback question when only card(s) are attached and no typed
+ * text exists. A single card renders exactly as before
  * ("Tell me about X."); REQ-167 generalizes it to name every attached card.
  */
 function composeCardsFallbackQuestion(cards: CardMetadataItem[]): string {
@@ -60,10 +66,7 @@ function CardThumbImage({ card }: { card: { name: string; imageUrl?: string; ima
   const imageUrl = card.imageUrl?.trim() || deriveCardImageUrl(card.imageId) || undefined;
   if (!imageUrl) {
     return (
-      <span
-        aria-hidden="true"
-        className="flex h-full w-full items-center justify-center bg-zinc-800 text-[6px] font-semibold text-zinc-300"
-      >
+      <span aria-hidden="true" className="thumb-fallback">
         {card.name.slice(0, 2).toUpperCase()}
       </span>
     );
@@ -83,13 +86,6 @@ function SearchResultThumb({ card }: { card: CardMetadataItem }): JSX.Element {
   );
 }
 
-type CoreTopic = {
-  id: string;
-  title: string;
-  ruleNumbers: string[];
-  excerpt: string;
-};
-
 export type QuickLookupAppProps = {
   onSubmit?: (question: string, cards: CardMetadataItem[]) => void;
   isActive?: boolean;
@@ -99,9 +95,6 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
   const [metadataError, setMetadataError] = useState<string | null>(null);
-  const [coreTopics, setCoreTopics] = useState<CoreTopic[]>([]);
-  const [isTopicsLoading, setIsTopicsLoading] = useState(true);
-  const [topicsError, setTopicsError] = useState<string | null>(null);
   const [searchInput, setSearchInput] = useState("");
   // Look-matching pass (slice M): the card search collapses into the composer's own
   // "＋ Add card" chip (`flow.css:169-182` `.search-pop`) instead of a permanent panel
@@ -112,10 +105,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   const [selectedCards, setSelectedCards] = useState<CardMetadataItem[]>([]);
   const [cardLimitMessage, setCardLimitMessage] = useState<string | null>(null);
   const [question, setQuestion] = useState("");
-  const [lockedTopic, setLockedTopic] = useState<Pick<CoreTopic, "id" | "title"> | null>(null);
-  const [openTopicId, setOpenTopicId] = useState<string | null>(null);
   const closeScanRef = useRef<() => void>(() => undefined);
-  const questionContainerRef = useRef<HTMLDivElement>(null);
   const questionInputRef = useRef<HTMLTextAreaElement>(null);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   // REQ-213/FLOW-016: set when the active conversation was reached by resuming it from
@@ -167,7 +157,6 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   function hydrateFromLookupDraft(draft: LookupDraftState): void {
     setSelectedCards(draft.selectedCards);
     setQuestion(draft.question);
-    setLockedTopic(draft.lockedTopic);
   }
 
   // Mid-flight Draft auto-hydrate (REQ-108 / FLOW-017): this destination mounts once per
@@ -225,10 +214,10 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   function snapshotMidFlightDraft(): void {
     if (isConversationActive) return;
 
-    const hasStaging = selectedCards.length > 0 || question.trim().length > 0 || lockedTopic !== null;
+    const hasStaging = selectedCards.length > 0 || question.trim().length > 0;
 
     if (hasStaging) {
-      saveDraft({ mode: "lookup", selectedCards, question, lockedTopic });
+      saveDraft({ mode: "lookup", selectedCards, question });
     } else {
       clearDraft("lookup");
     }
@@ -261,7 +250,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
       return;
     }
     snapshotMidFlightDraft();
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to selectedCards; question/lockedTopic are read via closure at fire time inside snapshotMidFlightDraft.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to selectedCards; question is read via closure at fire time inside snapshotMidFlightDraft.
   }, [selectedCards]);
 
   useEffect(() => {
@@ -285,26 +274,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
       }
     }
 
-    async function loadCoreTopics(): Promise<void> {
-      try {
-        const response = await fetch(CORE_TOPICS_URL, { signal: controller.signal });
-        if (!response.ok) {
-          throw new Error(`Core topics fetch failed with status ${response.status}`);
-        }
-        setCoreTopics((await response.json()) as CoreTopic[]);
-      } catch {
-        if (!controller.signal.aborted) {
-          setTopicsError("Core topics are unavailable. Type a Magic question to continue.");
-        }
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsTopicsLoading(false);
-        }
-      }
-    }
-
     void loadCardMetadata();
-    void loadCoreTopics();
 
     return () => controller.abort();
   }, []);
@@ -357,12 +327,14 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
 
   const suggestions = useAutocompleteSuggestions({
     cards: cardMetadata,
-    query: searchInput
+    query: searchInput,
+    minQueryLength: ADD_CARD_MIN_QUERY_LENGTH
   });
   const keyboard = useAutocompleteKeyboard({
     query: searchInput,
     suggestions,
-    onSelect: selectCard
+    onSelect: selectCard,
+    minQueryLength: ADD_CARD_MIN_QUERY_LENGTH
   });
   // REQ-214: the hold-time duplicate/cap check — the same rule the immediate
   // add always ran, applied the instant a card is recognised rather than
@@ -403,26 +375,15 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
 
   const normalizedSearchLength = searchInput.trim().length;
   const showSuggestionPanel =
-    normalizedSearchLength >= 3 && (isMetadataLoading || keyboard.isOpen || suggestions.length === 0);
+    normalizedSearchLength >= ADD_CARD_MIN_QUERY_LENGTH &&
+    (isMetadataLoading || keyboard.isOpen || suggestions.length === 0);
   const trimmedQuestion = question.trim();
-  const composedQuestion =
-    [lockedTopic ? `Tell me about ${lockedTopic.title}.` : null, trimmedQuestion || null]
-      .filter((part): part is string => part !== null)
-      .join(" ") || composeCardsFallbackQuestion(selectedCards);
-  const hasQuestionContent = lockedTopic !== null || selectedCards.length > 0 || trimmedQuestion.length > 0;
+  const composedQuestion = trimmedQuestion || composeCardsFallbackQuestion(selectedCards);
+  const hasQuestionContent = selectedCards.length > 0 || trimmedQuestion.length > 0;
   // The counter, the textarea cap, and this gate all measure the raw editable text.
-  // `composedQuestion` may legitimately exceed the cap once a topic pill or the silent
-  // card fallback is prepended, and that composed string is what gets submitted.
+  // `composedQuestion` may legitimately exceed the cap when the silent card fallback
+  // names several cards, and that composed string is what gets submitted.
   const canSubmit = hasQuestionContent && question.length <= MAX_QUESTION_LENGTH;
-
-  function handleTopicSelection(topic: CoreTopic): void {
-    setLockedTopic({ id: topic.id, title: topic.title });
-    questionContainerRef.current?.scrollIntoView({
-      behavior: prefersReducedMotion() ? "auto" : "smooth",
-      block: "center"
-    });
-    questionInputRef.current?.focus();
-  }
 
   async function submitLookup(source: "decrypt" | "retry"): Promise<void> {
     if (!canSubmit) return;
@@ -432,7 +393,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
       payload,
       stackSize: 0,
       finalQuestion: payload.question,
-      usedFallbackQuestion: lockedTopic === null && trimmedQuestion.length === 0 && selectedCards.length > 0
+      usedFallbackQuestion: trimmedQuestion.length === 0 && selectedCards.length > 0
     });
   }
 
@@ -450,11 +411,9 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   function handleStartOver(): void {
     startOver();
     setQuestion("");
-    setLockedTopic(null);
     setSelectedCards([]);
     setCardLimitMessage(null);
     setSearchInput("");
-    setOpenTopicId(null);
     setActiveConversationId(null);
     setReopenedFromHistory(false);
     closeScanRef.current();
@@ -463,7 +422,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   // REQ-206: ✎ Edit cards returns to the pre-submit page with the cards and question
   // exactly as they were — the conversation is already saved to history (every successful
   // answer auto-saves via onConversationUpdated above, REQ-103), so only the in-progress
-  // thread itself is cleared. Unlike Start Over, the cards/question/locked-topic staging is
+  // thread itself is cleared. Unlike Start Over, the cards/question staging is
   // left untouched.
   function handleEditCards(): void {
     startOver();
@@ -487,78 +446,90 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
     return (
       <PageShell variant="narrow">
         <StagedStepHeader />
-        <div className="chat-head">
-          <h1>{PAGE_TITLE}</h1>
-          {!isSubmitting && !isFollowUpSubmitting && (
-            <div className="tools">
-              <button
-                type="button"
-                onClick={handleEditCards}
-                title="Change the cards or the question, then ask again"
-                className="icon-chip motion-focus"
-              >
+        <section className="chat" aria-label="Conversation">
+          <div className="chat-head">
+            <h1>{PAGE_TITLE}</h1>
+            {!isSubmitting && !isFollowUpSubmitting && (
+              <div className="tools">
+                <button
+                  type="button"
+                  onClick={handleEditCards}
+                  title="Change the cards or the question, then ask again"
+                  className="icon-chip"
+                >
+                  <span className="glyph" aria-hidden="true">
+                    ✎
+                  </span>
+                  Edit cards
+                </button>
+                <button
+                  type="button"
+                  onClick={handleStartOver}
+                  aria-label="Start over — clears the cards and the question"
+                  title="Start over — clears the cards and the question"
+                  className="icon-round"
+                >
+                  <span aria-hidden="true">↺</span>
+                </button>
+              </div>
+            )}
+          </div>
+          {/* REQ-213/FLOW-016: reopened from Question History, not a fresh submit. */}
+          {reopenedFromHistory && (
+            <p className="from-history">
+              <span>
                 <span className="glyph" aria-hidden="true">
-                  ✎
-                </span>
-                Edit cards
-              </button>
-              <button
-                type="button"
-                onClick={handleStartOver}
-                aria-label="Start over — clears the cards and the question"
-                title="Start over — clears the cards and the question"
-                className="chat-icon-round motion-focus"
-              >
-                <span aria-hidden="true">↺</span>
-              </button>
-            </div>
+                  ◷
+                </span>{" "}
+                Reopened from your history
+              </span>
+            </p>
           )}
-        </div>
-        {/* REQ-213/FLOW-016: reopened from Question History, not a fresh submit. */}
-        {reopenedFromHistory && <p className="text-xs text-zinc-400">Reopened from your history</p>}
 
-        {/* Look-matching pass (slice M), requirement 11: the CARDS thumbnail strip
+          {/* Look-matching pass (slice M), requirement 11: the CARDS thumbnail strip
             (`flow.css:345-352` `.chat-cards`) replaces the "VIEW CONTEXT · N cards" panel on
             this screen — that panel belongs to In-depth details only (slice N). A tap opens
             the same corner `CardDetailPopup` the stage and the search results use. */}
-        {frozenLookupCards.length > 0 && (
-          <div className="chat-cards">
-            <span className="lbl">Cards</span>
-            {frozenLookupCards.map((card) => (
-              <button
-                key={card.cardId}
-                type="button"
-                className="thumb tap motion-focus"
-                aria-label={`View ${card.name}`}
-                onClick={() => setChipDetailCardId(card.cardId)}
-              >
-                <ChatCardThumb card={card} />
-              </button>
-            ))}
-          </div>
-        )}
+          {frozenLookupCards.length > 0 && (
+            <div className="chat-cards">
+              <span className="lbl">Cards</span>
+              {frozenLookupCards.map((card) => (
+                <button
+                  key={card.cardId}
+                  type="button"
+                  className="thumb tap card-identity-ring"
+                  style={getCardIdentityRingStyle(cardMetadata.find((entry) => entry.cardId === card.cardId)?.colors)}
+                  aria-label={`View ${card.name}`}
+                  onClick={() => setChipDetailCardId(card.cardId)}
+                >
+                  <ChatCardThumb card={card} />
+                </button>
+              ))}
+            </div>
+          )}
 
-        {chipDetailCardId &&
-          (() => {
-            const chipCard = frozenLookupCards.find((card) => card.cardId === chipDetailCardId);
-            return chipCard ? <CardDetailPopup card={chipCard} onClose={() => setChipDetailCardId(null)} /> : null;
-          })()}
+          {chipDetailCardId &&
+            (() => {
+              const chipCard = frozenLookupCards.find((card) => card.cardId === chipDetailCardId);
+              return chipCard ? <CardDetailPopup card={chipCard} onClose={() => setChipDetailCardId(null)} /> : null;
+            })()}
 
-        <ConversationWorkspace
-          messages={visibleMessages}
-          cards={frozenLookupCards}
-          onCardChipActivate={setChipDetailCardId}
-          error={error}
-          canRetry={canRetry}
-          retryLabel={retryLabel}
-          onRetry={() => submitLookup("retry")}
-          isFollowUpSubmitting={isFollowUpSubmitting}
-          onFollowUp={submitFollowUp}
-          onStartOver={handleStartOver}
-          // The round ↺ in the head above now carries Start Over (requirement 11);
-          // the old text button under the follow-up box is retired.
-          showStartOver={false}
-        />
+          <ConversationWorkspace
+            messages={visibleMessages}
+            cards={frozenLookupCards}
+            onCardChipActivate={setChipDetailCardId}
+            error={error}
+            canRetry={canRetry}
+            retryLabel={retryLabel}
+            onRetry={() => submitLookup("retry")}
+            isFollowUpSubmitting={isFollowUpSubmitting}
+            onFollowUp={submitFollowUp}
+            onStartOver={handleStartOver}
+            // The round ↺ in the head above now carries Start Over (requirement 11);
+            // the old text button under the follow-up box is retired.
+            showStartOver={false}
+          />
+        </section>
       </PageShell>
     );
   }
@@ -567,7 +538,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
     // Requirement 7: while scanning, this screen takes the same `100dvh`
     // fit Trade Balancer's scale screen uses (slice O), at the narrow 36rem
     // width instead of wide-fit's 56rem — the non-scanning state keeps
-    // plain "narrow" (it scrolls by design, e.g. with topics open).
+    // plain "narrow" (it scrolls by design).
     <PageShell variant={scanCapture.isOpen ? "narrow-fit" : "narrow"}>
       {/* Look-matching pass (slice P), requirement 1 (deviation from this
           slice's own files-touched list — see slice-p.evidence.md): the
@@ -579,82 +550,89 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
           Question" + Add card/Scan while the camera is open. */}
       <StagedStepHeader />
       {scanCapture.isOpen ? (
-        <div className="flow-head">
-          <h1>Scan a card</h1>
-          <button type="button" aria-label="Exit scan" onClick={scanCapture.closeScan} className="cs-scan-exit">
-            <span aria-hidden="true">✕</span>
-          </button>
-        </div>
-      ) : (
-        <div className="flow-head">
-          <h1>{PAGE_TITLE}</h1>
-          <div className="attach">
-            <button
-              type="button"
-              onClick={toggleSearch}
-              aria-expanded={isSearchOpen}
-              aria-controls="aq-search-pop"
-              className="icon-chip motion-focus"
-            >
-              <span className="glyph" aria-hidden="true">
-                ＋
-              </span>
-              Add card
-            </button>
-            <button
-              type="button"
-              aria-label="Scan a card"
-              onClick={() => void scanCapture.openScan()}
-              disabled={selectedCards.length >= MAX_LOOKUP_CARDS}
-              className="icon-chip motion-focus"
-            >
-              <span className="glyph" aria-hidden="true">
-                ▣
-              </span>
-              Scan
+        <div className="idq">
+          <div className="flow-head">
+            <h1>Scan a card</h1>
+            <button type="button" aria-label="Exit scan" onClick={scanCapture.closeScan} className="scan-exit">
+              <span aria-hidden="true">✕</span>
             </button>
           </div>
+          <section>
+            {scanCapture.isLoading ? (
+              <p className="aq-note">Loading scan data...</p>
+            ) : (
+              <div className="relative">
+                <ScanCameraSurface
+                  onCapture={() => undefined}
+                  identify={scanCapture.identify}
+                  onStatusChange={scanCapture.setCameraStatus}
+                  onAcquisitionDiagnostic={scanCapture.recordAcquisitionDiagnostic}
+                  convergence={scanCapture.convergence}
+                  confirmation={scanCapture.addConfirmation}
+                  debug={scanCapture.scanDebug}
+                  autoScanFps={3}
+                />
+                <ScanReviewBubble
+                  entries={scanCapture.heldEntries.map((entry) => ({
+                    id: entry.id,
+                    card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
+                    colors: entry.card.colors
+                  }))}
+                  onRemove={scanCapture.removeHeld}
+                  destinationLabel="your question"
+                />
+              </div>
+            )}
+            {scanCapture.error && <p className="motion-error aq-error">{scanCapture.error}</p>}
+          </section>
         </div>
-      )}
+      ) : (
+        <section className="qq" data-searching={isSearchOpen ? "true" : "false"}>
+          <div className="flow-head">
+            <h1>{PAGE_TITLE}</h1>
+            <div className="attach">
+              <button
+                type="button"
+                onClick={toggleSearch}
+                aria-expanded={isSearchOpen}
+                aria-controls="aq-search-pop"
+                className="icon-chip"
+              >
+                <span className="glyph" aria-hidden="true">
+                  ＋
+                </span>
+                Add card
+              </button>
+              <button
+                type="button"
+                aria-label="Scan a card"
+                onClick={() => void scanCapture.openScan()}
+                disabled={selectedCards.length >= MAX_LOOKUP_CARDS}
+                className="icon-chip"
+              >
+                <span className="glyph" aria-hidden="true">
+                  ▣
+                </span>
+                Scan
+              </button>
+            </div>
+          </div>
 
-      {scanCapture.isOpen ? (
-        <section className="space-y-3">
-          {scanCapture.isLoading ? (
-            <p className="rounded-xl border border-zinc-700 bg-zinc-950/40 px-3 py-2 text-sm text-zinc-300">
-              Loading scan data...
-            </p>
-          ) : (
-            <div className="relative">
-              <ScanCameraSurface
-                onCapture={() => undefined}
-                identify={scanCapture.identify}
-                onStatusChange={scanCapture.setCameraStatus}
-                onAcquisitionDiagnostic={scanCapture.recordAcquisitionDiagnostic}
-                convergence={scanCapture.convergence}
-                confirmation={scanCapture.addConfirmation}
-                debug={scanCapture.scanDebug}
-                autoScanFps={3}
-              />
-              <ScanReviewBubble
-                entries={scanCapture.heldEntries.map((entry) => ({
-                  id: entry.id,
-                  card: { cardId: entry.card.cardId, name: entry.card.name, imageUrl: entry.scanImageUrl },
-                  colors: entry.card.colors
-                }))}
-                onRemove={scanCapture.removeHeld}
-                destinationLabel="your question"
-              />
+          {selectedCards.length > 0 && <CardStage cards={selectedCards} cap={MAX_LOOKUP_CARDS} onRemove={removeCard} />}
+          {selectedCards.length > 0 && (
+            <div className="strip" aria-label="Attached cards">
+              {selectedCards.map((card) => (
+                <span
+                  key={card.cardId}
+                  className="thumb card-identity-ring"
+                  style={getCardIdentityRingStyle(card.colors)}
+                >
+                  <CardThumbImage card={card} />
+                </span>
+              ))}
+              <span className="note">{`${selectedCards.length} of ${MAX_LOOKUP_CARDS} attached`}</span>
             </div>
           )}
-          {scanCapture.error && (
-            <p className="motion-error rounded-xl border border-red-500/50 bg-red-950/40 px-3 py-2 text-sm text-red-100">
-              {scanCapture.error}
-            </p>
-          )}
-        </section>
-      ) : (
-        <>
-          {selectedCards.length > 0 && <CardStage cards={selectedCards} cap={MAX_LOOKUP_CARDS} onRemove={removeCard} />}
 
           {/* Look-matching pass (slice M), requirement 7: the search opens above the
               composer, inside this shared `.composer` wrapper (`flow.css:187`
@@ -663,7 +641,7 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
               exactly as the always-visible panel it replaces did. */}
           <div className="composer">
             {isSearchOpen && (
-              <section className="search-pop" id="aq-search-pop" aria-label="Add a card">
+              <section className="search-pop open" id="aq-search-pop" aria-label="Add a card">
                 <div className="search-row">
                   <span className="glyph" aria-hidden="true">
                     ⌕
@@ -689,9 +667,9 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                 {showSuggestionPanel && (
                   <div className="search-results">
                     {isMetadataLoading ? (
-                      <p className="px-2 py-1 text-sm text-zinc-400">Loading cards...</p>
+                      <p className="aq-note">Loading cards...</p>
                     ) : suggestions.length === 0 ? (
-                      <p className="px-2 py-1 text-sm text-zinc-400">{NO_MATCH_COPY}</p>
+                      <p className="aq-note">{NO_MATCH_COPY}</p>
                     ) : (
                       suggestions.map((card, index) => (
                         <button
@@ -712,28 +690,15 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                   </div>
                 )}
 
-                {metadataError && <p className="text-sm text-amber-200">{metadataError}</p>}
-                {cardLimitMessage && <p className="text-sm text-amber-200">{cardLimitMessage}</p>}
+                {metadataError && <p className="aq-note">{metadataError}</p>}
+                {cardLimitMessage && <p className="aq-note">{cardLimitMessage}</p>}
               </section>
             )}
 
             {isSubmitting ? (
               <AskAiWaitingPanel isSubmitting={isSubmitting} />
             ) : (
-              <div ref={questionContainerRef} className="space-y-2">
-                {lockedTopic && (
-                  <span className="inline-flex items-center gap-2 rounded-full border border-accent/70 bg-accent/15 px-3 py-1 text-xs font-semibold text-accent-soft">
-                    <span>{`Tell me about ${lockedTopic.title}.`}</span>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${lockedTopic.title} topic`}
-                      onClick={() => setLockedTopic(null)}
-                      className="rounded-full px-1 text-sm leading-none text-accent-soft transition hover:bg-accent/25"
-                    >
-                      ×
-                    </button>
-                  </span>
-                )}
+              <>
                 <ComposerPill
                   value={question}
                   onChange={setQuestion}
@@ -742,87 +707,27 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                   textareaId="quick-lookup-question"
                   textareaRef={questionInputRef}
                   textareaAriaLabel="Magic question"
-                  placeholder={
-                    lockedTopic
-                      ? "Add anything specific — or leave this blank and just ask."
-                      : "What would you like to know?"
-                  }
+                  placeholder="What would you like to know?"
+                  placeholders={QUESTION_PLACEHOLDER_TIERS}
                   submitLabel="Ask TheJudge"
                   pendingLabel="Asking…"
                   isSubmitting={isSubmitting}
                   disabled={!canSubmit}
                   onAddInDepthDetails={handleCarryToInDepth}
                 />
-              </div>
+              </>
             )}
           </div>
 
-          <details className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55">
-            <summary className="cursor-pointer px-4 py-3 text-zinc-100 marker:text-zinc-400">
-              <h3 className="ml-2 inline text-base font-semibold">General rules topics</h3>
-            </summary>
-            <div className="space-y-3 border-t border-zinc-700/70 p-4">
-              <p className="text-sm text-zinc-400">Choose a topic to start a question without calling the model.</p>
-              {isTopicsLoading ? (
-                <p className="text-sm text-zinc-400">Loading core topics...</p>
-              ) : topicsError ? (
-                <p className="text-sm text-amber-200">{topicsError}</p>
-              ) : (
-                <div className="space-y-3">
-                  {coreTopics.map((topic) => (
-                    <details
-                      key={topic.id}
-                      open={openTopicId === topic.id}
-                      onToggle={(event) => {
-                        if (event.currentTarget.open) {
-                          setOpenTopicId(topic.id);
-                          return;
-                        }
-                        setOpenTopicId((currentTopicId) => (currentTopicId === topic.id ? null : currentTopicId));
-                      }}
-                      className="rounded-xl border border-zinc-700 bg-zinc-950/35"
-                    >
-                      <summary className="cursor-pointer px-3 py-3 text-zinc-100 marker:text-zinc-400">
-                        <div className="ml-2 inline-flex w-[calc(100%_-_2rem)] items-center justify-between gap-3 align-middle">
-                          <h4 className="font-semibold text-zinc-100">{topic.title}</h4>
-                          <button
-                            type="button"
-                            aria-label={`Add ${topic.title} to question`}
-                            onClick={(event) => {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              handleTopicSelection(topic);
-                            }}
-                            className="rounded-lg border border-accent/70 bg-accent/15 px-3 py-2 text-sm font-semibold text-accent-soft transition hover:bg-accent/25"
-                          >
-                            Use this topic
-                          </button>
-                        </div>
-                      </summary>
-                      <p className="border-t border-zinc-700/70 p-3 whitespace-pre-wrap text-sm leading-relaxed text-zinc-300">
-                        {topic.excerpt}
-                      </p>
-                    </details>
-                  ))}
-                </div>
-              )}
-            </div>
-          </details>
-
           {error && (
-            <div className="motion-error space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
-              <p className="text-sm text-rose-300">{error}</p>
-              <button
-                type="button"
-                disabled={!canRetry}
-                onClick={() => void submitLookup("retry")}
-                className="rounded-xl border border-rose-500/50 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
-              >
+            <div className="motion-error aq-error">
+              <p>{error}</p>
+              <button type="button" className="btn" disabled={!canRetry} onClick={() => void submitLookup("retry")}>
                 {retryLabel}
               </button>
             </div>
           )}
-        </>
+        </section>
       )}
     </PageShell>
   );

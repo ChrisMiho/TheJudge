@@ -1,7 +1,9 @@
-import type { ReactNode } from "react";
+import { useContext, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { BrandMark } from "./BrandMark";
 import { MockModeBanner } from "./MockModeBanner";
 import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
+import { PageShellHeaderSlotContext } from "./pageShellContext";
 import { PortalSlot } from "./portal/PortalSlot";
 
 type StagedStepHeaderProps = {
@@ -15,25 +17,20 @@ type StagedStepHeaderProps = {
 };
 
 /**
- * Look-matching pass (slice L): this grid (`1fr auto 1fr`, the PortalSlot's ☰
- * left column, the centred brand, the optional `rightSlot`) is now styled as
- * `.app-header` (`shell.css:63-81`) — a sticky, full-bleed banner, in place of
- * a plain in-flow row. `MockModeBanner` moves here, directly under the
- * header, from `PageShell` (which still renders it for the full-bleed Life
- * Tracker variant, the one destination with no `StagedStepHeader`) — the
- * mockup's strip is the header's own sibling, not a page-level fixed overlay
- * (see `MockModeBanner.tsx`'s own comment). The former separate "MTG
- * Assistant" tagline line retires: `BrandMark` now carries its own tagline
- * (requirement #4), so repeating it here would show it twice.
+ * REQ-207: the banner header (`shell.css`'s `.app-header`, a `1fr auto 1fr`
+ * grid: the ☰ slot, the centred brand, an optional right slot) and the
+ * mock-mode strip under it (REQ-123). Inside a `PageShell` both render into the
+ * shell's header slot, at the top edge of the page and outside the column's
+ * padding, in the mockup's DOM order; with no shell above they render inline.
  */
-export function StagedStepHeader({ onBrandClick, historyTrigger, rightSlot }: StagedStepHeaderProps): JSX.Element {
-  return (
+export function StagedStepHeader({ onBrandClick, historyTrigger, rightSlot }: StagedStepHeaderProps): JSX.Element | null {
+  const slot = useContext(PageShellHeaderSlotContext);
+
+  const header = (
     <>
       <header className="app-header">
         <PortalSlot historyTrigger={historyTrigger} />
-        <div className="text-center">
-          <BrandMark onClick={onBrandClick} />
-        </div>
+        <BrandMark onClick={onBrandClick} />
         {rightSlot ? (
           <div className="hidden justify-self-end md:block">{rightSlot}</div>
         ) : (
@@ -43,4 +40,9 @@ export function StagedStepHeader({ onBrandClick, historyTrigger, rightSlot }: St
       <MockModeBanner />
     </>
   );
+
+  if (slot === undefined) {
+    return header;
+  }
+  return slot ? createPortal(header, slot) : null;
 }

@@ -1,0 +1,438 @@
+/*
+ * flow.css — the question-flow components Quick Question and In-Depth
+ * Question share, so the two flows read as one product (and so a later
+ * "go in-depth" button on Quick Question is a step, not a jump). Imports
+ * after tokens.css + shell.css; nothing here re-declares chrome.
+ *
+ *   .flow-head / .icon-chip   flow title with the attach controls beside it
+ *   .stage / .ring / .card     the lit stage with the attached card as hero
+ *   .card-widget               ✕ and ⓘ straddling the card's top corners
+ *   .strip                     the attached cards folded into a thumb strip
+ *                              while the search is open (phone)
+ *   .search-pop                the card search (capped at three rows, scrolls)
+ *   .q-box                     the question box: the chat's pill with the send
+ *                              button inside; slim by default, grows with the
+ *                              text to a cap, then scrolls; 300-char budget
+ *                              built into the frame (round 5)
+ *   .detail-panel              the card-detail sheet / side panel, round 3
+ *   .chat                      the conversation — today's chat feel; the cards
+ *                              of the question live in the Cards strip only,
+ *                              never again inside a message (owner, round 4);
+ *                              round 6: the judge's reply sits in a solid bubble
+ *                              of its own, as a texting app does
+ */
+
+/* ---- flow header: title on the left, ways to attach a card on the right ---- */
+.flow-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.flow-head h1 { font-size: 1.35rem; margin: 0; white-space: nowrap; }
+.flow-head .attach { display: flex; gap: 0.4rem; }
+.flow-hint { margin: -0.3rem 0 0; font-size: 0.82rem; color: var(--text-muted); }
+@media (max-width: 719px) {
+  .flow-head h1 { font-size: 1.15rem; }
+  .icon-chip { font-size: 0.8rem; padding: 0 0.6rem; }
+}
+
+.icon-chip {
+  display: inline-flex; align-items: center; gap: 0.35rem; white-space: nowrap;
+  min-height: 44px; padding: 0 0.7rem; border-radius: 0.6rem;
+  border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
+  color: var(--text-primary); font-size: 0.85rem; cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+.icon-chip { text-decoration: none; }
+.icon-chip:hover { border-color: var(--accent); }
+.icon-chip[aria-expanded="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel)); }
+.icon-chip:disabled { opacity: 0.55; cursor: default; }
+.icon-chip .glyph { color: var(--accent-soft); font-size: 1.05rem; line-height: 1; }
+
+/* ---- the stage: the surface the card sits on. Round 9 (owner: "the image
+   behind the card can go to a more generic solid color, like the chat uses,
+   so that it stands apart from the background"): a solid panel, the same fill
+   as the judge's bubble — no motif wash, no glow, no light line. ---- */
+.stage {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center; gap: 0.4rem;
+  padding: 1.1rem 0.5rem 0.6rem;
+  border-radius: 1.1rem;
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-panel);
+  box-shadow: 0 12px 30px -18px rgba(0, 0, 0, 0.9);
+  overflow: hidden;
+}
+.stage[hidden] { display: none; }
+
+/* the ring: the front card full size, one neighbour peeking out on each
+   side; anything further round the ring waits off-stage until it is next */
+.ring {
+  --card-w: 196px;
+  --card-h: calc(var(--card-w) * 88 / 63);
+  --step: 100px;          /* how far a neighbour sits to the side */
+  position: relative; z-index: 1;
+  width: 100%; height: var(--card-h);
+  margin-top: 0.5rem;
+}
+@media (min-width: 720px) {
+  .ring { --card-w: 280px; --step: 160px; }
+}
+.ring .card {
+  position: absolute; left: 50%; top: 0;
+  width: var(--card-w); height: var(--card-h);
+  margin-left: calc(var(--card-w) / -2);
+  border-radius: 11px; overflow: visible; background: #111;
+  transform: translateX(calc(var(--d) * var(--step))) scale(calc(1 - 0.16 * var(--ad)));
+  opacity: calc(1 - 0.45 * var(--ad));
+  filter: brightness(calc(1 - 0.35 * var(--ad))) blur(calc(var(--ad) * 0.6px));
+  z-index: calc(10 - var(--ad));
+  box-shadow: 0 14px 30px -14px rgba(0, 0, 0, 0.8);
+  --ring-w: 2px;
+  transition: transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1), opacity 320ms ease, filter 320ms ease;
+  cursor: pointer;
+}
+.ring .card[data-offstage="true"] { opacity: 0; pointer-events: none; }
+/* round 6: the glow round the front card is far quieter (players disliked it) —
+   a plain drop shadow and a whisper of the colour's light, nothing more */
+.ring .card[data-front="true"] {
+  box-shadow:
+    0 18px 36px -14px rgba(0, 0, 0, 0.85),
+    0 0 28px -10px color-mix(in srgb, var(--accent) 45%, transparent);
+  cursor: default;
+}
+.ring .card.summon { animation: summon 520ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes summon {
+  0% { opacity: 0; transform: translateX(calc(var(--d) * var(--step))) translateY(28px) scale(0.86); filter: brightness(1.8) blur(3px); }
+  100% { opacity: 1; transform: translateX(calc(var(--d) * var(--step))) scale(1); filter: none; }
+}
+.card img { display: block; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+/* image unavailable: the card's name is the only text the stage shows */
+.card .fallback {
+  display: grid; place-items: center; text-align: center; height: 100%; padding: 1rem;
+  border-radius: inherit;
+  border: 1px dashed color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 70%, transparent);
+}
+.card .fallback strong { display: block; color: var(--text-primary); font-size: 1.05rem; font-family: var(--font-display); }
+.card .fallback span { display: block; color: var(--text-muted); font-size: 0.8rem; margin-top: 0.3rem; }
+
+/* the two widgets straddle the card's top corners — half above the card edge,
+   so they sit on the frame's border and never over the printed name */
+.card-widget {
+  position: absolute; top: -15px; z-index: 5;
+  width: 32px; height: 32px; border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 45%, transparent);
+  background: rgba(9, 9, 11, 0.92); color: #f4f4f5;
+  font-size: 0.85rem; line-height: 1; font-weight: 600; cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.6), 0 0 12px -4px color-mix(in srgb, var(--accent) 80%, transparent);
+  opacity: 0; transform: scale(0.85); transition: opacity 180ms ease, transform 180ms ease, border-color 150ms ease;
+  pointer-events: none;
+}
+/* the 44px touch floor is met by a transparent halo around the visible disc */
+.card-widget::before { content: ""; position: absolute; inset: -7px; border-radius: inherit; }
+.card-widget.info { right: -8px; color: var(--accent-soft); }
+.card-widget.remove { left: -8px; }
+.card-widget:hover { border-color: var(--accent-soft); background: rgba(24, 24, 27, 0.98); }
+.card[data-front="true"] .card-widget { opacity: 1; transform: none; pointer-events: auto; }
+
+.arrow {
+  position: absolute; top: 50%; z-index: 20; transform: translateY(-50%);
+  width: 44px; height: 44px; border-radius: 999px;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 82%, transparent);
+  color: var(--text-primary); font-size: 1.15rem; line-height: 1; cursor: pointer;
+  backdrop-filter: blur(4px);
+}
+.arrow:hover { border-color: var(--accent-soft); }
+.arrow.prev { left: 0.15rem; }
+.arrow.next { right: 0.15rem; }
+.arrow[hidden] { display: none; }
+
+/* round 6: the dots sit in a small dark pill with a "3 / 5" count beside them,
+   so how many cards are attached is never lost against the dust or the art */
+.dots { position: relative; z-index: 1; display: inline-flex; align-items: center; gap: 0.4rem; min-height: 24px; padding: 0 0.65rem; border-radius: 999px;
+  background: rgba(9, 9, 11, 0.72); border: 1px solid color-mix(in srgb, var(--text-primary) 12%, transparent); backdrop-filter: blur(4px); }
+.dots:empty { display: none; }
+.dots span { width: 7px; height: 7px; border-radius: 999px; background: color-mix(in srgb, var(--text-muted) 55%, transparent); transition: background 200ms ease; }
+.dots span[data-on="true"] { background: var(--accent-soft); box-shadow: 0 0 6px var(--accent-soft); }
+.dots .n { width: auto; height: auto; border-radius: 0; background: none; box-shadow: none; margin-left: 0.2rem; font-size: 0.68rem; font-weight: 600; color: var(--text-muted); font-variant-numeric: tabular-nums; letter-spacing: 0.02em; }
+
+/* ---- the strip: while the search is open on a phone, the ring folds into a
+   row of thumbnails so the question box stays on screen ---- */
+.strip { display: none; align-items: center; gap: 0.45rem; padding: 0.35rem 0.6rem; border-radius: 0.8rem;
+  border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 70%, transparent); }
+.strip .thumb { width: 34px; height: 47px; border-radius: 4px; }
+.strip .note { margin-left: auto; font-size: 0.72rem; color: var(--text-muted); }
+@media (max-width: 719px) {
+  [data-searching="true"] .stage { display: none; }
+  [data-searching="true"] .strip { display: flex; }
+}
+
+/* ---- card search: opens just above the question box when "Add card" is pressed ---- */
+.search-pop { display: none; }
+.search-pop.open { display: grid; gap: 0.35rem; }
+.search-row { position: relative; }
+.search-row .field { padding-left: 2.2rem; }
+.search-row .glyph { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--accent-soft); }
+.search-results { display: grid; gap: 0.2rem; max-height: 156px; overflow-y: auto; padding-right: 2px; }
+.search-results button {
+  display: flex; align-items: center; gap: 0.6rem; width: 100%; text-align: left;
+  min-height: 48px; padding: 0.3rem 0.5rem; border-radius: 0.6rem;
+  border: 1px solid transparent; background: transparent; color: var(--text-primary); cursor: pointer;
+}
+.search-results button:hover { border-color: var(--surface-edge); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.search-results .thumb { width: 28px; height: 39px; border-radius: 3px; }
+.search-results .type { color: var(--text-muted); font-size: 0.76rem; margin-left: auto; white-space: nowrap; }
+
+/* ---- composer (round 5): the question box is the same pill the chat uses —
+   the text grows inside it to a cap, the character count and the round send
+   button live inside the frame, the budget meter runs along its bottom ---- */
+.composer { display: grid; gap: 0.6rem; }
+/* round 9: the box may shrink below the textarea's intrinsic width on a phone (the mic made the send wider) */
+.composer, .q-box, .followup { min-width: 0; }
+.q-box, .followup {
+  position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.5rem 0.6rem;
+  padding: 0.45rem 0.45rem 0.45rem 1.05rem; border-radius: 1.6rem;
+  border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 78%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 6%, transparent), 0 8px 24px -16px color-mix(in srgb, var(--accent) 80%, transparent);
+  transition: border-color 150ms ease;
+}
+/* round 11 ("the in-depth button lost its position and fell to the bottom …
+   the text stayed floating up higher, out of sync"): the box has two shapes.
+   One line of text: a single row — In-depth, the text, the count, the send.
+   Two lines or more: the text takes the whole top row at full width and the
+   controls step down onto a row of their own beneath it, In-depth at the left
+   and the count + send at the right, so they always sit together and the text
+   is never squeezed into a thin column between them on a phone. */
+.q-box:has(textarea.grown), .followup:has(textarea.grown) { padding: 0.55rem 0.45rem 0.45rem 0.45rem; }
+.q-box:has(textarea.grown) textarea, .followup:has(textarea.grown) textarea { flex: 1 0 100%; order: -1; padding: 0.3rem 0.6rem 0.2rem; }
+.q-box:has(textarea.grown) .deep { margin-right: auto; }
+.followup:has(textarea.grown) .fu-count { margin-left: auto; }
+.q-box:focus-within, .followup:focus-within { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); }
+.q-box textarea, .followup textarea {
+  flex: 1; min-width: 0; resize: none; background: transparent; border: 0; padding: 0.6rem 0;
+  min-height: 40px; max-height: 176px; overflow-y: auto; line-height: 1.4; font: inherit; font-size: 0.96rem; color: var(--text-primary);
+}
+.q-box textarea:focus, .followup textarea:focus { outline: none; }
+.q-box textarea::placeholder, .followup textarea::placeholder { color: color-mix(in srgb, var(--text-muted) 80%, transparent); }
+.q-count, .fu-count { align-self: flex-end; margin-bottom: 0.8rem; font-size: 0.66rem; color: var(--text-muted); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.q-count[data-near="true"] { color: var(--accent-soft); }
+/* round 9: a microphone inside the send control (owner: "add a microphone
+   icon inside of the send icon … leverage the phone's own voice-to-text").
+   The round send is one pill with two halves now: the mic on the left, the
+   arrow on the right. A tap on the mic listens — the phone's own speech
+   recognition (the browser's SpeechRecognition hands off to the device's
+   dictation engine; no service of ours) types what is said into the box —
+   and the half glows while it listens. The mockup plays a demo sentence. */
+.send-pair {
+  flex: 0 0 auto; display: inline-flex; align-items: stretch; height: 40px; border-radius: 999px; overflow: hidden;
+  background: linear-gradient(135deg, var(--accent), var(--accent-strong)); color: var(--text-on-accent);
+  box-shadow: 0 6px 16px -8px color-mix(in srgb, var(--accent) 90%, transparent);
+  transition: box-shadow 150ms ease;
+}
+.send-pair:hover { box-shadow: 0 8px 20px -8px color-mix(in srgb, var(--accent) 100%, transparent); }
+.send-pair button { width: 40px; height: 40px; border: 0; padding: 0; background: transparent; color: inherit; display: grid; place-items: center; cursor: pointer; font-size: 1rem; transition: background 150ms ease; }
+.send-pair button:hover { background: rgba(255, 255, 255, 0.14); }
+.send-pair .mic { border-right: 1px solid color-mix(in srgb, var(--text-on-accent) 26%, transparent); }
+.send-pair .mic svg { width: 18px; height: 18px; display: block; }
+.send-pair .mic[aria-pressed="true"] { background: color-mix(in srgb, var(--accent-soft) 38%, transparent); animation: mic-listen 1.1s ease-in-out infinite; }
+@keyframes mic-listen {
+  0%, 100% { box-shadow: inset 0 0 0 0 transparent; }
+  50% { box-shadow: inset 0 0 14px color-mix(in srgb, var(--accent-soft) 80%, transparent); }
+}
+.q-box:has(.mic[aria-pressed="true"]), .followup:has(.mic[aria-pressed="true"]) { border-color: var(--accent-soft); }
+/* round 11 ("the bar that fills up across the chat box … move it to an outline
+   to the send button, so that it feels more integrated"): the 300-character
+   budget is a ring of the colour's light that traces the send pill's edge as
+   the question grows — a faint track under it, brightening as the cap nears,
+   and closed at 300. The bar along the box's foot is gone. Round 15: the ring
+   starts at the top of the split between the mic and the arrow and runs
+   clockwise (the path in flow.js SEND_RING), and at 0 characters neither the
+   track nor the fill is drawn — the round line cap used to leave one stray dot
+   on the pill before anything was typed. */
+.send-wrap { position: relative; flex: 0 0 auto; align-self: flex-end; display: inline-grid; width: 80px; height: 40px; }
+.send-wrap .send-pair { grid-area: 1 / 1; }
+.send-ring { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); pointer-events: none; overflow: visible; }
+.send-ring path { fill: none; stroke-width: 2; stroke-linecap: round; }
+.send-ring .track { stroke: color-mix(in srgb, var(--text-primary) 14%, transparent); }
+.send-ring .fill { stroke: var(--accent-soft); stroke-dasharray: var(--fill, 0) 100; transition: stroke-dasharray 120ms ease, stroke 200ms ease;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-soft) 70%, transparent)); }
+.q-box[data-near="true"] .send-ring .fill, .followup[data-near="true"] .send-ring .fill { stroke: color-mix(in srgb, var(--accent-soft) 55%, #fff); filter: drop-shadow(0 0 5px var(--accent-soft)); }
+.q-box[data-fill="0"] .send-ring .track, .followup[data-fill="0"] .send-ring .track,
+.q-box[data-fill="0"] .send-ring .fill, .followup[data-fill="0"] .send-ring .fill { opacity: 0; }
+/* round 7: "Add in-depth details" is a control inside the question box, at its
+   left end — the same height as the round send, a pill of the colour's edge.
+   On a narrow phone it keeps its glyph and drops the word. */
+.q-box .deep {
+  flex: 0 0 auto; align-self: flex-end; display: inline-flex; align-items: center; gap: 0.35rem;
+  height: 40px; padding: 0 0.75rem 0 0.6rem; border-radius: 999px; cursor: pointer; white-space: nowrap;
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--text-primary); font-size: 0.8rem; font-weight: 600;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+.q-box .deep .glyph { color: var(--accent-soft); font-size: 1rem; line-height: 1; }
+.q-box .deep:hover, .q-box .deep:focus-visible { background: color-mix(in srgb, var(--accent) 28%, transparent); border-color: var(--accent-soft); }
+.q-box:has(.deep) { padding-left: 0.45rem; }
+.q-box:has(.deep) textarea { padding-left: 0.3rem; }
+@media (max-width: 479px) { .q-box .deep .lbl { display: none; } .q-box .deep { padding: 0 0.6rem; } }
+/* round 11: the count waits until there is something to count — an empty box shows the hint, the ring and the send, nothing more */
+.q-box[data-fill="0"] .q-count, .followup[data-fill="0"] .fu-count { display: none; }
+
+/* ---- card detail panel — round 3: the art leads, the close sits in the
+   corner, the oracle text reads like a card's own text box ---- */
+.detail-panel { display: flex; flex-direction: column; }
+.detail-panel .art {
+  position: relative; height: 190px; flex: 0 0 auto; overflow: hidden;
+  background: var(--surface-ground);
+}
+.detail-panel .art { border-radius: 1.1rem 1.1rem 0 0; }
+@media (max-width: 767px) { .detail-panel .art { height: 160px; } }
+.detail-panel .art img { width: 100%; height: 100%; object-fit: cover; object-position: center 30%; display: block; filter: saturate(1.1); }
+.detail-panel .art::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(180deg, rgba(9,9,11,0.15) 0%, transparent 35%, color-mix(in srgb, var(--surface-panel) 40%, transparent) 75%, var(--surface-panel) 100%);
+}
+.detail-panel .art .title {
+  position: absolute; left: 1rem; right: 3.5rem; bottom: 0.6rem; z-index: 1;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem;
+}
+.detail-panel .art h2 { margin: 0; font-size: 1.35rem; line-height: 1.1; text-shadow: 0 2px 12px rgba(0,0,0,0.8); }
+.detail-panel .art .cost { font-weight: 700; font-size: 0.95rem; color: var(--accent-soft); text-shadow: 0 1px 8px rgba(0,0,0,0.8); white-space: nowrap; }
+.detail-panel .body { padding: 0.5rem 1rem 1.1rem; display: grid; gap: 0.7rem; }
+.detail-panel .typeline { display: flex; flex-wrap: wrap; align-items: center; gap: 0.4rem 0.6rem; font-size: 0.86rem; color: var(--text-muted); }
+.detail-panel .typeline b { color: var(--text-primary); font-weight: 600; }
+.detail-panel .pips { display: inline-flex; gap: 3px; }
+.detail-panel .pips i { width: 10px; height: 10px; border-radius: 999px; display: inline-block; box-shadow: 0 0 0 1px rgba(0,0,0,0.5); }
+.detail-panel .oracle {
+  position: relative; margin: 0; padding: 0.85rem 0.95rem; border-radius: 0.6rem;
+  background: color-mix(in srgb, var(--surface-ground) 55%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 28%, transparent);
+  font-size: 0.95rem; line-height: 1.5; white-space: pre-wrap;
+}
+.detail-panel .oracle::before {
+  content: ""; position: absolute; inset: 3px; border-radius: 0.45rem; pointer-events: none;
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 14%, transparent);
+}
+.detail-panel .facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+.detail-panel .fact { padding: 0.45rem 0.6rem; border-radius: 0.55rem; border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 35%, transparent); min-width: 0; }
+.detail-panel .fact small { display: block; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.15rem; }
+.detail-panel .fact b { font-weight: 600; font-size: 0.86rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; }
+.detail-panel .fact.price b { color: var(--accent-soft); }
+.price { color: var(--accent-soft); font-weight: 600; }
+
+/* ---- card identity ring (Rule, 2026-09-24): every card surface keeps the
+   one-pixel ring in the card's own colour identity that today's app draws —
+   the theme owns the glow behind the card, never its edge. Same colours and
+   masked-border technique as apps/frontend/src/lib/cardIdentityRing.ts:
+   one colour = that colour, multicolour = a left-to-right gradient in WUBRG
+   order, colourless = silver grey. ---- */
+.card-identity-ring { position: relative; isolation: isolate; }
+.card-identity-ring::before {
+  content: ""; position: absolute; inset: 0; z-index: 4; border-radius: inherit;
+  padding: var(--ring-w, 1px); pointer-events: none;
+  background: var(--card-identity-ring, rgb(148 163 184 / 0.55));
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+}
+/* a small card thumbnail that carries the ring */
+.thumb { display: inline-block; flex: 0 0 auto; border-radius: 4px; overflow: hidden; line-height: 0; background: #111; }
+.thumb img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.thumb.tap { cursor: pointer; transition: transform 150ms ease; }
+.thumb.tap:hover { transform: translateY(-2px) scale(1.04); }
+
+/* ---- the conversation: today's chat, kept — a right-aligned question in
+   the accent, the judge's ruling as open text under a small seal, a pill
+   composer with a round send — plus the cards of the question, one tap away ---- */
+.chat { display: grid; gap: 0.7rem; }
+.chat-head { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+.chat-head h1 { font-size: 1.35rem; margin: 0; }
+.chat-cards { display: flex; align-items: center; gap: 0.45rem; padding: 0.4rem 0.6rem; border-radius: 0.8rem;
+  border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 60%, transparent); overflow-x: auto; }
+.chat-cards .lbl { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); white-space: nowrap; margin-right: 0.2rem; }
+.chat-cards .thumb { width: 32px; height: 45px; border-radius: 3px; }
+.chat-head .icon-chip { min-height: 38px; font-size: 0.8rem; }
+.thread { display: grid; gap: 0.8rem; padding: 0.4rem 0.1rem; max-height: 52dvh; overflow-y: auto; }
+@media (min-width: 720px) { .thread { max-height: 56dvh; } }
+.msg { max-width: 86%; font-size: 0.94rem; line-height: 1.5; animation: msg-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes msg-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.msg.you { justify-self: end; padding: 0.65rem 0.95rem; border-radius: 1.1rem; border-top-right-radius: 0.3rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, var(--accent-strong)), var(--accent-strong)); color: var(--text-on-accent);
+  box-shadow: 0 8px 22px -12px color-mix(in srgb, var(--accent) 90%, transparent); }
+.msg.judge { justify-self: start; display: grid; grid-template-columns: 30px 1fr; gap: 0.6rem; align-items: start; }
+.msg.judge > div { padding: 0.65rem 0.95rem; border-radius: 1.1rem; border-top-left-radius: 0.3rem;
+  background: var(--surface-panel); border: 1px solid var(--surface-edge); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9); }
+.msg.judge .seal { width: 30px; height: 30px; border-radius: 999px; background: var(--motif) center / cover no-repeat, var(--surface-ground);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent); animation: seal-in 900ms ease-out both; }
+@keyframes seal-in { 0% { transform: scale(0.4) rotate(-40deg); opacity: 0; } 60% { transform: scale(1.12) rotate(6deg); opacity: 1; } 100% { transform: none; } }
+.msg.judge .who { display: block; font-family: var(--font-display); font-size: 0.72rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent-soft); margin-bottom: 0.2rem; }
+.msg.judge p { margin: 0 0 0.5rem; }
+.msg.judge p:last-child { margin-bottom: 0; }
+/* a card the judge names (round 10: "the highlighting isn't obvious … the
+   highlight is basically the same color as the text" on White and Colorless):
+   the name sits in a chip — a tint of the colour's light behind it, a hairline
+   round it, a solid underline — so it reads as a thing to tap even when the
+   accent is as pale as the body text. Hover/press brightens the chip. */
+.msg.judge .ref { display: inline; color: var(--accent-soft); font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap;
+  padding: 0.04em 0.4em 0.06em; margin: 0 0.04em; border-radius: 0.4em;
+  background: color-mix(in srgb, var(--accent-soft) 14%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-soft) 32%, transparent), inset 0 -2px 0 0 color-mix(in srgb, var(--accent-soft) 70%, transparent);
+  transition: background-color 160ms ease, box-shadow 160ms ease; }
+.msg.judge .ref:hover, .msg.judge .ref:focus-visible { background: color-mix(in srgb, var(--accent-soft) 26%, transparent);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), inset 0 -2px 0 0 var(--accent-soft); }
+.thinking { display: inline-flex; gap: 4px; align-items: center; height: 20px; }
+.thinking i { width: 6px; height: 6px; border-radius: 999px; background: var(--accent-soft); animation: think 1.2s ease-in-out infinite; }
+.thinking i:nth-child(2) { animation-delay: 0.15s; } .thinking i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes think { 0%, 100% { opacity: 0.3; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+/* the wait (round 8): today's wait lines, typed out in the judge's bubble —
+   the bubble's edge breathes in the colour's light, each line types behind a
+   caret, the last one lifts away, the clock ticks at the foot. The absurd
+   lines lean in italics. */
+/* round 9: the wait is slower and more arcane — the clock runs at real speed,
+   every letter inks itself in with a glow that fades, two motes of the
+   colour's light drift up through the bubble, and a faint dashed ring turns
+   round the seal while the judge reads. */
+.msg.judge.waiting > div { position: relative; overflow: hidden; min-width: min(20rem, 70vw); animation: wait-breathe 2.4s ease-in-out infinite; }
+.msg.judge.waiting > div::before, .msg.judge.waiting > div::after {
+  content: ""; position: absolute; left: 16%; bottom: 8%; width: 3px; height: 3px; border-radius: 999px; pointer-events: none;
+  background: var(--accent-soft); box-shadow: 0 0 8px 2px color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  opacity: 0; animation: mote 5.5s ease-in-out infinite;
+}
+.msg.judge.waiting > div::after { left: 74%; width: 2px; height: 2px; animation-duration: 7s; animation-delay: 2.6s; }
+@keyframes mote { 0% { transform: none; opacity: 0; } 15% { opacity: 0.9; } 100% { transform: translate(8px, -72px); opacity: 0; } }
+.msg.judge .seal { position: relative; }
+.msg.judge.waiting .seal::after { content: ""; position: absolute; inset: -6px; border-radius: 999px; border: 1px dashed color-mix(in srgb, var(--accent-soft) 60%, transparent); animation: seal-ring 9s linear infinite; }
+@keyframes seal-ring { to { transform: rotate(360deg); } }
+.wait-line .ch { animation: ink-in 720ms ease-out both; }
+@keyframes ink-in {
+  0% { opacity: 0; filter: blur(3px); text-shadow: 0 0 14px var(--accent-soft), 0 0 3px #fff; }
+  45% { opacity: 1; filter: none; text-shadow: 0 0 10px var(--accent-soft); }
+  100% { opacity: 1; text-shadow: 0 0 0 transparent; }
+}
+@keyframes wait-breathe {
+  0%, 100% { border-color: var(--surface-edge); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9), 0 0 0 0 transparent; }
+  50% { border-color: color-mix(in srgb, var(--accent-soft) 45%, transparent); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9), 0 0 22px -6px color-mix(in srgb, var(--accent) 80%, transparent); }
+}
+.msg.judge.waiting .seal { animation: seal-in 900ms ease-out both, seal-scry 3s ease-in-out 900ms infinite; }
+@keyframes seal-scry { 0%, 100% { transform: none; } 50% { transform: rotate(-8deg) scale(1.06); } }
+.wait { display: grid; gap: 0.35rem; }
+.wait-lines { position: relative; display: grid; min-height: 1.5em; }
+.wait-line { grid-area: 1 / 1; color: var(--text-primary); }
+.wait-line::after { content: ""; display: inline-block; width: 2px; height: 1em; margin-left: 3px; vertical-align: -0.12em; background: var(--accent-soft); box-shadow: 0 0 8px 1px var(--accent-soft); animation: caret 0.9s steps(1) infinite; }
+.wait-line.typed::after { animation: caret 0.9s steps(1) infinite; opacity: 0.8; }
+@keyframes caret { 50% { opacity: 0; } }
+.wait-line[data-v="curious"] { color: color-mix(in srgb, var(--accent-soft) 35%, var(--text-primary)); }
+.wait-line[data-v="absurd"] { font-style: italic; color: color-mix(in srgb, var(--accent-soft) 55%, var(--text-primary)); }
+.wait-line.out { animation: wait-out 650ms ease-in forwards; }
+.wait-line.out::after { display: none; }
+@keyframes wait-out { to { opacity: 0; transform: translateY(-0.9em); filter: blur(2px); } }
+.wait-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; }
+.wait-time { font-size: 0.72rem; color: var(--text-muted); font-variant-numeric: tabular-nums; }
+
+/* the chat head: the title, then the tools — View context (In-Depth) and the round Start over ↺ at the far right */
+.chat-head .tools { display: flex; align-items: center; gap: 0.4rem; }
+
+/* the hidden attribute always wins over a component's own display value */
+[hidden] { display: none !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ring .card.summon, .msg, .msg.judge .seal, .thinking i, .msg.judge.waiting > div, .msg.judge.waiting > div::before, .msg.judge.waiting > div::after, .msg.judge.waiting .seal::after, .wait-line, .wait-line .ch, .wait-line::after, .send-pair .mic { animation: none !important; }
+}

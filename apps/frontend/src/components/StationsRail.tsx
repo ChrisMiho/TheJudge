@@ -27,11 +27,12 @@ export type StationsRailProps = {
  */
 export function StationsRail({ currentStep, furthestStepIndex, onNavigate }: StationsRailProps): JSX.Element {
   const currentIndex = FLOW_STEPS.indexOf(currentStep);
-  const fillPercent = FLOW_STEPS.length > 1 ? (currentIndex / (FLOW_STEPS.length - 1)) * 100 : 0;
+  // The mockup's lit path runs between the first and last node centres, i.e. 75% of the rail.
+  const fillPercent = FLOW_STEPS.length > 1 ? (currentIndex / (FLOW_STEPS.length - 1)) * 75 : 0;
 
   return (
-    <nav className="stations-rail" aria-label="In-depth details steps">
-      <span className="stations-rail-fill" aria-hidden="true" style={{ width: `${fillPercent}%` }} />
+    <nav className="rail" aria-label="In-depth details steps">
+      <span className="fill" aria-hidden="true" style={{ width: `${fillPercent}%` }} />
       {FLOW_STEPS.map((step, index) => {
         const isCurrent = step === currentStep;
         const isReachable = index <= furthestStepIndex;
@@ -39,17 +40,17 @@ export function StationsRail({ currentStep, furthestStepIndex, onNavigate }: Sta
           <button
             key={step}
             type="button"
-            className="stations-rail-station motion-focus"
+            className="motion-focus"
             aria-label={`Station ${index + 1}: ${STATION_LABELS[step]}`}
             aria-current={isCurrent ? "step" : undefined}
             data-done={index < currentIndex}
             disabled={!isReachable}
             onClick={() => onNavigate(step)}
           >
-            <span className="stations-rail-node" aria-hidden="true">
+            <span className="node" aria-hidden="true">
               {index + 1}
             </span>
-            <span className="stations-rail-label">{STATION_LABELS[step]}</span>
+            {STATION_LABELS[step]}
           </button>
         );
       })}

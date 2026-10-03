@@ -113,10 +113,9 @@ describe("Frontend - Shared", () => {
       const matrix = screen.getByRole("group", { name: "Commander damage by source" });
       const decrease = within(matrix).getByRole("button", { name: "Decrease commander damage from Player 2" });
       const increase = within(matrix).getByRole("button", { name: "Increase commander damage from Player 2" });
-      // `.lt-seat-bands` (index.css) is the joined −|+ pill at the seat's
-      // foot, replacing the old always-visible full-height top/bottom bands.
-      expect(decrease.closest(".lt-seat-bands")).not.toBeNull();
-      expect(increase.closest(".lt-seat-bands")).toBe(decrease.closest(".lt-seat-bands"));
+      // `.seat .bands` (index.css) is the joined −|+ pill at the seat's foot.
+      expect(decrease.closest(".bands")).not.toBeNull();
+      expect(increase.closest(".bands")).toBe(decrease.closest(".bands"));
     });
 
     it("sizes the commander-damage matrix to the active layout's real columns/rows, not a hardcoded grid-cols-2", () => {
@@ -296,45 +295,53 @@ describe("Frontend - Shared", () => {
       const props = panelProps(activeState);
       render(<CounterPanel {...props} />);
 
-      expect(screen.getByText("Life Tracker")).toHaveClass("text-accent-soft");
-      // Look-matching pass (slice Q): the active tab's own accent styling now
-      // comes from `.lt-seg button[aria-selected="true"]` (index.css), not a
-      // Tailwind utility class — asserted structurally (the shared segmented
-      // control, `aria-selected`) instead of a literal colour class.
+      expect(screen.getByText("Life Tracker").closest(".lt-head")).not.toBeNull();
+      // The active tab's own accent styling comes from `.seg button[aria-selected="true"]` (index.css),
+      // asserted structurally (the shared segmented control, `aria-selected`) rather than as a colour class.
       const commanderTab = screen.getByRole("tab", { name: "Commander damage" });
-      expect(commanderTab.closest(".lt-seg")).not.toBeNull();
+      expect(commanderTab.closest(".seg")).not.toBeNull();
       expect(commanderTab).toHaveAttribute("aria-selected", "true");
 
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       expect(screen.getByRole("tab", { name: "Counters" })).toHaveAttribute("aria-selected", "true");
-      expect(screen.getByTestId("counter-label-poison")).toHaveClass("text-accent-soft");
+      expect(screen.getByTestId("counter-label-poison").closest(".tile")).toHaveAttribute("data-on", "true");
 
       await user.type(screen.getByRole("textbox", { name: "Custom counter name" }), "Shield");
-      expect(screen.getByRole("button", { name: "Add custom counter" })).toHaveClass("text-accent-soft");
+      expect(screen.getByRole("button", { name: "Add custom counter" })).toHaveClass("btn");
     });
 
-    it("fills the available height instead of sizing to its content, like the suite's other overlays", () => {
-      // DEC-139: the panel joins the Menu tray (DEC-133) / history drawer (DEC-134) overlay
-      // family. As a content-sized bottom sheet it left a 358px dead scrim band above itself
-      // at 430x900 with 4 players — 40% of the viewport — which is the shape DEC-134 already
-      // retired for the history drawer.
+    // REQ-082 (as amended): the panel is the suite's shared sheet, sized to its content like every other
+    // sheet — no fixed tall frame of its own; only the sheet's body scrolls when the content is taller.
+    it("is hosted on the shared sheet and sized to its content, with no fixed full-height frame", () => {
       render(<CounterPanel {...panelProps()} />);
 
       const surface = screen.getByRole("dialog");
-      const overlay = surface.parentElement as HTMLElement;
+      expect(surface).toHaveClass("drawer-panel", "lt-sheet");
+      expect(surface.parentElement).toBe(document.body);
+      expect(surface.className).not.toMatch(/\bh-full\b|\bmax-h-\[|items-stretch/);
+      // Head, body and the Done foot bar are the sheet's own three bands, in that order.
+      const bands = Array.from(surface.children).filter((child) => /lt-head|lt-body|lt-foot/.test(child.className));
+      expect(bands.map((band) => band.className.split(" ").find((name) => name.startsWith("lt-")))).toEqual([
+        "lt-head",
+        "lt-scope",
+        "lt-foot"
+      ]);
+    });
 
-      // Stretches at every viewport rather than bottom-anchoring on narrow ones.
-      expect(overlay.className).toContain("items-stretch");
-      expect(overlay.className).not.toContain("items-end");
-      expect(overlay.className).not.toContain("sm:items-center");
+    it("closes from the Done bar, the ✕ and Escape", async () => {
+      const user = userEvent.setup();
+      const props = panelProps();
+      const { rerender } = render(<CounterPanel {...props} />);
 
-      // Height comes from the overlay, not from the content.
-      expect(surface.className).toContain("h-full");
-      expect(surface.className).not.toContain("max-h-[94dvh]");
+      await user.click(screen.getByRole("button", { name: "Done" }));
+      expect(props.onClose).toHaveBeenCalledTimes(1);
 
-      // The pre-existing scroll affordance is retained, not dropped: taller content at higher
-      // player counts must still be reachable.
-      expect(surface.className).toContain("overflow-y-auto");
+      await user.click(screen.getByRole("button", { name: "Close counters" }));
+      expect(props.onClose).toHaveBeenCalledTimes(2);
+
+      await user.keyboard("{Escape}");
+      expect(props.onClose).toHaveBeenCalledTimes(3);
+      rerender(<CounterPanel {...props} />);
     });
   });
 });

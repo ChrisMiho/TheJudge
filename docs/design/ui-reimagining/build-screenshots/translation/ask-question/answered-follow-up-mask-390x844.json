@@ -1,0 +1,76 @@
+{
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 844
+  },
+  {
+   "name": "closed bottom sheets glow",
+   "reason": "the mockup keeps its three closed bottom sheets mounted just below the screen and their accent glow bleeds up into the bottom edge on a phone; the app mounts a sheet only while open",
+   "x": 0,
+   "y": 796,
+   "width": 390,
+   "height": 48
+  },
+  {
+   "name": "question box",
+   "reason": "REQ-205 wins over the mockup: the In-depth chip and the mic|send pill paint 44px (the mockup's are 40px), so the box is 4px taller and its shape differs",
+   "x": 14,
+   "y": 570,
+   "width": 361,
+   "height": 112
+  },
+  {
+   "name": "card art thumbnails",
+   "reason": "card art: the app draws the corpus image at its stored size, the mockup its own copy of the image",
+   "x": 77,
+   "y": 175,
+   "width": 34,
+   "height": 47
+  },
+  {
+   "name": "card art thumbnails",
+   "reason": "card art: the app draws the corpus image at its stored size, the mockup its own copy of the image",
+   "x": 116,
+   "y": 175,
+   "width": 34,
+   "height": 47
+  },
+  {
+   "name": "card art thumbnails",
+   "reason": "card art: the app draws the corpus image at its stored size, the mockup its own copy of the image",
+   "x": 155,
+   "y": 175,
+   "width": 34,
+   "height": 47
+  },
+  {
+   "name": "card art thumbnails",
+   "reason": "card art: the app draws the corpus image at its stored size, the mockup its own copy of the image",
+   "x": 194,
+   "y": 175,
+   "width": 34,
+   "height": 47
+  },
+  {
+   "name": "card art thumbnails",
+   "reason": "card art: the app draws the corpus image at its stored size, the mockup its own copy of the image",
+   "x": 233,
+   "y": 175,
+   "width": 34,
+   "height": 47
+  },
+  {
+   "name": "the conversation thread",
+   "reason": "live data: the judge's answer text comes from the AI provider (the mock provider's text here), not the mockup's written ruling; the thread box is fixed to 320px on both sides for the capture",
+   "x": 14,
+   "y": 238,
+   "width": 361,
+   "height": 322
+  }
+ ]
+}

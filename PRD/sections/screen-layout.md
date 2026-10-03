@@ -31,7 +31,7 @@ Use fluid interpolation inside a band when possible; reserve hard switches for n
 - **Inner panels / workspaces** size as a **% of the suite shell** (the app content frame after banner/chrome), not as a second free grab at the full viewport.
 - Starting shell width intent (tunable per screen when a row says so):
   - **phone:** shell ≈ **100%** of viewport width (minus established page padding); no narrow “card floating in a phone desert.”
-  - **tablet/desktop:** shell ≈ **92%** of viewport width, capped at `min(48rem, 92vw)` (DEC-145 / REQ-124). Tune the rem cap in product truth when mocks prove a different reading width; do not jump to edge-to-edge without a catalog/DEC update.
+  - **tablet/desktop:** shell ≈ **92%** of viewport width, capped at `min(48rem, 92vw)` (DEC-145 / REQ-124). Tune the rem cap in product truth when mocks prove a different reading width; do not jump to edge-to-edge without a catalog/DEC update. On the direction-1 redesigned screens a screen's content column takes its mockup page's own width inside this cap (REQ-124).
 - Prose-dominant regions keep a **maximum reading measure inside the shell** — widening the shell does not mean every text column goes edge-to-edge.
 - **Height:** do **not** stretch pre-submit staged steps to absorb lower viewport dead space (DEC-145 — content-sized vertically; empty region accepted until step content exists). Vertical fill applies only where a screen row cites it (answered chat workspace, Life Tracker one-screen table, scan camera chrome).
 
@@ -61,7 +61,7 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Phone | Width ≈ 100% viewport (minus page padding); height follows content (not forced full-viewport stretch) |
 | Desktop/tablet | Width ≈ 92% viewport, cap `min(48rem, 92vw)`; height follows content for staged/pre-submit destinations |
 | Fit | No page scroll from shell chrome alone |
-| Notes | DEC-145, REQ-124, DEC-117. Do not invent vertical fill for empty lower bands. Life Tracker / answered workspace / scan use their own height rows |
+| Notes | DEC-145, REQ-124, DEC-117. Do not invent vertical fill for empty lower bands. Life Tracker / answered workspace / scan use their own height rows. The banner header sits above the shell's page padding, flush with the viewport's top edge (REQ-207); the padding applies to the content below it |
 
 #### Destination load fallback (route `Suspense` boundary)
 
@@ -100,7 +100,7 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Phone | Below `600px`: bottom sheet, content-sized up to the viewport; fixed head (title, ✕) and foot (actions) |
 | Desktop/tablet | From `600px`: floating card centred in the viewport, content-sized; Question History widens to two panes (REQ-213) |
 | Fit | Overlay; only the body region-scrolls; never a second page-length scroll for the host screen |
-| Notes | REQ-208, REQ-128, REQ-142, REQ-143, REQ-205. View Context keeps its own row; Life Tracker's counter panel keeps DEC-139 |
+| Notes | REQ-208, REQ-128, REQ-142, REQ-143, REQ-205. View Context keeps its own row; Life Tracker's counter panel is hosted here too (REQ-082) |
 
 #### Card detail popup (suite-wide)
 
@@ -139,7 +139,7 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Up to 10 cards (card stage, REQ-167 as amended) + question → Ask AI; Add in-depth details carries the cards into In-depth details (REQ-206) |
-| Phone | Shell 100% width band; content-sized vertically (DEC-145). **Card stage** (only when a card is attached): the front card full size on a solid-panel stage, the one other card peeking (two cards peek on one side only; three or more peek each side) — so the stage height does not grow with the card count; ✕ Remove / ⓘ Details straddle the front card's top corners; a dark count pill reads `n / cap`. **Question box:** one pill (Add in-depth details · text · count · send pill) |
+| Phone | Shell 100% width band; content-sized vertically (DEC-145). **Card stage** (only when a card is attached): the front card full size on a glass stage (REQ-207), the one other card peeking (two cards peek on one side only; three or more peek each side) — so the stage height does not grow with the card count; ✕ Remove / ⓘ Details straddle the front card's top corners; a row of position dots lights the front card's place. **Question box:** two rows (text on top; Add in-depth details chip bottom-left, mic|send pill bottom-right) |
 | Desktop/tablet | Shell 92%/48rem cap; content-sized vertically; the front card grows with the wider column; box growth must not force page scroll or clip chrome below the box (REQ-110 / DEC-146) |
 | Fit | No page scroll for the primary submit path: the send pill's `bottom` stays inside the first viewport at every attached-card count up to the cap. The stage replaces the stacked per-image list whose measured overflow this row previously bounded (history below); the per-image `25dvh` / `42dvh` cap retires with that list |
 | Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-129, REQ-133, REQ-141, REQ-167, REQ-174, REQ-200, REQ-206, FLOW-024. The on-demand card-detail load state follows the `#### Card detail popup (suite-wide)` row (REQ-174 / FLOW-024): quiet, in-region, no layout jump, failing soft to the name fallback. **History (superseded by REQ-206's card stage, `ui-reimagining-build`, 2026-10-01):** earlier passes bounded a stacked per-image list — a 2026-08-07 measurement capped each image at `max-height: 25dvh` / `42dvh` (`.card-shell-column img`) after an unbounded image pushed Send Request to `top` 868px; a 2026-08-30 re-measurement found the per-image cap held for up to five stacked cards but let the page scroll past the composer with 2+ attached; a 2026-09-24 re-measurement (two cards, 1159px document against an 844px viewport, Send Request `bottom` 1067) withdrew that as unacceptable and bound the attached-card **region** instead of each image. The card stage is the `ui-reimagining-build` pass's replacement for that bounded-region list — not a further re-measurement of it |
@@ -210,7 +210,7 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Phone | Camera frame grows to fill **available viewport height** in the scan chrome (DEC-090); overlays stay non-overlapping. Scan review bubble: card images size to their list-row width under DEC-160 (they are no longer pixel-capped at 92×128px); the review list keeps its own vertical region scroll |
 | Desktop/tablet | Same fill intent inside scan chrome; not a reason to widen unrelated suite shell; same review-list sizing rule |
 | Fit | Scan UI is its own full-bleed workspace; region overlays only. The review list region-scrolls — larger images mean more scrolling, which is accepted (DEC-160) — but the count pill must not displace or overlap the camera frame (DEC-090/REQ-129) |
-| Chrome | A square ✕ exit box sits above the camera's top-right corner on every host (accessible name "Exit scan"); the count pill (and, when open, its caution note) sits beneath it, non-overlapping; the opt-in Debug panel keeps its own bottom-left placement with a themed accent border (REQ-214) |
+| Chrome | A square ✕ exit box sits above the camera's top-right corner on every host (accessible name "Exit scan"); the count pill (and, when open, its caution note) sits beneath it, non-overlapping; the opt-in Debug panel keeps its own bottom-left placement with a themed accent border (REQ-214); when the mockup's scanner page carries the hint line, one line of static text sits under the camera frame in the mockup's position — text, not a control, never overlapping the camera frame, the count pill or the review list (REQ-214, REQ-070) |
 | Notes | DEC-090, DEC-160, REQ-129, DEC-052 family, REQ-214 — do not re-layout scanner internals from generic “stretch” feedback. Scan review was outside `ui-review`'s original scope and is affected only because `ScanReviewBubble` consumes the shared `CardPresentation`; the density trade is documented in DEC-160. **Verify live at 390×844**: if the enlarged count pill starves the camera frame, record a bounded image cap on this row — never fork the shared component |
 
 #### Player Life Tracker
@@ -219,9 +219,9 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 |---|---|
 | Purpose | Live table life/counters |
 | Phone / Desktop | **One-screen fit** for the life table at every player count (DEC-136); full-bleed destination chrome |
-| Fit | No page scroll for the life table; counter panel is full-height overlay (DEC-139) |
-| Sheets | Game Setup fits one phone screen; a player's Counters panel keeps its full-height overlay (DEC-139) with two tabs; Reset / New game confirm in the shared sheet (REQ-208). The table itself is pixel-untouched; every touching slice attaches the 390x844 and 1440x900 before/after pair (REQ-202) |
-| Notes | DEC-101, DEC-136, DEC-139 |
+| Fit | No page scroll for the life table; the counter panel is the content-sized shared sheet (REQ-082, REQ-208) |
+| Sheets | Game Setup fits one phone screen, with names behind an Edit names ▾ collapse and a Done › foot bar; a player's Counters panel is the content-sized shared sheet (REQ-082, REQ-208) with two tabs; Reset / New game confirm in the shared sheet (REQ-208). The table itself is pixel-untouched; every touching slice attaches the 390x844 and 1440x900 before/after pair (REQ-202) |
+| Notes | DEC-101, DEC-136, DEC-139 (retired by REQ-082 as amended), REQ-082 |
 
 #### Trade Balancer
 
@@ -231,7 +231,7 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Phone | Shell/full destination width; the two sides are **tabs sharing one panel**, not stacked (REQ-204) — one side's list, search, scan control and total render at a time, while both side totals and the difference stay visible whichever tab is active; lists region-scroll. Superseded geometry: vertically stacked sides, measured 2026-09-24 at 390x844 with both sides empty as Side A heading y 305 / Side B heading y 529, i.e. 224px per side before a card is added |
 | Desktop/tablet | Shell 92%/48rem (or destination equivalent); paired sides use shell width, not unused ultra-wide bands; content-sized vertically (DEC-145) |
 | Fit | No page scroll for totals/primary actions; entry lists **and the printing picker** region-scroll |
-| Balance | Two piles of gold on a solid panel with the verdict line and dollar difference beneath; the whole screen fits 390×844 and 1440×900 with only the entry lists scrolling (REQ-215) |
+| Balance | Two piles of gold on a glass panel (REQ-207) with the verdict line and dollar difference beneath; the whole screen fits 390×844 and 1440×900 with only the entry lists scrolling (REQ-215) |
 | Printing picker | Opens in the shared sheet (REQ-208); rows of set name, code, thumbnail, and Nonfoil / Foil price pills; the body region-scrolls at about 5-6 rows so the page never grows with a card's printing count (Sol Ring 128, corpus maximum 771); row images lazy-load; a set-name/code filter appears past 5 printings; the selected printing is scrolled into view on open (REQ-065; live observation 2026-09-09: 128 rows once rendered 10,748 px tall on an 844 px viewport) |
 | Price freshness | Date-level copy only — `Prices as of 5 June 2026`, formatted from the artifact's ISO `snapshotDate` with no raw `T`, milliseconds, or zone suffix, so it never reads as a live quote. One line at 390x844 (`scrollWidth` 299 = `clientWidth`). An unparseable artifact value omits the line entirely rather than printing raw data (ui-review, 2026-08-11, REQ-145); at `768px`+ it sits in the staged header's right-hand slot instead (REQ-215) |
 | Notes | DEC-087, DEC-145, REQ-145, REQ-065, REQ-204, REQ-215. Desktop/tablet paired sides are protected scope — the phone tab treatment must not reach the `768px`+ composition |

@@ -108,8 +108,9 @@ becomes the only way to add a card. It sits outside the core product loop
   recognised-but-not-yet-added cards — a scan-local holding list, not the
   destination's own card list — and expands to a viewport-capped 320px panel
   listing each held card with a single-tap, no-confirmation **Remove** plus a
-  caution control explaining that scanning is experimental. Each entry uses the
-  shared container-relative image + corner-detail presentation. The corner detail
+  caution control explaining that scanning is experimental. Each entry shows the card's
+  image as a thumbnail; a tap on the thumbnail opens the shared card detail
+  popup (the entry has no corner-detail overlay). The detail
   popup fetches its descriptive fields on demand by oracle id (REQ-175, FLOW-024)
   when opened and the network allows, degrading gracefully offline; when no image
   is available the entry falls back to the card name only, with no fetch triggered
@@ -117,6 +118,9 @@ becomes the only way to add a card. It sits outside the core product loop
   pill is built on every host that scans — In-Depth's zones, Ask a Question, and
   Trade Balancer (REQ-214). (DEC-058, DEC-078, DEC-151, REQ-040, REQ-175, REQ-214,
   FLOW-006, FLOW-024)
+- Built: a one-line hint under the viewfinder, worded as the mockup's scanner
+  page words it — "Auto-scan is on: a confident match adds the card and keeps
+  scanning. The shutter reads one frame by hand." (REQ-214, REQ-070)
 - Built: a recognised card joins the holding list, not the destination, the
   instant it locks; the destination's own card list changes only when the
   scanner closes, committing every held card in one step. The same

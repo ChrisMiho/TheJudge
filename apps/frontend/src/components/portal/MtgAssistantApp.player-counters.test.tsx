@@ -104,7 +104,7 @@ describe("Frontend - MTG Assistant", () => {
     expect(screen.getByLabelText("Player 1 life total")).toHaveValue("27");
     expect(screen.getByText("4 players")).toBeInTheDocument();
     expect(
-      screen.getByText("Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.")
+      screen.getByText("Who is playing, and where the turn is. Tap the arrow to name the players and set life — 2 players start at 20, 3+ at 40.")
     ).toBeInTheDocument();
     expect(screen.queryByLabelText("Player 1 poison")).not.toBeInTheDocument();
 
@@ -170,7 +170,9 @@ describe("Frontend - MTG Assistant", () => {
       screen.getByLabelText(`Player 1 ${field}`).closest("label")
     );
     const scalarStack = scalarRows[0]!.parentElement!;
-    expect(scalarStack.className).toContain("flex-col");
+    // `.counters` stacks the three selects one per line at every width (REQ-138); the mockup's
+    // three-column grid is overridden in the stylesheet.
+    expect(scalarStack.className).toContain("counters");
     expect(scalarStack.className).not.toMatch(/grid-cols-3/);
     for (const row of scalarRows) {
       expect(row!.parentElement).toBe(scalarStack);
@@ -182,10 +184,11 @@ describe("Frontend - MTG Assistant", () => {
       .getByLabelText("Player 1 commander damage from Player 2")
       .closest("label")!;
     const namedCounterRow = screen.getByLabelText("Player 1 counter Monarch amount").parentElement!;
-    expect(namedCounterRow.className).toBe(commanderRow.className);
-    expect(commanderRow.className).toContain("gap-2");
+    // Commander-damage and named-counter rows are the stylesheet's `.cmd-row` / `.named-row`, both
+    // content-sized flex rows with one declared gap (REQ-137).
+    expect(commanderRow.className).toContain("cmd-row");
+    expect(namedCounterRow.className).toContain("named-row");
     expect(commanderRow.className).not.toMatch(/grid-cols-\[1fr_auto\]/);
-    expect(scalarRows[0]!.className).toBe(commanderRow.className);
   });
 
   it("keeps commander damage a free-typed unbounded numeric input", async () => {

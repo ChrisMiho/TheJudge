@@ -26,7 +26,7 @@ type CardSelectionPreviewProps = {
  */
 export function CardSelectionPreview({ card, action }: CardSelectionPreviewProps): JSX.Element {
   return (
-    <article className="motion-enter rounded-2xl border border-zinc-600 bg-zinc-800/75 p-4 shadow-[0_14px_34px_-24px_rgba(0,0,0,0.5)]">
+    <article className="panel motion-enter p-4">
       <div className="card-shell-column mx-auto flex w-full flex-col gap-3">
         <CardPresentation card={card} className="w-full" />
         {action ? <div className="flex justify-center">{action}</div> : null}

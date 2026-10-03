@@ -26,6 +26,8 @@ import {
   addCardToStack,
   clickDecryptStack,
   advanceToContextEnrichment,
+  installMemoryLocalStorage,
+  uninstallMemoryLocalStorage,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
@@ -273,6 +275,51 @@ describe("Answered-state layout integration", () => {
     const startOver = screen.getByRole("button", { name: "Start over — clears everything" });
     expect(startOver).toBeInTheDocument();
     expect(startOver).toBeEnabled();
+  });
+
+  // REQ-209: the ruling's ✎ Edit renders beside View context and ↺ Start over, and mirrors Ask a
+  // Question's ✎ Edit cards — back to the review with the game context, every card's details and
+  // the question exactly as they were; the answered conversation leaves the screen already saved
+  // to Question History, and the next send starts a new conversation.
+  it("renders ✎ Edit beside View context and Start over, and returns to the review with everything kept", async () => {
+    const user = userEvent.setup();
+    installMemoryLocalStorage();
+    await reachAnsweredState(user);
+
+    const edit = screen.getByRole("button", { name: "Edit" });
+    expect(edit).toHaveClass("icon-chip");
+    const tools = edit.closest(".tools") as HTMLElement;
+    expect(within(tools).getByRole("button", { name: /View context:/ })).toBeInTheDocument();
+    expect(within(tools).getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
+
+    // The answered conversation is already in Question History before Edit leaves the screen.
+    const savedBefore = JSON.parse(localStorage.getItem("thejudge.conversationHistory.entries") ?? "[]") as Array<{
+      id: string;
+      visibleMessages: Array<{ content: string }>;
+    }>;
+    expect(savedBefore).toHaveLength(1);
+    expect(savedBefore[0]!.visibleMessages.some((message) => message.content === "Initial answer")).toBe(true);
+
+    await user.click(edit);
+
+    // The thread is gone; the review is back with the card, its details and the question kept.
+    expect(screen.queryByText("Initial answer")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Context reviewed · 1 card/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit context for Opt" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeEnabled();
+    // The saved entry is untouched by leaving the screen.
+    expect(JSON.parse(localStorage.getItem("thejudge.conversationHistory.entries") ?? "[]")).toHaveLength(1);
+
+    // The next send starts a new conversation: a second history entry, not an overwrite.
+    queueAskAiResponses({ status: 200, body: { answer: "Second answer" } });
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    expect(await screen.findByText("Second answer")).toBeInTheDocument();
+    const savedAfter = JSON.parse(localStorage.getItem("thejudge.conversationHistory.entries") ?? "[]") as Array<{
+      id: string;
+    }>;
+    expect(savedAfter).toHaveLength(2);
+    expect(new Set(savedAfter.map((entry) => entry.id)).size).toBe(2);
+    uninstallMemoryLocalStorage();
   });
 });
 });

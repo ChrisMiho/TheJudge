@@ -39,6 +39,14 @@ describe("search helpers", () => {
     expect(getSuggestions(sampleCards, "bo")).toEqual([]);
   });
 
+  it("keeps the three-character minimum by default and lets a caller lower it (REQ-167: Ask a Question's Add-card search passes 1)", () => {
+    expect(getSuggestions(sampleCards, "l")).toEqual([]);
+    expect(getSuggestions(sampleCards, "li")).toEqual([]);
+    expect(getSuggestions(sampleCards, "l", 1).map((card) => card.name)).toContain("Lightning Bolt");
+    // an empty query never lists the whole corpus, whatever the minimum
+    expect(getSuggestions(sampleCards, "  ", 1)).toEqual([]);
+  });
+
   it("returns suggestions for substring queries", () => {
     const result = getSuggestions(sampleCards, "bolt");
     expect(result).toHaveLength(1);

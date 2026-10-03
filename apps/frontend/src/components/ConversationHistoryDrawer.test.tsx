@@ -45,7 +45,7 @@ describe("Frontend - Conversation history drawer (REQ-213)", () => {
     it("shows an empty state and the n-of-20 head when there are no saved conversations or drafts", () => {
       render(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />);
 
-      expect(screen.getByRole("dialog", { name: "Question History — 0 of 20" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog", { name: "Question History 0 of 20" })).toBeInTheDocument();
       expect(screen.getByText("No saved conversations yet")).toBeInTheDocument();
     });
 
@@ -67,7 +67,7 @@ describe("Frontend - Conversation history drawer (REQ-213)", () => {
         />
       );
 
-      expect(screen.getByRole("dialog", { name: "Question History — 2 of 20" })).toBeInTheDocument();
+      expect(screen.getByRole("dialog", { name: "Question History 2 of 20" })).toBeInTheDocument();
     });
 
     it("shows each row's meta line, truncated question preview, and first ruling line", () => {
@@ -85,7 +85,8 @@ describe("Frontend - Conversation history drawer (REQ-213)", () => {
 
       expect(screen.getByText(new RegExp(`^${longQuestion.slice(0, 80)}…$`))).toBeInTheDocument();
       expect(screen.getByText("Hexproof restricts opposing targets.")).toBeInTheDocument();
-      expect(screen.getByText(/^Ask a Question/)).toBeInTheDocument();
+      // the row's meta line (the mockup's `.h-meta`): a mode chip, the card count, when
+      expect(screen.getByText("no cards")).toBeInTheDocument();
     });
 
     it("draws a dashed empty frame when an entry carries no cards, and a +n badge past three", () => {
@@ -108,7 +109,7 @@ describe("Frontend - Conversation history drawer (REQ-213)", () => {
       );
 
       // SheetShell portals to document.body, outside the local render container.
-      expect(document.querySelector(".border-dashed")).toBeInTheDocument();
+      expect(document.querySelector(".h-fan .none")).toBeInTheDocument();
       expect(screen.getByText("+1")).toBeInTheDocument();
       expect(document.querySelectorAll("img").length).toBe(3);
     });
@@ -234,7 +235,7 @@ describe("Frontend - Conversation history drawer (REQ-213)", () => {
         <ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[buildEntry()]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />
       );
 
-      expect(screen.getByText("Select a question to read it here.")).toBeInTheDocument();
+      expect(screen.getByText(/Pick a question to read it here\./)).toBeInTheDocument();
     });
   });
 
@@ -261,7 +262,7 @@ describe("Frontend - Conversation history drawer (REQ-213)", () => {
       const rows = screen.getAllByRole("button", { name: /Draft/ });
       expect(rows).toHaveLength(2);
 
-      await user.click(screen.getByText(/Ask a Question Draft/));
+      await user.click(rows.find((row) => /Ask a Question/.test(row.textContent ?? "")) as HTMLElement);
       expect(onResumeLookup).toHaveBeenCalledOnce();
     });
 
@@ -311,7 +312,7 @@ describe("Frontend - Conversation history drawer (REQ-213)", () => {
       rerender(<ConversationHistoryDrawer isOpen={false} onClose={vi.fn()} entries={[entry]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />);
       rerender(<ConversationHistoryDrawer isOpen onClose={vi.fn()} entries={[entry]} onResumeEntry={vi.fn()} onDeleteEntry={vi.fn()} />);
 
-      expect(screen.getByText("Select a question to read it here.")).toBeInTheDocument();
+      expect(screen.getByText(/Pick a question to read it here\./)).toBeInTheDocument();
     });
   });
 });

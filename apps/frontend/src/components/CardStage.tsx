@@ -1,151 +1,143 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CardDetailPopup, type CardPresentationCard } from "./CardPresentation";
 import { deriveCardImageUrl } from "../lib/cardImage";
+import { getCardIdentityRingStyle } from "../lib/cardIdentityRing";
+import { ringPlacementStyle } from "../lib/theme/flowStyles";
+
+type StageCard = CardPresentationCard & { colors?: string[] };
 
 export interface CardStageProps {
-  cards: CardPresentationCard[];
-  /** REQ-167's bound — rendered in the dots pill as `n / cap`. */
+  cards: StageCard[];
   cap: number;
   onRemove: (cardId: string) => void;
 }
 
 /**
- * REQ-206: the Ask a Question card stage. With cards attached, the front card renders
- * full size on a lit solid-panel stage with one neighbour peeking out each side and the
- * rest off-stage, so the stage's height never grows with the card count (superseding the
- * stacked per-image list, REQ-129 as amended). Arrows, ←/→, and a tap on a neighbour turn
- * the ring. With no card attached, nothing renders (the caller skips mounting this).
- *
- * Look-matching pass (slice M): restyled to `flow.css:52-99`'s `.stage`/`.ring`/`.card`/
- * `.card-widget`/`.arrow` — 196px/280px front card, the front-card accent glow, 40px round
- * arrows, dimmed/scaled/blurred neighbours — and `flow.css:148-155`'s `.dots` pill in place
- * of the corner count badge. LOOK-GAPS.md's conflict question ("the count shown on the
- * stage") is carried unresolved: the dots pill still reads the REQ-167 attached/cap count
- * (`n / cap`), not a position-within-stage reading, until the owner answers it.
+ * REQ-206: the attached cards as the mockup's stage — `.stage` > `.ring` (the ‹/› arrows, then the
+ * cards placed by their signed distance from the front card, `flow.css`'s `--d`) and `.dots`. The
+ * front card (`data-front="true"`) shows ✕ Remove and ⓘ Details straddling its top corners; the
+ * neighbours (one each side from three cards up, one side only at exactly two, never the same card
+ * twice) are tappable and turn the ring. Only the three cards on stage are rendered. The dots, one
+ * per card with the front card's lit, replace the old `n / cap` pill (the cap is told to the player
+ * by the add-past-the-cap message, REQ-167).
  */
-export function CardStage({ cards, cap, onRemove }: CardStageProps): JSX.Element | null {
+export function CardStage({ cards, cap: _cap, onRemove }: CardStageProps): JSX.Element | null {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [detailOpen, setDetailOpen] = useState(false);
+  const previousCountRef = useRef(cards.length);
+
+  // A card added turns the ring to it, as the mockup does (`focus = attached.length - 1`).
+  useEffect(() => {
+    if (cards.length > previousCountRef.current) {
+      setCurrentIndex(cards.length - 1);
+    }
+    previousCountRef.current = cards.length;
+  }, [cards.length]);
 
   if (cards.length === 0) {
     return null;
   }
 
-  const boundedIndex = Math.min(currentIndex, cards.length - 1);
-  const current = cards[boundedIndex]!;
-  const hasRing = cards.length > 1;
-  // With exactly two cards, the one neighbour is on both sides of the ring at once —
-  // peek it only on the right so it never renders twice (and so its name never matches
-  // two images at once).
-  const leftIndex = cards.length > 2 ? (boundedIndex - 1 + cards.length) % cards.length : null;
-  const rightIndex = hasRing ? (boundedIndex + 1) % cards.length : null;
+  const count = cards.length;
+  const front = Math.min(currentIndex, count - 1);
+  const hasRing = count > 1;
 
   function turnRing(toIndex: number): void {
-    setCurrentIndex(((toIndex % cards.length) + cards.length) % cards.length);
+    setCurrentIndex(((toIndex % count) + count) % count);
+  }
+
+  /** Shortest signed distance around the ring; only |d| <= 1 is on stage. */
+  function distanceOf(index: number): number {
+    let d = index - front;
+    if (d > count / 2) d -= count;
+    if (d < -count / 2) d += count;
+    return d;
   }
 
   return (
-    <div className="aq-stage" data-testid="card-stage">
-      <div className="aq-ring">
+    <div className="stage" data-testid="card-stage">
+      <div className="ring">
         {hasRing && (
-          <button
-            type="button"
-            aria-label="Previous card"
-            onClick={() => turnRing(boundedIndex - 1)}
-            className="aq-arrow motion-focus mr-1 sm:mr-2"
-          >
+          <button type="button" className="arrow prev" aria-label="Previous card" onClick={() => turnRing(front - 1)}>
             ‹
           </button>
         )}
-
-        <div className="flex min-w-0 flex-1 items-center justify-center">
-          {leftIndex !== null && (
-            <button
-              type="button"
-              aria-label={`Show ${cards[leftIndex]!.name} on the stage`}
-              onClick={() => turnRing(leftIndex)}
-              data-neighbor="true"
-              className="aq-card motion-focus relative z-0 -mr-6 shrink-0"
-            >
-              <StageCardImage card={cards[leftIndex]!} />
-            </button>
-          )}
-
-          <div data-front="true" className="aq-card relative z-10 shrink-0">
-            <StageCardImage card={current} />
-            <button
-              type="button"
-              aria-label={`Remove ${current.name}`}
-              onClick={() => {
-                onRemove(current.cardId);
-                if (boundedIndex >= cards.length - 1) {
-                  turnRing(Math.max(0, boundedIndex - 1));
-                }
-              }}
-              className="aq-card-widget remove motion-focus"
-            >
-              <span aria-hidden="true">×</span>
-            </button>
-            <button
-              type="button"
-              aria-label={`Show details for ${current.name}`}
-              aria-haspopup="dialog"
-              aria-expanded={detailOpen}
-              onClick={() => setDetailOpen(true)}
-              className="aq-card-widget info motion-focus"
-            >
-              <span aria-hidden="true">ⓘ</span>
-            </button>
-            {detailOpen ? <CardDetailPopup card={current} onClose={() => setDetailOpen(false)} /> : null}
-          </div>
-
-          {rightIndex !== null && (
-            <button
-              type="button"
-              aria-label={`Show ${cards[rightIndex]!.name} on the stage`}
-              onClick={() => turnRing(rightIndex)}
-              data-neighbor="true"
-              className="aq-card motion-focus relative z-0 -ml-6 shrink-0"
-            >
-              <StageCardImage card={cards[rightIndex]!} />
-            </button>
-          )}
-        </div>
-
         {hasRing && (
-          <button
-            type="button"
-            aria-label="Next card"
-            onClick={() => turnRing(boundedIndex + 1)}
-            className="aq-arrow motion-focus ml-1 sm:ml-2"
-          >
+          <button type="button" className="arrow next" aria-label="Next card" onClick={() => turnRing(front + 1)}>
             ›
           </button>
         )}
+        {cards.map((card, index) => {
+          const d = distanceOf(index);
+          if (Math.abs(d) > 1) return null;
+          const style = { ...getCardIdentityRingStyle(card.colors), ...ringPlacementStyle(d) };
+          if (d !== 0) {
+            return (
+              <button
+                key={card.cardId}
+                type="button"
+                className="card card-identity-ring"
+                aria-label={`Show ${card.name} on the stage`}
+                data-front="false"
+                data-neighbor="true"
+                style={style}
+                onClick={() => turnRing(index)}
+              >
+                <StageCardImage card={card} />
+              </button>
+            );
+          }
+          return (
+            <div key={card.cardId} className="card card-identity-ring" data-front="true" style={style}>
+              <StageCardImage card={card} />
+              <button
+                type="button"
+                className="card-widget remove"
+                aria-label={`Remove ${card.name}`}
+                onClick={() => {
+                  onRemove(card.cardId);
+                  if (front >= count - 1) {
+                    turnRing(Math.max(0, front - 1));
+                  }
+                }}
+              >
+                ✕
+              </button>
+              <button
+                type="button"
+                className="card-widget info"
+                aria-label={`Show details for ${card.name}`}
+                aria-haspopup="dialog"
+                aria-expanded={detailOpen}
+                onClick={() => setDetailOpen(true)}
+              >
+                ⓘ
+              </button>
+              {detailOpen ? <CardDetailPopup card={card} onClose={() => setDetailOpen(false)} /> : null}
+            </div>
+          );
+        })}
       </div>
 
-      <span className="aq-dots" data-testid="card-stage-count">
-        {hasRing &&
-          cards.map((card, index) => <span key={card.cardId} className="dot" data-on={index === boundedIndex} />)}
-        <span className="n">
-          {cards.length} / {cap}
-        </span>
-      </span>
+      <div className="dots" data-testid="card-stage-count" role="img" aria-label={`Card ${front + 1} of ${count}`}>
+        {hasRing && cards.map((card, index) => <span key={card.cardId} data-on={index === front} />)}
+        {hasRing && <span className="n">{`${front + 1} / ${count}`}</span>}
+      </div>
     </div>
   );
 }
 
-function StageCardImage({ card }: { card: CardPresentationCard }): JSX.Element {
+function StageCardImage({ card }: { card: StageCard }): JSX.Element {
   const imageUrl = card.imageUrl?.trim() || deriveCardImageUrl(card.imageId) || undefined;
   if (!imageUrl) {
     return (
-      <div
-        data-testid="card-presentation-fallback"
-        className="fallback-inner flex items-center justify-center bg-zinc-800 p-2 text-center text-xs font-semibold text-zinc-200"
-      >
-        {card.name}
+      <div data-testid="card-presentation-fallback" className="fallback">
+        <div>
+          <strong>{card.name}</strong>
+          <span>Image unavailable</span>
+        </div>
       </div>
     );
   }
-  return <img src={imageUrl} alt={card.name} />;
+  return <img src={imageUrl} alt={card.name} loading="eager" />;
 }

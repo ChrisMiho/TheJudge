@@ -133,6 +133,29 @@ async function addCard(
   });
 }
 
+/** Like `addCard`, but picks a named printing and finish in the pre-add picker. */
+async function addCardWith(
+  user: ReturnType<typeof userEvent.setup>,
+  sideId: "A" | "B",
+  cardName: string,
+  printingLabel: RegExp,
+  finish: "nonfoil" | "foil"
+): Promise<void> {
+  await openSideSearch(user, sideId);
+  const search = within(side(sideId)).getByLabelText(`Side ${sideId} card search`);
+  await user.clear(search);
+  await user.type(search, cardName.slice(0, 5));
+  await user.click(within(side(sideId)).getByRole("button", { name: new RegExp(`^${cardName}`) }));
+  const pickerElement = await screen.findByRole("group", { name: `Choose a printing for ${cardName}` });
+  await user.click(
+    within(pickerElement).getByRole("button", { name: new RegExp(`${printingLabel.source}.* ${finish}$`, "i") })
+  );
+  await waitFor(() => {
+    expect(screen.queryByRole("group", { name: `Choose a printing for ${cardName}` })).not.toBeInTheDocument();
+    expect(within(side(sideId)).queryByText("Loading price…")).not.toBeInTheDocument();
+  });
+}
+
 /** Opens the "Change printing" picker on an already-loaded entry and picks one. */
 async function changePrinting(
   user: ReturnType<typeof userEvent.setup>,
@@ -226,7 +249,9 @@ describe("Frontend - Trade", () => {
       });
     });
 
-    it("allows duplicates: adding the same card twice counts both entries", async () => {
+    // REQ-215: adding a card whose printing and finish match a row already on the side raises that
+    // row's quantity; a different printing or finish is its own row; totals are the unmerged sum.
+    it("merges a repeat add of the same printing and finish into one row with quantity 2", async () => {
       const user = userEvent.setup();
       await renderBalancer();
 
@@ -235,8 +260,33 @@ describe("Frontend - Trade", () => {
 
       expect(
         within(side("A")).getAllByRole("button", { name: /^Remove Lightning Bolt/ })
-      ).toHaveLength(2);
+      ).toHaveLength(1);
+      expect(within(side("A")).getByLabelText("Quantity for Lightning Bolt (Side A)")).toHaveTextContent("2");
       expect(sideTotalText("A")).toBe("$20.00");
+    });
+
+    it("keeps a different finish or printing as its own row, and merges only the exact match", async () => {
+      const user = userEvent.setup();
+      await renderBalancer();
+
+      await addCardWith(user, "A", "Lightning Bolt", /Magic 2010/, "nonfoil");
+      await addCardWith(user, "A", "Lightning Bolt", /Magic 2010/, "foil");
+      expect(
+        within(side("A")).getAllByRole("button", { name: /^Remove Lightning Bolt/ })
+      ).toHaveLength(2);
+      expect(sideTotalText("A")).toBe("$29.00");
+
+      await addCardWith(user, "A", "Lightning Bolt", /Unlimited Edition/, "nonfoil");
+      expect(
+        within(side("A")).getAllByRole("button", { name: /^Remove Lightning Bolt/ })
+      ).toHaveLength(3);
+      expect(sideTotalText("A")).toBe("$39.00");
+
+      // The exact match merges into the first Magic 2010 nonfoil row, which keeps its place.
+      await addCardWith(user, "A", "Lightning Bolt", /Magic 2010/, "nonfoil");
+      const quantities = within(side("A")).getAllByLabelText("Quantity for Lightning Bolt (Side A)");
+      expect(quantities.map((quantity) => quantity.textContent)).toEqual(["2", "1", "1"]);
+      expect(sideTotalText("A")).toBe("$43.00");
     });
 
     it("updates totals and difference live on foil, quantity, and remove", async () => {
@@ -289,7 +339,7 @@ describe("Frontend - Trade", () => {
         within(entry).getByLabelText("No foil price for Lightning Bolt")
       ).toBeInTheDocument();
       const contribution = within(entry).getByTestId("entry-contribution");
-      expect(contribution).toHaveClass("text-amber-300");
+      expect(contribution).toHaveClass("missing");
       expect(contribution).toHaveTextContent("$0.00");
       expect(sideTotalText("A")).toBe("$0.00");
     });

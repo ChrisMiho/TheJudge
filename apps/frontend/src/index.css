@@ -1,78 +1,289 @@
-@tailwind base;
 @tailwind components;
+
 @tailwind utilities;
+
+/* REQ-207: one typeface, Inter, self-hosted (a single variable latin file, 48 KB) with the
+   system stack as fallback in the token layer's `--font-body`; no request to a font CDN. */
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/inter-latin.woff2") format("woff2");
+}
 
 /* Automatic mobile-first presentation. These semantic hooks share one fluid
    spacing vocabulary; viewport changes never select a different component tree. */
+
+/* The mockup sets no line height (shell.css), so text takes the browser's `normal`;
+   Tailwind's preflight would otherwise set 1.5 on the root. */
+
+html {
+  line-height: normal;
+}
+
 .page-shell {
   position: relative;
-  min-height: 100vh;
-  /* Look-matching pass (slice L): a faint wash tint, not a flat single colour —
-     `shell.css:31-37`'s `background: var(--surface-wash)` ported onto this
-     suite's own per-profile tokens (`--ground-wash` already carries the
-     colour's hue; `--surface-wash` mixes a small slice of it into the ground
-     rather than the vivid full-strength tone `--ground-wash` is elsewhere,
-     e.g. the AmbientScene haze). The AmbientScene layer (REQ-207) plays
-     behind every page's own content, now as a true fixed viewport layer
-     (see `.ambient-scene` below) rather than scoped to this shell's box. */
-  background: color-mix(in srgb, rgb(var(--ground-wash)) 12%, rgb(var(--ground)));
-  padding-block: var(--layout-page-padding-block);
-  padding-inline: var(--layout-page-padding-inline);
-  color: #f4f4f5;
-}
-
-/* Mock-mode banner — persistent, non-dismissible bar shown only when the app is
-   built/run with the mock AI provider. Static, high-contrast, no motion.
-   Look-matching pass (slice L): restyled per `shell.css:325-332` and moved into
-   normal flow directly under `.app-header` (StagedStepHeader renders it) —
-   no longer `position: fixed` with a measured-height shell offset (REQ-123's
-   prior measured-clearance custom property and data attribute retire with
-   it: a static banner needs no clearance calculation). The full-bleed breakout
-   (`width: 100vw` / negative `margin-inline`) matches the header's own, so the
-   strip spans the viewport edge to edge exactly as the mockup's document-root
-   sibling does, even though it is technically nested inside the width-capped
-   `.page-content` column. */
-.mock-mode-banner {
-  position: static;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  padding: 0.35rem 0.6rem;
-  background-color: rgb(var(--accent) / 0.2);
-  color: #f4f4f5;
-  border-bottom: 1px solid rgb(var(--accent-soft) / 0.35);
-  text-align: center;
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-}
-
-/* Look-matching pass (slice L): replaces `.page-card` — no more bordered,
-   backgrounded, rounded card frame (shell.css:814-819's `.page-content`
-   ported). The width cap, centring, and vertical rhythm between the header
-   and the rest of a destination's content are unchanged from `.page-card`
-   (`--layout-surface-gap` gap, `--layout-panel-padding` vertical padding) —
-   this slice is a look pass, not a spacing pass, and the fluid cap rationale
-   below is `.page-card`'s own (DEC-145, REQ-124), carried over unchanged. */
-.page-content {
-  position: relative;
-  margin-left: auto;
-  margin-right: auto;
   display: flex;
+  flex-direction: column;
+  min-height: 100dvh;
+  background: var(--surface-wash);
+  color: var(--text-primary);
+}
+
+/* The header slot (`StagedStepHeader` portals the banner header and the
+   mock-mode strip into it): no box of its own, so the sticky header pins to
+   the shell and sits at the top edge (REQ-207). */
+
+.page-shell-header {
+  display: contents;
+}
+
+/* The open Menu tray's host: no box of its own; it carries `data-tray-open`, which
+   `shell.css` keys the tray's slide and its backdrop's fade on. */
+
+.menu-tray-host {
+  display: contents;
+}
+
+/* DEC-150: while the tray is open the ☰ is neither visible nor hit-testable (the component
+   marks it aria-hidden for exactly that span). */
+
+.menu-toggle[aria-hidden="true"] {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+/* REQ-122: the open tray is opaque over the page: a solid ground sits under the mockup's
+   glass gradients, so no page pixel shows through its painted bounds. */
+
+.menu-tray {
+  background-color: var(--surface-ground);
+}
+
+/* REQ-142 wins over the mockup's plain close glyph: the overlay ✕ takes the active
+   colour's light. */
+
+.drawer-panel .overlay-close {
+  color: var(--accent-soft);
+}
+
+/* Sheets still composed as head + body + foot by their screen's slice (printing picker,
+   zone card menu, enrichment dialogs) until that slice ports them to the mockup's own
+   inner markup. */
+
+.sheet-legacy-head {
+  display: flex;
+  align-items: center;
+  padding: 1rem 3.2rem 0.5rem 1rem;
+}
+
+.sheet-legacy-body {
+  padding: 0.5rem 1rem 1rem;
+}
+
+.sheet-legacy-foot {
+  padding: 0.6rem 1rem 1rem;
+  border-top: 1px solid var(--surface-edge);
+}
+
+/* Question History, below 600px: each row keeps its own Delete (REQ-213/DEC-143), a small
+   text control tucked into the row's lower right so the rows keep the mockup's height. */
+
+/* REQ-205: the feedback type pills paint at least 44px (the mockup's are 40px); the
+   negative block margin keeps the sheet's layout exactly the mockup's. */
+
+.fb-pill {
+  min-height: 44px;
+  margin-block: -2px;
+}
+
+/* The card tile's ⓘ details control and its name-only fallback (CardPresentation), on the
+   shared tokens. The control is a 44px glass disc in the tile's top-right corner. */
+
+.card-presentation-info {
+  position: absolute;
+  top: 0;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface-ground) 85%, transparent);
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.card-presentation-info:hover {
+  background: var(--surface-panel);
+}
+
+.card-presentation-fallback {
+  color: var(--text-primary);
+}
+
+.card-presentation-fallback-name {
+  font-weight: 600;
+}
+
+/* Notices and errors on Ask a Question, on the status tokens. */
+.aq-note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--status-warn);
+}
+
+.aq-error {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid color-mix(in srgb, var(--status-error) 45%, transparent);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--status-error) 10%, var(--surface-panel));
+  color: var(--status-error);
+  font-size: 0.86rem;
+}
+
+.aq-error p {
+  margin: 0;
+}
+
+.aq-error .btn {
+  justify-self: start;
+  color: var(--status-error);
+  border-color: color-mix(in srgb, var(--status-error) 50%, transparent);
+}
+
+.aq-error .btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.q-error {
+  flex: 1 0 100%;
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--status-error);
+}
+
+.thumb-fallback {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
-  max-width: min(48rem, 92vw);
+  height: 100%;
+  background: var(--surface-panel);
+  color: var(--text-muted);
+  font-size: 6px;
+  font-weight: 600;
+}
+
+/* A conversation reopened from Question History says so (quick-question.html's own rule). */
+.from-history {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.3rem 0.5rem;
+  margin: -0.3rem 0 0;
+  font-size: 0.76rem;
+  color: var(--text-muted);
+}
+
+.from-history .glyph {
+  color: var(--accent-soft);
+}
+
+/* The wait bubble (AskAiWaitingPanel) on the shared panel tokens. */
+.wait-inscription-bubble {
+  display: grid;
+  gap: 0.5rem;
+  padding: 1rem;
+  border: 1px solid var(--surface-edge);
+  border-radius: 1rem;
+  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
+}
+
+.wait-inscription-line {
+  font-size: 0.875rem;
+  color: var(--text-primary);
+}
+
+.wait-inscription-clock {
+  margin: 0;
+  font-family: ui-monospace, monospace;
+  font-size: 1.5rem;
+  color: var(--text-primary);
+}
+
+/* Ask a Question's pre-submit column (quick-question.html's own rules): one grid, the
+   composer's search folding the stage into the strip on a phone (flow.css). */
+.qq {
+  display: grid;
+  gap: 0.8rem;
+}
+
+/* REQ-205 wins over the mockup's 40px: the question box's controls paint at least 44px — the
+   In-depth chip, and the mic|send pill with its two halves and the budget ring round it. */
+.q-box .deep {
+  height: 44px;
+}
+
+.send-wrap {
+  width: 88px;
+  height: 44px;
+}
+
+.send-pair {
+  height: 44px;
+}
+
+.send-pair button {
+  width: 44px;
+  height: 44px;
+}
+
+/* A question's own line breaks are kept in its bubble. */
+.msg.you {
+  white-space: pre-wrap;
+}
+
+/* The stage's `.ring` (flow.css) shares its name with Tailwind's `ring` utility, which would
+   draw a 3px blue box-shadow round it; the stage's ring has no shadow of its own. */
+.ring {
+  box-shadow: none;
+}
+
+.history-item {
+  position: relative;
+}
+
+.history-item-delete {
+  position: absolute;
+  right: 0.6rem;
+  bottom: 0.35rem;
+  min-height: 44px;
+  padding: 0 0.4rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  cursor: pointer;
+}
+
+/* The column's own layout (shell.css gives it width, centring and padding):
+   a flex column with the suite's vertical rhythm between a screen's regions. */
+
+.page-content {
+  display: flex;
   flex-direction: column;
   gap: var(--layout-surface-gap);
-  padding: var(--layout-panel-padding) 0;
-  /* Look-matching pass (slice L): a floor, not a fixed height — a short
-     destination (e.g. Ask a Question's empty state) still gives
-     `.portal-shell-bounds` (anchored to this box, REQ-113) a full-viewport
-     clip region for the open Menu tray, instead of clipping it part-way down
-     the screen at this content's own short height (LOOK-GAPS.md: "the Menu
-     opens inside the old card and is clipped by it … ends at y≈360" — the
-     old card had the same short-content problem; removing it alone does not
-     fix this). Taller content still grows past this floor exactly as before. */
-  min-height: 100vh;
 }
 
 /* Look-matching pass (slice O), requirement 1: Trade Balancer fits the
@@ -84,6 +295,7 @@
    header, banner, and this screen's own `flow-head`/`.tb-scale` take their
    natural height as flex children that don't grow, and `.tb` (below) takes
    the remainder via `flex: 1`. Only `.tb-entries` (further below) scrolls. */
+
 .page-shell-fit {
   height: 100dvh;
   overflow: hidden;
@@ -102,8 +314,13 @@
    `<main>`'s own edges, which are the viewport's edges (no side padding wide
    enough to matter at these widths), so the page still never scrolls — the
    clip just moved one box up, where it costs nothing to look at. */
+
 .page-content-wide-fit {
+  width: min(56rem, 94vw);
   max-width: min(56rem, 94vw);
+  padding: 0.6rem 0 0;
+  display: flex;
+  flex-direction: column;
   height: 100%;
   min-height: 0;
 }
@@ -113,129 +330,36 @@
    height-fit behaviour `.page-content-wide-fit` uses above). Review 1 fix
    (finding 1): no `overflow: hidden` here either, for the same reason as
    `.page-content-wide-fit` above — `.page-shell-fit` keeps the no-scroll fit. */
+
 .page-content-narrow-fit {
   height: 100%;
   min-height: 0;
 }
 
-/* Look-matching pass (slice L): the sticky, full-bleed banner header
-   (`shell.css:63-81`'s `.app-header`), ported onto `StagedStepHeader`'s
-   existing `1fr auto 1fr` grid (REQ-139's PortalSlot column, the centred
-   brand, the optional `rightSlot`) — same shape, so no structural change to
-   that grid, only to its own styling and placement. `width: 100vw` plus the
-   negative `margin-inline` breaks the header out of `.page-content`'s
-   width-capped, centred column so it spans the full viewport edge to edge
-   (matching the mockup's header, which is a document-root sibling of the
-   content column) while staying a normal in-flow child — `position: sticky`
-   then pins it to the viewport top as the rest of the page scrolls under it,
-   exactly as a true document-root sticky header would. */
-.app-header {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  align-items: center;
-  gap: 0.5rem;
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-  min-height: 64px;
-  padding: 0.4rem 0.6rem;
-  background:
-    radial-gradient(40% 140% at 50% 120%, rgb(var(--accent) / 0.42) 0%, transparent 70%),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, rgb(var(--accent-strong)) 28%, rgb(var(--ground))) 0%,
-      color-mix(in srgb, rgb(var(--panel)) 94%, transparent) 100%
-    );
-  border-bottom: 1px solid rgb(var(--accent-soft) / 0.38);
-  box-shadow: 0 10px 30px -18px rgb(var(--accent) / 0.7);
-  backdrop-filter: blur(8px);
-  overflow: hidden;
-}
-
-@media (min-width: 768px) {
-  .app-header {
+@media (min-width: 768px) {.app-header {
     min-height: 68px;
   }
-}
-
-/* Brand mark, restyled per `shell.css:216-259`: a breathing orb showing the
-   active colour's motif, a gradient wordmark, and an uppercase tagline below
-   it — replacing the plain gradient-text-only mark. `BrandMark` reads the
-   motif itself via `useActiveThemeMotif` (REQ-201) so every mount (header,
-   Menu tray brand row, feedback success state) shows the current colour with
-   no prop threading. */
-.brand-mark {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.6rem;
-  line-height: 1.05;
-}
-
-.brand-mark .orb {
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  color: #f4f4f5;
-  /* No motif image asset exists in this codebase (see BrandMark.tsx's own
-     comment) — a radial accent wash stands in for the mockup's per-colour
-     `motifs/<colour>.svg`, with `MotifGlyph` (the Theme band's own simple
-     shape-per-profile SVG) centred on top via `currentColor`. */
-  background:
-    radial-gradient(circle at 35% 30%, rgb(var(--accent-soft) / 0.9), rgb(var(--accent)) 70%), rgb(var(--ground));
-  box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.55),
-    0 0 18px rgb(var(--accent) / 0.75);
-  animation: orb-breathe 4.5s ease-in-out infinite;
 }
 
 @keyframes orb-breathe {
   0%,
   100% {
     box-shadow:
-      0 0 0 1px rgb(var(--accent-soft) / 0.55),
-      0 0 14px rgb(var(--accent) / 0.65);
+      0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent),
+      0 0 14px color-mix(in srgb, var(--accent) 65%, transparent);
   }
   50% {
     box-shadow:
-      0 0 0 1px rgb(var(--accent-soft) / 0.85),
-      0 0 26px rgb(var(--accent) / 0.95);
+      0 0 0 1px color-mix(in srgb, var(--accent-soft) 85%, transparent),
+      0 0 26px color-mix(in srgb, var(--accent) 95%, transparent);
   }
-}
-
-.brand-mark .brand-text {
-  display: grid;
-  text-align: left;
-}
-
-.brand-mark .wordmark {
-  font-weight: 800;
-  font-size: 1.2rem;
-  letter-spacing: -0.01em;
-  background: linear-gradient(90deg, rgb(var(--accent-soft)), color-mix(in srgb, rgb(var(--accent-soft)) 45%, #e2e8f0));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.brand-mark .tagline {
-  font-size: 0.6rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #a1a1aa;
-  margin-top: 0.15rem;
 }
 
 /* Quiet route-chunk placeholder (DEC-157 / NFR-014). The normal PageShell and
    StagedStepHeader stay present while the destination module arrives; this
    token-sized content region prevents the card from collapsing without
    inventing viewport fill or motion for a sub-second code fetch. */
+
 .destination-load-fallback {
   display: grid;
   min-height: calc(
@@ -250,6 +374,12 @@
    rendered layout stays pixel-identical to before this wrapper existed. It
    exists purely so full-bleed destinations get the same `ShellBounds`
    positioning/clipping anchor `.page-content` gets (REQ-113). */
+
+.page-shell-bleed-content {
+  padding-block: var(--layout-page-padding-block);
+  padding-inline: var(--layout-page-padding-inline);
+}
+
 .page-shell-bleed {
   display: block;
   width: 100%;
@@ -259,32 +389,6 @@
      tall, so this rarely binds, but it costs nothing to keep both variants
      consistent. */
   min-height: 100vh;
-}
-
-/* Registered by `ShellBounds` (one per `PageShell`) as the Menu drawer's
-   portal target and clip box: sized to the shell's real content box via
-   `inset: 0` (out of flow, so it never inflates that box's height), clipped
-   at the shell's actual edges, and following whatever radius the shell
-   itself has (`.page-content`'s unset/0 since slice L retired the bordered
-   card frame, or full-bleed's unset/0) with no per-variant hardcoding — this
-   is what produces the matching bottom-left
-   radius for free. `pointer-events: none` keeps the box itself from
-   intercepting clicks on real shell content around/behind it; the drawer
-   portaled inside re-enables `pointer-events: auto` for itself. */
-.portal-shell-bounds {
-  position: absolute;
-  inset: 0;
-  overflow: hidden;
-  border-radius: inherit;
-  pointer-events: none;
-  /* Look-matching pass (slice L, review 1 fix — finding 2): `z-index: auto` (the
-     prior value) let `.app-header`'s own `z-index: 20` (sticky, a stacking
-     context) paint above whatever the Menu drawer portals in here, because this
-     box's children are compared in `.app-header`'s own ancestor stacking context,
-     not a new one of this box's own. One above the header's 20 is enough to put
-     the portaled drawer and its backdrop back on top, matching the mockup (the
-     Ask a Question row was unreachable and History was clipped in half). */
-  z-index: 21;
 }
 
 /* Look-matching pass (slice L): no corner to flush against any more — the
@@ -298,389 +402,27 @@
    button outside the header's own box. Kept as an empty, documented hook
    (rather than deleted outright) since `FeaturePortalMenu`/its tests still
    reference the class name for the portal container itself. */
+
+.portal-slot,
+.portal-slot-tab {
+  display: flex;
+}
+
 .portal-slot-tab {
   margin: 0;
 }
 
-/* Feature-portal corner rail (DEC-122, bounded by DEC-137): the trigger reads as
-   the radial-gradient glow area — no border, no separate button/pill layered on
-   top — anchored at the rail's own top-left corner and fading to fully
-   transparent well inside the painted extent so it never reads as a clipped,
-   pasted-on box (the earlier hard-edged-rectangle attempt this replaced).
-
-   DEC-137 splits *painted* extent from *interactive* extent. The gradient
-   reaches full transparency at 78% of its own box, so the element that paints it
-   was mostly invisible-but-tappable chrome sitting at z-index 3 above real
-   destination content: on Life Tracker it shadowed 75x111px (8,325px^2) of the
-   "Decrease life for Player 1" control, turning a life tap into a Menu open
-   mid-game. The gradient therefore moves to a `pointer-events: none`
-   ::before that keeps the exact painted extent it always had, while the button
-   itself shrinks to the icon band that actually accepts taps.
-
-   Height — not width — is the dimension that fixes this: destination content on
-   Life Tracker begins just below the icon band, so capping height drops the
-   overlap to zero while width is free. The 5.5rem width is deliberately KEPT:
-   the icon is centred in it, and narrowing the box to the icon's own width would
-   re-centre the icon 16px to the left, which DEC-137 explicitly does not accept.
-   See REQ-114 — compliance here is hit-tested, not eyeballed.
-
-   Position (REQ-139): the rail is `relative`, not `absolute`, so its
-   interactive band is a real in-flow box inside the header's left grid column.
-   Absolutely positioning it took the band out of flow, which is why the answered
-   workspace had to reserve matching clearance above "View context" with a one-off
-   `.adaptive-context-trigger` margin. In flow, the header row itself accounts for the
-   band and the shared `--layout-surface-gap` tokens own everything below it.
-
-   Look-matching pass (slice L): the box itself is now the painted extent too
-   — `shell.css:287-301`'s `.app-header .menu-toggle` sizing (50px, 54px at
-   768px+) — replacing DEC-137's split "5.5rem x 3.5rem interactive band
-   inside a 5.5rem x 10.5rem decorative glow" shape. DEC-137 existed to keep
-   the glow's corner-flush appearance against the old `.page-card` border
-   without extending the *tappable* area over destination content below it;
-   `.app-header` is now a fixed-height row with its own background (above),
-   so there is no card corner to flush against and no destination content
-   for an oversized glow to sit over. `position: relative` / `z-index: 3`
-   stay (still a header control above the ambient scene), though neither
-   anchors a decorative ::before layer any more. */
-.portal-menu-rail {
-  position: relative;
-  z-index: 3;
-  width: 50px;
-  height: 50px;
-  min-width: 50px;
-  min-height: 50px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.4rem;
-  color: rgb(244 244 245);
-  border-radius: 0.6rem;
-  transition: background-color var(--motion-fast) var(--motion-ease-out);
-}
-
-@media (min-width: 768px) {
-  .portal-menu-rail {
-    width: 54px;
-    height: 54px;
-    min-width: 54px;
-    min-height: 54px;
-    font-size: 1.5rem;
-  }
-}
-
-/* Shared sizing for both rail icons (DEC-126) — matching inline stroke-SVGs
-   (Menu's three-line hamburger, History's clock-in-circle) instead of the
-   previous mixed text-glyph/scaleX-stretch approach. */
-.portal-menu-rail-icon {
-  display: block;
-  width: 1.35rem;
-  height: 1.35rem;
-}
-
-/* Hover/expanded now darkens the button's own background-color directly —
-   there is no decorative ::before layer left to carry a gradient (see the
-   rail's own comment above). */
-.portal-menu-rail:hover,
-.portal-menu-rail:has([aria-expanded="true"]),
-.portal-menu-rail[aria-expanded="true"] {
-  background-color: rgb(var(--accent) / 0.14);
-  color: rgb(244 244 245);
-}
-
-/* Two-zone variant (DEC-126, rearranged by DEC-137): once a destination has a
-   history trigger, the rail's ambient-glow area hosts two equal-weight sibling
-   zones — Menu leading, History trailing — instead of Menu alone.
-
-   DEC-126 stacked these zones and used a fluid clamp() height to hold NFR-001's
-   44px-per-zone floor. That cannot work: only ~70px of vertical space exists
-   between the rail's top and the step-name eyebrow below it, while two stacked
-   44px zones need 88px. The clamp resolved to ~76px at 430px wide, so the zones
-   overflowed their own rail by 12px and that overflow landed on the eyebrow —
-   the floor was being met only by spilling onto destination content.
-
-   Side-by-side resolves both constraints at once: two 2.75rem zones fit the
-   rail's existing 5.5rem width exactly, the band is 2.75rem tall, and it clears
-   the eyebrow by ~26px. The clamp() is retired because the constraint that
-   motivated it is gone. */
-.portal-menu-rail-split {
-  height: 2.75rem;
-  padding: 0;
-  flex-direction: row;
-  align-items: stretch;
-}
-
-/* The split rail keeps its own original painted extent, unchanged — only the
-   arrangement of the zones inside it moves. */
-.portal-menu-rail-split::before {
-  height: clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem);
-}
-
-.portal-menu-rail-zone {
-  flex: 1;
-  min-width: 2.75rem;
-  min-height: 2.75rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: none;
-  background: none;
-  color: inherit;
-  font: inherit;
-  cursor: pointer;
-}
-
-/* Separator follows the arrangement: a vertical rule between side-by-side zones
-   where DEC-126's stacked pair used a horizontal one. */
-.portal-menu-rail-zone + .portal-menu-rail-zone {
-  border-left: 1px solid rgb(var(--accent-soft) / 0.35);
-}
-
-/* DEC-150/REQ-127: while the Menu tray is open, the corner-rail Menu trigger (and, on
-   History-bearing destinations, the History zone) must not paint through or remain
-   hit-testable above the open tray, and must not be reachable by keyboard. The rail stays
-   mounted (same DOM node) rather than being removed, so other chrome that restores focus to
-   it by reference across the open/close cycle keeps working; visibility: hidden removes it
-   from paint and from elementFromPoint hit-testing while pointer-events: none is
-   belt-and-suspenders. */
-.portal-menu-rail-inert {
-  visibility: hidden;
-  pointer-events: none;
-}
-
-/* Full-height drawer sliding in from the left edge (DEC-122, amended by
-   DEC-133): overlays from the same top-left corner as the rail (so it reads
-   as originating from the rail, not dropping from a header seam),
-   transform-only motion (see .portal-menu-drawer-motion). Its own left
-   column of content clears the rail's icon zone via
-   .portal-menu-drawer-inner's left padding.
-   `position: sticky; top: 0` (not `absolute`) so that, when portaled into
-   the resolved `.portal-shell-bounds` node (REQ-113), the drawer tracks the
-   on-screen top of the outer shell while a tall/scrollable destination
-   scrolls, instead of a fixed point in the document. `height: 100dvh` is a
-   viewport-scale cap, not a fixed rem guess: on a shell taller than the
-   viewport the drawer fills the visible portion; on a shell shorter than
-   the viewport, `.portal-shell-bounds`'s `overflow: hidden` clips the excess
-   at the shell's real (shorter) bottom edge — the same clip that produces
-   the matching bottom-left radius there. `pointer-events: auto` re-enables
-   interaction, since the clip box itself is `pointer-events: none`.
-
-   Look-matching pass (slice L): width and surface restyled per
-   `shell.css:347-366`'s `.menu-tray` (`min(20rem, 86vw)`, the two-stop
-   gradient background, the stronger drop shadow) — `position: sticky`,
-   `left/top: 0`, `height: 100dvh`, `overflow-y: auto` and the portal/clip
-   mechanics above (REQ-113) are unchanged; only the painted surface moves.
-   `isolation: isolate` keeps `.portal-menu-drawer-flair`'s own negative
-   z-index glow contained to this box rather than escaping behind the shell
-   it's portaled into. */
-.portal-menu-drawer {
-  position: sticky;
-  left: 0;
-  top: 0;
-  z-index: 2;
-  width: min(20rem, 86vw);
-  height: 100dvh;
-  overflow-y: auto;
-  pointer-events: auto;
-  isolation: isolate;
-  border-top-left-radius: 1.5rem;
-  background:
-    radial-gradient(90% 30% at 0% 100%, rgb(var(--accent) / 0.28) 0%, transparent 70%),
-    linear-gradient(
-      180deg,
-      color-mix(in srgb, rgb(var(--panel)) 96%, transparent),
-      color-mix(in srgb, rgb(var(--panel)) 92%, rgb(var(--ground)))
-    );
-  border-right: 1px solid rgb(var(--accent-soft) / 0.35);
-  box-shadow: 24px 0 60px -30px rgb(var(--accent) / 0.6);
-}
-
-/* Look-matching pass (slice L): the dimming/blur layer behind the open tray
-   (`shell.css:336-345`'s `.menu-tray-backdrop`) — a new, purely decorative
-   sibling (`aria-hidden`, `pointer-events: none`) alongside the drawer.
-   Dismissing the Menu by clicking outside it already works through the
-   existing document-level outside-click handler (`useOutsideDismiss` in
-   `FeaturePortalMenu.tsx`), so this layer only needs to paint, never to
-   receive the click. */
-.portal-menu-drawer-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  background: rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(2px);
-  pointer-events: none;
-}
-
-/* Look-matching pass (slice L): the foot-of-tray glow (`shell.css:374-388`'s
-   `.tray-flair::after`) — the static-plus-one-keyframe CSS pool of the
-   colour's light the Theme block sits above, reproduced per
-   `DESIGN-BRIEF.md`'s non-goal A1: the mockup's canvas-drawn falling-leaves/
-   runes/fog shapes (`ambience.js` `mountFlair`) are script/canvas animation
-   and are not ported — only the CSS glow is. `inset: 0` + negative z-index
-   stay inside `.portal-menu-drawer`'s own `isolation: isolate` stacking
-   context (above), so the glow never escapes behind the shell the drawer is
-   portaled into. */
-.portal-menu-drawer-flair {
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  background: radial-gradient(90% 28% at 30% 104%, rgb(var(--accent) / 0.4) 0%, transparent 70%);
-  animation: portal-menu-drawer-flair-twinkle 6s ease-in-out infinite alternate;
-}
-
-@keyframes portal-menu-drawer-flair-twinkle {
-  from {
-    opacity: 0.55;
-  }
-  to {
-    opacity: 0.9;
-  }
-}
-
-/* Look-matching pass (slice L): the divider before the Menu's one action
-   entry (Send feedback) — `shell.css:540-543`'s `.tray-divider`. */
-.portal-menu-drawer-divider {
-  height: 1px;
-  margin: 0.25rem 1rem;
-  background: linear-gradient(90deg, rgb(var(--accent-soft) / 0.38), transparent);
-}
-
-/* REQ-113/REQ-207: at 768px+ the tray stops being a full-height, shell-docked
-   panel and becomes a floating card inset from the viewport edges, rounded,
-   sized to its own content rather than the shell's full height. */
-@media (min-width: 768px) {
-  .portal-menu-drawer {
-    left: 1rem;
-    top: 1rem;
-    margin-bottom: 1rem;
-    height: auto;
-    max-height: calc(100dvh - 2rem);
-    border-radius: 1.5rem;
-    border: 1px solid rgb(var(--accent-soft) / 0.35);
-    border-right: 1px solid rgb(var(--accent-soft) / 0.35);
-  }
-}
-
-/* `min-height: 100%` (not a fixed height) stretches this flex column to the
-   drawer's full 100dvh on short content — giving the brand mark's `mt-auto`
-   (below) leftover space to pin against — while still letting it grow past
-   100% when entries + Theme content is taller, so the drawer's own
-   `overflow-y: auto` scrolls that excess exactly as before. */
-.portal-menu-drawer-inner {
-  min-height: 100%;
-  /* No horizontal padding: entry rows and the Theme block carry their own insets so
-     their separator rules stay full-bleed and meet the drawer's left wall. */
-  padding: 0.75rem 0 0.75rem 0;
-}
-
-/* One menu entry: the left inset that clears the corner rail's icon zone lives on the
-   row itself rather than on the drawer's padding box, so the row's bottom border spans
-   the drawer edge to edge. The inset tracks the rail's own painted width at each
-   breakpoint (DEC-137 caps the split rail at 5.5rem x 3.5rem): a flat 3.5rem cleared the
-   narrow rail but left the first row's label starting underneath the wider desktop band,
-   which read as the Menu trigger sitting on top of the first destination (DEC-147). */
-.portal-menu-drawer-row {
-  position: relative;
-  padding: 0.5rem 0.75rem 0.5rem 3.5rem;
-}
-
-/* Look-matching pass (slice L): fixes a real, pre-existing bug LOOK-GAPS.md
-   caught — this class was referenced on the Question History row's icon
-   (FeaturePortalMenu.tsx) but never defined, so the inline SVG rendered at
-   its unconstrained natural size (~100px tall in the capture) instead of a
-   glyph. `shell.css:477-550`'s 28px glyph column fixes the size and doubles
-   as this slice's intended look-match. */
-.portal-menu-drawer-row-icon {
-  flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
-  color: rgb(var(--accent-soft));
-}
-
-@media (min-width: 640px) {
-  .portal-menu-drawer-row {
-    padding-left: 5.5rem;
-  }
-}
-
-/* Look-matching pass (slice L): the current row's left accent bar
-   (`shell.css:517-527`'s `.tray-nav-list button[aria-current="page"]::before`)
-   — the existing `bg-zinc-800` active fill (FeaturePortalMenu.tsx) stays;
-   this adds the glowing bar the mockup draws beside it. */
-.portal-menu-drawer-row[aria-current="true"]::before {
-  content: "";
-  position: absolute;
-  left: 0.4rem;
-  top: 20%;
-  bottom: 20%;
-  width: 3px;
-  border-radius: 3px;
-  background: rgb(var(--accent-soft));
-  box-shadow: 0 0 12px rgb(var(--accent-soft) / 0.8);
-}
-
-/* Theme block: sits well below the rail's icon zone, so it takes a normal inset (a
-   3.5rem one would squeeze the 5-swatch grid). The last entry row's own bottom border
-   is the rule above it, so this block adds no second line of its own. */
-.portal-menu-drawer-section {
-  padding: 0.75rem 0.75rem 0 0.75rem;
-}
-
-/* Quiet decorative brand mark (REQ-113 item 4, DEC-133): non-interactive
-   (`pointer-events: none` — belt-and-suspenders alongside the `aria-hidden`
-   marker element and BrandMark's no-onClick plain-text rendering) and
-   visually muted so it reads as ambient chrome, not another action. No
-   height-detection logic decides whether this renders — a short shell
-   clips it via `.portal-shell-bounds`'s `overflow: hidden` (slice A), the
-   same mechanism that clips the rest of the drawer's excess height. */
-.portal-menu-drawer-brand {
-  pointer-events: none;
-  opacity: 0.35;
-  text-align: center;
-}
-
-@keyframes portal-menu-drawer-enter {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-.portal-menu-drawer-motion {
-  animation: portal-menu-drawer-enter var(--motion-fast) var(--motion-ease-out) both;
-}
-
 /* Inner panel — standard bordered content block; absorbs space-y */
+
 .panel-inner {
   border-radius: 1rem;
-  border: 1px solid rgb(63 63 70 / 0.7);
-  background-color: rgb(24 24 27 / 0.55);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
+  background-color: color-mix(in srgb, var(--surface-panel) 55%, transparent);
   padding: var(--layout-content-padding);
-}
-
-/* Look-matching pass (slice L): the Theme band's pill container
-   (`shell.css:571-592`'s `.theme-orbs`) — the existing scroll-arrow/snap
-   mechanics (ThemeSection.tsx) are unchanged; this wraps the same track in
-   the mockup's pill chrome. */
-.theme-band-track {
-  padding: 3px;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.6);
-  box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 0.04),
-    0 2px 10px -6px rgb(0 0 0 / 0.8);
 }
 
 .panel-inner > * + * {
   margin-top: var(--layout-compact-gap);
-}
-
-.staged-step-brand {
-  font-size: clamp(1.5rem, 3vw + 0.75rem, 1.875rem);
-  line-height: 1.2;
 }
 
 .step-eyebrow {
@@ -688,120 +430,15 @@
   line-height: 1.5rem;
 }
 
-/* REQ-209: the four-station progress rail (Game · Zones · Cards · Context). A thin
-   track behind the stations, filled up to the current one; each station is its own
-   button so the rail is navigation, not just a progress readout. */
-.stations-rail {
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.25rem;
-  padding-top: 0.25rem;
-}
-
-.stations-rail::before {
-  content: "";
-  position: absolute;
-  left: 12.5%;
-  right: 12.5%;
-  top: 0.9rem;
-  height: 2px;
-  background: rgb(63 63 70 / 0.7);
-  z-index: 0;
-}
-
-.stations-rail-fill {
-  position: absolute;
-  left: 12.5%;
-  top: 0.9rem;
-  height: 2px;
-  max-width: 75%;
-  background: linear-gradient(90deg, rgb(var(--accent-soft)), rgb(var(--accent-strong)));
-  z-index: 0;
-  transition: width var(--motion-slow) var(--motion-ease-out);
-}
-
-.stations-rail-station {
-  position: relative;
-  z-index: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.25rem;
-  background: transparent;
-  border: none;
-  padding: 0.25rem 0.1rem;
-  /* Look-matching pass (slice N): sentence case at 0.72rem, not the old
-     uppercase/tracked label (`in-depth-question.html:27-29`) — only the
-     current station's label takes weight 600/`--text-primary`, below. */
-  font-size: 0.72rem;
-  font-weight: 400;
-  color: rgb(161 161 170);
-}
-
-.stations-rail-station:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-
-.stations-rail-node {
-  display: flex;
-  height: 26px;
-  width: 26px;
-  align-items: center;
-  justify-content: center;
-  border-radius: 9999px;
-  border: 2px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground));
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: rgb(161 161 170);
-}
-
-.stations-rail-station[data-done="true"] .stations-rail-node {
-  border-color: rgb(var(--accent));
-  background: rgb(var(--accent));
-  color: rgb(var(--accent-contrast));
-}
-
-.stations-rail-station[aria-current="step"] {
-  color: rgb(244 244 245);
-  font-weight: 600;
-}
-
-.stations-rail-station[aria-current="step"] .stations-rail-node {
-  border-color: rgb(var(--accent-soft));
-  color: rgb(var(--accent-soft));
-  box-shadow:
-    0 0 0 4px rgb(var(--accent) / 0.3),
-    0 0 18px rgb(var(--accent-soft) / 0.6);
-  animation: node-pulse 2.6s ease-in-out infinite;
-}
-
-@keyframes node-pulse {
-  0%,
-  100% {
-    box-shadow:
-      0 0 0 4px rgb(var(--accent) / 0.3),
-      0 0 14px rgb(var(--accent-soft) / 0.5);
-  }
-  50% {
-    box-shadow:
-      0 0 0 6px rgb(var(--accent) / 0.22),
-      0 0 26px rgb(var(--accent-soft) / 0.8);
-  }
-}
-
 /* Horizontal left-to-right strip in add order, region-scrolling on its own x-axis rather
    than the page (DEC-151 part 3, REQ-130) — supersedes the prior 2-column vertical grid. */
+
 .zone-card-grid {
   --zone-card-grid-gap: var(--layout-compact-gap);
   gap: var(--zone-card-grid-gap);
 }
 
 .zone-card-tile {
-  gap: var(--layout-compact-gap);
-  padding: var(--layout-compact-gap);
   /* REQ-005/REQ-209: the shelf reorders by pointer events; a plain swipe still scrolls
      the shelf (`touch-pan-x` on the tile) but a held card must not also start the
      browser's own image drag ghost under the pointer. */
@@ -816,6 +453,7 @@
 }
 
 /* Full-width presentation plus enrichment controls makes row height responsive. */
+
 .scroll-cap-4-enrichment {
   --enrichment-card-row-gap: var(--layout-compact-gap);
   max-height: 70dvh;
@@ -835,6 +473,7 @@
    full-column image forces page scroll on the hosting step, which REQ-129 makes the
    binding constraint on all of DEC-160's growth. Recorded on the Quick Question pre-submit,
    View Context, and In-Depth zone collection rows of screen-layout.md. */
+
 .card-shell-column {
   max-width: min(100%, 20rem);
 }
@@ -847,28 +486,25 @@
    than a component fork or a reinstated shared `max-h-32`. Recorded on the Quick Question
    pre-submit, In-Depth Enrichment, View Context, and In-Depth zone collection rows of
    screen-layout.md. */
+
 .card-shell-column img {
   width: auto;
   max-height: 25dvh;
   margin-inline: auto;
 }
 
-@media (min-width: 768px) {
-  .card-shell-column {
+@media (min-width: 768px) {.card-shell-column {
     max-width: 24rem;
   }
 
-  .card-shell-column img {
+.card-shell-column img {
     max-height: 42dvh;
   }
 }
 
+/* the Context sheet's grid is the plate's own (`.wizard-plate`); the row only carries the hooks */
 .enrichment-card-row {
-  padding: var(--layout-content-padding);
-}
-
-.enrichment-card-row > * + * {
-  margin-top: var(--layout-compact-gap);
+  display: contents;
 }
 
 .scan-video {
@@ -876,24 +512,9 @@
   max-height: 50dvh;
 }
 
-.conversation-thread {
-  /* Floor (min-height) extends DEC-127's fill intent to short threads — without it a
-     one-message-pair answer sizes to content and leaves a large empty band below the
-     card (issues/4.png) because nothing in the .page-shell/.page-card chain otherwise
-     ties height to the viewport. Kept below the existing max-height's dvh figure so a
-     short thread still leaves room for the chrome below it (View context, follow-up
-     composer, Start Over) within a standard ~800px-tall desktop viewport (REQ-109). */
-  min-height: clamp(14rem, 38dvh, 22rem);
-  max-height: clamp(28rem, 70dvh, 44rem);
-  gap: var(--layout-compact-gap);
-  padding: var(--layout-content-padding);
-}
 
 .conversation-workspace {
-  display: flex;
-  min-height: 0;
-  flex-direction: column;
-  gap: var(--layout-surface-gap);
+  display: contents;
 }
 
 /* Mobile default: shrink-to-content width via .self-start (Tailwind, in the component)
@@ -902,13 +523,13 @@
    original full-width treatment at the sm breakpoint via Tailwind's sm:self-stretch —
    desktop keeps its existing sizing. min-height guarantees the NFR-001 44px touch
    target floor holds at the smaller mobile padding/font size too. */
+
 .conversation-start-over {
   min-height: 44px;
   padding-block: 0.5rem;
 }
 
-@media (min-width: 640px) {
-  .conversation-start-over {
+@media (min-width: 640px) {.conversation-start-over {
     padding-block: 0.625rem;
   }
 }
@@ -938,7 +559,7 @@
 .conversation-markdown h6 {
   font-weight: 600;
   line-height: 1.3;
-  color: #f4f4f5;
+  color: var(--text-primary);
 }
 
 .conversation-markdown h1 {
@@ -983,7 +604,7 @@
 
 .conversation-markdown code {
   border-radius: 0.25rem;
-  background-color: rgb(63 63 70 / 0.6);
+  background-color: color-mix(in srgb, var(--surface-edge) 60%, var(--surface-panel));
   padding: 0.125em 0.35em;
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 0.875em;
@@ -992,7 +613,7 @@
 .conversation-markdown pre {
   overflow-x: auto;
   border-radius: 0.5rem;
-  background-color: rgb(24 24 27 / 0.85);
+  background-color: color-mix(in srgb, var(--surface-ground) 85%, transparent);
   padding: 0.75em 1em;
 }
 
@@ -1002,15 +623,15 @@
 }
 
 .conversation-markdown a {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   text-decoration: underline;
   text-underline-offset: 0.15em;
 }
 
 .conversation-markdown blockquote {
-  border-left: 2px solid rgb(var(--accent) / 0.4);
+  border-left: 2px solid color-mix(in srgb, var(--accent) 40%, transparent);
   padding-left: 0.75em;
-  color: #d4d4d8;
+  color: var(--text-muted);
 }
 
 .conversation-markdown-table-scroll {
@@ -1025,14 +646,14 @@
 
 .conversation-markdown th,
 .conversation-markdown td {
-  border: 1px solid rgb(63 63 70 / 0.7);
+  border: 1px solid color-mix(in srgb, var(--surface-edge) 70%, transparent);
   padding: 0.35em 0.6em;
   text-align: left;
 }
 
 .conversation-markdown th {
   font-weight: 600;
-  background-color: rgb(63 63 70 / 0.35);
+  background-color: color-mix(in srgb, var(--surface-edge) 35%, transparent);
 }
 
 /* "View context" is the first element inside the answered .conversation-workspace,
@@ -1044,48 +665,32 @@
    2.75rem band). The rail is now in flow (see .portal-menu-rail), so the header
    accounts for its band and the shared --layout-surface-gap owns this spacing. Only
    the NFR-001 touch-target floor remains. */
+
 .adaptive-context-trigger {
   min-height: 44px;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--surface-edge);
+  border-radius: 0.75rem;
+  background: var(--surface-panel);
+  color: var(--text-primary);
+  text-align: left;
+  font-size: 0.875rem;
+  font-weight: 600;
 }
 
-/* History drawer (DEC-125, amended by DEC-134): a left-edge, full-height drawer at every
-   viewport rather than a bottom sheet below 768px. As a bottom sheet it sized itself to its
-   content, so a short list (one saved conversation, or an empty one) rendered a small strip
-   pinned to the bottom under a screen's worth of empty scrim — read as dead space, not as a
-   panel. It also sits behind the same corner-rail zone as the Menu drawer, which is a
-   left-edge full-height drawer at every width; matching that geometry makes the two rail
-   zones open the same shape of surface. The 768px+ presentation is unchanged. */
-.conversation-history-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 60;
-  display: flex;
-  align-items: stretch;
-  justify-content: flex-start;
-  background: rgb(9 9 11 / 0.72);
-  animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
+.adaptive-context-trigger-label {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
 }
 
-.conversation-history-surface {
-  width: min(22rem, 88vw);
-  overflow-y: auto;
-  border-radius: 0 1rem 1rem 0;
-  padding: var(--layout-panel-padding);
-  /* Slides in from the left edge it is anchored to, like the Menu drawer — the shared
-     `adaptive-context-enter` rises from the bottom, which only read correctly while this
-     was a bottom sheet. */
-  animation: conversation-history-enter var(--motion-base) var(--motion-ease-emphasized) both;
-}
-
-@keyframes conversation-history-enter {
-  from {
-    opacity: 0;
-    transform: translateX(-1.5rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateX(0);
-  }
+.adaptive-context-trigger-value {
+  display: block;
+  margin-top: 0.25rem;
 }
 
 .adaptive-context-overlay {
@@ -1094,7 +699,7 @@
   z-index: 60;
   display: flex;
   align-items: flex-end;
-  background: rgb(9 9 11 / 0.72);
+  background: color-mix(in srgb, var(--surface-ground) 72%, transparent);
   animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
 }
 
@@ -1102,205 +707,96 @@
    min(85dvh, 48rem)) so a dismissible scrim of >=25% viewport height stays
    reachable above the sheet at 390x844, rather than reading as page content
    showing through. */
+
 .adaptive-context-surface {
   width: 100%;
   max-height: 75dvh;
   overflow-y: auto;
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-ground);
+  color: var(--text-primary);
+  box-shadow: var(--dialog-shadow);
   border-radius: 1rem 1rem 0 0;
   padding: var(--layout-panel-padding);
   animation: adaptive-context-enter var(--motion-base) var(--motion-ease-emphasized) both;
 }
 
 .adaptive-context-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  border-bottom: 1px solid var(--surface-edge);
   padding-bottom: var(--layout-compact-gap);
+}
+
+.adaptive-context-header h2 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
 }
 
 .adaptive-context-content {
   padding-top: var(--layout-content-padding);
 }
 
-/* Card detail popup: superseded by the shared sheet shell below (REQ-208, REQ-128) —
-   `.card-detail-overlay` / `.card-detail-surface` / `.card-detail-header` /
-   `.card-detail-content` all retired; the popup now hosts on `.sheet-shell-*`, whose
-   `.sheet-shell-body` already owns the content-region padding and scroll. */
-
-/* Look-matching pass (slice L, requirement #10): the card detail popup's new
-   hero/typeline/oracle/facts layout, ported from `flow.css:280-317`'s
-   `.detail-panel`. `.sheet-shell-body`'s own padding already wraps
-   `.card-detail-body`, so this hero sits full-bleed inside it via a negative
-   margin equal to that padding, matching the mockup's art filling the sheet's
-   top edge to edge. */
-.card-detail-hero-wrap {
-  display: flex;
-  flex-direction: column;
-}
-
-.card-detail-hero {
-  position: relative;
-  height: 160px;
-  margin: calc(var(--layout-content-padding) * -1) calc(var(--layout-panel-padding) * -1) 0;
-  overflow: hidden;
-  background: rgb(var(--ground));
-}
-
-@media (min-width: 768px) {
-  .card-detail-hero {
-    height: 190px;
-  }
-}
-
-.card-detail-hero-img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  object-position: center 30%;
-  display: block;
-  filter: saturate(1.1);
-}
-
-.card-detail-hero-title {
-  position: absolute;
-  left: var(--layout-panel-padding);
-  right: calc(var(--layout-panel-padding) + 2.5rem);
-  bottom: 0.6rem;
-  z-index: 1;
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.card-detail-hero-title::before {
-  content: "";
-  position: absolute;
-  inset: -160px calc(var(--layout-panel-padding) * -1) -0.6rem calc(var(--layout-panel-padding) * -1);
-  z-index: -1;
-  background: linear-gradient(
-    180deg,
-    rgb(9 9 11 / 0.15) 0%,
-    transparent 35%,
-    rgb(var(--panel) / 0.4) 75%,
-    rgb(var(--panel)) 100%
-  );
-}
-
-.card-detail-hero-name {
-  margin: 0;
-  font-size: 1.25rem;
-  line-height: 1.1;
-  color: #f4f4f5;
-  text-shadow: 0 2px 12px rgb(0 0 0 / 0.8);
-}
-
-.card-detail-hero-cost {
-  font-weight: 700;
-  font-size: 0.9rem;
-  color: rgb(var(--accent-soft));
-  text-shadow: 0 1px 8px rgb(0 0 0 / 0.8);
-  white-space: nowrap;
-}
-
-.card-detail-body {
-  display: grid;
-  gap: 0.7rem;
-  padding-top: 0.5rem;
-}
-
-.card-detail-typeline {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin: 0;
-  font-size: 0.86rem;
-  color: #a1a1aa;
-}
-
-.card-detail-color-dot {
-  width: 10px;
-  height: 10px;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  box-shadow: 0 0 0 1px rgb(0 0 0 / 0.5);
-}
-
-.card-detail-oracle {
-  position: relative;
-  margin: 0;
-  padding: 0.85rem 0.95rem;
-  border-radius: 0.6rem;
-  background: rgb(var(--ground) / 0.55);
-  border: 1px solid rgb(var(--accent-soft) / 0.28);
-  font-size: 0.95rem;
-  line-height: 1.5;
-}
-
-.card-detail-facts {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 0.4rem;
-  margin: 0;
-}
-
-.card-detail-fact {
-  min-width: 0;
-  padding: 0.45rem 0.6rem;
-  border-radius: 0.55rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.35);
-}
-
-.card-detail-fact dt {
-  font-size: 0.62rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #a1a1aa;
-  margin-bottom: 0.15rem;
-}
-
-.card-detail-fact dd {
-  margin: 0;
-  font-weight: 600;
-  font-size: 0.86rem;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.card-detail-fact-price dd {
-  color: rgb(var(--accent-soft));
-}
-
-/* Look-matching pass (slice L): Question History row trimmings —
-   `shell.css:786-789`'s `.mode-chip` / `.h-chev` / `.history-foot`. */
-.mode-chip {
-  display: inline-block;
-  padding: 0.02rem 0.45rem;
-  border-radius: 999px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: rgb(var(--accent-soft));
-  border: 1px solid rgb(var(--accent-soft) / 0.4);
-  background: rgb(var(--accent) / 0.14);
-}
-
-.h-chev {
-  flex: 0 0 auto;
-  color: rgb(var(--accent-soft));
-  font-size: 1.1rem;
-  line-height: 1;
-}
-
-.history-foot {
-  padding: 0.4rem 0.25rem 0;
-  font-size: 0.68rem;
-  color: #a1a1aa;
-  border-top: 1px solid rgb(var(--panel-edge) / 0.7);
-}
-
 .frozen-context-detail-row {
   padding: var(--layout-compact-gap);
+  border: 1px solid var(--surface-edge);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--surface-ground) 35%, transparent);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.frozen-heading {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.frozen-line {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+}
+
+.frozen-strong {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.frozen-card-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.frozen-muted {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* the frozen context's card rows dim or light up with the zone filter, like the review's rows */
+
+.context-review-row {
+  transition:
+    opacity 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.context-review-row[data-dimmed="true"] {
+  opacity: 0.38;
+}
+
+.context-review-row[data-hit="true"] {
+  opacity: 1;
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface-panel));
+  box-shadow: var(--idq-shadow-15);
 }
 
 /* Look-matching pass (slice M): Ask a Question takes the mockup's look —
@@ -1315,527 +811,12 @@
 /* `quick-question.html:17` / `in-depth-question.html:14`: both flows cap
    their page column at 36rem instead of the suite's default 48rem
    (`.page-content` above). */
+
+/* REQ-124: a redesigned screen's column takes its mockup page's own width and top padding
+   (quick-question.html and in-depth-question.html: `min(36rem, 92vw)`, 0.8rem). */
 .page-content-narrow {
-  max-width: min(36rem, 92vw);
-}
-
-.flow-head {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.flow-head h1 {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: #e2e8f0;
-  white-space: nowrap;
-}
-
-@media (min-width: 768px) {
-  .flow-head h1 {
-    font-size: 1.35rem;
-  }
-}
-
-.flow-head .attach {
-  display: flex;
-  gap: 0.4rem;
-}
-
-/* Look-matching pass (slice N, review 1 fix — finding 3): the In-depth Cards
-   step's own ＋ Add card / ▣ Scan row, a direct child of the step column
-   rather than nested in a `.flow-head` (`in-depth-question.html:72`'s
-   `.idq > .attach` — lower specificity than `.flow-head .attach` above, so it
-   only ever applies where that more specific rule does not). */
-.attach {
-  display: flex;
-  gap: 0.5rem;
-}
-
-/* Look-matching pass (slice N, review 2 fix — Minor 6): the `-0.2rem` pull-up
-   is `in-depth-question.html:72`'s own `.idq > .attach` value, specific to the
-   In-depth row that sits directly under the rail — it was on the bare
-   `.attach` rule above, which also reaches Ask a Question's `.flow-head
-   .attach` (that rule sets no margin of its own, so nothing there overrode
-   it) and shifted its composer head by the same amount. Scoped here, on the
-   In-depth row's own second class, so Ask a Question's head is unchanged. */
-.idq-attach {
-  margin-top: -0.2rem;
-}
-
-/* Look-matching pass (slice O): Trade Balancer's "↺ New trade" chip
-   (`trade-balancer.html:214`'s `.head-tools`), sharing `.flow-head`'s own
-   row with the title and the phone-only price date. */
-.flow-head-tools {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-/* The phone-only price date (`.flow-head .asof`, requirement 3) drops to its
-   own full-width row under the title/New-trade row, instead of squeezing
-   between them. */
-.flow-head .asof {
-  flex: 1 0 100%;
-  order: 3;
-}
-
-.icon-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  white-space: nowrap;
-  min-height: 44px;
-  padding: 0 0.7rem;
-  border-radius: 0.6rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
-  color: #e2e8f0;
-  font-size: 0.85rem;
-  cursor: pointer;
-  transition:
-    border-color 150ms ease,
-    background 150ms ease;
-}
-
-.icon-chip:hover {
-  border-color: rgb(var(--accent));
-}
-
-.icon-chip[aria-expanded="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
-}
-
-.icon-chip:disabled {
-  opacity: 0.55;
-  cursor: default;
-}
-
-.icon-chip .glyph {
-  color: rgb(var(--accent-soft));
-  font-size: 1.05rem;
-  line-height: 1;
-}
-
-/* the card stage (`flow.css:52-99`) */
-.aq-stage {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 0.4rem;
-  padding: 1.1rem 0.5rem 0.6rem;
-  border-radius: 1.1rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel));
-  box-shadow: 0 12px 30px -18px rgb(0 0 0 / 0.9);
-  overflow: hidden;
-}
-
-.aq-ring {
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
-  margin-top: 0.5rem;
-}
-
-.aq-card {
-  position: relative;
-  width: 196px;
-  aspect-ratio: 63 / 88;
-  border-radius: 11px;
-  overflow: visible;
-  background: #111;
-  box-shadow: 0 14px 30px -14px rgb(0 0 0 / 0.8);
-  transition:
-    transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1),
-    opacity 320ms ease,
-    filter 320ms ease;
-}
-
-@media (min-width: 768px) {
-  .aq-card {
-    width: 280px;
-  }
-}
-
-.aq-card[data-front="true"] {
-  box-shadow:
-    0 18px 36px -14px rgb(0 0 0 / 0.85),
-    0 0 28px -10px rgb(var(--accent) / 0.45);
-}
-
-.aq-card[data-neighbor="true"] {
-  transform: scale(0.84);
-  opacity: 0.55;
-  filter: brightness(0.65);
-  cursor: pointer;
-}
-
-.aq-card img,
-.aq-card .fallback-inner {
-  display: block;
-  width: 100%;
-  height: 100%;
-  border-radius: inherit;
-}
-
-.aq-card img {
-  object-fit: cover;
-}
-
-.aq-card-widget {
-  position: absolute;
-  top: -15px;
-  z-index: 5;
-  width: 32px;
-  height: 32px;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--accent-soft) / 0.45);
-  background: rgb(9 9 11 / 0.92);
-  color: #f4f4f5;
-  font-size: 0.85rem;
-  font-weight: 600;
-  line-height: 1;
-  display: grid;
-  place-items: center;
-  box-shadow:
-    0 2px 10px rgb(0 0 0 / 0.6),
-    0 0 12px -4px rgb(var(--accent) / 0.8);
-}
-
-.aq-card-widget.info {
-  right: -8px;
-  color: rgb(var(--accent-soft));
-}
-
-.aq-card-widget.remove {
-  left: -8px;
-}
-
-.aq-card-widget:hover {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(24 24 27 / 0.98);
-}
-
-.aq-arrow {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.82);
-  color: #e2e8f0;
-  font-size: 1.15rem;
-  line-height: 1;
-  backdrop-filter: blur(4px);
-}
-
-.aq-arrow:hover {
-  border-color: rgb(var(--accent-soft));
-}
-
-.aq-dots {
-  position: relative;
-  z-index: 1;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.4rem;
-  min-height: 24px;
-  padding: 0 0.65rem;
-  border-radius: 999px;
-  background: rgb(9 9 11 / 0.72);
-  border: 1px solid rgb(226 232 240 / 0.12);
-  backdrop-filter: blur(4px);
-}
-
-.aq-dots .dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 999px;
-  background: rgb(161 161 170 / 0.55);
-}
-
-.aq-dots .dot[data-on="true"] {
-  background: rgb(var(--accent-soft));
-  box-shadow: 0 0 6px rgb(var(--accent-soft));
-}
-
-.aq-dots .n {
-  margin-left: 0.2rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  color: #a1a1aa;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: 0.02em;
-}
-
-/* card search, opened from + Add card (`flow.css:169-182`) */
-.search-pop {
-  display: grid;
-  gap: 0.35rem;
-}
-
-.search-row {
-  position: relative;
-}
-
-.search-row .field {
-  width: 100%;
-  min-height: 44px;
-  padding: 0 0.8rem 0 2.2rem;
-  border-radius: 0.8rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
-  color: #e2e8f0;
-  font-size: 0.9rem;
-}
-
-.search-row .field::placeholder {
-  color: #a1a1aa;
-}
-
-.search-row .glyph {
-  position: absolute;
-  left: 0.8rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: rgb(var(--accent-soft));
-}
-
-.search-results {
-  display: grid;
-  gap: 0.2rem;
-  max-height: 156px;
-  overflow-y: auto;
-  padding-right: 2px;
-}
-
-.search-results button {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-  width: 100%;
-  text-align: left;
-  min-height: 48px;
-  padding: 0.3rem 0.5rem;
-  border-radius: 0.6rem;
-  border: 1px solid transparent;
-  background: transparent;
-  color: #e2e8f0;
-  cursor: pointer;
-}
-
-.search-results button:hover,
-.search-results button[data-active="true"] {
-  border-color: rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--accent) / 0.1);
-}
-
-.search-results .thumb {
-  display: inline-block;
-  width: 28px;
-  height: 39px;
-  border-radius: 3px;
-  flex: 0 0 auto;
-  overflow: hidden;
-  background: #111;
-}
-
-.search-results .thumb img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.search-results .type {
-  color: #a1a1aa;
-  font-size: 0.76rem;
-  margin-left: auto;
-  white-space: nowrap;
-}
-
-/* the composer: search-pop + q-box share one wrapper (`flow.css:187-216`) */
-.composer {
-  display: grid;
-  gap: 0.6rem;
-  min-width: 0;
-}
-
-/* Look-matching pass (slice N, review 1 fix — finding 3): the Review step's
-   "Your question — optional" eyebrow above the composer
-   (`in-depth-question.html:584-585` `.q-lbl`). */
-.composer .q-lbl {
-  margin: -0.15rem 0 -0.35rem 0.2rem;
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #a1a1aa;
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.composer .q-lbl small {
-  text-transform: none;
-  letter-spacing: 0;
-  font-size: 0.7rem;
-}
-
-.q-box {
-  position: relative;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: flex-end;
-  gap: 0.5rem 0.6rem;
-  min-width: 0;
-  padding: 0.45rem 0.45rem 0.45rem 1.05rem;
-  border-radius: 1.6rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.78);
-  box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.06),
-    0 8px 24px -16px rgb(var(--accent) / 0.8);
-  transition: border-color 150ms ease;
-}
-
-.q-box:focus-within {
-  border-color: rgb(var(--accent-soft) / 0.55);
-}
-
-.q-box textarea {
-  flex: 1;
-  min-width: 0;
-  resize: none;
-  background: transparent;
-  border: 0;
-  padding: 0.6rem 0;
-  min-height: 40px;
-  max-height: 176px;
-  overflow-y: auto;
-  line-height: 1.4;
-  font-size: 0.96rem;
-  color: #e2e8f0;
-}
-
-.q-box textarea:focus {
-  outline: none;
-}
-
-.q-box textarea::placeholder {
-  color: rgb(161 161 170 / 0.8);
-}
-
-.q-count {
-  align-self: flex-end;
-  margin-bottom: 0.8rem;
-  font-size: 0.66rem;
-  color: #a1a1aa;
-  letter-spacing: 0.02em;
-  font-variant-numeric: tabular-nums;
-  white-space: nowrap;
-}
-
-.q-box .deep {
-  flex: 0 0 auto;
-  align-self: flex-end;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  height: 40px;
-  padding: 0 0.75rem 0 0.6rem;
-  border-radius: 999px;
-  cursor: pointer;
-  white-space: nowrap;
-  border: 1px solid rgb(var(--accent-soft) / 0.4);
-  background: rgb(var(--accent) / 0.16);
-  color: #e2e8f0;
-  font-size: 0.8rem;
-  font-weight: 600;
-  transition:
-    background 150ms ease,
-    border-color 150ms ease;
-}
-
-.q-box .deep:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
-}
-
-.q-box .deep .glyph {
-  color: rgb(var(--accent-soft));
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.q-box .deep:hover:not(:disabled),
-.q-box .deep:focus-visible {
-  background: rgb(var(--accent) / 0.28);
-  border-color: rgb(var(--accent-soft));
-}
-
-/* the split mic/send pill with its 300-char budget ring (`flow.css:224-260`).
-   REQ-205's 44px touch floor wins over the mockup's literal 40px pill halves
-   (DESIGN-BRIEF.md: "the requirement wins on behaviour") — each half is 44px
-   (Tailwind `h-11 w-11` on the buttons themselves), so the pill is 88px wide
-   rather than the mockup's 80px; the ring geometry below is scaled to match. */
-.send-pair {
-  flex: 0 0 auto;
-  display: inline-flex;
-  align-items: stretch;
-  height: 44px;
-  border-radius: 999px;
-  overflow: hidden;
-  background: linear-gradient(135deg, rgb(var(--accent)), rgb(var(--accent-strong)));
-  color: #fff;
-  box-shadow: 0 6px 16px -8px rgb(var(--accent) / 0.9);
-  transition: box-shadow 150ms ease;
-}
-
-.send-pair:hover {
-  box-shadow: 0 8px 20px -8px rgb(var(--accent));
-}
-
-.send-pair button {
-  border: 0;
-  padding: 0;
-  background: transparent;
-  color: inherit;
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  font-size: 1rem;
-  transition: background 150ms ease;
-}
-
-.send-pair button:hover:not(:disabled) {
-  background: rgb(255 255 255 / 0.14);
-}
-
-.send-pair button:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.send-pair-mic {
-  border-right: 1px solid rgb(255 255 255 / 0.26);
-}
-
-.send-pair-mic[aria-pressed="true"] {
-  background: rgb(var(--accent-soft) / 0.38);
-  animation: mic-listen 1.1s ease-in-out infinite;
+  width: min(36rem, 92vw);
+  padding-top: 0.8rem;
 }
 
 @keyframes mic-listen {
@@ -1844,159 +825,11 @@
     box-shadow: inset 0 0 0 0 transparent;
   }
   50% {
-    box-shadow: inset 0 0 14px rgb(var(--accent-soft) / 0.8);
+    box-shadow: inset 0 0 14px color-mix(in srgb, var(--accent-soft) 80%, transparent);
   }
-}
-
-.send-wrap {
-  position: relative;
-  flex: 0 0 auto;
-  align-self: flex-end;
-  display: inline-grid;
-  width: 88px;
-  height: 44px;
-}
-
-.send-wrap .send-pair {
-  grid-area: 1 / 1;
-}
-
-.send-ring {
-  position: absolute;
-  inset: -4px;
-  width: calc(100% + 8px);
-  height: calc(100% + 8px);
-  pointer-events: none;
-  overflow: visible;
-}
-
-.send-ring path {
-  fill: none;
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-
-.send-ring .track {
-  stroke: rgb(226 232 240 / 0.14);
-}
-
-.send-ring .fill {
-  stroke: rgb(var(--accent-soft));
-  filter: drop-shadow(0 0 3px rgb(var(--accent-soft) / 0.7));
-  transition:
-    stroke-dasharray 120ms ease,
-    stroke 200ms ease;
-}
-
-.send-ring .fill.bright {
-  stroke: color-mix(in srgb, rgb(var(--accent-soft)) 55%, #fff);
-  filter: drop-shadow(0 0 5px rgb(var(--accent-soft)));
-}
-
-/* the ruling conversation head and cards strip (`flow.css:345-352`) */
-.chat-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.chat-head h1 {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: #e2e8f0;
-}
-
-@media (min-width: 768px) {
-  .chat-head h1 {
-    font-size: 1.35rem;
-  }
-}
-
-.chat-head .tools {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-}
-
-.chat-icon-round {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
-  color: #e2e8f0;
-  font-size: 1rem;
-  cursor: pointer;
-}
-
-.chat-icon-round:hover {
-  border-color: rgb(var(--accent-soft));
-}
-
-.chat-cards {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.4rem 0.6rem;
-  border-radius: 0.8rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.6);
-  overflow-x: auto;
-}
-
-.chat-cards .lbl {
-  font-size: 0.68rem;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: #a1a1aa;
-  white-space: nowrap;
-  margin-right: 0.2rem;
-}
-
-.chat-cards .thumb {
-  width: 32px;
-  height: 45px;
-  border-radius: 3px;
-  flex: 0 0 auto;
-  overflow: hidden;
-  background: #111;
-  display: block;
-  border: 0;
-  padding: 0;
-  cursor: pointer;
-}
-
-.chat-cards .thumb img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
 }
 
 /* the message bubbles (`flow.css:355-374`) */
-.msg-you {
-  max-width: 86%;
-  align-self: flex-end;
-  padding: 0.65rem 0.95rem;
-  border-radius: 1.1rem;
-  border-top-right-radius: 0.3rem;
-  background: linear-gradient(
-    180deg,
-    color-mix(in srgb, rgb(var(--accent)) 85%, rgb(var(--accent-strong))),
-    rgb(var(--accent-strong))
-  );
-  color: #fff;
-  box-shadow: 0 8px 22px -12px rgb(var(--accent) / 0.9);
-  font-size: 0.94rem;
-  line-height: 1.5;
-}
 
 .msg-judge {
   max-width: 86%;
@@ -2009,27 +842,18 @@
   line-height: 1.5;
 }
 
-.msg-judge-bubble {
-  padding: 0.65rem 0.95rem;
-  border-radius: 1.1rem;
-  border-top-left-radius: 0.3rem;
-  background: rgb(var(--panel));
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  box-shadow: 0 8px 22px -14px rgb(0 0 0 / 0.9);
-}
-
 .msg-judge-seal {
   width: 30px;
   height: 30px;
   flex: 0 0 auto;
   border-radius: 999px;
-  background: rgb(var(--ground));
+  background: var(--surface-ground);
   box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.55),
-    0 0 14px rgb(var(--accent) / 0.7);
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent),
+    0 0 14px color-mix(in srgb, var(--accent) 70%, transparent);
   display: grid;
   place-items: center;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
 .msg-judge-who {
@@ -2037,99 +861,97 @@
   font-size: 0.72rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   margin-bottom: 0.2rem;
 }
 
-/* Look-matching pass (slice N): In-depth details takes the mockup's look —
-   `in-depth-question.html`'s `.plate`/`.plate-next` shell every step sits in,
-   the rail's sentence-case current-node styling and header back button, zone
-   tile glow, shelf card corner widgets, and the `.ctx-*` context-sheet grid.
-   The ruling view reuses slice M's `.chat-head`/`.msg-*` classes directly. */
+/* In-depth details (ui-look-translation, slice C): a port of `in-depth-question.html`'s own
+   stylesheet, selector for selector, with every colour, surface and shadow read from the
+   token layer (REQ-216) — the literal shadow values live in `lib/theme/glows.css`. The
+   Cards step's tile width (`--tile-w`) is declared there too. */
 
-/* the round back button + "In-depth details" h1 above the rail
-   (`in-depth-question.html:438` `.flow-head .lead`) */
-.idq-flow-head {
-  display: flex;
-  align-items: center;
-  gap: 0.6rem;
-}
-
-.idq-flow-head h1 {
-  margin: 0;
-  font-size: 1.15rem;
-  font-weight: 700;
-  letter-spacing: -0.015em;
-  color: #e2e8f0;
-}
-
-@media (min-width: 768px) {
-  .idq-flow-head h1 {
-    font-size: 1.35rem;
-  }
-}
-
-/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 7: the
-   carry note above the rail (`in-depth-question.html:75-76` `.carry-note`). */
-.carry-note {
-  margin: -0.2rem 0 0;
-  font-size: 0.8rem;
-  color: #a1a1aa;
-}
-
-.carry-note b {
-  color: rgb(var(--accent-soft));
-  font-weight: 600;
-}
-
-.icon-round {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
-  color: #e2e8f0;
-  font-size: 1.1rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.icon-round:hover {
-  border-color: rgb(var(--accent-soft));
-}
-
-/* a themed panel used by every In-depth details step — the same solid fill
-   as the Ask a Question stage and the chat bubble (`in-depth-question.html:80-87`) */
-.plate {
+.rail {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   position: relative;
-  padding: 0.9rem;
-  border-radius: 1rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel));
-  box-shadow: 0 12px 30px -18px rgb(0 0 0 / 0.9);
+  margin: 0.1rem 0 0;
 }
 
-.plate h2 {
-  margin: 0 0 0.6rem;
-  font-size: 0.74rem;
+.rail::before {
+  content: "";
+  position: absolute;
+  left: 12.5%;
+  right: 12.5%;
+  top: 12px;
+  height: 2px;
+  background: color-mix(in srgb, var(--surface-edge) 70%, transparent);
+}
+
+.rail .fill {
+  position: absolute;
+  left: 12.5%;
+  top: 12px;
+  height: 2px;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+  box-shadow: var(--glow-soft-10);
+  transition: width 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.rail button {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 0.35rem;
+  background: transparent;
+  border: 0;
+  padding: 0;
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.rail .node {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  border: 2px solid var(--surface-edge);
+  background: var(--surface-ground);
+  display: grid;
+  place-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  font-family: var(--font-display);
+  transition: all 250ms ease;
+}
+
+.rail button[data-done="true"] .node {
+  border-color: var(--accent);
+  background: var(--accent);
+  color: var(--text-on-accent);
+}
+
+.rail button[aria-current="step"] {
+  color: var(--text-primary);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: #a1a1aa;
 }
 
-.plate .lede {
-  margin: -0.3rem 0 0.7rem;
-  font-size: 0.82rem;
-  color: #a1a1aa;
+.rail button[aria-current="step"] .node {
+  border-color: var(--accent-soft);
+  color: var(--accent-soft);
+  box-shadow: var(--idq-shadow-2);
+  animation: node-pulse 2.6s ease-in-out infinite;
 }
 
-/* the way forward is the plate's own lit foot bar, replacing free-standing
-   Back/Continue buttons (`in-depth-question.html:55-66`) */
+@keyframes node-pulse {
+  0%, 100% { box-shadow: var(--idq-shadow-3);
+  }
+    50% { box-shadow: var(--idq-shadow-4);
+  };
+}
+
 .plate-next {
   display: flex;
   align-items: center;
@@ -2140,10 +962,10 @@
   padding: 0.7rem 1rem;
   min-height: 52px;
   border: 0;
-  border-top: 1px solid rgb(var(--panel-edge) / 0.7);
+  border-top: 1px solid var(--surface-edge);
   border-radius: 0 0 1rem 1rem;
-  background: linear-gradient(90deg, rgb(var(--accent) / 0.24), rgb(var(--accent) / 0.06));
-  color: #e2e8f0;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 24%, transparent), color-mix(in srgb, var(--accent) 6%, transparent));
+  color: var(--text-primary);
   font-weight: 600;
   font-size: 0.92rem;
   cursor: pointer;
@@ -2151,59 +973,279 @@
   transition: background 150ms ease;
 }
 
-.plate-next:hover:not(:disabled),
-.plate-next:focus-visible {
-  background: linear-gradient(90deg, rgb(var(--accent) / 0.38), rgb(var(--accent) / 0.12));
-}
-
-.plate-next:disabled {
-  cursor: not-allowed;
-  opacity: 0.55;
+.plate-next:hover, .plate-next:focus-visible {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 38%, transparent), color-mix(in srgb, var(--accent) 12%, transparent));
 }
 
 .plate-next small {
   font-weight: 500;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 0.78rem;
   margin-left: 0.45rem;
 }
 
 .plate-next .chev {
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 1.3rem;
   line-height: 1;
-  flex: 0 0 auto;
 }
 
-/* Look-matching pass (slice N, review 1 fix — finding 3): the Game step's
-   custom select chevron (`in-depth-question.html:121-122`) — an
-   element+class selector, so it always beats a single Tailwind utility class
-   regardless of stylesheet order, without touching any other `<select>` in
-   the app (e.g. the Context step's own `.ctx-form .field` selects, already
-   styled by a different, already-specific rule). */
-select.select-chevron {
-  appearance: none;
-  background-image:
-    linear-gradient(45deg, transparent 50%, rgb(var(--accent-soft)) 50%),
-    linear-gradient(135deg, rgb(var(--accent-soft)) 50%, transparent 50%);
-  background-position:
-    calc(100% - 1.1rem) 50%,
-    calc(100% - 0.8rem) 50%;
-  background-size: 5px 5px;
-  background-repeat: no-repeat;
-  padding-right: 2rem;
-}
-
-/* the stage-shaped shelf container (Cards step) uses the stage's own
-   plate-next inset (`in-depth-question.html:66`) */
 .stage .plate-next {
   margin: 0.4rem -0.5rem -0.6rem;
   width: calc(100% + 1rem);
   border-radius: 0 0 1.1rem 1.1rem;
 }
 
-/* step 2 — zone tiles glow when checked (`in-depth-question.html:125-138`) */
-.zone-tile {
+.flow-head .lead {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.flow-head .lead .icon-round {
+  text-decoration: none;
+}
+
+.carry-note {
+  margin: -0.2rem 0 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.carry-note b {
+  color: var(--accent-soft);
+}
+
+.plate {
+  position: relative;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-panel);
+  box-shadow: var(--idq-shadow-5);
+}
+
+.plate h2 {
+  margin: 0 0 0.6rem;
+  font-family: var(--font-body);
+  font-size: 0.74rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.plate .lede {
+  margin: -0.3rem 0 0.7rem;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.players-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.players-row .expander {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+}
+
+.players-row .expander .chev {
+  color: var(--accent-soft);
+  transition: transform 150ms ease;
+}
+
+.players-row .expander[aria-expanded="true"] .chev {
+  transform: rotate(90deg);
+}
+
+.players-row .stepper {
+  width: 44px;
+  padding: 0;
+  text-align: center;
+}
+
+.players-row .stepper.add {
+  color: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+.roster {
+  display: none;
+  gap: 0.5rem;
+  margin-top: 0.6rem;
+}
+
+.roster[data-open="true"] {
+  display: grid;
+}
+
+.roster .player-card {
+  display: grid;
+  gap: 0.5rem;
+  padding: 0.55rem 0.6rem;
+  border-radius: 0.7rem;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 40%, transparent);
+}
+
+.roster .player {
+  display: grid;
+  grid-template-columns: 1fr 5.5rem;
+  gap: 0.5rem;
+  align-items: end;
+}
+
+.roster label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+.roster .life {
+  text-align: center;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.roster-more {
+  display: none;
+  justify-content: flex-start;
+  margin-top: 0.4rem;
+}
+
+.player-more {
+  display: flex;
+  justify-content: flex-start;
+  margin-top: 0.4rem;
+}
+
+.roster[data-open="true"] + .roster-more {
+  display: flex;
+}
+
+.roster-more .link, .player-more .link, .extras .link {
+  background: transparent;
+  border: 0;
+  color: var(--accent-soft);
+  font-size: 0.76rem;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 0.2rem;
+}
+
+.player-more .link {
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.extras {
+  display: none;
+  gap: 0.55rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--surface-edge);
+}
+
+.roster[data-more="true"] .extras {
+  display: grid;
+}
+
+.extras .lbl {
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+}
+
+.extras .counters {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.4rem;
+}
+
+.extras .counters label {
+  gap: 0.2rem;
+}
+
+.extras .field {
+  min-height: 36px;
+  font-size: 0.84rem;
+  padding: 0.3rem 0.5rem;
+}
+
+.extras select.field {
+  padding-right: 1.6rem;
+  background-position: calc(100% - 0.9rem) 50%, calc(100% - 0.6rem) 50%;
+}
+
+.extras .cmd-row, .extras .named-row {
+  display: grid;
+  grid-template-columns: 1fr 5rem;
+  gap: 0.4rem;
+  align-items: center;
+  font-size: 0.82rem;
+}
+
+.extras .cmd-row span {
+  color: var(--text-muted);
+}
+
+.extras .named-row .field.amt {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.paired {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 0.9rem;
+}
+
+@media (min-width: 640px) {
+  .paired {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.paired label {
+  display: grid;
+  gap: 0.3rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+}
+
+select.field {
+  appearance: none;
+  background-image: linear-gradient(45deg, transparent 50%, var(--accent-soft) 50%), linear-gradient(135deg, var(--accent-soft) 50%, transparent 50%);
+  background-position: calc(100% - 1.1rem) 50%, calc(100% - 0.8rem) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  padding-right: 2rem;
+}
+
+.zone-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 640px) {
+  .zone-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.zone-grid label {
   position: relative;
   display: flex;
   align-items: center;
@@ -2211,122 +1253,244 @@ select.select-chevron {
   min-height: 52px;
   padding: 0.4rem 0.6rem;
   border-radius: 0.7rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.55);
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 55%, transparent);
   cursor: pointer;
   font-size: 0.88rem;
   transition: all 180ms ease;
   overflow: hidden;
 }
 
-.zone-tile[data-checked="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
-  box-shadow:
-    0 0 22px -6px rgb(var(--accent) / 0.85),
-    inset 0 0 18px -10px rgb(var(--accent-soft));
+.zone-grid input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
 }
 
-.zone-tile .mark {
+.zone-grid .mark {
   width: 18px;
   height: 18px;
-  flex: 0 0 auto;
   border-radius: 999px;
-  border: 1.5px solid rgb(var(--panel-edge) / 0.7);
+  border: 1.5px solid var(--surface-edge);
   display: grid;
   place-items: center;
   font-size: 0.65rem;
-  color: rgb(var(--accent-contrast));
+  color: var(--text-on-accent);
+  flex: 0 0 auto;
   transition: all 180ms ease;
 }
 
-.zone-tile[data-checked="true"] .mark {
-  background: rgb(var(--accent-soft));
-  border-color: rgb(var(--accent-soft));
-  color: rgb(var(--ground));
-  box-shadow: 0 0 10px rgb(var(--accent-soft));
+.zone-grid label:has(input:checked) {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
+  box-shadow: var(--idq-shadow-6);
 }
 
-/* step 3 — zone tabs as pills with an accent-soft count (`in-depth-question.html:141-144`) */
-.zone-tab-pill {
+.zone-grid label:has(input:checked)::after {
+  content: "";
+  position: absolute;
+  right: -10px;
+  top: -10px;
+  width: 44px;
+  height: 44px;
+  background: var(--motif) center / cover no-repeat;
+  opacity: 0.3;
+}
+
+.zone-grid label:has(input:checked) .mark {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+  color: var(--surface-ground);
+  box-shadow: var(--glow-soft-10);
+}
+
+.zone-grid label:has(input:checked) .mark::after {
+  content: "✓";
+}
+
+.zone-tabs {
+  display: flex;
+  gap: 0.4rem;
+  overflow-x: auto;
+  padding-bottom: 2px;
+}
+
+.zone-tabs button {
   flex: 0 0 auto;
   min-height: 40px;
   padding: 0.3rem 0.8rem;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel));
-  color: #a1a1aa;
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-panel);
+  color: var(--text-muted);
   font-size: 0.82rem;
   cursor: pointer;
 }
 
-.zone-tab-pill b {
-  color: rgb(var(--accent-soft));
+.zone-tabs button b {
+  color: var(--accent-soft);
   font-weight: 600;
   margin-left: 0.25rem;
 }
 
-.zone-tab-pill[aria-pressed="true"] {
-  color: #e2e8f0;
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
+.zone-tabs button[aria-pressed="true"] {
+  color: var(--text-primary);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
 }
 
-/* the lit reorder hint above the shelf (`in-depth-question.html:169-173`) */
+.place-zones {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+}
+
+@media (min-width: 720px) {
+  .place-zones {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.place-zones button .mark, .act-zones button .mark {
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  border: 1.5px solid var(--surface-edge);
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  font-size: 0.65rem;
+}
+
+.place-zones button:hover, .act-zones button:hover {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface-panel));
+}
+
+.place-zones button[data-extra="true"] {
+  border-style: dashed;
+  color: var(--text-muted);
+}
+
+.place-more {
+  justify-self: start;
+  background: transparent;
+  border: 0;
+  color: var(--accent-soft);
+  font-size: 0.78rem;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 0.2rem;
+}
+
+.place-more[hidden] {
+  display: none;
+}
+
 .shelf-hint {
   display: flex;
   align-items: flex-start;
   gap: 0.55rem;
+  margin: -0.2rem 0 -0.2rem;
   padding: 0.5rem 0.75rem;
   border-radius: 0.7rem;
-  border: 1px solid rgb(var(--accent-soft) / 0.32);
-  background: rgb(var(--accent) / 0.12);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent);
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
   font-size: 0.8rem;
   line-height: 1.4;
-  color: #e2e8f0;
+  color: var(--text-primary);
 }
 
-/* shelf card corner widgets, reusing the Ask a Question stage's own shape
-   (`in-depth-question.html:233-243`) */
-.shelf-card {
-  position: relative;
+.shelf-hint .glyph {
+  color: var(--accent-soft);
+  font-size: 1.05rem;
+  line-height: 1.1;
+  flex: 0 0 auto;
 }
 
-.shelf-card-widget {
-  position: absolute;
-  top: -12px;
-  z-index: 5;
-  width: 26px;
-  height: 26px;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--accent-soft) / 0.45);
-  background: rgb(9 9 11 / 0.92);
-  color: #f4f4f5;
-  font-size: 0.72rem;
+.shelf-hint b {
+  color: var(--accent-soft);
   font-weight: 600;
-  line-height: 1;
-  display: grid;
-  place-items: center;
-  box-shadow:
-    0 2px 10px rgb(0 0 0 / 0.6),
-    0 0 12px -4px rgb(var(--accent) / 0.8);
 }
 
-.shelf-card-widget.info {
-  right: -6px;
-  color: rgb(var(--accent-soft));
+.shelf {
+  display: flex;
+  gap: 0.7rem;
+  overflow-x: auto;
+  overflow-y: visible;
+  padding: 1rem 0.3rem 0.9rem;
+  scroll-snap-type: x proximity;
+  min-height: calc(var(--tile-w) * 88 / 63 + 1.9rem);
+  position: relative;
+  z-index: 1;
+  width: 100%;
 }
 
-.shelf-card-widget.remove {
-  left: -6px;
+.shelf .card {
+  position: relative;
+  flex: 0 0 auto;
+  width: var(--tile-w);
+  height: calc(var(--tile-w) * 88 / 63);
+  border-radius: 8px;
+  background: var(--card-back);
+  scroll-snap-align: start;
+  box-shadow: var(--idq-shadow-8);
+  transition: transform 160ms ease;
+  cursor: pointer;
 }
 
-.shelf-card-widget:hover {
-  border-color: rgb(var(--accent-soft));
+.shelf .card:hover {
+  transform: translateY(-3px);
 }
 
-/* the Stack's order tag straddles the card's bottom edge */
-.shelf-card-pos {
+.shelf .card {
+  touch-action: pan-x;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.shelf .card img {
+  -webkit-user-drag: none;
+  user-drag: none;
+  pointer-events: none;
+}
+
+.shelf .card.dragging {
+  z-index: 20;
+  transform: translateY(-8px) scale(1.04);
+  box-shadow: var(--idq-shadow-9);
+  transition: none;
+  cursor: grabbing;
+}
+
+.shelf .card.drop-before::before {
+  content: "";
+  position: absolute;
+  left: -0.45rem;
+  top: 8%;
+  bottom: 8%;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--accent-soft);
+  box-shadow: var(--glow-soft-10);
+  z-index: 6;
+}
+
+.shelf .card.drop-after::before {
+  content: "";
+  position: absolute;
+  right: -0.45rem;
+  top: 8%;
+  bottom: 8%;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--accent-soft);
+  box-shadow: var(--glow-soft-10);
+  z-index: 6;
+}
+
+.shelf .card .pos {
   position: absolute;
   left: 50%;
   bottom: -9px;
@@ -2337,16 +1501,39 @@ select.select-chevron {
   font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.06em;
-  background: rgb(9 9 11 / 0.92);
-  color: rgb(var(--accent-soft));
-  border: 1px solid rgb(var(--accent-soft) / 0.5);
-  box-shadow: 0 0 10px -2px rgb(var(--accent) / 0.8);
-  white-space: nowrap;
+  font-family: var(--font-display);
+  background: var(--pos-ground);
+  color: var(--accent-soft);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 50%, transparent);
+  box-shadow: var(--glow-accent-10);
 }
 
-/* step 4 — the context-sheet grid: art beside a compact form
-   (`in-depth-question.html:255-277`) */
-.ctx-sheet {
+.shelf .card .pos[data-top="true"] {
+  color: var(--surface-ground);
+  background: var(--accent-soft);
+}
+
+.shelf .empty {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-height: 140px;
+  border-radius: 0.8rem;
+  border: 1px dashed color-mix(in srgb, var(--accent-soft) 50%, transparent);
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  padding: 1rem;
+}
+
+.shelf .empty strong {
+  display: block;
+  color: var(--text-primary);
+  margin-bottom: 0.2rem;
+  font-family: var(--font-display);
+}
+
+.wizard-plate, .place-plate {
   display: grid;
   grid-template-columns: 96px 1fr;
   grid-template-areas: "art head" "form form" "nav nav";
@@ -2355,7 +1542,7 @@ select.select-chevron {
 }
 
 @media (min-width: 720px) {
-  .ctx-sheet {
+  .wizard-plate, .place-plate {
     grid-template-columns: 210px 1fr;
     grid-template-areas: "art head" "art form" "nav nav";
     gap: 0.7rem 1.1rem;
@@ -2372,12 +1559,41 @@ select.select-chevron {
 .ctx-art .hero {
   position: relative;
   width: 96px;
+  height: calc(96px * 88 / 63);
+  border-radius: 6px;
+  overflow: visible;
   cursor: pointer;
+  box-shadow: var(--idq-shadow-13);
+}
+
+.ctx-art .hero img {
+  border-radius: 6px;
+}
+
+.ctx-art .hero .card-widget {
+  display: none;
+}
+
+.ctx-art .hero .card-widget.info {
+  display: block;
+  width: 24px;
+  height: 24px;
+  font-size: 0.68rem;
+  top: -10px;
+  right: -8px;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
 }
 
 @media (min-width: 720px) {
   .ctx-art .hero {
     width: 210px;
+    height: calc(210px * 88 / 63);
+    border-radius: 10px;
+  }
+  .ctx-art .hero img {
+    border-radius: 10px;
   }
 }
 
@@ -2389,24 +1605,21 @@ select.select-chevron {
   align-content: start;
 }
 
-/* `.eyebrow` is reused outside `.ctx-head` too, for the Context step's own
-   plate-level "Card N of M" + "Skip to review" row
-   (`in-depth-question.html:534`) — kept un-scoped so both apply. */
-.eyebrow {
+.ctx-head .eyebrow {
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #a1a1aa;
+  color: var(--text-muted);
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 0.5rem;
 }
 
-.eyebrow .link {
+.ctx-head .eyebrow .link {
   background: transparent;
   border: 0;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 0.68rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2419,18 +1632,23 @@ select.select-chevron {
   margin: 0.1rem 0 0;
   font-size: 1.2rem;
   line-height: 1.15;
-  letter-spacing: -0.015em;
-  color: #e2e8f0;
-  font-weight: 700;
   text-transform: none;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  font-family: var(--font-display);
+  font-weight: 700;
 }
 
 .ctx-head .sub {
   font-size: 0.8rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
-.ctx-counter {
+.ctx-head .sub span {
+  color: var(--text-primary);
+}
+
+.counter {
   display: inline-flex;
   align-items: baseline;
   justify-content: center;
@@ -2441,29 +1659,32 @@ select.select-chevron {
   min-height: 30px;
   padding: 0 0.6rem;
   border-radius: 0.5rem;
-  border: 1px solid rgb(var(--accent-soft) / 0.45);
-  background: rgb(var(--accent) / 0.18);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 45%, transparent);
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface-panel));
   font-size: 0.82rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
 }
 
-.ctx-counter small {
+.counter small {
   font-weight: 500;
-  color: #a1a1aa;
+  color: var(--text-muted);
   margin-left: 0.3rem;
   font-size: 0.68rem;
 }
 
 .ctx-form {
   grid-area: form;
-  display: grid;
-  gap: 0.6rem;
 }
 
 .ctx-nav {
   grid-area: nav;
+}
+
+.ctx-form {
+  display: grid;
+  gap: 0.6rem;
 }
 
 .ctx-grid {
@@ -2472,14 +1693,19 @@ select.select-chevron {
   gap: 0.55rem;
 }
 
-.ctx-form label,
-.ctx-form .lbl {
+.ctx-form label, .ctx-form .lbl {
   display: grid;
-  gap: 0.28rem;
+  /* the mockup's 0.28rem less the 2px its 42px fields grow to meet REQ-205's 44px floor, so the
+     sheet keeps the mockup's height */
+  gap: calc(0.28rem - 2px);
   font-size: 0.68rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #a1a1aa;
+  color: var(--text-muted);
+}
+
+.ctx-form label[hidden] {
+  display: none;
 }
 
 .ctx-form .t {
@@ -2496,20 +1722,17 @@ select.select-chevron {
 }
 
 .ctx-form .field {
-  min-height: 42px;
+  min-height: 44px;
   font-size: 0.92rem;
-  border-radius: 0.6rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.6);
-  color: #e2e8f0;
-  padding: 0.4rem 0.6rem;
 }
 
-/* targets: one picker, chosen targets sit above it as pills
-   (`in-depth-question.html:276-277`) */
+.ctx-form input.field {
+  font-variant-numeric: tabular-nums;
+}
+
 .targets {
   display: grid;
-  gap: 0.35rem;
+  gap: calc(0.35rem - 1px);
 }
 
 .target-list {
@@ -2522,12 +1745,156 @@ select.select-chevron {
   display: none;
 }
 
-/* Look-matching pass (slice N, review 1 fix — finding 3), requirement 8: Add a
-   note / More details as two dashed rows sharing one line
-   (`in-depth-question.html:361-374`). */
-.ctx-tail {
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 32px;
+  padding: 0 0.25rem 0 0.6rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel));
+  color: var(--text-primary);
+  font-size: 0.8rem;
+}
+
+.pill .thumb {
+  width: 16px;
+  height: 22px;
+  border-radius: 2px;
+}
+
+.pill button {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  font-size: 0.8rem;
+  display: grid;
+  place-items: center;
+}
+
+.pill button:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.targets input.field[hidden] {
+  display: none;
+}
+
+.ctx-form textarea.field {
+  min-height: 42px;
+  max-height: 96px;
+  padding: 0.55rem 0.75rem;
+  resize: none;
+  overflow-y: auto;
+}
+
+.ctx-nav.plate-next {
+  margin-top: 0.2rem;
+}
+
+.review {
+  display: grid;
+  gap: 0.35rem;
+  max-height: 34dvh;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.review[data-collapsed="true"] {
+  display: none;
+}
+
+.review-head {
   display: flex;
+  align-items: center;
+  justify-content: space-between;
   gap: 0.5rem;
+}
+
+.review-head h2 {
+  margin: 0;
+}
+
+.review-head .link {
+  background: transparent;
+  border: 0;
+  color: var(--accent-soft);
+  font-size: 0.72rem;
+  cursor: pointer;
+  min-height: 32px;
+  padding: 0 0.3rem;
+}
+
+.review-sum {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.review-sum[hidden] {
+  display: none;
+}
+
+.review .row {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.35rem 0.45rem;
+  border-radius: 0.6rem;
+  border: 1px solid var(--surface-edge);
+  font-size: 0.84rem;
+  background: color-mix(in srgb, var(--surface-ground) 35%, transparent);
+}
+
+.review .thumb {
+  width: 30px;
+  height: 42px;
+  border-radius: 3px;
+}
+
+.review .nm {
+  font-weight: 600;
+}
+
+.review .what {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin-top: 0.1rem;
+}
+
+.review .zone {
+  color: var(--accent-soft);
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.review .edit {
+  border: 0;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  min-width: 36px;
+  min-height: 36px;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.review .edit:hover {
+  color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.wizard-plate {
+  overflow: hidden;
 }
 
 .more-row {
@@ -2535,144 +1902,77 @@ select.select-chevron {
   align-items: center;
   justify-content: space-between;
   gap: 0.6rem;
-  flex: 1 1 0;
-  min-width: 0;
+  width: 100%;
   min-height: 44px;
   padding: 0.35rem 0.7rem;
   border-radius: 0.7rem;
-  border: 1px dashed rgb(var(--accent-soft) / 0.35);
+  border: 1px dashed color-mix(in srgb, var(--accent-soft) 35%, transparent);
   background: transparent;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 0.84rem;
   cursor: pointer;
   text-align: left;
 }
 
-.more-row > span {
+.more-row:hover, .more-row:focus-visible {
+  border-style: solid;
+  border-color: var(--accent-soft);
+  color: var(--text-primary);
+}
+
+.more-row .set {
+  display: inline-flex;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.more-row .set b {
+  padding: 0.08rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent) 26%, var(--surface-panel));
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 45%, transparent);
+}
+
+.more-row .up {
+  color: var(--accent-soft);
+}
+
+.more-row[hidden] {
+  display: none;
+}
+
+.ctx-tail {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.ctx-tail .more-row {
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.ctx-tail .more-row > span {
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.more-row:hover,
-.more-row:focus-visible {
-  border-style: solid;
-  border-color: rgb(var(--accent-soft));
-  color: #e2e8f0;
+.note-row .glyph {
+  color: var(--accent-soft);
 }
 
-.more-row .up {
-  color: rgb(var(--accent-soft));
+.note-row small {
+  color: var(--text-muted);
+  font-size: 0.72rem;
+  margin-left: 0.2rem;
 }
 
 .note-row[aria-expanded="true"] {
   border-style: solid;
-  color: #e2e8f0;
-}
-
-/* targets as pills with the card's thumbnail (`in-depth-question.html:291-296`) */
-.target-pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: 32px;
-  padding: 0 0.25rem 0 0.6rem;
-  border-radius: 999px;
-  border: 1px solid rgb(var(--accent-soft) / 0.55);
-  background: rgb(var(--accent) / 0.24);
-  color: #e2e8f0;
-  font-size: 0.8rem;
-}
-
-/* Look-matching pass (slice N, review 1 fix — finding 3): the target pill's own
-   card thumbnail (`in-depth-question.html:296`'s `.pill .thumb`). */
-.target-pill .thumb {
-  width: 16px;
-  height: 22px;
-  border-radius: 2px;
-  overflow: hidden;
-  flex: 0 0 auto;
-}
-
-.target-pill .thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.target-pill button {
-  width: 26px;
-  height: 26px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
-  color: #a1a1aa;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  font-size: 0.8rem;
-}
-
-.target-pill button:hover {
-  color: #e2e8f0;
-  background: rgb(var(--accent) / 0.3);
-}
-
-/* step 4 review: one plate, capped-height scroll, zone filter pills
-   (`in-depth-question.html:301-319`, `:410-424`) */
-.review-plate-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;
-}
-
-.review-plate-head .link {
-  background: transparent;
-  border: 0;
-  color: rgb(var(--accent-soft));
-  font-size: 0.72rem;
-  cursor: pointer;
-  min-height: 32px;
-  padding: 0 0.3rem;
-}
-
-.review-list {
-  display: grid;
-  gap: 0.35rem;
-  max-height: 34dvh;
-  overflow-y: auto;
-  padding-right: 2px;
-  margin-top: 0.5rem;
-}
-
-.review-row {
-  display: grid;
-  grid-template-columns: 30px 1fr auto;
-  align-items: center;
-  gap: 0.6rem;
-  padding: 0.35rem 0.45rem;
-  border-radius: 0.6rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  font-size: 0.84rem;
-  background: rgb(var(--ground) / 0.35);
-  transition:
-    opacity 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
-}
-
-.review-row[data-dimmed="true"] {
-  opacity: 0.38;
-}
-
-.review-row[data-hit="true"] {
-  opacity: 1;
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.16);
-  box-shadow: 0 0 18px -6px rgb(var(--accent) / 0.85);
+  color: var(--text-primary);
 }
 
 .review-filters {
@@ -2682,172 +1982,514 @@ select.select-chevron {
   margin: 0.6rem 0 0;
 }
 
-.review-filter-pill {
+.review-filters[hidden] {
+  display: none;
+}
+
+.review-filters button {
   min-height: 32px;
   padding: 0.15rem 0.7rem;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel));
-  color: #e2e8f0;
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-panel);
+  color: var(--text-primary);
   font-size: 0.76rem;
   cursor: pointer;
 }
 
-.review-filter-pill b {
-  color: rgb(var(--accent-soft));
+.review-filters button b {
+  color: var(--accent-soft);
   margin-left: 0.2rem;
 }
 
-.review-filter-pill[aria-pressed="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.3);
-  box-shadow: 0 0 14px -4px rgb(var(--accent) / 0.8);
+.review-filters button[aria-pressed="true"] {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 30%, var(--surface-panel));
+  box-shadow: var(--glow-accent-14);
 }
 
-/* `FrozenGameContextDetails`' own richer (multi-line) row shape keeps its existing
-   bordered-card layout — only the filter dim/hit treatment is shared with
-   `.review-row` above (`in-depth-question.html:418-420`). */
-.context-review-row {
-  transition:
-    opacity 180ms ease,
-    border-color 180ms ease,
-    box-shadow 180ms ease,
-    background 180ms ease;
+.review-filters button:disabled {
+  color: var(--text-muted);
+  border-style: dashed;
+  cursor: default;
 }
 
-.context-review-row[data-dimmed="true"] {
+.review[data-more-below="true"] {
+  -webkit-mask-image: linear-gradient(180deg, black 82%, transparent);
+  mask-image: linear-gradient(180deg, black 82%, transparent);
+}
+
+.review .row {
+  transition: opacity 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.review[data-zone] .row {
   opacity: 0.38;
 }
 
-.context-review-row[data-hit="true"] {
+.review[data-zone] .row[data-hit="true"] {
   opacity: 1;
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.16);
-  box-shadow: 0 0 18px -6px rgb(var(--accent) / 0.85);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 16%, var(--surface-panel));
+  box-shadow: var(--idq-shadow-15);
 }
 
-/* Shared sheet shell (REQ-208): the one pop-up shape for card detail, Question
-   History, the printing picker, Send feedback and the confirm sheet. A bottom
-   sheet below `--sheet-breakpoint` (600px), a floating card centred in the
-   viewport from it up; fixed head/foot, scrolling body only (DEC-117/NFR-011 —
-   structural, scoped to this overlay family). */
-.sheet-shell-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: 70;
+.review-count-line {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  margin: 0.35rem 0 0;
+}
+
+.review-count-line[hidden] {
+  display: none;
+}
+
+.composer .q-lbl {
+  margin: -0.15rem 0 -0.35rem 0.2rem;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
   display: flex;
-  align-items: flex-end;
-  justify-content: center;
-  background: rgb(9 9 11 / 0.72);
-  /* Look-matching pass (slice L): the page behind blurs, not only dims
-     (`shell.css:433-447`'s `.sheet-backdrop`). */
-  backdrop-filter: blur(2px);
-  animation: adaptive-context-overlay-enter var(--motion-fast) var(--motion-ease-out) both;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-/* Look-matching pass (slice L): the glass shell every sheet adopter (card
-   detail, Send feedback, Question History, the confirm sheet, the printing
-   picker) now shares — `shell.css:872-915`'s `.drawer-panel` surface (the
-   corner accent glow, the blurred/saturated glass, the accent-soft hairline
-   border, the stacked shadow) plus `shell.css:917-935`'s mobile grab handle.
-   `width`, `max-height`, `display`, `flex-direction`, `overflow` and
-   `border-radius` are unchanged from before this slice — only the painted
-   surface and the handle are new. */
-.sheet-shell-surface {
-  position: relative;
+.composer .q-lbl small {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.7rem;
+}
+
+/* the card menu (`in-depth-question.html`'s Card actions): zone pills, the order pill, tray rows */
+
+.place-zones button, .act-zones button {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-height: 48px;
+  padding: 0.4rem 0.7rem;
+  text-align: left;
+  border-radius: 0.7rem;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 55%, transparent);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.88rem;
+  transition: all 160ms ease;
+}
+
+.act-zones button[data-current="true"] {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
+}
+
+.act-zones button[data-current="true"] .mark {
+  background: var(--accent-soft);
+  border-color: var(--accent-soft);
+  color: var(--surface-ground);
+}
+
+.act-zones button[data-current="true"] .mark::after {
+  content: "✓";
+}
+
+.place-plate .eyebrow .link.danger {
+  color: var(--text-muted);
+}
+
+.place-plate .eyebrow .link.danger:hover {
+  color: var(--status-error);
+}
+
+.act-body {
+  display: grid;
+  gap: 0.7rem;
+}
+
+.act-head {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.act-head .thumb {
+  width: 44px;
+  height: 61px;
+  border-radius: 4px;
+}
+
+.act-head h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.act-head .zone {
+  color: var(--accent-soft);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.act-body .lbl {
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.act-zones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.act-zones button {
+  min-height: 36px;
+  padding: 0.2rem 0.75rem 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  gap: 0.4rem;
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
+}
+
+.act-zones button .zg {
+  width: 15px;
+  height: 15px;
+  flex: 0 0 auto;
+  color: var(--accent-soft);
+  opacity: 0.50;
+  transition: opacity 160ms ease, filter 160ms ease;
+}
+
+.act-zones button .zg svg {
   width: 100%;
-  max-height: 85dvh;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  border-radius: 1rem 1rem 0 0;
-  background:
-    radial-gradient(90% 40% at 100% 0%, rgb(var(--accent) / 0.26) 0%, transparent 70%), rgb(var(--panel) / 0.82);
-  backdrop-filter: blur(18px) saturate(1.3);
-  -webkit-backdrop-filter: blur(18px) saturate(1.3);
-  border: 1px solid rgb(var(--accent-soft) / 0.32);
-  box-shadow:
-    0 30px 80px -30px rgb(0 0 0 / 1),
-    0 0 60px -20px rgb(var(--accent) / 0.7),
-    inset 0 1px 0 rgb(255 255 255 / 0.08);
-  animation: adaptive-context-enter var(--motion-base) var(--motion-ease-emphasized) both;
+  height: 100%;
+  display: block;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.35;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-/* Grab handle — mobile bottom-sheet only (hidden at >=600px below). */
-.sheet-shell-surface::before {
+.act-zones button:hover .zg {
+  opacity: 0.85;
+}
+
+.act-zones button[data-current="true"] {
+  box-shadow: var(--idq-shadow-act-1);
+}
+
+.act-zones button[data-current="true"] .zg {
+  opacity: 1;
+  filter: drop-shadow(0 0 3px color-mix(in srgb, var(--accent-soft) 85%, transparent));
+}
+
+.seg {
+  display: inline-flex;
+  border-radius: 999px;
+  border: 1px solid var(--surface-edge);
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
+}
+
+.seg button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  flex: 1 1 0;
+  min-height: 40px;
+  padding: 0 0.8rem;
+  border: 0;
+  background: transparent;
+  color: var(--text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.seg button + button {
+  border-left: 1px solid var(--surface-edge);
+}
+
+.seg button .glyph {
+  color: var(--accent-soft);
+  font-size: 0.95rem;
+}
+
+.seg button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.seg button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.seg button[hidden] {
+  display: none;
+}
+
+.act-menu {
+  display: grid;
+  gap: 0.1rem;
+  margin: 0.2rem -0.5rem 0;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--surface-edge);
+}
+
+.act-menu button {
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 46px;
+  padding: 0 0.75rem;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 0.6rem;
+  background: transparent;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 150ms ease;
+}
+
+.act-menu button .glyph {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  color: var(--accent-soft);
+  font-size: 1rem;
+}
+
+.act-menu button .chev {
+  color: var(--accent-soft);
+}
+
+.act-menu button:hover, .act-menu button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.act-menu button.danger .glyph {
+  color: var(--status-error);
+}
+
+.act-menu button.danger:hover {
+  color: var(--status-error);
+  background: color-mix(in srgb, var(--status-error) 8%, transparent);
+}
+
+/* a station not reached yet (REQ-209: tappable only up to the furthest station reached) keeps
+   the mockup's look; only the pointer says it cannot be tapped */
+.rail button:disabled {
+  cursor: not-allowed;
+}
+
+.idq {
+  display: grid;
+  gap: 0.8rem;
+}
+
+/* the step's own status line, in the accent's own light */
+.shelf .card .card-widget {
+  width: 26px;
+  height: 26px;
+  font-size: 0.72rem;
+  top: -12px;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+
+.shelf .card .card-widget.remove {
+  left: -6px;
+}
+
+.shelf .card .card-widget.info {
+  right: -6px;
+}
+
+.stage > .scan-panel {
+  display: grid;
+  gap: 0.75rem;
+  width: 100%;
+}
+
+.idq-step {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.wizard-card-list,
+.idq-picker {
+  display: contents;
+}
+
+.copies-value {
+  display: inline-flex;
+  align-items: center;
+  padding: 0 1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.custom-target {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.idq > .attach {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: -0.2rem;
+}
+
+@media (max-width: 479px) {
+  .idq > .attach .icon-chip {
+    flex: 1 1 0;
+    justify-content: center;
+    min-height: 44px;
+  }
+}
+
+.zone-grid label:has(input:focus-visible),
+.zone-tabs button:focus-visible,
+.rail button:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+/* REQ-137 / REQ-138 win over the mockup's roster grids: every counter row is a content-sized
+   leading element, one declared gap, then the value control, and the three scalar selects are
+   stacked at every width. */
+.extras .counters {
+  grid-template-columns: 1fr;
+}
+
+.extras .cmd-row,
+.extras .named-row {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.extras .named-row .field:not(.amt) {
+  flex: 1;
+  min-width: 0;
+}
+
+.extras .cmd-row .amt,
+.extras .named-row .amt {
+  width: 5rem;
+  flex: 0 0 5rem;
+}
+
+.act-order {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.act-head .thumb img {
+  width: 100%;
+  height: 100%;
+}
+
+/* REQ-205 wins over the mockup's small controls: the 44px touch floor is met by a transparent halo
+   round the visible control, so the look stays the mockup's and the hit area is 44px. The
+   fields are the one place the box itself grows (the mockup's 42px becomes 44px). */
+.flow-head .icon-round,
+.ctx-head .eyebrow .link,
+.review-head .link,
+.review .edit,
+.review-filters button,
+.pill button {
+  position: relative;
+}
+
+.flow-head .icon-round::after {
   content: "";
   position: absolute;
-  top: 6px;
-  left: 50%;
-  width: 40px;
-  height: 4px;
-  margin-left: -20px;
-  border-radius: 4px;
-  background: rgb(244 244 245 / 0.3);
-  z-index: 3;
+  inset: -2px;
 }
 
-.sheet-shell-head {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  padding: var(--layout-panel-padding);
-  padding-bottom: var(--layout-compact-gap);
-  border-bottom: 1px solid rgb(63 63 70 / 0.7);
+.ctx-head .eyebrow .link::after,
+.review-head .link::after {
+  content: "";
+  position: absolute;
+  inset: -10px -4px;
 }
 
-.sheet-shell-body {
-  flex: 1 1 auto;
-  overflow-y: auto;
-  padding: var(--layout-content-padding) var(--layout-panel-padding);
+.review .edit::after {
+  content: "";
+  position: absolute;
+  inset: -4px;
 }
 
-.sheet-shell-foot {
-  flex: 0 0 auto;
-  padding: var(--layout-panel-padding);
-  padding-top: var(--layout-compact-gap);
-  border-top: 1px solid rgb(63 63 70 / 0.7);
+.review-filters button::after {
+  content: "";
+  position: absolute;
+  inset: -6px 0;
 }
 
-/* 600px, not the suite's 640/768 bands — REQ-207's sheet-family boundary
-   (DEC-117/NFR-011), scoped to this overlay family only. */
-@media (min-width: 600px) {
-  .sheet-shell-overlay {
-    align-items: center;
-  }
-
-  .sheet-shell-surface {
-    width: min(32rem, 90vw);
-    max-height: min(85dvh, 42rem);
-    border-radius: 1rem;
-  }
-
-  .sheet-shell-surface::before {
-    display: none;
-  }
+.pill button::after {
+  content: "";
+  position: absolute;
+  inset: -9px;
 }
 
-@media (min-width: 768px) {
-  .scan-video {
+.shelf .card .card-widget::before {
+  inset: -9px;
+}
+
+.ctx-art .hero .card-widget.info::before {
+  inset: -10px;
+}
+
+.idq-error {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--status-error) 50%, transparent);
+  background: color-mix(in srgb, var(--status-error) 10%, transparent);
+  color: var(--status-error);
+  font-size: 0.875rem;
+}
+
+.idq-status {
+  margin: 0;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  color: var(--accent-soft);
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+
+@media (min-width: 768px) {.scan-video {
     aspect-ratio: 3 / 4;
     max-height: none;
   }
 
-  .adaptive-context-overlay {
+.adaptive-context-overlay {
     align-items: stretch;
     justify-content: flex-end;
   }
 
-  .adaptive-context-surface {
+.adaptive-context-surface {
     width: min(30rem, 90vw);
     max-height: none;
     border-radius: 1rem 0 0 1rem;
-  }
-
-  .conversation-history-surface {
-    width: min(30rem, 90vw);
   }
 }
 
@@ -2883,20 +2525,6 @@ select.select-chevron {
   --layout-surface-gap: clamp(0.5rem, 1.25vw, 1rem);
   --layout-compact-gap: clamp(0.375rem, 1vw, 0.75rem);
 
-  /* Default (blue) REQ-200 token set — mirrors the approved Blue profile so first
-     paint matches the default palette before applyPalette.ts's effect runs.
-     Overridden per-palette by applyPalette.ts via inline custom properties on
-     the document root (lib/theme/palettes.ts is the one authoritative source). */
-  --accent: 3 105 161;
-  --accent-strong: 29 78 216;
-  --accent-soft: 125 211 252;
-  --accent-contrast: 255 255 255;
-  --ground: 9 9 11;
-  --ground-wash: 3 105 161;
-  --panel: 24 24 27;
-  --panel-edge: 63 63 70;
-  --focus-ring: 125 211 252;
-
   /* REQ-207's sheet family (shared sheet shell, card detail, printing picker,
      Send feedback, the confirm sheet) switches at 600px — a bottom sheet
      below it, a floating centred card from it — new and structural, scoped to
@@ -2919,11 +2547,12 @@ select.select-chevron {
 }
 
 /* Ambient accent surface contract */
+
 .ambient-accent-surface {
-  border-color: rgb(var(--accent) / 0.24);
+  border-color: color-mix(in srgb, var(--accent) 24%, transparent);
   box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.04),
-    0 0.5rem 1.5rem rgb(var(--accent-strong) / 0.05);
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 4%, transparent),
+    0 0.5rem 1.5rem color-mix(in srgb, var(--accent-strong) 5%, transparent);
   transition:
     border-color var(--motion-base) var(--motion-ease-out),
     box-shadow var(--motion-base) var(--motion-ease-out);
@@ -2933,18 +2562,19 @@ select.select-chevron {
 .ambient-accent-interactive:focus-visible,
 .ambient-accent-interactive:focus-within,
 .ambient-accent-interactive:not(:disabled):active {
-  border-color: rgb(var(--accent) / 0.44);
+  border-color: color-mix(in srgb, var(--accent) 44%, transparent);
   box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.08),
-    0 0.5rem 1.5rem rgb(var(--accent-strong) / 0.1);
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 8%, transparent),
+    0 0.5rem 1.5rem color-mix(in srgb, var(--accent-strong) 10%, transparent);
 }
 
 .ambient-accent-surface[data-accent-current="true"] {
-  border-color: rgb(var(--accent) / 0.58);
+  border-color: color-mix(in srgb, var(--accent) 58%, transparent);
   box-shadow:
-    0 0 0 1px rgb(var(--accent-soft) / 0.12),
-    0 0.5rem 1.5rem rgb(var(--accent-strong) / 0.14);
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 12%, transparent),
+    0 0.5rem 1.5rem color-mix(in srgb, var(--accent-strong) 14%, transparent);
 }
+
 /* End ambient accent surface contract */
 
 body {
@@ -2952,7 +2582,7 @@ body {
   /* REQ-200: a flat dark ground, one colour per profile, no gradient. The
      profile's wash, scene and badge (AmbientScene) layer on top of this
      flat fill rather than the fill itself carrying a gradient. */
-  background: rgb(var(--ground));
+  background: var(--surface-ground);
   color: #e2e8f0;
   font-family:
     Inter,
@@ -2969,8 +2599,8 @@ body {
 }
 
 ::selection {
-  background: rgb(var(--accent-strong));
-  color: rgb(var(--accent-contrast));
+  background: var(--accent-strong);
+  color: var(--accent-contrast);
 }
 
 @keyframes motion-enter {
@@ -3070,11 +2700,6 @@ body {
   animation: motion-exit var(--motion-fast) var(--motion-ease-out) both;
 }
 
-/* Feature portal dropdown open motion — reuses the motion-enter keyframe timing. */
-.portal-menu-motion {
-  animation: motion-enter var(--motion-fast) var(--motion-ease-out) both;
-}
-
 .motion-hover,
 .motion-press,
 .motion-focus {
@@ -3088,7 +2713,7 @@ body {
 }
 
 .motion-focus:focus-visible {
-  outline: 2px solid rgb(var(--accent-soft));
+  outline: 2px solid var(--accent-soft);
   outline-offset: 2px;
   transform: scale(1.01);
 }
@@ -3188,6 +2813,7 @@ body {
  * canvas, no script-driven animation loop (the elapsed clock's own per-second
  * re-render is a plain React state tick, unrelated to these CSS keyframes).
  */
+
 @keyframes wait-inscription-ink-reveal {
   from {
     clip-path: inset(0 100% 0 0);
@@ -3247,7 +2873,7 @@ body {
   position: absolute;
   inset: 4px;
   border-radius: 9999px;
-  background: radial-gradient(circle, rgb(var(--accent-soft) / 1) 0%, rgb(var(--accent) / 1) 75%, transparent 100%);
+  background: radial-gradient(circle, var(--accent-soft) 0%, var(--accent) 75%, transparent 100%);
   opacity: 0.8;
 }
 
@@ -3261,7 +2887,7 @@ body {
   position: absolute;
   inset: 0;
   border-radius: 9999px;
-  border: 1px dashed rgb(var(--accent-soft) / 1);
+  border: 1px dashed var(--accent-soft);
   opacity: 0.55;
   animation: wait-inscription-ring-spin 6s linear infinite;
 }
@@ -3286,7 +2912,7 @@ body {
   width: 3px;
   height: 3px;
   border-radius: 9999px;
-  background: rgb(var(--accent-soft) / 1);
+  background: var(--accent-soft);
   animation: wait-inscription-mote-drift 2.4s var(--motion-ease-out) infinite;
 }
 
@@ -3306,15 +2932,16 @@ body {
  * rule is later in the cascade silently replace the other instead of both
  * playing. The "edge breathes" treatment is a `::after` overlay instead, with
  * its own independent `animation`. */
+
 @keyframes wait-inscription-bubble-breathe {
   0%,
   100% {
     opacity: 0.5;
-    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.12);
+    box-shadow: var(--ring-breathe-rest);
   }
   50% {
     opacity: 1;
-    box-shadow: 0 0 0 1px rgb(var(--accent) / 0.3);
+    box-shadow: var(--ring-breathe-peak);
   }
 }
 
@@ -3339,6 +2966,7 @@ body {
  * tier-up drops in with a slight overshoot; a tier-down lifts and fades.
  * Transform/opacity only (NFR-006); nothing loops idle — each keyframe plays
  * once per tier transition, triggered by the caller re-keying the SVG. */
+
 @keyframes trade-pile-tier-drop-in {
   0% {
     transform: translateY(-14px) scale(0.92);
@@ -3380,19 +3008,18 @@ body {
 }
 
 .trade-pile-richer {
-  filter: drop-shadow(0 0 6px rgb(var(--accent) / 0.45));
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--accent) 45%, transparent));
 }
 
 .trade-pile-lighter {
   opacity: 0.82;
 }
 
-/* Look-matching pass (slice O): Trade Balancer's screen, ported from
-   `trade-balancer.html` — the scale band (totals, piles, verdict), side
-   tabs/columns, one-line entry rows, and the side foot. `.icon-chip` (slice
-   M) and `.search-pop`/`.search-row`/`.search-results` (slice M) are reused
-   as-is for the "＋ Add card"/"▣ Scan" row and its popover — no new chip or
-   search-field classes here. */
+/* Trade Balancer (ui-look-translation, slice D): a port of `trade-balancer.html`'s own stylesheet,
+   selector for selector, with every colour, surface and shadow read from the token layer
+   (REQ-216). The screen fits the viewport through `.page-shell-fit` (above), not the mockup's
+   measured `--chrome`; the pile artwork (`TradePile`) stays as it was. */
+
 .tb {
   display: flex;
   flex-direction: column;
@@ -3401,10 +3028,40 @@ body {
   min-height: 0;
 }
 
-/* `trade-balancer.html:30-42` the scale: both sides' totals and piles in one
-   band, replacing the gold-pile verdict panel. */
-.tb-scale {
+@media (min-width: 720px) {
+  .tb {
+    margin-bottom: 2.25rem;
+  }
+}
+
+@media (max-width: 719px) {
+  .tb {
+    padding-bottom: 0.6rem;
+  }
+}
+
+.asof {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.flow-head .asof {
+  display: none;
+}
+
+@media (max-width: 719px) {
+  .header-side .asof {
+    display: none;
+  }
+  .flow-head .asof {
+    display: inline;
+  }
+}
+
+.scale {
   position: relative;
+  overflow: hidden;
   flex: 0 0 auto;
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -3412,69 +3069,78 @@ body {
   gap: 0.5rem;
   padding: 0.55rem 0.8rem 0.5rem;
   border-radius: 0.9rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-panel);
 }
 
-.tb-pan {
+.scale > * {
+  position: relative;
+  z-index: 1;
+}
+
+.pan {
   display: grid;
   gap: 0;
   min-width: 0;
 }
 
-.tb-pan.b {
+.pan.b {
   text-align: right;
 }
 
-.tb-pan-label {
+.pan .label {
   font-size: 0.64rem;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: #a1a1aa;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.tb-pan-total {
+.pan .total {
   font-size: 1.35rem;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
   line-height: 1.15;
   transition: color 200ms ease;
+  font-family: var(--font-display);
 }
 
-.tb-pan[data-heavy="true"] .tb-pan-total {
-  color: rgb(var(--accent-soft));
-  text-shadow: 0 0 18px rgb(var(--accent-soft) / 0.6);
+.pan[data-heavy="true"] .total {
+  color: var(--accent-soft);
+  text-shadow: 0 0 18px color-mix(in srgb, var(--accent-soft) 60%, transparent);
 }
 
-.tb-pan-count {
+.pan .count {
   font-size: 0.68rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
-.tb-piles-wrap {
+.piles-wrap {
   display: grid;
   justify-items: center;
   gap: 0.1rem;
   min-width: 200px;
 }
 
-.tb-piles {
+.piles {
   display: flex;
   align-items: flex-end;
   justify-content: center;
   gap: 0.4rem;
 }
 
-.tb-pile {
-  width: 132px;
-  height: 73px;
+.pile {
+  width: 120px;
+  height: 67px;
+  display: block;
+  overflow: visible;
+  transition: filter 300ms ease, opacity 300ms ease;
 }
 
-.tb-verdict {
+.verdict {
   font-size: 0.9rem;
   font-weight: 700;
   text-align: center;
@@ -3483,67 +3149,75 @@ body {
   font-family: Georgia, "Times New Roman", serif;
   font-style: italic;
   letter-spacing: 0.01em;
-  color: #e2e8f0;
 }
 
-.tb-verdict small {
+.verdict[data-even="true"] {
+  color: var(--accent-soft);
+}
+
+.verdict small {
   display: block;
-  font-family: inherit;
+  font-family: var(--font-body);
   font-style: normal;
   font-weight: 600;
   font-size: 0.72rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-variant-numeric: tabular-nums;
   letter-spacing: 0;
 }
 
-@media (min-width: 768px) {
-  .tb-scale {
+@media (min-width: 720px) {
+  .scale {
     padding: 0.6rem 1.1rem;
   }
-  .tb-pan-total {
+  .pan .total {
     font-size: 1.6rem;
   }
-  .tb-piles-wrap {
+  .piles-wrap {
     min-width: 320px;
   }
-  .tb-piles {
-    gap: 1.2rem;
-  }
-  .tb-pile {
+  .pile {
     width: 196px;
     height: 109px;
   }
+  .piles {
+    gap: 1.2rem;
+  }
 }
 
-@media (max-width: 767px) {
-  .tb-scale {
+@media (max-width: 719px) {
+  .scale {
     grid-template-columns: 1fr 1fr;
     gap: 0.2rem 0.5rem;
     padding-top: 0.4rem;
   }
-  .tb-piles-wrap {
+  .piles-wrap {
     grid-column: 1 / -1;
     grid-row: 1;
     min-width: 0;
   }
+  .pile {
+    width: 132px;
+    height: 73px;
+  }
+  .piles {
+    gap: 0.6rem;
+  }
 }
 
-/* `trade-balancer.html:84-93` side tabs on phone, two columns on desktop
-   (REQ-204). */
-.tb-side-tabs {
+.side-tabs {
   display: flex;
   gap: 0.4rem;
   flex: 0 0 auto;
 }
 
-.tb-side-tabs button {
+.side-tabs button {
   flex: 1;
   min-height: 42px;
   border-radius: 0.7rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  border: 1px solid var(--surface-edge);
   background: transparent;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 0.88rem;
   cursor: pointer;
   display: flex;
@@ -3552,53 +3226,56 @@ body {
   align-items: center;
 }
 
-.tb-side-tabs button b {
-  color: rgb(var(--accent-soft));
+.side-tabs button b {
+  color: var(--accent-soft);
   font-variant-numeric: tabular-nums;
 }
 
-.tb-side-tabs button[aria-selected="true"] {
-  color: #f4f4f5;
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
-  box-shadow: 0 0 16px -8px rgb(var(--accent-soft));
+.side-tabs button[aria-selected="true"] {
+  color: var(--text-primary);
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
+  box-shadow: var(--glow-soft-16);
 }
 
-.tb-sides {
+.sides {
   display: grid;
   gap: 0.6rem;
   flex: 1 1 auto;
   min-height: 0;
 }
 
-.tb-side {
+.side {
   display: none;
+}
+
+.side[data-active="true"] {
+  display: flex;
+}
+
+@media (min-width: 720px) {
+  .side-tabs {
+    display: none;
+  }
+  .sides {
+    grid-template-columns: 1fr 1fr;
+  }
+  .side {
+    display: flex !important;
+  }
+}
+
+.side {
   flex-direction: column;
   min-height: 0;
   gap: 0.5rem;
   padding: 0.6rem 0.7rem;
   border-radius: 1rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.8);
+  border: 1px solid var(--surface-edge);
+  background: var(--surface-panel);
 }
 
-.tb-side[data-active="true"] {
-  display: flex;
-}
-
-@media (min-width: 768px) {
-  .tb-side-tabs {
-    display: none;
-  }
-  .tb-sides {
-    grid-template-columns: 1fr 1fr;
-  }
-  .tb-side {
-    display: flex !important;
-  }
-}
-
-.tb-side-head {
+.side-head {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -3606,46 +3283,105 @@ body {
   flex: 0 0 auto;
 }
 
-.tb-side-attach {
+.side-head .name {
+  font-family: var(--font-display);
+  font-size: 1.02rem;
+  font-weight: 600;
+  background: transparent;
+  border: 0;
+  border-bottom: 1px dashed transparent;
+  color: var(--text-primary);
+  padding: 0.1rem 0;
+  width: 8rem;
+  min-width: 0;
+}
+
+.side-head .name:hover, .side-head .name:focus {
+  border-bottom-color: var(--accent-soft);
+  outline: none;
+}
+
+.side-head .attach {
   display: flex;
   gap: 0.35rem;
 }
 
-.tb-entries {
-  display: flex;
-  flex-direction: column;
+.side-head .icon-chip {
+  min-height: 38px;
+  font-size: 0.8rem;
+  padding: 0 0.6rem;
+}
+
+.side .search-pop {
+  flex: 0 0 auto;
+}
+
+.side .search-results {
+  max-height: 108px;
+}
+
+.entries {
+  display: grid;
   gap: 0.4rem;
+  align-content: start;
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   padding: 2px 2px 2px 0;
+  scrollbar-width: thin;
 }
 
-.tb-entry {
+.entry {
   display: grid;
   grid-template-columns: 44px 1fr auto;
   gap: 0.55rem;
   align-items: center;
   padding: 0.4rem 0.45rem;
   border-radius: 0.7rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.45);
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
+  animation: msg-in 260ms ease both;
 }
 
-.tb-entry-card {
+.entry .card {
+  position: relative;
   width: 44px;
   height: 61px;
   border-radius: 4px;
-  object-fit: contain;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: var(--tb-shadow-2);
 }
 
-.tb-entry-info {
+.entry .card img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.entry[data-foil="true"] .card::after {
+  content: "";
+  position: absolute;
+  inset: -40% -60%;
+  background: var(--foil-sheen);
+  mix-blend-mode: screen;
+  pointer-events: none;
+  animation: foil 3.2s ease-in-out infinite;
+}
+
+@keyframes foil {
+  0%, 100% { transform: translateX(-30%);
+  } 50% { transform: translateX(30%);
+  };
+}
+
+.entry .info {
   min-width: 0;
   display: grid;
   gap: 0.12rem;
 }
 
-.tb-entry-name {
+.entry .nm {
   font-weight: 600;
   font-size: 0.88rem;
   white-space: nowrap;
@@ -3653,94 +3389,88 @@ body {
   text-overflow: ellipsis;
 }
 
-.tb-entry-printing {
+.entry .printing {
   font-size: 0.7rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-.tb-entry-printing-link {
+.entry .printing button {
   background: transparent;
   border: 0;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 0.7rem;
   padding: 0;
   cursor: pointer;
   text-decoration: underline dotted;
 }
 
-.tb-entry-printing-link:disabled {
-  opacity: 0.5;
-  cursor: default;
+.entry .printing .only {
+  color: var(--text-muted);
 }
 
-.tb-entry-printing-only {
-  color: #a1a1aa;
-}
-
-.tb-entry-controls {
+.entry .controls {
   display: flex;
   align-items: center;
   gap: 0.25rem;
   margin-top: 0.1rem;
 }
 
-.tb-entry-ctl {
+.entry .ctl {
   min-width: 30px;
   min-height: 30px;
   padding: 0 0.4rem;
   border-radius: 0.45rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  border: 1px solid var(--surface-edge);
   background: transparent;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 0.74rem;
   cursor: pointer;
 }
 
-.tb-entry-ctl[aria-pressed="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.24);
-  color: rgb(var(--accent-soft));
+.entry .ctl[aria-pressed="true"] {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel));
+  color: var(--accent-soft);
 }
 
-.tb-entry-ctl:disabled {
+.entry .ctl:disabled {
   opacity: 0.4;
   cursor: default;
 }
 
-.tb-entry-qty {
+.entry .qty {
   min-width: 1.3rem;
   text-align: center;
   font-variant-numeric: tabular-nums;
   font-size: 0.82rem;
 }
 
-.tb-entry-money {
+.entry .money {
   display: grid;
   justify-items: end;
   gap: 0.05rem;
   align-self: start;
 }
 
-.tb-entry-line {
+.entry .money .line {
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-size: 0.95rem;
-  color: #e2e8f0;
 }
 
-.tb-entry-unit {
+.entry .money .unit {
   font-size: 0.66rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   white-space: nowrap;
 }
 
-.tb-entry-remove {
+.entry .x {
   border: 0;
   background: transparent;
-  color: #a1a1aa;
+  color: var(--text-muted);
   cursor: pointer;
   font-size: 0.85rem;
   min-width: 30px;
@@ -3748,74 +3478,112 @@ body {
   margin-top: 0.1rem;
 }
 
-.tb-entry-remove:hover {
-  color: #f4f4f5;
+.entry .x:hover {
+  color: var(--text-primary);
 }
 
-.tb-entry-empty {
+.entry-empty {
   padding: 1.2rem 1rem;
   text-align: center;
   font-size: 0.85rem;
-  color: #a1a1aa;
-  border: 1px dashed rgb(var(--accent-soft) / 0.45);
+  color: var(--text-muted);
+  border: 1px dashed color-mix(in srgb, var(--accent-soft) 45%, transparent);
   border-radius: 0.75rem;
 }
 
-.tb-side-foot {
+.side-foot {
   display: flex;
   justify-content: flex-end;
   align-items: center;
   font-size: 0.8rem;
-  color: #a1a1aa;
-  border-top: 1px solid rgb(var(--panel-edge) / 0.7);
+  color: var(--text-muted);
+  border-top: 1px solid var(--surface-edge);
   padding-top: 0.45rem;
   flex: 0 0 auto;
 }
 
-.tb-side-foot b {
-  color: #f4f4f5;
+.side-foot b {
+  color: var(--text-primary);
   font-size: 1rem;
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-display);
   margin-left: 0.4rem;
 }
 
-/* The printing picker's rows (REQ-065) — paired with slice L's
-   `.card-detail-hero*` for the art-crop header above (`PrintingPicker.tsx`). */
-.tb-printing-list {
+.flow-head .head-tools {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+@media (max-width: 719px) {
+  .flow-head {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 0.1rem 0.5rem;
+  }
+  .flow-head h1 {
+    grid-column: 1;
+  }
+  .flow-head .head-tools {
+    grid-column: 2;
+    grid-row: 1;
+  }
+  .flow-head .asof {
+    grid-column: 1 / -1;
+    grid-row: 2;
+  }
+}
+
+.pp-filter {
+  margin: 0 0 0.2rem;
+}
+
+.pp-filter[hidden] {
+  display: none;
+}
+
+.pp-lede {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.printing-list {
   display: grid;
   gap: 0.45rem;
 }
 
-.tb-printing-row {
+.printing-row {
   display: grid;
   grid-template-columns: 44px 1fr;
   gap: 0.7rem;
   align-items: center;
   padding: 0.55rem 0.6rem;
   border-radius: 0.8rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.4);
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 40%, transparent);
 }
 
-.tb-printing-row[data-current="true"] {
-  border-color: rgb(var(--accent-soft) / 0.55);
-  background: rgb(var(--accent) / 0.14);
+.printing-row[data-current="true"] {
+  border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface-panel));
 }
 
-.tb-printing-thumb {
+.printing-row .thumb {
   width: 44px;
   height: 61px;
   border-radius: 3px;
-  object-fit: contain;
 }
 
-.tb-printing-set {
+.printing-row .set {
   display: grid;
   gap: 0.3rem;
   min-width: 0;
 }
 
-.tb-printing-set-name {
+.printing-row .set .n {
   font-weight: 600;
   font-size: 0.88rem;
   white-space: nowrap;
@@ -3823,57 +3591,177 @@ body {
   text-overflow: ellipsis;
 }
 
-.tb-printing-set-name small {
+.printing-row .set .n small {
   display: block;
   font-weight: 500;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 0.7rem;
   letter-spacing: 0.04em;
   margin-top: 0.1rem;
 }
 
-.tb-printing-finishes {
+.printing-row .finishes {
   display: flex;
   gap: 0.35rem;
 }
 
-.tb-finish {
+.finish {
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
   min-height: 32px;
   padding: 0 0.6rem;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  border: 1px solid var(--surface-edge);
   background: transparent;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-size: 0.78rem;
   cursor: pointer;
   font-variant-numeric: tabular-nums;
 }
 
-.tb-finish small {
-  color: #a1a1aa;
+.finish small {
+  color: var(--text-muted);
   font-size: 0.68rem;
 }
 
-.tb-finish b {
+.finish b {
   font-weight: 700;
 }
 
-.tb-finish[aria-current="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.26);
-  box-shadow: 0 0 12px -5px rgb(var(--accent-soft));
+.finish[aria-pressed="true"] {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 26%, var(--surface-panel));
+  box-shadow: var(--glow-soft-12);
 }
 
-.tb-finish[aria-current="true"] b {
-  color: rgb(var(--accent-soft));
+.finish[aria-pressed="true"] b {
+  color: var(--accent-soft);
 }
 
-.tb-finish:disabled {
+.finish:disabled {
   opacity: 0.45;
   cursor: default;
+}
+
+.finish.foil::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: var(--foil-dot);
+}
+
+/* Trade Balancer pieces the mockup page does not draw */
+
+/* REQ-205 wins over the mockup's small controls: a transparent halo makes each hit area 44px
+   without changing the look. */
+.entry .ctl,
+.entry .x,
+.entry .printing button,
+.finish,
+.side-tabs button,
+.side-head .icon-chip,
+.side-head .name,
+.flow-head .head-tools .icon-chip {
+  position: relative;
+}
+
+.entry .ctl::after,
+.entry .x::after {
+  content: "";
+  position: absolute;
+  inset: -7px;
+}
+
+.entry .printing button::after {
+  content: "";
+  position: absolute;
+  inset: -14px -4px;
+}
+
+.finish::after {
+  content: "";
+  position: absolute;
+  inset: -6px 0;
+}
+
+.side-tabs button::after {
+  content: "";
+  position: absolute;
+  inset: -1px 0;
+}
+
+.side-head .icon-chip::after,
+.flow-head .head-tools .icon-chip::after {
+  content: "";
+  position: absolute;
+  inset: -3px;
+}
+
+.side-head .name::after {
+  content: "";
+  position: absolute;
+  inset: -11px 0;
+}
+
+.tb-note {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.side .scan-panel {
+  display: grid;
+  gap: 0.75rem;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.side .scan-title {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.side-head .name {
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: text;
+}
+
+.entry .card {
+  display: block;
+  flex: 0 0 auto;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.entry-error {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.3rem 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--status-warn) 45%, transparent);
+  background: color-mix(in srgb, var(--status-warn) 8%, transparent);
+  color: var(--status-warn);
+  font-size: 0.74rem;
+}
+
+.entry-error p {
+  margin: 0;
+}
+
+.entry .money .line.missing {
+  color: var(--status-warn);
 }
 
 @keyframes scan-confirm-pop {
@@ -3901,94 +3789,521 @@ body {
   animation: scan-confirm-pop 1.4s ease-out forwards;
 }
 
-/* Look-matching pass (slice P): the card scanner, ported from `card-scan.html`
-   — one panel (no nested frames), a corner-ticked guide with a marching lock
-   outline, a top-left "Locking on <card>" indicator, and a foot row
-   (mute/shutter/Debug) replacing the full-width rectangular Capture button
-   and the old bottom-center-absolute Debug pill. */
-.cs-viewfinder {
+/* The card scanner (ui-look-translation, slice E): a port of `card-scan.html`'s own stylesheet,
+   selector for selector, with every colour, surface and shadow read from the token layer (REQ-216) —
+   the literal shadows live in `lib/theme/glows.css`. The camera feed is the app's own `<video>`; the
+   mockup's still, lock outline, debug panel and camera-error message are not built (the scanner's
+   own copy and overlays are unchanged). */
+
+.scan {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.flow-head {
+  align-items: center;
+}
+
+.scan-exit {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 0.7rem;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-panel) 85%, transparent);
+  color: var(--text-primary);
+  font-size: 1.15rem;
+  text-decoration: none;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.scan-exit:hover, .scan-exit:focus-visible {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface-panel));
+}
+
+.viewfinder {
   position: relative;
   overflow: hidden;
   border-radius: 1.1rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: #0b0b0d;
+  border: 1px solid var(--surface-edge);
+  background: var(--viewfinder-ground);
+  height: clamp(20rem, calc(100dvh - 19rem), 42rem);
+  box-shadow: var(--cs-shadow-1);
 }
 
-/* `card-scan.html:19-20`: the column narrows further at desktop (31.5rem,
-   not the host page's own 36rem cap) specifically "so the ✕ sits right over
-   its corner" — the panel's own width, not the page's. This is also what
-   keeps the `md:aspect-[3/4]` video inside the viewport (requirement 7): a
-   576px-wide panel would stand 768px tall; capped to 504px it stands 672px,
-   the clamp's own ceiling. */
-@media (min-width: 768px) {
-  .cs-viewfinder {
-    /* The video inside (`md:aspect-[3/4] md:h-auto`, untouched/test-pinned)
-       derives its height from this width, so the width is solved backwards
-       from the same viewport-bounded height the phone clamp already uses
-       (`h-[clamp(20rem,calc(100dvh-17rem),42rem)]`) — an 18rem chrome
-       deduction here, not 17rem, because this host's header/banner/title
-       row plus page padding (rather than the phone clamp's own video-only
-       budget) sit above the panel too. `min()` with the mockup's literal
-       31.5rem keeps a short viewport from growing the panel past it.
-       Replacing the clamp's own 17rem is not open to this slice (shared by
-       every `ScanCameraSurface` host, including phone, where it already
-       fits exactly). */
-    max-width: min(31.5rem, calc(clamp(20rem, calc(100dvh - 18rem), 42rem) * 0.75));
-    margin-inline: auto;
+@media (min-width: 720px) {
+  .viewfinder {
+    height: auto;
+    aspect-ratio: 3 / 4;
+    max-height: 42rem;
   }
 }
 
-.cs-guide-tick {
+.guide {
+  position: absolute;
+  left: 50%;
+  top: 74px;
+  height: calc(100% - 74px - 52px);
+  aspect-ratio: 745 / 1040;
+  transform: translateX(-50%);
+  border-radius: 0.8rem;
+  border: 1.5px solid color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  box-shadow: var(--cs-shadow-2);
+  pointer-events: none;
+}
+
+.guide .tick {
   position: absolute;
   width: 16px;
   height: 16px;
-  border: 2px solid rgb(var(--accent-soft) / 0.85);
+  border: 2px solid color-mix(in srgb, var(--accent-soft) 85%, transparent);
 }
 
-.cs-guide-tick-tl {
-  left: -2px;
-  top: -2px;
+.guide .tick.tl {
+  left: -3px;
+  top: -3px;
   border-right: 0;
   border-bottom: 0;
   border-top-left-radius: 0.8rem;
 }
 
-.cs-guide-tick-tr {
-  right: -2px;
-  top: -2px;
+.guide .tick.tr {
+  right: -3px;
+  top: -3px;
   border-left: 0;
   border-bottom: 0;
   border-top-right-radius: 0.8rem;
 }
 
-.cs-guide-tick-bl {
-  left: -2px;
-  bottom: -2px;
+.guide .tick.bl {
+  left: -3px;
+  bottom: -3px;
   border-right: 0;
   border-top: 0;
   border-bottom-left-radius: 0.8rem;
 }
 
-.cs-guide-tick-br {
-  right: -2px;
-  bottom: -2px;
+.guide .tick.br {
+  right: -3px;
+  bottom: -3px;
   border-left: 0;
   border-top: 0;
   border-bottom-right-radius: 0.8rem;
 }
 
-@keyframes cs-guide-breathe {
-  0%,
-  100% {
-    border-color: rgb(var(--accent-soft) / 0.55);
+[data-state="locking"] .guide {
+  animation: guide-breathe 3.2s ease-in-out infinite;
+}
+
+@keyframes guide-breathe {
+  0%, 100% {
+    border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
+    box-shadow: var(--cs-shadow-2);
   }
   50% {
-    border-color: rgb(var(--accent-soft) / 0.85);
+    border-color: color-mix(in srgb, var(--accent-soft) 80%, transparent);
+    box-shadow: var(--cs-shadow-4);
   }
 }
 
-.cs-guide-breathe {
-  animation: cs-guide-breathe 3.2s ease-in-out infinite;
+.vf-foot {
+  position: absolute;
+  left: 0.75rem;
+  right: 0.75rem;
+  bottom: 0.55rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  z-index: 2;
+}
+
+.vf-foot .mute {
+  min-width: 36px;
+  min-height: 30px;
+  padding: 0 0.5rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 70%, transparent);
+  color: var(--text-primary);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.vf-foot .shutter {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  padding: 0;
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  border: 2px solid color-mix(in srgb, var(--accent-soft) 88%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 55%, transparent);
+  box-shadow: var(--cs-shadow-5);
+  transition: transform 120ms ease;
+}
+
+.vf-foot .shutter::before {
+  content: "";
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  display: block;
+  background: radial-gradient(circle at 38% 34%, color-mix(in srgb, var(--accent-soft) 55%, var(--accent)), var(--accent) 55%, var(--accent-strong));
+  transition: transform 120ms ease;
+}
+
+.vf-foot .shutter:hover::before {
+  transform: scale(1.05);
+}
+
+.vf-foot .shutter:active::before {
+  transform: scale(0.86);
+}
+
+.vf-foot .shutter:active {
+  transform: scale(0.97);
+}
+
+.credit {
+  margin: 0;
+  text-align: center;
+  color: color-mix(in srgb, var(--text-muted) 80%, transparent);
+  font-size: 0.62rem;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.indicator {
+  position: absolute;
+  left: 0.75rem;
+  top: 0.6rem;
+  max-width: calc(100% - 10rem);
+  min-height: 44px;
+  display: grid;
+  gap: 0.3rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.8rem;
+  background: color-mix(in srgb, var(--surface-ground) 78%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 30%, transparent);
+  backdrop-filter: blur(6px);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.indicator[hidden] {
+  display: none;
+}
+
+.indicator .votes {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.indicator .bar {
+  width: 88px;
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-muted) 30%, transparent);
+  overflow: hidden;
+}
+
+.indicator .bar i {
+  display: block;
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-soft));
+  transition: width 150ms ease;
+}
+
+.indicator .n {
+  font-size: 0.7rem;
+  color: var(--accent-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.indicator .dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  box-shadow: var(--cs-shadow-6);
+  margin-right: 0.4rem;
+  vertical-align: middle;
+  animation: think 1.2s ease-in-out infinite;
+}
+
+[data-state="camera-error"] .indicator {
+  border-color: color-mix(in srgb, var(--status-error) 50%, transparent);
+}
+
+.vf-top-right {
+  position: absolute;
+  right: 0.75rem;
+  top: 0.6rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  z-index: 3;
+}
+
+.caution {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--caution) 55%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 78%, transparent);
+  color: var(--caution);
+  cursor: pointer;
+  backdrop-filter: blur(6px);
+  box-shadow: var(--cs-shadow-7);
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.caution:hover, .caution:focus-visible {
+  border-color: var(--caution);
+  background: color-mix(in srgb, var(--caution) 14%, transparent);
+}
+
+.caution svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+}
+
+.review-bubble {
+  position: relative;
+  display: grid;
+  justify-items: end;
+  gap: 0.4rem;
+}
+
+.review-bubble .list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 0.4rem);
+}
+
+.review-bubble .pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0 0.8rem;
+  border-radius: 999px;
+  border: 0;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.86rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, white) 0%, var(--accent) 45%, var(--accent-strong) 100%);
+  color: var(--text-on-accent);
+  box-shadow: var(--cs-shadow-8);
+}
+
+.review-bubble .list {
+  display: none;
+  width: 16rem;
+  max-width: calc(100vw - 2.5rem);
+  padding: 0.6rem;
+  border-radius: 0.9rem;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-panel) 92%, transparent);
+  backdrop-filter: blur(10px);
+  text-align: left;
+}
+
+.review-bubble[data-open="true"] .list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.review-bubble .list .lbl {
+  font-size: 0.64rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
+}
+
+.review-bubble .list .note {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.35;
+  margin: 0;
+}
+
+.review-bubble .row {
+  display: grid;
+  grid-template-columns: 30px 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.82rem;
+}
+
+.review-bubble .row .thumb {
+  width: 30px;
+  height: 42px;
+  border-radius: 3px;
+}
+
+.review-bubble .row .btn {
+  min-height: 30px;
+  padding: 0.1rem 0.55rem;
+  font-size: 0.72rem;
+}
+
+.confirm {
+  position: absolute;
+  inset: 0;
+  display: none;
+  place-items: center;
+  pointer-events: none;
+}
+
+[data-state="added"] .confirm {
+  display: grid;
+  animation: confirm-pop 1.4s ease-out forwards;
+}
+
+.confirm > div {
+  display: grid;
+  justify-items: center;
+  gap: 0.2rem;
+  padding: 0.9rem 1.4rem;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, white) 0%, var(--accent) 45%, var(--accent-strong) 100%);
+  color: var(--text-on-accent);
+  box-shadow: var(--cs-shadow-9);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.confirm .up {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+@keyframes confirm-pop {
+  0% { opacity: 0; transform: scale(0.8); }
+  15% { opacity: 1; transform: scale(1.06); }
+  30% { transform: scale(1); }
+  70% { opacity: 1; }
+  100% { opacity: 0; transform: scale(0.96); }
+}
+
+.debug-toggle {
+  min-height: 30px;
+  padding: 0 0.7rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--text-primary) 14%, transparent);
+  background: color-mix(in srgb, var(--surface-ground) 70%, transparent);
+  color: var(--text-muted);
+  font-size: 0.68rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.debug-toggle[aria-pressed="true"] {
+  border-color: var(--accent-soft);
+  color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, color-mix(in srgb, var(--surface-ground) 80%, transparent));
+}
+
+.scan-hint {
+  margin: -0.2rem 0 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+[data-state="camera-error"] .guide, [data-state="camera-error"] .debug-toggle, [data-state="camera-error"] .vf-foot .shutter {
+  display: none;
+}
+
+/* the real camera feed fills the viewfinder (the mockup's `.feed`) */
+.viewfinder video {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-height: none;
+  aspect-ratio: auto;
+  object-fit: cover;
+  background: var(--viewfinder-ground);
+}
+
+/* the scanner host's column is the camera box's width on desktop, so the ✕ sits right over its corner */
+@media (min-width: 720px) {
+  .page-content-narrow-fit {
+    width: min(31.5rem, 92vw);
+  }
+}
+
+/* the caution note opens under the count pill, aligned to the frame's right edge */
+.caution-panel {
+  position: absolute;
+  right: 0.75rem;
+  top: calc(0.6rem + 44px + 0.4rem);
+  z-index: 4;
+  width: 22rem;
+  max-width: calc(100vw - 2rem);
+  padding: 1rem;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--caution) 45%, transparent);
+  background: color-mix(in srgb, var(--surface-panel) 96%, transparent);
+  text-align: left;
+}
+
+.caution-panel .ch {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.2rem 0 0.5rem;
+}
+
+.caution-panel .ch .caution {
+  pointer-events: none;
+}
+
+.caution-panel h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.caution-panel p {
+  margin: 0 0 0.6rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-primary);
+}
+
+.caution-panel p.text-muted {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+}
+
+.caution-panel .foot {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.review-bubble .list {
+  max-height: calc(100dvh - 8rem);
+  overflow-y: auto;
+}
+
+.review-bubble .row .name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 @keyframes cs-lock-outline-march {
@@ -4001,207 +4316,136 @@ body {
   animation: cs-lock-outline-march 2.4s linear infinite;
 }
 
-.cs-indicator {
-  position: absolute;
-  left: 0.75rem;
-  top: 0.6rem;
-  max-width: calc(100% - 10rem);
-  display: grid;
-  gap: 0.3rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 0.8rem;
-  background: rgb(9 9 11 / 0.78);
-  border: 1px solid rgb(var(--accent-soft) / 0.3);
-  backdrop-filter: blur(6px);
-  font-size: 0.8rem;
-  font-weight: 600;
-  color: #f4f4f5;
+/* Life Tracker's Game Setup and Counters sheets (ui-look-translation, slice F): a port of
+   `life-tracker-menus.html`'s own stylesheet, with every colour, surface and shadow read from the
+   token layer (REQ-216). The mockup's generic names (`.stepper`, `.seg`, `.link`, `.seat`, `.tile`)
+   are scoped under `.lt-scope` so they cannot reach the other screens' controls of the same name.
+   The table itself (`PlayerLifeTrackerApp`, `PlayerLifeCard`) is untouched (REQ-202). */
+
+.lt-sheet {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
 }
 
-.cs-indicator-bar {
-  width: 88px;
-  height: 6px;
-  border-radius: 999px;
-  background: rgb(161 161 170 / 0.3);
-  overflow: hidden;
+.lt-head {
+  flex: 0 0 auto;
+  padding: 1.1rem 3.2rem 0.7rem 1rem;
+  border-bottom: 1px solid var(--surface-edge);
 }
 
-.cs-indicator-bar-fill {
+@media (max-width: 599px) {
+  .lt-head {
+    padding-top: 1.4rem;
+  }
+}
+
+.lt-head small {
   display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: linear-gradient(90deg, rgb(var(--accent)), rgb(var(--accent-soft)));
-  transition: width 150ms ease;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-soft);
 }
 
-.cs-indicator-n {
-  font-size: 0.7rem;
-  color: rgb(var(--accent-soft));
-  font-variant-numeric: tabular-nums;
+.lt-head h2 {
+  margin: 0.1rem 0 0;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
-.cs-vf-foot {
-  position: absolute;
-  left: 0.75rem;
-  right: 0.75rem;
-  bottom: 0.55rem;
-  z-index: 2;
+.lt-head h2 .life {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.lt-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.8rem 1rem 1rem;
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  scrollbar-width: thin;
+}
+
+.lt-foot {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.6rem;
+  min-height: 52px;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-top: 1px solid var(--surface-edge);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 24%, transparent), color-mix(in srgb, var(--accent) 6%, transparent));
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+}
+
+.lt-foot:hover {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 38%, transparent), color-mix(in srgb, var(--accent) 12%, transparent));
+}
+
+.lt-foot .chev {
+  color: var(--accent-soft);
+  font-size: 1.2rem;
+}
+
+.lt-scope .lt-sec {
+  display: grid;
   gap: 0.5rem;
 }
 
-.cs-mute {
-  min-width: 36px;
-  min-height: 30px;
-  padding: 0 0.5rem;
-  border-radius: 999px;
-  border: 1px solid rgb(244 244 245 / 0.14);
-  background: rgb(9 9 11 / 0.7);
-  color: #f4f4f5;
-  font-size: 0.85rem;
-  cursor: pointer;
-}
-
-.cs-shutter {
-  width: 54px;
-  height: 54px;
-  border-radius: 999px;
-  padding: 0;
-  cursor: pointer;
-  display: grid;
-  place-items: center;
-  border: 2px solid rgb(var(--accent-soft) / 0.88);
-  background: rgb(9 9 11 / 0.55);
-  box-shadow:
-    0 0 0 3px rgb(9 9 11 / 0.45),
-    0 0 18px -4px rgb(var(--accent-soft) / 0.7);
-  transition: transform 120ms ease;
-}
-
-.cs-shutter::before {
-  content: "";
-  width: 40px;
-  height: 40px;
-  border-radius: 999px;
-  display: block;
-  background: radial-gradient(circle at 38% 34%, rgb(var(--accent-soft)), rgb(var(--accent)) 60%, rgb(var(--accent)));
-  transition: transform 120ms ease;
-}
-
-.cs-shutter:hover::before {
-  transform: scale(1.05);
-}
-
-.cs-shutter:active::before {
-  transform: scale(0.86);
-}
-
-.cs-shutter:active {
-  transform: scale(0.97);
-}
-
-.cs-debug-toggle {
-  min-height: 30px;
-  padding: 0 0.7rem;
-  border-radius: 999px;
-  border: 1px solid rgb(244 244 245 / 0.14);
-  background: rgb(9 9 11 / 0.7);
-  color: #a1a1aa;
+.lt-scope .lt-sec > .lbl {
   font-size: 0.68rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.cs-debug-toggle[aria-pressed="true"] {
-  border-color: rgb(var(--accent-soft));
-  color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
-}
-
-.cs-credit {
-  margin: 0.5rem 0 0;
-  text-align: center;
-  color: rgb(161 161 170 / 0.8);
-  font-size: 0.62rem;
-  font-weight: 500;
-  letter-spacing: 0.02em;
-}
-
-.cs-hint {
-  margin: 0.15rem 0 0;
-  font-size: 0.78rem;
-  color: #a1a1aa;
-}
-
-.cs-vf-top-right {
-  position: absolute;
-  right: 0.75rem;
-  top: 0.6rem;
-  z-index: 3;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--text-muted);
   display: flex;
-  align-items: flex-start;
-  gap: 0.4rem;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.5rem;
 }
 
-.cs-caution {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 999px;
-  border: 1px solid rgb(250 204 21 / 0.55);
-  background: rgb(9 9 11 / 0.78);
-  color: #facc15;
-  cursor: pointer;
-  backdrop-filter: blur(6px);
-  box-shadow: 0 0 14px -6px rgb(250 204 21 / 0.8);
-  transition:
-    border-color 150ms ease,
-    background 150ms ease;
+.lt-scope .lt-sec.custom-section {
+  margin-top: 1rem;
 }
 
-.cs-caution:hover,
-.cs-caution:focus-visible {
-  border-color: #facc15;
-  background: rgb(250 204 21 / 0.14);
+.lt-scope .lt-sec > .lbl small {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 0.72rem;
 }
 
-.cs-scan-exit {
-  display: inline-grid;
-  place-items: center;
-  width: 44px;
-  height: 44px;
-  border-radius: 0.7rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--panel) / 0.85);
-  color: #e2e8f0;
-  font-size: 1.15rem;
-  cursor: pointer;
-  transition:
-    border-color 150ms ease,
-    background 150ms ease;
+@media (min-width: 600px) {
+  .lt-sheet.drawer-panel {
+    width: min(32rem, 92vw);
+    max-height: min(44rem, calc(100dvh - 3rem));
+    overflow: hidden;
+  }
+  .lt-sheet .lt-body {
+    max-height: none;
+  }
 }
 
-.cs-scan-exit:hover,
-.cs-scan-exit:focus-visible {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.18);
-}
-
-/* Look-matching pass (slice Q): Life Tracker's Game Setup and Counters
-   sheets, ported from `life-tracker-menus.html`'s own `lt-`-prefixed
-   classes (not renamed for reuse here — they are the mockup's own names).
-   The table itself (`PlayerLifeTrackerApp`/`PlayerLifeCard`) is untouched
-   (REQ-202). */
-.lt-rows {
+.lt-scope .lt-rows {
   display: grid;
   gap: 0.15rem;
   margin: 0 -0.35rem;
 }
 
-.lt-rows button {
+.lt-scope .lt-rows button {
   display: grid;
   grid-template-columns: 30px 1fr auto;
   align-items: center;
@@ -4213,145 +4457,170 @@ body {
   border: 1px solid transparent;
   border-radius: 0.7rem;
   background: transparent;
-  color: #e2e8f0;
+  color: var(--text-primary);
   font-weight: 500;
   font-size: 0.92rem;
   cursor: pointer;
   transition: background 150ms ease;
 }
 
-.lt-rows button:hover,
-.lt-rows button:focus-visible {
-  background: rgb(var(--accent) / 0.12);
+.lt-scope .lt-rows button:hover, .lt-scope .lt-rows button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
 }
 
-.lt-rows .glyph {
+.lt-scope .lt-rows .glyph {
   width: 30px;
   height: 30px;
   display: grid;
   place-items: center;
+  color: var(--accent-soft);
   font-size: 1.05rem;
 }
 
-.lt-rows .words {
+.lt-scope .lt-rows .words {
   display: grid;
   gap: 0.05rem;
+  min-width: 0;
 }
 
-.lt-rows .words small {
+.lt-scope .lt-rows .words small {
   font-weight: 400;
   font-size: 0.74rem;
+  color: var(--text-muted);
 }
 
-.lt-rows .chev {
-  color: rgb(var(--accent-soft));
+.lt-scope .lt-rows .chev {
+  color: var(--accent-soft);
 }
 
-/* the stepper: − count + on one pill (`life-tracker-menus.html:70-75`) */
-.lt-stepper {
+.lt-scope .lt-rows button.danger .glyph {
+  color: var(--status-error);
+}
+
+.lt-scope .stepper {
   display: inline-flex;
   align-items: center;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.45);
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   overflow: hidden;
 }
 
-.lt-stepper button {
+.lt-scope .stepper button {
   width: 46px;
   height: 44px;
   border: 0;
   background: transparent;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 1.2rem;
   cursor: pointer;
 }
 
-.lt-stepper button:hover:not(:disabled) {
-  background: rgb(var(--accent) / 0.18);
+.lt-scope .stepper button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
-.lt-stepper button:disabled {
+.lt-scope .stepper button:disabled {
   opacity: 0.35;
   cursor: default;
 }
 
-.lt-stepper .val {
+.lt-scope .stepper .val {
   min-width: 6.5rem;
-  display: block;
   text-align: center;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
+  font-family: var(--font-display);
   font-size: 1rem;
-  color: #e2e8f0;
 }
 
-.lt-stepper .val small {
+.lt-scope .stepper .val small {
   display: block;
   font-weight: 500;
   font-size: 0.66rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
+  font-family: var(--font-body);
   letter-spacing: 0.06em;
   text-transform: uppercase;
 }
 
-/* name fields: two to a row, the seat number inside at the left
-   (`life-tracker-menus.html:83-84` `.names`) — always visible here (Q4). */
-.lt-names {
-  display: grid;
+.lt-scope .players-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.lt-scope .link {
+  background: transparent;
+  border: 0;
+  color: var(--accent-soft);
+  font-size: 0.8rem;
+  cursor: pointer;
+  min-height: 36px;
+  padding: 0 0.3rem;
+}
+
+.lt-scope .names {
+  display: none;
   grid-template-columns: 1fr 1fr;
   gap: 0.4rem;
 }
 
-.lt-names label {
+.lt-scope .names[data-open="true"] {
+  display: grid;
+}
+
+.lt-scope .names label {
   display: flex;
   align-items: center;
   min-height: 42px;
   border-radius: 0.6rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.45);
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   overflow: hidden;
   transition: border-color 150ms ease;
 }
 
-.lt-names label:focus-within {
-  border-color: rgb(var(--accent-soft));
+.lt-scope .names label:focus-within {
+  border-color: var(--accent-soft);
 }
 
-.lt-names .num {
+.lt-scope .names .num {
   flex: 0 0 2rem;
   text-align: center;
   font-size: 0.7rem;
   font-weight: 700;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
+  font-family: var(--font-display);
 }
 
-.lt-names input {
+.lt-scope .names input {
   flex: 1 1 0;
   min-width: 0;
   border: 0;
   background: transparent;
-  color: #e2e8f0;
+  color: var(--text-primary);
+  font: inherit;
   font-size: 0.9rem;
   padding: 0 0.5rem 0 0;
   outline: none;
 }
 
-/* one segmented pill for a two-way choice (`life-tracker-menus.html:90-95` `.seg`) */
-.lt-seg {
+.lt-scope .names input::placeholder {
+  color: var(--text-muted);
+}
+
+.lt-scope .seg {
   display: inline-flex;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
+  border: 1px solid var(--surface-edge);
   overflow: hidden;
-  background: rgb(var(--ground) / 0.45);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
 }
 
-.lt-seg.full {
-  display: flex;
-  width: 100%;
-}
-
-.lt-seg button {
+.lt-scope .seg button {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -4361,80 +4630,157 @@ body {
   padding: 0 0.9rem;
   border: 0;
   background: transparent;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 0.86rem;
   font-weight: 600;
   cursor: pointer;
   white-space: nowrap;
 }
 
-.lt-seg button + button {
-  border-left: 1px solid rgb(var(--panel-edge) / 0.7);
+.lt-scope .seg button + button {
+  border-left: 1px solid var(--surface-edge);
 }
 
-.lt-seg button .glyph {
-  color: rgb(var(--accent-soft));
+.lt-scope .seg button .glyph {
+  color: var(--accent-soft);
   font-size: 1rem;
 }
 
-.lt-seg button[aria-pressed="true"],
-.lt-seg button[aria-selected="true"] {
-  color: #e2e8f0;
-  background: rgb(var(--accent) / 0.24);
-  box-shadow: inset 0 0 0 1px rgb(var(--accent-soft) / 0.45);
+.lt-scope .seg button[aria-pressed="true"], .lt-scope .seg button[aria-selected="true"] {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel));
+  box-shadow: var(--lt-shadow-1);
 }
 
-.lt-pair {
+.lt-scope .seg.full {
+  display: flex;
+}
+
+.lt-scope .pair {
   display: grid;
   gap: 0.6rem;
 }
 
 @media (min-width: 600px) {
-  .lt-pair {
+  .lt-scope .pair {
     grid-template-columns: 1fr 1fr;
   }
 }
 
-.lt-pair-sub small {
-  display: block;
-  margin-bottom: 0.35rem;
+.lt-scope .pair .sub {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.lt-scope .pair .sub small {
   font-size: 0.66rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
-/* starting life: presets as pills (`life-tracker-menus.html:102-107` `.life-pills`) */
-.lt-life-pills {
+.lt-scope .life-pills {
   display: flex;
   flex-wrap: wrap;
   gap: 0.4rem;
   align-items: center;
 }
 
-/* ---- Counters: the seat map (`life-tracker-menus.html:126-144`) ---- */
-.lt-seat-map {
+.lt-scope .life-pills button {
+  min-width: 3.2rem;
+  min-height: 42px;
+  padding: 0 0.9rem;
+  border-radius: 999px;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
+  color: var(--text-primary);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 150ms ease;
+}
+
+.lt-scope .life-pills button:hover {
+  border-color: var(--accent-soft);
+}
+
+.lt-scope .life-pills button[aria-pressed="true"] {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel));
+  color: var(--accent-soft);
+  box-shadow: var(--idq-shadow-act-1);
+}
+
+.lt-scope .life-pills .custom {
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 0.86rem;
+}
+
+.lt-scope .life-custom {
+  display: none;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.lt-scope .life-custom[data-show="true"] {
+  display: flex;
+}
+
+.lt-scope .life-custom .field {
+  width: 6rem;
+  min-height: 42px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+.lt-scope .life-custom .ok {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1px solid var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 30%, var(--surface-panel));
+  color: var(--accent-soft);
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.lt-scope .life-custom .err {
+  font-size: 0.74rem;
+  color: var(--status-error);
+}
+
+.lt-scope .life-note {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.lt-scope .seat-map {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0.5rem;
 }
 
-.lt-seat {
+.lt-scope .seat {
   display: grid;
   grid-template-rows: auto 1fr auto;
-  gap: 0.3rem;
+  gap: 0.2rem;
   min-height: 104px;
   padding: 0.5rem 0.55rem;
   border-radius: 0.8rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: linear-gradient(160deg, rgb(var(--accent) / 0.18), rgb(var(--panel)));
+  border: 1px solid var(--surface-edge);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--accent) 18%, var(--surface-panel)), var(--surface-panel));
   position: relative;
   overflow: hidden;
 }
 
-.lt-seat-who {
+.lt-scope .seat .who {
   font-size: 0.74rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-weight: 600;
   letter-spacing: 0.02em;
   display: flex;
@@ -4443,147 +4789,136 @@ body {
   gap: 0.3rem;
 }
 
-.lt-seat-tag {
+.lt-scope .seat .who .tag {
   font-size: 0.58rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #ff8fa3;
-  border: 1px solid rgba(255, 77, 109, 0.55);
+  color: var(--status-error);
+  border: 1px solid color-mix(in srgb, var(--lethal) 55%, transparent);
   border-radius: 999px;
   padding: 0.1rem 0.4rem;
 }
 
-.lt-seat[data-lethal="true"] {
-  border-color: rgba(255, 77, 109, 0.6);
-  box-shadow: 0 0 18px -6px rgba(255, 77, 109, 0.7);
+.lt-scope .seat[data-lethal="true"] {
+  border-color: color-mix(in srgb, var(--lethal) 60%, transparent);
+  box-shadow: var(--lt-shadow-3);
 }
 
-.lt-seat-dmg {
+.lt-scope .seat .dmg {
   display: grid;
   place-items: center;
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 1.9rem;
   letter-spacing: -0.02em;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: #e2e8f0;
 }
 
-.lt-seat-dmg[data-lethal="true"] {
-  color: #ff8fa3;
-  text-shadow: 0 0 16px rgba(255, 77, 109, 0.6);
+.lt-scope .seat .dmg[data-lethal="true"] {
+  color: var(--status-error);
+  text-shadow: 0 0 16px color-mix(in srgb, var(--lethal) 60%, transparent);
 }
 
-/* − and + as one joined pill, as the Players stepper is */
-.lt-seat-bands {
+.lt-scope .seat .bands {
   display: grid;
   grid-template-columns: 1fr 1fr;
   border-radius: 999px;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.45);
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
   overflow: hidden;
 }
 
-.lt-seat-bands button {
+.lt-scope .seat .bands button {
   min-height: 36px;
   border: 0;
   background: transparent;
-  color: rgb(var(--accent-soft));
+  color: var(--accent-soft);
   font-size: 1.1rem;
   cursor: pointer;
 }
 
-.lt-seat-bands button + button {
-  border-left: 1px solid rgb(var(--panel-edge) / 0.7);
+.lt-scope .seat .bands button + button {
+  border-left: 1px solid var(--surface-edge);
 }
 
-.lt-seat-bands button:hover:not(:disabled) {
-  background: rgb(var(--accent) / 0.18);
+.lt-scope .seat .bands button:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
 }
 
-.lt-seat-bands button:disabled {
+.lt-scope .seat .bands button:disabled {
   opacity: 0.35;
   cursor: default;
 }
 
-/* your own seat, drawn like your card on the table */
-.lt-seat-me {
-  background: rgb(var(--ground) / 0.4);
+.lt-scope .seat.me {
+  background: color-mix(in srgb, var(--surface-ground) 40%, transparent);
   border-style: dashed;
 }
 
-.lt-seat-me .lt-seat-who {
-  color: rgb(var(--accent-soft));
+.lt-scope .seat.me .who {
+  color: var(--accent-soft);
 }
 
-.lt-seat-me .lt-seat-dmg {
-  color: #a1a1aa;
+.lt-scope .seat.me .dmg {
+  color: var(--text-muted);
   opacity: 0.7;
 }
 
-.lt-seat-you {
+.lt-scope .seat.me .you {
   text-align: center;
   font-size: 0.68rem;
-  color: #a1a1aa;
+  color: var(--text-muted);
+  min-height: 36px;
   display: grid;
   place-items: center;
 }
 
-/* the counter tiles (`life-tracker-menus.html:146-150` `.tiles`/`.tile`) */
-.lt-tiles {
+.lt-scope .tiles {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 0.45rem;
 }
 
 @media (min-width: 600px) {
-  .lt-tiles {
+  .lt-scope .tiles {
     grid-template-columns: repeat(4, 1fr);
   }
 }
 
-.lt-tile {
+.lt-scope .tile {
   position: relative;
-  border-radius: 0.8rem;
-  border: 1px solid rgb(var(--panel-edge) / 0.7);
-  background: rgb(var(--ground) / 0.45);
-  color: #e2e8f0;
-  text-align: center;
-  transition:
-    border-color 160ms ease,
-    background 160ms ease,
-    box-shadow 160ms ease;
-}
-
-.lt-tile:hover {
-  border-color: rgb(var(--accent-soft) / 0.55);
-}
-
-.lt-tile[data-on="true"] {
-  border-color: rgb(var(--accent-soft));
-  background: rgb(var(--accent) / 0.22);
-  box-shadow:
-    0 0 18px -6px rgb(var(--accent) / 0.85),
-    inset 0 0 14px -10px rgb(var(--accent-soft));
-}
-
-.lt-tile-main {
   display: grid;
   grid-template-rows: auto auto auto;
   justify-items: center;
   gap: 0.15rem;
-  width: 100%;
   min-height: 84px;
   padding: 0.55rem 0.4rem 0.45rem;
+  border-radius: 0.8rem;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 45%, transparent);
+  color: var(--text-primary);
   cursor: pointer;
+  text-align: center;
+  transition: all 160ms ease;
 }
 
-.lt-tile-icon {
+.lt-scope .tile:hover {
+  border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
+}
+
+.lt-scope .tile[data-on="true"] {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 22%, var(--surface-panel));
+  box-shadow: var(--idq-shadow-15);
+}
+
+.lt-scope .tile .ico {
   font-size: 1.3rem;
   line-height: 1;
 }
 
-.lt-tile-name {
+.lt-scope .tile .nm {
   font-size: 0.72rem;
   font-weight: 600;
   white-space: nowrap;
@@ -4592,19 +4927,20 @@ body {
   max-width: 100%;
 }
 
-.lt-tile-n {
+.lt-scope .tile .n {
+  font-family: var(--font-display);
   font-weight: 800;
   font-size: 1.15rem;
   line-height: 1;
   font-variant-numeric: tabular-nums;
-  color: #a1a1aa;
+  color: var(--text-muted);
 }
 
-.lt-tile[data-on="true"] .lt-tile-n {
-  color: rgb(var(--accent-soft));
+.lt-scope .tile[data-on="true"] .n {
+  color: var(--accent-soft);
 }
 
-.lt-tile-more {
+.lt-scope .tile .more {
   position: absolute;
   top: 2px;
   right: 2px;
@@ -4613,15 +4949,260 @@ body {
   border: 0;
   border-radius: 999px;
   background: transparent;
-  color: #a1a1aa;
+  color: var(--text-muted);
   font-size: 0.9rem;
   cursor: pointer;
   line-height: 1;
 }
 
-.lt-tile-more:hover {
-  color: #e2e8f0;
-  background: rgb(var(--accent) / 0.2);
+.lt-scope .tile .more:hover {
+  color: var(--text-primary);
+  background: color-mix(in srgb, var(--accent) 20%, transparent);
+}
+
+.lt-scope .tile[data-open="true"] {
+  border-color: var(--accent-soft);
+}
+
+.lt-scope .tile.pulse .n {
+  animation: tick 320ms ease;
+}
+
+@keyframes tick {
+  30% { transform: translateY(-4px) scale(1.15); }
+}
+
+.lt-scope .tile-tools {
+  display: none;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  padding: 0.5rem 0.6rem;
+  border-radius: 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  font-size: 0.82rem;
+}
+
+.lt-scope .tile-tools[data-show="true"] {
+  display: flex;
+}
+
+.lt-scope .tile-tools b {
+  margin-right: auto;
+}
+
+.lt-scope .tile-tools .stepper button {
+  width: 40px;
+  height: 38px;
+}
+
+.lt-scope .tile-tools .stepper .val {
+  min-width: 2.6rem;
+  font-size: 0.95rem;
+}
+
+.lt-scope .tile-tools .field {
+  width: 4.4rem;
+  min-height: 38px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.lt-scope .tile-tools .btn {
+  min-height: 38px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+.lt-scope .tile-tools .btn.danger:hover {
+  border-color: var(--status-error);
+  color: var(--status-error);
+}
+
+.lt-scope .tiles .tile.custom .rm {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.lt-scope .tiles .tile.custom .rm:hover {
+  color: var(--status-error);
+}
+
+.lt-scope .add-counter {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.4rem;
+}
+
+.lt-scope .add-counter .field {
+  min-height: 42px;
+}
+
+.lt-scope .add-counter .btn {
+  min-height: 42px;
+}
+
+.lt-scope .add-err {
+  font-size: 0.74rem;
+  color: var(--status-error);
+  margin: 0;
+}
+
+.lt-scope .add-err[hidden] {
+  display: none;
+}
+
+.lt-scope .hint {
+  font-size: 0.76rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+.lt-scope .lt-tab[hidden] {
+  display: none;
+}
+
+/* tile structure: the app's tile is a box holding the tap area and the ⋯ button side by side */
+.lt-scope .tile {
+  display: block;
+  cursor: default;
+}
+
+.lt-scope .tile-main {
+  display: grid;
+  grid-template-rows: auto auto auto;
+  justify-items: center;
+  gap: 0.15rem;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: center;
+  cursor: pointer;
+}
+
+.lt-scope .tiles .tile.custom .rm {
+  left: 2px;
+  right: auto;
+}
+
+.lt-scope .tile .options {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--surface-edge);
+  font-size: 0.8rem;
+}
+
+.lt-scope .tile .options form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem;
+}
+
+.lt-scope .tile .options .field {
+  min-height: 38px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.lt-scope .tile .options .btn {
+  min-height: 38px;
+  padding: 0.3rem 0.7rem;
+  font-size: 0.8rem;
+}
+
+/* the Game Setup sheet is hosted by the frozen table file (REQ-202), which hands the shared sheet its own
+   head: the sheet takes the mockup's `.lt-sheet` and `.lt-head` shape through the sheet's test id */
+[data-testid="life-tracker-game-setup"].drawer-panel {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+
+@media (min-width: 600px) {
+  [data-testid="life-tracker-game-setup"].drawer-panel {
+    width: min(32rem, 92vw);
+    max-height: min(44rem, calc(100dvh - 3rem));
+    overflow: hidden;
+  }
+}
+
+[data-testid="life-tracker-game-setup"] .sheet-legacy-head {
+  flex: 0 0 auto;
+  padding: 1.1rem 3.2rem 0.7rem 1rem;
+  border-bottom: 1px solid var(--surface-edge);
+}
+
+@media (max-width: 599px) {
+  [data-testid="life-tracker-game-setup"] .sheet-legacy-head {
+    padding-top: 1.4rem;
+  }
+}
+
+[data-testid="life-tracker-game-setup"] .sheet-legacy-head p {
+  display: block;
+  margin: 0;
+  line-height: normal;
+  font-size: 0.66rem;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--accent-soft);
+}
+
+[data-testid="life-tracker-game-setup"] .sheet-legacy-head h2 {
+  margin: 0.1rem 0 0;
+  line-height: normal;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+[data-testid="life-tracker-game-setup"] .sheet-legacy-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0;
+}
+
+[data-testid="life-tracker-game-setup"] .lt-scope.lt-body {
+  overflow: visible;
+}
+
+.lt-scope.lt-body {
+  display: grid;
+  gap: 1rem;
+  align-content: start;
+  padding: 0.8rem 1rem 1rem;
+}
+
+/* the Done bar closes the sheet; inside the Game Setup body it stays at the foot of the visible sheet */
+.lt-scope .lt-foot {
+  position: sticky;
+  bottom: -1rem;
+  margin: 0 -1rem -1rem;
+  width: auto;
+}
+
+.lt-note-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--status-error);
 }
 
 @keyframes send-spin {
@@ -4634,43 +5215,14 @@ body {
   display: inline-block;
   width: 14px;
   height: 14px;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
+  border: 2px solid color-mix(in srgb, var(--text-on-accent) 30%, transparent);
+  border-top-color: var(--text-on-accent);
   border-radius: 50%;
   animation: send-spin 0.7s linear infinite;
   vertical-align: middle;
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .motion-enter,
-  .motion-exit,
-  .motion-hover,
-  .motion-press,
-  .motion-focus,
-  .motion-success,
-  .motion-error,
-  .portal-menu-motion,
-  .portal-menu-drawer-motion,
-  .ambient-accent-surface,
-  .conversation-workspace-handoff,
-  .conversation-message-enter,
-  .conversation-new-response,
-  .adaptive-context-overlay,
-  .adaptive-context-surface,
-  .sheet-shell-overlay,
-  .sheet-shell-surface,
-  .conversation-history-overlay,
-  .conversation-history-surface,
-  .enrichment-card-enter,
-  .card-state-remove,
-  .ambient-scene-layer,
-  .wait-inscription-line-ink,
-  .wait-inscription-line-lift,
-  .wait-inscription-seal-ring,
-  .wait-inscription-mote,
-  .wait-inscription-bubble::after,
-  .trade-pile-tier-up,
-  .trade-pile-tier-down {
+@media (prefers-reduced-motion: reduce) {.motion-enter, .motion-exit, .motion-hover, .motion-press, .motion-focus, .motion-success, .motion-error, .ambient-accent-surface, .conversation-workspace-handoff, .conversation-message-enter, .conversation-new-response, .adaptive-context-overlay, .adaptive-context-surface, .enrichment-card-enter, .card-state-remove, .wait-inscription-line-ink, .wait-inscription-line-lift, .wait-inscription-seal-ring, .wait-inscription-mote, .wait-inscription-bubble::after, .trade-pile-tier-up, .trade-pile-tier-down {
     animation-delay: 0ms !important;
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
@@ -4679,185 +5231,13 @@ body {
   }
 }
 
-/* REQ-207 / REQ-201 ambient scene — the colour's element, CSS-only (NFR-006).
-   Look-matching pass (slice L): `position: fixed` / `z-index: 0`, ported from
-   `ambience.css:32-37`'s `.ambience` — a true viewport layer behind the
-   banner header, the mock-mode strip and `.page-content`/`.page-shell-bleed`
-   alike, rather than scoped inside this destination's own box. Previously
-   `position: absolute` inside `.page-shell` with `z-index: -1` painted the
-   scene one layer *below* that box's own background colour, so it never
-   showed in any capture (LOOK-GAPS.md's "the single biggest 'doesn't look
-   like it' gap"). Still behind every solid panel (REQ-207's "sits behind
-   solid panels so the badge shows around them, never through them") because
-   those panels paint their own background above z-index: 0. */
-.ambient-scene {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  pointer-events: none;
-  z-index: 0;
-  /* Density and opacity are each one number (REQ-207) so the whole scene can
-     be tuned without redrawing it. The tray variant plays at a whisper. */
-  --ambient-density: 1;
-  --ambient-opacity: 0.16;
-}
+/* Sheets, the Menu tray and their backdrops hold still under reduced motion: they appear
+   in place instead of sliding or fading. */
 
-.ambient-scene-tray {
-  --ambient-density: 0.6;
-  --ambient-opacity: 0.08;
-}
-
-/* Colorless's tray gets a fuller scatter of slightly brighter shapes (REQ-207). */
-.ambient-scene-tray.ambient-scene-motif-geometry {
-  --ambient-density: 0.85;
-  --ambient-opacity: 0.12;
-}
-
-.ambient-scene-layer {
-  position: absolute;
-  inset: 0;
-}
-
-@keyframes ambient-haze-drift-a {
-  0% {
-    transform: translate3d(-4%, -2%, 0) scale(1.04);
+@media (prefers-reduced-motion: reduce) {.drawer-panel,
+  .sheet-backdrop,
+  .menu-tray,
+  .menu-tray-backdrop {
+    transition: none;
   }
-  50% {
-    transform: translate3d(3%, 2%, 0) scale(1.08);
-  }
-  100% {
-    transform: translate3d(-4%, -2%, 0) scale(1.04);
-  }
-}
-
-@keyframes ambient-haze-drift-b {
-  0% {
-    transform: translate3d(3%, 1%, 0) scale(1.06);
-  }
-  50% {
-    transform: translate3d(-3%, -2%, 0) scale(1.02);
-  }
-  100% {
-    transform: translate3d(3%, 1%, 0) scale(1.06);
-  }
-}
-
-.ambient-scene-haze {
-  opacity: calc(var(--ambient-opacity) * 1.1);
-  background: radial-gradient(60% 60% at 30% 25%, rgb(var(--ground-wash) / 0.9) 0%, transparent 70%);
-  animation: ambient-haze-drift-a 48s var(--motion-ease-out) infinite;
-}
-
-.ambient-scene-haze-b {
-  background: radial-gradient(55% 55% at 72% 70%, rgb(var(--ground-wash) / 0.7) 0%, transparent 70%);
-  animation-name: ambient-haze-drift-b;
-  animation-duration: 56s;
-}
-
-@keyframes ambient-dust-drift {
-  0% {
-    transform: translate3d(0, 0, 0);
-  }
-  100% {
-    transform: translate3d(0, -6%, 0);
-  }
-}
-
-.ambient-scene-dust {
-  opacity: calc(var(--ambient-opacity) * var(--ambient-density) * 0.6);
-  background-image: radial-gradient(rgb(var(--ground-wash) / 0.9) 1px, transparent 1.5px);
-  background-size: 48px 48px;
-  animation: ambient-dust-drift 40s linear infinite;
-}
-
-@keyframes ambient-badge-breathe {
-  0%,
-  100% {
-    opacity: calc(var(--ambient-opacity) * 1.4);
-    transform: scale(1);
-  }
-  50% {
-    opacity: calc(var(--ambient-opacity) * 1.9);
-    transform: scale(1.03);
-  }
-}
-
-.ambient-scene-badge {
-  width: 60%;
-  height: 60%;
-  margin: auto;
-  left: 0;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  border-radius: 9999px;
-  background: radial-gradient(circle, rgb(var(--ground-wash) / 1) 0%, transparent 65%);
-  filter: blur(18px);
-  animation: ambient-badge-breathe 10s var(--motion-ease-emphasized) infinite;
-}
-
-@keyframes ambient-element-drift {
-  0% {
-    transform: translate3d(0, 0, 0);
-    opacity: calc(var(--ambient-opacity) * var(--ambient-density));
-  }
-  50% {
-    transform: translate3d(0, -3%, 0);
-    opacity: calc(var(--ambient-opacity) * var(--ambient-density) * 1.4);
-  }
-  100% {
-    transform: translate3d(0, 0, 0);
-    opacity: calc(var(--ambient-opacity) * var(--ambient-density));
-  }
-}
-
-.ambient-scene-element {
-  animation: ambient-element-drift 22s var(--motion-ease-out) infinite;
-  background-repeat: repeat;
-  background-size: 120px 120px;
-}
-
-/* White — low-sun rays (REQ-207). */
-.ambient-scene-element-beams {
-  background-image: repeating-linear-gradient(
-    100deg,
-    rgb(var(--ground-wash) / 0.5) 0px,
-    rgb(var(--ground-wash) / 0.5) 2px,
-    transparent 2px,
-    transparent 64px
-  );
-}
-
-/* Blue — a scatter of arcane rune shapes (REQ-207). */
-.ambient-scene-element-runes {
-  background-image: radial-gradient(circle, rgb(var(--ground-wash) / 0.6) 2px, transparent 2.5px);
-  background-size: 72px 72px;
-}
-
-/* Black — fog pooling (REQ-207). */
-.ambient-scene-element-fog {
-  background-image: radial-gradient(80% 40% at 50% 100%, rgb(var(--ground-wash) / 0.7) 0%, transparent 70%);
-  background-size: 100% 100%;
-}
-
-/* Red — a hot band with embers (REQ-207). */
-.ambient-scene-element-embers {
-  background-image: radial-gradient(circle, rgb(var(--ground-wash) / 0.7) 1.5px, transparent 2px);
-  background-size: 54px 90px;
-}
-
-/* Green — a scatter of leaf shapes (REQ-207). */
-.ambient-scene-element-leaves {
-  background-image: radial-gradient(ellipse 10px 5px, rgb(var(--ground-wash) / 0.6) 0%, transparent 75%);
-  background-size: 64px 96px;
-}
-
-/* Colorless — turning triangles, rings, arcs, dots and crosses (REQ-207). */
-.ambient-scene-element-geometry {
-  background-image:
-    radial-gradient(circle, rgb(var(--ground-wash) / 0.55) 1.5px, transparent 2px),
-    repeating-linear-gradient(45deg, rgb(var(--ground-wash) / 0.3) 0px, transparent 1px, transparent 40px);
-  background-size:
-    60px 60px,
-    80px 80px;
 }

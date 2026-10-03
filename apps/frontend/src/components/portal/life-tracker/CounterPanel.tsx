@@ -1,18 +1,11 @@
-import {
-  useEffect,
-  useRef,
-  useState,
-  type FormEvent,
-  type PointerEvent as ReactPointerEvent
-} from "react";
+import { useEffect, useId, useRef, useState, type FormEvent, type PointerEvent as ReactPointerEvent } from "react";
 import type { PlayerLabel } from "../../../types";
-import { useOutsideDismiss } from "../../../hooks/useOutsideDismiss";
 import { NAMED_COUNTER_PALETTE, type NamedCounterId } from "../../../lib/lifeTracker/counters";
 import type { SeatArrangementLayout } from "../../../lib/lifeTracker/seatArrangement";
 import { buildSeatMapCells } from "../../../lib/lifeTracker/seatMap";
 import type { TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
-import { OverlayCloseButton } from "../../OverlayCloseButton";
+import { SheetShell } from "../../SheetShell";
 
 export interface CounterPanelProps {
   player: TrackerPlayer;
@@ -45,6 +38,8 @@ interface CounterControlProps {
   onIncrement: () => void;
   onDecrement: () => void;
   onSet: (value: number) => void;
+  /** A custom counter's ✕: removes the counter (the tile then carries it instead of the ⋯). */
+  onRemove?: () => void;
 }
 
 /** Icon-forward, ghosted-until-active tile for named/custom counters: tap to increment, hold for a Decrease/Set menu. */
@@ -55,7 +50,8 @@ function CounterControl({
   labelTestId,
   onIncrement,
   onDecrement,
-  onSet
+  onSet,
+  onRemove
 }: CounterControlProps): JSX.Element {
   const [showOptions, setShowOptions] = useState(false);
   const [draftValue, setDraftValue] = useState(String(value));
@@ -118,13 +114,10 @@ function CounterControl({
   const isActive = value > 0;
 
   return (
-    // Look-matching pass (slice Q), requirement 3: `.lt-tile`
-    // (`life-tracker-menus.html:146-150`) — full-colour icons (no more
-    // opacity/greyscale dimming when inactive), title-case labels (the
-    // `uppercase` transform retired; `label` is already title case in
-    // `NAMED_COUNTER_PALETTE`), and the ⋯ control moved to the tile's own
-    // top-right corner instead of a second grid column beside the tap area.
-    <div className="lt-tile" data-on={isActive ? "true" : "false"}>
+    // `life-tracker-menus.html`'s `.tile`: the icon, the name and the count, a tap adds one, and the ⋯
+    // opens the tile's own options (take one away, set a number). A custom counter's ✕ sits in the
+    // same corner (`.rm`); the ⋯ button and the ✕ keep their own accessible names.
+    <div className={onRemove ? "tile custom" : "tile"} data-on={isActive ? "true" : "false"} data-open={showOptions ? "true" : "false"}>
       <button
         type="button"
         aria-label={`Increment ${label}`}
@@ -145,39 +138,37 @@ function CounterControl({
         onPointerUp={cancelLongPress}
         onPointerCancel={cancelLongPress}
         onPointerLeave={cancelLongPress}
-        className="motion-focus lt-tile-main"
+        className="motion-focus tile-main"
       >
-        {icon && (
-          <span aria-hidden="true" className="lt-tile-icon">
-            {icon}
-          </span>
-        )}
-        <span data-testid={labelTestId} className={`lt-tile-name ${isActive ? "text-accent-soft" : "text-zinc-300"}`}>
+        <span aria-hidden="true" className="ico">
+          {icon ?? "✦"}
+        </span>
+        <span data-testid={labelTestId} className="nm">
           {label}
         </span>
-        <span className="lt-tile-n">{value}</span>
+        <span className="n">{value}</span>
       </button>
+      {onRemove && (
+        <button type="button" aria-label={`Remove ${label}`} onClick={onRemove} className="motion-focus rm">
+          ✕
+        </button>
+      )}
       <button
         type="button"
         aria-label={`Options for ${label}`}
         aria-expanded={showOptions}
         onClick={() => setShowOptions((current) => !current)}
-        className="motion-focus lt-tile-more"
+        className="motion-focus more"
       >
         ⋯
       </button>
 
       {showOptions && (
-        <div role="group" aria-label={`${label} options`} className="mt-2 space-y-2 border-t border-zinc-700/70 pt-2">
-          <button
-            type="button"
-            aria-label={`Decrease ${label}`}
-            onClick={onDecrement}
-            className="motion-focus min-h-11 w-full rounded-lg border border-zinc-700 bg-zinc-900 text-sm font-bold text-zinc-100 hover:bg-zinc-800"
-          >
+        <div role="group" aria-label={`${label} options`} className="options">
+          <button type="button" aria-label={`Decrease ${label}`} onClick={onDecrement} className="motion-focus btn">
             Decrease by 1
           </button>
-          <form onSubmit={applySetValue} className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+          <form onSubmit={applySetValue}>
             <input
               type="number"
               min="0"
@@ -185,13 +176,9 @@ function CounterControl({
               aria-label={`Set ${label}`}
               value={draftValue}
               onChange={(event) => setDraftValue(event.target.value)}
-              className="motion-focus min-w-0 rounded-lg border border-zinc-700 bg-zinc-900 px-2 text-zinc-100"
+              className="motion-focus field"
             />
-            <button
-              type="submit"
-              aria-label={`Apply ${label} value`}
-              className="motion-focus min-h-11 rounded-lg border border-accent/50 bg-accent/10 px-3 text-sm font-bold text-accent-soft"
-            >
+            <button type="submit" aria-label={`Apply ${label} value`} className="motion-focus btn">
               Set
             </button>
           </form>
@@ -215,13 +202,9 @@ interface CommanderDamageCellProps {
 const LETHAL_COMMANDER_DAMAGE = 21;
 
 /**
- * Look-matching pass (slice Q), requirement 2: the `.lt-seat` shape
- * (`life-tracker-menus.html:116-122`) — the source's name top-left (with a
- * LETHAL tag beside it, not a separate line under the value), the damage
- * total centred and large, then one joined −|+ pill at the foot in place of
- * the prior always-visible decrease/increase bands above and below. Marks
- * itself LETHAL (red edge + tag) at 21+ (REQ-202); behaviour (the two tap
- * targets, their aria-labels) is unchanged.
+ * `life-tracker-menus.html`'s `.seat`: the source's name top-left (with a LETHAL tag beside it), the
+ * damage total centred and large, then one joined − | + pill at the foot. Marks itself LETHAL (red edge
+ * and tag) at 21+ (REQ-202); behaviour (the two tap targets, their aria-labels) is unchanged.
  */
 function CommanderDamageCell({
   name,
@@ -234,19 +217,19 @@ function CommanderDamageCell({
   const isLethal = value >= LETHAL_COMMANDER_DAMAGE;
 
   return (
-    <div data-testid={testId} data-lethal={isLethal} style={placement} className="lt-seat">
-      <span className="lt-seat-who">
+    <div data-testid={testId} data-lethal={isLethal} style={placement} className="seat">
+      <span className="who">
         <span className="truncate">{name}</span>
         {isLethal && (
-          <span data-testid={`commander-lethal-${name}`} className="lt-seat-tag">
+          <span data-testid={`commander-lethal-${name}`} className="tag">
             Lethal
           </span>
         )}
       </span>
-      <span data-testid={`commander-value-${name}`} className="lt-seat-dmg" data-lethal={isLethal}>
+      <span data-testid={`commander-value-${name}`} className="dmg" data-lethal={isLethal}>
         {value}
       </span>
-      <span className="lt-seat-bands">
+      <span className="bands">
         <button
           type="button"
           aria-label={`Decrease commander damage from ${name}`}
@@ -284,34 +267,13 @@ export function CounterPanel({
   const [activeTab, setActiveTab] = useState<"player" | "counters">("player");
   const [customName, setCustomName] = useState("");
   const [customNameError, setCustomNameError] = useState<string | null>(null);
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const returnFocusRef = useRef<HTMLElement | null>(null);
+  const titleId = useId();
   const displayLabel = formatPlayerDisplayLabel(player.label, player.displayName);
   // The commander-damage matrix is an absolute top-down replica of the table (REQ-173): the
   // panel itself is never rotated (DEC-139), but every seat - including the opener's own "me"
   // cell - sits at its own gridRow/gridColumn/gridArea from the active layout, not a fixed
   // two-column roster loop.
   const seatMapCells = buildSeatMapCells(layout, players, player.label);
-
-  useOutsideDismiss([dialogRef], onClose, true);
-
-  useEffect(() => {
-    returnFocusRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    dialogRef.current?.focus();
-
-    function handleKeyDown(event: KeyboardEvent): void {
-      if (event.key === "Escape") {
-        event.preventDefault();
-        onClose();
-      }
-    }
-
-    document.addEventListener("keydown", handleKeyDown);
-    return () => {
-      document.removeEventListener("keydown", handleKeyDown);
-      returnFocusRef.current?.focus();
-    };
-  }, [onClose]);
 
   function addCustom(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -342,50 +304,47 @@ export function CounterPanel({
   }
 
   return (
-    // DEC-139: the panel belongs to the same overlay family as the Menu tray (DEC-133) and the
-    // history drawer (DEC-134), so its surface fills the available height instead of sizing to
-    // its content. `items-end` + a content height previously left a 358px dead scrim band above
-    // the panel at 430x900 with 4 players — 40% of the viewport — which is the exact shape
-    // DEC-134 retired for the history drawer, in the product owner's own words. `items-stretch`
-    // at every viewport mirrors that decision; unused lower space is acceptable per DEC-133.
-    // The existing overflow-y-auto is retained, not introduced: the panel already scrolled.
-    <div className="fixed inset-0 z-50 flex items-stretch justify-center bg-black/70 p-2 sm:p-4">
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="counter-panel-title"
-        tabIndex={-1}
-        className="h-full w-full max-w-xl overflow-y-auto rounded-3xl border border-zinc-700 bg-zinc-950 p-4 text-zinc-100 shadow-2xl shadow-black/40"
-      >
-        <header className="flex items-start justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Life Tracker</p>
-            {/* Look-matching pass (slice Q), requirement 2: the title becomes
-                "Counters · <player>" plus a muted "<life> life" caption
-                (`life-tracker-menus.html:249` `#ctr-name`/`#ctr-life`). The
-                literal space between the two spans keeps the dialog's
-                `aria-labelledby` name readable. */}
-            <h2 id="counter-panel-title" className="text-xl font-black text-zinc-100">
-              <span>{`Counters · ${displayLabel}`}</span> <span className="text-sm font-medium text-zinc-400">{`${player.life} life`}</span>
-            </h2>
-          </div>
-          <OverlayCloseButton label="Close counters" onClick={onClose} />
-        </header>
+    // REQ-082 (as amended by ui-look-translation): the panel is the suite's shared sheet (REQ-208), sized to
+    // its content — a bottom sheet below 600px, a floating card from it up, with only its body scrolling.
+    // Focus trap, Escape, outside-dismiss and focus-restore come from `SheetShell`.
+    <SheetShell
+      isOpen
+      onClose={onClose}
+      closeLabel="Close counters"
+      titleId={titleId}
+      panelClassName="lt-sheet"
+      testId="life-tracker-counter-panel"
+    >
+      <div className="lt-head">
+        <small>Life Tracker</small>
+        {/* "Counters · <player>" plus a muted "<life> life" caption; the literal space between the two spans
+            keeps the dialog's `aria-labelledby` name readable. */}
+        <h2 id={titleId}>
+          <span>{`Counters · ${displayLabel}`}</span> <span className="life">{`${player.life} life`}</span>
+        </h2>
+      </div>
 
-        {/* Requirement 2: glyph tabs, `.seg.full`
-            (`life-tracker-menus.html:251`'s "⚔ Commander damage / ◈
-            Counters") in place of the plain "Player"/"Counters" labels —
-            the glyphs are decorative (`aria-hidden`), so each tab's own
-            accessible name is still just its words. */}
-        <div role="tablist" aria-label="Counter panel sections" className="lt-seg full mt-4">
-          <button type="button" role="tab" aria-selected={activeTab === "player"} onClick={() => setActiveTab("player")}>
+      <div className="lt-scope lt-body">
+        {/* Glyph tabs, `.seg.full`: "⚔ Commander damage / ◈ Counters"; the glyphs are decorative, so each
+            tab's own accessible name is still just its words. */}
+        <div role="tablist" aria-label="Counter panel sections" className="seg full">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "player"}
+            onClick={() => setActiveTab("player")}
+          >
             <span aria-hidden="true" className="glyph">
               ⚔
             </span>
             Commander damage
           </button>
-          <button type="button" role="tab" aria-selected={activeTab === "counters"} onClick={() => setActiveTab("counters")}>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeTab === "counters"}
+            onClick={() => setActiveTab("counters")}
+          >
             <span aria-hidden="true" className="glyph">
               ◈
             </span>
@@ -394,140 +353,135 @@ export function CounterPanel({
         </div>
 
         {activeTab === "player" ? (
-          <div role="tabpanel" aria-label="Player counters" className="mt-4">
-            {/* Requirement 2: a "lethal at 21" note beside the eyebrow
-                (`life-tracker-menus.html:255` `.lbl small`), replacing the
-                separate "Commander damage" heading alone. */}
-            <h3 className="mb-3 flex items-baseline gap-2 text-sm font-black text-zinc-200">
-              Commander damage
-              <small className="text-xs font-medium normal-case text-zinc-500">lethal at 21</small>
-            </h3>
-            <div
-              role="group"
-              aria-label="Commander damage by source"
-              className="lt-seat-map"
-              style={{
-                gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
-                gridTemplateRows: `repeat(${layout.rows}, minmax(0, 1fr))`
-              }}
-            >
-              {seatMapCells.map((cell) => {
-                const source = players.find((candidate) => candidate.label === cell.label);
-                if (!source) return null;
-                const sourceName = formatPlayerDisplayLabel(source.label, source.displayName);
-                const cellPlacement = { gridArea: cell.gridArea, gridRow: cell.gridRow, gridColumn: cell.gridColumn };
+          <div role="tabpanel" aria-label="Player counters" className="lt-tab">
+            <div className="lt-sec">
+              <span className="lbl">
+                Commander damage <small>lethal at 21</small>
+              </span>
+              <div
+                role="group"
+                aria-label="Commander damage by source"
+                className="seat-map"
+                style={{
+                  gridTemplateColumns: `repeat(${layout.columns}, minmax(0, 1fr))`,
+                  gridTemplateRows: `repeat(${layout.rows}, minmax(0, 1fr))`
+                }}
+              >
+                {seatMapCells.map((cell) => {
+                  const source = players.find((candidate) => candidate.label === cell.label);
+                  if (!source) return null;
+                  const sourceName = formatPlayerDisplayLabel(source.label, source.displayName);
+                  const cellPlacement = { gridArea: cell.gridArea, gridRow: cell.gridRow, gridColumn: cell.gridColumn };
 
-                if (cell.isSelf) {
-                  // Requirement 2: "your own seat drawn like your card" —
-                  // shows the real life total, with "your seat · life total"
-                  // replacing the old bare "me" caption
-                  // (`life-tracker-menus.html:357` `.seat.me .you`).
+                  if (cell.isSelf) {
+                    // "your own seat drawn like your card": shows the real life total, with
+                    // "your seat · life total" beneath it.
+                    return (
+                      <div
+                        key={cell.label}
+                        data-testid={`commander-cell-${cell.label}`}
+                        style={cellPlacement}
+                        className="seat me"
+                      >
+                        <span className="who">{sourceName}</span>
+                        <span className="dmg">{player.life}</span>
+                        <span className="you">your seat · life total</span>
+                      </div>
+                    );
+                  }
+
                   return (
-                    <div key={cell.label} data-testid={`commander-cell-${cell.label}`} style={cellPlacement} className="lt-seat lt-seat-me">
-                      <span className="lt-seat-who">{sourceName}</span>
-                      <span className="lt-seat-dmg">{player.life}</span>
-                      <span className="lt-seat-you">your seat · life total</span>
-                    </div>
+                    <CommanderDamageCell
+                      key={cell.label}
+                      testId={`commander-cell-${cell.label}`}
+                      name={sourceName}
+                      value={player.commanderDamage[cell.label] ?? 0}
+                      placement={cellPlacement}
+                      onIncrement={() => onAdjustCommanderDamage(player.label, cell.label, 1)}
+                      onDecrement={() => onAdjustCommanderDamage(player.label, cell.label, -1)}
+                    />
                   );
-                }
-
-                return (
-                  <CommanderDamageCell
-                    key={cell.label}
-                    testId={`commander-cell-${cell.label}`}
-                    name={sourceName}
-                    value={player.commanderDamage[cell.label] ?? 0}
-                    placement={cellPlacement}
-                    onIncrement={() => onAdjustCommanderDamage(player.label, cell.label, 1)}
-                    onDecrement={() => onAdjustCommanderDamage(player.label, cell.label, -1)}
-                  />
-                );
-              })}
+                })}
+              </div>
             </div>
           </div>
         ) : (
-          <div role="tabpanel" aria-label="Named and custom counters" className="mt-4 space-y-4">
-            {/* Requirement 3: the hint reads "tap to add one · ⋯ for more"
-                (`life-tracker-menus.html:264`), and the grid is 3 columns on
-                phone, 4 at desktop (`.tiles`), replacing the old 2/3 split. */}
-            <p className="text-sm text-zinc-400">tap to add one · ⋯ for more</p>
-            <div className="lt-tiles">
-              {NAMED_COUNTER_PALETTE.map((definition) => (
-                <CounterControl
-                  key={definition.id}
-                  label={definition.label}
-                  icon={definition.icon}
-                  labelTestId={`counter-label-${definition.id}`}
-                  value={player.namedCounters[definition.id]}
-                  onIncrement={() => onAdjustNamedCounter(player.label, definition.id, 1)}
-                  onDecrement={() => onAdjustNamedCounter(player.label, definition.id, -1)}
-                  onSet={(value) => onSetNamedCounter(player.label, definition.id, value)}
-                />
-              ))}
+          <div role="tabpanel" aria-label="Named and custom counters" className="lt-tab">
+            <div className="lt-sec">
+              <span className="lbl">
+                Counters <small>tap to add one · ⋯ for more</small>
+              </span>
+              <div className="tiles">
+                {NAMED_COUNTER_PALETTE.map((definition) => (
+                  <CounterControl
+                    key={definition.id}
+                    label={definition.label}
+                    icon={definition.icon}
+                    labelTestId={`counter-label-${definition.id}`}
+                    value={player.namedCounters[definition.id]}
+                    onIncrement={() => onAdjustNamedCounter(player.label, definition.id, 1)}
+                    onDecrement={() => onAdjustNamedCounter(player.label, definition.id, -1)}
+                    onSet={(value) => onSetNamedCounter(player.label, definition.id, value)}
+                  />
+                ))}
+              </div>
             </div>
 
-            {/* Requirement 3: one always-present "Custom counters" section
-                (`life-tracker-menus.html:267` `.lt-sec`) holding any existing
-                custom tiles plus the name field and "＋ Add" — replacing the
-                prior split (a conditional heading+grid, then a separate
-                bordered add-row below). */}
-            <section aria-label="Custom counters" className="space-y-2 border-t border-zinc-700/70 pt-4">
-              <h3 className="text-sm font-black text-zinc-200">Custom counters</h3>
-              {player.customCounters.length > 0 && (
-                <div className="lt-tiles">
-                  {player.customCounters.map((counter) => (
-                    <div key={counter.id} className="space-y-1">
-                      <CounterControl
-                        label={counter.name}
-                        value={counter.amount}
-                        onIncrement={() => onAdjustCustomCounter(player.label, counter.id, 1)}
-                        onDecrement={() => onAdjustCustomCounter(player.label, counter.id, -1)}
-                        onSet={(value) => onSetCustomCounter(player.label, counter.id, value)}
-                      />
-                      <button
-                        type="button"
-                        aria-label={`Remove ${counter.name}`}
-                        onClick={() => onRemoveCustomCounter(player.label, counter.id)}
-                        className="motion-focus min-h-11 w-full rounded-lg text-xs font-bold text-rose-400 hover:bg-rose-950/40"
-                      >
-                        Remove
-                      </button>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <form onSubmit={addCustom} className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-zinc-400">Custom counter name</span>
-                  <input
-                    aria-label="Custom counter name"
-                    aria-invalid={customNameError !== null}
-                    value={customName}
-                    onChange={(event) => {
-                      setCustomName(event.target.value);
-                      setCustomNameError(null);
-                    }}
-                    className="motion-focus min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-zinc-100"
-                  />
-                </label>
-                <button
-                  type="submit"
-                  aria-label="Add custom counter"
-                  className="motion-focus mt-auto min-h-11 rounded-xl border border-accent/50 bg-accent/10 px-4 text-sm font-black text-accent-soft"
-                >
-                  <span aria-hidden="true">＋</span> Add
-                </button>
-                {customNameError && (
-                  <p role="alert" className="col-span-2 text-sm text-rose-400">
-                    {customNameError}
+            {/* One always-present "Custom counters" section: any existing custom tiles plus the name field
+                and "＋ Add". */}
+            <section aria-label="Custom counters" className="lt-sec custom-section">
+              <span className="lbl">Custom counters</span>
+              <div className="tiles">
+                {player.customCounters.length > 0 ? (
+                  player.customCounters.map((counter) => (
+                    <CounterControl
+                      key={counter.id}
+                      label={counter.name}
+                      value={counter.amount}
+                      onIncrement={() => onAdjustCustomCounter(player.label, counter.id, 1)}
+                      onDecrement={() => onAdjustCustomCounter(player.label, counter.id, -1)}
+                      onSet={(value) => onSetCustomCounter(player.label, counter.id, value)}
+                      onRemove={() => onRemoveCustomCounter(player.label, counter.id)}
+                    />
+                  ))
+                ) : (
+                  <p className="hint" style={{ gridColumn: "1 / -1" }}>
+                    None yet — name one below.
                   </p>
                 )}
+              </div>
+              <form onSubmit={addCustom} className="add-counter">
+                <input
+                  className="field"
+                  aria-label="Custom counter name"
+                  aria-invalid={customNameError !== null}
+                  placeholder="Custom counter name"
+                  value={customName}
+                  onChange={(event) => {
+                    setCustomName(event.target.value);
+                    setCustomNameError(null);
+                  }}
+                />
+                <button type="submit" aria-label="Add custom counter" className="motion-focus btn">
+                  <span aria-hidden="true">＋</span> Add
+                </button>
               </form>
+              {customNameError && (
+                <p role="alert" className="add-err">
+                  {customNameError}
+                </p>
+              )}
             </section>
           </div>
         )}
       </div>
-    </div>
+
+      <button type="button" className="lt-foot" onClick={onClose}>
+        <span>Done</span>
+        <span className="chev" aria-hidden="true">
+          ›
+        </span>
+      </button>
+    </SheetShell>
   );
 }

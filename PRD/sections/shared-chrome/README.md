@@ -107,7 +107,8 @@ language live here.
 ### The Menu corner rail and tray
 
 - Built: the suite's single navigation affordance is the **☰ Menu button** at the
-  left of a banner header — at least 44px, about a quarter larger than the former
+  left of a banner header flush with the top edge of the screen (outside the page
+  padding) — at least 44px, about a quarter larger than the former
   corner rail on a phone and a third on desktop — with the brand centred (a
   breathing orb with the colour's badge, the wordmark, "MTG Assistant") on a lit
   band carrying a hairline of the colour's light and the profile's own element.
@@ -359,9 +360,10 @@ language live here.
 - Built: behind every page plays the chosen colour's **ambient scene** — two
   drifting haze sheets, a field of glowing dust, the colour's badge large, blurred
   and faint in the centre, and the colour's element (White beams, Blue runes, Black
-  fog, Red embers, Green leaves, Colorless turning geometry) — CSS-animated with
-  transform/opacity only, one density and one opacity number per scene, still
-  under reduced motion, and at a whisper inside the Menu tray. The ground is one
+  fog, Red embers, Green leaves, Colorless turning geometry) — drawn by one
+  hand-written canvas renderer ported from the mockup (`AmbientScene`), one
+  density and one opacity number per scene, one still frame under reduced
+  motion, and at a whisper inside the Menu tray. The ground is one
   flat colour per profile from the REQ-200 token set; one typeface (Inter,
   self-hosted) serves titles and body; no surface carries corner decoration.
   (REQ-207, REQ-200, REQ-201, NFR-006)

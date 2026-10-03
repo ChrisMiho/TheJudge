@@ -71,7 +71,7 @@ describe("Game setup and zone confirmation", () => {
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
 
-    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Zones in play" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Continue" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Back" })).toBeInTheDocument();
   });
@@ -146,7 +146,7 @@ describe("Game setup and zone confirmation", () => {
     render(<App />);
 
     expect(
-      screen.getByText("Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.")
+      screen.getByText("Who is playing, and where the turn is. Tap the arrow to name the players and set life — 2 players start at 20, 3+ at 40.")
     ).toBeInTheDocument();
     expect(
       screen.queryByText(["2 players start at 20", "life. 3+ players default to 40 life."].join(" "))
@@ -270,7 +270,7 @@ describe("Zone collection UI", () => {
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     await advancePastZoneConfirm(user);
 
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeInTheDocument();
   });
 
   it("preserves stack order bottom-to-top and shows enrichment counts", async () => {

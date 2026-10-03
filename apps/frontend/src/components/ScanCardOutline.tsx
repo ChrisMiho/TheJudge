@@ -29,7 +29,7 @@ function pointsAttr(points: Point[]): string {
 // is unchanged — it is developer-only, not part of this look pass.
 const STROKE_BY_VARIANT: Record<ScanCardOutlineVariant, string> = {
   debug: "#38bdf8",
-  affirmative: "rgb(var(--accent-soft))"
+  affirmative: "var(--accent-soft)"
 }
 
 export function ScanCardOutline({ corners, frameWidth, frameHeight, variant }: ScanCardOutlineProps): JSX.Element | null {

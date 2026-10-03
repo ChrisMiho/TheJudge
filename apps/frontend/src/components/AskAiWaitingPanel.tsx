@@ -38,7 +38,7 @@ export function AskAiWaitingPanel({ isSubmitting }: AskAiWaitingPanelProps): JSX
 
   return (
     <div
-      className={`wait-inscription-bubble ambient-accent-surface ambient-accent-interactive relative space-y-2 overflow-hidden rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 wait-stage-${stage.variant}`}
+      className={`wait-inscription-bubble ambient-accent-surface ambient-accent-interactive wait-stage-${stage.variant}`}
       data-accent-current="true"
     >
       {/* The colour's seal: a small ringed badge the message sits under. Only the
@@ -54,7 +54,7 @@ export function AskAiWaitingPanel({ isSubmitting }: AskAiWaitingPanelProps): JSX
         {liftingMessage && (
           <p
             aria-hidden="true"
-            className="wait-inscription-line wait-inscription-line-lift text-sm text-zinc-300"
+            className="wait-inscription-line wait-inscription-line-lift"
           >
             {liftingMessage}
           </p>
@@ -63,7 +63,7 @@ export function AskAiWaitingPanel({ isSubmitting }: AskAiWaitingPanelProps): JSX
           key={inkKey}
           aria-live="polite"
           aria-atomic="true"
-          className={`wait-inscription-line wait-inscription-line-ink text-sm text-zinc-300${
+          className={`wait-inscription-line wait-inscription-line-ink${
             stage.variant === "absurd" ? " italic" : ""
           }`}
         >
@@ -72,7 +72,7 @@ export function AskAiWaitingPanel({ isSubmitting }: AskAiWaitingPanelProps): JSX
       </div>
 
       {/* The elapsed clock ticks at the bubble's foot (REQ-023). */}
-      <p className="wait-inscription-clock text-2xl font-mono text-zinc-100">{formatElapsed(elapsed)}</p>
+      <p className="wait-inscription-clock">{formatElapsed(elapsed)}</p>
     </div>
   );
 }

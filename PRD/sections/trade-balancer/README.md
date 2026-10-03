@@ -40,7 +40,7 @@ Assistant core loop and changes nothing about it or the AI answer path.
 - Built: the view shows the **difference** between the two totals as an amount
   under a verdict line that names the side ahead in plain words, or "Even" when
   the totals match to the cent. (REQ-064, REQ-215)
-- Built: the balance is drawn as **two piles of gold** on a solid panel, each
+- Built: the balance is drawn as **two piles of gold** on a glass panel, each
   grown through five tiers relative to the richer side (the richer — or either,
   on a tie — is always tier 5; the lighter's tier is its share: 95%+ → 5, 75%+ →
   4, 50%+ → 3, 25%+ → 2, under → 1), with the verdict line and the plain dollar
@@ -110,6 +110,9 @@ Assistant core loop and changes nothing about it or the AI answer path.
   each unit counts toward the side total. A trade side is a value list, not the
   stack: the stack duplicate-block (REQ-009 / FLOW-004) and the 10-card cap
   (REQ-010) do **not** apply. (REQ-065, FLOW-009)
+- Built: adding a card whose printing and finish match a row already on that
+  side raises that row's quantity instead of adding a second row; a different
+  printing or finish stays its own row. Totals are unchanged. (REQ-065, REQ-215)
 - Built: each entry can be **removed** from its side. (REQ-065)
 - Built: printing selection is a **pricing/display layer only** — it is never
   pushed into prompt context, rulings lookup, or the Decrypt-Stack request

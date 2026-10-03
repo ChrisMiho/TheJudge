@@ -7,6 +7,8 @@ import type { CardDetailBlock } from "../lib/cardDetail";
 import type { CardMetadataItem } from "../types";
 
 export const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
+export const flowCss = readFileSync(resolve(process.cwd(), "src/styles/flow.css"), "utf8");
+export const shellCss = readFileSync(resolve(process.cwd(), "src/styles/shell.css"), "utf8");
 
 /**
  * Test-fixture shape: the slim up-front `CardMetadataItem` fields (REQ-174)
@@ -400,7 +402,7 @@ export async function addCardToStack(
 }
 
 export async function clickDecryptStack(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  if (screen.queryByRole("heading", { name: "Add cards to zones" })) {
+  if (screen.queryByRole("region", { name: "Add cards to zones" })) {
     await advancePastZoneCollection(user);
   }
   if (!screen.queryByRole("button", { name: "Decrypt Stack" })) {

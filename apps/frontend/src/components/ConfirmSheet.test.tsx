@@ -20,7 +20,9 @@ describe("Frontend - ConfirmSheet", () => {
     );
 
     const dialog = screen.getByTestId("trade-confirm");
-    expect(dialog).toHaveClass("sheet-shell-surface");
+    expect(dialog).toHaveClass("drawer-panel", "confirm-panel");
+    // the mockup's confirm sheet has no ✕: Keep, Esc and the backdrop dismiss it
+    expect(screen.queryByRole("button", { name: /^Keep —/ })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Start a new trade?" })).toBeInTheDocument();
     expect(screen.getByText("This clears both piles.")).toBeInTheDocument();
   });

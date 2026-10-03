@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
+const shellCss = readFileSync(resolve(process.cwd(), "src/styles/shell.css"), "utf8");
 
 function cssBlock(startMarker: string): string {
   const start = appCss.indexOf(startMarker);
@@ -87,7 +88,7 @@ describe("Decorative motion foundation CSS", () => {
   });
 
   it("preserves existing functional and portal motion selectors", () => {
-    expect(cssBlock(".portal-menu-motion")).toContain("animation:");
+    expect(shellCss).toMatch(/\.menu-tray \{[^}]*transition: transform/);
     expect(cssBlock(".wait-stage-calm")).toContain("animation:");
     expect(cssBlock(".scan-confirm-popup")).toContain("animation:");
     expect(cssBlock(".send-spinner")).toContain("animation:");

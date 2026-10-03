@@ -1,0 +1,20 @@
+{
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 900
+  },
+  {
+   "name": "the conversation thread",
+   "reason": "live data: the judge's answer text comes from the AI provider (the mock provider's text here), not the mockup's written ruling; the thread box is fixed to 320px on both sides for the capture",
+   "x": 431,
+   "y": 228,
+   "width": 578,
+   "height": 322
+  }
+ ]
+}

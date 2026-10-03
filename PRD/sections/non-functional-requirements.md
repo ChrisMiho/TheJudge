@@ -63,12 +63,12 @@
 - Description: UI motion may be expressive and decorative app-wide (DEC-079), but must stay lightweight, performant, and accessible. Decorative micro-transitions, easing, entrance/exit transitions, and state-change cues are permitted across the full staged flow and answered/conversation view; motion must not become a heavyweight dependency-driven system or regress the live-table loop.
 - Constraints:
   - decorative CSS motion (transitions and keyframe animations) is permitted across the full staged flow and answered view (DEC-079); it is no longer limited to functional loading/wait states
-  - implementation stays CSS-based — no animation library or animation-framework migration without a separate confirmed decision
+  - implementation stays CSS-based — no animation library or animation-framework migration without a separate confirmed decision; the one exception is the colour's ambient scene (below), a single hand-written canvas renderer with no library behind it
   - motion must honor `prefers-reduced-motion` (reduced or disabled decorative motion); no decorative motion is required to complete any flow
   - motion must be mobile-performance-safe (prefer transform/opacity, avoid layout thrash and main-thread jank) and must not regress NFR-001 (mobile-first) or NFR-002 (fast interaction loop)
   - scan camera surface convergence/lock/thumbs-up motion is excluded and stays as tuned (DEC-057, DEC-062, DEC-072, DEC-073)
   - functional wait-state motion keeps its thresholds and copy (DEC-031, DEC-041); the waiting panel's inscription treatment (REQ-023 as amended) is CSS-only and reduced-motion-aware
-  - the colour's ambient scene (REQ-207) is CSS-animated layers with one density and one opacity number per scene, held still under reduced motion
+  - the colour's ambient scene (REQ-207) is one hand-written canvas renderer ported from the approved direction-1 mockup's own renderer (`docs/design/ui-reimagining/direction-1/ambience.js`), mounted once as the `AmbientScene` component on a fixed canvas behind the page and driven by the active colour profile; it uses no animation library or framework, is decorative only (hidden from assistive technology, takes no pointer events), keeps one density and one opacity number per scene, and under `prefers-reduced-motion` paints one still frame and runs no animation loop
   - focused conversation motion (DEC-118 / REQ-098) reuses the shared CSS vocabulary, animates only newly entering content, preserves a scrolled-up reader's position, and becomes effectively immediate under reduced motion
 - Dependencies:
   - DEC-079
@@ -78,6 +78,8 @@
   - NFR-002
   - DEC-118
   - REQ-098
+- Notes:
+  - amended by `ui-look-translation` (2026-10-02): the ambient-scene canvas exception. The first build kept the scene CSS-only and shipped a haze; the owner's live comparison on 2026-10-02 found the missing scene was most of the gap to the mockup
 
 ### NFR-007
 - Title: Failure resilience

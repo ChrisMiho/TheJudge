@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { getCardIdentityRingStyle } from "../../lib/cardIdentityRing";
 import { deriveCardImageUrl } from "../../lib/cardImage";
 import type { CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
 import {
@@ -9,6 +10,7 @@ import {
   formatUsd,
   type TradeEntry
 } from "../../lib/trade/pricing";
+import { CardDetailPopup } from "../CardPresentation";
 import { PrintingPicker } from "./PrintingPicker";
 
 /** FLOW-025: one entry's per-card fetch state, computed and owned by
@@ -16,6 +18,8 @@ import { PrintingPicker } from "./PrintingPicker";
 export type TradeEntryPricingMeta = {
   oracleId: string;
   name: string;
+  /** The card's colour identity, for the row's identity ring (REQ-058). */
+  colors?: string[];
   status: "loading" | "loaded" | "error";
   printings: CardPrintingPrice[];
 };
@@ -32,6 +36,10 @@ export type TradeEntryRowProps = {
   onRetryPricing: (instanceId: string) => void;
 };
 
+/**
+ * One trade row in `trade-balancer.html`'s `.entry` order: the card tile (a tap opens the card detail),
+ * the name, printing line and Foil / − / quantity / + controls, and the money column.
+ */
 export function TradeEntryRow({
   entry,
   meta,
@@ -43,6 +51,7 @@ export function TradeEntryRow({
   onRetryPricing
 }: TradeEntryRowProps): JSX.Element {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const missingPrice = entryHasMissingPrice(entry);
   const unitPrice = entryUnitPrice(entry);
   const { printing } = entry;
@@ -55,20 +64,34 @@ export function TradeEntryRow({
 
   return (
     <li
-      className="tb-entry"
+      className="entry"
       data-missing-price={missingPrice ? "true" : undefined}
       data-pricing-status={meta?.status}
-      data-foil={entry.foil ? "true" : undefined}
+      data-foil={entry.foil ? "true" : "false"}
     >
-      {imageUrl && <img src={imageUrl} alt="" aria-hidden="true" className="tb-entry-card" />}
-      <div className="tb-entry-info">
-        <p className="tb-entry-name">{name}</p>
+      {imageUrl ? (
+        <button
+          type="button"
+          className="card card-identity-ring"
+          style={getCardIdentityRingStyle(meta?.colors)}
+          title="Card details"
+          aria-label={`Show details for ${name}`}
+          aria-haspopup="dialog"
+          onClick={() => setIsDetailOpen(true)}
+        >
+          <img src={imageUrl} alt="" aria-hidden="true" />
+        </button>
+      ) : (
+        <span className="card" aria-hidden="true" />
+      )}
+      <div className="info">
+        <span className="nm">{name}</span>
         {isLoading ? (
-          <p className="tb-entry-printing" role="status">
+          <span className="printing" role="status">
             Loading price…
-          </p>
+          </span>
         ) : printing.setName ? (
-          <p className="tb-entry-printing">
+          <span className="printing">
             {`${printing.setName} · ${printing.set.toUpperCase()} · `}
             {alternatePrintings.length > 1 ? (
               <button
@@ -76,36 +99,31 @@ export function TradeEntryRow({
                 aria-label={`Change printing for ${entryDescription}`}
                 disabled={isLoading}
                 onClick={() => setIsPickerOpen((open) => !open)}
-                className="tb-entry-printing-link"
               >
                 Change
               </button>
             ) : (
-              <span className="tb-entry-printing-only">only printing</span>
+              <span className="only">only printing</span>
             )}
-          </p>
+          </span>
         ) : null}
 
         {isError && (
-          <div className="flex items-center justify-between gap-2 rounded-lg border border-amber-700/50 bg-amber-950/20 px-2 py-1.5">
-            <p className="text-xs text-amber-200">Price unavailable right now.</p>
-            <button
-              type="button"
-              onClick={() => onRetryPricing(entry.instanceId)}
-              className="min-h-8 rounded-lg border border-amber-600/60 bg-zinc-950/60 px-2 py-1 text-xs font-semibold text-amber-200 transition hover:bg-zinc-800"
-            >
+          <div className="entry-error">
+            <p>Price unavailable right now.</p>
+            <button type="button" onClick={() => onRetryPricing(entry.instanceId)} className="ctl">
               Retry
             </button>
           </div>
         )}
 
-        <div className="tb-entry-controls">
+        <div className="controls">
           <button
             type="button"
             aria-label={`Toggle foil for ${entryDescription}`}
             aria-pressed={entry.foil}
             onClick={() => onToggleFoil(entry.instanceId)}
-            className="tb-entry-ctl"
+            className="ctl"
           >
             Foil
           </button>
@@ -115,52 +133,47 @@ export function TradeEntryRow({
             aria-label={`Decrease quantity for ${entryDescription}`}
             disabled={entry.quantity <= 1}
             onClick={() => onQuantityChange(entry.instanceId, entry.quantity - 1)}
-            className="tb-entry-ctl"
+            className="ctl"
           >
             −
           </button>
-          <span aria-label={`Quantity for ${entryDescription}`} className="tb-entry-qty">
+          <span aria-label={`Quantity for ${entryDescription}`} className="qty">
             {entry.quantity}
           </span>
           <button
             type="button"
             aria-label={`Increase quantity for ${entryDescription}`}
             onClick={() => onQuantityChange(entry.instanceId, entry.quantity + 1)}
-            className="tb-entry-ctl"
+            className="ctl"
           >
             +
           </button>
         </div>
       </div>
 
-      <div className="tb-entry-money">
-        <p
-          className={`tb-entry-line ${missingPrice ? "text-amber-300" : ""}`}
-          data-testid="entry-contribution"
-        >
+      <div className="money">
+        <span className={missingPrice ? "line missing" : "line"} data-testid="entry-contribution">
           {missingPrice && !isLoading && (
             <span role="img" aria-label={`No ${entry.foil ? "foil " : ""}price for ${name}`}>
               {"⚠ "}
             </span>
           )}
           {formatUsd(entryContribution(entry))}
-        </p>
-        <p className="tb-entry-unit">
-          {isLoading
-            ? ""
-            : missingPrice
-              ? "No price — $0"
-              : `${formatUsd(unitPrice ?? 0)} × ${entry.quantity}`}
-        </p>
-        <button
-          type="button"
-          aria-label={`Remove ${entryDescription}`}
-          onClick={() => onRemove(entry.instanceId)}
-          className="tb-entry-remove"
-        >
+        </span>
+        <span className="unit">
+          {isLoading ? "" : missingPrice ? "No price — $0" : `${formatUsd(unitPrice ?? 0)} × ${entry.quantity}`}
+        </span>
+        <button type="button" className="x" aria-label={`Remove ${entryDescription}`} onClick={() => onRemove(entry.instanceId)}>
           <span aria-hidden="true">✕</span>
         </button>
       </div>
+
+      {isDetailOpen && (
+        <CardDetailPopup
+          card={{ cardId: meta?.oracleId ?? "", name, imageId: printing.id }}
+          onClose={() => setIsDetailOpen(false)}
+        />
+      )}
 
       {isPickerOpen && (
         <PrintingPicker

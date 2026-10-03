@@ -43,6 +43,7 @@ export function FollowUpComposer({ isSubmitting, onSubmit }: FollowUpComposerPro
       pendingLabel="Send"
       isSubmitting={isSubmitting}
       disabled={!text.trim()}
+      variant="followup"
       surfaceClassName="ambient-accent-surface ambient-accent-interactive"
       accentCurrent={false}
     />

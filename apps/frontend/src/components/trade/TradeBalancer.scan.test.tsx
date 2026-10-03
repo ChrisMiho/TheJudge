@@ -315,29 +315,22 @@ describe("Frontend - Trade", () => {
       ]);
       await closeSideScan(user, "A");
 
-      // Duplicates are allowed: no stack duplicate-block, no 10-card cap.
+      // REQ-215: a scan commit of the same printing merges into one row with quantity 2 (no stack
+      // duplicate-block, no 10-card cap); the total is the unmerged sum.
       expect(
         within(side("A")).getAllByRole("button", { name: /^Remove Lightning Bolt/ })
-      ).toHaveLength(2);
+      ).toHaveLength(1);
+      expect(within(side("A")).getByLabelText("Quantity for Lightning Bolt (Side A)")).toHaveTextContent("2");
       expect(sideTotalText("A")).toBe("$8.00");
 
-      const [firstFoil] = within(side("A")).getAllByLabelText(
-        "Toggle foil for Lightning Bolt (Side A)"
-      );
-      await user.click(firstFoil);
-      expect(sideTotalText("A")).toBe("$29.00");
+      await user.click(within(side("A")).getByLabelText("Toggle foil for Lightning Bolt (Side A)"));
+      expect(sideTotalText("A")).toBe("$50.00");
 
-      const [firstIncrease] = within(side("A")).getAllByLabelText(
-        "Increase quantity for Lightning Bolt (Side A)"
-      );
-      await user.click(firstIncrease);
-      expect(sideTotalText("A")).toBe("$54.00");
+      await user.click(within(side("A")).getByLabelText("Increase quantity for Lightning Bolt (Side A)"));
+      expect(sideTotalText("A")).toBe("$75.00");
 
-      const [firstRemove] = within(side("A")).getAllByLabelText(
-        "Remove Lightning Bolt (Side A)"
-      );
-      await user.click(firstRemove);
-      expect(sideTotalText("A")).toBe("$4.00");
+      await user.click(within(side("A")).getByLabelText("Remove Lightning Bolt (Side A)"));
+      expect(sideTotalText("A")).toBe("$0.00");
     });
 
     it("drops a held card with Remove in the pill before the scanner closes, adding nothing for it", async () => {

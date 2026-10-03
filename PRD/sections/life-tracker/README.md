@@ -62,11 +62,10 @@ game survives a phone lock or reload because it saves itself as you play.
   bands (no hold menu). Incrementing an opponent's commander damage always
   decrements that player's life — this is always on, not a Game Setup
   toggle; every other counter change is manual.
-- Built: the panel's surface fills the available shell height rather than
-  sizing to its content, joining the suite's Menu-tray/history-drawer
-  full-height overlay family, and scrolls internally when its content
-  exceeds that height. No dead scrim band remains above it at any player
-  count. (DEC-139)
+- Built: the panel is hosted on the suite's shared sheet and sized to its
+  content like every other sheet — a bottom sheet below 600px, a floating
+  centred card from 600px up, never taller than the viewport, with only its
+  body scrolling when the content is taller. (REQ-082, REQ-208)
 - Built: counter values persist with the game (see Persistence, below).
 
 ### Day/night header control
@@ -91,7 +90,9 @@ game survives a phone lock or reload because it saves itself as you play.
   default (2 players → 20, 3+ players → 40) unless the user has already
   chosen a different starting life for this game.
 - Built: display names are edited in Game Setup's name fields — compact boxes
-  carrying the seat number, two to a row under the Players stepper. In-Depth
+  carrying the seat number, two to a row behind an **Edit names ▾** collapse
+  under the Players stepper (closed when the sheet opens). A **Done ›** foot bar
+  closes the sheet. In-Depth
   continues to use the shared `PlayerRosterEditor` — the tracker does not mount
   it. (REQ-202)
 
@@ -144,8 +145,8 @@ game survives a phone lock or reload because it saves itself as you play.
   still exist, so this bound survives.
 - The life table always fits one screen at every supported player count,
   with no per-row or per-card minimum (DEC-136; `screen-layout.md`).
-- The counter panel is full-height with no dead scrim band at any player
-  count (DEC-139).
+- The counter panel is content-sized and never taller than the viewport
+  (REQ-082).
 - Player count: 2–8. Starting life: 20/25/30/40 presets, Custom defaulting
   to 60. Count-driven starting-life defaults: 2 players → 20, 3+ players →
   40 (DEC-101, REQ-081).
@@ -157,9 +158,9 @@ game survives a phone lock or reload because it saves itself as you play.
   whole-card half-zones oriented by seat rotation; this bound no longer
   attaches to any surface in the tracker and does not appear in **Measured
   bounds** above.
-- **Content-sized bottom-sheet counter panel (original DEC-101 shape) —
-  closed door.** DEC-139 replaced it with the full-height overlay family
-  described in **How it works**, above.
+- **Full-height overlay counter panel (DEC-139) — retired.** REQ-082
+  (amended by `ui-look-translation`) moved the counter panel back onto the
+  content-sized shared sheet, as the approved mockup draws it.
 - **Layout mode / seat width as an input to life-zone orientation — closed
   door.** DEC-136 made seat rotation the sole orientation input for life
   adjustment zones.

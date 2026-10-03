@@ -51,7 +51,7 @@ describe("Frontend - Card Scan", () => {
     it("applies the affirmative stroke for the affirmative variant, from the accent-soft token (look-matching pass, slice P)", () => {
       render(<ScanCardOutline corners={corners} frameWidth={640} frameHeight={800} variant="affirmative" />);
       const polygon = screen.getByTestId("scan-card-outline").querySelector("polygon");
-      expect(polygon).toHaveAttribute("stroke", "rgb(var(--accent-soft))");
+      expect(polygon).toHaveAttribute("stroke", "var(--accent-soft)");
       expect(polygon?.className.baseVal).not.toMatch(/\b(sky|emerald)-/);
     });
 

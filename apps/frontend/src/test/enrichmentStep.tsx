@@ -71,6 +71,7 @@ export function renderEnrichment(
       frozenGameContext={null}
       onFollowUp={vi.fn()}
       onStartOver={vi.fn()}
+      onEditRequest={vi.fn()}
       {...overrides}
     />
   );
@@ -122,6 +123,7 @@ function StatefulEnrichmentHarness(
       frozenGameContext={null}
       onFollowUp={vi.fn()}
       onStartOver={vi.fn()}
+      onEditRequest={vi.fn()}
       {...rest}
     />
   );

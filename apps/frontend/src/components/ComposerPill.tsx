@@ -1,63 +1,53 @@
-import type { Ref } from "react";
+import { useEffect, useLayoutEffect, useRef, type Ref } from "react";
 import { DictationMicButton } from "./DictationMicButton";
 import { useDictation } from "../hooks/useDictation";
-import { SendIcon } from "./ComposerSubmitButton";
+import { budgetFillStyle } from "../lib/theme/flowStyles";
 
-/**
- * `flow.css:69` — the capsule-shaped ring traced round the send pill, drawn with
- * `pathLength={100}` so a percentage of the 300-character budget maps directly to
- * `strokeDasharray`. Scaled from the mockup's 80×40 pill to this suite's 88×44
- * (REQ-205's 44px touch floor — see `.send-pair` in `index.css`): inset 4px, each half
- * 44px tall, so the capsule's straight run spans x=26..70 at y=4/48 with a 22px radius.
- */
-const SEND_RING_PATH = "M26 4 H70 A22 22 0 0 1 70 48 H26 A22 22 0 0 1 26 4 Z";
-/** REQ-206: the ring brightens over the last 30 of the 300-character budget. */
-const RING_BRIGHT_THRESHOLD = 30;
+/** The stadium path round the send pill, begun at the top of the mic|send seam and run clockwise
+ * (the mockup's `flow.js` RING_PATH): the fill grows out of the seam. */
+const SEND_RING_PATH = "M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z";
+/** Within this many characters of the cap the ring and the count turn bright (the mockup's `near`). */
+const NEAR_CAP_CHARACTERS = 30;
+/** A textarea taller than this many pixels has crossed the one-line threshold (the mockup's `autoGrow`). */
+const ONE_LINE_THRESHOLD_PX = 56;
 
 export interface ComposerPillProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
   maxLength: number;
+  /** The hint shown in the empty box. */
   placeholder: string;
+  /**
+   * The hint in tiers, longest first (the mockup's `data-placeholders`): as the box narrows the
+   * longest tier that fits on one line is shown. Omit for a single fixed hint.
+   */
+  placeholders?: readonly string[];
   textareaAriaLabel: string;
-  /** Accessible name for the send control, e.g. "Ask TheJudge" (unchanged across submit states). */
   submitLabel: string;
-  /** Visible-only text while the request is in flight (accessible name is unchanged). */
   pendingLabel: string;
   isSubmitting?: boolean;
-  /** Blocks submit only (e.g. an empty box) — the player can still type. The textarea
-   * itself disables only while `isSubmitting`. */
   disabled?: boolean;
-  /** Omit entirely to hide the "Add in-depth details" segment (REQ-206: this page's own composer only). */
+  /** When present, renders the in-depth chip at the box's bottom-left; click carries the cards and the question. */
   onAddInDepthDetails?: () => void;
   addInDepthDetailsDisabled?: boolean;
   addInDepthDetailsLabel?: string;
   textareaId?: string;
   textareaRef?: Ref<HTMLTextAreaElement>;
-  /** Extra class names merged onto the root `.q-box` surface — e.g. the ambient-accent
-   * surface contract (`ambient-accent-surface ambient-accent-interactive`) a caller wants
-   * this pill to carry. `.q-box`'s own `border`/`box-shadow` stay the base; a later class's
-   * `border-color`/`box-shadow` (same specificity, later in the stylesheet) overrides only
-   * those, so the pill's own shape/padding/radius never changes. */
+  /** "question" (default): the pre-submit box. "followup": the answered view's box (`.followup`: the text, the count and the mic|send pill, no In-depth chip). */
+  variant?: "question" | "followup";
   surfaceClassName?: string;
-  /** Passed straight through to the root `.q-box` as `data-accent-current`, for the same
-   * ambient-accent contract. Omit entirely to render no attribute. */
   accentCurrent?: boolean;
 }
 
 /**
- * REQ-206, REQ-132, REQ-012, REQ-121: the suite's one-pill question box — the Add
- * in-depth details pill at its left end, the text, the character count, and the round
- * send control, with a 300-character ring traced round the send pill's edge. There is
- * no separate labelled submit button and no visible "Send Request" text; the send
- * control's accessible name carries the existing Ask/Decrypt semantics with no visible
- * label (REQ-132 as amended).
- *
- * Look-matching pass (slice M): restyled to `flow.css:187-274`'s `.composer`/`.q-box`/
- * `.deep`/`.send-pair`/`.send-wrap`/`.send-ring` — a split mic/send pill in place of two
- * separate round buttons, with the 300-character budget drawn as a capsule ring round
- * the pill's own edge instead of a circle round the send button alone.
+ * FLOW-011 / REQ-206: Ask a Question's question box in the mockup's own markup, so the ported
+ * `flow.css` shapes it: the In-depth chip, the text, the `n / 300` count and the mic|send pill with
+ * the budget ring round it. Its shape follows the text: one line shares a row with the chip and the
+ * send; from a second line (or a hint that wraps) the text takes the top row and the chip (left) and
+ * the mic|send pill (right) step down onto the row beneath (`flow.css` `:has(textarea.grown)`). The
+ * budget ring is drawn by CSS from the box's `--fill` and `data-near`. The Enter-to-send, 300-character
+ * cap and dictation (REQ-212) behaviours are unchanged.
  */
 export function ComposerPill({
   value,
@@ -65,6 +55,7 @@ export function ComposerPill({
   onSubmit,
   maxLength,
   placeholder,
+  placeholders,
   textareaAriaLabel,
   submitLabel,
   pendingLabel,
@@ -75,15 +66,65 @@ export function ComposerPill({
   addInDepthDetailsLabel = "Add in-depth details",
   textareaId,
   textareaRef,
+  variant = "question",
   surfaceClassName,
   accentCurrent
 }: ComposerPillProps): JSX.Element {
   const length = value.length;
-  const progress = maxLength > 0 ? Math.min(length / maxLength, 1) : 0;
-  const isBright = maxLength - length <= RING_BRIGHT_THRESHOLD;
+  const isNear = maxLength - length <= NEAR_CAP_CHARACTERS && length > 0;
   const submitDisabled = disabled || isSubmitting;
 
   const dictation = useDictation({ value, onChange, maxLength });
+  const boxRef = useRef<HTMLDivElement>(null);
+  const ownTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  function setTextarea(node: HTMLTextAreaElement | null): void {
+    ownTextareaRef.current = node;
+    if (typeof textareaRef === "function") textareaRef(node);
+    else if (textareaRef) (textareaRef as { current: HTMLTextAreaElement | null }).current = node;
+  }
+
+  // The two shapes: measured on the textarea itself, the way the mockup's `autoGrow` does — drop the
+  // `grown` shape, size to content, and take it back when the text no longer fits one line. The
+  // textarea's own height stays with `useAutoGrowTextarea` in the caller.
+  useLayoutEffect(() => {
+    const textarea = ownTextareaRef.current;
+    const box = boxRef.current;
+    if (!textarea || !box) return;
+    const previous = textarea.style.height;
+    textarea.classList.remove("grown");
+    textarea.style.height = "auto";
+    const grown = textarea.scrollHeight > ONE_LINE_THRESHOLD_PX;
+    textarea.classList.toggle("grown", grown);
+    textarea.style.height = previous;
+    box.style.borderRadius = grown ? "1.1rem" : "";
+  }, [value, dictation.isListening]);
+
+  // The hint comes in tiers (the mockup's `fitPlaceholder`): the longest that fits the box on one line
+  // is shown, re-measured whenever the box changes width. Idle while listening ("Listening…").
+  useEffect(() => {
+    const textarea = ownTextareaRef.current;
+    if (!textarea || !placeholders || placeholders.length < 2 || dictation.isListening) return;
+    const context = document.createElement("canvas").getContext?.("2d");
+    if (!context) return;
+    const fit = (): void => {
+      const styles = getComputedStyle(textarea);
+      context.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
+      const room =
+        textarea.clientWidth - (parseFloat(styles.paddingLeft) || 0) - (parseFloat(styles.paddingRight) || 0) - 2;
+      const pick = placeholders.find((tier) => context.measureText(tier).width <= room) ?? placeholders[placeholders.length - 1]!;
+      if (textarea.placeholder !== pick) textarea.placeholder = pick;
+    };
+    fit();
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", fit);
+      return () => window.removeEventListener("resize", fit);
+    }
+    const observer = new ResizeObserver(fit);
+    observer.observe(textarea);
+    void document.fonts?.ready.then(fit);
+    return () => observer.disconnect();
+  }, [placeholders, dictation.isListening]);
 
   function handleSubmit(): void {
     if (dictation.isListening) dictation.stop();
@@ -92,32 +133,36 @@ export function ComposerPill({
 
   return (
     <div
-      className={surfaceClassName ? `q-box ${surfaceClassName}` : "q-box"}
+      ref={boxRef}
+      className={surfaceClassName ? `${variant === "followup" ? "followup" : "q-box"} ${surfaceClassName}` : variant === "followup" ? "followup" : "q-box"}
       data-testid="composer-pill"
+      data-fill={length === 0 ? "0" : "some"}
+      data-near={isNear}
+      style={budgetFillStyle(maxLength > 0 ? (length / maxLength) * 100 : 0)}
       {...(accentCurrent === undefined ? {} : { "data-accent-current": accentCurrent })}
     >
-      {onAddInDepthDetails && (
+      {variant === "question" && onAddInDepthDetails && (
         <button
           type="button"
           onClick={onAddInDepthDetails}
           disabled={addInDepthDetailsDisabled}
           aria-label={addInDepthDetailsLabel}
+          title={`${addInDepthDetailsLabel} — your cards come with you`}
           data-testid="composer-pill-in-depth"
-          className="deep motion-focus"
+          className="deep"
         >
           <span className="glyph" aria-hidden="true">
             ◈
           </span>
-          {/* The label text hides below 480px (REQ-206: "glyph only below 480px"); the
-                accessible name above always carries the full text regardless of width. */}
-          <span aria-hidden="true" className="hidden whitespace-nowrap xs:inline">
+          {/* The label hides below 480px (flow.css); the accessible name above always carries it. */}
+          <span className="lbl" aria-hidden="true">
             In-depth
           </span>
         </button>
       )}
 
       <textarea
-        ref={textareaRef}
+        ref={setTextarea}
         id={textareaId}
         aria-label={textareaAriaLabel}
         value={value}
@@ -130,53 +175,38 @@ export function ComposerPill({
           }
         }}
         rows={1}
-        placeholder={dictation.isListening ? "Listening…" : placeholder}
+        placeholder={dictation.isListening ? "Listening…" : (placeholders?.[0] ?? placeholder)}
         disabled={isSubmitting}
       />
 
-      {length > 0 && (
-        <span data-testid="composer-pill-count" className="q-count">
-          {length}/{maxLength}
-        </span>
-      )}
+      <span data-testid="composer-pill-count" className={variant === "followup" ? "fu-count" : "q-count"} data-near={isNear}>
+        {length} / {maxLength}
+      </span>
 
       <span className="send-wrap">
-        {length > 0 && (
-          <svg className="send-ring" data-testid="composer-pill-ring" viewBox="0 0 96 52" aria-hidden="true">
-            <path className="track" d={SEND_RING_PATH} pathLength={100} />
-            <path
-              className={isBright ? "fill bright" : "fill"}
-              d={SEND_RING_PATH}
-              pathLength={100}
-              strokeDasharray={`${progress * 100} 100`}
-            />
-          </svg>
-        )}
+        <svg className="send-ring" data-testid="composer-pill-ring" viewBox="0 0 88 48" aria-hidden="true">
+          <path className="track" d={SEND_RING_PATH} pathLength={100} />
+          <path className="fill" d={SEND_RING_PATH} pathLength={100} />
+        </svg>
         <span className="send-pair">
-          {/* REQ-212: the mic half exists only where the browser exposes speech
-                recognition; where it does not, the pill is the arrow alone, unchanged. */}
-          {dictation.isSupported && (
-            <DictationMicButton
-              isListening={dictation.isListening}
-              onToggle={dictation.toggle}
-              variant="flat"
-              sizeClassName="h-11 w-11"
-            />
-          )}
+          {/* REQ-212: the mic half exists only where the browser exposes speech recognition;
+              where it does not, the pill is the arrow alone. */}
+          {dictation.isSupported && <DictationMicButton isListening={dictation.isListening} onToggle={dictation.toggle} />}
           <button
             type="button"
+            className="send"
             onClick={handleSubmit}
             disabled={submitDisabled}
             aria-label={isSubmitting ? pendingLabel : submitLabel}
+            title={isSubmitting ? pendingLabel : submitLabel}
             data-testid="composer-pill-send"
-            className="h-11 w-11"
           >
-            {isSubmitting ? <span className="send-spinner" /> : <SendIcon />}
+            {isSubmitting ? <span className="send-spinner" /> : "➤"}
           </button>
         </span>
       </span>
       {dictation.error && (
-        <p role="alert" data-testid="composer-pill-dictation-error" className="text-[10px] leading-tight text-rose-400">
+        <p role="alert" data-testid="composer-pill-dictation-error" className="q-error">
           {dictation.error}
         </p>
       )}

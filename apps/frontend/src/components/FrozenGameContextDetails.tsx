@@ -110,16 +110,13 @@ export function FrozenGameContextDetails({
   return (
     <div className="frozen-game-context-details space-y-4">
       <section className="space-y-1" aria-labelledby="frozen-context-turn">
-        <h3
-          id="frozen-context-turn"
-          className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400"
-        >
+        <h3 id="frozen-context-turn" className="frozen-heading">
           Turn
         </h3>
-        <p className="text-sm text-zinc-300">{getPhaseLabel(frozenGameContext)}</p>
+        <p className="frozen-line">{getPhaseLabel(frozenGameContext)}</p>
         {frozenGameContext.activePlayer && (
-          <p className="text-sm text-zinc-300">
-            <span className="font-medium text-zinc-200">Active player:</span>{" "}
+          <p className="frozen-line">
+            <span className="frozen-strong">Active player:</span>{" "}
             {formatPlayerDisplayLabel(
               frozenGameContext.activePlayer,
               displayNamesByPlayer[frozenGameContext.activePlayer]
@@ -130,13 +127,10 @@ export function FrozenGameContextDetails({
 
       {players.length > 0 && (
         <section className="space-y-1" aria-labelledby="frozen-context-setup">
-          <h3
-            id="frozen-context-setup"
-            className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400"
-          >
+          <h3 id="frozen-context-setup" className="frozen-heading">
             Setup
           </h3>
-          <ul className="space-y-0.5 text-sm text-zinc-300">
+          <ul className="frozen-line space-y-0.5">
             {players.map((player) => (
               <li key={player.label}>
                 {formatPlayerDisplayLabel(player.label, player.displayName)}: {player.lifeTotal} life
@@ -148,10 +142,7 @@ export function FrozenGameContextDetails({
 
       {onZoneFilterChange && populatedZones.length > 1 && (
         <div className="review-filters" role="group" aria-label="Pick out a zone's cards">
-          <button
-            type="button"
-            className="review-filter-pill"
-            aria-pressed={zoneFilter == null}
+          <button type="button" aria-pressed={zoneFilter == null}
             onClick={() => onZoneFilterChange(null)}
           >
             All<b>{totalCardCount}</b>
@@ -160,7 +151,6 @@ export function FrozenGameContextDetails({
             <button
               key={zone}
               type="button"
-              className="review-filter-pill"
               aria-pressed={zoneFilter === zone}
               onClick={() => onZoneFilterChange(zoneFilter === zone ? null : zone)}
             >
@@ -173,10 +163,7 @@ export function FrozenGameContextDetails({
 
       {populatedZones.map(({ zone, cards }) => (
         <section key={zone} className="space-y-2" aria-labelledby={`frozen-context-zone-${zone}`}>
-          <h3
-            id={`frozen-context-zone-${zone}`}
-            className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400"
-          >
+          <h3 id={`frozen-context-zone-${zone}`} className="frozen-heading">
             {ZONE_LABELS[zone]}
           </h3>
           <ul className="space-y-2">
@@ -185,10 +172,10 @@ export function FrozenGameContextDetails({
                 key={`${zone}:${card.instanceId ?? card.cardId}`}
                 data-dimmed={zoneFilter != null && zoneFilter !== zone}
                 data-hit={zoneFilter != null && zoneFilter === zone}
-                className="frozen-context-detail-row context-review-row space-y-1 rounded-xl border border-zinc-700/60 bg-zinc-900/50 p-3 text-sm text-zinc-300"
+                className="frozen-context-detail-row context-review-row space-y-1"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <p className="font-semibold text-zinc-100">{card.name}</p>
+                  <p className="frozen-card-name">{card.name}</p>
                   {onEditCard && (
                     <button
                       type="button"
@@ -200,8 +187,8 @@ export function FrozenGameContextDetails({
                     </button>
                   )}
                 </div>
-                {card.typeLine && <p className="text-xs text-zinc-400">{card.typeLine}</p>}
-                {card.oracleText && <p className="text-xs text-zinc-400">{card.oracleText}</p>}
+                {card.typeLine && <p className="frozen-muted">{card.typeLine}</p>}
+                {card.oracleText && <p className="frozen-muted">{card.oracleText}</p>}
                 {formatCardDetailLines(zone, card).map((line) => (
                   <p key={line}>{line}</p>
                 ))}

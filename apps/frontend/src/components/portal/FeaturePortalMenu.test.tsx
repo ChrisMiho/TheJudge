@@ -1,10 +1,9 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FeaturePortalMenu } from "./FeaturePortalMenu";
 import { PortalSlot } from "./PortalSlot";
-import { ShellBounds } from "./ShellBounds";
 import { LeftEdgeDrawerProvider } from "../../lib/portal/leftEdgeDrawerContext";
 import type { DestinationId, PortalEntry } from "../../lib/portal/types";
 import { navigateToPath, startOnInDepthQuestion } from "../../test/appTestHelpers";
@@ -75,7 +74,7 @@ describe("FeaturePortalMenu", () => {
     const button = screen.getByRole("button", { name: "Switch feature" });
     expect(button).toHaveAttribute("aria-haspopup", "true");
     expect(button).toHaveAttribute("aria-expanded", "false");
-    expect(button.querySelector("svg")).toBeInTheDocument();
+    expect(button).toHaveTextContent("☰");
     expect(button).not.toHaveTextContent("Menu");
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
@@ -89,7 +88,7 @@ describe("FeaturePortalMenu", () => {
     // DEC-150: once open, the trigger itself is gone from the DOM (not merely hidden) —
     // see the dedicated "rail-hide while open" describe block below for full coverage.
     expect(screen.queryByRole("button", { name: "Switch feature" })).not.toBeInTheDocument();
-    expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("menuitem", { name: "Trade" })).not.toHaveAttribute("aria-current");
     expect(screen.getByText("Theme")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Theme: Blue" })).toBeInTheDocument();
@@ -169,7 +168,7 @@ describe("FeaturePortalMenu", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    expect(screen.getByRole("menuitem", { name: "Trade" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("menuitem", { name: "Trade" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).not.toHaveAttribute("aria-current");
   });
 
@@ -182,7 +181,7 @@ describe("FeaturePortalMenu", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).toHaveAttribute("aria-current", "page");
   });
 
   it("renders action entries alongside destinations in array order", async () => {
@@ -196,7 +195,7 @@ describe("FeaturePortalMenu", () => {
     // REQ-067: a "Question History" row is always fixed right after the first entry,
     // regardless of what entries the caller passes — see the dedicated describe block
     // below for its own behaviour.
-    expect(items).toEqual(["MTG Assistant✓", "Question History", "Trade", "Demo action"]);
+    expect(items).toEqual(["MTG Assistant✓", "◷Question History", "⚖Trade", "✎Demo action"]);
     expect(screen.getByRole("menuitem", { name: "Demo action" })).not.toHaveAttribute("aria-current");
   });
 
@@ -215,7 +214,7 @@ describe("FeaturePortalMenu", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("menuitem", { name: "MTG Assistant" })).toHaveAttribute("aria-current", "page");
   });
 
   it("closes the menu on outside click", async () => {
@@ -245,152 +244,15 @@ describe("FeaturePortalMenu", () => {
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
-  it("is positioned top-left, distinct from right-corner chrome", () => {
+  it("sits at the top-left as the header's ☰ toggle, a plain text glyph in the mockup's own button", () => {
     render(<Harness />);
 
-    const container = screen.getByRole("button", { name: "Switch feature" }).closest("div");
-    expect(container?.className).toContain("fixed");
-    expect(container?.className).toContain("left-0");
-    expect(container?.className).toContain("top-0");
-    expect(container?.className).not.toContain("left-1/2");
-    expect(container?.className).not.toContain("-translate-x-1/2");
-    expect(container?.className).not.toContain("right-3");
+    const trigger = screen.getByRole("button", { name: "Switch feature" });
+    expect(trigger).toHaveClass("menu-toggle");
+    expect(trigger).toHaveTextContent("☰");
+    expect(trigger).toHaveAttribute("aria-haspopup", "true");
   });
 
-  it("renders the trigger as a borderless radial-gradient rail with no separate button chrome layered on top", () => {
-    render(<Harness />);
-
-    const button = screen.getByRole("button", { name: "Switch feature" });
-    expect(button.className).toContain("portal-menu-rail");
-    expect(button.className).toContain("border-none");
-    expect(button.className).not.toContain("border-accent");
-    expect(button.className).not.toContain("bg-zinc-900");
-  });
-
-  it("darkens the rail's own background on hover/expanded instead of adding a border or separate chrome layer (slice L)", () => {
-    // Look-matching pass (slice L): the rail is now a flat 50x50/54x54 icon button
-    // sized to match `.app-header .menu-toggle` (shell.css:287-301) — DEC-137's
-    // decorative ::before glow layer retires with the old corner-rail-in-card shape
-    // it existed for (see the rail's own comment in index.css), so the hover/expanded
-    // state now darkens the button's own background-color directly.
-    const hoverBlock = appCss.slice(
-      appCss.indexOf('.portal-menu-rail[aria-expanded="true"] {'),
-      appCss.indexOf("}", appCss.indexOf('.portal-menu-rail[aria-expanded="true"] {'))
-    );
-
-    expect(hoverBlock).toContain("background-color");
-    expect(hoverBlock).not.toContain("border");
-    expect(appCss).not.toContain(".portal-menu-rail::before");
-  });
-
-  it("gives the rail a real in-flow footprint, with no corner-flush lift now that there is no card border (slice L)", () => {
-    const railBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail {"))
-    );
-    const slotBlock = appCss.slice(
-      appCss.indexOf(".portal-slot-tab {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-slot-tab {"))
-    );
-
-    // In flow, not absolutely positioned out of it — so the answered workspace no longer
-    // needs a compensating clearance above View Context.
-    expect(railBlock).toContain("position: relative");
-    expect(railBlock).not.toContain("position: absolute");
-    expect(railBlock).toContain("z-index: 3");
-    // Look-matching pass (slice L): the rail sits inside `.app-header`'s own left grid
-    // column/padding now, like BrandMark sits in the centre one — no negated mirror of
-    // a card's padding is needed to meet a card border that no longer exists.
-    expect(slotBlock).toContain("margin: 0");
-    expect(slotBlock).not.toContain("--layout-panel-padding");
-  });
-
-  it("sizes the rail to the header's own ☰ control at every width (slice L: 50px, 54px at 768px+)", () => {
-    render(<Harness />);
-    const menuOnly = screen.getByRole("button", { name: "Switch feature" });
-    expect(menuOnly.className).toContain("portal-menu-rail");
-
-    const railBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail {"))
-    );
-    const desktopBlock = appCss.slice(
-      appCss.indexOf("@media (min-width: 768px) {\n  .portal-menu-rail {"),
-      appCss.indexOf("}", appCss.indexOf("@media (min-width: 768px) {\n  .portal-menu-rail {"))
-    );
-
-    expect(railBlock).toContain("width: 50px");
-    expect(railBlock).toContain("height: 50px");
-    expect(desktopBlock).toContain("width: 54px");
-    expect(desktopBlock).toContain("height: 54px");
-  });
-
-  it("lays the split rail's two zones side by side so they clear the step eyebrow at the touch-target floor", () => {
-    // DEC-137 amends DEC-126's stacked pair. Stacking cannot work: only ~70px exists between
-    // the rail's top and the eyebrow, while two stacked 44px zones need 88px — the old
-    // clamp() met the floor only by overflowing the rail onto the eyebrow.
-    const splitBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail-split {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-split {"))
-    );
-    const zoneBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail-zone {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-zone {"))
-    );
-    const separatorBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail-zone + .portal-menu-rail-zone {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-zone + .portal-menu-rail-zone {"))
-    );
-
-    expect(splitBlock).toContain("flex-direction: row");
-    expect(splitBlock).not.toContain("flex-direction: column");
-    expect(splitBlock).toContain("height: 2.75rem");
-    expect(splitBlock).not.toContain("clamp(");
-
-    // Both axes hold NFR-001's 44px floor now that the zones sit beside each other.
-    expect(zoneBlock).toContain("min-width: 2.75rem");
-    expect(zoneBlock).toContain("min-height: 2.75rem");
-
-    // Separator follows the arrangement.
-    expect(separatorBlock).toContain("border-left");
-    expect(separatorBlock).not.toContain("border-top");
-  });
-
-  it("keeps the split rail's painted extent unchanged while only its zones rearrange", () => {
-    const splitDecorative = appCss.slice(
-      appCss.indexOf(".portal-menu-rail-split::before {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-split::before {"))
-    );
-
-    expect(splitDecorative).toContain("clamp(4.75rem, 4.1rem + 2.5vw, 6.25rem)");
-  });
-
-  it("opens a full-height, shell-bounds-clipped drawer positioned under the corner rail, not a centered dropdown box", async () => {
-    const user = userEvent.setup();
-    render(<Harness />);
-
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-
-    const menu = screen.getByRole("menu");
-    expect(menu.className).toContain("portal-menu-drawer");
-    expect(menu.className).not.toContain("left-1/2");
-    expect(menu.className).not.toContain("-translate-x-1/2");
-
-    const drawerBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-drawer {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-drawer {"))
-    );
-    expect(drawerBlock).toContain("left: 0");
-    expect(drawerBlock).toContain("position: sticky");
-    expect(drawerBlock).toMatch(/height: 100dvh/);
-
-    const enterKeyframe = appCss.slice(
-      appCss.indexOf("@keyframes portal-menu-drawer-enter"),
-      appCss.indexOf("}", appCss.indexOf("@keyframes portal-menu-drawer-enter") + 200) + 1
-    );
-    expect(enterKeyframe).toContain("translateX(-100%)");
-    expect(enterKeyframe).toContain("translateX(0)");
-  });
 });
 
 describe("FeaturePortalMenu single rail trigger (REQ-114/REQ-115/REQ-207)", () => {
@@ -426,8 +288,7 @@ describe("FeaturePortalMenu single rail trigger (REQ-114/REQ-115/REQ-207)", () =
   it("still renders a single Menu-only trigger when the visible slot does have a history trigger", () => {
     render(<SlotHarness historyOnOpen={vi.fn()} />);
     const menuButton = screen.getByRole("button", { name: "Switch feature" });
-    expect(menuButton.className).toContain("portal-menu-rail");
-    expect(menuButton.className).not.toContain("portal-menu-rail-split");
+    expect(menuButton).toHaveClass("menu-toggle");
     expect(screen.queryByRole("button", { name: "Conversation history" })).not.toBeInTheDocument();
   });
 });
@@ -539,7 +400,7 @@ describe("FeaturePortalMenu rail-hide while open (DEC-150)", () => {
     const trigger = screen.getByRole("button", { name: "Switch feature" });
     expect(trigger).not.toHaveAttribute("aria-hidden");
     expect(trigger).not.toHaveAttribute("tabindex");
-    expect(trigger.className).not.toContain("portal-menu-rail-inert");
+    expect(trigger).not.toHaveAttribute("aria-hidden");
 
     await user.click(trigger);
 
@@ -551,7 +412,7 @@ describe("FeaturePortalMenu rail-hide while open (DEC-150)", () => {
     expect(document.body.contains(trigger)).toBe(true);
     expect(trigger).toHaveAttribute("aria-hidden", "true");
     expect(trigger).toHaveAttribute("tabindex", "-1");
-    expect(trigger.className).toContain("portal-menu-rail-inert");
+    expect(trigger).toHaveAttribute("aria-hidden", "true");
 
     // Belt-and-suspenders: even a direct click while inert must not toggle the tray again.
     fireEvent.click(trigger);
@@ -561,7 +422,7 @@ describe("FeaturePortalMenu rail-hide while open (DEC-150)", () => {
 
     expect(trigger).not.toHaveAttribute("aria-hidden");
     expect(trigger).not.toHaveAttribute("tabindex");
-    expect(trigger.className).not.toContain("portal-menu-rail-inert");
+    expect(trigger).not.toHaveAttribute("aria-hidden");
   });
 
   it("makes the single Menu trigger inert while the tray is open even when the visible slot has a history trigger, and restores it on close", async () => {
@@ -604,286 +465,86 @@ describe("FeaturePortalMenu rail-hide while open (DEC-150)", () => {
     expect(screen.getByRole("button", { name: "Switch feature" })).toBe(trigger);
   });
 
-  it("keeps the rail-inert rule both paint- and hit-test-inert, not merely non-interactive", () => {
-    const inertBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-rail-inert {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-rail-inert {"))
-    );
-
-    expect(inertBlock).toContain("visibility: hidden");
-    expect(inertBlock).toContain("pointer-events: none");
+  it("keeps the inert trigger both paint- and hit-test-inert, not merely non-interactive", () => {
+    expect(appCss).toMatch(/\.menu-toggle\[aria-hidden="true"\] \{[^}]*visibility: hidden;[^}]*pointer-events: none/);
   });
 });
 
 describe("FeaturePortalMenu reduced motion", () => {
-  it("covers the portal menu open animation in the prefers-reduced-motion block", () => {
-    const reducedMotionBlock = appCss.slice(appCss.indexOf("@media (prefers-reduced-motion: reduce)"));
-    expect(reducedMotionBlock).toContain(".portal-menu-motion");
-  });
-
-  it("covers the drawer's slide transition in the prefers-reduced-motion block", () => {
-    const reducedMotionBlock = appCss.slice(appCss.indexOf("@media (prefers-reduced-motion: reduce)"));
-    expect(reducedMotionBlock).toContain(".portal-menu-drawer-motion");
+  it("lets the tray and its backdrop appear in place under prefers-reduced-motion", () => {
+    expect(appCss).toMatch(/@media \(prefers-reduced-motion: reduce\) \{[^}]*\.menu-tray,[^}]*\.menu-tray-backdrop[^}]*transition: none/);
   });
 });
 
-describe("FeaturePortalMenu shell-bounds tray geometry (REQ-113)", () => {
-  it("falls back to rendering the drawer in place when no shell-bounds node is registered", async () => {
+describe("FeaturePortalMenu tray (the mockup's .menu-tray, REQ-122)", () => {
+  it("portals the open tray to the document body, a fixed full-height left tray with its own backdrop", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Harness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const menu = screen.getByRole("menu");
+    expect(menu).toHaveClass("menu-tray");
+    expect(container.contains(menu)).toBe(false);
+    expect(menu.closest(".menu-tray-host")?.parentElement).toBe(document.body);
+    expect(document.querySelector(".menu-tray-backdrop")).not.toBeNull();
+  });
+
+  it("slides in once mounted: the host flips data-tray-open from false to true", async () => {
+    const user = userEvent.setup();
+    render(<Harness />);
+
+    await user.click(screen.getByRole("button", { name: "Switch feature" }));
+
+    const host = document.querySelector(".menu-tray-host") as HTMLElement;
+    await waitFor(() => expect(host).toHaveAttribute("data-tray-open", "true"));
+  });
+
+  it("is opaque over the page (REQ-122): a solid ground sits under the glass gradients", () => {
+    expect(appCss).toMatch(/\.menu-tray \{[^}]*background-color: var\(--surface-ground\)/);
+  });
+
+  it("lays out the tray in the mockup's order: brand and ✕, the destination list, the Theme band, then the flair", async () => {
     const user = userEvent.setup();
     render(<Harness />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
 
     const menu = screen.getByRole("menu");
-    expect(menu.closest(".portal-shell-bounds")).toBeNull();
+    const order = Array.from(menu.children).map((child) => child.className || child.tagName.toLowerCase());
+    expect(order).toEqual(["tray-brand", "tray-nav-list", "h3", "theme-band", "theme-custom", "tray-flair"]);
+    expect(within(menu).getByRole("button", { name: "Close menu" })).toBeInTheDocument();
+    expect(menu.querySelector(".tray-brand .brand-mark")).not.toBeNull();
   });
 
-  it("portals the open drawer into the resolved shell-bounds node when one is registered", async () => {
+  it("closes from the tray's own ✕", async () => {
     const user = userEvent.setup();
-    render(
-      <FeaturePortalMenu
-        entries={DESTINATIONS}
-        activeDestinationId="mtg-assistant"
-        onSelect={vi.fn()}
-        paletteId="blue"
-        onPaletteSelect={vi.fn()}
-        colorlessCustomHex={undefined}
-        onColorlessCustomChange={vi.fn()}
-        onColorlessReset={vi.fn()}
-      >
-        <PortalSlot />
-        <section className="page-card">
-          <ShellBounds />
-          <div>page content</div>
-        </section>
-      </FeaturePortalMenu>
-    );
+    render(<Harness />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("button", { name: "Close menu" }));
 
-    const menu = screen.getByRole("menu");
-    expect(menu.parentElement).toHaveClass("portal-shell-bounds");
-  });
-
-  it("resolves the visible shell-bounds node among multiple registered (hidden vs visible)", async () => {
-    const user = userEvent.setup();
-    render(
-      <FeaturePortalMenu
-        entries={DESTINATIONS}
-        activeDestinationId="mtg-assistant"
-        onSelect={vi.fn()}
-        paletteId="blue"
-        onPaletteSelect={vi.fn()}
-        colorlessCustomHex={undefined}
-        onColorlessCustomChange={vi.fn()}
-        onColorlessReset={vi.fn()}
-      >
-        <PortalSlot />
-        <div hidden data-testid="hidden-shell">
-          <section className="page-card">
-            <ShellBounds />
-          </section>
-        </div>
-        <div data-testid="visible-shell">
-          <section className="page-card">
-            <ShellBounds />
-          </section>
-        </div>
-      </FeaturePortalMenu>
-    );
-
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-
-    const menu = screen.getByRole("menu");
-    const visibleHost = screen.getByTestId("visible-shell");
-    const hiddenHost = screen.getByTestId("hidden-shell");
-    expect(visibleHost.contains(menu)).toBe(true);
-    expect(hiddenHost.contains(menu)).toBe(false);
-  });
-
-  it("keeps the rail portaling into the header slot unchanged while the drawer portals into shell-bounds", async () => {
-    const user = userEvent.setup();
-    render(
-      <FeaturePortalMenu
-        entries={DESTINATIONS}
-        activeDestinationId="mtg-assistant"
-        onSelect={vi.fn()}
-        paletteId="blue"
-        onPaletteSelect={vi.fn()}
-        colorlessCustomHex={undefined}
-        onColorlessCustomChange={vi.fn()}
-        onColorlessReset={vi.fn()}
-      >
-        <PortalSlot />
-        <section className="page-card">
-          <ShellBounds />
-        </section>
-      </FeaturePortalMenu>
-    );
-
-    const button = screen.getByRole("button", { name: "Switch feature" });
-    expect(button.closest("div")?.className).toContain("portal-slot-tab");
-
-    await user.click(button);
-    const menu = screen.getByRole("menu");
-    expect(menu.closest(".portal-slot-tab")).toBeNull();
-    expect(menu.parentElement).toHaveClass("portal-shell-bounds");
-  });
-
-  it("still closes on outside click and Escape when the drawer is portaled into shell-bounds", async () => {
-    const user = userEvent.setup();
-    render(
-      <div>
-        <FeaturePortalMenu
-          entries={DESTINATIONS}
-          activeDestinationId="mtg-assistant"
-          onSelect={vi.fn()}
-          paletteId="blue"
-          onPaletteSelect={vi.fn()}
-          colorlessCustomHex={undefined}
-          onColorlessCustomChange={vi.fn()}
-          onColorlessReset={vi.fn()}
-        >
-          <PortalSlot />
-          <section className="page-card">
-            <ShellBounds />
-          </section>
-        </FeaturePortalMenu>
-        <button type="button">Outside</button>
-      </div>
-    );
-
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    expect(screen.getByRole("menu")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Outside" }));
-    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    expect(screen.getByRole("menu")).toBeInTheDocument();
-    await user.keyboard("{Escape}");
     expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
-  it("does not close when clicking inside the portaled drawer itself", async () => {
-    const user = userEvent.setup();
-    render(
-      <FeaturePortalMenu
-        entries={DESTINATIONS}
-        activeDestinationId="mtg-assistant"
-        onSelect={vi.fn()}
-        paletteId="blue"
-        onPaletteSelect={vi.fn()}
-        colorlessCustomHex={undefined}
-        onColorlessCustomChange={vi.fn()}
-        onColorlessReset={vi.fn()}
-      >
-        <PortalSlot />
-        <section className="page-card">
-          <ShellBounds />
-        </section>
-      </FeaturePortalMenu>
-    );
-
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    expect(screen.getByRole("menu")).toBeInTheDocument();
-
-    // Clicking the Theme heading text inside the portaled drawer is not an actionable
-    // control, but it is a click landing inside the drawer's own (portaled) DOM subtree —
-    // this must not be treated as an "outside" click that closes the menu.
-    await user.click(screen.getByText("Theme"));
-    expect(screen.getByRole("menu")).toBeInTheDocument();
-  });
-
-  it("gives .page-content a positioning context and .portal-shell-bounds a full-inset clip box matching the shell's radius", () => {
-    // Look-matching pass (slice L): `.page-content` replaces the old bordered `.page-card`.
-    const pageCardBlock = appCss.slice(
-      appCss.indexOf(".page-content {"),
-      appCss.indexOf("}", appCss.indexOf(".page-content {"))
-    );
-    expect(pageCardBlock).toContain("position: relative");
-
-    const shellBoundsBlock = appCss.slice(
-      appCss.indexOf(".portal-shell-bounds {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-shell-bounds {"))
-    );
-    expect(shellBoundsBlock).toContain("position: absolute");
-    expect(shellBoundsBlock).toContain("inset: 0");
-    expect(shellBoundsBlock).toContain("overflow: hidden");
-    expect(shellBoundsBlock).toContain("border-radius: inherit");
-    expect(shellBoundsBlock).toContain("pointer-events: none");
-  });
-
-  it("gives .page-shell-bleed a bare pass-through box with no visual chrome of its own", () => {
-    const bleedBlock = appCss.slice(
-      appCss.indexOf(".page-shell-bleed {"),
-      appCss.indexOf("}", appCss.indexOf(".page-shell-bleed {"))
-    );
-    expect(bleedBlock).toContain("position: relative");
-    expect(bleedBlock).not.toContain("border");
-    expect(bleedBlock).not.toContain("border-radius");
-    expect(bleedBlock).not.toContain("padding");
-  });
-});
-
-describe("FeaturePortalMenu decorative brand mark (REQ-113 item 4)", () => {
-  it("renders a quiet, non-interactive brand mark inside the open drawer, after the entries and Theme section", async () => {
+  it("closes on a click on the backdrop", async () => {
     const user = userEvent.setup();
     render(<Harness />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(document.querySelector(".menu-tray-backdrop") as HTMLElement);
 
-    const menu = screen.getByRole("menu");
-    const marks = screen.getAllByText("TheJudge");
-    expect(marks.length).toBeGreaterThan(0);
-    const brandMark = marks[marks.length - 1];
-    expect(menu.contains(brandMark)).toBe(true);
-
-    const hiddenAncestor = brandMark.closest('[aria-hidden="true"]');
-    expect(hiddenAncestor).not.toBeNull();
-    expect(hiddenAncestor?.className).toContain("portal-menu-drawer-brand");
-
-    // Not a button, not an actionable element.
-    expect(brandMark.tagName).not.toBe("BUTTON");
-    expect(brandMark.closest("button")).toBeNull();
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
   });
 
-  it("does not affect menuitem queries — the brand mark is not part of the drawer's role=menu semantics", async () => {
+  it("does not close when clicking inside the tray itself", async () => {
     const user = userEvent.setup();
     render(<Harness />);
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
+    await user.click(screen.getByRole("group", { name: "Theme palettes" }));
 
-    const items = screen.getAllByRole("menuitem");
-    expect(items.map((item) => item.textContent)).toEqual(["MTG Assistant✓", "Question History", "Trade"]);
-    expect(items.some((item) => item.textContent?.includes("TheJudge"))).toBe(false);
-  });
-
-  it("never triggers a selection when its area is clicked", async () => {
-    const user = userEvent.setup();
-    const onSelect = vi.fn();
-    render(<Harness onSelect={onSelect} />);
-
-    await user.click(screen.getByRole("button", { name: "Switch feature" }));
-    const marks = screen.getAllByText("TheJudge");
-    await user.click(marks[marks.length - 1]);
-
-    expect(onSelect).not.toHaveBeenCalled();
     expect(screen.getByRole("menu")).toBeInTheDocument();
-  });
-
-  it("styles the brand mark as quiet/non-interactive and stretches the drawer's flex column so it can pin to the bottom", () => {
-    const brandBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-drawer-brand {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-drawer-brand {"))
-    );
-    expect(brandBlock).toContain("pointer-events: none");
-    expect(brandBlock).toContain("opacity:");
-
-    const innerBlock = appCss.slice(
-      appCss.indexOf(".portal-menu-drawer-inner {"),
-      appCss.indexOf("}", appCss.indexOf(".portal-menu-drawer-inner {"))
-    );
-    expect(innerBlock).toContain("min-height: 100%");
   });
 });
 
@@ -935,7 +596,7 @@ describe("Chrome integration", () => {
     const user = userEvent.setup();
     await user.click(portalButton);
     // REQ-067: `in-depth` has no row of its own; "Ask a Question" reads current instead.
-    expect(screen.getByRole("menuitem", { name: "Ask a Question" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("menuitem", { name: "Ask a Question" })).toHaveAttribute("aria-current", "page");
     expect(screen.queryByRole("menuitem", { name: "In-Depth Question" })).not.toBeInTheDocument();
     expect(screen.getAllByRole("button", { name: /^Theme: / }).length).toBeGreaterThan(0);
     expect(portalButton).not.toHaveTextContent("Menu");

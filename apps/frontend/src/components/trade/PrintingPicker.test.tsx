@@ -60,7 +60,7 @@ describe("Frontend - Trade", () => {
       expect(screen.getByRole("heading", { name: /Lightning Bolt/ })).toBeInTheDocument();
     });
 
-    it("D1: the header shows the printing count", () => {
+    it("D1: no printing-count line: the mockup's picker shows only the lede, the filter and the rows", () => {
       render(
         <PrintingPicker
           cardName="Lightning Bolt"
@@ -70,18 +70,12 @@ describe("Frontend - Trade", () => {
         />
       );
 
-      expect(screen.getByText("2 printings")).toBeInTheDocument();
+      expect(screen.getByText("Tap a price to use that printing and finish.")).toBeInTheDocument();
+      expect(screen.queryByText("2 printings")).not.toBeInTheDocument();
+      expect(screen.queryByText("only printing")).not.toBeInTheDocument();
     });
 
-    it("D1 (owner-edited wording): a single printing reads 'only printing'", () => {
-      render(
-        <PrintingPicker cardName="Rare Card" printings={[printing()]} onSelect={vi.fn()} onCancel={vi.fn()} />
-      );
-
-      expect(screen.getByText("only printing")).toBeInTheDocument();
-    });
-
-    it("D2: the printing list sits in a scroll region, not a plain growing list", () => {
+    it("D2: the printing list lives in the sheet body, not a plain growing list", () => {
       render(
         <PrintingPicker
           cardName="Sol Ring"
@@ -91,9 +85,11 @@ describe("Frontend - Trade", () => {
         />
       );
 
+      // The list is the mockup's `.printing-list`; it scrolls with the shared sheet's own body, so a
+      // card with 771 printings never grows the page.
       const list = screen.getByRole("list");
-      expect(list).toHaveClass("overflow-y-auto");
-      expect(list.className).toMatch(/max-h-\[40vh\]/);
+      expect(list).toHaveClass("printing-list");
+      expect(list.closest(".body")).not.toBeNull();
     });
 
     it("D3: row images carry loading=\"lazy\"", () => {

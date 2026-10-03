@@ -67,7 +67,7 @@ describe("Interaction flows - search and game context", () => {
     const add = screen.getByRole("button", { name: "Add player" });
 
     for (const control of [toggle, remove, add]) {
-      expect(control).toHaveClass("min-h-[2.75rem]", "min-w-[3.5rem]");
+      expect(control).toHaveClass("btn");
     }
     expect(remove.compareDocumentPosition(add) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
@@ -103,7 +103,7 @@ describe("Interaction flows - search and game context", () => {
     );
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-    expect(screen.getByRole("heading", { name: "Zone confirmation" }).closest(".motion-enter")).not.toBeNull();
+    expect(screen.getByRole("heading", { name: "Zones in play" }).closest(".motion-enter")).not.toBeNull();
   });
 
   it("opts only the game-context disclosure row and phase control group into ambient accent surfaces", async () => {
@@ -128,7 +128,7 @@ describe("Interaction flows - search and game context", () => {
 
   it("defines a visible focus treatment for the shared motion utility", () => {
     expect(appCss).toMatch(
-      /\.motion-focus:focus-visible\s*\{[^}]*outline:\s*2px solid rgb\(var\(--accent-soft\)\);[^}]*outline-offset:\s*2px;/
+      /\.motion-focus:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--accent-soft\);[^}]*outline-offset:\s*2px;/
     );
   });
 

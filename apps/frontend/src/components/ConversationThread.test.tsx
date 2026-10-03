@@ -187,7 +187,7 @@ describe("Frontend - MTG Assistant", () => {
       rerender(<ConversationThread messages={appendedMessages} />);
 
       expect(firstAssistant).not.toHaveClass("conversation-message-enter");
-      const appended = screen.getByText("What about hexproof?").parentElement;
+      const appended = screen.getByText("What about hexproof?");
       expect(appended).toHaveClass("conversation-message-enter");
 
       rerender(<ConversationThread messages={[...appendedMessages]} />);
@@ -219,12 +219,14 @@ describe("Frontend - MTG Assistant", () => {
       const userMessage = screen
         .getByText("What about hexproof?")
         .closest("[data-conversation-message-index]");
-      expect(judgeMessage).toHaveClass("msg-judge");
+      expect(judgeMessage).toHaveClass("msg", "judge");
       expect(within(judgeMessage as HTMLElement).getByText("TheJudge")).toBeInTheDocument();
-      expect(
-        (judgeMessage as HTMLElement).querySelector(".msg-judge-bubble")
-      ).toContainElement(screen.getByText("The stack resolves."));
-      expect(userMessage).toHaveClass("msg-you");
+      // the mockup's `.msg.judge`: a seal, then the bubble (`> div`) holding the label and the ruling
+      expect((judgeMessage as HTMLElement).querySelector(".seal")).toBeInTheDocument();
+      expect((judgeMessage as HTMLElement).querySelector(":scope > div")).toContainElement(
+        screen.getByText("The stack resolves.")
+      );
+      expect(userMessage).toHaveClass("msg", "you");
     });
 
     it("renders assistant markdown syntax as structured elements", () => {

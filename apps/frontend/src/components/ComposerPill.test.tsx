@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { act, cleanup, render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -10,8 +12,11 @@ import {
 
 afterEach(cleanup);
 
+const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
+const flowCss = readFileSync(resolve(process.cwd(), "src/styles/flow.css"), "utf8");
+
 describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
-  it("has no separate Send Request label — the send control's visible content is icon-only", () => {
+  it("has no separate Send Request label — the send control's visible content is the mockup's ➤ glyph only", () => {
     render(
       <ComposerPill
         value=""
@@ -28,7 +33,7 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     expect(screen.queryByText("Send Request")).not.toBeInTheDocument();
     const send = screen.getByTestId("composer-pill-send");
     expect(send).toHaveAccessibleName("Ask TheJudge");
-    expect(send.textContent?.trim()).toBe("");
+    expect(send.textContent?.trim()).toBe("➤");
   });
 
   it("submits on a tap of the send pill", async () => {
@@ -76,7 +81,7 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     expect(onSubmit).toHaveBeenCalledTimes(1);
   });
 
-  it("draws no ring and hides the count at 0 characters", () => {
+  it("marks the box empty at 0 characters so the count, track and fill are not drawn (flow.css)", () => {
     render(
       <ComposerPill
         value=""
@@ -90,11 +95,15 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
       />
     );
 
-    expect(screen.queryByTestId("composer-pill-count")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("composer-pill-ring")).not.toBeInTheDocument();
+    const box = screen.getByTestId("composer-pill");
+    expect(box).toHaveAttribute("data-fill", "0");
+    expect(flowCss).toMatch(/\.q-box\[data-fill="0"\] \.q-count[^{]*\{[^}]*display: none/);
+    expect(flowCss).toMatch(/\.q-box\[data-fill="0"\] \.send-ring \.track[\s\S]*opacity: 0/);
+    // the ring is always in the DOM; CSS draws it from the box's --fill
+    expect(screen.getByTestId("composer-pill-ring")).toBeInTheDocument();
   });
 
-  it("draws the budget ring and the count once text is present, brighter in the last 30 characters", () => {
+  it("drives the budget ring from the box's --fill, brighter in the last 30 characters", () => {
     const { rerender } = render(
       <ComposerPill
         value="Does trample interact with deathtouch"
@@ -108,11 +117,12 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
       />
     );
 
-    expect(screen.getByTestId("composer-pill-count")).toHaveTextContent("37/300");
-    const ring = screen.getByTestId("composer-pill-ring");
-    const fillPath = ring.querySelector("path.fill");
-    expect(fillPath).toBeInTheDocument();
-    expect(fillPath).not.toHaveClass("bright");
+    const box = screen.getByTestId("composer-pill");
+    expect(screen.getByTestId("composer-pill-count")).toHaveTextContent("37 / 300");
+    expect(box).toHaveAttribute("data-fill", "some");
+    expect(box).toHaveAttribute("data-near", "false");
+    expect(box.style.getPropertyValue("--fill")).toBe("12.3");
+    expect(screen.getByTestId("composer-pill-ring").querySelector("path.fill")).toBeInTheDocument();
 
     rerender(
       <ComposerPill
@@ -127,7 +137,51 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
       />
     );
 
-    expect(screen.getByTestId("composer-pill-ring").querySelector("path.fill")).toHaveClass("bright");
+    expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-near", "true");
+    expect(screen.getByTestId("composer-pill").style.getPropertyValue("--fill")).toBe("93.3");
+    expect(screen.getByTestId("composer-pill-count")).toHaveAttribute("data-near", "true");
+  });
+
+  it("starts the ring at the top of the mic|send seam and runs it clockwise round the pill (the mockup's path)", () => {
+    render(
+      <ComposerPill
+        value="x"
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        maxLength={300}
+        placeholder="What would you like to know?"
+        textareaAriaLabel="Magic question"
+        submitLabel="Ask TheJudge"
+        pendingLabel="Asking…"
+      />
+    );
+
+    const ring = screen.getByTestId("composer-pill-ring");
+    expect(ring).toHaveAttribute("viewBox", "0 0 88 48");
+    expect(ring.querySelector("path.fill")).toHaveAttribute("d", "M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z");
+  });
+
+  it("is the follow-up box (.followup, .fu-count, no In-depth chip) in the followup variant", () => {
+    render(
+      <ComposerPill
+        variant="followup"
+        value="Hi"
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        onAddInDepthDetails={vi.fn()}
+        maxLength={300}
+        placeholder="Ask a follow-up…"
+        textareaAriaLabel="Follow-up question"
+        submitLabel="Send"
+        pendingLabel="Send"
+      />
+    );
+
+    const box = screen.getByTestId("composer-pill");
+    expect(box).toHaveClass("followup");
+    expect(box).not.toHaveClass("q-box");
+    expect(screen.getByTestId("composer-pill-count")).toHaveClass("fu-count");
+    expect(screen.queryByTestId("composer-pill-in-depth")).not.toBeInTheDocument();
   });
 
   it("hides the Add in-depth details segment entirely when the callback is omitted", () => {
@@ -338,7 +392,11 @@ describe("Frontend - ComposerPill dictation (REQ-212)", () => {
       />
     );
 
-    expect(screen.getByTestId("dictation-mic")).toHaveClass("h-11", "w-11");
-    expect(screen.getByTestId("composer-pill-send")).toHaveClass("h-11", "w-11");
+    // REQ-205 wins over the mockup's 40px: index.css raises the pill, both halves and the chip to 44px.
+    expect(appCss).toMatch(/\.send-pair button \{[^}]*width: 44px;[^}]*height: 44px/);
+    expect(appCss).toMatch(/\.send-pair \{[^}]*height: 44px/);
+    expect(appCss).toMatch(/\.q-box \.deep \{[^}]*height: 44px/);
+    expect(screen.getByTestId("dictation-mic")).toHaveClass("mic");
+    expect(screen.getByTestId("composer-pill-send")).toHaveClass("send");
   });
 });

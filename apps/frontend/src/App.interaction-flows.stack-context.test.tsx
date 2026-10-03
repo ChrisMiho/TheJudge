@@ -109,7 +109,7 @@ describe("Interaction flows - stack and target context", () => {
     expect(screen.getByText("Card 1 of 2")).toBeInTheDocument();
     await finishEnrichmentWizard(user);
 
-    expect(screen.getByText(/Review your question.s context\./)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Context reviewed · 2 cards/ })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("How does this resolve?")).toBeInTheDocument();
     expect(screen.queryByLabelText("Caster for Opt")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Caster for Lightning Bolt")).not.toBeInTheDocument();
@@ -169,7 +169,7 @@ describe("Interaction flows - stack and target context", () => {
 
     await user.click(screen.getByLabelText("Zone: Stack"));
     await advancePastZoneConfirm(user);
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeInTheDocument();
   });
 
   it("logs ask-ai success completion with httpStatus and response correlation id", async () => {

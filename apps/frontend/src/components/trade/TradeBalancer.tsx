@@ -35,6 +35,8 @@ const METADATA_LOAD_ERROR_COPY =
 type TradeEntryMeta = {
   oracleId: string;
   name: string;
+  /** The card's colour identity, for the row's identity ring (REQ-058). */
+  colors?: string[];
   status: "loading" | "loaded" | "error";
   /** Every printing the fetch returned, for the "Change printing" picker. Empty while loading/error. */
   printings: CardPrintingPrice[];
@@ -130,6 +132,12 @@ export function TradeBalancer(): JSX.Element {
   // instances stay mounted either way, so switching tabs loses no side state.
   const [activeSideTab, setActiveSideTab] = useState<TradeSideId>("A");
   const nextInstanceIdRef = useRef(0);
+  // The latest entries and per-entry pricing meta, readable synchronously: a scan commit adds several
+  // cards in one tick, and REQ-215's merge must see the row the previous add just made.
+  const entriesRef = useRef(entriesBySide);
+  entriesRef.current = entriesBySide;
+  const entryMetaRef = useRef(entryMetaById);
+  entryMetaRef.current = entryMetaById;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -251,22 +259,54 @@ export function TradeBalancer(): JSX.Element {
     preferredPrintingId?: string,
     preferredFoil?: boolean
   ): void {
+    // REQ-215: a card whose printing and finish match a row already on this side raises that row's
+    // quantity by one instead of adding a second row; the row keeps its place in add order. A
+    // scan commit (a printing but no explicit finish) merges the same way, reading the finish the
+    // scanned printing would default to.
+    if (preferredPrintingId) {
+      const existing = entriesRef.current[sideId].find((entry) => {
+        const meta = entryMetaRef.current[entry.instanceId];
+        if (meta?.oracleId !== oracleId || entry.printing.id !== preferredPrintingId) return false;
+        const wantedFoil =
+          preferredFoil ??
+          defaultFoilForPrinting(meta.printings.find((printing) => printing.id === preferredPrintingId) ?? entry.printing);
+        return entry.foil === wantedFoil;
+      });
+      if (existing) {
+        const merged = { ...existing, quantity: existing.quantity + 1 };
+        entriesRef.current = {
+          ...entriesRef.current,
+          [sideId]: entriesRef.current[sideId].map((entry) => (entry === existing ? merged : entry))
+        };
+        setSideEntries(sideId, (entries) =>
+          updateEntries(entries, existing.instanceId, (entry) => ({ ...entry, quantity: entry.quantity + 1 }))
+        );
+        return;
+      }
+    }
+
     nextInstanceIdRef.current += 1;
     const instanceId = `${oracleId}-${nextInstanceIdRef.current}`;
 
-    setSideEntries(sideId, (entries) => [
-      ...entries,
-      {
-        instanceId,
-        printing: preferredPrintingId ? { ...EMPTY_PRINTING, id: preferredPrintingId } : EMPTY_PRINTING,
-        foil: preferredFoil ?? false,
-        quantity: 1
-      }
-    ]);
-    setEntryMetaById((current) => ({
-      ...current,
-      [instanceId]: { oracleId, name, status: "loading", printings: [], preferredPrintingId, preferredFoil }
-    }));
+    const newEntry: TradeEntry = {
+      instanceId,
+      printing: preferredPrintingId ? { ...EMPTY_PRINTING, id: preferredPrintingId } : EMPTY_PRINTING,
+      foil: preferredFoil ?? false,
+      quantity: 1
+    };
+    const newMeta: TradeEntryMeta = {
+      oracleId,
+      name,
+      colors: cardMetadata?.find((card) => card.cardId === oracleId)?.colors,
+      status: "loading",
+      printings: [],
+      preferredPrintingId,
+      preferredFoil
+    };
+    entriesRef.current = { ...entriesRef.current, [sideId]: [...entriesRef.current[sideId], newEntry] };
+    entryMetaRef.current = { ...entryMetaRef.current, [instanceId]: newMeta };
+    setSideEntries(sideId, (entries) => [...entries, newEntry]);
+    setEntryMetaById((current) => ({ ...current, [instanceId]: newMeta }));
 
     loadPricingForEntry(instanceId, oracleId, preferredPrintingId, preferredFoil);
   }
@@ -413,7 +453,7 @@ export function TradeBalancer(): JSX.Element {
       <StagedStepHeader
         rightSlot={
           snapshotCopy ? (
-            <p className="text-xs text-zinc-500" aria-label="Price snapshot date (header)">
+            <p className="asof" aria-label="Price snapshot date (header)">
               {`Prices as of ${snapshotCopy}`}
             </p>
           ) : undefined
@@ -422,7 +462,7 @@ export function TradeBalancer(): JSX.Element {
       {/* Look-matching pass (slice O): `trade-balancer.html`'s `.tb` — the
           title row, the scale band, the phone side tabs, and the two sides —
           takes the screen's remaining height below the header (`.tb` in
-          index.css) and scrolls nowhere itself; only `.tb-entries` below
+          index.css) and scrolls nowhere itself; only `.entries` below
           does. */}
       <section className="tb">
         <div className="flow-head">
@@ -432,9 +472,9 @@ export function TradeBalancer(): JSX.Element {
               `rightSlot` above covers desktop (REQ-215's existing dual
               placement, unchanged by this slice). */}
           {snapshotCopy && (
-            <p className="asof text-xs text-zinc-500 md:hidden">{`Prices as of ${snapshotCopy}`}</p>
+            <p className="asof">{`Prices as of ${snapshotCopy}`}</p>
           )}
-          <div className="flow-head-tools">
+          <div className="head-tools">
             <button
               type="button"
               aria-label="New trade"
@@ -452,45 +492,45 @@ export function TradeBalancer(): JSX.Element {
 
         {/* Requirement 4: one scale band — both sides' totals, pile art, and a
             serif verdict line — replacing the old gold-pile verdict panel. */}
-        <div className="tb-scale">
-          <div className="tb-pan a" data-heavy={isHeavyA ? "true" : "false"}>
-            <span className="tb-pan-label">{sideNames.A}</span>
-            <span className="tb-pan-total" aria-label="Side A total (scale)">
+        <div className="scale">
+          <div className="pan a" data-heavy={isHeavyA ? "true" : "false"}>
+            <span className="label">{sideNames.A}</span>
+            <span className="total" aria-label="Side A total (scale)">
               {formatUsd(totalA)}
             </span>
-            {!bothSidesEmpty && <span className="tb-pan-count">{countLabel(countA)}</span>}
+            {!bothSidesEmpty && <span className="count">{countLabel(countA)}</span>}
           </div>
-          <div className="tb-piles-wrap">
-            <div className="tb-piles" aria-hidden="true">
+          <div className="piles-wrap">
+            <div className="piles" aria-hidden="true">
               <TradePile tier={tierA} isRicher={tierA >= tierB} transition={pileAnim.A.transition} animationKey={pileAnim.A.key} />
               <TradePile tier={tierB} isRicher={tierB >= tierA} transition={pileAnim.B.transition} animationKey={pileAnim.B.key} />
             </div>
-            <div className="tb-verdict" aria-live="polite">
+            <div className="verdict" data-even={totalA === totalB ? "true" : "false"} aria-live="polite">
               <span aria-label="Trade verdict">{scaleVerdictCopy}</span>
               {!bothSidesEmpty && (
                 <small aria-label="Trade difference">{differenceCopy}</small>
               )}
             </div>
           </div>
-          <div className="tb-pan b" data-heavy={isHeavyB ? "true" : "false"}>
-            <span className="tb-pan-label">{sideNames.B}</span>
-            <span className="tb-pan-total" aria-label="Side B total (scale)">
+          <div className="pan b" data-heavy={isHeavyB ? "true" : "false"}>
+            <span className="label">{sideNames.B}</span>
+            <span className="total" aria-label="Side B total (scale)">
               {formatUsd(totalB)}
             </span>
-            {!bothSidesEmpty && <span className="tb-pan-count">{countLabel(countB)}</span>}
+            {!bothSidesEmpty && <span className="count">{countLabel(countB)}</span>}
           </div>
         </div>
 
-        {isMetadataLoading && <p className="text-sm text-zinc-400">Loading card list…</p>}
+        {isMetadataLoading && <p className="tb-note">Loading card list…</p>}
         {metadataLoadError && (
-          <p role="alert" className="text-sm text-amber-200">
+          <p role="alert" className="idq-error">
             {metadataLoadError}
           </p>
         )}
 
         {/* Requirement 5: on phone, the two sides sit behind a tab pair; CSS
             hides this row and shows both `TradeSide` columns on desktop. */}
-        <div className="tb-side-tabs" role="tablist" aria-label="Trade side">
+        <div className="side-tabs" role="tablist" aria-label="Trade side">
           <button
             type="button"
             role="tab"
@@ -511,7 +551,7 @@ export function TradeBalancer(): JSX.Element {
           </button>
         </div>
 
-        <div className="tb-sides">
+        <div className="sides">
           <TradeSide
             sideId="A"
             sideName={sideNames.A}

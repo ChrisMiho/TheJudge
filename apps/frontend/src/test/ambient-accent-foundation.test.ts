@@ -37,7 +37,7 @@ describe("Ambient accent surface CSS contract", () => {
 
     expect(contract).not.toBe("");
     expect(cssBlock(".ambient-accent-surface")).toMatch(
-      /border-color:\s*rgb\(var\(--accent\)\s*\/\s*0\.\d+\)/
+      /border-color:\s*color-mix\(in srgb, var\(--accent\) \d+(?:\.\d+)?%, transparent\)/
     );
     expect(contract).toContain(".ambient-accent-interactive:not(:disabled):hover");
     expect(contract).toContain(".ambient-accent-interactive:focus-visible");
@@ -64,15 +64,12 @@ describe("Ambient accent surface CSS contract", () => {
     expect(contract).toContain("var(--motion-base)");
     expect(contract).toContain("var(--motion-ease-out)");
 
-    const declaredAccentTokens = [
-      ...appCss.matchAll(/^\s*(--accent(?:-[a-z]+)?):/gm)
-    ].map((match) => match[1]);
-    expect(declaredAccentTokens).toEqual([
-      "--accent",
-      "--accent-strong",
-      "--accent-soft",
-      "--accent-contrast"
-    ]);
+    // REQ-216: the accent tokens are declared once, in the ported token layer — never in index.css.
+    const declaredInAppCss = [...appCss.matchAll(/^\s*(--accent(?:-[a-z]+)?):/gm)].map((match) => match[1]);
+    expect(declaredInAppCss).toEqual([]);
+    const tokensCss = readFileSync(resolve(process.cwd(), "src/styles/tokens.css"), "utf8");
+    const declaredInTokens = new Set([...tokensCss.matchAll(/^\s*(--accent(?:-[a-z]+)?):/gm)].map((match) => match[1]));
+    expect(declaredInTokens).toEqual(new Set(["--accent", "--accent-strong", "--accent-soft", "--accent-contrast"]));
   });
 
   it("keeps neutral and independently themed surfaces outside the contract", () => {

@@ -1,9 +1,8 @@
-import { useId, useState } from "react";
+import { Fragment, useId, useState } from "react";
 import { useFeedbackForm, UNCONFIGURED_HINT } from "../../hooks/useFeedbackForm";
 import { summarizeFeedbackContext } from "../../lib/feedback/summarizeFeedbackContext";
 import type { FeedbackCategory } from "../../lib/feedback/submitFeedback";
 import type { FeedbackContext } from "../../lib/feedback/types";
-import { BrandMark } from "../BrandMark";
 import { SheetShell } from "../SheetShell";
 
 const CATEGORY_OPTIONS: ReadonlyArray<{ value: FeedbackCategory; label: string; glyph: string }> = [
@@ -13,13 +12,18 @@ const CATEGORY_OPTIONS: ReadonlyArray<{ value: FeedbackCategory; label: string; 
 ];
 
 const MESSAGE_HINT: Record<FeedbackCategory, string> = {
-  bug: "What went wrong?",
-  suggestion: "What would make this better?",
+  bug: "What went wrong, and what did you expect to happen?",
+  suggestion: "What would make TheJudge better?",
   other: "What's on your mind?"
 };
 
-const DISCLOSURE_LINE =
-  "Your report includes a snapshot of the app's current state (screen, in-progress question, and browser info).";
+const MESSAGE_LABEL: Record<FeedbackCategory, string> = {
+  bug: "What happened?",
+  suggestion: "What's your idea?",
+  other: "What would you like to tell us?"
+};
+
+const DISCLOSURE_LINE = "Your report includes a snapshot of the app right now";
 
 export interface FeedbackModalProps {
   isOpen: boolean;
@@ -58,7 +62,6 @@ function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDi
 
   const baseId = useId();
   const titleId = `${baseId}-title`;
-  const categoryGroupId = `${baseId}-category`;
   const messageId = `${baseId}-message`;
   const messageErrorId = `${baseId}-message-error`;
   const emailId = `${baseId}-email`;
@@ -70,195 +73,160 @@ function FeedbackDialog({ onClose, getFeedbackContext, formspreeId }: FeedbackDi
   const isSuccess = form.status === "success";
   const submitDisabled = form.isUnconfigured || isSending || isSuccess;
 
+  const heading = isSuccess ? "Thanks — your feedback was sent." : "Send feedback";
+
   return (
     <SheetShell
       isOpen
       onClose={onClose}
       closeLabel="Close feedback"
       titleId={titleId}
+      panelId="feedback-modal"
+      panelClassName="feedback-panel"
       testId="feedback-sheet"
-      head={
-        <>
-          <p className="text-xs font-bold uppercase tracking-[0.14em] text-accent-soft">Feedback</p>
-          <h2 id={titleId} className="text-xl font-black text-zinc-100">
-            Send feedback
-          </h2>
-        </>
-      }
-      foot={
-        isSuccess ? undefined : (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-end gap-3">
-              <button
-                type="button"
-                form={`${baseId}-form`}
-                onClick={() => void form.submit()}
-                disabled={submitDisabled}
-                aria-describedby={form.isUnconfigured ? hintId : undefined}
-                className="motion-press motion-focus min-h-[2.75rem] rounded-2xl bg-accent-strong px-4 font-bold text-accent-contrast disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                {isSending ? "Sending…" : "Send feedback"}
-              </button>
-            </div>
-            <p role="status" aria-live="polite" className="min-h-[1.25rem] text-sm text-zinc-300">
-              {statusMessage(form.status, form.failureStatus)}
-            </p>
-          </div>
-        )
-      }
     >
       {isSuccess ? (
-        <div className="flex flex-col items-center gap-3 py-6 text-center" data-testid="feedback-success">
-          <BrandMark />
-          <p role="status" aria-live="polite" className="text-base font-semibold text-zinc-100">
-            {statusMessage(form.status, form.failureStatus)}
-          </p>
+        <div className="fb-done" data-testid="feedback-success">
+          <span className="seal" aria-hidden="true" />
+          <h2 id={titleId} role="status" aria-live="polite">
+            {heading}
+          </h2>
+          <p>The team reads every report. If you left an email, a reply comes there.</p>
+          <button type="button" className="btn" onClick={onClose}>
+            Done
+          </button>
         </div>
       ) : (
         <form
           id={`${baseId}-form`}
-          className="flex flex-col gap-4"
+          className="fb-form"
           noValidate
           onSubmit={(event) => {
             event.preventDefault();
             void form.submit();
           }}
         >
-          <div className="flex flex-col gap-1">
-            <span
-              id={categoryGroupId}
-              className="text-xs font-semibold uppercase tracking-[0.1em] text-zinc-400"
-            >
-              Feedback type
-            </span>
-            <div role="group" aria-labelledby={categoryGroupId} className="flex flex-wrap gap-2">
-              {CATEGORY_OPTIONS.map((option) => {
-                const selected = form.category === option.value;
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => form.setCategory(option.value)}
-                    // Look-matching pass (slice L): a glyph per type (shell.css:707's
-                    // `.fb-pill`) and an outlined/glowing selected state in place of the
-                    // previous solid fill, matching the mockup's unfilled, lit pills.
-                    className={[
-                      "motion-focus motion-press flex min-h-[2.75rem] items-center gap-1.5 rounded-full border px-4 text-sm font-bold transition",
-                      selected
-                        ? "border-accent-soft bg-accent/15 text-zinc-100 shadow-[0_0_0.875rem_-0.3125rem_rgb(var(--accent)/0.8)]"
-                        : "border-zinc-700 bg-zinc-900 text-zinc-300 hover:bg-zinc-800"
-                    ].join(" ")}
-                  >
-                    <span aria-hidden="true" className="text-accent-soft">{option.glyph}</span>
-                    {option.label}
-                  </button>
-                );
-              })}
-            </div>
+          <div className="fb-head">
+            <small>Feedback</small>
+            <h2 id={titleId}>{heading}</h2>
           </div>
 
-          <div className="flex flex-col gap-1">
-            {/* Look-matching pass (slice L, review 1 fix — finding 6): uppercase eyebrow
-                label (shell.css's `.fb-field .t`), same accessible text as before. */}
-            <label
-              htmlFor={messageId}
-              className="text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-zinc-400"
-            >
-              What happened?
+          <div className="fb-kind" role="group" aria-label="Feedback type">
+            {CATEGORY_OPTIONS.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                className="fb-pill"
+                aria-pressed={form.category === option.value}
+                onClick={() => form.setCategory(option.value)}
+              >
+                <span aria-hidden="true" className="glyph">
+                  {option.glyph}
+                </span>
+                {option.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="fb-field" data-invalid={form.messageError !== null ? "true" : undefined}>
+            <label htmlFor={messageId} className="t">
+              {MESSAGE_LABEL[form.category]}
             </label>
             <textarea
               id={messageId}
+              className="field"
+              data-autofocus=""
               value={form.message}
               onChange={(event) => form.setMessage(event.target.value)}
               placeholder={MESSAGE_HINT[form.category]}
               rows={4}
+              maxLength={2000}
               required
               aria-required="true"
               aria-invalid={form.messageError !== null}
               aria-describedby={form.messageError ? messageErrorId : undefined}
-              className="motion-focus min-h-[2.75rem] rounded-2xl border border-zinc-700 bg-zinc-900 p-3 text-zinc-100"
             />
             {form.messageError && (
-              <p id={messageErrorId} role="alert" className="text-sm text-red-400">
+              <span id={messageErrorId} role="alert" className="fb-err">
                 {form.messageError}
-              </p>
+              </span>
             )}
           </div>
 
-          <div className="flex flex-col gap-1">
-            {/* Look-matching pass (slice L, review 1 fix — finding 6): uppercase eyebrow
-                label (shell.css's `.fb-field .t`), same accessible text as before. */}
-            <label
-              htmlFor={emailId}
-              className="text-[0.68rem] font-semibold uppercase tracking-[0.1em] text-zinc-400"
-            >
-              Reply email (optional)
+          <div className="fb-field" data-invalid={form.emailError !== null ? "true" : undefined}>
+            <label htmlFor={emailId} className="t">
+              Reply email <small>optional</small>
             </label>
             <input
               id={emailId}
+              className="field"
               type="email"
+              placeholder="you@example.com"
+              autoComplete="email"
               value={form.email}
               onChange={(event) => form.setEmail(event.target.value)}
               aria-invalid={form.emailError !== null}
               aria-describedby={form.emailError ? emailErrorId : undefined}
-              className="motion-focus min-h-[2.75rem] rounded-2xl border border-zinc-700 bg-zinc-900 px-3 text-zinc-100"
             />
             {form.emailError && (
-              <p id={emailErrorId} role="alert" className="text-sm text-red-400">
+              <span id={emailErrorId} role="alert" className="fb-err">
                 {form.emailError}
-              </p>
+              </span>
             )}
           </div>
 
-          <div
-            data-testid="feedback-snapshot-row"
-            className="rounded-2xl border border-dashed border-zinc-700 bg-zinc-900/40 p-3"
-          >
-            {/* Look-matching pass (slice L, review 1 fix — finding 6): one true
-                single-line row (shell.css:721's `.fb-snap-row`) — the disclosure
-                text truncates to one line (`min-w-0 truncate`, the flex item needs
-                `min-w-0` for `truncate` to shrink below its content width) and the
-                toggle shrinks to a bare chevron, matching the mockup's "◈ … ▾"
-                row. The toggle keeps its existing accessible name exactly
-                ("Show/Hide app-state details") as a visually-hidden (`sr-only`)
-                span — no behaviour change, only the painted row. */}
-            <div className="flex items-center justify-between gap-2">
-              <p className="min-w-0 flex-1 truncate text-sm text-zinc-400">
-                <span aria-hidden="true" className="text-accent-soft">◈</span> {DISCLOSURE_LINE}
-              </p>
-              <button
-                type="button"
-                aria-expanded={isSummaryExpanded}
-                aria-controls={summaryId}
-                onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
-                className="motion-focus flex min-h-[2.75rem] shrink-0 items-center justify-center rounded-lg px-2 text-accent-soft hover:bg-zinc-800"
-              >
-                <span className="sr-only">
-                  {isSummaryExpanded ? "Hide app-state details" : "Show app-state details"}
-                </span>
-                <span aria-hidden="true" className={isSummaryExpanded ? "rotate-180 transition" : "transition"}>
-                  ▾
-                </span>
-              </button>
-            </div>
+          <div className="fb-snapshot" data-testid="feedback-snapshot-row">
+            <button
+              type="button"
+              className="fb-snap-row"
+              aria-expanded={isSummaryExpanded}
+              aria-controls={summaryId}
+              onClick={() => setIsSummaryExpanded((expanded) => !expanded)}
+            >
+              <span>
+                <span aria-hidden="true" className="glyph">
+                  ◈
+                </span>{" "}
+                {DISCLOSURE_LINE}
+              </span>
+              <span aria-hidden="true" className="chev">
+                ▾
+              </span>
+              <span className="sr-only">
+                {isSummaryExpanded ? "Hide app-state details" : "Show app-state details"}
+              </span>
+            </button>
             {isSummaryExpanded && (
-              <dl id={summaryId} data-testid="feedback-app-state-summary" className="mt-3 grid gap-1 text-sm">
+              <dl id={summaryId} className="fb-snap-list" data-testid="feedback-app-state-summary">
                 {summaryLines.map((line) => (
-                  <div key={line.label} className="flex flex-wrap gap-2">
-                    <dt className="font-semibold text-zinc-400">{line.label}</dt>
-                    <dd className="text-zinc-200">{line.value}</dd>
-                  </div>
+                  <Fragment key={line.label}>
+                    <dt>{line.label}</dt>
+                    <dd>{line.value}</dd>
+                  </Fragment>
                 ))}
               </dl>
             )}
           </div>
 
           {form.isUnconfigured && (
-            <p id={hintId} className="text-sm text-amber-300">
+            <p id={hintId} className="fb-err">
               {UNCONFIGURED_HINT}
             </p>
           )}
+
+          <div className="fb-foot">
+            <span className="fb-note" role="status" aria-live="polite">
+              {statusMessage(form.status, form.failureStatus) || "Sent to the team, not to a public board."}
+            </span>
+            <button
+              type="submit"
+              className="btn primary"
+              disabled={submitDisabled}
+              aria-describedby={form.isUnconfigured ? hintId : undefined}
+            >
+              {isSending ? "Sending…" : "Send feedback"}
+            </button>
+          </div>
         </form>
       )}
     </SheetShell>
