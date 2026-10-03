@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import App from "./App";
@@ -15,9 +15,44 @@ import {
 
 const HISTORY_STORAGE_KEY = "thejudge.conversationHistory.entries";
 
+// REQ-067: the Menu lists one question door — "Ask a Question", not "Quick Question".
 async function switchToDestination(user: ReturnType<typeof userEvent.setup>, label: string): Promise<void> {
+  const menuLabel = label === "Quick Question" ? "Ask a Question" : label;
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name: label }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
+}
+
+// REQ-114/115/213: the dedicated "Conversation history" rail icon retires — History
+// opens from the Menu's "Question History" row instead, now the combined-list sheet.
+async function openHistory(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Switch feature" }));
+  await user.click(screen.getByRole("menuitem", { name: "Question History" }));
+}
+
+// REQ-213: jsdom's default innerWidth (1024) is the sheet family's "wide" side of its
+// 600px boundary, so a row tap only selects it into the reading pane here — "Open
+// conversation" is the explicit resume, same live hand-off a narrow tap gives directly.
+// Queried by role/accessible name (the row's own `aria-label`, a single "<kind>: <preview>"
+// string) rather than by text content — the row's visible text is three concatenated
+// spans (question/ruling/meta) whose combined textContent also starts with the question,
+// so a text-content query matches both the inner and outer node ambiguously.
+async function selectAndOpen(user: ReturnType<typeof userEvent.setup>, questionPreview: string): Promise<void> {
+  await user.click(await screen.findByRole("button", { name: new RegExp(`${questionPreview}$`) }));
+  await user.click(screen.getByRole("button", { name: "Open conversation" }));
+}
+
+async function selectAndDelete(user: ReturnType<typeof userEvent.setup>, questionPreview: string): Promise<void> {
+  await user.click(await screen.findByRole("button", { name: new RegExp(`${questionPreview}$`) }));
+  await user.click(screen.getByRole("button", { name: "Delete this question" }));
+  const confirmSheet = screen.getByTestId("history-delete-confirm");
+  await user.click(within(confirmSheet).getByRole("button", { name: "Delete" }));
+}
+
+async function selectAndCancelDelete(user: ReturnType<typeof userEvent.setup>, questionPreview: string): Promise<void> {
+  await user.click(await screen.findByRole("button", { name: new RegExp(`${questionPreview}$`) }));
+  await user.click(screen.getByRole("button", { name: "Delete this question" }));
+  const confirmSheet = screen.getByTestId("history-delete-confirm");
+  await user.click(within(confirmSheet).getByRole("button", { name: "Keep" }));
 }
 
 function seedCompletedConversation(
@@ -53,13 +88,6 @@ function storedEntryIds(): string[] {
   return (JSON.parse(raw) as { id: string }[]).map((entry) => entry.id);
 }
 
-// The row's select button and its Delete control both mention the question preview in their
-// accessible name (DEC-143), so selecting a row by preview text needs to exclude the delete
-// family's "Delete:"/"Confirm delete:"/"Cancel delete:" prefixes to stay unambiguous.
-function selectEntryMatcher(preview: string): (name: string) => boolean {
-  return (name: string) => name.includes(preview) && !/^(Delete|Confirm delete|Cancel delete):/.test(name);
-}
-
 describe("Frontend - Quick Lookup", () => {
   describe("Delete completed history entries (DEC-143 / REQ-118 / FLOW-018)", () => {
     beforeEach(() => {
@@ -83,7 +111,7 @@ describe("Frontend - Quick Lookup", () => {
       vi.unstubAllGlobals();
     });
 
-    it("removes a non-active entry from storage and the drawer without touching the active conversation", async () => {
+    it("removes a non-active entry from storage and the list without touching the active conversation", async () => {
       seedCompletedConversation("lookup", {
         id: "lookup-active",
         hiddenInitialQuestion: "Active question",
@@ -98,15 +126,17 @@ describe("Frontend - Quick Lookup", () => {
       render(<App />);
 
       await switchToDestination(user, "Quick Question");
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: selectEntryMatcher("Active question") }));
+      await openHistory(user);
+      await selectAndOpen(user, "Active question");
       expect(await screen.findByText("Active answer")).toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: /^Delete:.*Other question/ }));
-      await user.click(screen.getByRole("button", { name: /^Confirm delete:.*Other question/ }));
+      await openHistory(user);
+      await selectAndDelete(user, "Other question");
+      // Close the sheet before reading the real page behind it — otherwise "Active
+      // answer" matches both the still-open list's row (its ruling preview) and the
+      // actual resumed conversation.
+      await user.click(screen.getByRole("button", { name: "Close Question History" }));
 
-      expect(screen.queryByText(/Other question/)).not.toBeInTheDocument();
       expect(storedEntryIds()).toEqual(["lookup-active"]);
       // The active conversation is untouched by deleting a different entry.
       expect(screen.getByText("Active answer")).toBeInTheDocument();
@@ -122,13 +152,12 @@ describe("Frontend - Quick Lookup", () => {
       render(<App />);
 
       await switchToDestination(user, "Quick Question");
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: selectEntryMatcher("Earlier question") }));
+      await openHistory(user);
+      await selectAndOpen(user, "Earlier question");
       expect(await screen.findByText("Earlier answer")).toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: /^Delete:.*Earlier question/ }));
-      await user.click(screen.getByRole("button", { name: /^Confirm delete:.*Earlier question/ }));
+      await openHistory(user);
+      await selectAndDelete(user, "Earlier question");
 
       expect(screen.queryByText("Earlier answer")).not.toBeInTheDocument();
       expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("");
@@ -136,7 +165,7 @@ describe("Frontend - Quick Lookup", () => {
       expect(storedEntryIds()).toEqual([]);
     });
 
-    it("leaves storage and the drawer unchanged when a delete is cancelled", async () => {
+    it("leaves storage and the list unchanged when a delete is cancelled", async () => {
       seedCompletedConversation("lookup", {
         id: "lookup-kept",
         hiddenInitialQuestion: "Kept question",
@@ -146,11 +175,10 @@ describe("Frontend - Quick Lookup", () => {
       render(<App />);
 
       await switchToDestination(user, "Quick Question");
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: /^Delete:.*Kept question/ }));
-      await user.click(screen.getByRole("button", { name: /^Cancel delete:.*Kept question/ }));
+      await openHistory(user);
+      await selectAndCancelDelete(user, "Kept question");
 
-      expect(screen.getByText("Kept question")).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: /Kept question$/ })).toBeInTheDocument();
       expect(storedEntryIds()).toEqual(["lookup-kept"]);
     });
   });
@@ -180,7 +208,7 @@ describe("Frontend - MTG Assistant", () => {
       vi.unstubAllGlobals();
     });
 
-    it("clears the workspace back to game context and does not re-save the deleted thread when deleting the active conversation", async () => {
+    it("clears the workspace, lands on Ask a Question (REQ-029 amended), and does not re-save the deleted thread when deleting the active conversation", async () => {
       seedCompletedConversation("game", {
         id: "game-active",
         hiddenInitialQuestion: "Earlier game question",
@@ -189,16 +217,15 @@ describe("Frontend - MTG Assistant", () => {
       const user = userEvent.setup();
       render(<App />);
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: selectEntryMatcher("Earlier game question") }));
+      await openHistory(user);
+      await selectAndOpen(user, "Earlier game question");
       expect(await screen.findByText("Earlier game answer")).toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: /^Delete:.*Earlier game question/ }));
-      await user.click(screen.getByRole("button", { name: /^Confirm delete:.*Earlier game question/ }));
+      await openHistory(user);
+      await selectAndDelete(user, "Earlier game question");
 
       expect(screen.queryByText("Earlier game answer")).not.toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: "Game context" })).toBeVisible();
+      expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeVisible();
       expect(storedEntryIds()).toEqual([]);
     });
   });

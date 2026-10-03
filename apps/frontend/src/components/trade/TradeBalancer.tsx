@@ -1,19 +1,25 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { ConfirmSheet } from "../ConfirmSheet";
 import { PageShell } from "../PageShell";
 import { StagedStepHeader } from "../StagedStepHeader";
-import { StepEyebrow } from "../StepEyebrow";
 import { apiBaseUrl } from "../../lib/env";
 import { fetchCardPrintings, type CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
 import {
   defaultFoilForPrinting,
-  difference,
+  formatTradeDifference,
+  formatTradeVerdict,
   formatUsd,
+  normalizeSideName,
+  pileTier,
   sideTotal,
+  tradeVerdict,
+  type PileTier,
   type TradeEntry,
   type TradeSideId
 } from "../../lib/trade/pricing";
 import type { CardMetadataItem } from "../../types";
+import { TradePile, type TradePileTransition } from "./TradePile";
 import { TradeSide } from "./TradeSide";
 import { buildOracleSearchIndex } from "./oracleSearch";
 import { useTradeScan } from "./useTradeScan";
@@ -29,11 +35,17 @@ const METADATA_LOAD_ERROR_COPY =
 type TradeEntryMeta = {
   oracleId: string;
   name: string;
+  /** The card's colour identity, for the row's identity ring (REQ-058). */
+  colors?: string[];
   status: "loading" | "loaded" | "error";
   /** Every printing the fetch returned, for the "Change printing" picker. Empty while loading/error. */
   printings: CardPrintingPrice[];
   /** The scanned printing id, when this entry came from a scan lock (DEC-070) — reused on retry. */
   preferredPrintingId?: string;
+  /** The finish explicitly picked alongside `preferredPrintingId` (REQ-065's Nonfoil/Foil
+   * pills); `undefined` re-derives the finish from the resolved printing's own prices
+   * instead (the scan path, and retry). */
+  preferredFoil?: boolean;
 };
 
 const EMPTY_PRINTING: CardPrintingPrice = {
@@ -85,9 +97,16 @@ function selectPrinting(printings: CardPrintingPrice[], preferredPrintingId?: st
   return preferred ?? printings[0] ?? EMPTY_PRINTING;
 }
 
+type PileAnimState = { key: number; transition: TradePileTransition };
+
+const INITIAL_PILE_ANIM: Record<TradeSideId, PileAnimState> = {
+  A: { key: 0, transition: "none" },
+  B: { key: 0, transition: "none" }
+};
+
 /**
- * Two-sided, ephemeral trade balancer (REQ-064, FLOW-009). State lives only in this
- * component: no persistence, no history, no suggestions. Printing choice is a pricing
+ * Two-sided, ephemeral trade balancer (REQ-064, REQ-215, FLOW-009). State lives only in
+ * this component: no persistence, no history, no suggestions. Printing choice is a pricing
  * and display concern only — it never reaches prompt context or any request payload.
  *
  * Card identity (name, search, scan preview) comes from the shared `cardMetadata`
@@ -105,7 +124,20 @@ export function TradeBalancer(): JSX.Element {
   });
   const [entryMetaById, setEntryMetaById] = useState<Record<string, TradeEntryMeta>>({});
   const [snapshotDate, setSnapshotDate] = useState<string | null>(null);
+  const [sideNames, setSideNames] = useState<Record<TradeSideId, string>>({ A: "Side A", B: "Side B" });
+  const [isNewTradeConfirmOpen, setIsNewTradeConfirmOpen] = useState(false);
+  // Look-matching pass (slice O), requirement 5: on phone, one side shows at a
+  // time behind a tab pair (`trade-balancer.html:84-93`); both always show on
+  // desktop (CSS media query) regardless of this state. Both `TradeSide`
+  // instances stay mounted either way, so switching tabs loses no side state.
+  const [activeSideTab, setActiveSideTab] = useState<TradeSideId>("A");
   const nextInstanceIdRef = useRef(0);
+  // The latest entries and per-entry pricing meta, readable synchronously: a scan commit adds several
+  // cards in one tick, and REQ-215's merge must see the row the previous add just made.
+  const entriesRef = useRef(entriesBySide);
+  entriesRef.current = entriesBySide;
+  const entryMetaRef = useRef(entryMetaById);
+  entryMetaRef.current = entryMetaById;
 
   useEffect(() => {
     const controller = new AbortController();
@@ -169,7 +201,12 @@ export function TradeBalancer(): JSX.Element {
   /** FLOW-025: fetches one card's printings and prices, selects the preferred/first
    * printing once they arrive, and degrades the entry to $0-plus-caution with a
    * retry affordance on failure or a no-printings not-found result. */
-  function loadPricingForEntry(instanceId: string, oracleId: string, preferredPrintingId?: string): void {
+  function loadPricingForEntry(
+    instanceId: string,
+    oracleId: string,
+    preferredPrintingId?: string,
+    preferredFoil?: boolean
+  ): void {
     setEntryMetaById((current) => ({
       ...current,
       [instanceId]: { ...current[instanceId], oracleId, status: "loading" }
@@ -195,7 +232,11 @@ export function TradeBalancer(): JSX.Element {
         }));
         updateEntryOnEitherSide(instanceId, (entry) => {
           const printing = selectPrinting(printings, preferredPrintingId);
-          return { ...entry, printing, foil: defaultFoilForPrinting(printing) };
+          return {
+            ...entry,
+            printing,
+            foil: preferredFoil !== undefined ? preferredFoil : defaultFoilForPrinting(printing)
+          };
         });
       })
       .catch(() => {
@@ -207,39 +248,73 @@ export function TradeBalancer(): JSX.Element {
   }
 
   /** Adds a card by oracle id — the shared path for manual search (no preferred
-   * printing; the fetch's first printing is the default) and scan (the scanned
-   * printing id, DEC-070). The entry appears immediately with a loading state;
-   * pricing arrives asynchronously (FLOW-025). */
+   * printing/finish; the fetch's first printing and its own default finish apply),
+   * the printing picker's Nonfoil/Foil pills (REQ-065 — both preferred), and scan
+   * (the scanned printing id, DEC-070, no preferred finish). The entry appears
+   * immediately with a loading state; pricing arrives asynchronously (FLOW-025). */
   function handleAddByOracle(
     sideId: TradeSideId,
     oracleId: string,
     name: string,
-    preferredPrintingId?: string
+    preferredPrintingId?: string,
+    preferredFoil?: boolean
   ): void {
+    // REQ-215: a card whose printing and finish match a row already on this side raises that row's
+    // quantity by one instead of adding a second row; the row keeps its place in add order. A
+    // scan commit (a printing but no explicit finish) merges the same way, reading the finish the
+    // scanned printing would default to.
+    if (preferredPrintingId) {
+      const existing = entriesRef.current[sideId].find((entry) => {
+        const meta = entryMetaRef.current[entry.instanceId];
+        if (meta?.oracleId !== oracleId || entry.printing.id !== preferredPrintingId) return false;
+        const wantedFoil =
+          preferredFoil ??
+          defaultFoilForPrinting(meta.printings.find((printing) => printing.id === preferredPrintingId) ?? entry.printing);
+        return entry.foil === wantedFoil;
+      });
+      if (existing) {
+        const merged = { ...existing, quantity: existing.quantity + 1 };
+        entriesRef.current = {
+          ...entriesRef.current,
+          [sideId]: entriesRef.current[sideId].map((entry) => (entry === existing ? merged : entry))
+        };
+        setSideEntries(sideId, (entries) =>
+          updateEntries(entries, existing.instanceId, (entry) => ({ ...entry, quantity: entry.quantity + 1 }))
+        );
+        return;
+      }
+    }
+
     nextInstanceIdRef.current += 1;
     const instanceId = `${oracleId}-${nextInstanceIdRef.current}`;
 
-    setSideEntries(sideId, (entries) => [
-      ...entries,
-      {
-        instanceId,
-        printing: preferredPrintingId ? { ...EMPTY_PRINTING, id: preferredPrintingId } : EMPTY_PRINTING,
-        foil: false,
-        quantity: 1
-      }
-    ]);
-    setEntryMetaById((current) => ({
-      ...current,
-      [instanceId]: { oracleId, name, status: "loading", printings: [], preferredPrintingId }
-    }));
+    const newEntry: TradeEntry = {
+      instanceId,
+      printing: preferredPrintingId ? { ...EMPTY_PRINTING, id: preferredPrintingId } : EMPTY_PRINTING,
+      foil: preferredFoil ?? false,
+      quantity: 1
+    };
+    const newMeta: TradeEntryMeta = {
+      oracleId,
+      name,
+      colors: cardMetadata?.find((card) => card.cardId === oracleId)?.colors,
+      status: "loading",
+      printings: [],
+      preferredPrintingId,
+      preferredFoil
+    };
+    entriesRef.current = { ...entriesRef.current, [sideId]: [...entriesRef.current[sideId], newEntry] };
+    entryMetaRef.current = { ...entryMetaRef.current, [instanceId]: newMeta };
+    setSideEntries(sideId, (entries) => [...entries, newEntry]);
+    setEntryMetaById((current) => ({ ...current, [instanceId]: newMeta }));
 
-    loadPricingForEntry(instanceId, oracleId, preferredPrintingId);
+    loadPricingForEntry(instanceId, oracleId, preferredPrintingId, preferredFoil);
   }
 
   function handleRetryPricing(instanceId: string): void {
     const meta = entryMetaById[instanceId];
     if (!meta) return;
-    loadPricingForEntry(instanceId, meta.oracleId, meta.preferredPrintingId);
+    loadPricingForEntry(instanceId, meta.oracleId, meta.preferredPrintingId, meta.preferredFoil);
   }
 
   function handleToggleFoil(sideId: TradeSideId, instanceId: string): void {
@@ -266,18 +341,21 @@ export function TradeBalancer(): JSX.Element {
     });
   }
 
+  /** REQ-065: the picker's Nonfoil/Foil pills pass the chosen finish explicitly —
+   * no re-derivation, unlike the scan/retry path. */
   function handleChangePrinting(
     sideId: TradeSideId,
     instanceId: string,
-    printing: CardPrintingPrice
+    printing: CardPrintingPrice,
+    foil: boolean
   ): void {
     setSideEntries(sideId, (entries) =>
-      updateEntries(entries, instanceId, (entry) => ({
-        ...entry,
-        printing,
-        foil: defaultFoilForPrinting(printing)
-      }))
+      updateEntries(entries, instanceId, (entry) => ({ ...entry, printing, foil }))
     );
+  }
+
+  function handleRenameSide(sideId: TradeSideId, name: string): void {
+    setSideNames((current) => ({ ...current, [sideId]: normalizeSideName(sideId, name) }));
   }
 
   // Scan input (REQ-065 scan path): one camera at a time, adding to the side that
@@ -286,11 +364,70 @@ export function TradeBalancer(): JSX.Element {
 
   const totalA = sideTotal(entriesBySide.A);
   const totalB = sideTotal(entriesBySide.B);
-  const gap = difference(totalA, totalB);
-  const differenceCopy =
-    gap.higher === "equal"
-      ? "Even trade"
-      : `Side ${gap.higher} is ahead by ${formatUsd(gap.amount)}`;
+  const verdict = tradeVerdict(totalA, totalB);
+  const sideName = (side: TradeSideId) => sideNames[side];
+  const verdictCopy = formatTradeVerdict(verdict, sideName);
+  const differenceCopy = formatTradeDifference(totalA, totalB, sideName);
+  const bothSidesEmpty = entriesBySide.A.length === 0 && entriesBySide.B.length === 0;
+  // Look-matching pass (slice O), requirement 4: the scale band's own verdict
+  // line reads "Add cards to weigh the trade" at $0/$0 — `verdictCopy` above
+  // (`tradeVerdict`'s "Even" case) is correct once either side has a card.
+  const scaleVerdictCopy = bothSidesEmpty ? "Add cards to weigh the trade" : verdictCopy;
+  const countA = entriesBySide.A.reduce((sum, entry) => sum + entry.quantity, 0);
+  const countB = entriesBySide.B.reduce((sum, entry) => sum + entry.quantity, 0);
+  const countLabel = (count: number) => `${count} card${count === 1 ? "" : "s"}`;
+
+  const tierA: PileTier = pileTier(totalA, totalB);
+  const tierB: PileTier = pileTier(totalB, totalA);
+  // `.pan[data-heavy]` (the heavier side's glowing total) tracks the same
+  // "richer" reading the piles already use — tied at $0 or any other amount
+  // reads neither side as heavy, matching `trade-balancer.html`'s own
+  // `heavy = ta === tb ? null : ...`.
+  const isHeavyA = totalA !== totalB && tierA >= tierB;
+  const isHeavyB = totalA !== totalB && tierB >= tierA;
+
+  // REQ-215: a tier-up drops in with a slight overshoot, a tier-down lifts and
+  // fades — tracked per side so each pile's SVG re-keys and replays its own
+  // transition exactly once, rather than looping idle.
+  const [pileAnim, setPileAnim] = useState<Record<TradeSideId, PileAnimState>>(INITIAL_PILE_ANIM);
+  const prevTiersRef = useRef<Record<TradeSideId, PileTier>>({ A: tierA, B: tierB });
+
+  useEffect(() => {
+    const prev = prevTiersRef.current;
+    const nextA = tierA;
+    const nextB = tierB;
+    if (nextA === prev.A && nextB === prev.B) return;
+
+    setPileAnim((current) => ({
+      A:
+        nextA === prev.A
+          ? current.A
+          : { key: current.A.key + 1, transition: nextA > prev.A ? "up" : "down" },
+      B:
+        nextB === prev.B
+          ? current.B
+          : { key: current.B.key + 1, transition: nextB > prev.B ? "up" : "down" }
+    }));
+    prevTiersRef.current = { A: nextA, B: nextB };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tierA, tierB]);
+
+  function openNewTradeConfirm(): void {
+    if (bothSidesEmpty) return;
+    setIsNewTradeConfirmOpen(true);
+  }
+
+  function handleConfirmNewTrade(): void {
+    setEntriesBySide({ A: [], B: [] });
+    setEntryMetaById({});
+    // Side names are kept (REQ-215); only the cards clear.
+    setIsNewTradeConfirmOpen(false);
+  }
+
+  const cardCountAcrossBothSides =
+    entriesBySide.A.reduce((sum, entry) => sum + entry.quantity, 0) +
+    entriesBySide.B.reduce((sum, entry) => sum + entry.quantity, 0);
+  const totalValueAcrossBothSides = totalA + totalB;
 
   const sideProps = {
     cardMetadata: cardMetadata ?? [],
@@ -307,37 +444,141 @@ export function TradeBalancer(): JSX.Element {
     onQuantityChange: handleQuantityChange,
     onRemove: handleRemove,
     onChangePrinting: handleChangePrinting,
-    onRetryPricing: handleRetryPricing
+    onRetryPricing: handleRetryPricing,
+    onRenameSide: handleRenameSide
   };
 
   return (
-    <PageShell>
-      <StagedStepHeader />
-      <StepEyebrow stepName="Trade Balancer" />
+    <PageShell variant="wide-fit">
+      <StagedStepHeader
+        rightSlot={
+          snapshotCopy ? (
+            <p className="asof" aria-label="Price snapshot date (header)">
+              {`Prices as of ${snapshotCopy}`}
+            </p>
+          ) : undefined
+        }
+      />
+      {/* Look-matching pass (slice O): `trade-balancer.html`'s `.tb` — the
+          title row, the scale band, the phone side tabs, and the two sides —
+          takes the screen's remaining height below the header (`.tb` in
+          index.css) and scrolls nowhere itself; only `.entries` below
+          does. */}
+      <section className="tb">
+        <div className="flow-head">
+          <h1>Trade Balancer</h1>
+          {/* Requirement 3: the price date sits under the title, not inside
+              the scale/verdict band — shown here for phone; the header's own
+              `rightSlot` above covers desktop (REQ-215's existing dual
+              placement, unchanged by this slice). */}
+          {snapshotCopy && (
+            <p className="asof">{`Prices as of ${snapshotCopy}`}</p>
+          )}
+          <div className="head-tools">
+            <button
+              type="button"
+              aria-label="New trade"
+              disabled={bothSidesEmpty}
+              onClick={openNewTradeConfirm}
+              className="icon-chip"
+            >
+              <span className="glyph" aria-hidden="true">
+                ↺
+              </span>
+              New trade
+            </button>
+          </div>
+        </div>
 
-      <section className="space-y-2 rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4">
-        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">
-          Difference
-        </p>
-        <p className="text-lg font-semibold text-zinc-100" aria-label="Trade difference">
-          {differenceCopy}
-        </p>
-        <p className="text-xs text-zinc-400">
-          {`Side A ${formatUsd(totalA)} · Side B ${formatUsd(totalB)} · USD only`}
-        </p>
-        {isMetadataLoading && <p className="text-sm text-zinc-400">Loading card list…</p>}
+        {/* Requirement 4: one scale band — both sides' totals, pile art, and a
+            serif verdict line — replacing the old gold-pile verdict panel. */}
+        <div className="scale">
+          <div className="pan a" data-heavy={isHeavyA ? "true" : "false"}>
+            <span className="label">{sideNames.A}</span>
+            <span className="total" aria-label="Side A total (scale)">
+              {formatUsd(totalA)}
+            </span>
+            {!bothSidesEmpty && <span className="count">{countLabel(countA)}</span>}
+          </div>
+          <div className="piles-wrap">
+            <div className="piles" aria-hidden="true">
+              <TradePile tier={tierA} isRicher={tierA >= tierB} transition={pileAnim.A.transition} animationKey={pileAnim.A.key} />
+              <TradePile tier={tierB} isRicher={tierB >= tierA} transition={pileAnim.B.transition} animationKey={pileAnim.B.key} />
+            </div>
+            <div className="verdict" data-even={totalA === totalB ? "true" : "false"} aria-live="polite">
+              <span aria-label="Trade verdict">{scaleVerdictCopy}</span>
+              {!bothSidesEmpty && (
+                <small aria-label="Trade difference">{differenceCopy}</small>
+              )}
+            </div>
+          </div>
+          <div className="pan b" data-heavy={isHeavyB ? "true" : "false"}>
+            <span className="label">{sideNames.B}</span>
+            <span className="total" aria-label="Side B total (scale)">
+              {formatUsd(totalB)}
+            </span>
+            {!bothSidesEmpty && <span className="count">{countLabel(countB)}</span>}
+          </div>
+        </div>
+
+        {isMetadataLoading && <p className="tb-note">Loading card list…</p>}
         {metadataLoadError && (
-          <p role="alert" className="text-sm text-amber-200">
+          <p role="alert" className="idq-error">
             {metadataLoadError}
           </p>
         )}
-        {snapshotCopy && <p className="text-xs text-zinc-500">{`Prices as of ${snapshotCopy}`}</p>}
+
+        {/* Requirement 5: on phone, the two sides sit behind a tab pair; CSS
+            hides this row and shows both `TradeSide` columns on desktop. */}
+        <div className="side-tabs" role="tablist" aria-label="Trade side">
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeSideTab === "A"}
+            onClick={() => setActiveSideTab("A")}
+          >
+            <span>{sideNames.A}</span>
+            <b>{formatUsd(totalA)}</b>
+          </button>
+          <button
+            type="button"
+            role="tab"
+            aria-selected={activeSideTab === "B"}
+            onClick={() => setActiveSideTab("B")}
+          >
+            <span>{sideNames.B}</span>
+            <b>{formatUsd(totalB)}</b>
+          </button>
+        </div>
+
+        <div className="sides">
+          <TradeSide
+            sideId="A"
+            sideName={sideNames.A}
+            isActiveOnPhone={activeSideTab === "A"}
+            entries={entriesBySide.A}
+            {...sideProps}
+          />
+          <TradeSide
+            sideId="B"
+            sideName={sideNames.B}
+            isActiveOnPhone={activeSideTab === "B"}
+            entries={entriesBySide.B}
+            {...sideProps}
+          />
+        </div>
       </section>
 
-      <div className="grid gap-3 sm:grid-cols-2">
-        <TradeSide sideId="A" entries={entriesBySide.A} {...sideProps} />
-        <TradeSide sideId="B" entries={entriesBySide.B} {...sideProps} />
-      </div>
+      <ConfirmSheet
+        isOpen={isNewTradeConfirmOpen}
+        onKeep={() => setIsNewTradeConfirmOpen(false)}
+        onConfirm={handleConfirmNewTrade}
+        question="Start a new trade?"
+        detail={`This clears ${cardCountAcrossBothSides} card${cardCountAcrossBothSides === 1 ? "" : "s"} worth ${formatUsd(totalValueAcrossBothSides)} from both sides. Side names are kept.`}
+        keepLabel="Keep this trade"
+        confirmLabel="↺ Clear both sides"
+        testId="new-trade-confirm-sheet"
+      />
     </PageShell>
   );
 }

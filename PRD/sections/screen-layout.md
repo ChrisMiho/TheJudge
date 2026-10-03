@@ -31,7 +31,7 @@ Use fluid interpolation inside a band when possible; reserve hard switches for n
 - **Inner panels / workspaces** size as a **% of the suite shell** (the app content frame after banner/chrome), not as a second free grab at the full viewport.
 - Starting shell width intent (tunable per screen when a row says so):
   - **phone:** shell ≈ **100%** of viewport width (minus established page padding); no narrow “card floating in a phone desert.”
-  - **tablet/desktop:** shell ≈ **92%** of viewport width, capped at `min(48rem, 92vw)` (DEC-145 / REQ-124). Tune the rem cap in product truth when mocks prove a different reading width; do not jump to edge-to-edge without a catalog/DEC update.
+  - **tablet/desktop:** shell ≈ **92%** of viewport width, capped at `min(48rem, 92vw)` (DEC-145 / REQ-124). Tune the rem cap in product truth when mocks prove a different reading width; do not jump to edge-to-edge without a catalog/DEC update. On the direction-1 redesigned screens a screen's content column takes its mockup page's own width inside this cap (REQ-124).
 - Prose-dominant regions keep a **maximum reading measure inside the shell** — widening the shell does not mean every text column goes edge-to-edge.
 - **Height:** do **not** stretch pre-submit staged steps to absorb lower viewport dead space (DEC-145 — content-sized vertically; empty region accepted until step content exists). Vertical fill applies only where a screen row cites it (answered chat workspace, Life Tracker one-screen table, scan camera chrome).
 
@@ -61,7 +61,7 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Phone | Width ≈ 100% viewport (minus page padding); height follows content (not forced full-viewport stretch) |
 | Desktop/tablet | Width ≈ 92% viewport, cap `min(48rem, 92vw)`; height follows content for staged/pre-submit destinations |
 | Fit | No page scroll from shell chrome alone |
-| Notes | DEC-145, REQ-124, DEC-117. Do not invent vertical fill for empty lower bands. Life Tracker / answered workspace / scan use their own height rows |
+| Notes | DEC-145, REQ-124, DEC-117. Do not invent vertical fill for empty lower bands. Life Tracker / answered workspace / scan use their own height rows. The banner header sits above the shell's page padding, flush with the viewport's top edge (REQ-207); the padding applies to the content below it |
 
 #### Destination load fallback (route `Suspense` boundary)
 
@@ -86,29 +86,41 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | | |
 |---|---|
 | Purpose | Suite navigation + Theme |
-| Phone / Desktop | Rail: corner band (hit box capped per DEC-137) when tray closed. Open tray: full-height of **visible shell side**, width per navigation DECs (not a free full-viewport panel past shell). Theme orbs on one row (DEC-152). |
-| Fit | Overlay; no page scroll. Opaque over destination content; rail Menu/History icons hidden/unclickable while open; close via outside click / Escape (DEC-140/147/150) |
-| Notes | DEC-122, DEC-133, DEC-137, DEC-147, DEC-150, DEC-152, REQ-127, REQ-131 |
+| Phone | ☰ Menu button (≥44px) at the left of the banner header. Open tray: slides in from the left, full height of the **visible shell side**; opaque over destination content |
+| Desktop/tablet | Same ☰ trigger; the open tray is a floating card inset from the viewport edges, rounded, sized to its content (not full height) |
+| Theme band | Six equal cells, each ≥40px; when six no longer fit, the band slides with an arrow at each end nudging two cells, the chosen cell scrolled into view on open; from 320px up all six fit with no arrows; Colorless's colour well and Reset to gray sit beneath, wrapping |
+| Fit | Overlay; no page scroll. The tray closes on its ✕, a tap outside it, and Escape; the ☰ trigger is covered and not hit-testable while it is open (REQ-127) |
+| Notes | DEC-122, DEC-133, DEC-137, DEC-147, DEC-150, REQ-127, REQ-131, REQ-207. The destination list is REQ-206's |
+
+#### Shared sheet (card detail, Question History, printing picker, Send feedback, confirm)
+
+| | |
+|---|---|
+| Purpose | One overlay shell for the suite's small sheets (REQ-208) |
+| Phone | Below `600px`: bottom sheet, content-sized up to the viewport; fixed head (title, ✕) and foot (actions) |
+| Desktop/tablet | From `600px`: floating card centred in the viewport, content-sized; Question History widens to two panes (REQ-213) |
+| Fit | Overlay; only the body region-scrolls; never a second page-length scroll for the host screen |
+| Notes | REQ-208, REQ-128, REQ-142, REQ-143, REQ-205. View Context keeps its own row; Life Tracker's counter panel is hosted here too (REQ-082) |
 
 #### Card detail popup (suite-wide)
 
 | | |
 |---|---|
 | Purpose | Read oracle/local card detail without stacking it under the image |
-| Phone | Bottom sheet in the overlay family (DEC-158), **sized to its own content — not to the card image's bounding box**; opened from the top-right corner control on the image |
-| Desktop/tablet | Side panel at `768px`+ matching `AdaptiveContextDialog`'s composition; width tracks the View Context row, not a free full-viewport panel |
+| Phone | The shared sheet (REQ-208): a bottom sheet below `600px`, **sized to its own content — not to the card image's bounding box**; opened from the top-right corner control on the image |
+| Desktop/tablet | From `600px`: a floating card centred in the viewport, fading up into place; content-sized (REQ-208) |
 | Fit | Overlay; popup body may region-scroll if detail is long; the close control lays out **inside** the overlay's own bounds at every width; must not invent a second page-length scroll for the hosting step |
-| Notes | DEC-151, DEC-158, DEC-159, REQ-128, REQ-142, REQ-175, FLOW-024 — applies whenever a card image is shown across all six surfaces: Quick Question card search, In-Depth Enrichment, View Context, In-Depth zone selected-card/add preview, In-Depth zone strip, and Scan review. Superseded geometry: `absolute inset-0` over the image, measured at 92×128px holding 356px of content with its close X overflowing by 37px (DEC-158). **On-demand load state (REQ-128 / FLOW-024):** the descriptive block is fetched on first card-detail open, so the popup shows a brief loading state confined to the descriptive-content region while the already-local name, image, and color ring stay rendered and do not move. Keep it quiet and minimal — it must not introduce a branded splash, a full-overlay spinner takeover, a progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and must not resize the overlay or shift surrounding content (no layout jump when the block resolves). A minimal inline placeholder/skeleton in the descriptive region is allowed; a failed load falls soft to the name identity fallback (FLOW-001) with a retry affordance, never an error takeover |
+| Notes | DEC-151, DEC-158, DEC-159, REQ-128, REQ-142, REQ-175, REQ-208, FLOW-024 — applies whenever a card image is shown across all six surfaces: Quick Question card search, In-Depth Enrichment, View Context, In-Depth zone selected-card/add preview, In-Depth zone strip, and Scan review. Superseded geometry: `absolute inset-0` over the image, measured at 92×128px holding 356px of content with its close X overflowing by 37px (DEC-158); the `768px` side panel (DEC-158) is further superseded by REQ-208's `600px` centred card. **On-demand load state (REQ-128 / FLOW-024):** the descriptive block is fetched on first card-detail open, so the popup shows a brief loading state confined to the descriptive-content region while the already-local name, image, and color ring stay rendered and do not move. Keep it quiet and minimal — it must not introduce a branded splash, a full-overlay spinner takeover, a progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and must not resize the overlay or shift surrounding content (no layout jump when the block resolves). A minimal inline placeholder/skeleton in the descriptive region is allowed; a failed load falls soft to the name identity fallback (FLOW-001) with a retry affordance, never an error takeover |
 
-#### Conversation history drawer
+#### Question History (REQ-213 — superseded the conversation history drawer)
 
 | | |
 |---|---|
-| Purpose | List/restore/delete saved conversations |
-| Phone | Left-edge full-height; width ≈ `min(22rem, 88% viewport)` (DEC-134) |
-| Desktop/tablet | Left-edge full-height; width ≈ `min(30rem, 90% viewport)` |
-| Fit | Overlay; list may region-scroll inside drawer |
-| Notes | DEC-124, DEC-134, DEC-126. Mutually exclusive with Menu tray |
+| Purpose | Question History: list, reopen and delete saved conversations of both question kinds (REQ-213) |
+| Phone | The shared sheet (REQ-208) as a bottom sheet below `600px`; one list; a tap reopens the conversation |
+| Desktop/tablet | The shared sheet as a floating centred card from `600px` up, in two panes: the list and the chosen conversation with Open conversation / Delete this question. Superseded geometry: a left-edge full-height drawer, `min(22rem, 88vw)` phone / `min(30rem, 90vw)` desktop (DEC-134) |
+| Fit | Overlay; the list and the reading pane region-scroll inside the sheet body; head and foot fixed |
+| Notes | DEC-124, DEC-126, REQ-208, REQ-213. Opened from the Menu's Question History row; no rail History zone |
 
 #### View Context / adaptive context overlay
 
@@ -122,25 +134,25 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 
 ### Destinations
 
-#### Quick Question — pre-submit
+#### Ask a Question — pre-submit
 
 | | |
 |---|---|
-| Purpose | Up to 5 cards (bounded add strip, REQ-167) + question → Ask AI |
-| Phone | Shell 100% width band; content-sized vertically (DEC-145); each attached card image sizes to the content column (DEC-160) — with the corner detail popup for metadata (DEC-151/DEC-158); only **Remove card** beside/below each image (REQ-133); **the attached-card list is a bounded region — a horizontal strip and/or region-scrolled list — so total attached-card height does not grow with the card count (REQ-129 as amended, REQ-167's 5-card cap)**; primary fields and **Send Request** stay in the first viewport at every attached-card count up to five; topics/lists may region-scroll |
-| Desktop/tablet | Shell 92%/48rem cap; content-sized vertically; card images grow with the wider column rather than holding the phone size (DEC-160); composer/field growth must not force page scroll or clip chrome below the field (REQ-110 / DEC-146 / DEC-153) |
-| Fit | No page scroll for primary submit path — this bounds card image growth (REQ-129); if the two conflict, the Fit rule wins and a bounded cap is recorded on this row. **Measured bound (ui-review, 2026-08-07):** the two did conflict. An unbounded content-column image rendered 265x369 at 390x844 and pushed **Send Request** to `top` 868px with 1004px of document scroll. The shared shell column (`.card-shell-column img`) is therefore capped at `max-height: 25dvh` below 768px and `42dvh` at 768px+ — a host-row height bound, never a reinstated component `max-h-32` or a per-surface variant. Result: 151x211 at 390x844 with Send Request fully inside the first viewport (`bottom` 754px) and document scroll back to 846px vs the 844px baseline; 271x378 at 1440x900 with Send Request `bottom` 892px. Consequence to accept: at 390x844 the image is 45.3% of content width (151px of a 333px column, re-measured on ship 2026-08-11), so REQ-141's "clear majority" is **not** met on this surface — REQ-129 binds first, exactly as DEC-160 anticipates. It remains 1.65x the superseded 92x128 render and grows with the viewport (271x378 at 1440x900). Closing the gap requires changing the surrounding Quick Question column, not this cap. **Re-measured for the multi-card add strip (ui-review, 2026-08-30, REQ-167):** the existing per-image cap already holds unchanged — each stacked card is its own `.card-shell-column img` instance, so five attached cards at 390×844 render as five independent ~211px-tall images (confirmed via live snapshot, no new overflow), and three attached cards at 1440×900 render at the same ~378px-tall desktop size as the single-card case. Stacking multiple capped images necessarily grows total document height, so the page scrolled past the composer with 2+ cards attached. **That consequence is withdrawn by the `ui-reimagining` pass (REQ-129 as amended, 2026-09-24):** re-measured live at 390×844 with two cards attached, the document was 1159px against an 844px viewport and Send Request sat at `top` 1023 / `bottom` 1067 — 179px below the fold, which is the owner-reported friction, not an acceptable trade. The bound is now on the attached-card **region**, not each image: the list becomes a bounded strip and/or region-scrolled list so Send Request's `bottom` stays ≤ 844px at 390×844 with up to five cards attached. The per-image `25dvh` / `42dvh` host-row cap is unchanged; no per-surface component variant or reinstated `max-h-32` is introduced. |
-| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-129, REQ-132, REQ-133, REQ-141, REQ-167, REQ-174, REQ-200, FLOW-024. **On-demand load state (REQ-174 / FLOW-024):** the pre-submit card preview's descriptive metadata now loads on demand, so it shows the same quiet in-overlay loading state as the `#### Card detail popup (suite-wide)` row — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no image/strip resize or layout jump when the block resolves; a minimal inline placeholder only, failing soft to the name identity fallback (FLOW-001) |
+| Purpose | Up to 10 cards (card stage, REQ-167 as amended) + question → Ask AI; Add in-depth details carries the cards into In-depth details (REQ-206) |
+| Phone | Shell 100% width band; content-sized vertically (DEC-145). **Card stage** (only when a card is attached): the front card full size on a glass stage (REQ-207), the one other card peeking (two cards peek on one side only; three or more peek each side) — so the stage height does not grow with the card count; ✕ Remove / ⓘ Details straddle the front card's top corners; a row of position dots lights the front card's place. **Question box:** two rows (text on top; Add in-depth details chip bottom-left, mic|send pill bottom-right) |
+| Desktop/tablet | Shell 92%/48rem cap; content-sized vertically; the front card grows with the wider column; box growth must not force page scroll or clip chrome below the box (REQ-110 / DEC-146) |
+| Fit | No page scroll for the primary submit path: the send pill's `bottom` stays inside the first viewport at every attached-card count up to the cap. The stage replaces the stacked per-image list whose measured overflow this row previously bounded (history below); the per-image `25dvh` / `42dvh` cap retires with that list |
+| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-129, REQ-133, REQ-141, REQ-167, REQ-174, REQ-200, REQ-206, FLOW-024. The on-demand card-detail load state follows the `#### Card detail popup (suite-wide)` row (REQ-174 / FLOW-024): quiet, in-region, no layout jump, failing soft to the name fallback. **History (superseded by REQ-206's card stage, `ui-reimagining-build`, 2026-10-01):** earlier passes bounded a stacked per-image list — a 2026-08-07 measurement capped each image at `max-height: 25dvh` / `42dvh` (`.card-shell-column img`) after an unbounded image pushed Send Request to `top` 868px; a 2026-08-30 re-measurement found the per-image cap held for up to five stacked cards but let the page scroll past the composer with 2+ attached; a 2026-09-24 re-measurement (two cards, 1159px document against an 844px viewport, Send Request `bottom` 1067) withdrew that as unacceptable and bound the attached-card **region** instead of each image. The card stage is the `ui-reimagining-build` pass's replacement for that bounded-region list — not a further re-measurement of it |
 
-#### Quick Question — answered workspace
+#### Ask a Question — answered workspace
 
 | | |
 |---|---|
-| Purpose | Chat-first follow-up after first answer |
-| Phone / Desktop | Thread fills **available shell/workspace height**; composer docked in workspace; thread region-scrolls |
+| Purpose | Ask a Question — answered: chat follow-up after the first ruling, with the attached cards and Edit cards / Start over beside the title (REQ-206, REQ-075) |
+| Phone / Desktop | Thread fills **available shell/workspace height**; composer (the one-pill question box with the send pill, REQ-206) docked in workspace; thread region-scrolls. The title row carries **✎ Edit cards** and **↺ Start over** at its right once a ruling exists; the thread opens with the player's question as a right-aligned bubble (REQ-025), then the judge's messages, with an attached-card name rendered as a tappable chip when it matches |
 | Fit | No page scroll; thread is the scroll region (DEC-127/131) |
 | Rail clearance | The corner rail participates in layout (`.portal-menu-rail` is `position: relative`, giving the header's left column a real 44px band), so the first element under the header needs **no compensating clearance**. `.adaptive-context-trigger`'s `margin-top: calc(2.75rem - var(--layout-panel-padding))` is retired; spacing is plain `--layout-surface-gap` — measured 8px at 390x844 and 16px at 1440x900, with the rail's bottom 12px / 32px above View Context and no overlap. Do not reintroduce a rail-sized clearance constant here (ui-review, 2026-08-11) |
-| Notes | DEC-118, DEC-127, DEC-131, REQ-139 |
+| Notes | DEC-118, DEC-127, DEC-131, REQ-139, REQ-025, REQ-075, REQ-206 |
 
 #### In-Depth — Game context
 
@@ -197,8 +209,9 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Purpose | On-device card capture into a zone |
 | Phone | Camera frame grows to fill **available viewport height** in the scan chrome (DEC-090); overlays stay non-overlapping. Scan review bubble: card images size to their list-row width under DEC-160 (they are no longer pixel-capped at 92×128px); the review list keeps its own vertical region scroll |
 | Desktop/tablet | Same fill intent inside scan chrome; not a reason to widen unrelated suite shell; same review-list sizing rule |
-| Fit | Scan UI is its own full-bleed workspace; region overlays only. The review list region-scrolls — larger images mean more scrolling, which is accepted (DEC-160) — but the review bubble must not displace or overlap the camera frame (DEC-090/REQ-129) |
-| Notes | DEC-090, DEC-160, REQ-129, DEC-052 family — do not re-layout scanner internals from generic “stretch” feedback. Scan review was outside `ui-review`'s original scope and is affected only because `ScanReviewBubble` consumes the shared `CardPresentation`; the density trade is documented in DEC-160. **Verify live at 390×844**: if the enlarged review bubble starves the camera frame, record a bounded image cap on this row — never fork the shared component |
+| Fit | Scan UI is its own full-bleed workspace; region overlays only. The review list region-scrolls — larger images mean more scrolling, which is accepted (DEC-160) — but the count pill must not displace or overlap the camera frame (DEC-090/REQ-129) |
+| Chrome | A square ✕ exit box sits above the camera's top-right corner on every host (accessible name "Exit scan"); the count pill (and, when open, its caution note) sits beneath it, non-overlapping; the opt-in Debug panel keeps its own bottom-left placement with a themed accent border (REQ-214); when the mockup's scanner page carries the hint line, one line of static text sits under the camera frame in the mockup's position — text, not a control, never overlapping the camera frame, the count pill or the review list (REQ-214, REQ-070) |
+| Notes | DEC-090, DEC-160, REQ-129, DEC-052 family, REQ-214 — do not re-layout scanner internals from generic “stretch” feedback. Scan review was outside `ui-review`'s original scope and is affected only because `ScanReviewBubble` consumes the shared `CardPresentation`; the density trade is documented in DEC-160. **Verify live at 390×844**: if the enlarged count pill starves the camera frame, record a bounded image cap on this row — never fork the shared component |
 
 #### Player Life Tracker
 
@@ -206,8 +219,9 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 |---|---|
 | Purpose | Live table life/counters |
 | Phone / Desktop | **One-screen fit** for the life table at every player count (DEC-136); full-bleed destination chrome |
-| Fit | No page scroll for the life table; counter panel is full-height overlay (DEC-139) |
-| Notes | DEC-101, DEC-136, DEC-139 |
+| Fit | No page scroll for the life table; the counter panel is the content-sized shared sheet (REQ-082, REQ-208) |
+| Sheets | Game Setup fits one phone screen, with names behind an Edit names ▾ collapse and a Done › foot bar; a player's Counters panel is the content-sized shared sheet (REQ-082, REQ-208) with two tabs; Reset / New game confirm in the shared sheet (REQ-208). The table itself is pixel-untouched; every touching slice attaches the 390x844 and 1440x900 before/after pair (REQ-202) |
+| Notes | DEC-101, DEC-136, DEC-139 (retired by REQ-082 as amended), REQ-082 |
 
 #### Trade Balancer
 
@@ -217,18 +231,19 @@ Columns: **Purpose** · **Phone** · **Desktop/tablet** · **Fit** · **Notes / 
 | Phone | Shell/full destination width; the two sides are **tabs sharing one panel**, not stacked (REQ-204) — one side's list, search, scan control and total render at a time, while both side totals and the difference stay visible whichever tab is active; lists region-scroll. Superseded geometry: vertically stacked sides, measured 2026-09-24 at 390x844 with both sides empty as Side A heading y 305 / Side B heading y 529, i.e. 224px per side before a card is added |
 | Desktop/tablet | Shell 92%/48rem (or destination equivalent); paired sides use shell width, not unused ultra-wide bands; content-sized vertically (DEC-145) |
 | Fit | No page scroll for totals/primary actions; entry lists **and the printing picker** region-scroll |
-| Printing picker | Region-scrolls inside the side at about 5-6 rows, capped near `40vh`; the page never grows with a card's printing count (Sol Ring 128, corpus maximum 771). Row images lazy-load instead of all loading on open, a set-name/code filter appears above 8 printings, and the selected printing is scrolled into view on open (REQ-065, live observation 2026-09-09: 128 rows previously rendered 10,748 px tall on an 844 px viewport and pushed Side B to y≈11,500) |
-| Price freshness | Date-level copy only — `Prices as of 5 June 2026`, formatted from the artifact's ISO `snapshotDate` with no raw `T`, milliseconds, or zone suffix, so it never reads as a live quote. One line at 390x844 (`scrollWidth` 299 = `clientWidth`). An unparseable artifact value omits the line entirely rather than printing raw data (ui-review, 2026-08-11, REQ-145) |
-| Notes | DEC-087, DEC-145, REQ-145, REQ-065, REQ-204. Desktop/tablet paired sides are protected scope — the phone tab treatment must not reach the `768px`+ composition |
+| Balance | Two piles of gold on a glass panel (REQ-207) with the verdict line and dollar difference beneath; the whole screen fits 390×844 and 1440×900 with only the entry lists scrolling (REQ-215) |
+| Printing picker | Opens in the shared sheet (REQ-208); rows of set name, code, thumbnail, and Nonfoil / Foil price pills; the body region-scrolls at about 5-6 rows so the page never grows with a card's printing count (Sol Ring 128, corpus maximum 771); row images lazy-load; a set-name/code filter appears past 5 printings; the selected printing is scrolled into view on open (REQ-065; live observation 2026-09-09: 128 rows once rendered 10,748 px tall on an 844 px viewport) |
+| Price freshness | Date-level copy only — `Prices as of 5 June 2026`, formatted from the artifact's ISO `snapshotDate` with no raw `T`, milliseconds, or zone suffix, so it never reads as a live quote. One line at 390x844 (`scrollWidth` 299 = `clientWidth`). An unparseable artifact value omits the line entirely rather than printing raw data (ui-review, 2026-08-11, REQ-145); at `768px`+ it sits in the staged header's right-hand slot instead (REQ-215) |
+| Notes | DEC-087, DEC-145, REQ-145, REQ-065, REQ-204, REQ-215. Desktop/tablet paired sides are protected scope — the phone tab treatment must not reach the `768px`+ composition |
 
 #### Feedback modal
 
 | | |
 |---|---|
 | Purpose | Send feedback / bug report |
-| Phone / Desktop | Modal centered within viewport; width capped for readability (not full-bleed) |
+| Phone / Desktop | The shared sheet (REQ-208): bottom sheet below `600px`, floating centred card from `600px` up, width capped for readability; fixed head and foot, body scrolls |
 | Fit | Overlay; form body may region-scroll if needed |
-| Notes | DEC-105 |
+| Notes | DEC-105, REQ-087, REQ-208 |
 
 ## New-screen template
 

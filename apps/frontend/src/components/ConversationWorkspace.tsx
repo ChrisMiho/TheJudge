@@ -17,6 +17,12 @@ export type ConversationHistoryTriggerDescriptor = {
 type ConversationWorkspaceProps = {
   messages: ConversationMessage[];
   context?: ConversationContextDescriptor;
+  /** REQ-075/REQ-206: the conversation's attached cards, passed through to
+   * `ConversationThread` so an exact name match in the judge's message renders as a
+   * tappable chip. Omitted entirely by a workspace with no card-aware conversation
+   * (In-depth details' own chat keeps its existing frozen-context trigger unchanged). */
+  cards?: ReadonlyArray<{ cardId: string; name: string }>;
+  onCardChipActivate?: (cardId: string) => void;
   pendingFeedback?: ReactNode;
   error: string | null;
   canRetry: boolean;
@@ -33,6 +39,8 @@ type ConversationWorkspaceProps = {
 export function ConversationWorkspace({
   messages,
   context,
+  cards,
+  onCardChipActivate,
   pendingFeedback,
   error,
   canRetry,
@@ -63,18 +71,18 @@ export function ConversationWorkspace({
 
       {pendingFeedback}
 
-      <ConversationThread messages={messages} />
+      <ConversationThread messages={messages} cards={cards} onCardChipActivate={onCardChipActivate} />
 
       {newResponseControl}
 
       {error && (
-        <div className="motion-error space-y-2 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4">
-          <p className="text-sm text-rose-300">{error}</p>
+        <div className="motion-error aq-error">
+          <p>{error}</p>
           <button
             type="button"
+            className="btn"
             disabled={!canRetry}
             onClick={() => void onRetry()}
-            className="rounded-xl border border-rose-500/50 bg-rose-500/10 px-4 py-2 text-sm font-semibold text-rose-200 transition hover:bg-rose-500/20 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {retryLabel}
           </button>
@@ -87,14 +95,14 @@ export function ConversationWorkspace({
         <button
           type="button"
           onClick={onStartOver}
-          className="conversation-start-over self-start rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 text-xs font-semibold text-zinc-100 transition hover:bg-zinc-700/80 sm:self-stretch sm:text-sm"
+          className="conversation-start-over btn"
         >
           Start Over
         </button>
       )}
 
       {statusMessage && (
-        <p className="motion-success rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
+        <p className="motion-success aq-note">
           {statusMessage}
         </p>
       )}

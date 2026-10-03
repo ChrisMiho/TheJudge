@@ -15,15 +15,34 @@ import {
   expandSecondaryPlayerDetails,
   getUrlFromRequest,
   jsonResponse,
+  navigateToPath,
   selectZoneTab
 } from "./test/appTestHelpers";
 
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
 async function selectDestination(
   user: ReturnType<typeof userEvent.setup>,
   destinationName: string
 ): Promise<void> {
+  if (destinationName === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = destinationName === "Quick Question" ? "Ask a Question" : destinationName;
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name: destinationName }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
+}
+
+// REQ-206 (slice C, 2026-10-01): the Life Tracker -> Assistant roster-seed hand-off's
+// only live trigger now is Ask a Question's "Add in-depth details" carry (see
+// App.player-life-tracker-seed.test.tsx for the full positive/negative coverage of this
+// gesture; this file only needs the one carry to reach the seeded Assistant).
+async function carryIntoInDepthDetails(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Switch feature" }));
+  await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
+  await user.click(screen.getByRole("button", { name: "Add in-depth details" }));
 }
 
 function lifeCard(player: string): HTMLElement {
@@ -74,6 +93,8 @@ describe("Frontend - Portal", () => {
     vi.unstubAllGlobals();
   });
 
+  // REQ-206 (slice C, 2026-10-01): un-skipped — reaches the seeded Assistant via Ask a
+  // Question's "Add in-depth details" carry.
   it("carries a persisted live table through one-way Assistant handoff without cross-player or reverse-sync leaks", async () => {
     const user = userEvent.setup();
     const firstMount = render(<App />);
@@ -84,7 +105,7 @@ describe("Frontend - Portal", () => {
 
     await user.click(screen.getByRole("button", { name: "Open game setup" }));
     expect(screen.getByRole("dialog", { name: "Game Setup" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Edit player names" }));
+    await user.click(screen.getByRole("button", { name: "Edit names ▾" }));
     const playerOneName = screen.getByLabelText("Player 1 display name");
     await user.clear(playerOneName);
     await user.type(playerOneName, "Alice");
@@ -135,7 +156,7 @@ describe("Frontend - Portal", () => {
 
     const trackerSnapshot = localStorage.getItem(TRACKER_STORAGE_KEY);
     expect(trackerSnapshot).toBe(persistedBeforeReload);
-    await selectDestination(user, "In-Depth Question");
+    await carryIntoInDepthDetails(user);
 
     const assistantLife = await screen.findByLabelText("Player 1 life total");
     expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Alice");

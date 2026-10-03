@@ -1,9 +1,8 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearCardDetailCache } from "../lib/cardDetail";
-import type { ZoneCardItem } from "../types";
-import { ScanReviewBubble } from "./ScanReviewBubble";
+import { ScanReviewBubble, type ScanReviewEntry } from "./ScanReviewBubble";
 
 // The corner detail popup fetches its descriptive block on demand (REQ-175, FLOW-024);
 // stub a default response so opening it in these tests never hits the network.
@@ -34,167 +33,148 @@ afterEach(() => {
   clearCardDetailCache();
 });
 
-function makeZoneCard(overrides: Partial<ZoneCardItem> = {}): ZoneCardItem {
+let nextId = 1;
+function makeEntry(overrides: Partial<ScanReviewEntry> = {}): ScanReviewEntry {
   return {
-    cardId: "opt",
-    name: "Opt",
-    oracleText: "Scry 1, then draw a card.",
-    imageUrl: "",
-    manaCost: "{U}",
-    manaValue: 1,
-    typeLine: "Instant",
+    id: nextId++,
+    card: { cardId: "opt", name: "Opt", imageUrl: "" },
     colors: ["U"],
-    supertypes: [],
-    subtypes: [],
     ...overrides
   };
 }
 
 describe("Frontend - Card Scan", () => {
   describe("Review bubble", () => {
-    it("renders nothing when no cards have been added", () => {
-      const { container } = render(<ScanReviewBubble cards={[]} onRemove={vi.fn()} />);
+    it("renders nothing when the holding list is empty", () => {
+      const { container } = render(
+        <ScanReviewBubble entries={[]} onRemove={vi.fn()} destinationLabel="the Stack" />
+      );
       expect(container.firstChild).toBeNull();
     });
 
-    it("shows a count badge when cards are present", () => {
-      const cards = [makeZoneCard(), makeZoneCard({ cardId: "bolt", name: "Lightning Bolt" })];
-      render(<ScanReviewBubble cards={cards} onRemove={vi.fn()} />);
+    it("shows a count badge sized by the holding list", () => {
+      const entries = [makeEntry(), makeEntry({ card: { cardId: "bolt", name: "Lightning Bolt" } })];
+      render(<ScanReviewBubble entries={entries} onRemove={vi.fn()} destinationLabel="the Stack" />);
       expect(screen.getByRole("button", { name: /Scanned this session: 2/i })).toBeDefined();
     });
 
     it("expands to show card names on toggle", async () => {
       const user = userEvent.setup();
-      const cards = [makeZoneCard({ name: "Opt" })];
-      render(<ScanReviewBubble cards={cards} onRemove={vi.fn()} />);
+      const entries = [makeEntry({ card: { cardId: "opt", name: "Opt" } })];
+      render(<ScanReviewBubble entries={entries} onRemove={vi.fn()} destinationLabel="the Stack" />);
 
       await user.click(screen.getByRole("button", { name: /Scanned this session/i }));
 
       expect(screen.getByText("Opt")).toBeDefined();
     });
 
-    it("renders a compact scanned printing image with a corner detail popup, no duplicated name (DEC-151)", async () => {
+    it("names the destination the list joins when the scanner closes", async () => {
       const user = userEvent.setup();
-      const scannedUrl = "https://img/opt-print.jpg";
-      const cards = [makeZoneCard({ name: "Opt", imageUrl: scannedUrl })];
-      render(<ScanReviewBubble cards={cards} onRemove={vi.fn()} />);
+      render(
+        <ScanReviewBubble entries={[makeEntry()]} onRemove={vi.fn()} destinationLabel="Side A" />
+      );
 
       await user.click(screen.getByRole("button", { name: /Scanned this session/i }));
 
-      const img = screen.getByRole("img", { name: "Opt" });
-      expect(img.getAttribute("src")).toBe(scannedUrl);
-      expect(img).toHaveClass("h-auto", "w-full", "object-contain");
+      expect(screen.getByText("Joins Side A when you close the scanner")).toBeInTheDocument();
+    });
 
-      const entry = screen.getByRole("button", { name: /Remove Opt/i }).closest("li");
-      expect(entry).toHaveClass("card-identity-ring");
-      expect(entry).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
-      expect(within(entry as HTMLElement).queryByText("Opt")).not.toBeInTheDocument();
-      expect(
-        within(entry as HTMLElement).getByRole("button", { name: "Show details for Opt" })
-      ).toBeInTheDocument();
-
-      await user.click(
-        within(entry as HTMLElement).getByRole("button", { name: "Show details for Opt" })
+    it("opens the experimental-feature caution pop-up and dismisses it with Got it", async () => {
+      const user = userEvent.setup();
+      render(
+        <ScanReviewBubble entries={[makeEntry()]} onRemove={vi.fn()} destinationLabel="the Stack" />
       );
-      // DEC-158: the popup is portaled out of the review row rather than layered inside it,
-      // so the row still shows no duplicated name and the detail surface is not bound by the
-      // row's geometry.
-      expect(within(entry as HTMLElement).queryByTestId("card-detail-popup")).not.toBeInTheDocument();
-      expect(within(entry as HTMLElement).queryByText("Opt")).not.toBeInTheDocument();
+
+      expect(screen.queryByText(/Card scanning is experimental/)).not.toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Card scanning is experimental" }));
+      // Look-matching pass (slice P): the pop-up's heading and body are now
+      // separate elements (`card-scan.html`'s `.caution-panel` shape), not one
+      // combined sentence.
+      expect(screen.getByRole("heading", { name: "Card scanning is experimental" })).toBeInTheDocument();
+      expect(screen.getByText(/isn't fully functioning yet/)).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Got it" }));
+      expect(screen.queryByText(/isn't fully functioning yet/)).not.toBeInTheDocument();
+    });
+
+    // The holding list is the mockup's `.review-bubble .list`: one row per card, a ringed 30x42
+    // thumbnail, the name, and Remove.
+    it("renders each held card as a ringed thumbnail row with its name and Remove", async () => {
+      const user = userEvent.setup();
+      const scannedUrl = "https://img/opt-print.jpg";
+      const entries = [makeEntry({ card: { cardId: "opt", name: "Opt", imageUrl: scannedUrl } })];
+      render(<ScanReviewBubble entries={entries} onRemove={vi.fn()} destinationLabel="the Stack" />);
+
+      await user.click(screen.getByRole("button", { name: /Scanned this session/i }));
+
+      const row = screen.getByRole("button", { name: /Remove Opt/i }).closest(".row") as HTMLElement;
+      const thumb = within(row).getByRole("button", { name: "Show details for Opt" });
+      expect(thumb.querySelector("img")?.getAttribute("src")).toBe(scannedUrl);
+      expect(thumb).toHaveClass("thumb", "card-identity-ring");
+      expect(thumb).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
+      expect(within(row).getByText("Opt")).toBeInTheDocument();
+
+      // A tap on the thumbnail opens the shared card detail popup (DEC-151), portaled out of the row.
+      await user.click(thumb);
+      expect(within(row).queryByTestId("card-detail-popup")).not.toBeInTheDocument();
       expect(within(screen.getByTestId("card-detail-popup")).getByText("Opt")).toBeInTheDocument();
     });
 
-    it("uses a 320px viewport-capped panel with an internally scrolling list", async () => {
+    it("lists the held cards in one scrolling panel under the count pill", async () => {
       const user = userEvent.setup();
-      const cards = [
-        makeZoneCard(),
-        makeZoneCard({ cardId: "bolt", name: "Lightning Bolt" }),
-        makeZoneCard({ cardId: "ponder", name: "Ponder" })
+      const entries = [
+        makeEntry({ card: { cardId: "opt", name: "Opt" } }),
+        makeEntry({ card: { cardId: "bolt", name: "Lightning Bolt" } }),
+        makeEntry({ card: { cardId: "ponder", name: "Ponder" } })
       ];
-      render(<ScanReviewBubble cards={cards} onRemove={vi.fn()} />);
+      render(<ScanReviewBubble entries={entries} onRemove={vi.fn()} destinationLabel="the Stack" />);
 
       await user.click(screen.getByRole("button", { name: /Scanned this session/i }));
 
       const heading = screen.getByText("Added this session");
-      const panel = heading.parentElement;
-      expect(panel).toHaveClass(
-        "flex",
-        "w-80",
-        "max-w-[calc(100vw-1.5rem)]",
-        "max-h-[calc(100dvh-6.25rem)]"
-      );
-
-      const list = heading.nextElementSibling;
-      expect(list).toHaveClass("min-h-0", "overflow-y-auto");
+      expect(heading.closest(".list")).not.toBeNull();
+      expect(heading.closest(".review-bubble")).toHaveAttribute("data-open", "true");
+      expect(heading.closest(".list")?.querySelectorAll(".row")).toHaveLength(3);
     });
 
-    it("renders a full-width name-only fallback and keeps Remove usable when imageUrl is empty (D3)", async () => {
+    it("keeps Remove usable when a held card has no image (D3): the row shows the name only", async () => {
       const user = userEvent.setup();
-      const cards = [
-        makeZoneCard({
-          name: "Opt",
-          imageUrl: "",
-          manaValue: 0,
-          supertypes: ["Legendary"],
-          subtypes: ["Wizard"]
-        })
-      ];
-      render(<ScanReviewBubble cards={cards} onRemove={vi.fn()} />);
+      const entries = [makeEntry({ card: { cardId: "opt", name: "Opt", imageUrl: "" } })];
+      render(<ScanReviewBubble entries={entries} onRemove={vi.fn()} destinationLabel="the Stack" />);
 
       await user.click(screen.getByRole("button", { name: /Scanned this session/i }));
 
-      expect(screen.queryByRole("img")).toBeNull();
-      const fallback = screen.getByTestId("card-presentation-fallback");
-      expect(fallback).toHaveClass("w-full");
-      expect(within(fallback).getByText("Opt")).toBeInTheDocument();
-      // D3: the fallback shows the card name only — no descriptive fields, no fetch.
-      expect(within(fallback).queryByText("Instant")).not.toBeInTheDocument();
-      expect(within(fallback).queryByText("Scry 1, then draw a card.")).not.toBeInTheDocument();
+      expect(document.querySelector(".review-bubble img")).toBeNull();
       expect(fetch).not.toHaveBeenCalled();
 
       const remove = screen.getByRole("button", { name: /Remove Opt/i });
-      const entry = remove.closest("li");
+      const row = remove.closest(".row") as HTMLElement;
       expect(remove).toBeEnabled();
-      expect(entry).toHaveClass("card-identity-ring");
-      expect(entry).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
+      expect(within(row).getByText("Opt")).toBeInTheDocument();
+      expect(row.querySelector(".thumb")).toHaveClass("card-identity-ring");
+      expect(row.querySelector(".thumb")).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
     });
 
-    it("replaces a failed image with the metadata fallback without losing Remove", async () => {
-      const user = userEvent.setup();
-      render(
-        <ScanReviewBubble
-          cards={[makeZoneCard({ imageUrl: "https://img/opt-print.jpg" })]}
-          onRemove={vi.fn()}
-        />
-      );
-
-      await user.click(screen.getByRole("button", { name: /Scanned this session/i }));
-      fireEvent.error(screen.getByRole("img", { name: "Opt" }));
-
-      expect(screen.queryByRole("img")).not.toBeInTheDocument();
-      expect(screen.getByTestId("card-presentation-fallback")).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: /Remove Opt/i })).toBeEnabled();
-    });
-
-    it("uses accent palette tokens for the count badge, not a fixed hue", () => {
-      const cards = [makeZoneCard()];
-      render(<ScanReviewBubble cards={cards} onRemove={vi.fn()} />);
+    it("the count pill and caution triangle sit in the frame's top-right, beside each other", () => {
+      render(<ScanReviewBubble entries={[makeEntry()]} onRemove={vi.fn()} destinationLabel="the Stack" />);
 
       const badge = screen.getByRole("button", { name: /Scanned this session/i });
-      expect(badge).toHaveClass("bg-accent/90", "text-accent-contrast");
-      expect(badge.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
+      expect(badge).toHaveClass("pill");
+      const corner = badge.closest(".vf-top-right");
+      expect(corner).not.toBeNull();
+      expect(corner).toContainElement(screen.getByRole("button", { name: "Card scanning is experimental" }));
     });
 
-    it("calls onRemove with the instanceId of the removed card", async () => {
+    it("calls onRemove with the holding-list id of the removed entry", async () => {
       const user = userEvent.setup();
       const onRemove = vi.fn();
-      const cards = [makeZoneCard({ cardId: "opt", name: "Opt", instanceId: "iid-opt" })];
-      render(<ScanReviewBubble cards={cards} onRemove={onRemove} />);
+      const entry = makeEntry({ card: { cardId: "opt", name: "Opt" } });
+      render(<ScanReviewBubble entries={[entry]} onRemove={onRemove} destinationLabel="the Stack" />);
 
       await user.click(screen.getByRole("button", { name: /Scanned this session/i }));
       await user.click(screen.getByRole("button", { name: /Remove Opt/i }));
 
-      expect(onRemove).toHaveBeenCalledWith("iid-opt");
+      expect(onRemove).toHaveBeenCalledWith(entry.id);
     });
   });
 });

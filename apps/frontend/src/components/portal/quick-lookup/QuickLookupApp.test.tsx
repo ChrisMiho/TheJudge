@@ -48,26 +48,29 @@ function simpleCard(cardId: string, name: string): CardFixture {
   };
 }
 
-// REQ-167: enough distinct cards to exercise the 5-card cap and a 6th blocked add.
+// REQ-167 (amended): enough distinct cards to exercise the 10-card cap and an 11th
+// blocked add.
 const giantGrowth = simpleCard("oracle-giant-growth", "Giant Growth");
 const doomBlade = simpleCard("oracle-doom-blade", "Doom Blade");
 const brainstorm = simpleCard("oracle-brainstorm", "Brainstorm");
 const wrathOfGod = simpleCard("oracle-wrath-of-god", "Wrath of God");
-const allLookupCards = [lightningBolt, counterspell, giantGrowth, doomBlade, brainstorm, wrathOfGod];
-
-const coreTopics = [
-  {
-    id: "stack-and-priority",
-    title: "Stack and Priority",
-    ruleNumbers: ["117.1", "405.1"],
-    excerpt: "Players use priority to add spells and abilities to the stack."
-  },
-  {
-    id: "combat",
-    title: "Combat",
-    ruleNumbers: ["506.1"],
-    excerpt: "Combat proceeds through five steps."
-  }
+const shock = simpleCard("oracle-shock", "Shock");
+const divination = simpleCard("oracle-divination", "Divination");
+const terror = simpleCard("oracle-terror", "Terror");
+const healingSalve = simpleCard("oracle-healing-salve", "Healing Salve");
+const opt = simpleCard("oracle-opt", "Opt");
+const allLookupCards = [
+  lightningBolt,
+  counterspell,
+  giantGrowth,
+  doomBlade,
+  brainstorm,
+  wrathOfGod,
+  shock,
+  divination,
+  terror,
+  healingSalve,
+  opt
 ];
 
 const scrollIntoView = vi.fn();
@@ -152,9 +155,6 @@ function appFetchMock(
     if (url === "/data/cardMetadata.json") {
       return Promise.resolve(jsonResponse(cardMetadata.map(toSlimMetadata)));
     }
-    if (url === "/data/gameRulesCoreTopics.json") {
-      return Promise.resolve(jsonResponse(coreTopics));
-    }
     const cardDetailResponse = cardDetailResponseFor(url, cardMetadata);
     if (cardDetailResponse) {
       return Promise.resolve(cardDetailResponse);
@@ -173,12 +173,14 @@ function appFetchMock(
   });
 }
 
-async function openGeneralRulesTopics(
-  user: ReturnType<typeof userEvent.setup>
-): Promise<void> {
-  await user.click(
-    await screen.findByRole("heading", { name: "General rules topics" })
-  );
+/** Look-matching pass (slice M), requirement 1: the card search now opens from the
+ * "＋ Add card" chip instead of sitting permanently visible. A no-op once already open,
+ * so a sequence of several adds (REQ-167) takes one open, not one per card. */
+async function openCardSearch(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  if (screen.queryByRole("textbox", { name: "Card search" })) {
+    return;
+  }
+  await user.click(screen.getByRole("button", { name: "Add card" }));
 }
 
 describe("Frontend - Quick Lookup", () => {
@@ -197,9 +199,6 @@ describe("QuickLookupApp", () => {
         if (url === "/data/cardMetadata.json") {
           return Promise.resolve(jsonResponse([lightningBolt, counterspell].map(toSlimMetadata)));
         }
-        if (url === "/data/gameRulesCoreTopics.json") {
-          return Promise.resolve(jsonResponse(coreTopics));
-        }
         const cardDetailResponse = cardDetailResponseFor(url, [lightningBolt, counterspell]);
         if (cardDetailResponse) {
           return Promise.resolve(cardDetailResponse);
@@ -209,138 +208,42 @@ describe("QuickLookupApp", () => {
     );
   });
 
-  it("renders the confirmed guidance and orders card, question, then collapsed general topics", async () => {
+  it("renders the Ask a Question title with Add card/Scan beside it, then the card search, then the question box — and no General rules topics panel (REQ-079 retired)", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
 
-    expect(screen.queryByText("Browse core rules topics")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Scan a card" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "General rules topics" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/Choose a topic to start a question/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /^Add .* to question$/ })).not.toBeInTheDocument();
 
-    const cardLabel = screen.getByText("Optional cards").closest("label");
-    expect(cardLabel).not.toBeNull();
-    expect(cardLabel).toHaveTextContent(
-      "Optional cards — Add up to 5 cards for context, or ask any Magic related question."
-    );
+    // The card search is collapsed behind "＋ Add card" until opened.
+    expect(screen.queryByRole("textbox", { name: "Card search" })).not.toBeInTheDocument();
+    await openCardSearch(user);
 
-    const cardSection = cardLabel!.closest("section");
-    const questionForm = screen.getByRole("textbox", { name: "Magic question" }).closest("form");
-    const topicsHeading = await screen.findByRole("heading", {
-      name: "General rules topics"
-    });
-    const topicsDisclosure = topicsHeading.closest("details");
+    const cardSection = screen.getByRole("textbox", { name: "Card search" }).closest("section");
+    const composerPill = screen.getByTestId("composer-pill");
 
     expect(cardSection).not.toBeNull();
-    expect(questionForm).not.toBeNull();
-    expect(topicsDisclosure).not.toBeNull();
-    expect(
-      cardSection!.compareDocumentPosition(questionForm!) & Node.DOCUMENT_POSITION_FOLLOWING
-    ).toBeTruthy();
-    expect(
-      questionForm!.compareDocumentPosition(topicsDisclosure!) & Node.DOCUMENT_POSITION_FOLLOWING
-    ).toBeTruthy();
-    expect(topicsDisclosure).not.toHaveAttribute("open");
-    expect(screen.getByText("Choose a topic to start a question without calling the model.")).not.toBeVisible();
-
-    await user.click(topicsHeading);
-
-    expect(topicsDisclosure).toHaveAttribute("open");
-    expect(screen.getByText("Choose a topic to start a question without calling the model.")).toBeVisible();
-    expect(screen.getByRole("heading", { name: "Stack and Priority" })).toBeVisible();
+    expect(cardSection!.compareDocumentPosition(composerPill) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    // The whole pre-submit column is the mockup's `.qq`, which flips to the strip while searching.
+    expect(cardSection!.closest(".qq")).toHaveAttribute("data-searching", "true");
   });
 
-  it("shows one topic excerpt at a time and keeps action clicks from toggling the row", async () => {
-    const user = userEvent.setup();
+  it("makes no request for core topics and keeps the locked topic out of the draft (REQ-079 retired)", async () => {
     render(<QuickLookupApp />);
-    await openGeneralRulesTopics(user);
+    await screen.findByRole("textbox", { name: "Magic question" });
 
-    const stackHeading = await screen.findByRole("heading", { name: "Stack and Priority" });
-    const combatHeading = screen.getByRole("heading", { name: "Combat" });
-    const stackDisclosure = stackHeading.closest("details");
-    const combatDisclosure = combatHeading.closest("details");
-    const stackAction = screen.getByRole("button", { name: "Add Stack and Priority to question" });
-
-    expect(stackHeading).toBeVisible();
-    expect(stackHeading.closest("summary")).toBeVisible();
-    expect(stackAction).toBeVisible();
-    expect(stackDisclosure).not.toHaveAttribute("open");
-    expect(combatDisclosure).not.toHaveAttribute("open");
-    expect(screen.getByText(coreTopics[0].excerpt)).not.toBeVisible();
-    expect(screen.getByText(coreTopics[1].excerpt)).not.toBeVisible();
-
-    await user.click(stackAction);
-
-    expect(stackDisclosure).not.toHaveAttribute("open");
-    expect(fetch).toHaveBeenCalledTimes(2);
-
-    await user.click(stackHeading);
-
-    expect(stackDisclosure).toHaveAttribute("open");
-    expect(screen.getByText(coreTopics[0].excerpt)).toBeVisible();
-
-    await user.click(combatHeading);
-
-    expect(stackDisclosure).not.toHaveAttribute("open");
-    expect(combatDisclosure).toHaveAttribute("open");
-    expect(screen.getByText(coreTopics[0].excerpt)).not.toBeVisible();
-    expect(screen.getByText(coreTopics[1].excerpt)).toBeVisible();
-  });
-
-  it("locks, swaps, removes, and composes a topic without overwriting textarea text", async () => {
-    const user = userEvent.setup();
-    const onSubmit = vi.fn();
-    render(<QuickLookupApp onSubmit={onSubmit} />);
-    await openGeneralRulesTopics(user);
-
-    const questionInput = screen.getByRole("textbox", { name: "Magic question" });
-    await user.type(questionInput, "Keep this detail");
-    await user.click(
-      await screen.findByRole("button", { name: "Add Stack and Priority to question" })
-    );
-
-    expect(screen.getByText("Tell me about Stack and Priority.")).toBeInTheDocument();
-    expect(questionInput).toHaveValue("Keep this detail");
-    expect(questionInput).toHaveAttribute(
-      "placeholder",
-      "Add anything specific — or leave this blank and just ask."
-    );
-    expect(document.activeElement).toBe(questionInput);
-    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "smooth", block: "center" });
-
-    await user.click(screen.getByRole("button", { name: "Add Combat to question" }));
-
-    expect(screen.queryByText("Tell me about Stack and Priority.")).not.toBeInTheDocument();
-    expect(screen.getByText("Tell me about Combat.")).toBeInTheDocument();
-    expect(questionInput).toHaveValue("Keep this detail");
-
-    await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
-    expect(onSubmit).toHaveBeenLastCalledWith("Tell me about Combat. Keep this detail", []);
-
-    await user.clear(questionInput);
-    await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
-    expect(onSubmit).toHaveBeenLastCalledWith("Tell me about Combat.", []);
-
-    await user.click(screen.getByRole("button", { name: "Remove Combat topic" }));
-
-    expect(screen.queryByText("Tell me about Combat.")).not.toBeInTheDocument();
-    expect(questionInput).toHaveAttribute("placeholder", "What would you like to know?");
-    expect(screen.getByRole("button", { name: "Ask TheJudge" })).toBeDisabled();
-  });
-
-  it("uses non-animated scrolling when reduced motion is preferred", async () => {
-    const user = userEvent.setup();
-    vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: true })));
-    render(<QuickLookupApp />);
-    await openGeneralRulesTopics(user);
-
-    await user.click(
-      await screen.findByRole("button", { name: "Add Stack and Priority to question" })
-    );
-
-    expect(scrollIntoView).toHaveBeenCalledWith({ behavior: "auto", block: "center" });
+    const fetched = (fetch as unknown as ReturnType<typeof vi.fn>).mock.calls.map(([input]) => String(input));
+    expect(fetched.some((url) => url.includes("gameRulesCoreTopics"))).toBe(false);
   });
 
   it("resolves one card from autocomplete and supports removal", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
+    await openCardSearch(user);
 
     const searchInput = screen.getByRole("textbox", { name: "Card search" });
     await user.type(searchInput, "lig");
@@ -356,32 +259,41 @@ describe("QuickLookupApp", () => {
     await user.click(screen.getByRole("button", { name: "Show details for Lightning Bolt" }));
     expect(await screen.findByText(lightningBolt.oracleText!)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Close details for Lightning Bolt" }));
-    expect(screen.getByRole("heading", { name: "General rules topics" })).toBeVisible();
-    await openGeneralRulesTopics(user);
-    expect(screen.getByRole("heading", { name: "Stack and Priority" })).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Remove Lightning Bolt" }));
 
     expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
-    expect(await screen.findByRole("heading", { name: "Stack and Priority" })).toBeInTheDocument();
+  });
+
+  it("lists matches from the first character typed in the Add-card search (REQ-167)", async () => {
+    const user = userEvent.setup();
+    render(<QuickLookupApp />);
+    await openCardSearch(user);
+
+    await user.type(screen.getByRole("textbox", { name: "Card search" }), "l");
+
+    expect(await screen.findByRole("button", { name: "Lightning Bolt" })).toBeInTheDocument();
   });
 
   it("shows the shared no-match copy for a three-character query", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
+    await openCardSearch(user);
 
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "zzz");
 
     expect(await screen.findByText(NO_MATCH_COPY)).toBeInTheDocument();
   });
 
-  it("uses accent palette tokens for the Scan and Ask controls, not a fixed hue", async () => {
+  it("uses palette-driven styling for the Scan and Ask controls, not a fixed hue (look-matching pass, slice M)", async () => {
     render(<QuickLookupApp />);
 
     const scanButton = screen.getByRole("button", { name: "Scan a card" });
     const askButton = screen.getByRole("button", { name: "Ask TheJudge" });
-    expect(scanButton).toHaveClass("border-accent/70", "bg-accent/15", "text-accent-soft");
-    expect(askButton).toHaveClass("from-accent", "to-accent-strong", "text-accent-contrast");
+    // Restyled to `.icon-chip`/`.send-pair` (flow.css), which read the active palette's
+    // CSS custom properties (`--accent`/`--accent-soft`/`--accent-strong`) rather than a
+    // fixed Tailwind hue utility.
+    expect(scanButton).toHaveClass("icon-chip");
     expect(scanButton.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
     expect(askButton.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
   });
@@ -413,27 +325,7 @@ describe("QuickLookupApp", () => {
     await user.clear(questionInput);
     await user.type(questionInput, "a".repeat(301));
     expect(questionInput).toHaveValue("a".repeat(300));
-    expect(screen.getByText("300/300")).toBeInTheDocument();
-    expect(submitButton).toBeEnabled();
-    await openGeneralRulesTopics(user);
-
-    // The counter and the gate measure the editable textarea, so a locked topic neither
-    // inflates the visible count nor blocks a full-length question. The submitted string
-    // is still the composed pill phrase plus the trimmed text, and may exceed 300.
-    await user.click(
-      await screen.findByRole("button", { name: "Add Stack and Priority to question" })
-    );
-    expect(screen.getByText("300/300")).toBeInTheDocument();
-    expect(submitButton).toBeEnabled();
-
-    await user.click(submitButton);
-    expect(onSubmit).toHaveBeenLastCalledWith(
-      `Tell me about Stack and Priority. ${"a".repeat(300)}`,
-      []
-    );
-
-    await user.click(screen.getByRole("button", { name: "Remove Stack and Priority topic" }));
-    expect(screen.getByText("300/300")).toBeInTheDocument();
+    expect(screen.getByText("300 / 300")).toBeInTheDocument();
     expect(submitButton).toBeEnabled();
 
     await user.click(submitButton);
@@ -443,47 +335,29 @@ describe("QuickLookupApp", () => {
   it("counts the editable text rather than the silent card fallback", async () => {
     const user = userEvent.setup();
     render(<QuickLookupApp />);
+    await openCardSearch(user);
 
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
     const questionInput = screen.getByRole("textbox", { name: "Magic question" });
-    expect(screen.getByText("0/300")).toBeInTheDocument();
+    // REQ-206: at 0 characters the box carries data-fill="0", which hides the count and the ring (flow.css).
+    expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "0");
 
     await user.type(questionInput, "x");
-    expect(screen.getByText("1/300")).toBeInTheDocument();
+    expect(screen.getByText("1 / 300")).toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "some");
 
     await user.clear(questionInput);
-    expect(screen.getByText("0/300")).toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "0");
     expect(screen.getByRole("button", { name: "Ask TheJudge" })).toBeEnabled();
-  });
-
-  it("keeps the visible count on raw text while topics are locked, swapped, and removed", async () => {
-    const user = userEvent.setup();
-    render(<QuickLookupApp />);
-    await openGeneralRulesTopics(user);
-
-    const questionInput = screen.getByRole("textbox", { name: "Magic question" });
-    await user.click(
-      await screen.findByRole("button", { name: "Add Stack and Priority to question" })
-    );
-    expect(screen.getByText("0/300")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Ask TheJudge" })).toBeEnabled();
-
-    await user.click(screen.getByRole("button", { name: "Add Combat to question" }));
-    expect(screen.getByText("0/300")).toBeInTheDocument();
-
-    await user.type(questionInput, "Keep this detail");
-    expect(screen.getByText("16/300")).toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Remove Combat topic" }));
-    expect(screen.getByText("16/300")).toBeInTheDocument();
   });
 
   it("submits a silent card-name fallback when only a card is attached", async () => {
     const user = userEvent.setup();
     const onSubmit = vi.fn();
     render(<QuickLookupApp onSubmit={onSubmit} />);
+    await openCardSearch(user);
 
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
@@ -503,9 +377,6 @@ describe("QuickLookupApp", () => {
       if (url === "/data/cardMetadata.json") {
         return Promise.resolve(jsonResponse([lightningBolt, counterspell].map(toSlimMetadata)));
       }
-      if (url === "/data/gameRulesCoreTopics.json") {
-        return Promise.resolve(jsonResponse(coreTopics));
-      }
       if (url === "http://localhost:3000/api/ask-ai") {
         return new Promise<Response>((resolve) => {
           resolveAskAi = resolve;
@@ -515,6 +386,11 @@ describe("QuickLookupApp", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
     render(<QuickLookupApp />);
+    // Look-matching pass (slice M): the card search lives beside the composer in one
+    // shared wrapper, independent of the submit state — opened once here, it stays
+    // available while the answer loads below, same as it did permanently before this
+    // slice.
+    await openCardSearch(user);
 
     await user.type(
       screen.getByRole("textbox", { name: "Magic question" }),
@@ -526,11 +402,6 @@ describe("QuickLookupApp", () => {
     expect(screen.queryByRole("textbox", { name: "Magic question" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Ask TheJudge" })).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Card search" })).toBeEnabled();
-    const topicsHeading = screen.getByRole("heading", { name: "General rules topics" });
-    expect(topicsHeading).toBeVisible();
-
-    await user.click(topicsHeading);
-    expect(screen.getByRole("heading", { name: "Stack and Priority" })).toBeVisible();
 
     await act(async () => {
       resolveAskAi?.(
@@ -556,7 +427,7 @@ describe("QuickLookupApp", () => {
     expect(screen.queryByText("Consulting the stack…")).not.toBeInTheDocument();
   });
 
-  it("runs a cardless assistant-first conversation and restores core topics on start over", async () => {
+  it("runs a cardless conversation (question shown first, REQ-025) and clears the question on start over", async () => {
     const user = userEvent.setup();
     const fetchMock = appFetchMock(["First lookup answer", "Follow-up lookup answer"]);
     vi.stubGlobal("fetch", fetchMock);
@@ -568,7 +439,7 @@ describe("QuickLookupApp", () => {
     expect(await screen.findByText("First lookup answer")).toBeInTheDocument();
     expect(screen.getAllByTestId("conversation-workspace")).toHaveLength(1);
     expect(screen.getByRole("log")).toHaveAttribute("aria-relevant", "additions text");
-    expect(screen.queryByText("How does priority work?")).not.toBeInTheDocument();
+    expect(screen.getByText("How does priority work?")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /View context:/ })).not.toBeInTheDocument();
     const initialAskRequest = fetchMock.mock.calls.find(([input]) =>
       String(input).endsWith("/api/ask-ai")
@@ -594,12 +465,10 @@ describe("QuickLookupApp", () => {
       ]
     });
 
-    await user.click(screen.getByRole("button", { name: "Start Over" }));
+    await user.click(screen.getByRole("button", { name: "Start over — clears the cards and the question" }));
 
     expect(screen.queryByText("First lookup answer")).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("");
-    expect(await screen.findByRole("heading", { name: "General rules topics" })).toBeVisible();
-    expect(screen.getByRole("heading", { name: "Stack and Priority" })).not.toBeVisible();
   });
 
   it("freezes an attached card for the thread and follow-ups, then clears it on start over", async () => {
@@ -607,13 +476,10 @@ describe("QuickLookupApp", () => {
     const fetchMock = appFetchMock(["Card lookup answer", "Card follow-up answer"]);
     vi.stubGlobal("fetch", fetchMock);
     render(<QuickLookupApp />);
+    await openCardSearch(user);
 
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
-    await openGeneralRulesTopics(user);
-    await user.click(
-      await screen.findByRole("button", { name: "Add Stack and Priority to question" })
-    );
     await user.type(screen.getByRole("textbox", { name: "Magic question" }), "What can this target?");
     await user.click(screen.getByRole("button", { name: "Ask TheJudge" }));
 
@@ -621,20 +487,19 @@ describe("QuickLookupApp", () => {
     expect(screen.getAllByTestId("conversation-workspace")).toHaveLength(1);
     expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
-    await user.click(
-      screen.getByRole("button", { name: "View context: Lightning Bolt" })
-    );
-    const contextDialog = screen.getByRole("dialog", { name: "Card context" });
-    // The frozen card inside View Context is the same consolidated shell-column image.
-    expect(contextDialog).toContainElement(screen.getByRole("img", { name: "Lightning Bolt" }));
+    // Look-matching pass (slice M), requirement 11: the "VIEW CONTEXT" trigger is
+    // retired here in favour of the CARDS thumbnail strip — a tap on the one thumbnail
+    // opens the same corner card-detail popup the stage uses.
+    await user.click(screen.getByRole("button", { name: "View Lightning Bolt" }));
+    expect(await screen.findByRole("heading", { name: "Lightning Bolt" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Close card context" }));
+    await user.click(screen.getByRole("button", { name: "Close details for Lightning Bolt" }));
     const initialAskRequest = fetchMock.mock.calls.find(([input]) =>
       String(input).endsWith("/api/ask-ai")
     );
     expect(JSON.parse(initialAskRequest?.[1]?.body as string)).toEqual({
       mode: "lookup",
-      question: "Tell me about Stack and Priority. What can this target?",
+      question: "What can this target?",
       cards: [toWireCard(lightningBolt)]
     });
 
@@ -651,67 +516,79 @@ describe("QuickLookupApp", () => {
       cards: [toWireCard(lightningBolt)]
     });
 
-    await user.click(screen.getByRole("button", { name: "Start Over" }));
+    await user.click(screen.getByRole("button", { name: "Start over — clears the cards and the question" }));
 
     expect(screen.queryByText("Card lookup answer")).not.toBeInTheDocument();
     expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Remove Lightning Bolt" })).not.toBeInTheDocument();
     expect(screen.getByRole("textbox", { name: "Card search" })).toHaveValue("");
     expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("");
-    expect(screen.queryByText("Tell me about Stack and Priority.")).not.toBeInTheDocument();
-    expect(await screen.findByRole("heading", { name: "General rules topics" })).toBeVisible();
   });
 
   describe("multi-card lookup (REQ-167)", () => {
     async function addCardByName(user: ReturnType<typeof userEvent.setup>, query: string, name: string): Promise<void> {
+      await openCardSearch(user);
       const searchInput = screen.getByRole("textbox", { name: "Card search" });
       await user.clear(searchInput);
       await user.type(searchInput, query);
       await user.click(await screen.findByRole("button", { name }));
     }
 
-    it("adds, previews, and removes more than one card via typed search", async () => {
+    it("adds and removes more than one card via typed search, on the lit card stage", async () => {
       const user = userEvent.setup();
       vi.stubGlobal("fetch", appFetchMock([], allLookupCards));
       render(<QuickLookupApp />);
 
       await addCardByName(user, "lig", "Lightning Bolt");
+      expect(screen.getByTestId("card-stage-count")).toHaveAccessibleName("Card 1 of 1");
       await addCardByName(user, "cou", "Counterspell");
+      expect(screen.getByTestId("card-stage-count")).toHaveAccessibleName("Card 2 of 2");
 
+      // REQ-206: the stage shows the front card (the one just added) full size with its one
+      // neighbour peeking — the front card carries the Remove control.
+      expect(screen.getByRole("img", { name: "Counterspell" })).toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Show Lightning Bolt on the stage" })).toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Remove Counterspell" }));
+
+      expect(screen.queryByRole("img", { name: "Counterspell" })).not.toBeInTheDocument();
       expect(screen.getByRole("img", { name: "Lightning Bolt" })).toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Counterspell" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Remove Lightning Bolt" })).toBeInTheDocument();
-      expect(screen.getByRole("button", { name: "Remove Counterspell" })).toBeInTheDocument();
-
-      await user.click(screen.getByRole("button", { name: "Remove Lightning Bolt" }));
-
-      expect(screen.queryByRole("img", { name: "Lightning Bolt" })).not.toBeInTheDocument();
-      expect(screen.getByRole("img", { name: "Counterspell" })).toBeInTheDocument();
+      expect(screen.getByTestId("card-stage-count")).toHaveAccessibleName("Card 1 of 1");
     });
 
-    it("blocks an add past the 5-card cap and states the limit to the player", async () => {
+    it("blocks an add past the 10-card cap and states the limit to the player (REQ-167 amended)", async () => {
       const user = userEvent.setup();
       vi.stubGlobal("fetch", appFetchMock([], allLookupCards));
       render(<QuickLookupApp />);
 
-      await addCardByName(user, "lig", "Lightning Bolt");
-      await addCardByName(user, "cou", "Counterspell");
-      await addCardByName(user, "gia", "Giant Growth");
-      await addCardByName(user, "doo", "Doom Blade");
-      await addCardByName(user, "bra", "Brainstorm");
+      for (const [query, name] of [
+        ["lig", "Lightning Bolt"],
+        ["cou", "Counterspell"],
+        ["gia", "Giant Growth"],
+        ["doo", "Doom Blade"],
+        ["bra", "Brainstorm"],
+        ["wra", "Wrath of God"],
+        ["sho", "Shock"],
+        ["div", "Divination"],
+        ["ter", "Terror"],
+        ["hea", "Healing Salve"]
+      ] as const) {
+        await addCardByName(user, query, name);
+      }
 
-      expect(screen.queryByText(/You've added 5 cards/)).not.toBeInTheDocument();
+      expect(screen.getByTestId("card-stage-count")).toHaveAccessibleName("Card 10 of 10");
+      expect(screen.queryByText(/You've added 10 cards/)).not.toBeInTheDocument();
 
       const searchInput = screen.getByRole("textbox", { name: "Card search" });
       await user.clear(searchInput);
-      await user.type(searchInput, "wra");
-      await user.click(await screen.findByRole("button", { name: "Wrath of God" }));
+      await user.type(searchInput, "opt");
+      await user.click(await screen.findByRole("button", { name: "Opt" }));
 
       expect(
-        screen.getByText("You've added 5 cards, the most one Quick Question can use. Remove a card below to add another.")
+        screen.getByText("You've added 10 cards, the most one Quick Question can use. Remove a card below to add another.")
       ).toBeInTheDocument();
-      expect(screen.queryByRole("img", { name: "Wrath of God" })).not.toBeInTheDocument();
-      expect(screen.getAllByRole("button", { name: /^Remove / })).toHaveLength(5);
+      expect(screen.queryByRole("img", { name: "Opt" })).not.toBeInTheDocument();
+      expect(screen.getByTestId("card-stage-count")).toHaveAccessibleName("Card 10 of 10");
     });
 
     it("submits the full attached card list, freezes every card in context, and sends the frozen set on a follow-up", async () => {
@@ -733,12 +610,12 @@ describe("QuickLookupApp", () => {
         cards: [toWireCard(lightningBolt), toWireCard(counterspell)]
       });
 
-      const contextTrigger = screen.getByRole("button", { name: "View context: 2 cards" });
-      await user.click(contextTrigger);
-      const contextDialog = screen.getByRole("dialog", { name: "Card context" });
-      expect(contextDialog).toContainElement(screen.getByRole("img", { name: "Lightning Bolt" }));
-      expect(contextDialog).toContainElement(screen.getByRole("img", { name: "Counterspell" }));
-      await user.click(screen.getByRole("button", { name: "Close card context" }));
+      // Look-matching pass (slice M), requirement 11: both cards show in the CARDS strip,
+      // each its own tappable thumbnail opening the shared card-detail popup.
+      expect(screen.getByRole("button", { name: "View Lightning Bolt" })).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "View Counterspell" }));
+      expect(await screen.findByRole("heading", { name: "Counterspell" })).toBeInTheDocument();
+      await user.click(screen.getByRole("button", { name: "Close details for Counterspell" }));
 
       await user.type(screen.getByRole("textbox", { name: "Follow-up question" }), "What if both resolve?");
       await user.click(screen.getByRole("button", { name: "Send" }));

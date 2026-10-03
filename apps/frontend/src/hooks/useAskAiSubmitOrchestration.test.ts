@@ -338,7 +338,7 @@ describe("useAskAiSubmitOrchestration", () => {
       });
     });
 
-    it("seeds visibleMessages with assistant bubble on first decrypt success", async () => {
+    it("seeds visibleMessages with the user's question then the assistant bubble on first decrypt success (REQ-025)", async () => {
       createCorrelationIdMock.mockReturnValue("corr-1");
       vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ answer: "First answer" }, 200)));
 
@@ -359,7 +359,10 @@ describe("useAskAiSubmitOrchestration", () => {
         });
       });
 
-      expect(result.current.visibleMessages).toEqual([{ role: "assistant", content: "First answer" }]);
+      expect(result.current.visibleMessages).toEqual([
+        { role: "user", content: payloadFixture.question },
+        { role: "assistant", content: "First answer" }
+      ]);
       expect(result.current.isConversationActive).toBe(true);
       expect(result.current.frozenGameContext).toEqual(payloadFixture.gameContext);
     });
@@ -430,7 +433,7 @@ describe("useAskAiSubmitOrchestration", () => {
       expect(sentBody.gameContext).toEqual(frozenContext);
     });
 
-    it("appends user then assistant bubble on successful follow-up", async () => {
+    it("appends user then assistant bubble on successful follow-up, after the opening question bubble", async () => {
       createCorrelationIdMock.mockReturnValue("corr-1");
       vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ answer: "First answer" }, 200)));
 
@@ -456,6 +459,7 @@ describe("useAskAiSubmitOrchestration", () => {
       });
 
       expect(result.current.visibleMessages).toEqual([
+        { role: "user", content: payloadFixture.question },
         { role: "assistant", content: "First answer" },
         { role: "user", content: "What about priority?" },
         { role: "assistant", content: "Follow-up answer" }
@@ -574,6 +578,7 @@ describe("useAskAiSubmitOrchestration", () => {
 
       // After successful retry, bubble is appended
       expect(result.current.visibleMessages).toEqual([
+        { role: "user", content: payloadFixture.question },
         { role: "assistant", content: "First answer" },
         { role: "user", content: "What about priority?" },
         { role: "assistant", content: "Retry answer" }
@@ -734,7 +739,10 @@ describe("useAskAiSubmitOrchestration", () => {
       expect(firstSnapshot.conversationId).toEqual(expect.any(String));
       expect(firstSnapshot.conversationId.length).toBeGreaterThan(0);
       expect(firstSnapshot.hiddenInitialQuestion).toBe(payloadFixture.question);
-      expect(firstSnapshot.visibleMessages).toEqual([{ role: "assistant", content: "First answer" }]);
+      expect(firstSnapshot.visibleMessages).toEqual([
+        { role: "user", content: payloadFixture.question },
+        { role: "assistant", content: "First answer" }
+      ]);
 
       vi.stubGlobal("fetch", vi.fn(async () => jsonResponse({ answer: "Follow-up answer" }, 200)));
 
@@ -746,6 +754,7 @@ describe("useAskAiSubmitOrchestration", () => {
       const secondSnapshot = onConversationUpdated.mock.calls[1]?.[0];
       expect(secondSnapshot.conversationId).toBe(firstSnapshot.conversationId);
       expect(secondSnapshot.visibleMessages).toEqual([
+        { role: "user", content: payloadFixture.question },
         { role: "assistant", content: "First answer" },
         { role: "user", content: "Follow up?" },
         { role: "assistant", content: "Follow-up answer" }

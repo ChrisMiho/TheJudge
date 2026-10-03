@@ -11,6 +11,7 @@ import {
 } from "./lib/lifeTracker/state";
 import { saveTrackerState, TRACKER_STORAGE_KEY } from "./lib/lifeTracker/persistence";
 import { expandSecondaryPlayerDetails,
+  navigateToPath,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
@@ -40,9 +41,30 @@ function seededTrackerState() {
   return state;
 }
 
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
 async function selectDestination(user: ReturnType<typeof userEvent.setup>, name: string): Promise<void> {
+  if (name === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = name === "Quick Question" ? "Ask a Question" : name;
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
+}
+
+// REQ-206 (slice C, 2026-10-01): the Life Tracker -> Assistant roster-seed hand-off's
+// only live trigger now is Ask a Question's "Add in-depth details" carry — the Menu's
+// retired "In-Depth Question" row was the old one-hop gesture; this is the new one-hop
+// equivalent (Life Tracker -> Ask a Question -> Add in-depth details), narrowly tied to
+// the explicit carry button the same way the old gesture was narrowly tied to the Menu
+// row (see the negative tests above, unchanged: a deep link, browser Back, or a raw
+// route jump to `/in-depth` still never seeds).
+async function carryIntoInDepthDetails(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Switch feature" }));
+  await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
+  await user.click(screen.getByRole("button", { name: "Add in-depth details" }));
 }
 
 describe("Frontend - Portal", () => {
@@ -69,14 +91,16 @@ describe("Frontend - Portal", () => {
     vi.unstubAllGlobals();
   });
 
-  it("seeds a previously mounted Assistant only on the direct tracker-to-Assistant transition", async () => {
+  // REQ-206 (slice C, 2026-10-01): un-skipped — the hand-off's new trigger is Ask a
+  // Question's "Add in-depth details" carry (see `carryIntoInDepthDetails` above).
+  it("seeds a previously mounted Assistant only on the direct tracker-to-Assistant carry", async () => {
     const user = userEvent.setup();
     saveTrackerState(seededTrackerState());
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
     await selectDestination(user, "Life Tracker");
-    await selectDestination(user, "In-Depth Question");
+    await carryIntoInDepthDetails(user);
 
     expect(await screen.findByLabelText("Player 1 display name")).toHaveValue("Alice");
     expect(screen.getByLabelText("Player 1 life total")).toHaveValue("35");
@@ -133,13 +157,16 @@ describe("Frontend - Portal", () => {
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("");
   });
 
+  // REQ-206 (slice C, 2026-10-01): un-skipped — seeds via the carry, then exercises
+  // consume-once behavior via a later, unrelated raw route re-entry (never the carry
+  // again), which must not re-seed and so must not clobber the edit made in Assistant.
   it("consumes the seed once so later unrelated re-entry does not clobber Assistant edits", async () => {
     const user = userEvent.setup();
     saveTrackerState(seededTrackerState());
     saveActiveDestinationId("player-life-tracker");
     render(<App />);
 
-    await selectDestination(user, "In-Depth Question");
+    await carryIntoInDepthDetails(user);
     const nameInput = await screen.findByLabelText("Player 1 display name");
     await user.clear(nameInput);
     await user.type(nameInput, "Edited in Assistant");
@@ -149,6 +176,8 @@ describe("Frontend - Portal", () => {
     expect(screen.getByLabelText("Player 1 display name")).toHaveValue("Edited in Assistant");
   });
 
+  // REQ-206 (slice C, 2026-10-01): un-skipped — reaches the seeded, further-progressed
+  // wizard step via the carry.
   it("never writes Assistant edits back to the tracker snapshot", async () => {
     const user = userEvent.setup();
     saveTrackerState(seededTrackerState());
@@ -156,7 +185,7 @@ describe("Frontend - Portal", () => {
     saveActiveDestinationId("player-life-tracker");
     render(<App />);
 
-    await selectDestination(user, "In-Depth Question");
+    await carryIntoInDepthDetails(user);
     const lifeInput = await screen.findByLabelText("Player 1 life total");
     await user.clear(lifeInput);
     await user.type(lifeInput, "12");

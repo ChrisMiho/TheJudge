@@ -21,10 +21,10 @@
   REQ-028, REQ-029, REQ-030, REQ-031, REQ-032, REQ-033, REQ-045, REQ-056, REQ-058,
   REQ-061, REQ-069, REQ-070, REQ-093, REQ-094, REQ-095, REQ-100, REQ-106,
   REQ-110, REQ-121, REQ-130, REQ-132, REQ-136, REQ-137, REQ-138, REQ-139,
-  REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, FLOW-001, FLOW-002, FLOW-003,
-  FLOW-004, FLOW-005, FLOW-015, NFR-001, NFR-002, NFR-006, NFR-009
+  REQ-144, REQ-178, REQ-179, REQ-180, REQ-181, REQ-206, REQ-209, REQ-210, FLOW-001, FLOW-002,
+  FLOW-003, FLOW-004, FLOW-005, FLOW-015, NFR-001, NFR-002, NFR-006, NFR-009
 - Consumed but owned elsewhere (cited, not re-specified here): the shared
-  answered-conversation workspace, View Context overlay, history drawer,
+  answered-conversation workspace, View Context overlay, Question History,
   suite-wide card-detail popup, Menu rail (DEC-122), suite shell, and shared
   layout language live in `PRD/sections/shared-chrome/`; the camera scan input path
   (FLOW-006) lives in `PRD/sections/scan/`; the rules-retrieval and
@@ -38,7 +38,7 @@ The primary MTG Assistant loop — the destination a player opens to get a real
 ruling on a live board. Instead of one card and one question, In-Depth walks the
 player through a short staged wizard: set the game up (players, life, turn
 phase), confirm which zones matter, add the cards in each zone, optionally
-annotate them, then type a question and hit **Send Request**. Behind that button
+annotate them, then type a question and tap send. Behind that button
 runs the full Ask AI backend on its `mode: "game"` branch — the request carries a
 whole `GameContext`, the backend assembles one large prompt (general context,
 phase guidance, every populated zone with full card text, curated and retrieved
@@ -61,8 +61,26 @@ retrieval/combo machinery that other specs own.
   `in-depth`, DEC-094 / FLOW-010) reached through the shared Menu rail; it is the
   suite's primary MTG Assistant feature, not the whole app. The staged flow is a
   four-step wizard — **game context → zone confirmation → zone collection →
-  enrichment** — driven by a frontend state machine, then a submit that opens the
-  answered workspace. (FLOW-001, DEC-094)
+  enrichment**, presented as **In-depth details**' four stations (Game · Zones ·
+  Cards · Context, REQ-209) — driven by a frontend state machine, then a submit
+  that opens the answered workspace. (FLOW-001, DEC-094)
+- Built: a tappable progress rail (REQ-209) shows the four stations; a station
+  already reached (including the current one) stays tappable to return to.
+  Jumping to Context bounces back to Cards while any card carried from Ask a
+  Question is still unplaced, with a status flash naming why.
+  (`StationsRail.tsx`, REQ-209)
+- Built: cards carried from Ask a Question's "Add in-depth details" pill
+  (REQ-206) wait in a one-slot mailbox and are consumed once the walk naturally
+  reaches the Cards station (they do not skip Game or Zones). There, they are
+  placed one at a time — the card, "Which zone is it in?", a "card n of total"
+  counter, and "Leave this card out" — against every zone, not only the ones
+  picked at Zones; picking a zone adds it to the selection if it was not already
+  chosen. Nothing else on the Cards station renders, and Continue is unreachable,
+  until every carried card has a zone or is left out (REQ-018, REQ-206, REQ-209).
+  The pending queue is written into the existing mid-flight Draft slot (REQ-108)
+  alongside the rest of the staged state, so a reload mid-placement resumes
+  exactly where it left off. (`MtgAssistantApp.tsx`'s carry consumption and
+  placement handlers)
 - Built: each staged step renders the active step name as an eyebrow label above
   the step's own content, and a slim `TheJudge` / `MTG Assistant` brand block; the
   answered-state header stays brand-only with no step name. (DEC-067, REQ-045; the
@@ -121,9 +139,11 @@ retrieval/combo machinery that other specs own.
   add-player, and remove-last-player each meet a 44×44px touch target, the
   expander is a prominent triangle, and the add/remove pair reads `−` (remove)
   left / `+` (add) right. (DEC-091, REQ-069)
-- Built: the "Players in game" helper reads exactly `Tap ▾ to set names and life
-  totals — 2 players start at 20, 3+ at 40.`; the count-driven starting-life
-  behavior (2 → 20, 3+ → 40) is unchanged, this is copy only. (DEC-092, REQ-070)
+- Built: the "Players in game" helper reads as the In-depth details mockup's Game
+  station shows it (REQ-070's redesigned-screens exception; before this pass it
+  read exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at
+  40.`); the count-driven starting-life behavior (2 → 20, 3+ → 40) is unchanged,
+  this is copy only. (DEC-092, REQ-070)
 
 ### Step 2 — Zone confirmation
 
@@ -133,19 +153,22 @@ retrieval/combo machinery that other specs own.
   or off; selections are stored in `gameContext.selectedZones`, and at least one
   zone is required to continue. Phase defaults are UX hints, not legality rules.
   (REQ-016, DEC-024, DEC-035)
-- Built: the zone-confirmation helper reads exactly `Select all zones that apply
-  to your question.`; the prior turn-phase-defaults clause was intentionally
-  dropped. (DEC-092, REQ-070)
+- Built: the zone-confirmation helper reads as the In-depth details mockup's
+  Zones station shows it (REQ-070's redesigned-screens exception; before this
+  pass it read exactly `Select all zones that apply to your question.`). (DEC-092,
+  REQ-070)
 
 ### Step 3 — Zone collection
 
 - Built: for each selected zone the player adds card identities from local
   metadata search — search box says **Type to begin**, suggestions begin at 3
   characters, no-match shows **No matching card found**, and selecting a
-  suggestion opens a preview before an explicit Add. Stack cards preserve
-  bottom-to-top append order; a selected zone may hold zero cards individually,
-  but collection cannot continue until at least one selected zone contains a card.
-  (REQ-001, REQ-002, REQ-018, FLOW-001)
+  suggestion opens a preview before an explicit Add. Stack cards keep
+  bottom-to-top order — appended on add, then as the player reorders them; cards
+  carried from Ask a Question are each placed in a zone or left out before
+  collection can continue; a selected zone may hold zero cards individually, but
+  collection cannot continue until at least one selected zone contains a card.
+  (REQ-001, REQ-002, REQ-018, REQ-209, FLOW-001)
 - Built: zone collection shows a non-blocking nudge when the stack zone is
   selected but still empty and another selected zone already has a card — the
   player is not blocked from continuing, just prompted that the stack may be
@@ -153,20 +176,22 @@ retrieval/combo machinery that other specs own.
 - Built: the empty-state placeholder text (`Select a suggestion to preview and
   add a card to …`) is removed from zone-collection chrome; the search box and
   suggestion list are sufficient affordance on their own. (DEC-076, REQ-056)
-- Built: the stack has its own capture rules — append-only, newest card becomes
-  the top (`stack[0]` is the bottom, last element is the top, consistent across
-  UI, payload, and prompt builder), the add button reads **Begin stackening!**
-  when empty and **Add to Stack** otherwise, duplicates are blocked with a
-  "not supported yet" notice, and the stack is capped at 10 cards. The stack icon
-  shows a live count and opens a details panel listing cards bottom-to-top with
-  per-card remove and thumbnails-when-available. (DEC-004, DEC-005, DEC-006,
-  DEC-007, DEC-008, DEC-009, DEC-018, REQ-004, REQ-005, REQ-006, REQ-007, REQ-008,
-  REQ-009, REQ-010, FLOW-002, FLOW-004)
+- Built: the stack has its own capture rules — each add appends, so the newest
+  card becomes the top (`stack[0]` is the bottom, last element is the top,
+  consistent across UI, payload, and prompt builder); the player may then reorder
+  it by drag or Down / Up / To top, and the order shown is the order sent. The add
+  button reads **Begin stackening!** when empty and **Add to Stack** otherwise,
+  duplicates are blocked with a "not supported yet" notice, and the stack is
+  capped at 10 cards. The Stack tab shows a live count, and its shelf tags cards
+  BOTTOM … TOP, with per-card remove in the card menu. (DEC-004, DEC-005,
+  DEC-006, DEC-007, DEC-008, DEC-009, DEC-018, REQ-004, REQ-005, REQ-006, REQ-007,
+  REQ-008, REQ-009, REQ-010, REQ-209, FLOW-002, FLOW-004)
 - Built: added cards render in a horizontal left-to-right strip in add order with
-  horizontal region scroll (not document scroll), for every zone including stack;
-  each tile keeps Remove, stack-position label, and a card image sized to the
-  tile interior, with the corner detail popup as the read path. Non-stack cards
-  capture an owner. (DEC-151, DEC-160, REQ-130, REQ-058, FLOW-002)
+  horizontal region scroll (not document scroll), for every zone including stack,
+  with no row cap (REQ-056); each tile's **Card actions** button opens a menu
+  (Move to another zone, reorder, Card details, Remove — REQ-209) in place of a
+  direct Remove button, and the card image sizes to the tile interior. Non-stack
+  cards capture an owner. (DEC-151, DEC-160, REQ-130, REQ-058, REQ-209, FLOW-002)
 - Built: each `ZoneCardItem` carries a stable frontend-only `instanceId` assigned
   once at add time, so adding the same card twice to a non-stack zone yields two
   independent instances — removing or editing one leaves its siblings intact.
@@ -174,33 +199,47 @@ retrieval/combo machinery that other specs own.
   `buildAskAiRequest` serialization boundary so the `.strict()` payload schema is
   unchanged, and it never enables duplicate stack cards. (DEC-082, REQ-061)
 - Built: the camera scanner is an optional alternate input into the current zone
-  (owned by `sections/scan/`, FLOW-006): a confident lock auto-adds the scanned
-  card through the same add path (owner, duplicate-stack block, stack cap,
-  `ZoneCardItem` output). While scan is open, zone-collection search, the card
-  list, and outer staged-flow navigation are hidden; **Exit scan** returns to
-  manual collection. Scan resolves to oracle-level identity; the scanned
+  (owned by `sections/scan/`, FLOW-006): a confident lock holds the scanned card
+  in the scanner's own holding list, not the zone's card list — the same
+  duplicate-stack/stack-cap check a manual add runs is checked the instant the
+  card is recognised, against the zone's cards and anything already held.
+  Closing the scanner (**Exit scan**, a square ✕ box above the camera's
+  top-right corner) commits every held card through the same add path (owner,
+  `ZoneCardItem` output) in one step and returns to manual collection. While
+  scan is open, zone-collection search, the card list, and outer staged-flow
+  navigation are hidden. Scan resolves to oracle-level identity; the scanned
   printing's art rides as presentation only. (DEC-050 via scan spec, DEC-070,
-  REQ-061)
+  REQ-061, REQ-214)
 
 ### Step 4 — Enrichment
 
-- Built: a default card-by-card wizard (OK advances) with an optional **View all
-  cards** full-list edit mode builds one ordered enrichment list across all
-  populated zones. Per card the player may optionally add a caster, targets, a
-  freeform context note, and mana-spent context for stack entries; the note
-  placeholder names transient annotations (kicker/buyback paid, X value, counters
-  added this turn, tapped status, gained abilities). (REQ-017, DEC-028, FLOW-001)
+- Built: the Context station shows one compact sheet per card across all
+  populated zones, in one ordered list: the card's art at the left (210px desktop,
+  96px phone with the form below), a small `n / total` counter, and **Skip to
+  review** in the eyebrow. Fields are selects, not chips: Owner on every zone but
+  the Stack, Cast by on the Stack, Mana spent on every zone's card (a number box
+  prefilled with the printed mana value, hinting the printed cost, REQ-210), and one Targets picker on
+  every zone. The note is folded behind a slim **＋ Add a note** row (a card with a
+  note opens with it showing); its placeholder names transient annotations
+  (kicker/buyback paid, X value, counters added this turn, tapped status, gained
+  abilities). **Finish context · next: your question** leads to the review.
+  (REQ-017, REQ-021, REQ-209, FLOW-001)
 - Built: before submit, enrichment shows a pre-decrypt summary of which
   selected zones are populated and the fallback question that will be sent if
   the player leaves the question field blank. (DEC-028, REQ-011, REQ-017)
 - Built: targets use `ContextTarget` — player targets (`targetPlayer`), card
   targets (`zone` + `cardId` + `cardName`), `{ kind: "none" }`, and freeform
   (`targetDescription`); the public API never exposes the legacy `StackTarget`.
-  Card targets remain oracle-level even for duplicate instances. (DEC-026,
-  REQ-021, REQ-061)
+  Card targets remain oracle-level even for duplicate instances. The Context sheet
+  sets them through one Targets picker whose picks map onto these kinds — Just on
+  the board, All players, and Something else ride `other` with that text.
+  (DEC-026, REQ-021, REQ-061)
 - Built: mana-spent context is deterministic for every stack entry — omitted
   input falls back to `manaValue`, and the prompt emits mana-spent in stable
-  formatting. X-spell clarity is the primary motivation. (REQ-017)
+  formatting. X-spell clarity is the primary motivation. Every zone's card carries
+  the same optional box; a non-Stack value is sent and emitted only when the
+  player changes the prefilled printed value, so an untouched box leaves the
+  prompt unchanged. (REQ-017, REQ-210)
 - Built: In-Depth's game-context counter UI (surfaced in the roster, edited in
   the expanded secondary details) uses shared row patterns: poison, energy, and
   experience are content-sized bounded selects stacked vertically at every
@@ -211,10 +250,10 @@ retrieval/combo machinery that other specs own.
 
 ### Submit — Decrypt Stack
 
-- Built: the initial submit control's visible label is **Send Request**; its
-  accessible name retains Decrypt Stack / Ask semantics. Enrichment ready-state
-  copy points at the button when the optional question is blank. (DEC-153,
-  REQ-132, REQ-012)
+- Built: the initial submit control is the round send pill inside the question
+  box, with no visible text label; its accessible name retains Decrypt Stack /
+  Ask semantics. Enrichment ready-state copy points at the send when the
+  optional question is blank. (DEC-153, REQ-132, REQ-012, REQ-206)
 - Built: the optional question field accepts up to 300 characters of raw editable
   text (trimmed before submit). A blank trimmed question uses a zone-aware
   fallback in request/prompt logic — **Resolve the stack** when the stack zone has
@@ -235,14 +274,17 @@ retrieval/combo machinery that other specs own.
 - Built: while the decrypt request is in flight, the submit form is replaced by
   the `AskAiWaitingPanel` — a live elapsed timer with `aria-live` threshold
   messages at 0s / 3s / 8s / 15s / 25s / 40s (CSS-only motion) — while the card
-  list and wizard context above the form stay visible. (DEC-031, REQ-023)
+  list and wizard context above the form stay visible. It is drawn as the judge's
+  bubble under the colour's seal, each line inking itself in letter by letter.
+  (DEC-031, REQ-023)
 - Built: on the first success the enrichment submit form is replaced by the shared
   chat-first conversation workspace (owned by `sections/shared-chrome/`). The
-  first visible bubble is the assistant's answer; the initial user question is not
-  shown but rides in `conversationHistory`. The frozen game context is reachable
-  through a compact **View Context** trigger (phase + populated-zone count)
-  opening the read-only setup/zone/card/enrichment detail as an adaptive bottom
-  sheet / side drawer. (REQ-025, DEC-040, DEC-118)
+  thread opens with the player's question as sent (the fallback when the box was
+  blank) as a right-aligned bubble, then the assistant's answer; the question also
+  rides in `conversationHistory` exactly as before. The frozen game context is
+  reachable through a compact **View Context** trigger (phase + populated-zone
+  count) opening the read-only setup/zone/card/enrichment detail as an adaptive
+  bottom sheet / side drawer. (REQ-025, DEC-040, DEC-118)
 - Built: game context, zones, cards, and enrichment are **frozen** for the
   duration of the conversation; follow-ups are text-only in v1. The docked
   composer accepts up to 300 characters, shows an inline processing spinner while
@@ -257,15 +299,21 @@ retrieval/combo machinery that other specs own.
   turns; the current follow-up text goes in `question`, not duplicated in history.
   The backend inserts a `CONVERSATION HISTORY` section before `QUESTION`. History
   is ephemeral — no server-side session store — though the workspace's browser-
-  local history drawer (shared chrome) can persist and resume completed
+  local Question History (shared chrome) can persist and resume completed
   conversations. (REQ-027, DEC-038, DEC-039, FLOW-005)
-- Built: **Start Over** is visible once the first decrypt has succeeded and no
-  request is in flight. It clears the thread and returns to the game-context step,
-  clearing staged zones/cards/question/phase, but **preserves the player roster**
-  (count, names, life, poison/energy/experience, commander damage, custom
-  counters) so a game seeded from the Player Life Tracker is not wiped. A leaving
-  conversation with at least one answer auto-saves to completed history first.
-  (REQ-029, DEC-040)
+- Built: **↺ Start over** is visible once the first decrypt has succeeded and no
+  request is in flight. It clears the conversation thread and the staged
+  zones/cards/question/phase, and lands on a clean Ask a Question page
+  (`/quick-lookup`); In-depth details' next walk starts at station 1 once the
+  player returns. It **preserves the player roster** (count, names, life,
+  poison/energy/experience, commander damage, custom counters) so a game seeded
+  from the Player Life Tracker is not wiped. A leaving conversation with at
+  least one answer auto-saves to completed history first. (REQ-029, DEC-040,
+  REQ-206)
+- Built: **✎ Edit** sits beside View Context and ↺ Start over once a ruling
+  exists. It returns to the review with the game context, every card's details
+  and the question kept; the answered conversation is already saved to Question
+  History, and the next send starts a new conversation. (REQ-209)
 - Built: on any AI failure the app shows **Miho is working on it**, preserves game
   context / zones / cards / enrichment / question, keeps the previous successful
   answer visible, and offers a retry button on a 13-second cooldown. (DEC-014,
@@ -433,8 +481,9 @@ outcome-validated, not product truth.
   (DEC-046, REQ-022)
 - Combo variants: at most 5 selected per prompt — a relevance/noise cap
   independent of the 1,000,000-char prompt budget. (DEC-116, REQ-094, REQ-095)
-- Enrichment **View all cards** mode: at most 4 full-width edit rows per zone
-  before internal scroll. (DEC-076, REQ-056)
+- Review list: the former View all cards mode and its 4-row-per-zone scroll cap
+  are retired with it — the review lists every card's context in words, in page
+  flow, with no per-zone row cap. (REQ-017)
 - Zone-collection strip: fixed `w-40` / 160px tiles, image grows to fill the tile
   interior (≈92px → ≈144px) under DEC-160, horizontal region scroll. (DEC-151,
   DEC-160, REQ-130)
@@ -482,21 +531,24 @@ outcome-validated, not product truth.
   payload and LLM context. (DEC-035)
 - **Structured `gameStateNotes` sub-fields per feedback category — closed door.**
   DEC-043 made it a single freeform optional string. (DEC-043, REQ-031)
-- **The initial user question shown as a visible chat bubble — closed door.**
-  DEC-040 / REQ-025 hide it; it rides in `conversationHistory` only. (DEC-040,
-  REQ-025)
+- **The initial user question hidden from the thread — superseded.** DEC-040 kept
+  the thread opening on the answer alone; the `ui-reimagining-build` pass (REQ-025
+  as amended, 2026-10-01) shows the question first, as the owner's approved design
+  does. The request and history contract never changed. (DEC-040, REQ-025)
 - **`AskAiWaitingPanel` for follow-up turns — closed door.** DEC-041 replaced it
   with an inline composer spinner; the full panel shows only on the initial
   decrypt. (DEC-041, REQ-028)
 - **Start Over returning to the enrichment step with staged zones/cards preserved
-  — closed door.** REQ-029 now defines a full flow reset to the game-context step
-  that preserves only the player roster; the former "no history persisted after
-  start over" clause is also superseded by the browser-local history rules.
-  (REQ-029, DEC-124 via shared chrome)
+  — closed door.** REQ-029 now defines a full flow reset (to a clean Ask a
+  Question page since the `ui-reimagining-build` pass, REQ-206) that preserves
+  only the player roster; the former "no history persisted after start over"
+  clause is also superseded by the browser-local history rules. (REQ-029,
+  DEC-124 via shared chrome, REQ-206)
 - **Visible **Decrypt Stack** label on the initial submit control — closed door.**
-  DEC-153 made the visible label **Send Request** (the accessible name still reads
-  Decrypt Stack / Ask); the answered follow-up send stays arrow-only. (DEC-153,
-  REQ-132, REQ-012)
+  DEC-153 made the visible label **Send Request**; the `ui-reimagining-build` pass
+  (REQ-132 as amended, REQ-206) retires that visible label for the send pill the
+  accessible name retains Decrypt Stack / Ask semantics on. (DEC-153,
+  REQ-132, REQ-012, REQ-206)
 - **Two-column / four-visible-tile zone grid — closed door.** DEC-151 replaced it
   with the horizontal add-order strip. (DEC-151, REQ-130)
 - **Fixed `max-h-32` card-image cap and image-box-bound (`absolute inset-0`)
@@ -520,7 +572,7 @@ outcome-validated, not product truth.
   sampling (DEC-042 / REQ-027); answer-quality A/B on combo enrichment stays
   opt-in and informational, never a gate (DEC-161).
 - **Not owned here — consumed from other specs:** the shared answered-conversation
-  workspace, View Context overlay, history drawer, suite-wide card-detail popup,
+  workspace, View Context overlay, Question History, suite-wide card-detail popup,
   Menu rail, suite shell, mock-mode banner, routing, and the shared layout
   language are `sections/shared-chrome/`'s; the camera scan input path (FLOW-006)
   is `sections/scan/`'s; the rules-retrieval System 1/2/3 internals and the combo

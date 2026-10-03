@@ -1,0 +1,28 @@
+{
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 900
+  },
+  {
+   "name": "gold piles",
+   "reason": "TradePile's gold, bronze and gem artwork is the app's own drawing and stays unchanged (REQ-215); the mockup draws a different heap in the same place",
+   "x": 513,
+   "y": 167,
+   "width": 414,
+   "height": 111
+  },
+  {
+   "name": "price date line",
+   "reason": "the app writes the snapshot date as `8 September 2026` (REQ-066's freshness copy, pinned by tests) where the mockup writes `8 Sep 2026 \u00b7 USD`",
+   "x": 1260,
+   "y": 25,
+   "width": 172,
+   "height": 16
+  }
+ ]
+}

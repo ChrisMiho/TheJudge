@@ -185,18 +185,18 @@ describe("Backend - Ask AI", () => {
       return { cardId, name: cardId, oracleText: `${cardId} text` };
     }
 
-    it("accepts a bounded multi-card lookup list up to 5 cards (REQ-167)", () => {
-      const cards = ["a", "b", "c", "d", "e"].map(lookupCard);
+    it("accepts a bounded multi-card lookup list up to 10 cards (REQ-167, amended)", () => {
+      const cards = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"].map(lookupCard);
       const parsed = askAiRequestSchema.safeParse({ ...validLookupRequest(), cards });
 
       expect(parsed.success).toBe(true);
       if (parsed.success && parsed.data.mode === "lookup") {
-        expect(parsed.data.cards).toHaveLength(5);
+        expect(parsed.data.cards).toHaveLength(10);
       }
     });
 
-    it("rejects a 6th card in the lookup card list", () => {
-      const cards = ["a", "b", "c", "d", "e", "f"].map(lookupCard);
+    it("rejects an 11th card in the lookup card list", () => {
+      const cards = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k"].map(lookupCard);
       const parsed = askAiRequestSchema.safeParse({ ...validLookupRequest(), cards });
 
       expect(parsed.success).toBe(false);
@@ -233,12 +233,52 @@ describe("Backend - Ask AI", () => {
       ).toBe(false);
     });
 
+    it.each([1, 99])("accepts a Stack card with copies %i", (copies) => {
+      const parsed = askAiRequestSchema.safeParse({
+        ...validRequest(),
+        gameContext: {
+          ...validRequest().gameContext,
+          zones: { stack: [{ cardId: "opt", name: "Opt", oracleText: "Scry 1, then draw a card.", copies }] }
+        }
+      });
+
+      expect(parsed.success).toBe(true);
+    });
+
+    it.each([0, -1, 100, 1.5])("rejects a Stack card with copies %s out of the 1-99 range", (copies) => {
+      const parsed = askAiRequestSchema.safeParse({
+        ...validRequest(),
+        gameContext: {
+          ...validRequest().gameContext,
+          zones: { stack: [{ cardId: "opt", name: "Opt", oracleText: "Scry 1, then draw a card.", copies }] }
+        }
+      });
+
+      expect(parsed.success).toBe(false);
+    });
+
+    it("rejects copies on a non-Stack card (REQ-211: Stack only)", () => {
+      const parsed = askAiRequestSchema.safeParse({
+        ...validRequest(),
+        gameContext: {
+          ...validRequest().gameContext,
+          selectedZones: ["battlefield"],
+          zones: {
+            battlefield: [{ cardId: "opt", name: "Opt", oracleText: "Scry 1, then draw a card.", copies: 3 }]
+          }
+        }
+      });
+
+      expect(parsed.success).toBe(false);
+    });
+
     it.each([
       ["targets", []],
       ["caster", "Player 1"],
       ["owner", "Player 1"],
       ["contextNotes", "Cast during combat"],
-      ["manaSpent", 1]
+      ["manaSpent", 1],
+      ["copies", 1]
     ])(
       "rejects the game-state card field %s in a lookup card entry",
       (field, value) => {

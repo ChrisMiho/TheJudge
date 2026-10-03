@@ -1,0 +1,12 @@
+{
+ "regions": [
+  {
+   "name": "closed bottom sheets glow",
+   "reason": "the mockup keeps its three closed bottom sheets mounted just below the screen and their accent glow bleeds up into the bottom edge on a phone; the app mounts a sheet only while open",
+   "x": 0,
+   "y": 796,
+   "width": 390,
+   "height": 48
+  }
+ ]
+}

@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 
@@ -43,8 +43,9 @@ describe("Interaction flows - stack and target context", () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
+    await user.click(screen.getByRole("button", { name: "Add a card to Stack" }));
 
-    await user.type(screen.getByPlaceholderText("Type to begin"), "opt");
+    await user.type(screen.getByPlaceholderText("Search for a card to add"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     expect(screen.queryByLabelText("Entry target kind")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Entry context notes")).not.toBeInTheDocument();
@@ -57,6 +58,7 @@ describe("Interaction flows - stack and target context", () => {
     const user = userEvent.setup();
     render(<App />);
     await advanceToBattlefieldZoneCollection(user);
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     expect(screen.queryByLabelText("Battlefield target kind")).not.toBeInTheDocument();
@@ -67,15 +69,14 @@ describe("Interaction flows - stack and target context", () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
+    await user.click(screen.getByRole("button", { name: "Add a card to Stack" }));
 
-    await user.type(screen.getByPlaceholderText("Type to begin"), "opt");
+    await user.type(screen.getByPlaceholderText("Search for a card to add"), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
     await advanceToContextEnrichment(user);
 
-    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "player");
-    await user.selectOptions(screen.getByLabelText("Player target for Opt"), "Player 2");
-    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    await user.selectOptions(screen.getByLabelText("Add a target for Opt"), "player:Player 2");
     expect(screen.getByText("Player: Player 2")).toBeInTheDocument();
   });
 
@@ -88,7 +89,7 @@ describe("Interaction flows - stack and target context", () => {
     await advanceToContextEnrichment(user);
 
     expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Target kind for Opt")).toBeInTheDocument();
+    expect(screen.getByLabelText("Add a target for Opt")).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
 
     await finishEnrichmentWizard(user);
@@ -108,7 +109,7 @@ describe("Interaction flows - stack and target context", () => {
     expect(screen.getByText("Card 1 of 2")).toBeInTheDocument();
     await finishEnrichmentWizard(user);
 
-    expect(screen.getByText("Ready to decrypt.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Context reviewed · 2 cards/ })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("How does this resolve?")).toBeInTheDocument();
     expect(screen.queryByLabelText("Caster for Opt")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Caster for Lightning Bolt")).not.toBeInTheDocument();
@@ -139,11 +140,12 @@ describe("Interaction flows - stack and target context", () => {
     await addCardToStack(user, "cou", "Counterspell");
     await addCardToStack(user, "lig", "Lightning Bolt");
 
-    await advanceToContextEnrichmentFromZones(user);
+    // REQ-209: per-card removal is the Cards station shelf's card menu now, not a
+    // control inside the Context sheet.
+    await user.click(screen.getByRole("button", { name: "Card actions for Counterspell" }));
+    await user.click(screen.getByRole("button", { name: "Remove from the Stack" }));
 
-    const counterspellRow = screen.getByLabelText("Caster for Counterspell").closest("li");
-    expect(counterspellRow).not.toBeNull();
-    await user.click(within(counterspellRow as HTMLLIElement).getByRole("button", { name: "Remove Counterspell" }));
+    await advanceToContextEnrichmentFromZones(user);
 
     await clickDecryptStack(user);
 
@@ -167,7 +169,7 @@ describe("Interaction flows - stack and target context", () => {
 
     await user.click(screen.getByLabelText("Zone: Stack"));
     await advancePastZoneConfirm(user);
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeInTheDocument();
   });
 
   it("logs ask-ai success completion with httpStatus and response correlation id", async () => {
@@ -210,10 +212,13 @@ describe("Interaction flows - stack and target context", () => {
     await advanceToContextEnrichment(user);
 
     await user.selectOptions(screen.getByLabelText("Caster for Opt"), "Player 4");
-    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "player");
-    await user.selectOptions(screen.getByLabelText("Player target for Opt"), "Player 3");
-    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    await user.selectOptions(screen.getByLabelText("Add a target for Opt"), "player:Player 3");
+    // REQ-210: the box is prefilled with the printed mana value, fetched on demand — wait
+    // for that prefill to land, then clear it so typing produces the intended edited value.
+    await waitFor(() => expect(screen.getByLabelText("Mana spent for Opt")).toHaveValue("1"));
+    await user.clear(screen.getByLabelText("Mana spent for Opt"));
     await user.type(screen.getByLabelText("Mana spent for Opt"), "4");
+    await user.click(screen.getByRole("button", { name: "Add a note for Opt" }));
     await user.type(screen.getByLabelText("Context notes for Opt"), "Cast for alternate cost");
 
     await clickDecryptStack(user);
@@ -241,9 +246,12 @@ describe("Interaction flows - stack and target context", () => {
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
     await advanceToContextEnrichment(user);
 
-    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "other");
-    await user.type(screen.getByLabelText("Other target for Opt"), "Target defined by delayed trigger context");
-    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    await user.selectOptions(screen.getByLabelText("Add a target for Opt"), "other:__custom__");
+    await user.type(
+      screen.getByLabelText("Describe the target for Opt"),
+      "Target defined by delayed trigger context"
+    );
+    await user.click(screen.getByRole("button", { name: "Confirm target for Opt" }));
 
     await clickDecryptStack(user);
 
@@ -269,9 +277,8 @@ describe("Interaction flows - stack and target context", () => {
     await advanceToContextEnrichmentFromZones(user);
 
     await user.selectOptions(screen.getByLabelText("Caster for Opt"), "Player 3");
-    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "player");
-    await user.selectOptions(screen.getByLabelText("Player target for Opt"), "Player 4");
-    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    await user.selectOptions(screen.getByLabelText("Add a target for Opt"), "player:Player 4");
+    await user.click(screen.getByRole("button", { name: "Add a note for Opt" }));
     await user.type(screen.getByLabelText("Context notes for Opt"), "Copied from graveyard");
 
     await clickDecryptStack(user);
@@ -297,8 +304,7 @@ describe("Interaction flows - stack and target context", () => {
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
     await advanceToContextEnrichment(user);
 
-    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "none");
-    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    await user.selectOptions(screen.getByLabelText("Add a target for Opt"), "none");
 
     await clickDecryptStack(user);
 
@@ -356,8 +362,16 @@ describe("Interaction flows - stack and target context", () => {
     await advancePastZoneCollection(user);
     await finishEnrichmentWizard(user);
 
-    expect(screen.getByText("Sending to TheJudge")).toBeInTheDocument();
-    expect(screen.getByText("Battlefield: 1 card")).toBeInTheDocument();
+    // Look-matching pass (slice N, review 1 fix — finding 3), requirement 9: with
+    // cards present, the review plate above already names every populated zone
+    // (here, Lightning Bolt's own "Battlefield" row tag and the "Context
+    // reviewed · 1 card" head) — the old separate "Sending to TheJudge" summary
+    // panel is retired as the duplicate requirement 9 names. The Stack-selected-
+    // but-empty note is the one piece of information nothing else shows, so it
+    // still renders on its own.
+    expect(screen.queryByText("Sending to TheJudge")).not.toBeInTheDocument();
+    expect(screen.getByText("Context reviewed · 1 card")).toBeInTheDocument();
+    expect(screen.getByText("Battlefield")).toBeInTheDocument();
     expect(screen.getByText("Stack: selected, no cards added")).toBeInTheDocument();
     expect(screen.getByText(/Explain the interaction with the provided game state/)).toBeInTheDocument();
     expect(screen.queryByText(/No question\? Uses fallback: “Resolve the stack”/)).not.toBeInTheDocument();

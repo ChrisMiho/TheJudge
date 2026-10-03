@@ -2,6 +2,7 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { clearCardDetailCache, type CardDetailBlock } from "../lib/cardDetail";
+import { clearCardPrintingsCache, peekCardPrintings } from "../lib/trade/fetchCardPrintings";
 import { CardDetailPopup, CardPresentation, type CardPresentationCard } from "./CardPresentation";
 
 const URZA_DETAIL: CardDetailBlock = {
@@ -34,7 +35,12 @@ let fetchMock: ReturnType<typeof vi.fn>;
 
 beforeEach(() => {
   clearCardDetailCache();
-  fetchMock = vi.fn().mockResolvedValue(jsonResponse(URZA_DETAIL));
+  clearCardPrintingsCache();
+  // Look-matching pass (slice L): a fresh `Response` per call, not one shared
+  // instance (`mockResolvedValue` would resolve to the exact same object for
+  // every call) — the detail fetch and the new price fetch each read their
+  // own `.json()` body, and a `Response` body stream can only be read once.
+  fetchMock = vi.fn().mockImplementation(() => Promise.resolve(jsonResponse(URZA_DETAIL)));
   vi.stubGlobal("fetch", fetchMock);
 });
 
@@ -42,6 +48,7 @@ afterEach(() => {
   cleanup();
   vi.unstubAllGlobals();
   clearCardDetailCache();
+  clearCardPrintingsCache();
 });
 
 describe("Frontend - MTG Assistant", () => {
@@ -161,32 +168,32 @@ describe("CardPresentation", () => {
 
     await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
 
-    const overlay = screen.getByTestId("card-detail-overlay");
+    const overlay = screen.getByTestId("card-detail-popup-overlay");
     const popup = screen.getByTestId("card-detail-popup");
     const image = screen.getByRole("img", { name: "Urza, Lord High Artificer" });
 
-    // DEC-158/screen-layout.md "Card detail popup": the dialog is no longer `absolute inset-0`
-    // inside the 92x128px image box — it is a portal child of <body>, so its geometry is its
-    // own rather than the image's.
+    // DEC-158/REQ-208/screen-layout.md "Card detail popup": the dialog is no longer
+    // `absolute inset-0` inside the 92x128px image box — it is a portal child of <body> via
+    // the shared SheetShell, so its geometry is its own rather than the image's.
     expect(overlay.parentElement).toBe(document.body);
     expect(container.contains(popup)).toBe(false);
     expect(image.closest("[data-testid='card-detail-popup']")).toBeNull();
-    expect(popup.parentElement).toBe(overlay);
+    expect(popup.parentElement).toBe(document.body);
   });
 
-  it("renders the popup as the overlay-family bottom sheet / side panel surface rather than an image-bound box", async () => {
+  it("renders the popup on the shared sheet shell — a bottom sheet below 600px, centred on desktop (REQ-128) — rather than an image-bound box", async () => {
     const user = userEvent.setup();
     render(<CardPresentation card={makeCard()} />);
 
     await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
 
-    const overlay = screen.getByTestId("card-detail-overlay");
+    const overlay = screen.getByTestId("card-detail-popup-overlay");
     const popup = screen.getByTestId("card-detail-popup");
 
-    // The responsive bottom-sheet / side-panel geometry lives in index.css on these classes,
-    // matching the AdaptiveContextDialog composition the catalog points at.
-    expect(overlay).toHaveClass("card-detail-overlay");
-    expect(popup).toHaveClass("card-detail-surface");
+    // The responsive bottom-sheet / centred-desktop-card geometry lives in shell.css on
+    // these shared classes (REQ-208): `.sheet-backdrop` behind an `aside.drawer-panel.detail-panel`.
+    expect(overlay).toHaveClass("sheet-backdrop");
+    expect(popup).toHaveClass("drawer-panel", "detail-panel");
     expect(popup).not.toHaveClass("absolute", "inset-0");
     expect(popup).toHaveAttribute("role", "dialog");
     expect(popup).toHaveAttribute("aria-modal", "true");
@@ -214,10 +221,13 @@ describe("CardPresentation", () => {
     const trigger = screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" });
     await user.click(trigger);
 
-    fireEvent.mouseDown(screen.getByText("Urza, Lord High Artificer", { selector: "p" }));
+    // Look-matching pass (slice L): once loaded, the name renders inside the
+    // hero's <h3> (card-detail-hero-name), not the old <p> head title — any
+    // element with this exact text is an "inside" click either way.
+    fireEvent.mouseDown(screen.getByText("Urza, Lord High Artificer"));
     expect(screen.getByTestId("card-detail-popup")).toBeInTheDocument();
 
-    fireEvent.mouseDown(screen.getByTestId("card-detail-overlay"));
+    fireEvent.mouseDown(screen.getByTestId("card-detail-popup-overlay"));
 
     expect(screen.queryByTestId("card-detail-popup")).not.toBeInTheDocument();
     expect(trigger).toHaveAttribute("aria-expanded", "false");
@@ -228,15 +238,15 @@ describe("CardPresentation", () => {
     const { unmount } = render(<CardPresentation card={makeCard()} />);
 
     await user.click(screen.getByRole("button", { name: "Show details for Urza, Lord High Artificer" }));
-    expect(document.body.querySelector("[data-testid='card-detail-overlay']")).not.toBeNull();
+    expect(document.body.querySelector("[data-testid='card-detail-popup-overlay']")).not.toBeNull();
 
     unmount();
 
-    expect(document.body.querySelector("[data-testid='card-detail-overlay']")).toBeNull();
+    expect(document.body.querySelector("[data-testid='card-detail-popup-overlay']")).toBeNull();
     expect(document.body.querySelector("[data-testid='card-detail-popup']")).toBeNull();
   });
 
-  it("caches a card's detail for the session: reopening the same card issues no second fetch (A5)", async () => {
+  it("caches a card's detail (and its price, slice L) for the session: reopening the same card issues no second fetch (A5)", async () => {
     const user = userEvent.setup();
     render(<CardPresentation card={makeCard()} />);
 
@@ -247,18 +257,25 @@ describe("CardPresentation", () => {
         screen.getByText("When Urza enters, create a Construct artifact creature token.")
       ).toBeInTheDocument()
     );
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // Two independently cached fetches: the oracle-id detail block (REQ-175) and
+    // the look-matching pass's price lookup (same `/prices` endpoint Trade
+    // Balancer/the card scanner already call). `fetchMock` records a call the
+    // instant `fetch()` is invoked, not when its promise settles, so waiting on
+    // the call count alone races the price cache's own write — wait on the
+    // cache itself (module state) instead.
+    await waitFor(() => expect(peekCardPrintings("urza")).not.toBeUndefined());
+    expect(fetchMock).toHaveBeenCalledTimes(2);
 
     await user.click(screen.getByRole("button", { name: "Close details for Urza, Lord High Artificer" }));
     await user.click(trigger);
 
     // Cache hit: the descriptive block renders immediately with no loading flash and no
-    // second network call.
+    // second network call, for either fetch.
     expect(screen.queryByTestId("card-detail-loading")).not.toBeInTheDocument();
     expect(
       screen.getByText("When Urza enters, create a Construct artifact creature token.")
     ).toBeInTheDocument();
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it("degrades to the local identity plus a retry affordance on a failed/offline fetch, without blocking other controls (A11)", async () => {
@@ -277,7 +294,7 @@ describe("CardPresentation", () => {
     expect(screen.getByText("Urza, Lord High Artificer")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove" })).toBeEnabled();
 
-    fetchMock.mockResolvedValue(jsonResponse(URZA_DETAIL));
+    fetchMock.mockImplementation(() => Promise.resolve(jsonResponse(URZA_DETAIL)));
     await user.click(screen.getByRole("button", { name: "Retry" }));
 
     await waitFor(() =>
@@ -288,7 +305,7 @@ describe("CardPresentation", () => {
   });
 
   it("renders the not-found response as the empty-detail marker with no retry loop (REQ-175)", async () => {
-    fetchMock.mockResolvedValue(jsonResponse({ error: "card_not_found" }, 404));
+    fetchMock.mockImplementation(() => Promise.resolve(jsonResponse({ error: "card_not_found" }, 404)));
     const user = userEvent.setup();
     render(<CardPresentation card={makeCard()} />);
 
@@ -353,22 +370,52 @@ describe("CardDetailPopup", () => {
     expect(screen.getByText("0")).toBeInTheDocument();
     expect(screen.getByText("Legendary Creature — Human Artificer")).toBeInTheDocument();
     expect(screen.getByText("When Urza enters, create a Construct artifact creature token.")).toBeInTheDocument();
-    expect(screen.getByText("U, W")).toBeInTheDocument();
-    expect(screen.getByText("Legendary")).toBeInTheDocument();
+    // Look-matching pass (slice L, requirement #10): colours render as the
+    // typeline's colour dot (see the dedicated describe block below), not as
+    // "U, W" text; supertypes are dropped — "Legendary" already reads from
+    // the typeline string above, so a separate Supertypes fact would repeat
+    // it. Subtypes keep their own fact chip.
     expect(screen.getByText("Human, Artificer")).toBeInTheDocument();
+    // The new price fact chip (no price in this fixture's response — the shared
+    // fetch mock returns the oracle-detail shape for every call, which carries
+    // no `printings`) shows its "—" placeholder rather than inventing a value.
+    expect(screen.getByText("Price")).toBeInTheDocument();
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
+  });
+
+  it("renders the colour-identity dot from the same source the card tile's own ring reads", async () => {
+    render(<CardDetailPopup card={makeCard()} onClose={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getByText("{2}{U}{U}")).toBeInTheDocument());
+    const typeline = screen.getByText("Legendary Creature — Human Artificer").closest(".typeline");
+    const dot = typeline?.querySelector(".pips i");
+    expect(dot).not.toBeNull();
+    // U + W, two colours: getCardIdentityRing returns a linear-gradient, not a flat colour.
+    expect((dot as HTMLElement).style.background).toMatch(/linear-gradient/);
+  });
+
+  it("shows the art-crop image, not the normal-size image, in the hero", async () => {
+    const scryfallUrl = "https://cards.scryfall.io/normal/front/0/2/urza.jpg";
+    render(<CardDetailPopup card={makeCard({ imageUrl: scryfallUrl })} onClose={vi.fn()} />);
+
+    await waitFor(() => expect(screen.getByText("{2}{U}{U}")).toBeInTheDocument());
+    const hero = document.querySelector(".detail-panel .art img");
+    expect(hero).toHaveAttribute("src", "https://cards.scryfall.io/art_crop/front/0/2/urza.jpg");
   });
 
   it("omits absent optional fields instead of inventing values", async () => {
-    fetchMock.mockResolvedValue(
-      jsonResponse({
-        oracleText: "",
-        manaCost: "",
-        manaValue: 0,
-        typeLine: "",
-        colors: [],
-        supertypes: [],
-        subtypes: []
-      })
+    fetchMock.mockImplementation(() =>
+      Promise.resolve(
+        jsonResponse({
+          oracleText: "",
+          manaCost: "",
+          manaValue: 0,
+          typeLine: "",
+          colors: [],
+          supertypes: [],
+          subtypes: []
+        })
+      )
     );
     render(<CardDetailPopup card={makeCard()} onClose={vi.fn()} />);
 
@@ -378,9 +425,17 @@ describe("CardDetailPopup", () => {
     expect(screen.queryByText("Type")).not.toBeInTheDocument();
     expect(screen.queryByText("Oracle text")).not.toBeInTheDocument();
     expect(screen.queryByText("Colors")).not.toBeInTheDocument();
+    // Supertypes is dropped entirely (see the main field-list test above) —
+    // never shown, empty or not. Look-matching pass (slice L): Subtypes and
+    // Price are now fixed fact chips (flow.css:280-317's `.detail-panel
+    // .facts`), always present, so an absent value shows the suite's "—"
+    // placeholder rather than being omitted — that is the non-inventing
+    // behaviour this test guards, just expressed as a placeholder instead of
+    // a hidden row.
     expect(screen.queryByText("Supertypes")).not.toBeInTheDocument();
-    expect(screen.queryByText("Subtypes")).not.toBeInTheDocument();
+    expect(screen.getByText("Subtypes")).toBeInTheDocument();
     expect(screen.queryByText("N/A")).not.toBeInTheDocument();
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });
 });
 });

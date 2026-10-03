@@ -13,14 +13,15 @@
   REQ-075, REQ-079, REQ-091, REQ-092, REQ-094, REQ-095, REQ-097, REQ-098,
   REQ-011, REQ-022, REQ-024, REQ-030, REQ-105, REQ-109, REQ-110, REQ-121,
   REQ-129, REQ-132, REQ-134, REQ-141, REQ-167, REQ-178, REQ-179, REQ-180,
-  REQ-181, REQ-182, REQ-184, FLOW-006, FLOW-011, FLOW-023, NFR-001
+  REQ-181, REQ-182, REQ-184, REQ-206, FLOW-006, FLOW-011, FLOW-023, NFR-001
 
 ## What it is
 
-A feature-portal destination for the short ask: the player either has one or
-more cards in mind or doesn't, and wants a fast Magic rules answer without
-staging a whole game. They optionally attach up to 5 cards — each by typed
-search or camera scan — then type a question (or pick a rules topic), and get
+A feature-portal destination for the short ask, now the Menu's single
+**Ask a Question** door (REQ-206): the player either has one or more cards in
+mind or doesn't, and wants a fast Magic rules answer without staging a whole
+game. They optionally attach up to 10 cards — each by typed search or camera
+scan — then type a question, and get
 a plain-text answer in the same conversation chrome the main MTG Assistant flow
 uses. Behind that one screen runs the entire Ask AI backend: the request rides
 the shared `POST /api/ask-ai` endpoint on a `mode: "lookup"` branch, the
@@ -37,95 +38,93 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
 
 ### Entry and pre-submit layout
 
-- Built: Quick Lookup is registered as one feature-portal destination
-  (`quick-lookup`, DEC-095) and opens as a frontend-only view switch with no
-  reload; it ships no navigation menu of its own. (DEC-107, REQ-073, FLOW-011)
-- Built: the pre-submit view is laid out top to bottom as an optional
-  card-attach control, then the Question field, then the "General rules topics"
-  outer disclosure. (REQ-073, DEC-112)
-- Built: the card-attach control's label carries the guidance copy inline after
-  an em dash — "OPTIONAL CARDS — Add up to 5 cards for context, or ask any
-  Magic related question." — rather than as a standalone paragraph under the
-  header. (DEC-113, REQ-073, REQ-167)
-- Built: card input is optional and bounded to at most 5 cards (REQ-167). The
-  player adds each card by typed autocomplete search (REQ-001/REQ-002 behavior)
-  or by camera scan (the shared FLOW-006 engine); each add resolves to one
-  oracle-level `CardMetadataItem`, previewed with its name, image, and color
-  ring immediately; its descriptive block (oracle text and full metadata) loads
-  on demand by oracle id (REQ-174, REQ-175, FLOW-024) behind a brief loading
-  state before submit, and can be removed individually. An add attempted past the cap is blocked and a stated
-  limit message is shown to the player, mirroring the existing bounded-add UX
+- Built: Quick Lookup is the **Ask a Question** page — the Menu's single
+  question destination (`quick-lookup`, route `/quick-lookup`, DEC-095) — and
+  opens as a frontend-only view switch with no reload; it ships no navigation
+  menu of its own. Its **Add in-depth details** pill carries the attached
+  cards and the typed question into In-depth details (`/in-depth`), switching
+  the active destination there. (DEC-107, REQ-073, REQ-206, FLOW-011)
+- Built: the pre-submit view is laid out top to bottom as the title row (**Add
+  card** and **Scan** beside it), the card stage when any card is attached,
+  the two-row Question box. (REQ-073, DEC-112, REQ-206)
+- Built: the card stage renders when any card is attached — the front card
+  full size on a lit panel, with the one other card peeking at each side (two
+  cards peek on one side only, so the same card never renders twice); ←/›
+  arrows and a tap on a neighbour turn the ring; ✕ Remove and ⓘ Details
+  straddle the front card's top corners; a row of position dots lights the front
+  card's place in the ring.
+  With no card attached there is no stage. (REQ-206)
+- Built: card input is optional and bounded to at most 10 cards (REQ-167 as
+  amended). The player adds each card by typed autocomplete search
+  (REQ-001/REQ-002 behavior), which places it on the stage immediately, or by
+  camera scan (the shared FLOW-006 engine), which holds it in the scanner's
+  own holding list until the scanner closes, when every held card joins the
+  stage in hold order (REQ-214); either way each add resolves to one
+  oracle-level `CardMetadataItem`, with its name, image, and color ring shown
+  once on the stage. Its descriptive block (oracle text and full metadata)
+  loads on demand by oracle id (REQ-174, REQ-175, FLOW-024) behind a brief
+  loading state before submit, and can be removed from the stage's front
+  position. An add — typed or scanned — attempted past the cap, or of a card
+  already attached or already held, is blocked and a stated limit message is
+  shown to the player immediately, mirroring the existing bounded-add UX
   pattern (`ScanAddOutcome`, the In-Depth zone-collection strip). With zero or
-  one card attached, behavior is unchanged from before REQ-167. There are no
-  zones, stack, phase, or per-card enrichment-editing controls. (DEC-107,
-  REQ-073, REQ-167, FLOW-006, FLOW-011)
+  one card attached, behavior is unchanged in shape from before REQ-167.
+  There are no zones, stack, phase, or per-card enrichment-editing controls.
+  (DEC-107, REQ-073, REQ-167, REQ-206, REQ-214, FLOW-006, FLOW-011)
 - Built: scan here resolves to exactly one card per scan and is
   presentation-only at the printing level — the scanned printing's art never
-  reaches the request, prompt, or rulings; identity stays oracle-level.
-  (DEC-053, REQ-073)
+  reaches the request, prompt, or rulings; identity stays oracle-level. A
+  held-but-uncommitted scanned card is not yet one of the attached cards and
+  is not sent if the player submits without closing the scanner first — the
+  scanner's own Exit scan box is the only commit path (REQ-214). (DEC-053,
+  REQ-073, REQ-214)
 
-### General rules topics browse
+### General rules topics browse (retired)
 
-- Built: below the Question field sits a collapsed-by-default "General rules
-  topics" outer disclosure whose summary stays visible in every pre-submit state
-  — attaching a card or typing into the Question field does not hide it.
-  Expanding it reveals a short set of core rules topics (the stack & priority,
-  targeting, combat, layers) built from the same curated `gameRulesByTopic`
-  excerpts the prompt uses — one source of truth, no hand-authored second copy.
-  (REQ-079, DEC-112)
-- Built: topic rows are collapsed by default, each showing its title, a "Use
-  this topic" button, and an expand/collapse toggle without expanding the row;
-  expanding one row reveals its rule numbers and excerpt and auto-collapses any
-  other open topic (accordion — at most one excerpt visible at a time). Reading a
-  topic is fully client-side with no AI call. (REQ-079, DEC-112)
-- Built: "Use this topic" locks that topic's fixed phrase (`Tell me about
-  {Topic}.`) into a non-editable pill inline with the Question field's label,
-  with its own remove control; only one pill may be locked at a time and picking
-  a different topic swaps it without touching text already typed. It also
-  smooth-scrolls to the Question field and focuses the textarea. (REQ-091,
-  DEC-112)
+- Retired by `ui-look-translation` (2026-10-02) on the owner's gate verdict:
+  Ask a Question no longer shows the "General rules topics" panel — the
+  direction-1 mockup was made without it on purpose. A topic row was the
+  locked topic pill's only entry point, so the pill no longer appears and
+  nothing replaces it. (REQ-079 retired, REQ-091 as amended)
 
 ### Composing and submitting the question
 
-- Built: the freeform textarea stays independently editable at all times as
-  optional supplementary context; locking, swapping, or removing a pill never
-  overwrites it. Submit is enabled whenever a pill is locked, at least one card
-  is attached, or the textarea has non-empty trimmed text. (REQ-091, DEC-112)
+- Built: the freeform textarea stays editable at all times. Submit is enabled
+  whenever at least one card is attached or the textarea has non-empty trimmed
+  text. (REQ-091, DEC-112)
 - Built: on submit the wire `question` string is composed client-side — the
-  pill phrase plus trimmed textarea text (space-joined) when both are present;
-  the pill phrase alone; the textarea alone when no pill is locked; or, when no
-  pill is locked and the textarea is empty but one or more cards are attached,
+  trimmed textarea text when it is non-empty; or, when the textarea is empty
+  but one or more cards are attached,
   the silent fallback `Tell me about {Card Name}.` for a single card or
   `Tell me about {Card A}, {Card B} and {Card C}.` for several (never shown to
   the user). (REQ-091, REQ-167, FLOW-011)
 - Built: the visible counter, the textarea `maxLength`, and the submit gate all
   measure the raw editable textarea content, not the composed string, so an
-  empty field with a card or topic attached reads `0/300` and a full
+  empty field with a card attached reads `0/300` and a full
   300-character question stays submittable. (REQ-091 as amended by REQ-134,
   REQ-011)
-- Built: the composer row gives the Question textarea the full row width with
-  an inline character counter, replacing a wide labelled submit button with a
-  compact circular submit control at narrow viewports where a labelled button
-  would starve the field; wider viewports may keep a labelled control so long
-  as the field keeps the dominant share of the row. (DEC-146, REQ-121)
-- Built: the Question textarea grows with typed content up to the space
-  available before bottom chrome, capped so the page itself never scrolls from
-  field growth — growth stops when further expansion would push chrome below
-  the composer (submit row or equivalent) off-screen, not merely when the
-  field's own bottom reaches the viewport bottom while lower chrome is lost.
-  (DEC-131, REQ-110)
-- Built: the initial submit control shows the visible label **Send Request**
-  (accessible name may keep Ask/Decrypt semantics); the answered-view
-  follow-up composer keeps its separate compact arrow/icon-only send control.
-  (DEC-153, REQ-132, DEC-146)
+- Built: the Question box has two rows — the text on top, the Add in-depth
+  details chip at the bottom-left and the round mic|send pill at the
+  bottom-right, with the character count where the mockup places it. One line
+  of text is one row; typed content grows the box up to the space available
+  before bottom chrome, capped so the page itself never scrolls from field
+  growth. (DEC-146, DEC-131, REQ-110, REQ-121, REQ-206)
+- Built: the 300-character budget is drawn as a ring traced round the send
+  pill's edge, starting at the top of the pill's split and running clockwise,
+  brighter in the last 30 characters, closed at 300; at 0 characters no ring
+  is drawn and the numeric count is hidden. (REQ-011, REQ-134, REQ-206)
+- Built: the initial submit control is the round send pill inside the
+  question box, with no visible text label (its accessible name keeps Ask
+  semantics); the answered-view follow-up composer keeps its own compact
+  arrow/icon-only send control. (DEC-153, REQ-132, REQ-206)
 
 ### Initial submit wait
 
 - Built: while the initial submit is in flight and no answer has arrived, the
-  Question form (label, pill, textarea, counter, submit button) is hidden and
+  Question form (label, textarea, counter, submit button) is hidden and
   the existing `AskAiWaitingPanel` (live elapsed timer, threshold messages,
-  REQ-023) renders in its place. The Optional card section and the General rules
-  topics disclosure stay visible and interactive throughout. (DEC-114, REQ-092)
+  REQ-023) renders in its place. The Optional card section stays visible and
+  interactive throughout. (DEC-114, REQ-092)
 - Built: on error the Question form reappears alongside the retry affordance; on
   success the pre-submit view swaps to the shared conversation workspace.
   (DEC-114, REQ-092)
@@ -138,18 +137,23 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
   response affordance, and Start Over — under the same conversation limits as the
   main flow; Quick Lookup defines no separate limit policy. (REQ-075, DEC-118,
   REQ-097, REQ-098)
-- Built: the first visible bubble is the assistant's answer; the initial user
-  question rides in `conversationHistory` but is not shown as a visible bubble.
-  Follow-ups are text-only and send `{ mode: "lookup", question, cards: frozen
-  (the full attached set, when any were attached), conversationHistory }`.
-  (REQ-075, REQ-167, FLOW-011, FLOW-023)
+- Built: the thread opens with the player's question as sent (the fallback
+  when the box was blank) as a right-aligned bubble, then the assistant's
+  answer; the question also rides in `conversationHistory`. Follow-ups are
+  text-only and send `{ mode: "lookup", question, cards: frozen (the full
+  attached set, when any were attached), conversationHistory }`. (REQ-025,
+  REQ-075, REQ-167, FLOW-011, FLOW-023)
 - Built: when one or more cards were attached, every one of them is frozen for
   the conversation and shown behind a compact adaptive context trigger — a
   bottom sheet below 768px or a right-side drawer at 768px+; the trigger label
-  names the single card or states the count (`"N cards"`) for several. Without
-  a card, no empty context trigger or container renders. Start Over clears the
-  thread and any locked pill and returns to the pre-ask state. (REQ-075,
-  REQ-167, DEC-118)
+  names the single card or states the count (`"N cards"`) for several. A card
+  name in the judge's message that exactly matches an attached card renders as
+  a tappable chip opening that card's detail directly in the thread. Without a
+  card, no empty context trigger or container renders. **✎ Edit cards** (beside
+  the title) returns to the pre-submit page with the cards and question kept;
+  **↺ Start over** clears the thread, the cards, the question and any locked
+  pill and returns to the empty pre-ask state. (REQ-075, REQ-167, REQ-206,
+  DEC-118)
 
 ## The full backend path (request → assembly → retrieval → provider → response)
 
@@ -168,9 +172,9 @@ both providers. (DEC-020, REQ-072)
   a `gameContext` field is rejected as an unrecognized key — `cards` and
   `gameContext` are mutually exclusive across modes. (DEC-106, REQ-072,
   REQ-167)
-- Built: `cards` is an optional bounded list of at most 5 entries (REQ-167,
-  amending DEC-106's single optional `card`); a 6th entry is rejected by
-  validation. Each entry carries only `cardId` (oracle id), `name`, and
+- Built: `cards` is an optional bounded list of at most 10 entries (REQ-167 as
+  amended, amending DEC-106's single optional `card`); an 11th entry is
+  rejected by validation. Each entry carries only `cardId` (oracle id), `name`, and
   `imageUrl` (rendering only, not read by the prompt assembler) and carries no
   zone, caster, owner, targets, or context-notes fields; the descriptive block
   (`oracleText`/`manaCost`/`manaValue`/`typeLine`/`colors`/`supertypes`/
@@ -316,12 +320,13 @@ as the current shipped configuration, not product truth.
 
 - Wire question bound: `questionSchema` accepts up to 600 characters (min 0).
   This carries the composed string — the raw textarea is capped at the product
-  300 by the frontend, and 600 covers the locked-pill prefix or the silent
-  `Tell me about {Card Name}.` fallback the client composes on top. (REQ-134,
+  300 by the frontend, and 600 covers the silent `Tell me about {Card Name}.`
+  fallback the client composes (the locked-pill prefix it was also sized for is
+  retired with REQ-079). (REQ-134,
   REQ-091, `askAiRequest.ts`)
 - Frontend display cap: the visible counter, textarea `maxLength`, and submit
   gate measure the raw editable textarea at 300 characters (REQ-011); the
-  composed wire value may exceed 300 by the prefix, accepted against DEC-042's
+  composed wire value may exceed 300, accepted against DEC-042's
   1,000,000-char prompt budget. (REQ-091 as amended by REQ-134)
 - Conversation limits: 1–20 turns, alternating roles starting with user and
   ending with assistant, per-message cap — shared with the main flow, not a
@@ -334,22 +339,18 @@ as the current shipped configuration, not product truth.
   failure fallback (REQ-181, REQ-182); the query is the question tokens always,
   plus each attached card's name, type line, and keywords (REQ-167, REQ-178).
   (DEC-046, REQ-022, REQ-178, REQ-181, REQ-182, REQ-167)
-- Card attach cap: the pre-submit card-attach strip accepts at most 5 cards
-  (REQ-167); an add attempted past the cap is blocked with a stated limit
+- Card attach cap: the card stage accepts at most 10 cards (REQ-167 as
+  amended); an add attempted past the cap is blocked with a stated limit
   message. (REQ-167, `QuickLookupApp.tsx`)
 - Always-on core topics: a fixed four-topic core set (stack-and-priority,
   targets, zones, triggered-ability basics); the static MTG reference block is a
   bounded ≤2500-char constant. (DEC-045, DEC-025)
-- Pre-submit card image fit: the shared card-shell image is capped at
-  `max-height: 25dvh` below 768px and `42dvh` at 768px+, applied independently
-  per attached card — with one card, **Send Request** stays in the first
-  viewport with no page scroll; REQ-129's no-scroll fit binds before REQ-141's
-  "clear majority," so at 390×844 the image is ~45% of content width, which
-  REQ-141 is not met on and DEC-160 anticipates. With 2+ cards (REQ-167), each
-  stacked image still holds the same per-image cap — confirmed unchanged by
-  re-measurement (ui-review, 2026-08-30) — so the strip now scrolls the page
-  past the composer, an accepted consequence of the per-image bound, not a new
-  cap value. (DEC-160, REQ-129, REQ-141, REQ-167, `screen-layout.md`)
+- Pre-submit card stage: the front card is the only full-size image; the one
+  other card peeks and the rest are off-stage, so the stage's height does not
+  grow with the card count and the send pill stays in the first viewport at
+  every card count up to the cap. The former per-image `25dvh` / `42dvh`
+  stacked cap (ui-review, 2026-08-30) retires with the stacked list it bounded.
+  (REQ-129, REQ-141, REQ-167, REQ-206, `screen-layout.md`)
 - Layout/fit: mobile-first and touch-friendly; the pre-submit stack and the
   answered workspace follow the shared shell width and region-scroll rules of
   `screen-layout.md`'s "Quick Question — pre-submit" and "— answered workspace"
@@ -397,6 +398,10 @@ as the current shipped configuration, not product truth.
   DEC-106 union was shaped so a small amount of surrounding game context could be
   added to the card branch additively later; v1 keeps the card branch strictly
   single-card with no `gameContext`. Tracked as Q-003; open, not decided here.
+- **General rules topics panel on Ask a Question (REQ-079) — closed door.**
+  Retired by the owner's `ui-look-translation` gate verdict (2026-10-02): the
+  direction-1 mockup was made without it on purpose. Its locked topic pill
+  (REQ-091) went with it, since a topic row was the pill's only entry point.
 - **Deferred, not cut:** mid-conversation card/zone-context editing —
   follow-ups are text-only in v1 with the attached card, if any, frozen for the
   conversation.
@@ -407,9 +412,10 @@ The frontend destination and lookup-local UI live under
 `apps/frontend/src/components/portal/quick-lookup/` (`QuickLookupApp.tsx`),
 registered in `apps/frontend/src/components/portal/destinationRegistry.tsx`; it
 reuses the shared `apps/frontend/src/components/{ConversationWorkspace,AdaptiveContextDialog}.tsx`,
-the submit orchestration hook `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts`,
-and the committed core-topics browse artifact
-`apps/frontend/public/data/gameRulesCoreTopics.json`. The full backend path runs
+and the submit orchestration hook `apps/frontend/src/hooks/useAskAiSubmitOrchestration.ts`.
+The committed core-topics browse artifact
+`apps/frontend/public/data/gameRulesCoreTopics.json` is still written by the data
+build but no longer read by the page (REQ-079 retired). The full backend path runs
 through `apps/backend/src/validation/askAiRequest.ts` (the `mode: "lookup"`
 branch), `apps/backend/src/prompt/` (`preparation.ts`, `promptAssembly.ts`,
 `context.ts`, `mtgReference.ts`, `phaseGuidance.ts`),

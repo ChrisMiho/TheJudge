@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   COLORLESS_PALETTE,
   DEFAULT_PALETTE_ID,
+  contrastRatio as paletteContrastRatio,
   getPaletteById,
   hexToChannelTriple,
   isValidHexColor,
@@ -53,7 +54,23 @@ describe("palettes", () => {
       expect(typeof palette.accentStrong).toBe("string");
       expect(typeof palette.accentSoft).toBe("string");
       expect(typeof palette.accentContrast).toBe("string");
+      expect(typeof palette.ground).toBe("string");
+      expect(typeof palette.groundWash).toBe("string");
+      expect(typeof palette.panel).toBe("string");
+      expect(typeof palette.panelEdge).toBe("string");
+      expect(typeof palette.focusRing).toBe("string");
+      expect(typeof palette.motif).toBe("string");
     }
+  });
+
+  it("gives every profile the REQ-200 ground floor (never fully black) and its own REQ-201 motif", () => {
+    const motifs = new Set<string>();
+    for (const palette of PALETTES) {
+      expect(palette.ground).toBe("9 9 11");
+      motifs.add(palette.motif);
+    }
+    // Six distinct motif languages, one per profile (REQ-201).
+    expect(motifs.size).toBe(6);
   });
 
   it("includes a default blue palette matching DEFAULT_PALETTE_ID", () => {
@@ -184,12 +201,35 @@ describe("palettes", () => {
       expect(resolveColorlessPalette("not-a-hex")).toEqual(COLORLESS_PALETTE);
     });
 
-    it("applies a valid custom hex unchanged to accent, accentStrong, and accentSoft", () => {
-      const resolved = resolveColorlessPalette("#ff8800");
-      expect(resolved.accent).toBe("255 136 0");
-      expect(resolved.accentStrong).toBe("255 136 0");
-      expect(resolved.accentSoft).toBe("255 136 0");
-      expect(resolved.accentContrast).toBe("255 255 255");
+    it("applies an already-readable custom hex unchanged (REQ-099: a readable pick is applied unchanged)", () => {
+      // #E2E8F0 (today's primary-text colour) already clears every floor against the
+      // ground, so the lift is a no-op and the exact pick is kept.
+      const resolved = resolveColorlessPalette("#e2e8f0");
+      expect(resolved.accent).toBe("226 232 240");
+      expect(resolved.accentStrong).toBe("226 232 240");
+      expect(resolved.accentSoft).toBe("226 232 240");
+    });
+
+    it("lifts a low-contrast custom hex to the REQ-099/REQ-200 readability floors while keeping its hue", () => {
+      // #3B2A1E is a near-black brown: readable as picked only after a lift.
+      const resolved = resolveColorlessPalette("#3b2a1e");
+      const ground = resolved.ground;
+
+      // Hue kept: never a warning, rejection, or a different hue — only lightness moves.
+      expect(resolved.swatch).toBe("#3b2a1e");
+
+      // REQ-099: accent text / decorative dust reach at least 7:1 against the ground.
+      expect(paletteContrastRatio(resolved.accentSoft, ground)).toBeGreaterThanOrEqual(7);
+      // REQ-099: filled controls reach at least 2.4:1 against the ground.
+      expect(paletteContrastRatio(resolved.accent, ground)).toBeGreaterThanOrEqual(2.4);
+      expect(paletteContrastRatio(resolved.accentStrong, ground)).toBeGreaterThanOrEqual(2.4);
+      // REQ-099: text on a filled control is white or near-black, whichever reads.
+      expect(["255 255 255", "9 9 11"]).toContain(resolved.accentContrast);
+    });
+
+    it("persists the exact custom RGB as `swatch` even after the lift (REQ-099: the stored value is the exact pick)", () => {
+      const resolved = resolveColorlessPalette("#3b2a1e");
+      expect(resolved.swatch).toBe("#3b2a1e");
     });
   });
 });

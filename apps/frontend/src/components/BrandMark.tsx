@@ -1,27 +1,54 @@
+import { useActiveThemeMotif } from "../hooks/useActiveThemeMotif";
+
 export type BrandMarkProps = {
   onClick?: () => void;
+  /** The Menu tray's own copy of the mark: a plain, aria-hidden `<span>`, no heading. */
+  decorative?: boolean;
 };
 
 /**
- * `inline-block` keeps the gradient's `to right` stops mapped onto the glyph run itself —
- * a block-level element (the header's `1fr` grid column) would stretch the background box
- * far past the text, diluting the gradient down to a near-flat single hue.
+ * REQ-201 / REQ-207: the brand mark — a breathing orb painted with the active
+ * colour's motif (`--motif`, from the token layer), the wordmark, and the
+ * tagline. Rendered in the mockup's own shape (`.brand-mark` > `.orb`,
+ * `.brand-text` > `.wordmark` + `.tagline`) so the ported shell stylesheet
+ * applies unchanged. The header's mark is a `<h1>` heading, or a `<button>`
+ * when a caller passes `onClick`; the Menu tray's own copy is decorative.
  */
-const BRAND_CLASSES =
-  "staged-step-brand inline-block bg-gradient-to-r from-accent-soft to-accent-strong bg-clip-text font-bold tracking-tight text-transparent";
+export function BrandMark({ onClick, decorative = false }: BrandMarkProps): JSX.Element {
+  // Subscribes to the profile so the mark re-renders with the Theme band.
+  useActiveThemeMotif();
 
-export function BrandMark({ onClick }: BrandMarkProps): JSX.Element {
+  const inner = (
+    <>
+      <span aria-hidden="true" className="orb" />
+      <span className="brand-text">
+        <span className="wordmark">TheJudge</span>
+        {/* aria-hidden: decorative restatement of the mark's own tagline, not
+            part of its accessible name — every caller that queries this
+            control/heading by the exact name "TheJudge" (many `App.*.test.tsx`
+            files) must keep resolving to that name alone. */}
+        <span aria-hidden="true" className="tagline">
+          MTG Assistant
+        </span>
+      </span>
+    </>
+  );
+
+  if (decorative) {
+    return (
+      <span aria-hidden="true" className="brand-mark">
+        {inner}
+      </span>
+    );
+  }
+
   if (onClick) {
     return (
-      <button
-        type="button"
-        onClick={onClick}
-        className={`motion-hover motion-press motion-focus ${BRAND_CLASSES}`}
-      >
-        TheJudge
+      <button type="button" onClick={onClick} className="brand-mark motion-press">
+        {inner}
       </button>
     );
   }
 
-  return <h1 className={BRAND_CLASSES}>TheJudge</h1>;
+  return <h1 className="brand-mark">{inner}</h1>;
 }

@@ -104,9 +104,16 @@ function rankSuggestionFromIndex(entry: SearchIndexEntry, normalizedQuery: strin
   return { card, matchTier: 3, typoDistance, normalizedName };
 }
 
-export function getSuggestionsFromIndex(index: SearchIndexEntry[], query: string): CardMetadataItem[] {
+/** Every card search keeps this minimum except Ask a Question's Add-card search (REQ-167). */
+export const DEFAULT_MIN_QUERY_LENGTH = 3;
+
+export function getSuggestionsFromIndex(
+  index: SearchIndexEntry[],
+  query: string,
+  minQueryLength: number = DEFAULT_MIN_QUERY_LENGTH
+): CardMetadataItem[] {
   const normalizedQuery = normalize(query);
-  if (normalizedQuery.length < 3) return [];
+  if (normalizedQuery.length < Math.max(1, minQueryLength)) return [];
 
   return index
     .map((entry) => rankSuggestionFromIndex(entry, normalizedQuery))
@@ -127,6 +134,10 @@ export function getSuggestionsFromIndex(index: SearchIndexEntry[], query: string
     .map((ranked) => ranked.card);
 }
 
-export function getSuggestions(cards: CardMetadataItem[], query: string): CardMetadataItem[] {
-  return getSuggestionsFromIndex(buildSearchIndex(cards), query);
+export function getSuggestions(
+  cards: CardMetadataItem[],
+  query: string,
+  minQueryLength: number = DEFAULT_MIN_QUERY_LENGTH
+): CardMetadataItem[] {
+  return getSuggestionsFromIndex(buildSearchIndex(cards), query, minQueryLength);
 }

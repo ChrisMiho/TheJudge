@@ -116,7 +116,12 @@ export function ScanDebugOverlay({
         </div>
       )}
 
-      <div className="absolute left-3 bottom-3 max-w-[80%] space-y-1 rounded-xl bg-zinc-950/85 px-3 py-2 text-[11px] font-medium text-zinc-200 shadow-lg">
+      {/* REQ-214: the metrics panel is dressed in the selected profile's accent border, the
+          same themed-chrome treatment every other scan surface took — read-only numbers
+          only, no geometry or threshold change. Look-matching pass (slice P): the border
+          token moved from `accent` to `accent-soft` to match `card-scan.html`'s own
+          `.debug-panel` border — a cosmetic-only change, same position and content. */}
+      <div className="absolute left-3 bottom-3 max-w-[80%] space-y-1 rounded-xl border border-accent-soft/30 bg-zinc-950/85 px-3 py-2 text-[11px] font-medium text-zinc-200 shadow-lg">
         {metrics && (
           <>
             <MetricRow label="phase" value={metrics.phase} />

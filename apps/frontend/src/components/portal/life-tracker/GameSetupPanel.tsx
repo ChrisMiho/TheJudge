@@ -2,6 +2,8 @@ import { useState, type FormEvent } from "react";
 import { MAX_PLAYER_COUNT, MIN_PLAYER_COUNT } from "../../../lib/lifeTracker/state";
 import type { PlayerLabel } from "../../../types";
 import type { CardStyle, LayoutMode } from "../../../lib/lifeTracker/types";
+import { ConfirmSheet } from "../../ConfirmSheet";
+import { useSheetClose } from "../../SheetShell";
 
 export interface GameSetupPanelPlayer {
   label: PlayerLabel;
@@ -23,32 +25,16 @@ export interface GameSetupPanelProps {
   onNewGame: () => void;
 }
 
-/**
- * Reset and New Game both destroy work with no undo, so each is a two-step in-place confirm rather
- * than an immediate action: the first press swaps that button for a confirm/cancel pair and names
- * exactly what is about to be lost, the second press commits. Only one can be pending at a time -
- * starting the other confirm cancels the first - and closing Game Setup unmounts this panel, which
- * drops any pending confirm with it.
- */
+/** REQ-202: Reset and New game each ask first through the shared confirm sheet
+ * (REQ-208) rather than an in-place two-step confirm — today's confirmation
+ * copy is unchanged, only where it is asked. At most one can be open at a
+ * time; closing Game Setup unmounts this panel, which drops a pending one
+ * with it. */
 type PendingAction = "reset" | "new-game";
-
-const PENDING_MESSAGES: Record<PendingAction, string> = {
-  reset: "Reset this game? Every life total goes back to the starting life and all counters clear. Players, names, and settings stay.",
-  "new-game": "Start a new game? This game is discarded: back to 4 players at 40 life, with names and counters cleared. Layout and card style stay."
-};
 
 const STARTING_LIFE_PRESETS = [20, 25, 30, 40] as const;
 const MIN_CUSTOM_STARTING_LIFE = 1;
 const MAX_CUSTOM_STARTING_LIFE = 999;
-
-const PILL_BASE =
-  "motion-focus min-h-11 rounded-full border px-3 text-sm font-black tabular-nums transition";
-const PILL_SELECTED = "border-accent-strong bg-accent-strong text-accent-contrast shadow-sm";
-const PILL_UNSELECTED = "border-zinc-700 bg-zinc-900 text-zinc-100 hover:bg-zinc-800";
-
-function pillClassName(isSelected: boolean): string {
-  return `${PILL_BASE} ${isSelected ? PILL_SELECTED : PILL_UNSELECTED}`;
-}
 
 export function GameSetupPanel({
   playerCount,
@@ -68,7 +54,10 @@ export function GameSetupPanel({
   const [isEditingStartingLifeCustom, setIsEditingStartingLifeCustom] = useState(false);
   const [startingLifeDraft, setStartingLifeDraft] = useState("");
   const [customError, setCustomError] = useState<string | null>(null);
+  // REQ-202: the name fields sit behind an "Edit names" collapse that starts closed each time the sheet opens.
   const [isEditingNames, setIsEditingNames] = useState(false);
+  // The Done bar only closes the sheet: every Game Setup change already applied as it was made.
+  const closeSheet = useSheetClose();
   const isCustomStartingLife = !(STARTING_LIFE_PRESETS as readonly number[]).includes(startingLife);
 
   function applyCustomLife(event: FormEvent<HTMLFormElement>): void {
@@ -82,9 +71,7 @@ export function GameSetupPanel({
       parsed < MIN_CUSTOM_STARTING_LIFE ||
       parsed > MAX_CUSTOM_STARTING_LIFE
     ) {
-      setCustomError(
-        `Enter a whole number from ${MIN_CUSTOM_STARTING_LIFE} to ${MAX_CUSTOM_STARTING_LIFE}.`
-      );
+      setCustomError(`Enter a whole number from ${MIN_CUSTOM_STARTING_LIFE} to ${MAX_CUSTOM_STARTING_LIFE}.`);
       return;
     }
 
@@ -105,229 +92,132 @@ export function GameSetupPanel({
   }
 
   return (
-    <section aria-label="Game setup controls" className="divide-y divide-zinc-700/70">
-      <div className="pb-4">
-        <div className="flex gap-2">
-          {pendingAction === "reset" ? (
-            <div className="flex flex-1 gap-2">
-              <button
-                type="button"
-                aria-label="Confirm reset current game"
-                onClick={() => {
-                  setPendingAction(null);
-                  onReset();
-                }}
-                className="motion-focus min-h-11 flex-1 rounded-xl border border-rose-400 bg-rose-500 px-3 text-sm font-bold text-white hover:bg-rose-400"
-              >
-                Confirm
-              </button>
-              <button
-                type="button"
-                aria-label="Cancel reset current game"
-                onClick={() => setPendingAction(null)}
-                className="motion-focus min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-bold text-zinc-300 hover:bg-zinc-800"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              aria-label="Reset current game"
-              onClick={() => setPendingAction("reset")}
-              className="motion-focus min-h-11 flex-1 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-bold text-zinc-100 hover:bg-zinc-800"
-            >
-              Reset
-            </button>
-          )}
-
-          {pendingAction === "new-game" ? (
-            <div className="flex flex-1 gap-2">
-              <button
-                type="button"
-                aria-label="Confirm start new game"
-                onClick={() => {
-                  setPendingAction(null);
-                  onNewGame();
-                }}
-                className="motion-focus min-h-11 flex-1 rounded-xl border border-accent-strong bg-accent-strong px-3 text-sm font-bold text-accent-contrast hover:bg-accent"
-              >
-                Confirm
-              </button>
-              <button
-                type="button"
-                aria-label="Cancel start new game"
-                onClick={() => setPendingAction(null)}
-                className="motion-focus min-h-11 rounded-xl border border-zinc-700 bg-zinc-900 px-3 text-sm font-bold text-zinc-300 hover:bg-zinc-800"
-              >
-                Cancel
-              </button>
-            </div>
-          ) : (
-            <button
-              type="button"
-              aria-label="Start new game"
-              onClick={() => setPendingAction("new-game")}
-              className="motion-focus min-h-11 flex-1 rounded-xl border border-accent-strong bg-accent-strong px-3 text-sm font-bold text-accent-contrast hover:bg-accent"
-            >
-              New Game
-            </button>
-          )}
+    <section aria-label="Game setup controls" className="lt-scope lt-body">
+      {/* `life-tracker-menus.html`'s Game Setup, in its own order: This game (Reset, New game as tray
+          rows), Players (the joined stepper and the Edit names collapse), Starting life, then Layout and
+          Card style as two segmented pills, and the lit Done bar. */}
+      <div className="lt-sec">
+        <span className="lbl">This game</span>
+        <div className="lt-rows">
+          <button type="button" aria-label="Reset current game" onClick={() => setPendingAction("reset")}>
+            <span aria-hidden="true" className="glyph">
+              ↺
+            </span>
+            <span className="words">
+              Reset life totals
+              <small>Back to starting life, counters cleared. Names stay.</small>
+            </span>
+            <span aria-hidden="true" className="chev">
+              ›
+            </span>
+          </button>
+          <button
+            type="button"
+            aria-label="Start new game"
+            className="danger"
+            onClick={() => setPendingAction("new-game")}
+          >
+            <span aria-hidden="true" className="glyph">
+              ✦
+            </span>
+            <span className="words">
+              New game
+              <small>4 players at 40, names and counters cleared.</small>
+            </span>
+            <span aria-hidden="true" className="chev">
+              ›
+            </span>
+          </button>
         </div>
-        <p role="status" className={`text-xs font-semibold text-zinc-400 ${pendingAction ? "mt-2" : "sr-only"}`}>
-          {pendingAction ? PENDING_MESSAGES[pendingAction] : ""}
-        </p>
       </div>
 
-      <div className="py-4">
-        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-400">
-          <span aria-hidden="true" className="text-base leading-none">
-            👥
-          </span>
+      <div className="lt-sec">
+        <span data-testid="game-setup-section-players" className="lbl">
           Players
-        </p>
-        <div className="flex items-center gap-3" aria-label="Player count">
+        </span>
+        <div className="players-line">
+          <div className="stepper" aria-label="Player count">
+            <button
+              type="button"
+              aria-label="Decrease player count"
+              onClick={() => onPlayerCountChange(playerCount - 1)}
+              disabled={playerCount === MIN_PLAYER_COUNT}
+            >
+              <span aria-hidden="true">−</span>
+            </button>
+            <span className="val">
+              <span>{playerCount}</span>
+              <small>players</small>
+            </span>
+            <button
+              type="button"
+              aria-label="Increase player count"
+              onClick={() => onPlayerCountChange(playerCount + 1)}
+              disabled={playerCount === MAX_PLAYER_COUNT}
+            >
+              <span aria-hidden="true">+</span>
+            </button>
+          </div>
           <button
             type="button"
-            aria-label="Decrease player count"
-            onClick={() => onPlayerCountChange(playerCount - 1)}
-            disabled={playerCount === MIN_PLAYER_COUNT}
-            className="motion-focus inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-zinc-700 bg-zinc-900 text-lg font-black text-zinc-100 transition hover:bg-zinc-800 disabled:cursor-not-allowed disabled:opacity-50"
+            className="link"
+            aria-expanded={isEditingNames}
+            aria-controls="game-setup-names"
+            onClick={() => setIsEditingNames((open) => !open)}
           >
-            <span aria-hidden="true">−</span>
-          </button>
-          <span className="min-w-8 text-center text-lg font-black tabular-nums text-zinc-100">{playerCount}</span>
-          <button
-            type="button"
-            aria-label="Increase player count"
-            onClick={() => onPlayerCountChange(playerCount + 1)}
-            disabled={playerCount === MAX_PLAYER_COUNT}
-            className="motion-focus inline-flex min-h-11 min-w-11 items-center justify-center rounded-full border border-accent-strong bg-accent-strong text-lg font-black text-accent-contrast transition hover:bg-accent disabled:cursor-not-allowed disabled:border-zinc-700 disabled:bg-zinc-900 disabled:text-zinc-100 disabled:opacity-50"
-          >
-            <span aria-hidden="true">+</span>
+            {isEditingNames ? "Hide names ▴" : "Edit names ▾"}
           </button>
         </div>
 
-        <button
-          type="button"
-          aria-label={isEditingNames ? "Hide player names" : "Edit player names"}
-          aria-expanded={isEditingNames}
-          onClick={() => setIsEditingNames((current) => !current)}
-          className="motion-focus mt-3 inline-flex items-center gap-1 rounded-md text-xs font-bold text-accent-soft hover:underline"
-        >
-          <span aria-hidden="true">{isEditingNames ? "▾" : "▸"}</span>
-          Edit names
-        </button>
-
-        {isEditingNames && (
-          <div className="mt-2 space-y-2">
-            {players.map((player) => (
-              <label
-                key={player.label}
-                className="flex items-center gap-2 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-2"
-              >
-                <span className="w-24 shrink-0 text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                  {player.label}
+        {/* REQ-202: the name fields — compact boxes, two to a row, each carrying its seat number —
+            sit behind the Edit names collapse. */}
+        <div className="names" id="game-setup-names" data-open={isEditingNames ? "true" : "false"}>
+          {isEditingNames &&
+            players.map((player) => (
+              <label key={player.label}>
+                <span aria-hidden="true" className="num">
+                  {player.label.replace("Player ", "")}
                 </span>
                 <input
                   aria-label={`${player.label} display name`}
                   value={player.displayName}
                   onChange={(event) => onDisplayNameChange(player.label, event.target.value)}
-                  className="motion-focus min-h-9 w-full min-w-0 rounded-md border border-zinc-700 bg-zinc-950 px-2 text-sm text-zinc-100"
+                  placeholder={player.label}
                 />
               </label>
             ))}
-          </div>
-        )}
-      </div>
-
-      <div className="py-4">
-        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-400">
-          <span aria-hidden="true" className="text-base leading-none">
-            ▤
-          </span>
-          Layout
-        </p>
-        <div className="grid grid-cols-2 gap-2" aria-label="Layout mode">
-          {(["grid", "list"] as const).map((mode) => {
-            const isSelected = layoutMode === mode;
-            const label = mode === "grid" ? "Grid" : "List";
-            return (
-              <button
-                key={mode}
-                type="button"
-                aria-label={`Use ${mode} layout`}
-                aria-pressed={isSelected}
-                onClick={() => onLayoutModeChange(mode)}
-                className={`${pillClassName(isSelected)} inline-flex items-center justify-center gap-2`}
-              >
-                <span aria-hidden="true" className="text-base leading-none">
-                  {mode === "grid" ? "▦" : "☷"}
-                </span>
-                {label}
-              </button>
-            );
-          })}
-        </div>
-
-        <p className="mb-2 mt-3 text-xs font-bold uppercase tracking-[0.08em] text-zinc-500">Card style</p>
-        <div className="grid grid-cols-2 gap-2" aria-label="Card style">
-          {(["gradient", "flat"] as const).map((style) => {
-            const isSelected = cardStyle === style;
-            return (
-              <button
-                key={style}
-                type="button"
-                aria-label={`Use ${style} card style`}
-                aria-pressed={isSelected}
-                onClick={() => onCardStyleChange(style)}
-                className={`${pillClassName(isSelected)} inline-flex items-center justify-center gap-2`}
-              >
-                <span aria-hidden="true" className="text-base leading-none">
-                  {style === "gradient" ? "◐" : "●"}
-                </span>
-                {style === "gradient" ? "Ombre" : "Flat"}
-              </button>
-            );
-          })}
         </div>
       </div>
 
-      <div className="py-4">
-        <p className="mb-2 flex items-center gap-2 text-sm font-bold text-zinc-400">
-          <span aria-hidden="true" className="text-base leading-none">
-            ♥
-          </span>
-          Starting life
-        </p>
-        <div className="flex flex-wrap gap-2" aria-label="Starting life presets">
-          {STARTING_LIFE_PRESETS.map((preset) => {
-            const isSelected = startingLife === preset;
-            return (
-              <button
-                key={preset}
-                type="button"
-                aria-label={`Set starting life to ${preset}`}
-                aria-pressed={isSelected}
-                onClick={() => {
-                  setCustomError(null);
-                  setIsEditingStartingLifeCustom(false);
-                  onStartingLifeChange(preset);
-                }}
-                className={`${pillClassName(isSelected)} min-w-11`}
-              >
-                {preset}
-              </button>
-            );
-          })}
+      <div className="lt-sec">
+        <span className="lbl">
+          Starting life <small>2 players start at 20 · 3+ at 40</small>
+        </span>
+        <div className="life-pills" role="group" aria-label="Starting life presets">
+          {STARTING_LIFE_PRESETS.map((preset) => (
+            <button
+              key={preset}
+              type="button"
+              aria-label={`Set starting life to ${preset}`}
+              aria-pressed={startingLife === preset}
+              onClick={() => {
+                setCustomError(null);
+                setIsEditingStartingLifeCustom(false);
+                onStartingLifeChange(preset);
+              }}
+            >
+              {preset}
+            </button>
+          ))}
           {isEditingStartingLifeCustom ? (
-            <form noValidate onSubmit={applyCustomLife} className="relative min-h-11 min-w-20">
+            <form noValidate onSubmit={applyCustomLife} className="life-custom" data-show="true">
               <input
                 autoFocus
                 type="number"
                 min={MIN_CUSTOM_STARTING_LIFE}
                 max={MAX_CUSTOM_STARTING_LIFE}
                 step="1"
+                className="field"
                 aria-label="Custom starting life"
                 aria-invalid={customError !== null}
                 aria-describedby={customError ? "custom-starting-life-error" : undefined}
@@ -345,13 +235,12 @@ export function GameSetupPanel({
                 }}
                 onBlur={cancelCustomLifeEdit}
                 inputMode="numeric"
-                className="motion-focus min-h-11 w-full min-w-0 rounded-full border border-accent-strong bg-zinc-950 px-2 pr-8 text-center text-sm font-black tabular-nums text-zinc-100 ring-2 ring-accent/25"
               />
               <button
                 type="submit"
+                className="ok"
                 aria-label="Apply custom starting life"
                 onPointerDown={(event) => event.preventDefault()}
-                className="motion-focus absolute right-1 top-1/2 flex min-h-8 min-w-8 -translate-y-1/2 items-center justify-center rounded-full text-sm font-black text-accent-soft hover:bg-zinc-800"
               >
                 <span aria-hidden="true">✓</span>
               </button>
@@ -359,21 +248,97 @@ export function GameSetupPanel({
           ) : (
             <button
               type="button"
+              className="custom"
               aria-label="Set custom starting life"
               aria-pressed={isCustomStartingLife}
               onClick={beginCustomLifeEdit}
-              className={`${pillClassName(isCustomStartingLife)} min-w-11`}
             >
               {isCustomStartingLife ? startingLife : "Custom"}
             </button>
           )}
         </div>
         {customError && (
-          <p id="custom-starting-life-error" role="alert" className="mt-2 text-sm text-rose-400">
+          <p id="custom-starting-life-error" role="alert" className="lt-note-error">
             {customError}
           </p>
         )}
       </div>
+
+      <div className="lt-sec">
+        <div className="pair">
+          <div className="sub">
+            <small>Layout</small>
+            <div className="seg full" role="group" aria-label="Layout">
+              {(["grid", "list"] as const).map((mode) => (
+                <button
+                  key={mode}
+                  type="button"
+                  aria-label={`Use ${mode} layout`}
+                  aria-pressed={layoutMode === mode}
+                  onClick={() => onLayoutModeChange(mode)}
+                >
+                  <span aria-hidden="true" className="glyph">
+                    {mode === "grid" ? "▦" : "☷"}
+                  </span>
+                  {mode === "grid" ? "Grid" : "List"}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div className="sub">
+            <small>Card style</small>
+            <div className="seg full" role="group" aria-label="Card style">
+              {(["gradient", "flat"] as const).map((style) => (
+                <button
+                  key={style}
+                  type="button"
+                  aria-label={`Use ${style} card style`}
+                  aria-pressed={cardStyle === style}
+                  onClick={() => onCardStyleChange(style)}
+                >
+                  <span aria-hidden="true" className="glyph">
+                    {style === "gradient" ? "◐" : "●"}
+                  </span>
+                  {style === "gradient" ? "Ombre" : "Flat"}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <button type="button" className="lt-foot" onClick={() => closeSheet?.()}>
+        <span>Done</span>
+        <span className="chev" aria-hidden="true">
+          ›
+        </span>
+      </button>
+
+      <ConfirmSheet
+        isOpen={pendingAction === "reset"}
+        onKeep={() => setPendingAction(null)}
+        onConfirm={() => {
+          setPendingAction(null);
+          onReset();
+        }}
+        question="Reset this game?"
+        detail="Every life total goes back to the starting life and all counters clear. Players, names, and settings stay."
+        confirmLabel="Reset"
+        testId="life-tracker-reset-confirm"
+      />
+      <ConfirmSheet
+        isOpen={pendingAction === "new-game"}
+        onKeep={() => setPendingAction(null)}
+        onConfirm={() => {
+          setPendingAction(null);
+          onNewGame();
+        }}
+        question="Start a new game?"
+        detail="This game is discarded: back to 4 players at 40 life, with names and counters cleared. Layout and card style stay."
+        confirmLabel="New game"
+        testId="life-tracker-new-game-confirm"
+      />
     </section>
   );
 }

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { CANONICAL_ZONE_ORDER } from "../lib/contextFlow";
 import { NO_MATCH_COPY } from "../lib/search";
 import { ZONE_LABELS } from "../lib/zoneLabels";
@@ -10,12 +10,13 @@ import {
 } from "../lib/zoneCards";
 import { useAutocompleteKeyboard } from "../hooks/useAutocompleteKeyboard";
 import { useAutocompleteSuggestions } from "../hooks/useAutocompleteSuggestions";
-import { useScanCapture, type ScanAddOutcome } from "../hooks/useScanCapture";
+import { useScanCapture, type HeldScanEntry, type ScanAddOutcome, type ScanHoldCheck } from "../hooks/useScanCapture";
 import type { CardMetadataItem, PlayerLabel, ZoneCardItem, ZoneId } from "../types";
 import type { ConversationHistoryTriggerDescriptor } from "./ConversationWorkspace";
+import { CardHero } from "./CardHero";
+import { useCardDetailBlock } from "../hooks/useCardDetailBlock";
 import { PageShell } from "./PageShell";
 import { StagedStepHeader } from "./StagedStepHeader";
-import { StepEyebrow } from "./StepEyebrow";
 import { ZoneCardPicker } from "./ZoneCardPicker";
 
 type ZoneCollectionStepProps = {
@@ -27,12 +28,28 @@ type ZoneCollectionStepProps = {
   activePlayer: PlayerLabel;
   activePlayers: PlayerLabel[];
   displayNamesByPlayer: Record<PlayerLabel, string | undefined>;
+  /** Look-matching pass (slice N), requirement 3: no longer rendered as a per-step
+   * "Back" button — the caller's shared header ‹ (above `stationsRail`) is the only
+   * way back now. Kept in the prop contract so `MtgAssistantApp`'s wiring is unchanged. */
   onBack: () => void;
   onContinue: () => void;
   canContinue: boolean;
   onFlashStatus: (message: string) => void;
   statusMessage: string | null;
   historyTrigger?: ConversationHistoryTriggerDescriptor;
+  /** REQ-209: the four-station progress rail, rendered between the header and the step
+   * name. Owned by the caller (`MtgAssistantApp`) since it alone tracks the walk's
+   * furthest-reached station across all four steps. */
+  stationsRail?: ReactNode;
+  /** REQ-018/REQ-206/REQ-209: cards carried from Ask a Question's "Add in-depth
+   * details", waiting to be placed one at a time. While non-empty this step shows the
+   * placement gate instead of the normal zone tabs/shelf, and nothing passes Cards. */
+  pendingPlacementCards: CardMetadataItem[];
+  /** The total carried this walk — stays fixed while `pendingPlacementCards` shrinks, so
+   * the counter reads "n / total" instead of resetting as cards are placed. */
+  placementTotal: number;
+  onPlaceCard: (zone: ZoneId) => void;
+  onLeaveCardOut: () => void;
 };
 
 export function ZoneCollectionStep({
@@ -44,12 +61,16 @@ export function ZoneCollectionStep({
   activePlayer,
   activePlayers,
   displayNamesByPlayer,
-  onBack,
   onContinue,
   canContinue,
   onFlashStatus,
   statusMessage,
-  historyTrigger
+  historyTrigger,
+  stationsRail,
+  pendingPlacementCards,
+  placementTotal,
+  onPlaceCard,
+  onLeaveCardOut
 }: ZoneCollectionStepProps): JSX.Element {
   const orderedSelectedZones = useMemo(
     () => CANONICAL_ZONE_ORDER.filter((zone) => selectedZones.includes(zone)),
@@ -59,9 +80,10 @@ export function ZoneCollectionStep({
   const [searchInput, setSearchInput] = useState("");
   const [selectedCard, setSelectedCard] = useState<CardMetadataItem | null>(null);
   const [pendingOwner, setPendingOwner] = useState<PlayerLabel>(activePlayer);
-  // instanceIds auto-added to the active zone during the current scan session; feeds the
-  // top-right review bubble. Resets when the scan screen opens or the zone changes.
-  const [scanSessionInstanceIds, setScanSessionInstanceIds] = useState<string[]>([]);
+  // Look-matching pass (slice N, review 1 fix — finding 3), requirement 6: the
+  // search popover opens from the ＋ Add card chip under the rail now, instead
+  // of sitting permanently visible inside the plate.
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
 
   const activeZone = orderedSelectedZones[activeZoneIndex];
   const activeZoneCards = activeZone ? (zones[activeZone] ?? []) : [];
@@ -76,6 +98,7 @@ export function ZoneCollectionStep({
     setSearchInput("");
     setSelectedCard(null);
     setPendingOwner(activePlayer);
+    setIsSearchOpen(false);
   }, [activeZone, activePlayer]);
 
   const suggestions = useAutocompleteSuggestions({
@@ -97,25 +120,38 @@ export function ZoneCollectionStep({
     onSelect: selectCard
   });
 
+  // REQ-214: the hold-time duplicate/cap check — the same `validateZoneCardAdd`
+  // rule the immediate add always ran, applied the instant a card is recognised
+  // rather than deferred to commit, so a blocked re-scan still surfaces its
+  // message right away. Checked against the zone's current cards *and* anything
+  // already in the holding list but not yet committed, so scanning the same
+  // card twice in one session is blocked exactly when a manual duplicate add
+  // would be.
+  function canHoldInActiveZone(card: CardMetadataItem, held: HeldScanEntry[]): ScanHoldCheck {
+    if (!activeZone) {
+      return { ok: false, message: "No active zone" };
+    }
+    const heldAsZoneCards = held.map((entry) => buildZoneCardFromMetadata(entry.card, entry.scanImageUrl));
+    const candidateCard = buildZoneCardFromMetadata(card);
+    if (activeZone !== "stack") {
+      candidateCard.owner = pendingOwner;
+    }
+    const validation = validateZoneCardAdd([...activeZoneCards, ...heldAsZoneCards], candidateCard, activeZone);
+    return validation.ok ? { ok: true } : { ok: false, message: validation.message };
+  }
+
   const scanCapture = useScanCapture({
     cardMetadata,
-    onScanCandidateSelected: (card, scanImageUrl) => {
-      const outcome = addCardToActiveZone(card, scanImageUrl);
-      if (outcome.added) {
-        const instanceId = outcome.instanceId;
-        if (instanceId) {
-          setScanSessionInstanceIds((ids) => (ids.includes(instanceId) ? ids : [...ids, instanceId]));
-        }
-      }
-      return outcome;
-    }
+    canHold: canHoldInActiveZone,
+    // REQ-214: invoked once per held card when the scanner closes, in hold order —
+    // the zone's own card list only changes at that point, not on recognition.
+    onScanCandidateSelected: (card, scanImageUrl) => addCardToActiveZone(card, scanImageUrl)
   });
   const closeScan = scanCapture.closeScan;
   const isScanOpen = scanCapture.isOpen;
 
   useEffect(() => {
     closeScan();
-    setScanSessionInstanceIds([]);
   }, [activeZone, closeScan]);
 
   function updateZoneCards(zoneId: ZoneId, cards: ZoneCardItem[]): void {
@@ -166,12 +202,60 @@ export function ZoneCollectionStep({
     updateZoneCards(activeZone, removeZoneCardByInstanceId(activeZoneCards, instanceId));
   }
 
+  // REQ-209: the card menu's "Move to" — the card leaves activeZone and joins toZone,
+  // subject to that zone's own add validation (e.g. the Stack's duplicate/size limit).
+  function handleMoveCard(instanceId: string, toZone: ZoneId): void {
+    if (!activeZone || toZone === activeZone) {
+      return;
+    }
+    const card = activeZoneCards.find((item) => (item.instanceId ?? item.cardId) === instanceId);
+    if (!card) {
+      return;
+    }
+    const destCards = zones[toZone] ?? [];
+    const movedCard: ZoneCardItem =
+      toZone === "stack" ? { ...card, owner: undefined } : { ...card, owner: card.owner ?? pendingOwner };
+    const validation = validateZoneCardAdd(destCards, movedCard, toZone);
+    if (!validation.ok) {
+      onFlashStatus(validation.message);
+      return;
+    }
+    onZonesChange({
+      ...zones,
+      [activeZone]: removeZoneCardByInstanceId(activeZoneCards, instanceId),
+      [toZone]: appendZoneCard(destCards, movedCard)
+    });
+  }
+
+  // REQ-005/REQ-209: reorders a card within the active zone to `toIndexAfterRemoval` —
+  // the index in the zone's array once the moved card is already removed from it. Both
+  // the card menu's buttons and the shelf's drag reorder share this contract.
+  function handleReorderCard(instanceId: string, toIndexAfterRemoval: number): void {
+    if (!activeZone) {
+      return;
+    }
+    const cards = [...activeZoneCards];
+    const fromIndex = cards.findIndex((item) => (item.instanceId ?? item.cardId) === instanceId);
+    if (fromIndex === -1) {
+      return;
+    }
+    const [moved] = cards.splice(fromIndex, 1);
+    const clampedIndex = Math.max(0, Math.min(cards.length, toIndexAfterRemoval));
+    cards.splice(clampedIndex, 0, moved!);
+    updateZoneCards(activeZone, cards);
+  }
+
+  // Look-matching pass (slice N, review 1 fix — finding 3): named so both the
+  // new `.attach` row's own Scan button and `ZoneCardPicker`'s `scan.onOpen`
+  // (passed through for the scanner's own internal affordances) share one path.
+  async function handleOpenScan(): Promise<void> {
+    setSelectedCard(null);
+    setIsSearchOpen(false);
+    await scanCapture.openScan();
+  }
+
   function handleContinue(): void {
-    if (
-      canContinue &&
-      selectedZones.includes("stack") &&
-      (zones.stack?.length ?? 0) === 0
-    ) {
+    if (canContinue && selectedZones.includes("stack") && (zones.stack?.length ?? 0) === 0) {
       onFlashStatus(
         "Stack zone is selected but empty - fine for board-state questions; add stack cards if you want stack resolution."
       );
@@ -183,48 +267,125 @@ export function ZoneCollectionStep({
   const addButtonLabel =
     activeZone === "stack" ? (activeZoneCards.length === 0 ? "Begin stackening!" : "Add to Stack") : "Add card";
 
-  return (
-    <PageShell>
-      {!isScanOpen && (
-        <>
-          <StagedStepHeader historyTrigger={historyTrigger} />
-          <StepEyebrow stepName="Add cards to zones" />
-          <p className="text-sm text-zinc-400">
-            Select a zone, then add cards by searching or scanning.
-          </p>
-        </>
-      )}
+  // REQ-018/REQ-206/REQ-209: cards carried from Ask a Question are placed one at a
+  // time; nothing else on the Cards station renders until every carried card has a
+  // zone or is left out (D7's gate).
+  if (pendingPlacementCards.length > 0) {
+    const placingCard = pendingPlacementCards[0]!;
+    const placedSoFar = placementTotal - pendingPlacementCards.length;
 
-      {orderedSelectedZones.length === 0 ? (
-        !isScanOpen && (
-          <p className="rounded-2xl border border-zinc-700/70 bg-zinc-900/55 p-4 text-sm text-zinc-300">
-            No zones selected. Continue when you are ready to enrich context or ask a timing question.
-          </p>
-        )
-      ) : (
-        <>
-          {!isScanOpen && (
-            <div className="flex flex-wrap gap-2">
-              {orderedSelectedZones.map((zone, index) => {
-                const count = zones[zone]?.length ?? 0;
-                const isActive = index === activeZoneIndex;
-                return (
-                  <button
-                    key={zone}
-                    type="button"
-                    aria-label={`Zone tab: ${ZONE_LABELS[zone]}`}
-                    aria-pressed={isActive}
-                    data-accent-current={isActive}
-                    onClick={() => setActiveZoneIndex(index)}
-                    className="ambient-accent-surface ambient-accent-interactive motion-hover motion-press motion-focus rounded-lg border border-zinc-600 bg-zinc-800/70 px-3 py-1.5 text-xs font-semibold text-zinc-300 transition hover:bg-zinc-700/80"
-                  >
-                    {`${ZONE_LABELS[zone]}${count > 0 ? ` (${count})` : ""}`}
-                  </button>
-                );
-              })}
-            </div>
+    return (
+      <PageShell variant="narrow">
+        <StagedStepHeader historyTrigger={historyTrigger} />
+        <section className="idq">
+          {stationsRail}
+          <section className="idq-step" aria-label="Add cards to zones" data-placing="true">
+            <PlacementPlate
+              card={placingCard}
+              placedSoFar={placedSoFar}
+              placementTotal={placementTotal}
+              selectedZones={selectedZones}
+              onPlaceCard={onPlaceCard}
+              onLeaveCardOut={onLeaveCardOut}
+            />
+            {statusMessage && <p className="idq-status">{statusMessage}</p>}
+          </section>
+        </section>
+      </PageShell>
+    );
+  }
+
+  const stackSelected = activeZone === "stack";
+
+  return (
+    <PageShell variant="narrow">
+      {!isScanOpen && <StagedStepHeader historyTrigger={historyTrigger} />}
+      <section className="idq">
+        {!isScanOpen && stationsRail}
+
+        {/* `in-depth-question.html`'s own DOM order: the rail, the `.attach` row, the zone tabs and
+            the lit shelf hint all sit above the shelf's stage, which holds nothing but the shelf
+            and its `.plate-next` foot. */}
+        {!isScanOpen && activeZone && (
+          <div className="attach">
+            {/* `aria-label` disambiguates this toggle from the zone's own confirm button (also
+                named "Add card" for non-Stack zones) — visible text stays the mockup's. */}
+            <button
+              type="button"
+              aria-label={`Add a card to ${ZONE_LABELS[activeZone]}`}
+              aria-expanded={isSearchOpen}
+              aria-controls="zone-card-search-pop"
+              onClick={() => setIsSearchOpen((open) => !open)}
+              className="icon-chip motion-focus"
+            >
+              <span className="glyph" aria-hidden="true">
+                ＋
+              </span>{" "}
+              {stackSelected ? "Add to Stack" : "Add card"}
+            </button>
+            <button type="button" onClick={() => void handleOpenScan()} className="icon-chip motion-focus">
+              <span className="glyph" aria-hidden="true">
+                ▣
+              </span>{" "}
+              Scan
+            </button>
+          </div>
+        )}
+
+        <section className="idq-step" aria-label="Add cards to zones" data-placing="false">
+          {!isScanOpen &&
+            (orderedSelectedZones.length === 0 ? (
+              <p className="lede">
+                No zones selected. Continue when you are ready to enrich context or ask a timing question.
+              </p>
+            ) : (
+              <div className="zone-tabs">
+                {orderedSelectedZones.map((zone, index) => {
+                  const count = zones[zone]?.length ?? 0;
+                  const isActive = index === activeZoneIndex;
+                  return (
+                    <button
+                      key={zone}
+                      type="button"
+                      aria-label={`Zone tab: ${ZONE_LABELS[zone]}`}
+                      aria-pressed={isActive}
+                      data-accent-current={isActive}
+                      onClick={() => setActiveZoneIndex(index)}
+                      className="ambient-accent-surface ambient-accent-interactive motion-hover motion-press motion-focus"
+                    >
+                      {/* D5: every zone tab shows its own card count, Stack included — no
+                        zero-count special case. */}
+                      {ZONE_LABELS[zone]}
+                      <b>{count}</b>
+                    </button>
+                  );
+                })}
+              </div>
+            ))}
+
+          {/* The lit reorder hint (`#shelf-hint`, 2+ cards only), in the mockup's own wording. */}
+          {!isScanOpen && activeZone && activeZoneCards.length > 1 && (
+            <p className="shelf-hint">
+              <span className="glyph" aria-hidden="true">
+                {"⇄"}
+              </span>
+              <span>
+                {stackSelected ? (
+                  <>
+                    <b>Top resolves first</b>, then 2nd, 3rd… down to the bottom. Drag a card to reorder it (hold first
+                    on a phone), or tap it for Move up / Move down.
+                  </>
+                ) : (
+                  <>
+                    <b>Drag to reorder</b> (hold first on a phone). Tap a card to move it to another zone.
+                  </>
+                )}
+              </span>
+            </p>
           )}
 
+          {/* The stage always mounts (`ZoneCardPicker` owns its own internal scan-camera view and
+            must stay mounted while scanning); only the foot hides during scan. */}
           {activeZone && (
             <ZoneCardPicker
               zoneId={activeZone}
@@ -233,23 +394,23 @@ export function ZoneCollectionStep({
               displayNamesByPlayer={displayNamesByPlayer}
               pendingOwner={pendingOwner}
               onPendingOwnerChange={setPendingOwner}
+              isSearchOpen={isSearchOpen}
               searchInput={searchInput}
               onSearchInputChange={setSearchInput}
               onSearchKeyDown={keyboard.handleKeyDown}
               // Once the field holds the selected card's exact canonical name (DEC-160), that
               // name is not a query — reopening the list over the staged preview would cover
               // the very card it describes. Typing anything else brings suggestions back.
-              showSuggestions={
-                searchInput.trim().length >= 3 &&
-                keyboard.isOpen &&
-                searchInput !== selectedCard?.name
-              }
+              showSuggestions={searchInput.trim().length >= 3 && keyboard.isOpen && searchInput !== selectedCard?.name}
               isMetadataLoading={isMetadataLoading}
               suggestions={suggestions}
               noMatchCopy={NO_MATCH_COPY}
               activeSuggestionIndex={keyboard.activeIndex}
               onSuggestionHover={keyboard.setActiveIndex}
               onSuggestionSelect={(card) => {
+                // Keeps the search popover open (unchanged behaviour, DEC-160): the
+                // field now shows the selected card's exact canonical name, with the
+                // preview/Add action below it, until the player adds it or dismisses.
                 selectCard(card);
                 keyboard.closeSuggestions();
               }}
@@ -257,6 +418,8 @@ export function ZoneCollectionStep({
               addButtonLabel={addButtonLabel}
               onAddSelectedCard={handleAddSelectedCard}
               onRemoveCard={handleRemoveCard}
+              onMoveCard={handleMoveCard}
+              onReorderCard={handleReorderCard}
               scan={{
                 isOpen: isScanOpen,
                 isLoading: scanCapture.isLoading,
@@ -264,55 +427,128 @@ export function ZoneCollectionStep({
                 convergence: scanCapture.convergence,
                 addConfirmation: scanCapture.addConfirmation,
                 scanDebug: scanCapture.scanDebug,
-                sessionInstanceIds: scanSessionInstanceIds,
-                onOpen: async () => {
-                  setSelectedCard(null);
-                  setScanSessionInstanceIds([]);
-                  await scanCapture.openScan();
-                },
+                heldEntries: scanCapture.heldEntries,
+                onRemoveHeld: scanCapture.removeHeld,
+                onOpen: handleOpenScan,
                 onExitToManual: scanCapture.closeScan,
                 identify: scanCapture.identify,
                 onCameraStatusChange: scanCapture.setCameraStatus,
                 onAcquisitionDiagnostic: scanCapture.recordAcquisitionDiagnostic
               }}
-            />
-          )}
-        </>
-      )}
-
-      {!isScanOpen && (
-        <>
-          <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={onBack}
-              className="motion-hover motion-press motion-focus rounded-xl border border-zinc-500 bg-zinc-800/70 px-4 py-2.5 text-sm font-semibold text-zinc-100 transition hover:bg-zinc-700/80"
             >
-              Back
-            </button>
-            <button
-              type="button"
-              onClick={handleContinue}
-              disabled={!canContinue}
-              className="motion-hover motion-press motion-focus rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-            >
-              Continue
-            </button>
-          </div>
+              {!isScanOpen && (
+                <>
+                  {!canContinue && (
+                    <p className="lede">Add at least one card by searching or scanning before continuing.</p>
+                  )}
 
-          {!canContinue && (
-            <p className="text-xs text-zinc-400">
-              Add at least one card by searching or scanning before continuing.
-            </p>
+                  <button
+                    type="button"
+                    onClick={handleContinue}
+                    disabled={!canContinue}
+                    className="plate-next motion-hover motion-press motion-focus"
+                  >
+                    <span>
+                      Continue
+                      <small aria-hidden="true">next: a few details per card</small>
+                    </span>
+                    <span className="chev" aria-hidden="true">
+                      ›
+                    </span>
+                  </button>
+                </>
+              )}
+            </ZoneCardPicker>
           )}
-        </>
-      )}
 
-      {!isScanOpen && statusMessage && (
-        <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
-          {statusMessage}
-        </p>
-      )}
+          {!isScanOpen && statusMessage && <p className="idq-status">{statusMessage}</p>}
+        </section>
+      </section>
     </PageShell>
+  );
+}
+
+type PlacementPlateProps = {
+  card: CardMetadataItem;
+  placedSoFar: number;
+  placementTotal: number;
+  selectedZones: ZoneId[];
+  onPlaceCard: (zone: ZoneId) => void;
+  onLeaveCardOut: () => void;
+};
+
+/**
+ * `in-depth-question.html`'s `#place-plate`: the carried card as the hero beside "From your
+ * question", its name, type line and counter, and one tile per zone. REQ-018: every zone stays
+ * one tap away, so the zones already chosen lead and the rest follow as dashed tiles rather than
+ * folding behind "Other zones ▾".
+ */
+function PlacementPlate({
+  card,
+  placedSoFar,
+  placementTotal,
+  selectedZones,
+  onPlaceCard,
+  onLeaveCardOut
+}: PlacementPlateProps): JSX.Element {
+  const detail = useCardDetailBlock(card.cardId);
+  const chosen = CANONICAL_ZONE_ORDER.filter((zone) => selectedZones.includes(zone));
+  const rest = CANONICAL_ZONE_ORDER.filter((zone) => !selectedZones.includes(zone));
+
+  return (
+    <div className="plate place-plate" data-testid="card-placement-gate">
+      <div className="ctx-art">
+        <CardHero card={card} />
+      </div>
+      <div className="ctx-head">
+        <div className="eyebrow">
+          <span>From your question</span>
+          <button type="button" onClick={onLeaveCardOut} className="link danger motion-focus">
+            Leave this card out
+          </button>
+        </div>
+        <h2>{card.name}</h2>
+        {detail?.typeLine ? (
+          <div className="sub">
+            {detail.typeLine}
+            {detail.manaCost ? (
+              <>
+                {" · "}
+                <span>{detail.manaCost}</span>
+              </>
+            ) : null}
+          </div>
+        ) : null}
+        <span className="counter" aria-live="polite">
+          <span aria-hidden="true">
+            {placedSoFar + 1}&nbsp;/&nbsp;{placementTotal}
+          </span>
+          <small aria-hidden="true">to place</small>
+          <span className="sr-only">{`Card ${placedSoFar + 1} of ${placementTotal}`}</span>
+        </span>
+      </div>
+      <div className="ctx-form">
+        <span className="lbl">
+          <span className="t">
+            Which zone is it in?<small>tap one — the next card follows</small>
+          </span>
+        </span>
+        <div className="place-zones">
+          {[...chosen, ...rest].map((zone) => (
+            <button
+              key={zone}
+              type="button"
+              data-zone={zone}
+              data-extra={!selectedZones.includes(zone)}
+              onClick={() => onPlaceCard(zone)}
+              className="motion-focus"
+            >
+              <span className="mark" aria-hidden="true" />
+              {ZONE_LABELS[zone]}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
   );
 }

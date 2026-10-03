@@ -20,12 +20,9 @@ type PortalSlotProps = {
  * only falls back to the fixed tab when none of the registered slots are
  * visible (e.g. a destination with no header at all).
  *
- * `self-start`: the host header grid uses `items-center` so its row is
- * vertically centered against the tallest column (the brand block) — without
- * this override, the corner rail's `-mt` lift (see `.portal-slot-tab`) would
- * be measured from that centered position instead of the row's true top, and
- * would land short of the card's border. This slot sits in the header's
- * left column (DEC-122) — previously the top-middle placement of DEC-095.
+ * `.portal-slot`: a flex box in the header's left column (DEC-122), so the ☰
+ * inside it is a flex item exactly as the mockup's `.menu-toggle` is a direct
+ * child of `.app-header` (no inline line box shifting it off the row's centre).
  */
 export function PortalSlot({ historyTrigger }: PortalSlotProps): JSX.Element {
   const ref = useRef<HTMLDivElement>(null);
@@ -43,5 +40,5 @@ export function PortalSlot({ historyTrigger }: PortalSlotProps): JSX.Element {
     return () => unregisterSlot(node);
   }, [registerSlot, unregisterSlot, getHistoryTrigger]);
 
-  return <div ref={ref} className="self-start" />;
+  return <div ref={ref} className="portal-slot" />;
 }

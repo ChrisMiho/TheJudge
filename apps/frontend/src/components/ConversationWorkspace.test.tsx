@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { appCss } from "../test/appTestHelpers";
+import { appCss, flowCss } from "../test/appTestHelpers";
 import { ConversationWorkspace } from "./ConversationWorkspace";
 
 afterEach(cleanup);
@@ -48,8 +48,11 @@ describe("Frontend - Conversation workspace", () => {
     expect(within(workspace).getByText("Provider unavailable")).toBeInTheDocument();
     expect(within(workspace).getByText("Ready for follow-ups")).toBeInTheDocument();
 
+    // Look-matching pass (slice M, review 1 fix — finding 4): the follow-up box is
+    // `ComposerPill` itself now (`.q-box`), not a `<form>` of its own — assert it
+    // sits inside that shared pill shell instead of checking a `<form>`'s class.
     const composer = within(workspace).getByRole("textbox", { name: "Follow-up question" });
-    expect(composer.closest("form")).not.toHaveClass("fixed");
+    expect(composer.closest('[data-testid="composer-pill"]')).toBeInTheDocument();
     await user.type(composer, "What happens next?");
     await user.click(within(workspace).getByRole("button", { name: "Send" }));
     expect(onFollowUp).toHaveBeenCalledWith("What happens next?");
@@ -83,7 +86,7 @@ describe("Frontend - Conversation workspace", () => {
     expect(within(workspace).getByText("Cardless answer")).toBeInTheDocument();
   });
 
-  it("renders Start Over shrink-to-content on mobile, reverting to full width at the sm breakpoint (REQ-109)", () => {
+  it("renders Start Over as a shared button that keeps the 44px touch floor (REQ-109)", () => {
     render(
       <ConversationWorkspace
         messages={[{ role: "assistant", content: "Answer" }]}
@@ -99,12 +102,8 @@ describe("Frontend - Conversation workspace", () => {
     );
 
     const startOver = screen.getByRole("button", { name: "Start Over" });
-    // Mobile-default shrink-to-content (less-dominant, reduces accidental taps) via Tailwind's
-    // self-start, reverting to the original full-width stretch at sm: — the .conversation-
-    // start-over class carries the shared 44px NFR-001 touch-target floor at both sizes.
-    expect(startOver).toHaveClass("conversation-start-over");
-    expect(startOver).toHaveClass("self-start");
-    expect(startOver).toHaveClass("sm:self-stretch");
+    expect(startOver).toHaveClass("conversation-start-over", "btn");
+    expect(appCss).toMatch(/\.conversation-start-over \{[^}]*min-height: 44px/);
   });
 
   it("preserves a typed composer draft when New response focuses the latest assistant message", async () => {
@@ -197,11 +196,10 @@ describe("Frontend - Conversation workspace", () => {
     }
   });
 
-  it("gives the answered thread a viewport-relative min-height floor so short threads still fill (REQ-109)", () => {
-    expect(appCss).toMatch(/\.conversation-thread \{[^}]*min-height: clamp\([^)]*dvh[^)]*\);[^}]*\}/);
-    // The floor stays below the existing max-height figure so a short thread still leaves
-    // room below it (composer, Start Over) within a standard desktop viewport.
-    expect(appCss).toMatch(/\.conversation-thread \{[^}]*max-height: clamp\(28rem, 70dvh, 44rem\);[^}]*\}/);
+  it("takes the mockup's thread box (flow.css .thread) and adds no box of its own for the workspace", () => {
+    expect(flowCss).toMatch(/\.thread \{[^}]*max-height: 52dvh;[^}]*overflow-y: auto/);
+    expect(appCss).toMatch(/\.conversation-workspace \{\s*display: contents;\s*\}/);
+    expect(appCss).not.toMatch(/\.conversation-thread \{/);
   });
 
   it("guarantees the 44px NFR-001 touch-target floor on Start Over at both breakpoints", () => {

@@ -16,7 +16,7 @@ build-half dispatch carries `Working directory: <root>/.worktrees/implement-<slu
 | # | Node | Delegate | Model | Cap | On success | On failure |
 | --- | --- | --- | --- | --- | --- | --- |
 | 5 | `plan` | `/thejudge-map-out` | sonnet | 120 | `build` | park |
-| 6 | `build` | `/thejudge-implement-all` | sonnet | 1200 | `review` | park |
+| 6 | `build` | `/thejudge-implement-all` | sonnet | 4000 | `review` | park |
 | 7 | `review` | no-write reviewer subagent | opus | 120 | `close` | `build` for Critical/Important, max 2 loops |
 | 8 | `close` | `/thejudge-cleanup` (PR-ready path, on the code branch, before the merge) | sonnet | 120 | `land` — the run ends `COMPLETE` with the code PR open | park |
 | 9 | `land` | human PR merge | — | — | run complete — outside the run's ledger; the package is on `main` when the owner merges | — |

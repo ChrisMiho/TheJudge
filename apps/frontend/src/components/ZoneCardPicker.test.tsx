@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from "@testing-library/rea
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ZoneCardPicker } from "./ZoneCardPicker";
-import type { ScanConvergence } from "../hooks/useScanCapture";
+import type { HeldScanEntry, ScanConvergence } from "../hooks/useScanCapture";
 import { clearCardDetailCache } from "../lib/cardDetail";
 import type { CardMetadataItem, ZoneCardItem, ZoneId } from "../types";
 
@@ -65,12 +65,23 @@ function makeMetadataCard(name: string, imageId: string): CardMetadataItem {
   };
 }
 
+function makeHeldEntry(id: number, cardId: string, name: string): HeldScanEntry {
+  return { id, card: { cardId, name, imageId: "", colors: [] }, scanImageUrl: "", candidates: [] };
+}
+
 function renderPicker(
   scanOverrides: Partial<Parameters<typeof ZoneCardPicker>[0]["scan"]> = {},
   pickerOverrides: {
     zoneId?: ZoneId;
     cards?: ZoneCardItem[];
     onRemoveCard?: (cardId: string) => void;
+    onMoveCard?: (instanceId: string, toZone: ZoneId) => void;
+    onReorderCard?: (instanceId: string, toIndexAfterRemoval: number) => void;
+    // Look-matching pass (slice N, review 1 fix — finding 3): search now opens
+    // from the caller's own ＋ Add card chip — default true here so every
+    // existing search-visible assertion below keeps resolving without having
+    // to open it first; tests of the closed state pass `false` explicitly.
+    isSearchOpen?: boolean;
   } = {}
 ) {
   const onExitToManual = vi.fn();
@@ -82,6 +93,7 @@ function renderPicker(
       displayNamesByPlayer={{ "Player 1": undefined } as never}
       pendingOwner="Player 1"
       onPendingOwnerChange={() => undefined}
+      isSearchOpen={pickerOverrides.isSearchOpen ?? true}
       searchInput=""
       onSearchInputChange={() => undefined}
       onSearchKeyDown={() => undefined}
@@ -96,6 +108,8 @@ function renderPicker(
       addButtonLabel="Add card"
       onAddSelectedCard={() => undefined}
       onRemoveCard={pickerOverrides.onRemoveCard ?? (() => undefined)}
+      onMoveCard={pickerOverrides.onMoveCard ?? (() => undefined)}
+      onReorderCard={pickerOverrides.onReorderCard ?? (() => undefined)}
       scan={{
         isOpen: true,
         isLoading: false,
@@ -103,7 +117,8 @@ function renderPicker(
         convergence: searching,
         addConfirmation: null,
         scanDebug: null,
-        sessionInstanceIds: [],
+        heldEntries: [],
+        onRemoveHeld: () => undefined,
         onOpen: () => undefined,
         onExitToManual,
         identify: () => ({ matched: false, was_rotated: false, candidates: [] }),
@@ -131,12 +146,11 @@ describe("ZoneCardPicker scan chrome", () => {
     expect(screen.queryByText(/^Camera:/)).not.toBeInTheDocument();
   });
 
-  it("renders the Scan confirm control with accent palette tokens, not a hardcoded emerald hue", () => {
-    renderPicker({ isOpen: false });
-    const scanButton = screen.getByRole("button", { name: "Scan" });
-    expect(scanButton).toHaveClass("border-accent/70", "bg-accent/15", "text-accent-soft", "hover:bg-accent/25");
-    expect(scanButton.className).not.toMatch(/emerald/);
-  });
+  // Look-matching pass (slice N, review 1 fix — finding 3): the Scan trigger moved
+  // out of this component entirely, into the caller's own ＋ Add card / ▣ Scan row
+  // under the rail (`ZoneCollectionStep`'s `.attach`, styled by the shared
+  // `.icon-chip` class — accent tokens come from that shared CSS now, not an
+  // inline Tailwind utility list local to this component).
 
   it("never renders a manual-entry prompt or 'Use manual search' button", () => {
     renderPicker();
@@ -159,16 +173,14 @@ describe("ZoneCardPicker scan focus", () => {
     expect(document.querySelector(".zone-card-grid")).toBeNull();
   });
 
-  it("renders Exit scan above and outside the camera overlay", () => {
+  it("renders Exit scan as a box above the camera's top-right corner (REQ-214)", () => {
     renderPicker({ isOpen: true });
     const exitBtn = screen.getByRole("button", { name: "Exit scan" });
     const camera = screen.getByTestId("scan-camera");
     const cameraOverlay = camera.parentElement;
 
-    expect(exitBtn.compareDocumentPosition(camera) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(cameraOverlay).not.toContainElement(exitBtn);
-    expect(exitBtn).not.toHaveClass("absolute", "right-3", "top-3", "z-20");
-    expect(exitBtn).toHaveClass("min-h-10");
+    expect(cameraOverlay).toContainElement(exitBtn);
+    expect(exitBtn).toHaveClass("absolute", "right-3", "top-3");
   });
 
   it("Exit scan closes scan when clicked", async () => {
@@ -196,31 +208,36 @@ describe("ZoneCardPicker card grid", () => {
     );
     const grid = document.querySelector(".zone-card-grid");
     expect(grid).not.toBeNull();
-    expect(grid).toHaveClass("flex", "overflow-x-auto");
+    // `.shelf` is the mockup's own horizontal, region-scrolling strip.
+    expect(grid).toHaveClass("shelf");
     expect(grid).not.toHaveClass("grid", "grid-cols-2");
 
     // Tiles lay out left-to-right in add order.
     const tiles = grid?.querySelectorAll(".zone-card-tile") ?? [];
     expect(tiles).toHaveLength(2);
-    expect(within(tiles[0] as HTMLElement).getByText("bottom")).toBeInTheDocument();
-    expect(within(tiles[1] as HTMLElement).getByText("top")).toBeInTheDocument();
+    // REQ-008/REQ-209: the Stack's shelf tags read BOTTOM … TOP.
+    expect(within(tiles[0] as HTMLElement).getByText("BOTTOM")).toBeInTheDocument();
+    expect(within(tiles[1] as HTMLElement).getByText("TOP")).toBeInTheDocument();
   });
 
   it("exposes the semantic responsive hook on zone card tiles", () => {
     renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
-    const tile = screen.getByRole("button", { name: "Remove Opt from Stack" }).closest(".zone-card-tile");
+    const tile = screen.getByRole("button", { name: "Card actions for Opt" }).closest(".zone-card-tile");
     expect(tile).toHaveClass("zone-card-tile");
   });
 
   it("adds token-driven entrance and remove-exit hooks to card tiles", () => {
     renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
 
-    const removeButton = screen.getByRole("button", { name: "Remove Opt from Stack" });
-    expect(removeButton.closest(".zone-card-tile")).toHaveClass(
+    // Look-matching pass (slice N): the tile itself is the "Card actions" trigger now
+    // (requirement 6); the quick ✕ corner widget (`in-depth-question.html:233-243`)
+    // keeps the press-preview hook the "about to remove" micro-animation used.
+    const actionsButton = screen.getByRole("button", { name: "Card actions for Opt" });
+    expect(actionsButton.closest(".zone-card-tile")).toHaveClass(
       "enrichment-card-enter",
       "card-state-remove"
     );
-    expect(removeButton).toHaveClass("card-state-remove-trigger");
+    expect(screen.getByRole("button", { name: "Remove Opt" })).toHaveClass("card-state-remove-trigger");
   });
 
   it("uses a compact image with a corner detail popup, no duplicated card name, and keeps controls below it (DEC-151)", async () => {
@@ -232,10 +249,11 @@ describe("ZoneCardPicker card grid", () => {
 
     const image = screen.getByRole("img", { name: "Opt" });
     const tile = image.closest(".zone-card-tile") as HTMLElement;
-    expect(image).toHaveClass("zone-card-tile-image", "h-auto", "w-full", "object-contain");
+    expect(image).toHaveClass("zone-card-tile-image");
     expect(within(tile).queryByText("Opt")).not.toBeInTheDocument();
-    expect(screen.getByText("bottom & top")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Remove Opt from Stack" })).toBeInTheDocument();
+    // REQ-008/REQ-209: one card on the Stack reads TOP (not "bottom & top").
+    expect(screen.getByText("TOP")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Card actions for Opt" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Show details for Opt" })).toBeInTheDocument();
 
     // Oracle/detail text is not stacked under the image by default — only the popup shows it.
@@ -251,7 +269,7 @@ describe("ZoneCardPicker card grid", () => {
     expect(screen.getByRole("img", { name: "Opt" })).toBeInTheDocument();
   });
 
-  it("keeps strip tiles at their fixed w-40 footprint while the image inside grows", () => {
+  it("keeps strip tiles on the mockup's fixed-width shelf while the image fills the tile", () => {
     renderPicker(
       { isOpen: false },
       {
@@ -264,37 +282,39 @@ describe("ZoneCardPicker card grid", () => {
 
     const tiles = document.querySelectorAll(".zone-card-tile");
     expect(tiles).toHaveLength(2);
-    // REQ-130/DEC-160: only the image grows. The tile keeps its fixed width and the strip
-    // stays one horizontal region-scrolling row in add order.
+    // REQ-130/DEC-160: the tile is the mockup's `.shelf .card` (a fixed `--tile-w` width, set by
+    // the shelf) and the image inside fills it; the strip stays one horizontal region-scrolling
+    // row in add order.
     tiles.forEach((tile) => {
-      expect(tile).toHaveClass("w-40", "shrink-0");
+      expect(tile).toHaveClass("card");
       const image = within(tile as HTMLElement).getByRole("img");
-      expect(image).toHaveClass("w-full");
+      expect(image).toHaveClass("zone-card-tile-image");
       expect(image.className).not.toMatch(/max-h-|\bw-auto\b/);
     });
     const grid = document.querySelector(".zone-card-grid");
-    expect(grid).toHaveClass("flex", "overflow-x-auto");
+    expect(grid).toHaveClass("shelf");
     expect(within(tiles[0] as HTMLElement).getByRole("img", { name: "Opt" })).toBeInTheDocument();
     expect(
       within(tiles[1] as HTMLElement).getByRole("img", { name: "Lightning Bolt" })
     ).toBeInTheDocument();
   });
 
-  it("puts search and the labeled Scan control on one non-wrapping row with a 44px touch floor", () => {
+  // Look-matching pass (slice N, review 1 fix — finding 3): search is now the
+  // mockup's own popover (`.search-pop`/`.search-row`), opened from the
+  // caller's ＋ Add card chip rather than sharing a row with an inline Scan
+  // button (Scan moved to that same caller's `.attach` row).
+  it("renders the search field inside the search-pop popover when open", () => {
     renderPicker({ isOpen: false });
 
     const input = screen.getByLabelText("Stack search input");
-    const scanButton = screen.getByRole("button", { name: "Scan" });
-    const row = input.parentElement as HTMLElement;
+    expect(input).toHaveClass("field");
+    expect(input.closest(".search-pop")).not.toBeNull();
+  });
 
-    // REQ-125: one row at every width — the prior `sm:grid-cols-[1fr_auto]` stacked them
-    // below 640px, pushing the selected-card preview and its Add action further down phone.
-    expect(row).toContainElement(scanButton);
-    expect(row).toHaveClass("grid", "grid-cols-[1fr_auto]", "items-center");
-    expect(row.className).not.toMatch(/sm:grid-cols/);
-    expect(scanButton).toHaveTextContent("Scan");
-    expect(scanButton).toHaveClass("min-h-11", "whitespace-nowrap");
-    expect(input).toHaveClass("min-h-11", "min-w-0");
+  it("renders no search field when the search popover is closed", () => {
+    renderPicker({ isOpen: false }, { isSearchOpen: false });
+
+    expect(screen.queryByLabelText("Stack search input")).not.toBeInTheDocument();
   });
 
   it("renders the selected-card preview as a shell-column image with Add below and no duplicate title", () => {
@@ -306,6 +326,7 @@ describe("ZoneCardPicker card grid", () => {
         displayNamesByPlayer={{ "Player 1": undefined } as never}
         pendingOwner="Player 1"
         onPendingOwnerChange={() => undefined}
+        isSearchOpen
         searchInput="Opt"
         onSearchInputChange={() => undefined}
         onSearchKeyDown={() => undefined}
@@ -320,6 +341,8 @@ describe("ZoneCardPicker card grid", () => {
         addButtonLabel="Add card"
         onAddSelectedCard={() => undefined}
         onRemoveCard={() => undefined}
+        onMoveCard={() => undefined}
+        onReorderCard={() => undefined}
       />
     );
 
@@ -337,7 +360,7 @@ describe("ZoneCardPicker card grid", () => {
     expect(
       image.compareDocumentPosition(addButton) & Node.DOCUMENT_POSITION_FOLLOWING
     ).toBeTruthy();
-    expect(addButton).toHaveClass("min-h-11");
+    expect(addButton).toHaveClass("btn", "primary");
   });
 
   it("does not duplicate the owner label on an image-bearing non-stack card", () => {
@@ -392,7 +415,7 @@ describe("ZoneCardPicker card grid", () => {
 
     const fallback = screen.getByTestId("card-presentation-fallback");
     const tile = fallback.closest(".zone-card-tile");
-    expect(fallback).toHaveClass("w-full");
+    expect(fallback).toHaveClass("fallback");
     expect(tile).toHaveClass("card-identity-ring");
     expect(tile).toHaveStyle(
       "--card-identity-ring: linear-gradient(90deg, rgb(248 231 185 / 0.55), rgb(14 165 233 / 0.55))"
@@ -401,8 +424,11 @@ describe("ZoneCardPicker card grid", () => {
     // D3: the fallback shows the card name only — no descriptive fields, no fetch.
     expect(within(fallback).queryByText("{2}{U}{U}")).not.toBeInTheDocument();
     expect(within(fallback).queryByText("Legendary Creature — Human Artificer")).not.toBeInTheDocument();
-    expect(screen.getByText("bottom & top")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Remove Urza, Lord High Artificer from Stack" })).toBeInTheDocument();
+    // REQ-008/REQ-209: one card on the Stack reads TOP (not "bottom & top").
+    expect(screen.getByText("TOP")).toBeInTheDocument();
+    expect(
+      screen.getByRole("button", { name: "Card actions for Urza, Lord High Artificer" })
+    ).toBeInTheDocument();
   });
 
   it("replaces a failed tile image with the name-only fallback and issues no detail fetch (D3, DEC-078)", () => {
@@ -437,86 +463,143 @@ describe("ZoneCardPicker card grid", () => {
         onRemoveCard
       }
     );
-    await user.click(screen.getByRole("button", { name: "Remove Opt from Stack" }));
+    // REQ-008/REQ-209: Remove is a row in the card menu a tap on "Card actions" opens.
+    await user.click(screen.getByRole("button", { name: "Card actions for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Remove from the Stack" }));
     expect(onRemoveCard).toHaveBeenCalledTimes(1);
     expect(onRemoveCard).toHaveBeenCalledWith("iid-opt");
   });
 
-  it("renders stack position labels on tiles", () => {
+  it("renders stack position tags on tiles", () => {
     renderPicker(
       { isOpen: false },
       { cards: [makeZoneCard("opt", "Opt"), makeZoneCard("bolt", "Lightning Bolt")] }
     );
-    expect(screen.getByText("bottom")).toBeInTheDocument();
-    expect(screen.getByText("top")).toBeInTheDocument();
+    expect(screen.getByText("BOTTOM")).toBeInTheDocument();
+    expect(screen.getByText("TOP")).toBeInTheDocument();
   });
 
-  it("renders tile for a single card with 'bottom & top' label", () => {
+  it("renders tile for a single card with a TOP tag", () => {
     renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt")] });
-    expect(screen.getByText("bottom & top")).toBeInTheDocument();
+    expect(screen.getByText("TOP")).toBeInTheDocument();
+  });
+
+  it("opens the card menu on Card actions, with Move to pills and no order control for a lone card", async () => {
+    const user = userEvent.setup();
+    renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })] });
+
+    await user.click(screen.getByRole("button", { name: "Card actions for Opt" }));
+
+    expect(screen.getByTestId("zone-card-menu")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Battlefield" })).toBeInTheDocument();
+    expect(screen.queryByRole("group", { name: "Reorder" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Remove from the Stack" })).toBeInTheDocument();
+  });
+
+  it("moves a card to another zone via the card menu's Move to pill", async () => {
+    const user = userEvent.setup();
+    const onMoveCard = vi.fn();
+    renderPicker(
+      { isOpen: false },
+      { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })], onMoveCard }
+    );
+
+    await user.click(screen.getByRole("button", { name: "Card actions for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Battlefield" }));
+
+    expect(onMoveCard).toHaveBeenCalledWith("iid-opt", "battlefield");
+    // Choosing an action closes the menu.
+    expect(screen.queryByTestId("zone-card-menu")).not.toBeInTheDocument();
+  });
+
+  it("reorders a Stack card via the card menu's Down/Up/To top controls", async () => {
+    const user = userEvent.setup();
+    const onReorderCard = vi.fn();
+    renderPicker(
+      { isOpen: false },
+      {
+        cards: [
+          makeZoneCard("opt", "Opt", { instanceId: "iid-opt" }),
+          makeZoneCard("bolt", "Lightning Bolt", { instanceId: "iid-bolt" }),
+          makeZoneCard("doom", "Doom Blade", { instanceId: "iid-doom" })
+        ],
+        onReorderCard
+      }
+    );
+
+    // "Lightning Bolt" is the middle card (index 1 of 3).
+    await user.click(screen.getByRole("button", { name: "Card actions for Lightning Bolt" }));
+    await user.click(screen.getByRole("button", { name: "⤒ To top" }));
+
+    expect(onReorderCard).toHaveBeenCalledWith("iid-bolt", 3);
+  });
+
+  it("opens Card details from the card menu, closing the menu first", async () => {
+    const user = userEvent.setup();
+    renderPicker({ isOpen: false }, { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })] });
+
+    await user.click(screen.getByRole("button", { name: "Card actions for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Card details" }));
+
+    expect(screen.queryByTestId("zone-card-menu")).not.toBeInTheDocument();
+    expect(screen.getByTestId("card-detail-popup")).toBeInTheDocument();
+    expect(within(screen.getByTestId("card-detail-popup")).getByText("Opt")).toBeInTheDocument();
   });
 });
 
-describe("ZoneCardPicker scan review bubble", () => {
-  it("does not render the bubble when nothing was scanned this session", () => {
-    renderPicker({ sessionInstanceIds: [] }, { cards: [makeZoneCard("opt", "Opt")] });
+describe("ZoneCardPicker scan review bubble (REQ-214 holding list)", () => {
+  it("does not render the bubble when the holding list is empty", () => {
+    renderPicker({ heldEntries: [] }, { cards: [makeZoneCard("opt", "Opt")] });
     expect(screen.queryByLabelText(/^Scanned this session:/)).not.toBeInTheDocument();
   });
 
-  it("counts this-session adds and expands to the scanned cards", async () => {
+  it("counts the holding list and expands to the held cards, naming the destination", async () => {
     const user = userEvent.setup();
-    const optCard = makeZoneCard("opt", "Opt", { instanceId: "iid-opt" });
-    const boltCard = makeZoneCard("bolt", "Lightning Bolt", { instanceId: "iid-bolt" });
-    const manualCard = makeZoneCard("manual", "Counterspell");
     renderPicker(
-      { sessionInstanceIds: ["iid-opt", "iid-bolt"] },
-      { cards: [optCard, boltCard, manualCard] }
+      { heldEntries: [makeHeldEntry(1, "opt", "Opt"), makeHeldEntry(2, "bolt", "Lightning Bolt")] },
+      { zoneId: "stack" }
     );
 
     const counter = screen.getByLabelText("Scanned this session: 2");
     expect(counter).toBeInTheDocument();
-    expect(counter.parentElement).toHaveClass("absolute", "right-3", "top-12", "z-10");
-    // Counter reflects only this-session scans, not the manually added card.
+    expect(counter.closest(".vf-top-right")).not.toBeNull();
+    // Counter reflects only the holding list, independent of the zone's own cards.
     expect(within(counter).getByText("2")).toBeInTheDocument();
 
     await user.click(counter);
     expect(screen.getByText("Added this session")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Opt from scan review" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Remove Lightning Bolt from scan review" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Remove Counterspell from scan review" })).not.toBeInTheDocument();
+    expect(screen.getByText("Joins the Stack when you close the scanner")).toBeInTheDocument();
   });
 
-  it("renders the review bubble counter with accent palette tokens, not a fixed hue", () => {
-    renderPicker(
-      { sessionInstanceIds: ["iid-opt"] },
-      { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })] }
-    );
+  it("renders the review bubble counter as the mockup's .pill, reading the active colour's tokens", () => {
+    renderPicker({ heldEntries: [makeHeldEntry(1, "opt", "Opt")] });
     const bubble = screen.getByLabelText("Scanned this session: 1");
-    expect(bubble).toHaveClass("bg-accent/90", "text-accent-contrast");
+    expect(bubble).toHaveClass("pill");
     expect(bubble.className).not.toMatch(/\b(sky|emerald)-/);
   });
 
-  it("removes a scanned card in one tap via the existing removal path with no confirmation", async () => {
+  it("removing a held card calls onRemoveHeld with its holding-list id and nothing else", async () => {
     const user = userEvent.setup();
-    const onRemoveCard = vi.fn();
+    const onRemoveHeld = vi.fn();
     const confirmSpy = vi.spyOn(window, "confirm");
-    renderPicker(
-      { sessionInstanceIds: ["iid-opt"] },
-      { cards: [makeZoneCard("opt", "Opt", { instanceId: "iid-opt" })], onRemoveCard }
-    );
+    renderPicker({ heldEntries: [makeHeldEntry(7, "opt", "Opt")], onRemoveHeld });
 
     await user.click(screen.getByLabelText("Scanned this session: 1"));
     await user.click(screen.getByRole("button", { name: "Remove Opt from scan review" }));
 
-    expect(onRemoveCard).toHaveBeenCalledTimes(1);
-    expect(onRemoveCard).toHaveBeenCalledWith("iid-opt");
+    expect(onRemoveHeld).toHaveBeenCalledTimes(1);
+    expect(onRemoveHeld).toHaveBeenCalledWith(7);
     expect(confirmSpy).not.toHaveBeenCalled();
     confirmSpy.mockRestore();
   });
 
-  it("drops a card from the bubble once it leaves the zone list (live update)", () => {
-    renderPicker({ sessionInstanceIds: ["iid-opt"] }, { cards: [] });
-    expect(screen.queryByLabelText(/^Scanned this session:/)).not.toBeInTheDocument();
+  it("the holding list is independent of the zone's own card list (nothing committed until close)", () => {
+    renderPicker({ heldEntries: [makeHeldEntry(1, "opt", "Opt")] }, { cards: [] });
+    // The held card shows in the pill even though the zone's own list (`cards`) is empty —
+    // it has not joined the zone yet.
+    expect(screen.getByLabelText("Scanned this session: 1")).toBeInTheDocument();
   });
 });
 });

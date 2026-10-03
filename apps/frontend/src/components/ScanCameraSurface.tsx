@@ -429,57 +429,56 @@ export function ScanCameraSurface({
     saveScanAudioMuted(next)
   }
 
+  // The scanner's state in the mockup's own words (`card-scan.html`'s `[data-state]`): the stylesheet
+  // keys the guide's breathing, the thumbs-up and the camera-error look off it.
+  const scanState =
+    status === "camera-error"
+      ? "camera-error"
+      : popup
+        ? "added"
+        : isLocking
+          ? "locking"
+          : searchingNudge || inZoneCue
+            ? "nudge"
+            : "searching"
+
   return (
-    <section className={`space-y-3 ${className}`}>
-      <div className="relative overflow-hidden rounded-2xl border border-zinc-600 bg-zinc-950">
-        <video
-          ref={videoRef}
-          className="scan-video h-[clamp(20rem,calc(100dvh-17rem),42rem)] !max-h-none w-full bg-zinc-950 object-cover md:aspect-[3/4] md:h-auto md:!max-h-none"
-          muted
-          playsInline
-        />
+    <section className={`scan ${className}`} data-state={scanState} data-debug={debugEnabled}>
+      <div className="viewfinder">
+        <video ref={videoRef} className="scan-video" muted playsInline />
         <audio ref={audioRef} src="/assets/scanSuccess.wav" preload="auto" />
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div
-            className="relative h-[82%] aspect-[745/1040] rounded-xl border-2 border-accent-soft/90 shadow-[0_0_0_999px_rgba(15,23,42,0.35)]"
-            data-testid="scan-alignment-guide"
-          >
-            <button
-              type="button"
-              onClick={handleMutedChange}
-              aria-pressed={muted}
-              aria-label={muted ? "Unmute scan sound" : "Mute scan sound"}
-              className="pointer-events-auto absolute left-2 top-2 rounded-full bg-zinc-950/70 px-2.5 py-1 text-sm font-semibold text-zinc-300 opacity-90 transition hover:bg-zinc-800/80 focus:outline-none focus:ring-2 focus:ring-zinc-300"
-            >
-              <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
-            </button>
-            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-zinc-950/60 px-2.5 py-1 text-[10px] font-medium text-zinc-300/80 opacity-90">
-              Powered by Cardomancer
-            </div>
-          </div>
+
+        {/* The guide: a thin accent border with four corner ticks, breathing while locking; it dims
+            everything outside it through the box-shadow spread (`card-scan.html`'s `.guide`). */}
+        <div className="guide" data-testid="scan-alignment-guide">
+          <span className="tick tl" aria-hidden="true" />
+          <span className="tick tr" aria-hidden="true" />
+          <span className="tick bl" aria-hidden="true" />
+          <span className="tick br" aria-hidden="true" />
         </div>
-        <div
-          role="status"
-          aria-live="polite"
-          className="pointer-events-none absolute left-3 top-3 flex max-w-[80%] flex-col gap-1 rounded-xl bg-zinc-950/80 px-3 py-2 text-xs font-semibold text-zinc-100"
-        >
-          {indicatorText && <span>{indicatorText}</span>}
+
+        {/* "Locking on <card>" + the vote bar, top-left — the text and aria contract are unchanged. */}
+        <div role="status" aria-live="polite" className="indicator" hidden={!indicatorText}>
+          {indicatorText && (
+            <span>
+              {!isLocking && status !== "camera-error" && <span className="dot" aria-hidden="true" />}
+              {indicatorText}
+            </span>
+          )}
           {isLocking && (
-            <span className="flex items-center gap-2">
-              <span className="h-1.5 w-20 overflow-hidden rounded-full bg-zinc-700/80">
-                <span
-                  className="block h-full rounded-full bg-accent transition-[width] duration-150"
+            <span className="votes">
+              <span className="bar">
+                <i
                   style={{
                     width: `${Math.min(100, Math.round((convergence!.votes / Math.max(1, convergence!.votesNeeded)) * 100))}%`
                   }}
                 />
               </span>
-              <span className="text-[11px] font-medium text-accent-soft/90">
-                {`${convergence!.votes}/${convergence!.votesNeeded}`}
-              </span>
+              <span className="n">{`${convergence!.votes}/${convergence!.votesNeeded}`}</span>
             </span>
           )}
         </div>
+
         {lockOutline && (
           <ScanCardOutline
             corners={lockOutline.corners}
@@ -497,48 +496,54 @@ export function ScanCameraSurface({
             frameHeight={debugFrame?.height ?? null}
           />
         )}
-        <button
-          type="button"
-          onClick={() =>
-            setDebugEnabled((on) => {
-              const next = !on
-              if (!next) setDebugAcquisitionDiagnostic(null)
-              return next
-            })
-          }
-          aria-pressed={debugEnabled}
-          className={`absolute bottom-3 left-1/2 -translate-x-1/2 rounded-full px-2.5 py-1 text-[10px] font-semibold transition ${
-            debugEnabled
-              ? "bg-accent/90 text-accent-contrast"
-              : "bg-zinc-950/70 text-zinc-300 hover:bg-zinc-800/80"
-          }`}
-        >
-          Debug
-        </button>
+
         {popup && (
-          <div
-            key={popup.id}
-            role="status"
-            aria-live="polite"
-            className="scan-confirm-popup pointer-events-none absolute inset-0 flex items-center justify-center"
-          >
-            <div className="flex flex-col items-center gap-1 rounded-2xl bg-accent/90 px-5 py-4 text-accent-contrast shadow-lg">
-              <span className="text-4xl" aria-hidden="true">
+          <div key={popup.id} role="status" aria-live="polite" className="confirm scan-confirm-popup">
+            <div>
+              <span className="up" aria-hidden="true">
                 👍
               </span>
-              <span className="text-sm font-semibold">{`Added ${popup.cardName}`}</span>
+              <span>{`Added ${popup.cardName}`}</span>
             </div>
           </div>
         )}
+
+        {/* The foot band: sound at the left, the round shutter in the middle, Debug at the right.
+            "Mute scan sound"/"Unmute scan sound" and "Capture" keep their exact accessible names
+            (DESIGN-BRIEF.md A12); the shutter's disc is decoration. */}
+        <div className="vf-foot">
+          <button
+            type="button"
+            onClick={handleMutedChange}
+            aria-pressed={muted}
+            aria-label={muted ? "Unmute scan sound" : "Mute scan sound"}
+            className="mute"
+          >
+            <span aria-hidden="true">{muted ? "🔇" : "🔊"}</span>
+          </button>
+          <button type="button" onClick={() => void scanCurrentFrame(true)} aria-label="Capture" className="shutter" />
+          <button
+            type="button"
+            onClick={() =>
+              setDebugEnabled((on) => {
+                const next = !on
+                if (!next) setDebugAcquisitionDiagnostic(null)
+                return next
+              })
+            }
+            aria-pressed={debugEnabled}
+            className="debug-toggle"
+          >
+            Debug
+          </button>
+        </div>
       </div>
+      <p className="credit">Powered by Cardomancer</p>
+      {/* REQ-214: the mockup's one-line hint under the frame — text, not a control. */}
+      <p className="scan-hint">
+        Auto-scan is on: a confident match adds the card and keeps scanning. The shutter reads one frame by hand.
+      </p>
       <canvas ref={canvasRef} className="hidden" aria-hidden="true" />
-      <button
-        type="button"
-        onClick={() => void scanCurrentFrame(true)}
-        className="w-full rounded-lg border border-accent/70 bg-accent/15 px-4 py-2 text-sm font-semibold text-accent-soft hover:bg-accent/25 focus:outline-none focus:ring-2 focus:ring-accent-soft"
-      >
-        Capture
-      </button>
     </section>
   )
 }

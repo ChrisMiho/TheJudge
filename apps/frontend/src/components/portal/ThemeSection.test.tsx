@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ComponentProps } from "react";
@@ -19,31 +21,41 @@ function renderThemeSection(overrides: Partial<ComponentProps<typeof ThemeSectio
   );
 }
 
+const shellCss = readFileSync(resolve(process.cwd(), "src/styles/shell.css"), "utf8");
+
 describe("Frontend - Theme", () => {
   describe("ThemeSection", () => {
-    it("renders one swatch per palette, labeled by name", () => {
+    it("renders one cell per palette, named by its hover title and accessible name, not a visible label", () => {
       renderThemeSection();
 
       for (const palette of PALETTES) {
-        expect(screen.getByRole("button", { name: `Theme: ${palette.name}` })).toBeInTheDocument();
-      }
-    });
-
-    it("renders the palettes as one compact row of circular controls without visible names", () => {
-      renderThemeSection();
-
-      const paletteGroup = screen.getByRole("group", { name: "Theme palettes" });
-      expect(paletteGroup).toHaveClass("grid-cols-6", "gap-0.5");
-
-      for (const palette of PALETTES) {
-        const paletteButton = screen.getByRole("button", { name: `Theme: ${palette.name}` });
-        expect(paletteButton).toHaveClass("h-10", "w-10", "rounded-full", "motion-focus");
-        expect(paletteButton).toHaveAttribute("title", palette.name);
+        const cell = screen.getByRole("button", { name: `Theme: ${palette.name}` });
+        expect(cell).toHaveAttribute("title", palette.name);
         expect(screen.queryByText(palette.name)).not.toBeInTheDocument();
       }
     });
 
-    it("indicates the active palette", () => {
+    // REQ-131/REQ-207 A4: the band's six cells are never narrower than 40px.
+    // Look-matching pass (slice L): cells are 46px tall (shell.css:614-657's
+    // `.theme-orb`) — only the height changed, the 40px width/touch-target
+    // floor is unchanged.
+    it("renders every cell at least 40px wide and 46px tall, inside a single scrollable band track", () => {
+      renderThemeSection();
+
+      const band = screen.getByRole("group", { name: "Theme palettes" });
+      // `.theme-orbs` scrolls horizontally and `.theme-orb` is at least 40px wide, 46px tall (shell.css).
+      expect(band).toHaveClass("theme-orbs");
+      expect(shellCss).toMatch(/\.theme-orbs \{[^}]*overflow-x: auto/);
+      expect(shellCss).toMatch(/\.theme-orb \{[^}]*min-width: 40px;[^}]*min-height: 46px/s);
+
+      for (const palette of PALETTES) {
+        const cell = screen.getByRole("button", { name: `Theme: ${palette.name}` });
+        expect(cell.parentElement).toBe(band);
+        expect(cell).toHaveClass("theme-orb");
+      }
+    });
+
+    it("marks the active palette's cell as current (the mockup fills it with the colour's light), not with a check", () => {
       renderThemeSection({ paletteId: "white" });
 
       const whiteButton = screen.getByRole("button", { name: "Theme: White" });
@@ -51,7 +63,9 @@ describe("Frontend - Theme", () => {
 
       expect(whiteButton).toHaveAttribute("aria-pressed", "true");
       expect(blueButton).toHaveAttribute("aria-pressed", "false");
-      expect(within(whiteButton).getByText("✓")).toBeInTheDocument();
+      expect(whiteButton).toHaveAttribute("data-current", "true");
+      expect(blueButton).toHaveAttribute("data-current", "false");
+      expect(within(whiteButton).queryByText("✓")).not.toBeInTheDocument();
       expect(within(blueButton).queryByText("✓")).not.toBeInTheDocument();
     });
 
@@ -96,30 +110,69 @@ describe("Frontend - Theme", () => {
       ]);
     });
 
-    it("derives the active profile's check mark from accent-contrast so White stays readable", () => {
+    it("paints each cell from its profile's own colours through the token layer, never an inline colour", () => {
       renderThemeSection({ paletteId: "white" });
 
-      const whiteCheck = within(screen.getByRole("button", { name: "Theme: White" })).getByText("✓");
-      expect(whiteCheck).toHaveClass("text-accent-contrast");
+      const cell = screen.getByRole("button", { name: "Theme: White" });
+      expect(cell.getAttribute("style")).toMatch(/--orb: #ede7d6/);
+      expect(cell.getAttribute("style")).toMatch(/--orb-soft: #faf8f2/);
+      expect(cell.getAttribute("style")).not.toMatch(/background|color:/);
     });
 
-    it("renders all six orbs, including Colorless, in the same single-row grid", () => {
+    it("renders all six cells, including Colorless, in the same band track", () => {
       renderThemeSection({ paletteId: "colorless" });
 
-      const paletteGroup = screen.getByRole("group", { name: "Theme palettes" });
+      const band = screen.getByRole("group", { name: "Theme palettes" });
       const colorlessButton = screen.getByRole("button", { name: "Theme: Colorless" });
 
-      expect(paletteGroup).toHaveClass("grid", "grid-cols-6", "gap-0.5");
-      expect(colorlessButton.parentElement).toBe(paletteGroup);
+      expect(colorlessButton.parentElement).toBe(band);
+      expect(within(band).getAllByRole("button", { name: /^Theme: / })).toHaveLength(6);
     });
 
-    it("centers the Colorless custom-color controls under the full orb row", () => {
+    // REQ-131/REQ-207: overflow arrows appear only when six 40px cells do not fit the
+    // band's own width — jsdom reports 0 for scrollWidth/clientWidth (no real layout), so
+    // both read as "nothing to scroll" and neither arrow shows; this asserts the hook (an
+    // arrow hidden by default, present but hidden in the DOM, not conditionally unmounted)
+    // rather than real overflow geometry, which is exercised manually at A10.
+    it("renders both scroll arrows hidden by default (no overflow to scroll)", () => {
+      const { container } = renderThemeSection();
+
+      const leftArrow = container.querySelector('[aria-label="Scroll Theme band left"]');
+      const rightArrow = container.querySelector('[aria-label="Scroll Theme band right"]');
+      expect(container.querySelector(".theme-band")).toHaveAttribute("data-overflow", "false");
+      expect(leftArrow).toHaveAttribute("data-off", "true");
+      expect(rightArrow).toHaveAttribute("data-off", "true");
+    });
+
+    it("scrolls the track left/right when an arrow is activated", () => {
+      const { container } = renderThemeSection();
+
+      const band = screen.getByRole("group", { name: "Theme palettes" });
+      const scrollBySpy = vi.fn();
+      band.scrollBy = scrollBySpy as unknown as typeof band.scrollBy;
+
+      // Arrows stay mounted (just hidden, no overflow in jsdom) rather than conditionally
+      // unmounted, the same "stay mounted, just inert/hidden" pattern FeaturePortalMenu's
+      // rail-inert rule uses — queried by attribute directly since a `hidden` element is
+      // excluded from `getByRole`'s accessible-name lookup by default.
+      const rightArrow = container.querySelector('[aria-label="Scroll Theme band right"]') as HTMLElement;
+      fireEvent.click(rightArrow);
+      expect(scrollBySpy).toHaveBeenCalledWith({ left: 84, behavior: "smooth" });
+
+      const leftArrow = container.querySelector('[aria-label="Scroll Theme band left"]') as HTMLElement;
+      fireEvent.click(leftArrow);
+      expect(scrollBySpy).toHaveBeenCalledWith({ left: -84, behavior: "smooth" });
+    });
+
+    it("centers the Colorless custom-color controls under the band", () => {
       renderThemeSection({ paletteId: "colorless" });
 
       const input = screen.getByLabelText("Customize Colorless color");
       const controlsRow = input.parentElement;
 
-      expect(controlsRow).toHaveClass("justify-center");
+      expect(controlsRow).toHaveClass("theme-custom");
+      expect(controlsRow).toHaveAttribute("data-show", "true");
+      expect(shellCss).toMatch(/\.theme-custom \{[^}]*justify-content: center/);
     });
 
     it("renders the native color input and Reset to gray only when Colorless is active", () => {

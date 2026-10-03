@@ -67,10 +67,11 @@
   - appended card becomes the top of the stack
   - app shows brief success state such as **Stacked**
 - Constraints:
-  - stack is append-only in the core product
+  - adding always appends; after adding, the player may reorder the Stack by drag or by Down / Up / To top (REQ-209), and the array order sent is the order shown (REQ-006)
 - Dependencies:
   - stack state
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): "append-only" becomes append-on-add plus player reorder
 
 ### REQ-006
 - Title: Stack ordering consistency
@@ -79,7 +80,7 @@
 - Acceptance Criteria:
   - `stack[0]` is the bottom of the stack
   - the last item in the array is the top of the stack
-  - stack details UI displays bottom-to-top
+  - the Stack shelf tags its cards BOTTOM … TOP (REQ-209); a player's reorder rewrites the array itself, so the bottom-first meaning holds after any drag or Down / Up / To top
   - prompt builder preserves the same order
 - Constraints:
   - do not invert ordering in any layer
@@ -87,36 +88,39 @@
   - frontend stack state
   - backend prompt builder
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): follows REQ-005's player reorder
 
 ### REQ-007
 - Title: Stack icon with count
 - Priority: medium
 - Description: The app must represent the current stack with an icon that looks like stacked cards and displays the current count.
 - Acceptance Criteria:
-  - icon is visible when stack contains cards
-  - icon badge reflects current stack size
+  - the Stack's zone tab on the Cards station (REQ-209) is the icon: it shows whenever the Stack is a chosen zone
+  - the tab's count reflects the current stack size
 - Constraints:
   - keep visual treatment simple in the core product
 - Dependencies:
   - stack state
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the stacked-cards icon becomes the Stack's zone tab with its count
 
 ### REQ-008
 - Title: Stack details and removal
 - Priority: high
 - Description: Clicking the stack icon must open a details view where cards can be inspected and removed.
 - Acceptance Criteria:
-  - clicking stack icon opens a box, panel, or modal
-  - cards are listed bottom-to-top
-  - each row shows card name and remove button
+  - the Stack's shelf on the Cards station (REQ-209) is the details view; tapping a card opens its menu
+  - cards are tagged BOTTOM … TOP
+  - each card's menu shows its name and **Remove from the Stack**
   - thumbnail is shown when available
   - if thumbnail does not load, row still renders correctly
   - user can remove cards from the stack
 - Constraints:
-  - no manual reordering in the core product
+  - reordering is available by drag or Down / Up / To top (REQ-005, REQ-209)
 - Dependencies:
   - stack state
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the details box becomes the shelf plus card menu; the no-reorder constraint is lifted by REQ-005
 
 ### REQ-009
 - Title: Block duplicate stack cards
@@ -166,7 +170,7 @@
 - Priority: high
 - Description: The app must submit the final question and captured `gameContext` to the backend through the main action button.
 - Acceptance Criteria:
-  - the initial pre-submit action's **visible** label is **Send Request** (DEC-153 / REQ-132); the control's accessible name retains Decrypt Stack / Ask semantics
+  - the initial pre-submit action is the send pill inside the question box with no visible text label (REQ-132 as amended, REQ-206); the control's accessible name retains Decrypt Stack / Ask semantics
   - clicking the button sends `question` and `gameContext`
   - no top-level `stack` or `battlefieldContext` is sent
   - submit is allowed only when at least one selected zone has a card
@@ -263,10 +267,11 @@
 - Priority: medium
 - Description: Each collected card may include prompt-facing enrichment such as caster, targets, notes, and mana spent where relevant.
 - Acceptance Criteria:
-  - app builds one ordered enrichment list across all populated zones
-  - user can optionally enter context notes per card; stack item `contextNotes` UI uses placeholder copy that names transient card-level annotations: kicker or buyback paid, X value used, counters added this turn, tapped status, gained abilities this turn
-  - user can optionally set targets using `ContextTarget`
-  - user can optionally enter mana-spent context for stack entries
+  - app builds one ordered enrichment list across all populated zones and presents it as one compact sheet per card (the card's art beside a short form, an `n / total` counter, Skip to review); the review list with a ✎ jump-back per row replaces the former View all cards list mode
+  - user can optionally enter context notes per card behind a folded **＋ Add a note** row (a card that has a note opens with it showing); the note placeholder names transient card-level annotations: kicker or buyback paid, X value used, counters added this turn, tapped status, gained abilities this turn
+  - user can optionally set targets using `ContextTarget` through one Targets picker (REQ-021) on every zone, Hand and Library included
+  - user can optionally enter mana-spent context in a plain number box prefilled with the printed mana value and hinting the printed cost, on every zone's card; an untouched box sends nothing (every zone beyond the Stack: REQ-210)
+  - fields are selects, not chips: Owner on every zone but the Stack, Cast by on the Stack
   - backend prompt context always emits deterministic mana-spent value per stack entry
   - omitted user input falls back to `manaValue`
   - prompt/mock output includes mana-spent context in stable formatting
@@ -277,6 +282,7 @@
   - backend prompt context builder
 - Notes:
   - X-spell clarity is a primary motivation for this field
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the form becomes the direction-1 context sheet (REQ-209); every field today's form carries is kept, including Targets on Hand and Library cards — the mockup's omission there is not adopted
 
 ### REQ-018
 - Title: Per-zone card collection
@@ -287,7 +293,8 @@
   - before input, the search box says **Type to begin**
   - suggestions begin at 3 or more typed characters
   - no-match state shows **No matching card found**
-  - stack-zone cards preserve bottom-to-top append order
+  - stack-zone cards keep bottom-to-top order: appended on add, then as the player reorders them (REQ-005)
+  - cards carried from Ask a Question are each placed in a zone, or left out, before collection can continue (REQ-206, REQ-209)
   - selected zones with zero cards are allowed individually
   - collection cannot continue until at least one selected zone contains a card
 - Constraints:
@@ -296,6 +303,7 @@
   - local card metadata
   - zone confirmation
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): follows REQ-005's reorder and REQ-206's carry
 
 ### REQ-019
 - Title: Ask AI request payload shape
@@ -338,13 +346,16 @@
   - card targets include `zone`, `cardId`, and `cardName`
   - none targets use `{ kind: "none" }`
   - other targets include `targetDescription`
-  - target picker can reference players and collected zone cards
+  - one Targets picker lists No target · Just on the board (Battlefield / Command Zone) · each player by typed name · All players · every other card in context with its zone · Something else (one line); each pick becomes a removable pill (a card pill carries its thumbnail) and the picker resets to "Add another target…"
+  - picks map onto today's kinds with no contract change: a player → `{ kind: "player", targetPlayer }`; a card → `{ kind: "card", zone, cardId, cardName }`; No target → `{ kind: "none" }`; Just on the board → `{ kind: "other", targetDescription: "Just on the board" }`; All players → `{ kind: "other", targetDescription: "All players" }`; Something else → `{ kind: "other", targetDescription: <typed text, ≤200 characters> }`
+  - a target can be picked once; naming every player folds into All players; No target and Just on the board each replace every other pick; an empty list sends no targets, exactly as today; the eight-target bound is unchanged
 - Constraints:
   - public API must not expose legacy `StackTarget`
 - Dependencies:
   - enrichment UI
   - backend prompt context normalization
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the kind → value → Add rows become one picker (REQ-209); the request contract is unchanged
 
 ### REQ-022
 - Title: General game rules prompt enrichment
@@ -400,6 +411,7 @@
   - displayed message updates at defined second thresholds: 0s, 3s, 8s, 15s, 25s, 40s
   - submit form is restored when a response is received or an error occurs
   - message region uses `aria-live` so screen readers announce updates
+  - the panel is drawn as the judge's bubble under the colour's seal: each threshold line inks itself in letter by letter with a glow that fades, the line before lifts and fades, the elapsed clock ticks at the bubble's foot, two motes of the colour's light drift up through it, a faint dashed ring turns round the seal, and the bubble's edge breathes in the colour's light; the absurd-tone lines are set in italics; under reduced motion each line appears whole and nothing drifts or turns
 - Constraints:
   - CSS-only motion; no animation libraries
   - panel must not block card context above the form
@@ -408,6 +420,7 @@
   - NFR-006
 - Notes:
   - approved threshold copy: 0s "Consulting the stack…" (calm), 3s "Priority is passing to the LLM." (calm), 8s "The judge is reading every layer. Twice." (curious), 15s "Still waiting? The servers are scrying 1." (curious), 25s "At this point we're basically in a MUD subgame." (absurd), 40s "If this were F6, we'd have resolved by now." (absurd)
+  - amended for the `ui-reimagining-build` pass (2026-09-30): thresholds and copy unchanged; the panel takes the direction-1 inscription treatment, CSS-only (NFR-006)
 
 ### REQ-024
 - Title: Phase-scoped prompt guidance
@@ -431,19 +444,19 @@
 ### REQ-025
 - Title: Post-decrypt conversation thread
 - Priority: high
-- Description: After a successful Decrypt Stack, the enrichment step must replace the submit form with the shared chat-first conversation workspace, whose first visible message is the assistant's initial answer and whose frozen game context is available through an adaptive read-only context trigger/sheet/drawer.
+- Description: After a successful Decrypt Stack, the enrichment step must replace the submit form with the shared chat-first conversation workspace, whose first visible message is the player's own question as sent (including any fallback) followed by the assistant's initial answer, and whose frozen game context is available through an adaptive read-only context trigger/sheet/drawer.
 - Acceptance Criteria:
   - on first decrypt success, the submit form and Decrypt Stack button are hidden
   - answered-state header shows only **TheJudge** and omits redundant subtitle or conversation-heading copy
   - the shared workspace shows a compact game-context trigger before the message log, summarizing at least turn phase and populated-zone count
   - activating the trigger opens the full frozen setup, zones, cards, and enrichment detail in an accessible bottom sheet below `768px` or right-side drawer at `768px+`
   - open frozen context remains read-only and does not allow zone, card, or enrichment edits; close/Escape restores focus to the trigger
-  - a scrollable accessible conversation log is the workspace's dominant surface; its first visible bubble is the assistant's answer
-  - the initial user question is not shown in the thread
+  - a scrollable accessible conversation log is the workspace's dominant surface; its first visible bubble is the player's question as sent, followed by the assistant's answer
+  - the initial user question is shown in the thread as a right-aligned user bubble, exactly as sent (the zone-aware fallback when the question box was blank)
   - error/retry, composer, and Start Over occupy stable shared-workspace rows; the composer is docked within the workspace and is not fixed to the viewport
   - start over button is visible and enabled while no request is in flight
 - Constraints:
-  - thread opens with the assistant answer only; do not show the initial user question as a visible bubble
+  - the initial question bubble is presentation only: `conversationHistory` assembly, request payloads, and prompt text are unchanged
   - layout changes must not change request payloads, prompt assembly, answer rendering, or conversation-history behavior
 - Dependencies:
   - REQ-012
@@ -452,6 +465,7 @@
   - REQ-097
   - REQ-098
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-10-01): reverses the "initial question hidden" rule — the player's question now opens the thread on both question kinds (REQ-075 carries the Ask a Question side). Built in `useAskAiSubmitOrchestration.ts`, shared by both request modes: the first `visibleMessages` entry is now `{ role: "user", content: payload.question }`, ahead of the assistant's answer
 
 ### REQ-026
 - Title: Follow-up chat composer
@@ -522,7 +536,7 @@
 - Description: Users must be able to start over from an active In-Depth Question conversation, clearing the conversation and returning to the beginning of the flow so they can stage a new question from scratch, without losing their player roster.
 - Acceptance Criteria:
   - start over button is visible whenever the first decrypt has succeeded and no request is in flight
-  - clicking start over clears the conversation thread and returns the user to the game context step (first step of the flow)
+  - clicking start over clears the conversation thread and returns the user to a clean Ask a Question page (REQ-206); In-depth details' next walk starts at station 1 (Game)
   - staged game context, selected zones, zone cards, question text, and turn-phase/combat-step staging are cleared
   - player roster is preserved: player count, display names, life totals, poison/energy/experience, commander damage, and custom counters are unchanged (so a game seeded from or shared with Player Life Tracker is not wiped)
   - if the conversation being left has at least one successful answer, it is auto-saved to completed history first (REQ-103 / DEC-124)
@@ -535,9 +549,11 @@
   - REQ-103
   - REQ-107
   - REQ-108
+  - REQ-206
 - Notes:
   - superseded prior behavior of returning to the enrichment step with staged zones/cards preserved; this requirement now defines a full flow reset instead
   - the former "no conversation history is persisted after start over" clause is superseded by DEC-124/DEC-130 persistence rules
+  - amended for the `ui-reimagining-build` pass (2026-10-01): Start over lands on the one question door (Ask a Question) instead of the game-context step; roster preservation is unchanged. Built in `MtgAssistantApp.tsx`'s `handleStartOver`: the existing in-depth-local resets are unchanged and a `navigate("/quick-lookup")` call was added after them
 
 ### REQ-030
 - Title: Prompt assembly includes full card metadata in every populated zone
@@ -923,6 +939,7 @@
   - FLOW-001
 - Notes:
   - refines header chrome only; the cat-wizard image is hidden by default and revealed session-only after 10 brand-mark taps counted across every in-scope screen (DEC-076, REQ-056, REQ-203)
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the View all cards / Card-by-card toggle is retired with View all cards (REQ-017 as amended); the Context station shows one sheet per card and the review list replaces the list mode
   - amended by DEC-122: the step name moves out of the header row entirely into an eyebrow label above each step's own content heading; this requirement's step-name values, ordering, and per-step coverage stay valid, only the position clause is superseded
 
 ### REQ-046
@@ -1203,6 +1220,7 @@
   - automatic responsive presentation (REQ-096 / DEC-117) adjusts surrounding spacing without changing these functional caps
   - prior 2-column / 4-visible-tile zone grid superseded by DEC-151 horizontal strip
   - amended for the `ui-reimagining` pass (2026-09-24): the Easter egg's trigger widens from the game-context step to every in-scope screen under one session-wide tap count (REQ-203). The session-only scope, the asset, and the hidden-on-initial-render behaviour are unchanged, and the egg is protected scope through the redesign.
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the View all cards 4-row criterion has no subject once REQ-017 retires that mode; the review list's bound (REQ-209) replaces it
 
 ### REQ-057
 - Title: Scanner acquisition diagnostics and validation matrix
@@ -1280,6 +1298,7 @@
   - FLOW-006
 - Notes:
   - `CardSelectionPreview` participates in DEC-151 corner detail + compact image rules; identity-ring calibration remains shared
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the enrichment modes become the one context sheet and the review (REQ-017, REQ-209); the shared presentation and identity ring apply there unchanged
 
 ### REQ-059
 - Title: App-wide UI motion & visual-feedback polish pass
@@ -1464,11 +1483,11 @@
 - Acceptance Criteria:
   - the view presents two sides (**Side A** and **Side B**), each an ordered list of card entries
   - each side shows a running **total** = `Σ qty × (foil ? usdFoil : usd)` across its entries, updating live as entries are added, removed, re-priced, foil-toggled, or quantity-changed
-  - the view shows the **difference** between the two totals as an amount and indicates which side is higher (or that the sides are equal)
+  - the view shows the **difference** between the two totals as an amount under a verdict line that names the side ahead in plain words, or "Even" when equal to the cent (REQ-215)
   - totals and the difference are displayed in USD
   - an entry whose selected-mode price is missing contributes **$0** to its side total and is visibly flagged per REQ-065 (distinct color + caution triangle)
   - the view is reachable from the top-level navigation menu (REQ-067) and the MTG Assistant flow is unaffected
-  - the trade state is **ephemeral**: no history, no persistence across reload, no marketplace/transaction handling, and no automated balancing suggestions
+  - the trade state is **ephemeral**: no history, no persistence across reload, no marketplace/transaction handling, and no automated balancing suggestions; a **New trade** action clears both sides after the shared confirm sheet (REQ-215, REQ-208)
   - when the view opens it issues **one fire-and-forget warm-up request** to the backend's existing health check (`GET /api/health`) alongside its `cardMetadata` load, so a cold backend wakes while the card list downloads and the player types instead of that wait landing on the first card's price fetch. It sends and reads no product data, renders no UI, and never blocks, disables, or surfaces an error on search when it fails or when no backend is running (mock-default local dev unaffected)
 - Constraints:
   - the AI answer path stays frozen: no change to `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, the provider boundary, or `POST /api/ask-ai`. The balancer prices cards only through a read-only backend price fetch (REQ-175), and its only other backend traffic is the warm-up ping to the existing `GET /api/health`, which carries no product data in either direction; printing identity is never pushed into any prompt, rulings, or answer payload
@@ -1484,6 +1503,7 @@
   - REQ-175
 - Notes:
   - a trade side is a value list, not the stack: the duplicate-block (REQ-009/FLOW-004) and 10-card cap (REQ-010) do not apply
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the difference readout becomes REQ-215's piles and verdict line; totals and pricing unchanged
 
 ### REQ-065
 - Title: Trade card entry — printing selection, foil toggle, quantity
@@ -1494,8 +1514,8 @@
   - **scan input:** the existing scan engine identifies the card and the **scanned printing** (its `Candidate.card_id`, DEC-070) is the entry's default printing; the user can **change the printing** to any other printing of that card
   - **manual search input:** the user finds a card by name via the existing local search (DEC-012); tapping a suggestion fetches that card's printing list and shows the **printing picker in place of the suggestions**, with a brief loading state, and the entry is added carrying the printing the player taps — the choice happens **before the card is added**, and the chosen printing's price applies. Cancelling returns to the search box. If that pre-add fetch fails or the card has no printings, the card is added anyway in the $0-plus-caution state with the retry affordance, so manual search stays the permanent fallback input path
   - the **foil toggle** switches the entry's contribution between `usd` and `usd_foil`. Whenever an entry receives a printing — picked before an add, resolved from a scan, changed, or re-fetched on retry — the mode is **re-derived from that printing's own prices**: non-foil when the printing has a `usd` price, and foil only when `usd` is null and `usd_foil` is not (a new entry starts non-foil). The player may still toggle into a mode with no price, which keeps the $0-plus-caution treatment below
-  - the **printing picker** — the same component used before an add and by "Change printing" — heads with the card's printing count (`N printings`, computed from the fetched list, never from a stored field), lists printings **newest release first** (REQ-066), **region-scrolls** inside a short box instead of growing the page with the card's printing count, lazy-loads its row images, offers a **set-name/set-code filter** once a card has more than eight printings, and scrolls the currently selected printing into view when it opens
-  - **quantity/multiples:** the same card (or printing) may appear multiple times on a side, via repeated adds and/or a per-entry quantity control; each unit counts toward the side total; the stack duplicate-block does not apply
+  - the **printing picker** — the same component used before an add and by "Change printing" — opens in the shared sheet (REQ-208) with the card's art and name, one line of instruction, and one row per printing **newest release first** (REQ-066): set name, code, a thumbnail, and **Nonfoil** and **Foil** price pills; a tap on a pill picks that printing and that finish; a printing with no foil price shows a disabled Foil pill; the head counts the printings (`N printings`, computed from the fetched list, never from a stored field) and a card with one printing reads "only printing"; the body **region-scrolls** instead of growing the page with the card's printing count, lazy-loads its row images, offers a **set-name/set-code filter** once a card has more than five printings, and scrolls the currently selected printing into view when it opens
+  - **quantity/multiples:** the same card may appear multiple times on a side: a repeated add of the same printing and finish raises that entry's quantity (REQ-215), a different printing or finish is its own entry, and the per-entry quantity control adjusts it; each unit counts toward the side total; the stack duplicate-block does not apply
   - **missing price:** when the selected foil mode has no price for the chosen printing, the entry's contribution defaults to **$0**, the entry's price is rendered in a **distinct color** from priced entries, and the entry shows a **caution-triangle** indicator communicating that the value is unknown
   - each entry can be **removed** from its side
   - a card's printings and prices are fetched from the backend once per card and cached per session (REQ-066, REQ-175, FLOW-025). On a manual search that fetch runs when the suggestion is tapped, so the picker carries the loading state and the entry appears already priced from cache; on a scan it runs on add and the entry shows a brief in-place loading state while it resolves. The card's name and image come from the shared local `cardMetadata` index (REQ-174). If the price fetch fails, the entry degrades to the $0-plus-caution treatment with a retry affordance rather than a broken row
@@ -1512,6 +1532,7 @@
   - FLOW-025
 - Notes:
   - reuses the existing scan resolver (REQ-036) and manual search (REQ-002/REQ-003) as input; the printing pick and pricing are the new layer
+  - amended for the `ui-reimagining-build` pass (2026-09-30): pills per finish, the shared sheet, and the filter threshold from eight to five printings; prices and selection rules unchanged. The picker's row shows set name and code only, not a release year — `CardPrintingPrice` (REQ-066) carries no release-date field, so "code · year" from the mockup is not shown; adding one is a backend-contract change out of this pass's scope
 
 ### REQ-066
 - Title: Printing-level price data artifact
@@ -1546,12 +1567,12 @@
 ### REQ-067
 - Title: Feature portal — top-level app navigation
 - Priority: high
-- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — one icon-only Menu button docked in the **top-middle** of every destination header — opening the registered destinations, action entries, and palette-only Theme section. Destinations come from an extensible registry rather than shipping their own entry chrome; registered destinations include **In-Depth Question**, **Quick Question**, **Trade Balancer**, and **Life Tracker**. Switching is a frontend-only view switch that preserves each destination's in-session data (with DEC-120's presentation-only exception for In-Depth secondary-player-details), while only the active destination id persists across reload in the same tab (DEC-095 as amended by DEC-104/DEC-107/DEC-109/DEC-110/DEC-111/DEC-117/DEC-120).
+- Description: The app must provide a first-class **feature portal** that owns top-level navigation chrome — one ☰ Menu button at the left of every destination's banner header (REQ-207) — opening the registered destinations, action entries, and palette-only Theme band. Destinations come from an extensible registry rather than shipping their own entry chrome; the Menu lists **Ask a Question** (`quick-lookup`, also current while `in-depth` is open), **Question History**, **Life Tracker** (`player-life-tracker`), and **Trade Balancer** (`trade-balancer`) (REQ-206, REQ-213).
 - Acceptance Criteria:
-  - an icon-only navigation Menu button sits in the **top-middle** of every destination header, docks through the destination's inline `PortalSlot`, and scrolls with that header; the viewport-fixed path remains only a defensive fallback for a future headerless destination
+  - an icon-only ☰ Menu button sits at the left of every destination's banner header (REQ-207), docks through the destination's inline `PortalSlot`, and scrolls with that header; the viewport-fixed path remains only a defensive fallback for a future headerless destination
   - the portal button, brand block, step-name column where present, and opened Menu have non-overlapping visual bounds and pointer hit areas across automatic responsive widths
   - destinations come from an **extensible registry** (a feature registers a destination entry rather than adding its own nav chrome); adding a destination requires no portal redesign
-  - opening the Menu lists **In-Depth Question** (`mtg-assistant`), **Quick Question** (`quick-lookup`), **Trade Balancer** (`trade-balancer`), and **Life Tracker** (`player-life-tracker`) with the current destination indicated
+  - opening the Menu lists **Ask a Question** (`quick-lookup`; current also while `in-depth` is open), **Question History** (an action row opening REQ-213's sheet), **Life Tracker** (`player-life-tracker`), and **Trade Balancer** (`trade-balancer`) with the current destination indicated; `in-depth` stays registered and routable with no row of its own (REQ-206)
   - the Menu may include action entries that invoke handlers without switching destination (DEC-104; v1: **Send feedback**), plus a Theme section containing palette swatches only; no layout/profile control is shown (DEC-110/DEC-117)
   - selecting a destination switches the active view; selecting the current mode is a no-op that does not reset in-progress destination data
   - switching between destinations preserves each destination's in-session data while the app stays loaded, except In-Depth secondary-player-details disclosure resets collapsed per DEC-120/REQ-100; refreshing restores only the active destination id in the same tab while each destination's internal state resets (DEC-111/REQ-090)
@@ -1576,6 +1597,7 @@
   - DEC-117/REQ-096 remove only the former density control; palette hosting, destination registry, action entries, and Menu docking remain unchanged
   - amended by DEC-122: the Menu trigger moves from a top-middle tab to a top-left corner rail, and its dropdown becomes a left-edge sliding drawer; destination registry, action entries, Theme section, in-session state preservation, and reload persistence are all unchanged, only the trigger's position and opened-panel shape are superseded
   - amended by DEC-133 / REQ-113: the open Menu panel is a full-height left tray of the outer shell (visible-bounds on tall shells, matching bottom-left radius); registry, Theme, and docking guarantees otherwise unchanged
+  - amended for the `ui-reimagining-build` pass (2026-09-30): one question door (REQ-206), Question History as a Menu row (REQ-213), and the ☰ banner trigger (REQ-207); registry, action entries, state preservation and reload persistence unchanged
 
 ### REQ-068
 - Title: Responsive scan-view layout
@@ -1640,10 +1662,11 @@
 - Priority: low
 - Description: Sharpen the existing on-screen helper statements that under-explain how to use a screen, so a first-time user understands the control and its behavior from one concise line. This is a copy-only pass that enhances text already rendered; it adds no net-new guidance text, tooltips, popovers, onboarding chrome, or intro lines, and it leaves self-explanatory screens and the playful themed labels/buttons unchanged (DEC-092).
 - Acceptance Criteria:
-  - the game-context "Players in game" helper text reads exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.` (replacing `2 players start at 20 life. 3+ players default to 40 life.`), naming the `▾` expander control while preserving the 20/40 defaults behavior in a single line
-  - the zone-confirmation helper text reads exactly `Select all zones that apply to your question.` (replacing `Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.`); the prior turn-phase-defaults clause is intentionally dropped
+  - the game-context "Players in game" helper text reads exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.` (replacing `2 players start at 20 life. 3+ players default to 40 life.`), naming the `▾` expander control while preserving the 20/40 defaults behavior in a single line; on the redesigned In-depth details Game station the mockup's wording governs instead (redesigned-screens exception below)
+  - the zone-confirmation helper text reads exactly `Select all zones that apply to your question.` (replacing `Select the zones relevant to your question. Defaults are pre-checked based on the turn phase.`); the prior turn-phase-defaults clause is intentionally dropped; on the redesigned In-depth details Zones station the mockup's wording governs instead (redesigned-screens exception below)
   - no other on-screen guidance/helper text is changed: the "Add cards to zones" helper, the context-enrichment screen (other than its ready-state helper text, whose pointer to the send control is governed by DEC-153/REQ-132 rather than this preserve), the answered/follow-up view, the scan on-open state, the stack-order note, the tuned scan cause-hints, and the fallback-question note are byte-for-byte unchanged
-  - no net-new guidance text is introduced anywhere — no new intro/orientation lines, tooltips, popovers, coachmarks, modals, or onboarding flow
+  - redesigned-screens exception (`ui-look-translation`, 2026-10-02): on Ask a Question (REQ-206), In-depth details (REQ-209), Trade Balancer (REQ-215), the card scanner's chrome (REQ-214) and Life Tracker's Game Setup and Counters sheets (REQ-202), guidance and helper text — its wording, its placement, and whether a line appears at all — follows that screen's approved mockup page under `docs/design/ui-reimagining/direction-1/`. Where the mockup page shows no such line, none renders (for example the In-depth Cards step's "Add cards to zones" heading and lede, and the stack-order note `Stack order is bottom to top. The first card you add is the bottom; each new card is added on top.`); where it shows one, its wording is the mockup's. On these screens the byte-for-byte preserve still holds for the tuned scan condition-aware cause-hints and the scanner's `locking` / `camera-error` state copy (REQ-052, REQ-071), the waiting panel's thresholds and copy (DEC-031, DEC-041), and every control's accessible name
+  - no net-new guidance text is introduced anywhere — no new intro/orientation lines, tooltips, popovers, coachmarks, modals, or onboarding flow — except a line a redesigned screen's mockup page shows (exception above)
   - the `▾`/`▸` expander control referenced by the enhanced game-context copy retains its existing `aria-label`/`aria-expanded` semantics and toggle behavior (REQ-069); the copy change is text-only
   - tests assert the two enhanced strings render on their respective screens and that the replaced strings no longer appear
 - Constraints:
@@ -1664,6 +1687,7 @@
 - Notes:
   - triggered by post-AWS-release feedback that the per-screen usage statements were not landing; scope was deliberately narrowed by the product owner from a broad per-screen rewrite to enhancing only the two helper lines that under-explain, leaving self-explanatory screens alone
   - DEC-153 supersedes this requirement's prior blanket preserve of the visible **Decrypt Stack** submit label for the initial pre-submit control only, and additionally carves out the Enrichment ready-state helper text's pointer to that control from this requirement's byte-for-byte preserve of the context-enrichment screen
+  - amended by `ui-look-translation` (2026-10-02): the redesigned-screens exception above. The decision-index row DEC-092 that first set this preserve is retired, so the rule is amended here
 
 ### REQ-071
 - Title: Remove redundant searching-state label to clear mute-toggle overlap
@@ -1728,10 +1752,10 @@
   - when a card is resolved, its name, image when available, and oracle text (including full metadata) are shown before the user submits a question, and the user can remove or replace it before submitting
   - only one card is active at a time; there are no zones, stack, phase, multi-card setup, or per-card enrichment-editing controls
   - a freeform question field accepts up to the same character cap as the main flow question (REQ-011)
-  - the pre-submit view's guidance copy reads exactly **"Add a card for context or ask any Magic related question."**, shown inline as a suffix on the "Optional card" label after an em dash (e.g. "OPTIONAL CARD — Add a card for context or ask any Magic related question."), not as a standalone line under the header (DEC-113)
-  - the pre-submit view is laid out top to bottom as: optional card-attach control, then the Question field, then the "General rules topics" outer disclosure (REQ-079), whose collapsed summary remains visible regardless of whether a card is attached or the question field already has text
+  - the pre-submit view's guidance copy follows the Ask a Question mockup page (REQ-070's redesigned-screens exception); the redesigned page carries no hint line under the title (REQ-206), so the former inline suffix "Add a card for context or ask any Magic related question." on the "Optional card" label no longer renders (today's build already omits it)
+  - the pre-submit view is laid out top to bottom as: optional card-attach control, then the Question field (the "General rules topics" disclosure that followed it is retired, REQ-079)
 - Constraints:
-  - reuse existing search, scan, card-presentation, and core-topics components; do not fork new identity or metadata models
+  - reuse existing search, scan, and card-presentation components; do not fork new identity or metadata models
   - printing-level scan identity stays presentation-only and is not pushed into the request, prompt, or rulings (DEC-053)
 - Dependencies:
   - DEC-107
@@ -1746,6 +1770,7 @@
   - during quick-lookup refinement this requirement was rewritten to merge the prior separate Card Lookup entry (this ID) and Rules Lookup entry (former REQ-076) into one destination; see REQ-076
   - during quick-question-ui-refinement, the guidance-copy wording and the card/question/topics section order were confirmed (DEC-112); the prior "empty state shows the fallback" framing is superseded by REQ-079's always-rendered collapsed outer disclosure
   - during ui-refinement, the guidance copy's placement moved from a standalone line under the header to inline with the "Optional card" label (DEC-113); the wording itself and the section order are unchanged
+  - amended by `ui-look-translation` (2026-10-02): the "General rules topics" disclosure after the Question field is retired on the owner's gate verdict (REQ-079)
 
 ### REQ-074
 - Title: Quick Lookup prompt assembly and domain guardrail
@@ -1783,11 +1808,11 @@
 - Description: After the first answer, Quick Question must use the same shared chat-first conversation workspace as In-Depth Question for text follow-ups under the same conversation limits, with the attached card (if any) frozen behind the adaptive read-only context trigger/sheet/drawer.
 - Acceptance Criteria:
   - on first successful answer, the surface renders the same shared workspace, conversation log, docked follow-up composer, inline processing animation, retry/error placement, New response affordance, and Start Over control as In-Depth Question (REQ-025 / REQ-026 / REQ-027 / REQ-028 / REQ-029 / REQ-097 / REQ-098)
-  - the frozen "context" is the attached card if the user resolved one before asking; otherwise there is no frozen context object (no `GameContext` either way); a card, once submitted, is frozen for the duration of the conversation and follow-ups are text-only
-  - when a card is frozen, a compact trigger naming the card opens its existing read-only card presentation in a bottom sheet below `768px` or right-side drawer at `768px+`; without a card, no empty context trigger or container is rendered
-  - the first visible thread bubble is the assistant's answer; the initial user question is included in `conversationHistory` sent to the API but is not shown as a visible bubble
-  - follow-up requests send `{ mode: "lookup", question, card: frozen (when one was attached), conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Quick Lookup defines no separate limit policy
-  - start over clears the thread and returns to the empty pre-ask state — the looked-up card, its search input, and any locked topic are cleared, and the core-topics fallback (REQ-079) is visible
+  - the frozen "context" is the attached card(s) — up to REQ-167's ten-card bound — if the user attached any before asking; otherwise there is no frozen context object (no `GameContext` either way); once submitted, the attached set is frozen for the duration of the conversation and follow-ups are text-only
+  - when any card is frozen, a compact trigger naming the card or stating the count (`"N cards"`) opens the frozen set's read-only card presentation in a bottom sheet below `768px` or right-side drawer at `768px+`; without a card, no empty context trigger or container is rendered; a card name in the judge's message that exactly matches an attached card renders as a tappable chip opening that card's detail directly in the thread (REQ-206)
+  - the first visible thread bubble is the player's question as sent (REQ-025 as amended), then the assistant's answer; the question is also included in `conversationHistory` sent to the API
+  - follow-up requests send `{ mode: "lookup", question, cards: frozen (the full attached set, when any were attached), conversationHistory }` and reuse the same message-count and per-message/character limits as the main flow (REQ-027); Quick Lookup defines no separate limit policy
+  - start over clears the thread and returns to the empty pre-ask state — the looked-up card and its search input are cleared (the core-topics panel is retired, REQ-079)
   - mock-provider follow-ups append to the same thread exactly as live responses do
 - Constraints:
   - reuse the shared workspace and existing conversation/card components; no new conversation-limit constants, duplicated context formatting, or divergent chrome
@@ -1801,8 +1826,11 @@
   - DEC-118
   - REQ-097
   - REQ-098
+  - REQ-167
+  - REQ-206
 - Notes:
   - during quick-lookup refinement this requirement was rewritten to merge the prior Card Lookup thread (this ID) and Rules Lookup thread (former REQ-080) into one; see REQ-080
+  - amended for the `ui-reimagining-build` pass (2026-10-01): the question shows first (REQ-025 as amended), the frozen context generalizes from one card to the attached set (REQ-167's ten-card bound), and attached-card names in the answer become tappable chips (REQ-206); the follow-up contract is otherwise unchanged
 
 ### REQ-076
 - Title: Rules Lookup entry and rules-mode request
@@ -1839,20 +1867,11 @@
 
 ### REQ-079
 - Title: General rules topics browse fallback
-- Priority: medium
-- Description: Quick Lookup must offer a small always-local list of core rules topics (labeled "General rules topics") the user can read with no AI call, built from the same curated rules excerpts the prompt uses and positioned below the Question field. Its outer disclosure summary remains visible regardless of card/question state while the topic list is collapsed by default.
+- Priority: —
+- Description: Retired by the owner's `ui-look-translation` gate verdict (2026-10-02). Ask a Question no longer offers the "General rules topics" panel: the direction-1 mockup was made without it on purpose. The panel's one action, locking a topic phrase into the question, has no entry point left (REQ-091 as amended).
 - Acceptance Criteria:
-  - the pre-submit view shows a collapsed-by-default outer "General rules topics" disclosure below the Question field; expanding it reveals a short set of core rules topics (e.g. the stack & priority, targeting, combat, layers)
-  - the outer disclosure's summary is always visible — attaching a card and/or typing into the question field does not hide it — while its helper copy and topic list stay hidden when collapsed
-  - topic rows are collapsed by default: each row shows its title, an action button (REQ-091), and an expand/collapse toggle, all visible without expanding
-  - expanding a row reveals that topic's rule numbers and excerpt; opening one topic auto-collapses any other currently-open topic (accordion — at most one excerpt visible at a time)
-  - the topic content is a committed frontend subset of the same curated `gameRulesByTopic` excerpts used by prompt assembly (single source of truth; no hand-authored second copy)
-  - reading (expanding) a topic is fully client-side with no backend call and no AI cost
-  - the topic row's action button behavior (locking a phrase into the question) is specified by REQ-091; it does not itself call the model
-  - the list is a discoverability fallback, not a full Comprehensive Rules browser
+  - retired — Ask a Question renders no "General rules topics" disclosure, topic list or topic row in any state (pre-submit, waiting, error, answered, after Start over)
 - Constraints:
-  - frontend-bundled static data (DEC-012 pattern); no runtime rules sync and no new endpoint
-  - do not fork or hand-author rules text that could drift from the curated corpus
 - Dependencies:
   - DEC-107
   - DEC-112
@@ -1863,6 +1882,7 @@
   - the committed core-topics subset is regenerated from the curated manifest by the existing data build; topic selection is a build-time sign-off like DEC-030
   - during quick-lookup refinement this requirement's dependency moved from DEC-099 (Rules Lookup, superseded) to DEC-107 (Quick Lookup); its content is otherwise unchanged
   - during the quick-question-ui-refinement work this requirement's section title ("Browse core rules topics" → "General rules topics"), placement (below the Question field), always-rendered outer-summary gate change, collapsed outer disclosure, and nested row-level accordion were confirmed (DEC-112); the row action button's behavior superseded its original "pre-fills a freely editable textarea" criterion — see REQ-091
+  - retired by `ui-look-translation` (2026-10-02) on the owner's gate verdict: "retire. Remove the General rules topics panel from Ask a Question; the mockup was made without it on purpose." Amended alongside: REQ-073 (page order), REQ-075 (Start over), REQ-091 (no entry point left), REQ-092 (the wait), REQ-206 (the page), FLOW-011, FLOW-023, `quick-lookup/README.md`, and the system map's Quick Lookup summary. The committed frontend topic list and the data build that writes it are left as they are; the backend's curated rules topics that every prompt uses are unchanged.
 
 ### REQ-080
 - Title: Rules Lookup conversation thread and limits
@@ -1919,8 +1939,8 @@
   - each opponent commander-damage cell exposes always-visible `−`/`+` bands (no hold menu); band thickness follows REQ-112
   - incrementing an opponent's commander damage also decrements that player's life (always on; not a Game Setup toggle)
   - counter values persist with the game per DEC-103
-  - the panel's surface fills the available shell height rather than sizing to its content, joining the Menu tray and history drawer's overlay family, and scrolls internally when its content exceeds that height (DEC-139)
-  - no dead scrim band remains above the panel at any player count
+  - the panel is hosted on the suite's shared sheet (REQ-208) and sized to its content like every other sheet — a bottom sheet below `600px` and a floating centred card from `600px` up, never taller than the viewport, with only its body scrolling when the content is taller; this replaces the former full-height overlay (DEC-139)
+  - its two tabs (Commander damage · Counters) and every counter, value, range and control are unchanged (REQ-202)
 - Constraints:
   - counters are captured values only; no automatic rules resolution beyond the explicit commander-damage→life convenience (DEC-013)
   - the surface-geometry clause is presentation only; it introduces no new counter types and no change to DEC-102's contract, DEC-103 persistence, or REQ-085's seed handoff
@@ -1930,9 +1950,11 @@
   - REQ-081
   - REQ-083
   - REQ-112
+  - REQ-208
 - Notes:
   - "all trackable player counters" per product direction; commander damage is per-opponent
   - the palette's per-player “Day/night” counter is distinct from the game-wide day/night designation (REQ-111)
+  - amended by `ui-look-translation` (2026-10-02): the content-sized shared sheet replaces the full-height overlay, matching the mockup (the first build's owner question 7)
 
 ### REQ-083
 - Title: GameContext per-player counter contract extension
@@ -2017,27 +2039,29 @@
 ### REQ-087
 - Title: Feedback & bug-report modal and capture
 - Priority: medium
-- Description: Selecting the **Send feedback** portal action (REQ-086) opens an accessible modal over the current screen (the user keeps their place; no view switch). The modal captures a **category** (Bug / Suggestion / Other), a **required freeform message**, and an **optional reply email**, and discloses the attached app-state snapshot (REQ-088) to the user before submit (DEC-105).
+- Description: Selecting the **Send feedback** portal action (REQ-086) opens the shared sheet (REQ-208) over the current screen (the user keeps their place; no view switch). The form captures a **category** (Bug / Suggestion / Other, as three pills), a **required freeform message**, and an **optional reply email**, and discloses the attached app-state snapshot (REQ-088) to the user before submit (DEC-105).
 - Acceptance Criteria:
-  - the modal opens over the current screen without switching the active destination or resetting in-progress state
-  - fields: a category select (Bug / Suggestion / Other), a required freeform message, and an optional reply email; blank email = anonymous
+  - the form opens in the shared sheet (REQ-208) over the current screen without switching the active destination or resetting in-progress state
+  - fields: the category as three pills (Bug · Suggestion · Other) with the message box's hint changing with it, a required freeform message, and an optional reply email; blank email = anonymous
   - validation: submit is blocked until the message is non-empty (after trim); when a reply email is present it must be a valid email format; validation messages are shown inline
-  - the modal shows a one-line disclosure that current app state is attached, plus an **expandable human-readable summary** of what is included (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment)
-  - accessibility: focus is trapped within the modal, Esc closes it, focus is restored to the trigger on close, and open/close motion is CSS-only and reduced-motion-aware (NFR-006)
-  - submit lifecycle: idle → sending → success acknowledgement or inline error; the draft (fields) is preserved on error so the user can retry
-  - the modal is theme-aware and touch-friendly on mobile (NFR-001)
+  - the form shows that current app state is attached as one dashed row, folded by default, that opens to an **expandable human-readable summary** of what is included (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment)
+  - accessibility: focus is trapped within the sheet, Esc closes it, focus is restored to the trigger on close, and open/close motion is CSS-only and reduced-motion-aware (NFR-006)
+  - submit lifecycle: idle → sending → success acknowledgement (a thank-you under the app's own mark) or inline error; the draft (fields) is preserved on error so the user can retry
+  - the form is theme-aware and touch-friendly on mobile (NFR-001)
 - Constraints:
-  - the modal reads app state only through a lazy `getFeedbackContext()` callback supplied by the app shell and never reaches into flow internals or mutates app state
+  - the form reads app state only through a lazy `getFeedbackContext()` callback supplied by the app shell and never reaches into flow internals or mutates app state
   - no persistence, auth, in-app history, or analytics; no screenshots/file uploads in v1
 - Dependencies:
   - DEC-105
   - REQ-086
   - REQ-088
+  - REQ-208
   - NFR-001
   - NFR-006
   - FLOW-014
 - Notes:
   - the expandable summary shows the same content that REQ-088 serializes for delivery
+  - amended for the `ui-reimagining-build` pass (2026-10-01): renders in the shared sheet (REQ-208); fields, validation, snapshot content and delivery unchanged
 
 ### REQ-088
 - Title: Feedback delivery and app-state snapshot
@@ -2118,19 +2142,13 @@
 ### REQ-091
 - Title: Locked topic-phrase pill in Quick Lookup's general rules topics
 - Priority: medium
-- Description: Selecting a topic in Quick Lookup's "General rules topics" section (REQ-079) locks that topic's fixed phrase into a non-editable pill inline with the Question field, rather than pre-filling the freeform textarea, so the topic choice always reaches the submitted question while the user can still add their own supplementary text.
+- Description: Selecting a topic in Quick Lookup's "General rules topics" section (REQ-079) locked that topic's fixed phrase into a non-editable pill inline with the Question field. A topic row was the pill's only entry point; with REQ-079 retired (2026-10-02), no entry point remains and the pill no longer appears. No other way to lock a phrase replaces it. What stays in force is how the question is composed with no pill: the typed text, or the silent card-name fallback when the box is empty and a card is attached.
 - Acceptance Criteria:
-  - each topic row's action button reads "Use this topic" (renamed from "Ask about this"); its label and `aria-label` communicate adding to the question, not submitting
-  - tapping "Use this topic" adds a pill inline next to the Question field's label showing the literal, non-editable phrase `Tell me about {Topic}.`
-  - the pill has its own visible remove control; activating it clears the locked phrase and returns the Question field to its plain (no-pill) state
-  - only one topic pill may be locked at a time; tapping a different topic's "Use this topic" replaces the current pill without altering any text already typed in the textarea
-  - the textarea remains available and editable at all times as optional supplementary context; its content is never overwritten by locking, swapping, or removing a pill
-  - the textarea's placeholder text changes while a pill is locked, inviting optional additional detail or an as-is submit (e.g. "Add anything specific — or leave this blank and just ask.")
-  - submit is enabled whenever a pill is locked, a card is attached, or the textarea has non-empty trimmed text — not only on non-empty textarea content
-  - tapping "Use this topic" smooth-scrolls the view so the Question field (with its new pill) is visible, and focuses the textarea
-  - on submit, the request's `question` value is composed client-side with no `AskAiRequest` shape change: the pill phrase plus the trimmed textarea content (space-joined) when both are present; the pill phrase alone when the textarea is empty; the trimmed textarea content alone when no pill is locked and the textarea is non-empty; or, when no pill is locked, the textarea is empty, and a card is attached, the silent fallback phrase `Tell me about {Card Name}.` (not shown to the user; mirrors the locked-pill's phrasing convention and the game-context flow's existing silent-fallback-question precedent)
-  - the shared 300-character cap (REQ-011) and the visible character counter both measure the **raw editable textarea content** — not the composed string; the locked pill phrase and the silent card fallback are composed at submit time and do not consume the user's budget (amended by REQ-134)
-  - a locked topic pill and an attached card may both be present at submit time; the collapsed outer general-rules-topics summary remains rendered (REQ-079) whether or not a pill is locked
+  - the locked topic pill never appears: there is no topic row and no other control that locks a phrase into the question (REQ-079 retired); the "Use this topic" button, the pill and its remove control, the one-pill swap rule, the locked-pill placeholder and the scroll-to-question are retired with it
+  - the textarea remains available and editable at all times
+  - submit is enabled whenever a card is attached or the textarea has non-empty trimmed text — not only on non-empty textarea content
+  - on submit, the request's `question` value is composed client-side with no `AskAiRequest` shape change: the trimmed textarea content when it is non-empty; or, when the textarea is empty and a card is attached, the silent fallback phrase `Tell me about {Card Name}.` (not shown to the user; it keeps the retired pill's phrasing convention and the game-context flow's existing silent-fallback-question precedent)
+  - the shared 300-character cap (REQ-011) and the visible character counter both measure the **raw editable textarea content** — not the composed string; the silent card fallback is composed at submit time and does not consume the user's budget (amended by REQ-134)
 - Constraints:
   - no `AskAiRequest` shape or backend prompt-assembly contract change; composition is frontend-only string concatenation
   - **amended on ship (2026-08-11)**: one Zod bound did have to move. `questionSchema` was `boundedText(300, 0)`, which rejected the composed string once the composed-length submit gate was removed; it is now `boundedText(600, 0)`. No field, request shape, route, or prompt-assembly behavior changed — see REQ-134's ship correction for the measurement
@@ -2142,16 +2160,17 @@
 - Notes:
   - supersedes REQ-079's prior "ask about this pre-fills an editable textarea" acceptance criterion for the topic-row action button; REQ-079 was amended alongside this requirement
   - **amended during the `ui-review` pass (2026-08-06)**: the cap/counter criterion originally read "the shared 300-character cap (REQ-011) applies to the composed question string, and the visible character counter reflects the composed length". Live measurement showed that rule produces three user-visible defects — an empty field reporting the prefix length (`22/300` with a topic locked), a counter that rises when the user backspaces to empty (the silent card fallback replaces the empty string), and an unreachable submit state (`323/300` with **Send Request** disabled while `maxLength` caps raw input at 300). Product-owner decision: the counter and the submit gate both measure raw editable text. The composed string may therefore exceed 300 by the pill phrase — accepted. Composition itself (pill phrase + trimmed text, silent fallbacks, single-pill rule) is unchanged. See REQ-134, including its 2026-08-11 ship correction: the wire bound in `askAiRequest.ts` is 600 characters, because the original "no downstream limit is at risk" reasoning cited DEC-042's prompt budget and missed the request schema's own 300-character bound.
+  - amended by `ui-look-translation` (2026-10-02): REQ-079 is retired on the owner's gate verdict, so the topic row — this pill's only entry point — is gone. The pill no longer appears and no new entry point is added; the textarea, submit, composition and counter criteria keep only their no-pill cases, which are unchanged. The `questionSchema` 600-character wire bound is unchanged.
 
 ### REQ-092
 - Title: Quick Lookup submit wait feedback
 - Priority: medium
 - Description: While Quick Lookup's initial submit is in flight (before the first answer arrives), the app must hide the Question form and show the existing decrypt wait feedback panel in its place, matching the in-depth flow's own submit-wait pattern.
 - Acceptance Criteria:
-  - while a Quick Lookup submit is in flight and no answer has yet arrived, the Question form (label, locked-topic pill if present, textarea, character counter, submit button) is not rendered
+  - while a Quick Lookup submit is in flight and no answer has yet arrived, the Question form (label, textarea, character counter, submit button) is not rendered
   - `AskAiWaitingPanel` (REQ-023: live elapsed timer, `aria-live` threshold-based messages) renders in the Question form's place during the wait
   - the Optional card section (search/attach control, selected-card preview) remains visible and interactive during the wait
-  - the "General rules topics" outer disclosure remains visible and interactive during the wait; expanding/collapsing a topic or locking/swapping/removing a topic pill during the wait does not affect the in-flight request
+
   - the Question form reappears in place of the waiting panel as soon as the request resolves with an error, alongside the existing error/retry affordance
   - on success, the pre-submit view is replaced by the existing post-answer conversation view (REQ-025-style swap), unchanged by this requirement
 - Constraints:
@@ -2164,6 +2183,7 @@
   - REQ-075
 - Notes:
   - added during ui-refinement to close a gap: REQ-023 specifies this pattern for the in-depth flow's `EnrichmentStep`, and REQ-075 covers Quick Lookup's conversation once an answer exists, but the pre-first-answer wait state on Quick Lookup's own submit form was previously unspecified and had drifted from the REQ-023 pattern
+  - amended by `ui-look-translation` (2026-10-02): the "General rules topics" disclosure that stayed live during the wait is retired (REQ-079), and the locked topic pill no longer appears (REQ-091)
 
 ### REQ-093
 - Title: Committed Commander Spellbook combo corpus
@@ -2377,8 +2397,8 @@
   - selecting any fixed profile immediately retints every existing accent-token consumer without resetting destination or workflow state; automated representative coverage includes In-Depth Question, Quick Question, Player Life Tracker, feature-portal chrome, and scanner accents
   - fixed-profile token use follows the existing semantic roles: accent text on dark surfaces uses `accent-soft`, accent text on light surfaces uses `accent-strong`, and text on filled accent controls uses `accent-contrast`
   - selecting Colorless with no saved custom value applies its fixed gray tokens and exposes an inline native full-spectrum color input plus `Reset to gray`
-  - choosing a custom color assigns the exact RGB unchanged to `accent`, `accent-strong`, and `accent-soft`, leaves `accent-contrast` white, applies immediately, persists separately, and is restored after switching away from and back to Colorless
-  - custom Colorless applies with no validation, warning, rejection, derived tint/shade, or contrast correction; low-contrast custom results are accepted
+  - choosing a custom color applies its hue to every token-driven surface, applies immediately, persists separately as the exact RGB picked, and is restored after switching away from and back to Colorless
+  - custom Colorless is lifted only where it would fail readability, keeping its hue: accent text and decorative dust reach at least 7:1 against the page ground, filled controls at least 2.4:1, and text on a filled control is white or near-black, whichever reads; there is no warning or rejection, and a readable pick is applied unchanged
   - `Reset to gray` removes only the saved custom RGB and immediately reapplies the fixed Colorless values
   - Violet, Emerald, Amber, and Rose are absent from the catalog; loading one of those or any unsupported selected ID deletes the stored selection and falls back to Blue
   - malformed saved custom RGB is deleted and Colorless uses its fixed gray values; unavailable storage or failed reads/writes do not block render or reset app state
@@ -2406,6 +2426,7 @@
   - the neon direction is values-only; it adds no CSS shadow, bloom, halo, animation, profile-specific component rule, or new token role
   - the refinement comparison image is preview-only and is not a shipped product asset
   - amended for the `ui-reimagining` pass (2026-09-24): REQ-200 adds surface roles per profile without changing any published hex value or the Colorless custom-RGB contract. Colorless's "artifact" reading — steel, brushed metal, a hint of warmth — is expressed through those new roles and REQ-201's motif language, not by editing Colorless's four published values
+  - amended for the `ui-reimagining-build` pass (2026-09-30): "deliberately uncorrected" custom Colorless becomes "your hue, made readable" (REQ-207); the stored value is still the exact pick, so Reset to gray and persistence are unchanged. The constraint's "no custom-Colorless contrast guarantee" is superseded by the lift above; the lift is a fixed rule, not a generated theming engine
 
 ### REQ-100
 - Title: Compact synchronized player-secondary disclosure
@@ -2422,7 +2443,7 @@
   - closing the outer **Players in game** disclosure resets the secondary state; reopening it shows all active player cards in their compact state
   - switching from In-Depth Question to another destination and back resets secondary details collapsed while preserving the outer roster-disclosure state, player count, display names, life totals, all counter values, current staged-flow step, and every other in-progress destination value
   - expanding, collapsing, closing/reopening the outer disclosure, and completing a destination round trip never mutate the eventual `gameContext.players` values submitted for unchanged inputs
-  - the helper copy remains exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.`; no new visible guidance text is introduced
+  - the helper copy remains exactly `Tap ▾ to set names and life totals — 2 players start at 20, 3+ at 40.`, or on the redesigned Game station the mockup's wording (REQ-070's redesigned-screens exception); no other new visible guidance text is introduced
   - automated coverage verifies compact default rendering, synchronized expand from more than one player's arrow, synchronized collapse, add/remove behavior, outer-disclosure reset, destination-return reset, value preservation, accessible shared state, and minimum touch sizing
 - Constraints:
   - frontend presentation/local disclosure state only; no change to player validation, starting-life defaults, `AskAiRequest`, Zod schemas, `GameContext`, tracker persistence/seed semantics, prompt assembly, providers, backend routes, card metadata, scanner behavior, or data pipeline
@@ -2441,6 +2462,7 @@
   - NFR-001
 - Notes:
   - approved visual direction: `PRD/work/excess-ui/mock-a-nested-player-accordion.png`; the mock's generated text is non-normative
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the per-player arrows become one shared **More details for all players** toggle (REQ-209) that drives this same synchronized state; criteria that name "any player's arrow" read as that toggle, and the collapse-on-leave rule is unchanged
 
 ### REQ-101
 - Title: Feature-portal Menu tab prominence (responsive width, thicker border, medium glow)
@@ -2494,28 +2516,27 @@
   - narrows `technical-design-rules.md`'s "preserve plain-text core product response output" constraint to the API/contract layer only
 
 ### REQ-103
-- Title: Persistent conversation history list and drawer
+- Title: Persistent conversation history list, as one Question History sheet
 - Priority: high
-- Description: In-Depth Question and Quick Question must offer a left history drawer (always-on History rail, including pre-submit steps) listing auto-saved past conversations and any mid-flight **Draft**, persisted browser-locally on the current device, so a user can browse conversations from earlier in the session or a previous visit.
+- Description: Both question flows share one **Question History** (REQ-213), opened from the Menu, listing auto-saved past conversations of both kinds and any mid-flight **Draft**, persisted browser-locally on the current device, so a user can browse conversations from earlier in the session or a previous visit.
 - Acceptance Criteria:
   - any conversation that reaches at least one successful answer auto-saves to a browser-local history list; saving happens on first answer and updates on each subsequent follow-up in that conversation
-  - a history drawer, opened from the shared conversation workspace, lists saved conversations most-recent-first, each showing originating flow, timestamp, and the first question as a preview snippet
-  - the list is capped at the 20 most recent conversations; saving a 21st entry prunes the oldest
+  - Question History (REQ-213), opened from the Menu, lists saved conversations of both question kinds most-recent-first, each showing its cards, the question, the ruling's first line, and a meta line
+  - the list is capped at the 20 most recent conversations across both kinds; saving a 21st entry prunes the oldest
   - leaving an active conversation with at least one successful answer (via Start Over / New conversation) auto-saves it to history before clearing the workspace
   - storage reads are guarded; a missing, corrupted, or invalid stored value is dropped without breaking the app, mirroring the existing theme-preference fallback pattern
-  - the drawer opens/closes with an explicit control and Escape, contains keyboard focus while open, and returns focus to its trigger on close (outside/scrim dismiss added by REQ-117 / DEC-142; user delete by REQ-118 / DEC-143)
+  - the history sheet opens from the Menu, closes with ✕, Escape and outside tap, contains keyboard focus while open, and returns focus to its trigger on close (REQ-208; user delete by REQ-118 / DEC-143)
   - no server-side store, account system, or cross-device sync is introduced; history is scoped to one browser on one device
-  - the drawer's trigger is a small icon integrated into the feature-portal Menu's corner rail (DEC-122), stacked below the Menu icon within the same fluid-height ambient glow hit-area, and is always rendered on In-Depth Question and Quick Question (DEC-129), including when the list is empty and after Start Over
-  - below `768px` the drawer presents as a bottom sheet; at `768px`+ it presents as a left-side drawer, mirroring DEC-118's context sheet/drawer breakpoint and affordance types (DEC-125)
-  - opening the history drawer while the feature-portal Menu drawer is open closes the Menu drawer first, and vice versa, so the left edge never shows two overlapping panels (DEC-125)
-  - saved-conversation entries render as plain, unboxed grouped rows with a quiet active/hover highlight rather than a bordered card per entry (DEC-126)
-  - when a mid-flight Draft exists for the destination, the drawer shows a distinct **Draft** row (REQ-108 / DEC-130) in addition to completed conversations
+  - the trigger is the Menu's **Question History** row, directly under Ask a Question, on every destination (REQ-213)
+  - it presents in the shared sheet: a bottom sheet below `600px`, a floating centred card with two panes from `600px` up (REQ-208, REQ-213)
+  - choosing Question History closes the Menu tray before its sheet opens, so the two never overlap
+  - saved-conversation rows show a fan of the conversation's cards, the question, the ruling's first line, and one meta line (REQ-213)
+  - each flow's mid-flight Draft shows as a distinct **Draft** row above the saved conversations (REQ-108 / DEC-130)
 - Constraints:
   - frontend-only, browser-local persistence; no backend endpoint or contract change
   - reuse the DEC-103 (Player Life Tracker) persistence pattern rather than introducing new storage infrastructure
 - Dependencies:
   - DEC-124
-  - DEC-125
   - DEC-126
   - DEC-129
   - DEC-130
@@ -2524,8 +2545,11 @@
   - DEC-103
   - REQ-107
   - REQ-108
+  - REQ-208
+  - REQ-213
 - Notes:
   - trigger placement and entry row styling refined by DEC-126; always-on visibility and Draft slot added by DEC-129/DEC-130
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the drawer becomes Question History in the shared sheet (REQ-213); persistence, cap, auto-save and Draft rules unchanged
 
 ### REQ-104
 - Title: Resume a saved conversation
@@ -2593,18 +2617,18 @@
   - restores the missing REQ-106 body referenced by DEC-128 / FLOW-001 / the absorbed roster package; desktop alignment coverage added in the 2026-08-05 re-refinement
 
 ### REQ-107
-- Title: Always-visible History rail without View Context overlap
+- Title: Question History always one tap away, without View Context overlap
 - Priority: high
-- Description: On In-Depth Question and Quick Question, the History corner-rail control must always be available (including empty history and after Start Over), and must not overlap the answered-state View Context trigger or its chrome at any supported viewport.
+- Description: Question History must always be reachable from every destination through the Menu's Question History row (REQ-213), including with empty history and after Start Over; the banner header's ☰ button must not overlap the answered-state View Context trigger or its chrome at any supported viewport.
 - Acceptance Criteria:
-  - History rail zone is visible on every In-Depth Question and Quick Question screen state (all pre-submit steps and the answered workspace), including when no completed conversations or Draft exist
+  - the Menu's Question History row is present on every destination and every screen state, including when no completed conversations or Draft exist
   - immediately after Start Over, History remains visible and openable without requiring a new successful submit
   - opening History with an empty list shows an empty/zero-state drawer rather than hiding or disabling the control
-  - at desktop widths and at ~390×844 mobile widths, the History icon/hit-target does not overlap, clip into, or sit on the border of the View Context trigger
+  - at desktop widths and at ~390×844 mobile widths, the ☰ button's hit-target does not overlap, clip into, or sit on the border of the View Context trigger
   - answered-workspace top clearance used to satisfy the prior criterion must not leave a large empty band after DEC-137's shorter side-by-side rail (REQ-116 / DEC-141)
-  - Life Tracker and Trade Balancer continue to show Menu-only rails (no History zone)
+  - every destination shows the same ☰ header control; no destination shows a History rail zone
 - Constraints:
-  - presentation and availability only; drawer open/close, breakpoint sheet/drawer, and Menu mutual exclusivity remain DEC-125
+  - presentation and availability only; the history sheet's shape is REQ-208's
   - no Ask AI contract or backend change
 - Dependencies:
   - DEC-129
@@ -2613,7 +2637,10 @@
   - DEC-141
   - REQ-103
   - REQ-116
+  - REQ-208
+  - REQ-213
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the History rail zone is retired; availability moves to the Menu row (REQ-213)
 
 ### REQ-108
 - Title: Mid-flight Draft slot in conversation history
@@ -2736,15 +2763,15 @@
 - Priority: medium
 - Description: The open feature-portal Menu panel must read as the full left side of the outer app shell — stretching top→bottom of `.page-card` on standard destinations and the same full left-side treatment on Life Tracker's full-bleed shell — flush with the shell's bottom-left curved corner, without a partial-height cutoff and without squaring over the shell radius (DEC-133).
 - Acceptance Criteria:
-  - on a standard `.page-card` destination, the open Menu tray fills the card's left side from top to bottom even when destination/Theme content is shorter than that height
+  - below `768px`, on a standard `.page-card` destination, the open Menu tray fills the card's left side from top to bottom even when destination/Theme content is shorter than that height; at `768px`+ it is a floating card inset from the viewport edges, rounded, and sized to its content (REQ-207)
   - the tray's bottom-left corner is flush with the shell's bottom-left and uses the same bottom-left border radius as the shell so the curved edge is preserved (no square overhang into the page background)
   - when the shell is taller than the viewport, the tray sizes to the visible shell side (viewport ∩ shell) and stays flush with the on-screen top and bottom of the outer component rather than spanning the shell's full scrollable height
   - Life Tracker (full-bleed shell) receives the same full left-side height and bottom-left radius treatment as standard destinations
-  - unused lower tray space may show a quiet, non-interactive decorative TheJudge brand mark; the mark must not be a second navigation control and may be omitted only when a short shell cannot host it cleanly
-  - left-edge slide open/close, corner-rail trigger, destination/action/Theme behavior, reduced-motion, and Menu↔History mutual exclusivity remain unchanged from DEC-122/DEC-125/DEC-126
+  - unused lower tray space shows the colour's scene at a whisper over a pool of the colour's light (REQ-207); nothing there is a second navigation control
+  - left-edge slide open/close, destination/action/Theme behavior and reduced-motion remain; the trigger is REQ-207's ☰ button and History is a Menu row (REQ-213)
   - tests or stylesheet assertions cover full-shell height (or visible-bounds equivalent), matching bottom-left radius, and Life Tracker parity
 - Constraints:
-  - presentation only; shell-docked chrome (DEC-109) — tracking the shell's visible rectangle is allowed; a free-floating overlay disconnected from the shell is not
+  - presentation only; below `768px` the tray is shell-docked (DEC-109), tracking the shell's visible rectangle; at `768px`+ it is a floating card inset from the viewport edges and sized to its content (REQ-207)
   - no change to destination registry, action entries, Theme section contents, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, backend routes, card metadata, scan behavior, or data pipeline
   - do not redesign tray contents, consolidate EnrichmentStep brand-block JSX, or add a step-progress indicator in this requirement
 - Dependencies:
@@ -2757,25 +2784,23 @@
   - NFR-006
 - Notes:
   - follow-up to shipped `center-menu-tab-prominence` (DEC-122); EnrichmentStep brand-block consolidation remains parked
+  - amended for the `ui-reimagining-build` pass (2026-09-30): full height below `768px`, floating card at `768px`+
 
 ### REQ-114
 - Title: Suite chrome hit areas bounded to the affordance they paint
 - Priority: high
-- Description: Suite chrome must not accept taps outside the affordance it visibly paints. The feature-portal corner rail's interactive box is capped to its icon band while its radial gradient continues to paint at its current `5.5rem × 10.5rem` extent as non-interactive decoration, and the two-zone split rail's zones sit side-by-side so they clear the step-name eyebrow while holding NFR-001's per-zone touch floor (DEC-137).
+- Description: Suite chrome must not accept taps outside the affordance it visibly paints. Under the direction-1 banner header (REQ-207) the Menu trigger is the ☰ button, whose interactive box equals its painted button (at least 44px), and no header decoration — the lit band, its element art, the ambient scene — accepts pointer events.
 - Acceptance Criteria:
-  - the single-zone rail's interactive element is `5.5rem` wide × `3.5rem` tall; the region between that box and the gradient's painted extent does not accept pointer events
-  - the single-zone rail's rendered appearance is unchanged at every viewport and in every state (rest, hover, `aria-expanded`), including the top-left radius treatment, both gradient stops, and the icon's rendered position — the icon must not shift as a result of the smaller interactive box
-  - on Life Tracker, `document.elementFromPoint` over the region previously shadowed by the rail returns the player card's life control, not the Menu trigger — asserted at multiple points across the former `75 × 111` overlap, not a single sample, and the measured remaining overlap between the rail's interactive box and the "Decrease life for Player 1" control is exactly zero
-  - the split rail renders its Menu and History zones side-by-side within the rail's `5.5rem` width, each at least `2.75rem × 2.75rem`, with Menu leading and History trailing
-  - on a destination carrying a History zone, `document.elementFromPoint` over the step-name eyebrow's leading characters returns the eyebrow's own content, not a rail zone, and the rail's interactive box ends above the eyebrow's top edge
-  - both split-rail zones meet NFR-001's 44px-per-zone floor without either zone overflowing the rail's stated box
-  - the single-zone rail retains a touch target meeting NFR-001 at every viewport
+  - the ☰ button's interactive box equals its painted bounds and is at least 44px in each dimension; the banner's decorative band and element art are `pointer-events: none`
+  - on Life Tracker, `document.elementFromPoint` over the life controls nearest the header returns the life control, never the Menu trigger or header decoration, asserted at several points
+  - `document.elementFromPoint` over the step-name eyebrow's leading characters returns the eyebrow's own content, not header chrome
+  - the ☰ button meets NFR-001 at every viewport
   - no destination's content is inset, repositioned, or resized to accommodate the rail
   - verification is by hit-testing the contested regions in tests; screenshot or visual inspection alone does not satisfy this requirement
 - Constraints:
   - presentation only; the fix lives in the chrome, not in any destination's layout
   - no change to the destination registry, drawer contents, Theme section, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, providers, or backend routes
-  - do not redesign the rail's visual language or alter its gradient values
+  - the rail's radial-gradient visual language is retired by REQ-207; this requirement's hit-area rule carries over to the ☰ button
 - Dependencies:
   - DEC-137
   - DEC-122
@@ -2790,6 +2815,7 @@
   - `3.5rem` matches the menu-row inset already used in `index.css` to clear this same icon zone
   - the single-zone rail keeps its painted `5.5rem` width because capping height alone reduces the Life Tracker overlap to zero; narrowing the width would re-center the icon 16px left, a visual change this requirement forbids
   - the side-by-side split arrangement is forced, not stylistic: only 70px exists between the rail's top and the eyebrow, while two stacked 44px zones require 88px
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the corner-rail geometry is superseded; the painted-equals-interactive rule stands
 
 ### REQ-115
 - Title: Menu tray occludes under-rail chrome when open
@@ -2814,6 +2840,7 @@
   - NFR-001
 - Notes:
   - prior "Menu trigger still toggles the tray closed" criterion is superseded by REQ-127
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the History rail zone is retired (REQ-213), so the History-occlusion criteria have no subject; the open tray still covers the ☰ trigger (REQ-127) and stays opaque over destination content (REQ-122)
 
 ### REQ-116
 - Title: Compact answered-workspace top clearance
@@ -2822,7 +2849,7 @@
 - Acceptance Criteria:
   - on resumed and freshly answered conversations at desktop and ~390×844, there is no large unused empty band between the step eyebrow/header region and View Context / first thread content attributable to oversized rail clearance
   - computed top clearance for `.adaptive-context-trigger` (or equivalent) is sized to the current side-by-side rail height, not the pre–DEC-137 stacked-rail clamp
-  - History icon/hit-target still does not overlap, clip into, or sit on the border of View Context (REQ-107)
+  - the ☰ Menu button's hit-target does not overlap, clip into, or sit on the border of View Context (REQ-107 as amended)
   - short-thread fill / Start Over reachability from REQ-109 remain satisfied
 - Constraints:
   - presentation only; no history semantics or Ask AI contract changes
@@ -2920,11 +2947,11 @@
 ### REQ-121
 - Title: Pre-submit composer row composition
 - Priority: high
-- Description: The Enrichment optional-question and Quick Question composers present the field as the dominant element of their row, with an inline character counter and a compact submit control, matching the answered view's follow-up composer composition (DEC-146). Initial visible label is **Send Request** per DEC-153 / REQ-132.
+- Description: The Enrichment optional-question and Ask a Question composers present the field as the dominant element of their row, with an inline character counter and a compact submit control, matching the answered view's follow-up composer composition (DEC-146). The submit control is the send pill with no visible text label (REQ-132 as amended, REQ-206).
 - Acceptance Criteria:
   - at a 390px-wide viewport the composer's text field measures at least 65% of its composer row's width (baseline defect: 136px of 340px = 40%; the answered-view follow-up composer measures 230px at the same viewport)
   - the placeholder and typed content are not clipped: the field's `scrollHeight` does not exceed its `clientHeight` at rest
-  - the submit control exposes its existing accessible name ("Ask TheJudge", "Decrypt Stack") even when the visible label is **Send Request**
+  - the submit control (the send pill, REQ-206) exposes its existing accessible name ("Ask TheJudge", "Decrypt Stack") with no visible text label
   - the submit control meets the 44px touch-target floor (NFR-001)
   - submit gating, character caps, and the zone-aware blank-question fallback are unchanged
 - Constraints:
@@ -2936,8 +2963,10 @@
   - REQ-132
   - REQ-110
   - REQ-120
+  - REQ-206
   - NFR-001
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-10-01): the visible "Send Request" label is retired for the send pill (REQ-132 as amended); the 65% width floor and submit gating are unchanged
 
 ### REQ-122
 - Title: Opaque Menu tray with painted bounds inside the shell
@@ -2986,6 +3015,7 @@
 - Description: The desktop shell scales past the fixed `42rem` column to a modest fluid cap so paired controls have room, without single full-width controls stretching into content-less bands (DEC-145). Vertical space below staged-step content is deliberately retained.
 - Acceptance Criteria:
   - the shell width is `min(48rem, 92vw)`; at 1440x900 the measured shell width is 768px (baseline: 670px)
+  - on the direction-1 redesigned screens (Ask a Question, In-depth details, Trade Balancer, the card scanner's chrome, Life Tracker's sheets) a screen's content column inside the shell takes the width its mockup page draws, never wider than the shell; the shell's own width and cap above are unchanged and remain the ceiling
   - the cap still binds on ultra-wide viewports: at 2560px wide the shell does not exceed 48rem (768px)
   - a full-width primary control inside the shell ("Confirm game context") measures no more than ~720px at 1440x900, so it still reads as a button rather than a band (rejected settings measured 976px at 64rem and 1277px at 90rem)
   - mobile presentation at 390x844 is unchanged by this requirement
@@ -3005,6 +3035,7 @@
 - Notes:
   - width was chosen by comparing to-scale mocks of 42/48/64/90rem; rendered CTA width, not percentage of viewport filled, was the deciding measure
   - amended for the `ui-reimagining` pass (2026-09-24): the "no theme/typography/brand redesign" constraint is scoped to this requirement's own change. The `min(48rem, 92vw)` cap and its 768px-at-1440px measurement are unchanged and still bind the redesign
+  - amended by `ui-look-translation` (2026-10-02): the 48rem cap stays the ceiling, but a redesigned screen's content column follows its mockup page's own width inside it; the first build's review measured In-depth details' mockup column at 36rem (576px) at 1440×900 against the app's 768px
 
 ### REQ-125
 - Title: Reachable add action in card detail
@@ -3063,12 +3094,12 @@
 ### REQ-127
 - Title: Hide rail icons while Menu tray is open; outside-click close
 - Priority: high
-- Description: While the feature-portal Menu tray is open, Menu and History rail icons are not visible and not clickable; the user closes the tray by clicking/tapping outside it or pressing Escape (DEC-150).
+- Description: While the feature-portal Menu tray is open, the ☰ Menu trigger is covered and not clickable; the user closes the tray with its ✕, by clicking/tapping outside it, or by pressing Escape (DEC-150, REQ-207).
 - Acceptance Criteria:
-  - with the tray open on History-bearing and Menu-only destinations at 390×844 and 1440×900, `document.elementFromPoint` over the former Menu and History icon centers does not hit those controls
-  - Menu and History rail affordances do not paint through/over the open tray
-  - outside-click (and existing Escape) closes the tray; opening History by other means still honors Menu↔History mutual exclusivity
-  - rest-state rail (tray closed) keeps DEC-137 hit-area rules and NFR-001 floors
+  - with the tray open at 390×844 and 1440×900, `document.elementFromPoint` over the ☰ button's center does not hit it
+  - the ☰ button does not paint through or over the open tray
+  - the tray's ✕, outside-click and Escape each close it; choosing Question History closes the tray before its sheet opens
+  - the rest-state ☰ (tray closed) keeps REQ-114's hit-area rule and NFR-001's floor
 - Constraints:
   - presentation/interaction only; no registry, Theme, History persistence, or Ask AI contract changes
 - Dependencies:
@@ -3079,14 +3110,15 @@
   - REQ-115
   - NFR-001
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): one ☰ trigger, a ✕ on the tray
 
 ### REQ-128
 - Title: Suite-wide card-image detail popup
 - Priority: high
-- Description: Whenever a card image is displayed in the suite, a compact corner control on the image opens a dismissible, portal-hosted overlay with oracle text and other descriptive fields fetched on demand by oracle id (REQ-175, FLOW-024). The overlay follows DEC-158 and the `AdaptiveContextDialog` family: it is sized to its own content outside the image bounds, presenting as a bottom sheet below `768px` and a side panel at `768px`+ (DEC-151, DEC-158).
+- Description: Whenever a card image is displayed in the suite, a compact corner control on the image opens a dismissible, portal-hosted overlay with oracle text and other descriptive fields fetched on demand by oracle id (REQ-175, FLOW-024). The overlay is the shared sheet (REQ-208): sized to its own content outside the image bounds, a bottom sheet below `600px` and a floating card centred in the viewport from `600px` up.
 - Acceptance Criteria:
   - every suite card-image surface that shows an available image exposes the corner detail control (top-right of the image)
-  - activating the control opens a portal-hosted, content-sized overlay outside the card image's bounding box: a bottom sheet below `768px` and a side panel at `768px`+, following `screen-layout.md` → *Card detail popup (suite-wide)*
+  - activating the control opens the shared sheet (REQ-208), content-sized outside the card image's bounding box: a bottom sheet below `600px`, a floating centred card from `600px` up, following `screen-layout.md` → *Shared sheet (card detail, Question History, printing picker, Send feedback, confirm)*
   - the popup has an X close control; Escape and/or outside dismiss may match other overlays
   - stacked oracle/detail under the image is not the default path when the image is present
   - the popup fetches its descriptive contents on demand from the `GET /api/cards/:oracleId` endpoint (REQ-175, FLOW-024), showing a brief loading state whose presentation follows `PRD/sections/screen-layout.md` (a quiet in-overlay state in the descriptive-content region only — no branded splash, spinner takeover, progress bar, or motion beyond the existing CSS-motion rules (NFR-006), and no overlay resize or layout shift on resolve); name, image, and color ring (already local) render immediately
@@ -3099,12 +3131,14 @@
   - DEC-078
   - REQ-058
   - REQ-125
+  - REQ-208
   - NFR-001
   - REQ-174
   - REQ-175
   - FLOW-024
 - Notes:
   - **amended during the `ui-review` pass (2026-08-06)**: DEC-158 supersedes the original "popup over the card" geometry. The top-right image trigger remains; the popup's content is now fetched on demand by oracle id (REQ-175, FLOW-024) rather than read from locally carried fields, and the popup itself is portal-hosted and independent of the image bounds.
+  - amended for the `ui-reimagining-build` pass (2026-10-01): the side panel at `768px`+ becomes REQ-208's centred card from `600px`; the on-demand fetch and fallbacks are unchanged
 
 ### REQ-129
 - Title: Card image first-viewport fit ceiling
@@ -3164,12 +3198,12 @@
   - **amended during the `ui-reimagining` pass (2026-09-24)**: the strip itself was already shipped and verified live; the owner's reported friction was tile density, not a missing strip. The 160px tile is superseded by a three-tiles-visible-at-390px criterion, measured rather than chosen.
 
 ### REQ-131
-- Title: Theme orb single-row layout
+- Title: Theme band single-row layout
 - Priority: medium
-- Description: The Menu Theme section keeps all six profile orbs on one row and centers Colorless options under that row when Colorless is selected (DEC-152).
+- Description: The Menu Theme section is one six-cell band (REQ-207) that never wraps: each cell is at least 40px, and when six no longer fit the band slides with an arrow at each end; Colorless options sit centred beneath it when Colorless is selected (DEC-152).
 - Acceptance Criteria:
-  - at 390×844 and 1440×900 with the Menu tray open, the six Theme orbs share one row (the last orb is not alone on a second row)
-  - when Colorless is selected, custom color + Reset controls appear centered under the orb row
+  - at 390×844 and 1440×900 with the Menu tray open, the six Theme cells share one row with no arrows; below the width where six 40px cells fit, the band slides with an arrow at each end nudging two cells, the exhausted end's arrow fading, and the chosen cell scrolled into view on open
+  - when Colorless is selected, custom color + Reset controls appear centered under the band, wrapping cleanly
   - selecting other profiles does not show Colorless-only controls; DEC-119 catalog/persistence unchanged
 - Constraints:
   - Theme-section layout only; destination menu row geometry (DEC-135) unchanged
@@ -3179,14 +3213,15 @@
   - REQ-099
   - NFR-001
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-09-30): orbs become band cells (REQ-207)
 
 ### REQ-132
 - Title: Initial Send Request label and Enrichment ready copy
 - Priority: medium
-- Description: The initial pre-submit Ask/Decrypt control shows visible **Send Request** text; the answered follow-up send control stays arrow/icon-only; Enrichment ready-state copy briefly directs the user to that button when the optional message is empty (DEC-153).
+- Description: Every question box sends from the round send pill inside the box (REQ-206) — there is no separate labelled **Send Request** button, and older entries' **Send Request** names this send control. Enrichment ready-state copy briefly directs the user to that control when the optional message is empty (DEC-153).
 - Acceptance Criteria:
-  - Enrichment decrypt and Quick Question first-ask submit controls show the visible label **Send Request**
-  - after the first answer, the follow-up composer send control remains arrow/icon-only
+  - the Enrichment and Ask a Question first-ask submit controls are the send pill inside the question box, with no visible text label
+  - the follow-up composer uses the same send pill
   - Enrichment ready-state helper text (when the optional question is blank) concisely tells the user to use the send button unless they add an optional message
   - REQ-121 field-width floor (≥65% of composer row at 390px) still holds
   - accessible names retain Ask/Decrypt semantics; character caps and blank-question fallback unchanged
@@ -3198,8 +3233,10 @@
   - REQ-121
   - REQ-011
   - REQ-073
+  - REQ-206
   - NFR-001
 - Notes:
+  - amended for the `ui-reimagining-build` pass (2026-10-01): the visible Send Request label is retired for the send pill; accessible names and caps unchanged
 
 ### REQ-133
 - Title: Card area consolidation around the corner detail popup
@@ -3278,7 +3315,7 @@
 - Description: Remove the reserved dead space above the View Context trigger in the answered workspace (Quick Question and In-Depth) by giving the feature-portal corner rail a real in-flow footprint, so surrounding spacing collapses to normal layout tokens instead of a hand-tuned clearance constant.
 - Acceptance Criteria:
   - the feature-portal corner rail occupies in-flow layout space rather than reserving it through `.adaptive-context-trigger`'s `margin-top: calc(2.75rem - var(--layout-panel-padding))`; that compensating margin is deleted, not merely reduced
-  - the View Context trigger never overlaps or sits beneath the rail's interactive area at 390×844 or 1440×900, verified live with both a Menu and a History rail zone present
+  - the View Context trigger never overlaps or sits beneath the ☰ Menu button's interactive area at 390×844 or 1440×900, verified live (REQ-207)
   - measured vertical distance between the destination heading and the View Context trigger shrinks at both viewport bands (baseline: 32px of applied compensating margin, against a rail whose measured in-flow height is 0px)
   - spacing comes from the shared `--layout-surface-gap`/`.conversation-workspace` tokens rather than a one-off inline override
   - document-level scrolling in the answered workspace is no worse than the current baseline (the answered Quick Question workspace already document-scrolls at 390×844 — this requirement must not deepen it, and need not eliminate it)
@@ -3292,6 +3329,7 @@
   - DEC-141
 - Notes:
   - root cause identified live during `ui-review` refinement: the rail is `position: absolute` with a measured height of **0px**, so nothing pushes the trigger down automatically and `index.css` compensates with a magic margin. Tuning that constant treats the symptom; giving the rail a footprint removes the whole class of hand-tuned clearance values (product-owner decision, 2026-08-06).
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the feature-portal corner rail is retired for the banner header's ☰ Menu button (REQ-207); the clearance check reads "☰ Menu button" wherever it named the corner rail or the History rail zone
 
 ### REQ-137
 - Title: In-Depth player-details expand affordance correctness
@@ -3876,7 +3914,8 @@
 - Description: In Quick Question today the player attaches at most one card, and pointing the question at any other card is a gamble — the model only reliably knows the single attached card. This lets the player add every card they want to ask about (a bounded list), each resolved to its oracle identity exactly the way the single card is today, while Quick Question still carries no zones, phase, stack, life totals, or other game state. The backend enriches each attached card — full metadata including oracle text, plus its WotC rulings — and scores supplemental rule retrieval over the question plus all attached cards, so every card the player named is fully in context. The fast, no-setup experience stays; the "did it actually see the other card" gamble goes away.
 - Acceptance Criteria:
   - The lookup request carries an optional **bounded list** of cards in place of the single optional card; each entry carries only identity — `cardId` (oracle id) and `name` — and carries no zone, owner, caster, targets, or context-notes fields. The descriptive block (`oracleText`, `imageUrl`, `manaCost`, `manaValue`, `typeLine`, `colors`, `supertypes`, `subtypes`) is no longer part of the request; the backend resolves the card-intrinsic fields server-side by `cardId` from `cardDetailByOracleId.json.br` (REQ-175, REQ-176). The per-card enrichment below is unchanged — it resolves each attached card's metadata server-side rather than from the request.
-  - The pre-submit view lets the player add, preview, and remove more than one card; an explicit cap of **5 cards** is enforced and stated to the player so the prompt stays bounded.
+  - The pre-submit view lets the player add, preview, and remove more than one card; an explicit cap of **10 cards** — the same number as the Stack's limit (REQ-010) — is enforced and stated to the player so the prompt stays bounded.
+  - On Ask a Question (REQ-206) the Add-card search opens its result list before three characters are typed, at the threshold the direction-1 mockup's own search uses (`docs/design/ui-reimagining/direction-1/flow.js`, read at build and recorded in this requirement's Notes); every other card search in the suite keeps its three-character minimum. Which card resolves, and what the request carries, are unchanged.
   - Backend enrichment runs per attached card: each card's full metadata (same per-card formatting as populated-zone cards, DEC-042/REQ-030) and each card's WotC rulings (DEC-029) appear; System 3 supplemental retrieval (DEC-046/REQ-022) scores the question plus a compact signal for every attached card — name, type line, and keyword list. It no longer scores over each card's full oracle text, which was measured to drop supplemental recall@5 from 0.577 to 0.026 on a labelled benchmark (REQ-178).
   - Combo enrichment (Commander Spellbook) adapts to the card set: the attached cards become the match instances, amending REQ-094's single-card lookup rule. A candidate qualifies when it contains at least one attached card as an exact ingredient or authoritative template match, and candidates covering more of the attached cards rank ahead of those covering fewer (attached-card coverage), applied before popularity — so "how do these cards combo" surfaces the combos using the most of the attached cards first. With exactly one card attached this is identical to today's single-card lookup; with zero cards attached, behavior is unchanged (no combo data without explicit intent and at least one card). (DEC-116/REQ-094 [amended]/REQ-095)
   - When an eligible candidate is **complete** — every ingredient slot filled by an exact or authoritative-template match across the attached cards — the answer explains that combo, with per-ingredient card state left explicitly unverified (a lookup carries no board). When a candidate is **partial** — it qualifies on at least one attached card but at least one ingredient slot is unmatched — the answer names each missing ingredient and describes what would fill that role: the missing ingredient's own card name (missing exact ingredient) or template/category description (missing template ingredient) drawn from the combo definition, so the player learns how the combo could be completed rather than getting nothing. This is a description of the missing role, **not** a card recommendation or search — no card-suggestion engine is added. Complete/partial classification for lookup and its at-most-five selection/ranking are defined in REQ-094 (amended); the answer text itself is rendered by REQ-095's existing present/missing ingredient enrichment, which already covers game and lookup candidates alike and needs no new criterion here.
@@ -3893,12 +3932,15 @@
   - REQ-072, REQ-074 (lookup validation and assembly)
   - FLOW-023
   - REQ-175, REQ-176 (the attached card's descriptive block is now resolved server-side by `cardId`, not carried on the request)
+  - REQ-010 (the Stack's cap, now shared), REQ-206
 - Notes:
   - Supersedes the single-card constraint (DEC-107 "single card", DEC-106 optional single `card`). The `card` field becomes a bounded list; the exact wire spelling (`cards` array vs. keeping `card` as an array) is a code-shape choice made at implementation — both stay back-compatible through the `mode` union.
   - Amends REQ-094's `mode: "lookup"` combo criterion: the required match instance was the single attached card; it becomes the bounded attached-card set — a candidate qualifies on containing any one attached card, and attached-card coverage ranks results ahead of popularity. REQ-094 carries the reciprocal "amended by REQ-167" note and lists REQ-167 as a dependency. The zero-card and single-card lookup cases, and all of game-mode retrieval, are unchanged.
-  - Screen-layout's "Quick Question — pre-submit" row was re-measured for the multi-card add strip on 2026-08-30 and again on 2026-09-24. The 2026-08-30 reading accepted page scroll past the composer with 2+ cards attached; the `ui-reimagining` pass withdraws that (REQ-129 as amended) and binds the attached-card region so Send Request stays in the first viewport at all five cards. That row is the authority; this note is no longer an instruction to re-measure.
+  - Screen-layout's "Quick Question — pre-submit" row was re-measured for the multi-card add strip on 2026-08-30 and again on 2026-09-24. The 2026-08-30 reading accepted page scroll past the composer with 2+ cards attached; the `ui-reimagining` pass withdrew that (REQ-129 as amended), and the `ui-reimagining-build` card stage (REQ-206) keeps the send in the first viewport at every card count up to the cap. That row is the authority; this note is no longer an instruction to re-measure.
   - Does not resolve Q-003 (lightweight game context) or Q-004 (answer-seeded second-pass retrieval); both stay open.
   - Gate review (2026-08-30) tightened the add cap from a suggested ~6 to a fixed 5, and directed that lookup-mode combo answers explain a completed combo when the attached cards fully assemble it, and otherwise name the missing piece(s) and describe what would fill them. The define loop (2026-08-30) settled those mechanics in REQ-094 (amended): "complete" = every ingredient slot filled by an exact/template match in the attached set, with REQ-094's zone/quantity checks dropped for a board-less mode; "partial" = qualifies on at least one attached card but leaves a slot unmatched; lookup selection order is complete-before-partial, then attached-card coverage, then fewer missing, then popularity, then variant id. The answer is REQ-095's existing present/missing rendering, and "what would fill the role" is the missing ingredient's own identity/template from the combo catalog, not a card recommendation. No new stable ID was needed.
+  - amended for the `ui-reimagining-build` pass (2026-09-30, 2026-10-01): the cap rises from 5 to 10 so every card on the Ask a Question stage (REQ-206) can be carried into In-depth details, whose Stack holds 10 (REQ-010). The 2026-08-30 gate review had set 5; the owner's direction-1 mockup rounds set 10. `MAX_LOOKUP_CARDS` moved to 10 in both the frontend cap and the backend request validation (`askAiRequest.ts`); the single lookup assembly loop and prompt text are unchanged
+  - amended by `ui-look-translation` (2026-10-02): Ask a Question's search threshold (the first build's owner question 2). Recorded at build from the mockup's script: the mockup's own search (`quick-question.html`'s `renderSearch`, with `flow.js`) has no minimum — it filters its ten-card demo shortlist on whatever is typed — and the real corpus holds tens of thousands of cards, so Ask a Question's Add-card search lists matches from the first character typed (a threshold of one) and lists nothing for an empty box; the other searches keep three
 
 ### REQ-168
 - Title: The rules guardrail stops refusing real Magic phrases like "combo"
@@ -4027,7 +4069,7 @@
 - Constraints:
   - pure frontend/presentation: no backend, no provider path, no `GameContext` seed contract (DEC-102), no persistence shape (DEC-103); mock-default keeps working
   - preserve always-on commander-damage-decrements-life, the panel opponent cells' `−`/`+` bands (~53px, REQ-112), the "me" self-cell, and seat rotation as the sole life-zone orientation input (DEC-136)
-  - do not reopen the counter-panel overlay/tray shape (DEC-139) — change only the matrix arrangement inside the panel, never its height or overlay treatment
+  - do not reopen the counter-panel overlay/tray shape — change only the matrix arrangement inside the panel, never its height or overlay treatment (this bound REQ-173's own change; the panel's shape is now REQ-082's content-sized shared sheet)
   - the on-card map counter-rotates against the card rotation (DEC-136 rotates the life-number content), and its glyphs counter-rotate back so the numbers face the seated player — never leave the map to rotate with the card
 - Dependencies:
   - REQ-081
@@ -4861,7 +4903,7 @@
     `#FFFFFF` on `accent` `#0A7A42` = 5.42:1) and are floors, not targets
   - the wash never goes fully black: its darkest point stays at or above the
     measured `#09090B` luminance, so the app survives a bright game store
-  - deliberately uncorrected custom Colorless RGB (REQ-099) stays exempt from the
+  - a custom Colorless colour is lifted to REQ-099's readability floors (as amended) while keeping its hue, so it no longer sits outside them
     contrast floors, exactly as it is today
   - no token name encodes a theme mode, and no in-scope component hard-codes a
     zinc/slate colour value; adding a light theme later requires new values for
@@ -4907,6 +4949,8 @@
     block), and `sections/system-map.md`'s Theme entry
   - the contrast floors are measured current behaviour, not new quality targets:
     the redesign may not make any of the three worse than it is today
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the custom-Colorless exemption is replaced by REQ-099's readability lift, the one permitted runtime colour derivation — a fixed rule, not a contrast engine. REQ-207 is the code slice that ships this token set
+  - REQ-216 extends this requirement's one-source rule from colours to every style value (surface, radius, shadow, glow, type size, spacing) and fixes the order the shared stylesheets layer in; the roles above resolve to its ported token layer
 
 ### REQ-201
 - Title: Original per-colour motif kit
@@ -4930,7 +4974,9 @@
   - motifs are decorative: no motif is the sole carrier of meaning, state, or an
     action, and removing one leaves every control usable and labelled
   - motifs respect `prefers-reduced-motion` through the existing CSS motion
-    baseline (NFR-006); no new motion trigger or timing system is introduced
+    baseline, and the ambient scene through its canvas renderer's still frame
+    (NFR-006); no new motion trigger or timing system is introduced beyond that
+    one renderer's own frame loop
   - the brand mark may keep, adapt, or replace today's gradient text wordmark,
     and whatever it becomes keeps the Easter-egg tap trigger (REQ-203)
 - Constraints:
@@ -4963,8 +5009,11 @@
 - Description: Player Life Tracker inherits shared chrome, the REQ-200 token
   set, and shared stylesheet changes the same way every other destination
   does — the menu rail, brand mark, theme section, overlays, and page shell.
-  Life Tracker's own screens, counters, layout, and `lib/lifeTracker/` state
-  are untouched by the redesign. Every slice that touches shared chrome, the
+  Life Tracker's table (seats, life numbers, layout, day/night, the seat map),
+  its `lib/lifeTracker/` state, persistence and behaviour are untouched by the
+  redesign; the sheets that open from it (Game Setup, a player's Counters, the
+  confirm) take the shared look with every control, option, default and range
+  unchanged (REQ-208). Every slice that touches shared chrome, the
   token set, or the shared stylesheet attaches a Life Tracker before/after
   screenshot pair at 390x844 and 1440x900 to its PR, so the owner sees exactly
   what changed before merging. There is no automated pixel-diff gate; the
@@ -4980,12 +5029,18 @@
   - the owner reviews the pair on the PR and approves or requests changes;
     there is no automated diff threshold and no pixel count that blocks the
     slice on its own
-  - Life Tracker's one-screen fit at every supported player count (DEC-136) and
-    its full-height counter panel (DEC-139) are unaffected
-  - `lib/lifeTracker/` state, persistence, the commander-damage matrix, the
-    counter palette, day/night, Game Setup, Reset/New Game, and the one-way MTG
-    Assistant seed are untouched by the redesign packages
-  - automated coverage asserts Life Tracker's own screens, counters, layout,
+  - Life Tracker's one-screen fit at every supported player count (DEC-136) is
+    unaffected; a player's Counters panel is the content-sized shared sheet
+    (REQ-082 as amended)
+  - `lib/lifeTracker/` state, persistence, commander-damage and counter values,
+    day/night, and the one-way MTG Assistant seed are untouched; Game Setup,
+    Reset / New Game and a player's Counters change only their presentation
+    (the shared sheet, REQ-208), keeping every control, option, default and range
+    unchanged, except that Game Setup's name fields sit behind an **Edit names ▾**
+    collapse (closed when the sheet opens) and the sheet gains a **Done ›** foot bar
+    that closes it; every Game Setup change still applies as it is made, and ✕,
+    Escape and a tap outside still close the sheet (REQ-081, FLOW-013)
+  - automated coverage asserts Life Tracker's table, counter values, layout,
     and `lib/lifeTracker/` state are unchanged by each redesign slice; the
     shared-chrome inheritance itself is confirmed by the screenshot pair, not
     by an automated pixel assertion
@@ -4993,7 +5048,7 @@
   - Life Tracker must not fork a shared component or add a per-destination
     override; it consumes shared chrome and the token set exactly as every
     other destination does
-  - no Life Tracker behaviour, copy, layout, or state change of any kind in the
+  - no change to Life Tracker's rules, state, or table layout of any kind in the
     redesign packages
   - the screenshot pair is a PR review attachment, not a CI job: it does not
     enter `npm run quality:check`, cannot block a merge automatically, and
@@ -5007,12 +5062,29 @@
 - Notes:
   - shared chrome changes reach Life Tracker automatically as each slice
     ships, reviewed by the screenshot pair; there is no separate deferred
-    pass for shared chrome. Life Tracker's own screens remain a distinct,
-    not-yet-scheduled redesign, same as before
+    pass for shared chrome. Life Tracker's table remains out of scope; its sheets
+    are restyled by the `ui-reimagining-build` pass
   - the baseline captures taken during refinement live in the work package's
     git-ignored `.playwright-mcp/` folder; each build slice captures its own
     before/after pair at merge time for the PR review, not as an automated
     pixel-diff gate
+  - amended for the `ui-reimagining-build` pass (2026-09-30): the owner asked
+    for the back menus to be redrawn (mockup round 11) and approved them
+    (rounds 13-14). Game Setup becomes one phone screen — Reset life totals
+    and New game as rows that ask first through the shared confirm sheet; a
+    Players stepper (2-8) with an **Edit names ▾** collapse (closed when the
+    sheet opens) holding the name fields two to a row, each carrying its
+    seat number; Starting life pills (20 / 25 / 30 / 40 / Custom 1-999) under
+    Players with its rule line; Layout (Grid / List) and Card style (Ombre /
+    Flat) as a labelled pair of segmented pills. A player's Counters has two
+    tabs: Commander damage · lethal at 21 (the seat map alone — a tile per
+    other seat with name, number and one joined -/+ pill, a red edge and
+    LETHAL tag at 21, the player's own seat drawn like their card) and
+    Counters (the eleven named counters as tiles that add one on a tap and
+    light above zero, a ⋯ on each tile to take one away, set a number or
+    clear — long-press stays — and custom counters as the same tiles with a
+    remove ✕ and today's add field and three errors)
+  - amended by `ui-look-translation` (2026-10-02): Game Setup's Edit names ▾ collapse and Done › foot bar, matching the mockup and REQ-081 / FLOW-013 (the first build's owner question 6)
 
 ### REQ-203
 - Title: Suite-wide brand-mark Easter egg
@@ -5155,3 +5227,354 @@
     are the baseline this requirement closes, not targets
   - the brand-mark entry also makes the REQ-203 Easter-egg trigger comfortably
     tappable
+
+### REQ-206
+- Title: Ask a Question — one door for every question, with the cards carried into In-depth details
+- Priority: high
+- Description: The Menu offers one question destination, **Ask a Question**, in place of the separate Quick Question and In-Depth Question rows. The Ask a Question page is today's Quick Question page (route `/quick-lookup`, `mode: "lookup"` request) recomposed around the attached cards: the front card full size on a lit stage with the one other card peeking out each side (two cards peek on one side only, never duplicated), a two-row question box with the send inside it, and an **Add in-depth details** pill that carries the attached cards and any typed question into In-depth details (route `/in-depth`, `mode: "game"` request). The two routes, the two request modes and their prompts are unchanged; what changes is the door, the page composition, and the carry.
+- Acceptance Criteria:
+  - the Menu lists **Ask a Question** once and no longer lists Quick Question or In-Depth Question; it opens `/quick-lookup`; `/in-depth` stays addressable by deep link and by the carry, and the Menu marks Ask a Question current on both routes
+  - with no card attached there is no stage; with cards attached the front card renders full size on a glass stage (REQ-207) with the one other card peeking out each side (three or more cards peek one on each side; exactly two cards peek on one side only, so the same card is never rendered twice); a tap on a neighbour or the ‹/› arrows turns the ring
+  - ✕ Remove and ⓘ Details straddle the front card's top corners; a row of position dots, one per attached card with the front card's dot lit, shows where the player is in the ring, placed and drawn as the mockup page shows it, with the accessible name "Card <n> of <total>"; there is no `n / <cap>` count pill, and the cap (REQ-167) is stated by the existing message when the player tries to add past it
+  - **Add card** and **Scan** sit beside the title; the card search field stays available for typed autocomplete search and is not gated behind a separate reveal step
+  - the question box has two rows, as the mockup page draws it: the text on top; the Add in-depth details chip at the bottom-left (labelled or icon-only at each width as the mockup shows) and the send pill, with its microphone half (REQ-212), at the bottom-right; the character count sits where the mockup places it
+  - the 300-character budget (REQ-011, measured on the raw typed text per REQ-134) is drawn as a ring round the send pill's edge in the profile's accent light over a faint track, brighter in the last 30 characters and closed at 300; it starts at the top of the pill's split and runs clockwise; at 0 characters no track, fill or dot is drawn and the numeric count is hidden; there is no separate Send Request button, no bar under the box, and no hint line under the title
+  - **Add in-depth details** switches the active destination to In-depth details, carrying every attached card and the typed question (or its silent fallback); the carry is queued in a one-slot mailbox (`lib/portal/seedContext.tsx`'s `queueLookupCarry`/`consumeLookupCarry`) alongside the existing Life Tracker roster-seed mailbox; a quick-lookup visit entered directly from Life Tracker still carries the roster seed forward through this one gesture, narrowly tied to it the same way the retired direct Menu transition was (App.player-life-tracker-seed.test.tsx's negative tests: a deep link, browser Back, or a raw route jump never seeds)
+  - the answered view keeps the existing frozen-card trigger (naming the single card or the count, "N cards") opening the frozen set's read-only presentation; a card name in the judge's message that exactly matches a card attached to this conversation renders as a tappable chip (an accent-tinted, underlined inline control) that opens that card's detail directly in the thread
+  - two actions sit top-right beside the title once a ruling exists: **✎ Edit cards** returns to the pre-submit page with the cards and question exactly as they were (the conversation is already auto-saved to history, REQ-103), and **↺ Start over** clears cards and question to the empty page
+  - the General rules topics disclosure (REQ-079) is retired and is not on the page in any state; the locked topic pill (REQ-091) has no entry point left and never appears
+  - tests cover the single Menu entry, turning the ring (tap and arrows, wrapping, no duplicate neighbour at exactly two cards, the lit position dot following the front card), the carry queuing cards/question and switching the destination, the ring at 0/mid/last-30/300 characters, Edit cards restoring cards and question, and a chip opening the card detail
+- Constraints:
+  - no change to either request mode, `AskAiRequest`, Zod schemas, `GameContext`, prompt assembly, or routes, except the lookup card cap (REQ-167)
+  - the carry is in-memory frontend state using the existing cross-destination hand-off pattern (`seedContext.tsx`); the Ask a Question Draft (REQ-108) begins the moment the first card is attached, and every carried card — placed in In-depth details or still waiting for a zone — is written into the Draft slot, so the whole request survives a reload
+  - keep-alive mounting and URL-as-truth routing are unchanged (DEC-157, REQ-140)
+  - In-depth details' own stations rail, Cards shelf, carried-card placement UI, and card menu (the fuller mockup direction for the `/in-depth` side of the carry) are a later slice's scope; this requirement covers the Ask a Question side — the door, the stage, the composer, and the carry mechanism — in full
+- Dependencies:
+  - REQ-011
+  - REQ-079
+  - REQ-091
+  - REQ-103
+  - REQ-108
+  - REQ-134
+  - REQ-140
+  - REQ-167
+  - REQ-207
+  - FLOW-011
+- Notes:
+  - "Quick Question" in older requirements names the Ask a Question page (route `/quick-lookup`) and "In-Depth Question" names In-depth details (route `/in-depth`); older entries keep those names as internal labels rather than being rewritten
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner-approved direction-1 mockup (rounds 2–14); built by slice C of that package — `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `CardStage.tsx`, `ComposerPill.tsx`, `ConversationThread.tsx` (chip matching), `lib/portal/seedContext.tsx` (lookup-carry mailbox), `lib/portal/inDepthCarryContext.tsx` (the carry action), `App.tsx` (`handleCarryToInDepth`)
+  - owner edit (2026-10-01): the Ask a Question Draft begins the moment the first card is attached, not only once a question is typed, so a carried-but-unplaced card survives a reload — see the Constraints line above and REQ-108
+  - amended by `ui-look-translation` (2026-10-02): the owner's gate verdict retired the General rules topics panel (REQ-079) — the mockup was made without it on purpose — so the page no longer carries it or the locked topic pill
+  - amended by `ui-look-translation` (2026-10-02): position dots replace the count pill, matching the mockup (the first build's owner question 1)
+
+### REQ-207
+- Title: Direction-1 shared chrome — banner header, Menu tray, Theme band, and the colour's ambient scene
+- Priority: high
+- Description: The shared frame every destination lives in takes the owner-approved direction-1 look and delivers the REQ-200 token set and REQ-201 motif kit in code. A banner header carries the Menu (☰) at the left and the brand centred; the Menu tray slides in from the left; Theme is a six-cell band; and a restrained scene of the chosen colour's element, drawn by the canvas renderer ported from the mockup (NFR-006), plays behind every page.
+- Acceptance Criteria:
+  - one typeface, Inter, for body and titles (titles heavier with tighter tracking), served as a self-hosted local font file with the system stack as fallback — no runtime request to a font CDN, no display face
+  - the page ground is flat: one colour per profile from the REQ-200 token set, no gradient; neutral ground and panel fills stay the visual majority; no corner decoration, hairline bracket or flourish on any surface
+  - the header is a banner: ☰ at the left (at least 44px; about a quarter larger than today's trigger on a phone and a third on desktop), the brand centred (a breathing orb holding the colour's badge, the wordmark, "MTG Assistant") on a lit band with a hairline of the colour's light along its foot, and each profile's element drawn across the band (White low-sun rays at half strength; Blue a scatter of arcane shapes; Black fog pooling at the ends; Red a hot band with embers; Green a scatter of leaf and tree shapes; Colorless small triangles, rings, arcs, dots and crosses); the right-hand slot shows Trade Balancer's price date at `768px`+; the brand keeps the cat-wizard Easter egg (REQ-203)
+  - the banner header sits flush with the top edge of the viewport — its top at y=0 at every width — and the page's own padding applies only to the content below it, never wrapping or offsetting the header; in mock provider mode the mock-mode banner keeps its place directly under the header (REQ-123)
+  - the Menu tray slides in from the left at every width: full height of the visible shell side below `768px`; at `768px`+ a floating card inset from the edges, rounded, sized to its content; it closes on its ✕, a tap outside it, and Escape; it stays fully opaque over destination content (REQ-122)
+  - the destination list is REQ-206's: Ask a Question, Question History (REQ-213), Life Tracker, Trade Balancer, then Send feedback past a hairline
+  - **Theme** is one segmented band the tray's width with six equal cells in catalog order (White, Blue, Black, Red, Green, Colorless): an unchosen cell is a faint wash of its colour with its symbol in the colour's light; the chosen cell is filled with the colour's light, the symbol dark on it, with a small glow; no colour names or blurb (each cell's hover title and accessible name name the colour); a cell is never narrower than 40px — when six no longer fit, the band slides with an arrow at each end nudging two cells at a time (the exhausted end's arrow fades) and the chosen cell is scrolled into view when the Menu opens; from 320px up all six fit and no arrow shows; with Colorless current, a colour well and **Reset to gray** show beneath, wrapping cleanly
+  - behind every page plays the chosen colour's **ambient scene**: two slowly drifting haze sheets, a field of glowing dust, the colour's badge large, blurred and faint in the centre, and the colour's element moving (White beams, Blue runes and constellations, Black fog and brambles, Red heat and embers, Green falling leaves, Colorless turning geometry), as the ported mockup renderer draws each one; the same scene plays at a whisper inside the Menu tray over a pool of the colour's light fading in at its foot (Colorless's tray gets a fuller scatter of slightly brighter shapes)
+  - each scene's density and opacity are one number each, so it can be tuned down without redrawing; the scene is decorative and never carries meaning; panels (the card stage, every In-depth plate, the Trade Balancer piles' panel and every other panel surface) take the mockup's own surface values from the shared token layer (REQ-216) — translucent glass wherever the mockup draws glass — so the scene reads through them; the open Menu tray stays fully opaque (REQ-122)
+  - under `prefers-reduced-motion` the scene paints one still frame and runs no animation loop, and every decorative motion stops (NFR-006)
+  - the REQ-200 contrast floors hold over the scene in all six profiles, including text on glass panels with the scene behind them; a custom Colorless colour follows REQ-099
+  - every card keeps its colour-identity ring (REQ-058) on every card surface; the theme owns the glow behind a card, never its edge
+  - tests cover the band's cell floor and arrows at 280px and 390px, the tray's close paths, reduced motion stopping the scene, the header's top edge at 0 at 390×844 and 1440×900, the font loading from the app's own origin, and the contrast floors per profile
+- Constraints:
+  - motion (NFR-006): the scene is the one hand-written canvas renderer ported from the mockup's `ambience.js`, mounted once as `AmbientScene` (page and Menu-tray variants) on a fixed canvas behind the page and driven by the active colour profile; no animation library; every other decorative motion in the frame stays CSS transforms and opacity
+  - the six symbols, badges, banner elements and scene art are the app's own drawings, shipped as local static files or drawn by the ported scene renderer from the app's own code (REQ-201); no Wizards of the Coast glyph, icon font, logo, set symbol or card art
+  - the font file and scene art stay within the frontend asset budget (REQ-201, NFR-013); if a self-hosted Inter cut cannot fit, the system stack stands and no font file ships
+  - presentation only: no change to request contracts, prompts, backend routes, card metadata, or the data pipeline
+  - Life Tracker inherits this chrome, reviewed by the screenshot pair on every touching slice (REQ-202)
+- Dependencies:
+  - REQ-058
+  - REQ-099
+  - REQ-122
+  - REQ-200
+  - REQ-201
+  - REQ-202
+  - REQ-203
+  - REQ-205
+  - REQ-206
+  - REQ-213
+  - NFR-006
+  - NFR-013
+  - FLOW-007
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the approved mockup drew the element on a script-driven canvas — this build keeps the look and moves it to CSS to stay inside NFR-006
+  - amended by `ui-look-translation` (2026-10-02): the scene returns to the mockup's own canvas renderer under NFR-006's ambient-scene exception; the CSS-only haze it replaces is retired
+  - amended by `ui-look-translation` (2026-10-02): the header sits at the top edge outside the page padding (the first build's reviews measured a band of about 20px at 390×844 and 48px at 1440×900 above it), and panels take the mockup's glass surfaces instead of solid fills
+
+### REQ-208
+- Title: One shared sheet for card detail, Question History, the printing picker, Send feedback, and confirmations
+- Priority: medium
+- Description: The suite's small overlays share one sheet shell so they open, size, scroll and close the same way: a bottom sheet below `600px` and a floating card centred in the viewport from `600px` up, with a fixed head and foot and only the body scrolling. The shell hosts the card-detail box (REQ-128), Question History (REQ-213), Trade Balancer's printing picker (REQ-065), Send feedback (REQ-087), and a shared confirm sheet.
+- Acceptance Criteria:
+  - one shell component presents as a bottom sheet below `600px` and as a floating card centred in the viewport from `600px` up; the head (title and ✕) and foot (actions) stay fixed and only the body region-scrolls; the sheet sizes to its content up to the viewport
+  - it opens with a short fade-up (immediate under reduced motion), traps focus, closes on ✕, Escape and a tap outside, and returns focus to its trigger (REQ-143)
+  - the card-detail box (REQ-128) and Send feedback (REQ-087) are hosted on this shell today; Question History (REQ-213) and the printing picker (REQ-065) host on it when those slices build
+  - the confirm sheet (`ConfirmSheet`) asks before a destructive action with a plain question, one line on what will be cleared, a keep action and a clear action; a caller renders it only when there is something to clear
+  - View Context keeps its own bottom sheet / right drawer at the `768px` boundary (REQ-135); Life Tracker's counter panel is hosted on this shell (REQ-082 as amended)
+  - the shared close control (REQ-142) and the 44px floor (REQ-205) apply
+  - tests cover the shell at both sides of `600px`, focus trap and restore, outside dismiss, and body-only scroll with a long body
+- Constraints:
+  - one shared component; no per-overlay fork or size prop; presentation only
+  - the `600px` switch is a structural media query (DEC-117, NFR-011), not device detection; it applies to this overlay family only and the suite's `768px` phone/tablet band is unchanged
+- Dependencies:
+  - REQ-065
+  - REQ-087
+  - REQ-128
+  - REQ-135
+  - REQ-142
+  - REQ-143
+  - REQ-205
+  - REQ-213
+  - NFR-006
+  - NFR-011
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); built by slice B of that package as `apps/frontend/src/components/SheetShell.tsx` and `ConfirmSheet.tsx`
+
+### REQ-209
+- Title: In-depth details — four stations, the Cards shelf, and the card menu
+- Priority: high
+- Description: In-Depth Question's four staged steps become **In-depth details**: four stations on a progress rail — 1 Game · 2 Zones · 3 Cards · 4 Context — with the way forward built into each panel, a lit shelf of real card images per zone, a card menu for moving, ordering, reading and removing a card, one-at-a-time placement of cards carried from Ask a Question (REQ-206), and a review before the question. Every detail today's staged flow collects is kept.
+- Acceptance Criteria:
+  - the title reads "In-depth details"; the Menu marks Ask a Question current; a round ‹ beside the title goes back one card inside Context, then to Cards, and from station 1 back to the Ask a Question page
+  - a progress rail shows the four stations; stations already reached are tappable to return to, but Context bounces back to Cards while any carried card is unplaced; the ruling is not a station — when it arrives the rail and flow give way to the chat
+  - each station's panel keeps a Back/Continue action pair naming the next step; Back and Continue are equal width where both show
+  - **Game** is one plate under a "Game context" heading: players (a square −/+ stepper, 2–8) with names and life totals behind an expander, then turn phase (with the combat sub-step when phase is combat) and active player; one shared "More details for all players" toggle reveals each player's Poison · Energy · Experience, commander damage from each other player, and named counters with "Add a named counter" (REQ-100's synchronized state); the Additional game state notes (REQ-031) stay
+  - **Zones** shows the seven-zone checklist; at least one zone is still required (REQ-016)
+  - **Cards** gives one tab per chosen zone with its live count and a lit shelf of real card images for the chosen tab, no row cap (REQ-056); cards arrive by search, scan, or carried from Ask a Question
+  - **Stack tags**: one card reads TOP; two read BOTTOM / TOP; from three the ends read BOTTOM and TOP and the cards between count down from the top (TOP, 2ND, 3RD … BOTTOM); only the Stack wears tags
+  - **every zone reorders by drag** (a mouse drags at once; touch after a short hold, while a plain swipe still scrolls the shelf; the image never starts the browser's own image drag); the Stack also offers Down / Up / To top and other zones Left / Right; tags renumber live; Stack order is sent as shown (REQ-005, REQ-006); order in other zones is cosmetic and changes no prompt meaning
+  - **carried cards are placed one at a time**: the card as hero, "Which zone is it in?", one tile per zone, a "card n of total" counter, and "Leave this card out"; picking a zone adds it to the chosen set if it was not already there; nothing passes Cards until every carried card has a zone or is left out; a carried card the Stack refuses (duplicate or cap, REQ-009 / REQ-010) shows the existing notice and stays unplaced
+  - **a tap on a shelf card opens its menu**, built on the suite's one shared pop-up shell (REQ-208): the card's name; **Move to** as a wrap of pills for every other zone; an order control (Down/Up/To top on the Stack, Left/Right elsewhere) when the zone holds 2+ cards; **Card details** and **Remove from the <zone>** as rows
+  - **Context** is REQ-017's compact sheet per card
+  - **the review** lists each card's context in words with ✎ to jump back
+  - **the chat** is the shared workspace with the Cards strip, **View Context** beside the title, and the same bubble, wait, chips and send pill as Ask a Question; **✎ Edit** renders beside View Context and ↺ Start over once a ruling exists and, mirroring Ask a Question's ✎ Edit cards (REQ-206), returns to the review with the game context, every card's details and the question exactly as they were — the answered conversation leaves the screen, already saved to Question History (REQ-103, REQ-213), and the next send starts a new conversation; **↺ Start over** follows REQ-029
+  - tests cover rail navigation and the Context bounce, the carried-card guardrail and Leave out, drag and button reorder with tag renumbering, the Stack order reaching the request, the menu's Move to and Remove, and ✎ Edit rendering once a ruling exists and returning to the review with everything kept and the conversation saved
+- Constraints:
+  - every field today's staged flow collects is kept; the request contract is unchanged except as REQ-210 and REQ-211 separately decide
+  - drag reorder is built on pointer events with no drag-and-drop library (NFR-004, NFR-006)
+  - staged state stays in the destination's existing state and Draft slot (REQ-108); no new store
+- Dependencies:
+  - REQ-005
+  - REQ-006
+  - REQ-009
+  - REQ-010
+  - REQ-016
+  - REQ-017
+  - REQ-021
+  - REQ-029
+  - REQ-031
+  - REQ-100
+  - REQ-103
+  - REQ-108
+  - REQ-206
+  - REQ-208
+  - REQ-213
+  - FLOW-001
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup rounds 2–14
+  - built across the package's slices: slice D (this id's owning slice) builds the stations rail, the Cards shelf, carried-card placement, drag/button reorder and the card menu — `apps/frontend/src/components/StationsRail.tsx`, `ZoneCardMenu.tsx`, `ZoneCardPicker.tsx`, `ZoneCollectionStep.tsx`, `ZoneConfirmStep.tsx`, `EnrichmentStep.tsx` (rail slot), `lib/shelfDragReorder.ts`, `lib/stackTags.ts`, `portal/MtgAssistantApp.tsx` (carry consumption, placement handlers, rail guardrail); the Context sheet and review (slice E) and the chat's wait treatment (slice F) land afterward in the same package, so the description above is this id's complete intent, not a claim that slice D alone built it
+  - amended by `ui-look-translation` (2026-10-02): the ✎ Edit chip renders and mirrors Ask a Question's ✎ Edit cards (the first build's owner question 3; that build drew no Edit control)
+
+### REQ-210
+- Title: Mana spent for every zone's cards
+- Priority: low
+- Description: Every zone's card in In-depth details' Context station carries the same optional Mana spent box as a Stack card, so a question about a card that cares how much mana was spent to cast it (X, converge, sunburst), in any zone, can say so. The box is prefilled with the card's printed mana value and hints its printed cost; only a value the player changes is sent and emitted in the prompt.
+- Acceptance Criteria:
+  - the Context sheet shows a plain number box labelled Mana spent on every zone's card, prefilled with the card's printed mana value and hinting its printed cost (for example "printed {R}")
+  - a box left at its prefilled value sends no `manaSpent` for that card: a Stack card's prompt keeps today's fallback to `manaValue` (REQ-017) and a non-Stack card's prompt emits no mana-spent line, so an untouched form produces today's prompt byte-for-byte
+  - a changed value (0-99, the existing `manaSpent` bound) is sent on that card; a non-Stack card with a sent value emits `manaSpent: <n>` in its zone entry in the same stable formatting as the Stack's
+  - golden fixtures pin a non-Stack card with and without a sent value
+- Constraints:
+  - no new request field: `manaSpent` already exists on every zone card in the request schema; this adds the non-Stack prompt line and the form box, on every zone, only
+  - no mana-source legality checks (REQ-017)
+- Dependencies:
+  - REQ-017
+  - REQ-030
+  - REQ-209
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30) from the owner's direction-1 mockup; broadened from Battlefield-only to every zone by the owner's gate-review edit (2026-10-01) - "sometimes it does matter" on Graveyard and other zones too; use cases to be refined later
+  - built by slice E: `apps/frontend/src/components/EnrichmentStep.tsx` (the box, every zone), `apps/frontend/src/lib/enrichmentFormat.ts` (`parseManaSpent` bound, `formatPrintedManaHint`), `apps/backend/src/prompt/context.ts` (`normalizeZoneItem` passthrough), `apps/backend/src/prompt/promptFormatting.ts` (`formatNonStackZoneSections` line insertion)
+
+### REQ-211
+- Title: Copies on a Stack card
+- Priority: low
+- Description: A Stack card in In-depth details' Context station may record how many copies of that spell are on the stack besides the original (storm, copy effects), through a More details sheet that slides over the card's context sheet. The count reaches the request and the prompt so the ruling can account for the copies.
+- Acceptance Criteria:
+  - a Stack card's Context sheet shows a **More details** row beside **＋ Add a note**; it opens a sheet over the card sheet holding **Copies** (a stepper, 0-99, default 0); **Done** slides it away
+  - a Stack card with copies above 0 sends an optional integer `copies` (1-99) on that card; 0 sends nothing
+  - the prompt's Stack entry for that card emits `copies: <n>` in stable formatting, right after `manaSpent`; with no copies sent the prompt is unchanged byte-for-byte
+  - the review row reads "+N copies"
+  - the request schema rejects `copies` outside 1-99 and on non-Stack cards
+  - golden fixtures and tests pin a Stack card with and without copies
+- Constraints:
+  - additive, optional field on the Stack card only; the duplicate-card block (REQ-009) and the 10-card Stack cap (REQ-010) are unchanged
+  - copies are prompt context, never validated or simulated
+- Dependencies:
+  - REQ-009
+  - REQ-010
+  - REQ-017
+  - REQ-019
+  - REQ-030
+  - REQ-209
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the owner kept it as a "Try" in mockup rounds 7-8
+  - built by slice K (2026-10-01): a stepper (−/+, 0-99) stands in for the mockup's five-row picker — same range and default, a simpler control; `apps/frontend/src/components/EnrichmentStep.tsx` (the More details sheet, built on the shared sheet shell, REQ-208), `apps/frontend/src/types.ts` (`ZoneCardItem.copies`), `apps/frontend/src/lib/contextFlow/flow.ts` (strips 0/undefined before the wire), `apps/frontend/src/components/FrozenGameContextDetails.tsx` (the "+N copies" review line), `apps/backend/src/validation/askAiRequest.ts` (`stackZoneCardItemSchema`; Stack-only is enforced by the shared schema's `.strict()` unknown-key check, not a separate rule), `apps/backend/src/prompt/context.ts` (`normalizeOptionalCopies`), `apps/backend/src/prompt/promptFormatting.ts` (`formatStackSection`'s splice)
+
+### REQ-212
+- Title: Dictate a question from the send pill
+- Priority: low
+- Description: Every question box's send pill has a microphone half beside the arrow. A tap listens through the browser's built-in speech recognition and types what is said into the box, where it counts toward the 300-character budget and can be edited before sending.
+- Acceptance Criteria:
+  - where the browser exposes speech recognition (`SpeechRecognition` or `webkitSpeechRecognition`), the send pill shows a microphone half at the left and the arrow at the right in every question box (Ask a Question, its follow-up, In-depth details' question and its follow-up); where it does not, the pill is the arrow alone and nothing else changes
+  - a tap on the mic starts listening: the mic half glows, the box reads "Listening…", and recognised words are inserted as typed text, never sent automatically; a second tap, a send, or the browser's own silence timeout stops listening
+  - dictated text is clipped at the 300-character budget exactly as typed text is (REQ-011)
+  - a denied microphone permission or a recognition error stops listening with a one-line message and leaves the typed text intact
+  - both halves meet the 44px touch floor (REQ-205) and carry accessible names ("Dictate question" / "Stop dictating", and the existing send control's own name)
+  - tests cover each question box with and without the browser API, insertion into existing text, the character cap, stopping on submit mid-dictation, and the error path, using a stubbed recognition object
+- Constraints:
+  - browser-native only: no audio reaches TheJudge's backend, no new endpoint, no speech library or dependency, and nothing is stored beyond the text in the box
+- Dependencies:
+  - REQ-011
+  - REQ-205
+  - REQ-206
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30). Some browsers process the audio in the vendor's own speech service, as keyboard dictation does; the app itself never handles audio
+  - built by slice K: `apps/frontend/src/hooks/useDictation.ts` (the shared listen/insert/error state machine) and `apps/frontend/src/components/DictationMicButton.tsx` (the shared mic control), wired into `apps/frontend/src/components/ComposerPill.tsx` (Ask a Question), `apps/frontend/src/components/FollowUpComposer.tsx` (every flow's follow-up), and `apps/frontend/src/components/EnrichmentStep.tsx` (In-depth details' own pre-submit composer)
+
+### REQ-213
+- Title: Question History — one list for every question, reopened live
+- Priority: medium
+- Description: Question History is a Menu row directly under Ask a Question that opens the shared sheet (REQ-208) with one list of the last 20 saved conversations from both question kinds, each row reopening its conversation live in its own flow. It replaces the per-flow History drawer and the retired History rail zone.
+- Acceptance Criteria:
+  - the list holds both kinds (Ask a Question and In-depth details) most-recent-first from the one existing store, capped at 20 across both (a 21st prunes the oldest); the head shows the title and "n of 20"; each flow's Draft (REQ-108) shows as its own row above the saved conversations
+  - every row shows the conversation's cards as a small fan of thumbnails (three, then "+n"; a dashed frame for none), the question, the first line of the ruling, and one meta line (Ask a Question or In-depth details · cards · the game context for In-depth · follow-ups · when)
+  - below `600px` a tap closes the sheet and reopens that conversation live in its own flow — an Ask a Question conversation on the Ask a Question page with its cards in the strip, the thread, and "Reopened from your history" under the title; an In-depth conversation in In-depth details' chat with View Context — with the follow-up box ready
+  - from `600px` the sheet has two panes: the list (a tap only selects), and the chosen conversation read in full with **Open conversation** and **Delete this question** at its foot; below `600px` each row keeps its own Delete control instead; deleting confirms first through the shared confirm sheet (REQ-208) and deleting the active conversation clears it without re-saving (REQ-118)
+  - opening a conversation from mid-flight staging snapshots the Draft first, as today (REQ-108)
+  - tests cover the merged list across both kinds, the cap, reopening each kind into its own flow, the two-pane layout from `600px`, and delete (confirm/cancel, active vs. non-active)
+- Constraints:
+  - frontend-only, browser-local; no storage key, entry shape or cap change — only the per-flow list filter is removed
+  - no request or prompt change
+- Dependencies:
+  - REQ-103
+  - REQ-104
+  - REQ-107
+  - REQ-108
+  - REQ-118
+  - REQ-206
+  - REQ-207
+  - REQ-208
+  - FLOW-016
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30)
+  - built by slice I: `apps/frontend/src/components/ConversationHistoryDrawer.tsx` (the combined list, drafts, two-pane reading, delete), `apps/frontend/src/components/portal/FeaturePortalMenu.tsx` (owns the sheet, the always-enabled Question History row, resume/delete wiring), `apps/frontend/src/lib/portal/seedContext.tsx` (the resume/deletion/draft-resume mailboxes a cross-destination hand-off needs), `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx` and `apps/frontend/src/components/portal/MtgAssistantApp.tsx` (each consumes its own mode's mailbox and keeps its existing `restoreConversation`/Draft-hydrate logic)
+
+### REQ-214
+- Title: Card scanner: a scanner-local holding list, committed on close, with a count pill on every host
+- Priority: medium
+- Description: The shared camera scanner (FLOW-006) keeps its detection, lock and ding unchanged. A recognised card now waits in the scanner's own holding list instead of joining the destination the instant it is recognised; the list is shown by a top-right count pill, with Remove on each entry and a caution note that scanning is experimental. Closing the scanner (the "Exit scan" control, now a square box with an X above the camera's top-right corner) commits every held card to the zone or trade side it was opened from, in one step. The count pill, previously built only for In-Depth's zones, now appears on every host that scans: In-Depth's Cards station, Ask a Question, and Trade Balancer.
+- Acceptance Criteria:
+  - a recognised card is added to the scanner's own holding list, not the destination's own card list, the moment it is recognised; the destination's own list is unchanged until the scanner closes
+  - the top-right pill shows the holding list's count and expands to each held card with its own Remove; Remove drops that card from the holding list with nothing added for it
+  - closing the scanner commits every remaining held card to the zone or trade side it was opened from, in one step, then returns to where it was; every "Scan" entry point opens the scanner at an empty holding list
+  - the same duplicate/cap rule each destination already applies on a manual add (the Stack's duplicate block; Ask a Question's already-attached block and 10-card cap, REQ-167) is checked the instant a card is recognised, against both the destination's current cards and anything already held but not yet committed - not deferred to the close commit, so a blocked re-scan still surfaces its message immediately; Trade Balancer passes no such rule, so a duplicate scan is always held and committed (REQ-065's existing duplicates-allowed behaviour)
+  - the "Exit scan" control is a square box carrying an X, positioned above the camera's top-right corner on every host, with the accessible name "Exit scan" unchanged; the manual Capture control keeps the accessible name "Capture"
+  - a caution control beside the count pill opens a one-line note that card scanning is experimental, dismissed with "Got it"
+  - a one-line static hint under the viewfinder, in the wording and position the mockup's scanner page (`docs/design/ui-reimagining/direction-1/card-scan.html`) shows (today: "Auto-scan is on: a confident match adds the card and keeps scanning. The shutter reads one frame by hand."); it is text, not a control, and is an allowed exception to REQ-070's no-net-new-guidance rule; if the mockup page carries no such line, none renders
+  - detection, lock, the ding, and the opt-in Debug overlay's metrics are unchanged; the Debug panel takes a themed accent border
+  - tests cover the holding-list accumulate/commit-on-close/Remove behaviour, the hold-time duplicate/cap check, the hint line on every host, and that detection/lock/capture are unchanged
+- Constraints:
+  - presentation and sequencing only: detection, fingerprint matching, lock thresholds, the stabilizer, the ding, mute persistence and debug frame export are unchanged (DEC-052...062; NFR-006's scan-motion exclusion is unaffected)
+  - no new request field or prompt change; a held-but-uncommitted card never reaches `AskAiRequest` or a trade side's totals
+- Dependencies:
+  - REQ-037
+  - REQ-040
+  - REQ-041
+  - REQ-042
+  - REQ-068
+  - REQ-065
+  - REQ-167
+  - REQ-200
+  - REQ-205
+  - REQ-206
+  - REQ-209
+  - FLOW-006
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30), from the mockup's own "join your question when you close the scanner" pill foot; an earlier pass of this proposal had kept today's add-on-recognition instead, which the owner's gate-review edit (2026-10-01) reversed back to the mockup's rule
+  - built by slice H: `apps/frontend/src/hooks/useScanCapture.ts` (the holding list, the hold-time `canHold` check, commit-on-close), `apps/frontend/src/components/ScanReviewBubble.tsx` (the count pill, the caution note, the "Joins <destination>" foot), `apps/frontend/src/components/ZoneCardPicker.tsx`, `apps/frontend/src/components/portal/quick-lookup/QuickLookupApp.tsx`, `apps/frontend/src/components/trade/TradeSide.tsx`, `apps/frontend/src/components/trade/useTradeScan.ts` (the three hosts wiring the ✕ exit box and the pill), `apps/frontend/src/components/ScanDebugOverlay.tsx` (the accent-bordered panel); the mockup's exact three-band viewfinder layout, the breathing guide line, the marching-dash lock outline and the 54px shutter ring are not built in this slice - the existing viewfinder, reticle and Capture button are reused and re-themed, not redrawn, since none of them is behavior the holding list depends on
+  - amended by `ui-look-translation` (2026-10-02): the mockup's hint line (the first build's owner question 5; that build had none)
+
+### REQ-215
+- Title: Trade Balancer - two piles of gold, a verdict line, New trade, and named sides
+- Priority: medium
+- Description: Trade Balancer shows the balance as two piles of gold that grow with each side's value and a verdict line in plain words, adds a New trade action that asks first, and lets the players rename a side. Totals arithmetic, pricing, the price route and the ephemeral posture are unchanged (REQ-064, REQ-065).
+- Acceptance Criteria:
+  - every entry shows its card image (a tap opens the card detail); entries keep add order; changing a printing or finish edits the row in place; the foil toggle on each trade row stays; adding a card whose printing and finish match a row already on that side raises that row's quantity by one instead of adding a second row (the row keeps its place in add order, and a scanner commit merges the same way), so identical copies read as one row with its quantity
+  - two piles of gold sit on a glass panel (REQ-207); each pile has five relative tiers, drawn in flat gold/amber with a bronze outline and one purple gem on tiers 4-5
+  - tiers are relative: the richer side (or either, on a tie) is tier 5; the lighter side's tier is its share of the richer: 95%+ -> 5, 75%+ -> 4, 50%+ -> 3, 25%+ -> 2, under -> 1; the richer pile glows and the lighter dims a step; a tier-up drops in from above with a slight overshoot, a tier-down lifts and fades, nothing loops idle, and the piles update live; empty state (both sides empty): a bare ground line and "Add cards to weigh the trade"
+  - the verdict line under the piles, by the smaller side's share of the larger: 95%+ "Fair trade" - 85-95% "Slightly favors <side>" - 60-85% "Leans toward <side>" - under 60% "Lopsided - <side> by NN%"; "Even" when the totals are equal to the cent; the plain dollar difference sits beneath ("Side A +$1.85")
+  - a **New trade** action sits beside the title; with cards on either side it opens the shared confirm sheet (REQ-208) - "Start a new trade?", how many cards and how much value it clears, side names kept; **Keep this trade** / **Clear both sides**; with both sides empty it does nothing
+  - a side is renamed by tapping its name (a short inline text field, 1-20 characters; blank restores the default); the name is used in the verdict, the difference, and the side's own heading/search labels; it lives only as long as the trade
+  - the price date sits in the staged header's right-hand slot at 768px+ and under the title below 768px (REQ-145 copy unchanged)
+  - tests cover each tier boundary, each verdict band and Even, the New trade confirm and its no-op when empty, renaming, a repeat add merging into one row's quantity (and a different printing or finish staying separate), and totals unchanged by any of it
+- Constraints:
+  - totals, pricing, printing selection, the price route, the warm-up ping and the ephemeral no-persistence posture are unchanged (REQ-064, REQ-065, REQ-066, REQ-175); side names are not persisted
+  - the piles are drawn inline (SVG), CSS-only motion (NFR-006)
+- Dependencies:
+  - REQ-064
+  - REQ-065
+  - REQ-145
+  - REQ-204
+  - REQ-205
+  - REQ-208
+  - NFR-006
+  - FLOW-009
+- Notes:
+  - reserved and proposed by the `ui-reimagining-build` package (2026-09-30); the mockup also tried Add cash, Swap sides and Copy summary and removed them - none ships
+  - built by slice G: `apps/frontend/src/components/trade/TradeBalancer.tsx`, `TradeSide.tsx` (rename), `TradePile.tsx` (the five-tier SVG piles), `PrintingPicker.tsx` (shared-sheet rehost, Nonfoil/Foil pills), `apps/frontend/src/lib/trade/pricing.ts` (`pileTier`, `tradeVerdict`, `formatTradeVerdict`, `formatTradeDifference`, `normalizeSideName`), `apps/frontend/src/components/StagedStepHeader.tsx` (new optional `rightSlot` prop, additive and backward compatible)
+  - built by `ui-look-translation` (2026-10-02): the mockup's foil sheen on a foil entry row (`index.css`, `var(--foil-sheen)`); the Foil toggle/label is unchanged
+  - amended by `ui-look-translation` (2026-10-02): a repeat add of the same printing and finish merges into one row's quantity, matching the mockup (the first build's owner question 4); totals are unchanged
+
+### REQ-216
+- Title: One visual system, inherited by every screen
+- Priority: high
+- Description: Every redesigned screen, sheet, overlay and panel takes its look from one shared visual system ported from the approved direction-1 mockup (`docs/design/ui-reimagining/direction-1/`). One token layer — the mockup's `tokens.css`, ported once — is the only place a colour, surface, radius, shadow, glow, type size or spacing value is defined, with the six colour profiles as one set of variables switched in one place. Shell styles (`shell.css`, `ambience.css`: header, Menu, Theme band, sheets, the ambient scene) build on the tokens; flow styles (`flow.css`: stage, composer, plates, pills) build on both. Nothing carries its own palette, its own profile or its own copy of a shared style, so choosing a Theme colour recolours everything at once.
+- Acceptance Criteria:
+  - the mockup's `tokens.css` is ported once, with its variable names and values, as the app's only token source; REQ-200's roles (page ground, colour wash, raised panel fill, panel edge, focus ring, primary text, muted text, filled-accent text) resolve to the ported variables rather than carrying values of their own; the theme code that switches the profile and derives the custom Colorless colour (`apps/frontend/src/lib/theme/`) belongs to this token layer, and any value it holds that `tokens.css` also defines is equal to it, checked by a test
+  - the six colour profiles live in that one token layer and switch in one place; a value the mockup does not supply (the custom Colorless colour, REQ-099) is derived the way the mockup derives its six profiles, never chosen by eye
+  - styles layer in one order — tokens, then shell (`shell.css`, `ambience.css`), then flow (`flow.css`), then a screen's own selectors; a screen's own selector may use what those layers set but may not redefine it; a style two screens need moves up a layer instead of being written twice
+  - a screen gets a sheet, a confirm, a composer, a card stage, a plate or a foot bar only through the shared components (`SheetShell`, `ConfirmSheet`, `ComposerPill`, `CardStage`, the shared plate and foot bar); a variant extends the shared one with a modifier and never forks a local copy
+  - choosing a Theme colour in the Menu (FLOW-007) recolours every screen, sheet and overlay at once, with no element left on the previous colour or on a fixed one
+  - outside the token layer, the ported shell, flow and ambience stylesheets, and the named exemptions below, no redesigned component or stylesheet declares a hex colour, an `rgb(…)` or `hsl(…)` value with literal numbers, a one-off shadow (a Tailwind `shadow-[…]` value or a `box-shadow` with literal lengths), a fixed Tailwind palette colour (such as `zinc-` or `slate-`, already barred by REQ-200), or a custom property of its own; a hit is a defect
+  - colours that cannot come from a stylesheet stay in code only in these named files (under `apps/frontend/src/`), each for its reason: the background scene's canvas drawing (`components/AmbientScene.tsx` — a canvas paints with colour strings; its colours are the mockup's `ambience.js` values copied unchanged and keyed by profile); the trade pile's gold, bronze and gem artwork (`components/trade/TradePile.tsx` — fixed materials, the same in every Theme); the scanner's opt-in developer debug outline and overlay (the `debug` stroke in `components/ScanCardOutline.tsx`, and `components/ScanDebugOverlay.tsx` — diagnostics fixed to read against any profile); each card's colour-identity ring (`lib/cardIdentityRing.ts` — derived from the card, never the profile, REQ-058); and the Life Tracker table (`components/portal/life-tracker/PlayerLifeCard.tsx`, `PlayerLifeTrackerApp.tsx` — pixel-unchanged, REQ-202); every other colour in a TS/TSX file lives in the token layer
+  - every slice that touches a redesigned screen records (a) a search for the patterns above, with the command and a count of zero, over the whole of each component it rebuilds and over every line it adds anywhere under `apps/frontend/src`, skipping the token layer, the ported stylesheets, tests and the named exemptions, and (b) a profile-switch pair — its main state at 390×844 in two Theme colours — showing every element recoloured and none left behind; review treats a hit in (a) or a left-behind element in (b) as Important
+- Constraints:
+  - presentation only; no change to request contracts, prompts, backend routes, card metadata, the data pipeline, or any behaviour another requirement sets
+  - Life Tracker's table stays pixel-unchanged and outside this requirement's ported layers (REQ-202); its sheets inherit the system like every other sheet
+  - card art and each card's colour-identity ring stay derived from the card, never from the profile (REQ-058)
+  - no theming framework and no new dependency (REQ-200)
+- Dependencies:
+  - REQ-058
+  - REQ-099
+  - REQ-200
+  - REQ-201
+  - REQ-202
+  - REQ-206
+  - REQ-207
+  - REQ-208
+  - REQ-209
+  - REQ-214
+  - REQ-215
+  - NFR-006
+  - FLOW-007
+- Notes:
+  - reserved and proposed by the `ui-look-translation` package (2026-10-02) from the owner's rule of 2026-10-02: one shared visual system that every screen, sheet, overlay and panel inherits, with nothing carrying its own palette, its own profile, or its own flow of styles. Written because the first build re-typed mockup values into the app's own tokens and every re-typing drifted

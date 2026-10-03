@@ -53,6 +53,8 @@ function mockScanCapture(isOpen: boolean): void {
     scanAcquisitionDiagnostic: null,
     blockedNotice: null,
     addConfirmation: null,
+    heldEntries: [],
+    removeHeld: vi.fn(),
     openScan: vi.fn(),
     closeScan: vi.fn(),
     rescan: vi.fn(),
@@ -82,6 +84,10 @@ function renderStep(
       canContinue={true}
       onFlashStatus={() => undefined}
       statusMessage={statusMessage}
+      pendingPlacementCards={[]}
+      placementTotal={0}
+      onPlaceCard={() => undefined}
+      onLeaveCardOut={() => undefined}
     />
   );
 }
@@ -106,11 +112,9 @@ describe("ZoneCollectionStep scan focus", () => {
       "motion-press",
       "motion-focus"
     );
-    expect(screen.getByRole("button", { name: "Back" })).toHaveClass(
-      "motion-hover",
-      "motion-press",
-      "motion-focus"
-    );
+    // Look-matching pass (slice N), requirement 3: the per-step "Back" button is
+    // retired — the caller's shared header ‹ is the only way back now.
+    expect(screen.queryByRole("button", { name: "Back" })).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Continue" })).toHaveClass(
       "motion-hover",
       "motion-press",
@@ -135,6 +139,10 @@ describe("ZoneCollectionStep scan focus", () => {
 
     expect(stackTab).toHaveAttribute("data-accent-current", "false");
     expect(battlefieldTab).toHaveAttribute("data-accent-current", "true");
+
+    // Look-matching pass (slice N, review 1 fix — finding 3): search now opens
+    // from its own ＋ Add card chip, and closes again on every zone change.
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
     expect(screen.getByLabelText("Battlefield search input").closest(".ambient-accent-surface")).toHaveAttribute(
       "data-accent-current",
       "true"
@@ -151,8 +159,10 @@ describe("ZoneCollectionStep scan focus", () => {
       makeZoneCard("doom", "Doom Blade")
     ]);
 
-    const cardGrid = screen.getByText("Stack cards (5)").nextElementSibling;
-    expect(cardGrid).toHaveClass("zone-card-grid", "flex", "overflow-x-auto");
+    // REQ-209: a multi-card shelf also carries a reorder hint between the count and the
+    // grid, so the grid is looked up directly rather than assumed to be the next sibling.
+    const cardGrid = document.querySelector(".zone-card-grid");
+    expect(cardGrid).toHaveClass("zone-card-grid", "shelf");
     expect(screen.getByText("Doom Blade")).toBeInTheDocument();
   });
 
@@ -194,14 +204,20 @@ describe("ZoneCollectionStep scan focus", () => {
         canContinue={true}
         onFlashStatus={() => undefined}
         statusMessage={null}
+        pendingPlacementCards={[]}
+        placementTotal={0}
+        onPlaceCard={() => undefined}
+        onLeaveCardOut={() => undefined}
       />
     );
 
+    // REQ-008/REQ-209: Remove now lives in the card menu a tap on the card opens.
     const grid = document.querySelector(".zone-card-grid") as HTMLElement;
-    const removals = within(grid).getAllByRole("button", { name: "Remove Opt from Battlefield" });
-    expect(removals).toHaveLength(2);
+    const actionTriggers = within(grid).getAllByRole("button", { name: "Card actions for Opt" });
+    expect(actionTriggers).toHaveLength(2);
 
-    await user.click(removals[0]!);
+    await user.click(actionTriggers[0]!);
+    await user.click(screen.getByRole("button", { name: "Remove from the Battlefield" }));
 
     expect(onZonesChange).toHaveBeenCalledWith({ battlefield: [card2] });
   });
@@ -231,9 +247,16 @@ describe("ZoneCollectionStep scan focus", () => {
         canContinue={true}
         onFlashStatus={() => undefined}
         statusMessage={null}
+        pendingPlacementCards={[]}
+        placementTotal={0}
+        onPlaceCard={() => undefined}
+        onLeaveCardOut={() => undefined}
       />
     );
 
+    // Look-matching pass (slice N, review 1 fix — finding 3): search opens
+    // from its own ＋ Add card chip now.
+    await user.click(screen.getByRole("button", { name: "Add a card to Stack" }));
     const search = screen.getByLabelText("Stack search input");
     await user.type(search, "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));

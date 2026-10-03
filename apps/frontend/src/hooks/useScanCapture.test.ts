@@ -102,7 +102,7 @@ describe("Frontend - Card Scan", () => {
       expect(createIdentifier).toHaveBeenCalledTimes(1);
     });
 
-    it("auto-adds the locked card via the add path and resumes searching", async () => {
+    it("REQ-214: a recognised card waits in the holding list, not the destination, and resumes searching", async () => {
       const identifier = makeIdentifier({
         matched: true,
         was_rotated: false,
@@ -128,14 +128,95 @@ describe("Frontend - Card Scan", () => {
         }
       });
 
-      expect(onScanCandidateSelected).toHaveBeenCalledTimes(1);
-      expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0], "https://img/opt-print.jpg");
+      expect(onScanCandidateSelected).not.toHaveBeenCalled();
+      expect(result.current.heldEntries).toHaveLength(1);
+      expect(result.current.heldEntries[0]).toMatchObject({
+        card: cardMetadata[0],
+        scanImageUrl: "https://img/opt-print.jpg"
+      });
       expect(result.current.scanPhase).toBe("searching");
       expect(result.current.lockedCandidate).toBeNull();
       expect(result.current.blockedNotice).toBeNull();
     });
 
-    it("a blocked add surfaces a non-blocking notice and keeps scanning", async () => {
+    it("REQ-214: closing the scanner commits every held card to the destination, in hold order", async () => {
+      const identifier = makeIdentifier({
+        matched: true,
+        was_rotated: false,
+        candidates: [{ card_id: "printing-opt", distance: 7 }]
+      });
+      const onScanCandidateSelected = vi.fn(() => ({ added: true } as const));
+      const { result } = renderHook(() =>
+        useScanCapture({
+          cardMetadata,
+          onScanCandidateSelected,
+          dependencies: {
+            loadHashDb: vi.fn(async () => db),
+            loadScanMap: vi.fn(async () => scanMap),
+            createIdentifier: vi.fn(() => identifier)
+          }
+        })
+      );
+
+      await act(async () => {
+        await result.current.openScan();
+        for (let i = 0; i < SCAN_STABILIZER_CONFIG.minVotes; i++) {
+          await result.current.identify(image);
+        }
+      });
+      expect(onScanCandidateSelected).not.toHaveBeenCalled();
+
+      act(() => {
+        result.current.closeScan();
+      });
+
+      expect(onScanCandidateSelected).toHaveBeenCalledTimes(1);
+      expect(onScanCandidateSelected).toHaveBeenCalledWith(cardMetadata[0], "https://img/opt-print.jpg", [
+        { card_id: "opt", distance: 7 }
+      ]);
+      expect(result.current.heldEntries).toHaveLength(0);
+      expect(result.current.isOpen).toBe(false);
+    });
+
+    it("REQ-214: removing a held card drops it from the list with nothing committed for it", async () => {
+      const identifier = makeIdentifier({
+        matched: true,
+        was_rotated: false,
+        candidates: [{ card_id: "printing-opt", distance: 7 }]
+      });
+      const onScanCandidateSelected = vi.fn(() => ({ added: true } as const));
+      const { result } = renderHook(() =>
+        useScanCapture({
+          cardMetadata,
+          onScanCandidateSelected,
+          dependencies: {
+            loadHashDb: vi.fn(async () => db),
+            loadScanMap: vi.fn(async () => scanMap),
+            createIdentifier: vi.fn(() => identifier)
+          }
+        })
+      );
+
+      await act(async () => {
+        await result.current.openScan();
+        for (let i = 0; i < SCAN_STABILIZER_CONFIG.minVotes; i++) {
+          await result.current.identify(image);
+        }
+      });
+      const heldId = result.current.heldEntries[0].id;
+
+      act(() => {
+        result.current.removeHeld(heldId);
+      });
+      expect(result.current.heldEntries).toHaveLength(0);
+
+      act(() => {
+        result.current.closeScan();
+      });
+      expect(onScanCandidateSelected).not.toHaveBeenCalled();
+    });
+
+    it("REQ-214: a held card the destination rejects on commit surfaces a non-blocking notice", async () => {
       const identifier = makeIdentifier({
         matched: true,
         was_rotated: false,
@@ -161,10 +242,47 @@ describe("Frontend - Card Scan", () => {
         }
       });
 
+      act(() => {
+        result.current.closeScan();
+      });
+
       expect(onScanCandidateSelected).toHaveBeenCalledTimes(1);
       expect(result.current.scanPhase).toBe("searching");
       expect(result.current.lockedCandidate).toBeNull();
       expect(result.current.blockedNotice).toBe("Card already in stack");
+    });
+
+    it("REQ-214: opening the scanner starts at an empty holding list", async () => {
+      const identifier = makeIdentifier({
+        matched: true,
+        was_rotated: false,
+        candidates: [{ card_id: "printing-opt", distance: 7 }]
+      });
+      const onScanCandidateSelected = vi.fn(() => ({ added: true } as const));
+      const { result } = renderHook(() =>
+        useScanCapture({
+          cardMetadata,
+          onScanCandidateSelected,
+          dependencies: {
+            loadHashDb: vi.fn(async () => db),
+            loadScanMap: vi.fn(async () => scanMap),
+            createIdentifier: vi.fn(() => identifier)
+          }
+        })
+      );
+
+      await act(async () => {
+        await result.current.openScan();
+        for (let i = 0; i < SCAN_STABILIZER_CONFIG.minVotes; i++) {
+          await result.current.identify(image);
+        }
+      });
+      expect(result.current.heldEntries).toHaveLength(1);
+
+      await act(async () => {
+        await result.current.openScan();
+      });
+      expect(result.current.heldEntries).toHaveLength(0);
     });
 
     it("ambiguous frames never auto-add", async () => {

@@ -21,9 +21,11 @@ import {
   createMemoryStorage,
   getUrlFromRequest,
   jsonResponse,
+  navigateToPath,
   openStackBuilder,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
+import { appliedAccentTriple } from "./test/appliedTheme";
 
 function paletteFor(id: string): Palette {
   return getPaletteById(id) as Palette;
@@ -36,12 +38,20 @@ async function openPortalMenu(user: ReturnType<typeof userEvent.setup>): Promise
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
 }
 
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
 async function selectDestination(
   user: ReturnType<typeof userEvent.setup>,
   destinationName: string
 ): Promise<void> {
+  if (destinationName === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = destinationName === "Quick Question" ? "Ask a Question" : destinationName;
   await openPortalMenu(user);
-  await user.click(screen.getByRole("menuitem", { name: destinationName }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
 }
 
 async function selectPalette(user: ReturnType<typeof userEvent.setup>, paletteName: string): Promise<void> {
@@ -51,10 +61,10 @@ async function selectPalette(user: ReturnType<typeof userEvent.setup>, paletteNa
 
 function expectRootTokens(palette: Palette): void {
   expect(document.documentElement.dataset.theme).toBe(palette.id);
-  expect(document.documentElement.style.getPropertyValue("--accent")).toBe(palette.accent);
-  expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe(palette.accentStrong);
-  expect(document.documentElement.style.getPropertyValue("--accent-soft")).toBe(palette.accentSoft);
-  expect(document.documentElement.style.getPropertyValue("--accent-contrast")).toBe(palette.accentContrast);
+  expect(appliedAccentTriple("--accent")).toBe(palette.accent);
+  expect(appliedAccentTriple("--accent-strong")).toBe(palette.accentStrong);
+  expect(appliedAccentTriple("--accent-soft")).toBe(palette.accentSoft);
+  expect(appliedAccentTriple("--accent-contrast")).toBe(palette.accentContrast);
 }
 
 describe("Frontend - Theme", () => {
@@ -109,13 +119,13 @@ describe("Global theme reach across destinations", () => {
 
     await selectDestination(user, "Quick Question");
     expectRootTokens(paletteFor("red"));
-    // The rail's radial gradient reads --accent/--accent-strong directly (see .portal-menu-rail
-    // in index.css), so the accent-root-token assertion above already covers palette reach; this
-    // just confirms the trigger is still wired onto that accent-driven class after the switch.
-    expect(screen.getByRole("button", { name: "Switch feature" }).className).toContain("portal-menu-rail");
+    // The header's ☰ reads the profile through the token layer (shell.css's `.menu-toggle`), so the
+    // root-token assertion above already covers palette reach; this confirms the trigger is still
+    // the header's menu toggle after the switch.
+    expect(screen.getByRole("button", { name: "Switch feature" })).toHaveClass("menu-toggle");
 
     await openPortalMenu(user);
-    expect(screen.getByRole("menuitem", { name: "Quick Question" })).toHaveAttribute("aria-current", "true");
+    expect(screen.getByRole("menuitem", { name: "Ask a Question" })).toHaveAttribute("aria-current", "page");
     expect(screen.getByRole("button", { name: "Theme: Red" })).toHaveAttribute("aria-pressed", "true");
   });
 
@@ -124,6 +134,9 @@ describe("Global theme reach across destinations", () => {
     render(<App />);
     await selectDestination(user, "Quick Question");
 
+    // Look-matching pass (slice M): the card search opens from "＋ Add card"
+    // (requirement 1) instead of sitting permanently visible.
+    await user.click(screen.getByRole("button", { name: "Add card" }));
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     await user.type(screen.getByRole("textbox", { name: "Magic question" }), "Does it draw a card?");
@@ -133,7 +146,9 @@ describe("Global theme reach across destinations", () => {
     expectRootTokens(paletteFor("green"));
     expect(screen.getByTestId("card-presentation-fallback")).toHaveTextContent("Opt");
     expect(screen.getByRole("textbox", { name: "Magic question" })).toHaveValue("Does it draw a card?");
-    expect(screen.getByRole("button", { name: "Scan a card" }).className).toContain("border-accent/70");
+    // Restyled to `.icon-chip` (flow.css), which reads the active palette's CSS custom
+    // properties rather than a fixed Tailwind accent utility (look-matching pass, slice M).
+    expect(screen.getByRole("button", { name: "Scan a card" })).toHaveClass("icon-chip");
   });
 
   it("retints Player Life Tracker without resetting life, counter, or setup state", async () => {
@@ -209,16 +224,19 @@ describe("Global theme reach across destinations", () => {
     fireEvent.change(screen.getByLabelText("Customize Colorless color"), {
       target: { value: "#0a0a0a" }
     });
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("10 10 10");
+    // REQ-099: #0a0a0a is near-black and fails the readability floors as picked, so it
+    // is lifted (hue kept) rather than applied unchanged.
+    expect(appliedAccentTriple("--accent")).not.toBe("10 10 10");
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
 
-    await user.click(screen.getByRole("menuitem", { name: "Quick Question" }));
+    await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
+    await user.click(screen.getByRole("button", { name: "Add card" }));
     await user.type(screen.getByRole("textbox", { name: "Card search" }), "cou");
     await user.click(await screen.findByRole("button", { name: "Counterspell" }));
 
     await openPortalMenu(user);
     await user.click(screen.getByRole("button", { name: "Reset to gray" }));
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("82 82 91");
+    expect(appliedAccentTriple("--accent")).toBe("82 82 91");
     expect(screen.getByTestId("card-presentation-fallback")).toHaveTextContent("Counterspell");
 
     await selectDestination(user, "In-Depth Question");

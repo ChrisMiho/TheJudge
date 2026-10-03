@@ -1,0 +1,1120 @@
+/*
+ * shell.css — the single source of direction 1's shared chrome skeleton:
+ * page shell, header, brand mark, the menu tray (slides in from the LEFT,
+ * as today's app does — owner, round 3), the ornament frame utility, the
+ * shared buttons/fields, and the overlay primitives (modal, drawer) every
+ * mockup page reuses rather than re-declaring. Imports tokens.css first.
+ *
+ * Round 3 personality pass: a breathing brand orb, a shimmer on the primary
+ * button, and the ambience layer (ambience.css/js) behind it all. Round 4:
+ * one typeface (Inter) again, the side tray floating as glass, and the Menu
+ * tray stripped of every line of copy that was not a destination. Round 6:
+ * the hairline corner brackets are gone for good ("too sci-fi"), the banner
+ * carries an abstract design per colour instead of the badge stamps, the
+ * theme row is flat motif icons, and Colorless can wear a custom colour.
+ * Round 7: the banner design is each colour's own element, the theme icons
+ * sit in filled circles (a play on the mana symbols), and the tray's foot
+ * plays the colour's element at a whisper instead of the badge.
+ */
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  font-family: var(--font-body);
+}
+
+body {
+  background: var(--surface-wash);
+  color: var(--text-primary);
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+img {
+  max-width: 100%;
+}
+
+button,
+select,
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+h1, h2, .display {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.015em;
+}
+
+/* ---- Header: a banner (round 5). ☰ at the left, the brand centred on a lit
+   band with its tagline, a slot at the right. Round 6: the badge stamps at
+   each end are gone ("out of place"); instead each colour paints an abstract
+   design across the band that speaks its adjectives — see the per-profile
+   rules under "banner designs" below. ---- */
+
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 64px;
+  padding: 0.4rem 0.6rem;
+  background:
+    radial-gradient(40% 140% at 50% 120%, color-mix(in srgb, var(--accent) 42%, transparent) 0%, transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--accent-strong) 28%, var(--surface-ground)) 0%, color-mix(in srgb, var(--surface-panel) 94%, transparent) 100%);
+  border-bottom: 1px solid var(--surface-edge);
+  box-shadow: 0 10px 30px -18px color-mix(in srgb, var(--accent) 70%, #000);
+  backdrop-filter: blur(8px);
+  overflow: hidden;
+}
+
+.app-header::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.9;
+}
+
+/* ---- banner designs (round 7): the design across the band is the colour's
+   own element, the one its background animation plays — not an abstract
+   pattern. Each is a mask cut from the colour's tokens, so a custom Colorless
+   colour carries into it.
+   White  · rays of a low sun fanning up from behind the brand (round 9:
+            toned down — fainter rays, a softer fade)
+   Blue   · (round 9) a subtle random scatter of arcane shapes — runes of the
+            invented script, rings, small stars, dots, arcs — the waves are gone
+   Black  · fog pooling low at each end
+   Red    · one hot band low on the banner, embers rising
+   Green  · (round 9) an abstract scatter of leaf-and-tree shapes — leaves,
+            twigs, acorns, tree rings, seeds, fern sprigs — the drawn limbs are gone
+   Colorless · (round 8) a random scatter of small shapes — triangles, rings,
+            arcs, dots, crosses — no lattice, no order ---- */
+[data-profile="white"] .app-header::before {
+  background: repeating-conic-gradient(from -90deg at 50% 135%, transparent 0 5deg, color-mix(in srgb, var(--accent-soft) 5%, transparent) 5deg 7deg);
+  -webkit-mask-image: radial-gradient(60% 160% at 50% 135%, #000 12%, transparent 74%);
+  mask-image: radial-gradient(60% 160% at 50% 135%, #000 12%, transparent 74%);
+}
+[data-profile="blue"] .app-header::before {
+  background: color-mix(in srgb, var(--accent-soft) 14%, transparent);
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 64'><g fill='none' stroke='%23000' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'><path transform='translate(94.1 57.5) rotate(17.3)' opacity='0.8' d='M0 -2.1 V2.1 M-2.1 0 H2.1'/><g transform='translate(25.4 18.7) rotate(0)' opacity='0.5'><circle r='7.8'/><circle r='2.6'/></g><g transform='translate(232.4 59.8) rotate(0)' opacity='0.9'><circle r='7.3'/><circle r='2.8'/></g><path transform='translate(236.6 50.5) rotate(44.7)' opacity='0.6' d='M-8.8 0 A8.8 8.8 0 0 1 8.8 0'/><path transform='translate(138.1 12.2) rotate(-4.5)' opacity='0.9' d='M-2.6 -2.6 L2.6 -2.6 M0 -2.6 L0 4.3 M-1.7 4.3 L1.7 4.3'/><path transform='translate(141.7 63.4) rotate(39.2)' opacity='0.9' d='M-11.7 0 A11.7 11.7 0 0 1 11.7 0'/><path transform='translate(289.9 48.2) rotate(13.5)' opacity='0.9' d='M-2.4 -4 L-2.4 4 L2.4 4 M-2.4 0 L1.6 -2.4'/><path transform='translate(184.6 7.2) rotate(41.7)' opacity='0.8' d='M0 -2.6 V2.6 M-2.6 0 H2.6'/><path transform='translate(274 63.5) rotate(-6.2)' opacity='0.9' d='M0 -6.4 L0 6.4 M-3.9 -2.6 L0 0.6 L3.9 -2.6'/><g transform='translate(258.9 55.8) rotate(0)' opacity='0.6'><circle r='7.2'/><circle r='2.2'/></g><path transform='translate(17.3 4.8) rotate(33.8)' opacity='0.6' d='M0 -2.5 V2.5 M-2.5 0 H2.5'/><circle cx='272.9' cy='52.7' r='2.8' opacity='0.7'/><path transform='translate(37.1 48.1) rotate(-16.5)' opacity='0.6' d='M-3.3 5.5 L-3.3 -5.5 L3.3 -2.2 L-3.3 1.1'/><g transform='translate(298.7 11.8) rotate(0)' opacity='0.7'><circle r='6.4'/><circle r='2.2'/></g><circle cx='285.8' cy='61.7' r='2.8' opacity='0.8'/><circle cx='204.1' cy='50.5' r='4.5' opacity='0.5'/><path transform='translate(222.3 35.5) rotate(-8.8)' opacity='0.9' d='M-3.7 6.1 L-3.7 -6.1 L3.7 -2.5 L-3.7 1.2'/><circle cx='26.4' cy='27.8' r='4.7' opacity='0.5'/><path transform='translate(43.3 46.9) rotate(41.4)' opacity='0.6' d='M0 -2.1 V2.1 M-2.1 0 H2.1'/><path transform='translate(206.8 9.9) rotate(1.5)' opacity='0.9' d='M-8.7 0 A8.7 8.7 0 0 1 8.7 0'/><g transform='translate(134.2 22.2) rotate(0)' opacity='0.6'><circle r='5.8'/><circle r='3.1'/></g><path transform='translate(225.4 41) rotate(14.7)' opacity='0.5' d='M-3.8 -3.8 L3.8 -3.8 M0 -3.8 L0 6.3 M-2.5 6.3 L2.5 6.3'/><path transform='translate(110.6 48.4) rotate(14.9)' opacity='0.4' d='M0 -2.9 V2.9 M-2.9 0 H2.9'/><path transform='translate(82.5 29.7) rotate(341.8)' opacity='0.4' d='M-9.6 0 A9.6 9.6 0 0 1 9.6 0'/><circle cx='29.3' cy='31.9' r='5.2' opacity='0.6'/><g transform='translate(293.2 8.5) rotate(0)' opacity='0.5'><circle r='7.3'/><circle r='2'/></g><path transform='translate(71.4 21.7) rotate(23.8)' opacity='0.5' d='M0 -2.1 V2.1 M-2.1 0 H2.1'/><path transform='translate(168.1 18.4) rotate(14.6)' opacity='0.9' d='M0 -6 L0 6 M0 -3 L3.6 -5.4 M0 0 L-3.6 2.4'/><path transform='translate(239.7 41.3) rotate(26.8)' opacity='0.5' d='M0 -3 V3 M-3 0 H3'/><g transform='translate(123.5 39.5) rotate(0)' opacity='0.6'><circle r='5.1'/><circle r='2.4'/></g><circle cx='137.9' cy='15.8' r='5.8' opacity='0.6'/><path transform='translate(44.3 17.7) rotate(-4.4)' opacity='0.9' d='M0 -5.4 L0 5.4 M-3.3 -2.2 L0 0.5 L3.3 -2.2'/><path transform='translate(58.4 52) rotate(-2.1)' opacity='0.4' d='M3.2 -5.4 L-1.1 -1.1 L3.2 3.2 M-3.2 -1.1 L-3.2 5.4'/><path transform='translate(124.3 34.3) rotate(-3.7)' opacity='0.9' d='M0 -4 L2.4 0 L0 4 L-2.4 0 L0 -4 M0 -1.2 L0 1.2'/><circle cx='274.4' cy='11.9' r='6.5' opacity='0.6'/><circle cx='166' cy='31.9' r='4.5' opacity='0.7'/></g><g fill='%23000'><circle cx='159' cy='3' r='0.9' opacity='0.8'/><circle cx='275.7' cy='18.7' r='1.1' opacity='0.5'/><circle cx='152.1' cy='47.6' r='1.1' opacity='0.8'/><circle cx='223.3' cy='39.1' r='0.8' opacity='0.9'/><circle cx='259.7' cy='14.3' r='0.9' opacity='0.9'/><circle cx='198.8' cy='45.8' r='1' opacity='0.5'/><circle cx='163.6' cy='21.7' r='1.1' opacity='0.9'/><circle cx='277.2' cy='32.4' r='1' opacity='0.5'/></g></svg>"), linear-gradient(90deg, #000 0%, rgba(0,0,0,.18) 36%, transparent 46%, transparent 54%, rgba(0,0,0,.18) 64%, #000 100%);
+  -webkit-mask-size: 300px 64px, 100% 100%;
+  -webkit-mask-repeat: repeat, no-repeat;
+  -webkit-mask-position: 0 0, 0 0;
+  -webkit-mask-composite: source-in;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 64'><g fill='none' stroke='%23000' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'><path transform='translate(94.1 57.5) rotate(17.3)' opacity='0.8' d='M0 -2.1 V2.1 M-2.1 0 H2.1'/><g transform='translate(25.4 18.7) rotate(0)' opacity='0.5'><circle r='7.8'/><circle r='2.6'/></g><g transform='translate(232.4 59.8) rotate(0)' opacity='0.9'><circle r='7.3'/><circle r='2.8'/></g><path transform='translate(236.6 50.5) rotate(44.7)' opacity='0.6' d='M-8.8 0 A8.8 8.8 0 0 1 8.8 0'/><path transform='translate(138.1 12.2) rotate(-4.5)' opacity='0.9' d='M-2.6 -2.6 L2.6 -2.6 M0 -2.6 L0 4.3 M-1.7 4.3 L1.7 4.3'/><path transform='translate(141.7 63.4) rotate(39.2)' opacity='0.9' d='M-11.7 0 A11.7 11.7 0 0 1 11.7 0'/><path transform='translate(289.9 48.2) rotate(13.5)' opacity='0.9' d='M-2.4 -4 L-2.4 4 L2.4 4 M-2.4 0 L1.6 -2.4'/><path transform='translate(184.6 7.2) rotate(41.7)' opacity='0.8' d='M0 -2.6 V2.6 M-2.6 0 H2.6'/><path transform='translate(274 63.5) rotate(-6.2)' opacity='0.9' d='M0 -6.4 L0 6.4 M-3.9 -2.6 L0 0.6 L3.9 -2.6'/><g transform='translate(258.9 55.8) rotate(0)' opacity='0.6'><circle r='7.2'/><circle r='2.2'/></g><path transform='translate(17.3 4.8) rotate(33.8)' opacity='0.6' d='M0 -2.5 V2.5 M-2.5 0 H2.5'/><circle cx='272.9' cy='52.7' r='2.8' opacity='0.7'/><path transform='translate(37.1 48.1) rotate(-16.5)' opacity='0.6' d='M-3.3 5.5 L-3.3 -5.5 L3.3 -2.2 L-3.3 1.1'/><g transform='translate(298.7 11.8) rotate(0)' opacity='0.7'><circle r='6.4'/><circle r='2.2'/></g><circle cx='285.8' cy='61.7' r='2.8' opacity='0.8'/><circle cx='204.1' cy='50.5' r='4.5' opacity='0.5'/><path transform='translate(222.3 35.5) rotate(-8.8)' opacity='0.9' d='M-3.7 6.1 L-3.7 -6.1 L3.7 -2.5 L-3.7 1.2'/><circle cx='26.4' cy='27.8' r='4.7' opacity='0.5'/><path transform='translate(43.3 46.9) rotate(41.4)' opacity='0.6' d='M0 -2.1 V2.1 M-2.1 0 H2.1'/><path transform='translate(206.8 9.9) rotate(1.5)' opacity='0.9' d='M-8.7 0 A8.7 8.7 0 0 1 8.7 0'/><g transform='translate(134.2 22.2) rotate(0)' opacity='0.6'><circle r='5.8'/><circle r='3.1'/></g><path transform='translate(225.4 41) rotate(14.7)' opacity='0.5' d='M-3.8 -3.8 L3.8 -3.8 M0 -3.8 L0 6.3 M-2.5 6.3 L2.5 6.3'/><path transform='translate(110.6 48.4) rotate(14.9)' opacity='0.4' d='M0 -2.9 V2.9 M-2.9 0 H2.9'/><path transform='translate(82.5 29.7) rotate(341.8)' opacity='0.4' d='M-9.6 0 A9.6 9.6 0 0 1 9.6 0'/><circle cx='29.3' cy='31.9' r='5.2' opacity='0.6'/><g transform='translate(293.2 8.5) rotate(0)' opacity='0.5'><circle r='7.3'/><circle r='2'/></g><path transform='translate(71.4 21.7) rotate(23.8)' opacity='0.5' d='M0 -2.1 V2.1 M-2.1 0 H2.1'/><path transform='translate(168.1 18.4) rotate(14.6)' opacity='0.9' d='M0 -6 L0 6 M0 -3 L3.6 -5.4 M0 0 L-3.6 2.4'/><path transform='translate(239.7 41.3) rotate(26.8)' opacity='0.5' d='M0 -3 V3 M-3 0 H3'/><g transform='translate(123.5 39.5) rotate(0)' opacity='0.6'><circle r='5.1'/><circle r='2.4'/></g><circle cx='137.9' cy='15.8' r='5.8' opacity='0.6'/><path transform='translate(44.3 17.7) rotate(-4.4)' opacity='0.9' d='M0 -5.4 L0 5.4 M-3.3 -2.2 L0 0.5 L3.3 -2.2'/><path transform='translate(58.4 52) rotate(-2.1)' opacity='0.4' d='M3.2 -5.4 L-1.1 -1.1 L3.2 3.2 M-3.2 -1.1 L-3.2 5.4'/><path transform='translate(124.3 34.3) rotate(-3.7)' opacity='0.9' d='M0 -4 L2.4 0 L0 4 L-2.4 0 L0 -4 M0 -1.2 L0 1.2'/><circle cx='274.4' cy='11.9' r='6.5' opacity='0.6'/><circle cx='166' cy='31.9' r='4.5' opacity='0.7'/></g><g fill='%23000'><circle cx='159' cy='3' r='0.9' opacity='0.8'/><circle cx='275.7' cy='18.7' r='1.1' opacity='0.5'/><circle cx='152.1' cy='47.6' r='1.1' opacity='0.8'/><circle cx='223.3' cy='39.1' r='0.8' opacity='0.9'/><circle cx='259.7' cy='14.3' r='0.9' opacity='0.9'/><circle cx='198.8' cy='45.8' r='1' opacity='0.5'/><circle cx='163.6' cy='21.7' r='1.1' opacity='0.9'/><circle cx='277.2' cy='32.4' r='1' opacity='0.5'/></g></svg>"), linear-gradient(90deg, #000 0%, rgba(0,0,0,.18) 36%, transparent 46%, transparent 54%, rgba(0,0,0,.18) 64%, #000 100%);
+  mask-size: 300px 64px, 100% 100%;
+  mask-repeat: repeat, no-repeat;
+  mask-position: 0 0, 0 0;
+  mask-composite: intersect;
+}
+[data-profile="black"] .app-header::before {
+  background:
+    radial-gradient(34% 90% at 6% 115%, color-mix(in srgb, var(--accent-soft) 16%, transparent) 0%, transparent 70%),
+    radial-gradient(26% 70% at 22% 125%, color-mix(in srgb, var(--accent-soft) 10%, transparent) 0%, transparent 70%),
+    radial-gradient(34% 90% at 94% 115%, color-mix(in srgb, var(--accent-soft) 16%, transparent) 0%, transparent 70%),
+    radial-gradient(26% 70% at 78% 125%, color-mix(in srgb, var(--accent-soft) 10%, transparent) 0%, transparent 70%);
+}
+[data-profile="red"] .app-header::before {
+  background:
+    radial-gradient(1.5px 1.5px at 18% 38%, var(--accent-soft) 60%, transparent 70%),
+    radial-gradient(1px 1px at 27% 62%, var(--accent-soft) 60%, transparent 70%),
+    radial-gradient(1.5px 1.5px at 76% 30%, var(--accent-soft) 60%, transparent 70%),
+    radial-gradient(1px 1px at 84% 66%, var(--accent-soft) 60%, transparent 70%),
+    radial-gradient(1px 1px at 9% 74%, var(--accent-soft) 60%, transparent 70%),
+    radial-gradient(1.5px 1.5px at 92% 46%, var(--accent-soft) 60%, transparent 70%),
+    linear-gradient(180deg, transparent 72%, color-mix(in srgb, var(--accent) 45%, transparent) 84%, transparent 96%);
+  opacity: 0.7;
+}
+[data-profile="green"] .app-header::before {
+  background: color-mix(in srgb, var(--accent-soft) 14%, transparent);
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 64'><g fill='%23000'><g transform='translate(241.5 19.1) rotate(323.4) scale(1)' opacity='0.9'><path d='M-3 0 h6 v1 q0 4.5 -3 5.5 q-3 -1 -3 -5.5z'/><path d='M-3.6 0 q3.6 -3.4 7.2 0 z'/><path d='M0 -3 v-1.6' stroke='%23000' stroke-width='1' /></g><circle cx='272.6' cy='41.6' r='0.9' opacity='0.6'/><path transform='translate(234.2 63.5) rotate(99.1) scale(1)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(226.4 42.2) rotate(221.9) scale(0.9)' opacity='0.5' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><g transform='translate(49.1 63) rotate(181.4) scale(0.9)' opacity='0.4'><path d='M-3 0 h6 v1 q0 4.5 -3 5.5 q-3 -1 -3 -5.5z'/><path d='M-3.6 0 q3.6 -3.4 7.2 0 z'/><path d='M0 -3 v-1.6' stroke='%23000' stroke-width='1' /></g><path transform='translate(13.7 58.4) rotate(294.8) scale(0.7)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><circle cx='30.5' cy='63' r='0.9' opacity='0.6'/><path transform='translate(134.7 11) rotate(76.7) scale(0.6)' opacity='0.8' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(136.1 58) rotate(37.3) scale(0.9)' opacity='0.5' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(134.8 33.4) rotate(154.6) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><g transform='translate(230.7 22.3) rotate(188.5) scale(1)' opacity='0.8'><ellipse rx='1.6' ry='2.4'/><path d='M0 -2 q6 -4 8 2 q-5 0 -8 -2z' opacity='0.7'/></g><path transform='translate(126.4 26) rotate(343.8) scale(0.7)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(287.1 45.3) rotate(322.2) scale(0.8)' opacity='0.6' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><g transform='translate(0.2 61) rotate(28.9) scale(0.8)' opacity='0.5'><ellipse rx='1.6' ry='2.4'/><path d='M0 -2 q6 -4 8 2 q-5 0 -8 -2z' opacity='0.7'/></g><circle cx='52.6' cy='35.9' r='1' opacity='0.8'/><circle cx='268.8' cy='17.3' r='1.1' opacity='0.6'/><path transform='translate(149 26.6) rotate(44.1) scale(1)' opacity='0.8' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(296.2 42.9) rotate(124.4) scale(1)' opacity='0.5' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(32.4 58.2) rotate(286.7) scale(0.7)' opacity='0.4' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><circle cx='165.8' cy='23.1' r='0.9' opacity='1'/><circle cx='196.4' cy='23' r='1.4' opacity='0.5'/><g transform='translate(224.2 15.3) rotate(33.5) scale(0.9)' opacity='1'><path d='M-3 0 h6 v1 q0 4.5 -3 5.5 q-3 -1 -3 -5.5z'/><path d='M-3.6 0 q3.6 -3.4 7.2 0 z'/><path d='M0 -3 v-1.6' stroke='%23000' stroke-width='1' /></g><circle cx='49.3' cy='21.1' r='1.3' opacity='0.9'/><g transform='translate(191.4 19.4) rotate(174.3) scale(1.1)' opacity='0.6'><ellipse rx='1.6' ry='2.4'/><path d='M0 -2 q6 -4 8 2 q-5 0 -8 -2z' opacity='0.7'/></g><g transform='translate(200.3 44.3) rotate(77.2) scale(1)' opacity='0.5'><path d='M-3 0 h6 v1 q0 4.5 -3 5.5 q-3 -1 -3 -5.5z'/><path d='M-3.6 0 q3.6 -3.4 7.2 0 z'/><path d='M0 -3 v-1.6' stroke='%23000' stroke-width='1' /></g><g transform='translate(28.9 44.8) rotate(49.5) scale(0.8)' opacity='0.4'><path d='M-3 0 h6 v1 q0 4.5 -3 5.5 q-3 -1 -3 -5.5z'/><path d='M-3.6 0 q3.6 -3.4 7.2 0 z'/><path d='M0 -3 v-1.6' stroke='%23000' stroke-width='1' /></g><circle cx='73.5' cy='41.6' r='1.4' opacity='0.8'/><path transform='translate(93.1 33) rotate(279.9) scale(0.7)' opacity='0.6' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/></g><g fill='none' stroke='%23000' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'><path transform='translate(171 14.9) rotate(254.4) scale(1.1)' opacity='0.8' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z M0 1.5 V11'/><g transform='translate(41 38.6) rotate(70.5) scale(0.9)' opacity='0.6'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(102.4 19.1) rotate(97.6) scale(1)' opacity='0.6'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(7.9 39.7) rotate(337.6) scale(0.9)' opacity='0.6'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(108.8 21.5) rotate(84.3) scale(1)' opacity='0.9'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(23.5 0.5) rotate(145.4) scale(0.9)' opacity='0.5'><path d='M0 0 L0 -16'/><path d='M0 -3 l-3 -2 M0 -3 l3 -2 M0 -7 l-3 -2 M0 -7 l3 -2 M0 -11 l-2.4 -1.6 M0 -11 l2.4 -1.6'/></g><g transform='translate(223.8 46.2) rotate(259.1) scale(1)' opacity='0.6'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(231.8 45.7) rotate(351.2) scale(0.7)' opacity='0.6'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(261.5 0.4) rotate(159) scale(1)' opacity='0.9'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(11.7 7.2) rotate(57.2) scale(0.9)' opacity='0.7'><path d='M0 0 L0 -16'/><path d='M0 -3 l-3 -2 M0 -3 l3 -2 M0 -7 l-3 -2 M0 -7 l3 -2 M0 -11 l-2.4 -1.6 M0 -11 l2.4 -1.6'/></g><g transform='translate(93 21.1) rotate(2.5) scale(1)' opacity='0.9'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(71.6 61.9) rotate(88.1) scale(1)' opacity='1'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(39.7 47.3) rotate(176.7) scale(1)' opacity='0.4'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(75.2 23.4) rotate(279.5) scale(0.8)' opacity='0.8'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(246.6 30.1) rotate(56.3) scale(0.8)' opacity='1'><path d='M0 0 L0 -16'/><path d='M0 -3 l-3 -2 M0 -3 l3 -2 M0 -7 l-3 -2 M0 -7 l3 -2 M0 -11 l-2.4 -1.6 M0 -11 l2.4 -1.6'/></g><g transform='translate(228.1 0.6) rotate(59.7) scale(0.7)' opacity='0.8'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(182.8 46.5) rotate(176.5) scale(1)' opacity='0.6'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(56 36.5) rotate(169.9) scale(0.9)' opacity='0.8'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g></g></svg>"), linear-gradient(90deg, #000 0%, rgba(0,0,0,.18) 36%, transparent 46%, transparent 54%, rgba(0,0,0,.18) 64%, #000 100%);
+  -webkit-mask-size: 300px 64px, 100% 100%;
+  -webkit-mask-repeat: repeat, no-repeat;
+  -webkit-mask-position: 0 0, 0 0;
+  -webkit-mask-composite: source-in;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 64'><g fill='%23000'><g transform='translate(241.5 19.1) rotate(323.4) scale(1)' opacity='0.9'><path d='M-3 0 h6 v1 q0 4.5 -3 5.5 q-3 -1 -3 -5.5z'/><path d='M-3.6 0 q3.6 -3.4 7.2 0 z'/><path d='M0 -3 v-1.6' stroke='%23000' stroke-width='1' /></g><circle cx='272.6' cy='41.6' r='0.9' opacity='0.6'/><path transform='translate(234.2 63.5) rotate(99.1) scale(1)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(226.4 42.2) rotate(221.9) scale(0.9)' opacity='0.5' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><g transform='translate(49.1 63) rotate(181.4) scale(0.9)' opacity='0.4'><path d='M-3 0 h6 v1 q0 4.5 -3 5.5 q-3 -1 -3 -5.5z'/><path d='M-3.6 0 q3.6 -3.4 7.2 0 z'/><path d='M0 -3 v-1.6' stroke='%23000' stroke-width='1' /></g><path transform='translate(13.7 58.4) rotate(294.8) scale(0.7)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><circle cx='30.5' cy='63' r='0.9' opacity='0.6'/><path transform='translate(134.7 11) rotate(76.7) scale(0.6)' opacity='0.8' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(136.1 58) rotate(37.3) scale(0.9)' opacity='0.5' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(134.8 33.4) rotate(154.6) scale(0.8)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><g transform='translate(230.7 22.3) rotate(188.5) scale(1)' opacity='0.8'><ellipse rx='1.6' ry='2.4'/><path d='M0 -2 q6 -4 8 2 q-5 0 -8 -2z' opacity='0.7'/></g><path transform='translate(126.4 26) rotate(343.8) scale(0.7)' opacity='0.7' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(287.1 45.3) rotate(322.2) scale(0.8)' opacity='0.6' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><g transform='translate(0.2 61) rotate(28.9) scale(0.8)' opacity='0.5'><ellipse rx='1.6' ry='2.4'/><path d='M0 -2 q6 -4 8 2 q-5 0 -8 -2z' opacity='0.7'/></g><circle cx='52.6' cy='35.9' r='1' opacity='0.8'/><circle cx='268.8' cy='17.3' r='1.1' opacity='0.6'/><path transform='translate(149 26.6) rotate(44.1) scale(1)' opacity='0.8' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(296.2 42.9) rotate(124.4) scale(1)' opacity='0.5' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><path transform='translate(32.4 58.2) rotate(286.7) scale(0.7)' opacity='0.4' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/><circle cx='165.8' cy='23.1' r='0.9' opacity='1'/><circle cx='196.4' cy='23' r='1.4' opacity='0.5'/><g transform='translate(224.2 15.3) rotate(33.5) scale(0.9)' opacity='1'><path d='M-3 0 h6 v1 q0 4.5 -3 5.5 q-3 -1 -3 -5.5z'/><path d='M-3.6 0 q3.6 -3.4 7.2 0 z'/><path d='M0 -3 v-1.6' stroke='%23000' stroke-width='1' /></g><circle cx='49.3' cy='21.1' r='1.3' opacity='0.9'/><g transform='translate(191.4 19.4) rotate(174.3) scale(1.1)' opacity='0.6'><ellipse rx='1.6' ry='2.4'/><path d='M0 -2 q6 -4 8 2 q-5 0 -8 -2z' opacity='0.7'/></g><g transform='translate(200.3 44.3) rotate(77.2) scale(1)' opacity='0.5'><path d='M-3 0 h6 v1 q0 4.5 -3 5.5 q-3 -1 -3 -5.5z'/><path d='M-3.6 0 q3.6 -3.4 7.2 0 z'/><path d='M0 -3 v-1.6' stroke='%23000' stroke-width='1' /></g><g transform='translate(28.9 44.8) rotate(49.5) scale(0.8)' opacity='0.4'><path d='M-3 0 h6 v1 q0 4.5 -3 5.5 q-3 -1 -3 -5.5z'/><path d='M-3.6 0 q3.6 -3.4 7.2 0 z'/><path d='M0 -3 v-1.6' stroke='%23000' stroke-width='1' /></g><circle cx='73.5' cy='41.6' r='1.4' opacity='0.8'/><path transform='translate(93.1 33) rotate(279.9) scale(0.7)' opacity='0.6' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z'/></g><g fill='none' stroke='%23000' stroke-width='1.1' stroke-linecap='round' stroke-linejoin='round'><path transform='translate(171 14.9) rotate(254.4) scale(1.1)' opacity='0.8' d='M0 0 c 3.4 3 3.6 8.6 0 12.4 c -3.6 -3.8 -3.4 -9.4 0 -12.4z M0 1.5 V11'/><g transform='translate(41 38.6) rotate(70.5) scale(0.9)' opacity='0.6'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(102.4 19.1) rotate(97.6) scale(1)' opacity='0.6'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(7.9 39.7) rotate(337.6) scale(0.9)' opacity='0.6'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(108.8 21.5) rotate(84.3) scale(1)' opacity='0.9'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(23.5 0.5) rotate(145.4) scale(0.9)' opacity='0.5'><path d='M0 0 L0 -16'/><path d='M0 -3 l-3 -2 M0 -3 l3 -2 M0 -7 l-3 -2 M0 -7 l3 -2 M0 -11 l-2.4 -1.6 M0 -11 l2.4 -1.6'/></g><g transform='translate(223.8 46.2) rotate(259.1) scale(1)' opacity='0.6'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(231.8 45.7) rotate(351.2) scale(0.7)' opacity='0.6'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(261.5 0.4) rotate(159) scale(1)' opacity='0.9'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(11.7 7.2) rotate(57.2) scale(0.9)' opacity='0.7'><path d='M0 0 L0 -16'/><path d='M0 -3 l-3 -2 M0 -3 l3 -2 M0 -7 l-3 -2 M0 -7 l3 -2 M0 -11 l-2.4 -1.6 M0 -11 l2.4 -1.6'/></g><g transform='translate(93 21.1) rotate(2.5) scale(1)' opacity='0.9'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(71.6 61.9) rotate(88.1) scale(1)' opacity='1'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(39.7 47.3) rotate(176.7) scale(1)' opacity='0.4'><circle r='2.2'/><path d='M-4.6 0 A4.6 4.6 0 0 1 4.6 0'/><path d='M0 7 A7 7 0 0 1 -7 0'/></g><g transform='translate(75.2 23.4) rotate(279.5) scale(0.8)' opacity='0.8'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(246.6 30.1) rotate(56.3) scale(0.8)' opacity='1'><path d='M0 0 L0 -16'/><path d='M0 -3 l-3 -2 M0 -3 l3 -2 M0 -7 l-3 -2 M0 -7 l3 -2 M0 -11 l-2.4 -1.6 M0 -11 l2.4 -1.6'/></g><g transform='translate(228.1 0.6) rotate(59.7) scale(0.7)' opacity='0.8'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(182.8 46.5) rotate(176.5) scale(1)' opacity='0.6'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g><g transform='translate(56 36.5) rotate(169.9) scale(0.9)' opacity='0.8'><path d='M0 0 L14 -4'/><path d='M5 -1.8 l-1.5 -3.5'/><path d='M9 -3 l2 -3.5'/><path d='M11 -3.5 l-1.2 3.2'/></g></g></svg>"), linear-gradient(90deg, #000 0%, rgba(0,0,0,.18) 36%, transparent 46%, transparent 54%, rgba(0,0,0,.18) 64%, #000 100%);
+  mask-size: 300px 64px, 100% 100%;
+  mask-repeat: repeat, no-repeat;
+  mask-position: 0 0, 0 0;
+  mask-composite: intersect;
+}
+[data-profile="colorless"] .app-header::before {
+  background: color-mix(in srgb, var(--accent-soft) 15%, transparent);
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 64'><g fill='none' stroke='%23000' stroke-width='1.2' stroke-linecap='round'><rect transform='translate(112.7 25.5) rotate(15.8)' opacity='0.44' x='-2.1' y='-2.1' width='4.2' height='4.2'/><path transform='translate(66.3 39.4) rotate(163.1)' opacity='0.67' stroke-dasharray='1 3' d='M-9.3 0 H9.3'/><rect transform='translate(264.4 26.9) rotate(273.2)' opacity='0.81' x='-3.0' y='-3.0' width='5.9' height='5.9'/><path transform='translate(123.4 52.9) rotate(40.9)' opacity='0.52' stroke-dasharray='1 3' d='M-8.5 0 H8.5'/><circle transform='translate(117.3 49.1) rotate(20.9)' opacity='0.5' r='3.6'/><circle transform='translate(149.3 39.8) rotate(209.4)' opacity='0.44' r='8.4'/><circle transform='translate(161.4 7.9) rotate(53.4)' opacity='0.91' r='7.2'/><path transform='translate(215.9 51.8) rotate(128.4)' opacity='0.92' d='M-2.4 0 H2.4 M0 -2.4 V2.4'/><path transform='translate(51.6 37.3) rotate(113.0)' opacity='0.58' d='M-6.2 0 A 6.2 6.2 0 0 1 6.2 0'/><path transform='translate(151.0 16.3) rotate(190.3)' opacity='0.68' d='M-1.9 0 H1.9 M0 -1.9 V1.9'/><circle transform='translate(238.7 50.5) rotate(196.2)' opacity='0.57' r='8.5'/><path transform='translate(91.2 17.4) rotate(91.7)' opacity='0.54' d='M0 -3.2 L2.8 1.6 L-2.8 1.6Z'/><path transform='translate(56.5 26.6) rotate(238.7)' opacity='0.98' d='M4.0 0.0 L2.0 3.5 L-2.0 3.5 L-4.0 -0.0 L-2.0 -3.5 L2.0 -3.5Z'/><rect transform='translate(286.2 14.4) rotate(286.7)' opacity='0.6' x='-1.9' y='-1.9' width='3.7' height='3.7'/><path transform='translate(169.9 53.1) rotate(203.0)' opacity='0.61' d='M-3.8 0 A 3.8 3.8 0 0 1 3.8 0'/><circle transform='translate(175.5 21.0) rotate(30.7)' opacity='0.42' r='3.6'/><path transform='translate(157.9 14.0) rotate(175.8)' opacity='0.45' stroke-dasharray='1 3' d='M-13.8 0 H13.8'/><circle transform='translate(60.6 53.5) rotate(237.0)' opacity='0.43' r='5.0'/><path transform='translate(260.3 51.2) rotate(293.9)' opacity='0.46' d='M0 -7.9 L6.9 4.0 L-6.9 4.0Z'/><path transform='translate(285.3 29.0) rotate(217.9)' opacity='0.67' d='M-4.9 0 H4.9'/><path transform='translate(233.6 25.8) rotate(259.5)' opacity='0.77' d='M-1.9 0 H1.9 M0 -1.9 V1.9'/><path transform='translate(154.2 10.7) rotate(203.0)' opacity='0.88' d='M-4.3 0 H4.3 M0 -4.3 V4.3'/><path transform='translate(70.9 16.3) rotate(38.9)' opacity='0.82' d='M-2.9 0 H2.9 M0 -2.9 V2.9'/><path transform='translate(194.7 49.1) rotate(352.3)' opacity='0.84' d='M0 -6.2 L5.4 3.1 L-5.4 3.1Z'/><path transform='translate(242.0 35.6) rotate(116.7)' opacity='0.6' stroke-dasharray='1 3' d='M-9.6 0 H9.6'/></g><g fill='%23000'><circle cx='107.2' cy='56.2' r='1.9' opacity='0.49'/></g></svg>"), linear-gradient(90deg, #000 0%, rgba(0,0,0,.18) 36%, transparent 46%, transparent 54%, rgba(0,0,0,.18) 64%, #000 100%);
+  -webkit-mask-size: 300px 64px, 100% 100%;
+  -webkit-mask-repeat: repeat, no-repeat;
+  -webkit-mask-position: 0 0, 0 0;
+  -webkit-mask-composite: source-in;
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 64'><g fill='none' stroke='%23000' stroke-width='1.2' stroke-linecap='round'><rect transform='translate(112.7 25.5) rotate(15.8)' opacity='0.44' x='-2.1' y='-2.1' width='4.2' height='4.2'/><path transform='translate(66.3 39.4) rotate(163.1)' opacity='0.67' stroke-dasharray='1 3' d='M-9.3 0 H9.3'/><rect transform='translate(264.4 26.9) rotate(273.2)' opacity='0.81' x='-3.0' y='-3.0' width='5.9' height='5.9'/><path transform='translate(123.4 52.9) rotate(40.9)' opacity='0.52' stroke-dasharray='1 3' d='M-8.5 0 H8.5'/><circle transform='translate(117.3 49.1) rotate(20.9)' opacity='0.5' r='3.6'/><circle transform='translate(149.3 39.8) rotate(209.4)' opacity='0.44' r='8.4'/><circle transform='translate(161.4 7.9) rotate(53.4)' opacity='0.91' r='7.2'/><path transform='translate(215.9 51.8) rotate(128.4)' opacity='0.92' d='M-2.4 0 H2.4 M0 -2.4 V2.4'/><path transform='translate(51.6 37.3) rotate(113.0)' opacity='0.58' d='M-6.2 0 A 6.2 6.2 0 0 1 6.2 0'/><path transform='translate(151.0 16.3) rotate(190.3)' opacity='0.68' d='M-1.9 0 H1.9 M0 -1.9 V1.9'/><circle transform='translate(238.7 50.5) rotate(196.2)' opacity='0.57' r='8.5'/><path transform='translate(91.2 17.4) rotate(91.7)' opacity='0.54' d='M0 -3.2 L2.8 1.6 L-2.8 1.6Z'/><path transform='translate(56.5 26.6) rotate(238.7)' opacity='0.98' d='M4.0 0.0 L2.0 3.5 L-2.0 3.5 L-4.0 -0.0 L-2.0 -3.5 L2.0 -3.5Z'/><rect transform='translate(286.2 14.4) rotate(286.7)' opacity='0.6' x='-1.9' y='-1.9' width='3.7' height='3.7'/><path transform='translate(169.9 53.1) rotate(203.0)' opacity='0.61' d='M-3.8 0 A 3.8 3.8 0 0 1 3.8 0'/><circle transform='translate(175.5 21.0) rotate(30.7)' opacity='0.42' r='3.6'/><path transform='translate(157.9 14.0) rotate(175.8)' opacity='0.45' stroke-dasharray='1 3' d='M-13.8 0 H13.8'/><circle transform='translate(60.6 53.5) rotate(237.0)' opacity='0.43' r='5.0'/><path transform='translate(260.3 51.2) rotate(293.9)' opacity='0.46' d='M0 -7.9 L6.9 4.0 L-6.9 4.0Z'/><path transform='translate(285.3 29.0) rotate(217.9)' opacity='0.67' d='M-4.9 0 H4.9'/><path transform='translate(233.6 25.8) rotate(259.5)' opacity='0.77' d='M-1.9 0 H1.9 M0 -1.9 V1.9'/><path transform='translate(154.2 10.7) rotate(203.0)' opacity='0.88' d='M-4.3 0 H4.3 M0 -4.3 V4.3'/><path transform='translate(70.9 16.3) rotate(38.9)' opacity='0.82' d='M-2.9 0 H2.9 M0 -2.9 V2.9'/><path transform='translate(194.7 49.1) rotate(352.3)' opacity='0.84' d='M0 -6.2 L5.4 3.1 L-5.4 3.1Z'/><path transform='translate(242.0 35.6) rotate(116.7)' opacity='0.6' stroke-dasharray='1 3' d='M-9.6 0 H9.6'/></g><g fill='%23000'><circle cx='107.2' cy='56.2' r='1.9' opacity='0.49'/></g></svg>"), linear-gradient(90deg, #000 0%, rgba(0,0,0,.18) 36%, transparent 46%, transparent 54%, rgba(0,0,0,.18) 64%, #000 100%);
+  mask-size: 300px 64px, 100% 100%;
+  mask-repeat: repeat, no-repeat;
+  mask-position: 0 0, 0 0;
+  mask-composite: intersect;
+}
+
+.app-header::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent 0%, var(--accent-soft) 35%, var(--accent-soft) 65%, transparent 100%);
+  opacity: 0.9;
+}
+
+.app-header > * {
+  position: relative;
+  z-index: 1;
+}
+
+.app-header .menu-toggle {
+  justify-self: start;
+}
+
+.header-side {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* the brand mark: a breathing orb of the colour's badge, the wordmark, the tagline */
+.brand-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 44px;
+  padding: 0.2rem 0.6rem;
+  background: transparent;
+  border: none;
+  border-radius: 0.8rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.brand-mark:hover,
+.brand-mark:focus-visible {
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.brand-mark .orb,
+.brand-mark img,
+.brand-mark svg {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  background: var(--motif) center / cover no-repeat, var(--surface-ground);
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent),
+    0 0 18px color-mix(in srgb, var(--accent) 75%, transparent);
+  animation: orb-breathe 4.5s ease-in-out infinite;
+}
+
+@keyframes orb-breathe {
+  0%, 100% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 65%, transparent); }
+  50% { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 85%, transparent), 0 0 26px color-mix(in srgb, var(--accent) 95%, transparent); }
+}
+
+.brand-mark .brand-text {
+  display: grid;
+  line-height: 1.05;
+  text-align: left;
+}
+
+.brand-mark .wordmark {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.2rem;
+  letter-spacing: -0.01em;
+  background: linear-gradient(90deg, var(--accent-soft), color-mix(in srgb, var(--accent-soft) 45%, var(--text-primary)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.brand-mark .tagline {
+  font-family: var(--font-body);
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+/* a round icon button: back arrows, start over, close */
+.icon-round {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
+  color: var(--text-primary);
+  display: inline-grid;
+  place-items: center;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.icon-round:hover,
+.icon-round:focus-visible {
+  border-color: var(--accent-soft);
+  background: color-mix(in srgb, var(--accent) 18%, var(--surface-panel));
+}
+
+.icon-round[hidden] {
+  display: none;
+}
+
+.menu-toggle,
+.icon-btn {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-size: 1.1rem;
+}
+
+/* the ☰ (round 8: "too small, especially on desktop … 20-30%"): about a
+   quarter larger on a phone, a third on desktop */
+.app-header .menu-toggle {
+  min-width: 50px;
+  min-height: 50px;
+  font-size: 1.4rem;
+}
+@media (min-width: 768px) {
+  .app-header .menu-toggle {
+    min-width: 54px;
+    min-height: 54px;
+    font-size: 1.5rem;
+  }
+}
+
+.icon-btn:hover,
+.menu-toggle:hover,
+.icon-btn:focus-visible,
+.menu-toggle:focus-visible {
+  border-color: var(--surface-edge);
+  background: color-mix(in srgb, var(--accent) 14%, transparent);
+}
+
+.mock-mode-banner {
+  text-align: center;
+  font-size: 0.72rem;
+  padding: 0.22rem 0.5rem;
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface-ground));
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--surface-edge);
+}
+
+/* ---- Menu tray: slides in from the left, like today's app ---- */
+
+.menu-tray-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 30;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.menu-tray {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: min(20rem, 86vw);
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(90% 30% at 0% 100%, color-mix(in srgb, var(--accent) 28%, transparent) 0%, transparent 70%),
+    linear-gradient(180deg, color-mix(in srgb, var(--surface-panel) 96%, transparent), color-mix(in srgb, var(--surface-panel) 92%, var(--surface-ground)));
+  border-right: 1px solid var(--surface-edge);
+  box-shadow: 24px 0 60px -30px color-mix(in srgb, var(--accent) 60%, #000);
+  z-index: 31;
+  padding: 0.75rem 0 1rem;
+  overflow-y: auto;
+  transform: translateX(-100%);
+  transition: transform 0.24s cubic-bezier(0.2, 0.8, 0.2, 1);
+  isolation: isolate;
+}
+
+/* the tray's backdrop (round 7: the foot; round 8: the whole tray). The
+   colour's own element plays at a whisper behind the rows (ambience.js
+   mountFlair: falling leaves from a canopy at the tray's top, runes, fog and
+   brambles, heat, beams, turning shapes) — faint behind the destinations,
+   fuller in the open space below the Theme row, over a pool of the colour's
+   light at the foot. Nothing in it takes a tap. */
+.tray-flair {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.35) 30%, rgba(0, 0, 0, 0.75) 55%, #000 80%);
+  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.5) 0%, rgba(0, 0, 0, 0.35) 30%, rgba(0, 0, 0, 0.75) 55%, #000 80%);
+}
+
+.tray-flair .flair-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  mix-blend-mode: screen;
+  opacity: 0.85;
+}
+
+.tray-flair::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(90% 28% at 30% 104%, color-mix(in srgb, var(--accent) 40%, transparent) 0%, transparent 70%);
+  animation: flair-twinkle 6s ease-in-out infinite alternate;
+}
+
+@keyframes flair-twinkle {
+  from { opacity: 0.55; }
+  to { opacity: 0.9; }
+}
+
+/* round 10 ("the colorless profile tray really lacks animation, or they're
+   invisible?"): Colorless's accent is a dark grey, so the pool of light at the
+   tray's foot all but vanished and its few faint shapes read as nothing. The
+   pool is drawn from the colour's pale light instead, and ambience.js gives
+   the tray more shapes, drawn a shade brighter — still the quietest of the six. */
+[data-profile="colorless"] .tray-flair::after {
+  background: radial-gradient(90% 28% at 30% 104%, color-mix(in srgb, var(--accent-soft) 26%, transparent) 0%, transparent 70%);
+}
+
+.menu-tray::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  right: -1px;
+  width: 1px;
+  background: linear-gradient(180deg, var(--accent-soft), transparent 60%);
+  opacity: 0.7;
+}
+
+[data-tray-open="true"] .menu-tray-backdrop {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* the same dimming for sheets and side panels, toggled on the backdrop itself
+   so a card-detail sheet never drags the menu tray open with it */
+.sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 39;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.sheet-backdrop[data-open="true"] {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+[data-tray-open="true"] .menu-tray {
+  transform: translateX(0);
+}
+
+.menu-tray .tray-brand {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0 0.6rem 0.6rem 0.75rem;
+  border-bottom: 1px solid var(--surface-edge);
+}
+
+.menu-tray .tray-brand .brand-mark {
+  padding-left: 0;
+}
+
+.menu-tray h3 {
+  font-family: var(--font-body);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--text-muted);
+  margin: 0.9rem 1rem 0.35rem;
+}
+
+/* destination rows: a plain list, themed — a lit bar marks the current screen */
+.tray-nav-list {
+  list-style: none;
+  padding: 0.35rem 0.5rem 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.tray-nav-list button {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 28px 1fr auto;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+  padding: 0 0.75rem;
+  min-height: 48px;
+  background: transparent;
+  border: 1px solid transparent;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 0.95rem;
+  position: relative;
+  transition: background 150ms ease, border-color 150ms ease;
+}
+
+.tray-nav-list button .glyph {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  color: var(--accent-soft);
+}
+
+.tray-nav-list button .here {
+  font-size: 0.85rem;
+  color: var(--accent-soft);
+}
+
+.tray-nav-list button[aria-current="page"] {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  border-color: color-mix(in srgb, var(--accent-soft) 25%, transparent);
+}
+
+.tray-nav-list button[aria-current="page"]::before {
+  content: "";
+  position: absolute;
+  left: -0.5rem;
+  top: 20%;
+  bottom: 20%;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--accent-soft);
+  box-shadow: 0 0 12px var(--accent-soft);
+}
+
+.tray-nav-list button:hover,
+.tray-nav-list button:focus-visible {
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+}
+
+.tray-divider {
+  height: 1px;
+  margin: 0.25rem 1rem;
+  background: linear-gradient(90deg, var(--surface-edge), transparent);
+}
+
+/* a destination glyph drawn as an inline SVG (round 6: the question row wears
+   a card silhouette, not a lightning bolt) */
+.tray-nav-list button .glyph svg { width: 20px; height: 20px; display: block; }
+
+/* theme row (round 7): each colour's symbol sits in a filled circle — a play
+   on the printed mana symbols: a light disc of the colour, the symbol dark on
+   it. The chosen one wears a thin ring of its light and sits a touch larger. */
+/* round 11 shrank the six discs to share a narrow tray's width; round 12 (owner:
+   "they reach a point where you can't even click on them … a new solution that
+   allows them to look nice without shrinking them down") replaces the discs with
+   ONE BAND: a single pill the width of the tray, cut into six equal cells, one
+   per colour. A cell is as wide as its sixth of the row and always 46 px tall,
+   so the target never shrinks below a thumb; the symbol inside is a fixed
+   28 px and never scales. An unchosen cell is a faint wash of its colour with
+   the symbol in the colour's light; the chosen cell is filled with the colour's
+   light, its symbol dark on it — the printed-mana-symbol look the discs had —
+   and glows a touch. Still one row, at every width. */
+/* round 13 (owner: "when I squished the screen a ton, the band did as well … do we
+   change the UI to an arrow in each direction with the colour band in the middle?"):
+   a cell never goes below 40 px wide. When six of them no longer fit the tray, the
+   band keeps its cells full-size and slides instead — an arrow appears at each end
+   and nudges it along two cells at a time; the arrow at the end you have reached
+   fades. On any phone 320 px and up all six still fit and no arrow shows. */
+.theme-band {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin: 0.2rem 0.5rem 0;
+}
+
+.theme-orbs {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 60%, transparent);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 2px 10px -6px rgba(0, 0, 0, 0.8);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  scrollbar-width: none;
+}
+.theme-orbs::-webkit-scrollbar { display: none; }
+
+.theme-step {
+  flex: 0 0 auto;
+  display: none;
+  width: 30px;
+  height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: var(--accent-soft);
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  place-items: center;
+  transition: opacity 150ms ease, background 150ms ease;
+}
+.theme-band[data-overflow="true"] .theme-step { display: grid; }
+.theme-step:hover { background: color-mix(in srgb, var(--accent) 18%, transparent); }
+.theme-step[data-off="true"] { opacity: 0.25; pointer-events: none; }
+
+.theme-orb {
+  display: grid;
+  place-items: center;
+  flex: 1 0 40px;
+  min-width: 40px;
+  scroll-snap-align: center;
+  background: color-mix(in srgb, var(--orb) 20%, transparent);
+  border: 0;
+  padding: 0;
+  min-height: 46px;
+  border-radius: 8px;
+  color: var(--orb-soft);
+  cursor: pointer;
+  transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+}
+.theme-orb:first-child { border-radius: 999px 8px 8px 999px; }
+.theme-orb:last-child { border-radius: 8px 999px 999px 8px; }
+
+.theme-orb .orb {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  opacity: 0.9;
+  transition: opacity 150ms ease, transform 150ms ease;
+  /* the symbol's cut-outs (a skull's eyes, a leaf's vein) show the cell behind them */
+  --disc: color-mix(in srgb, var(--orb) 20%, var(--surface-panel));
+}
+.theme-orb[data-current="true"] .orb { --disc: var(--orb-soft); }
+.theme-orb .orb svg { width: 100%; height: 100%; display: block; }
+
+.theme-orb:hover,
+.theme-orb:focus-visible {
+  background: color-mix(in srgb, var(--orb) 30%, transparent);
+}
+.theme-orb:hover .orb,
+.theme-orb:focus-visible .orb { opacity: 1; }
+
+.theme-orb[data-current="true"] {
+  background: var(--orb-soft);
+  color: #0e0e11;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.18), 0 0 14px color-mix(in srgb, var(--orb) 70%, transparent);
+}
+.theme-orb[data-current="true"] .orb { opacity: 1; transform: scale(1.08); }
+
+/* Colorless keeps its custom colour (as today's app): a colour well and a reset,
+   shown only while Colorless is the current theme. Round 11: the row wraps
+   cleanly on a narrow phone — the label never breaks mid-word and the reset
+   keeps to one line. */
+.theme-custom {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 0.45rem 0.5rem;
+  margin: 0.5rem 0.75rem 0;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+.theme-custom[data-show="true"] { display: flex; }
+.theme-custom span { white-space: nowrap; }
+.theme-custom .btn { white-space: nowrap; }
+.theme-custom input[type="color"] {
+  width: 36px; height: 36px; padding: 0; border: 1px solid var(--surface-edge); border-radius: 0.5rem; background: transparent; cursor: pointer;
+}
+.theme-custom input[type="color"]::-webkit-color-swatch-wrapper { padding: 3px; }
+.theme-custom input[type="color"]::-webkit-color-swatch { border: 0; border-radius: 0.3rem; }
+.theme-custom .btn { min-height: 34px; padding: 0.2rem 0.7rem; font-size: 0.78rem; }
+
+/* ---- a confirm sheet (round 11): the shared sheet at its smallest — a
+   question, one line of consequence, keep or go ahead. A bottom sheet on a
+   phone, a small centred card on desktop. Trade Balancer's New trade uses it;
+   Life Tracker's Reset and New Game use the same one. ---- */
+.confirm-panel { padding: 1.4rem 1.1rem 1.1rem; display: grid; gap: 0.5rem; }
+.confirm-panel h2 { margin: 0; font-size: 1.15rem; }
+.confirm-panel p { margin: 0; font-size: 0.86rem; color: var(--text-muted); line-height: 1.45; }
+.confirm-panel p b { color: var(--text-primary); font-weight: 600; }
+.confirm-panel .row { display: flex; gap: 0.5rem; justify-content: flex-end; flex-wrap: wrap; margin-top: 0.5rem; }
+.confirm-panel .row .btn { min-height: 44px; padding: 0.5rem 1rem; font-weight: 600; }
+.confirm-panel .row .btn.go { border-color: color-mix(in srgb, #ff8fa3 55%, transparent); background: color-mix(in srgb, #ff4d6d 18%, var(--surface-panel)); color: #ffd1da; }
+.confirm-panel .row .btn.go:hover { border-color: #ff8fa3; background: color-mix(in srgb, #ff4d6d 28%, var(--surface-panel)); }
+@media (max-width: 599px) { .confirm-panel { padding-top: 1.6rem; } .confirm-panel .row .btn { flex: 1 1 auto; } }
+@media (min-width: 600px) {
+  .confirm-panel.drawer-panel { top: 50%; left: 50%; right: auto; bottom: auto; width: min(24rem, 92vw); max-height: calc(100dvh - 3rem); border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent); border-radius: 1.1rem; opacity: 0; transform: translate(-50%, -50%) translateY(14px) scale(0.97); transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s ease; }
+  .confirm-panel.drawer-panel[data-open="true"] { opacity: 1; transform: translate(-50%, -50%); }
+  .confirm-panel.drawer-panel::before { display: none; }
+}
+
+/* ---- Send feedback (round 11): today's form in the shared sheet ---- */
+.feedback-panel { padding: 0; }
+.fb-form { display: grid; gap: 0.8rem; padding: 1.1rem 1rem 1rem; }
+@media (max-width: 599px) { .fb-form { padding-top: 1.3rem; } }
+.fb-head small { display: block; font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent-soft); }
+.fb-head h2 { margin: 0.1rem 0 0; font-size: 1.3rem; }
+.fb-kind { display: flex; gap: 0.4rem; flex-wrap: wrap; }
+.fb-pill { display: inline-flex; align-items: center; gap: 0.4rem; min-height: 40px; padding: 0 0.9rem 0 0.7rem; border-radius: 999px; cursor: pointer; font-weight: 600; font-size: 0.86rem;
+  border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-ground) 40%, transparent); color: var(--text-muted); transition: all 150ms ease; }
+.fb-pill .glyph { color: var(--accent-soft); font-size: 0.9rem; line-height: 1; }
+.fb-pill:hover { border-color: var(--accent-soft); color: var(--text-primary); }
+.fb-pill[aria-pressed="true"] { color: var(--text-primary); border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 24%, var(--surface-panel)); box-shadow: 0 0 14px -5px color-mix(in srgb, var(--accent) 80%, transparent); }
+.fb-field { display: grid; gap: 0.3rem; }
+.fb-field .t { font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); display: flex; gap: 0.4rem; align-items: baseline; }
+.fb-field .t small { text-transform: none; letter-spacing: 0; font-size: 0.7rem; }
+.fb-field textarea.field { resize: vertical; min-height: 6.5rem; line-height: 1.45; padding: 0.6rem 0.75rem; }
+.fb-field[data-invalid="true"] .field { border-color: #ff8fa3; box-shadow: 0 0 0 3px rgba(255, 143, 163, 0.18); }
+.fb-err { font-size: 0.76rem; color: #ff8fa3; }
+.fb-snapshot { border: 1px dashed color-mix(in srgb, var(--accent-soft) 35%, transparent); border-radius: 0.7rem; }
+.fb-snap-row { display: flex; justify-content: space-between; align-items: center; gap: 0.6rem; width: 100%; min-height: 44px; padding: 0.4rem 0.75rem; text-align: left;
+  background: transparent; border: 0; color: var(--text-muted); font-size: 0.8rem; cursor: pointer; }
+.fb-snap-row .glyph { color: var(--accent-soft); }
+.fb-snap-row .chev { color: var(--accent-soft); transition: transform 150ms ease; }
+.fb-snap-row[aria-expanded="true"] .chev { transform: rotate(180deg); }
+.fb-snap-list { display: grid; grid-template-columns: auto 1fr; gap: 0.3rem 0.8rem; margin: 0; padding: 0.2rem 0.75rem 0.7rem; font-size: 0.78rem; border-top: 1px solid var(--surface-edge); }
+.fb-snap-list dt { color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; font-size: 0.64rem; padding-top: 0.15rem; }
+.fb-snap-list dd { margin: 0; color: var(--text-primary); min-width: 0; overflow-wrap: anywhere; }
+.fb-foot { display: flex; align-items: center; justify-content: space-between; gap: 0.8rem; flex-wrap: wrap; padding-top: 0.2rem; }
+.fb-note { font-size: 0.72rem; color: var(--text-muted); }
+.fb-foot .btn.primary { min-height: 44px; padding: 0.5rem 1.2rem; font-weight: 600; margin-left: auto; }
+.fb-foot .btn.primary:disabled { opacity: 0.7; cursor: default; }
+.fb-done { display: grid; justify-items: center; text-align: center; gap: 0.5rem; padding: 2rem 1.2rem 1.4rem; }
+.fb-done .seal { width: 56px; height: 56px; border-radius: 999px; background: var(--motif) center / cover no-repeat, var(--surface-ground);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), 0 0 24px color-mix(in srgb, var(--accent) 75%, transparent); animation: seal-in 900ms ease-out both; margin-bottom: 0.4rem; }
+.fb-done h2 { margin: 0; font-size: 1.15rem; }
+.fb-done p { margin: 0 0 0.6rem; font-size: 0.84rem; color: var(--text-muted); max-width: 26rem; }
+@media (min-width: 600px) {
+  #feedback-modal.drawer-panel { top: 50%; left: 50%; right: auto; bottom: auto; width: min(30rem, 92vw); max-height: calc(100dvh - 3rem); border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent); border-radius: 1.1rem; opacity: 0; transform: translate(-50%, -50%) translateY(14px) scale(0.97); transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s ease; }
+  #feedback-modal.drawer-panel[data-open="true"] { opacity: 1; transform: translate(-50%, -50%); }
+  #feedback-modal.drawer-panel::before { display: none; }
+}
+
+/* ---- Question History (round 11). The owner: "clicking on them does
+   nothing … explore what that user experience looks like for mobile and for
+   desktop"; "expand on the information displayed … while still wrapping
+   everything up in a concise package"; "the width the history box allows
+   before swapping to the desktop version … is quite large"; "always ensuring
+   both versions support scrolling".
+   Every row: the cards of the question as a small fan of thumbnails, the
+   question, the first line of the ruling, and one meta line — Quick or
+   In-depth, how many cards, how many follow-ups, when. A tap on a phone
+   closes the sheet and reopens that conversation, live, in Ask a Question. On
+   a wide screen the panel is two panes: the list at the left, the chosen
+   conversation read in full at the right, with Open at its foot.
+   The phone sheet stops at 600 px (the rest of the overlays keep 768); from
+   600 px up the floating card drives. The header stays put and only the list
+   (and the preview) scroll. ---- */
+.history-panel { display: flex; flex-direction: column; max-height: inherit; }
+.history-panel .h-head { flex: 0 0 auto; display: flex; align-items: baseline; gap: 0.5rem; padding: 1.1rem 3.2rem 0.6rem 1rem; border-bottom: 1px solid var(--surface-edge); }
+.history-panel .h-head h2 { margin: 0; font-size: 1.25rem; }
+.history-panel .h-head .n { font-size: 0.78rem; color: var(--text-muted); }
+.history-panel .h-panes { display: grid; grid-template-columns: 1fr; min-height: 0; flex: 1 1 auto; }
+.history-list { display: grid; gap: 0.35rem; align-content: start; padding: 0.6rem 0.75rem 0.9rem; overflow-y: auto; min-height: 0; scrollbar-width: thin; }
+.history-row {
+  display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 0.7rem; text-align: left; width: 100%;
+  padding: 0.55rem 0.6rem 0.55rem 0.6rem; border-radius: 0.75rem; border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 40%, transparent); color: var(--text-primary); cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+.history-row:hover, .history-row:focus-visible { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); background: color-mix(in srgb, var(--accent) 10%, transparent); }
+.history-row[aria-current="true"] { border-color: var(--accent-soft); background: color-mix(in srgb, var(--accent) 20%, var(--surface-panel)); box-shadow: 0 0 16px -6px color-mix(in srgb, var(--accent) 80%, transparent); }
+/* the fan: up to three thumbnails overlapping, a "+n" tab for the rest; a dashed empty frame when the question had no cards */
+.history-row .h-fan { display: flex; align-items: center; width: 52px; height: 46px; position: relative; flex: 0 0 auto; }
+.history-row .h-fan .thumb { position: absolute; top: 0; width: 30px; height: 42px; border-radius: 3px; box-shadow: 0 4px 10px -4px #000, 0 0 0 1px rgba(0, 0, 0, 0.6); }
+.history-row .h-fan .thumb:nth-child(1) { left: 0; z-index: 3; }
+.history-row .h-fan .thumb:nth-child(2) { left: 11px; z-index: 2; top: 2px; filter: brightness(0.9); }
+.history-row .h-fan .thumb:nth-child(3) { left: 22px; z-index: 1; top: 4px; filter: brightness(0.8); }
+.history-row .h-fan .more { position: absolute; right: -2px; bottom: -2px; z-index: 4; padding: 0 0.3rem; border-radius: 999px; font-size: 0.6rem; font-weight: 700; line-height: 1.5; background: var(--accent-soft); color: var(--surface-ground); }
+.history-row .h-fan .none { width: 30px; height: 42px; border-radius: 3px; border: 1px dashed color-mix(in srgb, var(--text-muted) 55%, transparent); display: grid; place-items: center; color: var(--text-muted); font-size: 0.8rem; }
+.history-row .h-main { min-width: 0; display: grid; gap: 0.12rem; }
+.history-row .h-q { font-weight: 600; font-size: 0.9rem; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.history-row .h-a { font-size: 0.76rem; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.history-row .h-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 0.15rem 0.35rem; font-size: 0.68rem; color: var(--text-muted); margin-top: 0.1rem; }
+.history-row .h-meta .sep::before { content: "·"; }
+.mode-chip { display: inline-block; padding: 0.02rem 0.45rem; border-radius: 999px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent-soft) 40%, transparent); background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.history-row .h-chev { color: var(--accent-soft); font-size: 1.1rem; line-height: 1; }
+.history-empty { padding: 1.4rem 1rem; text-align: center; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed color-mix(in srgb, var(--accent-soft) 45%, transparent); border-radius: 0.75rem; margin: 0.6rem 0.75rem; }
+.history-foot { flex: 0 0 auto; padding: 0.4rem 1rem 0.7rem; font-size: 0.68rem; color: var(--text-muted); border-top: 1px solid var(--surface-edge); }
+/* the preview pane (wide screens only) */
+.h-preview { display: none; }
+@media (min-width: 600px) {
+  #history-drawer.drawer-panel { top: 50%; left: 50%; right: auto; bottom: auto; width: min(52rem, 94vw); max-height: min(40rem, calc(100dvh - 3rem)); border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent); border-radius: 1.1rem; opacity: 0; transform: translate(-50%, -50%) translateY(14px) scale(0.97); transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s ease; overflow: hidden; }
+  #history-drawer.drawer-panel[data-open="true"] { opacity: 1; transform: translate(-50%, -50%); }
+  #history-drawer.drawer-panel::before { display: none; }
+  .history-panel { height: min(40rem, calc(100dvh - 3rem)); }
+  .history-panel .h-panes { grid-template-columns: minmax(16rem, 20rem) 1fr; }
+  .history-list { border-right: 1px solid var(--surface-edge); }
+  .history-row .h-chev { display: none; }
+  .h-preview { display: flex; flex-direction: column; min-height: 0; }
+  .h-preview .pv-scroll { flex: 1 1 auto; min-height: 0; overflow-y: auto; padding: 0.8rem 1rem 0.6rem; display: flex; flex-direction: column; gap: 0.7rem; scrollbar-width: thin; }
+  .h-preview .pv-scroll > * { flex: 0 0 auto; }
+  .h-preview .pv-when { display: flex; flex-wrap: wrap; align-items: center; gap: 0.2rem 0.45rem; font-size: 0.74rem; color: var(--text-muted); }
+  .h-preview .thread { max-height: none; overflow: visible; }
+  .h-preview .pv-foot { flex: 0 0 auto; display: flex; align-items: center; justify-content: space-between; gap: 0.6rem; padding: 0.6rem 1rem 0.8rem; border-top: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 60%, transparent); }
+  .h-preview .pv-foot .link { background: transparent; border: 0; color: var(--text-muted); font-size: 0.78rem; cursor: pointer; min-height: 36px; padding: 0 0.3rem; }
+  .h-preview .pv-foot .link:hover { color: #ff8fa3; }
+  .h-preview .pv-foot .btn.primary { min-height: 40px; padding: 0.4rem 1.1rem; font-weight: 600; }
+  .h-preview .pv-empty { display: grid; place-items: center; height: 100%; color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem; }
+}
+
+/* ---- Page shell / content column ---- */
+
+.page-content {
+  flex: 1;
+  width: min(48rem, 92vw);
+  margin: 0 auto;
+  padding: 1rem 0 2rem;
+}
+
+.card-panel {
+  background: var(--surface-panel);
+  border: 1px solid var(--surface-edge);
+  border-radius: 0.9rem;
+  padding: 1rem;
+}
+
+/* (round 6) the hairline corner brackets of rounds 4–5 are gone — the owner
+   read them as sci-fi. No lit surface carries corner decoration now. */
+
+/* ---- Generic overlay (feedback modal / view-context) --- */
+
+.overlay-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 40;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+[data-open="true"].overlay-backdrop {
+  display: flex;
+}
+
+.overlay-panel {
+  background: var(--surface-panel);
+  border: 1px solid var(--surface-edge);
+  border-radius: 0.9rem;
+  max-width: 28rem;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  padding: 1rem;
+  position: relative;
+}
+
+.overlay-panel .overlay-close {
+  position: absolute;
+  top: 0.4rem;
+  right: 0.4rem;
+}
+
+/* The card-detail box, History and the printing picker at >=768px: a floating
+   glass card that sizes to its content — never a full-height grey column
+   (owner, round 4). Round 8: it sits in the centre of the screen, not shoved
+   into the top-right corner (owner: "the location feels so odd … more towards
+   the center"), and fades up into place. A bottom sheet on phones. */
+.drawer-panel {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  right: auto;
+  bottom: auto;
+  max-height: calc(100dvh - 3rem);
+  width: min(26rem, 92vw);
+  border-radius: 1.1rem;
+  background:
+    radial-gradient(90% 40% at 100% 0%, color-mix(in srgb, var(--accent) 26%, transparent) 0%, transparent 70%),
+    color-mix(in srgb, var(--surface-panel) 82%, transparent);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent);
+  box-shadow:
+    0 30px 80px -30px #000,
+    0 0 60px -20px color-mix(in srgb, var(--accent) 70%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  z-index: 40;
+  padding: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, -50%) translateY(14px) scale(0.97);
+  transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s ease;
+}
+
+[data-open="true"].drawer-panel {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translate(-50%, -50%);
+}
+
+.drawer-panel .overlay-close {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  z-index: 3;
+  background: rgba(9, 9, 11, 0.55);
+  border-color: color-mix(in srgb, var(--text-primary) 18%, transparent);
+  backdrop-filter: blur(4px);
+}
+
+@media (max-width: 767px) {
+  .drawer-panel {
+    top: auto;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto;
+    max-height: 88dvh;
+    border: none;
+    border-top: 1px solid var(--surface-edge);
+    border-radius: 1.1rem 1.1rem 0 0;
+    opacity: 1;
+    transform: translateY(100%);
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  [data-open="true"].drawer-panel {
+    transform: translateY(0);
+  }
+
+  /* grab handle */
+  .drawer-panel::before {
+    content: "";
+    position: absolute;
+    top: 6px;
+    left: 50%;
+    width: 40px;
+    height: 4px;
+    margin-left: -20px;
+    border-radius: 4px;
+    background: color-mix(in srgb, var(--text-primary) 30%, transparent);
+    z-index: 3;
+  }
+}
+
+/* ---- Buttons / inputs shared across mockups ---- */
+
+.btn {
+  min-height: 44px;
+  padding: 0.5rem 1rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-panel) 80%, transparent);
+  color: var(--text-primary);
+  cursor: pointer;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.btn:hover {
+  border-color: var(--accent);
+}
+
+.btn.primary {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 88%, #fff) 0%, var(--accent) 45%, var(--accent-strong) 100%);
+  color: var(--text-on-accent);
+  border-color: color-mix(in srgb, var(--accent-soft) 45%, transparent);
+  box-shadow: 0 8px 24px -10px color-mix(in srgb, var(--accent) 90%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* a slow light sweep across the primary control */
+.btn.primary::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  bottom: -50%;
+  left: -30%;
+  width: 24%;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.22), transparent);
+  transform: skewX(-18deg);
+  animation: shimmer 4.2s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 60% { left: -30%; }
+  100% { left: 130%; }
+}
+
+.btn.ghost {
+  background: transparent;
+}
+
+.field {
+  min-height: 44px;
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.65rem;
+  border: 1px solid var(--surface-edge);
+  background: color-mix(in srgb, var(--surface-ground) 80%, transparent);
+  color: var(--text-primary);
+}
+
+.field::placeholder {
+  color: color-mix(in srgb, var(--text-muted) 80%, transparent);
+}
+
+.field:focus {
+  outline: none;
+  border-color: var(--accent-soft);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.before-after {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.before-after figure {
+  margin: 0;
+  flex: 1 1 16rem;
+}
+
+.before-after img {
+  width: 100%;
+  border-radius: 0.6rem;
+  border: 1px solid var(--surface-edge);
+  display: block;
+}
+
+.before-after figcaption {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+/* ---- demo controls (mockup only, never app code): a dashed strip that
+   reads as scaffolding, kept out of the main composition ---- */
+.demo-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  align-items: center;
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  margin: 1.4rem 0 0;
+  padding: 0.45rem 0.6rem;
+  border: 1px dashed color-mix(in srgb, var(--text-muted) 45%, transparent);
+  border-radius: 0.5rem;
+}
+
+.demo-bar .tag {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 0.6rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 3px;
+  background: color-mix(in srgb, var(--text-muted) 25%, transparent);
+  color: var(--text-primary);
+}
+
+.demo-bar button {
+  font-size: 0.68rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--surface-edge);
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+
+.demo-bar button[aria-pressed="true"] {
+  color: var(--text-primary);
+  border-color: var(--accent-soft);
+}
+
+.foot-note {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 0.8rem;
+}
+
+/* round 10 ("I think there is only stuff cut off now due to the demo
+   buttons"): on a phone the demo strip and the foot-note no longer sit under
+   the screen pushing it past the fold. The strip folds into a small DEMO tab
+   at the foot's right corner (flow.js mounts it); a tap floats the strip over
+   the page, a second tap or Escape folds it away. The app screen alone fills
+   the phone, as it will in the build. Desktop is unchanged. */
+@media (max-width: 719px) {
+  .demo-bar, .foot-note { display: none; }
+  /* a slim tab on the right edge, clear of every foot control (New trade, the send pill) */
+  .demo-toggle {
+    position: fixed; right: 0; top: 62%; z-index: 60; writing-mode: vertical-rl;
+    font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 0.5rem 0.22rem; border-radius: 0.4rem 0 0 0.4rem; cursor: pointer;
+    border: 1px dashed color-mix(in srgb, var(--text-muted) 55%, transparent); border-right: 0;
+    background: rgba(9, 9, 11, 0.78); color: var(--text-muted); opacity: 0.7;
+  }
+  .demo-toggle[aria-expanded="true"] { color: var(--text-primary); border-style: solid; opacity: 1; }
+  body[data-demo-open="true"] .demo-bar {
+    display: flex; position: fixed; left: 0.6rem; right: 0.6rem; bottom: calc(2.4rem + env(safe-area-inset-bottom, 0px)); z-index: 59; margin: 0;
+    background: rgba(9, 9, 11, 0.94); box-shadow: 0 12px 30px -12px rgba(0, 0, 0, 0.9);
+  }
+}
+@media (min-width: 720px) { .demo-toggle { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .brand-mark .orb, .brand-mark img, .brand-mark svg, .tray-flair::after { animation: none; }
+  .tray-flair .flair-canvas { display: none; }
+  .btn.primary::after { display: none; }
+}

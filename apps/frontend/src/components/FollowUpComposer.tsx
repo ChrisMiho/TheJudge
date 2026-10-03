@@ -1,5 +1,5 @@
-import { useState, type FormEvent } from "react";
-import { SendIcon } from "./ComposerSubmitButton";
+import { useState } from "react";
+import { ComposerPill } from "./ComposerPill";
 
 const MAX_QUESTION_CHARS = 300;
 
@@ -8,47 +8,44 @@ type FollowUpComposerProps = {
   onSubmit: (text: string) => Promise<void>;
 };
 
+/**
+ * Look-matching pass (slice M, review 1 fix — finding 4): the follow-up box reuses
+ * `ComposerPill`, the same split mic/send pill and 300-character budget ring the
+ * main composer uses (`flow.css:187-274`), instead of its own hand-rolled row with
+ * two separate round mic/send circles and a "0/300" count line stacked above them
+ * (LOOK-GAPS.md's Ask a Question section, "Follow-up box": "The mockup uses the
+ * same split pill as the composer"). Behaviour is unchanged: the field's
+ * accessible name stays "Follow-up question", the send control's stays "Send", a
+ * blank submission is still blocked, the field still clears on send, and dictation
+ * still stops before submit (`ComposerPill`'s own `handleSubmit` already does
+ * this). `pendingLabel` repeats `submitLabel` so the send control's accessible
+ * name never changes while sending, matching this composer's existing contract.
+ */
 export function FollowUpComposer({ isSubmitting, onSubmit }: FollowUpComposerProps): JSX.Element {
   const [text, setText] = useState("");
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>): Promise<void> {
-    event.preventDefault();
+  function handleSubmit(): void {
     const trimmedText = text.trim();
     if (!trimmedText) return;
     setText("");
-    await onSubmit(trimmedText);
+    void onSubmit(trimmedText);
   }
 
   return (
-    <form
-      onSubmit={(event) => void handleSubmit(event)}
-      data-accent-current={false}
-      className="ambient-accent-surface ambient-accent-interactive flex items-center gap-2 rounded-full border border-zinc-700/70 bg-zinc-900/55 py-1.5 pl-4 pr-1.5"
-    >
-      <label className="flex min-w-0 flex-1 items-center">
-        <span className="sr-only">Follow-up question</span>
-        <textarea
-          aria-label="Follow-up question"
-          placeholder="Ask a follow-up…"
-          value={text}
-          onChange={(event) => setText(event.target.value.slice(0, MAX_QUESTION_CHARS))}
-          rows={1}
-          maxLength={MAX_QUESTION_CHARS}
-          disabled={isSubmitting}
-          className="min-w-0 flex-1 resize-none bg-transparent py-1.5 text-sm text-zinc-100 placeholder:text-zinc-500 focus:outline-none disabled:opacity-60"
-        />
-      </label>
-      <span className="shrink-0 text-xs text-zinc-500">
-        {text.length}/{MAX_QUESTION_CHARS}
-      </span>
-      <button
-        type="submit"
-        aria-label="Send"
-        disabled={isSubmitting || !text.trim()}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gradient-to-r from-accent to-accent-strong text-accent-contrast transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
-      >
-        {isSubmitting ? <span className="send-spinner" /> : <SendIcon />}
-      </button>
-    </form>
+    <ComposerPill
+      value={text}
+      onChange={setText}
+      onSubmit={handleSubmit}
+      maxLength={MAX_QUESTION_CHARS}
+      placeholder="Ask a follow-up…"
+      textareaAriaLabel="Follow-up question"
+      submitLabel="Send"
+      pendingLabel="Send"
+      isSubmitting={isSubmitting}
+      disabled={!text.trim()}
+      variant="followup"
+      surfaceClassName="ambient-accent-surface ambient-accent-interactive"
+      accentCurrent={false}
+    />
   );
 }

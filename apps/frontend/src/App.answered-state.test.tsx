@@ -21,10 +21,13 @@ import {
   getUrlFromRequest,
   normalizeHeaders,
   openStackBuilder,
+  openZoneCardSearch,
   selectCard,
   addCardToStack,
   clickDecryptStack,
   advanceToContextEnrichment,
+  installMemoryLocalStorage,
+  uninstallMemoryLocalStorage,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
@@ -82,12 +85,14 @@ describe("Adaptive frozen context in answered state", () => {
     await user.click(screen.getByRole("button", { name: "Add player" }));
     await user.click(screen.getByRole("button", { name: "Add player" }));
     await openStackBuilder(user);
+    await openZoneCardSearch(user, "Stack");
     await selectCard(user, "opt", "Opt");
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
     await advanceToContextEnrichment(user);
 
     await user.selectOptions(screen.getByLabelText("Caster for Opt"), "Player 4");
     await user.type(screen.getByLabelText("Mana spent for Opt"), "4");
+    await user.click(screen.getByRole("button", { name: "Add a note for Opt" }));
     await user.type(screen.getByLabelText("Context notes for Opt"), "Cast for alternate cost");
 
     await clickDecryptStack(user);
@@ -208,27 +213,35 @@ describe("Answered-state layout integration", () => {
     expect(await screen.findByText("Initial answer")).toBeInTheDocument();
   }
 
-  it("shows only the TheJudge header without MTG Assistant or Conversation heading", async () => {
+  it("shows the shared TheJudge header and an Ask a Question chat-head, without a Conversation heading", async () => {
     const user = userEvent.setup();
     await reachAnsweredState(user);
 
+    // Look-matching pass (slice N), requirement 10: the ruling now takes the shared
+    // `.app-header` (brand + tagline, same as every other destination) plus its own
+    // `.chat-head` "Ask a Question" — the old header that hid the tagline here alone is
+    // retired.
     expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
-    expect(screen.queryByText("MTG Assistant")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Conversation" })).not.toBeInTheDocument();
   });
 
-  it("renders the context trigger before the conversation thread in one shared workspace", async () => {
+  it("renders the context trigger in the chat head, before the conversation thread", async () => {
     const user = userEvent.setup();
     await reachAnsweredState(user);
 
+    // Look-matching pass (slice N, review 1 fix — finding 3), requirement 10: the
+    // "◈ View context" trigger now lives in the chat-head's own tools row,
+    // alongside Start Over, rather than inside the conversation workspace.
     const workspace = screen.getByTestId("conversation-workspace");
-    const trigger = within(workspace).getByRole("button", { name: /View context:/ });
+    const trigger = screen.getByRole("button", { name: /View context:/ });
     const firstAnswer = screen.getByText("Initial answer");
     expect(trigger.compareDocumentPosition(firstAnswer) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
       Node.DOCUMENT_POSITION_FOLLOWING
     );
     expect(within(workspace).getAllByRole("textbox", { name: "Follow-up question" })).toHaveLength(1);
-    expect(within(workspace).getAllByRole("button", { name: "Start Over" })).toHaveLength(1);
+    // Look-matching pass (slice N): Start Over is the chat-head's own round ↺ now,
+    // outside the conversation workspace (requirement 10) — see the dedicated test below.
   });
 
   it("appends follow-up bubbles below the context trigger without a waiting panel", async () => {
@@ -257,9 +270,56 @@ describe("Answered-state layout integration", () => {
     const user = userEvent.setup();
     await reachAnsweredState(user);
 
-    const startOver = screen.getByRole("button", { name: "Start Over" });
+    // Look-matching pass (slice N), requirement 10: Start Over is the chat-head's
+    // round ↺ now, not a text button under the follow-up box.
+    const startOver = screen.getByRole("button", { name: "Start over — clears everything" });
     expect(startOver).toBeInTheDocument();
     expect(startOver).toBeEnabled();
+  });
+
+  // REQ-209: the ruling's ✎ Edit renders beside View context and ↺ Start over, and mirrors Ask a
+  // Question's ✎ Edit cards — back to the review with the game context, every card's details and
+  // the question exactly as they were; the answered conversation leaves the screen already saved
+  // to Question History, and the next send starts a new conversation.
+  it("renders ✎ Edit beside View context and Start over, and returns to the review with everything kept", async () => {
+    const user = userEvent.setup();
+    installMemoryLocalStorage();
+    await reachAnsweredState(user);
+
+    const edit = screen.getByRole("button", { name: "Edit" });
+    expect(edit).toHaveClass("icon-chip");
+    const tools = edit.closest(".tools") as HTMLElement;
+    expect(within(tools).getByRole("button", { name: /View context:/ })).toBeInTheDocument();
+    expect(within(tools).getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
+
+    // The answered conversation is already in Question History before Edit leaves the screen.
+    const savedBefore = JSON.parse(localStorage.getItem("thejudge.conversationHistory.entries") ?? "[]") as Array<{
+      id: string;
+      visibleMessages: Array<{ content: string }>;
+    }>;
+    expect(savedBefore).toHaveLength(1);
+    expect(savedBefore[0]!.visibleMessages.some((message) => message.content === "Initial answer")).toBe(true);
+
+    await user.click(edit);
+
+    // The thread is gone; the review is back with the card, its details and the question kept.
+    expect(screen.queryByText("Initial answer")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /Context reviewed · 1 card/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit context for Opt" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeEnabled();
+    // The saved entry is untouched by leaving the screen.
+    expect(JSON.parse(localStorage.getItem("thejudge.conversationHistory.entries") ?? "[]")).toHaveLength(1);
+
+    // The next send starts a new conversation: a second history entry, not an overwrite.
+    queueAskAiResponses({ status: 200, body: { answer: "Second answer" } });
+    await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
+    expect(await screen.findByText("Second answer")).toBeInTheDocument();
+    const savedAfter = JSON.parse(localStorage.getItem("thejudge.conversationHistory.entries") ?? "[]") as Array<{
+      id: string;
+    }>;
+    expect(savedAfter).toHaveLength(2);
+    expect(new Set(savedAfter.map((entry) => entry.id)).size).toBe(2);
+    uninstallMemoryLocalStorage();
   });
 });
 });

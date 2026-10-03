@@ -57,6 +57,9 @@ function renderSide(overrides: Partial<TradeSideProps> = {}): { onAddByOracle: R
   render(
     <TradeSide
       sideId="A"
+      sideName="Side A"
+      onRenameSide={vi.fn()}
+      isActiveOnPhone
       entries={[]}
       cardMetadata={cardMetadata}
       searchIndex={searchIndex}
@@ -76,11 +79,23 @@ function renderSide(overrides: Partial<TradeSideProps> = {}): { onAddByOracle: R
   return { onAddByOracle };
 }
 
+/** Look-matching pass (slice O), requirement 8: the card search now opens
+ * from the "Add card" chip instead of sitting permanently visible — the same
+ * change slice M made to Ask a Question's own card search. A no-op once
+ * already open. */
+async function openSideSearch(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  if (screen.queryByLabelText("Side A card search")) {
+    return;
+  }
+  await user.click(screen.getByRole("button", { name: "Add card" }));
+}
+
 async function searchAndTapSuggestion(
   user: ReturnType<typeof userEvent.setup>,
   query: string,
   suggestionName: string
 ): Promise<void> {
+  await openSideSearch(user);
   const search = screen.getByLabelText("Side A card search");
   await user.type(search, query);
   await user.click(screen.getByRole("button", { name: suggestionName }));
@@ -144,12 +159,12 @@ describe("Frontend - Trade", () => {
       const pickerElement = await screen.findByRole("group", {
         name: "Choose a printing for Lightning Bolt"
       });
-      await user.click(within(pickerElement).getByRole("button", { name: /Magic 2010/ }));
+      await user.click(within(pickerElement).getByRole("button", { name: /Magic 2010 M10 nonfoil/ }));
 
-      expect(onAddByOracle).toHaveBeenCalledWith("A", "oracle-bolt", "Lightning Bolt", "bolt-m10");
+      expect(onAddByOracle).toHaveBeenCalledWith("A", "oracle-bolt", "Lightning Bolt", "bolt-m10", false);
     });
 
-    it("C3: Cancel returns to the search box with the query text intact and no card added", async () => {
+    it("C3: Cancel (the sheet's close control) returns to the search box with the query text intact and no card added", async () => {
       vi.stubGlobal(
         "fetch",
         vi.fn(() =>
@@ -162,10 +177,10 @@ describe("Frontend - Trade", () => {
       const { onAddByOracle } = renderSide();
 
       await searchAndTapSuggestion(user, "Light", "Lightning Bolt");
-      const pickerElement = await screen.findByRole("group", {
+      await screen.findByRole("group", {
         name: "Choose a printing for Lightning Bolt"
       });
-      await user.click(within(pickerElement).getByRole("button", { name: "Cancel" }));
+      await user.click(screen.getByRole("button", { name: "Cancel choosing a printing for Lightning Bolt" }));
 
       expect(
         screen.queryByRole("group", { name: "Choose a printing for Lightning Bolt" })

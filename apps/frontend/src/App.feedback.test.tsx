@@ -31,14 +31,14 @@ async function openFeedbackModal(user: ReturnType<typeof userEvent.setup>): Prom
 async function readAppStateSummary(
   user: ReturnType<typeof userEvent.setup>
 ): Promise<Record<string, string>> {
-  await user.click(screen.getByRole("button", { name: "Show app-state details" }));
+  await user.click(screen.getByRole("button", { name: /Show app-state details/ }));
   const summary = screen.getByTestId("feedback-app-state-summary");
 
-  return Array.from(summary.children).reduce<Record<string, string>>((lines, row) => {
-    const label = row.querySelector("dt")?.textContent;
-    const value = row.querySelector("dd")?.textContent;
-    if (label) {
-      lines[label] = value ?? "";
+  const terms = Array.from(summary.querySelectorAll("dt"));
+  const details = Array.from(summary.querySelectorAll("dd"));
+  return terms.reduce<Record<string, string>>((lines, term, index) => {
+    if (term.textContent) {
+      lines[term.textContent] = details[index]?.textContent ?? "";
     }
     return lines;
   }, {});
@@ -82,9 +82,11 @@ describe("Frontend - Feedback", () => {
         .getAllByRole("menuitem")
         .map((item) => item.getAttribute("aria-label"));
 
+      // REQ-067: one question door ("Ask a Question", not "Quick Question"), Question
+      // History as a Menu row, and `in-depth` with no row of its own.
       expect(entryLabels).toEqual([
-        "Quick Question",
-        "In-Depth Question",
+        "Ask a Question",
+        "Question History",
         "Life Tracker",
         "Trade Balancer",
         "Send feedback"
@@ -118,9 +120,10 @@ describe("Frontend - Feedback", () => {
       await user.click(screen.getByRole("button", { name: "Close feedback" }));
       await openPortalMenu(user);
 
-      expect(screen.getByRole("menuitem", { name: "In-Depth Question" })).toHaveAttribute(
+      // REQ-067: `in-depth` has no row of its own; "Ask a Question" reads current.
+      expect(screen.getByRole("menuitem", { name: "Ask a Question" })).toHaveAttribute(
         "aria-current",
-        "true"
+        "page"
       );
     });
 
@@ -129,12 +132,12 @@ describe("Frontend - Feedback", () => {
       render(<App />);
 
       await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-      expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeVisible();
+      expect(screen.getByRole("heading", { name: "Zones in play" })).toBeVisible();
 
       await openFeedbackModal(user);
       await user.click(screen.getByRole("button", { name: "Close feedback" }));
 
-      expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeVisible();
+      expect(screen.getByRole("heading", { name: "Zones in play" })).toBeVisible();
     });
 
     it("discloses the MTG Assistant's live flow slice at the step the modal was opened", async () => {
@@ -171,7 +174,7 @@ describe("Frontend - Feedback", () => {
       render(<App />);
 
       await openPortalMenu(user);
-      await user.click(screen.getByRole("menuitem", { name: "Quick Question" }));
+      await user.click(screen.getByRole("menuitem", { name: "Ask a Question" }));
 
       await openFeedbackModal(user);
       const summary = await readAppStateSummary(user);

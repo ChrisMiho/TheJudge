@@ -1,33 +1,59 @@
-import type { ReactNode } from "react";
-import { isMockProvider } from "../lib/env";
+import { useState, type ReactNode } from "react";
+import { useActiveThemeMotif } from "../hooks/useActiveThemeMotif";
+import { AmbientScene } from "./AmbientScene";
 import { MockModeBanner } from "./MockModeBanner";
-import { ShellBounds } from "./portal/ShellBounds";
+import { PageShellHeaderSlotContext } from "./pageShellContext";
 
 type PageShellProps = {
   children: ReactNode;
   /**
-   * "standard" (default) wraps children in the bordered, width-capped `.page-card`.
-   * "full-bleed" keeps the `.page-shell` background/mock-banner chrome but lets the
-   * caller's content use the full viewport width (e.g. a live tabletop life-table view).
+   * "standard" (default) wraps children in the width-capped `.page-content`
+   * column. "full-bleed" keeps the shell chrome but lets the caller's content
+   * use the full viewport width (Life Tracker's live table). "narrow": the
+   * same column at the mockup's 36rem cap (Ask a Question, In-depth details).
+   * "wide-fit": a 56rem column that fits the viewport instead of scrolling
+   * (Trade Balancer). "narrow-fit": the 36rem column with the same viewport
+   * fit (the scanner).
    */
-  variant?: "standard" | "full-bleed";
+  variant?: "standard" | "full-bleed" | "narrow" | "wide-fit" | "narrow-fit";
 };
 
+/**
+ * REQ-207 / REQ-216: the page shell in the mockup's DOM order — the colour's
+ * ambient scene (a fixed canvas behind everything), the header slot (the app
+ * header and mock-mode strip render here, at the top edge of the page, never
+ * inside the column's padding), then the `.page-content` column.
+ */
 export function PageShell({ children, variant = "standard" }: PageShellProps): JSX.Element {
+  const motif = useActiveThemeMotif();
+  const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+
   return (
-    <main className="page-shell" data-mock-banner={isMockProvider ? "true" : undefined}>
-      <MockModeBanner />
-      {variant === "full-bleed" ? (
-        <div className="page-shell-bleed">
-          {children}
-          <ShellBounds />
-        </div>
-      ) : (
-        <section className="page-card">
-          {children}
-          <ShellBounds />
-        </section>
-      )}
+    <main className={variant === "wide-fit" || variant === "narrow-fit" ? "page-shell page-shell-fit" : "page-shell"}>
+      <AmbientScene motif={motif} />
+      <div ref={setHeaderSlot} className="page-shell-header" />
+      <PageShellHeaderSlotContext.Provider value={headerSlot}>
+        {variant === "full-bleed" ? (
+          <div className="page-shell-bleed">
+            <MockModeBanner />
+            <div className="page-shell-bleed-content">{children}</div>
+          </div>
+        ) : (
+          <div
+            className={
+              variant === "narrow"
+                ? "page-content page-content-narrow"
+                : variant === "wide-fit"
+                  ? "page-content page-content-wide-fit"
+                  : variant === "narrow-fit"
+                    ? "page-content page-content-narrow page-content-narrow-fit"
+                    : "page-content"
+            }
+          >
+            {children}
+          </div>
+        )}
+      </PageShellHeaderSlotContext.Provider>
     </main>
   );
 }

@@ -24,7 +24,6 @@ import {
   expandPlayerDetails,
   selectTurnPhase,
   advancePastZoneConfirm,
-  openEnrichmentListView,
   advancePastZoneCollection,
   advanceToContextEnrichmentFromZones,
   advanceToZoneCollectionWithZones,
@@ -72,7 +71,7 @@ describe("Game setup and zone confirmation", () => {
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
 
-    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Zones in play" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Continue" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Back" })).toBeInTheDocument();
   });
@@ -147,7 +146,7 @@ describe("Game setup and zone confirmation", () => {
     render(<App />);
 
     expect(
-      screen.getByText("Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.")
+      screen.getByText("Who is playing, and where the turn is. Tap the arrow to name the players and set life — 2 players start at 20, 3+ at 40.")
     ).toBeInTheDocument();
     expect(
       screen.queryByText(["2 players start at 20", "life. 3+ players default to 40 life."].join(" "))
@@ -186,11 +185,9 @@ describe("Game setup and zone confirmation", () => {
     expect(within(casterSelect).getByRole("option", { name: "Player 1 (Alice)" })).toHaveValue("Player 1");
     await user.selectOptions(casterSelect, "Player 2");
 
-    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "player");
-    const targetSelect = screen.getByLabelText("Player target for Opt");
-    expect(within(targetSelect).getByRole("option", { name: "Player 2 (Bob)" })).toHaveValue("Player 2");
-    await user.selectOptions(targetSelect, "Player 1");
-    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    const targetSelect = screen.getByLabelText("Add a target for Opt");
+    expect(within(targetSelect).getByRole("option", { name: "Player 2 (Bob)" })).toHaveValue("player:Player 2");
+    await user.selectOptions(targetSelect, "player:Player 1");
     expect(screen.getByText("Player: Player 1 (Alice)")).toBeInTheDocument();
 
     await clickDecryptStack(user);
@@ -273,7 +270,7 @@ describe("Zone collection UI", () => {
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     await advancePastZoneConfirm(user);
 
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeInTheDocument();
   });
 
   it("preserves stack order bottom-to-top and shows enrichment counts", async () => {
@@ -286,17 +283,18 @@ describe("Zone collection UI", () => {
     await addCardToActiveZone(user, "opt", "Opt");
     await addCardToActiveZone(user, "lig", "Lightning Bolt");
     await selectZoneTab(user, "Stack");
-    expect(screen.getByText("bottom")).toBeInTheDocument();
-    expect(screen.getByText("top")).toBeInTheDocument();
+    // REQ-008/REQ-209: the Stack's shelf tags read BOTTOM … TOP.
+    expect(screen.getByText("BOTTOM")).toBeInTheDocument();
+    expect(screen.getByText("TOP")).toBeInTheDocument();
 
     await selectZoneTab(user, "Hand");
     await selectZoneTab(user, "Battlefield");
     await addCardToActiveZone(user, "lig", "Lightning Bolt");
 
     await advancePastZoneCollection(user);
-    await openEnrichmentListView(user);
     expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "OK — next card" }));
     expect(screen.getByLabelText("Caster for Lightning Bolt")).toBeInTheDocument();
   });
 
@@ -317,7 +315,8 @@ describe("Zone collection UI", () => {
     await advancePastZoneConfirm(user);
 
     await selectZoneTab(user, "Hand");
-    expect(screen.getByRole("button", { name: "Remove Opt from Hand" })).toBeInTheDocument();
+    // REQ-008/REQ-209: Remove lives in the card menu a tap on the card opens.
+    expect(screen.getByRole("button", { name: "Card actions for Opt" })).toBeInTheDocument();
   });
 
   it("shows waiting panel while submitting and hides the submit form", async () => {

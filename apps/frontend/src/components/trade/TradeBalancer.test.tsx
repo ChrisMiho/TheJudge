@@ -70,19 +70,34 @@ function makeFetchMock(
   });
 }
 
-async function renderBalancer(): Promise<void> {
-  render(<TradeBalancer />);
-  await waitFor(() => {
-    expect(screen.getByLabelText("Side A card search")).not.toBeDisabled();
-  });
-}
-
 function side(sideId: "A" | "B"): HTMLElement {
   return screen.getByRole("region", { name: `Side ${sideId}` });
 }
 
+async function renderBalancer(): Promise<void> {
+  render(<TradeBalancer />);
+  await waitFor(() => {
+    expect(within(side("A")).getByRole("button", { name: "Add card" })).not.toBeDisabled();
+  });
+}
+
 function sideTotalText(sideId: "A" | "B"): string {
   return within(side(sideId)).getByLabelText(`Side ${sideId} total`).textContent ?? "";
+}
+
+/** Look-matching pass (slice O), requirement 8: the card search now opens
+ * from the "Add card" chip instead of sitting permanently visible — the same
+ * change slice M made to Ask a Question's own card search. A no-op once
+ * already open, so a sequence of several adds takes one open, not one per
+ * card. */
+async function openSideSearch(
+  user: ReturnType<typeof userEvent.setup>,
+  sideId: "A" | "B"
+): Promise<void> {
+  if (within(side(sideId)).queryByLabelText(`Side ${sideId} card search`)) {
+    return;
+  }
+  await user.click(within(side(sideId)).getByRole("button", { name: "Add card" }));
 }
 
 /** Manual path (Slice C: pick-before-add): search a card by name, tap its
@@ -95,21 +110,48 @@ async function addCard(
   sideId: "A" | "B",
   cardName: string
 ): Promise<void> {
+  await openSideSearch(user, sideId);
   const search = within(side(sideId)).getByLabelText(`Side ${sideId} card search`);
   await user.clear(search);
   await user.type(search, cardName.slice(0, 5));
   await user.click(within(side(sideId)).getByRole("button", { name: new RegExp(`^${cardName}`) }));
 
-  const pickerElement = await within(side(sideId)).findByRole("group", {
+  // The printing picker now hosts on the shared SheetShell (REQ-065/REQ-208),
+  // portaled to document.body — it is not a DOM descendant of the side
+  // section, so these queries are document-wide (`screen`), not `within`.
+  const pickerElement = await screen.findByRole("group", {
     name: `Choose a printing for ${cardName}`
   });
   const [firstRow] = within(pickerElement).getAllByRole("listitem");
-  await user.click(within(firstRow).getByRole("button"));
+  await user.click(within(firstRow).getByRole("button", { name: /nonfoil/i }));
 
   await waitFor(() => {
     expect(
-      within(side(sideId)).queryByRole("group", { name: `Choose a printing for ${cardName}` })
+      screen.queryByRole("group", { name: `Choose a printing for ${cardName}` })
     ).not.toBeInTheDocument();
+    expect(within(side(sideId)).queryByText("Loading price…")).not.toBeInTheDocument();
+  });
+}
+
+/** Like `addCard`, but picks a named printing and finish in the pre-add picker. */
+async function addCardWith(
+  user: ReturnType<typeof userEvent.setup>,
+  sideId: "A" | "B",
+  cardName: string,
+  printingLabel: RegExp,
+  finish: "nonfoil" | "foil"
+): Promise<void> {
+  await openSideSearch(user, sideId);
+  const search = within(side(sideId)).getByLabelText(`Side ${sideId} card search`);
+  await user.clear(search);
+  await user.type(search, cardName.slice(0, 5));
+  await user.click(within(side(sideId)).getByRole("button", { name: new RegExp(`^${cardName}`) }));
+  const pickerElement = await screen.findByRole("group", { name: `Choose a printing for ${cardName}` });
+  await user.click(
+    within(pickerElement).getByRole("button", { name: new RegExp(`${printingLabel.source}.* ${finish}$`, "i") })
+  );
+  await waitFor(() => {
+    expect(screen.queryByRole("group", { name: `Choose a printing for ${cardName}` })).not.toBeInTheDocument();
     expect(within(side(sideId)).queryByText("Loading price…")).not.toBeInTheDocument();
   });
 }
@@ -119,12 +161,17 @@ async function changePrinting(
   user: ReturnType<typeof userEvent.setup>,
   sideId: "A" | "B",
   cardName: string,
-  printingLabel: string | RegExp
+  printingLabel: string | RegExp,
+  finish: "nonfoil" | "foil" = "nonfoil"
 ): Promise<void> {
   await user.click(
     within(side(sideId)).getByLabelText(new RegExp(`^Change printing for ${cardName}`))
   );
-  await user.click(within(side(sideId)).getByRole("button", { name: printingLabel }));
+  // Portaled to document.body (SheetShell) — document-wide query.
+  const row = screen.getByRole("button", {
+    name: new RegExp(`${printingLabel instanceof RegExp ? printingLabel.source : printingLabel}.*${finish}`, "i")
+  });
+  await user.click(row);
 }
 
 describe("Frontend - Trade", () => {
@@ -166,20 +213,20 @@ describe("Frontend - Trade", () => {
 
       await renderBalancer();
 
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Even trade");
-      expect(screen.getByLabelText("Side A card search")).not.toBeDisabled();
+      expect(screen.getByText("Add cards to weigh the trade")).toBeInTheDocument();
+      expect(within(side("A")).getByRole("button", { name: "Add card" })).not.toBeDisabled();
       expect(screen.queryByRole("alert")).not.toBeInTheDocument();
     });
 
-    it("shows a loading state for the card list, then an even trade with no snapshot line yet", async () => {
+    it("shows a loading state for the card list, then the empty-trade state with no snapshot line yet", async () => {
       render(<TradeBalancer />);
 
       expect(screen.getByText("Loading card list…")).toBeInTheDocument();
 
       await waitFor(() => {
-        expect(screen.getByLabelText("Side A card search")).not.toBeDisabled();
+        expect(within(side("A")).getByRole("button", { name: "Add card" })).not.toBeDisabled();
       });
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Even trade");
+      expect(screen.getByText("Add cards to weigh the trade")).toBeInTheDocument();
       // Nothing has been priced yet — no bulk price snapshot to report.
       expect(screen.queryByText(/^Prices as of /)).not.toBeInTheDocument();
     });
@@ -191,17 +238,20 @@ describe("Frontend - Trade", () => {
       await addCard(user, "A", "Lightning Bolt");
 
       const entry = within(side("A")).getByRole("listitem");
-      expect(entry).toHaveTextContent("Unlimited Edition (2ED) #162");
+      expect(entry).toHaveTextContent("Unlimited Edition · 2ED");
       expect(sideTotalText("A")).toBe("$10.00");
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent(
-        "Side A is ahead by $10.00"
-      );
+      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Side A +$10.00");
       await waitFor(() => {
-        expect(screen.getByText("Prices as of 5 June 2026")).toBeInTheDocument();
+        // Shown twice (REQ-215): the header's right-hand slot at 768px+ and
+        // under the title below it — jsdom renders both regardless of
+        // viewport, so this asserts on all copies rather than exactly one.
+        expect(screen.getAllByText("Prices as of 5 June 2026").length).toBeGreaterThan(0);
       });
     });
 
-    it("allows duplicates: adding the same card twice counts both entries", async () => {
+    // REQ-215: adding a card whose printing and finish match a row already on the side raises that
+    // row's quantity; a different printing or finish is its own row; totals are the unmerged sum.
+    it("merges a repeat add of the same printing and finish into one row with quantity 2", async () => {
       const user = userEvent.setup();
       await renderBalancer();
 
@@ -210,8 +260,33 @@ describe("Frontend - Trade", () => {
 
       expect(
         within(side("A")).getAllByRole("button", { name: /^Remove Lightning Bolt/ })
-      ).toHaveLength(2);
+      ).toHaveLength(1);
+      expect(within(side("A")).getByLabelText("Quantity for Lightning Bolt (Side A)")).toHaveTextContent("2");
       expect(sideTotalText("A")).toBe("$20.00");
+    });
+
+    it("keeps a different finish or printing as its own row, and merges only the exact match", async () => {
+      const user = userEvent.setup();
+      await renderBalancer();
+
+      await addCardWith(user, "A", "Lightning Bolt", /Magic 2010/, "nonfoil");
+      await addCardWith(user, "A", "Lightning Bolt", /Magic 2010/, "foil");
+      expect(
+        within(side("A")).getAllByRole("button", { name: /^Remove Lightning Bolt/ })
+      ).toHaveLength(2);
+      expect(sideTotalText("A")).toBe("$29.00");
+
+      await addCardWith(user, "A", "Lightning Bolt", /Unlimited Edition/, "nonfoil");
+      expect(
+        within(side("A")).getAllByRole("button", { name: /^Remove Lightning Bolt/ })
+      ).toHaveLength(3);
+      expect(sideTotalText("A")).toBe("$39.00");
+
+      // The exact match merges into the first Magic 2010 nonfoil row, which keeps its place.
+      await addCardWith(user, "A", "Lightning Bolt", /Magic 2010/, "nonfoil");
+      const quantities = within(side("A")).getAllByLabelText("Quantity for Lightning Bolt (Side A)");
+      expect(quantities.map((quantity) => quantity.textContent)).toEqual(["2", "1", "1"]);
+      expect(sideTotalText("A")).toBe("$43.00");
     });
 
     it("updates totals and difference live on foil, quantity, and remove", async () => {
@@ -221,9 +296,7 @@ describe("Frontend - Trade", () => {
       await addCard(user, "A", "Lightning Bolt");
       await addCard(user, "B", "Black Lotus");
 
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent(
-        "Side B is ahead by $20.00"
-      );
+      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Side B +$20.00");
 
       await user.click(
         within(side("A")).getByLabelText("Toggle foil for Lightning Bolt (Side A)")
@@ -246,9 +319,7 @@ describe("Frontend - Trade", () => {
 
       await user.click(within(side("B")).getByLabelText("Remove Black Lotus (Side B)"));
       expect(sideTotalText("B")).toBe("$0.00");
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent(
-        "Side A is ahead by $10.00"
-      );
+      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Side A +$10.00");
     });
 
     it("flags a missing selected-mode price and counts it as $0", async () => {
@@ -268,7 +339,7 @@ describe("Frontend - Trade", () => {
         within(entry).getByLabelText("No foil price for Lightning Bolt")
       ).toBeInTheDocument();
       const contribution = within(entry).getByTestId("entry-contribution");
-      expect(contribution).toHaveClass("text-amber-300");
+      expect(contribution).toHaveClass("missing");
       expect(contribution).toHaveTextContent("$0.00");
       expect(sideTotalText("A")).toBe("$0.00");
     });
@@ -330,26 +401,30 @@ describe("Frontend - Trade", () => {
       await user.click(
         within(side("A")).getByLabelText("Change printing for Lightning Bolt (Side A)")
       );
-      const pickerElement = within(side("A")).getByRole("group", {
+      const pickerElement = screen.getByRole("group", {
         name: "Choose a printing for Lightning Bolt"
       });
       const picker = within(pickerElement);
 
-      const unlimitedOption = picker.getByRole("button", { name: /Unlimited Edition \(2ED\) #162/ });
-      expect(unlimitedOption.querySelector("img")).toHaveAttribute(
+      // Look-matching pass (slice O): each row's set name and "code · #collector"
+      // now sit in separate elements (`.tb-printing-set-name` + a nested
+      // `<small>`, `trade-balancer.html`'s own printing-row shape) rather than
+      // one combined "Set (CODE) #n" string — match by the set name alone.
+      const unlimitedRow = picker.getByText(/Unlimited Edition/).closest("li");
+      expect(unlimitedRow?.querySelector("img")).toHaveAttribute(
         "src",
         deriveCardImageUrl("bolt-2ed")
       );
 
-      const magicOption = picker.getByRole("button", { name: /Magic 2010 \(M10\) #146/ });
-      expect(magicOption.querySelector("img")).toHaveAttribute(
+      const magicRow = picker.getByText(/Magic 2010/).closest("li");
+      expect(magicRow?.querySelector("img")).toHaveAttribute(
         "src",
         deriveCardImageUrl("bolt-m10")
       );
       // Two distinct printings of the same card render two distinct images —
       // the image, not just text, disambiguates them.
-      expect(unlimitedOption.querySelector("img")?.getAttribute("src")).not.toBe(
-        magicOption.querySelector("img")?.getAttribute("src")
+      expect(unlimitedRow?.querySelector("img")?.getAttribute("src")).not.toBe(
+        magicRow?.querySelector("img")?.getAttribute("src")
       );
     });
 
@@ -365,9 +440,13 @@ describe("Frontend - Trade", () => {
       await renderBalancer();
       await addCard(user, "A", "Lightning Bolt");
 
-      const freshness = await screen.findByText(/^Prices as of /);
-      expect(freshness).toHaveTextContent("Prices as of 5 June 2026");
-      expect(freshness.textContent).not.toMatch(/T22:21:13\.248Z|\d{2}:\d{2}|Z$/);
+      // Shown twice (REQ-215: header slot at 768px+, below the title under it).
+      const freshnessCopies = await screen.findAllByText(/^Prices as of /);
+      expect(freshnessCopies.length).toBeGreaterThan(0);
+      for (const freshness of freshnessCopies) {
+        expect(freshness).toHaveTextContent("Prices as of 5 June 2026");
+        expect(freshness.textContent).not.toMatch(/T22:21:13\.248Z|\d{2}:\d{2}|Z$/);
+      }
     });
 
     it("degrades safely when the snapshot value is unparseable, leaving pricing intact", async () => {
@@ -403,8 +482,11 @@ describe("Frontend - Trade", () => {
       const alert = await screen.findByRole("alert");
       expect(alert).toHaveTextContent("The card list is unavailable right now.");
       expect(alert).toHaveTextContent("500");
-      expect(screen.getByLabelText("Trade difference")).toHaveTextContent("Even trade");
-      expect(screen.getByLabelText("Side A card search")).toBeDisabled();
+      expect(screen.getByText("Add cards to weigh the trade")).toBeInTheDocument();
+      // Look-matching pass (slice O): the search field is now collapsed
+      // behind the "Add card" chip (requirement 8) — a failed card-list load
+      // disables that chip itself, same gate the field had before.
+      expect(within(side("A")).getByRole("button", { name: "Add card" })).toBeDisabled();
     });
 
     it("degrades a failed price fetch to $0-plus-caution with a retry affordance, and retrying re-fetches", async () => {
@@ -431,6 +513,7 @@ describe("Frontend - Trade", () => {
       const user = userEvent.setup();
       await renderBalancer();
 
+      await openSideSearch(user, "A");
       const search = within(side("A")).getByLabelText("Side A card search");
       await user.type(search, "Light");
       await user.click(within(side("A")).getByRole("button", { name: /^Lightning Bolt/ }));

@@ -9,9 +9,9 @@
 - Main Flow:
   1. Game setup: user sets player count, active player when known, and turn phase via dropdown; turn phase is required and defaults to **main_1**. The expandable **Players in game** panel renders each active player as a compact card with display name and life visible. A secondary-details arrow on every player card controls one synchronized state: activating any arrow expands or collapses Poison, Energy, Experience, Commander damage, and named counters for all active players. Active player and downstream player selects show display names as `Player N (Name)` when set. Turn phase and active player appear in one merged panel; the cat-wizard hero image is hidden until the user taps the brand mark 10 times, counted session-wide across every in-scope screen rather than only on this step (session-only reveal; REQ-203).
   2. Zone confirmation: app preselects likely zones from the turn phase; user adjusts the checklist; at least one zone is required to continue.
-  3. Per-zone collection: for each selected zone, user may add card identities from local search; non-stack cards capture owner; stack cards are ordered bottom-to-top. Added cards appear in a horizontal left-to-right strip in add order with horizontal region scroll. An available uncropped card image sizes to the container its host affords (DEC-160) rather than to a fixed compact cap; a corner detail control opens a dismissible popup that fetches oracle/metadata on demand by oracle id (FLOW-024). If the image is unavailable, the fallback shows the locally available identity (the card name) directly, and opening the popup still fetches the detail. Remove and stack position remain available. Each complete tile has a restrained ring derived from the card's existing colors, with a light silver-gray treatment for colorless/missing colors. While scan is open, search and the card list are hidden; user exits scan to return to manual search.
-  4. Enrichment: default card-by-card wizard (OK advances); optional **View all cards** for full-list edit with per-zone internal scrolling; user may add caster, targets, notes, and mana spent where relevant. In both modes, the same container-relative image + corner detail popup presentation appears above full-width enrichment fields (DEC-160); the popup's descriptive fields load on demand (FLOW-024). The complete image-bearing or fallback card row uses the same identity-ring treatment as zone collection.
-  5. Submit: user enters an optional question, clicks **Send Request** on the initial decrypt control, and the frontend sends `question` plus `gameContext` to the backend.
+  3. Cards: for each selected zone, user may add card identities by search or scan, and cards carried from Ask a Question are placed into a zone one at a time (or left out); non-stack cards capture owner; stack cards are ordered bottom-to-top, appended on add and reorderable by drag or Down / Up / To top (REQ-005, REQ-209). Cards appear on a lit horizontal shelf per zone tab with horizontal region scroll; an available uncropped card image sizes to the container its host affords (DEC-160); a tap opens the card's menu (Move to · order · Card details · Remove), and its detail opens in the shared sheet with descriptive fields fetched on demand by oracle id (FLOW-024). If the image is unavailable, the fallback shows the card name. Each complete tile keeps a restrained ring derived from the card's colors, light silver-gray for colorless/missing colors. While scan is open, search and the shelf are hidden; the user exits scan with its ✕ to return.
+  4. Context: one compact sheet per card (REQ-017) — owner, cast by, mana spent where relevant, one Targets picker, and a folded note — then a review listing each card's context in words with ✎ to jump back. The card's image uses the container-relative presentation with the corner detail control, and the complete image-bearing or fallback card row keeps the same identity-ring treatment as the shelf.
+  5. Submit: user enters an optional question and taps the send pill inside the question box (REQ-132, REQ-206), and the frontend sends `question` plus `gameContext` to the backend.
   6. Backend builds the prompt and returns a plain-text answer.
   7. Frontend displays the answer in the shared chat-first conversation workspace; frozen game context is available through the adaptive read-only context trigger/sheet/drawer and follow-ups continue through FLOW-005.
 - Edge Cases:
@@ -40,6 +40,7 @@
   - compact synchronized player-secondary disclosure (DEC-120, REQ-100) changes only the visibility of existing player inputs; submitted game context is unchanged for unchanged values
   - player-details containment/alignment (DEC-128, REQ-106) is presentation-only and does not change disclosure semantics or payloads
   - desktop shell width (DEC-145, REQ-124), pre-submit composer composition (DEC-146 / DEC-153, REQ-121 / REQ-132), and card density (DEC-151, REQ-125 / REQ-128–130) are presentation-only and change no step logic or payload
+  - amended for the `ui-reimagining-build` pass (2026-09-30): steps 1–4 are In-depth details' stations Game · Zones · Cards · Context (REQ-209); step 1's players panel uses one shared "More details for all players" toggle (REQ-100 as amended)
 
 ### FLOW-002
 - Name: Inspect and remove cards from selected zones
@@ -99,7 +100,7 @@
 - Preconditions:
   - first decrypt has succeeded and the conversation thread is showing
 - Main Flow:
-  1. User enters the shared chat-first workspace with the assistant's first answer visible in the message log.
+  1. User enters the shared chat-first workspace with their own question shown first (REQ-025 as amended), then the assistant's first answer, in the message log.
   2. User may open the compact Game context trigger to inspect the full frozen read-only context in a bottom sheet below `768px` or right-side drawer at `768px+`, then close it and return focus to the trigger.
   3. User reads the assistant's answer in the accessible conversation log.
   4. User types a follow-up in the chat composer (up to 300 characters) and clicks Send.
@@ -110,14 +111,14 @@
   9. Send button is restored; user can send another follow-up.
 - Edge Cases:
   - if the follow-up request fails, the error is shown and a retry button is presented; retry resubmits the failed follow-up with the same frozen context and history
-  - if the user clicks start over, the conversation thread is cleared, enrichment editing is unfrozen, previously entered context is preserved, and the pre-decrypt enrichment state is restored
+  - if the user clicks start over, the conversation thread and staged zones/cards/question/phase are cleared, the player roster is preserved, and the player lands on a clean Ask a Question page (REQ-029 as amended, REQ-206); In-depth details' next walk starts at station 1
   - start over is not available while a request is in flight
   - if history chars exceed `MAX_CONVERSATION_HISTORY_CHARS` (6000), oldest turns are truncated before the prompt is assembled
   - when the backend is running in mock mode, the assistant bubble still appends in the same chat thread and its answer contains the exact assembled LLM-facing prompt for that submitted user message
   - while the reader is farther than 64px from the bottom, incoming messages never force-scroll; activating New response scrolls to and places keyboard focus on the newest assistant message without clearing any composer draft
 - Notes:
   - game context, zones, cards, and enrichment are frozen for the duration of the conversation; follow-ups are text-only in v1
-  - the initial user question (including fallback) is included in `conversationHistory` sent to the API but is not shown as a visible bubble in the thread
+  - the initial user question (including fallback) is included in `conversationHistory` sent to the API and is shown as the first, right-aligned bubble in the thread (REQ-025 as amended)
   - the answered-state screen keeps the top header slim and uses the compact context trigger plus adaptive overlay so the message log remains primary (DEC-118, REQ-097, REQ-098)
 
 ### FLOW-006
@@ -130,31 +131,31 @@
 - Main Flow:
   1. Camera opens as its own screen with a card-shaped guide overlay and stays open for the session.
   2. The scanner auto-scans continuously; a manual capture button is always available. A live convergence indicator shows `searching`, then `locking` on a named card with a progress/confidence cue as evidence accumulates (DEC-057). While searching under poor conditions, the indicator surfaces a cause-aware hint derived from per-frame quality signals — e.g. "too much glare — tilt the card", "hold steady", "move closer" — to guide the user toward a lockable frame (DEC-062). Behind the scenes the query frame is conditioned (glare suppression, auto-contrast, white-balance) and the best frame in the window is preferred for hashing so a card locks without needing a perfect angle.
-  3. As the scanner enters the `locking` state (a confident leader accumulating votes), an affirmative outline is drawn on the detected card in the viewfinder as a positive "you're close — hold this angle" alignment cue; it clears if the scanner drops back to `searching` (DEC-083). Once one card is consistently the best over a short window with high confidence, it **locks in** and is **auto-added** to the current zone via the existing add path (owner via the sticky owner selector, duplicate-stack block, stack-size limit, `ZoneCardItem` output) — no Accept tap and no selecting from a list (DEC-056).
-  4. A thumbs-up confirmation popup fades in and out and a short "ding" plays (on by default; a top-left mute toggle silences the sound only, not the popup); auto-scan immediately resumes for the next card and the scan review bubble shows the running count of cards added this session (DEC-058, DEC-057, DEC-061).
-  5. To remove a wrong auto-add, the user taps the scanned-cards bubble in the top-right. Its viewport-capped 320px panel lists each card with the shared container-relative image + corner detail popup presentation and a persistent Remove control. An available uncropped image grows to its list-row width (DEC-160) without displacing the camera chrome; the corner control opens a popup whose descriptive fields are fetched on demand by oracle id (FLOW-024) when opened and the network allows, degrading gracefully offline; if the image is unavailable, the fallback shows the card name only, with no fetch triggered by image failure. Each complete entry has the same restrained identity ring used by zone collection and enrichment. Long sessions scroll inside the panel. The user removes the card in one tap (no confirmation) without leaving the camera (DEC-058, DEC-078, DEC-151).
-  6. User repeats as needed, then taps **Exit scan** (top-right on the camera surface) to return to zone collection and pick another zone or move forward in the flow; normal staged-flow navigation/actions return only after scan closes.
+  3. As the scanner enters the `locking` state (a confident leader accumulating votes), an affirmative outline is drawn on the detected card in the viewfinder as a positive "you're close — hold this angle" alignment cue; it clears if the scanner drops back to `searching` (DEC-083). Once one card is consistently the best over a short window with high confidence, it **locks in** and **joins the scanner's own holding list** — not the zone's own card list yet (REQ-214). The same duplicate-stack/stack-size check the existing add path applies on a manual add runs now, the instant the card is recognised, against the zone's current cards and anything already held; a blocked card is not held (see Edge Cases) — no Accept tap and no selecting from a list (DEC-056, REQ-214).
+  4. A thumbs-up confirmation popup fades in and out and a short "ding" plays (on by default; a top-left mute toggle silences the sound only, not the popup); auto-scan immediately resumes for the next card and the top-right count pill shows the running count of cards held this session (DEC-058, DEC-057, DEC-061, REQ-214).
+  5. To drop a wrongly held card before it joins the zone, the user taps the count pill in the top-right. Its viewport-capped 320px panel lists each held card with the shared container-relative image + corner detail popup presentation and a persistent Remove control, and its foot names the zone the list will join when the scanner closes. An available uncropped image grows to its list-row width (DEC-160) without displacing the camera chrome; the corner control opens a popup whose descriptive fields are fetched on demand by oracle id (FLOW-024) when opened and the network allows, degrading gracefully offline; if the image is unavailable, the fallback shows the card name only, with no fetch triggered by image failure. Each complete entry has the same restrained identity ring used by zone collection and enrichment. Long sessions scroll inside the panel. The user drops the card from the holding list in one tap (no confirmation) without leaving the camera — nothing is added to the zone for it (DEC-058, DEC-078, DEC-151, REQ-214). A caution control beside the pill opens a one-line note that scanning is experimental.
+  6. User repeats as needed, then taps **Exit scan** — a square ✕ box above the camera's top-right corner (REQ-214) — which commits every card still in the holding list to the zone, in hold order, through the existing add path (owner via the sticky owner selector, `ZoneCardItem` output), in one step, then returns to zone collection to pick another zone or move forward in the flow; normal staged-flow navigation/actions return only after scan closes.
 - Edge Cases:
-  - lock/convergence thresholds are tuned to lock readily on a clearly-leading card while retaining the runner-up margin guard; rare wrong auto-adds are acceptable because they are removable in one tap, and an ambiguous frame keeps searching rather than committing (DEC-059, DEC-058)
+  - lock/convergence thresholds are tuned to lock readily on a clearly-leading card while retaining the runner-up margin guard; a rare wrongly-held card is acceptable because it is removable from the holding list in one tap before it ever reaches the zone, and an ambiguous frame keeps searching rather than committing (DEC-059, DEC-058, REQ-214)
   - if no confident match, keep auto-scanning with manual capture available; manual search is reached by exiting scan — the in-scan low-confidence manual-search escalation prompt is not shown (DEC-076)
   - under glare/gloss, uneven or dim lighting, camera shake, or finger occlusion, the query is conditioned and the best frame is selected so the true card's hash distance drops below the lock gate; the gate itself is held (DEC-059 values) — robustness comes from a cleaner query, not a looser gate (DEC-062)
   - finger occlusion is treated as a frame-quality penalty (the scanner prefers an unoccluded frame); there is no masked/partial-region matching (DEC-062)
   - card-back detection is descoped from the shipped UX (no canonical reference asset); a scanned card back falls through to the normal low-confidence path (DEC-055)
-  - if a scanned card would duplicate a card already in the stack, the existing duplicate block applies and a non-blocking notice is shown while scanning continues (`FLOW-004`, DEC-056)
-  - if the stack already has 10 cards, additional adds are blocked (same as manual) with a non-blocking notice while scanning continues
+  - if a scanned card would duplicate a card already in the stack (counting both the stack's own cards and anything already held but not yet committed), the existing duplicate block applies the instant the card is recognised, the card is not held, and a non-blocking notice is shown while scanning continues (`FLOW-004`, DEC-056, REQ-214)
+  - if the stack already has 10 cards (counting the same way), additional recognitions are blocked at hold time (same as manual) with a non-blocking notice while scanning continues (REQ-214)
   - if camera permission is denied or unavailable, fall back to manual search and surface the reason
   - stack cards are added in scan order, bottom-to-top; manual reorder remains out of scope (`FLOW-002`)
   - the preview and the added card's thumbnail show the **scanned printing's** art, not the oracle-level representative image, so the on-screen art matches the physical card; if the scanned printing has no image in the bridge, it falls back to the oracle-level image (DEC-070)
-  - if neither the selected printing image nor its oracle-level fallback can load, including while offline, the scan review entry shows the name-only fallback (the locally available card name) with no broken-image icon, no additional fetch triggered by the image failure, and no loss of the Remove control — the surface stays fully usable offline (DEC-078 preserved)
+  - if neither the selected printing image nor its oracle-level fallback can load, including while offline, the held-card entry shows the name-only fallback (the locally available card name) with no broken-image icon, no additional fetch triggered by the image failure, and no loss of the Remove control — the surface stays fully usable offline (DEC-078 preserved)
   - on hard captures (ornate/etched-foil/full-art printings, a card whose border barely contrasts the play surface, or a card **held up to the camera, tilted and finger-occluded, against a cluttered background**) the detector raises its recall to still lock the 4-corner outline; detection is **biased toward the on-screen card-shaped guide** the user aligns to, so background clutter outside the guide does not win selection, and the searching-state copy actively coaches the easy regime (fill the guide, flat contrasting surface, fingers off the edges); if it persistently cannot find a card, the scan surfaces a condition-aware nudge rather than a silent `no-card`, and manual search stays available — the stabilizer lock gate is unchanged so looser detection does not cause wrong auto-adds (DEC-072, DEC-073)
   - while the opt-in debug overlay is enabled, the **Capture** button additionally exports the exact failing camera frame for detector tuning; with the overlay off (default) this is invisible and Capture behaves normally (DEC-072, DEC-065)
   - the camera is opened in a higher-resolution capture mode (continuous autofocus where supported, graceful fallback) so the warp reads a sharper source and a card locks across a wider range of distances and lighting instead of only a narrow sweet spot; once a frame is good enough to lock the searching indicator shows a positive "good — hold steady" cue so the user can find and hold the lockable zone, and the matching recipe/bin/identify/lock boundary is unchanged (DEC-074)
   - scanner acquisition is validated against both the hard Mac-webcam baseline and a stand-assisted controlled setup when available; this is a QA/diagnostic matrix, not a different user mode, and failures should identify the blocking stage before more tuning is baked in (DEC-077)
 - Notes:
   - scanning is an optional alternate input path (DEC-050); manual search remains the default and a permanent fallback
-  - scan-review image sizing, panel layout, and identity ring are presentation only (DEC-078, REQ-058); the counter, removal, and scan loop behavior are unchanged
-  - each auto-added card is an independent instance keyed on `instanceId`; scanning the same card twice into a non-stack zone yields two scan-review entries, and one-tap removal targets only the chosen instance (DEC-082, REQ-061)
-  - while scan is open, zone-collection search, the card list, and outer staged-flow navigation/action buttons are hidden; scan-local controls including **Capture** remain available, and **Exit scan** is the path back to manual search or normal flow navigation (DEC-076)
+  - held-card image sizing, panel layout, and identity ring are presentation only (DEC-078, REQ-058); the counter, removal, and scan loop behavior are unchanged
+  - each committed card is an independent instance keyed on `instanceId`; scanning the same card twice into a non-stack zone (where the zone allows it) yields two held entries that commit as two zone entries, and one-tap removal from the holding list targets only the chosen one (DEC-082, REQ-061, REQ-214)
+  - while scan is open, zone-collection search, the card list, and outer staged-flow navigation/action buttons are hidden; scan-local controls including **Capture** remain available, and **Exit scan** — the ✕ box above the camera's top-right corner — is the path back to manual search or normal flow navigation, committing the holding list to the zone as it closes (DEC-076, REQ-214)
   - identification runs fully on-device with no network calls (DEC-051); art-only matching yields ranked candidates resolved to oracle-level `CardMetadataItem` (DEC-053), with the scanned printing's image carried as presentation only (DEC-070)
 
 ### FLOW-007
@@ -164,11 +165,11 @@
   - app is loaded
 - Main Flow:
   1. User opens the feature-portal Menu and finds its palette-only **Theme** section.
-  2. App shows White, Blue, Black, Red, Green, and Colorless in that order as named swatches, with the current profile indicated and Blue as the default.
+  2. App shows White, Blue, Black, Red, Green, and Colorless in that order as a six-cell Theme band — each cell its colour's wash and symbol, named by its hover title and accessible name rather than a visible label — with the current profile lit and Blue as the default (REQ-207).
   3. User selects a profile.
-  4. App immediately applies the selected profile to the whole surface — background wash, panel fills and edges, focus rings, the Ask AI waiting panel, and the card-detail popup — plus primary accents and the resting/hover/focus/current treatments on REQ-060's inventory, all without leaving the current workflow step (REQ-200). Player Life Tracker's own screens keep their present-day appearance; the shared chrome it inherits (menu rail, brand mark, theme section) picks up the profile like every other destination, reviewed by a screenshot pair rather than pinned (REQ-202).
+  4. App immediately applies the selected profile to the whole surface — the flat ground, the colour's ambient scene (REQ-207), panel fills and edges, focus rings, the Ask AI waiting panel, and the card-detail box — plus primary accents and the resting/hover/focus/current treatments on REQ-060's inventory, all without leaving the current workflow step (REQ-200). Player Life Tracker's table keeps its present-day appearance; the shared chrome and sheets it inherits pick up the profile like every other destination, reviewed by a screenshot pair rather than pinned (REQ-202).
   5. If the user selects Colorless, the Theme section exposes an inline full-spectrum color input and `Reset to gray`.
-  6. If the user chooses a custom color, app immediately applies the exact RGB without validation or contrast correction and remembers it independently; if the user selects Reset, app deletes only the custom value and restores fixed neutral gray.
+  6. If the user chooses a custom color, app immediately applies its hue, lifted only where it would fail readability (REQ-099 as amended), and remembers the exact pick independently; if the user selects Reset, app deletes only the custom value and restores fixed neutral gray.
   7. App stores the selected profile for the browser.
   8. On later reloads, app restores the selected profile and any remembered Colorless custom RGB before or during initial render without resetting user workflow state.
 - Edge Cases:
@@ -176,7 +177,7 @@
   - if a saved custom RGB is malformed, app deletes the custom value and uses fixed Colorless gray
   - if browser storage is unavailable or write fails, the selected profile/custom RGB may apply for the current session but app continues normally
   - selecting the current fixed profile is a no-op and does not close or reset the main gameplay workflow unless the implemented control naturally closes after selection
-  - a low-contrast custom Colorless choice is applied as chosen; the app does not warn, reject, or repair it
+  - a low-contrast custom Colorless choice is lifted to REQ-099's readability floors while keeping its hue; the app does not warn or reject it
 - Notes:
   - theme selection is frontend-only personalization and never changes submitted game context, prompt text, backend API behavior, or AI responses
   - REQ-060's inventory is the minimum that carries the restrained ambient hierarchy from DEC-081; under REQ-200 static chrome and the dominant page background are profile-driven too, bounded by REQ-200's measured contrast floors. Card-identity rings (REQ-058) stay outside the profile; Life Tracker (REQ-202) inherits the profile through shared chrome like every other destination
@@ -192,15 +193,15 @@
 - Trigger: User opens the Trade Balancer from the top-level navigation menu (FLOW-010) to compare the value of two lists of cards
 - Preconditions:
   - app is loaded
-  - the shared local card index (`cardMetadata`, REQ-174) is available for search and identity; a card's prices are fetched from the backend when its search suggestion is tapped, or when a scanned card is added (REQ-066, REQ-175, FLOW-025)
+  - the shared local card index (`cardMetadata`, REQ-174) is available for search and identity; a card's prices are fetched from the backend when its search suggestion is tapped, or when the scanner closes and commits a held card to the side (REQ-066, REQ-175, REQ-214, FLOW-025)
 - Main Flow:
   1. The Trade Balancer opens with two sides (**Side A** and **Side B**), each an empty card list, and a running total per side plus the difference between them. On open the balancer also sends one fire-and-forget warm-up request to the backend's health check, so a cold backend wakes while the card list downloads and the player types; it shows nothing and is ignored if it fails (REQ-064).
   2. For a side, the user adds a card by **scanning** or by **manual search**:
-     - Scan: the existing engine identifies the card and the **scanned printing** becomes the entry's default printing; the user can change the printing if it is wrong (DEC-070, REQ-065).
+     - Scan: the existing engine identifies the card and holds it in the scanner's own holding list, carrying its ranked printing candidates; closing the scanner (**Exit scan**, a square ✕ box above the camera's top-right corner) commits every held card to the side in hold order, each with its **scanned printing** as the entry's default printing — the user can change the printing if it is wrong (DEC-070, REQ-065, REQ-214).
      - Manual search: the user finds the card by name, taps the suggestion, and **chooses the printing from that card's printing list before the card is added** — newest release first, each row showing set, collector number, both prices and a thumbnail; that printing's price applies (DEC-012, REQ-065).
-     - The balancer fetches that card's printings and prices from the backend once and caches them for the session: on a manual search when the suggestion is tapped (the picker carries the loading state, and the entry then appears already priced), on a scan when the card is added (the entry shows a brief in-place loading state) (FLOW-025).
+     - The balancer fetches that card's printings and prices from the backend once and caches them for the session: on a manual search when the suggestion is tapped (the picker carries the loading state, and the entry then appears already priced), on a scan when the scanner closes and the held card commits (the entry shows a brief in-place loading state) (FLOW-025, REQ-214).
   3. The added entry shows its printing (set/collector/image), its USD price, a **foil toggle** (non-foil ↔ `usd_foil`), and a **quantity** control; the same card may be added multiple times or carry a quantity ≥ 1.
-  4. Each side total updates live as `Σ qty × (foil ? usdFoil : usd)`, and the difference between the two sides updates with an amount and which side is higher (or equal).
+  4. Each side total updates live as `Σ qty × (foil ? usdFoil : usd)`, and the two piles of gold, the verdict line naming the side ahead (or "Even"), and the dollar difference update with them (REQ-215).
   5. The user adds cards to the other side the same way, adjusts foil/quantity, and removes entries as needed until the difference reflects the trade.
   6. The user reads the balance at a glance and returns to MTG Assistant via the navigation menu when done; trade state is not persisted.
 - Edge Cases:
@@ -223,8 +224,8 @@
 - Preconditions:
   - app is loaded
 - Main Flow:
-  1. User taps the icon-only portal Menu button in the **top-middle** of the current screen's header; it is the suite's only floating/attached app-chrome affordance.
-  2. The Menu opens and lists the registered destinations — **In-Depth Question**, **Quick Question**, **Trade Balancer**, and **Life Tracker** — with the current destination indicated. It also shows the palette-only **Theme** section and any registered action entries (v1: **Send feedback**).
+  1. User taps the ☰ Menu button at the left of the current screen's banner header (REQ-207); it is the suite's only app-navigation affordance.
+  2. The Menu tray slides in and lists **Ask a Question** (current also while In-depth details is open), **Question History**, **Life Tracker**, and **Trade Balancer**, with the current destination lit; below them sit **Send feedback** and the six-cell **Theme** band (REQ-206, REQ-213).
   3. User selects another destination.
   4. App switches the active view to the selected destination without leaving the app or reloading.
   5. To return, the user opens the same Menu and selects the other destination. Palette selection may also be changed in place without switching destinations.
@@ -240,43 +241,45 @@
   - palette selection follows FLOW-007; layout density FLOW-008 is retired and responsive presentation is automatic (DEC-117 / REQ-096)
 
 ### FLOW-011
-- Name: Ask a Quick Question with optional card context
-- Trigger: User opens **Quick Question** from the feature portal (FLOW-010) to ask about a single card, or ask a freeform Magic rules question, without staging any game state
+- Name: Ask a Question with optional card context
+- Trigger: User opens **Ask a Question** from the Menu (FLOW-010) to ask about one or more cards, or ask a freeform Magic rules question, without staging any game state
 - Preconditions:
   - app is loaded
-  - local card metadata and the committed core-topics browse data are available
+  - local card metadata is available
   - for scan input: the device has a usable camera with permission and the fingerprint library loads on first scan (FLOW-006)
 - Main Flow:
-  1. User selects Quick Question from the feature portal; the app switches to the lookup view (frontend-only, no reload).
-  2. The pre-submit view shows, top to bottom: an optional card-attach control (its "OPTIONAL CARD" label followed inline by the guidance copy "Add a card for context or ask any Magic related question.", dash-separated, DEC-113), the Question field, then a collapsed-by-default "General rules topics" outer disclosure. Its summary remains visible regardless of whether a card is attached or the Question field already has text; expanding it reveals a short list of core rules topics (the stack & priority, targeting, combat, layers) the user can read locally with no AI call.
-  3. User optionally resolves one card either by typed autocomplete search (reusing REQ-001/REQ-002 behavior) or by scanning it with the existing camera scanner (FLOW-006 engine); the result is a single oracle-level card, shown with name, image when available, oracle text, and full metadata. The user may instead skip card input.
-  4. After expanding the outer "General rules topics" disclosure, each topic row shows its title, a "Use this topic" button, and an expand/collapse toggle without needing to expand the row; expanding a row reveals that topic's rule numbers and excerpt and auto-collapses any other open topic (accordion). Tapping "Use this topic" locks that topic's phrase (`Tell me about {Topic}.`) into a non-editable pill next to the Question field's label (with its own remove control), smooth-scrolls the view to the Question field, and focuses the textarea; any text the user already typed in the textarea is preserved as optional supplementary context (REQ-091).
-  5. User enters or continues a freeform question (subject to the same 300-character cap as the main flow, which measures the **raw editable textarea content** — the locked pill phrase and the silent card-name fallback are composed at submit time and do not consume that budget, REQ-091 as amended by REQ-134) and submits, with or without a card attached and with or without a locked topic pill.
-  6. Frontend sends `{ mode: "lookup", question, card? }` to `POST /api/ask-ai`; `question` is the client-composed string (the locked pill phrase plus any supplementary textarea text, the textarea alone when no pill is locked and it has text, or — when no pill is locked and the textarea is empty but a card is attached — a silent `Tell me about {Card Name}.` fallback, per REQ-091); `card` is present only if one was attached; no `gameContext` is sent.
+  1. User selects Ask a Question from the Menu; the app switches to the question page (frontend-only, no reload).
+  2. The pre-submit view shows, top to bottom: the title with **Add card** and **Scan** beside it, the card stage when any card is attached (the front card full size, the one other card peeking at each side), the two-row question box (the text on top; the Add in-depth details chip at the bottom-left and the mic|send pill at the bottom-right).
+  3. User optionally attaches cards, up to the lookup cap (REQ-167), by typed autocomplete search (REQ-001/REQ-002 behavior) or by scanning (FLOW-006 engine); each is a single oracle-level card shown on the stage with its image when available. The user may instead skip card input, or tap **Add in-depth details** to carry the cards and any typed question into In-depth details (REQ-206, FLOW-001).
+  4. (Retired by `ui-look-translation`, 2026-10-02, on the owner's gate verdict.) This step was the General rules topics panel and its topic pill. The panel is removed from Ask a Question (REQ-079 retired); a topic row was the pill's only entry point, so the pill no longer appears (REQ-091 as amended). The step number is kept so steps 5–10 keep theirs.
+  5. User enters a freeform question (subject to the same 300-character cap as the main flow, which measures the **raw editable textarea content** — the silent card-name fallback is composed at submit time and does not consume that budget, REQ-091 as amended by REQ-134) and submits, with or without a card attached.
+  6. Frontend sends `{ mode: "lookup", question, cards? }` to `POST /api/ask-ai`; `question` is the client-composed string (the typed text, or — when the box is empty but cards are attached — the silent `Tell me about {Card Name}.` fallback, per REQ-091); `cards` is present only if any were attached; no `gameContext` is sent.
   7. Backend assembles one lookup-mode prompt: question-driven rules retrieval (MTG reference block, always-on core game-rules topics, System 3 supplemental) always runs; when a card is attached, per-card enrichment (WotC rulings, full metadata incl. oracle text, and a System 3 query extended with that card's name, type line, and keywords — not its oracle text, REQ-178) layers in; game-state-only sections are always omitted. Off-domain questions get the "confused rules lookup" persona response rather than a direct answer. Backend returns a plain-text answer.
-  7a. While the request is in flight and no answer has arrived yet, the Question form is hidden and replaced in place by the waiting panel (live elapsed timer, escalating messages); the Optional card section and the General rules topics disclosure stay visible and interactive throughout (DEC-114).
-  8. Frontend replaces the waiting/pre-submit view with the shared chat-first workspace (first visible bubble is the assistant answer; the initial question is not shown). When a card was attached, a compact card-context trigger opens its read-only presentation in a mobile bottom sheet or desktop right drawer; without a card, no context trigger renders.
-  9. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "lookup", question, card: frozen (if one was attached), conversationHistory }` under the same conversation limits as the main flow.
-  10. User may start over, which clears the thread, any locked topic pill, and returns to the pre-ask state — with the looked-up card preserved if one was attached; the collapsed outer "General rules topics" summary remains visible either way.
+  7a. While the request is in flight and no answer has arrived yet, the Question form is hidden and replaced in place by the waiting panel (live elapsed timer, escalating messages); the card stage stays visible and interactive throughout (DEC-114).
+  8. Frontend replaces the waiting/pre-submit view with the shared chat-first workspace: the player's question as sent, then the assistant's answer (REQ-025 as amended). When any card was attached, a compact card-context trigger opens its read-only presentation (naming the single card or the count, "N cards") in a mobile bottom sheet or desktop right drawer; a card name in the answer that matches an attached card renders as a tappable chip opening that card's detail (REQ-206); without a card, no context trigger renders.
+  9. User may send text follow-ups from the reused composer; each follow-up sends `{ mode: "lookup", question, cards: frozen (if any were attached), conversationHistory }` under the same conversation limits as the main flow.
+  10. User may tap **✎ Edit cards** to return to the pre-submit page with the cards and question kept, or **↺ Start over** to clear the thread, the cards and the question and return to the empty page.
 - Edge Cases:
-  - if no pill is locked, the question is blank after trimming, and no card is attached, submit is blocked; if a card is attached in that same state, submit is enabled and the composed question silently falls back to `Tell me about {Card Name}.` (REQ-091); the collapsed outer "General rules topics" summary remains visible regardless (it is not a fallback state, per REQ-079)
-  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved card/question/pill, retry with cooldown; the Question form reappears (waiting panel removed) alongside the error and retry affordance (DEC-114)
-  - if the follow-up request fails, the error is shown and retry resubmits with the same frozen card (if any) and history (FLOW-005)
+  - if the question is blank after trimming and no card is attached, submit is blocked; if a card is attached in that same state, submit is enabled and the composed question silently falls back to `Tell me about {Card Name}.` (REQ-091)
+  - adding an 11th card is blocked with a stated limit message (REQ-167 as amended)
+  - AI failure reuses the main flow's failure handling (FLOW-003): the message **Miho is working on it**, preserved cards/question, retry with cooldown; the Question form reappears (waiting panel removed) alongside the error and retry affordance (DEC-114)
+  - if the follow-up request fails, the error is shown and retry resubmits with the same frozen cards (if any) and history (FLOW-005)
   - if history chars exceed the shared cap, oldest turns are truncated first (REQ-027)
   - in mock provider mode, the assistant bubble still appends in the same thread and its answer contains the exact assembled LLM-facing prompt for that submitted message
-  - scan input inherits FLOW-006 behavior (permission fallback to manual search, scanned-printing art as presentation only); scan resolves to one card rather than adding into a zone
+  - scan input inherits FLOW-006 behavior (permission fallback to manual search, scanned-printing art as presentation only); each scan resolves to one card added to the stage rather than into a zone
   - an off-domain question (with or without a card attached) gets the "confused rules lookup" persona response (DEC-108), not a direct answer
-  - selecting a second topic before submitting swaps the locked pill without touching any text already typed in the textarea (REQ-091)
+
   - if a later answer arrives while the reader is farther than 64px from the bottom, the log preserves reading position and shows New response; activating it scrolls to and places keyboard focus on the newest assistant message without clearing any composer draft (REQ-098)
 - Notes:
-  - Quick Lookup carries no zones, stack, phase, or multi-card setup (DEC-107); it is not a full Comprehensive Rules browser and not official judge authority (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-002 / DEC-013)
-  - reuses existing search, scan, core-topics, and the shared conversation workspace; when a card is attached the conversation is frozen on it, otherwise there is no frozen context object; follow-ups are text-only in v1
+  - Ask a Question carries no zones, stack, phase, or other game state (DEC-107, REQ-167); it is not a full Comprehensive Rules browser and not official judge authority (canonical rule: `goals-and-non-goals.md` Scope Notes; retired index DEC-002 / DEC-013)
+  - reuses existing search, scan, and the shared conversation workspace; when a card is attached the conversation is frozen on the attached set, otherwise there is no frozen context object; follow-ups are text-only in v1
   - shares the main flow's conversation and text limits; Quick Lookup defines no separate limit policy
   - no answer-seeded second-pass retrieval in v1 (deferred, tracked as Q-004); the model still surfaces relevant verbatim rules from the first-pass provided set
   - a future option to attach optional lightweight game context to the card branch is tracked as Q-003 and is out of v1 scope
-  - the "General rules topics" section's placement, always-rendered collapsed outer summary, nested row-level accordion disclosure, and the "Use this topic" locked-pill mechanism were confirmed during quick-question-ui-refinement (DEC-112 / REQ-091)
+  - the "General rules topics" section's placement, always-rendered collapsed outer summary, nested row-level accordion disclosure, and the "Use this topic" locked-pill mechanism were confirmed during quick-question-ui-refinement (DEC-112 / REQ-091); all four were retired by `ui-look-translation` (2026-10-02) on the owner's gate verdict — the panel is removed from Ask a Question (REQ-079 retired) and the pill has no entry point left (REQ-091 as amended)
   - during quick-lookup refinement this flow was rewritten to merge the prior separate Card Lookup flow (this ID) and Rules Lookup flow (former FLOW-012) into one; see FLOW-012
   - DEC-118 / REQ-097 / REQ-098 refine answered-state presentation and scrolling only; lookup request/prompt behavior is unchanged
+  - amended by `ui-look-translation` (2026-10-02): the pre-submit question box takes the direction-1 mockup's two-row shape; what it does is unchanged
 
 ### FLOW-012
 - Name: Look up a rules concept and ask a question
@@ -313,12 +316,12 @@
 - Preconditions:
   - app is loaded
 - Main Flow:
-  1. User opens the top-middle feature-portal menu and selects **Send feedback** (an action entry, DEC-104); the app opens the feedback modal over the current screen without switching the active destination or losing in-progress state.
-  2. User picks a category (Bug / Suggestion / Other) and writes a message; the message is required.
+  1. User opens the Menu (☰) and selects **Send feedback** (an action entry, DEC-104); the app opens the feedback form in the shared sheet over the current screen without switching the active destination (REQ-208) or losing in-progress state.
+  2. User picks a category — three pills, Bug / Suggestion / Other — and writes a message; the message is required.
   3. User optionally enters a reply email (blank = anonymous); if present, it must be a valid email format.
-  4. The modal shows a one-line disclosure that current app state is attached and, on demand, an **expandable summary** of exactly what is included (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment).
-  5. User submits; the modal goes to a sending state and posts the report plus the JSON-stringified snapshot to Formspree.
-  6. On success the modal shows an acknowledgement and can be dismissed; on error it shows an inline error and preserves the draft for retry.
+  4. The form shows a dashed row disclosing that current app state is attached and, on demand, an **expandable summary** of exactly what is included (screen/step, game context + typed question, zones/cards/enrichment, conversation history, provider mode, active destination, environment).
+  5. User submits; the sheet goes to a sending state and posts the report plus the JSON-stringified snapshot to Formspree.
+  6. On success the sheet shows a thank-you under the app's own mark and can be dismissed; on error it shows an inline error and preserves the draft for retry.
 - Edge Cases:
   - message empty (after trim) → submit is blocked with an inline message-required prompt
   - reply email present but malformed → submit is blocked with an inline format prompt
@@ -357,16 +360,16 @@
   - "complete candidate" does not validate mana, commander designation, card state, legality, or prose prerequisites (DEC-116)
 
 ### FLOW-016
-- Name: Resume a saved conversation from history
-- Trigger: User opens the shared conversation workspace's history drawer and selects a saved conversation
+- Name: Resume a saved conversation from Question History
+- Trigger: User opens **Question History** from the Menu and selects a saved conversation
 - Preconditions:
   - at least one conversation has previously reached a successful answer and was auto-saved (REQ-103)
 - Main Flow:
-  1. User opens the history drawer from the shared conversation workspace.
-  2. Drawer lists saved conversations most-recent-first, each showing flow, timestamp, and a preview of the first question.
-  3. User selects an entry.
-  4. If the currently active conversation has at least one successful answer, it is auto-saved to history first.
-  5. The selected entry's frozen context (game context or attached card), mode, and full message thread load into the workspace, replacing the previously active conversation.
+  1. User opens **Question History** from the Menu (REQ-213).
+  2. The shared sheet lists saved conversations of both question kinds most-recent-first, each showing a fan of its cards, the question, the ruling's first line, and a meta line (kind, cards, the game context for In-depth, follow-ups, when).
+  3. User selects an entry: below `600px` the tap reopens it; from `600px` it shows in the reading pane and **Open conversation** reopens it.
+  4. If the currently active conversation in that entry's own flow has at least one successful answer, it is auto-saved to history first.
+  5. The selected entry's frozen context (game context or attached cards), mode, and full message thread load into its own flow's workspace — an Ask a Question conversation on the Ask a Question page with "Reopened from your history" under the title, an In-depth conversation in In-depth details' chat with View Context — replacing the previously active conversation of that flow. Resuming an entry from the *other* flow switches destination to it first.
   6. The follow-up composer enables; the user can continue asking follow-ups under the same limits and frozen-context rules as a freshly-decrypted conversation.
   7. On the next successful follow-up in the resumed conversation, its history entry moves to most-recent in the list.
 - Edge Cases:
@@ -374,60 +377,63 @@
   - history list exceeds 20 entries → oldest entry is pruned automatically on the next save
   - user selects the same conversation that is already active → no-op, workspace state unchanged
   - user starts a brand-new conversation instead of resuming → existing Start Over / New conversation flow applies unchanged (DEC-040/REQ-029), with auto-save of the outgoing conversation per REQ-103; subsequent mid-flight staging after Start Over becomes/overwrites the Draft slot (REQ-108 / FLOW-017)
-  - the feature-portal Menu drawer is already open when the user opens the history drawer (or vice versa) → the previously open drawer closes first, so only one left-edge drawer is ever open at a time (DEC-125)
-  - History control is unavailable / missing after Start Over → defect; History must remain always visible on In-Depth Question and Quick Question (REQ-107 / DEC-129)
+  - choosing Question History from the Menu closes the Menu tray before the sheet opens, so the two never overlap
+  - Question History missing from the Menu → defect; it must be reachable on every destination (REQ-107, REQ-213)
 - Notes:
   - resumed frozen context stays read-only; no zone/card/enrichment editing is introduced (DEC-040 unchanged)
   - no backend, contract, or provider behavior changes; this is a frontend state-restoration flow only
   - Draft resume (pre-submit mid-flight) is FLOW-017, not this completed-conversation resume path
+  - amended for the `ui-reimagining-build` pass (2026-09-30): Question History replaces the per-flow history drawer (REQ-213); a cross-flow resume switches destination as part of the same gesture
 
 ### FLOW-017
 - Name: Preserve and resume mid-flight Draft across Menu leave and reload
-- Trigger: User stages mid-flight work on In-Depth Question or Quick Question before first successful submit, then leaves via Menu, reloads, or opens History
+- Trigger: User stages mid-flight work on In-Depth Question or Quick Question before first successful submit, then leaves via Menu, reloads, or opens Question History
 - Preconditions:
   - user is on (or returning to) In-Depth Question or Quick Question
-  - History rail is always visible on these destinations (REQ-107)
+  - Question History is reachable from the Menu on every destination (REQ-107, REQ-213)
 - Main Flow:
-  1. User stages mid-flight state (typed question, optional card, zones/enrichment, current step — anything before first successful submit). The destination's single Draft slot is written/updated and appears in History as **Draft**.
+  1. User stages mid-flight state (typed question, optional card, zones/enrichment, current step — anything before first successful submit). The destination's single Draft slot is written/updated and appears in Question History as its own **Draft** row.
   2. User may open Menu and navigate to another destination (or reload the page) without submitting; Draft remains browser-local.
   3. Returning to that destination via Menu, or reloading while that destination mounts, auto-hydrates mid-flight UI from Draft (DEC-103-style) so staged work is not lost.
-  4. User may also open History from the corner rail (including from a pre-submit step) and select **Draft** or a completed conversation (FLOW-016).
-  5. Selecting Draft restores that destination's mid-flight staged state so the user can continue toward submit.
-  5a. Selecting a *completed* conversation from a pre-submit step snapshots the current staging to the Draft slot first, then lands on that conversation (DEC-134). The staged attempt is immediately recoverable as the **Draft** row in the same drawer; no confirmation or notice interrupts the transition (DEC-138).
+  4. User may also open Question History from the Menu (including from a pre-submit step) and select **Draft** or a completed conversation (FLOW-016).
+  5. Selecting Draft restores that flow's mid-flight staged state so the user can continue toward submit — switching destination first when the Draft belongs to the other flow, then re-hydrating from storage immediately rather than waiting for a future mount (the owning flow is already mounted-but-hidden when the player started on it).
+  5a. Selecting a *completed* conversation from a pre-submit step snapshots the current staging to the Draft slot first, then lands on that conversation (DEC-134). The staged attempt is immediately recoverable as the **Draft** row in Question History; no confirmation or notice interrupts the transition (DEC-138).
   6. After Start Over from an answered conversation (completed auto-save per REQ-103), new mid-flight staging becomes/overwrites that destination's Draft (still one row). Start Over itself remains answered-only (REQ-029).
 - Edge Cases:
-  - empty completed history and no Draft → History still opens to an empty/zero-state list
-  - Draft storage corrupt → Draft dropped; History still opens; destination mounts fresh
+  - empty completed history and no Draft → Question History still opens to an empty/zero-state list
+  - Draft storage corrupt → Draft dropped; Question History still opens; destination mounts fresh
   - first successful submit while a Draft exists for the attempt → Draft cleared; conversation enters completed-history path
-  - switching to Life Tracker / Trade Balancer → those destinations have no History zone; returning to In-Depth / Quick Question restores always-on History and auto-hydrates Draft if present
+  - switching to Life Tracker / Trade Balancer → Question History stays reachable from the Menu there; returning to Ask a Question or In-depth details auto-hydrates Draft if present
   - selecting a completed conversation with no meaningful staging present → no Draft written, matching Menu-leave's empty-staging behavior
   - selecting a completed conversation while an answered conversation is already active → no Draft to maintain; restore proceeds unchanged
 - Notes:
   - one Draft per conversation-bearing destination; no unfinished backlog; no mid-flight Start Over invent (DEC-130)
   - pre-submit empty lower-half screen fill is out of scope for this flow
   - the three mid-flight exits — Menu leave, reload, and opening a saved conversation — are all Draft-covered and must behave identically in both conversation-bearing destinations (DEC-138)
+  - amended for the `ui-reimagining-build` pass (2026-09-30): Draft lives in Question History (REQ-213), not the retired rail; selecting a Draft already on its own destination re-hydrates immediately rather than relying on a mount effect
 
 ### FLOW-018
-- Name: Delete a saved conversation from history
-- Trigger: User opens the History drawer and chooses to delete a completed conversation entry
+- Name: Delete a saved conversation from Question History
+- Trigger: User opens Question History and chooses to delete a completed conversation entry
 - Preconditions:
   - at least one completed conversation exists in browser-local history (REQ-103)
-  - user is on In-Depth Question or Quick Question (History rail available)
+  - Question History is open from the Menu (REQ-213)
 - Main Flow:
-  1. User opens Conversation history from the corner rail.
-  2. User activates delete on a completed entry (not Draft).
-  3. App presents an explicit confirmation step naming that the entry will be removed.
+  1. User opens Question History from the Menu.
+  2. User activates delete on a completed entry (not Draft) — the row's own delete control below `600px`, or **Delete this question** in the reading pane from `600px`.
+  3. App asks first in the shared confirm sheet, naming the entry that will be removed (REQ-208).
   4. User confirms; app removes the entry from local storage and from the list.
-  5. If the deleted entry was the active conversation, the workspace clears to the destination's clean pre-answer state without re-saving that thread; otherwise the active workspace is unchanged.
-  6. User may close History via Close, Escape, or outside/scrim click (REQ-117).
+  5. If the deleted entry was the active conversation **in its own flow**, that flow's workspace clears to its clean pre-answer state without re-saving that thread — even when Question History was opened from the *other* flow; otherwise the active workspace is unchanged.
+  6. User may close Question History via ✕, Escape, or outside/scrim click (REQ-117, REQ-208).
 - Edge Cases:
-  - user cancels confirmation → entry remains; drawer stays open
-  - last completed entry deleted → drawer shows empty/zero-state (and Draft row if present)
+  - user cancels confirmation → entry remains; Question History stays open
+  - last completed entry deleted → Question History shows its empty state (and Draft rows if present)
   - storage write fails → app does not crash; user can retry; existing guarded persistence pattern applies
   - Draft row → no delete-via-this-flow; Draft remains overwrite/clear per FLOW-017
 - Notes:
   - frontend-only; no backend, accounts, or sync (DEC-143)
   - auto-prune at 20 completed entries remains for entries the user does not delete
+  - amended for the `ui-reimagining-build` pass (2026-09-30): delete confirms through the shared confirm sheet (REQ-208) rather than a bespoke confirm step, and reaches the active conversation's own flow even when deleted from the other flow's view of Question History (REQ-213)
 
 ### FLOW-020
 - Name: Owner halts a graph run in flight
@@ -511,13 +517,13 @@
 - Trigger: In Quick Question the player wants to ask how two or more specific cards interact, without staging a game
 - Preconditions:
   - app is loaded
-  - local card metadata and the committed core-topics browse data are available
+  - local card metadata is available
   - for scan input: the device has a usable camera with permission and the fingerprint library loads on first scan (FLOW-006)
 - Main Flow:
   1. User opens Quick Question from the feature portal; the app switches to the lookup view (frontend-only, no reload).
-  2. The pre-submit view shows, top to bottom: the card-attach control — now able to hold more than one card — then the Question field, then the collapsed-by-default "General rules topics" disclosure.
+  2. The pre-submit view shows, top to bottom: the card-attach control — now able to hold more than one card — then the Question field (the "General rules topics" disclosure that followed it is retired, REQ-079).
   3. User adds each card they want to discuss by typed autocomplete search (REQ-001/REQ-002) or by camera scan (FLOW-006); each resolves to one oracle-level card, previewed then added, and each can be removed. Adds are capped at the stated bound (REQ-167).
-  4. User types the question (or locks a topic pill, REQ-091) and submits; the request carries the list of attached cards and no game state.
+  4. User types the question and submits; the request carries the list of attached cards and no game state.
   5. Backend assembles one lookup-mode prompt: per-card full metadata and per-card WotC rulings for every attached card, System 3 supplemental retrieval scored over the question plus each attached card's name, type line, and keywords — not its full oracle text (REQ-178) — and combo enrichment over the card set when explicit combo intent is present; game-state-only sections stay omitted (REQ-167 / DEC-107).
   6. The answer opens the shared chat-first workspace; the frozen context shows all attached cards; follow-ups are text-only with the card set frozen and send `{ mode: "lookup", question, cards: frozen, conversationHistory }`.
 - Edge Cases:

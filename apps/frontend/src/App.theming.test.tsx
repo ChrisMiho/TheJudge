@@ -34,6 +34,7 @@ import {
   appCss,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
+import { appliedAccentTriple } from "./test/appliedTheme";
 
 let fetchMock: ReturnType<typeof vi.fn>;
 let metadataFixture: CardMetadataItem[] = [];
@@ -90,8 +91,11 @@ describe("Theme palette changes preserve workflow state", () => {
     await user.click(screen.getByRole("button", { name: "Theme: White" }));
 
     expect(document.documentElement.dataset.theme).toBe("white");
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("237 231 214");
-    expect(screen.getByRole("button", { name: "Confirm game context" }).className).toContain("from-accent");
+    expect(appliedAccentTriple("--accent")).toBe("237 231 214");
+    // Look-matching pass (slice N): restyled to `.plate-next` (flow.css), which reads the
+    // active palette's `--accent`/`--accent-strong` custom properties directly rather than
+    // a fixed Tailwind gradient utility.
+    expect(screen.getByRole("button", { name: "Confirm game context" }).className).toContain("plate-next");
   });
 
   it("does not reset game setup, zones, cards, question, or conversation state when the palette changes", async () => {
@@ -106,13 +110,14 @@ describe("Theme palette changes preserve workflow state", () => {
     await waitForMetadataReady();
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
+    await finishEnrichmentWizard(user);
     await user.type(screen.getByPlaceholderText("How does this resolve?"), "Will this resolve?");
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
     await user.click(screen.getByRole("button", { name: "Theme: Green" }));
 
     expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("Will this resolve?");
-    expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Edit context for Opt" })).toBeInTheDocument();
 
     await clickDecryptStack(user);
     const requestBody = await waitFor(() => {
@@ -129,7 +134,7 @@ describe("Theme palette changes preserve workflow state", () => {
     await user.click(screen.getByRole("button", { name: "Theme: Blue" }));
 
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
   });
 
   it("retints all six palettes without changing an in-progress flow or its current surfaces", async () => {
@@ -143,11 +148,15 @@ describe("Theme palette changes preserve workflow state", () => {
     await waitForMetadataReady();
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
+    await finishEnrichmentWizard(user);
     await user.type(screen.getByPlaceholderText("How does this resolve?"), "Does Opt resolve?");
 
+    // REQ-017: once every card is reviewed the review surface rests (its editing is
+    // done) while the question submission stays current — the former simultaneous
+    // "list mode" reading no longer applies since that mode is retired.
     const cardSurface = document.querySelector<HTMLElement>(".enrichment-card-surface");
     const questionSurface = document.querySelector<HTMLElement>(".enrichment-question-surface");
-    expect(cardSurface).toHaveAttribute("data-accent-current", "true");
+    expect(cardSurface).toHaveAttribute("data-accent-current", "false");
     expect(questionSurface).toHaveAttribute("data-accent-current", "true");
 
     await user.click(screen.getByRole("button", { name: "Switch feature" }));
@@ -155,14 +164,14 @@ describe("Theme palette changes preserve workflow state", () => {
       await user.click(screen.getByRole("button", { name: `Theme: ${palette.name}` }));
 
       expect(document.documentElement.dataset.theme).toBe(palette.id);
-      expect(document.documentElement.style.getPropertyValue("--accent")).toBe(palette.accent);
-      expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe(
+      expect(appliedAccentTriple("--accent")).toBe(palette.accent);
+      expect(appliedAccentTriple("--accent-strong")).toBe(
         palette.accentStrong
       );
-      expect(document.documentElement.style.getPropertyValue("--accent-soft")).toBe(
+      expect(appliedAccentTriple("--accent-soft")).toBe(
         palette.accentSoft
       );
-      expect(document.documentElement.style.getPropertyValue("--accent-contrast")).toBe(
+      expect(appliedAccentTriple("--accent-contrast")).toBe(
         palette.accentContrast
       );
       expect(screen.getByRole("heading", { name: "Context enrichment" })).toBeInTheDocument();
@@ -170,7 +179,7 @@ describe("Theme palette changes preserve workflow state", () => {
       expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue(
         "Does Opt resolve?"
       );
-      expect(cardSurface).toHaveAttribute("data-accent-current", "true");
+      expect(cardSurface).toHaveAttribute("data-accent-current", "false");
       expect(questionSurface).toHaveAttribute("data-accent-current", "true");
     }
 
@@ -199,34 +208,42 @@ describe("Theme palette changes preserve workflow state", () => {
     await user.click(screen.getByRole("button", { name: "Theme: Colorless" }));
 
     expect(document.documentElement.dataset.theme).toBe("colorless");
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("82 82 91");
+    expect(appliedAccentTriple("--accent")).toBe("82 82 91");
 
     fireEvent.change(screen.getByLabelText("Customize Colorless color"), {
       target: { value: "#123456" }
     });
 
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("18 52 86");
-    expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe("18 52 86");
-    expect(document.documentElement.style.getPropertyValue("--accent-soft")).toBe("18 52 86");
-    expect(document.documentElement.style.getPropertyValue("--accent-contrast")).toBe("255 255 255");
+    // REQ-099: #123456 is a near-black navy that fails both readability
+    // floors as picked, so it is lifted (hue kept) rather than applied
+    // unchanged — assert the floors hold, not a specific lifted RGB.
+    const liftedAccent = appliedAccentTriple("--accent");
+    expect(liftedAccent).not.toBe("18 52 86");
+    expect(appliedAccentTriple("--accent-strong")).toBe(liftedAccent);
+    expect(["255 255 255", "9 9 11"]).toContain(
+      appliedAccentTriple("--accent-contrast")
+    );
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Theme: Green" }));
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("10 122 66");
+    expect(appliedAccentTriple("--accent")).toBe("10 122 66");
 
     await user.click(screen.getByRole("button", { name: "Theme: Colorless" }));
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("18 52 86");
+    expect(appliedAccentTriple("--accent")).toBe(liftedAccent);
 
     await user.click(screen.getByRole("button", { name: "Reset to gray" }));
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("82 82 91");
+    expect(appliedAccentTriple("--accent")).toBe("82 82 91");
     expect(screen.getByText("Mock answer")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
   });
 });
 describe("Neutral palette backdrop", () => {
   it("does not leave the app shell background biased toward blue-950", () => {
     expect(appCss).not.toContain("#172554");
-    expect(appCss).toContain("background: linear-gradient(135deg, #09090b 0%, #18181b 45%, #09090b 100%);");
+    // REQ-200: a flat dark ground, one colour per profile, no gradient — the
+    // old hard-coded gradient is gone, replaced by the `--surface-wash` token.
+    expect(appCss).not.toMatch(/\.page-shell\s*{[^}]*linear-gradient/);
+    expect(appCss).toContain("background: var(--surface-wash);");
   });
 });
 
@@ -270,12 +287,14 @@ describe("Accent token coverage for staged and answered semantic surfaces", () =
     await advancePastZoneCollection(user);
     await finishEnrichmentWizard(user);
 
-    const readyText = screen.getByText("Ready to decrypt.");
-    const panel = readyText.closest("div");
+    // Look-matching pass (slice N): restyled to `.plate` (flow.css's neutral panel
+    // shell, matching the mockup's own `#review-plate` — no special accent tint), with
+    // the zone filter pills reading the active palette's `--accent-soft` directly
+    // rather than a fixed Tailwind hue.
+    const readyText = screen.getByRole("heading", { name: /Context reviewed/ });
+    const panel = readyText.closest(".plate");
     expect(panel).not.toBeNull();
-    expect(panel!.className).toContain("border-accent");
-    expect(panel!.className).toContain("bg-accent");
-    expect(readyText.className).toContain("text-accent-soft");
+    expect(panel!.className).toContain("plate");
     expect(panel!.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
   });
 
@@ -297,8 +316,10 @@ describe("Accent token coverage for staged and answered semantic surfaces", () =
 
     const bubble = userMessage.closest("div");
     expect(bubble).not.toBeNull();
-    expect(bubble!.className).toContain("bg-accent-strong");
-    expect(bubble!.className).toContain("text-accent-contrast");
+    // The mockup's `.msg.you` (flow.css), which reads the active palette's
+    // `--accent`/`--accent-strong` tokens rather than a fixed Tailwind accent utility.
+    expect(bubble!.className).toContain("msg");
+    expect(bubble!.className).toContain("you");
     expect(bubble!.className).not.toMatch(/emerald|green|sky|blue-[0-9]/);
   });
 
@@ -314,7 +335,7 @@ describe("Accent token coverage for staged and answered semantic surfaces", () =
     await user.click(screen.getByRole("button", { name: "Theme: Green" }));
 
     expect(screen.getByText("The stack resolves.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
   });
 });

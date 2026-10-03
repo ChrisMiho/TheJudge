@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ConversationMessage } from "../types";
 import { ConversationThread } from "./ConversationThread";
@@ -187,7 +187,7 @@ describe("Frontend - MTG Assistant", () => {
       rerender(<ConversationThread messages={appendedMessages} />);
 
       expect(firstAssistant).not.toHaveClass("conversation-message-enter");
-      const appended = screen.getByText("What about hexproof?").parentElement;
+      const appended = screen.getByText("What about hexproof?");
       expect(appended).toHaveClass("conversation-message-enter");
 
       rerender(<ConversationThread messages={[...appendedMessages]} />);
@@ -203,7 +203,7 @@ describe("Frontend - MTG Assistant", () => {
       expect(scrollToMock).toHaveBeenLastCalledWith({ top: 640, behavior: "auto" });
     });
 
-    it("renders a solid, high-contrast user bubble and plain flowing assistant text with no bubble background", () => {
+    it("renders the question as an accent bubble and the judge's reply in a sealed bubble with its own label (look-matching pass, slice M)", () => {
       render(
         <ConversationThread
           messages={[
@@ -213,15 +213,20 @@ describe("Frontend - MTG Assistant", () => {
         />
       );
 
-      const assistantBubble = screen
+      const judgeMessage = screen
         .getByText("The stack resolves.")
         .closest("[data-conversation-message-index]");
-      const userBubble = screen.getByText("What about hexproof?").parentElement;
-      expect(userBubble).toHaveClass("bg-accent-strong", "text-accent-contrast");
-      expect(userBubble?.className).not.toContain("bg-accent-strong/30");
-      expect(userBubble?.className).not.toContain("border");
-      expect(assistantBubble?.className).not.toMatch(/\bbg-/);
-      expect(assistantBubble).not.toHaveClass("text-accent-contrast");
+      const userMessage = screen
+        .getByText("What about hexproof?")
+        .closest("[data-conversation-message-index]");
+      expect(judgeMessage).toHaveClass("msg", "judge");
+      expect(within(judgeMessage as HTMLElement).getByText("TheJudge")).toBeInTheDocument();
+      // the mockup's `.msg.judge`: a seal, then the bubble (`> div`) holding the label and the ruling
+      expect((judgeMessage as HTMLElement).querySelector(".seal")).toBeInTheDocument();
+      expect((judgeMessage as HTMLElement).querySelector(":scope > div")).toContainElement(
+        screen.getByText("The stack resolves.")
+      );
+      expect(userMessage).toHaveClass("msg", "you");
     });
 
     it("renders assistant markdown syntax as structured elements", () => {
@@ -284,6 +289,70 @@ describe("Frontend - MTG Assistant", () => {
 
       const table = screen.getByRole("table");
       expect(table.parentElement).toHaveClass("conversation-markdown-table-scroll");
+    });
+
+    describe("card-name chips (REQ-075, REQ-206)", () => {
+      const cards = [
+        { cardId: "urza", name: "Urza, Lord High Artificer" },
+        { cardId: "opt", name: "Opt" }
+      ];
+
+      it("renders an exact card-name match in an assistant message as a tappable chip", () => {
+        const messages: ConversationMessage[] = [
+          { role: "assistant", content: "Urza, Lord High Artificer deals damage on activation." }
+        ];
+        render(<ConversationThread messages={messages} cards={cards} />);
+
+        expect(screen.getByTestId("conversation-card-chip-urza")).toHaveTextContent(
+          "Urza, Lord High Artificer"
+        );
+      });
+
+      it("matches every attached card's name independently in the same message", () => {
+        const messages: ConversationMessage[] = [
+          { role: "assistant", content: "Urza, Lord High Artificer can target Opt's caster." }
+        ];
+        render(<ConversationThread messages={messages} cards={cards} />);
+
+        expect(screen.getByTestId("conversation-card-chip-urza")).toBeInTheDocument();
+        expect(screen.getByTestId("conversation-card-chip-opt")).toBeInTheDocument();
+      });
+
+      it("calls the activation handler with the matched card's id on click", () => {
+        const onCardChipActivate = vi.fn();
+        const messages: ConversationMessage[] = [{ role: "assistant", content: "Opt draws a card." }];
+        render(<ConversationThread messages={messages} cards={cards} onCardChipActivate={onCardChipActivate} />);
+
+        fireEvent.click(screen.getByTestId("conversation-card-chip-opt"));
+        expect(onCardChipActivate).toHaveBeenCalledWith("opt");
+      });
+
+      it("does not render a chip for a name that is not in the conversation's attached cards", () => {
+        const messages: ConversationMessage[] = [
+          { role: "assistant", content: "Lightning Bolt deals 3 damage." }
+        ];
+        render(<ConversationThread messages={messages} cards={cards} />);
+
+        expect(screen.queryByTestId(/^conversation-card-chip-/)).not.toBeInTheDocument();
+        expect(screen.getByText("Lightning Bolt deals 3 damage.")).toBeInTheDocument();
+      });
+
+      it("renders no chips when no cards prop is given", () => {
+        const messages: ConversationMessage[] = [
+          { role: "assistant", content: "Urza, Lord High Artificer deals damage." }
+        ];
+        render(<ConversationThread messages={messages} />);
+
+        expect(screen.queryByTestId("conversation-card-chip-urza")).not.toBeInTheDocument();
+      });
+
+      it("never chips a name inside a user message", () => {
+        const messages: ConversationMessage[] = [{ role: "user", content: "Tell me about Opt." }];
+        render(<ConversationThread messages={messages} cards={cards} />);
+
+        expect(screen.queryByTestId("conversation-card-chip-opt")).not.toBeInTheDocument();
+        expect(screen.getByText("Tell me about Opt.")).toBeInTheDocument();
+      });
     });
   });
 });

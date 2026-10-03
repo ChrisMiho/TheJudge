@@ -1,0 +1,28 @@
+{
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 844
+  },
+  {
+   "name": "closed bottom sheets glow",
+   "reason": "the mockup keeps its closed bottom sheets mounted just below the screen and their accent glow bleeds up into the bottom edge on a phone; the app mounts a sheet only while open",
+   "x": 0,
+   "y": 796,
+   "width": 390,
+   "height": 48
+  },
+  {
+   "name": "the conversation thread",
+   "reason": "live data: the judge's answer text comes from the AI provider (the mock provider's text here), not the mockup's written ruling; the thread box is fixed to 320px on both sides for the capture",
+   "x": 14,
+   "y": 250,
+   "width": 361,
+   "height": 322
+  }
+ ]
+}

@@ -9,20 +9,44 @@ import {
   installMemoryLocalStorage,
   installMemorySessionStorage,
   jsonResponse,
+  navigateToPath,
   uninstallMemoryLocalStorage,
   uninstallMemorySessionStorage,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
 async function switchToDestination(user: ReturnType<typeof userEvent.setup>, label: string): Promise<void> {
+  if (label === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = label === "Quick Question" ? "Ask a Question" : label;
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name: label }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
+}
+
+// REQ-114/115/213: the dedicated "Conversation history" rail icon retires — History
+// opens from the Menu's "Question History" row instead.
+async function openHistory(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(screen.getByRole("button", { name: "Switch feature" }));
+  await user.click(screen.getByRole("menuitem", { name: "Question History" }));
 }
 
 // A history row's select button and its Delete control (DEC-143) both mention the question
 // preview in their accessible name, so selecting a row by preview text alone is ambiguous —
 // exclude the delete control's "Delete: ..." name to land on the select button.
 const SELECT_HISTORY_ENTRY_NAME = /^(?!Delete:).*Earlier question/;
+
+// REQ-213: jsdom's default innerWidth (1024) is the sheet family's wide side of its
+// 600px boundary — a row tap only selects it into the reading pane; "Open conversation"
+// is the explicit resume a narrow tap would otherwise give directly.
+async function selectAndOpenHistoryEntry(user: ReturnType<typeof userEvent.setup>): Promise<void> {
+  await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
+  await user.click(screen.getByRole("button", { name: "Open conversation" }));
+}
 
 describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
   beforeEach(() => {
@@ -60,10 +84,10 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
     const firstMount = render(<App />);
 
     await advanceToBattlefieldZoneCollection(user);
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeVisible();
 
     await switchToDestination(user, "Quick Question");
-    expect(screen.getByLabelText("Card search")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeVisible();
 
     // Storage persists (installMemoryLocalStorage backs it with a module-level map), but the
     // React tree does not: unmounting and rendering a fresh <App /> is the only way to prove
@@ -72,7 +96,7 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
     render(<App />);
 
     await switchToDestination(user, "In-Depth Question");
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeVisible();
   });
 
   it("restores Quick Question staging on a fresh mount after Menu-leave, via Draft", async () => {
@@ -99,18 +123,18 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
 
     await advanceToBattlefieldZoneCollection(user);
     await switchToDestination(user, "Quick Question");
-    const firstMountAfterLeave = screen.getByLabelText("Card search");
+    const firstMountAfterLeave = screen.getByRole("heading", { name: "Ask a Question" });
     expect(firstMountAfterLeave).toBeVisible();
 
     await switchToDestination(user, "In-Depth Question");
     // Back within the same session: in-memory state already shows the staged step directly.
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeVisible();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeVisible();
 
     // Start Over to clear the in-memory view back to game-context without touching the
     // still-saved Draft, so opening History exercises the Draft row rather than in-memory state.
     // Game context has no Start Over control, so simulate the disconnect a different way:
     // open History directly from the staged step and confirm the Draft row itself is present.
-    await user.click(screen.getByRole("button", { name: "Conversation history" }));
+    await openHistory(user);
     const draftRow = await screen.findByRole("button", { name: /Draft/ });
     expect(draftRow).toBeInTheDocument();
   });
@@ -170,8 +194,8 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await user.type(screen.getByLabelText("Magic question"), "Does lifelink trigger on deathtouch damage?");
       expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
+      await openHistory(user);
+      await selectAndOpenHistoryEntry(user);
 
       const draft = localStorage.getItem("thejudge.conversationDraft.lookup");
       expect(draft).not.toBeNull();
@@ -193,8 +217,8 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await advanceToBattlefieldZoneCollection(user);
       expect(localStorage.getItem("thejudge.conversationDraft.game")).toBeNull();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
+      await openHistory(user);
+      await selectAndOpenHistoryEntry(user);
 
       const draft = localStorage.getItem("thejudge.conversationDraft.game");
       expect(draft).not.toBeNull();
@@ -209,11 +233,11 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
       await switchToDestination(user, "Quick Question");
       await user.type(screen.getByLabelText("Magic question"), "Does trample carry over lethal damage?");
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
+      await openHistory(user);
+      await selectAndOpenHistoryEntry(user);
       expect(await screen.findByText("Earlier answer")).toBeInTheDocument();
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
+      await openHistory(user);
       expect(await screen.findByRole("button", { name: /Draft/ })).toBeInTheDocument();
     });
 
@@ -224,8 +248,8 @@ describe("Frontend - Mid-flight Draft (REQ-108 / FLOW-017)", () => {
 
       await switchToDestination(user, "Quick Question");
 
-      await user.click(screen.getByRole("button", { name: "Conversation history" }));
-      await user.click(await screen.findByRole("button", { name: SELECT_HISTORY_ENTRY_NAME }));
+      await openHistory(user);
+      await selectAndOpenHistoryEntry(user);
 
       expect(localStorage.getItem("thejudge.conversationDraft.lookup")).toBeNull();
     });

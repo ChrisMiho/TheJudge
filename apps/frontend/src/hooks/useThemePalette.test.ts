@@ -1,8 +1,9 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { DEFAULT_PALETTE_ID } from "../lib/theme/palettes";
+import { contrastRatio, DEFAULT_PALETTE_ID } from "../lib/theme/palettes";
 import { useThemePalette } from "./useThemePalette";
+import { appliedAccentTriple } from "../test/appliedTheme";
 
 function createMemoryStorage(): Storage {
   const map = new Map<string, string>();
@@ -85,10 +86,10 @@ describe("useThemePalette", () => {
 
     expect(result.current.paletteId).toBe("colorless");
     expect(result.current.palette.accent).toBe("82 82 91");
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("82 82 91");
+    expect(appliedAccentTriple("--accent")).toBe("82 82 91");
   });
 
-  it("setColorlessCustom copies the hex unchanged into accent/accent-strong/accent-soft and keeps white contrast", () => {
+  it("setColorlessCustom keeps the custom hue, lifted to the REQ-099/REQ-200 readability floors", () => {
     const { result } = renderHook(() => useThemePalette());
 
     act(() => {
@@ -98,18 +99,28 @@ describe("useThemePalette", () => {
       result.current.setColorlessCustom("#123456");
     });
 
+    const ground = result.current.palette.ground;
     expect(result.current.colorlessCustomHex).toBe("#123456");
-    expect(result.current.palette.accent).toBe("18 52 86");
-    expect(result.current.palette.accentStrong).toBe("18 52 86");
-    expect(result.current.palette.accentSoft).toBe("18 52 86");
-    expect(result.current.palette.accentContrast).toBe("255 255 255");
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("18 52 86");
-    expect(document.documentElement.style.getPropertyValue("--accent-strong")).toBe("18 52 86");
-    expect(document.documentElement.style.getPropertyValue("--accent-soft")).toBe("18 52 86");
+    // REQ-099: accent text / dust reach 7:1, filled controls reach 2.4:1 against
+    // the ground, keeping the picked hue — not the exact unlifted RGB, since
+    // #123456 is a near-black navy that fails both floors as picked.
+    expect(contrastRatio(result.current.palette.accentSoft, ground)).toBeGreaterThanOrEqual(7);
+    expect(contrastRatio(result.current.palette.accent, ground)).toBeGreaterThanOrEqual(2.4);
+    expect(contrastRatio(result.current.palette.accentStrong, ground)).toBeGreaterThanOrEqual(2.4);
+    expect(["255 255 255", "9 9 11"]).toContain(result.current.palette.accentContrast);
+    expect(appliedAccentTriple("--accent")).toBe(result.current.palette.accent);
+    expect(appliedAccentTriple("--accent-strong")).toBe(
+      result.current.palette.accentStrong
+    );
+    expect(appliedAccentTriple("--accent-soft")).toBe(
+      result.current.palette.accentSoft
+    );
+    // The stored value is still the exact pick (REQ-099: "the stored value is
+    // still the exact pick, so Reset to gray and persistence are unchanged").
     expect(localStorage.getItem("thejudge.theme.colorlessCustomRgb")).toBe("#123456");
   });
 
-  it("switching away from Colorless and back restores the remembered custom value", () => {
+  it("switching away from Colorless and back restores the remembered (and re-lifted) custom value", () => {
     const { result } = renderHook(() => useThemePalette());
 
     act(() => {
@@ -118,6 +129,7 @@ describe("useThemePalette", () => {
     act(() => {
       result.current.setColorlessCustom("#123456");
     });
+    const liftedAccent = result.current.palette.accent;
     act(() => {
       result.current.setPalette("green");
     });
@@ -128,7 +140,7 @@ describe("useThemePalette", () => {
       result.current.setPalette("colorless");
     });
 
-    expect(result.current.palette.accent).toBe("18 52 86");
+    expect(result.current.palette.accent).toBe(liftedAccent);
   });
 
   it("resetColorlessCustom clears only the custom value and restores fixed Colorless gray", () => {
@@ -175,7 +187,7 @@ describe("useThemePalette", () => {
 
     expect(result.current.paletteId).toBe("colorless");
     expect(result.current.colorlessCustomHex).toBe("#123456");
-    expect(document.documentElement.style.getPropertyValue("--accent")).toBe("18 52 86");
+    expect(appliedAccentTriple("--accent")).toBe(result.current.palette.accent);
   });
 });
 });

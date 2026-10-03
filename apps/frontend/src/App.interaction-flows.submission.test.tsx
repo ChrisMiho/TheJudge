@@ -42,6 +42,7 @@ describe("Interaction flows - submission and retry", () => {
     await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
     await advanceToContextEnrichment(user);
+    await finishEnrichmentWizard(user);
 
     const questionInput = screen.getByPlaceholderText("How does this resolve?");
     await user.type(questionInput, "Will this resolve?");
@@ -52,11 +53,15 @@ describe("Interaction flows - submission and retry", () => {
     expect(screen.queryByPlaceholderText("How does this resolve?")).not.toBeInTheDocument();
     expect(screen.queryByText("Optional question")).not.toBeInTheDocument();
 
+    // Look-matching pass (slice N), requirement 10: the ruling now takes the shared
+    // `.app-header` (brand + tagline, same as every other destination) plus its own
+    // `.chat-head` "Ask a Question" — the old header that hid the tagline here alone is
+    // retired.
     expect(screen.queryByRole("heading", { name: "Conversation" })).not.toBeInTheDocument();
-    expect(screen.queryByText("MTG Assistant")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "TheJudge" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Ask a Question" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Ask a follow-up…")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Start Over" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Start over — clears everything" })).toBeInTheDocument();
   });
 
   it("enforces retry cooldown and keeps context through repeated failures", async () => {
@@ -69,6 +74,7 @@ describe("Interaction flows - submission and retry", () => {
     await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
     await advanceToContextEnrichment(user);
+    await finishEnrichmentWizard(user);
 
     const questionInput = screen.getByPlaceholderText("How does this resolve?");
     await user.type(questionInput, "Retry this");
@@ -129,9 +135,11 @@ describe("Interaction flows - submission and retry", () => {
     await selectZoneTab(user, "Stack");
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
+    // Walk the compact sheets (real pointer-event clicks) before switching to fake
+    // timers — only the retry-cooldown wait below needs those.
+    await finishEnrichmentWizard(user);
 
     vi.useFakeTimers();
-    await finishEnrichmentWizard(user);
     fireEvent.click(screen.getByRole("button", { name: "Decrypt Stack" }));
     await act(async () => {
       await Promise.resolve();
@@ -169,9 +177,9 @@ describe("Interaction flows - submission and retry", () => {
 
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Zones in play" })).toBeInTheDocument();
     await advancePastZoneConfirm(user);
-    expect(screen.getByRole("heading", { name: "Add cards to zones" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Add cards to zones" })).toBeInTheDocument();
   });
 
   it("captures battlefield context and submits it in ask-ai payload", async () => {
@@ -209,10 +217,12 @@ describe("Interaction flows - submission and retry", () => {
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
 
+    // Canonical zone order puts the Stack's Opt first; step to Lightning Bolt
+    // (Battlefield) before editing its sheet.
+    await user.click(screen.getByRole("button", { name: "OK — next card" }));
+    await user.click(screen.getByRole("button", { name: "Add a note for Lightning Bolt" }));
     await user.type(screen.getByLabelText("Context notes for Lightning Bolt"), "Created by Storm count");
-    await user.selectOptions(screen.getByLabelText("Target kind for Lightning Bolt"), "player");
-    await user.selectOptions(screen.getByLabelText("Player target for Lightning Bolt"), "Player 2");
-    await user.click(screen.getByRole("button", { name: "Add target for Lightning Bolt" }));
+    await user.selectOptions(screen.getByLabelText("Add a target for Lightning Bolt"), "player:Player 2");
 
     await clickDecryptStack(user);
     const requestBody = await waitFor(() => {
@@ -239,10 +249,11 @@ describe("Interaction flows - submission and retry", () => {
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
 
+    // Canonical zone order puts Battlefield's Lightning Bolt first; step to Opt
+    // (Command Zone) before editing its sheet.
+    await user.click(screen.getByRole("button", { name: "OK — next card" }));
     await user.selectOptions(screen.getByLabelText("Owner for Opt"), "Player 2");
-    await user.selectOptions(screen.getByLabelText("Target kind for Opt"), "card");
-    await user.selectOptions(screen.getByLabelText("Card target for Opt"), "lightning-bolt");
-    await user.click(screen.getByRole("button", { name: "Add target for Opt" }));
+    await user.selectOptions(screen.getByLabelText("Add a target for Opt"), "card:battlefield:lightning-bolt");
 
     await clickDecryptStack(user);
     const requestBody = await waitFor(() => {
@@ -284,20 +295,28 @@ describe("Interaction flows - submission and retry", () => {
     await addCardToActiveZone(user, "cou", "Counterspell");
     await advanceToContextEnrichmentFromZones(user);
 
+    // Canonical zone order puts the Stack's cards (Opt, then Counterspell) before
+    // Battlefield's Lightning Bolt. Walk them one sheet at a time: each untouched
+    // Mana spent box shows the printed mana value, fetched on demand (REQ-210), and
+    // sends nothing unless edited.
+    const optRow = screen.getByLabelText("Caster for Opt").closest("li") as HTMLElement;
+    expect(within(optRow).getByLabelText("Caster for Opt")).toHaveValue("Player 1");
+    await waitFor(() => expect(within(optRow).getByLabelText("Mana spent for Opt")).toHaveValue("1"));
+    await user.click(within(optRow).getByRole("button", { name: "Add a note for Opt" }));
+    expect(within(optRow).getByLabelText("Context notes for Opt")).toHaveValue("");
+
+    await user.click(screen.getByRole("button", { name: "OK — next card" }));
+    const counterspellRow = screen.getByLabelText("Caster for Counterspell").closest("li") as HTMLElement;
+    expect(within(counterspellRow).getByLabelText("Caster for Counterspell")).toHaveValue("Player 1");
+    await waitFor(() =>
+      expect(within(counterspellRow).getByLabelText("Mana spent for Counterspell")).toHaveValue("2")
+    );
+    await user.click(within(counterspellRow).getByRole("button", { name: "Add a note for Counterspell" }));
+    expect(within(counterspellRow).getByLabelText("Context notes for Counterspell")).toHaveValue("");
+
+    await user.click(screen.getByRole("button", { name: "OK — next card" }));
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
     await user.type(screen.getByPlaceholderText("How does this resolve?"), "Can this be countered now?");
-
-    const optRow = screen.getByLabelText("Caster for Opt").closest("li");
-    const counterspellRow = screen.getByLabelText("Caster for Counterspell").closest("li");
-    expect(optRow).not.toBeNull();
-    expect(counterspellRow).not.toBeNull();
-
-    expect(within(optRow as HTMLLIElement).getByLabelText("Caster for Opt")).toHaveValue("Player 1");
-    expect(within(optRow as HTMLLIElement).getByLabelText("Mana spent for Opt")).toHaveValue("");
-    expect(within(optRow as HTMLLIElement).getByLabelText("Context notes for Opt")).toHaveValue("");
-
-    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Caster for Counterspell")).toHaveValue("Player 1");
-    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Mana spent for Counterspell")).toHaveValue("");
-    expect(within(counterspellRow as HTMLLIElement).getByLabelText("Context notes for Counterspell")).toHaveValue("");
 
     await clickDecryptStack(user);
     const requestBody = await waitFor(() => {
@@ -335,15 +354,17 @@ describe("Interaction flows - submission and retry", () => {
     await addCardToStack(user, "cou", "Counterspell");
     await advanceToContextEnrichment(user);
 
-    const boltRow = screen.getByLabelText("Caster for Lightning Bolt").closest("li") as HTMLElement;
-    const optRow = screen.getByLabelText("Caster for Opt").closest("li") as HTMLElement;
-    const counterspellRow = screen.getByLabelText("Caster for Counterspell").closest("li") as HTMLElement;
-    expect(boltRow.compareDocumentPosition(optRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING
-    );
-    expect(optRow.compareDocumentPosition(counterspellRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING
-    );
+    // One compact sheet at a time (REQ-017) walks add order, confirming it rather
+    // than comparing simultaneous DOM positions.
+    expect(screen.getByText("Card 1 of 3")).toBeInTheDocument();
+    expect(screen.getByLabelText("Caster for Lightning Bolt")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "OK — next card" }));
+    expect(screen.getByText("Card 2 of 3")).toBeInTheDocument();
+    expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "OK — next card" }));
+    expect(screen.getByText("Card 3 of 3")).toBeInTheDocument();
+    expect(screen.getByLabelText("Caster for Counterspell")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
 
     const reviewedQuestion = "Does this ordering resolve correctly?";
     await user.type(screen.getByPlaceholderText("How does this resolve?"), reviewedQuestion);
@@ -367,6 +388,7 @@ describe("Interaction flows - submission and retry", () => {
     render(<App />);
 
     await advanceToBattlefieldZoneCollection(user);
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
     const battlefieldSearchInput = screen.getByLabelText("Battlefield search input");
     expect(screen.queryByLabelText("Battlefield item name")).not.toBeInTheDocument();
 
@@ -389,6 +411,7 @@ describe("Interaction flows - submission and retry", () => {
     expect(screen.queryByRole("button", { name: "Add battlefield target" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add battlefield item" })).not.toBeInTheDocument();
 
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 

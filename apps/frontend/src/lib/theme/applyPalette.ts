@@ -1,22 +1,42 @@
-import type { Palette } from "./palettes";
+import { getPaletteById, type Palette } from "./palettes";
 
-const accentVarNames = {
-  accent: "--accent",
-  accentStrong: "--accent-strong",
-  accentSoft: "--accent-soft",
-  accentContrast: "--accent-contrast"
-} as const;
+const customVarNames = ["--accent", "--accent-strong", "--accent-soft", "--accent-contrast", "--wash-tint", "--focus-ring"] as const;
+
+function triplet(channels: string): string {
+  const hex = channels
+    .split(" ")
+    .map((part) => Number(part).toString(16).padStart(2, "0"))
+    .join("");
+  return `#${hex}`;
+}
 
 /**
- * Sets the active palette's `data-theme` attribute and accent CSS variables
- * on the document root. Touches document-root styling only — never reads or
- * mutates flow/scan/conversation state.
+ * Selects the active profile on the document root. The six profiles' values
+ * live in `styles/tokens.css` under `[data-profile="<id>"]` (REQ-216: one token
+ * source), so a built-in profile only sets the attribute and clears any custom
+ * Colorless override. A custom Colorless colour (REQ-099) is derived by
+ * `resolveColorlessPalette` and written as inline overrides of the same
+ * variables, the way the mockup's `applyCustom` does, plus `data-accent` so the
+ * ambient scene restarts on the new colour. Touches document-root styling only.
  */
 export function applyPalette(palette: Palette): void {
   const root = document.documentElement;
   root.dataset.theme = palette.id;
-  root.style.setProperty(accentVarNames.accent, palette.accent);
-  root.style.setProperty(accentVarNames.accentStrong, palette.accentStrong);
-  root.style.setProperty(accentVarNames.accentSoft, palette.accentSoft);
-  root.style.setProperty(accentVarNames.accentContrast, palette.accentContrast);
+  root.dataset.themeMotif = palette.motif;
+  root.setAttribute("data-profile", palette.id);
+  const base = getPaletteById(palette.id);
+  const custom = base !== undefined && palette.swatch !== base.swatch;
+  if (!custom) {
+    for (const name of customVarNames) root.style.removeProperty(name);
+    root.removeAttribute("data-accent");
+    return;
+  }
+  const accent = triplet(palette.accent);
+  root.style.setProperty("--accent", accent);
+  root.style.setProperty("--accent-strong", triplet(palette.accentStrong));
+  root.style.setProperty("--accent-soft", triplet(palette.accentSoft));
+  root.style.setProperty("--accent-contrast", triplet(palette.accentContrast));
+  root.style.setProperty("--wash-tint", `color-mix(in srgb, ${accent} 16%, #0c0c0d)`);
+  root.style.setProperty("--focus-ring", triplet(palette.accentSoft));
+  root.setAttribute("data-accent", palette.swatch);
 }

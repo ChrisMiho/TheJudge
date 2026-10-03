@@ -144,7 +144,13 @@ async function openStackZoneCollection(user: ReturnType<typeof userEvent.setup>)
 }
 
 async function selectStackCard(user: ReturnType<typeof userEvent.setup>, query: string, cardName: string): Promise<void> {
-  const searchInput = screen.getByPlaceholderText("Type to begin");
+  // Look-matching pass (slice N, review 1 fix — finding 3): search opens from its
+  // own ＋ Add card chip now, instead of sitting permanently visible.
+  const chip = screen.queryByRole("button", { name: /^Add a card to /, expanded: false });
+  if (chip) {
+    await user.click(chip);
+  }
+  const searchInput = screen.getByPlaceholderText("Search for a card to add");
   await user.clear(searchInput);
   await user.type(searchInput, query);
   await user.click(await screen.findByRole("button", { name: cardName }));
@@ -199,6 +205,7 @@ describe("Target gating and pickers", () => {
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
     await user.click(screen.getByRole("button", { name: "Continue" }));
     await user.click(screen.getByRole("button", { name: "Zone tab: Battlefield" }));
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
     await user.type(screen.getByLabelText("Battlefield search input"), "lig");
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
@@ -255,9 +262,10 @@ describe("Target gating and pickers", () => {
     expect(screen.getByLabelText("Mock scan camera")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Exit scan" }));
-    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (1)");
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack1");
     expect(screen.getByText("Opt")).toBeInTheDocument();
-    expect(screen.getByText("bottom & top")).toBeInTheDocument();
+    // REQ-008/REQ-209: one card on the Stack reads TOP (not "bottom & top").
+    expect(screen.getByText("TOP")).toBeInTheDocument();
   });
 
   it("tracks auto-added scans in the review bubble and removes one in a single tap", async () => {
@@ -297,9 +305,9 @@ describe("Target gating and pickers", () => {
     await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
     await user.click(screen.getByRole("button", { name: "Continue" }));
 
-    expect(screen.getByLabelText("Target kind for Opt")).toBeInTheDocument();
+    expect(screen.getByLabelText("Add a target for Opt")).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
     expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("How does this resolve?")).toBeInTheDocument();
   });
@@ -316,7 +324,7 @@ describe("Target gating and pickers", () => {
     expect(screen.queryByRole("button", { name: "Decrypt Stack" })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Continue" }));
-    await user.click(screen.getByRole("button", { name: "OK — finish enrichment" }));
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
     expect(screen.getByRole("button", { name: "Decrypt Stack" })).toBeInTheDocument();
   });
 });

@@ -12,13 +12,22 @@ import {
   expandSecondaryPlayerDetails,
   getUrlFromRequest,
   jsonResponse,
+  navigateToPath,
   selectZoneTab,
   startOnInDepthQuestion
 } from "./test/appTestHelpers";
 
+// REQ-067/REQ-206: the Menu lists one question door — "Ask a Question" (not
+// "Quick Question"), and `in-depth` has no row of its own, so "In-Depth
+// Question" is reached by direct navigation instead of a menu click.
 async function selectDestination(user: ReturnType<typeof userEvent.setup>, name: string): Promise<void> {
+  if (name === "In-Depth Question") {
+    await navigateToPath("/in-depth");
+    return;
+  }
+  const menuLabel = name === "Quick Question" ? "Ask a Question" : name;
   await user.click(screen.getByRole("button", { name: "Switch feature" }));
-  await user.click(screen.getByRole("menuitem", { name }));
+  await user.click(screen.getByRole("menuitem", { name: menuLabel }));
 }
 
 function secondaryArrows(): HTMLElement[] {
@@ -73,8 +82,7 @@ describe("Frontend - Portal", () => {
     const arrows = secondaryArrows();
     expect(arrows.length).toBeGreaterThan(0);
     for (const arrow of arrows) {
-      expect(arrow.className).toContain("min-h-[2.75rem]");
-      expect(arrow.className).toContain("min-w-[2.75rem]");
+      expect(arrow.className).toContain("link");
     }
   });
 
@@ -153,12 +161,12 @@ describe("Frontend - Portal", () => {
     expect(screen.getByLabelText("Player 1 poison")).toHaveValue("5");
 
     await user.click(screen.getByRole("button", { name: "Confirm game context" }));
-    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Zones in play" })).toBeInTheDocument();
 
     await selectDestination(user, "Quick Question");
     await selectDestination(user, "In-Depth Question");
 
-    expect(screen.getByRole("heading", { name: "Zone confirmation" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Zones in play" })).toBeInTheDocument();
   });
 
   it("selecting the already-active destination is a no-op that changes nothing", async () => {

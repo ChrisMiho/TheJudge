@@ -82,7 +82,7 @@ async function open(props: HarnessProps = {}) {
 }
 
 async function fillMessage(user: ReturnType<typeof userEvent.setup>, text: string): Promise<void> {
-  await user.type(screen.getByLabelText("What happened?"), text);
+  await user.type(screen.getByRole("textbox", { name: /happened|your idea|tell us/ }), text);
 }
 
 function submitButton(): HTMLElement {
@@ -112,21 +112,35 @@ describe("FeedbackModal", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("renders a labelled modal dialog with the three form controls", async () => {
+  it("renders a labelled sheet dialog with the type as three pills", async () => {
     const { dialog } = await open();
 
     expect(dialog).toHaveAttribute("aria-modal", "true");
+    expect(dialog).toHaveClass("drawer-panel", "feedback-panel");
     expect(within(dialog).getByRole("heading", { name: "Send feedback" })).toBeInTheDocument();
 
-    const category = screen.getByLabelText("Feedback type");
-    expect(category).toBeInstanceOf(HTMLSelectElement);
-    expect(
-      Array.from((category as HTMLSelectElement).options).map((option) => option.text)
-    ).toEqual(["Bug", "Suggestion", "Other"]);
-    expect((category as HTMLSelectElement).value).toBe("bug");
+    const bug = screen.getByRole("button", { name: "Bug" });
+    const suggestion = screen.getByRole("button", { name: "Suggestion" });
+    const other = screen.getByRole("button", { name: "Other" });
+    expect(bug).toHaveAttribute("aria-pressed", "true");
+    expect(suggestion).toHaveAttribute("aria-pressed", "false");
+    expect(other).toHaveAttribute("aria-pressed", "false");
 
     expect(screen.getByLabelText("What happened?")).toBeRequired();
-    expect(screen.getByLabelText("Reply email (optional)")).toBeInTheDocument();
+    expect(screen.getByLabelText(/^Reply email/)).toBeInTheDocument();
+  });
+
+  it("switches the selected pill and the message hint together", async () => {
+    const { user } = await open();
+
+    await user.click(screen.getByRole("button", { name: "Suggestion" }));
+    expect(screen.getByRole("button", { name: "Suggestion" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: "Bug" })).toHaveAttribute("aria-pressed", "false");
+    // the label and the hint both follow the chosen type (the mockup's KIND_LABEL / KIND_HINT)
+    expect(screen.getByLabelText("What's your idea?")).toHaveAttribute(
+      "placeholder",
+      "What would make TheJudge better?"
+    );
   });
 
   it("moves focus into the dialog on open and restores it to the opener on close", async () => {
@@ -160,6 +174,8 @@ describe("FeedbackModal", () => {
     expect(focusable.length).toBeGreaterThan(1);
     const first = focusable[0]!;
     const last = focusable[focusable.length - 1]!;
+    // the message box takes focus on open (the mockup's behaviour); start the walk from the first control
+    first.focus();
 
     // Forward through every focusable element and one step past the end.
     for (let index = 0; index < focusable.length; index += 1) {
@@ -190,7 +206,7 @@ describe("FeedbackModal", () => {
     const { user } = await open();
 
     await fillMessage(user, "The stack resolved backwards.");
-    await user.type(screen.getByLabelText("Reply email (optional)"), "nope");
+    await user.type(screen.getByLabelText(/^Reply email/), "nope");
     await user.click(submitButton());
 
     expect(await screen.findByRole("alert")).toHaveTextContent(
@@ -198,8 +214,8 @@ describe("FeedbackModal", () => {
     );
     expect(submitFeedbackMock).not.toHaveBeenCalled();
 
-    await user.clear(screen.getByLabelText("Reply email (optional)"));
-    await user.type(screen.getByLabelText("Reply email (optional)"), "player@example.com");
+    await user.clear(screen.getByLabelText(/^Reply email/));
+    await user.type(screen.getByLabelText(/^Reply email/), "player@example.com");
     await user.click(submitButton());
 
     await waitFor(() => expect(submitFeedbackMock).toHaveBeenCalledTimes(1));
@@ -215,13 +231,21 @@ describe("FeedbackModal", () => {
     expect(submitFeedbackMock.mock.calls[0]?.[0]).not.toHaveProperty("email");
   });
 
+  it("folds the snapshot disclosure behind a dashed row", async () => {
+    await open();
+
+    const row = screen.getByTestId("feedback-snapshot-row");
+    expect(row).toHaveClass("fb-snapshot");
+    expect(within(row).getByText(/includes a snapshot of the app right now/i)).toBeInTheDocument();
+  });
+
   it("always shows the disclosure line and reveals the summary on demand", async () => {
     const { user } = await open();
 
-    expect(screen.getByText(/includes a snapshot of the app's current state/i)).toBeInTheDocument();
+    expect(screen.getByText(/includes a snapshot of the app right now/i)).toBeInTheDocument();
     expect(screen.queryByTestId("feedback-app-state-summary")).not.toBeInTheDocument();
 
-    const toggle = screen.getByRole("button", { name: "Show app-state details" });
+    const toggle = screen.getByRole("button", { name: /Show app-state details/ });
     expect(toggle).toHaveAttribute("aria-expanded", "false");
 
     await user.click(toggle);
@@ -230,7 +254,7 @@ describe("FeedbackModal", () => {
     for (const line of summarizeFeedbackContext(createContext())) {
       expect(within(summary).getByText(line.label)).toBeInTheDocument();
     }
-    expect(screen.getByRole("button", { name: "Hide app-state details" })).toHaveAttribute(
+    expect(screen.getByRole("button", { name: /Hide app-state details/ })).toHaveAttribute(
       "aria-expanded",
       "true"
     );
@@ -239,11 +263,11 @@ describe("FeedbackModal", () => {
   it("shows the user exactly the snapshot it serializes into appState", async () => {
     const { user } = await open();
 
-    await user.click(screen.getByRole("button", { name: "Show app-state details" }));
+    await user.click(screen.getByRole("button", { name: /Show app-state details/ }));
     const summary = screen.getByTestId("feedback-app-state-summary");
-    const shownRows = Array.from(summary.querySelectorAll("div")).map((row) =>
-      Array.from(row.children).map((cell) => cell.textContent)
-    );
+    const terms = Array.from(summary.querySelectorAll("dt")).map((cell) => cell.textContent);
+    const details = Array.from(summary.querySelectorAll("dd")).map((cell) => cell.textContent);
+    const shownRows = terms.map((term, index) => [term, details[index]]);
 
     await fillMessage(user, "The stack resolved backwards.");
     await user.click(submitButton());
@@ -279,6 +303,9 @@ describe("FeedbackModal", () => {
     resolveSubmit?.({ status: "success" });
 
     expect(await screen.findByText("Thanks — your feedback was sent.")).toBeInTheDocument();
+    const success = screen.getByTestId("feedback-success");
+    expect(success.querySelector(".seal")).not.toBeNull();
+    expect(screen.queryByLabelText("What happened?")).not.toBeInTheDocument();
   });
 
   it("shows an inline error and preserves the draft when delivery fails", async () => {
@@ -286,15 +313,15 @@ describe("FeedbackModal", () => {
 
     const { user } = await open();
 
-    await user.selectOptions(screen.getByLabelText("Feedback type"), "suggestion");
+    await user.click(screen.getByRole("button", { name: "Suggestion" }));
     await fillMessage(user, "Everything is on fire.");
-    await user.type(screen.getByLabelText("Reply email (optional)"), "player@example.com");
+    await user.type(screen.getByLabelText(/^Reply email/), "player@example.com");
     await user.click(submitButton());
 
     expect(await screen.findByText(/We couldn't send that/)).toBeInTheDocument();
-    expect(screen.getByLabelText("Feedback type")).toHaveValue("suggestion");
-    expect(screen.getByLabelText("What happened?")).toHaveValue("Everything is on fire.");
-    expect(screen.getByLabelText("Reply email (optional)")).toHaveValue("player@example.com");
+    expect(screen.getByRole("button", { name: "Suggestion" })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByLabelText("What's your idea?")).toHaveValue("Everything is on fire.");
+    expect(screen.getByLabelText(/^Reply email/)).toHaveValue("player@example.com");
     expect(submitButton()).toBeEnabled();
   });
 

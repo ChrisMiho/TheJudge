@@ -216,6 +216,12 @@ export function formatStackSection(context: PromptContext): string {
       // Insert stack-only fields: caster after subtypes (index 6), manaSpent after targets (index 8)
       metaLines.splice(6, 0, `caster: ${formatPlayerRef(card.caster, displayNamesByPlayer)}`);
       metaLines.splice(8, 0, `manaSpent: ${card.manaSpent ?? card.manaValue}`);
+      // REQ-211: copies (the storm case) is sent only when the player set it above 0 —
+      // an untouched card adds no line, keeping every prompt that doesn't use this
+      // byte-identical. Inserted right after manaSpent, before contextNotes.
+      if (card.copies !== undefined) {
+        metaLines.splice(9, 0, `copies: ${card.copies}`);
+      }
       return [`Stack item ${index + 1} (${card.stackRole})`, `card: ${card.name}`, ...metaLines].join("\n");
     })
     .join("\n\n");
@@ -234,14 +240,22 @@ export function formatNonStackZoneSections(context: PromptContext): string {
       const sectionHeader = ZONE_SECTION_LABEL[zone.zoneId] ?? `ZONE: ${zone.zoneId.toUpperCase()}`;
       const itemLabel = ZONE_ITEM_LABEL[zone.zoneId] ?? zone.zoneId;
       const itemsText = zone.items
-        .map((item, index) =>
-          [
+        .map((item, index) => {
+          const metaLines = formatZoneCardMetadataLines(item, displayNamesByPlayer);
+          // REQ-210: an explicitly sent mana-spent value is inserted right after
+          // targets (the same relative position the Stack's own manaSpent line
+          // takes) — an untouched card (no sent value) adds no line, so today's
+          // prompts stay byte-identical.
+          if (item.manaSpent !== undefined) {
+            metaLines.splice(7, 0, `manaSpent: ${item.manaSpent}`);
+          }
+          return [
             `${itemLabel} ${index + 1}`,
             `name: ${item.name}`,
             `owner: ${formatPlayerRef(item.owner, displayNamesByPlayer)}`,
-            ...formatZoneCardMetadataLines(item, displayNamesByPlayer)
-          ].join("\n")
-        )
+            ...metaLines
+          ].join("\n");
+        })
         .join("\n\n");
       return [sectionHeader, itemsText].join("\n");
     })

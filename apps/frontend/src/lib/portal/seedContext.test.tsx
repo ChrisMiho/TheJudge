@@ -111,4 +111,56 @@ describe("Frontend - Shared", () => {
       expect(result.current.consumeSeed()).toBeNull();
     });
   });
+
+  describe("Lookup carry mailbox (REQ-206)", () => {
+    const firstCarry = {
+      cards: [{ cardId: "urza", name: "Urza, Lord High Artificer", imageId: "img-urza", colors: ["U"] }],
+      question: "Tell me about Urza."
+    };
+    const secondCarry = {
+      cards: [{ cardId: "opt", name: "Opt", imageId: "img-opt", colors: ["U"] }],
+      question: ""
+    };
+
+    it("returns null when nothing has been queued", () => {
+      const { result } = renderHook(() => useAssistantSeed(), { wrapper: withProvider });
+
+      expect(result.current.consumeLookupCarry()).toBeNull();
+    });
+
+    it("hands the queued carry to the consumer unchanged, consuming it exactly once", () => {
+      const { result } = renderHook(() => useAssistantSeed(), { wrapper: withProvider });
+
+      result.current.queueLookupCarry(firstCarry);
+
+      expect(result.current.consumeLookupCarry()).toEqual(firstCarry);
+      expect(result.current.consumeLookupCarry()).toBeNull();
+    });
+
+    it("keeps only the latest of several pending carries", () => {
+      const { result } = renderHook(() => useAssistantSeed(), { wrapper: withProvider });
+
+      result.current.queueLookupCarry(firstCarry);
+      result.current.queueLookupCarry(secondCarry);
+
+      expect(result.current.consumeLookupCarry()).toEqual(secondCarry);
+    });
+
+    it("is independent of the roster seed mailbox — queuing one never satisfies the other", () => {
+      const { result } = renderHook(() => useAssistantSeed(), { wrapper: withProvider });
+
+      result.current.queueSeed(firstSeed);
+      result.current.queueLookupCarry(firstCarry);
+
+      expect(result.current.consumeLookupCarry()).toEqual(firstCarry);
+      expect(result.current.consumeSeed()).toEqual(firstSeed);
+    });
+
+    it("ignores a queued carry without a provider instead of throwing", () => {
+      const { result } = renderHook(() => useAssistantSeed());
+
+      expect(() => result.current.queueLookupCarry(firstCarry)).not.toThrow();
+      expect(result.current.consumeLookupCarry()).toBeNull();
+    });
+  });
 });

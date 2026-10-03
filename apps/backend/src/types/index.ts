@@ -64,6 +64,11 @@ export type PromptContextZoneItem = {
   owner?: PlayerLabel;
   targets: PromptContextStackTarget[];
   contextNotes?: string;
+  /** REQ-210: every zone's card can carry an explicit mana-spent value now, not only
+   * the Stack. Unlike the Stack's `manaSpent` (always present, falling back to
+   * `manaValue`), this is present only when the player actually sent one — an
+   * untouched box emits no line, keeping today's prompts byte-identical. */
+  manaSpent?: number;
 };
 
 export type PromptContextStackItem = {
@@ -83,6 +88,10 @@ export type PromptContextStackItem = {
   targets: PromptContextStackTarget[];
   contextNotes?: string;
   manaSpent: number;
+  /** REQ-211: the storm case — how many copies of this spell are on the stack besides
+   * the original. Present only when the player set it above 0; an untouched card emits
+   * no `copies` line, keeping every prompt that doesn't use this byte-identical. */
+  copies?: number;
   stackIndex: number;
   stackRole: "bottom" | "middle" | "top";
 };

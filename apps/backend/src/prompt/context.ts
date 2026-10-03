@@ -143,6 +143,20 @@ function resolveCardDetail(cardId: string, cardDetailIndex: CardDetailIndex): Ca
   return cardDetailIndex.get(normalizeWhitespace(cardId)) ?? EMPTY_CARD_DETAIL;
 }
 
+/** REQ-210: a non-Stack card's `manaSpent` is sent only when the player actually
+ * edited it — an untouched box's `manaSpent` stays `undefined` end to end, so this
+ * returns `undefined` rather than falling back to the printed `manaValue` the way
+ * the Stack's own field does. */
+function normalizeOptionalManaSpent(value: number | undefined): number | undefined {
+  return typeof value === "number" && Number.isFinite(value) && value >= 0 ? value : undefined;
+}
+
+/** REQ-211: Copies is sent only when the player set it above 0 (1-99); anything else
+ * (undefined, 0, out of range) reaches the prompt as nothing at all. */
+function normalizeOptionalCopies(value: number | undefined): number | undefined {
+  return typeof value === "number" && Number.isInteger(value) && value >= 1 && value <= 99 ? value : undefined;
+}
+
 function normalizeZoneItem(
   card: import("../types/index.js").ZoneCardItem,
   cardDetailIndex: CardDetailIndex
@@ -151,6 +165,7 @@ function normalizeZoneItem(
   if (name.length === 0) return null;
   const owner = card.owner;
   const detail = resolveCardDetail(card.cardId, cardDetailIndex);
+  const manaSpent = normalizeOptionalManaSpent(card.manaSpent);
   return {
     cardId: normalizeWhitespace(card.cardId),
     name,
@@ -165,7 +180,8 @@ function normalizeZoneItem(
     keywords: normalizeOptionalList(detail.keywords),
     owner: owner && normalizeWhitespace(owner).length > 0 ? owner : undefined,
     targets: normalizeTargets(card.targets),
-    contextNotes: normalizeOptionalText(card.contextNotes) || undefined
+    contextNotes: normalizeOptionalText(card.contextNotes) || undefined,
+    ...(manaSpent !== undefined ? { manaSpent } : {})
   };
 }
 
@@ -277,6 +293,9 @@ export function buildPromptContext(
           typeof card.manaSpent === "number" && Number.isFinite(card.manaSpent) && card.manaSpent >= 0
             ? card.manaSpent
             : normalizeOptionalNumber(detail.manaValue),
+        ...(normalizeOptionalCopies(card.copies) !== undefined
+          ? { copies: normalizeOptionalCopies(card.copies) }
+          : {}),
         stackIndex,
         stackRole: toStackRole(stackIndex, stack.length)
       };

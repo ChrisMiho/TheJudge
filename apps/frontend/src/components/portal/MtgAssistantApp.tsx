@@ -1,15 +1,14 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
-import { ConversationHistoryDrawer } from "../ConversationHistoryDrawer";
+import { useNavigate } from "react-router";
 import { EnrichmentStep } from "../EnrichmentStep";
 import { StagedStepHeader } from "../StagedStepHeader";
-import { StepEyebrow } from "../StepEyebrow";
+import { StationsRail } from "../StationsRail";
 import { ZoneCollectionStep } from "../ZoneCollectionStep";
 import { ZoneConfirmStep } from "../ZoneConfirmStep";
 import { logFrontendDebug } from "../../lib/debugLogger";
-import type { ConversationHistoryEntry, GameDraftState } from "../../lib/conversationHistory/persistence";
+import type { GameDraftState } from "../../lib/conversationHistory/persistence";
 import {
   clearDraft,
-  deleteHistoryEntry,
   loadDraft,
   loadHistoryEntries,
   saveDraft,
@@ -20,6 +19,7 @@ import {
   buildAskAiRequest,
   canAdvance,
   DEFAULT_TURN_PHASE,
+  FLOW_STEPS,
   getNextStep,
   getPreviousStep,
   mergeSelectedZonesOnPhaseChange,
@@ -36,6 +36,7 @@ import {
   PlayerRosterEditor,
   type RosterPlayer
 } from "../PlayerRosterEditor";
+import { appendZoneCard, buildZoneCardFromMetadata, validateZoneCardAdd } from "../../lib/zoneCards";
 import type {
   CardMetadataItem,
   CombatStep,
@@ -55,7 +56,10 @@ const MIN_PLAYERS = MIN_PLAYER_ROSTER_SIZE;
 const MAX_PLAYERS = MAX_PLAYER_ROSTER_SIZE;
 const DUEL_STARTING_LIFE_TOTAL = "20";
 const MULTIPLAYER_STARTING_LIFE_TOTAL = "40";
-const PLAYER_OPTIONS: PlayerLabel[] = Array.from({ length: MAX_PLAYERS }, (_, index) => `Player ${index + 1}` as PlayerLabel);
+const PLAYER_OPTIONS: PlayerLabel[] = Array.from(
+  { length: MAX_PLAYERS },
+  (_, index) => `Player ${index + 1}` as PlayerLabel
+);
 
 type ScalarCounterField = "poison" | "energy" | "experience";
 
@@ -101,16 +105,6 @@ function createEmptyCountersByPlayer(): AssistantCountersByPlayer {
   });
   return countersByPlayer;
 }
-
-/**
- * One grouped row for every player counter: a content-sized leading element, one declared
- * gap, then the value control. The previous `grid-cols-[1fr_auto]` rows gave the label all
- * leftover width, so the label text and its input sat up to 457px apart on desktop and read
- * as two unrelated controls (REQ-137).
- */
-const COUNTER_ROW_CLASS = "flex min-w-0 items-center gap-2";
-const COUNTER_AMOUNT_INPUT_CLASS =
-  "motion-focus w-20 shrink-0 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-right font-semibold text-zinc-100";
 
 /** Fixed ranges for the scalar counters; every value in range is offered explicitly. */
 const SCALAR_COUNTER_MAX: Record<ScalarCounterField, number> = {
@@ -160,10 +154,25 @@ export interface MtgAssistantAppProps {
 }
 
 export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.Element {
-  const { consumeSeed } = useAssistantSeed();
+  const navigate = useNavigate();
+  const {
+    consumeSeed,
+    consumeLookupCarry,
+    consumeHistoryResume,
+    consumeHistoryDeletion,
+    consumeDraftResume,
+    historyResumeVersion
+  } = useAssistantSeed();
   const [cardMetadata, setCardMetadata] = useState<CardMetadataItem[]>([]);
   const [isMetadataLoading, setIsMetadataLoading] = useState(true);
   const [flowStep, setFlowStep] = useState<FlowStepId>("game-context");
+  // REQ-209: the furthest station this walk has reached, so the rail can let a player
+  // jump back to any visited station without re-earning it; reset on Start Over.
+  const [furthestStepIndex, setFurthestStepIndex] = useState(0);
+  // REQ-018/REQ-206/REQ-209: cards carried from Ask a Question's "Add in-depth
+  // details", waiting to be placed one at a time on the Cards station.
+  const [pendingPlacementCards, setPendingPlacementCards] = useState<CardMetadataItem[]>([]);
+  const [placementTotal, setPlacementTotal] = useState(0);
   const [activePlayerCount, setActivePlayerCount] = useState(MIN_PLAYERS);
   const [lifeTotalsByPlayer, setLifeTotalsByPlayer] = useState<Record<PlayerLabel, string>>(createDefaultLifeTotals);
   const [gameContext, setGameContext] = useState<GameContext | null>(null);
@@ -180,12 +189,10 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   const showCatEasterEgg = brandClickCount >= 10;
   const [playersDetailsExpanded, setPlayersDetailsExpanded] = useState(false);
   const [secondaryDetailsExpanded, setSecondaryDetailsExpanded] = useState(false);
-  const [displayNamesByPlayer, setDisplayNamesByPlayer] = useState<Record<PlayerLabel, string>>(createDefaultDisplayNames);
+  const [displayNamesByPlayer, setDisplayNamesByPlayer] =
+    useState<Record<PlayerLabel, string>>(createDefaultDisplayNames);
   const [countersByPlayer, setCountersByPlayer] = useState<AssistantCountersByPlayer>(createEmptyCountersByPlayer);
-  const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [historyEntries, setHistoryEntries] = useState<ConversationHistoryEntry[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
-  const [gameDraft, setGameDraft] = useState<GameDraftState | null>(null);
 
   // DestinationOutlet keeps previously visited destinations mounted. Running after
   // every render lets an already-mounted Assistant atomically take the one-shot seed
@@ -224,6 +231,31 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     setPlayersDetailsExpanded(true);
   });
 
+  // REQ-206/REQ-209: the same atomic-consume, every-render pattern as the roster seed
+  // above — a lookup carry can be queued while this destination is already mounted
+  // (hidden) from an earlier visit, immediately before App.tsx switches the portal to
+  // it, so a mount-only effect would miss it.
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- consumeLookupCarry clears synchronously, so state updates cannot loop; checking every render is required for a hidden mounted destination.
+  useEffect(() => {
+    const carry = consumeLookupCarry();
+    if (!carry || carry.cards.length === 0) {
+      return;
+    }
+
+    setPendingPlacementCards(carry.cards);
+    setPlacementTotal(carry.cards.length);
+    if (carry.question.trim().length > 0) {
+      setQuestion(carry.question);
+    }
+  });
+
+  // REQ-209: the rail marks a station reachable once the walk has gotten at least that
+  // far; it never regresses on its own (Start Over resets it explicitly below).
+  useEffect(() => {
+    const currentIndex = FLOW_STEPS.indexOf(flowStep);
+    setFurthestStepIndex((current) => Math.max(current, currentIndex));
+  }, [flowStep]);
+
   const wasActiveRef = useRef(isActive);
   useEffect(() => {
     if (wasActiveRef.current && !isActive) {
@@ -244,6 +276,10 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     setCombatStep(draft.combatStep);
     setConfirmedPhase(draft.confirmedPhase);
     setActivePlayer(draft.activePlayer);
+    // REQ-206/REQ-209: every carried card — placed or still waiting for a zone — is in
+    // the Draft slot, so a reload mid-placement resumes exactly where it left off.
+    setPendingPlacementCards(draft.pendingPlacementCards);
+    setPlacementTotal(draft.placementTotal);
   }
 
   // Mid-flight Draft auto-hydrate (REQ-108 / FLOW-017): this destination mounts once per
@@ -345,6 +381,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
       gameContext !== null ||
       selectedZones.length > 0 ||
       question.trim().length > 0 ||
+      pendingPlacementCards.length > 0 ||
       Object.values(zoneCardsByZone).some((cards) => (cards?.length ?? 0) > 0);
 
     if (hasStaging) {
@@ -358,7 +395,9 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         turnPhase,
         combatStep,
         confirmedPhase,
-        activePlayer
+        activePlayer,
+        pendingPlacementCards,
+        placementTotal
       });
     } else {
       clearDraft("game");
@@ -492,12 +531,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     }));
   }
 
-  function updateNamedCounter(
-    player: PlayerLabel,
-    counterId: string,
-    field: "name" | "amount",
-    value: string
-  ): void {
+  function updateNamedCounter(player: PlayerLabel, counterId: string, field: "name" | "amount", value: string): void {
     setCountersByPlayer((current) => ({
       ...current,
       [player]: {
@@ -584,6 +618,57 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     flashStatus("Game context saved.");
   }
 
+  // REQ-209: the rail lets a player jump back to any station already reached. The
+  // guardrail bounces a jump to Context back to Cards while any carried card is still
+  // unplaced — nobody passes the Cards station until every carried card has a zone or
+  // is left out (D7).
+  function handleRailNavigate(step: FlowStepId): void {
+    const targetIndex = FLOW_STEPS.indexOf(step);
+    if (targetIndex > furthestStepIndex) {
+      return;
+    }
+    if (step === "enrichment" && pendingPlacementCards.length > 0) {
+      setFlowStep("zone-collection");
+      flashStatus("Give every carried card a zone first.");
+      return;
+    }
+    setFlowStep(step);
+  }
+
+  // REQ-018/REQ-206/REQ-209: places the current carried card (the head of the
+  // placement queue) into `zone`, selecting that zone if it was not already chosen,
+  // subject to the zone's own add validation (the Stack's duplicate/size limit) — a
+  // refused card stays unplaced rather than silently dropping (REQ-209).
+  function handlePlaceCarriedCard(zone: ZoneId): void {
+    const card = pendingPlacementCards[0];
+    if (!card) {
+      return;
+    }
+
+    const nextCard = buildZoneCardFromMetadata(card);
+    if (zone !== "stack") {
+      nextCard.owner = activePlayer;
+    }
+
+    const destCards = zoneCardsByZone[zone] ?? [];
+    const validation = validateZoneCardAdd(destCards, nextCard, zone);
+    if (!validation.ok) {
+      flashStatus(validation.message);
+      return;
+    }
+
+    setSelectedZones((current) => (current.includes(zone) ? current : [...current, zone]));
+    setZoneCardsByZone((current) => ({
+      ...current,
+      [zone]: appendZoneCard(destCards, nextCard)
+    }));
+    setPendingPlacementCards((current) => current.slice(1));
+  }
+
+  function handleLeaveCarriedCardOut(): void {
+    setPendingPlacementCards((current) => current.slice(1));
+  }
+
   function confirmZoneSelection(): void {
     setGameContext((current) => (current ? { ...current, selectedZones } : current));
     const nextStep = getNextStep("zone-confirm");
@@ -665,9 +750,17 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     await submitFollowUp(text);
   }
 
+  // REQ-029 (amended for REQ-206): Start over clears In-depth details' staged state —
+  // the player roster (count, names, life, poison/energy/experience, commander damage,
+  // named counters) is untouched above, so a game seeded from Life Tracker is not
+  // wiped — and lands the player on a clean Ask a Question page; the next In-depth
+  // details walk starts at station 1 (Game) once they return.
   function handleStartOver(): void {
     startOver();
     setFlowStep("game-context");
+    setFurthestStepIndex(0);
+    setPendingPlacementCards([]);
+    setPlacementTotal(0);
     setGameContext(null);
     setSelectedZones([]);
     setZoneCardsByZone({});
@@ -678,66 +771,117 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
     setActivePlayer("Player 1");
     setStatusMessage(null);
     setActiveConversationId(null);
+    navigate("/quick-lookup");
   }
 
-  function openHistory(): void {
-    setHistoryEntries(loadHistoryEntries("game"));
-    setGameDraft(loadDraft("game"));
-    setIsHistoryOpen(true);
+  // REQ-209: the ruling's ✎ Edit returns to the review with the game context, every card's
+  // details and the question exactly as they were. The conversation is already saved to
+  // Question History (every successful answer auto-saves via onConversationUpdated, REQ-103),
+  // so only the answered thread itself leaves the screen; the next send starts a new
+  // conversation. Unlike Start Over, nothing staged is cleared.
+  function handleEditContext(): void {
+    startOver();
+    setActiveConversationId(null);
   }
 
-  function handleSelectHistoryEntry(entry: ConversationHistoryEntry): void {
-    // Opening a saved conversation is the third mid-flight exit (DEC-138), alongside
-    // Menu-leave and reload. It never changes `isActive` — this destination stays mounted
-    // and active — so the edge effect above cannot see it, and without this call
-    // restoreConversation would overwrite staged work with nothing recoverable. Snapshot
-    // first, then restore, so the staged attempt reappears as the Draft row in the same
-    // drawer the user is already looking at. Silent by design: no dialog, no notice.
-    snapshotMidFlightDraft();
-    restoreConversation(entry);
-    setActiveConversationId(entry.id);
-    setIsHistoryOpen(false);
-    // The restored conversation only renders inside EnrichmentStep, so selecting an entry
-    // from any earlier staged step (game-context, zone-confirm, zone-collection) has to
-    // move the flow there as well. Without this the drawer closed onto the step the user
-    // was already on — the conversation looked like it never opened — and then ambushed
-    // them with someone else's thread the moment they walked the flow forward to
-    // enrichment on their own. Quick Question has no equivalent bug: its whole screen is
-    // gated on `isConversationActive`, so restoring is enough there. (DEC-124)
-    setFlowStep("enrichment");
-  }
-
-  function handleSelectDraft(draft: GameDraftState): void {
-    hydrateFromGameDraft(draft);
-    setIsHistoryOpen(false);
-  }
-
-  // DEC-143/REQ-118/FLOW-018: deletes a completed entry from storage and refreshes the list
-  // first; only then, if it was the active conversation, clears the workspace by reusing the
-  // same handleStartOver path Start Over already uses. handleStartOver's own resets (not
-  // onConversationUpdated) are what run here, so the deleted thread is never re-saved.
-  function handleDeleteHistoryEntry(entry: ConversationHistoryEntry): void {
-    deleteHistoryEntry(entry.id);
-    setHistoryEntries(loadHistoryEntries("game"));
-    if (entry.id === activeConversationId) {
-      handleStartOver();
+  // REQ-213/FLOW-016/FLOW-017/FLOW-018: Question History now lives one level up
+  // (FeaturePortalMenu's combined sheet), so this destination's own exits for it are a
+  // mailbox it consumes rather than local drawer state. `historyResumeVersion` is the one
+  // reactive signal covering all three mailboxes — each `consume*` call below is mode-aware
+  // and a no-op when nothing matching "game" is pending, so this effect is safe to run on
+  // every bump regardless of which flow (or neither) the player actually acted on.
+  useEffect(() => {
+    const resumeEntry = consumeHistoryResume("game");
+    if (resumeEntry) {
+      // Opening a saved conversation is the third mid-flight exit (DEC-138), alongside
+      // Menu-leave and reload. Snapshot first, then restore, so a staged attempt reappears
+      // as this flow's own Draft row the next time History opens. Silent by design.
+      snapshotMidFlightDraft();
+      restoreConversation(resumeEntry);
+      setActiveConversationId(resumeEntry.id);
+      // The restored conversation only renders inside EnrichmentStep, so resuming an entry
+      // from any earlier staged step (game-context, zone-confirm, zone-collection) has to
+      // move the flow there as well — otherwise the sheet closed onto the step the user was
+      // already on, and then ambushed them with someone else's thread the moment they
+      // walked the flow forward to enrichment on their own. Quick Question has no
+      // equivalent: its whole screen is gated on `isConversationActive`. (DEC-124)
+      setFlowStep("enrichment");
+      return;
     }
+
+    const deletedId = consumeHistoryDeletion("game");
+    if (deletedId && deletedId === activeConversationId) {
+      // DEC-143/REQ-118/FLOW-018: handleStartOver's own resets (not onConversationUpdated)
+      // run here, so the deleted thread is never re-saved.
+      handleStartOver();
+      return;
+    }
+
+    if (consumeDraftResume("game")) {
+      const draft = loadDraft("game");
+      if (draft) hydrateFromGameDraft(draft);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reacts only to historyResumeVersion; the consume*/activeConversationId/handleStartOver/restoreConversation values are read via closure at fire time, not listed, so an unrelated render doesn't re-run this.
+  }, [historyResumeVersion]);
+
+  // Look-matching pass (slice N), requirement 1: a round back button plus the page's
+  // own "In-depth details" h1, above the rail, shared by every staged step (the rail
+  // itself hides on the ruling, so this header is gone there too). Requirement 3
+  // retires every per-step free-standing "Back" button in favour of this one control —
+  // station 1 has no previous station, so it leaves In-depth details for Ask a
+  // Question, the screen a player arrived from.
+  function handleHeaderBack(): void {
+    const previousStep = getPreviousStep(flowStep);
+    if (previousStep) {
+      setFlowStep(previousStep);
+      return;
+    }
+    navigate("/quick-lookup");
   }
+
+  // `in-depth-question.html`'s order above the plate: the flow head (round back button + h1),
+  // the carry note while carried cards wait, then the rail.
+  const stationsRail = (
+    <>
+      <div className="flow-head">
+        <div className="lead">
+          <button
+            type="button"
+            className="icon-round motion-focus"
+            aria-label="Back"
+            title="Back"
+            onClick={handleHeaderBack}
+          >
+            <span aria-hidden="true">‹</span>
+          </button>
+          <h1>In-depth details</h1>
+        </div>
+      </div>
+      {pendingPlacementCards.length > 0 && (
+        <p className="carry-note">
+          <b>
+            {placementTotal} {placementTotal === 1 ? "card" : "cards"}
+          </b>{" "}
+          came along with your question — set the game up, then step 3 asks for each one&rsquo;s zone, one card at a
+          time.
+        </p>
+      )}
+      <StationsRail currentStep={flowStep} furthestStepIndex={furthestStepIndex} onNavigate={handleRailNavigate} />
+    </>
+  );
 
   let content: JSX.Element;
 
   if (flowStep === "game-context") {
     content = (
-      <PageShell>
-          <StagedStepHeader
-            onBrandClick={() => setBrandClickCount((c) => c + 1)}
-            historyTrigger={{ onOpen: openHistory }}
-          />
-          <StepEyebrow stepName="Game context" />
+      <PageShell variant="narrow">
+        <StagedStepHeader onBrandClick={() => setBrandClickCount((c) => c + 1)} />
+        <section className="idq">
+          {stationsRail}
           {showCatEasterEgg && (
             <div className="p-2 text-center">
               {emptyStateImageFailed ? (
-                <p className="text-2xl font-semibold text-zinc-200">Cat wizard</p>
+                <p className="text-2xl font-semibold">Cat wizard</p>
               ) : (
                 <img
                   src={EMPTY_STATE_IMAGE_URL}
@@ -748,175 +892,174 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
               )}
             </div>
           )}
-          <div className="panel-inner">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Players in game</p>
-            <p className="text-xs text-zinc-400">Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.</p>
+          {/* `in-depth-question.html`'s step 1: Players in game and Turn phase/Active player
+              share one `.plate`, with `.plate-next` as the only way forward. */}
+          <section className="idq-step" aria-label="Game context">
+            <div className="plate">
+              <h2>Game context</h2>
+              <p className="lede">
+                Who is playing, and where the turn is. Tap the arrow to name the players and set life — 2 players start
+                at 20, 3+ at 40.
+              </p>
 
-            <PlayerRosterEditor
-              players={rosterPlayers}
-              playerCount={activePlayerCount}
-              isExpanded={playersDetailsExpanded}
-              onToggleExpanded={toggleOuterRosterDetails}
-              onAddPlayer={addPlayer}
-              onRemovePlayer={removePlayer}
-              onDisplayNameChange={updateDisplayName}
-              onLifeTotalChange={updateLifeTotal}
-              showLifeTotals
-              secondaryDetailsExpanded={secondaryDetailsExpanded}
-              onToggleSecondaryDetails={toggleSecondaryDetails}
-              renderPlayerExtras={(player) => {
-                const playerCounters = countersByPlayer[player.label];
-                return (
-                  <div className="space-y-3 border-t border-zinc-700/70 pt-3">
-                    {/* Stacked at every width: three bounded selects side by side squeezed
+              <PlayerRosterEditor
+                players={rosterPlayers}
+                playerCount={activePlayerCount}
+                isExpanded={playersDetailsExpanded}
+                onToggleExpanded={toggleOuterRosterDetails}
+                onAddPlayer={addPlayer}
+                onRemovePlayer={removePlayer}
+                onDisplayNameChange={updateDisplayName}
+                onLifeTotalChange={updateLifeTotal}
+                showLifeTotals
+                secondaryDetailsExpanded={secondaryDetailsExpanded}
+                onToggleSecondaryDetails={toggleSecondaryDetails}
+                renderPlayerExtras={(player) => {
+                  const playerCounters = countersByPlayer[player.label];
+                  return (
+                    <>
+                      {/* Stacked at every width: three bounded selects side by side squeezed
                         each control below its own legible width (REQ-138). */}
-                    <div className="flex flex-col gap-2">
-                      {(["poison", "energy", "experience"] as const).map((field) => (
-                        <label key={field} className={COUNTER_ROW_CLASS}>
-                          {/* One declared label width across the three stacked rows, so the
-                              selects line up instead of stepping with each label's length. */}
-                          <span className="w-20 shrink-0 truncate text-xs font-semibold capitalize text-zinc-300">
+                      <div className="counters">
+                        {(["poison", "energy", "experience"] as const).map((field) => (
+                          <label key={field}>
                             {field}
-                          </span>
-                          <select
-                            aria-label={`${player.label} ${field}`}
-                            value={playerCounters[field]}
-                            onChange={(event) => updateScalarCounter(player.label, field, event.target.value)}
-                            className="motion-focus w-auto shrink-0 rounded-lg border border-zinc-600 bg-zinc-800 px-2 py-1.5 font-semibold text-zinc-100"
-                          >
-                            <option value="">Unset</option>
-                            {scalarCounterOptions(field, playerCounters[field]).map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </select>
-                        </label>
-                      ))}
-                    </div>
+                            <select
+                              aria-label={`${player.label} ${field}`}
+                              value={playerCounters[field]}
+                              onChange={(event) => updateScalarCounter(player.label, field, event.target.value)}
+                              className="field"
+                            >
+                              <option value="">Unset</option>
+                              {scalarCounterOptions(field, playerCounters[field]).map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+                        ))}
+                      </div>
 
-                    <div className="space-y-2">
-                      <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                        Commander damage
-                      </p>
+                      <span className="lbl">Commander damage</span>
                       {activePlayers
                         .filter((source) => source !== player.label)
                         .map((source) => (
-                          <label key={source} className={COUNTER_ROW_CLASS}>
-                            <span className="min-w-0 truncate text-zinc-300">From {source}</span>
+                          <label key={source} className="cmd-row">
+                            <span>From {source}</span>
                             <input
                               aria-label={`${player.label} commander damage from ${source}`}
                               value={playerCounters.commanderDamage[source] ?? ""}
-                              onChange={(event) =>
-                                updateCommanderDamage(player.label, source, event.target.value)
-                              }
+                              onChange={(event) => updateCommanderDamage(player.label, source, event.target.value)}
                               inputMode="numeric"
-                              className={COUNTER_AMOUNT_INPUT_CLASS}
+                              placeholder="0"
+                              className="field amt"
                             />
                           </label>
                         ))}
-                    </div>
 
-                    {playerCounters.counters.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-400">
-                          Named counters
-                        </p>
-                        {playerCounters.counters.map((counter) => {
-                          const accessibleName = counter.name.trim() || counter.id;
-                          return (
-                            <div key={counter.id} className={COUNTER_ROW_CLASS}>
-                              <input
-                                aria-label={`${player.label} counter ${accessibleName} name`}
-                                value={counter.name}
-                                onChange={(event) =>
-                                  updateNamedCounter(player.label, counter.id, "name", event.target.value)
-                                }
-                                className="motion-focus min-w-0 flex-1 rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-1.5 text-zinc-100"
-                              />
-                              <input
-                                aria-label={`${player.label} counter ${accessibleName} amount`}
-                                value={counter.amount}
-                                onChange={(event) =>
-                                  updateNamedCounter(player.label, counter.id, "amount", event.target.value)
-                                }
-                                inputMode="numeric"
-                                className={COUNTER_AMOUNT_INPUT_CLASS}
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                );
-              }}
-            />
-          </div>
-          <div className="panel-inner ambient-accent-surface ambient-accent-interactive">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <label className="flex flex-col gap-2 text-sm">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Turn phase</span>
-                <select
-                  aria-label="Turn phase"
-                  value={turnPhase}
-                  onChange={(event) => setTurnPhase(event.target.value as TurnPhase)}
-                  className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
-                >
-                  {TURN_PHASE_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-              <label className="flex flex-col gap-2 text-sm">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Active player</span>
-                <select
-                  aria-label="Active player"
-                  value={activePlayer}
-                  onChange={(event) => setActivePlayer(event.target.value as PlayerLabel)}
-                  className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
-                >
-                  {activePlayers.map((player) => (
-                    <option key={player} value={player}>
-                      {formatPlayerDisplayLabel(player, displayNamesByPlayer[player])}
-                    </option>
-                  ))}
-                </select>
-              </label>
+                      {playerCounters.counters.length > 0 && (
+                        <>
+                          <span className="lbl">Named counters</span>
+                          {playerCounters.counters.map((counter) => {
+                            const accessibleName = counter.name.trim() || counter.id;
+                            return (
+                              <div key={counter.id} className="named-row">
+                                <input
+                                  aria-label={`${player.label} counter ${accessibleName} name`}
+                                  value={counter.name}
+                                  onChange={(event) =>
+                                    updateNamedCounter(player.label, counter.id, "name", event.target.value)
+                                  }
+                                  placeholder="Counter name"
+                                  className="field"
+                                />
+                                <input
+                                  aria-label={`${player.label} counter ${accessibleName} amount`}
+                                  value={counter.amount}
+                                  onChange={(event) =>
+                                    updateNamedCounter(player.label, counter.id, "amount", event.target.value)
+                                  }
+                                  inputMode="numeric"
+                                  placeholder="0"
+                                  className="field amt"
+                                />
+                              </div>
+                            );
+                          })}
+                        </>
+                      )}
+                    </>
+                  );
+                }}
+              />
+              <div className="paired ambient-accent-surface ambient-accent-interactive">
+                <label>
+                  Turn phase
+                  <select
+                    aria-label="Turn phase"
+                    value={turnPhase}
+                    onChange={(event) => setTurnPhase(event.target.value as TurnPhase)}
+                    className="field motion-focus"
+                  >
+                    {TURN_PHASE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Active player
+                  <select
+                    aria-label="Active player"
+                    value={activePlayer}
+                    onChange={(event) => setActivePlayer(event.target.value as PlayerLabel)}
+                    className="field"
+                  >
+                    {activePlayers.map((player) => (
+                      <option key={player} value={player}>
+                        {formatPlayerDisplayLabel(player, displayNamesByPlayer[player])}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                {turnPhase === "combat" && (
+                  <label>
+                    Combat step
+                    <select
+                      aria-label="Combat step"
+                      value={combatStep}
+                      onChange={(event) => setCombatStep(event.target.value as CombatStep)}
+                      className="field"
+                    >
+                      {COMBAT_STEP_OPTIONS.map((option) => (
+                        <option key={option.value} value={option.value}>
+                          {option.label}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                )}
+              </div>
+
+              <button
+                type="button"
+                aria-label="Confirm game context"
+                onClick={confirmGameContext}
+                className="plate-next motion-hover motion-press motion-focus"
+              >
+                <span>
+                  Continue<small>next: which zones are in play</small>
+                </span>
+                <span className="chev" aria-hidden="true">
+                  ›
+                </span>
+              </button>
             </div>
-            {turnPhase === "combat" && (
-              <label className="flex flex-col gap-2 text-sm">
-                <span className="text-xs font-semibold uppercase tracking-[0.08em] text-zinc-300">Combat step</span>
-                <select
-                  aria-label="Combat step"
-                  value={combatStep}
-                  onChange={(event) => setCombatStep(event.target.value as CombatStep)}
-                  className="motion-focus rounded-lg border border-zinc-600 bg-zinc-800 px-3 py-2 text-sm text-zinc-100"
-                >
-                  {COMBAT_STEP_OPTIONS.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
-          </div>
-
-          <button
-            type="button"
-            onClick={confirmGameContext}
-            className="motion-hover motion-press motion-focus rounded-xl bg-gradient-to-r from-accent to-accent-strong px-4 py-2.5 text-sm font-semibold text-accent-contrast"
-          >
-            Confirm game context
-          </button>
-          {statusMessage && (
-            <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-2 text-sm font-medium text-accent-soft">
-              {statusMessage}
-            </p>
-          )}
+            {statusMessage && <p className="idq-status">{statusMessage}</p>}
+          </section>
+        </section>
       </PageShell>
     );
   } else if (flowStep === "zone-confirm") {
@@ -941,7 +1084,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         }}
         onContinue={confirmZoneSelection}
         statusMessage={statusMessage}
-        historyTrigger={{ onOpen: openHistory }}
+        stationsRail={stationsRail}
       />
     );
   } else if (flowStep === "zone-collection") {
@@ -969,7 +1112,11 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         canContinue={canContinueCollection}
         onFlashStatus={flashStatus}
         statusMessage={statusMessage}
-        historyTrigger={{ onOpen: openHistory }}
+        stationsRail={stationsRail}
+        pendingPlacementCards={pendingPlacementCards}
+        placementTotal={placementTotal}
+        onPlaceCard={handlePlaceCarriedCard}
+        onLeaveCardOut={handleLeaveCarriedCardOut}
       />
     );
   } else {
@@ -982,6 +1129,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         question={question}
         onQuestionChange={setQuestion}
         onDecryptStack={handleDecryptStack}
+        stationsRail={stationsRail}
         onBack={() => {
           const previousStep = getPreviousStep("enrichment");
           if (previousStep) {
@@ -1004,7 +1152,7 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
         frozenGameContext={frozenGameContext}
         onFollowUp={handleFollowUp}
         onStartOver={handleStartOver}
-        historyTrigger={{ onOpen: openHistory }}
+        onEditRequest={handleEditContext}
       />
     );
   }
@@ -1012,15 +1160,6 @@ export function MtgAssistantApp({ isActive = true }: MtgAssistantAppProps): JSX.
   return (
     <div key={flowStep} className="motion-enter">
       {content}
-      <ConversationHistoryDrawer
-        isOpen={isHistoryOpen}
-        onClose={() => setIsHistoryOpen(false)}
-        entries={historyEntries}
-        activeConversationId={activeConversationId}
-        onSelectEntry={handleSelectHistoryEntry}
-        onDeleteEntry={handleDeleteHistoryEntry}
-        draft={gameDraft ? { updatedAt: gameDraft.updatedAt, onSelect: () => handleSelectDraft(gameDraft) } : null}
-      />
     </div>
   );
 }

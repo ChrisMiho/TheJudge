@@ -271,7 +271,7 @@ controlling`: the predicate attests which orchestrator is running.
 | 3 | `define` | `thejudge-refinement` | opus | 150 | `gate-qc` |
 | 4 | `gate-qc` | `thejudge-quality-check` | sonnet | 60 | `plan` on PASS, `define` on FAIL — except a fourth FAIL, which parks at `owner-action` |
 | 5 | `plan` | `thejudge-map-out` | sonnet | 120 | `build` |
-| 6 | `build` | `thejudge-implement-all` | sonnet | 1200 | `review` |
+| 6 | `build` | `thejudge-implement-all` | sonnet | 4000 | `review` |
 | 7 | `review` | no-write reviewer subagent | opus | 120 | `close` on approval, `build` on Critical/Important |
 | 8 | `close` | `thejudge-cleanup` (on the code branch, before the merge) | sonnet | 120 | `land` — the run ends `COMPLETE` with the code PR open |
 | 9 | `land` | human (PR merge) | — | — | run complete — outside the run's ledger; the package is on `main` when the owner merges |

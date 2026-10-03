@@ -1,7 +1,7 @@
 import { useCallback, useRef, useState } from "react";
 
 import type { ScanCameraStatus } from "../ScanCameraSurface";
-import { useScanCapture } from "../../hooks/useScanCapture";
+import { useScanCapture, type HeldScanEntry } from "../../hooks/useScanCapture";
 import { loadScanMap } from "../../lib/scan/loadScanMap";
 import type { CardScanMap } from "../../lib/scan/resolveScanCandidates";
 import type { Candidate, IdentifyResult, RgbImage } from "../../lib/scan/types";
@@ -28,6 +28,9 @@ export type TradeScan = {
   convergence: ReturnType<typeof useScanCapture>["convergence"];
   addConfirmation: ReturnType<typeof useScanCapture>["addConfirmation"];
   scanDebug: ReturnType<typeof useScanCapture>["scanDebug"];
+  /** REQ-214: the scanner's own holding list — not yet on either side's entries. */
+  heldEntries: HeldScanEntry[];
+  removeHeld: (id: number) => void;
 };
 
 /**
@@ -69,23 +72,8 @@ export function useTradeScan({
   const [notice, setNotice] = useState<TradeScanNotice | null>(null);
   const activeSideIdRef = useRef<TradeSideId | null>(null);
   const scanMapRef = useRef<CardScanMap | null>(null);
-  const pendingOracleIdRef = useRef<string | null>(null);
   const onAddByOracleRef = useRef(onAddByOracle);
   onAddByOracleRef.current = onAddByOracle;
-
-  const scanCapture = useScanCapture({
-    cardMetadata,
-    // Runs synchronously inside `scanCapture.identify` on a confident lock. The
-    // oracle id is stashed here and paired with the same frame's ranked printing
-    // candidates once identify resolves.
-    onScanCandidateSelected: (card) => {
-      pendingOracleIdRef.current = card.cardId;
-      return { added: true };
-    }
-  });
-
-  const { closeScan: closeCapture, identify: captureIdentify, openScan: openCapture } = scanCapture;
-  const captureSetCameraStatus = scanCapture.setCameraStatus;
 
   const addScannedEntry = useCallback(
     (oracleId: string, name: string, candidates: Candidate[]): void => {
@@ -99,35 +87,34 @@ export function useTradeScan({
     []
   );
 
-  const identify = useCallback(
-    async (image: RgbImage): Promise<IdentifyResult> => {
-      const result = await captureIdentify(image);
-      const lockedOracleId = pendingOracleIdRef.current;
+  const scanCapture = useScanCapture({
+    cardMetadata,
+    // REQ-214: invoked once per held card when the scanner closes, in hold
+    // order — not on recognition. `candidates` is that card's own ranked
+    // identify result from the moment it was held, carried by the holding
+    // list so the printing resolution below works even long after that frame.
+    onScanCandidateSelected: (card, _scanImageUrl, candidates) => {
+      addScannedEntry(card.cardId, card.name, candidates);
+      return { added: true };
+    }
+  });
 
-      if (lockedOracleId) {
-        pendingOracleIdRef.current = null;
-        const card = cardMetadata.find((item) => item.cardId === lockedOracleId);
-        if (card) {
-          addScannedEntry(lockedOracleId, card.name, result.candidates);
-        }
-      }
-
-      return result;
-    },
-    [addScannedEntry, captureIdentify, cardMetadata]
-  );
+  const { closeScan: closeCapture, identify, openScan: openCapture } = scanCapture;
+  const captureSetCameraStatus = scanCapture.setCameraStatus;
 
   const closeScan = useCallback((): void => {
-    activeSideIdRef.current = null;
-    pendingOracleIdRef.current = null;
-    setActiveSideId(null);
+    // REQ-214: closeCapture() synchronously flushes the holding list through
+    // onScanCandidateSelected -> addScannedEntry, which reads activeSideIdRef — so
+    // the ref must still name the scanning side while that flush runs. Clear it
+    // only after.
     closeCapture();
+    activeSideIdRef.current = null;
+    setActiveSideId(null);
   }, [closeCapture]);
 
   const openScan = useCallback(
     (sideId: TradeSideId): void => {
       activeSideIdRef.current = sideId;
-      pendingOracleIdRef.current = null;
       setActiveSideId(sideId);
       setNotice(null);
       void openCapture();
@@ -172,6 +159,8 @@ export function useTradeScan({
     recordAcquisitionDiagnostic: scanCapture.recordAcquisitionDiagnostic,
     convergence: scanCapture.convergence,
     addConfirmation: scanCapture.addConfirmation,
-    scanDebug: scanCapture.scanDebug
+    scanDebug: scanCapture.scanDebug,
+    heldEntries: scanCapture.heldEntries,
+    removeHeld: scanCapture.removeHeld
   };
 }

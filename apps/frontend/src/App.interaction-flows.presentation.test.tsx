@@ -31,13 +31,23 @@ describe("Interaction flows - zone card presentation", () => {
   installInteractionFlowsHarness();
 
   it("blocks Decrypt Stack after all cards are removed in enrichment", async () => {
+    // REQ-209/REQ-017 (slice D/E): per-card removal moved from the Context sheet to
+    // the Cards station's shelf card menu. Reach Context once (furthest-reached makes
+    // its rail station tappable), go back to Cards, remove the only card there, then
+    // return to Context directly via the rail — bypassing the Cards→Context Continue
+    // gate the same way a player revisiting an earlier choice would.
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
     await addCardToStack(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
 
-    await user.click(screen.getByRole("button", { name: "Remove Opt" }));
+    // Look-matching pass (slice N), requirement 3: the per-step "Back to zones" button
+    // is retired — the shared header's ‹ (above the rail) is the only way back now.
+    await user.click(screen.getByRole("button", { name: "Back" }));
+    await user.click(screen.getByRole("button", { name: "Card actions for Opt" }));
+    await user.click(screen.getByRole("button", { name: "Remove from the Stack" }));
+    await user.click(screen.getByRole("button", { name: "Station 4: Context" }));
 
     const decryptButton = screen.getByRole("button", { name: "Decrypt Stack" });
     expect(decryptButton).toBeDisabled();
@@ -82,7 +92,7 @@ describe("Interaction flows - zone card presentation", () => {
     expect(screen.getByText("Cat wizard")).toBeInTheDocument();
   });
 
-  it("shows zone cards in enrichment step and removal works", async () => {
+  it("shows zone cards in enrichment step, one sheet at a time, in add order", async () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
@@ -90,18 +100,20 @@ describe("Interaction flows - zone card presentation", () => {
     await addCardToStack(user, "opt", "Opt");
     await addCardToStack(user, "cou", "Counterspell");
 
-    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (2)");
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack2");
 
     await advanceToContextEnrichmentFromZones(user);
+    expect(screen.getByText("Card 1 of 2")).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
-    expect(screen.getByLabelText("Caster for Counterspell")).toBeInTheDocument();
+    expect(screen.queryByLabelText("Caster for Counterspell")).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Remove Opt" }));
+    await user.click(screen.getByRole("button", { name: "OK — next card" }));
+    expect(screen.getByText("Card 2 of 2")).toBeInTheDocument();
     expect(screen.queryByLabelText("Caster for Opt")).not.toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Counterspell")).toBeInTheDocument();
   });
 
-  it("uses the image-first presentation and complete-row identity ring in wizard mode", async () => {
+  it("uses the image-first presentation and complete-row identity ring in the compact sheet", async () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
@@ -110,13 +122,15 @@ describe("Interaction flows - zone card presentation", () => {
     await advancePastZoneCollection(user);
 
     const image = screen.getByRole("img", { name: "Lightning Bolt" });
-    expect(image).toHaveClass("h-auto", "w-full", "object-contain");
 
+    // The sheet's art is the mockup's `.card.hero`, wearing the identity ring (REQ-058).
     const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
-    expect(row).toHaveClass("enrichment-card-row", "card-identity-ring");
-    expect(row).toHaveStyle("--card-identity-ring: rgb(239 68 68 / 0.55)");
+    expect(row).toHaveClass("enrichment-card-row");
+    const hero = image.closest(".hero");
+    expect(hero).toHaveClass("card-identity-ring");
+    expect(hero).toHaveStyle("--card-identity-ring: rgb(239 68 68 / 0.55)");
 
-    const header = image.closest(".enrichment-card-header");
+    const header = image.closest(".hero");
     expect(header).not.toBeNull();
     expect(within(header as HTMLElement).queryByText("Lightning Bolt")).not.toBeInTheDocument();
     expect(within(header as HTMLElement).queryByText("Stack")).not.toBeInTheDocument();
@@ -143,11 +157,12 @@ describe("Interaction flows - zone card presentation", () => {
 
     expect(within(row as HTMLElement).getByLabelText("Caster for Lightning Bolt")).toBeInTheDocument();
     expect(within(row as HTMLElement).getByLabelText("Mana spent for Lightning Bolt")).toBeInTheDocument();
-    expect(within(row as HTMLElement).getByLabelText("Target kind for Lightning Bolt")).toBeInTheDocument();
+    expect(within(row as HTMLElement).getByLabelText("Add a target for Lightning Bolt")).toBeInTheDocument();
+    await user.click(within(row as HTMLElement).getByRole("button", { name: "Add a note for Lightning Bolt" }));
     expect(within(row as HTMLElement).getByLabelText("Context notes for Lightning Bolt")).toBeInTheDocument();
   });
 
-  it("uses the same shared name-only fallback and header controls in list mode (D3)", async () => {
+  it("uses the same shared name-only fallback on the compact sheet after an image error (D3)", async () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
@@ -156,24 +171,17 @@ describe("Interaction flows - zone card presentation", () => {
     await advanceToContextEnrichmentFromZones(user);
 
     const image = screen.getByRole("img", { name: "Lightning Bolt" });
-    expect(image).toHaveClass("h-auto", "w-full", "object-contain");
 
     const row = screen.getByLabelText("Caster for Lightning Bolt").closest("li");
-    const header = image.closest(".enrichment-card-header");
-    expect(header).not.toBeNull();
-    expect(within(header as HTMLElement).getByRole("button", { name: "Remove Lightning Bolt" })).toBeInTheDocument();
-    expect(within(header as HTMLElement).queryByText("Lightning Bolt")).not.toBeInTheDocument();
-    expect(row?.closest("ul")).toHaveClass("scroll-cap-4-enrichment");
 
     fireEvent.error(image);
 
     const fallback = within(row as HTMLElement).getByTestId("card-presentation-fallback");
-    expect(fallback).toHaveClass("w-full");
+    expect(fallback).toHaveClass("fallback");
     expect(within(fallback).getByText("Lightning Bolt")).toBeInTheDocument();
     // D3: the fallback shows the card name only — no descriptive fields, no detail fetch.
     expect(within(fallback).queryByText("Instant")).not.toBeInTheDocument();
     expect(within(fallback).queryByText("Lightning Bolt deals 3 damage to any target.")).not.toBeInTheDocument();
-    expect(within(row as HTMLElement).getByRole("button", { name: "Remove Lightning Bolt" })).toBeEnabled();
   });
 
   it("shows only the card name in the empty-image enrichment fallback, with no descriptive fields (D3)", async () => {
@@ -197,16 +205,20 @@ describe("Interaction flows - zone card presentation", () => {
     const row = screen.getByLabelText("Caster for Opt").closest("li");
     const fallback = within(row as HTMLElement).getByTestId("card-presentation-fallback");
     expect(screen.queryByRole("img", { name: "Opt" })).not.toBeInTheDocument();
-    expect(fallback).toHaveClass("w-full");
+    expect(fallback).toHaveClass("fallback");
     expect(within(fallback).getByText("Opt")).toBeInTheDocument();
     expect(within(fallback).queryByText("Instant")).not.toBeInTheDocument();
     expect(within(fallback).queryByText("Scry 1, then draw a card.")).not.toBeInTheDocument();
     expect(within(fallback).queryByText("Legendary")).not.toBeInTheDocument();
-    expect(row).toHaveClass("card-identity-ring");
-    expect(row).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
+    const hero = fallback.closest(".hero");
+    expect(hero).toHaveClass("card-identity-ring");
+    expect(hero).toHaveStyle("--card-identity-ring: rgb(14 165 233 / 0.55)");
   });
 
-  it("shows zone cards in enrichment order (bottom-to-top) and removal is usable", async () => {
+  it("walks zone cards in enrichment order (bottom-to-top), one sheet at a time", async () => {
+    // REQ-017/REQ-056 (amended): the former "View all cards" list mode and its 4-row
+    // scroll cap are retired along with per-card removal in this step (REQ-209's shelf
+    // card menu owns removal now) — this walks the compact-sheet order instead.
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
@@ -216,32 +228,12 @@ describe("Interaction flows - zone card presentation", () => {
 
     await advanceToContextEnrichmentFromZones(user);
 
+    expect(screen.getByText("Card 1 of 2")).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "OK — next card" }));
+    expect(screen.getByText("Card 2 of 2")).toBeInTheDocument();
     expect(screen.getByLabelText("Caster for Lightning Bolt")).toBeInTheDocument();
-
-    const optRow = screen.getByLabelText("Caster for Opt").closest("li") as HTMLElement;
-    const boltRow = screen.getByLabelText("Caster for Lightning Bolt").closest("li") as HTMLElement;
-    expect(optRow.compareDocumentPosition(boltRow) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
-      Node.DOCUMENT_POSITION_FOLLOWING
-    );
-
-    await user.click(screen.getByRole("button", { name: "Remove Lightning Bolt" }));
-    expect(screen.queryByLabelText("Caster for Lightning Bolt")).not.toBeInTheDocument();
-    expect(screen.getByLabelText("Caster for Opt")).toBeInTheDocument();
-  });
-
-  it("applies scroll-cap-4-enrichment class to zone card list in list view", async () => {
-    const user = userEvent.setup();
-    render(<App />);
-    await openStackBuilder(user);
-
-    await addCardToStack(user, "opt", "Opt");
-
-    await advanceToContextEnrichmentFromZones(user);
-
-    const casterSelect = screen.getByLabelText("Caster for Opt");
-    const cardList = casterSelect.closest("ul");
-    expect(cardList).toHaveClass("scroll-cap-4-enrichment");
   });
 
   it("blocks duplicate adds and preserves stack entries", async () => {
@@ -254,7 +246,7 @@ describe("Interaction flows - zone card presentation", () => {
     await user.click(screen.getByRole("button", { name: "Add to Stack" }));
 
     expect(await screen.findByText("Duplicate cards are not supported in MVP1.")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (1)");
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack1");
 
     await advanceToContextEnrichmentFromZones(user);
     expect(screen.queryAllByLabelText(/^Caster for /)).toHaveLength(1);
@@ -265,13 +257,14 @@ describe("Interaction flows - zone card presentation", () => {
     const user = userEvent.setup();
     render(<App />);
     await openStackBuilder(user);
+    await user.click(screen.getByRole("button", { name: "Add a card to Stack" }));
 
-    const searchInput = screen.getByPlaceholderText("Type to begin");
+    const searchInput = screen.getByPlaceholderText("Search for a card to add");
     await user.type(searchInput, "opt");
     await user.click(await screen.findByRole("button", { name: "Opt" }));
     await user.click(screen.getByRole("button", { name: "Begin stackening!" }));
 
-    expect(screen.getByPlaceholderText("Type to begin")).toHaveValue("");
+    expect(screen.getByPlaceholderText("Search for a card to add")).toHaveValue("");
     expect(screen.queryByRole("heading", { name: "Opt" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add to Stack" })).not.toBeInTheDocument();
   });
@@ -300,19 +293,21 @@ describe("Interaction flows - zone card presentation", () => {
       await addCardToStack(user, card.name, card.name);
     }
 
-    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (10)");
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack10");
 
     await selectCard(user, manyCards[10].name, manyCards[10].name);
     await user.click(screen.getByRole("button", { name: "Add to Stack" }));
 
     expect(await screen.findByText("MVP stack limit reached (10 cards).")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack (10)");
+    expect(screen.getByRole("button", { name: "Zone tab: Stack" })).toHaveTextContent("Stack10");
 
     await advanceToContextEnrichmentFromZones(user);
-    const casterLabels = screen.queryAllByLabelText(/^Caster for /);
-    expect(casterLabels).toHaveLength(10);
     for (let index = 0; index < 10; index += 1) {
+      expect(screen.getByText(`Card ${index + 1} of 10`)).toBeInTheDocument();
       expect(screen.getByLabelText(`Caster for ${manyCards[index].name}`)).toBeInTheDocument();
+      if (index < 9) {
+        await user.click(screen.getByRole("button", { name: "OK — next card" }));
+      }
     }
     // Outlier test: fills the whole 10-card stack through the UI (~10 sequential
     // userEvent add flows), far more than any sibling. It runs ~1.5s locally but

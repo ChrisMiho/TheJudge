@@ -165,7 +165,13 @@ export function useAskAiSubmitOrchestration({
       const nextFrozenContext: FrozenAskAiContext = isLookupAskAiPayload(payload)
         ? { kind: "lookup", cards: payload.cards ?? [] }
         : { kind: "game", gameContext: payload.gameContext };
-      const nextVisibleMessages: ConversationMessage[] = [{ role: "assistant", content: body.answer }];
+      // REQ-025 (amended): the player's own question opens the thread, shown first as a
+      // right-aligned bubble exactly as sent — including the silent fallback — then the
+      // assistant's answer underneath it.
+      const nextVisibleMessages: ConversationMessage[] = [
+        { role: "user", content: payload.question },
+        { role: "assistant", content: body.answer }
+      ];
       const nextConversationId = generateConversationId();
       setFrozenContext(nextFrozenContext);
       setHiddenInitialQuestion(payload.question);
@@ -321,11 +327,9 @@ export function useAskAiSubmitOrchestration({
 
     const correlationId = createCorrelationId();
 
-    // conversationHistory: hidden initial question + all visible messages (assistant-first)
-    const conversationHistory: ConversationMessage[] = [
-      { role: "user", content: hiddenInitialQuestion },
-      ...visibleMessages
-    ];
+    // conversationHistory: visibleMessages already opens with the initial question (REQ-025
+    // as amended), so it is the whole wire history verbatim — no separate prepend.
+    const conversationHistory: ConversationMessage[] = visibleMessages;
 
     const followUpPayload: AskAiPayload =
       frozenContext.kind === "lookup"

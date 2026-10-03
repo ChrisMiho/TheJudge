@@ -1,12 +1,14 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { screen, within } from "@testing-library/react";
+import { act, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { NO_MATCH_COPY } from "../lib/search";
 import type { CardDetailBlock } from "../lib/cardDetail";
 import type { CardMetadataItem } from "../types";
 
 export const appCss = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
+export const flowCss = readFileSync(resolve(process.cwd(), "src/styles/flow.css"), "utf8");
+export const shellCss = readFileSync(resolve(process.cwd(), "src/styles/shell.css"), "utf8");
 
 /**
  * Test-fixture shape: the slim up-front `CardMetadataItem` fields (REQ-174)
@@ -150,6 +152,29 @@ export function uninstallMemorySessionStorage(): void {
  * say so here rather than depending on which destination happens to lead the registry.
  * Call after any `installMemorySessionStorage()`, so the seed lands in the storage under test.
  */
+/**
+ * REQ-067/REQ-206: `in-depth` stays registered and routable with no row of
+ * its own in the Menu (its row — Ask a Question's "Add in-depth details" —
+ * ships in slice C's carry hand-off). Mid-test navigation to it goes through
+ * the URL — the same mechanism `useActiveDestination`'s own `navigate()`
+ * uses (REQ-140/DEC-157: URL is the source of truth) — via the browser
+ * History API plus a manually dispatched `popstate`, since calling
+ * `window.history.pushState` directly does not itself notify React Router's
+ * listener (bound to `popstate`), but updates `window.location` immediately,
+ * so dispatching `popstate` afterward lets the router pick up the change.
+ */
+export async function navigateToPath(path: string): Promise<void> {
+  await act(async () => {
+    // React Router's own history state shape ({ idx, key, usr }) — a bare `{}`
+    // state confuses its internal index tracking (its own `handlePop` reads
+    // `state.idx`), so this mirrors it closely enough for the popstate it
+    // dispatches next to read as one of its own POP navigations.
+    const currentIdx = typeof window.history.state?.idx === "number" ? window.history.state.idx : 0;
+    window.history.pushState({ idx: currentIdx + 1, key: Math.random().toString(36).slice(2) }, "", path);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  });
+}
+
 export function startOnInDepthQuestion(): void {
   try {
     globalThis.sessionStorage?.setItem("thejudge.portal.activeDestinationId", "mtg-assistant");
@@ -189,7 +214,11 @@ export function normalizeHeaders(initHeaders: RequestInit["headers"]): Record<st
 }
 
 export async function waitForMetadataReady(): Promise<void> {
-  await screen.findByPlaceholderText("Type to begin");
+  // Look-matching pass (slice N, review 1 fix — finding 3): the search field no
+  // longer renders by default (it opens from its own ＋ Add card chip), so
+  // metadata readiness is now signalled by that chip's own presence instead —
+  // present the moment a zone is active, regardless of which zone.
+  await screen.findByRole("button", { name: /^Add a card to /, expanded: false });
 }
 
 export async function advanceToStackBuilder(user: ReturnType<typeof userEvent.setup>): Promise<void> {
@@ -238,7 +267,7 @@ export async function advancePastZoneCollection(user: ReturnType<typeof userEven
 
 export async function finishEnrichmentWizard(user: ReturnType<typeof userEvent.setup>): Promise<void> {
   for (;;) {
-    const finishButton = screen.queryByRole("button", { name: "OK — finish enrichment" });
+    const finishButton = screen.queryByRole("button", { name: "OK — finish context" });
     if (finishButton) {
       await user.click(finishButton);
       break;
@@ -278,12 +307,36 @@ export async function selectZoneTab(user: ReturnType<typeof userEvent.setup>, zo
   await user.click(screen.getByRole("button", { name: `Zone tab: ${zone}` }));
 }
 
+/**
+ * Look-matching pass (slice N, review 1 fix — finding 3): the zone's search field
+ * now opens from its own ＋ Add card chip (`aria-label`d "Add a card to <Zone>" to
+ * stay distinct from that zone's own "Add card" confirm button) instead of sitting
+ * permanently visible. A no-op if the popover is already open (idempotent, so
+ * callers that search more than once in one test can call this before the first
+ * search only). `expanded: false` scopes the query to the one, currently-closed
+ * chip — opening the chip for a zone whose search is already open is never needed.
+ */
+export async function openZoneCardSearch(user: ReturnType<typeof userEvent.setup>, zone: string): Promise<void> {
+  const chip = screen.queryByRole("button", { name: `Add a card to ${zone}`, expanded: false });
+  if (chip) {
+    await user.click(chip);
+  }
+}
+
 export async function addCardToActiveZone(
   user: ReturnType<typeof userEvent.setup>,
   query: string,
   cardName: string
 ): Promise<void> {
-  const searchInput = screen.getByPlaceholderText("Type to begin");
+  // Look-matching pass (slice N, review 1 fix — finding 3): the search field opens
+  // from its own ＋ Add card chip now (`aria-label`d "Add a card to <Zone>" to stay
+  // distinct from the zone's own "Add card" confirm button below), instead of
+  // sitting permanently visible with the "Type to begin" placeholder.
+  const openSearch = screen.queryByRole("button", { name: /^Add a card to /, expanded: false });
+  if (openSearch) {
+    await user.click(openSearch);
+  }
+  const searchInput = screen.getByPlaceholderText("Search for a card to add");
   await user.clear(searchInput);
   await user.type(searchInput, query);
   await user.click(await screen.findByRole("button", { name: cardName }));
@@ -297,15 +350,18 @@ export async function openStackBuilder(user: ReturnType<typeof userEvent.setup>)
 }
 
 export function readSuggestionNamesFromPanel(searchInput: HTMLElement): string[] {
-  const searchLabel = searchInput.closest("label");
-  const suggestionPanel = searchLabel?.nextElementSibling;
+  // Look-matching pass (slice N, review 1 fix — finding 3): the field now sits in
+  // `.search-row`, a sibling of `.search-results` inside the shared `.search-pop`
+  // (no more `<label>` wrapper with the panel as its next sibling).
+  const searchPop = searchInput.closest(".search-pop");
+  const suggestionPanel = searchPop?.querySelector(".search-results");
   if (!(suggestionPanel instanceof HTMLElement)) {
     return [];
   }
   const hasAutocompleteContent =
     within(suggestionPanel).queryByText("Loading cards...") !== null ||
     within(suggestionPanel).queryByText(NO_MATCH_COPY) !== null ||
-    suggestionPanel.querySelector("ul") !== null;
+    suggestionPanel.querySelector("button") !== null;
   if (!hasAutocompleteContent) {
     return [];
   }
@@ -321,7 +377,14 @@ export function readSuggestionNamesFromPanel(searchInput: HTMLElement): string[]
 }
 
 export async function selectCard(user: ReturnType<typeof userEvent.setup>, query: string, cardName: string): Promise<void> {
-  const searchInput = screen.getByPlaceholderText("Type to begin");
+  // Look-matching pass (slice N, review 1 fix — finding 3): open whichever zone's
+  // ＋ Add card chip is currently showing (there is only ever one active zone's
+  // `.attach` row at a time) before searching — a no-op if already open.
+  const chip = screen.queryByRole("button", { name: /^Add a card to /, expanded: false });
+  if (chip) {
+    await user.click(chip);
+  }
+  const searchInput = screen.getByPlaceholderText("Search for a card to add");
   await user.clear(searchInput);
   await user.type(searchInput, query);
   await user.click(await screen.findByRole("button", { name: cardName }));
@@ -332,13 +395,14 @@ export async function addCardToStack(
   query: string,
   cardName: string
 ): Promise<void> {
+  await openZoneCardSearch(user, "Stack");
   await selectCard(user, query, cardName);
   await user.click(screen.getByRole("button", { name: /Begin stackening!|Add to Stack/ }));
-  await user.clear(screen.getByPlaceholderText("Type to begin"));
+  await user.clear(screen.getByPlaceholderText("Search for a card to add"));
 }
 
 export async function clickDecryptStack(user: ReturnType<typeof userEvent.setup>): Promise<void> {
-  if (screen.queryByRole("heading", { name: "Add cards to zones" })) {
+  if (screen.queryByRole("region", { name: "Add cards to zones" })) {
     await advancePastZoneCollection(user);
   }
   if (!screen.queryByRole("button", { name: "Decrypt Stack" })) {

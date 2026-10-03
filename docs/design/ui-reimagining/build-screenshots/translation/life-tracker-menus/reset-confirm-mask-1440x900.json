@@ -1,0 +1,26 @@
+{
+ "contentBox": {
+  "x": 528,
+  "y": 384,
+  "width": 384,
+  "height": 132
+ },
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 900
+  },
+  {
+   "name": "confirm copy and focus ring",
+   "reason": "the button labels 'Keep' and 'Reset' stay as they are because REQ-070 freezes every control's accessible name; the body sentence (the mockup adds a starting-life figure) is not protected by any requirement and whether to adopt the mockup's wording is an open owner question; the mockup also focuses its first button on open; this is copy and focus ring, not look",
+   "x": 528,
+   "y": 414,
+   "width": 384,
+   "height": 102
+  }
+ ]
+}

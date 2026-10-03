@@ -106,45 +106,46 @@ language live here.
 
 ### The Menu corner rail and tray
 
-- Built: the suite's single navigation affordance is a **top-left corner rail** —
-  a radial-gradient glow anchored at the header corner that fades to fully
-  transparent well inside its own box, with no border and no separate button on
-  top; the glow area itself is the trigger. Selecting it opens a **full-height
-  left tray** of the outer shell that slides in from the left edge
-  (`transform: translateX`), staying docked inline per-screen and never fixed to
-  the viewport (a `fixed` fallback survives in code only as a defensive net for a
-  hypothetical headerless destination). The brand block centers in the header row;
-  the step-name text renders as an in-flow eyebrow above each step's own content,
-  not in header chrome. (DEC-122, DEC-109, DEC-133)
-- Built: the tray lists the registered destinations in registry order — **Quick
-  Question, In-Depth Question, Life Tracker, Trade Balancer** — then the **Send
-  feedback** action entry (which opens the feedback modal without switching the
-  active destination), then the palette-only Theme section. Rows render full-bleed,
-  separated by rules that meet the tray's left wall; the active entry keeps a check
-  mark and quiet fill. Registry order also supplies the no-stored-preference
-  default: **Quick Question** leads and is the default destination. (DEC-135,
-  DEC-104, DEC-095)
-- Built: the tray fills the visible shell side (viewport ∩ shell on tall
-  scrollable pages), with matching top- and bottom-left shell radii and an optional
-  quiet, non-interactive brand mark in unused lower space. It is opaque across its
-  full painted bounds — no destination text, control, or artwork remains legible
-  through it — and its painted content does not overflow the shell/viewport bottom.
-  (DEC-133, DEC-147, REQ-113, REQ-122)
-- Built: on the two conversation-bearing destinations (In-Depth Question, Quick
-  Question) the rail splits into **side-by-side Menu + History zones** in a single
-  `2.75rem`-tall band, Menu leading and History trailing. Life Tracker and Trade
-  Balancer keep the single-zone Menu-only rail. Suite chrome's interactive box may
-  not extend past the affordance it paints: the single-zone rail's interactive box
-  is `5.5rem × 3.5rem` while its gradient keeps painting at `5.5rem × 10.5rem` as
-  `pointer-events: none` decoration; compliance is verified by hit-testing, not by
-  eye. (DEC-137, DEC-126, REQ-114, REQ-113)
-- Built: while the tray is open, neither the Menu trigger nor the History zone is
-  visible or hit-testable (`aria-hidden`, `tabIndex={-1}`, `visibility: hidden`,
-  `pointer-events: none`), and the tray fully occludes the under-rail History zone.
-  The tray closes exclusively by outside click / Escape — the rail icons are not
-  the open-state close control. Menu↔History mutual exclusivity still applies when
-  History is opened by other means. (DEC-150, DEC-140, DEC-147, REQ-115, REQ-127,
-  REQ-122)
+- Built: the suite's single navigation affordance is the **☰ Menu button** at the
+  left of a banner header flush with the top edge of the screen (outside the page
+  padding) — at least 44px, about a quarter larger than the former
+  corner rail on a phone and a third on desktop — with the brand centred (a
+  breathing orb with the colour's badge, the wordmark, "MTG Assistant") on a lit
+  band carrying a hairline of the colour's light and the profile's own element.
+  Selecting ☰ opens the Menu tray, which slides in from the left: full height of
+  the visible shell side below `768px`, a floating inset rounded card sized to its
+  content at `768px`+. The step-name text renders as an in-flow eyebrow above each
+  step's own content, not in header chrome. (REQ-207, DEC-109, DEC-133)
+- Built: the tray lists **Ask a Question, Question History, Life Tracker, Trade
+  Balancer** — then the **Send feedback** action entry (which opens the feedback
+  modal without switching the active destination), then the palette-only Theme
+  band. Ask a Question is `quick-lookup`'s Menu label and reads current while
+  `in-depth` is open too, since `in-depth` has no row of its own (REQ-206);
+  Question History is a fixed row, not a registry entry, opening the active
+  destination's own history trigger (REQ-213). Rows render full-bleed, separated
+  by rules that meet the tray's left wall; the active entry keeps a check mark and
+  quiet fill. The no-stored-preference default is still `quick-lookup`. (REQ-067,
+  REQ-206, REQ-213, DEC-135, DEC-104, DEC-095)
+- Built: below `768px` the tray fills the visible shell side (viewport ∩ shell on
+  tall scrollable pages), with matching top- and bottom-left shell radii; at
+  `768px`+ it is a floating card inset from the viewport edges, rounded, sized to
+  its content. Either way it is opaque across its full painted bounds — no
+  destination text, control, or artwork remains legible through it — its painted
+  content does not overflow the shell/viewport bottom, and its lower space carries
+  the colour's scene at a whisper. (DEC-133, DEC-147, REQ-113, REQ-122, REQ-207)
+- Built: every destination — including the two conversation-bearing ones, In-Depth
+  Question and Quick Question — carries the same single ☰ trigger; the former
+  split Menu + History band is retired (REQ-213: History is a Menu row, not a
+  second rail zone). Suite chrome's interactive box may not extend past the
+  affordance it paints: the ☰ button's interactive box equals its painted bounds,
+  at least 44px, with the banner's decorative band and element art
+  `pointer-events: none`; compliance is verified by hit-testing, not by eye.
+  (REQ-114, REQ-207, REQ-213)
+- Built: while the tray is open, the ☰ trigger is covered and not hit-testable
+  (`aria-hidden`, `tabIndex={-1}`, `visibility: hidden`, `pointer-events: none`).
+  The tray closes on its ✕, an outside click, or Escape; choosing Question History
+  closes the tray before its sheet opens. (DEC-150, DEC-140, DEC-147, REQ-115,
+  REQ-127, REQ-122, REQ-213)
 - Built: the active-destination choice persists across a refresh within the same
   tab via guarded `sessionStorage` (demoted to the bare-`/` fallback under
   DEC-157); each destination's staged/conversation/follow-up state still resets on
@@ -166,13 +167,14 @@ language live here.
   interpolate; no UA sniffing, JS device detection, or separate mobile/desktop
   trees. The Theme section exposes no layout/profile control. (DEC-117, REQ-096,
   NFR-011)
-- Built: the Theme section's palette orbs sit on one row within the tray; the
-  section takes a normal inset rather than the rail-clearing row inset (it sits well
-  below the rail's icon zone). (REQ-131, DEC-135)
+- Built: the Theme section is one segmented band the tray's width, six equal cells
+  (never narrower than 40px), sliding with an arrow at each end when six no longer
+  fit; it takes a normal inset rather than the rail-clearing row inset. (REQ-131,
+  REQ-207, DEC-135)
 - Built: the catalog is six globally shared MTG-color profiles, ordered **White,
   Blue, Black, Red, Green, Colorless**, with Blue the default; each supplies curated
   `accent` / `accent-strong` / `accent-soft` / `accent-contrast` values through the
-  existing four-token contract, and each orb swatch shows that profile's
+  existing four-token contract, and each Theme cell's light shows that profile's
   `accent-soft` value. Colorless alone exposes an inline full-spectrum custom-color
   input plus **Reset to gray**: a chosen custom RGB is applied to `accent` /
   `accent-strong` / `accent-soft` unchanged, with no contrast validation or
@@ -180,10 +182,12 @@ language live here.
   to other profiles and back. Loading a retired or otherwise unsupported stored
   palette ID (the former Violet/Emerald/Amber/Rose catalog) deletes that stored
   value and falls back to Blue. (DEC-119, REQ-099)
-- Built: all six Theme orbs render on a single row, with the Theme block/tray
-  extending as needed so the last orb never wraps to a second row on its own; when
-  Colorless is selected, its custom-color input and Reset control render **centered
-  underneath** the orb row rather than beside it. (DEC-152, REQ-131)
+- Built: an unchosen cell is a faint wash of its colour with its symbol in the
+  colour's light; the chosen cell is filled with the colour's light, the symbol
+  dark on it, with a small glow; no colour names or blurb (hover titles and
+  accessible names carry them). When Colorless is selected, its custom-color input
+  and Reset control render **centered underneath** the band, wrapping cleanly.
+  (DEC-152, REQ-131, REQ-207)
 
 ### The shared answered-conversation workspace
 
@@ -215,38 +219,50 @@ language live here.
   `--layout-surface-gap` owns the spacing — no rail-sized compensating constant.
   History↔View Context non-overlap still holds. (DEC-141, REQ-116, DEC-129)
 
-### Conversation history drawer
+### Question History (REQ-213 — superseded the per-flow history drawer)
 
 - Built: any conversation that reaches at least one successful answer auto-saves to
   a browser-local, single-device history list, capped at the **20 most recent**
-  completed entries (a 21st prunes the oldest). Each entry stores flow/mode, the
-  frozen context snapshot (`GameContext` or attached card), the full message thread,
-  and a created/updated timestamp; reads are guarded try/catch with corrupt entries
-  dropped. Selecting an entry restores its frozen context, mode, and thread and
-  re-enables follow-ups exactly as a freshly-answered conversation. (DEC-124,
-  FLOW-016, DEC-103-precedent)
-- Built: the drawer opens from the **History zone of the Menu corner rail** on
-  In-Depth Question and Quick Question, always present — including empty history,
-  every pre-submit step, and immediately after Start Over — and must not overlap
-  View Context. It presents as a left-edge, full-height drawer at every viewport,
-  mutually exclusive with the Menu tray via `LeftEdgeDrawerContext`. Selecting a
-  saved conversation on In-Depth from any staged step lands the flow on the answered
-  workspace in the same action. (DEC-126, DEC-129, DEC-134, DEC-125, FLOW-016)
-- Built: each conversation-bearing destination keeps exactly one browser-local
-  **Draft** slot snapshotting mid-flight staging (typed question, optional card,
-  staged game/zones/enrichment, current step) so Menu navigation, reload, or opening
-  a saved conversation do not wipe pre-submit work. The drawer lists Draft as its own
-  row, distinct from completed entries; selecting it restores staged state. Draft
-  auto-hydrates the mid-flight UI on destination mount (reload or Menu return). The
-  first successful submit clears Draft and the conversation enters completed history;
-  Draft does not count toward the 20-entry cap. Opening a saved conversation from
-  mid-flight staging silently snapshots Draft first, in both destinations. (DEC-130,
-  DEC-138, FLOW-017)
-- Built: each completed row exposes a delete control, distinct from select-to-resume,
-  that confirms before removing the entry; deleting the active completed conversation
-  clears the workspace to its clean pre-answer state without re-saving the deleted
-  thread. The prune-at-20 cap is preserved; Draft rows are not deletable via this
-  control. (DEC-143, REQ-118, FLOW-018)
+  completed entries across both question kinds (a 21st prunes the oldest). Each entry
+  stores flow/mode, the frozen context snapshot (`GameContext` or attached cards), the
+  full message thread, and a created/updated timestamp; reads are guarded try/catch
+  with corrupt entries dropped. (DEC-124, FLOW-016, DEC-103-precedent)
+- Built: Question History is a Menu row directly under Ask a Question, opened on the
+  shared sheet (REQ-208), always present on every destination — including empty
+  history, every pre-submit step, and immediately after Start Over — and must not
+  overlap View Context. There is no separate History rail zone; choosing the row
+  closes the Menu tray first, so the two never overlap. The sheet lists saved
+  conversations of **both kinds in one list**, most-recent-first, each row showing a
+  small fan of the conversation's cards, the question, the ruling's first line, and a
+  meta line (kind, cards, the game context for In-depth, follow-ups, when). (DEC-126,
+  DEC-129, DEC-134, REQ-208, REQ-213, FLOW-016)
+- Built: below `600px` a tap on a row closes the sheet and reopens that conversation
+  live in its own flow immediately — the one the entry belongs to, switching
+  destination first when it is the other one. From `600px` the sheet is two panes: the
+  list (a tap only selects) and the selected conversation read in full, with **Open
+  conversation** (the same live reopen) and **Delete this question** at its foot. An
+  Ask a Question conversation reopens on the Ask a Question page with its cards in the
+  strip, the thread, and "Reopened from your history" under the title; an In-depth
+  conversation reopens in In-depth details' chat with View Context available, flow
+  advanced to the station that hosts it. (REQ-213, FLOW-016)
+- Built: each flow keeps exactly one browser-local **Draft** slot snapshotting
+  mid-flight staging (typed question, optional cards, staged game/zones/enrichment,
+  current step) so Menu navigation, reload, or opening a saved conversation do not
+  wipe pre-submit work. Question History lists each flow's Draft as its own row above
+  the saved conversations; selecting it restores that flow's staged state (switching
+  destination first when needed) and does not count toward the 20-entry cap. Draft
+  auto-hydrates the mid-flight UI on destination mount (reload or Menu return), and
+  also on an explicit Draft-row select while that destination is already active — a
+  mount-only effect would miss the latter. Opening a saved conversation from mid-flight
+  staging silently snapshots Draft first, in either flow. (DEC-130, DEC-138, FLOW-017,
+  REQ-213)
+- Built: each completed row — the row's own delete control below `600px`, or **Delete
+  this question** in the reading pane from `600px` — asks first through the shared
+  confirm sheet (REQ-208) before removing the entry; deleting the active completed
+  conversation clears its own flow's workspace to its clean pre-answer state without
+  re-saving the deleted thread, even when Question History deleted it from a different
+  flow than the one currently open. The prune-at-20 cap is preserved; Draft rows are
+  not deletable via this control. (DEC-143, REQ-118, REQ-208, FLOW-018, REQ-213)
 
 ### View Context / adaptive-context overlay
 
@@ -259,10 +275,10 @@ language live here.
   setup/zone/card/enrichment detail; Quick Question supplies a card-name trigger reusing
   the shared read-only card presentation when a card is attached, and renders no trigger
   or container without a card. (DEC-118, DEC-141)
-- Built: View Context, the History drawer, and the Menu tray all dismiss on
+- Built: View Context, Question History, and the Menu tray all dismiss on
   outside/scrim click in addition to Close and Escape, without closing on clicks inside
   the panel surface — one shared outside-click implementation across the overlay family.
-  (DEC-142, REQ-117, REQ-135)
+  (DEC-142, REQ-117, REQ-135, REQ-213)
 - Built: opening View Context on a resumed lookup card never white-screens the app —
   `CardSelectionPreview` tolerates missing/undefined `colors` / `supertypes` /
   `subtypes` and other optional fields, falling back to N/A-style empty handling instead
@@ -280,16 +296,16 @@ language live here.
 ### Card detail popup (suite-wide) and the shared close control
 
 - Built: whenever a card image is shown anywhere in the suite, a compact corner control
-  (top-right of the image) opens a **dismissible detail popup** carrying oracle text and
+  (top-right of the image) opens a **dismissible detail box** carrying oracle text and
   other descriptive fields fetched on demand by oracle id (REQ-175, FLOW-024) behind a
   brief loading state; a missing image keeps the name-first fallback, which shows the card
-  name only (FLOW-001). The popup renders through a portal into the `AdaptiveContextDialog`
-  overlay family — a bottom sheet below `768px`, a side panel at `768px+`, sized to its
-  **own content** — not `absolute inset-0` over the image's box. Stacked oracle/detail
+  name only (FLOW-001). The box renders in the shared sheet (REQ-208) — a bottom sheet
+  below `600px`, a floating card centred in the viewport from `600px` up — sized to its
+  **own content**, not `absolute inset-0` over the image's box. Stacked oracle/detail
   under the image is not the default density path. This is one shared component across all
   six card surfaces (Quick Question card search, In-Depth Enrichment, the card inside View
   Context, the In-Depth zone selected-card/add preview, the In-Depth zone strip, and Scan
-  review). (DEC-151, DEC-158, REQ-128)
+  review). (DEC-151, DEC-158, REQ-128, REQ-208)
 - Built: the shared `CardPresentation` renders only a small **Remove card** control beside
   the image; every other field it once showed lives in the corner popup. Its image sizes
   **relative to its container** (not a fixed pixel cap), so each surface grows to what its
@@ -314,6 +330,20 @@ language live here.
   copy-pasted zinc chrome and the former text "Close" buttons, at or above the 44px touch
   floor. (DEC-159, DEC-156, REQ-142)
 
+### The shared sheet
+
+- Built: one `SheetShell` component — a bottom sheet below `600px`, a floating card
+  centred in the viewport from `600px` up (fading up into place), with a fixed head
+  and foot and only the body scrolling; it traps focus, closes on ✕, Escape and
+  outside tap, and restores focus. The card-detail box and Send feedback already
+  host on it (REQ-128, REQ-087); Question History and Trade Balancer's printing
+  picker host on it when those slices build (REQ-213, REQ-065). A shared
+  `ConfirmSheet`, built on `SheetShell`, asks before a destructive action with a
+  plain question, one clearing line, a keep action and a clear action, and is
+  rendered only by a caller that has something to clear; Trade Balancer's New trade
+  and Life Tracker's Reset/New game wire it up when those slices build. View
+  Context keeps its own `768px` sheet/drawer. (REQ-208, REQ-128, REQ-087)
+
 ### Decorative motion baseline
 
 - Built: shared chrome draws on the app-wide, CSS-only decorative-motion baseline —
@@ -327,6 +357,16 @@ language live here.
   Functional wait-state motion (the ask-AI waiting panel, the inline follow-up
   spinner) predates this baseline and is unchanged by it. (DEC-079, REQ-059,
   NFR-006)
+- Built: behind every page plays the chosen colour's **ambient scene** — two
+  drifting haze sheets, a field of glowing dust, the colour's badge large, blurred
+  and faint in the centre, and the colour's element (White beams, Blue runes, Black
+  fog, Red embers, Green leaves, Colorless turning geometry) — drawn by one
+  hand-written canvas renderer ported from the mockup (`AmbientScene`), one
+  density and one opacity number per scene, one still frame under reduced
+  motion, and at a whisper inside the Menu tray. The ground is one
+  flat colour per profile from the REQ-200 token set; one typeface (Inter,
+  self-hosted) serves titles and body; no surface carries corner decoration.
+  (REQ-207, REQ-200, REQ-201, NFR-006)
 
 ## Shared layout language
 
@@ -369,19 +409,26 @@ not product truth.
   `min(48rem, 92vw)` — 768px at a 1440px viewport (was 670px under the former `42rem`
   column), and the cap still binds on ultra-wide displays. (DEC-145, REQ-124,
   `screen-layout.md`)
-- Single-zone Menu rail (Life Tracker, Trade Balancer): interactive box `5.5rem × 3.5rem`;
-  gradient paints at `5.5rem × 10.5rem` as `pointer-events: none` decoration, so the
-  variant's appearance is byte-for-byte unchanged. (DEC-137, REQ-114)
-- Split Menu+History rail (In-Depth, Quick Question): two zones side-by-side, each
-  `2.75rem × 2.75rem`, in one `2.75rem` band — required because only 70px exists between
-  the rail top and the step eyebrow while two stacked 44px zones need 88px. (DEC-137)
-- Menu tray: full height of the visible shell side; opaque across its painted bounds;
-  painted content does not overflow the shell/viewport bottom. Theme orbs on one row.
-  (DEC-133, DEC-147, REQ-113, REQ-122, REQ-131)
-- History drawer width: phone `min(22rem, 88vw)`; desktop `min(30rem, 90vw)`; left-edge
-  full-height at every viewport, no `max-height` cap. Completed-history retention: 20
-  entries, oldest pruned; plus at most one Draft row per destination (not counted toward
-  the 20). (DEC-134, DEC-124, DEC-130)
+- Menu trigger: the ☰ button at the banner's left, at least 44px, interactive box
+  equal to its painted bounds; the banner's band and element art take no pointer
+  events. Superseded geometry: the single-zone corner rail (`5.5rem × 3.5rem`
+  interactive, gradient painted at `5.5rem × 10.5rem`). (REQ-114, REQ-207)
+- Superseded geometry: the split Menu+History rail (In-Depth, Quick Question) —
+  two zones side-by-side, each `2.75rem × 2.75rem`, in one `2.75rem` band. REQ-213
+  retires it: History is a Menu row, not a second rail zone, so every destination
+  carries the single ☰ trigger above. (DEC-137, REQ-114, REQ-213)
+- Menu tray: below `768px` full height of the visible shell side; at `768px`+ a
+  floating card sized to its content; opaque across its painted bounds; painted
+  content does not overflow the shell/viewport bottom. Theme band cells ≥40px,
+  sliding with arrows when six do not fit. (DEC-133, DEC-147, REQ-113, REQ-122,
+  REQ-131, REQ-207)
+- Question History: the shared sheet (REQ-208) — bottom sheet below `600px`, floating
+  centred card with two panes from `600px` (the list, and the selected conversation read
+  in full with Open conversation / Delete this question). Superseded geometry: a left-edge
+  full-height drawer, phone `min(22rem, 88vw)` / desktop `min(30rem, 90vw)`, no
+  `max-height` cap. Completed-history retention: 20 entries across both question kinds,
+  oldest pruned; plus at most one Draft row per flow (not counted toward the 20). (DEC-124,
+  DEC-130, DEC-134, REQ-208, REQ-213)
 - View Context overlay: phone bottom sheet caps so a dismissible scrim of **≥25% of
   viewport height** remains at 390×844 — i.e. ≤`75dvh`, tightening the shipped
   `min(85dvh, 48rem)`; desktop right drawer within workspace rules. The frozen card inside
@@ -392,10 +439,12 @@ not product truth.
   the retired `calc(2.75rem - var(--layout-panel-padding))` rail-sized constant must not be
   reintroduced. Auto-scroll near-bottom threshold: remaining distance ≤ 64px. (DEC-141,
   REQ-116, DEC-118, `screen-layout.md`)
-- Card detail popup: bottom sheet below `768px` / side panel at `768px+`, content-sized,
-  close control laid out inside its own bounds at every width. Superseded geometry:
-  `absolute inset-0` over the image, measured **92×128px holding 356px of content** with its
-  44px close X overflowing its container by 37px. (DEC-158, DEC-151, REQ-128)
+- Card detail popup: the shared sheet (REQ-208) — bottom sheet below `600px` / floating
+  centred card from `600px`, content-sized, close control laid out inside its own bounds
+  at every width. Superseded geometry: `absolute inset-0` over the image, measured
+  **92×128px holding 356px of content** with its 44px close X overflowing its container by
+  37px (DEC-158); the `768px` side panel is further superseded by REQ-208's `600px`
+  centred card. (DEC-158, DEC-151, REQ-128, REQ-208)
 - Shared card image (all six surfaces): container-relative, aspect-preserved, uncropped —
   no `max-h-32` pixel cap; shell-column surfaces render ~300px at 390×844 (REQ-141's
   legibility floor) and grow at desktop, while the zone strip tile stays `w-40`/160px with a

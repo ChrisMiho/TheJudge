@@ -1,9 +1,9 @@
-import { useCallback, useEffect, useId, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import { createPortal } from "react-dom";
-import { useOutsideDismiss } from "../hooks/useOutsideDismiss";
+import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { fetchCardDetail, peekCardDetail, type CardDetailBlock } from "../lib/cardDetail";
-import { deriveCardImageUrl } from "../lib/cardImage";
-import { OverlayCloseButton } from "./OverlayCloseButton";
+import { getCardIdentityRing } from "../lib/cardIdentityRing";
+import { deriveCardArtCropFromImageUrl, deriveCardArtCropUrl, deriveCardImageUrl } from "../lib/cardImage";
+import { fetchCardPrintings, peekCardPrintings } from "../lib/trade/fetchCardPrintings";
+import { SheetShell } from "./SheetShell";
 
 /** The identity fields every card surface needs to render a tile — image, name, and
  * the oracle id used to fetch detail on demand (REQ-175, FLOW-024). `ZoneCardItem`
@@ -43,52 +43,94 @@ const EMPTY_CARD_DETAIL: CardDetailBlock = {
   subtypes: []
 };
 
-function CardDetailFieldsList({ detail }: { detail: CardDetailBlock }): JSX.Element {
+/** A representative USD price for the fact chip (slice L, requirement #10):
+ * the first printing's non-foil price, falling back to its foil price, then
+ * to the next printing — the cheapest-available reading, not a specific
+ * printing's price (the suite's six card surfaces show one generic card, not
+ * a chosen printing). `undefined` when no printing carries either price. */
+function representativePrice(printings: ReadonlyArray<{ usd: number | null; usdFoil: number | null }> | undefined): number | undefined {
+  for (const printing of printings ?? []) {
+    const price = printing.usd ?? printing.usdFoil;
+    if (price !== null && price !== undefined) {
+      return price;
+    }
+  }
+  return undefined;
+}
+
+const COLOR_NAMES: Record<string, string> = { W: "White", U: "Blue", B: "Black", R: "Red", G: "Green" };
+
+function colorsLabel(colors: readonly string[]): string {
+  const names = colors.map((color) => COLOR_NAMES[color]).filter(Boolean);
+  return names.length > 0 ? names.join(", ") : "Colorless";
+}
+
+function formatUsd(amount: number): string {
+  return `$${amount.toFixed(2)}`;
+}
+
+/**
+ * Look-matching pass (slice L, requirement #10): the card detail popup takes
+ * `flow.css:280-317`'s `.detail-panel` — an art-crop hero with the name and
+ * mana cost over it, a type line with a colour-identity dot (reusing
+ * `getCardIdentityRing`, the same source `CardPresentation`'s own card-tile
+ * ring already draws from — no new colour mapping), the oracle text in a lit
+ * box, and three fact chips (Mana value, Subtypes, Price). Price reads the
+ * same `GET /api/cards/:oracleId/prices` endpoint Trade Balancer's printing
+ * picker and the card scanner's match confirmation already call (no new API
+ * route) — a representative (cheapest-available) printing price, since this
+ * popup shows one generic card, not a chosen printing. */
+function CardDetailFieldsList({
+  card,
+  detail,
+  price,
+  titleId
+}: {
+  card: CardPresentationCard;
+  detail: CardDetailBlock;
+  price: number | undefined;
+  titleId: string;
+}): JSX.Element {
+  const artCropUrl =
+    deriveCardArtCropUrl(card.imageId) || deriveCardArtCropFromImageUrl(card.imageUrl) || undefined;
+
   return (
-    <dl className="space-y-1">
-      {hasText(detail.manaCost) ? (
-        <div>
-          <dt className="font-medium">Mana cost</dt>
-          <dd>{detail.manaCost}</dd>
+    <div data-testid="card-detail-fields" className="detail-fields">
+      <div className="art">
+        {artCropUrl ? <img src={artCropUrl} alt="" aria-hidden="true" /> : null}
+        <div className="title">
+          <h2 id={titleId}>{card.name}</h2>
+          {hasText(detail.manaCost) ? <span className="cost">{detail.manaCost}</span> : null}
         </div>
-      ) : null}
-      {detail.manaValue !== undefined ? (
-        <div>
-          <dt className="font-medium">Mana value</dt>
-          <dd>{detail.manaValue}</dd>
+      </div>
+      <div className="body">
+        {hasText(detail.typeLine) ? (
+          <div className="typeline">
+            <b>{detail.typeLine}</b>
+            <span>·</span>
+            <span className="pips" aria-hidden="true">
+              <i style={{ background: getCardIdentityRing(detail.colors) }} />
+            </span>
+            <span>{colorsLabel(detail.colors)}</span>
+          </div>
+        ) : null}
+        {hasText(detail.oracleText) ? <p className="oracle whitespace-pre-wrap">{detail.oracleText}</p> : null}
+        <div className="facts">
+          <div className="fact">
+            <small>Mana value</small>
+            <b>{detail.manaValue}</b>
+          </div>
+          <div className="fact">
+            <small>Subtypes</small>
+            <b>{detail.subtypes?.length ? detail.subtypes.join(", ") : "—"}</b>
+          </div>
+          <div className="fact price">
+            <small>Price</small>
+            <b>{price !== undefined ? formatUsd(price) : "—"}</b>
+          </div>
         </div>
-      ) : null}
-      {hasText(detail.typeLine) ? (
-        <div>
-          <dt className="font-medium">Type</dt>
-          <dd>{detail.typeLine}</dd>
-        </div>
-      ) : null}
-      {hasText(detail.oracleText) ? (
-        <div>
-          <dt className="font-medium">Oracle text</dt>
-          <dd className="whitespace-pre-wrap">{detail.oracleText}</dd>
-        </div>
-      ) : null}
-      {detail.colors?.length ? (
-        <div>
-          <dt className="font-medium">Colors</dt>
-          <dd>{detail.colors.join(", ")}</dd>
-        </div>
-      ) : null}
-      {detail.supertypes?.length ? (
-        <div>
-          <dt className="font-medium">Supertypes</dt>
-          <dd>{detail.supertypes.join(", ")}</dd>
-        </div>
-      ) : null}
-      {detail.subtypes?.length ? (
-        <div>
-          <dt className="font-medium">Subtypes</dt>
-          <dd>{detail.subtypes.join(", ")}</dd>
-        </div>
-      ) : null}
-    </dl>
+      </div>
+    </div>
   );
 }
 
@@ -112,25 +154,36 @@ type PopupDetailState =
  * resize (`screen-layout.md`). A failed/offline fetch degrades to a retry affordance
  * without blocking the surface's other controls (Remove, etc).
  *
- * It is portaled to `document.body` rather than layered `absolute inset-0` over the
- * image. As an image-bound box it inherited the image's 92x128px geometry, squeezing
- * 356px of detail into a 66px text column and pushing its own close control 37px past
- * the dialog's right edge (DEC-158). Portaled, it takes the overlay family's own
- * geometry — content-sized bottom sheet below 768px, View Context-width side panel at
- * 768px+, per `screen-layout.md`'s "Card detail popup" row — identically on all six
- * card surfaces, with no per-surface variant, because every surface renders this one
- * component.
+ * It is hosted on the shared `SheetShell` (REQ-208, REQ-128) rather than layered
+ * `absolute inset-0` over the image. As an image-bound box it inherited the image's
+ * 92x128px geometry, squeezing 356px of detail into a 66px text column and pushing its
+ * own close control 37px past the dialog's right edge (DEC-158). Hosted on the shared
+ * shell, it takes that overlay family's own geometry — a bottom sheet below the
+ * `--sheet-breakpoint` token (600px), a floating card centred in the viewport from it
+ * up — identically on all six card surfaces, with no per-surface variant, because every
+ * surface renders this one component.
  */
 export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.Element {
   const titleId = useId();
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const closeRef = useRef<HTMLButtonElement>(null);
 
   const [state, setState] = useState<PopupDetailState>(() => {
     const cached = peekCardDetail(card.cardId);
     return cached !== undefined ? { status: "loaded", detail: cached ?? EMPTY_CARD_DETAIL } : { status: "loading" };
   });
   const startedLoadedRef = useRef(state.status === "loaded");
+
+  // Look-matching pass (slice L): the fact chip's price, read from the same
+  // `GET /api/cards/:oracleId/prices` endpoint Trade Balancer and the card
+  // scanner already call (`lib/trade/fetchCardPrintings.ts`) — a separate,
+  // independently cached fetch from the oracle-id detail block above, so a
+  // slow/failed price lookup never blocks or retries the descriptive fields.
+  // `undefined` (no price found or still loading) renders the chip's "—"
+  // placeholder rather than an error state — this popup's other fields stay
+  // useful with no price at all (REQ-175's existing degrade pattern).
+  const [price, setPrice] = useState<number | undefined>(() => {
+    const cached = peekCardPrintings(card.cardId);
+    return cached !== undefined ? representativePrice(cached?.printings) : undefined;
+  });
 
   const loadDetail = useCallback(() => {
     setState({ status: "loading" });
@@ -160,60 +213,62 @@ export function CardDetailPopup({ card, onClose }: CardDetailPopupProps): JSX.El
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useOutsideDismiss([dialogRef], onClose, true);
-
   useEffect(() => {
-    closeRef.current?.focus();
+    if (peekCardPrintings(card.cardId) !== undefined) {
+      return undefined;
+    }
+    let cancelled = false;
+    fetchCardPrintings(card.cardId)
+      .then((block) => {
+        if (cancelled) return;
+        setPrice(representativePrice(block?.printings));
+      })
+      .catch(() => {
+        // Price is a nice-to-have fact chip, not a gate — a failed lookup just
+        // keeps the chip's "—" placeholder, with no retry affordance of its own.
+      });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  function handleKeyDown(event: KeyboardEvent<HTMLDivElement>): void {
-    if (event.key === "Escape") {
-      event.preventDefault();
-      onClose();
-    }
-  }
-
-  return createPortal(
-    <div className="card-detail-overlay" data-testid="card-detail-overlay">
-      <div
-        ref={dialogRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        tabIndex={-1}
-        onKeyDown={handleKeyDown}
-        data-testid="card-detail-popup"
-        className="card-detail-surface ambient-accent-surface border border-zinc-700 bg-zinc-950 text-left text-sm text-zinc-200 shadow-2xl"
-      >
-        <div className="card-detail-header flex shrink-0 items-start justify-between gap-3 border-b border-zinc-700/70">
-          <p id={titleId} className="font-semibold text-zinc-100">
-            {card.name}
-          </p>
-          <OverlayCloseButton ref={closeRef} label={`Close details for ${card.name}`} onClick={onClose} />
-        </div>
-        <div className="card-detail-content" data-testid="card-detail-content">
-          {state.status === "loading" ? (
-            <p className="text-sm text-zinc-400" role="status" aria-live="polite" data-testid="card-detail-loading">
+  return (
+    <SheetShell
+      isOpen
+      onClose={onClose}
+      closeLabel={`Close details for ${card.name}`}
+      titleId={titleId}
+      panelClassName="detail-panel"
+      testId="card-detail-popup"
+    >
+      {/* Once loaded, the name renders visibly inside the art hero below (`.detail-panel .art h2`),
+          which then carries `titleId` itself; before that (loading/error, no hero) this
+          `sr-only` title is the dialog's only accessible name. */}
+      {state.status === "loaded" ? null : (
+        <p id={titleId} className="sr-only">
+          {card.name}
+        </p>
+      )}
+      <div data-testid="card-detail-content">
+        {state.status === "loading" ? (
+          <div className="body">
+            <p className="text-muted" role="status" aria-live="polite" data-testid="card-detail-loading">
               Loading details…
             </p>
-          ) : state.status === "error" ? (
-            <div className="space-y-2" data-testid="card-detail-error">
-              <p className="text-sm text-zinc-400">Details unavailable right now.</p>
-              <button
-                type="button"
-                onClick={loadDetail}
-                className="rounded-lg border border-zinc-600 bg-zinc-900/60 px-3 py-1.5 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-800"
-              >
-                Retry
-              </button>
-            </div>
-          ) : (
-            <CardDetailFieldsList detail={state.detail} />
-          )}
-        </div>
+          </div>
+        ) : state.status === "error" ? (
+          <div className="body" data-testid="card-detail-error">
+            <p className="text-muted">Details unavailable right now.</p>
+            <button type="button" onClick={loadDetail} className="btn">
+              Retry
+            </button>
+          </div>
+        ) : (
+          <CardDetailFieldsList card={card} detail={state.detail} price={price} titleId={titleId} />
+        )}
       </div>
-    </div>,
-    document.body
+    </SheetShell>
   );
 }
 
@@ -269,7 +324,7 @@ export function CardPresentation({
             aria-haspopup="dialog"
             aria-expanded={detailOpen}
             onClick={() => setDetailOpen(true)}
-            className="absolute right-0 top-0 flex h-11 w-11 items-center justify-center rounded-full bg-zinc-950/85 text-base font-semibold leading-none text-zinc-100 shadow-md transition hover:bg-zinc-900 focus:outline-none focus:ring-2 focus:ring-accent-soft"
+            className="card-presentation-info"
           >
             <span aria-hidden="true">ⓘ</span>
           </button>
@@ -281,13 +336,13 @@ export function CardPresentation({
         // (DEC-078's offline no-fetch-on-failure guarantee preserved).
         <div
           className={joinClasses(
-            "w-full text-sm text-zinc-200",
+            "card-presentation-fallback w-full text-sm",
             imageFailed ? "motion-error" : undefined,
             fallbackClassName
           )}
           data-testid="card-presentation-fallback"
         >
-          <p className="font-semibold text-zinc-100">{card.name}</p>
+          <p className="card-presentation-fallback-name">{card.name}</p>
         </div>
       )}
       {actions ? (

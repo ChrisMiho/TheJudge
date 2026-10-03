@@ -1,5 +1,6 @@
 import { useState } from "react";
 
+import { getCardIdentityRingStyle } from "../../lib/cardIdentityRing";
 import { deriveCardImageUrl } from "../../lib/cardImage";
 import type { CardPrintingPrice } from "../../lib/trade/fetchCardPrintings";
 import {
@@ -9,6 +10,7 @@ import {
   formatUsd,
   type TradeEntry
 } from "../../lib/trade/pricing";
+import { CardDetailPopup } from "../CardPresentation";
 import { PrintingPicker } from "./PrintingPicker";
 
 /** FLOW-025: one entry's per-card fetch state, computed and owned by
@@ -16,6 +18,8 @@ import { PrintingPicker } from "./PrintingPicker";
 export type TradeEntryPricingMeta = {
   oracleId: string;
   name: string;
+  /** The card's colour identity, for the row's identity ring (REQ-058). */
+  colors?: string[];
   status: "loading" | "loaded" | "error";
   printings: CardPrintingPrice[];
 };
@@ -28,10 +32,14 @@ export type TradeEntryRowProps = {
   onToggleFoil: (instanceId: string) => void;
   onQuantityChange: (instanceId: string, quantity: number) => void;
   onRemove: (instanceId: string) => void;
-  onChangePrinting: (instanceId: string, printing: CardPrintingPrice) => void;
+  onChangePrinting: (instanceId: string, printing: CardPrintingPrice, foil: boolean) => void;
   onRetryPricing: (instanceId: string) => void;
 };
 
+/**
+ * One trade row in `trade-balancer.html`'s `.entry` order: the card tile (a tap opens the card detail),
+ * the name, printing line and Foil / − / quantity / + controls, and the money column.
+ */
 export function TradeEntryRow({
   entry,
   meta,
@@ -43,6 +51,7 @@ export function TradeEntryRow({
   onRetryPricing
 }: TradeEntryRowProps): JSX.Element {
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
   const missingPrice = entryHasMissingPrice(entry);
   const unitPrice = entryUnitPrice(entry);
   const { printing } = entry;
@@ -55,137 +64,126 @@ export function TradeEntryRow({
 
   return (
     <li
-      className="space-y-2 rounded-xl border border-zinc-700 bg-zinc-950/35 p-3"
+      className="entry"
       data-missing-price={missingPrice ? "true" : undefined}
       data-pricing-status={meta?.status}
+      data-foil={entry.foil ? "true" : "false"}
     >
-      <div className="flex flex-wrap items-start gap-3">
-        {imageUrl && (
-          <img
-            src={imageUrl}
-            alt=""
-            aria-hidden="true"
-            className="h-16 w-auto shrink-0 rounded-md object-contain"
-          />
-        )}
-        <div className="flex min-w-0 flex-1 flex-wrap items-start justify-between gap-2">
-          <div className="min-w-0">
-            <p className="truncate text-sm font-semibold text-zinc-100">{name}</p>
-            {isLoading ? (
-              <p className="text-xs text-zinc-400" role="status">
-                Loading price…
-              </p>
-            ) : printing.setName ? (
-              <p className="text-xs text-zinc-400">
-                {`${printing.setName} (${printing.set.toUpperCase()}) #${printing.collectorNumber}`}
-              </p>
-            ) : null}
-          </div>
-          <div className="text-right">
-            <p
-              className={`text-sm font-semibold ${missingPrice ? "text-amber-300" : "text-zinc-100"}`}
-              data-testid="entry-contribution"
-            >
-              {missingPrice && !isLoading && (
-                <span role="img" aria-label={`No ${entry.foil ? "foil " : ""}price for ${name}`}>
-                  {"⚠ "}
-                </span>
-              )}
-              {formatUsd(entryContribution(entry))}
-            </p>
-            <p className="text-xs text-zinc-400">
-              {isLoading
-                ? ""
-                : missingPrice
-                  ? "No price — counts as $0"
-                  : `${formatUsd(unitPrice ?? 0)} × ${entry.quantity}`}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {isError && (
-        <div className="flex items-center justify-between gap-2 rounded-lg border border-amber-700/50 bg-amber-950/20 px-2 py-1.5">
-          <p className="text-xs text-amber-200">Price unavailable right now.</p>
-          <button
-            type="button"
-            onClick={() => onRetryPricing(entry.instanceId)}
-            className="min-h-8 rounded-lg border border-amber-600/60 bg-zinc-950/60 px-2 py-1 text-xs font-semibold text-amber-200 transition hover:bg-zinc-800"
-          >
-            Retry
-          </button>
-        </div>
-      )}
-
-      <div className="flex flex-wrap items-center gap-2">
+      {imageUrl ? (
         <button
           type="button"
-          aria-label={`Toggle foil for ${entryDescription}`}
-          aria-pressed={entry.foil}
-          onClick={() => onToggleFoil(entry.instanceId)}
-          className={`min-h-10 rounded-lg border px-3 py-2 text-xs font-semibold transition ${
-            entry.foil
-              ? "border-accent/70 bg-accent/15 text-accent-soft"
-              : "border-zinc-600 bg-zinc-950/60 text-zinc-200 hover:bg-zinc-700"
-          }`}
+          className="card card-identity-ring"
+          style={getCardIdentityRingStyle(meta?.colors)}
+          title="Card details"
+          aria-label={`Show details for ${name}`}
+          aria-haspopup="dialog"
+          onClick={() => setIsDetailOpen(true)}
         >
-          Foil
+          <img src={imageUrl} alt="" aria-hidden="true" />
         </button>
+      ) : (
+        <span className="card" aria-hidden="true" />
+      )}
+      <div className="info">
+        <span className="nm">{name}</span>
+        {isLoading ? (
+          <span className="printing" role="status">
+            Loading price…
+          </span>
+        ) : printing.setName ? (
+          <span className="printing">
+            {`${printing.setName} · ${printing.set.toUpperCase()} · `}
+            {alternatePrintings.length > 1 ? (
+              <button
+                type="button"
+                aria-label={`Change printing for ${entryDescription}`}
+                disabled={isLoading}
+                onClick={() => setIsPickerOpen((open) => !open)}
+              >
+                Change
+              </button>
+            ) : (
+              <span className="only">only printing</span>
+            )}
+          </span>
+        ) : null}
 
-        <div className="flex items-center gap-1">
+        {isError && (
+          <div className="entry-error">
+            <p>Price unavailable right now.</p>
+            <button type="button" onClick={() => onRetryPricing(entry.instanceId)} className="ctl">
+              Retry
+            </button>
+          </div>
+        )}
+
+        <div className="controls">
+          <button
+            type="button"
+            aria-label={`Toggle foil for ${entryDescription}`}
+            aria-pressed={entry.foil}
+            onClick={() => onToggleFoil(entry.instanceId)}
+            className="ctl"
+          >
+            Foil
+          </button>
+
           <button
             type="button"
             aria-label={`Decrease quantity for ${entryDescription}`}
             disabled={entry.quantity <= 1}
             onClick={() => onQuantityChange(entry.instanceId, entry.quantity - 1)}
-            className="min-h-10 min-w-10 rounded-lg border border-zinc-600 bg-zinc-950/60 px-3 py-2 text-sm font-semibold text-zinc-200 transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
+            className="ctl"
           >
             −
           </button>
-          <span
-            aria-label={`Quantity for ${entryDescription}`}
-            className="min-w-8 text-center text-sm font-semibold text-zinc-100"
-          >
+          <span aria-label={`Quantity for ${entryDescription}`} className="qty">
             {entry.quantity}
           </span>
           <button
             type="button"
             aria-label={`Increase quantity for ${entryDescription}`}
             onClick={() => onQuantityChange(entry.instanceId, entry.quantity + 1)}
-            className="min-h-10 min-w-10 rounded-lg border border-zinc-600 bg-zinc-950/60 px-3 py-2 text-sm font-semibold text-zinc-200 transition hover:bg-zinc-700"
+            className="ctl"
           >
             +
           </button>
         </div>
+      </div>
 
-        <button
-          type="button"
-          aria-label={`Change printing for ${entryDescription}`}
-          disabled={isLoading || alternatePrintings.length === 0}
-          onClick={() => setIsPickerOpen((open) => !open)}
-          className="min-h-10 rounded-lg border border-zinc-600 bg-zinc-950/60 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700 disabled:cursor-not-allowed disabled:opacity-40"
-        >
-          Change printing
-        </button>
-
-        <button
-          type="button"
-          aria-label={`Remove ${entryDescription}`}
-          onClick={() => onRemove(entry.instanceId)}
-          className="min-h-10 rounded-lg border border-zinc-600 bg-zinc-950/60 px-3 py-2 text-xs font-semibold text-zinc-200 transition hover:bg-zinc-700"
-        >
-          Remove
+      <div className="money">
+        <span className={missingPrice ? "line missing" : "line"} data-testid="entry-contribution">
+          {missingPrice && !isLoading && (
+            <span role="img" aria-label={`No ${entry.foil ? "foil " : ""}price for ${name}`}>
+              {"⚠ "}
+            </span>
+          )}
+          {formatUsd(entryContribution(entry))}
+        </span>
+        <span className="unit">
+          {isLoading ? "" : missingPrice ? "No price — $0" : `${formatUsd(unitPrice ?? 0)} × ${entry.quantity}`}
+        </span>
+        <button type="button" className="x" aria-label={`Remove ${entryDescription}`} onClick={() => onRemove(entry.instanceId)}>
+          <span aria-hidden="true">✕</span>
         </button>
       </div>
+
+      {isDetailOpen && (
+        <CardDetailPopup
+          card={{ cardId: meta?.oracleId ?? "", name, imageId: printing.id }}
+          onClose={() => setIsDetailOpen(false)}
+        />
+      )}
 
       {isPickerOpen && (
         <PrintingPicker
           cardName={name}
           printings={alternatePrintings}
           selectedPrintingId={printing.id}
+          selectedFoil={entry.foil}
           onCancel={() => setIsPickerOpen(false)}
-          onSelect={(nextPrinting) => {
-            onChangePrinting(entry.instanceId, nextPrinting);
+          onSelect={(nextPrinting, foil) => {
+            onChangePrinting(entry.instanceId, nextPrinting, foil);
             setIsPickerOpen(false);
           }}
         />

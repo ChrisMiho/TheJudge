@@ -1,0 +1,68 @@
+{
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 900
+  },
+  {
+   "name": "mock-mode banner copy",
+   "reason": "the mockup page's banner reads 'the camera feed is a still'; the app's banner is the shared mock-mode line",
+   "x": 0,
+   "y": 67,
+   "width": 1442,
+   "height": 30
+  },
+  {
+   "name": "lock progress",
+   "reason": "live scan state: the app's matcher reports its own vote count and may name a different card than the mockup's 3/5 on Lightning Bolt",
+   "x": 480,
+   "y": 174,
+   "width": 185,
+   "height": 54
+  },
+  {
+   "name": "lock outline",
+   "reason": "the marching outline follows the detected card: the app draws its own detection's quad, the mockup a fixed one",
+   "x": 572,
+   "y": 288,
+   "width": 293,
+   "height": 413
+  },
+  {
+   "name": "mock-mode banner copy",
+   "reason": "the mockup page's banner reads 'the camera feed is a still'; the app's banner is the shared mock-mode line",
+   "x": 0,
+   "y": 66,
+   "width": 1442,
+   "height": 30
+  },
+  {
+   "name": "lock progress",
+   "reason": "live scan state: the app's matcher reports its own vote count and may name a different card than the mockup's 3/5 on Lightning Bolt",
+   "x": 480,
+   "y": 174,
+   "width": 185,
+   "height": 54
+  },
+  {
+   "name": "caution triangle",
+   "reason": "the mockup always draws the caution triangle; the app draws it, with the count pill, once a card is held (REQ-214)",
+   "x": 914,
+   "y": 174,
+   "width": 46,
+   "height": 46
+  },
+  {
+   "name": "lock outline",
+   "reason": "the marching outline follows the detected card: the app draws its own detection's quad, the mockup a fixed one",
+   "x": 575,
+   "y": 302,
+   "width": 286,
+   "height": 405
+  }
+ ]
+}

@@ -1,8 +1,9 @@
+import { useState } from "react";
 import { render } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { vi } from "vitest";
 import { EnrichmentStep } from "../components/EnrichmentStep";
-import type { GameContext, ZoneCardItem } from "../types";
+import type { GameContext, ZoneCardItem, ZoneId } from "../types";
 
 export const card: ZoneCardItem = {
   cardId: "opt",
@@ -70,6 +71,7 @@ export function renderEnrichment(
       frozenGameContext={null}
       onFollowUp={vi.fn()}
       onStartOver={vi.fn()}
+      onEditRequest={vi.fn()}
       {...overrides}
     />
   );
@@ -85,4 +87,56 @@ export function renderEnrichmentWithDuplicates(
     activePlayers: ["Player 1", "Player 2"],
     onZonesChange
   });
+}
+
+/** A thin stateful wrapper: unlike `renderEnrichment`'s mocked `onZonesChange` (which
+ * drops the update, fine for tests that only inspect the mock's call args), this
+ * actually feeds `onZonesChange` back into `zones`, so a target pill, a Mana spent
+ * edit, or a note really re-renders — needed for tests that assert on the DOM after
+ * an interaction rather than on a mock call. */
+function StatefulEnrichmentHarness(
+  overrides: Partial<EnrichmentStepProps> & { initialZones: Partial<Record<ZoneId, ZoneCardItem[]>> }
+): JSX.Element {
+  const { initialZones, ...rest } = overrides;
+  const [zones, setZones] = useState(initialZones);
+  return (
+    <EnrichmentStep
+      gameContext={singlePlayerGameContext}
+      zones={zones}
+      onZonesChange={setZones}
+      activePlayers={["Player 1"]}
+      question=""
+      onQuestionChange={vi.fn()}
+      onDecryptStack={vi.fn()}
+      onBack={vi.fn()}
+      canDecrypt
+      isSubmitting={false}
+      answer={null}
+      error={null}
+      canRetry
+      retryCountdown={0}
+      onRetry={vi.fn()}
+      statusMessage={null}
+      isConversationActive={false}
+      isFollowUpSubmitting={false}
+      visibleMessages={[]}
+      frozenGameContext={null}
+      onFollowUp={vi.fn()}
+      onStartOver={vi.fn()}
+      onEditRequest={vi.fn()}
+      {...rest}
+    />
+  );
+}
+
+export function renderStatefulEnrichmentWithDuplicates(): ReturnType<typeof userEvent.setup> {
+  const user = userEvent.setup();
+  render(
+    <StatefulEnrichmentHarness
+      gameContext={twoPlayerGameContext}
+      initialZones={{ stack: [card1, card2] }}
+      activePlayers={["Player 1", "Player 2"]}
+    />
+  );
+  return user;
 }

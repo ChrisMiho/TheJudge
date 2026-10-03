@@ -1,5 +1,6 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { ZoneAskAiPayload } from "../../lib/contextFlow";
 import type { RosterSeed } from "../../lib/lifeTracker/seed";
@@ -11,6 +12,7 @@ import {
   baseCardMetadataFixture,
   clickDecryptStack,
   expandSecondaryPlayerDetails,
+  finishEnrichmentWizard,
   getUrlFromRequest,
   jsonResponse,
   selectZoneTab
@@ -43,18 +45,29 @@ const fourPlayerSeed: RosterSeed = {
 function renderWithSeed(seed: RosterSeed): void {
   let pendingSeed: RosterSeed | null = seed;
   render(
-    <AssistantSeedContext.Provider
-      value={{
-        queueSeed: vi.fn(),
-        consumeSeed: () => {
-          const pending = pendingSeed;
-          pendingSeed = null;
-          return pending;
-        }
-      }}
-    >
-      <MtgAssistantApp />
-    </AssistantSeedContext.Provider>
+    <MemoryRouter initialEntries={["/in-depth"]}>
+      <AssistantSeedContext.Provider
+        value={{
+          queueSeed: vi.fn(),
+          consumeSeed: () => {
+            const pending = pendingSeed;
+            pendingSeed = null;
+            return pending;
+          },
+          queueLookupCarry: vi.fn(),
+          consumeLookupCarry: () => null,
+          queueHistoryResume: vi.fn(),
+          consumeHistoryResume: () => null,
+          queueHistoryDeletion: vi.fn(),
+          consumeHistoryDeletion: () => null,
+          queueDraftResume: vi.fn(),
+          consumeDraftResume: () => false,
+          historyResumeVersion: 0
+        }}
+      >
+        <MtgAssistantApp />
+      </AssistantSeedContext.Provider>
+    </MemoryRouter>
   );
 }
 
@@ -91,7 +104,7 @@ describe("Frontend - MTG Assistant", () => {
     expect(screen.getByLabelText("Player 1 life total")).toHaveValue("27");
     expect(screen.getByText("4 players")).toBeInTheDocument();
     expect(
-      screen.getByText("Tap the arrow to set names and life totals — 2 players start at 20, 3+ at 40.")
+      screen.getByText("Who is playing, and where the turn is. Tap the arrow to name the players and set life — 2 players start at 20, 3+ at 40.")
     ).toBeInTheDocument();
     expect(screen.queryByLabelText("Player 1 poison")).not.toBeInTheDocument();
 
@@ -157,7 +170,9 @@ describe("Frontend - MTG Assistant", () => {
       screen.getByLabelText(`Player 1 ${field}`).closest("label")
     );
     const scalarStack = scalarRows[0]!.parentElement!;
-    expect(scalarStack.className).toContain("flex-col");
+    // `.counters` stacks the three selects one per line at every width (REQ-138); the mockup's
+    // three-column grid is overridden in the stylesheet.
+    expect(scalarStack.className).toContain("counters");
     expect(scalarStack.className).not.toMatch(/grid-cols-3/);
     for (const row of scalarRows) {
       expect(row!.parentElement).toBe(scalarStack);
@@ -169,10 +184,11 @@ describe("Frontend - MTG Assistant", () => {
       .getByLabelText("Player 1 commander damage from Player 2")
       .closest("label")!;
     const namedCounterRow = screen.getByLabelText("Player 1 counter Monarch amount").parentElement!;
-    expect(namedCounterRow.className).toBe(commanderRow.className);
-    expect(commanderRow.className).toContain("gap-2");
+    // Commander-damage and named-counter rows are the stylesheet's `.cmd-row` / `.named-row`, both
+    // content-sized flex rows with one declared gap (REQ-137).
+    expect(commanderRow.className).toContain("cmd-row");
+    expect(namedCounterRow.className).toContain("named-row");
     expect(commanderRow.className).not.toMatch(/grid-cols-\[1fr_auto\]/);
-    expect(scalarRows[0]!.className).toBe(commanderRow.className);
   });
 
   it("keeps commander damage a free-typed unbounded numeric input", async () => {
@@ -279,6 +295,7 @@ describe("Frontend - MTG Assistant", () => {
     await selectZoneTab(user, "Stack");
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
+    await finishEnrichmentWizard(user);
     await user.type(
       screen.getByPlaceholderText("How does this resolve?"),
       "What happens if this resolves?"
@@ -286,7 +303,7 @@ describe("Frontend - MTG Assistant", () => {
     await clickDecryptStack(user);
 
     expect(await screen.findByText("ok")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Start Over" }));
+    await user.click(screen.getByRole("button", { name: "Start over — clears everything" }));
 
     expect(screen.getByRole("heading", { name: "Game context" })).toBeInTheDocument();
     expect(await screen.findByLabelText("Player 1 display name")).toHaveValue("Alice");
@@ -302,6 +319,7 @@ describe("Frontend - MTG Assistant", () => {
     expect(screen.queryByText("Opt")).not.toBeInTheDocument();
     await addCardToActiveZone(user, "opt", "Opt");
     await advanceToContextEnrichmentFromZones(user);
+    await finishEnrichmentWizard(user);
     expect(screen.getByPlaceholderText("How does this resolve?")).toHaveValue("");
   });
 });

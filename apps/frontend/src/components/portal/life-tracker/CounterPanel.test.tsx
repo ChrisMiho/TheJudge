@@ -63,7 +63,10 @@ describe("Frontend - Shared", () => {
       const trigger = screen.getByRole("button", { name: "Open Alice counters" });
 
       await user.click(trigger);
-      expect(screen.getByRole("dialog", { name: "Counters for Player 1 (Alice)" })).toBeInTheDocument();
+      // Look-matching pass (slice Q): the title is "Counters · <player>" plus
+      // a muted "<life> life" caption (both make up the dialog's accessible
+      // name via aria-labelledby).
+      expect(screen.getByRole("dialog", { name: "Counters · Player 1 (Alice) 40 life" })).toBeInTheDocument();
       await user.click(screen.getByRole("button", { name: "Close counters" }));
 
       expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
@@ -89,7 +92,9 @@ describe("Frontend - Shared", () => {
 
       const matrix = screen.getByRole("group", { name: "Commander damage by source" });
       expect(within(matrix).getAllByTestId(/^commander-cell-/)).toHaveLength(4);
-      expect(within(matrix).getByText("me")).toBeInTheDocument();
+      // Look-matching pass (slice Q): "your seat · life total" replaces the
+      // old bare "me" caption.
+      expect(within(matrix).getByText("your seat · life total")).toBeInTheDocument();
       expect(within(matrix).getByText("Player 2")).toBeInTheDocument();
       expect(within(matrix).queryByRole("button", { name: /Player 1/ })).not.toBeInTheDocument();
       expect(within(matrix).queryByRole("button", { name: /Options for/ })).not.toBeInTheDocument();
@@ -101,17 +106,16 @@ describe("Frontend - Shared", () => {
       expect(props.onAdjustCommanderDamage).toHaveBeenCalledWith("Player 1", "Player 2", -1);
     });
 
-    it("renders commander damage decrease/increase bands at the widened tap-target height", () => {
+    it("renders commander damage decrease/increase as one joined stepper pill (look-matching pass, slice Q)", () => {
       const props = panelProps();
       render(<CounterPanel {...props} />);
 
       const matrix = screen.getByRole("group", { name: "Commander damage by source" });
-      expect(
-        within(matrix).getByRole("button", { name: "Decrease commander damage from Player 2" })
-      ).toHaveClass("min-h-[53px]");
-      expect(
-        within(matrix).getByRole("button", { name: "Increase commander damage from Player 2" })
-      ).toHaveClass("min-h-[53px]");
+      const decrease = within(matrix).getByRole("button", { name: "Decrease commander damage from Player 2" });
+      const increase = within(matrix).getByRole("button", { name: "Increase commander damage from Player 2" });
+      // `.seat .bands` (index.css) is the joined −|+ pill at the seat's foot.
+      expect(decrease.closest(".bands")).not.toBeNull();
+      expect(increase.closest(".bands")).toBe(decrease.closest(".bands"));
     });
 
     it("sizes the commander-damage matrix to the active layout's real columns/rows, not a hardcoded grid-cols-2", () => {
@@ -142,7 +146,7 @@ describe("Frontend - Shared", () => {
       const player8Seat = layout.seats.find((seat) => seat.label === "Player 8")!;
 
       const meCell = screen.getByTestId("commander-cell-Player 1");
-      expect(meCell).toHaveTextContent("me");
+      expect(meCell).toHaveTextContent("your seat · life total");
       expect(meCell.className).not.toContain("min-h-36");
       expect(meCell).toHaveStyle({ gridRow: ownSeat.gridRow, gridColumn: ownSeat.gridColumn });
 
@@ -150,6 +154,31 @@ describe("Frontend - Shared", () => {
       expect(opponentCell).toHaveStyle({ gridRow: player8Seat.gridRow, gridColumn: player8Seat.gridColumn });
       expect(player8Seat.gridRow).toBe(ownSeat.gridRow);
       expect(player8Seat.gridColumn).not.toBe(ownSeat.gridColumn);
+    });
+
+    it("marks a commander-damage cell LETHAL at 21 and not below it (REQ-202)", () => {
+      const state = populatedState();
+      const atTwenty: TrackerState = {
+        ...state,
+        players: state.players.map((entry, index) =>
+          index === 0 ? { ...entry, commanderDamage: { ...entry.commanderDamage, "Player 2": 20 } } : entry
+        )
+      };
+      const { rerender } = render(<CounterPanel {...panelProps(atTwenty)} />);
+
+      expect(screen.getByTestId("commander-cell-Player 2")).toHaveAttribute("data-lethal", "false");
+      expect(screen.queryByTestId("commander-lethal-Player 2")).not.toBeInTheDocument();
+
+      const atTwentyOne: TrackerState = {
+        ...state,
+        players: state.players.map((entry, index) =>
+          index === 0 ? { ...entry, commanderDamage: { ...entry.commanderDamage, "Player 2": 21 } } : entry
+        )
+      };
+      rerender(<CounterPanel {...panelProps(atTwentyOne)} />);
+
+      expect(screen.getByTestId("commander-cell-Player 2")).toHaveAttribute("data-lethal", "true");
+      expect(screen.getByTestId("commander-lethal-Player 2")).toHaveTextContent(/lethal/i);
     });
 
     it("renders the shared palette exactly once and increments each value independently", async () => {
@@ -266,39 +295,53 @@ describe("Frontend - Shared", () => {
       const props = panelProps(activeState);
       render(<CounterPanel {...props} />);
 
-      expect(screen.getByText("Life Tracker")).toHaveClass("text-accent-soft");
-      expect(screen.getByRole("tab", { name: "Player" })).toHaveClass("text-accent-soft");
+      expect(screen.getByText("Life Tracker").closest(".lt-head")).not.toBeNull();
+      // The active tab's own accent styling comes from `.seg button[aria-selected="true"]` (index.css),
+      // asserted structurally (the shared segmented control, `aria-selected`) rather than as a colour class.
+      const commanderTab = screen.getByRole("tab", { name: "Commander damage" });
+      expect(commanderTab.closest(".seg")).not.toBeNull();
+      expect(commanderTab).toHaveAttribute("aria-selected", "true");
 
       await user.click(screen.getByRole("tab", { name: "Counters" }));
-      expect(screen.getByRole("tab", { name: "Counters" })).toHaveClass("text-accent-soft");
-      expect(screen.getByTestId("counter-label-poison")).toHaveClass("text-accent-soft");
+      expect(screen.getByRole("tab", { name: "Counters" })).toHaveAttribute("aria-selected", "true");
+      expect(screen.getByTestId("counter-label-poison").closest(".tile")).toHaveAttribute("data-on", "true");
 
       await user.type(screen.getByRole("textbox", { name: "Custom counter name" }), "Shield");
-      expect(screen.getByRole("button", { name: "Add custom counter" })).toHaveClass("text-accent-soft");
+      expect(screen.getByRole("button", { name: "Add custom counter" })).toHaveClass("btn");
     });
 
-    it("fills the available height instead of sizing to its content, like the suite's other overlays", () => {
-      // DEC-139: the panel joins the Menu tray (DEC-133) / history drawer (DEC-134) overlay
-      // family. As a content-sized bottom sheet it left a 358px dead scrim band above itself
-      // at 430x900 with 4 players — 40% of the viewport — which is the shape DEC-134 already
-      // retired for the history drawer.
+    // REQ-082 (as amended): the panel is the suite's shared sheet, sized to its content like every other
+    // sheet — no fixed tall frame of its own; only the sheet's body scrolls when the content is taller.
+    it("is hosted on the shared sheet and sized to its content, with no fixed full-height frame", () => {
       render(<CounterPanel {...panelProps()} />);
 
       const surface = screen.getByRole("dialog");
-      const overlay = surface.parentElement as HTMLElement;
+      expect(surface).toHaveClass("drawer-panel", "lt-sheet");
+      expect(surface.parentElement).toBe(document.body);
+      expect(surface.className).not.toMatch(/\bh-full\b|\bmax-h-\[|items-stretch/);
+      // Head, body and the Done foot bar are the sheet's own three bands, in that order.
+      const bands = Array.from(surface.children).filter((child) => /lt-head|lt-body|lt-foot/.test(child.className));
+      expect(bands.map((band) => band.className.split(" ").find((name) => name.startsWith("lt-")))).toEqual([
+        "lt-head",
+        "lt-scope",
+        "lt-foot"
+      ]);
+    });
 
-      // Stretches at every viewport rather than bottom-anchoring on narrow ones.
-      expect(overlay.className).toContain("items-stretch");
-      expect(overlay.className).not.toContain("items-end");
-      expect(overlay.className).not.toContain("sm:items-center");
+    it("closes from the Done bar, the ✕ and Escape", async () => {
+      const user = userEvent.setup();
+      const props = panelProps();
+      const { rerender } = render(<CounterPanel {...props} />);
 
-      // Height comes from the overlay, not from the content.
-      expect(surface.className).toContain("h-full");
-      expect(surface.className).not.toContain("max-h-[94dvh]");
+      await user.click(screen.getByRole("button", { name: "Done" }));
+      expect(props.onClose).toHaveBeenCalledTimes(1);
 
-      // The pre-existing scroll affordance is retained, not dropped: taller content at higher
-      // player counts must still be reachable.
-      expect(surface.className).toContain("overflow-y-auto");
+      await user.click(screen.getByRole("button", { name: "Close counters" }));
+      expect(props.onClose).toHaveBeenCalledTimes(2);
+
+      await user.keyboard("{Escape}");
+      expect(props.onClose).toHaveBeenCalledTimes(3);
+      rerender(<CounterPanel {...props} />);
     });
   });
 });

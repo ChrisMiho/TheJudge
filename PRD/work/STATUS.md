@@ -33,7 +33,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ui-reimagining-build | Answer `PRD/work/ui-reimagining-build/GATE-QUESTIONS.md` (57 slots) in the docs PR, then merge to build — gate-qc PASS on attempt 2, run `graph-20260930-055958` |
 
 
 ## deferred

@@ -1,0 +1,68 @@
+{
+ "regions": [
+  {
+   "name": "closed tray shadow",
+   "reason": "the mockup keeps its closed Menu tray mounted off-screen and its accent shadow bleeds onto the left edge; the app mounts the tray only while open",
+   "x": 0,
+   "y": 0,
+   "width": 80,
+   "height": 900
+  },
+  {
+   "name": "question box",
+   "reason": "REQ-205 wins over the mockup: the In-depth chip and the mic|send pill paint 44px (the mockup's are 40px), so the box is 4px taller and its shape differs",
+   "x": 431,
+   "y": 560,
+   "width": 578,
+   "height": 63
+  },
+  {
+   "name": "card art thumbnails",
+   "reason": "card art: the app draws the corpus image at its stored size, the mockup its own copy of the image",
+   "x": 493,
+   "y": 165,
+   "width": 34,
+   "height": 47
+  },
+  {
+   "name": "card art thumbnails",
+   "reason": "card art: the app draws the corpus image at its stored size, the mockup its own copy of the image",
+   "x": 532,
+   "y": 165,
+   "width": 34,
+   "height": 47
+  },
+  {
+   "name": "card art thumbnails",
+   "reason": "card art: the app draws the corpus image at its stored size, the mockup its own copy of the image",
+   "x": 571,
+   "y": 165,
+   "width": 34,
+   "height": 47
+  },
+  {
+   "name": "card art thumbnails",
+   "reason": "card art: the app draws the corpus image at its stored size, the mockup its own copy of the image",
+   "x": 610,
+   "y": 165,
+   "width": 34,
+   "height": 47
+  },
+  {
+   "name": "card art thumbnails",
+   "reason": "card art: the app draws the corpus image at its stored size, the mockup its own copy of the image",
+   "x": 650,
+   "y": 165,
+   "width": 34,
+   "height": 47
+  },
+  {
+   "name": "the conversation thread",
+   "reason": "live data: the judge's answer text comes from the AI provider (the mock provider's text here), not the mockup's written ruling; the thread box is fixed to 320px on both sides for the capture",
+   "x": 431,
+   "y": 228,
+   "width": 578,
+   "height": 322
+  }
+ ]
+}

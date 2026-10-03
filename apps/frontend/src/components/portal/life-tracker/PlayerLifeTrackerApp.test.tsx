@@ -63,7 +63,7 @@ describe("Frontend - Shared", () => {
   });
 
   describe("PlayerLifeTrackerApp", () => {
-    it("renders portal chrome and lets names be edited from the Players section of Game Setup", async () => {
+    it("renders portal chrome and lets names be edited from Game Setup\u0027s Edit names collapse", async () => {
       const user = userEvent.setup();
       render(<PlayerLifeTrackerApp />);
 
@@ -72,9 +72,7 @@ describe("Frontend - Shared", () => {
 
       await openGameSetup(user);
       expect(screen.getByLabelText("Player count")).toBeInTheDocument();
-      expect(screen.queryByLabelText("Player 1 display name")).not.toBeInTheDocument();
-
-      await user.click(screen.getByRole("button", { name: "Edit player names" }));
+      await user.click(screen.getByRole("button", { name: "Edit names ▾" }));
       const playerOneName = screen.getByLabelText("Player 1 display name");
 
       await user.clear(playerOneName);
@@ -82,12 +80,11 @@ describe("Frontend - Shared", () => {
       expect(screen.getByText("Player 1 (Alice)")).toBeInTheDocument();
     });
 
-    it("wraps its full-bleed content in the shell-bounds pass-through wrapper (REQ-113)", () => {
+    it("wraps its full-bleed content in a bare pass-through wrapper", () => {
       const { container } = render(<PlayerLifeTrackerApp />);
 
       const bleedWrapper = container.querySelector(".page-shell-bleed");
       expect(bleedWrapper).toBeInTheDocument();
-      expect(bleedWrapper?.querySelector(".portal-shell-bounds")).toBeInTheDocument();
       // The full-bleed wrapper is a bare pass-through box — Life Tracker's own layout
       // (its inner flex column) is still the direct structural content, pixel-identical
       // to before this wrapper existed.
@@ -254,13 +251,13 @@ describe("Frontend - Shared", () => {
 
       await openGameSetup(user);
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
-      await user.click(screen.getByRole("button", { name: "Confirm reset current game" }));
+      await user.click(screen.getByRole("button", { name: "Reset" }));
       expect(within(screen.getByTestId("life-card-Player 1")).getByText("40")).toBeInTheDocument();
       expect(localStorage.length).toBe(0);
 
       await user.click(screen.getByRole("button", { name: "Decrease player count" }));
       await user.click(screen.getByRole("button", { name: "Start new game" }));
-      await user.click(screen.getByRole("button", { name: "Confirm start new game" }));
+      await user.click(screen.getByRole("button", { name: "New game" }));
       expect(trackerCards()).toHaveLength(4);
       expect(localStorage.length).toBe(0);
     });
@@ -281,7 +278,9 @@ describe("Frontend - Shared", () => {
       render(<PlayerLifeTrackerApp />);
 
       await user.click(screen.getByRole("button", { name: "Open counters for Player 2" }));
-      expect(screen.getByRole("dialog", { name: "Counters for Player 2" })).toBeInTheDocument();
+      // Look-matching pass (slice Q): "Counters · <player>" plus a muted
+      // "<life> life" caption.
+      expect(screen.getByRole("dialog", { name: "Counters · Player 2 40 life" })).toBeInTheDocument();
       await user.click(screen.getByRole("tab", { name: "Counters" }));
       await user.click(screen.getByRole("button", { name: "Options for Poison" }));
       await user.click(screen.getByRole("button", { name: "Decrease Poison" }));
@@ -343,12 +342,12 @@ describe("Frontend - Shared", () => {
       await openGameSetup(user);
 
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
-      expect(screen.getByRole("button", { name: "Confirm reset current game" })).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Reset this game?" })).toBeInTheDocument();
 
       await user.click(screen.getByRole("button", { name: "Close game setup" }));
       await openGameSetup(user);
 
-      expect(screen.queryByRole("button", { name: "Confirm reset current game" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("heading", { name: "Reset this game?" })).not.toBeInTheDocument();
       expect(screen.getByRole("button", { name: "Reset current game" })).toBeInTheDocument();
     });
 
@@ -416,7 +415,7 @@ describe("Frontend - Shared", () => {
 
       await openGameSetup(user);
       await user.click(screen.getByRole("button", { name: "Reset current game" }));
-      await user.click(screen.getByRole("button", { name: "Confirm reset current game" }));
+      await user.click(screen.getByRole("button", { name: "Reset" }));
 
       expect(
         screen.getByRole("button", { name: "Day and night: currently day. Flip designation." })
