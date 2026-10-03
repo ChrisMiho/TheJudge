@@ -202,7 +202,15 @@ jobs:
           # exists to ship. Everything else (docs, PRD/**, .claude/**, ...)
           # does not warrant a full frontend + Lambda deploy.
           code_pattern='^(apps/|scripts/|\.github/workflows/|package\.json$|package-lock\.json$|tsconfig.*\.json$)'
-          if echo "$changed" | grep -Eq "$code_pattern"; then
+          # Match against a here-string, never `echo "$changed" | grep -Eq`.
+          # `grep -q` exits at the first match and closes the pipe; on a large
+          # change set the still-writing `echo` then dies with SIGPIPE, and
+          # under `set -o pipefail` that broken-pipe status becomes the
+          # pipeline's exit code — so a real match reads as a failure and the
+          # `if` wrongly votes skip. (Bit PR #239's 679-file merge on
+          # 2026-10-03: code was on main but deploy was skipped.) A here-string
+          # has no pipe, so grep's own exit status is the verdict.
+          if grep -Eq "$code_pattern" <<<"$changed"; then
             echo "Code-set path changed — deploy verdict: deploy." | tee -a "$GITHUB_STEP_SUMMARY"
             echo "deploy=true" >> "$GITHUB_OUTPUT"
           else
