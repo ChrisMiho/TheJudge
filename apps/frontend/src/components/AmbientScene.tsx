@@ -14,7 +14,7 @@ export type AmbientSceneProps = {
   variant?: "page" | "tray";
 };
 
-type AttachOptions = { k?: number; dust?: number; tray?: boolean; size?: () => [number, number] };
+type AttachOptions = { k?: number; dust?: number; tray?: boolean; adaptive?: boolean; size?: () => [number, number] };
 
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 
@@ -40,6 +40,25 @@ let random: () => number = Math.random;
 
 function reducedMotion(): boolean {
   return typeof window.matchMedia === "function" && window.matchMedia(REDUCED_QUERY).matches;
+}
+
+/*
+ * Adaptive fallback for weak hardware. The full-screen scene is GPU paint/
+ * composite-bound, not JS-bound — smooth on a strong GPU, "lag central" on a
+ * weak one — and no amount of thinning the scene changes that. So after the
+ * loop starts we sample ~1.2s of real frame times: if the machine cannot hold
+ * ~45fps for the majority of that window, the loop freezes to one still frame
+ * (the same resting look reduced-motion gets) instead of animating a janky one.
+ */
+const PROBE_SLOW_MS = 22; // a frame slower than ~45fps
+const PROBE_MIN_SAMPLES = 20; // need a real window; ignore startup jank
+const PROBE_SLOW_FRACTION = 0.5; // majority of the window must be slow
+const PROBE_WINDOW_MS = 1200;
+
+export function shouldFallbackToStatic(frameDurationsMs: number[]): boolean {
+  if (frameDurationsMs.length < PROBE_MIN_SAMPLES) return false;
+  const slow = frameDurationsMs.filter((d) => d > PROBE_SLOW_MS).length;
+  return slow / frameDurationsMs.length > PROBE_SLOW_FRACTION;
 }
 
 /*
@@ -457,8 +476,11 @@ const AMBIENCE = (() => {
   // opts: k (scene density, 1 = the page), dust (dust density, 1 = the page), size() -> [W, H]
   function attach(canvas: HTMLCanvasElement, opts: AttachOptions = {}) {
     const ctx = canvas.getContext('2d') as CanvasRenderingContext2D;
-    const k = opts.k ?? 1, dustK = opts.dust ?? 1;
+    const k = opts.k ?? 1, dustK = opts.dust ?? 1, adaptive = opts.adaptive ?? false;
     let parts: any[] = [], recipe: any, scene: any, W = 0, H = 0, raf = 0, dpr = 1, t = 0, cache: HTMLCanvasElement | null = null;
+    // adaptive-fallback probe (see shouldFallbackToStatic): sampled after start()
+    let probeDone = false, probeStart = 0, probeLast = 0;
+    const probeSamples: number[] = [];
 
     function spawn(p: any, fresh: boolean) {
       const r = recipe;
@@ -489,6 +511,7 @@ const AMBIENCE = (() => {
       scene.backdrop(c2, W, H, k);
     }
     function start() {
+      probeDone = false; probeStart = 0; probeLast = 0; probeSamples.length = 0;
       random = reducedMotion() ? seededRandom(STILL_FRAME_SEED) : Math.random;
       t = Math.floor(rnd(0, 10000));
       const profile = document.documentElement.dataset.profile || 'blue';
@@ -503,6 +526,21 @@ const AMBIENCE = (() => {
       else { ctx.clearRect(0, 0, W, H); tick(true); }
     }
     function tick(once?: boolean | number) {
+      // Adaptive fallback: while probing, time real frames; if the machine
+      // can't keep up, draw THIS frame as usual but stop the loop so it rests
+      // on a still image rather than animating a janky one.
+      let freeze = false;
+      if (adaptive && !probeDone && once !== true) {
+        const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+        if (probeStart === 0) { probeStart = now; probeLast = now; }
+        else {
+          probeSamples.push(now - probeLast); probeLast = now;
+          if (now - probeStart >= PROBE_WINDOW_MS && probeSamples.length >= PROBE_MIN_SAMPLES) {
+            probeDone = true;
+            freeze = shouldFallbackToStatic(probeSamples);
+          }
+        }
+      }
       t += 1;
       ctx.clearRect(0, 0, W, H);
       if (cache) ctx.drawImage(cache, 0, 0, W, H);
@@ -540,7 +578,7 @@ const AMBIENCE = (() => {
         ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, Math.PI * 2); ctx.fill();
         ctx.fillStyle = rgba(col, alpha); ctx.beginPath(); ctx.arc(p.x, p.y, p.s * (p.spark ? 1.3 : 0.9), 0, Math.PI * 2); ctx.fill();
       }
-      if (once !== true) raf = requestAnimationFrame(() => tick());
+      if (once !== true && !freeze) raf = requestAnimationFrame(() => tick());
     }
     resize(); start();
     const observer = new MutationObserver(() => start());
@@ -602,7 +640,8 @@ export function AmbientScene({ motif, variant = "page" }: AmbientSceneProps): JS
     }
     // Half density: k/dust 1 -> 0.5 halves the scene elements and the drifting
     // dust particles drawn every frame. Keeps the look, ~halves the draw cost.
-    const scene = AMBIENCE.attach(canvas, { k: 0.5, dust: 0.5 });
+    // adaptive: weak GPUs that can't hold the frame rate rest on a still frame.
+    const scene = AMBIENCE.attach(canvas, { k: 0.5, dust: 0.5, adaptive: true });
     window.addEventListener("resize", scene.resize);
     return () => {
       window.removeEventListener("resize", scene.resize);
