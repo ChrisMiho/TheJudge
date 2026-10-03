@@ -108,7 +108,12 @@
   width: 100%;
   height: 100%;
   opacity: 1;
-  mix-blend-mode: screen;
+  /* No mix-blend-mode: a screen blend on a full-screen canvas that repaints
+     every frame forces the compositor to read back and re-blend the whole
+     viewport (plus the two blurred haze sheets under it) every frame — pure GPU
+     cost, invisible to JS timing, the real cause of the live lag on weak GPUs.
+     The dust is light motes on a dark base, where screen ≈ normal, so dropping
+     it is near-invisible and lets the haze composite once instead of per frame. */
 }
 
 /* the page content always sits above the ambience (fixed overlays — trays,

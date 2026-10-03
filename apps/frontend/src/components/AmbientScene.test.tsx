@@ -1,7 +1,7 @@
 import { render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { AmbientScene } from "./AmbientScene";
+import { AmbientScene, shouldFallbackToStatic } from "./AmbientScene";
 import { PALETTES } from "../lib/theme/palettes";
 
 function mockMatchMedia(prefersReduced: boolean): void {
@@ -120,6 +120,33 @@ describe("Frontend - AmbientScene", () => {
     document.documentElement.setAttribute("data-profile", "red");
 
     await waitFor(() => expect(log.length).toBeGreaterThan(before));
+  });
+
+  it("falls back to static when most sampled frames run slower than ~45fps", () => {
+    // A weak machine: ~30fps (33ms/frame) sustained -> freeze to the still frame.
+    const slow = Array.from({ length: 40 }, () => 33);
+    expect(shouldFallbackToStatic(slow)).toBe(true);
+  });
+
+  it("keeps animating when the machine holds a smooth frame rate", () => {
+    const smooth60 = Array.from({ length: 40 }, () => 16.7);
+    expect(shouldFallbackToStatic(smooth60)).toBe(false);
+    // A solid ~50fps machine (20ms) still animates — it is only borderline, not slow.
+    const smooth50 = Array.from({ length: 40 }, () => 20);
+    expect(shouldFallbackToStatic(smooth50)).toBe(false);
+  });
+
+  it("ignores a short sample (startup jank) and does not downgrade", () => {
+    // Too few frames to judge: a couple of slow startup frames must not trip it.
+    expect(shouldFallbackToStatic([40, 40, 40])).toBe(false);
+  });
+
+  it("tolerates a minority of slow frames (occasional hitches keep animating)", () => {
+    const mostlySmooth = [
+      ...Array.from({ length: 30 }, () => 16),
+      ...Array.from({ length: 8 }, () => 40)
+    ];
+    expect(shouldFallbackToStatic(mostlySmooth)).toBe(false);
   });
 
   it("stops its loop when it unmounts", () => {
