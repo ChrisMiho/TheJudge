@@ -591,6 +591,10 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
           <div className="flow-head">
             <h1>{PAGE_TITLE}</h1>
             <div className="attach">
+              {/* The chip toggles the card search. While search is open it also hides the
+                  card carousel on mobile (`flow.css` `[data-searching="true"] .stage`), so the
+                  label/glyph flip to "✕ Close search" — the only hint that tapping it again
+                  closes search and brings the carousel back. */}
               <button
                 type="button"
                 onClick={toggleSearch}
@@ -599,9 +603,9 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
                 className="icon-chip"
               >
                 <span className="glyph" aria-hidden="true">
-                  ＋
+                  {isSearchOpen ? "✕" : "＋"}
                 </span>
-                Add card
+                {isSearchOpen ? "Close search" : "Add card"}
               </button>
               <button
                 type="button"
