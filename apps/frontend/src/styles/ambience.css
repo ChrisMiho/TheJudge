@@ -48,7 +48,11 @@
 
 /* two sheets of haze: each is a few large soft blobs, blurred, on its own slow path */
 .ambience .haze {
-  filter: blur(46px) saturate(1.1);
+  /* blur(30px) not 46px, and the drift keyframes no longer scale() the layer:
+     animating scale on a large blurred sheet forces the browser to re-rasterize
+     the whole blur every frame (paint-bound, murders weaker GPUs). It still
+     drifts via translate/rotate, which the compositor handles for free. */
+  filter: blur(30px) saturate(1.1);
   opacity: 0.62;
   animation: haze-a 46s ease-in-out infinite alternate;
   transform-origin: 50% 50%;
@@ -58,12 +62,12 @@
   animation: haze-b 64s ease-in-out infinite alternate;
 }
 @keyframes haze-a {
-  from { transform: translate3d(-4%, -2%, 0) rotate(-2deg) scale(1); }
-  to { transform: translate3d(4%, 3%, 0) rotate(2deg) scale(1.08); }
+  from { transform: translate3d(-4%, -2%, 0) rotate(-2deg); }
+  to { transform: translate3d(4%, 3%, 0) rotate(2deg); }
 }
 @keyframes haze-b {
-  from { transform: translate3d(3%, 2%, 0) rotate(1.5deg) scale(1.06); }
-  to { transform: translate3d(-4%, -3%, 0) rotate(-1.5deg) scale(1); }
+  from { transform: translate3d(3%, 2%, 0) rotate(1.5deg); }
+  to { transform: translate3d(-4%, -3%, 0) rotate(-1.5deg); }
 }
 
 /* the badge (round 9: "making the image larger, centered, and maybe a bit

@@ -472,7 +472,10 @@ const AMBIENCE = (() => {
       return p;
     }
     function resize() {
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
+      // Cap at 1.5, not 2: the full-screen canvas is re-rastered every frame,
+      // so its cost scales with dpr². 1.5 cuts that ~45% on 2x+ displays; the
+      // scene is soft and blended, so the sharpness drop is not noticeable.
+      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       [W, H] = opts.size ? opts.size() : [window.innerWidth, window.innerHeight];
       canvas.width = Math.max(1, W * dpr); canvas.height = Math.max(1, H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -597,7 +600,9 @@ export function AmbientScene({ motif, variant = "page" }: AmbientSceneProps): JS
         scene.stop();
       };
     }
-    const scene = AMBIENCE.attach(canvas, { k: 1, dust: 1 });
+    // Half density: k/dust 1 -> 0.5 halves the scene elements and the drifting
+    // dust particles drawn every frame. Keeps the look, ~halves the draw cost.
+    const scene = AMBIENCE.attach(canvas, { k: 0.5, dust: 0.5 });
     window.addEventListener("resize", scene.resize);
     return () => {
       window.removeEventListener("resize", scene.resize);
