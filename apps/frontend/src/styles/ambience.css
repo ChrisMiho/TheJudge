@@ -48,11 +48,12 @@
 
 /* two sheets of haze: each is a few large soft blobs, blurred, on its own slow path */
 .ambience .haze {
-  /* blur(30px) not 46px, and the drift keyframes no longer scale() the layer:
-     animating scale on a large blurred sheet forces the browser to re-rasterize
-     the whole blur every frame (paint-bound, murders weaker GPUs). It still
-     drifts via translate/rotate, which the compositor handles for free. */
-  filter: blur(30px) saturate(1.1);
+  /* No filter: blur(). A live blur() on two full-viewport sheets is the single
+     biggest cost when the browser renders on the CPU (hardware acceleration off
+     or GPU-blocklisted) — measured ~10x the whole frame budget. The haze is
+     already soft radial gradients fading to transparent, so a heavier, wider
+     falloff reads the same as a blurred sheet without any filter pass. The
+     layer still drifts via transform (translate/rotate), which is cheap. */
   opacity: 0.62;
   animation: haze-a 46s ease-in-out infinite alternate;
   transform-origin: 50% 50%;
@@ -84,8 +85,10 @@
   left: calc(50% - var(--badge) / 2);
   top: calc(52% - var(--badge) / 2);
   background: var(--motif) center / contain no-repeat;
-  opacity: 0.26;
-  filter: blur(6px) saturate(1.1);
+  /* No filter: blur() here either — a blur() on a ~1040px image is costly on the
+     CPU path. The radial mask already dissolves the edges into the atmosphere,
+     and a lower opacity keeps it a faint backdrop rather than a sharp logo. */
+  opacity: 0.2;
   -webkit-mask-image: radial-gradient(closest-side, #000 80%, transparent 100%);
   mask-image: radial-gradient(closest-side, #000 80%, transparent 100%);
   animation: badge-drift 70s ease-in-out infinite alternate;

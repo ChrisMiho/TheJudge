@@ -481,6 +481,21 @@ const AMBIENCE = (() => {
     // adaptive-fallback probe (see shouldFallbackToStatic): sampled after start()
     let probeDone = false, probeStart = 0, probeLast = 0;
     const probeSamples: number[] = [];
+    // Pre-rendered dust-mote sprites (the soft glow halo), built once per start()
+    // and keyed to the active colour. Each dust particle is a drawImage of one of
+    // these instead of a createRadialGradient()+fill() every frame — the gradient
+    // build is the per-particle killer on the CPU path; a cached sprite blit is
+    // an order of magnitude cheaper. Rebuilt when the Theme (recipe) changes.
+    let moteColor: HTMLCanvasElement | null = null, moteSpark: HTMLCanvasElement | null = null;
+    function makeMote(color: number[]): HTMLCanvasElement {
+      const S = 64, c = document.createElement('canvas'); c.width = c.height = S;
+      const cx = c.getContext('2d') as CanvasRenderingContext2D | null;
+      if (!cx) return c; // no 2D context (e.g. jsdom without canvas) — blank sprite is harmless
+      const g = cx.createRadialGradient(S / 2, S / 2, 0, S / 2, S / 2, S / 2);
+      g.addColorStop(0, rgba(color, 1)); g.addColorStop(1, rgba(color, 0));
+      cx.fillStyle = g; cx.beginPath(); cx.arc(S / 2, S / 2, S / 2, 0, Math.PI * 2); cx.fill();
+      return c;
+    }
 
     function spawn(p: any, fresh: boolean) {
       const r = recipe;
@@ -494,10 +509,12 @@ const AMBIENCE = (() => {
       return p;
     }
     function resize() {
-      // Cap at 1.5, not 2: the full-screen canvas is re-rastered every frame,
-      // so its cost scales with dpr². 1.5 cuts that ~45% on 2x+ displays; the
-      // scene is soft and blended, so the sharpness drop is not noticeable.
-      dpr = Math.min(window.devicePixelRatio || 1, 1.5);
+      // Cap at 1, not the display's 2+: the full-screen canvas is re-rastered
+      // every frame, and on the CPU path (hardware acceleration off) every
+      // backing pixel is CPU work, so cost scales with dpr². Capping at 1 draws
+      // at CSS resolution and lets the browser upscale; the scene is soft dust
+      // and gradients, so the sharpness drop is not noticeable.
+      dpr = Math.min(window.devicePixelRatio || 1, 1);
       [W, H] = opts.size ? opts.size() : [window.innerWidth, window.innerHeight];
       canvas.width = Math.max(1, W * dpr); canvas.height = Math.max(1, H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -518,6 +535,7 @@ const AMBIENCE = (() => {
       recipe = Object.assign({}, RECIPES[profile] || RECIPES.blue);
       scene = Object.create((opts.tray && TRAY_SCENES[profile]) || SCENES[profile] || SCENES.blue);
       if (recipe.fromToken) { const c = tokenRGB(); if (c) { recipe.color = c; recipe.spark = c.map((x) => Math.min(255, x + 40)); scene.col = c; } }
+      moteColor = makeMote(recipe.color); moteSpark = makeMote(recipe.spark);
       parts = Array.from({ length: Math.round(recipe.n * dustK) }, () => spawn({}, true));
       scene.init(W, H, k);
       buildCache();
@@ -573,9 +591,12 @@ const AMBIENCE = (() => {
         const alpha = fade * (0.35 + 0.5 * tw) * (p.spark ? 1 : 0.7);
         const col = p.spark ? recipe.spark : recipe.color;
         const rad = p.s * (p.spark ? 6 : 4);
-        const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, rad);
-        g.addColorStop(0, rgba(col, alpha * 0.5)); g.addColorStop(1, rgba(col, 0));
-        ctx.fillStyle = g; ctx.beginPath(); ctx.arc(p.x, p.y, rad, 0, Math.PI * 2); ctx.fill();
+        // soft glow halo: a blit of the cached mote sprite (peak alpha alpha*0.5,
+        // matching the old gradient's centre stop) — no per-frame gradient build
+        ctx.globalAlpha = alpha * 0.5;
+        ctx.drawImage((p.spark ? moteSpark : moteColor) as HTMLCanvasElement, p.x - rad, p.y - rad, rad * 2, rad * 2);
+        ctx.globalAlpha = 1;
+        // the crisp bright core: a tiny solid dot, cheap to fill
         ctx.fillStyle = rgba(col, alpha); ctx.beginPath(); ctx.arc(p.x, p.y, p.s * (p.spark ? 1.3 : 0.9), 0, Math.PI * 2); ctx.fill();
       }
       if (once !== true && !freeze) raf = requestAnimationFrame(() => tick());
