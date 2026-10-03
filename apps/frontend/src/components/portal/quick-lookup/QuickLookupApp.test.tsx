@@ -232,6 +232,27 @@ describe("QuickLookupApp", () => {
     expect(cardSection!.closest(".qq")).toHaveAttribute("data-searching", "true");
   });
 
+  it("relabels the Add-card chip to \"Close search\" while search is open, so the same control that hides the card carousel on mobile reads as the way to bring it back", async () => {
+    const user = userEvent.setup();
+    render(<QuickLookupApp />);
+
+    // Closed: the chip invites adding a card.
+    expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Close search" })).not.toBeInTheDocument();
+
+    await openCardSearch(user);
+
+    // Open: the same toggle now reads as the close action (the only hint that tapping
+    // it again closes search and reveals the carousel on mobile).
+    expect(screen.getByRole("button", { name: "Close search" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Add card" })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Close search" }));
+
+    expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
+    expect(screen.queryByRole("textbox", { name: "Card search" })).not.toBeInTheDocument();
+  });
+
   it("makes no request for core topics and keeps the locked topic out of the draft (REQ-079 retired)", async () => {
     render(<QuickLookupApp />);
     await screen.findByRole("textbox", { name: "Magic question" });
