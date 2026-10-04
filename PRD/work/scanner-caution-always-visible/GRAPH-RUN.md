@@ -3,11 +3,11 @@
 - Run ID: `graph-20261004-154238`
 - Profile: `loaded (env sentinel)` (reported by graph-preflight at node 1)
 - Canary: `denied — hook live (universal: rm -rf denied in every session; graph: nohup denied while lock held)`
-- Autonomous base: `origin/thejudge-auto/scanner-caution-always-visible` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-scanner-caution-always-visible`
+- Autonomous base: `origin/main` (rewritten by the build half's claim; docs PR #255 merged)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-caution-always-visible`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-154238/`
-- Current node: `owner-action` (parked at gate-qc PASS)
-- Next action: owner answers `GATE-QUESTIONS.md` (REQ-214 verdict + B1/B2) and merges the docs PR; `graph-implement` builds it — `/graph-implement PRD/work/scanner-caution-always-visible/`
+- Current node: `owner-action` (claimed by build half; resolving the answered gate)
+- Next action: `/graph-implement PRD/work/scanner-caution-always-visible/`
 
 ## Node ledger
 

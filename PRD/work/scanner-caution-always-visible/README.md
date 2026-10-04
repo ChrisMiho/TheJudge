@@ -8,7 +8,7 @@ Intake (evidence, not authority): `intake/request.md`, `intake/observations.md` 
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/scanner-caution-always-visible
+- Autonomous base: origin/main
 
 ## Preparation gate
 
