@@ -10,7 +10,8 @@ See IDEA.md. Intake: intake/GRAPH-BRIEF.md.
 
 ## Preparation gate
 
-- Quality-check: FAIL (2026-10-03, gate-qc attempt 2)
+- Quality-check: PASS (2026-10-03, gate-qc attempt 3). Width finding (attempt-2 item 5) RESOLVED: REQ-218 scopes the scanner's 31.5rem override to the scanner host, keeps the Ask column 36rem / 92vw, and carries a measured 1440px criterion. All proposed diff `-` anchors match current PRD/sections text; no remaining findings.
+- Previous: FAIL (gate-qc attempt 2)
 - Attempt 2 findings (latest; attempt-1 items 1-4 below are RESOLVED):
   5. "Column width unchanged" is false as written. `apps/frontend/src/index.css` (~line 4244) has `@media (min-width: 720px) { .page-content-narrow-fit { width: min(31.5rem, 92vw); } }`, a scanner-specific override that shrinks the narrow-fit column to 31.5rem on desktop (narrow is 36rem). Adopting `narrow-fit` as-is narrows both Ask screens on desktop, contradicting the brief and REQ-218 criteria ("36rem / 92vw", "must not widen/change"). Refinement must either scope that override to the scanner (scanner-only class) so Ask keeps 36rem, or state the width change as an explicit decision; and add a REQ-218 criterion asserting the column width at 1440px.
 - Attempt 1 record:
