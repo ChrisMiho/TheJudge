@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/`
-- Current node: `plan` ok (STATUS.active, slices A–D) → `build` (build half)
+- Current node: `build` ok (PR #254 open; criteria hook-unearned, known gap) → `review` (build half)
 - Next action: `/graph-implement PRD/work/ui-pass-2/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | — | gate-review | sonnet | ok | `0 → 14` | REQ-215 `accept` applied (GATE-QUESTIONS.md unchanged — accept leaves the proposed diff as written; `PRD/sections/` untouched); `## Gate verdicts` row added; `STATUS.owner-action` → `STATUS.refined`; README `status: refined`; brief reconciliation: none (accept, no contradicting passage) | 2026-10-04 |
 | 4′ | gate-qc (re-grade) | sonnet | ok | `0 → 6` | PASS, no findings; brief unchanged from the spec-forming gate-qc (REQ-215 accepted as proposed, items 2–4 no new/amended ID); named surfaces verified present (`TradePile.tsx`, direction-1 `trade-balancer.html` mockup, `shell.css` `.confirm-panel` 687–697); non-goals explicit; Preparation gate PASS retained (2 non-blocking map-out notes: item 3 → 600px per REQ-213; brief line-slip near `shell.css:892`); STATUS.refined unchanged | 2026-10-04 |
 | 5 | plan | sonnet | ok | `0 → 11` | `GAMEPLAN.md` + 4 slice docs (A pile-art / B search-pill / C history-delete / D confirm-padding), no inter-slice deps; 4 `slice-*.criteria.json` (8/7/7/7, all `false`; manual visual checks carry viewports 1440×900 + 390×844, each browser slice a cleanup criterion); slice A records REQ-215 PRD truth applied by intent at build; `STATUS.refined` → `STATUS.active`; README slice table added; board row → `## active` | 2026-10-04 |
+| 6 | build | sonnet | ok (work; criteria hook-unearned) | `0 → 75` | All 4 slices built + committed on `thejudge-auto/ui-pass-2-work` (A `7e067c0` TradePile.tsx + functional-requirements.md REQ-215 edit; B `8ac7334` flow.css; C `a3fc132` index.css; D `9ea3925` shell.css) + `slice-*.evidence.md`; code PR #254 open (base `main`): https://github.com/ChrisMiho/TheJudge/pull/254; full frontend suite 1498 pass, typecheck + eslint clean, `quality:check` exit 0; verified live desktop 1440×900 + phone 390×844 (captures gitignored). CAVEAT: 0 hook-earned criteria — known build-half evidence-log-root gap (hook resolves criteria root to launch checkout, not the branch-only slice docs), confirmed `grep -c graph-20261004-012328 .graph-evidence.jsonl` = 0; criteria files remain `false`, NOT forged (flip guard + auto-mode classifier both correctly blocked the unbacked bulk flip); heartbeat `0 → 75` proves the hook is live; launch checkout byte-identical to the pre-build snapshot (write-scope holds). Integrity deferred to node 7 review (the real gate). | 2026-10-04 |
 
 ## Open gate
 
@@ -233,6 +234,34 @@ Slice so each slice is independently implementable and reviewable, with testable
 Do not commit or push — the driver commits between nodes. Never touch the launch checkout; never force-push; never git add all; only create a worktree if the skill requires it inside .worktrees/ (it should not — you already work in this worktree in place).
 
 Report back concisely with evidence: the slice letters and one-line scope each, the criteria file paths emitted, the status marker set (STATUS.active), and confirm no commit/push was made.
+
+### build
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2
+
+You are node 6 (build) of an autonomous graph-implement run for the package PRD/work/ui-pass-2/. Run ID graph-20261004-012328. Invoke the thejudge-implement-all skill (Skill tool) and follow its graph is controlling mode exactly. Do not pause for user approval; return your result to the graph driver.
+
+Copy the line Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2 unchanged into every prompt you write to any subagent of your own.
+
+Shared branch (named explicitly, as node 6 requires): thejudge-auto/ui-pass-2-work. It is the checked-out branch of this worktree and is already pushed to origin with the GAMEPLAN, slice docs, and criteria files at its tip. Implement in place in this worktree — do not create a second worktree or a contributor branch.
+
+Implement every remaining slice in PRD/work/ui-pass-2/GAMEPLAN.md end to end — code, tests, verification, status — then set STATUS.ship-ready. The slices:
+- A (slice-a-pile-art.md): redraw the Trade Balancer tier art in apps/frontend/src/components/trade/TradePile.tsx to the direction-1 trade-balancer.html mockup. This slice applies the REQ-215 product-truth amendment to PRD/sections/ by intent, re-derived from the accepted GATE-QUESTIONS.md diff and DESIGN-BRIEF.md against current truth, together with the code, in this build.
+- B (slice-b-search-pill.md): give the Add-card search input the composer pill shape/fill/accent frame.
+- C (slice-c-history-delete.md): fix the mobile Question-History delete button chrome at the 600px breakpoint (REQ-213), keep the 44px touch target and the aria-label.
+- D (slice-d-confirm-padding.md): make the confirm-panel padding beat .drawer-panel padding:0 by specificity; grep for the real padding:0 line rather than trusting a line number.
+
+Durable product truth: the only PRD/sections change is the REQ-215 amendment, applied in slice A as above. Items B-D amend no stable ID. Do not pre-write PRD/sections for them.
+
+Acceptance criteria are enforced by a committed hook against each slice's slice-<letter>.criteria.json — every criterion must be earned by a real observed tool call; you cannot flip one to true without the matching evidence. Visual-only checks are manual and earned by a dated observation line after you actually look in a browser at the stated viewport (1440x900 desktop, 390x844 mobile). Launch the frontend dev server from this worktree, verify live, capture screenshots into PRD/work/ui-pass-2/.playwright-mcp/, then close the browser and stop the server (runtime-process-hygiene).
+
+Open the code PR from this worktree: gh pr create --base main --head thejudge-auto/ui-pass-2-work, with a body opening with the PR-body plain-language block (What this is / What you need to do / What it changes). Create the PR; never merge or close it.
+
+Boundaries: never touch the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge; stage explicit paths only (never git add -A/--all/.); never force-push; never push main; never merge into main. Commit each slice on thejudge-auto/ui-pass-2-work.
+
+Report back concisely with evidence: per slice, the files changed and the key commit SHA; which criteria are earned (and confirm none remain false); the PRD/sections REQ-215 edit made; the test/verification commands run and their result; the code PR URL; the status marker set (STATUS.ship-ready); and confirm the launch checkout was never touched.
 
 ## Instruction ledger
 
