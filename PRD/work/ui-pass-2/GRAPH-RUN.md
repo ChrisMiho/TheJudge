@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/`
-- Current node: `owner-action` (docs PR #253 merged; build half claimed)
+- Current node: `gate-review` ok → re-entering at `gate-qc` (build half)
 - Next action: `/graph-implement PRD/work/ui-pass-2/`
 
 ## Node ledger
@@ -17,13 +17,25 @@
 | 2 | shape | sonnet | ok | `0 → 10` | package `PRD/work/ui-pass-2/` created (IDEA.md, README, STATUS.ideation); intake copied verbatim then staged copy deleted; 5 prior-run matches recorded as input; commit `37c92250` on `thejudge-auto/ui-pass-2` | 2026-10-04 |
 | 3 | define | opus | ok | `0 → 139` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (one block — REQ-215 amendment) written; all 4 findings reproduced live (dev server :5273, mockup :5399, 6 before-screenshots in `.playwright-mcp/`); items 2–4 shaped as cosmetic fixes against existing REQ-206/118/208/NFR-001, no new/amended ID; STATUS.refined; commit `900a6eff` on `thejudge-auto/ui-pass-2` | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `0 → 8` | PASS, no blocking findings; DESIGN-BRIEF aligned with current PRD truth and agent-ready; one non-blocking map-out note (item 3 → 600px per REQ-213; brief line-number slip near `shell.css:892`); STATUS.refined unchanged, no commit | 2026-10-04 |
+| — | gate-review | sonnet | ok | `0 → 14` | REQ-215 `accept` applied (GATE-QUESTIONS.md unchanged — accept leaves the proposed diff as written; `PRD/sections/` untouched); `## Gate verdicts` row added; `STATUS.owner-action` → `STATUS.refined`; README `status: refined`; brief reconciliation: none (accept, no contradicting passage) | 2026-10-04 |
 
 ## Open gate
 
-- Parked at `owner-action` after gate-qc PASS (spec-forming half complete).
+- RESOLVED 2026-10-04 by gate review: 1 verdict applied (1 accept); the run resumes at `gate-qc`.
+- (historical) Parked at `owner-action` after gate-qc PASS (spec-forming half complete).
 - Question for the owner: answer the verdict slot in `PRD/work/ui-pass-2/GATE-QUESTIONS.md` (one block — `REQ-215` amendment: the trade gold piles follow the direction-1 mockup's art). Items 2–4 propose no product-truth change.
 - Evidence: gate-qc PASS, no findings (node 4 row above); DESIGN-BRIEF + GATE-QUESTIONS committed `900a6eff`; ledger/README/board committed and pushed on `thejudge-auto/ui-pass-2`; docs PR into `main`: https://github.com/ChrisMiho/TheJudge/pull/253.
 - Resume: the owner answers `GATE-QUESTIONS.md` and **merges the docs PR into `main`** — that merge is the build signal; `graph-implement` (the background build loop) then claims the spec and builds it.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-215` | accept | — |
+
+### Brief reconciliation
+
+none — accept as proposed, no contradicting passage.
 
 ## Dispatch prompts
 
@@ -146,6 +158,30 @@ On PASS: leave the status as refined and report PASS.
 Commit any status/report change on `thejudge-auto/ui-pass-2` with explicit paths only (never git add all); do not push; never touch the launch checkout; never force-push.
 
 Report back concisely with evidence: the PASS/FAIL verdict, the exact findings (none on PASS, or the complete list on FAIL), the status marker in effect, and any commit SHA you made.
+
+### gate-review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2
+
+You are the gate-resolution node of an autonomous graph-implement run for the package `PRD/work/ui-pass-2/`. Run ID `graph-20261004-012328`. The owner answered `GATE-QUESTIONS.md` and merged the docs PR (#253) into main; this run has claimed the spec on branch `thejudge-auto/ui-pass-2-work`.
+
+Invoke the `graph-gate-review` skill (Skill tool) and follow its Procedure exactly. Do not improvise beyond its steps.
+
+Inputs you are resolving:
+- `PRD/work/ui-pass-2/GATE-QUESTIONS.md` carries one stable-ID block: `REQ-215`, with `- Verdict: accept` and the owner's reason (accept as proposed, 2026-10-04 — redraw the trade gold-pile art to match the direction-1 mockup; behaviour, tiers, transitions, and the REQ-216 palette-in-code exemption unchanged).
+
+Your job, per the skill:
+1. Apply the `accept` verdict to the proposed diff inside `GATE-QUESTIONS.md` (finalize the proposal in the work folder). Never edit `PRD/sections/` — that happens at build.
+2. Reconcile `DESIGN-BRIEF.md` and the README's intake pointer to the verdict. An `accept` means the proposed truth stands as written, so reconcile only passages that contradict the final verdict; `intake/` stays verbatim. If nothing contradicts, say so.
+3. Record the verdict(s), restore the `STATUS.refined` marker (replacing `STATUS.owner-action`; exactly one STATUS.* marker).
+
+Every file you touch must be inside this package under the Working directory above. Copy the `Working directory:` line unchanged into any prompt you write for a sub-dispatch.
+
+Do not commit, push, or open/merge any PR — the driver commits between nodes. Do not touch the `GRAPH-RUN.md` ledger header or node ledger — the driver owns those.
+
+Report back concisely, with evidence (file paths and the exact lines changed), and include a `### Brief reconciliation` list naming every edit made to `DESIGN-BRIEF.md`/README for the verdict, or stating "none — accept as proposed, no contradicting passage." Confirm the final STATUS marker is `STATUS.refined` and list the package's STATUS.* files.
 
 ## Instruction ledger
 
