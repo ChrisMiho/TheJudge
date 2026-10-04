@@ -19,6 +19,22 @@ function mockMatchMedia(prefersReduced: boolean): void {
   );
 }
 
+const GOLDEN: Record<string, string> = {
+  // fingerprints of one seeded still frame, captured before the phone-path change
+  green1280: "12865:2093576085",
+  greenTray1280: "2998:522468427",
+  white390: "193:2897454861",
+  white1280: "193:1118732190",
+  blue390: "339:883568024",
+  blue1280: "207:986954215",
+  black390: "1196:1382025930",
+  black1280: "22136:310943361",
+  red390: "205:352457340",
+  red1280: "205:1515807002",
+  colorless390: "195:1984659477",
+  colorless1280: "217:1736726970"
+};
+
 type CallLog = { name: string; args: unknown[] }[];
 
 /** A 2D context that records every call and answers gradient/measure requests. */
@@ -158,5 +174,78 @@ describe("Frontend - AmbientScene", () => {
     unmount();
 
     expect(cancel).toHaveBeenCalledWith(7);
+  });
+
+  describe("green on a phone (REQ-207)", () => {
+    const realWidth = window.innerWidth;
+    const realHeight = window.innerHeight;
+
+    function setViewport(width: number, height: number): void {
+      Object.defineProperty(window, "innerWidth", { configurable: true, value: width });
+      Object.defineProperty(window, "innerHeight", { configurable: true, value: height });
+    }
+
+    /** One still frame (reduced motion = seeded) of a colour's scene at a viewport. */
+    function paintStill(profile: string, width: number, height: number): CallLog {
+      mockMatchMedia(true);
+      setViewport(width, height);
+      document.documentElement.setAttribute("data-profile", profile);
+      log.length = 0;
+      const { unmount } = render(<AmbientScene motif="leaves" />);
+      unmount();
+      return [...log];
+    }
+
+    /** Deepest point any drawn limb segment reaches (leaf veins use tiny local coordinates). */
+    function limbDepth(calls: CallLog): number {
+      return Math.max(0, ...calls.filter((c) => c.name === "lineTo").map((c) => Number(c.args[1])));
+    }
+
+    function fingerprint(calls: CallLog): string {
+      const text = JSON.stringify(calls);
+      let hash = 5381;
+      for (let i = 0; i < text.length; i += 1) hash = ((hash * 33) ^ text.charCodeAt(i)) >>> 0;
+      return `${calls.length}:${hash}`;
+    }
+
+    afterEach(() => setViewport(realWidth, realHeight));
+
+    it("keeps limbs off the side edges at 390 wide", () => {
+      expect(limbDepth(paintStill("green", 390, 844))).toBeLessThan(160);
+    });
+
+    it("covers the whole phone band, including 520 to 767 wide", () => {
+      for (const width of [520, 600, 767]) {
+        expect(limbDepth(paintStill("green", width, 1000))).toBeLessThan(160);
+      }
+    });
+
+    it("draws fewer leaves on a phone than the same screen without the phone path would", () => {
+      const leaves = (calls: CallLog) => calls.filter((c) => c.name === "bezierCurveTo").length;
+      expect(leaves(paintStill("green", 390, 844))).toBeLessThan(leaves(paintStill("green", 800, 844)));
+    });
+
+    it("leaves green at 768 and wider with its full limbs", () => {
+      expect(limbDepth(paintStill("green", 768, 1024))).toBeGreaterThan(200);
+      expect(limbDepth(paintStill("green", 1280, 800))).toBeGreaterThan(200);
+      expect(fingerprint(paintStill("green", 1280, 800))).toBe(GOLDEN.green1280);
+    });
+
+    it("leaves the tray-width tall scene on a wide screen as it was (vines down the edges)", () => {
+      mockMatchMedia(true);
+      setViewport(1280, 800);
+      document.documentElement.setAttribute("data-profile", "green");
+      log.length = 0;
+      const { unmount } = render(<AmbientScene motif="leaves" variant="tray" />);
+      unmount();
+      expect(fingerprint([...log])).toBe(GOLDEN.greenTray1280);
+    });
+
+    it("renders every non-green scene exactly as before at phone and desktop widths", () => {
+      for (const profile of ["white", "blue", "black", "red", "colorless"]) {
+        expect(fingerprint(paintStill(profile, 390, 844))).toBe(GOLDEN[`${profile}390`]);
+        expect(fingerprint(paintStill(profile, 1280, 800))).toBe(GOLDEN[`${profile}1280`]);
+      }
+    });
   });
 });

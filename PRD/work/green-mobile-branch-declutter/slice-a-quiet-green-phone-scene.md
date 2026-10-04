@@ -1,6 +1,6 @@
 # Slice A — Quiet green scene on phones
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # green-mobile-branch-declutter
 
@@ -18,6 +18,6 @@ See IDEA.md.
 
 | Slice | Doc | Criteria | Depends on | Status |
 | --- | --- | --- | --- | --- |
-| A | `slice-a-quiet-green-phone-scene.md` | `slice-a.criteria.json` | none | planned |
+| A | `slice-a-quiet-green-phone-scene.md` | `slice-a.criteria.json` | none | done |
 
 Implementation map: `AmbientScene.tsx` (`GREEN.backdrop`/`init`) and its test; the REQ-207 amendment is applied at build. See `GAMEPLAN.md`.
