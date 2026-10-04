@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/anchor-ask-composer` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261003-205515/`
-- Current node: `gate-qc` (attempt 2 — re-grade after define attempt 2)
+- Current node: `define` (attempt 3 — gate-qc FAIL loop 2 of 3)
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 43` | DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-218 new, REQ-110/129/206 amend) written; STATUS.refined; committed `4281967`; zero PRD/sections edits confirmed via `git diff --name-only origin/main...HEAD`; no blocker | 2026-10-03 |
 | 4 | gate-qc | sonnet | failed | `0 → 17` | FAIL — 4 findings (wrong fit variant: brief/REQ-218 name `page-content-wide-fit`, Ask screens use `narrow` → `narrow-fit`, width must not change; In-depth per-page variant unspecified vs DEC-145 content-sized Game/Zones/Cards; broken diff wording in quick-lookup README; screen-layout Notes cell contradicts new cells); STATUS.refining; committed `cb8db5c`; loops to define attempt 2 | 2026-10-03 |
 | 3 | define | opus | ok | `0 → 32` | attempt 2 — all 4 gate-qc findings fixed (`narrow-fit` + width-unchanged criterion; frame only at In-depth Enrichment station; reworded README diff; screen-layout Notes reconciled); same 4 ids (REQ-218 new, REQ-110/129/206 amend), no new ids; STATUS.refined; committed `4334ae1`; no blocker | 2026-10-03 |
+| 4 | gate-qc | sonnet | failed | `0 → 20` | attempt 2 — prior 4 findings confirmed resolved; 1 new finding: `.page-content-narrow-fit` has a desktop override (`index.css:4244`, `width: min(31.5rem,92vw)` for the scanner) that would narrow the Ask column 36rem→31.5rem at ≥720px, contradicting the brief's width-unchanged intent; fix = keep Ask at 36rem (scope scanner override / distinct fit class) + add a 1440px width criterion; STATUS.refining; committed `045194e`; loops to define attempt 3 | 2026-10-03 |
 
 ## Open gate
 
@@ -192,6 +193,32 @@ Report back:
 - The complete findings list (or `none`)
 - The STATUS marker now set
 - The commit hash if you committed a report artifact
+
+### define (attempt 3)
+
+graph is controlling
+
+You are node 3 (`define`), attempt 3, of an autonomous graph-kickoff run. gate-qc attempt 2 returned one new FAIL finding; invoke the `thejudge-refinement` skill (Skill tool, skill name `thejudge-refinement`) and fix it. Do not improvise around it.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer
+
+Package: PRD/work/anchor-ask-composer/ (branch thejudge-auto/anchor-ask-composer in this worktree). The prior four findings are already resolved; do not regress them.
+
+Single finding to fix (a consistency fix against the brief's already-stated intent — NOT a new product decision, so no blocker question): the `narrow-fit` fit class carries a desktop override at `apps/frontend/src/index.css` line 4244 — `@media (min-width: 720px) { .page-content-narrow-fit { width: min(31.5rem, 92vw); } }` — added for the scanner. Adopting `narrow-fit` as-is would shrink the Ask column from 36rem (the `narrow` width) to 31.5rem on desktop. That contradicts the brief and REQ-218, which both say the Ask column width is unchanged (36rem / 92vw).
+
+Resolve it by honoring the brief's stated width-unchanged intent — the Ask screens keep 36rem / 92vw on desktop. In the proposal, specify the mechanism so the implementer does not guess (e.g. a distinct Ask fit class that applies the 100dvh frame WITHOUT the 31.5rem desktop width override, or scope that existing override to the scanner only), and leave the scanner's current 31.5rem behavior untouched. Add a REQ-218 acceptance criterion that asserts the Ask column width at 1440px (36rem / 92vw, unchanged from today).
+
+Hard rules (unchanged):
+- Keep every proposed diff's `-` anchor lines matching the CURRENT PRD/sections text verbatim.
+- Do NOT edit PRD/sections/ — refinement only PROPOSES.
+- Set STATUS.refined on completion (gate-qc re-grades).
+- Commit on this branch, explicit paths only (never `git add -A` / `git add .` / `git add --all`). Do not push main, do not force-push, do not touch the launch checkout, do not edit any `thejudge-*` skill.
+
+Report back:
+- How the finding was resolved (the mechanism chosen) and the new/edited REQ-218 criterion
+- The stable ids GATE-QUESTIONS.md now proposes
+- The STATUS marker set and the commit hash
+- Any genuine decision blocker (expected: none)
 
 ## Instruction ledger
 
