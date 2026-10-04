@@ -21,7 +21,7 @@
 ## Open gate
 
 - Parked at `owner-action` on gate-qc PASS (spec-forming half complete).
-- Docs-only PR: (opening — URL recorded below)
+- Docs-only PR: https://github.com/ChrisMiho/TheJudge/pull/255 (base `main`, head `thejudge-auto/scanner-caution-always-visible`)
 - Decision: answer the verdict slots in `PRD/work/scanner-caution-always-visible/GATE-QUESTIONS.md` — the REQ-214 amendment (accept / edit / reject), B1 (scope: all 3 scanner surfaces, recommended, vs Trade Balancer only), and B2 (count-pill default) — then merge the docs PR into `main`. That merge is the build signal.
 - Minor nit for build/gate-review (non-blocking): scan/README.md proposed wording says the caution sits "Beside the count pill", but the pill can be absent while the caution shows; "in the top-right, alongside the count pill once it appears" reads cleaner.
 - Resume (build half): `/graph-implement PRD/work/scanner-caution-always-visible/`
