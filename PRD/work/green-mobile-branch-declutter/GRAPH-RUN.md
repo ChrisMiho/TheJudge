@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-green-mobile-branch-declutter`
 - Staging: none (no intake supplied — the request carried no file paths or pasted documents)
-- Current node: `review`
+- Current node: `close`
 - Next action: `/graph-implement PRD/work/green-mobile-branch-declutter/`
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 4 | gate-qc | sonnet | ok | `1 → 10` | thejudge-quality-check PASS (build-half re-entry): brief + finalized proposal agree; no new ids; three REQ-207 diff anchors verbatim in `functional-requirements.md` (REQ-207 at line 5270); cited truth real; `AmbientScene.tsx:169` = `if (H > W * 1.6 && W < 520)`; four non-blocking implementer notes; STATUS.refined held; Preparation gate re-recorded | 2026-10-04 |
 | 5 | plan | sonnet | ok | `1 → 14` | thejudge-map-out verified Preparation gate PASS first; wrote GAMEPLAN.md + one slice `slice-a-quiet-green-phone-scene.md` + `slice-a.criteria.json` (8 criteria A1–A8, all false, each with evidence block: A1/A4/A8 manual screenshots+judgement+cleanup, A2/A3/A5 AmbientScene unit test, A6 functional-requirements.md, A7 quality:check); STATUS.active; README Slices table added | 2026-10-04 |
 | 6 | build | sonnet | ok | `1 → 74` | thejudge-implement-all built slice A (commit cbcc293): `AmbientScene.tsx` phone path keyed on `window.innerWidth < 768` (was `W < 520`, now covers 520–767, Menu tray included); `AmbientScene.test.tsx` +89 lines (390, 520/600/767, fewer phone leaves, green≥768 + 5 non-green scenes unchanged via seeded-frame fingerprint); REQ-207 amended in `functional-requirements.md` (apply-by-intent, phone-shell line cites `screen-layout.md`); `slice-a.evidence.md` dated 2026-10-04 (A1/A4/A8); all A1–A8 true. Tests: AmbientScene 17/17 ×3 no flakes; `npm run quality:check` exit 0, 595/595. **Return-side assertion PASS**: launch checkout byte-identical to baseline; all writes inside `.worktrees/implement-green-mobile-branch-declutter/`. STATUS.ship-ready; code PR #252 open → main | 2026-10-04 |
+| 7 | review | opus | ok | `1 → 14` | no-write reviewer (fresh context, Explore) APPROVE: all 8 slice-A acceptance criteria met. Verified phone path keys on `window.innerWidth < 768` (early-return before the old `<520` branch, so side-edge vines can't run on a phone); tests at 390 + 520/600/767 assert `limbDepth<160`, green≥768 + non-green guarded by golden fingerprints (not tautologies); REQ-207 amend lines at `functional-requirements.md:5284/5288/5312` cite `screen-layout.md`. 1 Minor/Nit (amended-by date 2026-10-04 vs gate's proposed 2026-10-03), non-looping; 0 Critical/Important | 2026-10-04 |
 
 ## Open gate
 
@@ -125,6 +126,16 @@ Rubric — the slice's own Acceptance criteria (grade only these; a preference, 
 - Browser closed, owned dev server stopped, ports released.
 
 Verify the code actually keys the phone path on a width threshold that includes 520-767 and leaves >= 768 and non-green scenes untouched; verify the tests assert what they claim; verify the REQ-207 amendment matches the approved accept-as-written verdict and cites screen-layout.md. Severity: Critical = the slice's stated behaviour is wrong or a criterion is unmet; Important = a correctness gap within the stated requirements; anything else is Minor/Nit and does not loop back. Return a verdict of APPROVE or CHANGES-REQUESTED, each finding with a severity and file:line, and a one-line rationale. Copy the Working directory line above unchanged into any prompt you write.
+
+### close
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-green-mobile-branch-declutter
+
+You are node 8 (close) of an autonomous graph-implement run (run id graph-20261004-001946, slug green-mobile-branch-declutter). Invoke the thejudge-cleanup skill and follow it exactly in graph mode, PR-ready path: you run ON the code branch thejudge-auto/green-mobile-branch-declutter-work BEFORE the owner merges, so the receipt and the package deletion ride inside the open code PR #252 (https://github.com/ChrisMiho/TheJudge/pull/252). Unattended; no user questions. All reads/writes inside the working directory above. Do not merge or close any PR; do not push to main.
+
+Steps: verify slice A is complete (STATUS.ship-ready, all criteria true). Confirm the durable PRD truth is already applied — the REQ-207 amendment is in PRD/sections/functional-requirements.md (criterion line, test-list line, amended-by line, phone-shell cite to screen-layout.md), applied by build; promote only any leftover, never re-write it. Write the receipt at PRD/instructions/receipts/green-mobile-branch-declutter-2026-10-04.md with a `## Graph run` section folding this run's `## Node ledger` and `## Instruction ledger` VERBATIM from GRAPH-RUN.md, an `## Intake` section (intake: none supplied), and the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/252`. Record in the receipt these loose ends for the owner: (1) a leftover git stash on the shared stack whose message begins WIP on thejudge-auto/green-mobile-branch-declutter-work (build created it to fingerprint pre-change code; drop/pop were denied to the run — safe for the owner to drop); (2) the before/after screenshots live only in the build worktree's gitignored .playwright-mcp/ and do not travel with the PR; (3) the Minor review nit (amended-by date 2026-10-04 vs the gate's proposed 2026-10-03). Update PRD/work/STATUS.md (remove the green-mobile-branch-declutter row or mark it shipped per the skill). Delete PRD/work/green-mobile-branch-declutter/. Commit the receipt, the STATUS.md update, and the deletion on thejudge-auto/green-mobile-branch-declutter-work (do not push — the driver pushes after appending the close row). Report the receipt path, the Terminal state line, what was promoted vs already-present, and confirmation the package folder is deleted.
 
 ## Instruction ledger
 
