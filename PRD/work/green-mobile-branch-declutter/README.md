@@ -6,7 +6,7 @@ See IDEA.md.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/green-mobile-branch-declutter
+- Autonomous base: origin/main
 
 ## Preparation gate
 

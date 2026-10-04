@@ -1,13 +1,13 @@
 # Graph run — green-mobile-branch-declutter
 
-- Run ID: `graph-20261003-232715`
-- Profile: `loaded (env sentinel)` (stated by graph-preflight at node 1)
-- Canary: `denied — hook live (recursive-force-remove + nohup-wrapper)`
-- Autonomous base: `origin/thejudge-auto/green-mobile-branch-declutter` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-green-mobile-branch-declutter`
+- Run ID: `graph-20261004-001946` (build half; spec-forming half was `graph-20261003-232715`)
+- Profile: `unverified` (the build half's launch command was not stated this session)
+- Canary: `pending — build half takes the lock and re-issues the canary at claim`
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-green-mobile-branch-declutter`
 - Staging: none (no intake supplied — the request carried no file paths or pasted documents)
-- Current node: `owner-action`
-- Next action: `/graph-implement PRD/work/green-mobile-branch-declutter/` (after the owner answers GATE-QUESTIONS.md and merges the docs PR)
+- Current node: `claim`
+- Next action: `/graph-implement PRD/work/green-mobile-branch-declutter/`
 
 ## Node ledger
 
