@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ui-pass-2 | Four owner UI findings shaped; brief written, each reproduced live. One gate question (REQ-215 amend: pile art follows the mockup); items 2-4 need no product-truth change |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ui-pass-2 | Four owner UI findings: Trade Balancer gold art, Add-card search shape, mobile history Delete button, clipped delete-confirm text |
 
 ## owner-action
 
