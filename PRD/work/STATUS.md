@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| scanner-caution-always-visible | gate answered (REQ-214 accept, B1 all surfaces, B2 keep pill); resumes at gate-qc |
 
 ## refining
 
@@ -35,6 +34,7 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | anchor-ask-composer | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-218 new + REQ-110/129/206 amend) and merge to build |
+| scanner-caution-always-visible | build-half PARKED: feature already shipped in code (ui-pass-2 slice E, #254). Owner decides: (A) close as already-shipped [rec], or (B) docs-only build to reconcile 3 stale PRD files. See GRAPH-RUN.md `## Open gate` |
 
 
 ## deferred

@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # Design brief: scanner caution triangle always visible
 

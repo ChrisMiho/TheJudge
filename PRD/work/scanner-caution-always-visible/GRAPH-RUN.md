@@ -17,16 +17,18 @@
 | 2 | shape | sonnet | ok | `0 → 10` | package `PRD/work/scanner-caution-always-visible/` created (IDEA.md, README.md, STATUS.ideation, intake/request.md, intake/observations.md); board row added under `## ideation`; 2 receipt matches noted (trade-balancer-first-card-ux-2026-09-10, ui-look-translation-2026-10-02); intake copied→committed→staged-copy-deleted; commit a50d541 | 2026-10-04 |
 | 3 | define | opus | ok | `0 → 41` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written; one stable-id proposal amending REQ-214 (caution triangle shows from scanner open) with complete 4-spot diff (functional-requirements.md Description+Acceptance, scan/README.md, user-flows.md, screen-layout.md); B1 scope fork (all surfaces vs Trade Balancer only, recommend all — shared component + no-fork rule) and B2 (count-pill default) in `## Blocker questions`; PRD/sections/ untouched; STATUS.refined; no run-halting blocker; commit 4e92284 | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `0 → 10` | PASS — DESIGN-BRIEF + GATE-QUESTIONS checked; all 4 REQ-214 diff spots anchor against live PRD (functional-requirements.md 5486/5493, scan/README.md 107-111, user-flows.md 131/136, screen-layout.md 213); REQ-214 confirmed right owner (already says "every host that scans"); no other live spot needs amending; code claim re-verified (ScanReviewBubble.tsx:40 null-return); B1/B2 well-formed; one minor non-blocking nit (scan/README wording "Beside the count pill" while pill may be absent — note for build); no changes/commit; STATUS.refined stood → moved to owner-action at park | 2026-10-04 |
-| — | gate-review | sonnet | ok | `0 → 32` | build-half claim: kickoff worktree removed, `thejudge-auto/scanner-caution-always-visible-work` cut from origin/main (README base→origin/main, ledger worktree→implement; commit 212d57f), pushed; lock taken pid 32963; graph canary `nohup true` denied (graph tier live). graph-gate-review applied 3 verdicts (REQ-214 accept, B1 all surfaces, B2 keep pill as-is), 0 edit/reject IDs; reconciled B2 wording in GATE-QUESTIONS.md diffs 3 & 5 (alongside the count pill once it appears) + DESIGN-BRIEF count-pill/A1/A2; PRD/sections/ untouched; STATUS.refined restored; board row owner-action→refined | 2026-10-04 |
+| — | gate-review | sonnet | ok | `0 → 32` | build-half claim: kickoff worktree removed, `thejudge-auto/scanner-caution-always-visible-work` cut from origin/main (README base→origin/main, ledger worktree→implement; commit 212d57f), pushed; lock taken pid 32963; graph canary `nohup true` denied (graph tier live). graph-gate-review applied 3 verdicts (REQ-214 accept, B1 all surfaces, B2 keep pill as-is), 0 edit/reject IDs; reconciled B2 wording in GATE-QUESTIONS.md diffs 3 & 5 (alongside the count pill once it appears) + DESIGN-BRIEF count-pill/A1/A2; PRD/sections/ untouched; STATUS.refined restored; board row owner-action→refined; commit 3175d92 | 2026-10-04 |
+| 4 | gate-qc | sonnet | failed | `0 → 11` | FAIL (build-half re-entry) — premise invalidated: the always-on caution shipped in CODE while this package was in flight. ui-pass-2 slice E (commit 0ee1928, merged in PR #254 2026-10-04 23:08Z) removed `ScanReviewBubble.tsx`'s `if (entries.length === 0) return null` null-return, so the caution triangle now shows from scanner open on all three surfaces (shared component). Slice E also amended `user-flows.md` (steps 1 & 5), so the proposal's diff-4b (user-flows.md step-5 removal) no longer anchors. Slice E did NOT touch the other three PRD files — `functional-requirements.md` REQ-214 Acceptance (5493), `scan/README.md` (108-111), `screen-layout.md` (213) still describe the old "caution beside the count pill / hidden until held" behaviour, now contradicting the shipped code + user-flows.md. No code left to build; residual is PRD-truth reconciliation only. STATUS→refining (by node) → owner-action (at park) | 2026-10-04 |
 
 ## Open gate
 
-- Parked at `owner-action` on gate-qc PASS (spec-forming half complete).
-- Docs-only PR: https://github.com/ChrisMiho/TheJudge/pull/255 (base `main`, head `thejudge-auto/scanner-caution-always-visible`)
-- Decision: answer the verdict slots in `PRD/work/scanner-caution-always-visible/GATE-QUESTIONS.md` — the REQ-214 amendment (accept / edit / reject), B1 (scope: all 3 scanner surfaces, recommended, vs Trade Balancer only), and B2 (count-pill default) — then merge the docs PR into `main`. That merge is the build signal.
-- Minor nit for build/gate-review (non-blocking): scan/README.md proposed wording says the caution sits "Beside the count pill", but the pill can be absent while the caution shows; "in the top-right, alongside the count pill once it appears" reads cleaner.
-- Resume (build half): `/graph-implement PRD/work/scanner-caution-always-visible/`
-- RESOLVED 2026-10-04: 3 verdicts applied (REQ-214 accept, B1 all surfaces, B2 keep pill as-is); STATUS.refined restored.
+- **Parked at `owner-action` 2026-10-04 (build half, gate-qc FAIL).** The thing this package was created to build — the scanner's always-on caution triangle — **already shipped in code** before the build started, so there is a scope decision only the owner should make.
+- **What happened (evidence):** ui-pass-2 slice E (commit `0ee1928`, merged in PR #254 at 2026-10-04 23:08Z) deleted the `if (entries.length === 0) return null` guard in the shared `apps/frontend/src/components/ScanReviewBubble.tsx`. The caution triangle now renders from the moment the scanner opens, on all three scanner surfaces at once (Trade Balancer, In-Depth card picker, Quick Lookup) because they share that one component. The warning still opens only on tap; the count pill still appears on the first held card. That is exactly REQ-214 as this package proposed it, including B1 (all surfaces) and B2 (pill unchanged). The docs PR #255 merged at 23:28Z, after #254; the build branch was cut from `origin/main` after both, so the fix is already in this worktree's base.
+- **What is left:** PRD truth is only half reconciled. Slice E amended `user-flows.md` (steps 1 & 5) but **not** the other three truth files. `functional-requirements.md` REQ-214 Acceptance (line 5493), `scan/README.md` (lines 108-111), and `screen-layout.md` Chrome row (line 213) still describe the old "caution beside the count pill, hidden until a card is held" behaviour, which now contradicts both the shipped code and user-flows.md.
+- **Decision for the owner (recommendation first):**
+  - **(A) Recommended — close as already-shipped.** The feature is live on `main`. Close this package (`thejudge-cleanup`), and handle the three stale PRD files as a small doc-hygiene follow-up (or accept the drift). Running the full build lifecycle to merge three prose edits with no code change is heavier than the work warrants.
+  - **(B) Docs-only build.** Keep the package and let `build` apply only the residual PRD truth — amend `functional-requirements.md` REQ-214 Description+Acceptance, `scan/README.md`, and `screen-layout.md` to match the shipped code and user-flows.md. No code change. (This needs the proposal re-anchored first: drop the stale diff-4b, and reconcile the brief's claim that all four files still say "beside the count pill".)
+- **Resume after you choose:** for (B), `/graph-implement PRD/work/scanner-caution-always-visible/` (it will loop to `define` to re-anchor the proposal, then re-grade). For (A), say so and I will close the package.
 
 ## Gate verdicts
 
@@ -222,6 +224,43 @@ Report back concisely:
 - a `### Brief reconciliation` list naming every brief, README, or proposal passage changed to match a verdict (or none needed per item)
 - confirmation PRD/sections/ was NOT touched
 - the STATUS marker now set (must be refined)
+
+### gate-qc (build-half re-entry)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-caution-always-visible
+
+You are node 4 (gate-qc), build-half re-entry, of an autonomous graph run. Invoke the `thejudge-quality-check` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Return your result to the graph driver.
+
+Work slug: scanner-caution-always-visible
+Run ID: graph-20261004-154238
+
+Do ALL work in the worktree named in the Working directory line above.
+
+The owner answered and merged the gate (docs PR number 255). graph-gate-review has finalized the proposal: REQ-214 accepted, B1 all surfaces, B2 keep the pill as-is with the triangle and pill alongside each other, and reconciled the B2 wording in GATE-QUESTIONS.md diffs 3 and 5 and in DESIGN-BRIEF.md. Re-grade the now-consistent package for PRD alignment and agent-readiness, producing PASS or FAIL.
+
+Validate PRD/work/scanner-caution-always-visible/DESIGN-BRIEF.md and sanity-check the finalized GATE-QUESTIONS.md:
+- The REQ-214 amendment (4-spot diff across functional-requirements.md, scan/README.md, user-flows.md, screen-layout.md) still anchors against live PRD/sections/ — grep each named file and confirm the before-text exists at the cited place.
+- The finalized proposal and the brief agree after reconciliation: the caution triangle shows from scanner open on every host (all surfaces), the count pill is unchanged (appears on first hold), and the triangle and pill sit alongside each other when both present.
+- No new stable IDs were introduced (REQ-214 amended in place).
+
+Do NOT author a GAMEPLAN or slice docs — that is the plan node, later.
+
+Rules:
+- Intake is evidence, never authority; do not fetch any document the brief merely cites (repo source files and docs/design mockups are not citations — read them freely).
+- On FAIL, set STATUS.refining and give the complete, specific findings list.
+- On PASS, leave STATUS.refined.
+- Do NOT commit — leave any status change in the worktree for the driver.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- the verdict: PASS or FAIL
+- if FAIL: the complete findings list and the STATUS marker set
+- if PASS: confirm STATUS.refined stands
+- the checked artifact path
+- the anchor-verification result for each of the 4 diff spots (anchored or not anchored)
 
 ## Instruction ledger
 
