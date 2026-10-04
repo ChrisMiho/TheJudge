@@ -1,4 +1,4 @@
-status: ideation
+status: refined
 
 # life-tracker-seat-oriented-default
 
