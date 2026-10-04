@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # scanner-caution-always-visible
 
@@ -9,3 +9,9 @@ Intake (evidence, not authority): `intake/request.md`, `intake/observations.md` 
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/scanner-caution-always-visible
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/scanner-caution-always-visible/DESIGN-BRIEF.md`
+- Findings: none blocking. One minor non-blocking nit — scan/README.md proposed wording says the caution sits "Beside the count pill" while the pill can be absent; reword to "in the top-right, alongside the count pill once it appears" at build.

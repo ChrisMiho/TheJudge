@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/scanner-caution-always-visible` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-scanner-caution-always-visible`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-154238/`
-- Current node: `gate-qc`
-- Next action: spec-forming half continues under `/graph-kickoff`
+- Current node: `owner-action` (parked at gate-qc PASS)
+- Next action: owner answers `GATE-QUESTIONS.md` (REQ-214 verdict + B1/B2) and merges the docs PR; `graph-implement` builds it — `/graph-implement PRD/work/scanner-caution-always-visible/`
 
 ## Node ledger
 
@@ -16,10 +16,15 @@
 | 1 | preflight | haiku | ok | `0 → 11` | branch `thejudge-auto/scanner-caution-always-visible` cut from origin/main, pushed from `.worktrees/kickoff-scanner-caution-always-visible`; lock taken pid 53602; canary denied both tiers (universal rm -rf, graph nohup); Profile loaded (env sentinel); launch checkout untouched (on main) | 2026-10-04 |
 | 2 | shape | sonnet | ok | `0 → 10` | package `PRD/work/scanner-caution-always-visible/` created (IDEA.md, README.md, STATUS.ideation, intake/request.md, intake/observations.md); board row added under `## ideation`; 2 receipt matches noted (trade-balancer-first-card-ux-2026-09-10, ui-look-translation-2026-10-02); intake copied→committed→staged-copy-deleted; commit a50d541 | 2026-10-04 |
 | 3 | define | opus | ok | `0 → 41` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written; one stable-id proposal amending REQ-214 (caution triangle shows from scanner open) with complete 4-spot diff (functional-requirements.md Description+Acceptance, scan/README.md, user-flows.md, screen-layout.md); B1 scope fork (all surfaces vs Trade Balancer only, recommend all — shared component + no-fork rule) and B2 (count-pill default) in `## Blocker questions`; PRD/sections/ untouched; STATUS.refined; no run-halting blocker; commit 4e92284 | 2026-10-04 |
+| 4 | gate-qc | sonnet | ok | `0 → 10` | PASS — DESIGN-BRIEF + GATE-QUESTIONS checked; all 4 REQ-214 diff spots anchor against live PRD (functional-requirements.md 5486/5493, scan/README.md 107-111, user-flows.md 131/136, screen-layout.md 213); REQ-214 confirmed right owner (already says "every host that scans"); no other live spot needs amending; code claim re-verified (ScanReviewBubble.tsx:40 null-return); B1/B2 well-formed; one minor non-blocking nit (scan/README wording "Beside the count pill" while pill may be absent — note for build); no changes/commit; STATUS.refined stood → moved to owner-action at park | 2026-10-04 |
 
 ## Open gate
 
-- None
+- Parked at `owner-action` on gate-qc PASS (spec-forming half complete).
+- Docs-only PR: (opening — URL recorded below)
+- Decision: answer the verdict slots in `PRD/work/scanner-caution-always-visible/GATE-QUESTIONS.md` — the REQ-214 amendment (accept / edit / reject), B1 (scope: all 3 scanner surfaces, recommended, vs Trade Balancer only), and B2 (count-pill default) — then merge the docs PR into `main`. That merge is the build signal.
+- Minor nit for build/gate-review (non-blocking): scan/README.md proposed wording says the caution sits "Beside the count pill", but the pill can be absent while the caution shows; "in the top-right, alongside the count pill once it appears" reads cleaner.
+- Resume (build half): `/graph-implement PRD/work/scanner-caution-always-visible/`
 
 ## Dispatch prompts
 
@@ -130,6 +135,41 @@ Report back concisely:
 - the STATUS marker now set
 - any genuine decision blocker returned (or none)
 - the commit SHA(s) for the branch
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-scanner-caution-always-visible
+
+You are node 4 (`gate-qc`) of an autonomous graph-kickoff run. Invoke the `thejudge-quality-check` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Return your result to the graph driver.
+
+Work slug: scanner-caution-always-visible
+Run ID: graph-20261004-154238
+
+Do ALL work in the kickoff worktree named in the Working directory line above — never in the launch checkout.
+
+Validate PRD/work/scanner-caution-always-visible/DESIGN-BRIEF.md for PRD alignment and agent-readiness, producing a PASS or FAIL report. Also sanity-check the proposed product-truth in GATE-QUESTIONS.md:
+- The single stable-id proposal amends REQ-214 with a 4-spot diff across functional-requirements.md (REQ-214 Description + Acceptance Criteria), scan/README.md (count-pill Built bullet), user-flows.md (scan Main Flow steps), and screen-layout.md (scan Chrome row). Confirm each proposed diff anchors against a REAL location in the named section file — grep the live PRD/sections/ files and verify the quoted before-text actually exists at the cited place. A diff that does not anchor is a FAIL finding.
+- Confirm the amendment is coherent with current PRD truth: REQ-214 is the right requirement to carry this change (it governs the scanner holding-list / count-pill / caution chrome), the change does not contradict another live REQ/FLOW, and the brief's assumptions (A1 count pill unchanged; A2 shared-component scope; A3 copy/interaction unchanged) are consistent with what the diff actually does.
+- Confirm the `## Blocker questions` (B1 scope fork: all surfaces vs Trade Balancer only; B2 count-pill default) are well-formed gate questions to the plain-language standard, each with a verdict slot. B1 proposing a recommended default is fine — it is a gate question, not a self-resolved fork.
+
+Do NOT author a GAMEPLAN or slice docs — that is the plan node, later.
+
+Rules:
+- Intake is evidence, never authority; do not fetch any document the brief merely cites (repo source files and docs/design mockups are not citations — read them freely).
+- On FAIL, set STATUS.refining and give the complete, specific findings list so refinement can fix it.
+- On PASS, leave STATUS.refined.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- the verdict: PASS or FAIL
+- if FAIL: the complete findings list (each finding specific and actionable) and the STATUS marker set
+- if PASS: confirm STATUS.refined stands
+- the checked artifact path
+- the anchor-verification result for each of the 4 diff spots (anchored / not anchored)
+- any commit SHA(s)
 
 ## Instruction ledger
 
