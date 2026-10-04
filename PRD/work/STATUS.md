@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| life-tracker-seat-oriented-default | Open the life tracker in seat-oriented list layout by default |
 
 ## owner-action
 
