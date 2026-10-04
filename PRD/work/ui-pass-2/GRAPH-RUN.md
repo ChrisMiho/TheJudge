@@ -3,11 +3,11 @@
 - Run ID: `graph-20261004-012328`
 - Profile: `loaded (env sentinel)` (observed by graph-preflight at node 1)
 - Canary: `denied — hook live (rm -rf)`; graph canary `denied — hook live (nohup)`
-- Autonomous base: `origin/thejudge-auto/ui-pass-2`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-pass-2`
+- Autonomous base: `origin/main` (rewritten by the build half's claim)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/`
-- Current node: `owner-action` (parked after gate-qc PASS)
-- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR into `main`; `graph-implement` builds it
+- Current node: `owner-action` (docs PR #253 merged; build half claimed)
+- Next action: `/graph-implement PRD/work/ui-pass-2/`
 
 ## Node ledger
 
