@@ -33,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| life-tracker-seat-oriented-default | Answer REQ-217 in GATE-QUESTIONS.md, then merge the docs PR to build (grid→list default flip) |
 
 
 ## deferred
