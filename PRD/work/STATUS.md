@@ -13,7 +13,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| ui-pass-2 | mapped 2026-10-04: slices A-D (pile art, search pill, history delete, confirm padding); building on `thejudge-auto/ui-pass-2-work` |
 
 ## refined
 
@@ -35,6 +34,7 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | anchor-ask-composer | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-218 new + REQ-110/129/206 amend) and merge to build |
+| ui-pass-2 | built + review APPROVE, code PR #254 open; parked before close — criteria `false` (known evidence-root gap + auto-mode audit guardrail block the self-report flip). Owner decision in GRAPH-RUN.md `## Open gate`; resume `/graph-implement PRD/work/ui-pass-2/` |
 
 
 ## deferred

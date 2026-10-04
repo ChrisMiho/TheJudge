@@ -1,4 +1,4 @@
-status: active
+status: owner-action
 
 # ui-pass-2
 
@@ -22,6 +22,8 @@ See IDEA.md. Intake: intake/observations.md.
 | D | `slice-d-confirm-padding.md` | Mobile delete-confirm sheet no longer clips its text | none | planned |
 
 Implementation map: `GAMEPLAN.md`. Criteria: `slice-<letter>.criteria.json`. All slices parallel-ready; REQ-215 truth is applied by intent in slice A.
+
+All four slices are built and committed, and node 7 review returned APPROVE (full suite 1498 pass). The run is parked at `owner-action` before `close` — the criteria files stay `false` because of the known evidence-log-root gap and the auto-mode audit guardrail; see `GRAPH-RUN.md` `## Open gate` for the owner decision. Code PR #254 is open.
 
 ## Preparation gate
 
