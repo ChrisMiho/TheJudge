@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| green-mobile-branch-declutter | slice A built; criteria A1-A8 true; code PR open |
 
 ## active
 
