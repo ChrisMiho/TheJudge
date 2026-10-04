@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # life-tracker-seat-oriented-default
 
@@ -10,3 +10,9 @@ Make the life tracker open in the seat-oriented (list) layout by default so each
 ## Autonomous metadata
 
 - Autonomous base: origin/thejudge-auto/life-tracker-seat-oriented-default
+
+## Preparation gate
+
+- Quality-check: PASS
+- Checked artifact: `PRD/work/life-tracker-seat-oriented-default/DESIGN-BRIEF.md`
+- Findings: none

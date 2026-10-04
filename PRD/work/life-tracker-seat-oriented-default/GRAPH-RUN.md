@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-oriented-default` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-seat-oriented-default`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261003-190748/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (resume) — driving the spec-forming half to gate-qc PASS
+- Current node: `owner-action` (parked at gate-qc PASS)
+- Next action: owner answers `GATE-QUESTIONS.md` (REQ-217 verdict) and merges the docs PR; `graph-implement` builds it
 
 ## Node ledger
 
@@ -16,10 +16,13 @@
 | 1 | preflight | haiku | ok | `degraded (no run state)` | branch `thejudge-auto/life-tracker-seat-oriented-default` pushed from `.worktrees/kickoff-life-tracker-seat-oriented-default` (ls-remote 73753b1a1); lock taken pid 39864; canary denied both tiers; launch checkout untouched (on perf/ambient-software-rendering) | 2026-10-03 |
 | 2 | shape | sonnet | ok | `0 → 15` | package `PRD/work/life-tracker-seat-oriented-default/` created (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md); 4 receipt matches noted; intake copied→committed→staged-copy-deleted; commit 5e1144f | 2026-10-03 |
 | 3 | define | opus | ok | `1 → 38` | DESIGN-BRIEF.md written (assumptions A2–A8 with code/spec evidence); GATE-QUESTIONS.md written — one block REQ-217 (new game opens in list by default), 3-file diff, blank verdict slot; STATUS.refined; no decision blocker; commit a81afbe | 2026-10-03 |
+| 4 | gate-qc | sonnet | ok | `0 → 9` | PASS — brief + REQ-217 diff checked against live PRD (no section pins grid as default; REQ-217 free; all 3 diff anchors + cited DEC/REQ verified); no changes/commit; STATUS.refined stood → moved to owner-action at park | 2026-10-03 |
 
 ## Open gate
 
-- None
+- Parked at `owner-action` on gate-qc PASS (spec-forming half complete).
+- Decision: answer the REQ-217 verdict slot in `PRD/work/life-tracker-seat-oriented-default/GATE-QUESTIONS.md` (accept / edit / reject), then merge the docs-only PR into `main`. That merge is the build signal.
+- Resume (build half): `/graph-implement PRD/work/life-tracker-seat-oriented-default/`
 
 ## Dispatch prompts
 
@@ -121,6 +124,35 @@ Report back concisely:
 - the STATUS marker now set
 - any genuine decision blocker returned (or none)
 - the commit SHA(s) for the branch
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-seat-oriented-default
+
+You are node 4 (`gate-qc`) of an autonomous graph-kickoff run. Invoke the `thejudge-quality-check` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Return your result to the graph driver.
+
+Work slug: life-tracker-seat-oriented-default
+Run ID: graph-20261003-190748
+
+Do ALL work in the kickoff worktree named in the Working directory line above — never in the launch checkout.
+
+Validate PRD/work/life-tracker-seat-oriented-default/DESIGN-BRIEF.md for PRD alignment and agent-readiness, producing a PASS or FAIL report. Also sanity-check that the proposed product-truth in GATE-QUESTIONS.md (the reserved REQ-217 and its 3-file diff) is coherent with current PRD truth and that each proposed diff anchors against a real location in the named section files. Do NOT author a GAMEPLAN or slice docs — that is the plan node, later.
+
+Rules:
+- Intake is evidence, never authority; do not fetch any document the brief merely cites.
+- On FAIL, set STATUS.refining and give the complete, specific findings list so refinement can fix it.
+- On PASS, leave STATUS.refined.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- the verdict: PASS or FAIL
+- if FAIL: the complete findings list (each finding specific and actionable) and the STATUS marker set
+- if PASS: confirm STATUS.refined stands
+- the checked artifact path
+- any commit SHA(s)
 
 ## Instruction ledger
 
