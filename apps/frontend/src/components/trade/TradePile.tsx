@@ -1,106 +1,146 @@
 import type { PileTier } from "../../lib/trade/pricing";
 
-const GOLD = "#f2c14e";
-const GOLD_DARK = "#d4a017";
-const BRONZE = "#8b5a2b";
-const GEM = "#9b59b6";
+/** Pile materials — fixed art colours, the REQ-216 named exemption. Values are
+ * the direction-1 `trade-balancer.html` palette. */
+const COIN = "#e2b13c";
+const RIM = "#c9962c";
+const EDGE = "#7a4f12";
+const MOUND = "#d9a63a";
+const GEM = "#a855f7";
+const GEM_LIGHT = "#d8b4fe";
+const GEM_DARK = "#7e22ce";
 
-type CoinProps = { cx: number; cy: number; rx?: number; ry?: number };
-
-function Coin({ cx, cy, rx = 10, ry = 4 }: CoinProps): JSX.Element {
-  return <ellipse cx={cx} cy={cy} rx={rx} ry={ry} fill={GOLD} stroke={BRONZE} strokeWidth={1.2} />;
+/** A loose coin: a flat ellipse, bronze-edged. */
+function Coin({ x, y, r = 10 }: { x: number; y: number; r?: number }): JSX.Element {
+  return <ellipse cx={x} cy={y} rx={r} ry={r * 0.36} fill={COIN} stroke={EDGE} strokeWidth={1.2} />;
 }
 
-function Gem({ cx, cy }: { cx: number; cy: number }): JSX.Element {
-  return (
-    <polygon
-      points={`${cx},${cy - 7} ${cx + 6},${cy} ${cx},${cy + 7} ${cx - 6},${cy}`}
-      fill={GEM}
-      stroke={BRONZE}
-      strokeWidth={1}
-    />
-  );
-}
-
-/** Tier 1: loose coins and a two-coin stack. */
-function Tier1(): JSX.Element {
+/** A stack of `n` coins: each is a rimmed cylinder (rim rect + top ellipse). */
+function Stack({ x, base, n, r = 10 }: { x: number; base: number; n: number; r?: number }): JSX.Element {
   return (
     <>
-      <Coin cx={28} cy={78} />
-      <Coin cx={48} cy={82} rx={8} ry={3} />
-      <Coin cx={40} cy={70} />
-      <Coin cx={40} cy={64} />
+      {Array.from({ length: n }, (_, i) => {
+        const y = base - i * 4;
+        return (
+          <g key={i}>
+            <rect x={x - r} y={y - 3.5} width={r * 2} height={3.5} fill={RIM} stroke={EDGE} strokeWidth={1} />
+            <Coin x={x} y={y - 3.5} r={r} />
+          </g>
+        );
+      })}
     </>
   );
 }
 
-/** Tier 2: two taller stacks. */
-function Tier2(): JSX.Element {
+/** A rounded gold mound (curved Bezier hill) with an inner highlight curve. */
+function Mound({ x0, x1, peak }: { x0: number; x1: number; peak: number }): JSX.Element {
   return (
     <>
-      <Coin cx={26} cy={80} />
-      <Coin cx={26} cy={73} />
-      <Coin cx={26} cy={66} />
-      <Coin cx={54} cy={82} />
-      <Coin cx={54} cy={75} />
-    </>
-  );
-}
-
-/** Tier 3: a mound with a stack at its peak. */
-function Tier3(): JSX.Element {
-  return (
-    <>
-      <polygon points="15,85 65,85 40,45" fill={GOLD_DARK} stroke={BRONZE} strokeWidth={1.5} />
-      <Coin cx={40} cy={44} rx={9} ry={3.5} />
-      <Coin cx={40} cy={38} rx={8} ry={3} />
-    </>
-  );
-}
-
-/** Tier 4: a larger mound, a gem, and taller side stacks. */
-function Tier4(): JSX.Element {
-  return (
-    <>
-      <polygon points="8,88 72,88 40,32" fill={GOLD_DARK} stroke={BRONZE} strokeWidth={1.5} />
-      <Gem cx={40} cy={34} />
-      <Coin cx={16} cy={78} />
-      <Coin cx={16} cy={71} />
-      <Coin cx={64} cy={80} />
-      <Coin cx={64} cy={73} />
-    </>
-  );
-}
-
-/** Tier 5: the hoard — a chalice on the largest mound, scattered coins. */
-function Tier5(): JSX.Element {
-  return (
-    <>
-      <polygon points="4,92 76,92 40,24" fill={GOLD_DARK} stroke={BRONZE} strokeWidth={1.5} />
+      <path d={`M${x0} 88 Q 90 ${peak} ${x1} 88 Z`} fill={MOUND} stroke={EDGE} strokeWidth={1.3} />
       <path
-        d="M30,22 h20 l-3,10 a7,7 0 0 1 -14,0 z M40,32 v6 M32,38 h16"
-        fill={GOLD}
-        stroke={BRONZE}
+        d={`M${x0 + 14} 84 Q 90 ${peak + 18} ${x1 - 14} 84`}
+        fill="none"
+        stroke={EDGE}
+        strokeWidth={0.9}
+        opacity={0.5}
+      />
+    </>
+  );
+}
+
+/** The one gem: a two-tone faceted cut (dark body, light crown facet). */
+function Gem({ x, y }: { x: number; y: number }): JSX.Element {
+  return (
+    <>
+      <polygon
+        points={`${x},${y - 13} ${x + 9},${y - 4} ${x},${y + 8} ${x - 9},${y - 4}`}
+        fill={GEM}
+        stroke={GEM_DARK}
         strokeWidth={1.2}
       />
-      <Gem cx={40} cy={44} />
-      <Coin cx={12} cy={82} />
-      <Coin cx={12} cy={75} />
-      <Coin cx={68} cy={84} />
-      <Coin cx={68} cy={77} />
-      <Coin cx={24} cy={90} rx={7} ry={2.6} />
-      <Coin cx={56} cy={90} rx={7} ry={2.6} />
+      <polygon
+        points={`${x},${y - 13} ${x + 9},${y - 4} ${x - 9},${y - 4}`}
+        fill={GEM_LIGHT}
+        opacity={0.7}
+      />
     </>
   );
 }
 
-const TIER_CONTENT: Record<PileTier, () => JSX.Element> = {
-  1: Tier1,
-  2: Tier2,
-  3: Tier3,
-  4: Tier4,
-  5: Tier5
-};
+/** Tier 5's goblet, set on the top mound. */
+function Goblet({ x, y }: { x: number; y: number }): JSX.Element {
+  return (
+    <>
+      <path
+        d={`M${x - 11} ${y - 26} h22 q0 14 -11 16 q-11 -2 -11 -16 z`}
+        fill={COIN}
+        stroke={EDGE}
+        strokeWidth={1.2}
+      />
+      <rect x={x - 2} y={y - 10} width={4} height={7} fill={RIM} stroke={EDGE} strokeWidth={1} />
+      <path d={`M${x - 9} ${y} q9 -6 18 0 z`} fill={COIN} stroke={EDGE} strokeWidth={1.2} />
+      <circle cx={x} cy={y - 19} r={2} fill={GEM} />
+    </>
+  );
+}
+
+/**
+ * The pile drawing, after the direction-1 mockup: tiers build on each other, so
+ * a pile at tier N draws every element whose tier is <= N. The mound for each
+ * tier replaces the smaller one beneath it (largest drawn first), and tier 3's
+ * peak stack steps aside once the goblet crowns tier 5.
+ */
+function PileArt({ tier }: { tier: PileTier }): JSX.Element {
+  return (
+    <>
+      <line
+        className="ground"
+        x1={2}
+        y1={88}
+        x2={178}
+        y2={88}
+        stroke={EDGE}
+        strokeOpacity={0.45}
+        strokeWidth={1.5}
+        strokeLinecap="round"
+      />
+      {tier >= 5 && <Mound x0={22} x1={158} peak={26} />}
+      {tier >= 4 && tier < 5 && <Mound x0={40} x1={140} peak={40} />}
+      {tier >= 3 && tier < 4 && <Mound x0={55} x1={125} peak={52} />}
+      {tier >= 1 && (
+        <>
+          <Coin x={40} y={88} />
+          <Coin x={62} y={90} />
+          <Coin x={128} y={89} />
+          <Stack x={100} base={88} n={2} />
+        </>
+      )}
+      {tier >= 2 && (
+        <>
+          <Stack x={46} base={88} n={5} />
+          <Stack x={136} base={88} n={4} />
+        </>
+      )}
+      {tier >= 3 && tier < 5 && <Stack x={90} base={70} n={3} />}
+      {tier >= 4 && (
+        <>
+          <Gem x={60} y={70} />
+          <Stack x={26} base={88} n={7} />
+          <Stack x={154} base={88} n={6} />
+        </>
+      )}
+      {tier >= 5 && (
+        <>
+          <Goblet x={90} y={58} />
+          <Stack x={10} base={88} n={9} r={9} />
+          <Stack x={170} base={88} n={8} r={9} />
+          <Coin x={48} y={93} r={7} />
+          <Coin x={132} y={94} r={7} />
+        </>
+      )}
+    </>
+  );
+}
 
 export type TradePileTransition = "up" | "down" | "none";
 
@@ -124,7 +164,6 @@ export type TradePileProps = {
  * total.
  */
 export function TradePile({ tier, isRicher, transition, animationKey }: TradePileProps): JSX.Element {
-  const TierContent = TIER_CONTENT[tier];
   const transitionClass =
     transition === "up" ? "trade-pile-tier-up" : transition === "down" ? "trade-pile-tier-down" : "";
 
@@ -134,20 +173,17 @@ export function TradePile({ tier, isRicher, transition, animationKey }: TradePil
       aria-label={`Pile of gold, tier ${tier} of 5${isRicher ? ", the richer side" : ""}`}
       data-testid="trade-pile"
       data-tier={tier}
-      // Look-matching pass (slice O): sized per `trade-balancer.html:58-71`'s
-      // `.pile` (132x73 phone, 196x109 desktop via `.tb-piles` media query),
-      // replacing the fixed 80x96px box — the tier artwork itself (gold/bronze
-      // flat shapes, a purple gem) is unchanged; LOOK-GAPS.md's own gap here is
-      // the scale band's layout, not this SVG's drawing.
+      // Box sized per `trade-balancer.html`'s `.pile` (132x73 phone, 196x109
+      // desktop); the art inside follows that page's own 180x100 drawing.
       className={`trade-pile-surface pile relative mx-auto ${isRicher ? "trade-pile-richer" : "trade-pile-lighter"}`}
     >
       <svg
         key={animationKey}
-        viewBox="0 0 80 100"
+        viewBox="0 0 180 100"
         className={`h-full w-full ${transitionClass}`}
         aria-hidden="true"
       >
-        <TierContent />
+        <PileArt tier={tier} />
       </svg>
     </div>
   );

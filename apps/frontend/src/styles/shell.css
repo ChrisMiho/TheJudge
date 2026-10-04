@@ -684,7 +684,8 @@ h1, h2, .display {
    question, one line of consequence, keep or go ahead. A bottom sheet on a
    phone, a small centred card on desktop. Trade Balancer's New trade uses it;
    Life Tracker's Reset and New Game use the same one. ---- */
-.confirm-panel { padding: 1.4rem 1.1rem 1.1rem; display: grid; gap: 0.5rem; }
+/* `.confirm-panel.drawer-panel`: the base `.drawer-panel { padding: 0 }` reset below is later in the file at equal specificity, so the padding needs the doubled selector to win. */
+.confirm-panel.drawer-panel { padding: 1.4rem 1.1rem 1.1rem; display: grid; gap: 0.5rem; }
 .confirm-panel h2 { margin: 0; font-size: 1.15rem; }
 .confirm-panel p { margin: 0; font-size: 0.86rem; color: var(--text-muted); line-height: 1.45; }
 .confirm-panel p b { color: var(--text-primary); font-weight: 600; }
@@ -692,7 +693,7 @@ h1, h2, .display {
 .confirm-panel .row .btn { min-height: 44px; padding: 0.5rem 1rem; font-weight: 600; }
 .confirm-panel .row .btn.go { border-color: color-mix(in srgb, #ff8fa3 55%, transparent); background: color-mix(in srgb, #ff4d6d 18%, var(--surface-panel)); color: #ffd1da; }
 .confirm-panel .row .btn.go:hover { border-color: #ff8fa3; background: color-mix(in srgb, #ff4d6d 28%, var(--surface-panel)); }
-@media (max-width: 599px) { .confirm-panel { padding-top: 1.6rem; } .confirm-panel .row .btn { flex: 1 1 auto; } }
+@media (max-width: 599px) { .confirm-panel.drawer-panel { padding-top: 1.6rem; } .confirm-panel .row .btn { flex: 1 1 auto; } }
 @media (min-width: 600px) {
   .confirm-panel.drawer-panel { top: 50%; left: 50%; right: auto; bottom: auto; width: min(24rem, 92vw); max-height: calc(100dvh - 3rem); border: 1px solid color-mix(in srgb, var(--accent-soft) 32%, transparent); border-radius: 1.1rem; opacity: 0; transform: translate(-50%, -50%) translateY(14px) scale(0.97); transition: transform 0.26s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.18s ease; }
   .confirm-panel.drawer-panel[data-open="true"] { opacity: 1; transform: translate(-50%, -50%); }

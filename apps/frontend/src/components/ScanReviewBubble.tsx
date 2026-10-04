@@ -37,10 +37,10 @@ export function ScanReviewBubble({ entries, onRemove, destinationLabel }: ScanRe
   const [detailEntryId, setDetailEntryId] = useState<number | null>(null);
   const detailEntry = entries.find((entry) => entry.id === detailEntryId);
 
-  if (entries.length === 0) {
-    return null;
-  }
-
+  // The caution triangle is always shown in the top-right while the scanner is open, like the
+  // `card-scan.html` mockup — the warning has to reach the player before a scan lands, not only
+  // after one does (REQ-214). The count pill and its holding list still appear only once a card
+  // is held, so an empty session shows the triangle alone.
   return (
     <>
       <div className="vf-top-right">
@@ -53,50 +53,52 @@ export function ScanReviewBubble({ entries, onRemove, destinationLabel }: ScanRe
         >
           <CautionTriangle />
         </button>
-        <div className="review-bubble" data-open={expanded ? "true" : "false"}>
-          <button
-            type="button"
-            className="pill"
-            aria-label={`Scanned this session: ${entries.length}`}
-            aria-expanded={expanded}
-            onClick={() => setExpanded((open) => !open)}
-          >
-            <span aria-hidden="true">✓</span>
-            <span>{entries.length}</span>
-          </button>
-          {expanded && (
-            <div className="list">
-              <span className="lbl">Added this session</span>
-              {entries.map((entry) => {
-                const imageUrl = entry.card.imageUrl?.trim() || deriveCardImageUrl(entry.card.imageId) || undefined;
-                return (
-                  <div key={entry.id} className="row">
-                    <button
-                      type="button"
-                      className="thumb tap card-identity-ring"
-                      style={getCardIdentityRingStyle(entry.colors)}
-                      aria-label={`Show details for ${entry.card.name}`}
-                      aria-haspopup="dialog"
-                      onClick={() => setDetailEntryId(entry.id)}
-                    >
-                      {imageUrl ? <img src={imageUrl} alt="" /> : null}
-                    </button>
-                    <span className="name">{entry.card.name}</span>
-                    <button
-                      type="button"
-                      className="btn"
-                      aria-label={`Remove ${entry.card.name} from scan review`}
-                      onClick={() => onRemove(entry.id)}
-                    >
-                      Remove
-                    </button>
-                  </div>
-                );
-              })}
-              <p className="note">{`Joins ${destinationLabel} when you close the scanner`}</p>
-            </div>
-          )}
-        </div>
+        {entries.length > 0 && (
+          <div className="review-bubble" data-open={expanded ? "true" : "false"}>
+            <button
+              type="button"
+              className="pill"
+              aria-label={`Scanned this session: ${entries.length}`}
+              aria-expanded={expanded}
+              onClick={() => setExpanded((open) => !open)}
+            >
+              <span aria-hidden="true">✓</span>
+              <span>{entries.length}</span>
+            </button>
+            {expanded && (
+              <div className="list">
+                <span className="lbl">Added this session</span>
+                {entries.map((entry) => {
+                  const imageUrl = entry.card.imageUrl?.trim() || deriveCardImageUrl(entry.card.imageId) || undefined;
+                  return (
+                    <div key={entry.id} className="row">
+                      <button
+                        type="button"
+                        className="thumb tap card-identity-ring"
+                        style={getCardIdentityRingStyle(entry.colors)}
+                        aria-label={`Show details for ${entry.card.name}`}
+                        aria-haspopup="dialog"
+                        onClick={() => setDetailEntryId(entry.id)}
+                      >
+                        {imageUrl ? <img src={imageUrl} alt="" /> : null}
+                      </button>
+                      <span className="name">{entry.card.name}</span>
+                      <button
+                        type="button"
+                        className="btn"
+                        aria-label={`Remove ${entry.card.name} from scan review`}
+                        onClick={() => onRemove(entry.id)}
+                      >
+                        Remove
+                      </button>
+                    </div>
+                  );
+                })}
+                <p className="note">{`Joins ${destinationLabel} when you close the scanner`}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
       {detailEntry && <CardDetailPopup card={detailEntry.card} onClose={() => setDetailEntryId(null)} />}
       {cautionOpen && (
