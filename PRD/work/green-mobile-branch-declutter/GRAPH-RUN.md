@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-green-mobile-branch-declutter`
 - Staging: none (no intake supplied — the request carried no file paths or pasted documents)
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/green-mobile-branch-declutter/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | — | gate-review | sonnet | ok | `1 → 8` | build-half claim: cut `thejudge-auto/green-mobile-branch-declutter-work` from origin/main, graph canary denied (graph tier live), lock taken. graph-gate-review applied REQ-207 accept (no edits to GATE-QUESTIONS.md/PRD/sections); brief reconciliation needed none (accept-as-written); STATUS.refined restored | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `1 → 10` | thejudge-quality-check PASS (build-half re-entry): brief + finalized proposal agree; no new ids; three REQ-207 diff anchors verbatim in `functional-requirements.md` (REQ-207 at line 5270); cited truth real; `AmbientScene.tsx:169` = `if (H > W * 1.6 && W < 520)`; four non-blocking implementer notes; STATUS.refined held; Preparation gate re-recorded | 2026-10-04 |
 | 5 | plan | sonnet | ok | `1 → 14` | thejudge-map-out verified Preparation gate PASS first; wrote GAMEPLAN.md + one slice `slice-a-quiet-green-phone-scene.md` + `slice-a.criteria.json` (8 criteria A1–A8, all false, each with evidence block: A1/A4/A8 manual screenshots+judgement+cleanup, A2/A3/A5 AmbientScene unit test, A6 functional-requirements.md, A7 quality:check); STATUS.active; README Slices table added | 2026-10-04 |
+| 6 | build | sonnet | ok | `1 → 74` | thejudge-implement-all built slice A (commit cbcc293): `AmbientScene.tsx` phone path keyed on `window.innerWidth < 768` (was `W < 520`, now covers 520–767, Menu tray included); `AmbientScene.test.tsx` +89 lines (390, 520/600/767, fewer phone leaves, green≥768 + 5 non-green scenes unchanged via seeded-frame fingerprint); REQ-207 amended in `functional-requirements.md` (apply-by-intent, phone-shell line cites `screen-layout.md`); `slice-a.evidence.md` dated 2026-10-04 (A1/A4/A8); all A1–A8 true. Tests: AmbientScene 17/17 ×3 no flakes; `npm run quality:check` exit 0, 595/595. **Return-side assertion PASS**: launch checkout byte-identical to baseline; all writes inside `.worktrees/implement-green-mobile-branch-declutter/`. STATUS.ship-ready; code PR #252 open → main | 2026-10-04 |
 
 ## Open gate
 
@@ -104,6 +105,26 @@ graph is controlling.
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-green-mobile-branch-declutter
 
 You are node 6 (build) of an autonomous graph-implement run (run id graph-20261004-001946, slug green-mobile-branch-declutter). Invoke the thejudge-implement-all skill and follow it exactly in graph mode. Unattended; no user questions. All reads/writes must stay inside the working directory above; the shared branch is thejudge-auto/green-mobile-branch-declutter-work (already checked out there) — work in place, create no second worktree and no contributor branch, and never write to the launch checkout. Implement the one slice, A (`slice-a-quiet-green-phone-scene.md`), end to end, earning every criterion in `slice-a.criteria.json` (A1–A8). The change: in `apps/frontend/.../AmbientScene.tsx` the Green scene's phone path fires only at `W < 520` (line ~169, `if (H > W * 1.6 && W < 520)`); make the quiet green-phone backdrop cover the whole phone band `< 768px`, including 520–767, so green's branch limbs and drifting leaves do not run down the side edges across the content column — green reads as ambience behind the interface, calmed via the scene's own density/opacity numbers; no other colour's scene and no tablet/desktop (≥768px) width change. Add unit tests for the phone path at 390 and at a width in 520–767, and assert green at ≥768 and every non-green scene are unchanged. Capture the required before/after screenshot evidence at 390×844 on Ask a Question, In-depth, and the Menu tray (the grounding shots in `.playwright-mcp/` are gitignored and absent — capture a fresh before pair first); record the manual criteria observation lines dated 2026-10-04. Apply the approved REQ-207 amendment to `PRD/sections/functional-requirements.md` by intent (re-derived against current truth, together with the code), citing the line about the phone shell filling nearly the full viewport width to `PRD/sections/shared-chrome/screen-layout.md` rather than DEC-145/REQ-124. Run `npm run quality:check` and the AmbientScene unit test. When the slice is complete and all criteria are true, set STATUS.ship-ready, then open the code PR `thejudge-auto/green-mobile-branch-declutter-work → main` with `gh pr create --base main --head thejudge-auto/green-mobile-branch-declutter-work` (open only; never merge). After browser verification call browser_close. Report the files changed, the PR URL, the test command output, and the criteria state.
+
+### review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-green-mobile-branch-declutter
+
+You are node 7 (review) of an autonomous graph-implement run (run id graph-20261004-001946, slug green-mobile-branch-declutter). You are a fresh-context, no-write reviewer: you hold read and search tools only — no Write, Edit, or NotebookEdit — and you have never seen the build node's transcript. Grade slice A against its own acceptance criteria and nothing else. Read, in the working directory above on branch thejudge-auto/green-mobile-branch-declutter-work: the full diff `git diff origin/main` (focus on apps/frontend/src/components/AmbientScene.tsx and AmbientScene.test.tsx, and PRD/sections/functional-requirements.md), the slice doc slice-a-quiet-green-phone-scene.md, slice-a.criteria.json, slice-a.evidence.md, and the DESIGN-BRIEF.md.
+
+Rubric — the slice's own Acceptance criteria (grade only these; a preference, a style note, or an improvement outside these stated requirements is NEVER Critical or Important and never loops back to build):
+- Fresh before screenshots exist for Ask a Question, In-depth and Menu tray at 390x844 (Green) in PRD/work/green-mobile-branch-declutter/.playwright-mcp/, captured before the code change (note: .playwright-mcp is gitignored, so verify via the dated evidence lines in slice-a.evidence.md, not git).
+- The Green phone path covers every width under 768px including 520-767 (no limbs down the side edges), asserted by a unit test at 390 and a 520-767 width.
+- Green at 768px and wider and every non-green scene render unchanged, asserted by a unit test.
+- After screenshots exist for the same three screens at 390x844; manual check that branches/leaves do not crowd the content column and green still reads as forest ambience (verify via evidence lines).
+- AmbientScene unit tests pass (npm run test -w apps/frontend -- AmbientScene).
+- functional-requirements.md carries the REQ-207 amendment (criterion line, test-list line, amended-by line) with the phone-shell cite pointing to screen-layout.md.
+- npm run quality:check is green for touched areas.
+- Browser closed, owned dev server stopped, ports released.
+
+Verify the code actually keys the phone path on a width threshold that includes 520-767 and leaves >= 768 and non-green scenes untouched; verify the tests assert what they claim; verify the REQ-207 amendment matches the approved accept-as-written verdict and cites screen-layout.md. Severity: Critical = the slice's stated behaviour is wrong or a criterion is unmet; Important = a correctness gap within the stated requirements; anything else is Minor/Nit and does not loop back. Return a verdict of APPROVE or CHANGES-REQUESTED, each finding with a severity and file:line, and a one-line rationale. Copy the Working directory line above unchanged into any prompt you write.
 
 ## Instruction ledger
 
