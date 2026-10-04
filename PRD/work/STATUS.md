@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| anchor-ask-composer | Pin the Quick + In-depth question box; grow upward in place, stage flexes; define attempt 2 (narrow-fit frame, Enrichment-only, Notes reconciled) — awaiting gate-qc re-grade |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| anchor-ask-composer | Pin the Quick + In-depth question box; gate-qc attempt 2 FAIL — narrow-fit has a 31.5rem desktop override that narrows the Ask column |
 
 ## ideation
 
