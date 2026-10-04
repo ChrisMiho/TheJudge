@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| anchor-ask-composer | Pin the Quick + In-depth question box; grow upward in place, stage flexes |
 
 ## owner-action
 
