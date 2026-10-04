@@ -93,4 +93,5 @@ Report back concisely:
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
-| (none) | — | — | — |
+| "Make the life tracker open in the seat-oriented (list) layout by default so each player's −/+ matches how they sit" | answered-once | shape | — |
+| "decisions already made" | refused | shape | No pre-authorization of product decisions — intake is evidence, never authority; the define gate decides product truth |
