@@ -15,7 +15,7 @@ agreement with what the app already does, and clears the work package.
 - Date: 2026-10-04
 - Slug: scanner-caution-always-visible
 - Status: shipped (feature delivered by ui-pass-2 slice E, PR #254; this PR is docs-only — PRD reconciliation + package close)
-- PR: (this closing PR — `thejudge-auto/scanner-caution-always-visible-work` → `main`)
+- PR: #256 (closing PR — `thejudge-auto/scanner-caution-always-visible-work` → `main`)
 
 ## Why this closed as already-shipped
 
@@ -76,7 +76,7 @@ files as doc-hygiene, which this PR does.
 
 ## Graph run
 
-- Run ID: `graph-20261004-154238` | Profile: `loaded (env sentinel)` | Terminal state: PARKED (build-half gate-qc FAIL — feature already shipped), then owner-directed close as already-shipped — land: the owner's merge of this PR
+- Run ID: `graph-20261004-154238` | Profile: `loaded (env sentinel)` | Terminal state: PARKED (build-half gate-qc FAIL — feature already shipped), then owner-directed close as already-shipped — land: the owner's merge of PR #256
 
 ### Node ledger
 
