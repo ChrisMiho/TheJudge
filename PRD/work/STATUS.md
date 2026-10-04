@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| scanner-caution-always-visible | gate answered (REQ-214 accept, B1 all surfaces, B2 keep pill); resumes at gate-qc |
 
 ## refining
 
@@ -34,7 +35,6 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | anchor-ask-composer | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-218 new + REQ-110/129/206 amend) and merge to build |
-| scanner-caution-always-visible | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-214 amend: caution triangle shows from scanner open; B1 scope recommend all 3 scanners; B2 pill default) and merge to build |
 
 
 ## deferred

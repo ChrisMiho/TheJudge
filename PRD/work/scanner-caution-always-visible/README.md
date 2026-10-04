@@ -1,4 +1,4 @@
-status: owner-action
+status: refined
 
 # scanner-caution-always-visible
 

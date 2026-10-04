@@ -58,11 +58,12 @@ experimental — the bug the request was raised to fix stays.
 +- Built: a top-right **count pill** holds this scanning session's own list of
 +  recognised-but-not-yet-added cards — a scan-local holding list, not the
 +  destination's own card list — and expands to a viewport-capped 320px panel
-+  listing each held card with a single-tap, no-confirmation **Remove**. Beside
-+  the count pill, a caution control (a yellow triangle) sits in the scanner's
-+  top-right from the moment the scanner opens — present before any card is held,
-+  independent of the holding list, so a player whose scans never lock still sees
-+  it — and opens a one-line note that scanning is experimental only on tap. Each entry shows the card's
++  listing each held card with a single-tap, no-confirmation **Remove**. A
++  caution control (a yellow triangle) sits in the scanner's top-right from the
++  moment the scanner opens — present before any card is held, independent of the
++  holding list, so a player whose scans never lock still sees it — with the count
++  pill alongside it once the pill appears (on the first held card), and opens a
++  one-line note that scanning is experimental only on tap. Each entry shows the card's
 ```
 
 **4. `PRD/sections/user-flows.md` — scan Main Flow step 1 (~line 131) and step 5 (~line 136)**
@@ -87,7 +88,7 @@ Step 5 — drop the trailing caution sentence (now stated at step 1); the rest o
 
 ```diff
 -| Chrome | A square ✕ exit box sits above the camera's top-right corner on every host (accessible name "Exit scan"); the count pill (and, when open, its caution note) sits beneath it, non-overlapping; the opt-in Debug panel keeps its own bottom-left placement with a themed accent border (REQ-214); when the mockup's scanner page carries the hint line, one line of static text sits under the camera frame in the mockup's position — text, not a control, never overlapping the camera frame, the count pill or the review list (REQ-214, REQ-070) |
-+| Chrome | A square ✕ exit box sits above the camera's top-right corner on every host (accessible name "Exit scan"); a caution control (a yellow triangle) sits in the top-right from the moment the scanner opens, independent of the holding list, with its caution note opening only on tap; the count pill sits beside/beneath it, non-overlapping, and appears once the first card is held; the opt-in Debug panel keeps its own bottom-left placement with a themed accent border (REQ-214); when the mockup's scanner page carries the hint line, one line of static text sits under the camera frame in the mockup's position — text, not a control, never overlapping the camera frame, the count pill or the review list (REQ-214, REQ-070) |
++| Chrome | A square ✕ exit box sits above the camera's top-right corner on every host (accessible name "Exit scan"); a caution control (a yellow triangle) sits in the top-right from the moment the scanner opens, independent of the holding list, with its caution note opening only on tap; the count pill sits alongside it (the two always adjacent, never overlapping) once the pill appears on the first held card; the opt-in Debug panel keeps its own bottom-left placement with a themed accent border (REQ-214); when the mockup's scanner page carries the hint line, one line of static text sits under the camera frame in the mockup's position — text, not a control, never overlapping the camera frame, the count pill or the review list (REQ-214, REQ-070) |
 ```
 
 - Verdict: accept

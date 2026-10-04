@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 10` | package `PRD/work/scanner-caution-always-visible/` created (IDEA.md, README.md, STATUS.ideation, intake/request.md, intake/observations.md); board row added under `## ideation`; 2 receipt matches noted (trade-balancer-first-card-ux-2026-09-10, ui-look-translation-2026-10-02); intake copied→committed→staged-copy-deleted; commit a50d541 | 2026-10-04 |
 | 3 | define | opus | ok | `0 → 41` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written; one stable-id proposal amending REQ-214 (caution triangle shows from scanner open) with complete 4-spot diff (functional-requirements.md Description+Acceptance, scan/README.md, user-flows.md, screen-layout.md); B1 scope fork (all surfaces vs Trade Balancer only, recommend all — shared component + no-fork rule) and B2 (count-pill default) in `## Blocker questions`; PRD/sections/ untouched; STATUS.refined; no run-halting blocker; commit 4e92284 | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `0 → 10` | PASS — DESIGN-BRIEF + GATE-QUESTIONS checked; all 4 REQ-214 diff spots anchor against live PRD (functional-requirements.md 5486/5493, scan/README.md 107-111, user-flows.md 131/136, screen-layout.md 213); REQ-214 confirmed right owner (already says "every host that scans"); no other live spot needs amending; code claim re-verified (ScanReviewBubble.tsx:40 null-return); B1/B2 well-formed; one minor non-blocking nit (scan/README wording "Beside the count pill" while pill may be absent — note for build); no changes/commit; STATUS.refined stood → moved to owner-action at park | 2026-10-04 |
+| — | gate-review | sonnet | ok | `0 → 32` | build-half claim: kickoff worktree removed, `thejudge-auto/scanner-caution-always-visible-work` cut from origin/main (README base→origin/main, ledger worktree→implement; commit 212d57f), pushed; lock taken pid 32963; graph canary `nohup true` denied (graph tier live). graph-gate-review applied 3 verdicts (REQ-214 accept, B1 all surfaces, B2 keep pill as-is), 0 edit/reject IDs; reconciled B2 wording in GATE-QUESTIONS.md diffs 3 & 5 (alongside the count pill once it appears) + DESIGN-BRIEF count-pill/A1/A2; PRD/sections/ untouched; STATUS.refined restored; board row owner-action→refined | 2026-10-04 |
 
 ## Open gate
 
@@ -25,6 +26,25 @@
 - Decision: answer the verdict slots in `PRD/work/scanner-caution-always-visible/GATE-QUESTIONS.md` — the REQ-214 amendment (accept / edit / reject), B1 (scope: all 3 scanner surfaces, recommended, vs Trade Balancer only), and B2 (count-pill default) — then merge the docs PR into `main`. That merge is the build signal.
 - Minor nit for build/gate-review (non-blocking): scan/README.md proposed wording says the caution sits "Beside the count pill", but the pill can be absent while the caution shows; "in the top-right, alongside the count pill once it appears" reads cleaner.
 - Resume (build half): `/graph-implement PRD/work/scanner-caution-always-visible/`
+- RESOLVED 2026-10-04: 3 verdicts applied (REQ-214 accept, B1 all surfaces, B2 keep pill as-is); STATUS.refined restored.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-214` | accept | "yes — the triangle always displays and brings up the pop-up warning when clicked on" |
+| `B1` | all surfaces | "all scanners get this; the same scanner component should be used for all flows ... Fix the shared component once." |
+| `B2` | keep pill as-is | "leave the pill as-is (appears on first hold) — just make sure the triangle and the count pill sit next to each other whenever both are present" |
+
+### Brief reconciliation
+
+- grep: `grep -nEi "beside|alongside|next to|flip the owner|self-resolved|recommendation, not" DESIGN-BRIEF.md GATE-QUESTIONS.md` (no hits left contradicting a verdict)
+- `GATE-QUESTIONS.md` diff 3 (scan/README.md) — said "Beside the count pill, a caution control ..." → now says the triangle sits top-right from open, "with the count pill alongside it once the pill appears" (B2 wording nit)
+- `GATE-QUESTIONS.md` diff 5 (screen-layout.md Chrome row) — said pill "beside/beneath it" → now "alongside it (always adjacent, never overlapping) once the pill appears on the first held card" (B2)
+- `DESIGN-BRIEF.md` design section (count pill bullet) — added: triangle and pill sit alongside each other whenever both present (B2)
+- `DESIGN-BRIEF.md` A1 — evidence "flip the owner can request" → owner verdict B2 (keep pill as-is; adjacent when both present)
+- `DESIGN-BRIEF.md` A2 — "recommendation, not a self-resolved decision" → owner verdict B1 (all surfaces, fix shared component once)
+- `README.md` intake pointer — none needed (intake does not state superseded behaviour)
 
 ## Dispatch prompts
 
@@ -170,6 +190,38 @@ Report back concisely:
 - the checked artifact path
 - the anchor-verification result for each of the 4 diff spots (anchored / not anchored)
 - any commit SHA(s)
+
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-scanner-caution-always-visible
+
+You are the gate-resolution step of the build half of an autonomous graph run. Invoke the `graph-gate-review` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Return your result to the graph driver.
+
+Work slug: scanner-caution-always-visible
+Run ID: graph-20261004-154238
+Package: PRD/work/scanner-caution-always-visible/
+
+The owner has answered PRD/work/scanner-caution-always-visible/GATE-QUESTIONS.md and merged the docs PR (number 255). Read the owner verdict and reason lines in GATE-QUESTIONS.md verbatim (they are the authority; do not re-quote them here) and apply them:
+
+- REQ-214 — Verdict: accept. The owner confirmed the triangle always displays and opens the pop-up warning on tap. Finalize the REQ-214 proposal (its 4-spot diff) inside GATE-QUESTIONS.md as the accepted proposal. Do NOT edit PRD/sections/ — build applies it later.
+- B1 (scope fork) — Verdict: all surfaces. The owner chose all three scanner surfaces, fixing the shared component once. The REQ-214 amendment already names every host; confirm it stays all-surfaces and that the brief shared-component scope assumption A2 agrees.
+- B2 (count pill) — Verdict: keep pill as-is. The owner kept the count pill unchanged (it appears on first hold) and added one requirement: the caution triangle and the count pill must sit alongside each other whenever both are present. Reconcile the brief and the proposal to this: the count pill stays unchanged; the caution triangle sits in the scanner top-right from open, with the count pill alongside it once the first card is held; and resolve the known wording nit in the scan/README.md proposed diff so it reads alongside the count pill once it appears rather than beside a pill that may be absent. This reconciles wording to the owner verdict; it is not a new product decision.
+
+Then:
+- Reconcile DESIGN-BRIEF.md (and the README intake pointer, if any) to every edit/reject so the re-grade and plan see one consistent package. B1 and B2 confirm the proposal existing direction, so the reconciliation is bounded to the B2 wording nuance above.
+- Restore STATUS.refined.
+- Record the verdicts in GATE-QUESTIONS.md.
+- Do NOT commit — leave the edits in the worktree for the driver to commit between nodes.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- the verdict applied for each ID or question (REQ-214, B1, B2)
+- a `### Brief reconciliation` list naming every brief, README, or proposal passage changed to match a verdict (or none needed per item)
+- confirmation PRD/sections/ was NOT touched
+- the STATUS marker now set (must be refined)
 
 ## Instruction ledger
 

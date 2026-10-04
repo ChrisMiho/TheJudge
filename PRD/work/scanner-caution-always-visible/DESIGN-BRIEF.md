@@ -42,7 +42,9 @@ Split the two concerns the `entries.length === 0` guard currently conflates:
 - The **caution triangle** (and its tap-to-open note) renders whenever the
   scanner is open, independent of the holding list.
 - The **count pill** keeps its current behaviour: it appears once the first card
-  is held and shows the running count. (Assumption A1 below.)
+  is held and shows the running count. Whenever both are present, the triangle
+  and the count pill sit alongside each other in the scanner's top-right (owner
+  verdict on B2, 2026-10-04). (Assumption A1 below.)
 
 In practice: the component stops returning `null` on an empty holding list; it
 always renders the caution triangle, and renders the count pill only when
@@ -77,8 +79,9 @@ Non-goals (from the request and IDEA.md):
   scanner opens"); it says nothing about the count pill. Preparation-contract
   assumption ladder rule 5 (preserve user-visible behaviour unless the request
   changes it) and rule 4 (smallest reversible scope). A "0" count pill would be
-  new noise the request did not ask for. Recorded as a flip the owner can request
-  at the gate (B1 notes).
+  new noise the request did not ask for. Owner verdict on B2 (2026-10-04): keep
+  the pill as-is (appears on first hold), and the triangle and count pill sit next
+  to each other whenever both are present.
 - **A2 — the always-on caution is written as a property of the shared scanner
   chrome (every host), because the component is shared and the PRD bars forking
   it.** Evidence: `ScanReviewBubble` is rendered identically by Trade Balancer
@@ -86,9 +89,9 @@ Non-goals (from the request and IDEA.md):
   and Ask a Question / Quick Lookup (`portal/quick-lookup/QuickLookupApp.tsx:575`);
   `PRD/sections/screen-layout.md` (scan Notes row) says "never fork the shared
   component"; REQ-214 already defines the caution control on "every host that
-  scans." The experimental-scanner rationale is surface-independent. This is a
-  recommendation, not a self-resolved decision — the scope is surfaced for the
-  owner as B1.
+  scans." The experimental-scanner rationale is surface-independent. Owner verdict on
+  B1 (2026-10-04): all surfaces — the same scanner component serves every flow,
+  so fix the shared component once.
 - **A3 — the existing warning copy and the tap-to-open interaction are
   unchanged.** Evidence: the request says "the warning text appearing only when
   the player taps the triangle"; the copy already matches the mockup
