@@ -22,7 +22,7 @@
 
 - Gate: `define` product-truth proposal awaiting the owner. `gate-qc` PASSed; the run stops here per graph-kickoff.
 - What the owner does: answer the `- Verdict:` slot in `PRD/work/green-mobile-branch-declutter/GATE-QUESTIONS.md` (one block, REQ-207 — accept / edit / reject), then merge the docs-only PR into `main`. That merge is the build signal.
-- Docs PR: see the `## Dispatch prompts`-adjacent note below (URL recorded at park).
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/251
 - Resume command (build half, after merge): `/graph-implement PRD/work/green-mobile-branch-declutter/`
 
 ## Dispatch prompts
