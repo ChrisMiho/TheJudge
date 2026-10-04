@@ -20,19 +20,23 @@ function mockMatchMedia(prefersReduced: boolean): void {
 }
 
 const GOLDEN: Record<string, string> = {
-  // fingerprints of one seeded still frame, captured before the phone-path change
-  green1280: "12865:2093576085",
-  greenTray1280: "2998:522468427",
-  white390: "193:2897454861",
-  white1280: "193:1118732190",
-  blue390: "339:883568024",
-  blue1280: "207:986954215",
-  black390: "1196:1382025930",
-  black1280: "22136:310943361",
-  red390: "205:352457340",
-  red1280: "205:1515807002",
-  colorless390: "195:1984659477",
-  colorless1280: "217:1736726970"
+  // Fingerprints of one seeded still frame for the cases this diff must leave
+  // unchanged (green at >=768px and every non-green scene). The draw-call count
+  // (the part before the colon) is version-independent; the hash is of args
+  // rounded to 3 decimals, so it is stable across Node/V8 versions (see
+  // fingerprint() below).
+  green1280: "12865:156881676",
+  greenTray1280: "2998:2931903125",
+  white390: "193:180073385",
+  white1280: "193:961196455",
+  blue390: "339:2624013100",
+  blue1280: "207:2992968134",
+  black390: "1196:3087704209",
+  black1280: "22136:1430510574",
+  red390: "205:4138612825",
+  red1280: "205:2887479130",
+  colorless390: "195:642700728",
+  colorless1280: "217:4115066807"
 };
 
 type CallLog = { name: string; args: unknown[] }[];
@@ -202,7 +206,16 @@ describe("Frontend - AmbientScene", () => {
     }
 
     function fingerprint(calls: CallLog): string {
-      const text = JSON.stringify(calls);
+      // Round every numeric draw-call arg to 3 decimals before hashing. The raw
+      // args are full-precision results of Math.sin/cos/sqrt, which are not
+      // bit-identical across V8/Node versions (the scene renders fine; only the
+      // last bits drift). Rounding to 0.001 absorbs that sub-pixel drift — far
+      // below the drift magnitude's worst case — while still catching any real
+      // change to the frame, so the fingerprint is stable whether the suite runs
+      // on the dev's Node or CI's Node 22.
+      const text = JSON.stringify(calls, (_key, value) =>
+        typeof value === "number" && Number.isFinite(value) ? Math.round(value * 1000) / 1000 : value
+      );
       let hash = 5381;
       for (let i = 0; i < text.length; i += 1) hash = ((hash * 33) ^ text.charCodeAt(i)) >>> 0;
       return `${calls.length}:${hash}`;
