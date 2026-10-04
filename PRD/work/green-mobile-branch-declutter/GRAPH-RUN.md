@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/green-mobile-branch-declutter` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-green-mobile-branch-declutter`
 - Staging: none (no intake supplied — the request carried no file paths or pasted documents)
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half; resumes at the recorded node)
+- Current node: `owner-action`
+- Next action: `/graph-implement PRD/work/green-mobile-branch-declutter/` (after the owner answers GATE-QUESTIONS.md and merges the docs PR)
 
 ## Node ledger
 
@@ -16,10 +16,14 @@
 | 1 | preflight | haiku | ok | `degraded (run-state pointed at prior run graph-20261003-205515 during preflight)` | branch `thejudge-auto/green-mobile-branch-declutter` pushed from `.worktrees/kickoff-green-mobile-branch-declutter` (origin commit 21e9af2); canary denied both tiers; launch checkout untouched on `fix/chat-long-message-wrap` | 2026-10-03 |
 | 2 | shape | sonnet | ok | `0 → 14` | package `PRD/work/green-mobile-branch-declutter/` created (IDEA.md, README.md, STATUS.ideation; commit c8917dd); 3 `## Prior run` matches recorded in IDEA.md | 2026-10-03 |
 | 3 | define | opus | ok | `0 → 83` | DESIGN-BRIEF.md + GATE-QUESTIONS.md (one block, REQ-207 amended in place, no new ids) written; grounded against live app at 390x844 (screenshots in package `.playwright-mcp/`); STATUS.refined | 2026-10-03 |
+| 4 | gate-qc | sonnet | ok | `0 → 7` | thejudge-quality-check PASS on DESIGN-BRIEF.md + GATE-QUESTIONS.md; code references and proposed-diff anchors verified against `AmbientScene.tsx` and `functional-requirements.md` REQ-207; two non-blocking implementer notes; STATUS.refined held | 2026-10-03 |
 
 ## Open gate
 
-- None
+- Gate: `define` product-truth proposal awaiting the owner. `gate-qc` PASSed; the run stops here per graph-kickoff.
+- What the owner does: answer the `- Verdict:` slot in `PRD/work/green-mobile-branch-declutter/GATE-QUESTIONS.md` (one block, REQ-207 — accept / edit / reject), then merge the docs-only PR into `main`. That merge is the build signal.
+- Docs PR: see the `## Dispatch prompts`-adjacent note below (URL recorded at park).
+- Resume command (build half, after merge): `/graph-implement PRD/work/green-mobile-branch-declutter/`
 
 ## Dispatch prompts
 
@@ -46,6 +50,14 @@ graph is controlling.
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-green-mobile-branch-declutter
 
 You are node 3 (define) of an autonomous graph-kickoff run (run id graph-20261003-232715, slug green-mobile-branch-declutter). Invoke the thejudge-refinement skill and follow it exactly in graph mode. This is unattended: in graph mode you propose without pausing for approval and without interactive questions. Apply the assumption ladder per question; I am giving you no standing authorization to pre-resolve product decisions. All reads/writes inside the working directory above. The package is PRD/work/green-mobile-branch-declutter/; read its IDEA.md first. The idea: the new UI is loved for its personality, but with the GREEN mana theme on a phone the decorative branches overlap and pile over the controls/text, reading as clutter instead of ambience; the owner wants green-on-mobile to keep its branch personality as a quiet backdrop that never covers the interface. Ground your premises in the real code and running UI, not assumptions — a prior refinement produced three wrong premises from code-reading alone; find the component that renders green's branch decoration, read how it positions on mobile breakpoints, and verify against the real rendering where practical. Deliverables: DESIGN-BRIEF.md to the plain-language standard; if the change needs PRD/sections product truth, author GATE-QUESTIONS.md with one block per stable id (plain-language gate block, complete proposed diff, verdict + reason slots), naming/reserving new ids rather than writing them live; set STATUS.refining while shaping and STATUS.refined when complete. Do not edit PRD/sections or code. Report the brief path, whether GATE-QUESTIONS.md was authored and which ids, what you observed in the real code/UI, the STATUS marker, and any genuine decision blocker.
+
+### gate-qc
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-green-mobile-branch-declutter
+
+You are node 4 (gate-qc) of an autonomous graph-kickoff run (run id graph-20261003-232715, slug green-mobile-branch-declutter). Invoke the thejudge-quality-check skill and follow it exactly in graph mode. Unattended; no user questions. All reads/writes inside the working directory above. Validate DESIGN-BRIEF.md against PRD alignment and agent-readiness, producing a PASS/FAIL report. This package proposes one in-place product-truth amendment (REQ-207, presentation-only, green-phone containment) recorded in GATE-QUESTIONS.md; check the brief and proposal are consistent and agent-ready. Do not write a GAMEPLAN or slice docs. On PASS leave STATUS.refined; on FAIL set STATUS.refining and give complete specific findings. Report the verdict, the checked artifact path, and the complete findings list.
 
 ## Instruction ledger
 
