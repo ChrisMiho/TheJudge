@@ -16,6 +16,11 @@ export type AmbientSceneProps = {
 
 type AttachOptions = { k?: number; dust?: number; tray?: boolean; adaptive?: boolean; size?: () => [number, number] };
 
+/** Below this viewport width the app is on a phone (DEC-117 / DEC-149). */
+const PHONE_MAX_WIDTH = 768;
+/** Green's drifting leaves are drawn at this fraction of their opacity on a phone. */
+const PHONE_LEAF_ALPHA = 0.55;
+
 const REDUCED_QUERY = "(prefers-reduced-motion: reduce)";
 
 /**
@@ -102,8 +107,13 @@ const AMBIENCE = (() => {
 
   const GREEN: any = {
     dark: [10, 92, 51], mid: [10, 122, 66], mint: [74, 255, 160], wood: [60, 150, 100],
+    // a phone (viewport < 768px, REQ-207) has no side gutter, so green stays a
+    // quiet backdrop there: a few leaves, softer, and no limbs over the content
+    phone() { return typeof window !== 'undefined' && window.innerWidth < PHONE_MAX_WIDTH; },
     init(W: any, H: any, k: any) {
-      const n = Math.max(7, Math.round(14 * k * Math.sqrt(W * H / 1296000)));
+      const phone = this.phone();
+      this.leafAlpha = phone ? PHONE_LEAF_ALPHA : 1;
+      const n = phone ? Math.max(3, Math.round(6 * k * Math.sqrt(W * H / 1296000))) : Math.max(7, Math.round(14 * k * Math.sqrt(W * H / 1296000)));
       this.leaves = Array.from({ length: n }, () => this.leaf(W, H, true));
     },
     leaf(W: any, H: any, fresh: any) {
@@ -164,7 +174,17 @@ const AMBIENCE = (() => {
       // limbs: from just past each top corner, reaching inward and drooping;
       // a short one or two hang from the middle of the top edge
       const scale = Math.max(0.5, Math.min(1, W / 1100)) * Math.min(1, H / 700);
-      // tall and narrow (the Menu tray, a phone): the limbs hang down both side
+      // a phone (any viewport < 768px): only a hint of branch — one short, thin,
+      // faint twig reaching in from each top corner, clear of the content column
+      if (this.phone()) {
+        for (const side of [0, 1]) {
+          const x0 = side ? W + 6 : -6;
+          const ang = side ? Math.PI - rnd(0.1, 0.25) : rnd(0.1, 0.25);
+          this.limb(ctx, x0, rnd(0, 14), ang, Math.min(110, W * rnd(0.2, 0.28)), rnd(3, 4), k * 0.6, 1);
+        }
+        return;
+      }
+      // tall and narrow (the Menu tray on a wide screen): the limbs hang down both side
       // edges as vines, reaching into the open space below the content
       if (H > W * 1.6 && W < 520) {
         for (const side of [0, 1]) {
@@ -191,7 +211,7 @@ const AMBIENCE = (() => {
         l.y += l.vy; l.x += Math.sin(t / 95 + l.ph) * l.amp + 0.06; l.rot += l.rs + Math.sin(t / 70 + l.ph) * 0.004;
         if (l.y > H + 30 || l.x < -40 || l.x > W + 40) Object.assign(l, this.leaf(W, H, false));
         const fade = Math.min(1, (l.y + 30) / 90);
-        this.drawLeaf(ctx, l.x, l.y, l.s, l.rot, mix(this.mid, this.mint, l.t * 0.7), l.a * fade, this.dark);
+        this.drawLeaf(ctx, l.x, l.y, l.s, l.rot, mix(this.mid, this.mint, l.t * 0.7), l.a * fade * this.leafAlpha, this.dark);
       }
     }
   };
