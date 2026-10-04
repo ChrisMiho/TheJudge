@@ -1,7 +1,123 @@
 # Graph run — ui-pass-2
 
 - Run ID: `graph-20261004-012328`
+- Profile: `loaded (env sentinel)` (observed by graph-preflight at node 1)
+- Canary: `denied — hook live (rm -rf)`; graph canary `denied — hook live (nohup)`
 - Autonomous base: `origin/thejudge-auto/ui-pass-2`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-pass-2`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/`
-- Current node: `shape`
+- Current node: `define`
+- Next action: `/graph-kickoff` (spec-forming half continues under the graph driver)
+
+## Node ledger
+
+| # | Node | Model | Outcome | Heartbeat | Evidence | Date |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | preflight | haiku | ok | `0 → 9` | branch `thejudge-auto/ui-pass-2` pushed from `.worktrees/kickoff-ui-pass-2`; universal + graph canaries both denied (hook live); Profile loaded (env sentinel); launch checkout untouched | 2026-10-04 |
+| 2 | shape | sonnet | ok | `0 → 10` | package `PRD/work/ui-pass-2/` created (IDEA.md, README, STATUS.ideation); intake copied verbatim then staged copy deleted; 5 prior-run matches recorded as input; commit `37c92250` on `thejudge-auto/ui-pass-2` | 2026-10-04 |
+
+## Open gate
+
+- None
+
+## Dispatch prompts
+
+### preflight
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge
+
+You are node 1 (`preflight`) of an autonomous graph-kickoff run. Invoke the `graph-preflight` skill (Skill tool) and follow its Procedure exactly. Do not improvise repairs; if the script exits non-zero, relay its message verbatim and stop.
+
+Run parameters (pass these verbatim, never infer or substitute):
+- `--branch thejudge-auto/ui-pass-2`
+- `--slug ui-pass-2`
+- `--run-id graph-20261004-012328`
+- `--pid 53602`
+- base: default (origin/main)
+
+Procedure you must carry out:
+1. Dry run first:
+   `npm run graph:preflight -- --branch thejudge-auto/ui-pass-2 --slug ui-pass-2 --run-id graph-20261004-012328 --pid 53602 --dry-run`
+   Report the `shape:`, resolved `base:`, `worktree:`, `profile sentinel:` and `Profile:` lines verbatim.
+2. If the script exits 1 (dirty in-place tree) or 2 (stop sentinel / lock held / branch collision / existing kickoff worktree), STOP and relay the message verbatim. Do not hand-resolve anything.
+3. Otherwise re-run the identical command WITHOUT `--dry-run`, same explicit `--run-id`. The script takes the concurrency lock itself.
+4. Liveness canaries — these are real Bash tool calls you must issue, and the hook must DENY each:
+   a. Issue the universal `CANARY_COMMAND` the script printed. Require a deny; classify with the skill's guidance. If it is ALLOWED, the run is BLOCKED — report verbatim and stop, do not continue.
+   b. After the lock is taken, issue the `GRAPH_CANARY_COMMAND` the script printed. Require a deny (graph tier). If ALLOWED, BLOCKED — report verbatim and stop.
+5. Confirm end state (root shape): `cd .worktrees/kickoff-ui-pass-2 && git branch --show-current` equals `thejudge-auto/ui-pass-2`; `git ls-remote --heads origin thejudge-auto/ui-pass-2` shows it pushed; `git branch --show-current` at the launch root is unchanged.
+
+Report back, concisely and with evidence (command output, not bare claims):
+- `shape:` line
+- resolved `base:` line
+- absolute `worktree:` path
+- the lock record (slug, run id, pid)
+- both canary results as their ledger lines (`denied — hook live (<command>)` form)
+- the `Profile:` line verbatim
+- confirmation the launch-root branch is unchanged
+
+The launch checkout must never be switched, committed to, or stashed. Never force-push, never create a worktree outside `.worktrees/`.
+
+### shape
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-pass-2
+
+You are node 2 (`shape`) of an autonomous graph-kickoff run. Invoke the `thejudge-kickoff` skill (Skill tool) and follow its `graph is controlling` mode exactly. Do not pause for user approval; return your result to the graph driver.
+
+Copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-pass-2` unchanged into every prompt you write to any subagent of your own.
+
+Run parameters:
+- Supplied slug (use verbatim, do not propose another): `ui-pass-2`
+- Run ID: `graph-20261004-012328`
+- Staged intake (absolute path): `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/` — contains `observations.md`
+
+The request (owner's own words, from the staged `observations.md`):
+> This is all feedback I'd like to act on from the latest UI refactoring:
+> 1. The gold in the Trade Balancer is different than the mockup — same concept, but the art is different.
+> 2. The shape of the search box that pops up when you click add card doesn't mirror the existing question box, which makes it look out of place.
+> 3. The delete button on the question history on mobile is ugly and looks broken.
+> 4. The menu that pops up to delete chats on mobile is really nice, but some of the text is cut off — let's fix that.
+
+What to do, per the skill's graph mode:
+1. Read the minimal onboarding context (root `README.md`, `PRD/README.md`) and `PRD/instructions/preparation-contract.md`.
+2. Investigate only request-relevant PRD sections and code (the UI surfaces these four items touch) — enough to judge this is an actionable package and to seed `IDEA.md`. This is scoping, not design; refinement (node 3) does the design.
+3. Create `PRD/work/ui-pass-2/` with `IDEA.md` (STATUS.ideation) and the package `README.md`, using slug `ui-pass-2`.
+4. Grep `PRD/instructions/receipts/` for slug/keyword matches against this request and intake; write one `## Prior run` line per match into `IDEA.md` (no match → no section). The recent UI-reimagining / UI-look-translation / green-mobile work is likely relevant — record matches as input, never as scope.
+5. Handle intake only after `PRD/work/ui-pass-2/` exists: copy each staged item verbatim into `PRD/work/ui-pass-2/intake/`, commit on the branch (explicit paths only — never git add all), then delete the staged copy, in that order.
+6. Record the staging path `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/` in `PRD/work/ui-pass-2/GRAPH-RUN.md` at the ledger's first write if you create it.
+
+If the request cannot be turned into an actionable package, return `NO ACTIONABLE PACKAGE` with the reason.
+
+Report back concisely with evidence: the slug, the paths you created, any `## Prior run` matches found, the exact commit SHA on which branch, and confirmation the staged intake copy was deleted after the committed copy landed. Stage/commit explicit paths only; never force-push; never touch the launch checkout.
+
+### define
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-pass-2
+
+You are node 3 (`define`) of an autonomous graph-kickoff run. Invoke the `thejudge-refinement` skill (Skill tool) and follow its `graph is controlling` mode exactly. You have no human to ask — never pause for user approval. Apply the assumption ladder in `PRD/instructions/preparation-contract.md` per question, and record any proposed product-truth change in `PRD/work/ui-pass-2/GATE-QUESTIONS.md` rather than asking. Do not edit `PRD/sections/`.
+
+Copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-pass-2` unchanged into every prompt you write to any subagent of your own.
+
+Package: `PRD/work/ui-pass-2/`. Read its `IDEA.md`, `README.md`, and `intake/observations.md` first. The package is a single UI-polish pass over four owner findings from the latest UI refactoring:
+1. Trade Balancer gold-pile art differs from the mockup — same concept, different art. Scoped code: `apps/frontend/src/components/trade/TradePile.tsx` (REQ-215).
+2. The card-search box opened by the Add-card control in `TradeSide.tsx` has a different shape from the Ask-a-Question composer box, so it looks out of place.
+3. The mobile Delete button on Question History rows looks broken/ugly — `.history-item-delete` in `ConversationHistoryDrawer.tsx`.
+4. The mobile delete-confirm sheet (`history-delete-confirm`) clips some of its text.
+
+Required of you:
+- Verify each finding LIVE, not from code alone. Prior repo runs recorded that code-reading alone produced wrong UI premises; node 2 explicitly did not open the mockup or the app. Launch the frontend dev server from this worktree and inspect in a browser — desktop viewport for items 1–2, a mobile viewport (e.g. iPhone width < 768px) for items 3–4 — and compare item 1 against the UI mockup the recent UI-reimagining / look-translation work produced. Capture before-state screenshots into `PRD/work/ui-pass-2/.playwright-mcp/`. If a finding cannot be reproduced live, say so and shape it as the owner described rather than inventing a premise. Close any browser session and stop the dev server when done (runtime-process-hygiene).
+- Produce `PRD/work/ui-pass-2/DESIGN-BRIEF.md`: the player-facing problem and the intended look for each of the four items, the exact surfaces/classes to change, and non-goals (this is polish, not a redesign — the card-identity ring and existing theme ownership rules still hold).
+- Decide, per the assumption ladder, whether each item needs a change to product truth in `PRD/sections/`. These are mostly polish/bug fixes against existing requirements, so many may amend an existing `REQ`/`FLOW` rather than add a new one. For every proposed new or amended stable ID, write a `## <STABLE-ID>` block in `GATE-QUESTIONS.md` opening with the gate-question plain-language block from `PRD/instructions/plain-language-standard.md` (What this decides · In plain terms · What happens if you say no), then that ID's complete proposed diff (never a summary), then a `- Verdict:` slot and `- Reason:` slot. If no item needs a product-truth change, write no `GATE-QUESTIONS.md`; the run still proceeds to quality-check.
+- Set `STATUS.refining` while shaping and `STATUS.refined` on completion. Commit your artifacts on `thejudge-auto/ui-pass-2` with explicit paths only (never git add all); do not push; never touch the launch checkout; never force-push.
+
+Report back concisely with evidence: which findings you reproduced live and how, the path to `DESIGN-BRIEF.md`, whether you wrote `GATE-QUESTIONS.md` and which stable IDs it proposes (new vs amended), the screenshots captured, the status marker set, and the commit SHA on the branch.
+
+## Instruction ledger
+
+| Instruction | Class | Node | Rule |
+| --- | --- | --- | --- |
