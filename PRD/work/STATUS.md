@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| anchor-ask-composer | Pin the Quick + In-depth question box; scanner's 31.5rem desktop override on the shared `narrow-fit` class scoped to the scanner host so the Ask column stays 36rem (REQ-218) |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| anchor-ask-composer | Pin the Quick + In-depth question box; gate-qc attempt 2 FAIL — narrow-fit has a 31.5rem desktop override that narrows the Ask column |
 
 ## ideation
 

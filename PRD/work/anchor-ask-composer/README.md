@@ -1,4 +1,4 @@
-status: refining
+status: refined
 
 # anchor-ask-composer
 

@@ -26,8 +26,12 @@ In scope:
   `narrow-fit` → `page-content page-content-narrow page-content-narrow-fit`), the
   36rem/92vw fit sibling of the `wide-fit` child Trade Balancer ships. Same
   pattern, not a new one; the Ask column width is unchanged (stays `narrow`,
-  36rem / 92vw). On In-depth the frame is applied only at the Enrichment station
-  (station 4 / Context), not the earlier staged steps.
+  36rem / 92vw). The shared `narrow-fit` class carries a scanner-only desktop
+  width override (31.5rem at ≥720px, `index.css` ~line 4244) written as a global
+  selector; that override is scoped to the scanner host so the Ask column keeps
+  36rem and the scanner's 31.5rem is untouched. On In-depth the frame is applied
+  only at the Enrichment station (station 4 / Context), not the earlier staged
+  steps.
 - Composer pinned at the bottom; stage/context region flexes and region-scrolls.
 - Box grows upward in place to a cap, then scrolls internally; the chip + mic|send
   pill stay on a stable bottom row; the page never scrolls from box growth.
@@ -84,8 +88,11 @@ applies the approved proposal). Four stable IDs:
   screens are a `100dvh` no-page-scroll frame (reusing `page-shell-fit`) with the
   stage/context region flexing and region-scrolling and the composer pinned;
   composer stays above the on-screen keyboard; search-fold, card-detail popup,
-  and the answered follow-up composer keep working. Carries the `screen-layout.md`
-  Ask-a-Question-pre-submit and In-Depth-Enrichment row edits.
+  and the answered follow-up composer keep working. The Ask column stays
+  36rem / 92vw on desktop — the scanner's 31.5rem desktop override on the shared
+  `narrow-fit` class is scoped to the scanner host so it does not shrink the Ask
+  column. Carries the `screen-layout.md` Ask-a-Question-pre-submit and
+  In-Depth-Enrichment row edits.
 - **REQ-129** (amend) — the send-pill-in-first-viewport guarantee is now
   delivered structurally by the anchored frame (composer pinned + stage flexes),
   not only by bounding the attached-card region; the card-image ceiling is
@@ -104,7 +111,12 @@ Recorded because the owner approval pause is replaced by the assumption ladder
    pattern): the intake names the Trade Balancer frame as the shipped
    no-page-scroll pattern and the idea's non-goals forbid a new one. The brief
    adopts it; `GATE-QUESTIONS.md` surfaces the anchored frame as REQ-218 for the
-   owner.
+   owner. The shared `narrow-fit` class carries a scanner-only desktop width
+   override (31.5rem at ≥720px, a global selector added for the scanner's camera
+   box); ladder #2/#5 (preserve tested + user-visible behavior) scopes it to the
+   scanner host so the Ask column keeps its unchanged `narrow` 36rem cap and the
+   scanner's 31.5rem is untouched — a consistency fix to the brief's
+   width-unchanged intent, not a new product decision.
 2. **A new REQ (REQ-218) for the frame + keyboard, not only amendments.** Ladder
    #1 (no existing home): REQ-110 is composer *growth* and REQ-129 is card-image
    *size*; neither states "the whole Ask screen is a pinned `100dvh` frame" or
