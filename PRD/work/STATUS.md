@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| green-mobile-branch-declutter | green mana theme on mobile: decorative branches overlap the UI; make them quiet ambience |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| green-mobile-branch-declutter | green mana theme on mobile: decorative branches overlap the UI; make them quiet ambience |
 
 ## owner-action
 
