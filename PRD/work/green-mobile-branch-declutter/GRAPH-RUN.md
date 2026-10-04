@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-green-mobile-branch-declutter`
 - Staging: none (no intake supplied — the request carried no file paths or pasted documents)
-- Current node: `gate-qc` (re-entry after gate resolution)
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/green-mobile-branch-declutter/`
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 83` | DESIGN-BRIEF.md + GATE-QUESTIONS.md (one block, REQ-207 amended in place, no new ids) written; grounded against live app at 390x844 (screenshots in package `.playwright-mcp/`); STATUS.refined | 2026-10-03 |
 | 4 | gate-qc | sonnet | ok | `0 → 7` | thejudge-quality-check PASS on DESIGN-BRIEF.md + GATE-QUESTIONS.md; code references and proposed-diff anchors verified against `AmbientScene.tsx` and `functional-requirements.md` REQ-207; two non-blocking implementer notes; STATUS.refined held | 2026-10-03 |
 | — | gate-review | sonnet | ok | `1 → 8` | build-half claim: cut `thejudge-auto/green-mobile-branch-declutter-work` from origin/main, graph canary denied (graph tier live), lock taken. graph-gate-review applied REQ-207 accept (no edits to GATE-QUESTIONS.md/PRD/sections); brief reconciliation needed none (accept-as-written); STATUS.refined restored | 2026-10-04 |
+| 4 | gate-qc | sonnet | ok | `1 → 10` | thejudge-quality-check PASS (build-half re-entry): brief + finalized proposal agree; no new ids; three REQ-207 diff anchors verbatim in `functional-requirements.md` (REQ-207 at line 5270); cited truth real; `AmbientScene.tsx:169` = `if (H > W * 1.6 && W < 520)`; four non-blocking implementer notes; STATUS.refined held; Preparation gate re-recorded | 2026-10-04 |
 
 ## Open gate
 
@@ -78,6 +79,14 @@ graph is controlling.
 Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-green-mobile-branch-declutter
 
 You are the gate-review node of an autonomous graph-implement run (build half; run id graph-20261004-001946, slug green-mobile-branch-declutter). Invoke the graph-gate-review skill and follow it exactly in graph mode. Unattended; no interactive questions. All reads/writes inside the working directory above, on branch thejudge-auto/green-mobile-branch-declutter-work. The owner has answered GATE-QUESTIONS.md: one block, REQ-207, Verdict: accept, with the reason that green on a phone (viewport `< 768px`) stays a quiet backdrop clear of the content column, accepted as written, and the implementer tunes the code path that serves the whole phone band (not only the current `< 520` trigger). Apply the accept verdict to the proposed diff inside GATE-QUESTIONS.md (finalize the proposal in the work folder; never edit PRD/sections). Then reconcile DESIGN-BRIEF.md and the README's intake pointer to the finalized verdict so gate-qc re-grades one consistent package; the single verdict is accept-as-written, so reconciliation is bounded to confirming the brief already matches the accepted diff and the owner's `< 768px` clarification. Restore STATUS.refined. Report the verdicts applied, a `### Brief reconciliation` list naming every passage checked or changed (or stating none was needed and why), and the resume command.
+
+### gate-qc (build-half re-entry)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-green-mobile-branch-declutter
+
+You are the gate-qc node (build-half re-entry after gate resolution) of an autonomous graph-implement run (run id graph-20261004-001946, slug green-mobile-branch-declutter). Invoke the thejudge-quality-check skill and follow it exactly in graph mode. Unattended; no user questions. All reads/writes inside the working directory above, on branch thejudge-auto/green-mobile-branch-declutter-work. The define gate is resolved: the owner's one verdict, REQ-207, is accept-as-written (green on a phone, viewport `< 768px`, stays a quiet backdrop clear of the content column; the implementer tunes the code path that serves the whole phone band, not only the current `< 520` trigger). Re-validate DESIGN-BRIEF.md against PRD alignment and agent-readiness now that the gate is finalized, producing a PASS/FAIL report. The package proposes one in-place product-truth amendment (REQ-207, presentation-only, green-phone containment) recorded in GATE-QUESTIONS.md; check the brief and the finalized proposal are consistent and agent-ready. Do not write a GAMEPLAN or slice docs. On PASS leave STATUS.refined; on FAIL set STATUS.refining and give complete specific findings. Report the verdict, the checked artifact path, and the complete findings list.
 
 ## Instruction ledger
 
