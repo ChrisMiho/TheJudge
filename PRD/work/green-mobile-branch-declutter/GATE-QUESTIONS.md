@@ -47,5 +47,5 @@ could bring the clutter back without failing any test.
 +  - amended by `green-mobile-branch-declutter` (2026-10-03): the Green scene's phone path drew its branches (limbs) down both side edges, across the content column — a phone has no side gutter for them to sit in — so green read as clutter over the interface instead of ambience; the new criterion requires green on a phone to stay a quiet backdrop. Presentation-only and Green-only; the other five scenes and every tablet/desktop width are unchanged. Grounded against the running app at 390×844 (screenshots in the work package)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: reject
+- Reason: Owner's call (2026-10-04): try a one-time tune first — calm Green's phone scene in AmbientScene.tsx without writing a durable REQ-207 containment bar. Code-only, no PRD/sections edit; the build follows the design brief's tuning scope. If the tune lands well and sticks, revisit recording the phone-containment criterion in a later pass.
