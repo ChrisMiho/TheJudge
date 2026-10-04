@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/anchor-ask-composer` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261003-205515/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 7` | branch `thejudge-auto/anchor-ask-composer` pushed (`0d5f2e5`) from `.worktrees/kickoff-anchor-ask-composer`; launch checkout untouched (`fix/desktop-close-search-chips`); universal canary denied, graph canary denied, lock `free → taken` | 2026-10-03 |
 | 2 | shape | sonnet | ok | `0 → 8` | package `PRD/work/anchor-ask-composer/` created (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md); committed `2e2a2ca`; 7 prior-run matches recorded in IDEA.md | 2026-10-03 |
+| 3 | define | opus | ok | `0 → 43` | DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-218 new, REQ-110/129/206 amend) written; STATUS.refined; committed `4281967`; zero PRD/sections edits confirmed via `git diff --name-only origin/main...HEAD`; no blocker | 2026-10-03 |
 
 ## Open gate
 
@@ -115,6 +116,29 @@ Report back:
 - Whether GATE-QUESTIONS.md was written, and the list of stable ids it proposes (with new vs amended marked)
 - The STATUS marker you set and the commit hash
 - Any genuine decision blocker you recorded (and where)
+
+### gate-qc
+
+graph is controlling
+
+You are node 4 (`gate-qc`) of an autonomous graph-kickoff run. Invoke the `thejudge-quality-check` skill (Skill tool, skill name `thejudge-quality-check`) and follow it exactly. Do not improvise around it.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer
+
+Package: PRD/work/anchor-ask-composer/ (branch thejudge-auto/anchor-ask-composer in this worktree).
+
+Validate PRD/work/anchor-ask-composer/DESIGN-BRIEF.md against PRD alignment and agent-readiness, producing a PASS or FAIL report. The proposed product-truth amendments are in GATE-QUESTIONS.md (REQ-218 new, REQ-110/129/206 amended) — read them as the brief's proposed truth; they are NOT yet applied to PRD/sections and must not be. Do NOT write a GAMEPLAN or slice docs — this node only grades.
+
+Rules:
+- On FAIL, set STATUS.refining and give the complete findings list.
+- On PASS, leave STATUS.refined.
+- Do NOT edit PRD/sections/. Commit any report artifact on this branch with explicit paths only (never `git add -A` / `git add .` / `git add --all`). Do not push main, do not force-push, do not touch the launch checkout, do not edit any `thejudge-*` skill.
+
+Report back:
+- The verdict: PASS or FAIL
+- The complete findings list (or `none`)
+- The STATUS marker now set
+- The commit hash if you committed a report artifact
 
 ## Instruction ledger
 
