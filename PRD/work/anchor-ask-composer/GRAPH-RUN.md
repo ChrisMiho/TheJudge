@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/anchor-ask-composer` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261003-205515/`
-- Current node: `define` (attempt 2 — gate-qc FAIL loop 1 of 3)
+- Current node: `gate-qc` (attempt 2 — re-grade after define attempt 2)
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 8` | package `PRD/work/anchor-ask-composer/` created (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md); committed `2e2a2ca`; 7 prior-run matches recorded in IDEA.md | 2026-10-03 |
 | 3 | define | opus | ok | `0 → 43` | DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-218 new, REQ-110/129/206 amend) written; STATUS.refined; committed `4281967`; zero PRD/sections edits confirmed via `git diff --name-only origin/main...HEAD`; no blocker | 2026-10-03 |
 | 4 | gate-qc | sonnet | failed | `0 → 17` | FAIL — 4 findings (wrong fit variant: brief/REQ-218 name `page-content-wide-fit`, Ask screens use `narrow` → `narrow-fit`, width must not change; In-depth per-page variant unspecified vs DEC-145 content-sized Game/Zones/Cards; broken diff wording in quick-lookup README; screen-layout Notes cell contradicts new cells); STATUS.refining; committed `cb8db5c`; loops to define attempt 2 | 2026-10-03 |
+| 3 | define | opus | ok | `0 → 32` | attempt 2 — all 4 gate-qc findings fixed (`narrow-fit` + width-unchanged criterion; frame only at In-depth Enrichment station; reworded README diff; screen-layout Notes reconciled); same 4 ids (REQ-218 new, REQ-110/129/206 amend), no new ids; STATUS.refined; committed `4334ae1`; no blocker | 2026-10-03 |
 
 ## Open gate
 
@@ -168,6 +169,29 @@ Report back:
 - The stable ids GATE-QUESTIONS.md now proposes
 - The STATUS marker set and the commit hash
 - Any genuine decision blocker (expected: none)
+
+### gate-qc (attempt 2)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 2, of an autonomous graph-kickoff run. define attempt 2 fixed the four prior findings; invoke the `thejudge-quality-check` skill (Skill tool, skill name `thejudge-quality-check`) and re-grade. Do not improvise around it.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer
+
+Package: PRD/work/anchor-ask-composer/ (branch thejudge-auto/anchor-ask-composer in this worktree).
+
+Validate PRD/work/anchor-ask-composer/DESIGN-BRIEF.md against PRD alignment and agent-readiness, producing a PASS or FAIL report. Confirm the four attempt-1 findings are resolved (correct `narrow-fit` variant with column width unchanged; In-depth frame only at the Enrichment station with Game/Zones/Cards content-sized per DEC-145; reworded quick-lookup README diff; screen-layout Notes cell reconciled), and re-check the whole brief and GATE-QUESTIONS.md (REQ-218 new, REQ-110/129/206 amended) for any remaining PRD-alignment or agent-readiness gap. The amendments are NOT applied to PRD/sections and must not be. Do NOT write a GAMEPLAN or slice docs.
+
+Rules:
+- On FAIL, set STATUS.refining and give the complete findings list.
+- On PASS, leave STATUS.refined.
+- Do NOT edit PRD/sections/. Commit any report artifact on this branch with explicit paths only (never `git add -A` / `git add .` / `git add --all`). Do not push main, do not force-push, do not touch the launch checkout, do not edit any `thejudge-*` skill.
+
+Report back:
+- The verdict: PASS or FAIL
+- The complete findings list (or `none`)
+- The STATUS marker now set
+- The commit hash if you committed a report artifact
 
 ## Instruction ledger
 
