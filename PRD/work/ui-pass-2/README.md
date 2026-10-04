@@ -20,10 +20,11 @@ See IDEA.md. Intake: intake/observations.md.
 | B | `slice-b-search-pill.md` | Add-card search box mirrors the question-box pill | none | planned |
 | C | `slice-c-history-delete.md` | Mobile Question History Delete button looks like a control | none | planned |
 | D | `slice-d-confirm-padding.md` | Mobile delete-confirm sheet no longer clips its text | none | planned |
+| E | (owner-directed, post-review) | Card-scan caution triangle always shown in the scanner's top-right (like the mockup); warning pops up only on click. Exit ✕ moved to the panel header (above the camera, per REQ-214) so it no longer covers the triangle. REQ-214 truth amended. | none | done |
 
-Implementation map: `GAMEPLAN.md`. Criteria: `slice-<letter>.criteria.json`. All slices parallel-ready; REQ-215 truth is applied by intent in slice A.
+Implementation map: `GAMEPLAN.md`. Criteria: `slice-<letter>.criteria.json` (A–D). All slices parallel-ready; REQ-215 truth is applied by intent in slice A.
 
-All four slices are built and committed, and node 7 review returned APPROVE (full suite 1498 pass). The run is parked at `owner-action` before `close` — the criteria files stay `false` because of the known evidence-log-root gap and the auto-mode audit guardrail; see `GRAPH-RUN.md` `## Open gate` for the owner decision. Code PR #254 is open.
+Slices A–D are built and node 7 review returned APPROVE (full suite 1498 pass). The owner then approved the four fixes live and directed one addition — slice E, the always-visible card-scan caution (above). Slice E is built, its REQ-214 amendment applied, full suite 1498 pass, verified live (triangle tappable, warning on click, no overlap with the Exit ✕). Awaiting the owner's approval of the final look before `close`. The A–D criteria files stay `false` because of the known evidence-log-root gap and the auto-mode audit guardrail; see `GRAPH-RUN.md` `## Open gate` for the close decision. Code PR #254 is open.
 
 ## Preparation gate
 

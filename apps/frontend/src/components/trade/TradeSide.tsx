@@ -242,7 +242,22 @@ export function TradeSide({
 
       {isScanOpen ? (
         <div className="scan-panel">
-          <p className="scan-title">{`Scanning onto ${sideLabel}`}</p>
+          {/* REQ-214: the way out is a square ✕ box above the camera's top-right corner —
+              it lives in the panel header, not over the viewfinder, so it never sits on top
+              of the frame's own top-right chrome (the always-shown experimental-scan caution
+              triangle and, once cards are held, the count pill). Closing commits the holding
+              list below to this side. */}
+          <div className="scan-head">
+            <p className="scan-title">{`Scanning onto ${sideLabel}`}</p>
+            <button
+              type="button"
+              aria-label="Exit scan"
+              onClick={scan.closeScan}
+              className="icon-round"
+            >
+              <span aria-hidden="true">✕</span>
+            </button>
+          </div>
           {scan.isLoading ? (
             <p className="tb-note">Loading scan data...</p>
           ) : (
@@ -257,16 +272,6 @@ export function TradeSide({
                 debug={scan.scanDebug}
                 autoScanFps={3}
               />
-              {/* REQ-214: a box with an ✕ above the camera's top-right corner — the only
-                  way out; closing commits the holding list below to this side. */}
-              <button
-                type="button"
-                aria-label="Exit scan"
-                onClick={scan.closeScan}
-                className="icon-round absolute right-3 top-3 z-10"
-              >
-                <span aria-hidden="true">✕</span>
-              </button>
               <ScanReviewBubble
                 entries={scan.heldEntries.map((entry) => ({
                   id: entry.id,
