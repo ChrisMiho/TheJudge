@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/scanner-caution-always-visible` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-scanner-caution-always-visible`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-154238/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: spec-forming half continues under `/graph-kickoff`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 11` | branch `thejudge-auto/scanner-caution-always-visible` cut from origin/main, pushed from `.worktrees/kickoff-scanner-caution-always-visible`; lock taken pid 53602; canary denied both tiers (universal rm -rf, graph nohup); Profile loaded (env sentinel); launch checkout untouched (on main) | 2026-10-04 |
 | 2 | shape | sonnet | ok | `0 → 10` | package `PRD/work/scanner-caution-always-visible/` created (IDEA.md, README.md, STATUS.ideation, intake/request.md, intake/observations.md); board row added under `## ideation`; 2 receipt matches noted (trade-balancer-first-card-ux-2026-09-10, ui-look-translation-2026-10-02); intake copied→committed→staged-copy-deleted; commit a50d541 | 2026-10-04 |
+| 3 | define | opus | ok | `0 → 41` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written; one stable-id proposal amending REQ-214 (caution triangle shows from scanner open) with complete 4-spot diff (functional-requirements.md Description+Acceptance, scan/README.md, user-flows.md, screen-layout.md); B1 scope fork (all surfaces vs Trade Balancer only, recommend all — shared component + no-fork rule) and B2 (count-pill default) in `## Blocker questions`; PRD/sections/ untouched; STATUS.refined; no run-halting blocker; commit 4e92284 | 2026-10-04 |
 
 ## Open gate
 
@@ -91,6 +92,44 @@ Report back concisely:
 - the intake copy → commit → delete confirmation, in that order
 - the commit SHA(s)
 - IDEA.md contents (the 3–5 sentences)
+
+### define
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-scanner-caution-always-visible
+
+You are node 3 (`define`) of an autonomous graph-kickoff run. Invoke the `thejudge-refinement` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Replace the approval pause with the conservative assumption ladder in PRD/instructions/preparation-contract.md, record every material assumption and its evidence in DESIGN-BRIEF.md, and continue autonomously. Return your result to the graph driver.
+
+Work slug: scanner-caution-always-visible
+Run ID: graph-20261004-154238
+
+Do ALL work in the kickoff worktree named in the Working directory line above — never in the launch checkout.
+
+Context: the package has IDEA.md and intake/ (request.md is the owner request and the authority for this run; observations.md is referenced ui-pass-2 feedback whose items 1-4 are a DIFFERENT, already-built package — out of scope here). The request: in the Trade Balancer card scanner, the experimental caution triangle appears only after a card has been scanned, so players whose scans fail never see the warning; the desired outcome is the triangle sitting in the scanner's top-right from the moment the scanner opens (as in the direction-1 mockup), with the warning text appearing only when the player taps the triangle.
+
+Grounding evidence already verified in the code (weigh it at this gate; it is evidence, not settled truth) — verify each yourself before relying on it:
+- The caution triangle and its tap-to-open warning panel live inside apps/frontend/src/components/ScanReviewBubble.tsx. That component does if (entries.length === 0) return null near its top, so the entire top-right block (caution triangle + scanned-count pill) is unmounted until at least one card has been held from a successful scan. That null-return is the mechanism behind the bug.
+- ScanReviewBubble is a SHARED component rendered on three scanner surfaces: the Trade Balancer (apps/frontend/src/components/trade/TradeSide.tsx ~line 270), the Zone card picker (ZoneCardPicker.tsx ~289), and Quick Lookup (portal/quick-lookup/QuickLookupApp.tsx ~575). The request names the Trade Balancer specifically. Whether the always-visible caution applies to only the Trade Balancer scanner or to every surface that renders this shared component is a genuine product fork — surface it, do not self-resolve it.
+- The caution panel copy and the direction-1 mockup are referenced in ScanReviewBubble.tsx comments as card-scan.html. card-scan.html and anything under docs/design are repo artifacts you may read directly (they are not intake citations).
+- Implementation-sequencing note for the brief (NOT product truth): open PR #254 (the ui-pass-2 package) also edits ScanReviewBubble.tsx and moved the Exit ✕ control per REQ-214. The eventual build should land after #254 merges to avoid a conflict. Record this as a sequencing consideration only.
+
+Hard rules:
+- Intake is evidence, never authority. Every product decision the request or intake raises is decided here, the same as any other source.
+- Never open, read, or fetch any document the intake merely cites. Record only its path as a citation. (Repo source files and docs/design mockups are not citations — read them freely.)
+- Refinement PROPOSES product truth; it never edits PRD/sections/. When the change needs product-truth edits, write them as the exact diff in PRD/work/scanner-caution-always-visible/GATE-QUESTIONS.md — one `## <STABLE-ID>` block per stable id, each opening with the gate-question plain-language block (What this decides / In plain terms / What happens if you say no) from PRD/instructions/plain-language-standard.md, then that id's complete proposed diff (never a summary), then `- Verdict: <accept | edit | reject>` and `- Reason:`. New stable ids are named and reserved in the proposal, not written live. Put any genuine decision fork (such as the shared-component scope above) in a `## Blocker questions` section or as its own stable-id slot, to the same plain-language standard.
+- Read the real current-state feature spec(s) under PRD/sections/ before proposing any edit, so each proposed diff is against live truth. Find the spec that governs the Trade Balancer card scanner and its caution/experimental warning and its scan-review bubble yourself (grep PRD/sections/ for the scanner, the caution/experimental warning, REQ-214, and ScanReviewBubble); verify the right files and lines before writing any diff.
+- Produce DESIGN-BRIEF.md recording the design direction and every material assumption with its evidence. Set STATUS.refining while in flux and STATUS.refined when the brief is complete.
+- If genuine uncertainty meets the three-condition decision-blocker test in preparation-contract.md, preserve the furthest valid artifacts and return the unresolved decision to the graph driver instead of guessing — do not self-resolve a genuine product fork.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- the DESIGN-BRIEF.md design direction (a few sentences) and the key assumptions recorded
+- whether GATE-QUESTIONS.md was written, and if so every `## <STABLE-ID>` block it contains (id + one-line what-it-decides) and any `## Blocker questions`
+- the STATUS marker now set
+- any genuine decision blocker returned (or none)
+- the commit SHA(s) for the branch
 
 ## Instruction ledger
 
