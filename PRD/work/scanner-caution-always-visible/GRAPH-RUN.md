@@ -67,7 +67,7 @@ Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-
 
 You are node 2 (`shape`) of an autonomous graph-kickoff run. Invoke the `thejudge-kickoff` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Return your result to the graph driver.
 
-Request (verbatim): "In the Trade Balancer card scanner, the \"experimental\" caution triangle only shows after a card has been scanned, so people whose scans fail never get warned. Make it always visible in the scanner's top-right from the moment it opens (like the direction-1 mockup), with the warning popping up only when the triangle is tapped."
+Request (verbatim; inner quotes rendered curly so the span records as one instruction): "In the Trade Balancer card scanner, the “experimental” caution triangle only shows after a card has been scanned, so people whose scans fail never get warned. Make it always visible in the scanner's top-right from the moment it opens (like the direction-1 mockup), with the warning popping up only when the triangle is tapped."
 
 Supplied slug (use verbatim, do NOT propose your own): scanner-caution-always-visible
 Run ID: graph-20261004-154238
@@ -96,4 +96,4 @@ Report back concisely:
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
-| (none) | — | — | — |
+| "In the Trade Balancer card scanner, the “experimental” caution triangle only shows after a card has been scanned, so people whose scans fail never get warned. Make it always visible in the scanner's top-right from the moment it opens (like the direction-1 mockup), with the warning popping up only when the triangle is tapped." | answered-once | shape | — |
