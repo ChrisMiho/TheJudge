@@ -112,6 +112,40 @@ describe("Frontend - Trade", () => {
       vi.clearAllMocks();
     });
 
+    it("relabels the Add-card chip to \"Close search\" while the card search is open, so the toggle reads as the way to close it again", async () => {
+      const user = userEvent.setup();
+      renderSide();
+
+      // Closed: the chip invites adding a card.
+      expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Close search" })).not.toBeInTheDocument();
+
+      await openSideSearch(user);
+
+      // Open: the same toggle now reads as the close action — the hint that
+      // tapping it again closes the search that is covering the side.
+      expect(screen.getByRole("button", { name: "Close search" })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Add card" })).not.toBeInTheDocument();
+
+      await user.click(screen.getByRole("button", { name: "Close search" }));
+
+      expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
+      expect(screen.queryByLabelText("Side A card search")).not.toBeInTheDocument();
+    });
+
+    it("closes the card search on Escape, the same as tapping the Close-search chip (parity with Ask a Question)", async () => {
+      const user = userEvent.setup();
+      renderSide();
+
+      await openSideSearch(user);
+      expect(screen.getByLabelText("Side A card search")).toBeInTheDocument();
+
+      await user.type(screen.getByLabelText("Side A card search"), "{Escape}");
+
+      expect(screen.queryByLabelText("Side A card search")).not.toBeInTheDocument();
+      expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
+    });
+
     it("C1: tapping a suggestion shows a loading state, then the printing picker in place of the suggestion list", async () => {
       let resolveFetch: (value: Response) => void = () => undefined;
       vi.stubGlobal(

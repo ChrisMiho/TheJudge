@@ -201,18 +201,22 @@ export function TradeSide({
         )}
         {!isScanOpen && (
           <div className="attach">
+            {/* The chip toggles this side's card search. While it is open, the
+                label/glyph (and its screen-reader name) flip to "✕ Close search"
+                — the only hint that tapping it again closes the search. Mirrors
+                Ask a Question's own Add-card chip (QuickLookupApp). */}
             <button
               type="button"
-              aria-label="Add card"
+              aria-label={isSearchOpen ? "Close search" : "Add card"}
               aria-expanded={isSearchOpen}
               disabled={isInputDisabled}
               onClick={() => setIsSearchOpen((open) => !open)}
               className="icon-chip"
             >
               <span className="glyph" aria-hidden="true">
-                ＋
+                {isSearchOpen ? "✕" : "＋"}
               </span>
-              Add card
+              {isSearchOpen ? "Close search" : "Add card"}
             </button>
             <button
               type="button"
@@ -292,6 +296,11 @@ export function TradeSide({
                 value={query}
                 disabled={isInputDisabled}
                 onChange={(event) => setQuery(event.target.value)}
+                // Escape closes the search, the same as the Close-search chip —
+                // parity with Ask a Question's own card search (QuickLookupApp).
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") setIsSearchOpen(false);
+                }}
                 className="field"
                 placeholder={
                   isMetadataLoading
