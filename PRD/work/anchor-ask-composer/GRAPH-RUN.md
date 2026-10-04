@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/anchor-ask-composer` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261003-205515/`
-- Current node: `define` (attempt 3 — gate-qc FAIL loop 2 of 3)
+- Current node: `gate-qc` (attempt 3 — re-grade after define attempt 3)
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | failed | `0 → 17` | FAIL — 4 findings (wrong fit variant: brief/REQ-218 name `page-content-wide-fit`, Ask screens use `narrow` → `narrow-fit`, width must not change; In-depth per-page variant unspecified vs DEC-145 content-sized Game/Zones/Cards; broken diff wording in quick-lookup README; screen-layout Notes cell contradicts new cells); STATUS.refining; committed `cb8db5c`; loops to define attempt 2 | 2026-10-03 |
 | 3 | define | opus | ok | `0 → 32` | attempt 2 — all 4 gate-qc findings fixed (`narrow-fit` + width-unchanged criterion; frame only at In-depth Enrichment station; reworded README diff; screen-layout Notes reconciled); same 4 ids (REQ-218 new, REQ-110/129/206 amend), no new ids; STATUS.refined; committed `4334ae1`; no blocker | 2026-10-03 |
 | 4 | gate-qc | sonnet | failed | `0 → 20` | attempt 2 — prior 4 findings confirmed resolved; 1 new finding: `.page-content-narrow-fit` has a desktop override (`index.css:4244`, `width: min(31.5rem,92vw)` for the scanner) that would narrow the Ask column 36rem→31.5rem at ≥720px, contradicting the brief's width-unchanged intent; fix = keep Ask at 36rem (scope scanner override / distinct fit class) + add a 1440px width criterion; STATUS.refining; committed `045194e`; loops to define attempt 3 | 2026-10-03 |
+| 3 | define | opus | ok | `0 → 32` | attempt 3 — width-override finding fixed: REQ-218 now requires re-scoping the global `narrow-fit` 31.5rem override to the scanner host (`:has(.scan)` / modifier) so Ask inherits the 36rem cap and the scanner stays 31.5rem; added a measured 1440px width criterion; brief propagated; same 4 ids, no new ids, no `-` anchors touched; STATUS.refined; committed `277aaab`; no blocker | 2026-10-03 |
 
 ## Open gate
 
@@ -219,6 +220,29 @@ Report back:
 - The stable ids GATE-QUESTIONS.md now proposes
 - The STATUS marker set and the commit hash
 - Any genuine decision blocker (expected: none)
+
+### gate-qc (attempt 3)
+
+graph is controlling
+
+You are node 4 (`gate-qc`), attempt 3, of an autonomous graph-kickoff run. define attempt 3 fixed the single prior finding (the `narrow-fit` desktop width override); invoke the `thejudge-quality-check` skill (Skill tool, skill name `thejudge-quality-check`) and re-grade. Do not improvise around it.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer
+
+Package: PRD/work/anchor-ask-composer/ (branch thejudge-auto/anchor-ask-composer in this worktree).
+
+Validate PRD/work/anchor-ask-composer/DESIGN-BRIEF.md against PRD alignment and agent-readiness, producing a PASS or FAIL report. Confirm the width-override finding is resolved — REQ-218 keeps the Ask column at 36rem / 92vw by re-scoping the scanner's 31.5rem override to the scanner host, with a measured 1440px criterion — and re-check the whole brief and GATE-QUESTIONS.md (REQ-218 new, REQ-110/129/206 amended) for any remaining PRD-alignment or agent-readiness gap, including that every proposed diff's `-` anchors still match current PRD/sections text. The amendments are NOT applied to PRD/sections and must not be. Do NOT write a GAMEPLAN or slice docs.
+
+Rules:
+- On FAIL, set STATUS.refining and give the complete findings list.
+- On PASS, leave STATUS.refined.
+- Do NOT edit PRD/sections/. Commit any report artifact on this branch with explicit paths only (never `git add -A` / `git add .` / `git add --all`). Do not push main, do not force-push, do not touch the launch checkout, do not edit any `thejudge-*` skill.
+
+Report back:
+- The verdict: PASS or FAIL
+- The complete findings list (or `none`)
+- The STATUS marker now set
+- The commit hash if you committed a report artifact
 
 ## Instruction ledger
 
