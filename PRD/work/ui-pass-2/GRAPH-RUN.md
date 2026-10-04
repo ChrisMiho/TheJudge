@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/`
-- Current node: `build` ok (PR #254 open; criteria hook-unearned, known gap) → `review` (build half)
+- Current node: `review` APPROVE → `close` (build half)
 - Next action: `/graph-implement PRD/work/ui-pass-2/`
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 4′ | gate-qc (re-grade) | sonnet | ok | `0 → 6` | PASS, no findings; brief unchanged from the spec-forming gate-qc (REQ-215 accepted as proposed, items 2–4 no new/amended ID); named surfaces verified present (`TradePile.tsx`, direction-1 `trade-balancer.html` mockup, `shell.css` `.confirm-panel` 687–697); non-goals explicit; Preparation gate PASS retained (2 non-blocking map-out notes: item 3 → 600px per REQ-213; brief line-slip near `shell.css:892`); STATUS.refined unchanged | 2026-10-04 |
 | 5 | plan | sonnet | ok | `0 → 11` | `GAMEPLAN.md` + 4 slice docs (A pile-art / B search-pill / C history-delete / D confirm-padding), no inter-slice deps; 4 `slice-*.criteria.json` (8/7/7/7, all `false`; manual visual checks carry viewports 1440×900 + 390×844, each browser slice a cleanup criterion); slice A records REQ-215 PRD truth applied by intent at build; `STATUS.refined` → `STATUS.active`; README slice table added; board row → `## active` | 2026-10-04 |
 | 6 | build | sonnet | ok (work; criteria hook-unearned) | `0 → 75` | All 4 slices built + committed on `thejudge-auto/ui-pass-2-work` (A `7e067c0` TradePile.tsx + functional-requirements.md REQ-215 edit; B `8ac7334` flow.css; C `a3fc132` index.css; D `9ea3925` shell.css) + `slice-*.evidence.md`; code PR #254 open (base `main`): https://github.com/ChrisMiho/TheJudge/pull/254; full frontend suite 1498 pass, typecheck + eslint clean, `quality:check` exit 0; verified live desktop 1440×900 + phone 390×844 (captures gitignored). CAVEAT: 0 hook-earned criteria — known build-half evidence-log-root gap (hook resolves criteria root to launch checkout, not the branch-only slice docs), confirmed `grep -c graph-20261004-012328 .graph-evidence.jsonl` = 0; criteria files remain `false`, NOT forged (flip guard + auto-mode classifier both correctly blocked the unbacked bulk flip); heartbeat `0 → 75` proves the hook is live; launch checkout byte-identical to the pre-build snapshot (write-scope holds). Integrity deferred to node 7 review (the real gate). | 2026-10-04 |
+| 7 | review | opus | ok (APPROVE) | `0 → 22` | No Critical/Important/Minor findings; independent re-run in the worktree: frontend suite 145 files / 1498 tests pass, `typecheck` clean, eslint clean on TradePile.tsx; diff scoped to the 4 code files + REQ-215 (ConversationHistoryDrawer.tsx + TradeSide.tsx have no diff — aria-labels/testids untouched); each slice meets its own acceptance criteria (A art redrawn + old palette removed; B Add-card search = `.q-box` pill; C delete-button chrome at 599px per REQ-213 + 44px floor; D `.confirm-panel.drawer-panel` specificity beats base `padding:0`); non-goals held; the all-`false` criteria judged as the known hook-root gap, not a defect | 2026-10-04 |
 
 ## Open gate
 
@@ -262,6 +263,36 @@ Open the code PR from this worktree: gh pr create --base main --head thejudge-au
 Boundaries: never touch the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge; stage explicit paths only (never git add -A/--all/.); never force-push; never push main; never merge into main. Commit each slice on thejudge-auto/ui-pass-2-work.
 
 Report back concisely with evidence: per slice, the files changed and the key commit SHA; which criteria are earned (and confirm none remain false); the PRD/sections REQ-215 edit made; the test/verification commands run and their result; the code PR URL; the status marker set (STATUS.ship-ready); and confirm the launch checkout was never touched.
+
+### review
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2
+
+You are node 7 (review) of an autonomous graph-implement run for the package PRD/work/ui-pass-2/. Run ID graph-20261004-012328. You are a fresh-context, no-write reviewer — you have no Write/Edit tools and must not modify anything. You did not see the build agent's work; grade only the artifacts and the diff.
+
+Copy the line Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2 unchanged into any prompt you write to a sub-dispatch.
+
+The code lives on branch thejudge-auto/ui-pass-2-work in this worktree; PR #254 targets main. The four slices:
+- A slice-a-pile-art.md — Trade Balancer tier art redrawn to the direction-1 mockup (apps/frontend/src/components/trade/TradePile.tsx), plus the REQ-215 amendment in PRD/sections/functional-requirements.md.
+- B slice-b-search-pill.md — Add-card search input given the Ask-a-Question composer pill shape (apps/frontend/src/styles/flow.css).
+- C slice-c-history-delete.md — mobile Question-History delete button chrome at the 600px breakpoint (apps/frontend/src/index.css).
+- D slice-d-confirm-padding.md — confirm-panel padding beats .drawer-panel padding:0 by specificity (apps/frontend/src/styles/shell.css).
+
+Your rubric is each slice's own ## Acceptance criteria (read it from the slice doc) and the REQ-215 intent in DESIGN-BRIEF.md / the accepted GATE-QUESTIONS.md. Grade each slice against its own stated criteria and correctness only.
+
+Context on criteria files: the slice-*.criteria.json values are all false because of a known build-half tooling gap (the evidence hook resolves its criteria root to the launch checkout, not this worktree, so it earns nothing — confirmed independently). Do NOT treat the false values as a finding; judge the substance from the diff, the slice docs' acceptance criteria, the committed slice-*.evidence.md observation logs, and your own test run.
+
+Do independently, with evidence:
+1. Read the diff for the four code files and functional-requirements.md: run git -P diff f6013f1..HEAD -- <paths> (or git -P show on each slice commit 7e067c0/8ac7334/a3fc132/9ea3925).
+2. Re-run the frontend checks yourself: npm --workspace apps/frontend run test -- --run (you may scope to the touched areas first, then the full suite), and npm --workspace apps/frontend run typecheck. Report pass/fail counts you observe, not the build agent's claims.
+3. Confirm the REQ-215 edit in functional-requirements.md matches the accepted amendment and touches no other requirement.
+4. Confirm the non-goals hold: card-identity ring stays each card's own edge, the theme owns only the glow, no behaviour/pricing/backend change, aria-labels and testids unchanged.
+
+Severity rule (binding): a preference, a style note, or any improvement outside a slice's stated acceptance criteria is NEVER Critical or Important and does not loop the run back to build. Only a correctness gap or an unmet stated criterion can be Critical/Important.
+
+Report back concisely: an overall verdict (APPROVE, or CHANGES with findings), and per finding its severity (Critical/Important/Minor), the file:line, and the exact failure. If APPROVE, state the test counts you observed and that each slice meets its acceptance criteria. Do not commit, push, or modify anything.
 
 ## Instruction ledger
 
