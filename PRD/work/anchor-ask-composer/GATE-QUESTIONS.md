@@ -125,7 +125,7 @@ and there is no stated rule that the box stays above the mobile keyboard.
 +  `screen-layout.md`'s five In-Depth rows. (DEC-145 via shared chrome, REQ-218, NFR-001)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -213,7 +213,7 @@ the controls as the box grows.
 +  - the composer is pinned at the foot of the `100dvh` anchored Ask-screen frame and grows upward in place above its stable control row; its growth must not clip UI below the field or force page scroll from growth alone (REQ-110, REQ-218)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -294,7 +294,7 @@ could push the pill out — the exact defect this package fixes.
 +  bounded. (REQ-129, REQ-141, REQ-167, REQ-206, REQ-218, `screen-layout.md`)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -371,7 +371,7 @@ box expands rather than reading as the box calmly growing upward in place.
 +  REQ-110, REQ-121, REQ-206, REQ-218)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
