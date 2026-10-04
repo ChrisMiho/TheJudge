@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/`
-- Current node: `gate-review` ok → re-entering at `gate-qc` (build half)
+- Current node: `gate-qc` re-grade PASS → `plan` (build half)
 - Next action: `/graph-implement PRD/work/ui-pass-2/`
 
 ## Node ledger
@@ -18,6 +18,7 @@
 | 3 | define | opus | ok | `0 → 139` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (one block — REQ-215 amendment) written; all 4 findings reproduced live (dev server :5273, mockup :5399, 6 before-screenshots in `.playwright-mcp/`); items 2–4 shaped as cosmetic fixes against existing REQ-206/118/208/NFR-001, no new/amended ID; STATUS.refined; commit `900a6eff` on `thejudge-auto/ui-pass-2` | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `0 → 8` | PASS, no blocking findings; DESIGN-BRIEF aligned with current PRD truth and agent-ready; one non-blocking map-out note (item 3 → 600px per REQ-213; brief line-number slip near `shell.css:892`); STATUS.refined unchanged, no commit | 2026-10-04 |
 | — | gate-review | sonnet | ok | `0 → 14` | REQ-215 `accept` applied (GATE-QUESTIONS.md unchanged — accept leaves the proposed diff as written; `PRD/sections/` untouched); `## Gate verdicts` row added; `STATUS.owner-action` → `STATUS.refined`; README `status: refined`; brief reconciliation: none (accept, no contradicting passage) | 2026-10-04 |
+| 4′ | gate-qc (re-grade) | sonnet | ok | `0 → 6` | PASS, no findings; brief unchanged from the spec-forming gate-qc (REQ-215 accepted as proposed, items 2–4 no new/amended ID); named surfaces verified present (`TradePile.tsx`, direction-1 `trade-balancer.html` mockup, `shell.css` `.confirm-panel` 687–697); non-goals explicit; Preparation gate PASS retained (2 non-blocking map-out notes: item 3 → 600px per REQ-213; brief line-slip near `shell.css:892`); STATUS.refined unchanged | 2026-10-04 |
 
 ## Open gate
 
@@ -181,7 +182,30 @@ Every file you touch must be inside this package under the Working directory abo
 
 Do not commit, push, or open/merge any PR — the driver commits between nodes. Do not touch the `GRAPH-RUN.md` ledger header or node ledger — the driver owns those.
 
-Report back concisely, with evidence (file paths and the exact lines changed), and include a `### Brief reconciliation` list naming every edit made to `DESIGN-BRIEF.md`/README for the verdict, or stating "none — accept as proposed, no contradicting passage." Confirm the final STATUS marker is `STATUS.refined` and list the package's STATUS.* files.
+Report back concisely, with evidence (file paths and the exact lines changed), and include a `### Brief reconciliation` list naming every edit made to `DESIGN-BRIEF.md`/README for the verdict, or stating that none were needed for an accept with no contradicting passage. Confirm the final STATUS marker is `STATUS.refined` and list the package's STATUS.* files.
+
+### gate-qc (re-grade)
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2
+
+You are node 4 (gate-qc), re-grading after gate resolution, in an autonomous graph-implement run for the package PRD/work/ui-pass-2/. Run ID graph-20261004-012328. Invoke the thejudge-quality-check skill (Skill tool) and follow its graph is controlling mode exactly. Do not pause for user approval; return a PASS or FAIL verdict to the graph driver.
+
+Copy the line Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2 unchanged into every prompt you write to any subagent of your own.
+
+Validate PRD/work/ui-pass-2/DESIGN-BRIEF.md for PRD alignment and agent-readiness. Do NOT write a GAMEPLAN or slice docs — grade the brief and emit a PASS/FAIL report only.
+
+Context: the owner answered the define gate and merged the docs PR. The sole product-truth change, REQ-215 (trade gold-pile art follows the direction-1 mockup), was accepted as proposed, so the brief is unchanged from the version that already passed gate-qc in the spec-forming half. Items 2-4 are cosmetic alignment/CSS fixes against existing requirements (REQ-206, REQ-118, REQ-208, NFR-001) and propose no new or amended stable ID.
+
+Judge whether the brief aligns with current PRD truth and is ready to be sliced by an implementation agent — clear surfaces/classes, testable outcomes, explicit non-goals (the card-identity ring and theme-ownership rules held as non-goals). Grade only the brief; do not expand scope.
+
+On FAIL: set STATUS.refining and report the complete findings list so refinement can address them.
+On PASS: leave STATUS.refined and report PASS.
+
+Do not commit or push — the driver commits between nodes. Never touch the launch checkout; never force-push; never git add all.
+
+Report back concisely with evidence: the PASS/FAIL verdict, the exact findings (none on PASS, or the complete list on FAIL), and the status marker in effect.
 
 ## Instruction ledger
 
