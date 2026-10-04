@@ -1,0 +1,14 @@
+{
+  "slug": "green-mobile-branch-declutter",
+  "slice": "A",
+  "criteria": [
+    {"id": "A1", "statement": "Fresh before screenshots exist for Ask a Question, In-depth and Menu tray at 390x844 (Green), captured before the code change", "value": false, "evidence": {"manual": true}},
+    {"id": "A2", "statement": "The Green phone path covers every width < 768px including 520-767, asserted by a unit test at 390 and a 520-767 width", "value": false, "evidence": {"command": "test.*AmbientScene", "paths": ["apps/frontend/src/components/AmbientScene.test.tsx"]}},
+    {"id": "A3", "statement": "Green at >= 768px and every non-green scene render unchanged, asserted by a unit test", "value": false, "evidence": {"command": "test.*AmbientScene", "paths": ["apps/frontend/src/components/AmbientScene.test.tsx"]}},
+    {"id": "A4", "statement": "After screenshots exist for the same three screens at 390x844 and branches/leaves do not crowd the content column while green still reads as forest ambience", "value": false, "evidence": {"manual": true}},
+    {"id": "A5", "statement": "AmbientScene unit tests pass", "value": false, "evidence": {"command": "npm run test.*AmbientScene"}},
+    {"id": "A6", "statement": "functional-requirements.md carries the REQ-207 amendment with the phone-shell cite pointing to screen-layout.md", "value": false, "evidence": {"paths": ["PRD/sections/functional-requirements.md"]}},
+    {"id": "A7", "statement": "npm run quality:check is green for touched areas", "value": false, "evidence": {"command": "npm run quality:check"}},
+    {"id": "A8", "statement": "Browser closed, owned dev server stopped, ports released; captures written to PRD/work/green-mobile-branch-declutter/.playwright-mcp/", "value": false, "evidence": {"manual": true}}
+  ]
+}

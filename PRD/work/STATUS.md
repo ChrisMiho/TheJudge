@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| green-mobile-branch-declutter | mapped: one slice (A); GAMEPLAN + criteria written |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| green-mobile-branch-declutter | define gate answered (REQ-207 accept); resume at gate-qc |
 
 ## refining
 
