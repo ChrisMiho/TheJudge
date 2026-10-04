@@ -97,7 +97,30 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
 
   function scrollToLatest(container: HTMLDivElement): void {
     const behavior: ScrollBehavior = prefersReducedMotion() ? "auto" : "smooth";
-    const top = container.scrollHeight;
+    const maxScroll = Math.max(0, container.scrollHeight - container.clientHeight);
+
+    // A long ruling is taller than the thread, so scrolling to the very bottom
+    // dropped the reader at the *end* of the answer with its opening lines — and
+    // the question that prompted it — shoved up out of view. Instead anchor the
+    // start of the newest exchange (the user's question, else the answer itself)
+    // to the top of the thread, so a long answer is read from its first line. A
+    // short exchange can't scroll that far, so `min` clamps it back to the
+    // bottom — the whole thing stays visible, no behaviour change there.
+    let top = maxScroll;
+    const anchorIndex =
+      latestAssistantIndex > 0 && messages[latestAssistantIndex - 1]?.role === "user"
+        ? latestAssistantIndex - 1
+        : latestAssistantIndex;
+    if (anchorIndex >= 0) {
+      const anchorEl = container.querySelector<HTMLElement>(
+        `[data-conversation-message-index="${anchorIndex}"]`
+      );
+      if (anchorEl) {
+        const anchorTop =
+          container.scrollTop + (anchorEl.getBoundingClientRect().top - container.getBoundingClientRect().top);
+        top = Math.min(Math.max(0, anchorTop), maxScroll);
+      }
+    }
 
     if (typeof container.scrollTo === "function") {
       container.scrollTo({ top, behavior });
@@ -106,8 +129,8 @@ export function ConversationThread({ messages, cards, onCardChipActivate }: Conv
     }
 
     readerSnapshotRef.current = {
-      scrollTop: Math.max(0, container.scrollHeight - container.clientHeight),
-      nearBottom: true
+      scrollTop: top,
+      nearBottom: maxScroll - top <= NEAR_BOTTOM_THRESHOLD_PX
     };
   }
 
