@@ -173,6 +173,21 @@ describe("ZoneCollectionStep scan focus", () => {
     expect(screen.queryByLabelText("Battlefield search input")).not.toBeInTheDocument();
   });
 
+  it("closes the zone card search on Escape, the same as tapping the Close-search chip (parity with Ask a Question)", async () => {
+    const user = userEvent.setup();
+    mockScanCapture(false);
+    renderStep([makeZoneCard("opt", "Opt")], null, ["stack", "battlefield"]);
+
+    await user.click(screen.getByRole("button", { name: "Zone tab: Battlefield" }));
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
+    expect(screen.getByLabelText("Battlefield search input")).toBeInTheDocument();
+
+    await user.type(screen.getByLabelText("Battlefield search input"), "{Escape}");
+
+    expect(screen.queryByLabelText("Battlefield search input")).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add a card to Battlefield" })).toBeInTheDocument();
+  });
+
   it("renders the zone card list as a horizontal left-to-right strip with region scroll before scan opens (DEC-151 part 3)", () => {
     mockScanCapture(false);
     renderStep([

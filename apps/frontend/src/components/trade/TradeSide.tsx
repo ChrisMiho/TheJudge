@@ -296,6 +296,11 @@ export function TradeSide({
                 value={query}
                 disabled={isInputDisabled}
                 onChange={(event) => setQuery(event.target.value)}
+                // Escape closes the search, the same as the Close-search chip —
+                // parity with Ask a Question's own card search (QuickLookupApp).
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") setIsSearchOpen(false);
+                }}
                 className="field"
                 placeholder={
                   isMetadataLoading

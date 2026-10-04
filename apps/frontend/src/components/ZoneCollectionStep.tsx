@@ -296,6 +296,10 @@ export function ZoneCollectionStep({
   }
 
   const stackSelected = activeZone === "stack";
+  // DEC-160: the suggestion list is only visible once there are 3+ query chars that are not the
+  // already-staged card's canonical name. Escape dismisses the list first (below), the search second.
+  const suggestionsVisible =
+    searchInput.trim().length >= 3 && keyboard.isOpen && searchInput !== selectedCard?.name;
 
   return (
     <PageShell variant="narrow">
@@ -404,11 +408,21 @@ export function ZoneCollectionStep({
               isSearchOpen={isSearchOpen}
               searchInput={searchInput}
               onSearchInputChange={setSearchInput}
-              onSearchKeyDown={keyboard.handleKeyDown}
+              // Two-stage Escape: while the suggestion list is open it dismisses the list (the
+              // autocomplete's own behaviour, keeping the field so you can keep typing); with the
+              // list closed it closes the whole search, the same as the Close-search chip — parity
+              // with Ask a Question's card search (QuickLookupApp).
+              onSearchKeyDown={(event) => {
+                if (event.key === "Escape" && !suggestionsVisible) {
+                  setIsSearchOpen(false);
+                  return;
+                }
+                keyboard.handleKeyDown(event);
+              }}
               // Once the field holds the selected card's exact canonical name (DEC-160), that
               // name is not a query — reopening the list over the staged preview would cover
               // the very card it describes. Typing anything else brings suggestions back.
-              showSuggestions={searchInput.trim().length >= 3 && keyboard.isOpen && searchInput !== selectedCard?.name}
+              showSuggestions={suggestionsVisible}
               isMetadataLoading={isMetadataLoading}
               suggestions={suggestions}
               noMatchCopy={NO_MATCH_COPY}
