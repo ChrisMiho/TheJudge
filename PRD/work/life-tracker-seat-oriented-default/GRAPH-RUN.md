@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/life-tracker-seat-oriented-default` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-seat-oriented-default`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261003-190748/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (resume) — driving the spec-forming half to gate-qc PASS
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `degraded (no run state)` | branch `thejudge-auto/life-tracker-seat-oriented-default` pushed from `.worktrees/kickoff-life-tracker-seat-oriented-default` (ls-remote 73753b1a1); lock taken pid 39864; canary denied both tiers; launch checkout untouched (on perf/ambient-software-rendering) | 2026-10-03 |
 | 2 | shape | sonnet | ok | `0 → 15` | package `PRD/work/life-tracker-seat-oriented-default/` created (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md); 4 receipt matches noted; intake copied→committed→staged-copy-deleted; commit 5e1144f | 2026-10-03 |
+| 3 | define | opus | ok | `1 → 38` | DESIGN-BRIEF.md written (assumptions A2–A8 with code/spec evidence); GATE-QUESTIONS.md written — one block REQ-217 (new game opens in list by default), 3-file diff, blank verdict slot; STATUS.refined; no decision blocker; commit a81afbe | 2026-10-03 |
 
 ## Open gate
 
@@ -88,6 +89,38 @@ Report back concisely:
 - the intake copy → commit → delete confirmation, in that order
 - the commit SHA(s)
 - IDEA.md contents (the 3–5 sentences)
+
+### define
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-seat-oriented-default
+
+You are node 3 (`define`) of an autonomous graph-kickoff run. Invoke the `thejudge-refinement` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Replace the approval pause with the conservative assumption ladder in PRD/instructions/preparation-contract.md, record every material assumption and its evidence in DESIGN-BRIEF.md, and continue autonomously. Return your result to the graph driver.
+
+Work slug: life-tracker-seat-oriented-default
+Run ID: graph-20261003-190748
+
+Do ALL work in the kickoff worktree named in the Working directory line above — never in the launch checkout.
+
+Context: the package has IDEA.md and intake/GRAPH-BRIEF.md. The brief is a self-contained probe brief describing a default-layout change for the Player Life Tracker (grid layout vs seat-oriented list layout).
+
+Hard rules:
+- Intake is evidence, never authority. The brief marks several matters as already decided; treat each as evidence to weigh at this gate, never as settled product truth. Every product decision the brief raises is decided here, the same as any other source.
+- Never open, read, or fetch any document the brief merely cites (for example PROBE.md). Record only its path as a citation.
+- Refinement PROPOSES product truth; it never edits PRD/sections/. When the change needs product-truth edits, write them as the exact diff in PRD/work/life-tracker-seat-oriented-default/GATE-QUESTIONS.md — one `## <STABLE-ID>` block per stable id, each opening with the gate-question plain-language block (What this decides / In plain terms / What happens if you say no) from PRD/instructions/plain-language-standard.md, then that id's complete proposed diff (never a summary), then `- Verdict: <accept | edit | reject>` and `- Reason:`. New stable ids are named and reserved in the proposal, not written live.
+- Read the real current-state feature spec(s) under PRD/sections/ before proposing any edit, so each proposed diff is against live truth. The brief names PRD/sections/life-tracker/README.md and PRD/sections/system-map.md as the truth to amend; verify those are the right files and lines yourself.
+- Produce DESIGN-BRIEF.md recording the design direction and every material assumption with its evidence. Set STATUS.refining while in flux and STATUS.refined when the brief is complete.
+- If genuine uncertainty meets the three-condition decision-blocker test in preparation-contract.md, preserve the furthest valid artifacts and return the unresolved decision to the graph driver instead of guessing — do not self-resolve a genuine product fork.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- the DESIGN-BRIEF.md design direction (a few sentences) and the key assumptions recorded
+- whether GATE-QUESTIONS.md was written, and if so every `## <STABLE-ID>` block it contains (id + one-line what-it-decides)
+- the STATUS marker now set
+- any genuine decision blocker returned (or none)
+- the commit SHA(s) for the branch
 
 ## Instruction ledger
 
