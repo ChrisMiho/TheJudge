@@ -34,7 +34,6 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | anchor-ask-composer | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-218 new + REQ-110/129/206 amend) and merge to build |
-| ui-pass-2 | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-215 amend: pile art follows the mockup) and merge to build; items 2-4 need no product-truth change |
 
 
 ## deferred

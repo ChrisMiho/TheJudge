@@ -169,7 +169,16 @@
 .search-pop { display: none; }
 .search-pop.open { display: grid; gap: 0.35rem; }
 .search-row { position: relative; }
-.search-row .field { padding-left: 2.2rem; }
+.search-row .field {
+  padding-left: 2.2rem; padding-right: 1.05rem; border-radius: 1.6rem;
+  border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 78%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 6%, transparent), 0 8px 24px -16px color-mix(in srgb, var(--accent) 80%, transparent);
+  transition: border-color 150ms ease;
+}
+.search-row .field:focus {
+  border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 6%, transparent), 0 8px 24px -16px color-mix(in srgb, var(--accent) 80%, transparent);
+}
 .search-row .glyph { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--accent-soft); }
 .search-results { display: grid; gap: 0.2rem; max-height: 156px; overflow-y: auto; padding-right: 2px; }
 .search-results button {

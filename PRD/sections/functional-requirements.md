@@ -5521,7 +5521,15 @@
 - Description: Trade Balancer shows the balance as two piles of gold that grow with each side's value and a verdict line in plain words, adds a New trade action that asks first, and lets the players rename a side. Totals arithmetic, pricing, the price route and the ephemeral posture are unchanged (REQ-064, REQ-065).
 - Acceptance Criteria:
   - every entry shows its card image (a tap opens the card detail); entries keep add order; changing a printing or finish edits the row in place; the foil toggle on each trade row stays; adding a card whose printing and finish match a row already on that side raises that row's quantity by one instead of adding a second row (the row keeps its place in add order, and a scanner commit merges the same way), so identical copies read as one row with its quantity
-  - two piles of gold sit on a glass panel (REQ-207); each pile has five relative tiers, drawn in flat gold/amber with a bronze outline and one purple gem on tiers 4-5
+  - two piles of gold sit on a glass panel (REQ-207); each pile has five relative tiers, drawn in flat gold/amber with a bronze outline and one purple gem on tiers 4-5.
+    The tier artwork follows the direction-1 mockup's own drawing
+    (`docs/design/ui-reimagining/direction-1/trade-balancer.html`): coins are stacked
+    cylinders with a rim edge (not plain discs), mounds are rounded (not sharp triangles),
+    the gem is a two-tone faceted cut, and tier 5 crowns the hoard with a goblet — in the
+    mockup's gold/bronze/gem palette, rather than a re-drawn approximation. The fixed
+    pile materials still live in `components/trade/TradePile.tsx` (REQ-216's named
+    exemption); the tiers, the relative-share logic, the glow/dim cue and the
+    drop-in / lift-fade motion are unchanged
   - tiers are relative: the richer side (or either, on a tie) is tier 5; the lighter side's tier is its share of the richer: 95%+ -> 5, 75%+ -> 4, 50%+ -> 3, 25%+ -> 2, under -> 1; the richer pile glows and the lighter dims a step; a tier-up drops in from above with a slight overshoot, a tier-down lifts and fades, nothing loops idle, and the piles update live; empty state (both sides empty): a bare ground line and "Add cards to weigh the trade"
   - the verdict line under the piles, by the smaller side's share of the larger: 95%+ "Fair trade" - 85-95% "Slightly favors <side>" - 60-85% "Leans toward <side>" - under 60% "Lopsided - <side> by NN%"; "Even" when the totals are equal to the cent; the plain dollar difference sits beneath ("Side A +$1.85")
   - a **New trade** action sits beside the title; with cards on either side it opens the shared confirm sheet (REQ-208) - "Start a new trade?", how many cards and how much value it clears, side names kept; **Keep this trade** / **Clear both sides**; with both sides empty it does nothing
@@ -5545,6 +5553,12 @@
   - built by slice G: `apps/frontend/src/components/trade/TradeBalancer.tsx`, `TradeSide.tsx` (rename), `TradePile.tsx` (the five-tier SVG piles), `PrintingPicker.tsx` (shared-sheet rehost, Nonfoil/Foil pills), `apps/frontend/src/lib/trade/pricing.ts` (`pileTier`, `tradeVerdict`, `formatTradeVerdict`, `formatTradeDifference`, `normalizeSideName`), `apps/frontend/src/components/StagedStepHeader.tsx` (new optional `rightSlot` prop, additive and backward compatible)
   - built by `ui-look-translation` (2026-10-02): the mockup's foil sheen on a foil entry row (`index.css`, `var(--foil-sheen)`); the Foil toggle/label is unchanged
   - amended by `ui-look-translation` (2026-10-02): a repeat add of the same printing and finish merges into one row's quantity, matching the mockup (the first build's owner question 4); totals are unchanged
+  - amended by the `ui-pass-2` polish pass (2026-10-04): the tier artwork follows the
+    direction-1 mockup's drawing (rimmed coin stacks, rounded mounds, two-tone faceted
+    gem, goblet), closing the pile-art drift the first look-translation build left out
+    of scope (its TradePile note recorded the SVG drawing as not the gap it was fixing);
+    concept, tiers, transitions, the REQ-216 palette-in-code exemption and behaviour are
+    unchanged
 
 ### REQ-216
 - Title: One visual system, inherited by every screen
