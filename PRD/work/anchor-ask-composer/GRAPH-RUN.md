@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/anchor-ask-composer` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261003-205515/`
-- Current node: `gate-qc` (attempt 3 — re-grade after define attempt 3)
-- Next action: `/graph-kickoff` (spec-forming half in progress)
+- Current node: `owner-action` (parked at gate-qc PASS — spec-forming half complete)
+- Next action: owner answers `GATE-QUESTIONS.md` verdict slots and merges the docs PR; `graph-implement` then builds
 
 ## Node ledger
 
@@ -20,10 +20,18 @@
 | 3 | define | opus | ok | `0 → 32` | attempt 2 — all 4 gate-qc findings fixed (`narrow-fit` + width-unchanged criterion; frame only at In-depth Enrichment station; reworded README diff; screen-layout Notes reconciled); same 4 ids (REQ-218 new, REQ-110/129/206 amend), no new ids; STATUS.refined; committed `4334ae1`; no blocker | 2026-10-03 |
 | 4 | gate-qc | sonnet | failed | `0 → 20` | attempt 2 — prior 4 findings confirmed resolved; 1 new finding: `.page-content-narrow-fit` has a desktop override (`index.css:4244`, `width: min(31.5rem,92vw)` for the scanner) that would narrow the Ask column 36rem→31.5rem at ≥720px, contradicting the brief's width-unchanged intent; fix = keep Ask at 36rem (scope scanner override / distinct fit class) + add a 1440px width criterion; STATUS.refining; committed `045194e`; loops to define attempt 3 | 2026-10-03 |
 | 3 | define | opus | ok | `0 → 32` | attempt 3 — width-override finding fixed: REQ-218 now requires re-scoping the global `narrow-fit` 31.5rem override to the scanner host (`:has(.scan)` / modifier) so Ask inherits the 36rem cap and the scanner stays 31.5rem; added a measured 1440px width criterion; brief propagated; same 4 ids, no new ids, no `-` anchors touched; STATUS.refined; committed `277aaab`; no blocker | 2026-10-03 |
+| 4 | gate-qc | sonnet | ok | `0 → 11` | attempt 3 — **PASS**, no findings; all 17 proposed diff `-` anchors verified against current PRD/sections (functional-requirements, screen-layout, quick-lookup, in-depth, user-flows); REQ-218 free (last is REQ-216; REQ-217 held by life-tracker run); nothing applied to PRD/sections; STATUS.refined; committed `d8b4458` | 2026-10-03 |
 
 ## Open gate
 
-- None
+- Parked at `owner-action` on gate-qc PASS (spec-forming half complete, 2026-10-03).
+- **What the owner does:** answer the `accept / edit / reject` verdict slots in
+  `PRD/work/anchor-ask-composer/GATE-QUESTIONS.md` (4 proposed stable IDs: REQ-218
+  new anchored Ask-screen frame, REQ-110 / REQ-129 / REQ-206 amended), then **merge
+  the docs PR into `main`**. That merge is the build signal.
+- `graph-implement` (the build half) picks the spec up from `main` in its own
+  worktree and opens the second, code PR.
+- Resume if needed: `/graph-implement PRD/work/anchor-ask-composer/`.
 
 ## Dispatch prompts
 
