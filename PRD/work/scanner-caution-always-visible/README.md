@@ -1,4 +1,4 @@
-status: ideation
+status: refined
 
 # scanner-caution-always-visible
 

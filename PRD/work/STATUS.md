@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| scanner-caution-always-visible | Caution triangle shows from scanner open, warning on tap; REQ-214 amend proposed; B1 = shared-surface scope (recommend all 3 scanners) |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| scanner-caution-always-visible | Trade Balancer scanner caution triangle always visible from open; warning on tap only |
 
 ## owner-action
 
