@@ -107,8 +107,12 @@ becomes the only way to add a card. It sits outside the core product loop
 - Built: a top-right **count pill** holds this scanning session's own list of
   recognised-but-not-yet-added cards — a scan-local holding list, not the
   destination's own card list — and expands to a viewport-capped 320px panel
-  listing each held card with a single-tap, no-confirmation **Remove** plus a
-  caution control explaining that scanning is experimental. Each entry shows the card's
+  listing each held card with a single-tap, no-confirmation **Remove**. A
+  caution control (a yellow triangle) sits in the scanner's top-right from the
+  moment the scanner opens — present before any card is held, independent of the
+  holding list, so a player whose scans never lock still sees it — with the count
+  pill alongside it once the pill appears (on the first held card), and opens a
+  one-line note that scanning is experimental only on tap. Each entry shows the card's
   image as a thumbnail; a tap on the thumbnail opens the shared card detail
   popup (the entry has no corner-detail overlay). The detail
   popup fetches its descriptive fields on demand by oracle id (REQ-175, FLOW-024)
