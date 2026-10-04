@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| green-mobile-branch-declutter | define gate answered (REQ-207 accept); resume at gate-qc |
 
 ## refining
 
@@ -34,7 +35,6 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | anchor-ask-composer | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-218 new + REQ-110/129/206 amend) and merge to build |
-| green-mobile-branch-declutter | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-207 amend, green-phone containment) and merge to build |
 
 
 ## deferred
