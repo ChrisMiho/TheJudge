@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/ui-pass-2`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-pass-2`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half continues under the graph driver)
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 9` | branch `thejudge-auto/ui-pass-2` pushed from `.worktrees/kickoff-ui-pass-2`; universal + graph canaries both denied (hook live); Profile loaded (env sentinel); launch checkout untouched | 2026-10-04 |
 | 2 | shape | sonnet | ok | `0 → 10` | package `PRD/work/ui-pass-2/` created (IDEA.md, README, STATUS.ideation); intake copied verbatim then staged copy deleted; 5 prior-run matches recorded as input; commit `37c92250` on `thejudge-auto/ui-pass-2` | 2026-10-04 |
+| 3 | define | opus | ok | `0 → 139` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (one block — REQ-215 amendment) written; all 4 findings reproduced live (dev server :5273, mockup :5399, 6 before-screenshots in `.playwright-mcp/`); items 2–4 shaped as cosmetic fixes against existing REQ-206/118/208/NFR-001, no new/amended ID; STATUS.refined; commit `900a6eff` on `thejudge-auto/ui-pass-2` | 2026-10-04 |
 
 ## Open gate
 
@@ -116,6 +117,31 @@ Required of you:
 - Set `STATUS.refining` while shaping and `STATUS.refined` on completion. Commit your artifacts on `thejudge-auto/ui-pass-2` with explicit paths only (never git add all); do not push; never touch the launch checkout; never force-push.
 
 Report back concisely with evidence: which findings you reproduced live and how, the path to `DESIGN-BRIEF.md`, whether you wrote `GATE-QUESTIONS.md` and which stable IDs it proposes (new vs amended), the screenshots captured, the status marker set, and the commit SHA on the branch.
+
+### gate-qc
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-pass-2
+
+You are node 4 (`gate-qc`) of an autonomous graph-kickoff run. Invoke the `thejudge-quality-check` skill (Skill tool) and follow its `graph is controlling` mode exactly. Do not pause for user approval; return a PASS or FAIL verdict to the graph driver.
+
+Copy the line `Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-pass-2` unchanged into every prompt you write to any subagent of your own.
+
+Validate `PRD/work/ui-pass-2/DESIGN-BRIEF.md` for PRD alignment and agent-readiness. Do NOT write a GAMEPLAN or slice docs — this node only grades the brief and emits a PASS/FAIL report.
+
+Context you may rely on:
+- The package is a four-item UI-polish pass. `DESIGN-BRIEF.md` covers all four; `GATE-QUESTIONS.md` proposes exactly one product-truth change (an amendment to REQ-215 for the trade-pile artwork). Items 2–4 are cosmetic alignment/CSS fixes against existing requirements (REQ-206, REQ-118, REQ-208, NFR-001) and propose no new or amended stable ID.
+- All four findings were reproduced live during refinement; the brief cites before-state screenshots in `PRD/work/ui-pass-2/.playwright-mcp/` (gitignored, local evidence).
+
+Judge whether the brief aligns with current PRD truth and is ready to be sliced by an implementation agent — clear surfaces/classes, testable intended outcomes, explicit non-goals (the card-identity ring and theme-ownership rules are held as non-goals). Grade only the brief against those standards; do not expand scope.
+
+On FAIL: set `STATUS.refining` and report the complete findings list so refinement can address them.
+On PASS: leave the status as refined and report PASS.
+
+Commit any status/report change on `thejudge-auto/ui-pass-2` with explicit paths only (never git add all); do not push; never touch the launch checkout; never force-push.
+
+Report back concisely with evidence: the PASS/FAIL verdict, the exact findings (none on PASS, or the complete list on FAIL), the status marker in effect, and any commit SHA you made.
 
 ## Instruction ledger
 
