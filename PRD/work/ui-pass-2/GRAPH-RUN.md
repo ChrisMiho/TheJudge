@@ -22,7 +22,7 @@
 
 - Parked at `owner-action` after gate-qc PASS (spec-forming half complete).
 - Question for the owner: answer the verdict slot in `PRD/work/ui-pass-2/GATE-QUESTIONS.md` (one block — `REQ-215` amendment: the trade gold piles follow the direction-1 mockup's art). Items 2–4 propose no product-truth change.
-- Evidence: gate-qc PASS, no findings (node 4 row above); DESIGN-BRIEF + GATE-QUESTIONS committed `900a6eff`; ledger/README/board committed and pushed on `thejudge-auto/ui-pass-2`; docs PR into `main`: <PR URL recorded below once opened>.
+- Evidence: gate-qc PASS, no findings (node 4 row above); DESIGN-BRIEF + GATE-QUESTIONS committed `900a6eff`; ledger/README/board committed and pushed on `thejudge-auto/ui-pass-2`; docs PR into `main`: https://github.com/ChrisMiho/TheJudge/pull/253.
 - Resume: the owner answers `GATE-QUESTIONS.md` and **merges the docs PR into `main`** — that merge is the build signal; `graph-implement` (the background build loop) then claims the spec and builds it.
 
 ## Dispatch prompts
