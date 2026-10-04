@@ -265,16 +265,33 @@ html {
 }
 
 .history-item-delete {
-  position: absolute;
-  right: 0.6rem;
-  bottom: 0.35rem;
   min-height: 44px;
-  padding: 0 0.4rem;
-  border: 0;
-  background: transparent;
+  min-width: 44px;
+  padding: 0 0.8rem;
+  border: 1px solid var(--surface-edge);
+  border-radius: 0.75rem;
+  background: color-mix(in srgb, var(--surface-ground) 40%, transparent);
   color: var(--text-muted);
-  font-size: 0.68rem;
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
+}
+
+.history-item-delete:hover,
+.history-item-delete:focus-visible {
+  border-color: color-mix(in srgb, #ff8fa3 55%, transparent);
+  color: #ffd1da;
+}
+
+/* Phone (REQ-213, below 600px): Delete sits in its own column beside the row,
+   so it never overlaps the answer line or the chevron. */
+@media (max-width: 599px) {
+  .history-item {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
+    gap: 0.4rem;
+  }
 }
 
 /* The column's own layout (shell.css gives it width, centring and padding):
