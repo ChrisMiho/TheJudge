@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| anchor-ask-composer | Pin the Quick + In-depth question box; grow upward in place, stage flexes |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| anchor-ask-composer | Pin the Quick + In-depth question box; grow upward in place, stage flexes; gate-qc FAIL 1 (see README Preparation gate) |
 
 ## ideation
 
