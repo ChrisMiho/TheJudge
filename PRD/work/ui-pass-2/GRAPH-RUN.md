@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/ui-pass-2`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-ui-pass-2`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half continues under the graph driver)
+- Current node: `owner-action` (parked after gate-qc PASS)
+- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR into `main`; `graph-implement` builds it
 
 ## Node ledger
 
@@ -16,10 +16,14 @@
 | 1 | preflight | haiku | ok | `0 → 9` | branch `thejudge-auto/ui-pass-2` pushed from `.worktrees/kickoff-ui-pass-2`; universal + graph canaries both denied (hook live); Profile loaded (env sentinel); launch checkout untouched | 2026-10-04 |
 | 2 | shape | sonnet | ok | `0 → 10` | package `PRD/work/ui-pass-2/` created (IDEA.md, README, STATUS.ideation); intake copied verbatim then staged copy deleted; 5 prior-run matches recorded as input; commit `37c92250` on `thejudge-auto/ui-pass-2` | 2026-10-04 |
 | 3 | define | opus | ok | `0 → 139` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` (one block — REQ-215 amendment) written; all 4 findings reproduced live (dev server :5273, mockup :5399, 6 before-screenshots in `.playwright-mcp/`); items 2–4 shaped as cosmetic fixes against existing REQ-206/118/208/NFR-001, no new/amended ID; STATUS.refined; commit `900a6eff` on `thejudge-auto/ui-pass-2` | 2026-10-04 |
+| 4 | gate-qc | sonnet | ok | `0 → 8` | PASS, no blocking findings; DESIGN-BRIEF aligned with current PRD truth and agent-ready; one non-blocking map-out note (item 3 → 600px per REQ-213; brief line-number slip near `shell.css:892`); STATUS.refined unchanged, no commit | 2026-10-04 |
 
 ## Open gate
 
-- None
+- Parked at `owner-action` after gate-qc PASS (spec-forming half complete).
+- Question for the owner: answer the verdict slot in `PRD/work/ui-pass-2/GATE-QUESTIONS.md` (one block — `REQ-215` amendment: the trade gold piles follow the direction-1 mockup's art). Items 2–4 propose no product-truth change.
+- Evidence: gate-qc PASS, no findings (node 4 row above); DESIGN-BRIEF + GATE-QUESTIONS committed `900a6eff`; ledger/README/board committed and pushed on `thejudge-auto/ui-pass-2`; docs PR into `main`: <PR URL recorded below once opened>.
+- Resume: the owner answers `GATE-QUESTIONS.md` and **merges the docs PR into `main`** — that merge is the build signal; `graph-implement` (the background build loop) then claims the spec and builds it.
 
 ## Dispatch prompts
 
