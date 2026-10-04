@@ -90,8 +90,8 @@ Step 5 — drop the trailing caution sentence (now stated at step 1); the rest o
 +| Chrome | A square ✕ exit box sits above the camera's top-right corner on every host (accessible name "Exit scan"); a caution control (a yellow triangle) sits in the top-right from the moment the scanner opens, independent of the holding list, with its caution note opening only on tap; the count pill sits beside/beneath it, non-overlapping, and appears once the first card is held; the opt-in Debug panel keeps its own bottom-left placement with a themed accent border (REQ-214); when the mockup's scanner page carries the hint line, one line of static text sits under the camera frame in the mockup's position — text, not a control, never overlapping the camera frame, the count pill or the review list (REQ-214, REQ-070) |
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner (2026-10-04): yes — the triangle always displays and brings up the pop-up warning when clicked on.
 
 ---
 
@@ -125,8 +125,8 @@ shared component or add a surface prop (against the no-fork rule), the In-Depth
 and Ask a Question scanners keep the never-warned-on-failed-scan bug, and the
 REQ-214 amendment's "every host" wording needs narrowing to the Trade Balancer.
 
-- Verdict (all surfaces / Trade Balancer only):
-- Reason:
+- Verdict (all surfaces / Trade Balancer only): all surfaces
+- Reason: Owner (2026-10-04): all scanners get this; the same scanner component should be used for all flows, so there is no reason any flow would differ. Fix the shared component once.
 
 ### B2 (secondary) — the count pill stays hidden until the first card is held
 
@@ -144,5 +144,5 @@ build widen to that.
 **Recommendation:** keep the pill as-is (caution-only change). No product-truth
 edit is needed for this default; it is recorded so you can flip it.
 
-- Verdict (keep pill as-is / show pill from open):
-- Reason:
+- Verdict (keep pill as-is / show pill from open): keep pill as-is
+- Reason: Owner (2026-10-04): leave the pill as-is (appears on first hold) — just make sure the triangle and the count pill sit next to each other whenever both are present. (Resolves the scan/README wording nit: triangle always top-right, count pill alongside it once it appears.)
