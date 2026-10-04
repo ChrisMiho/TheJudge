@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-012328/`
-- Current node: `gate-qc` re-grade PASS → `plan` (build half)
+- Current node: `plan` ok (STATUS.active, slices A–D) → `build` (build half)
 - Next action: `/graph-implement PRD/work/ui-pass-2/`
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 8` | PASS, no blocking findings; DESIGN-BRIEF aligned with current PRD truth and agent-ready; one non-blocking map-out note (item 3 → 600px per REQ-213; brief line-number slip near `shell.css:892`); STATUS.refined unchanged, no commit | 2026-10-04 |
 | — | gate-review | sonnet | ok | `0 → 14` | REQ-215 `accept` applied (GATE-QUESTIONS.md unchanged — accept leaves the proposed diff as written; `PRD/sections/` untouched); `## Gate verdicts` row added; `STATUS.owner-action` → `STATUS.refined`; README `status: refined`; brief reconciliation: none (accept, no contradicting passage) | 2026-10-04 |
 | 4′ | gate-qc (re-grade) | sonnet | ok | `0 → 6` | PASS, no findings; brief unchanged from the spec-forming gate-qc (REQ-215 accepted as proposed, items 2–4 no new/amended ID); named surfaces verified present (`TradePile.tsx`, direction-1 `trade-balancer.html` mockup, `shell.css` `.confirm-panel` 687–697); non-goals explicit; Preparation gate PASS retained (2 non-blocking map-out notes: item 3 → 600px per REQ-213; brief line-slip near `shell.css:892`); STATUS.refined unchanged | 2026-10-04 |
+| 5 | plan | sonnet | ok | `0 → 11` | `GAMEPLAN.md` + 4 slice docs (A pile-art / B search-pill / C history-delete / D confirm-padding), no inter-slice deps; 4 `slice-*.criteria.json` (8/7/7/7, all `false`; manual visual checks carry viewports 1440×900 + 390×844, each browser slice a cleanup criterion); slice A records REQ-215 PRD truth applied by intent at build; `STATUS.refined` → `STATUS.active`; README slice table added; board row → `## active` | 2026-10-04 |
 
 ## Open gate
 
@@ -206,6 +207,32 @@ On PASS: leave STATUS.refined and report PASS.
 Do not commit or push — the driver commits between nodes. Never touch the launch checkout; never force-push; never git add all.
 
 Report back concisely with evidence: the PASS/FAIL verdict, the exact findings (none on PASS, or the complete list on FAIL), and the status marker in effect.
+
+### plan
+
+graph is controlling.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2
+
+You are node 5 (plan) of an autonomous graph-implement run for the package PRD/work/ui-pass-2/. Run ID graph-20261004-012328. Invoke the thejudge-map-out skill (Skill tool) and follow its graph is controlling mode exactly. Do not pause for user approval; return your result to the graph driver.
+
+Copy the line Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-ui-pass-2 unchanged into every prompt you write to any subagent of your own.
+
+Preconditions (verify, do not self-certify): the package README's Preparation gate section records Quality-check: PASS. The brief is PRD/work/ui-pass-2/DESIGN-BRIEF.md.
+
+Produce GAMEPLAN.md and the lettered slice docs plus one slice-<letter>.criteria.json beside each, and set STATUS.active, per the skill. The package is a four-item UI-polish pass:
+1. Trade Balancer gold-pile art follows the direction-1 mockup (REQ-215 amendment, accepted). Surface: apps/frontend/src/components/trade/TradePile.tsx; compare against the direction-1 trade-balancer.html mockup.
+2. The card-search box opened by the Add-card control mirrors the shape of the Ask-a-Question composer box so it no longer looks out of place (existing REQ-206/REQ-207).
+3. The mobile Delete button on Question History rows no longer looks broken (.history-item-delete in ConversationHistoryDrawer.tsx; existing REQ-118/FLOW-018). Use the 600px breakpoint per REQ-213, not a generic phone width.
+4. The mobile delete-confirm sheet no longer clips its text (history-delete-confirm / shell.css .confirm-panel near lines 687-697; existing REQ-208/NFR-001).
+
+Two non-blocking notes from the brief, already in the Preparation gate: item 3 uses the 600px breakpoint (REQ-213); the brief's .drawer-panel padding-override line reference is near shell.css:892, not 872 — use the real location.
+
+Slice so each slice is independently implementable and reviewable, with testable acceptance criteria carrying real evidence blocks (command patterns or file paths; mark a visual-only check manual). The product-truth change for REQ-215 is applied at build together with the code — the slice that touches the trade pile must note that PRD/sections truth for REQ-215 is applied by intent there.
+
+Do not commit or push — the driver commits between nodes. Never touch the launch checkout; never force-push; never git add all; only create a worktree if the skill requires it inside .worktrees/ (it should not — you already work in this worktree in place).
+
+Report back concisely with evidence: the slice letters and one-line scope each, the criteria file paths emitted, the status marker set (STATUS.active), and confirm no commit/push was made.
 
 ## Instruction ledger
 

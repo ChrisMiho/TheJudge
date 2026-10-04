@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| ui-pass-2 | mapped 2026-10-04: slices A-D (pile art, search pill, history delete, confirm padding); building on `thejudge-auto/ui-pass-2-work` |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| ui-pass-2 | build half claimed (docs PR #253 merged); REQ-215 accept applied, gate resolved; building on `thejudge-auto/ui-pass-2-work` |
 
 ## refining
 

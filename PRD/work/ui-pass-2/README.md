@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # ui-pass-2
 
@@ -11,6 +11,17 @@ See IDEA.md. Intake: intake/observations.md.
 - Gate questions: `GATE-QUESTIONS.md` — one amendment (`REQ-215`: trade pile art
   follows the direction-1 mockup drawing). Items 2-4 need no product-truth change.
 - Before-state screenshots: `.playwright-mcp/`.
+
+## Slices
+
+| Slice | Doc | Scope | Depends on | Status |
+| --- | --- | --- | --- | --- |
+| A | `slice-a-pile-art.md` | Trade gold-pile art follows the direction-1 mockup | none | planned |
+| B | `slice-b-search-pill.md` | Add-card search box mirrors the question-box pill | none | planned |
+| C | `slice-c-history-delete.md` | Mobile Question History Delete button looks like a control | none | planned |
+| D | `slice-d-confirm-padding.md` | Mobile delete-confirm sheet no longer clips its text | none | planned |
+
+Implementation map: `GAMEPLAN.md`. Criteria: `slice-<letter>.criteria.json`. All slices parallel-ready; REQ-215 truth is applied by intent in slice A.
 
 ## Preparation gate
 

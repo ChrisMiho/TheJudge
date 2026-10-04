@@ -1,0 +1,65 @@
+{
+  "slug": "ui-pass-2",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "The search input's computed `border-radius` matches `.q-box`'s (`1.6rem` pill) and its fill is `--surface-panel` with the soft accent frame, via rules in `flow.css` (or `index.css` `.side` scope)",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/styles/flow.css",
+          "apps/frontend/src/index.css"
+        ]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "`TradeSide.tsx` markup, the `\u2315` glyph, placeholder, Escape-to-close, suggestion list and printing picker are unchanged; existing trade and search tests pass",
+      "value": false,
+      "evidence": {
+        "command": "vitest.*(trade|Trade|search)|npm --workspace apps/frontend run test"
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "Visual: desktop 1440x900, open Add card on a Trade side; the box and the Ask a Question composer read as one family (same silhouette, fill, frame); input height >= 44px",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "Visual: phone 390x844, same comparison; no horizontal overflow, glyph stays inside the pill, suggestion list still scrolls",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "Visual: the Ask a Question card search still looks correct if the shared class was changed",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "B6",
+      "statement": "Browser closed, owned dev server stopped, ports released; captures written under `PRD/work/ui-pass-2/.playwright-mcp/`",
+      "value": false,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "B7",
+      "statement": "Frontend typecheck passes",
+      "value": false,
+      "evidence": {
+        "command": "typecheck"
+      }
+    }
+  ]
+}
