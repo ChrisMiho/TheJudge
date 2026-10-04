@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| scanner-caution-always-visible | Trade Balancer scanner caution triangle always visible from open; warning on tap only |
 
 ## owner-action
 
