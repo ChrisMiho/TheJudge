@@ -21,9 +21,13 @@ then the text area scrolls inside itself — the box never pushes the page.
 
 In scope:
 
-- Put both Ask screens in the existing no-page-scroll frame
-  (`page-shell-fit` / `page-content-wide-fit`), the same pattern Trade Balancer
-  already ships.
+- Put both Ask screens in the existing no-page-scroll frame — the `page-shell-fit`
+  outer shell with the `narrow-fit` content child (`PageShell` variant
+  `narrow-fit` → `page-content page-content-narrow page-content-narrow-fit`), the
+  36rem/92vw fit sibling of the `wide-fit` child Trade Balancer ships. Same
+  pattern, not a new one; the Ask column width is unchanged (stays `narrow`,
+  36rem / 92vw). On In-depth the frame is applied only at the Enrichment station
+  (station 4 / Context), not the earlier staged steps.
 - Composer pinned at the bottom; stage/context region flexes and region-scrolls.
 - Box grows upward in place to a cap, then scrolls internally; the chip + mic|send
   pill stay on a stable bottom row; the page never scrolls from box growth.
@@ -42,8 +46,14 @@ Out of scope (non-goals, from the idea):
 
 ## Design direction (chosen)
 
-Both Ask page columns become a `100dvh` flex-column frame reusing the existing
-`page-shell-fit` + content-fit child. Inside the frame:
+Both Ask surfaces become a `100dvh` flex-column frame reusing the existing
+`page-shell-fit` shell with the `narrow-fit` content child (the 36rem/92vw fit
+variant already in `PageShell.tsx` — the column width does not change from today's
+`narrow`). `PageShell`'s `variant` prop is set per page/step, so the frame turns on
+only where the Ask composer lives: the Quick lookup page uses the `narrow-fit`
+variant, and In-depth flips only the Enrichment station (station 4 / Context) from
+`narrow` to `narrow-fit` while Game / Zones / Cards keep `narrow` and stay
+content-sized vertically (DEC-145). Inside the frame:
 
 - Header / mock banner / title+actions row / flow head: natural height.
 - Card stage region (Ask a Question's `.qq`) or the per-card context list

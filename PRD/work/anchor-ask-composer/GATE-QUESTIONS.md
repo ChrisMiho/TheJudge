@@ -45,15 +45,16 @@ and there is no stated rule that the box stays above the mobile keyboard.
 +### REQ-218
 +- Title: Anchored Ask-screen frame with pinned question box
 +- Priority: high
-+- Description: Both Ask screens — Ask a Question (route `/quick-lookup`, the pre-submit view) and In-depth details' Enrichment surface (route `/in-depth`, station 4 / Context) — lay out inside a screen-height (`100dvh`) flex-column frame that never scrolls the page. Header, mock-mode banner, title/actions row, and flow head take their natural height; the **card stage (Ask a Question) or the per-card context list (In-depth Enrichment)** flexes in the middle and shrinks/region-scrolls; the **question box is pinned at the bottom** as the anchor. The frame reuses the existing shipped no-page-scroll pattern (`page-shell-fit` / `page-content-wide-fit`), not a new one. On a phone the pinned box stays above the on-screen keyboard.
++- Description: Both Ask screens — Ask a Question (route `/quick-lookup`, the pre-submit view) and In-depth details' Enrichment surface (route `/in-depth`, station 4 / Context) — lay out inside a screen-height (`100dvh`) flex-column frame that never scrolls the page. Header, mock-mode banner, title/actions row, and flow head take their natural height; the **card stage (Ask a Question) or the per-card context list (In-depth Enrichment)** flexes in the middle and shrinks/region-scrolls; the **question box is pinned at the bottom** as the anchor. The frame reuses the existing shipped no-page-scroll pattern — the `page-shell-fit` shell with the `narrow-fit` content child (`page-content page-content-narrow page-content-narrow-fit`), the 36rem fit sibling of Trade Balancer's `wide-fit` child — not a new one. The Ask column width does not change: both screens stay the `narrow` width they ship today (36rem / 92vw); only the vertical `100dvh` fit is added. On In-depth the frame is applied **only** at the Enrichment station (station 4 / Context): because `PageShell`'s `variant` is set per staged step, Enrichment switches to the `narrow-fit` variant while the earlier Game / Zones / Cards steps keep the plain `narrow` variant. On a phone the pinned box stays above the on-screen keyboard.
 +- Acceptance Criteria:
 +  - both Ask screens render as a `100dvh` (or `100dvh`-equivalent) flex column: page/document scroll does not appear at 1440×716 or 390×740 even with a 300-character question typed
 +  - the card stage (Ask a Question) / per-card context list (In-depth Enrichment) is the flexing region (`flex: 1; min-height: 0`) and gives up room by region-scrolling, rather than lengthening the page, when the box grows or the content is tall
 +  - the question box (`ComposerPill`) is the pinned bottom anchor on both screens; its structure is unchanged (no new row, no moved control)
 +  - on a focused phone viewport the pinned box sits above the on-screen keyboard (height resolved against the visual viewport), not hidden behind it
-+  - the frame reuses the Trade Balancer `page-shell-fit` / `page-content-wide-fit` pattern; it does **not** re-add `overflow: hidden` on the inner content column at 1440px (the clipping that the Trade Balancer review bound against, because the column is narrower than the viewport)
++  - the frame reuses the Trade Balancer `page-shell-fit` no-page-scroll pattern through the `narrow-fit` content child (`page-content page-content-narrow page-content-narrow-fit`), the 36rem fit sibling of Trade Balancer's `wide-fit` child — not a new frame; it does **not** re-add `overflow: hidden` on the inner content column at 1440px (the clipping the Trade Balancer review bound against, because the column is narrower than the viewport — which the 36rem Ask column also is)
++  - the Ask column width does not change: both screens keep the `narrow` 36rem / 92vw cap they ship today; the frame adds only the vertical `100dvh` fit and must not widen the column (the `narrow-fit` child caps at 36rem, never `wide-fit`'s 56rem)
 +  - after the frame change these keep working on both screens: the phone search-fold (card stage folds to a strip while the search field is open), the suite card-detail popup, and the answered-view follow-up composer
-+  - the earlier staged In-depth steps (Game, Zones, Cards) are unchanged — they stay content-sized vertically (DEC-145); only the Enrichment composer surface is re-framed
++  - on In-depth the frame is applied only at the Enrichment station (station 4 / Context): `PageShell`'s `variant` is set per staged step, so Enrichment switches to the `narrow-fit` variant while the earlier Game, Zones, and Cards steps keep the plain `narrow` variant and stay content-sized vertically (DEC-145); only the Enrichment composer surface is re-framed
 +- Constraints:
 +  - frontend layout only; no change to `ComposerPill` structure, the card stage, either request mode, `AskAiRequest`, Zod schemas, prompt assembly, routes, or the mock default
 +  - reuse the existing fit pattern; do not invent a parallel frame (idea non-goal)
@@ -80,6 +81,13 @@ and there is no stated rule that the box stays above the mobile keyboard.
 ```
 
 ```diff
+# PRD/sections/screen-layout.md — Ask a Question — pre-submit row, Notes cell
+
+-| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-129, REQ-133, REQ-141, REQ-167, REQ-174, REQ-200, REQ-206, FLOW-024. The on-demand card-detail load state follows the `#### Card detail popup (suite-wide)` row (REQ-174 / FLOW-024): quiet, in-region, no layout jump, failing soft to the name fallback. **History (superseded by REQ-206's card stage, `ui-reimagining-build`, 2026-10-01):** earlier passes bounded a stacked per-image list — a 2026-08-07 measurement capped each image at `max-height: 25dvh` / `42dvh` (`.card-shell-column img`) after an unbounded image pushed Send Request to `top` 868px; a 2026-08-30 re-measurement found the per-image cap held for up to five stacked cards but let the page scroll past the composer with 2+ attached; a 2026-09-24 re-measurement (two cards, 1159px document against an 844px viewport, Send Request `bottom` 1067) withdrew that as unacceptable and bound the attached-card **region** instead of each image. The card stage is the `ui-reimagining-build` pass's replacement for that bounded-region list — not a further re-measurement of it |
++| Notes | DEC-107, DEC-145, DEC-146, DEC-151, DEC-153, DEC-158, DEC-160, REQ-129, REQ-133, REQ-141, REQ-167, REQ-174, REQ-200, REQ-206, REQ-218, FLOW-024. **Frame (REQ-218):** this pre-submit row is now a `100dvh` anchored frame, so DEC-145's "content-sized vertically" no longer governs it — the row fills the viewport height with the card stage flexing/region-scrolling and the composer pinned at the foot. DEC-145 stays in the id list because it still governs the staged In-Depth Game/Zones/Cards steps, not this re-framed row. The on-demand card-detail load state follows the `#### Card detail popup (suite-wide)` row (REQ-174 / FLOW-024): quiet, in-region, no layout jump, failing soft to the name fallback. **History (superseded by REQ-206's card stage, `ui-reimagining-build`, 2026-10-01):** earlier passes bounded a stacked per-image list — a 2026-08-07 measurement capped each image at `max-height: 25dvh` / `42dvh` (`.card-shell-column img`) after an unbounded image pushed Send Request to `top` 868px; a 2026-08-30 re-measurement found the per-image cap held for up to five stacked cards but let the page scroll past the composer with 2+ attached; a 2026-09-24 re-measurement (two cards, 1159px document against an 844px viewport, Send Request `bottom` 1067) withdrew that as unacceptable and bound the attached-card **region** instead of each image. The card stage is the `ui-reimagining-build` pass's replacement for that bounded-region list — not a further re-measurement of it |
+```
+
+```diff
 # PRD/sections/screen-layout.md — In-Depth — Enrichment row, Fit cell
 
 -| Fit | Composer growth must not force page scroll or clip chrome below the field (REQ-110); card image growth is bounded by the same no-page-scroll rule (REQ-129), with any needed cap recorded on this row |
@@ -95,9 +103,10 @@ and there is no stated rule that the box stays above the mobile keyboard.
 -  rows. (NFR-001, `screen-layout.md`)
 +- Layout/fit: mobile-first and touch-friendly; the pre-submit view is a `100dvh`
 +  anchored frame (REQ-218) — card stage flexing in the middle, the question box
-+  pinned at the foot — and the answered workspace follow the shared shell width
-+  and region-scroll rules of `screen-layout.md`'s "Quick Question — pre-submit"
-+  and "— answered workspace" rows. (NFR-001, REQ-218, `screen-layout.md`)
++  pinned at the foot. The pre-submit view and the answered workspace both follow
++  the shared shell width and region-scroll rules of `screen-layout.md`'s "Quick
++  Question — pre-submit" and "— answered workspace" rows. (NFR-001, REQ-218,
++  `screen-layout.md`)
 ```
 
 ```diff
