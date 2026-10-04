@@ -21,7 +21,8 @@
 ## Open gate
 
 - Parked at `owner-action` on gate-qc PASS (spec-forming half complete).
-- Decision: answer the REQ-217 verdict slot in `PRD/work/life-tracker-seat-oriented-default/GATE-QUESTIONS.md` (accept / edit / reject), then merge the docs-only PR into `main`. That merge is the build signal.
+- Docs-only PR: https://github.com/ChrisMiho/TheJudge/pull/247 (base `main`, head `thejudge-auto/life-tracker-seat-oriented-default`)
+- Decision: answer the REQ-217 verdict slot in `PRD/work/life-tracker-seat-oriented-default/GATE-QUESTIONS.md` (accept / edit / reject), then merge PR #247 into `main`. That merge is the build signal.
 - Resume (build half): `/graph-implement PRD/work/life-tracker-seat-oriented-default/`
 
 ## Dispatch prompts
