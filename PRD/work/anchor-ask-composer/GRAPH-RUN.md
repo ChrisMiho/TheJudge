@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/anchor-ask-composer` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261003-205515/`
-- Current node: `gate-qc`
+- Current node: `define` (attempt 2 — gate-qc FAIL loop 1 of 3)
 - Next action: `/graph-kickoff` (spec-forming half in progress)
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 7` | branch `thejudge-auto/anchor-ask-composer` pushed (`0d5f2e5`) from `.worktrees/kickoff-anchor-ask-composer`; launch checkout untouched (`fix/desktop-close-search-chips`); universal canary denied, graph canary denied, lock `free → taken` | 2026-10-03 |
 | 2 | shape | sonnet | ok | `0 → 8` | package `PRD/work/anchor-ask-composer/` created (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md); committed `2e2a2ca`; 7 prior-run matches recorded in IDEA.md | 2026-10-03 |
 | 3 | define | opus | ok | `0 → 43` | DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-218 new, REQ-110/129/206 amend) written; STATUS.refined; committed `4281967`; zero PRD/sections edits confirmed via `git diff --name-only origin/main...HEAD`; no blocker | 2026-10-03 |
+| 4 | gate-qc | sonnet | failed | `0 → 17` | FAIL — 4 findings (wrong fit variant: brief/REQ-218 name `page-content-wide-fit`, Ask screens use `narrow` → `narrow-fit`, width must not change; In-depth per-page variant unspecified vs DEC-145 content-sized Game/Zones/Cards; broken diff wording in quick-lookup README; screen-layout Notes cell contradicts new cells); STATUS.refining; committed `cb8db5c`; loops to define attempt 2 | 2026-10-03 |
 
 ## Open gate
 
@@ -139,6 +140,34 @@ Report back:
 - The complete findings list (or `none`)
 - The STATUS marker now set
 - The commit hash if you committed a report artifact
+
+### define (attempt 2)
+
+graph is controlling
+
+You are node 3 (`define`), attempt 2, of an autonomous graph-kickoff run. gate-qc returned FAIL; invoke the `thejudge-refinement` skill (Skill tool, skill name `thejudge-refinement`) and follow it exactly to fix the findings below. Do not improvise around it.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer
+
+Package: PRD/work/anchor-ask-composer/ (branch thejudge-auto/anchor-ask-composer in this worktree). The brief is DESIGN-BRIEF.md; the proposal is GATE-QUESTIONS.md. These are consistency/correctness fixes resolvable from existing product truth and the frontend code — they are NOT new product decisions, so do not add blocker questions for them; resolve each and update the brief and GATE-QUESTIONS.md.
+
+Fix all four gate-qc findings:
+1. Wrong frame variant. The brief and REQ-218 name `page-content-wide-fit` (56rem / 94vw), but both Ask screens use the `narrow` variant today (36rem / 92vw). The matching fit child is `narrow-fit` in `apps/frontend/src/components/PageShell.tsx`. Name the correct `narrow-fit` child everywhere, and state explicitly in REQ-218 that the Ask column width does not change (stays 36rem / 92vw).
+2. In-depth per-page variant. `PageShell`'s variant is set per page; Game/Zones/Cards must stay content-sized (DEC-145) and only the Enrichment station gets the frame. State in the brief and REQ-218 how the frame applies only at the Enrichment station (e.g. a conditional variant at that step), so the implementer does not guess.
+3. Broken wording in the proposed quick-lookup/README.md Layout/fit diff (`the pre-submit view is a 100dvh anchored frame ... and the answered workspace follow ...` — subject/verb disagreement). Reword so it reads correctly.
+4. The screen-layout.md Ask pre-submit Notes cell still cites DEC-145 (content-sized) while the proposed Phone/Desktop cells drop it. Edit the Notes cell (or add a note) so the row does not contradict itself.
+
+Hard rules (unchanged):
+- Keep every proposed diff's `-` anchor lines matching the CURRENT PRD/sections text verbatim after your edits.
+- Do NOT edit PRD/sections/ — refinement only PROPOSES.
+- Set STATUS.refined on completion (gate-qc will re-grade).
+- Commit on this branch, explicit paths only (never `git add -A` / `git add .` / `git add --all`). Do not push main, do not force-push, do not touch the launch checkout, do not edit any `thejudge-*` skill.
+
+Report back:
+- How each of the four findings was resolved (one line each)
+- The stable ids GATE-QUESTIONS.md now proposes
+- The STATUS marker set and the commit hash
+- Any genuine decision blocker (expected: none)
 
 ## Instruction ledger
 
