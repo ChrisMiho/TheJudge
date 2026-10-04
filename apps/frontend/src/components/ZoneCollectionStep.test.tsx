@@ -149,6 +149,30 @@ describe("ZoneCollectionStep scan focus", () => {
     );
   });
 
+  it("relabels the Add-card chip to \"Close search\" while the zone card search is open, so the toggle reads as the way to close it again", async () => {
+    const user = userEvent.setup();
+    mockScanCapture(false);
+    renderStep([makeZoneCard("opt", "Opt")], null, ["stack", "battlefield"]);
+
+    await user.click(screen.getByRole("button", { name: "Zone tab: Battlefield" }));
+
+    // Closed: the chip invites adding a card to the active zone (aria-label stays
+    // zone-scoped to keep it distinct from the zone's own "Add card" confirm button).
+    expect(screen.getByRole("button", { name: "Add a card to Battlefield" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Add a card to Battlefield" }));
+
+    // Open: the same toggle now reads and shows as the close action.
+    const toggle = screen.getByRole("button", { name: "Close card search for Battlefield" });
+    expect(toggle).toHaveTextContent("Close search");
+    expect(screen.queryByRole("button", { name: "Add a card to Battlefield" })).not.toBeInTheDocument();
+
+    await user.click(toggle);
+
+    expect(screen.getByRole("button", { name: "Add a card to Battlefield" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Battlefield search input")).not.toBeInTheDocument();
+  });
+
   it("renders the zone card list as a horizontal left-to-right strip with region scroll before scan opens (DEC-151 part 3)", () => {
     mockScanCapture(false);
     renderStep([
