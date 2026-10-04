@@ -25,6 +25,7 @@
 ## Open gate
 
 - Parked at `owner-action` on gate-qc PASS (spec-forming half complete, 2026-10-03).
+- Docs PR (docs-only, into `main`): https://github.com/ChrisMiho/TheJudge/pull/249
 - **What the owner does:** answer the `accept / edit / reject` verdict slots in
   `PRD/work/anchor-ask-composer/GATE-QUESTIONS.md` (4 proposed stable IDs: REQ-218
   new anchored Ask-screen frame, REQ-110 / REQ-129 / REQ-206 amended), then **merge
