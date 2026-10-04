@@ -67,5 +67,5 @@ Add one Notes line under REQ-215:
 +    unchanged
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: Owner accepted as proposed (2026-10-04) — redraw the pile art to match the direction-1 mockup; behaviour, tiers, transitions and the REQ-216 palette-in-code exemption unchanged.
