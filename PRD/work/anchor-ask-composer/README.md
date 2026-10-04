@@ -1,4 +1,4 @@
-status: ideation
+status: refined
 
 # anchor-ask-composer
 
