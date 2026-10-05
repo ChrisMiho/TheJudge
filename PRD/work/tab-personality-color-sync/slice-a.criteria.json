@@ -1,0 +1,61 @@
+{
+  "slug": "tab-personality-color-sync",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "An exact-string test asserts the `index.html` `<title>` equals `TheJudge · MTG Assistant`",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test|grep.*<title>",
+        "paths": [
+          "apps/frontend/index.html"
+        ]
+      }
+    },
+    {
+      "id": "A2",
+      "statement": "A test applies each of the six built-in profiles and asserts the theme-color `content` equals that profile's `tokens.css` `--accent` hex",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test|applyPalette"
+      }
+    },
+    {
+      "id": "A3",
+      "statement": "A test applies a custom Colorless palette (`resolveColorlessPalette`) and asserts theme-color equals the resolved custom accent hex",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test|applyPalette"
+      }
+    },
+    {
+      "id": "A4",
+      "statement": "A test asserts `applyPalette` creates the theme-color meta when absent and does not duplicate it on repeat calls",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test|applyPalette"
+      }
+    },
+    {
+      "id": "A5",
+      "statement": "`index.html` contains no manifest link and tab code contains no new per-profile hex table (grep over `applyPalette.ts` shows no `#` hex literals)",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "apps/frontend/src/lib/theme/applyPalette.ts",
+          "apps/frontend/index.html"
+        ],
+        "command": "grep.*(applyPalette|index\\.html)"
+      }
+    },
+    {
+      "id": "A6",
+      "statement": "`npm --workspace apps/frontend run test` passes",
+      "value": false,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test"
+      }
+    }
+  ]
+}

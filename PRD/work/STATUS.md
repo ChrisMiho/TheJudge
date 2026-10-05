@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| tab-personality-color-sync | mapped: slices A-C (title+theme-color, favicon, browser check+PRD apply) |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| tab-personality-color-sync | gate resolved (REQ-219 accept, 2026-10-04); resumes at gate-qc |
 
 ## refining
 

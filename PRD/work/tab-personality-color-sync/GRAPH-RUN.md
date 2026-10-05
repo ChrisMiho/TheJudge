@@ -35,6 +35,7 @@ place). Rows below with dates after this note belong to the correction pass.
 | 4 | gate-qc | sonnet | ok | `1 → 12` | **correction pass**: PASS, 0 findings on first grade; all cited ids verified live (REQ-126/200/201/207/216/099; no retired id cited; DEC-149 only in history); REQ-219 free (last id REQ-217; REQ-218 reserved by anchor-ask-composer); current-state premises confirmed from code; every acceptance criterion has a checkable bar; STATUS.refined — **STOP at first PASS**. Non-blocking for map-out: pin the exact title string (brief shows `TheJudge · MTG Assistant` as an example) | 2026-10-04 |
 | — | gate-review | sonnet | ok | `0 → 8` | build-half run `graph-20261004-215150`: REQ-219 verdict `accept` applied (GATE-QUESTIONS.md unchanged); `### Brief reconciliation` none; `## Gate verdicts` written; `## Open gate` RESOLVED; STATUS.owner-action→refined; PRD/sections untouched (`git status --porcelain \| grep -c PRD/sections/` = 0) | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `0 → 8` | build-half re-grade: PASS, 0 findings; six cited authorities verified live (REQ-099/126/200/201/207/216 in functional-requirements.md); no retired id cited; REQ-219 free; current-state premises confirmed from code (no favicon, static `<title>TheJudge`, no theme-color meta, no manifest); every acceptance criterion measurable; STATUS.refined; README `## Preparation gate` rewritten for this run | 2026-10-04 |
+| 5 | plan | sonnet | ok | `0 → 17` | 3 sequential slices: A title (`TheJudge · MTG Assistant`) + theme-color meta synced by applyPalette; B faviconArt.ts SVG-data-URI helper + per-profile favicon swap; C six-profile real-browser check + REQ-219 apply to PRD/sections + ship gates. GAMEPLAN.md + slice-a/b/c docs + criteria.json (6/6/8; C's 5 browser checks manual). STATUS.active | 2026-10-04 |
 
 ## Open gate
 
@@ -340,6 +341,33 @@ Report back:
 - the STATUS marker now set
 - confirmation the README `## Preparation gate` section was updated
 Report evidence as paths/quotes, not bare claims. End with a one-line status: gate-qc PASS or gate-qc FAIL (with the finding count).
+
+### plan (build half — run graph-20261004-215150)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync
+
+You are node 5 (`plan`) of the build half of an autonomous graph run. Invoke the `thejudge-map-out` skill (Skill tool, skill name `thejudge-map-out`) and follow it exactly in graph-controlled mode. Because `graph is controlling`, do NOT stop to ask the user anything — produce GAMEPLAN.md plus lettered slice docs and hand back.
+
+Run ID: graph-20261004-215150. Work ENTIRELY inside the working directory above (the build worktree, branch thejudge-auto/tab-personality-color-sync-work). First `cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync` and run every command from there — never the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge. Copy the `Working directory:` line unchanged into any prompt you write.
+
+Package: PRD/work/tab-personality-color-sync/. The package README `## Preparation gate` records `Quality-check: PASS` (build-half re-grade, run graph-20261004-215150) — do NOT self-certify it; read it and proceed. STATUS is `refined`.
+
+Read DESIGN-BRIEF.md and GATE-QUESTIONS.md (the finalized REQ-219 proposal, verdict accept). Slice the work into sequential lettered slices per the skill, write GAMEPLAN.md and one slice-<letter>.md per slice in PRD/instructions/requirement-format.md shape, and emit one slice-<letter>.criteria.json beside each slice doc (every criterion initialised false with an evidence block — a command pattern, file paths, or a manual flag — per thejudge-map-out/reference.md). Set STATUS.active.
+
+The feature (REQ-219, scope fixed by the brief): the BROWSER tab, three surfaces — (1) an SVG favicon wired into apps/frontend/index.html that reuses the per-profile motif/brand art (MOTIF_SYMBOLS / BrandMark, REQ-201/207) drawn in the active accent and swapped by applyPalette on profile change; (2) a single branded <title> string; (3) a theme-color meta tag kept equal to the active profile accent by applyPalette. All colour derives from the one token layer via applyPalette (REQ-216) — no second hex table. Custom Colorless (REQ-099) must be followed. Non-goals: no PWA/manifest, no animated favicon, no per-route title, no in-app surface change. Affected code named in the brief: apps/frontend/index.html, apps/frontend/src/lib/theme/applyPalette.ts, motifSymbols.ts / BrandMark.tsx (read-only reuse), possibly a small favicon-art helper under apps/frontend/src/lib/theme/.
+
+Non-blocking note carried from gate-qc: pin the EXACT branded title string in the slice (the brief shows `TheJudge · MTG Assistant` only as an example) so the exact-string test has one definite value. Make each slice's acceptance criteria measurable, and include a slice/criterion for a real-browser check across the six profiles (favicon icon, title, and mobile theme-color bar re-skin) at build/review, since the live tab was not opened at define.
+
+Do NOT write code, do NOT edit PRD/sections/, do NOT commit or push — the driver commits between nodes.
+
+Report back:
+- the slice letters and a one-line scope each
+- confirmation GAMEPLAN.md and every slice-*.md + slice-*.criteria.json were written (paths)
+- the exact branded title string you pinned
+- the STATUS marker now set
+Report evidence as paths, not bare claims. End with a one-line status: plan OK (ready for build, N slices) or BLOCKED (reason).
 
 ## Instruction ledger
 
