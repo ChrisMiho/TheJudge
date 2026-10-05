@@ -19,7 +19,7 @@ one browser tab, so it follows the one active profile; the earlier A/B fork
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/tab-personality-color-sync
+- Autonomous base: origin/main
 
 ## Preparation gate
 

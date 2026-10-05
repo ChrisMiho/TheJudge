@@ -3,8 +3,8 @@
 - Run ID: `graph-20261004-204628`
 - Profile: `loaded (env sentinel)` (observed by graph-preflight at node 1)
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — tier armed (nohup true, lock held)`
-- Autonomous base: `origin/thejudge-auto/tab-personality-color-sync` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync`
+- Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/tab-personality-color-sync` by the build half's claim, run `graph-20261004-215150`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync`
 - Staging: none (inline request; no files or pasted markdown staged)
 - Current node: `owner-action` (correction pass gate-qc PASS — spec-forming half stopped)
 - Next action: owner answers REQ-219 in `GATE-QUESTIONS.md` + merges docs PR #258; then `/graph-implement PRD/work/tab-personality-color-sync/` builds it
