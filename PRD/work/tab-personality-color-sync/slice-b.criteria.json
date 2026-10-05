@@ -5,7 +5,7 @@
     {
       "id": "B1",
       "statement": "`faviconArt.test.ts` asserts, for each of the six motifs, the decoded SVG contains that motif's `MOTIF_SYMBOLS` paths and the accent hex, and contains no `currentColor`",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/frontend run test|faviconArt|applyPalette"
       }
@@ -13,7 +13,7 @@
     {
       "id": "B2",
       "statement": "A test applies each of the six profiles and asserts exactly one `link[rel=\"icon\"]` whose `href` decodes to that profile's motif drawn in that profile's accent; the six hrefs are pairwise distinct",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/frontend run test|faviconArt|applyPalette"
       }
@@ -21,7 +21,7 @@
     {
       "id": "B3",
       "statement": "A test applies custom Colorless and asserts the favicon contains the resolved custom accent hex",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/frontend run test|faviconArt|applyPalette"
       }
@@ -29,7 +29,7 @@
     {
       "id": "B4",
       "statement": "A test asserts the favicon `href` starts with `data:image/svg+xml` and contains no `http` URL",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/frontend run test|faviconArt|applyPalette"
       }
@@ -37,7 +37,7 @@
     {
       "id": "B5",
       "statement": "`faviconArt.ts` and `applyPalette.ts` contain no `setInterval`/`setTimeout`/`requestAnimationFrame` and no profile hex literals",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/frontend/src/lib/theme/faviconArt.ts",
@@ -49,7 +49,7 @@
     {
       "id": "B6",
       "statement": "`npm --workspace apps/frontend run test` and `npm run typecheck` pass",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run typecheck|npm --workspace apps/frontend run test"
       }

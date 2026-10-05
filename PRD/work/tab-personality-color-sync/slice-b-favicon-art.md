@@ -1,6 +1,6 @@
 # Slice B — Per-profile favicon
 
-## Status: planned
+## Status: done
 
 ## Goal
 

@@ -1,3 +1,4 @@
+import { buildFaviconHref } from "./faviconArt";
 import { getPaletteById, type Palette } from "./palettes";
 
 const customVarNames = ["--accent", "--accent-strong", "--accent-soft", "--accent-contrast", "--wash-tint", "--focus-ring"] as const;
@@ -12,8 +13,9 @@ function triplet(channels: string): string {
 
 /**
  * REQ-219: the browser tab follows the active profile. Sets the mobile browser
- * bar tint (`theme-color`) to the profile accent, derived from the palette (the
- * one token source, REQ-216), creating the meta when absent. Never duplicates it.
+ * bar tint (`theme-color`) and the tab icon to the profile accent, derived from the
+ * palette (the one token source, REQ-216), creating the tags when absent and
+ * never duplicating them.
  */
 function syncTabChrome(palette: Palette): void {
   const accent = triplet(palette.accent);
@@ -24,6 +26,15 @@ function syncTabChrome(palette: Palette): void {
     document.head.appendChild(meta);
   }
   meta.content = accent;
+
+  let icon = document.head.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  if (icon === null) {
+    icon = document.createElement("link");
+    icon.rel = "icon";
+    icon.type = "image/svg+xml";
+    document.head.appendChild(icon);
+  }
+  icon.href = buildFaviconHref(palette.motif, accent);
 }
 
 /**
