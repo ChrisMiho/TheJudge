@@ -64,14 +64,18 @@ with:
 Notes — append this bullet to REQ-206's Notes list:
 
 ```
-  - amended by `indepth-chip-collapse` (2026-10-04): the In-depth chip now collapses to the ◈ glyph alone whenever the Ask composer is engaged (focused or non-empty) and keeps the "In-depth" label only at rest (empty and unfocused), freeing single-row width for the question; this is a deliberate departure from the direction-1 mockup, which draws the chip's label by width only (no collapse-while-typing state) — the owner signed off on going beyond the mockup for the single-row typing state. Frontend/CSS only: extends the existing `@media (max-width:479px) { .q-box .deep .lbl { display:none } }` block in `apps/frontend/src/styles/flow.css` with a `:focus-within` / non-empty-fill state rule; no `ComposerPill.tsx` structure change, and the `<480px` always-icon-only rule and the chip's accessible name are unchanged
+  - amended by `indepth-chip-collapse` (2026-10-05): the In-depth chip now collapses to the ◈ glyph alone whenever the Ask composer is engaged (the question box is focused, or the box holds text) and keeps the "In-depth" label only at rest (empty and unfocused), freeing single-row width for the question; this is a deliberate departure from the direction-1 mockup, which draws the chip's label by width only (no collapse-while-typing state) — the owner signed off on going beyond the mockup for the single-row typing state. Frontend/CSS only: extends the existing `@media (max-width:479px) { .q-box .deep .lbl { display:none } }` block in `apps/frontend/src/styles/flow.css` with a state rule keyed to the textarea being focused (scoped to the text field itself, so keyboard focus landing on the chip, mic, or send button does not drop the label) or the box holding text — not a bare `.q-box:focus-within`; no `ComposerPill.tsx` structure change, and the `<480px` always-icon-only rule and the chip's accessible name are unchanged
 ```
 
 ### Verdict
 
 - [ ] accept
-- [ ] edit: ____________________
+- [x] edit: behavior accepted as proposed (Option B — label at rest, ◈ when engaged). One refinement to the implementation hint only: scope the collapse trigger to the **textarea being focused** (or the box holding text), **not** a bare `.q-box:focus-within`, so keyboard focus landing on the chip, mic, or send button does not drop the "In-depth" label. The acceptance-criteria line is unchanged ("focused or holds text" already carries this intent); only the Notes bullet's selector hint was tightened.
 - [ ] reject
+
+- Reason: `:focus-within` fires for any descendant control, which would collapse the label the instant a keyboard user tabs onto the chip itself — the opposite of a teaching affordance. Scoping to the text field keeps the label visible while tabbing across the controls and drops it only once you are actually in the text or have typed. Owner-approved 2026-10-05.
+
+- Build sequencing (owner guidance, 2026-10-05): build `anchor-ask-composer` first (it is the foundational composer change and also rewrites this REQ-206 line), then this package folds in as a sub-clause substitution. Build re-reads REQ-206 before applying.
 
 ---
 

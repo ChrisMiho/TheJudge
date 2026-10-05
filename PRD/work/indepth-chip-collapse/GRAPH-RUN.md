@@ -22,10 +22,14 @@
 ## Open gate
 
 - Parked at `owner-action` on gate-qc PASS (run one terminal state: PARKED).
-- Action: answer the REQ-206 edit slot in `PRD/work/indepth-chip-collapse/GATE-QUESTIONS.md`
-  (accept / edit / reject), then merge docs PR #261
+- GATE-QUESTIONS.md ANSWERED by the owner 2026-10-05: REQ-206 verdict `edit` — behavior
+  accepted (Option B); implementation hint tightened to scope the collapse to the textarea's
+  focus (or the box holding text), not bare `.q-box:focus-within`. Build sequencing: build
+  `anchor-ask-composer` first, then this folds in as a sub-clause substitution.
+- Remaining owner action: merge docs PR #261
   (https://github.com/ChrisMiho/TheJudge/pull/261) into `main`. That merge is the build signal.
-- Resume (build half): `/graph-implement PRD/work/indepth-chip-collapse/`
+- Resume (build half): `/graph-implement PRD/work/indepth-chip-collapse/` — graph-gate-review
+  applies the `edit` verdict and reconciles the brief, then the run continues plan → build → review → close.
 - Coordination note: anchor-ask-composer (owner-action, docs PR #249 merged) rewrites the
   same REQ-206 acceptance line; build applies this as a sub-clause substitution and re-reads
   REQ-206 before applying.
