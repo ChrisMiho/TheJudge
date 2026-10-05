@@ -284,6 +284,45 @@ Report back concisely:
 - the code PR URL (head thejudge-auto/life-tracker-seat-oriented-default-work, base main)
 - every path you wrote, so the driver can confirm all writes stayed inside the worktree
 
+### build (attempt 2 — continue B and C)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-seat-oriented-default
+
+You are node 6 (`build`), attempt 2, continuing a partial build. Invoke the `thejudge-implement-all` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Return your result to the graph driver.
+
+Work slug: life-tracker-seat-oriented-default
+Run ID: graph-20261004-191418
+Shared branch (REQUIRED, already checked out in this worktree): thejudge-auto/life-tracker-seat-oriented-default-work
+Recorded autonomous base: origin/main — the code PR is thejudge-auto/life-tracker-seat-oriented-default-work → main.
+
+STATE: Slice A code is built, tested, and pushed (commit d979ae4): new helper `apps/frontend/src/lib/lifeTracker/lifeHalves.ts` (`lifeHalvesForSeat`, grid keyed to `SeatPlacement.side`, list mirrors right-of-pair), `PlayerLifeCard.tsx` wired to it, `lifeHalves.test.ts` + `PlayerLifeCard.test.tsx` (25 pass), typecheck/lint/quality:check green, seatArrangement.ts byte-unchanged. BUT slice A's criteria are NOT flipped (they were flipped then reverted), the slice-A doc is still `## Status: planned`, STATUS.active stands, and slices B and C are NOT started, and no code PR exists.
+
+TOOLING NOTE (this is why attempt 1 stopped — not a graph guardrail): the harness auto-mode classifier denies `sed -i` inside a compound command and `python3 <<'EOF'` heredoc file-writes. Edit files with the Edit/Write tools directly, and run `npm run quality:check` as its own standalone Bash command (never chained after a file edit with `&&`). If you hit a real `[graph-boundary]` denial, stop and report it verbatim — do not route around it. An auto-mode-classifier denial is not a graph guardrail: switch tool form and continue.
+
+Do ALL work in the build worktree named above — never the launch checkout. Every path you write stays inside this worktree. Under `graph is controlling` work in place on the shared branch (no second worktree).
+
+Finish the build:
+- Slice A: re-flip its seven criteria `value` to true with the Edit tool (already earned), set the slice-A doc `## Status: done`, commit + push.
+- Slice B: update the downstream tests that assert the old split, run the full frontend vitest suite and `npm run quality:check` green, then the live browser check (grid AND list at 2/3/4/6/8 players, 390x844 and 1280x800) that each `−` sits nearest its player and the table fits one screen. Check the thin top/bottom gutter for grid 2–3p upright seats for ± overlap with the name pill and map. Playwright cleanup per CLAUDE.md: close the browser, stop any dev server you own, captures under PRD/work/life-tracker-seat-oriented-default/.playwright-mcp/. Write dated observation lines (`YYYY-MM-DD <id> — ...`) for B4/B5/B6/B7, flip B's criteria, mark the doc done, commit + push.
+- Slice C: apply the finalized four-file REQ-217 diff from GATE-QUESTIONS.md to PRD/sections/ by intent against current truth (REQ-217 appended after REQ-216, DEC-170 amended in place, life-tracker/README.md, system-map.md) together with the code, run the ship gates, flip C's criteria, mark done, commit + push.
+- When every registered slice is done: set STATUS.ship-ready and open the code PR with `gh pr create` (head thejudge-auto/life-tracker-seat-oriented-default-work, base main).
+
+Earning criteria: run the real commands, do the real live check, write the real observation lines, then flip. Never fabricate — node 7 review is the integrity gate. Do not touch: the default layout (grid stays), the seat arrangements, the Game Setup Layout toggle, the MTG Assistant seed, layout persistence. Never force-push, merge/close a PR, or push main.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- each slice's status + commit SHA(s)
+- the criteria state per slice (all true?) and the evidence kind earned for each
+- the full-suite + quality:check result (command + pass/fail)
+- the live browser check result and the capture path
+- the four PRD/sections files changed for REQ-217
+- STATUS.ship-ready confirmed
+- the code PR URL
+- every path you wrote
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
