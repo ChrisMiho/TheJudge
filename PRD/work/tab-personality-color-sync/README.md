@@ -1,4 +1,4 @@
-status: refined
+status: owner-action
 
 # tab-personality-color-sync
 
@@ -23,7 +23,6 @@ one browser tab, so it follows the one active profile; the earlier A/B fork
 
 ## Preparation gate
 
-- Quality-check: (pending re-grade after this correction pass)
+- Quality-check: PASS
 - Checked artifact: `PRD/work/tab-personality-color-sync/DESIGN-BRIEF.md`
-- Findings: superseded — prior PASS was against the wrong (Menu-tray) surface.
-  Re-run gate-qc against the corrected browser-tab brief.
+- Findings: none. Re-graded fresh (graph run `graph-20261004-212625`, node 4) against the corrected browser-tab brief. Cited authorities REQ-126, REQ-200, REQ-201, REQ-207, REQ-216, REQ-099 verified live in `PRD/sections/functional-requirements.md`; no retired id (DEC-149 is retired and is not cited) is claimed. REQ-219 is free in `PRD/sections` (REQ-217 is the last used id; REQ-218 is reserved by `anchor-ask-composer`). Current-state premises confirmed from code: `apps/frontend/index.html` has no favicon link, a static `<title>TheJudge</title>`, no theme-color meta; no manifest and no favicon file under `apps/frontend/public/`; no `document.title =` assignment in `apps/frontend/src`. Every REQ-219 acceptance criterion is measurable. Non-blocking note for map-out: the exact branded title string is only an example in the brief (`TheJudge · MTG Assistant`); pin it in the slice so the exact-string test has one value.

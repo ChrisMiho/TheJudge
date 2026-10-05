@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| tab-personality-color-sync | CORRECTED to the browser tab (favicon + title + mobile theme-color), not the ☰ Menu; REQ-219 content replaced, no blocker (A/B fork dropped); ready for gate-qc re-grade |
 
 ## refining
 
@@ -35,6 +34,7 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | anchor-ask-composer | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-218 new + REQ-110/129/206 amend) and merge to build |
+| tab-personality-color-sync | gate-qc PASS (browser-tab feature); docs PR #258 open into main — answer GATE-QUESTIONS.md (REQ-219: favicon + title + mobile theme-color sync) and merge to build |
 
 
 ## deferred

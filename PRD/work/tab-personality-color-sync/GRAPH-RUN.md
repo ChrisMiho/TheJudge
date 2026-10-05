@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/tab-personality-color-sync` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync`
 - Staging: none (inline request; no files or pasted markdown staged)
-- Current node: `gate-qc` (correction pass re-grade — run id `graph-20261004-212625`)
-- Next action: `/graph-kickoff` (spec-forming half continues)
+- Current node: `owner-action` (correction pass gate-qc PASS — spec-forming half stopped)
+- Next action: owner answers REQ-219 in `GATE-QUESTIONS.md` + merges docs PR #258; then `/graph-implement PRD/work/tab-personality-color-sync/` builds it
 
 ## Correction
 
@@ -32,14 +32,15 @@ place). Rows below with dates after this note belong to the correction pass.
 | 3 | define | opus | ok | `1 → 25` | attempt 2: all 4 gate-qc findings fixed in DESIGN-BRIEF.md + GATE-QUESTIONS.md (DEC-081/DEC-104 citations removed; live deps REQ-060/REQ-200/REQ-059/DEC-135/NFR-006 added; measurable glyph-box acceptance bar); REQ-219 + Q-219 unchanged; citations re-verified against live PRD/sections/ | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `1 → 15` | attempt 2: PASS, 0 findings; all 4 prior findings verified resolved against live PRD; REQ-219 id free (last is REQ-217), 48px row ≥ NFR-001 44px, Q-219 confirmed genuine blocker; STATUS.refined; non-blocking note: DEC-135 is `retired` but the shared-chrome line carries the truth and REQ-219 cites it alongside — **STOP at first PASS** | 2026-10-04 |
 | 3 | define | opus | ok | `1 → 40` | **correction pass** (run `graph-20261004-212625`): DESIGN-BRIEF.md + GATE-QUESTIONS.md rewritten for the browser tab (favicon + title + theme-color sync); REQ-219 content fully replaced, no blocker (A/B fork dropped); verified current state from code (no favicon, static `<title>TheJudge`, no theme-color meta, no manifest); reuse applyPalette.ts / useThemePalette.ts / tokens.css `[data-profile]` / motifSymbols.ts / BrandMark.tsx; removed retired DEC-149, cites live REQ-126/200/201/207/216/099; STATUS.refined | 2026-10-04 |
+| 4 | gate-qc | sonnet | ok | `1 → 12` | **correction pass**: PASS, 0 findings on first grade; all cited ids verified live (REQ-126/200/201/207/216/099; no retired id cited; DEC-149 only in history); REQ-219 free (last id REQ-217; REQ-218 reserved by anchor-ask-composer); current-state premises confirmed from code; every acceptance criterion has a checkable bar; STATUS.refined — **STOP at first PASS**. Non-blocking for map-out: pin the exact title string (brief shows `TheJudge · MTG Assistant` as an example) | 2026-10-04 |
 
 ## Open gate
 
-- State: PARKED at `owner-action` (gate-qc PASS, 2026-10-04). Spec-forming half complete.
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/258 (docs-only, into `main`)
-- Question: answer the verdict slots in `PRD/work/tab-personality-color-sync/GATE-QUESTIONS.md` — REQ-219 (accept/edit/reject) and the one product fork **Q-219**: do the Menu tabs all reflect the single active Theme colour you've picked (reading A, proposed/recommended), or does each tab wear its own fixed Magic colour independent of Theme (reading B)? Reading B would reshape REQ-219 into a per-destination colour mapping.
-- Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, this ledger; gate-qc PASS with 0 findings (attempt 2). Non-blocking note: DEC-135 is marked `retired` in `PRD/sections/decisions.md`, but the row-presentation truth also lives in the shared-chrome spec line, which REQ-219 cites alongside it.
-- Resume command (after you answer the slots and merge the docs PR to `main`): `/graph-implement PRD/work/tab-personality-color-sync/`
+- State: PARKED at `owner-action` (correction-pass gate-qc PASS, 2026-10-04). Spec-forming half complete for the **browser-tab** feature.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/258 (docs-only, into `main`; rewritten in place for the browser tab)
+- Question: answer the one verdict slot in `PRD/work/tab-personality-color-sync/GATE-QUESTIONS.md` — **REQ-219** (accept/edit/reject): the browser tab (favicon + document title + mobile `theme-color`) carries personality and syncs to the active colour profile. **No blocker** — the earlier Q-219 A/B colour fork is resolved (one browser tab follows the one active profile).
+- Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, this ledger; correction-pass gate-qc PASS with 0 findings. Current state confirmed: no favicon, static `<title>TheJudge`, no `theme-color` meta, no manifest — the feature adds all three. Non-blocking for map-out: pin the exact title string.
+- Resume command (after you answer REQ-219 and merge the docs PR to `main`): `/graph-implement PRD/work/tab-personality-color-sync/`
 
 ## Dispatch prompts
 
@@ -251,6 +252,34 @@ Report back:
 - what you found about the CURRENT favicon/title/theme-color setup, with file paths/lines, and where you verified live vs from code
 - the STATUS marker now set
 End with a one-line status: define OK (ready for gate-qc) — note GATE-QUESTIONS.md written.
+
+### gate-qc (correction pass — run graph-20261004-212625)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync
+
+You are node 4 (`gate-qc`) of an autonomous graph run — grading the CORRECTED browser-tab brief. Invoke the `thejudge-quality-check` skill (Skill tool, skill name `thejudge-quality-check`) and follow it in graph-controlled mode. Because `graph is controlling`, do NOT stop to ask the user anything — produce a PASS/FAIL report and hand back.
+
+Run all work inside the working directory above (the kickoff worktree), never the launch checkout. Copy the `Working directory:` line unchanged into any prompt you write for a sub-subagent. Run ID: `graph-20261004-212625`. Package: `PRD/work/tab-personality-color-sync/`.
+
+Context: the earlier PASS was against a wrong (Menu-tray) brief and is superseded. The brief and GATE-QUESTIONS.md were rewritten this pass for the BROWSER TAB — the favicon, the document title, and the mobile/PWA `theme-color`, all syncing to the active colour profile. REQ-219 is reused with entirely new content; no blocker.
+
+Grade `PRD/work/tab-personality-color-sync/DESIGN-BRIEF.md` fresh for PRD alignment and agent-readiness. Verify specifically:
+- Every cited authority is LIVE in PRD/sections/ (no retired decisions). The pass claims to cite REQ-126, REQ-200, REQ-201, REQ-207, REQ-216, REQ-099 and to have removed a retired DEC-149 — confirm each cited id exists and is live, and that no retired id is cited as a new claim.
+- The current-state premises are accurate: confirm (from code) that there is today no favicon link, a static <title>TheJudge, and no theme-color meta / manifest, as the brief states.
+- Every acceptance criterion has a measurable, checkable bar.
+- REQ-219 is a free/appropriately-reused stable id and consistent with the brief.
+
+Produce a PASS/FAIL report. Do NOT write a GAMEPLAN or slice docs. On FAIL, set `STATUS.refining` and list the complete findings. On PASS, set `STATUS.refined` and leave the package ready to stop at this gate. Update the package README `## Preparation gate` section with the result (exact preparation-contract shape).
+
+Report back:
+- the verdict (PASS or FAIL)
+- the complete findings list (none, or each issue with the authority/line you checked)
+- confirmation of the current-state premises (favicon/title/theme-color)
+- the STATUS marker now set
+- confirmation the README `## Preparation gate` section was updated
+Report evidence as paths/quotes, not bare claims. End with a one-line status: gate-qc PASS or gate-qc FAIL (with the finding count).
 
 ## Instruction ledger
 
