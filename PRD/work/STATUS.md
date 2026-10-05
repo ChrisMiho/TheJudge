@@ -13,6 +13,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| indepth-chip-collapse | mapped: slices A (CSS) and B (REQ-206 apply + ship gates) |
 
 ## refined
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| indepth-chip-collapse | refined — REQ-206 edit applied at gate-review; resuming at gate-qc. Coordinates with anchor-ask-composer (same REQ-206 line) |
 
 
 ## deferred

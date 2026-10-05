@@ -1,0 +1,50 @@
+{
+  "slug": "indepth-chip-collapse",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "REQ-206 has state-aware sub-clause; old sub-clause gone",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md"
+        ]
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "Rest of the REQ-206 line unchanged (diff shows only the sub-clause)",
+      "value": false,
+      "evidence": {
+        "command": "git diff.*PRD/sections"
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "REQ-206 Notes carries the indepth-chip-collapse bullet",
+      "value": false,
+      "evidence": {
+        "paths": [
+          "PRD/sections/functional-requirements.md"
+        ]
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "grep for old sub-clause in PRD/sections returns no hit",
+      "value": false,
+      "evidence": {
+        "command": "grep.*at each width as the mockup shows"
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "npm run quality:check is green",
+      "value": false,
+      "evidence": {
+        "command": "npm run quality:check"
+      }
+    }
+  ]
+}

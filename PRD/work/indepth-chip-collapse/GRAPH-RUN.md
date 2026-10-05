@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/indepth-chip-collapse` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-indepth-chip-collapse`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-234937/`
-- Current node: `plan` (build half; gate-qc PASS)
+- Current node: `build` (build half; plan done, slices A+B)
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/261 (MERGED — the build signal; base `main`, head `thejudge-auto/indepth-chip-collapse`)
 - Next action: `/graph-implement PRD/work/indepth-chip-collapse/` — continues gate-qc → plan → build → review → close on `thejudge-auto/indepth-chip-collapse-work`
 
@@ -20,6 +20,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 8` | thejudge-quality-check PASS (first PASS → stop); proposed REQ-206 replace-line matches functional-requirements.md:5240 char-for-char; 3 non-blocking findings; STATUS.refined left for driver to park | 2026-10-05 |
 | — | gate-review | sonnet | ok | `1 → 19` | build half (run graph-20261005-150943): REQ-206 `edit` verdict applied; brief reconciled (DESIGN-BRIEF Material assumption 3 + README Preparation-gate finding 2 to textarea-focus, not bare `:focus-within`); `## Gate verdicts` recorded in README; no intake supersession note needed; STATUS.owner-action → refined; board row updated; no commit (driver commits) | 2026-10-05 |
 | 4 | gate-qc | sonnet | ok | `1 → 9` | build-half re-grade — **PASS**, no findings; brief + README Gate verdicts + GATE-QUESTIONS.md consistent after the owner's edit (collapse keyed to textarea focus / non-empty box, not bare `:focus-within`); 3 non-blocking build notes (frozen replace-anchor no longer matches current REQ-206:5245 after #262 merge → apply as sub-clause substitution and re-read; Material assumption 4 stale re #262; Notes owner-signed-off wording correct); STATUS.refined | 2026-10-05 |
+| 5 | plan | sonnet | ok | `1 → 14` | verified README Preparation gate PASS; GAMEPLAN.md + 2 slice docs written — A (`slice-a-chip-collapse-css.md`: flow.css state rule next to line 281 using `:has(textarea:focus)` / non-empty box, never bare `:focus-within`; ComposerPill.test.tsx CSS-contract + accessible-name tests; Playwright 1440/390) and B (`slice-b-req206-promotion.md`: REQ-206 sub-clause substitution by intent + Notes bullet; PRD promotion + ship gates); criteria `slice-a.criteria.json` (A1–A10, browser/cleanup manual) + `slice-b.criteria.json` (B1–B5), all `false`; STATUS.active; board row moved; build caveat recorded (non-empty trigger uses `data-fill`, fallback `:has(textarea:not(:placeholder-shown))`) | 2026-10-05 |
 
 - None. The `define` gate is resolved: docs PR #261 merged (the build signal), the build
   half claimed the spec on `thejudge-auto/indepth-chip-collapse-work`, and gate-review applied
@@ -138,6 +139,32 @@ Important re-grade context: anchor-ask-composer (PR #262) has MERGED to main and
 On FAIL, set STATUS.refining and list every finding. On PASS, leave STATUS.refined.
 
 Report back concisely: the verdict (PASS or FAIL); the complete findings list (or none); any non-blocking build notes; and the STATUS marker you left.
+
+### plan
+
+graph is controlling
+
+You are node 5 (`plan`) of a graph-implement (build half) run. Invoke the `thejudge-map-out` skill (Skill tool, skill name `thejudge-map-out`) and follow it exactly. Do not run interactively; `graph is controlling`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-indepth-chip-collapse
+
+ALL work happens in that build worktree on branch `thejudge-auto/indepth-chip-collapse-work`, never the launch checkout. Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Run context: Slug: indepth-chip-collapse. Run ID: graph-20261005-150943. Package: PRD/work/indepth-chip-collapse/.
+
+The package README `## Preparation gate` records Quality-check: PASS (build-half re-grade, 2026-10-05). Verify that before writing any planning artifact; you cannot self-certify a PASS.
+
+Produce GAMEPLAN.md and the lettered slice docs, plus one `slice-<letter>.criteria.json` beside each slice doc (every criterion initialised `false`, each carrying an `evidence` block). Set STATUS.active.
+
+Scope (frontend/CSS only, one REQ-206 sub-clause): the Ask-a-Question composer's In-depth chip must drop its In-depth text label and show only the glyph while the composer is engaged — the question textarea is focused, or the box holds text — and restore the label at rest (empty and unfocused). Keyboard focus landing on the chip, mic, or send button must NOT drop the label — key the collapse to the textarea being focused or the box being non-empty, NOT a bare `.q-box:focus-within`. The `<480px` glyph-only rule and the chip's accessible name are unchanged. The CSS hook is `apps/frontend/src/styles/flow.css` line 281 (`@media (max-width: 479px) { .q-box .deep .lbl … }`); extend it with a state rule. No `ComposerPill.tsx` structure change.
+
+Build note (carry into the slice doc): anchor-ask-composer (PR #262) has MERGED, so build applies the approved REQ-206 change BY INTENT as a sub-clause substitution — re-read the current REQ-206 line in `PRD/sections/functional-requirements.md` and replace only the sub-clause `(labelled or icon-only at each width as the mockup shows)` with the state-aware wording, leaving the rest of the line (ring-based character budget, live region, downward growth) intact — plus append the approved Notes bullet. Do NOT blind-replay the frozen GATE-QUESTIONS.md replace-anchor.
+
+Make acceptance criteria measurable: the label hides on textarea focus and on non-empty box at a normal width (e.g. 1440px); the label stays visible when keyboard focus is on the chip / mic / send while the box is empty and the textarea is not focused; the label restores when the box is emptied and the textarea blurred; `<480px` stays glyph-only in every state; the accessible name is unchanged; `npm run quality:check` green.
+
+Do NOT commit; the driver commits between nodes. Do NOT touch GRAPH-RUN.md (the driver's ledger).
+
+Report back concisely: GAMEPLAN.md path; the slice letters with a one-line scope each; the criteria files emitted; the STATUS marker; and whether the node is ok or needs to park.
 
 ## Instruction ledger
 

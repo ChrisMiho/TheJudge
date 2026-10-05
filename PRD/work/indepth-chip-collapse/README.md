@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 Intake origin: .worktrees/.graph-intake/graph-20261004-234937 (probe-indepth-chip-collapse), copied verbatim to intake/.
 
@@ -25,3 +25,12 @@ Intake origin: .worktrees/.graph-intake/graph-20261004-234937 (probe-indepth-chi
 - `README.md` Preparation gate finding (2) — said build decides on scoping -> now records the owner's verdict resolved it to textarea focus
 - `GATE-QUESTIONS.md` REQ-206 Notes bullet — already carries the textarea-scoped hint; acceptance-criteria line unchanged
 - Re-grep: remaining `focus-within` hits are only the negated "not a bare `.q-box:focus-within`" phrasings.
+
+## Slices
+
+| Slice | Doc | Scope | Depends on |
+| --- | --- | --- | --- |
+| A | `slice-a-chip-collapse-css.md` | flow.css state rule + tests + live browser check | none |
+| B | `slice-b-req206-promotion.md` | REQ-206 sub-clause substitution + Notes bullet; ship gates | A |
+
+Implementation map: GAMEPLAN.md. Build note: anchor-ask-composer (#262) has merged; apply REQ-206 by intent as a sub-clause substitution, not the frozen replace-anchor.
