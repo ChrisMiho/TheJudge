@@ -1,4 +1,4 @@
-status: owner-action
+status: refined
 
 # life-tracker-seat-oriented-default
 

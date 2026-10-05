@@ -20,10 +20,18 @@
 
 ## Open gate
 
-- Parked at `owner-action` on gate-qc PASS (spec-forming half complete).
-- Docs-only PR: https://github.com/ChrisMiho/TheJudge/pull/247 (base `main`, head `thejudge-auto/life-tracker-seat-oriented-default`)
-- Decision: answer the REQ-217 verdict slot in `PRD/work/life-tracker-seat-oriented-default/GATE-QUESTIONS.md` (accept / edit / reject), then merge PR #247 into `main`. That merge is the build signal.
+- RESOLVED 2026-10-04 by graph-gate-review: 1 verdict (1 accept, 0 edit, 0 reject). Docs PR #247 merged; run resumes at gate-qc.
 - Resume (build half): `/graph-implement PRD/work/life-tracker-seat-oriented-default/`
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-217` | accept | — |
+
+### Brief reconciliation
+
+none
 
 ## Dispatch prompts
 
@@ -154,6 +162,31 @@ Report back concisely:
 - if PASS: confirm STATUS.refined stands
 - the checked artifact path
 - any commit SHA(s)
+
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-seat-oriented-default
+
+You are the gate-resolution step of the build half (before node 5). Invoke the `graph-gate-review` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Return your result to the graph driver.
+
+Package path: PRD/work/life-tracker-seat-oriented-default/
+Run ID: graph-20261004-191418
+
+Do ALL work in the build worktree named in the Working directory line above — never in the launch checkout.
+
+Apply the owner's recorded verdicts in GATE-QUESTIONS.md to the proposal inside that file (never editing PRD/sections/), reconcile DESIGN-BRIEF.md and the README's intake pointer to every edit or reject, record `## Gate verdicts` with its `### Brief reconciliation` list in GRAPH-RUN.md, mark `## Open gate` resolved, restore STATUS.refined and the PRD/work/STATUS.md board row, and hand back the resume command. The file carries one stable ID (REQ-217) whose recorded verdict you read from the file itself — take no verdict from this prompt.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- the gate restated in one sentence (how many IDs, the verdict split)
+- the `## Gate verdicts` rows written
+- the `### Brief reconciliation` list (the quoted grep and each rewritten passage, or `none` when every verdict was accept)
+- the STATUS marker now set and the board row
+- the commit SHA(s) on the branch
+- the exact resume command
 
 ## Instruction ledger
 

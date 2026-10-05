@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| life-tracker-seat-oriented-default | REQ-217 gate verdict accept (2026-10-04); build resumes at gate-qc. |
 
 ## refining
 
@@ -34,7 +35,6 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | anchor-ask-composer | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-218 new + REQ-110/129/206 amend) and merge to build |
-| life-tracker-seat-oriented-default | REQ-217 redefined to the near-edge −/+ fix (not a default flip); owner accepted 2026-10-04. Merge docs PR #247 to build. |
 
 
 ## deferred
