@@ -319,6 +319,31 @@ Report back:
 - The commit hash (do NOT push; the driver pushes between nodes)
 - Any blocker that would stop build
 
+### build
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-anchor-ask-composer
+
+You are node 6 (build) of the build half (run graph-20261005-133503). From the Working directory above, invoke the Skill named thejudge-implement-all for package PRD/work/anchor-ask-composer/. Implement every remaining slice (A, B, C, D) end to end in this one worktree on branch thejudge-auto/anchor-ask-composer-work; the GAMEPLAN, slice docs, and criteria files are at the pushed tip b53e418.
+
+Apply the approved product truth: for each GATE-QUESTIONS.md diff (REQ-218 new, REQ-110/129/206 amend, plus screen-layout, quick-lookup, in-depth, user-flows), write the real PRD/sections/ edit by intent against current truth — re-derive the edit, do not blind-replay a possibly-stale patch — together with the code, in the same branch. Place the new REQ-218 entry between REQ-217 and REQ-219 (the diff text says after REQ-216 but ids shifted). Re-read REQ-206 fresh at apply time; the indepth-chip-collapse package will later substitute a sub-clause of the same REQ-206 line, so keep REQ-206's chip clause as the approved width-only wording — do not pre-apply indepth's collapse behavior.
+
+Every criterion in every slice-*.criteria.json must end true, earned by the matching tool call; the node reports ok only when all are true. For the manual browser-measurement criteria, run the dev server and Playwright and write captures under PRD/work/anchor-ask-composer/.playwright-mcp/ (create it if absent); close the browser when done. When all slices are complete, set STATUS.ship-ready.
+
+Open the code PR with gh pr create --base main --head thejudge-auto/anchor-ask-composer-work, carrying a plain-language body (what a player experiences first) per PRD/instructions/plain-language-standard.md. Do NOT merge or close any PR.
+
+Boundaries: commit with explicit paths only — never git add -A, git add ., or git add --all. Do not push main, do not force-push, do not delete remote branches, do not touch the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge, do not edit any thejudge-* skill, do not run data:refresh. Copy the Working directory line above unchanged into every prompt you write (including any sub-agent you dispatch).
+
+Report back:
+- Each slice letter and its outcome
+- Confirmation every criterion is true (per slice)
+- The PRD/sections files changed
+- STATUS.ship-ready confirmation
+- The code PR URL
+- The final commit hash
+- Every path you wrote (so the driver can confirm all writes are inside the worktree)
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
