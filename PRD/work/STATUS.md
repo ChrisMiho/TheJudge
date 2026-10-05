@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| anchor-ask-composer | built 2026-10-05: slices A-D done (Ask frame, In-depth Enrichment frame, phone keyboard, PRD apply); code PR open for owner merge |
 
 ## active
 
