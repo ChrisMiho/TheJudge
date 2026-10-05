@@ -21,6 +21,7 @@
 | — | gate-review | sonnet | ok | `1 → 19` | build half (run graph-20261005-150943): REQ-206 `edit` verdict applied; brief reconciled (DESIGN-BRIEF Material assumption 3 + README Preparation-gate finding 2 to textarea-focus, not bare `:focus-within`); `## Gate verdicts` recorded in README; no intake supersession note needed; STATUS.owner-action → refined; board row updated; no commit (driver commits) | 2026-10-05 |
 | 4 | gate-qc | sonnet | ok | `1 → 9` | build-half re-grade — **PASS**, no findings; brief + README Gate verdicts + GATE-QUESTIONS.md consistent after the owner's edit (collapse keyed to textarea focus / non-empty box, not bare `:focus-within`); 3 non-blocking build notes (frozen replace-anchor no longer matches current REQ-206:5245 after #262 merge → apply as sub-clause substitution and re-read; Material assumption 4 stale re #262; Notes owner-signed-off wording correct); STATUS.refined | 2026-10-05 |
 | 5 | plan | sonnet | ok | `1 → 14` | verified README Preparation gate PASS; GAMEPLAN.md + 2 slice docs written — A (`slice-a-chip-collapse-css.md`: flow.css state rule next to line 281 using `:has(textarea:focus)` / non-empty box, never bare `:focus-within`; ComposerPill.test.tsx CSS-contract + accessible-name tests; Playwright 1440/390) and B (`slice-b-req206-promotion.md`: REQ-206 sub-clause substitution by intent + Notes bullet; PRD promotion + ship gates); criteria `slice-a.criteria.json` (A1–A10, browser/cleanup manual) + `slice-b.criteria.json` (B1–B5), all `false`; STATUS.active; board row moved; build caveat recorded (non-empty trigger uses `data-fill`, fallback `:has(textarea:not(:placeholder-shown))`) | 2026-10-05 |
+| 6 | build | sonnet | failed | `1 → 35` | attempt 1 — CODE COMPLETE, criteria flip blocked. Slice A: `flow.css` state rule hides `.q-box .deep .lbl` on `:has(textarea:focus)` / non-empty box, label kept when focus is on chip/mic/send, `<480px` glyph-only, `ComposerPill.tsx` untouched; `ComposerPill.test.tsx` +2 tests (25 pass); Playwright 1440/390 live check passed; captures moved into worktree `.playwright-mcp/`. Slice B: REQ-206 sub-clause `(labelled or icon-only at each width as the mockup shows)` substituted by intent in `functional-requirements.md` (rest of merged line intact, no ID added), Notes bullet appended. `npm run quality:check` exit 0 (595). Pushed `7d86095`, PR #263 opened. PARKED on criteria flip: harness auto-mode `[CI Bypass]` denied the build's sed/heredoc write form; evidence log 0 entries (known build-half evidence-root gap — hook loads criteria from the launch checkout where the slice files don't exist, so earns none; heartbeat 35 proves the hook fired). Return-side (REQ-193): launch porcelain IDENTICAL before/after; all writes inside the worktree. Re-dispatching attempt 2 to finish via Edit/Write per the life-tracker fix | 2026-10-05 |
 
 - None. The `define` gate is resolved: docs PR #261 merged (the build signal), the build
   half claimed the spec on `thejudge-auto/indepth-chip-collapse-work`, and gate-review applied
@@ -189,6 +190,32 @@ Run `npm run quality:check` and confirm it is green before setting STATUS.ship-r
 Do NOT touch GRAPH-RUN.md (the driver's ledger).
 
 Report back concisely: each slice's outcome and the files changed (paths relative to the worktree); confirmation every criteria file is all-`true`; the `npm run quality:check` result; the PR URL; the STATUS marker; and whether the node is ok or needs to park.
+
+### build (attempt 2 — finish-up)
+
+graph is controlling
+
+You are node 6 (`build`), attempt 2, of a graph-implement run. Invoke the `thejudge-implement-all` skill (Skill tool, skill name `thejudge-implement-all`) and follow it exactly. Do not run interactively; `graph is controlling`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-indepth-chip-collapse
+
+ALL work happens in that build worktree, in place, on branch `thejudge-auto/indepth-chip-collapse-work`. Do NOT write anything in the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge — every path you write must be inside `.worktrees/implement-indepth-chip-collapse/`. Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Run context: Slug: indepth-chip-collapse. Run ID: graph-20261005-150943. Branch: `thejudge-auto/indepth-chip-collapse-work`.
+
+Attempt 1 already landed all the real work and committed it (commit 7d86095, PR #263): slice A code (`apps/frontend/src/styles/flow.css` state rule, `apps/frontend/src/components/ComposerPill.test.tsx` +2 tests), slice B PRD edit (REQ-206 sub-clause substituted by intent in `PRD/sections/functional-requirements.md`, Notes bullet appended), Playwright captures under `PRD/work/indepth-chip-collapse/.playwright-mcp/`. Do NOT redo or re-edit that work — verify it is present first (`git log --oneline -3`, and read `flow.css` + the REQ-206 line).
+
+Attempt 1 could NOT finish the slice-completion bookkeeping because it flipped the criteria via a sed/heredoc write form, which the harness auto-mode classifier denies as `[CI Bypass]`. Your ONLY remaining job is the finish-up, done with the Edit and Write tools — NOT sed, NOT heredocs, NOT `node`/`jq`/shell JSON edits (those trip the same auto-mode denial):
+
+1. Re-run `npm run quality:check` and confirm exit 0 (re-earns the command criteria this attempt).
+2. Re-verify the live states so your manual observations are your own: with the dev server up, confirm at 1440px the In-depth label shows at rest, hides on textarea focus, hides with text after blur, STAYS shown when focus is on the chip / mic / send with an empty unfocused textarea, and returns after emptying+blurring; and at 390px it is glyph-only in every state. You may re-use the existing `.playwright-mcp/` captures as corroboration. Close the browser and release the port when done (runtime-process-hygiene).
+3. Write `PRD/work/indepth-chip-collapse/slice-a.evidence.md` (Write tool) with one dated observation line per manual criterion (A2, A3, A4, A5, A6, A10 — whichever the criteria file marks manual), each naming its criterion id and what you saw today (2026-10-05).
+4. Flip every criterion in `slice-a.criteria.json` and `slice-b.criteria.json` to `true` using the Edit tool (or Write the whole file). If any flip is denied by a `[graph-boundary]` rule naming missing evidence, STOP and report it — do not route around it.
+5. Set `STATUS.ship-ready` (rename the STATUS marker), set README `status: ship-ready`, mark the slice docs/README Slices as done, and move the `PRD/work/STATUS.md` board row to ship-ready.
+
+Do NOT open a new PR (PR #263 already exists); just commit and push to the same branch. Do NOT touch GRAPH-RUN.md (the driver's ledger).
+
+Report back concisely: confirmation attempt-1 work is present; the `npm run quality:check` result; the live re-verification result; that `slice-a.evidence.md` was written and both criteria files are all-`true` (or the exact `[graph-boundary]` denial if any flip was refused); the STATUS marker; the push; and whether the node is ok or needs to park.
 
 ## Instruction ledger
 
