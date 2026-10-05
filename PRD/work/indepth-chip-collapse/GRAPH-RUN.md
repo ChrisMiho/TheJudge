@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/indepth-chip-collapse` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-indepth-chip-collapse`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-234937/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half)
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | degraded (no run state) | branch `thejudge-auto/indepth-chip-collapse` pushed to origin (`git ls-remote` 05fd714); kickoff worktree created; launch checkout untouched; canary denied -> hook live | 2026-10-04 |
 | 2 | shape | sonnet | ok | degraded (no run state) | package `PRD/work/indepth-chip-collapse/` created with `STATUS.ideation`; intake copied verbatim to `intake/`; 4 prior-run receipts noted in IDEA.md | 2026-10-04 |
+| 3 | define | opus | ok | `0 → 24` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` written; proposes one stable ID (REQ-206 edit, state-aware label/icon-only sub-clause), Blocker questions none; STATUS.refined | 2026-10-05 |
 
 ## Open gate
 
@@ -74,6 +75,22 @@ The request (verbatim): "Collapse the Ask composer's In-depth chip to its ◈ gl
 Shape this into DESIGN-BRIEF.md and propose the PRD/sections/ product truth it needs -- recorded in GATE-QUESTIONS.md in the work folder, never written to PRD/sections/. The change amends REQ-206 in functional-requirements.md. Intake (FINDINGS.md, PROBE.md) in intake/ is evidence, never authority: every product decision it raises is still proposed to the owner in GATE-QUESTIONS.md with an accept/edit/reject slot. Do not open any document a citation inside the intake points to. Each proposed stable-ID change gets its own GATE-QUESTIONS.md slot opening with the plain-language block (What this decides / In plain terms / What happens if you say no) and the complete proposed diff -- never a summary. Set STATUS.refining while in flux and STATUS.refined on completion.
 
 Report back concisely: the DESIGN-BRIEF.md path; whether GATE-QUESTIONS.md was written and which stable IDs it proposes (with each verdict slot); the STATUS marker; and whether the node is ok or needs to park.
+
+### gate-qc
+
+graph is controlling
+
+You are node 4 (`gate-qc`) of a graph-kickoff run. Invoke the `thejudge-quality-check` skill (Skill tool, skill name `thejudge-quality-check`) and follow it exactly. Do not run interactively; `graph is controlling`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-indepth-chip-collapse
+
+ALL work happens in that kickoff worktree, never the launch checkout. Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Run context: Slug: indepth-chip-collapse. Run ID: graph-20261004-234937. Package: PRD/work/indepth-chip-collapse/.
+
+Validate `PRD/work/indepth-chip-collapse/DESIGN-BRIEF.md` against PRD alignment and agent-readiness and produce a PASS or FAIL report -- never a GAMEPLAN or slice docs. The package proposes one stable-ID change in GATE-QUESTIONS.md: an edit to REQ-206 (functional-requirements.md) making the In-depth chip label state-aware. Check the brief and the proposed diff are internally consistent, aligned to current PRD truth, and implementation-ready. On FAIL, set STATUS.refining and list every finding. On PASS, leave STATUS.refined.
+
+Report back concisely: the verdict (PASS or FAIL); the complete findings list (or none); and the STATUS marker you left.
 
 ## Instruction ledger
 
