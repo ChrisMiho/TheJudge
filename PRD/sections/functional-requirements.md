@@ -2699,12 +2699,12 @@
 - Title: Growing pre-submit question composers
 - Priority: high
 - Description: The Enrichment optional-question field and the Quick Question (Ask a Question) question field must grow with typed content so long messages remain readable and editable. Both boxes are pinned at the bottom of the anchored Ask-screen frame (REQ-218); the box grows **upward in place** — the text expands above the box's own control row while that row (the Add in-depth details chip and the mic|send pill) stays put — up to a cap, past which the text area scrolls inside itself. The page/document never scrolls from field growth and chrome below the composer is never clipped.
--  - as the user types a long question on Enrichment (optional question) and on Ask a Question, the box grows upward with the content rather than staying a single-line-height box that clips text; the control row (chip + mic|send pill) stays on a stable bottom row and does not move or reorder as the box grows
+- Acceptance Criteria:
+  - as the user types a long question on Enrichment (optional question) and on Ask a Question, the box grows upward with the content rather than staying a single-line-height box that clips text; the control row (chip + mic|send pill) stays on a stable bottom row and does not move or reorder as the box grows
   - the box is pinned at the bottom of the `100dvh` anchored frame (REQ-218); its growth takes room from the flexing stage/context region above it, never from the page, so document/page scroll does not appear
   - growth stops at a cap, past which the text area scrolls inside itself — never the page; lower chrome is never pushed off-screen or clipped
   - the same grow-in-place-without-page-scroll behavior holds on desktop (more available space) and mobile, including above the on-screen keyboard (REQ-218)
   - character counter and submit control remain usable while the box is expanded
-  - character counter and submit control remain usable while the field is expanded
 - Constraints:
   - does not require filling empty lower-half dead space on pre-submit screens beyond what field growth naturally occupies
   - no Ask AI contract change; existing character caps unchanged
