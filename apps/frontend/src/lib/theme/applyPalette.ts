@@ -11,6 +11,22 @@ function triplet(channels: string): string {
 }
 
 /**
+ * REQ-219: the browser tab follows the active profile. Sets the mobile browser
+ * bar tint (`theme-color`) to the profile accent, derived from the palette (the
+ * one token source, REQ-216), creating the meta when absent. Never duplicates it.
+ */
+function syncTabChrome(palette: Palette): void {
+  const accent = triplet(palette.accent);
+  let meta = document.head.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (meta === null) {
+    meta = document.createElement("meta");
+    meta.name = "theme-color";
+    document.head.appendChild(meta);
+  }
+  meta.content = accent;
+}
+
+/**
  * Selects the active profile on the document root. The six profiles' values
  * live in `styles/tokens.css` under `[data-profile="<id>"]` (REQ-216: one token
  * source), so a built-in profile only sets the attribute and clears any custom
@@ -24,6 +40,7 @@ export function applyPalette(palette: Palette): void {
   root.dataset.theme = palette.id;
   root.dataset.themeMotif = palette.motif;
   root.setAttribute("data-profile", palette.id);
+  syncTabChrome(palette);
   const base = getPaletteById(palette.id);
   const custom = base !== undefined && palette.swatch !== base.swatch;
   if (!custom) {

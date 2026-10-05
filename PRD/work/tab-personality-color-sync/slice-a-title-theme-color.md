@@ -1,6 +1,6 @@
 # Slice A — Branded title and theme-color sync
 
-## Status: planned
+## Status: done
 
 ## Goal
 
