@@ -26,6 +26,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 9` | build-half re-grade — **PASS**, no findings; all 69 proposed diff `-` anchors re-verified against current PRD/sections (functional-requirements, screen-layout, quick-lookup, in-depth, user-flows); the 4 accept verdicts introduce no inconsistency; REQ-218 id still free; STATUS.refined; non-blocking build note — place REQ-218 between REQ-217 and REQ-219 (the diff says after REQ-216 but ids shifted since it was authored); no commit (no artifact) | 2026-10-05 |
 | 5 | plan | sonnet | ok | `0 → 14` | 4 slices mapped (A scope scanner 31.5rem override + Ask `narrow-fit` frame + 1440px width criterion; B frame In-depth Enrichment station only, DEC-145 holds for Game/Zones/Cards; C `visualViewport` keyboard hook; D apply PRD/sections diffs REQ-218/110/129/206 + screen-layout/quick-lookup/in-depth/user-flows, final measured pass, ship gates); `slice-{a,b,c,d}.criteria.json` emitted, all criteria `false`; REQ-218 placement note carried to GAMEPLAN + slice D; STATUS.active; committed `4ab8916`; no blocker | 2026-10-05 |
 | 6 | build | sonnet | ok | `0 → 98` | slices A–D implemented end to end; all criteria earned (A1–A8, B1–B7, C1–C4, D1–D7 true, no `false` remaining); PRD/sections truth applied by intent (REQ-218 new between REQ-217/219, REQ-110/129/206 amended; screen-layout, quick-lookup, in-depth, user-flows); REQ-206 chip clause kept at approved width-only wording (indepth sub-clause not pre-applied); scanner 31.5rem override scoped via `:has(> .idq > .flow-head .scan-exit)`; new `useVisualViewportHeight` hook; measured 1440×716 + 390×740 (Ask/In-depth col 576px, scanner 504px; send pill on-screen; keyboard-stub pill bottom 359.8/397.6 < 400); `npm run quality:check` + frontend suite (1538) + `test:scripts` (595) green; STATUS.ship-ready; **code PR #262** open (`thejudge-auto/anchor-ask-composer-work → main`, 64c846c). Return-side (REQ-193): launch porcelain identical before/after; product writes all inside the worktree (stray gitignored Playwright auto-snapshots landed in the pre-existing launch-root `.playwright-mcp/` scratch — no tracked change, assertion holds) | 2026-10-05 |
+| 7 | review | opus | failed | `0 → 28` | **LOOP TO BUILD** (loop 1 of 2) — slices A/B/C PASS; one Important finding inside slice D's criteria (D-1): REQ-110 amendment in `functional-requirements.md` applied incorrectly — `- Acceptance Criteria:` header dropped and not re-added; first criterion malformed as `-  - as the user types…` (literal `-  - ` prefix, line 2702); stale duplicate bullet left (line 2707 `…while the field is expanded`) beside the new line 2706 (`…while the box is expanded`). Drifts from approved GATE-QUESTIONS REQ-110 diff; no Critical. Focus checks clean: REQ-206 chip clause width-only (collapse not pre-applied), REQ-218 between REQ-217/219, scanner 31.5rem scoped to host, other 4 edits match intent | 2026-10-05 |
 
 ## Open gate
 
@@ -366,6 +367,28 @@ Report back:
 - Per slice (A–D): PASS or the findings
 - Each finding with a severity: Critical, Important, or Minor/preference (and whether it falls outside the slice's stated criteria)
 - Overall verdict: APPROVE (advance to close) or LOOP TO BUILD (only on a Critical or Important finding inside a slice's criteria), with the specific fix
+
+### build (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-anchor-ask-composer
+
+You are node 6 (build), attempt 2, of the build half (run graph-20261005-133503). The review node (node 7) returned one Important finding inside slice D. Fix exactly that finding — nothing else — then re-verify. All slices already shipped (STATUS.ship-ready, code PR #262 open on branch thejudge-auto/anchor-ask-composer-work); this is a correction pass, not a re-implementation.
+
+The finding (D-1): in PRD/sections/functional-requirements.md, REQ-110's amended Acceptance Criteria was applied incorrectly. Re-read the approved REQ-110 block in PRD/work/anchor-ask-composer/GATE-QUESTIONS.md to confirm the intended result, then correct the shipped REQ-110 so it matches that approved intent:
+1. Restore the `- Acceptance Criteria:` header as its own line before the first criterion (it was dropped).
+2. Fix the malformed first criterion line (currently `-  - as the user types …`, with a literal `-  - ` prefix) to a normal nested bullet `  - as the user types …`.
+3. Delete the stale duplicate bullet `  - character counter and submit control remain usable while the field is expanded` (the approved diff replaced it with `  - character counter and submit control remain usable while the box is expanded`, which is already present — keep that one).
+
+Change only REQ-110 in functional-requirements.md. Do not touch REQ-206's chip clause (it must stay the approved width-only wording), REQ-218, REQ-129, the other PRD/sections files, or any code — the review confirmed those are correct. After the fix, re-run npm run quality:check and confirm green, and confirm slice D's criteria remain true. Commit on branch thejudge-auto/anchor-ask-composer-work with explicit paths only (never git add -A / . / --all) and push to that branch so PR #262 updates. Do not merge or close any PR, do not push main, do not force-push, do not touch the launch checkout, do not edit any thejudge-* skill. Copy the Working directory line above unchanged into every prompt you write.
+
+Report back:
+- The exact before/after of the REQ-110 Acceptance Criteria block
+- Confirmation only REQ-110 in functional-requirements.md changed (git diff name-only since 64c846c)
+- quality:check result
+- The commit hash and confirmation it is pushed
+- Every path you wrote
 
 ## Instruction ledger
 
