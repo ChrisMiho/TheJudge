@@ -230,8 +230,10 @@ html {
 }
 
 /* REQ-218: in the 36rem fit frame the Ask column is a flex column exactly the frame's height —
-   header and title take their natural height, the card stage flexes and region-scrolls, and the
-   question box is the pinned foot, so a long question grows the box upward in place. */
+   header and title take their natural height, the card stage keeps its natural height (and only
+   region-scrolls if it must shrink), and the question box rests directly under it. Slack sits
+   BELOW the box; a long question grows the box downward (the textarea's cap is set by
+   `useAutoGrowTextarea`: down to the control row and the keyboard, then it scrolls inside). */
 .page-content-narrow-fit > .qq {
   display: flex;
   flex-direction: column;
@@ -244,7 +246,7 @@ html {
 }
 
 .page-content-narrow-fit > .qq > .stage {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
@@ -254,20 +256,17 @@ html {
   flex-shrink: 0;
 }
 
-.page-content-narrow-fit > .qq > .composer {
-  margin-top: auto;
-}
-
-/* REQ-218: the box's text area caps at a share of the visible height, so with the phone keyboard
-   open (a short visual viewport) the pinned box still fits and the text scrolls inside it. */
+/* REQ-218: the box's text area has no fixed cap here — `useAutoGrowTextarea` sizes it to fill
+   the visible height down to its own control row (and the phone keyboard), then the text scrolls
+   inside the textarea, never the page. */
 .page-content-narrow-fit .q-box textarea {
-  max-height: min(176px, calc(var(--visual-viewport-height, 100dvh) * 0.22));
+  max-height: none;
 }
 
 /* REQ-218: the In-depth Enrichment station, same frame: the per-card context region flexes and
-   scrolls, the question box is pinned. */
+   scrolls only if it must shrink, the question box rests directly under it and grows downward. */
 .page-content-narrow-fit > .idq-fit {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -278,7 +277,7 @@ html {
 }
 
 .page-content-narrow-fit > .idq-fit > .idq-step {
-  flex: 1 1 auto;
+  flex: 0 1 auto;
   min-height: 0;
   display: flex;
   flex-direction: column;
@@ -292,7 +291,6 @@ html {
 
 .page-content-narrow-fit > .idq-fit > .idq-step > .enrichment-question-surface {
   flex: 0 0 auto;
-  margin-top: auto;
 }
 
 .page-content-narrow-fit > .idq-fit > .idq-step > :not(.plate):not(.enrichment-question-surface) {
@@ -386,7 +384,7 @@ html {
 .page-shell-fit {
   height: 100dvh;
   /* REQ-218: on a phone with the keyboard open the visual viewport is shorter than `100dvh`;
-     `PageShell` sets the variable from `visualViewport`, so the pinned composer rides above it. */
+     `PageShell` sets the variable from `visualViewport`, so the grown question box stays above it. */
   height: var(--visual-viewport-height, 100dvh);
   min-height: 0; /* `.page-shell`'s own `min-height: 100dvh` would otherwise keep the frame tall */
   overflow: hidden;

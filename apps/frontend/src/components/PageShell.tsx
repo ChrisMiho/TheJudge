@@ -29,8 +29,8 @@ export function PageShell({ children, variant = "standard" }: PageShellProps): J
   const motif = useActiveThemeMotif();
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
   const visualViewportHeight = useVisualViewportHeight();
-  // REQ-218: the 36rem fit frame resolves its height against the visual viewport so a pinned
-  // question box rides above the phone keyboard; `.page-shell-fit` falls back to `100dvh`.
+  // REQ-218: the 36rem fit frame resolves its height against the visual viewport so a growing
+  // question box stays above the phone keyboard; `.page-shell-fit` falls back to `100dvh`.
   const fitStyle =
     variant === "narrow-fit" && visualViewportHeight !== null
       ? ({ "--visual-viewport-height": `${visualViewportHeight}px` } as CSSProperties)

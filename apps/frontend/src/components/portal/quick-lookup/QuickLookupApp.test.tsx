@@ -1,5 +1,7 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CardMetadataItem } from "../../../types";
 import { NO_MATCH_COPY } from "../../../lib/search";
@@ -212,7 +214,7 @@ describe("QuickLookupApp", () => {
     );
   });
 
-  it("frames the pre-submit screen in the narrow-fit variant with the question box as the pinned foot, scanner open or not (REQ-218)", async () => {
+  it("frames the pre-submit screen in the narrow-fit variant with the question box resting under the card stage, scanner open or not (REQ-218)", async () => {
     const user = userEvent.setup();
     const { container, unmount } = render(<QuickLookupApp />);
 
@@ -220,8 +222,23 @@ describe("QuickLookupApp", () => {
     expect(container.querySelector(".page-content-narrow-fit")).not.toBeNull();
     const qq = container.querySelector(".page-content-narrow-fit > .qq");
     expect(qq).not.toBeNull();
-    // The composer is the last region of the column, after the title row and the card stage.
-    expect(qq?.lastElementChild?.classList.contains("composer")).toBe(true);
+    // The composer sits directly under the card stage (top-rest), after the title row — it is
+    // not bottom-pinned: no stylesheet rule pushes it to the foot or lets the stage eat the slack.
+    const children = Array.from(qq?.children ?? []);
+    const composerIndex = children.findIndex((child) => child.classList.contains("composer"));
+    expect(composerIndex).toBeGreaterThan(0);
+    const stageIndex = children.findIndex((child) => child.classList.contains("stage"));
+    if (stageIndex >= 0) expect(stageIndex).toBeLessThan(composerIndex);
+    const composer = qq?.children[composerIndex] as HTMLElement;
+    expect(composer.style.marginTop).toBe("");
+
+    // jsdom applies no stylesheet, so assert the frame rules at source: no bottom pin, no fixed
+    // 176px textarea cap, and the stage no longer flexes to eat the slack above the box.
+    const css = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
+    expect(css).not.toMatch(/\.page-content-narrow-fit > \.qq > \.composer\s*\{[^}]*margin-top:\s*auto/);
+    expect(css).not.toMatch(/\.enrichment-question-surface\s*\{[^}]*margin-top:\s*auto/);
+    expect(css).not.toMatch(/\.page-content-narrow-fit \.q-box textarea\s*\{[^}]*176px/);
+    expect(css).toMatch(/\.page-content-narrow-fit > \.qq > \.stage\s*\{\s*flex:\s*0 1 auto/);
     expect(qq?.querySelector(".composer textarea")).not.toBeNull();
     await user.click(screen.getByRole("button", { name: "Add card" }));
     unmount();

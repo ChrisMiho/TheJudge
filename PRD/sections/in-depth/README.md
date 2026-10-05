@@ -260,11 +260,11 @@ retrieval/combo machinery that other specs own.
   cards, otherwise **Explain the interaction with the provided game state** when
   another selected zone has cards — which may be shown as a pre-submit hint. The
   pre-submit composer presents the field as the dominant row element with an
-  inline counter and compact submit. It is pinned at the foot of the Enrichment
-  surface's `100dvh` anchored frame (REQ-218) and grows upward in place above its
-  stable control row, over the per-card context list that flexes and
-  region-scrolls above it — without forcing page scroll or clipping chrome below
-  it, and staying above the on-screen keyboard on a phone. (REQ-011, DEC-028,
+  inline counter and compact submit. It rests directly under the per-card context list in the Enrichment
+  surface's `100dvh` anchored frame (REQ-218) and grows downward to a cap that
+  leaves room for its control row (and the on-screen keyboard on a phone), then
+  scrolls inside the text area — without forcing page scroll or clipping chrome
+  below it. (REQ-011, DEC-028,
   DEC-146, DEC-131, REQ-121, REQ-110, REQ-218)
 - Built: submit is allowed only when at least one selected zone holds a card. The
   frontend sends `AskAiRequest = { question, gameContext }` on `mode: "game"`
@@ -503,7 +503,7 @@ outcome-validated, not product truth.
 - Layout/fit: the Game, Zones, and Cards steps are content-sized vertically
   (no stretch to fill lower viewport, DEC-145); the Enrichment surface is the
   In-depth end of the `100dvh` anchored Ask-screen frame (REQ-218) — the per-card
-  context list flexes/region-scrolls and the question box is pinned at the foot;
+  context list keeps its natural height and the question box rests directly under it;
   the answered workspace and the zone/enrichment lists region-scroll per
   `screen-layout.md`'s five In-Depth rows. (DEC-145 via shared chrome, REQ-218, NFR-001)
 

@@ -8,6 +8,13 @@ import { useLayoutEffect, useRef, type RefObject } from "react";
 const VIEWPORT_BOTTOM_MARGIN_PX = 24;
 
 /**
+ * Height (px) reserved under the field for the box's own control row — the Add-in-depth chip,
+ * the mic|send pill and the count (44px controls plus the box padding) — so the send pill
+ * always stays inside the visible viewport as the field grows downward (REQ-218).
+ */
+const CONTROL_ROW_RESERVE_PX = 64;
+
+/**
  * Grow-to-fit behavior shared by both pre-submit question composers (Enrichment's optional
  * question, Quick Question's question) — DEC-131 prefers one shared implementation over two
  * divergent per-field ones. Accepts the caller's own `<textarea>` ref (rather than returning
@@ -72,8 +79,17 @@ export function useAutoGrowTextarea(
 
       remeasureWhenRenderedRef.current = false;
 
+      // The visual viewport shrinks when the phone keyboard opens (`innerHeight` may not), so
+      // measure against it when present; the field's top is converted into the same space.
+      const visualViewport = window.visualViewport;
       const { top } = textarea.getBoundingClientRect();
-      const viewportCeiling = Math.max(0, window.innerHeight - top - VIEWPORT_BOTTOM_MARGIN_PX);
+      const visibleBottom = visualViewport
+        ? visualViewport.offsetTop + visualViewport.height
+        : window.innerHeight;
+      const viewportCeiling = Math.max(
+        0,
+        visibleBottom - top - CONTROL_ROW_RESERVE_PX - VIEWPORT_BOTTOM_MARGIN_PX
+      );
       const ceiling = Math.max(viewportCeiling, measureSingleLineHeight(textarea));
 
       textarea.style.height = `${Math.min(textarea.scrollHeight, ceiling)}px`;
@@ -89,7 +105,12 @@ export function useAutoGrowTextarea(
     }
 
     window.addEventListener("resize", handleWindowResize);
-    return () => window.removeEventListener("resize", handleWindowResize);
+    // The phone keyboard resizes the visual viewport without a window resize.
+    window.visualViewport?.addEventListener("resize", handleWindowResize);
+    return () => {
+      window.removeEventListener("resize", handleWindowResize);
+      window.visualViewport?.removeEventListener("resize", handleWindowResize);
+    };
   }, []);
 
   // Re-activating a destination changes neither `value` nor the window size, so
