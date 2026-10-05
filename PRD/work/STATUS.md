@@ -33,7 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| anchor-ask-composer | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-218 new + REQ-110/129/206 amend) and merge to build |
+| anchor-ask-composer | APPROVED — docs PR #249 merged, all verdicts `accept` (REQ-218 new + REQ-110/129/206 amend); ready to build via `/graph-implement PRD/work/anchor-ask-composer/` |
 
 
 ## deferred
