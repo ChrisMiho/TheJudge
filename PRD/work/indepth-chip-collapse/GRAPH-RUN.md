@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/indepth-chip-collapse` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-indepth-chip-collapse`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-234937/`
-- Current node: `review` (build half; build ok, ship-ready, PR #263)
+- Current node: `close` (build half; review APPROVE)
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/261 (MERGED — the build signal; base `main`, head `thejudge-auto/indepth-chip-collapse`)
 - Next action: `/graph-implement PRD/work/indepth-chip-collapse/` — continues gate-qc → plan → build → review → close on `thejudge-auto/indepth-chip-collapse-work`
 
@@ -23,6 +23,7 @@
 | 5 | plan | sonnet | ok | `1 → 14` | verified README Preparation gate PASS; GAMEPLAN.md + 2 slice docs written — A (`slice-a-chip-collapse-css.md`: flow.css state rule next to line 281 using `:has(textarea:focus)` / non-empty box, never bare `:focus-within`; ComposerPill.test.tsx CSS-contract + accessible-name tests; Playwright 1440/390) and B (`slice-b-req206-promotion.md`: REQ-206 sub-clause substitution by intent + Notes bullet; PRD promotion + ship gates); criteria `slice-a.criteria.json` (A1–A10, browser/cleanup manual) + `slice-b.criteria.json` (B1–B5), all `false`; STATUS.active; board row moved; build caveat recorded (non-empty trigger uses `data-fill`, fallback `:has(textarea:not(:placeholder-shown))`) | 2026-10-05 |
 | 6 | build | sonnet | ok | `1 → 30` | attempt 2 — finish-up via Edit/Write (no sed/heredoc): `npm run quality:check` exit 0 (595 pass); live re-verified at 1440px (label shown at rest, hidden on textarea focus, hidden with text after blur, SHOWN with focus on chip/mic/send while box empty, returns after empty+blur) and 390px (glyph-only every state, incl. chip focused); `slice-a.evidence.md` written (A2,A3,A4,A5,A6,A10 dated 2026-10-05); both criteria files all-`true` (10+5) via the Write tool — NO `[graph-boundary]` denial on the flips (confirms graph tier had no opinion; attempt-1 block was the harness auto-mode command-form classifier only); STATUS.ship-ready, README + board row updated; browser/port 5391 released; pushed `28c6abf`, PR #263. Return-side (REQ-193): launch porcelain IDENTICAL, all writes in-worktree | 2026-10-05 |
 | 6 | build | sonnet | failed | `1 → 35` | attempt 1 — CODE COMPLETE, criteria flip blocked. Slice A: `flow.css` state rule hides `.q-box .deep .lbl` on `:has(textarea:focus)` / non-empty box, label kept when focus is on chip/mic/send, `<480px` glyph-only, `ComposerPill.tsx` untouched; `ComposerPill.test.tsx` +2 tests (25 pass); Playwright 1440/390 live check passed; captures moved into worktree `.playwright-mcp/`. Slice B: REQ-206 sub-clause `(labelled or icon-only at each width as the mockup shows)` substituted by intent in `functional-requirements.md` (rest of merged line intact, no ID added), Notes bullet appended. `npm run quality:check` exit 0 (595). Pushed `7d86095`, PR #263 opened. PARKED on criteria flip: harness auto-mode `[CI Bypass]` denied the build's sed/heredoc write form; evidence log 0 entries (known build-half evidence-root gap — hook loads criteria from the launch checkout where the slice files don't exist, so earns none; heartbeat 35 proves the hook fired). Return-side (REQ-193): launch porcelain IDENTICAL before/after; all writes inside the worktree. Re-dispatching attempt 2 to finish via Edit/Write per the life-tracker fix | 2026-10-05 |
+| 7 | review | opus | ok | `1 → 16` | **APPROVE**, no Critical/Important findings. Fresh-context no-write reviewer graded `git diff origin/main...HEAD` against the slices' own acceptance criteria (A1–A10, B1–B5 all met). Verified: collapse keyed to `:has(textarea:focus)` + `:not([data-fill="0"])` (the only `:focus-within` in flow.css is the pre-existing border rule at line 217, not on `.lbl`) so a keyboard user on chip/mic/send with an empty unfocused box keeps the label; `data-fill` is "0"/"some" so `:not([data-fill="0"])` fires for any non-empty value; `<480px` rule + `aria-label` + `.lbl aria-hidden` unchanged, `ComposerPill.tsx` no diff; REQ-206 only the sub-clause replaced (grep of old phrase = 0), rest of line intact, Notes bullet appended, no ID added/renumbered; ran ComposerPill tests 25/25; `slice-a.evidence.md` dated observations present. Advance to close | 2026-10-05 |
 
 - None. The `define` gate is resolved: docs PR #261 merged (the build signal), the build
   half claimed the spec on `thejudge-auto/indepth-chip-collapse-work`, and gate-review applied
@@ -241,6 +242,28 @@ The rubric is the slices' OWN `## Acceptance criteria`, not your taste. Grade th
 Severity rule: a preference, a style note, or any improvement OUTSIDE the slices' stated requirements is NEVER Critical or Important and must NOT loop the run back to build. Only a gap that breaks correctness or a stated acceptance criterion is Critical/Important.
 
 Report back concisely: APPROVE, or a list of Critical/Important findings (each naming the file, the broken criterion, and why). State your verdict as APPROVE (advance to close) or CHANGES-REQUESTED (loop to build).
+
+### close
+
+graph is controlling
+
+You are node 8 (`close`) of a graph-implement run. Invoke the `thejudge-cleanup` skill (Skill tool, skill name `thejudge-cleanup`) and follow it exactly, on the PR-ready path (the code branch, BEFORE the owner's merge). Do not run interactively; `graph is controlling`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-indepth-chip-collapse
+
+ALL work happens in that build worktree on branch `thejudge-auto/indepth-chip-collapse-work`, never the launch checkout. The receipt and the package deletion ride in PR #263. Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Run context: Slug: indepth-chip-collapse. Run ID: graph-20261005-150943. Package: PRD/work/indepth-chip-collapse/. Code PR: https://github.com/ChrisMiho/TheJudge/pull/263 (`thejudge-auto/indepth-chip-collapse-work → main`).
+
+The package is STATUS.ship-ready; review APPROVED. Close it out:
+- Verify slice completion (A + B, all criteria `true`).
+- Confirm the durable PRD/sections/ truth is already applied by build — REQ-206 in `functional-requirements.md` carries the state-aware chip sub-clause and the appended Notes bullet. Promote only any leftover; never re-write what build already applied.
+- Write the receipt under `PRD/instructions/receipts/indepth-chip-collapse-2026-10-05.md`, folding the ledger's `## Node ledger` and `## Instruction ledger` VERBATIM into a `## Graph run` section, and add an `## Intake` section naming each staged intake file and its stated origin. The receipt's `## Graph run` summary line must read: `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/263`. Follow the plain-language standard. Do NOT append the `close` node-ledger row yourself — the driver appends it after you return (the ledger file is being deleted).
+- Update `PRD/work/STATUS.md` (remove the ship-ready row for this slug / move it to the shipped record as the board convention requires).
+- Delete `PRD/work/indepth-chip-collapse/` (the whole package folder, including GRAPH-RUN.md, after folding it into the receipt).
+- Commit the receipt + deletion + STATUS.md on `thejudge-auto/indepth-chip-collapse-work` and push. Do NOT merge, close, or force-push any PR. Do NOT open a new PR.
+
+Report back concisely: the receipt path; confirmation the ledger was folded verbatim and the Terminal state line is present; the PRD truth confirmation (already applied vs promoted leftover); that the package folder is deleted and STATUS.md updated; the commit SHA and push; and whether the node is ok or needs to park.
 
 ## Instruction ledger
 
