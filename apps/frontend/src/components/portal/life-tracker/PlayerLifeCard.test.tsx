@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { createInitialState } from "../../../lib/lifeTracker/state";
-import { seatArrangement, type SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
+import { listSeatArrangement, seatArrangement, type SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
 import { PlayerLifeCard } from "./PlayerLifeCard";
 
 const placement: SeatPlacement = {
@@ -319,29 +319,55 @@ describe("Frontend - Shared", () => {
       expect(screen.getByRole("button", { name: increaseName })).toHaveClass("top-0", "h-1/2");
     });
 
-    it("splits grid-mode cards on a fixed screen left/right regardless of seat rotation", () => {
+    it("splits grid-mode cards on each seat's near edge, `-` toward the player", () => {
       const player = playerAtLife(40);
       const decreaseName = "Decrease life for Player 1 (Alice)";
       const increaseName = "Increase life for Player 1 (Alice)";
+      const cases: Array<[SeatPlacement["side"], SeatPlacement["rotation"], string[], string[]]> = [
+        ["left", 90, ["left-0", "w-1/2"], ["right-0", "w-1/2"]],
+        ["right", 270, ["right-0", "w-1/2"], ["left-0", "w-1/2"]],
+        ["bottom", 0, ["bottom-0", "h-1/2"], ["top-0", "h-1/2"]],
+        ["top", 180, ["top-0", "h-1/2"], ["bottom-0", "h-1/2"]]
+      ];
 
-      // A sideways seat (rotation 90) that would split top/bottom in list mode instead splits on a
-      // fixed on-screen left/right in grid mode: − on the left half, + on the right, every card.
+      for (const [side, rotation, decreaseClasses, increaseClasses] of cases) {
+        const { unmount } = render(
+          <PlayerLifeCard
+            player={player}
+            players={rosterWith(player)}
+            placement={{ ...placement, side, rotation }}
+            layout={layout}
+            cardStyle="gradient"
+            layoutMode="grid"
+            onAdjustLife={vi.fn()}
+            onSetLife={vi.fn()}
+            onOpenCounters={vi.fn()}
+          />
+        );
+        expect(screen.getByRole("button", { name: decreaseName })).toHaveClass(...decreaseClasses);
+        expect(screen.getByRole("button", { name: increaseName })).toHaveClass(...increaseClasses);
+        unmount();
+      }
+    });
+
+    it("mirrors the right-of-pair list seat so `-` is on its own outer right side", () => {
+      const player = playerAtLife(40);
       render(
         <PlayerLifeCard
           player={player}
           players={rosterWith(player)}
-          placement={{ ...placement, rotation: 90 }}
-          layout={layout}
+          placement={{ ...placement, side: "bottom", rotation: 0, gridColumn: "2 / 3" }}
+          layout={listSeatArrangement(4)}
           cardStyle="gradient"
-          layoutMode="grid"
+          layoutMode="list"
           onAdjustLife={vi.fn()}
           onSetLife={vi.fn()}
           onOpenCounters={vi.fn()}
         />
       );
 
-      expect(screen.getByRole("button", { name: decreaseName })).toHaveClass("left-0", "w-1/2");
-      expect(screen.getByRole("button", { name: increaseName })).toHaveClass("right-0", "w-1/2");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 1 (Alice)" })).toHaveClass("right-0", "w-1/2");
+      expect(screen.getByRole("button", { name: "Increase life for Player 1 (Alice)" })).toHaveClass("left-0", "w-1/2");
     });
 
     it("keeps the inner controls clickable above the two life halves", () => {
