@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 15` | package `PRD/work/life-tracker-seat-oriented-default/` created (IDEA.md, README.md, STATUS.ideation, intake/GRAPH-BRIEF.md); 4 receipt matches noted; intake copied→committed→staged-copy-deleted; commit 5e1144f | 2026-10-03 |
 | 3 | define | opus | ok | `1 → 38` | DESIGN-BRIEF.md written (assumptions A2–A8 with code/spec evidence); GATE-QUESTIONS.md written — one block REQ-217 (new game opens in list by default), 3-file diff, blank verdict slot; STATUS.refined; no decision blocker; commit a81afbe | 2026-10-03 |
 | 4 | gate-qc | sonnet | ok | `0 → 9` | PASS — brief + REQ-217 diff checked against live PRD (no section pins grid as default; REQ-217 free; all 3 diff anchors + cited DEC/REQ verified); no changes/commit; STATUS.refined stood → moved to owner-action at park | 2026-10-03 |
+| — | gate-review | sonnet | ok | `0 → 16` | REQ-217 accept applied in GATE-QUESTIONS.md (proposal unchanged, no PRD/sections edit); brief reconciliation none; STATUS.refined restored, board row moved; Open gate RESOLVED; commit 1fe8212 | 2026-10-04 |
 
 ## Open gate
 
