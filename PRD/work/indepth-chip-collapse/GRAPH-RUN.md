@@ -3,8 +3,8 @@
 - Run ID: `graph-20261004-234937`
 - Profile: `loaded (env sentinel)` (observed by graph-preflight at node 1)
 - Canary: `denied — hook live (rm -rf universal; nohup graph-tier)`
-- Autonomous base: `origin/thejudge-auto/indepth-chip-collapse` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-indepth-chip-collapse`
+- Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/indepth-chip-collapse` by the build half's claim)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-indepth-chip-collapse`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-234937/`
 - Current node: `owner-action` (parked at gate-qc PASS)
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/261 (base `main`, head `thejudge-auto/indepth-chip-collapse`)

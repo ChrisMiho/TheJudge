@@ -4,7 +4,7 @@ Intake origin: .worktrees/.graph-intake/graph-20261004-234937 (probe-indepth-chi
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/indepth-chip-collapse
+- Autonomous base: origin/main
 
 ## Preparation gate
 
