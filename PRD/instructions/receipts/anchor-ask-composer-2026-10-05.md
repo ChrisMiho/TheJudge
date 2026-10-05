@@ -49,3 +49,43 @@
 ## Intake
 
 - `intake/GRAPH-BRIEF.md` — the owner's graph-run brief supplied at kickoff (staged at `.worktrees/.graph-intake/graph-20261003-205515/`).
+
+## Post-run owner revision (2026-10-05, live review before merge)
+
+The graph run above ended COMPLETE with the question box **pinned at the bottom
+of the anchored frame, growing upward** (REQ-218/110/129 as first shipped). On a
+live preview of PR #262 — before merging — the owner reversed that resting
+position and directed several refinements. All of the following rode as extra
+commits on the same branch `thejudge-auto/anchor-ask-composer-work` / PR #262
+(no new package, no new PR); the PRD/sections truth was updated in step with the
+code each time:
+
+- **Box rests at the top, grows downward.** The box now sits under the attach
+  chips and the card stage (which stay above it) and grows downward into the
+  slack below, capped so its own control row (chip + mic|send pill) and the
+  mobile keyboard stay on screen; past the cap **only the textarea** scrolls.
+  No page scroll. (reverses the pinned-bottom/grow-upward wording of
+  REQ-218/110/129.)
+- **Card carousel never scrolls; card image capped by breakpoint.** ~55% (≥720px)
+  / ~48% (600–719px) / ~40% (<600px) of the frame height, with a further step to
+  ~33% (≈18% smaller) on small short phones (`max-width:480px` and
+  `max-height:700px`, iPhone-SE class, after a 25%-then-+10% tuning); the image
+  yields to keep the box a readable minimum (`--card-room`). The card stage no
+  longer region-scrolls.
+- **Visible `n/300` counter removed.** The budget ring around the send pill is the
+  only visible cue; a visually-hidden `aria-live` region keeps the remaining count
+  for screen readers; the 300 cap is unchanged. Applied to the Ask box and the
+  answered follow-up box.
+- **Placeholder hint shortens by viewport breakpoint.** ≥600px
+  "What would you like to know?", 400–599px "Ask your question…", ≤400px (SE
+  class) "Your question…", with a fit-measurement safety net.
+
+Commit range: `64c846c` (original build) → `10bf68f` (final). Key rework commits:
+`43395bd`, `ff9d583`, `3fdcc2f`, `2c4b318`, `24fa112`, `7c08a07`, `37229f7`,
+`10bf68f`. An independent no-write review of the full reworked diff returned
+**APPROVE** after the final wording fixes (behaviors verified correct; stale
+"visible counter" / "grows upward" text cleared across quick-lookup README,
+REQ-011 note, system-map, and a code comment). `npm run quality:check` green.
+
+Terminal state unchanged: **COMPLETE — land: the owner's merge of
+https://github.com/ChrisMiho/TheJudge/pull/262**.
