@@ -439,6 +439,32 @@ Report back:
 - your verdict
 End with a one-line status: review APPROVE (ready for close) or review CHANGES (N Critical/Important findings, loop to build).
 
+### close (build half — run graph-20261004-215150)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync
+
+You are node 8 (`close`) of the build half of an autonomous graph run. Invoke the `thejudge-cleanup` skill (Skill tool, skill name `thejudge-cleanup`) and follow it exactly in graph-controlled mode, on the PR-ready path: you run ON the code branch thejudge-auto/tab-personality-color-sync-work BEFORE the owner merges, so the receipt and the package deletion ride in code PR #259. Because `graph is controlling`, do NOT stop to ask the user anything.
+
+First cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync and run every command from there — never the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge. Copy the `Working directory:` line unchanged into any prompt you write.
+
+Package: PRD/work/tab-personality-color-sync/, STATUS.ship-ready. Per the skill:
+- Verify every slice is complete (A/B/C done; criteria.json all true) and the ship gates are met (review APPROVE, quality:check green — recorded in GRAPH-RUN.md).
+- Confirm the durable PRD truth is ALREADY present (REQ-219 in PRD/sections/functional-requirements.md and the shared-chrome/README.md bullet were applied at build). Promote ONLY any leftover; never re-write what build applied. Confirm no leftover reference to the superseded Menu-tray REQ-219 content remains.
+- Fold the GRAPH-RUN.md ## Node ledger and ## Instruction ledger VERBATIM into a ## Graph run section of a durable receipt at PRD/instructions/receipts/tab-personality-color-sync-2026-10-04.md. Include a line reading PR: https://github.com/ChrisMiho/TheJudge/pull/259 and the terminal-state line exactly: Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/259
+- Write the ## Intake section naming each staged intake file and its origin (if none, say so).
+- Update PRD/work/STATUS.md (remove the tab-personality-color-sync board row — the package is being deleted).
+- Delete PRD/work/tab-personality-color-sync/ entirely.
+- Commit the receipt plus the deletion plus STATUS.md on thejudge-auto/tab-personality-color-sync-work (stage explicit paths, never git add -A or git add .) and push. Do NOT merge or close PR #259, do NOT push or merge into main.
+
+Report back:
+- the receipt path
+- confirmation REQ-219 durable truth is present (grep evidence) and no superseded Menu-tray content remains
+- confirmation PRD/work/tab-personality-color-sync/ is deleted
+- the commit and push result
+Report evidence as commands/paths, not bare claims. End with a one-line status: close OK (receipt written, package deleted, pushed) or BLOCKED (reason).
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
