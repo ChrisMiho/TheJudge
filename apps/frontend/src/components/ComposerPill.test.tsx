@@ -406,4 +406,50 @@ describe("Frontend - ComposerPill dictation (REQ-212)", () => {
     expect(screen.getByTestId("dictation-mic")).toHaveClass("mic");
     expect(screen.getByTestId("composer-pill-send")).toHaveClass("send");
   });
+
+  describe("hint tiers fit one line with a safety margin", () => {
+    const tiers = ["What would you like to know?", "Ask your question…", "Your question…", "Ask…"];
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+
+    afterEach(() => {
+      HTMLCanvasElement.prototype.getContext = originalGetContext;
+      delete (HTMLTextAreaElement.prototype as { clientWidth?: number }).clientWidth;
+    });
+
+    function placeholderAtWidth(clientWidth: number): string {
+      // 8px per character stands in for the canvas measurement; padding is 0 in jsdom.
+      HTMLCanvasElement.prototype.getContext = (() => ({
+        font: "",
+        measureText: (text: string) => ({ width: text.length * 8 })
+      })) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+      Object.defineProperty(HTMLTextAreaElement.prototype, "clientWidth", { configurable: true, value: clientWidth });
+      render(
+        <ComposerPill
+          value=""
+          onChange={vi.fn()}
+          onSubmit={vi.fn()}
+          maxLength={300}
+          placeholder={tiers[0]!}
+          placeholders={tiers}
+          textareaAriaLabel="Magic question"
+          submitLabel="Ask TheJudge"
+          pendingLabel="Asking…"
+        />
+      );
+      return (screen.getByRole("textbox", { name: "Magic question" }) as HTMLTextAreaElement).placeholder;
+    }
+
+    it("keeps the full prompt when the box is wide", () => {
+      expect(placeholderAtWidth(400)).toBe(tiers[0]);
+    });
+
+    it("steps down a tier when the longest only barely fits (inside the margin)", () => {
+      // The full tier is 28 chars = 224px; 230px would fit with no margin but must step down with one.
+      expect(placeholderAtWidth(230)).toBe("Ask your question…");
+    });
+
+    it("falls to the shortest tier in a very narrow box", () => {
+      expect(placeholderAtWidth(40)).toBe("Ask…");
+    });
+  });
 });

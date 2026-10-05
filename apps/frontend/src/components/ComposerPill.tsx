@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, type Ref } from "react";
+import { useLayoutEffect, useRef, type Ref } from "react";
 import { DictationMicButton } from "./DictationMicButton";
 import { useDictation } from "../hooks/useDictation";
 import { budgetFillStyle } from "../lib/theme/flowStyles";
@@ -10,6 +10,9 @@ const SEND_RING_PATH = "M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z";
 const NEAR_CAP_CHARACTERS = 30;
 /** A textarea taller than this many pixels has crossed the one-line threshold (the mockup's `autoGrow`). */
 const ONE_LINE_THRESHOLD_PX = 56;
+// Safety margin for the hint fit: a fixed gutter plus a share of the line, so a tier that only barely fits steps down.
+const PLACEHOLDER_MARGIN_PX = 12;
+const PLACEHOLDER_MARGIN_RATIO = 0.04;
 
 export interface ComposerPillProps {
   value: string;
@@ -101,8 +104,11 @@ export function ComposerPill({
   }, [value, dictation.isListening]);
 
   // The hint comes in tiers (the mockup's `fitPlaceholder`): the longest that fits the box on one line
-  // is shown, re-measured whenever the box changes width. Idle while listening ("Listening…").
-  useEffect(() => {
+  // is shown, re-measured whenever the box changes width or a font finishes loading. Idle while
+  // listening ("Listening…"). A layout effect, so the first paint already shows the fitting tier (no
+  // flash of the longest one). The tier must clear the line by a safety margin so a string that only
+  // barely fits steps down instead of cramming to the edge on real phone text rendering.
+  useLayoutEffect(() => {
     const textarea = ownTextareaRef.current;
     if (!textarea || !placeholders || placeholders.length < 2 || dictation.isListening) return;
     const context = document.createElement("canvas").getContext?.("2d");
@@ -110,20 +116,31 @@ export function ComposerPill({
     const fit = (): void => {
       const styles = getComputedStyle(textarea);
       context.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
-      const room =
-        textarea.clientWidth - (parseFloat(styles.paddingLeft) || 0) - (parseFloat(styles.paddingRight) || 0) - 2;
+      const inner =
+        textarea.clientWidth - (parseFloat(styles.paddingLeft) || 0) - (parseFloat(styles.paddingRight) || 0);
+      const room = inner - PLACEHOLDER_MARGIN_PX - inner * PLACEHOLDER_MARGIN_RATIO;
       const pick = placeholders.find((tier) => context.measureText(tier).width <= room) ?? placeholders[placeholders.length - 1]!;
       if (textarea.placeholder !== pick) textarea.placeholder = pick;
     };
     fit();
+    // A web font that arrives after mount changes glyph widths without changing the box width, so the
+    // observer alone would never re-fit; `loadingdone` covers it (and `ready` the already-loading case).
+    const fonts = document.fonts;
+    fonts?.addEventListener?.("loadingdone", fit);
+    void fonts?.ready.then(fit);
     if (typeof ResizeObserver === "undefined") {
       window.addEventListener("resize", fit);
-      return () => window.removeEventListener("resize", fit);
+      return () => {
+        window.removeEventListener("resize", fit);
+        fonts?.removeEventListener?.("loadingdone", fit);
+      };
     }
     const observer = new ResizeObserver(fit);
     observer.observe(textarea);
-    void document.fonts?.ready.then(fit);
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      fonts?.removeEventListener?.("loadingdone", fit);
+    };
   }, [placeholders, dictation.isListening]);
 
   function handleSubmit(): void {

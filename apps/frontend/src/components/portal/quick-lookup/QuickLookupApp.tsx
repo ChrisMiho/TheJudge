@@ -42,7 +42,7 @@ const CARD_METADATA_URL = "/data/cardMetadata.json";
 const ADD_CARD_MIN_QUERY_LENGTH = 1;
 const MAX_QUESTION_LENGTH = 300;
 /** The hint shortens in tiers as the box narrows (the mockup's `data-placeholders`). */
-const QUESTION_PLACEHOLDER_TIERS = ["What would you like to know?", "Ask your question…", "Ask…"];
+const QUESTION_PLACEHOLDER_TIERS = ["What would you like to know?", "Ask your question…", "Your question…", "Ask…"];
 const RETRY_COOLDOWN_SECONDS = 13;
 
 /**
