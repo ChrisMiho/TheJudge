@@ -37,6 +37,7 @@ place). Rows below with dates after this note belong to the correction pass.
 | 4 | gate-qc | sonnet | ok | `0 → 8` | build-half re-grade: PASS, 0 findings; six cited authorities verified live (REQ-099/126/200/201/207/216 in functional-requirements.md); no retired id cited; REQ-219 free; current-state premises confirmed from code (no favicon, static `<title>TheJudge`, no theme-color meta, no manifest); every acceptance criterion measurable; STATUS.refined; README `## Preparation gate` rewritten for this run | 2026-10-04 |
 | 5 | plan | sonnet | ok | `0 → 17` | 3 sequential slices: A title (`TheJudge · MTG Assistant`) + theme-color meta synced by applyPalette; B faviconArt.ts SVG-data-URI helper + per-profile favicon swap; C six-profile real-browser check + REQ-219 apply to PRD/sections + ship gates. GAMEPLAN.md + slice-a/b/c docs + criteria.json (6/6/8; C's 5 browser checks manual). STATUS.active | 2026-10-04 |
 | 6 | build | sonnet | ok | `0 → 57` | 3 slices implemented on thejudge-auto/tab-personality-color-sync-work; **code PR #259** opened into main. Code: apps/frontend/index.html, applyPalette.ts, faviconArt.ts (+ applyPalette.test.ts / faviconArt.test.ts). Criteria all true (a 6/6, b 6/6, c 8/8; slice-c manual C1–C5 earned via dated observation in slice-c doc). Real-browser check (Playwright, dev server :5391 in worktree, 390x844): six profiles + custom Colorless re-skin favicon/title/theme-color with no reload; capture `favicon-strip-390.png` (gitignored). REQ-219 applied to product truth: functional-requirements.md:5623 + shared-chrome/README.md:140. Gates: `npm --workspace apps/frontend run test` 1529 pass; `npm run typecheck`/`lint` clean; `npm run quality:check` exit 0. Return-side: launch checkout identical to baseline (empty); all writes inside the worktree. STATUS.ship-ready | 2026-10-04 |
+| 7 | review | opus | ok | `0 → 16` | APPROVE, 0 Critical/Important. Fresh no-write reviewer graded each slice against its own acceptance criteria: A/B/C all PASS; theme-color + favicon both derive from `triplet(palette.accent)` via applyPalette for six profiles + custom Colorless, no second hex table (REQ-216); favicon reuses MOTIF_SYMBOLS as data URI, no fetch/CDN/animation; REQ-219 apply byte-identical to the accepted GATE-QUESTIONS diff; tests assert real behaviour; no in-app surface changed. 2 minor non-blocking notes (GRAPH-RUN uncommitted bookkeeping; `--disc` var fallback inside data-URI SVG is cosmetic, within spec) — neither loops to build | 2026-10-04 |
 
 ## Open gate
 
@@ -401,6 +402,42 @@ Report back:
 - the code PR URL
 - confirmation every write stayed inside the build worktree
 Report evidence as commands/paths/URLs, not bare claims. End with a one-line status: build OK (ready for review, PR url) or BLOCKED/PARKED (reason).
+
+### review (build half — run graph-20261004-215150)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync
+
+You are node 7 (`review`) of the build half of an autonomous graph run: a fresh-context, read-and-search-only reviewer. You have NO write tools and must not modify, commit, or push anything. You did not see the build node's work; grade only what is on the branch.
+
+First cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync and run every command from there. Copy the `Working directory:` line unchanged into any prompt you write.
+
+Review the implemented work for REQ-219 (the browser tab: favicon plus title plus mobile theme-color synced to the active colour profile), branch thejudge-auto/tab-personality-color-sync-work, code PR #259 into main.
+
+Inputs to read:
+- The full diff: git diff origin/main...HEAD (and git diff --stat origin/main...HEAD for the file list).
+- The slice docs PRD/work/tab-personality-color-sync/slice-a-title-theme-color.md, slice-b-favicon-art.md, slice-c-browser-check-and-ship.md. Each slice's ## Acceptance criteria IS your rubric — grade against it verbatim.
+- The package artifacts DESIGN-BRIEF.md, GATE-QUESTIONS.md (the accepted REQ-219 diff), GAMEPLAN.md, and the three slice-*.criteria.json files (every criterion should be true).
+
+Grade each slice against its own ## Acceptance criteria. Also confirm:
+- the index.html title is exactly the pinned branded string, with no per-route title and no manifest;
+- theme-color and favicon derive from the active profile accent via applyPalette for all six profiles and custom Colorless (REQ-099), with no second per-profile hex table in the tab code (REQ-216);
+- the favicon reuses MOTIF_SYMBOLS as a data URI with no fetch or CDN and no animation or timers;
+- REQ-219 as applied to PRD/sections/functional-requirements.md and shared-chrome/README.md matches the accepted diff in GATE-QUESTIONS.md;
+- the tests added actually assert these behaviours (not empty or tautological);
+- no in-app screen or overlay changed (a non-goal).
+
+Severity rule (binding): a preference, a style note, or an improvement outside a slice's stated requirements is NEVER Critical or Important and must NOT loop the run back to build. Flag only gaps that break correctness or a stated acceptance criterion.
+
+Do NOT run the full browser check yourself (the build node earned the manual criteria); you may run read-only commands (git diff, grep, cat) and, if useful, npm --workspace apps/frontend run test to confirm the suite is green — but no writes.
+
+Report back:
+- per slice (A/B/C): PASS or the specific unmet criterion
+- any Critical or Important finding, each with the exact file and line and the acceptance criterion it violates (or none)
+- any minor or non-blocking notes, clearly marked as not looping back to build
+- your verdict
+End with a one-line status: review APPROVE (ready for close) or review CHANGES (N Critical/Important findings, loop to build).
 
 ## Instruction ledger
 
