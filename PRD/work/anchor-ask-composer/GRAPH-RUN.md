@@ -28,6 +28,7 @@
 | 6 | build | sonnet | ok | `0 → 98` | slices A–D implemented end to end; all criteria earned (A1–A8, B1–B7, C1–C4, D1–D7 true, no `false` remaining); PRD/sections truth applied by intent (REQ-218 new between REQ-217/219, REQ-110/129/206 amended; screen-layout, quick-lookup, in-depth, user-flows); REQ-206 chip clause kept at approved width-only wording (indepth sub-clause not pre-applied); scanner 31.5rem override scoped via `:has(> .idq > .flow-head .scan-exit)`; new `useVisualViewportHeight` hook; measured 1440×716 + 390×740 (Ask/In-depth col 576px, scanner 504px; send pill on-screen; keyboard-stub pill bottom 359.8/397.6 < 400); `npm run quality:check` + frontend suite (1538) + `test:scripts` (595) green; STATUS.ship-ready; **code PR #262** open (`thejudge-auto/anchor-ask-composer-work → main`, 64c846c). Return-side (REQ-193): launch porcelain identical before/after; product writes all inside the worktree (stray gitignored Playwright auto-snapshots landed in the pre-existing launch-root `.playwright-mcp/` scratch — no tracked change, assertion holds) | 2026-10-05 |
 | 7 | review | opus | failed | `0 → 28` | **LOOP TO BUILD** (loop 1 of 2) — slices A/B/C PASS; one Important finding inside slice D's criteria (D-1): REQ-110 amendment in `functional-requirements.md` applied incorrectly — `- Acceptance Criteria:` header dropped and not re-added; first criterion malformed as `-  - as the user types…` (literal `-  - ` prefix, line 2702); stale duplicate bullet left (line 2707 `…while the field is expanded`) beside the new line 2706 (`…while the box is expanded`). Drifts from approved GATE-QUESTIONS REQ-110 diff; no Critical. Focus checks clean: REQ-206 chip clause width-only (collapse not pre-applied), REQ-218 between REQ-217/219, scanner 31.5rem scoped to host, other 4 edits match intent | 2026-10-05 |
 | 6 | build | sonnet | ok | `0 → 7` | attempt 2 — D-1 fix: REQ-110 Acceptance Criteria corrected in `functional-requirements.md` (restored `- Acceptance Criteria:` header; fixed malformed `-  - ` first bullet to a nested bullet; deleted stale duplicate `…while the field is expanded`, keeping `…while the box is expanded`); now matches approved GATE-QUESTIONS REQ-110; only REQ-110 changed (1 hunk, 2+/2−); `npm run quality:check` green (595 pass); slice D criteria stay true; committed `25b5bdc`, pushed, PR #262 updated. Return-side (REQ-193): launch porcelain identical; sole product write `functional-requirements.md` inside the worktree | 2026-10-05 |
+| 7 | review | opus | ok | `0 → 13` | attempt 2 — **APPROVE**; D-1 fully fixed (REQ-110 Acceptance Criteria now matches approved GATE-QUESTIONS block: `- Acceptance Criteria:` header + 5 nested bullets, no malformed prefix, no duplicate); fix diff confined to the REQ-110 block, no new drift; focus checks re-confirmed (REQ-206 chip clause width-only, REQ-218 between REQ-217/219 at line 5630, scanner 31.5rem scoped to `.scan-exit` host so Ask stays 36rem); no Critical/Important remaining; advance to close | 2026-10-05 |
 
 ## Open gate
 
@@ -410,6 +411,31 @@ Report back:
 - Is D-1 fully fixed? (yes/no, with the evidence)
 - Any new finding, with severity
 - Overall verdict: APPROVE (advance to close) or LOOP TO BUILD (only on a Critical or Important finding inside a slice's criteria)
+
+### close
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-anchor-ask-composer
+
+You are node 8 (close) of the build half (run graph-20261005-133503). From the Working directory above, invoke the Skill named thejudge-cleanup for package PRD/work/anchor-ask-composer/ on the code branch thejudge-auto/anchor-ask-composer-work BEFORE the owner's merge, so the receipt and the package deletion ride in code PR #262.
+
+The package is STATUS.ship-ready; the review node APPROVED (attempt 2). Durable PRD/sections truth was already applied by build (REQ-218 new, REQ-110/129/206 amended, plus screen-layout, quick-lookup, in-depth, user-flows) — confirm it is present and promote only any leftover; never re-write it.
+
+Do:
+- Write the receipt at PRD/instructions/receipts/anchor-ask-composer-2026-10-05.md, folding GRAPH-RUN.md's `## Node ledger` and `## Instruction ledger` VERBATIM into a `## Graph run` section, with a `- PR:` line for https://github.com/ChrisMiho/TheJudge/pull/262 and the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/262`. Include an `## Intake` section naming each staged intake file and its origin.
+- Update PRD/work/STATUS.md (remove anchor-ask-composer from the board / move it out of active).
+- Delete PRD/work/anchor-ask-composer/.
+- Commit all of this on thejudge-auto/anchor-ask-composer-work with explicit paths only (never git add -A, git add ., git add --all).
+
+Do NOT merge or close PR #262, do not push main, do not force-push, do not delete any remote branch, do not touch the launch checkout, do not edit any thejudge-* skill. Do NOT push — the driver pushes between nodes and appends the final `close` ledger row to the receipt. Copy the Working directory line above unchanged into every prompt you write.
+
+Report back:
+- The receipt path and its `Terminal state:` line
+- Confirmation the `## Node ledger` and `## Instruction ledger` were folded in verbatim
+- Confirmation PRD/work/anchor-ask-composer/ is deleted and PRD/work/STATUS.md updated
+- Confirmation durable PRD/sections truth is present (and whether any promotion was needed)
+- The commit hash (do NOT push)
 
 ## Instruction ledger
 
