@@ -411,7 +411,19 @@ describe("Frontend - ComposerPill dictation (REQ-212)", () => {
     const tiers = ["What would you like to know?", "Ask your question…", "Your question…", "Ask…"];
     const originalGetContext = HTMLCanvasElement.prototype.getContext;
 
+    const originalMatchMedia = window.matchMedia;
+    // Stand in for a viewport of `viewport` px wide: min-width queries match when it is at least that.
+    function setViewport(viewport: number): void {
+      window.matchMedia = ((query: string) => {
+        const min = Number(/min-width:\s*(\d+)px/.exec(query)?.[1] ?? 0);
+        return { matches: viewport >= min, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() };
+      }) as unknown as typeof window.matchMedia;
+    }
+
+    beforeEach(() => setViewport(1440));
+
     afterEach(() => {
+      window.matchMedia = originalMatchMedia;
       HTMLCanvasElement.prototype.getContext = originalGetContext;
       delete (HTMLTextAreaElement.prototype as { clientWidth?: number }).clientWidth;
     });
@@ -439,8 +451,28 @@ describe("Frontend - ComposerPill dictation (REQ-212)", () => {
       return (screen.getByRole("textbox", { name: "Magic question" }) as HTMLTextAreaElement).placeholder;
     }
 
-    it("keeps the full prompt when the box is wide", () => {
+    it("keeps the full prompt when the box is wide on a desktop viewport", () => {
       expect(placeholderAtWidth(400)).toBe(tiers[0]);
+    });
+
+    it("keeps the full prompt on a tablet viewport (600-719px)", () => {
+      setViewport(650);
+      expect(placeholderAtWidth(400)).toBe(tiers[0]);
+    });
+
+    it("shows the short hint on a phone viewport even when the long one fits the wide empty row", () => {
+      setViewport(450);
+      expect(placeholderAtWidth(300)).toBe("Ask your question…");
+    });
+
+    it("shows the shortest-but-one hint on a small phone (375px) in the two-row empty box", () => {
+      setViewport(375);
+      expect(placeholderAtWidth(300)).toBe("Your question…");
+    });
+
+    it("still steps down past the breakpoint tier when that tier would overflow", () => {
+      setViewport(390);
+      expect(placeholderAtWidth(40)).toBe("Ask…");
     });
 
     it("steps down a tier when the longest only barely fits (inside the margin)", () => {

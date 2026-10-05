@@ -14,6 +14,19 @@ const ONE_LINE_THRESHOLD_PX = 56;
 const PLACEHOLDER_MARGIN_PX = 12;
 const PLACEHOLDER_MARGIN_RATIO = 0.04;
 
+/** Viewport seams for the hint (the app's ~720px / ~600px seams plus an iPhone-SE-class step). */
+const BREAKPOINT_QUERIES = ["(min-width: 600px)", "(min-width: 401px)"] as const;
+
+/**
+ * Index of the longest hint tier a viewport may show: tablet and desktop (>= 600px) the full prompt,
+ * phones (< 600px) the second tier, small phones (<= 400px) the third. Without matchMedia: 0.
+ */
+function placeholderFloorForViewport(): number {
+  if (typeof window === "undefined" || !window.matchMedia) return 0;
+  if (window.matchMedia(BREAKPOINT_QUERIES[0]).matches) return 0;
+  return window.matchMedia(BREAKPOINT_QUERIES[1]).matches ? 1 : 2;
+}
+
 export interface ComposerPillProps {
   value: string;
   onChange: (value: string) => void;
@@ -112,32 +125,47 @@ export function ComposerPill({
     const textarea = ownTextareaRef.current;
     if (!textarea || !placeholders || placeholders.length < 2 || dictation.isListening) return;
     const context = document.createElement("canvas").getContext?.("2d");
-    if (!context) return;
     const fit = (): void => {
-      const styles = getComputedStyle(textarea);
-      context.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
-      const inner =
-        textarea.clientWidth - (parseFloat(styles.paddingLeft) || 0) - (parseFloat(styles.paddingRight) || 0);
-      const room = inner - PLACEHOLDER_MARGIN_PX - inner * PLACEHOLDER_MARGIN_RATIO;
-      const pick = placeholders.find((tier) => context.measureText(tier).width <= room) ?? placeholders[placeholders.length - 1]!;
+      // The viewport breakpoint sets the longest tier a screen may show (phones get the short hint
+      // even where the long one would fit the wide empty row); the measurement is the safety net.
+      const floor = Math.min(placeholderFloorForViewport(), placeholders.length - 1);
+      const candidates = placeholders.slice(floor);
+      let pick = candidates[0]!;
+      if (context) {
+        const styles = getComputedStyle(textarea);
+        context.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
+        const inner =
+          textarea.clientWidth - (parseFloat(styles.paddingLeft) || 0) - (parseFloat(styles.paddingRight) || 0);
+        const room = inner - PLACEHOLDER_MARGIN_PX - inner * PLACEHOLDER_MARGIN_RATIO;
+        pick = candidates.find((tier) => context.measureText(tier).width <= room) ?? candidates[candidates.length - 1]!;
+      }
       if (textarea.placeholder !== pick) textarea.placeholder = pick;
     };
     fit();
+    window.addEventListener("resize", fit);
+    window.addEventListener("orientationchange", fit);
+    const queries = BREAKPOINT_QUERIES.map((query) => window.matchMedia?.(query)).filter(Boolean) as MediaQueryList[];
+    queries.forEach((mq) => mq.addEventListener?.("change", fit));
+    const stopViewport = (): void => {
+      window.removeEventListener("resize", fit);
+      window.removeEventListener("orientationchange", fit);
+      queries.forEach((mq) => mq.removeEventListener?.("change", fit));
+    };
     // A web font that arrives after mount changes glyph widths without changing the box width, so the
     // observer alone would never re-fit; `loadingdone` covers it (and `ready` the already-loading case).
     const fonts = document.fonts;
     fonts?.addEventListener?.("loadingdone", fit);
     void fonts?.ready.then(fit);
     if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", fit);
       return () => {
-        window.removeEventListener("resize", fit);
+        stopViewport();
         fonts?.removeEventListener?.("loadingdone", fit);
       };
     }
     const observer = new ResizeObserver(fit);
     observer.observe(textarea);
     return () => {
+      stopViewport();
       observer.disconnect();
       fonts?.removeEventListener?.("loadingdone", fit);
     };
