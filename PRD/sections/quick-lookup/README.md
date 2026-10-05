@@ -110,7 +110,7 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
   Ask-screen frame (REQ-218). One line of text is one row; typed content grows
   the box **downward**, until it must leave room for its own chip + mic|send
   control row and, on a phone, the on-screen keyboard — the page never scrolls —
-  past which the text area scrolls inside itself. (DEC-146, DEC-131,
+  past which the text area scrolls inside itself — the only element that scrolls. (DEC-146, DEC-131,
   REQ-110, REQ-121, REQ-206, REQ-218)
 - Built: the 300-character budget is drawn as a ring traced round the send
   pill's edge, starting at the top of the pill's split and running clockwise,
@@ -357,8 +357,10 @@ as the current shipped configuration, not product truth.
   `42dvh` stacked cap (ui-review, 2026-08-30) retires with the stacked list it
   bounded. (REQ-129, REQ-141, REQ-167, REQ-206, REQ-218, `screen-layout.md`)
 - Layout/fit: mobile-first and touch-friendly; the pre-submit view is a `100dvh`
-  anchored frame (REQ-218) — card stage at its natural height, the question box
-  resting directly under it. The pre-submit view and the answered workspace both follow
+  anchored frame (REQ-218) — card stage at its natural height that never scrolls (the card image is
+  capped at about 55% / 48% / 40% of the frame height by breakpoint, yielding to
+  the box's readable minimum), the question box resting directly under it, only
+  its text area scrolling. The pre-submit view and the answered workspace both follow
   the shared shell width and region-scroll rules of `screen-layout.md`'s "Quick
   Question — pre-submit" and "— answered workspace" rows. (NFR-001, REQ-218,
   `screen-layout.md`)

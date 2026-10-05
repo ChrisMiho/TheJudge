@@ -238,7 +238,18 @@ describe("QuickLookupApp", () => {
     expect(css).not.toMatch(/\.page-content-narrow-fit > \.qq > \.composer\s*\{[^}]*margin-top:\s*auto/);
     expect(css).not.toMatch(/\.enrichment-question-surface\s*\{[^}]*margin-top:\s*auto/);
     expect(css).not.toMatch(/\.page-content-narrow-fit \.q-box textarea\s*\{[^}]*176px/);
-    expect(css).toMatch(/\.page-content-narrow-fit > \.qq > \.stage\s*\{\s*flex:\s*0 1 auto/);
+    // The only element that scrolls is the textarea: the card stage and the In-depth context
+    // region never scroll, and the card image is capped by the responsive breakpoints instead.
+    const stageRule = css.match(/\.page-content-narrow-fit > \.qq > \.stage\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(stageRule).toMatch(/flex:\s*0 0 auto/);
+    expect(stageRule).not.toMatch(/overflow-y:\s*auto/);
+    const plateRule = css.match(/\.idq-fit > \.idq-step > \.plate\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(plateRule).not.toMatch(/overflow/);
+    expect(css).toMatch(/\.page-content-narrow-fit\s*\{[^}]*--card-cap:\s*0\.4/);
+    expect(css).toMatch(/@media \(min-width: 600px\)\s*\{\s*\.page-content-narrow-fit\s*\{\s*--card-cap:\s*0\.48/);
+    expect(css).toMatch(/@media \(min-width: 720px\)\s*\{\s*\.page-content-narrow-fit\s*\{\s*--card-cap:\s*0\.55/);
+    expect(css).toMatch(/\.page-content-narrow-fit \.ring\s*\{\s*--card-w:\s*min\(196px,[^;]*--card-room/);
+    expect(css).toMatch(/\.page-content-narrow-fit \.q-box textarea\s*\{\s*max-height:\s*none/);
     expect(qq?.querySelector(".composer textarea")).not.toBeNull();
     await user.click(screen.getByRole("button", { name: "Add card" }));
     unmount();

@@ -230,8 +230,9 @@ html {
 }
 
 /* REQ-218: in the 36rem fit frame the Ask column is a flex column exactly the frame's height —
-   header and title take their natural height, the card stage keeps its natural height (and only
-   region-scrolls if it must shrink), and the question box rests directly under it. Slack sits
+   header and title take their natural height, the card stage keeps its natural height and NEVER
+   scrolls (the card image is sized down by the responsive caps below instead), and the question
+   box rests directly under it. Only the box's textarea ever scrolls. Slack sits
    BELOW the box; a long question grows the box downward (the textarea's cap is set by
    `useAutoGrowTextarea`: down to the control row and the keyboard, then it scrolls inside). */
 .page-content-narrow-fit > .qq {
@@ -246,14 +247,38 @@ html {
 }
 
 .page-content-narrow-fit > .qq > .stage {
-  flex: 0 1 auto;
-  min-height: 0;
-  overflow-x: hidden;
-  overflow-y: auto;
+  flex: 0 0 auto;
+  overflow: hidden;
 }
 
 .page-content-narrow-fit > .qq > .stage > * {
   flex-shrink: 0;
+}
+
+/* REQ-218: the card IMAGE is capped by a share of the visible frame height so the stage never
+   needs to scroll: ~55% on desktop (>=720px), ~48% on a tablet (600-719px), ~40% on a phone
+   (<=599px). The card is 63:88, so its width is the cap times 63/88, never above the ring's own
+   natural width. It stays the biggest thing in the frame while the box keeps a readable minimum. */
+.page-content-narrow-fit {
+  --frame-h: var(--visual-viewport-height, 100dvh);
+  --card-cap: 0.4;
+  /* the box-minimum guarantee: the image yields so header + stage chrome + a 2-line box with its
+     control row (~370px) always fit, never shrinking the card below 120px tall */
+  --card-room: calc(max(120px, var(--frame-h) - 370px) * 63 / 88);
+}
+@media (min-width: 600px) {
+  .page-content-narrow-fit { --card-cap: 0.48; }
+}
+@media (min-width: 720px) {
+  .page-content-narrow-fit { --card-cap: 0.55; }
+}
+.page-content-narrow-fit .ring {
+  --card-w: min(196px, calc(var(--frame-h) * var(--card-cap) * 63 / 88), var(--card-room));
+}
+@media (min-width: 720px) {
+  .page-content-narrow-fit .ring {
+    --card-w: min(280px, calc(var(--frame-h) * var(--card-cap) * 63 / 88), var(--card-room));
+  }
 }
 
 /* REQ-218: the box's text area has no fixed cap here — `useAutoGrowTextarea` sizes it to fill
@@ -264,7 +289,7 @@ html {
 }
 
 /* REQ-218: the In-depth Enrichment station, same frame: the per-card context region flexes and
-   scrolls only if it must shrink, the question box rests directly under it and grows downward. */
+   never scrolls (only the textarea does), the question box rests directly under it and grows downward. */
 .page-content-narrow-fit > .idq-fit {
   flex: 0 1 auto;
   min-height: 0;
@@ -286,7 +311,6 @@ html {
 .page-content-narrow-fit > .idq-fit > .idq-step > .plate {
   flex: 0 1 auto;
   min-height: 0;
-  overflow-y: auto;
 }
 
 .page-content-narrow-fit > .idq-fit > .idq-step > .enrichment-question-surface {
