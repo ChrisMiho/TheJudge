@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| tab-personality-color-sync | built: slices A-C done, REQ-219 applied, code PR open |
 
 ## active
 
