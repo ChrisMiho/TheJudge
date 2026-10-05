@@ -25,7 +25,7 @@ idea, which the owner dropped (default stays grid).
 | B | slice-b-tests-and-live-check.md | Downstream tests, full suite, live one-screen check | A |
 | C | slice-c-prd-apply-and-ship.md | REQ-217 PRD apply, ship gates | A, B |
 
-Implementation map: see GAMEPLAN.md. Status: active.
+Implementation map: see GAMEPLAN.md. Status: ship-ready.
 
 ## Preparation gate
 

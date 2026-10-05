@@ -5594,3 +5594,28 @@
   - FLOW-007
 - Notes:
   - reserved and proposed by the `ui-look-translation` package (2026-10-02) from the owner's rule of 2026-10-02: one shared visual system that every screen, sheet, overlay and panel inherits, with nothing carrying its own palette, its own profile, or its own flow of styles. Written because the first build re-typed mockup values into the app's own tokens and every re-typing drifted
+
+### REQ-217
+- Title: The life-adjust `−` button sits on the edge nearest each player
+- Priority: medium
+- Description: In the Player Life Tracker, each life card's two-zone life-adjust split places `−` (lose life) on the edge of the card nearest the seated player — the table edge they sit at — and `+` (gain life) on the far edge, so every player taps toward themselves to drop life and no card forces a reach across itself or the table. This holds in both grid and list layouts, for every seat, at every player count 2–8, and is keyed to each seat's table edge rather than to a fixed screen side. In list layout the head and foot seats keep `−` on the seated player's own left (already correct) and only the two players in a middle pair row are mirrored so each one's `−` sits on their own outer side. In grid layout the former fixed on-screen left/right split (`−` always screen-left) is replaced by this per-seat near-edge split: bottom/top for the 2–3-player upright and upside-down seats, outer left/right for the 4–8-player side-column seats. This reverses DEC-170 (fixed grid split) by owner decision 2026-10-04; DEC-136's per-seat principle stands and is now expressed as the near-edge rule for both layouts. The default layout is unchanged (grid, `DEFAULT_LAYOUT_MODE`), no layout is removed, and this is a deliberate standalone change to the life table, separate from the UI redesign that holds the table otherwise unchanged (REQ-202).
+- Acceptance Criteria:
+  - in grid layout at 2–3 players, each seat's `−` sits on the edge nearest that seat (bottom seat → bottom edge, top/upside-down seat → top edge) and `+` on the far edge
+  - in grid layout at 4–8 players, each side-column seat's `−` sits on its outer edge (left-column → left, right-column → right) and `+` on the inner edge; no card keeps the old fixed screen-left `−`
+  - in list layout the head and foot seats are unchanged, and in every middle pair row the left-of-pair player's `−` is on the left and the right-of-pair player's `−` is on the right, each on their own near side
+  - across both layouts at every player count 2–8, no seat places `−` on the edge farthest from its player
+  - the three interactive inner controls (life total, commander-damage preview, inline life input) still take their own taps, and the life table still fits one screen at every player count 2–8 (DEC-136; `screen-layout.md`)
+  - the default layout, the seat arrangements, the Game Setup Layout toggle, the one-way MTG Assistant seed, and layout persistence are all unchanged
+- Constraints:
+  - pure frontend/presentation: no backend, no `GameContext` seed contract (DEC-102), no persistence shape change (DEC-103), no change to the seat arrangements themselves
+  - do not change which layout is the default (grid stays) or remove any layout
+  - a deliberate change to the life table outside the UI redesign that otherwise holds it unchanged (REQ-202); the `−`/`+` position is the only table change here
+- Dependencies:
+  - REQ-081
+  - REQ-173
+  - REQ-202
+  - DEC-136
+  - DEC-170
+- Notes:
+  - the production change is a pure helper, `apps/frontend/src/lib/lifeTracker/lifeHalves.ts` (`lifeHalvesForSeat`), wired into `apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx`; it reads each seat's table edge (`side`) from `seatArrangement.ts` and, for list pair rows, which column the seat is in from `gridColumn`, because left/right pair seats share rotation 0° and the split cannot be derived from rotation alone. `seatArrangement.ts` is unchanged
+  - reserved and proposed by the `life-tracker-seat-oriented-default` package; redefined 2026-10-04 from the earlier "open in list by default" proposal, which the owner dropped (default stays grid)

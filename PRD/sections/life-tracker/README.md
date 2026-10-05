@@ -8,7 +8,7 @@
   editing in place — never by recording a new decision.
 - Backed by: DEC-101, DEC-102, DEC-103, DEC-132, DEC-136, DEC-139, DEC-170,
   REQ-081, REQ-082, REQ-083, REQ-084, REQ-085, REQ-111, REQ-112, REQ-173,
-  FLOW-013, NFR-001, NFR-006
+  REQ-217, FLOW-013, NFR-001, NFR-006
 
 ## What it is
 
@@ -28,13 +28,16 @@ game survives a phone lock or reload because it saves itself as you play.
   arrangement per player count with a grid mode and a list mode.
 - Built: life adjustment splits each card into two half-card zones covering the
   whole card except its three interactive controls (life total, commander-damage
-  preview, inline life input). In **list mode** the split follows the seat's own
-  rotation — `−` always on the player's left, `+` always on their right from that
-  player's point of view. In **grid mode** it is a fixed on-screen left/right —
-  `−` on the left half, `+` on the right — the same for every card, because four
-  cards facing in from all sides made a per-seat top/bottom split awkward; the
-  `−`/`+` glyphs reflow to the card's outer edges and read screen-upright.
-  (DEC-136, DEC-170)
+  preview, inline life input). `−` sits on the edge nearest each player (the
+  table edge they sit at) and `+` on the far edge, so every player taps toward
+  themselves to lose life and no one reaches across their card. In **list mode**
+  the head and foot seats keep `−` on the seated player's own left, and the two
+  players in a middle row are mirrored so each one's `−` is on their own outer
+  side. In **grid mode** the split is per-seat too — `−` on the near edge
+  (bottom/top for the 2–3-player upright/upside-down seats, outer left/right for
+  the 4–8-player side-column seats), replacing the earlier fixed on-screen
+  left/right split (reversed by owner decision 2026-10-04). The default layout is
+  unchanged (grid). (REQ-217, DEC-136, DEC-170)
 - Built: the life table always fits one screen at every supported player
   count — rows share the shell's height with no per-row or per-card minimum,
   and card contents scale in container-query units rather than clipping.

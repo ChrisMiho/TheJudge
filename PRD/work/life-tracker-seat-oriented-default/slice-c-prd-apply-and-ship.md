@@ -1,6 +1,6 @@
 # Slice C — Apply REQ-217 product truth and ship gates
 
-## Status: planned
+## Status: done
 
 ## Goal
 

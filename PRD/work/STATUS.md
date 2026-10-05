@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| life-tracker-seat-oriented-default | slices A, B, C done 2026-10-04; code PR into main awaits owner merge. |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| life-tracker-seat-oriented-default | mapped out 2026-10-04: slices A (helper+card), B (tests+live check), C (PRD apply+ship). |
 
 ## refined
 
