@@ -34,6 +34,7 @@ place). Rows below with dates after this note belong to the correction pass.
 | 3 | define | opus | ok | `1 → 40` | **correction pass** (run `graph-20261004-212625`): DESIGN-BRIEF.md + GATE-QUESTIONS.md rewritten for the browser tab (favicon + title + theme-color sync); REQ-219 content fully replaced, no blocker (A/B fork dropped); verified current state from code (no favicon, static `<title>TheJudge`, no theme-color meta, no manifest); reuse applyPalette.ts / useThemePalette.ts / tokens.css `[data-profile]` / motifSymbols.ts / BrandMark.tsx; removed retired DEC-149, cites live REQ-126/200/201/207/216/099; STATUS.refined | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `1 → 12` | **correction pass**: PASS, 0 findings on first grade; all cited ids verified live (REQ-126/200/201/207/216/099; no retired id cited; DEC-149 only in history); REQ-219 free (last id REQ-217; REQ-218 reserved by anchor-ask-composer); current-state premises confirmed from code; every acceptance criterion has a checkable bar; STATUS.refined — **STOP at first PASS**. Non-blocking for map-out: pin the exact title string (brief shows `TheJudge · MTG Assistant` as an example) | 2026-10-04 |
 | — | gate-review | sonnet | ok | `0 → 8` | build-half run `graph-20261004-215150`: REQ-219 verdict `accept` applied (GATE-QUESTIONS.md unchanged); `### Brief reconciliation` none; `## Gate verdicts` written; `## Open gate` RESOLVED; STATUS.owner-action→refined; PRD/sections untouched (`git status --porcelain \| grep -c PRD/sections/` = 0) | 2026-10-04 |
+| 4 | gate-qc | sonnet | ok | `0 → 8` | build-half re-grade: PASS, 0 findings; six cited authorities verified live (REQ-099/126/200/201/207/216 in functional-requirements.md); no retired id cited; REQ-219 free; current-state premises confirmed from code (no favicon, static `<title>TheJudge`, no theme-color meta, no manifest); every acceptance criterion measurable; STATUS.refined; README `## Preparation gate` rewritten for this run | 2026-10-04 |
 
 ## Open gate
 
@@ -316,6 +317,29 @@ Report back:
 - the restored STATUS marker
 - confirmation that PRD/sections/ was not touched
 Report evidence as commands/paths, not bare claims. End with a one-line status: gate-review OK (status restored to refined; resumes at gate-qc) or REFUSED (with the reason).
+
+### gate-qc (build half — run graph-20261004-215150)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync
+
+You are node 4 (`gate-qc`) of the build half of an autonomous graph run, re-grading the package after gate-review applied the owner's REQ-219 verdict (accept). Invoke the `thejudge-quality-check` skill (Skill tool, skill name `thejudge-quality-check`) and follow it exactly in graph-controlled mode. Because `graph is controlling`, do NOT stop to ask the user anything — produce a PASS/FAIL report and hand back.
+
+Run ID: graph-20261004-215150. Work ENTIRELY inside the working directory above (the build worktree, branch thejudge-auto/tab-personality-color-sync-work). First `cd /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync` and run every command from there — never the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge. Copy the `Working directory:` line unchanged into any prompt you write.
+
+Package: PRD/work/tab-personality-color-sync/. The owner's verdict on REQ-219 was `accept` as proposed, so DESIGN-BRIEF.md and GATE-QUESTIONS.md are unchanged from the correction pass that already PASSed. Re-grade fresh regardless — verify, do not assume.
+
+Validate PRD/work/tab-personality-color-sync/DESIGN-BRIEF.md for PRD alignment and agent-readiness per the skill. Verify every cited authority is LIVE in PRD/sections/ (the brief cites REQ-126, REQ-200, REQ-201, REQ-207, REQ-216, REQ-099; confirm each exists and no retired id is cited as a new claim), the current-state premises hold (no favicon link, static `<title>TheJudge`, no `theme-color` meta, no manifest), REQ-219 is a free/appropriately-reused stable id, and every acceptance criterion carries a measurable, checkable bar. Do NOT write a GAMEPLAN or slice docs.
+
+On PASS leave STATUS.refined. On FAIL set STATUS.refining and list the complete findings. Either way, update the package README `## Preparation gate` section with the result in the exact preparation-contract shape (Quality-check: PASS | FAIL, Checked artifact, Findings). Do NOT commit or push — the driver commits between nodes.
+
+Report back:
+- the verdict (PASS or FAIL)
+- the complete findings list (none, or each issue with the authority/line checked)
+- the STATUS marker now set
+- confirmation the README `## Preparation gate` section was updated
+Report evidence as paths/quotes, not bare claims. End with a one-line status: gate-qc PASS or gate-qc FAIL (with the finding count).
 
 ## Instruction ledger
 
