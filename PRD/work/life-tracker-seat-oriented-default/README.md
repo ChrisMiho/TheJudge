@@ -19,8 +19,9 @@ idea, which the owner dropped (default stays grid).
 
 ## Preparation gate
 
-- Quality-check: PASS (re-run 2026-10-04 on the redefined brief)
+- Quality-check: PASS (build-half re-grade 2026-10-04 after REQ-217 accept)
 - Checked artifact: `PRD/work/life-tracker-seat-oriented-default/DESIGN-BRIEF.md`
 - Findings: none. Noted: REQ-217 is a deliberate table change scoped around
   REQ-202 (which shields the table from the UI redesign only); DEC-170 amended in
-  place for the grid reversal.
+  place for the grid reversal. All four REQ-217 diff anchors verified live on the
+  build branch.
