@@ -5,7 +5,7 @@
     {
       "id": "B1",
       "statement": "Enrichment composer surface renders `narrow-fit`; Game, Zones and Cards steps and the answered conversation shell still render `narrow`; unit test asserts both",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "vitest|npm .*test"
       }
@@ -13,7 +13,7 @@
     {
       "id": "B2",
       "statement": "EnrichmentStep unit tests pass",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "vitest|npm .*test"
       }
@@ -21,7 +21,7 @@
     {
       "id": "B3",
       "statement": "At 1440x716 on In-depth Enrichment with a 300-character question and several context cards, document scroll height is no greater than the viewport and the send pill `bottom` is inside the viewport (measured in browser)",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -29,7 +29,7 @@
     {
       "id": "B4",
       "statement": "Same at 390x740 (measured in browser)",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -37,7 +37,7 @@
     {
       "id": "B5",
       "statement": "At 1440px the In-depth Enrichment column measures 576px (measured in browser)",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -45,7 +45,7 @@
     {
       "id": "B6",
       "statement": "Game, Zones and Cards steps remain content-sized with no frame at 1440x716 (browser walk)",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -53,7 +53,7 @@
     {
       "id": "B7",
       "statement": "Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/anchor-ask-composer/.playwright-mcp/`",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

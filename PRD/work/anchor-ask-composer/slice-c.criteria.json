@@ -5,7 +5,7 @@
     {
       "id": "C1",
       "statement": "A hook (or equivalent) tracks `visualViewport` height and exposes it to the fit frame; unit tests cover resize, absence of `visualViewport`, and listener cleanup",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "vitest|npm .*test"
       }
@@ -13,7 +13,7 @@
     {
       "id": "C2",
       "statement": "Both Ask screens consume it; unit test or CSS assertion shows the frame height uses the visual-viewport value with a `100dvh` fallback",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "vitest|npm .*test"
       }
@@ -21,7 +21,7 @@
     {
       "id": "C3",
       "statement": "Emulated focused phone viewport with a shrunken visual viewport (keyboard simulated): the send pill `bottom` stays within the visual viewport on both Ask screens (measured in browser)",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -29,7 +29,7 @@
     {
       "id": "C4",
       "statement": "Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/anchor-ask-composer/.playwright-mcp/`",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

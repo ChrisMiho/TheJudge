@@ -734,9 +734,11 @@ export function EnrichmentStep({
   }
 
   return (
-    <PageShell variant="narrow">
+    // REQ-218: this station (the per-card context list and the question box) takes the fit frame;
+    // the answered conversation above, Game, Zones and Cards stay plain "narrow" (DEC-145).
+    <PageShell variant="narrow-fit">
       <StagedStepHeader historyTrigger={historyTrigger} />
-      <section className="idq">
+      <section className="idq idq-fit">
         {stationsRail}
         {/* Kept as a plain, visually-hidden heading: the mockup's Context step has no generic
             eyebrow of its own (each plate's own h2 carries the card name instead), but several

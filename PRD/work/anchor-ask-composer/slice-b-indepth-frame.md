@@ -1,6 +1,6 @@
 # Slice B — Frame In-depth Enrichment
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -15,13 +15,13 @@ At the In-depth Enrichment station the per-card context list flexes and region-s
 
 ## Acceptance criteria
 
-- [ ] Enrichment composer surface renders `narrow-fit`; Game, Zones and Cards steps and the answered conversation shell still render `narrow`; unit test asserts both
-- [ ] EnrichmentStep unit tests pass
-- [ ] At 1440x716 on In-depth Enrichment with a 300-character question and several context cards, document scroll height is no greater than the viewport and the send pill `bottom` is inside the viewport (measured in browser)
-- [ ] Same at 390x740 (measured in browser)
-- [ ] At 1440px the In-depth Enrichment column measures 576px (measured in browser)
-- [ ] Game, Zones and Cards steps remain content-sized with no frame at 1440x716 (browser walk)
-- [ ] Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/anchor-ask-composer/.playwright-mcp/`
+- [x] Enrichment composer surface renders `narrow-fit`; Game, Zones and Cards steps and the answered conversation shell still render `narrow`; unit test asserts both
+- [x] EnrichmentStep unit tests pass
+- [x] At 1440x716 on In-depth Enrichment with a 300-character question and several context cards, document scroll height is no greater than the viewport and the send pill `bottom` is inside the viewport (measured in browser)
+- [x] Same at 390x740 (measured in browser)
+- [x] At 1440px the In-depth Enrichment column measures 576px (measured in browser)
+- [x] Game, Zones and Cards steps remain content-sized with no frame at 1440x716 (browser walk)
+- [x] Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/anchor-ask-composer/.playwright-mcp/`
 
 ## Verification
 

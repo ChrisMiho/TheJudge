@@ -1,6 +1,6 @@
 # Slice A — Scope scanner width override, frame Ask a Question
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -16,14 +16,14 @@ Ask a Question's pre-submit screen becomes a `100dvh` frame: header and title ta
 
 ## Acceptance criteria
 
-- [ ] The scanner's 31.5rem desktop width rule no longer targets the bare shared `.page-content-narrow-fit` class; it is scoped to the scanner host
-- [ ] Ask a Question pre-submit renders in the `narrow-fit` variant whether or not the scanner is open; test asserts it
-- [ ] Frontend unit tests for the Ask screen pass, including a new test for the variant and the pinned-composer structure
-- [ ] At 1440x716 on Ask a Question with a 300-character question typed, document scroll height is no greater than the viewport and the send pill `bottom` is inside the viewport (measured in browser)
-- [ ] At 390x740 on Ask a Question with a 300-character question typed, document scroll height is no greater than the viewport and the send pill `bottom` is inside the viewport (measured in browser)
-- [ ] At 1440px the Ask column measures 576px (36rem), and the scanner column, opened, measures 504px (31.5rem) (measured in browser)
-- [ ] The phone search-fold, the card-detail popup and the answered follow-up composer still work (browser walk)
-- [ ] Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/anchor-ask-composer/.playwright-mcp/`
+- [x] The scanner's 31.5rem desktop width rule no longer targets the bare shared `.page-content-narrow-fit` class; it is scoped to the scanner host
+- [x] Ask a Question pre-submit renders in the `narrow-fit` variant whether or not the scanner is open; test asserts it
+- [x] Frontend unit tests for the Ask screen pass, including a new test for the variant and the pinned-composer structure
+- [x] At 1440x716 on Ask a Question with a 300-character question typed, document scroll height is no greater than the viewport and the send pill `bottom` is inside the viewport (measured in browser)
+- [x] At 390x740 on Ask a Question with a 300-character question typed, document scroll height is no greater than the viewport and the send pill `bottom` is inside the viewport (measured in browser)
+- [x] At 1440px the Ask column measures 576px (36rem), and the scanner column, opened, measures 504px (31.5rem) (measured in browser)
+- [x] The phone search-fold, the card-detail popup and the answered follow-up composer still work (browser walk)
+- [x] Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/anchor-ask-composer/.playwright-mcp/`
 
 ## Verification
 

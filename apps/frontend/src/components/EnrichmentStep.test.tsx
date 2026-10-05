@@ -291,4 +291,20 @@ describe("EnrichmentStep Optional question dictation (REQ-212)", () => {
     expect(getLastDictationInstance().stop).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("EnrichmentStep fit frame (REQ-218)", () => {
+  it("renders the station in the narrow-fit variant with the question box inside the frame", async () => {
+    const user = renderEnrichment();
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
+    expect(document.querySelector(".page-shell-fit")).not.toBeNull();
+    expect(document.querySelector(".page-content-narrow-fit > .idq-fit")).not.toBeNull();
+    expect(document.querySelector(".idq-fit .enrichment-question-surface textarea")).not.toBeNull();
+  });
+
+  it("keeps the answered conversation shell on plain narrow (DEC-145)", () => {
+    renderEnrichment({ isConversationActive: true });
+    expect(document.querySelector(".page-shell-fit")).toBeNull();
+    expect(document.querySelector(".page-content-narrow")).not.toBeNull();
+  });
+});
 });

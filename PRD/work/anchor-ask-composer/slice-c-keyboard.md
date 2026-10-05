@@ -1,6 +1,6 @@
 # Slice C — Keep composer above the phone keyboard
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -14,10 +14,10 @@ On a phone the pinned question box floats above the on-screen keyboard when focu
 
 ## Acceptance criteria
 
-- [ ] A hook (or equivalent) tracks `visualViewport` height and exposes it to the fit frame; unit tests cover resize, absence of `visualViewport`, and listener cleanup
-- [ ] Both Ask screens consume it; unit test or CSS assertion shows the frame height uses the visual-viewport value with a `100dvh` fallback
-- [ ] Emulated focused phone viewport with a shrunken visual viewport (keyboard simulated): the send pill `bottom` stays within the visual viewport on both Ask screens (measured in browser)
-- [ ] Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/anchor-ask-composer/.playwright-mcp/`
+- [x] A hook (or equivalent) tracks `visualViewport` height and exposes it to the fit frame; unit tests cover resize, absence of `visualViewport`, and listener cleanup
+- [x] Both Ask screens consume it; unit test or CSS assertion shows the frame height uses the visual-viewport value with a `100dvh` fallback
+- [x] Emulated focused phone viewport with a shrunken visual viewport (keyboard simulated): the send pill `bottom` stays within the visual viewport on both Ask screens (measured in browser)
+- [x] Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/anchor-ask-composer/.playwright-mcp/`
 
 ## Verification
 

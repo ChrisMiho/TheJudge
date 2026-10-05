@@ -74,6 +74,7 @@ const allLookupCards = [
 ];
 
 const scrollIntoView = vi.fn();
+const scanState = vi.hoisted(() => ({ isOpen: false }));
 
 vi.mock("../../../hooks/useScanCapture", () => ({
   useScanCapture: ({
@@ -83,7 +84,9 @@ vi.mock("../../../hooks/useScanCapture", () => ({
     cardMetadata: CardMetadataItem[];
     onScanCandidateSelected: (card: CardMetadataItem, scanImageUrl: string) => unknown;
   }) => ({
-    isOpen: false,
+    isOpen: scanState.isOpen,
+    heldEntries: [],
+    removeHeld: vi.fn(),
     isLoading: false,
     error: null,
     convergence: {
@@ -186,6 +189,7 @@ async function openCardSearch(user: ReturnType<typeof userEvent.setup>): Promise
 describe("Frontend - Quick Lookup", () => {
 describe("QuickLookupApp", () => {
   beforeEach(() => {
+    scanState.isOpen = false;
     scrollIntoView.mockClear();
     Object.defineProperty(Element.prototype, "scrollIntoView", {
       configurable: true,
@@ -206,6 +210,26 @@ describe("QuickLookupApp", () => {
         throw new Error(`Unexpected fetch: ${url}`);
       })
     );
+  });
+
+  it("frames the pre-submit screen in the narrow-fit variant with the question box as the pinned foot, scanner open or not (REQ-218)", async () => {
+    const user = userEvent.setup();
+    const { container, unmount } = render(<QuickLookupApp />);
+
+    expect(container.querySelector(".page-shell-fit")).not.toBeNull();
+    expect(container.querySelector(".page-content-narrow-fit")).not.toBeNull();
+    const qq = container.querySelector(".page-content-narrow-fit > .qq");
+    expect(qq).not.toBeNull();
+    // The composer is the last region of the column, after the title row and the card stage.
+    expect(qq?.lastElementChild?.classList.contains("composer")).toBe(true);
+    expect(qq?.querySelector(".composer textarea")).not.toBeNull();
+    await user.click(screen.getByRole("button", { name: "Add card" }));
+    unmount();
+
+    scanState.isOpen = true;
+    const scanning = render(<QuickLookupApp />);
+    expect(scanning.container.querySelector(".page-content-narrow-fit")).not.toBeNull();
+    expect(scanning.container.querySelector(".page-content-narrow-fit > .idq .scan-exit")).not.toBeNull();
   });
 
   it("renders the Ask a Question title with Add card/Scan beside it, then the card search, then the question box — and no General rules topics panel (REQ-079 retired)", async () => {

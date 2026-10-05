@@ -98,5 +98,42 @@ describe("PageShell (slice L look-matching pass)", () => {
 
     expect(container.querySelector(".page-shell")?.className).not.toMatch(/\bp[xy]?-/);
   });
+
+  it("narrow-fit frames the 36rem column and hands the frame the visual viewport height (REQ-218)", () => {
+    const viewport = Object.assign(new EventTarget(), { height: 420 });
+    Object.defineProperty(window, "visualViewport", { value: viewport, configurable: true });
+    try {
+      const { container } = render(
+        <PageShell variant="narrow-fit">
+          <p>content</p>
+        </PageShell>
+      );
+      const main = container.querySelector("main");
+      expect(main?.className).toContain("page-shell-fit");
+      expect(main?.style.getPropertyValue("--visual-viewport-height")).toBe("420px");
+      expect(container.querySelector(".page-content-narrow.page-content-narrow-fit")).not.toBeNull();
+    } finally {
+      Object.defineProperty(window, "visualViewport", { value: undefined, configurable: true });
+    }
+  });
+
+  it("narrow-fit sets no height variable without visualViewport, so the frame falls back to 100dvh", () => {
+    const { container } = render(
+      <PageShell variant="narrow-fit">
+        <p>content</p>
+      </PageShell>
+    );
+    expect(container.querySelector("main")?.getAttribute("style")).toBeNull();
+  });
+
+  it("plain narrow keeps the content-sized column (no fit frame)", () => {
+    const { container } = render(
+      <PageShell variant="narrow">
+        <p>content</p>
+      </PageShell>
+    );
+    expect(container.querySelector(".page-shell-fit")).toBeNull();
+    expect(container.querySelector(".page-content-narrow-fit")).toBeNull();
+  });
 });
 });

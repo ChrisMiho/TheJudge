@@ -5,7 +5,7 @@
     {
       "id": "D1",
       "statement": "`### REQ-218` exists in `PRD/sections/functional-requirements.md` after REQ-217 and before REQ-219",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep.*REQ-21|grep.*REQ-218"
       }
@@ -13,7 +13,7 @@
     {
       "id": "D2",
       "statement": "REQ-110, REQ-129 and REQ-206 carry the amended wording and added REQ-218 dependencies",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep.*REQ-21|grep.*REQ-218"
       }
@@ -21,7 +21,7 @@
     {
       "id": "D3",
       "statement": "`PRD/sections/screen-layout.md`, `quick-lookup/README.md`, `in-depth/README.md` and `user-flows.md` carry the approved edits (grep for REQ-218 in each)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep.*REQ-21|grep.*REQ-218"
       }
@@ -29,7 +29,7 @@
     {
       "id": "D4",
       "statement": "PRD ledger and id checks pass (`npm run test:scripts`)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -37,7 +37,7 @@
     {
       "id": "D5",
       "statement": "`npm run quality:check` green",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }
@@ -45,7 +45,7 @@
     {
       "id": "D6",
       "statement": "Final browser pass: both Ask screens at 1440x716 and 390x740 with a 300-character question, document height no greater than viewport, send pill inside viewport, cards visible (measured in browser)",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -53,7 +53,7 @@
     {
       "id": "D7",
       "statement": "Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/anchor-ask-composer/.playwright-mcp/`",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

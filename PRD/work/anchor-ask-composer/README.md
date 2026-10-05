@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # anchor-ask-composer
 
@@ -26,3 +26,5 @@ See IDEA.md. Intake: intake/GRAPH-BRIEF.md.
 | D | `slice-d-truth-and-ship.md` | A, B, C | Apply PRD diffs (REQ-218 between REQ-217 and REQ-219), final measured pass, ship gates |
 
 Plan: `GAMEPLAN.md`.
+
+Build: all four slices done 2026-10-05 (build evidence: `build-evidence.md`; captures: `.playwright-mcp/`). Product truth applied to `PRD/sections/` in slice D.

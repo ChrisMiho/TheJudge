@@ -229,6 +229,76 @@ html {
   gap: 0.8rem;
 }
 
+/* REQ-218: in the 36rem fit frame the Ask column is a flex column exactly the frame's height —
+   header and title take their natural height, the card stage flexes and region-scrolls, and the
+   question box is the pinned foot, so a long question grows the box upward in place. */
+.page-content-narrow-fit > .qq {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+.page-content-narrow-fit > .qq > * {
+  flex: 0 0 auto;
+}
+
+.page-content-narrow-fit > .qq > .stage {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.page-content-narrow-fit > .qq > .stage > * {
+  flex-shrink: 0;
+}
+
+.page-content-narrow-fit > .qq > .composer {
+  margin-top: auto;
+}
+
+/* REQ-218: the box's text area caps at a share of the visible height, so with the phone keyboard
+   open (a short visual viewport) the pinned box still fits and the text scrolls inside it. */
+.page-content-narrow-fit .q-box textarea {
+  max-height: min(176px, calc(var(--visual-viewport-height, 100dvh) * 0.22));
+}
+
+/* REQ-218: the In-depth Enrichment station, same frame: the per-card context region flexes and
+   scrolls, the question box is pinned. */
+.page-content-narrow-fit > .idq-fit {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content-narrow-fit > .idq-fit > * {
+  flex: 0 0 auto;
+}
+
+.page-content-narrow-fit > .idq-fit > .idq-step {
+  flex: 1 1 auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.page-content-narrow-fit > .idq-fit > .idq-step > .plate {
+  flex: 0 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.page-content-narrow-fit > .idq-fit > .idq-step > .enrichment-question-surface {
+  flex: 0 0 auto;
+  margin-top: auto;
+}
+
+.page-content-narrow-fit > .idq-fit > .idq-step > :not(.plate):not(.enrichment-question-surface) {
+  flex: 0 0 auto;
+}
+
 /* REQ-205 wins over the mockup's 40px: the question box's controls paint at least 44px — the
    In-depth chip, and the mic|send pill with its two halves and the budget ring round it. */
 .q-box .deep {
@@ -315,6 +385,10 @@ html {
 
 .page-shell-fit {
   height: 100dvh;
+  /* REQ-218: on a phone with the keyboard open the visual viewport is shorter than `100dvh`;
+     `PageShell` sets the variable from `visualViewport`, so the pinned composer rides above it. */
+  height: var(--visual-viewport-height, 100dvh);
+  min-height: 0; /* `.page-shell`'s own `min-height: 100dvh` would otherwise keep the frame tall */
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -4265,7 +4339,7 @@ body {
 
 /* the scanner host's column is the camera box's width on desktop, so the ✕ sits right over its corner */
 @media (min-width: 720px) {
-  .page-content-narrow-fit {
+  .page-content-narrow-fit:has(> .idq > .flow-head .scan-exit) {
     width: min(31.5rem, 92vw);
   }
 }

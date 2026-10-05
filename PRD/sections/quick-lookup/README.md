@@ -105,10 +105,13 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
   REQ-011)
 - Built: the Question box has two rows — the text on top, the Add in-depth
   details chip at the bottom-left and the round mic|send pill at the
-  bottom-right, with the character count where the mockup places it. One line
-  of text is one row; typed content grows the box up to the space available
-  before bottom chrome, capped so the page itself never scrolls from field
-  growth. (DEC-146, DEC-131, REQ-110, REQ-121, REQ-206)
+  bottom-right, with the character count where the mockup places it. The box is
+  pinned at the bottom of the anchored Ask-screen frame (REQ-218). One line of
+  text is one row; typed content grows the box **upward in place** above the
+  stable chip + mic|send control row — the controls do not move and the page
+  never scrolls — up to a cap, past which the text area scrolls inside itself;
+  on a phone the box stays above the on-screen keyboard. (DEC-146, DEC-131,
+  REQ-110, REQ-121, REQ-206, REQ-218)
 - Built: the 300-character budget is drawn as a ring traced round the send
   pill's edge, starting at the top of the pill's split and running clockwise,
   brighter in the last 30 characters, closed at 300; at 0 characters no ring
@@ -347,14 +350,18 @@ as the current shipped configuration, not product truth.
   bounded ≤2500-char constant. (DEC-045, DEC-025)
 - Pre-submit card stage: the front card is the only full-size image; the one
   other card peeks and the rest are off-stage, so the stage's height does not
-  grow with the card count and the send pill stays in the first viewport at
-  every card count up to the cap. The former per-image `25dvh` / `42dvh`
-  stacked cap (ui-review, 2026-08-30) retires with the stacked list it bounded.
-  (REQ-129, REQ-141, REQ-167, REQ-206, `screen-layout.md`)
-- Layout/fit: mobile-first and touch-friendly; the pre-submit stack and the
-  answered workspace follow the shared shell width and region-scroll rules of
-  `screen-layout.md`'s "Quick Question — pre-submit" and "— answered workspace"
-  rows. (NFR-001, `screen-layout.md`)
+  grow with the card count. The send pill stays in the first viewport at every
+  card count up to the cap and at every typed length because the screen is a
+  `100dvh` anchored frame (REQ-218): the composer is pinned at the foot and the
+  card stage flexes/region-scrolls above it. The former per-image `25dvh` /
+  `42dvh` stacked cap (ui-review, 2026-08-30) retires with the stacked list it
+  bounded. (REQ-129, REQ-141, REQ-167, REQ-206, REQ-218, `screen-layout.md`)
+- Layout/fit: mobile-first and touch-friendly; the pre-submit view is a `100dvh`
+  anchored frame (REQ-218) — card stage flexing in the middle, the question box
+  pinned at the foot. The pre-submit view and the answered workspace both follow
+  the shared shell width and region-scroll rules of `screen-layout.md`'s "Quick
+  Question — pre-submit" and "— answered workspace" rows. (NFR-001, REQ-218,
+  `screen-layout.md`)
 
 ## Rejected alternatives and deferred scope
 

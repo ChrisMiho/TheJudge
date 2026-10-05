@@ -31,7 +31,7 @@
   - closing the outer player panel or leaving and returning to In-Depth Question resets secondary details collapsed without clearing player values or other in-progress flow state
   - on phone and desktop viewports, expanding secondary player details must not push cards or controls horizontally off-page, misalign the expand panel, or introduce document-level horizontal scroll (DEC-128, REQ-106)
   - returning to a staged step after leaving the destination and resizing the viewport must not leave the optional-question composer collapsed below one line or clipping typed content (DEC-131, REQ-110, REQ-120)
-  - composer growth must not clip UI below the field or force page scroll from growth alone (REQ-110)
+  - the composer is pinned at the foot of the `100dvh` anchored Ask-screen frame and grows upward in place above its stable control row; its growth must not clip UI below the field or force page scroll from growth alone (REQ-110, REQ-218)
   - on narrow/mobile viewports, the card-detail view reached from zone search must keep its add action in the first viewport; the image is container-relative and bounded by the hosting row's recorded cap rather than a fixed compact size (DEC-160, REQ-125, REQ-128, REQ-129)
 - Notes:
   - this is the primary core product flow with staged context capture
