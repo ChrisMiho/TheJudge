@@ -163,7 +163,7 @@
   - submit flow
 - Notes:
   - question is optional in the core product
-  - "up to 300 characters" means **what the user types**: REQ-091 as amended (`ui-review`, 2026-08-06) confirms the cap and the visible counter both measure raw editable text, not the client-composed submitted string
+  - "up to 300 characters" means **what the user types**: REQ-091 as amended (`ui-review`, 2026-08-06) confirms the cap and the character-budget measurement (now the send-pill ring and its screen-reader remaining-count live region — no visible numeric counter since `anchor-ask-composer`, 2026-10-05) both measure raw editable text, not the client-composed submitted string
 
 ### REQ-012
 - Title: Decrypt Stack submit action

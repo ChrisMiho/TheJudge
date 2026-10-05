@@ -327,8 +327,9 @@ as the current shipped configuration, not product truth.
   fallback the client composes (the locked-pill prefix it was also sized for is
   retired with REQ-079). (REQ-134,
   REQ-091, `askAiRequest.ts`)
-- Frontend display cap: the visible counter, textarea `maxLength`, and submit
-  gate measure the raw editable textarea at 300 characters (REQ-011); the
+- Frontend display cap: the budget ring, the screen-reader remaining-count live
+  region, textarea `maxLength`, and submit gate measure the raw editable textarea
+  at 300 characters (REQ-011); no visible numeric counter is drawn; the
   composed wire value may exceed 300, accepted against DEC-042's
   1,000,000-char prompt budget. (REQ-091 as amended by REQ-134)
 - Conversation limits: 1–20 turns, alternating roles starting with user and
