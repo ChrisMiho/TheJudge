@@ -22,6 +22,7 @@
 | 5 | plan | sonnet | ok | `0 → 25` | GAMEPLAN + slices A/B/C with criteria (7/7/6, all false w/ evidence); split sourced from `SeatPlacement.side` (grid) + `gridColumn`/`layout.columns` (list), seatArrangement.ts untouched; new helper `lib/lifeTracker/lifeHalves.ts`; STATUS.active; README slice table + board row; commit d3f22c1 | 2026-10-04 |
 | 6 | build | sonnet | failed | `0 → 20` | attempt 1 — slice A code built/tested/pushed (commit d979ae4: lifeHalves.ts helper + PlayerLifeCard wiring, 25 tests/typecheck/lint/quality:check green, seatArrangement.ts byte-unchanged); stopped after misreading a harness auto-mode-classifier denial (`sed -i` compound + `python3 <<EOF` heredoc) as the graph criteria guard — reverted the criteria flip, slices B/C not started; launch checkout identical; re-dispatched as attempt 2 | 2026-10-04 |
 | 6 | build | sonnet | ok | `0 → 84` | attempt 2 — slices A/B/C done (commits 0ef96e2/eee98cd/1e74430), all 20 criteria true; full suite `npm --prefix apps/frontend test` 1503 tests pass + `quality:check` exit 0; live browser check grid+list 2/3/4/6/8 @390x844 & 1280x800 (each `−` near edge, table one-screen); live bug fixed (half-button `items-center` moved to left/right maps); REQ-217 applied to 4 PRD/sections files (REQ-217 append, DEC-170 amend-in-place, life-tracker/README, system-map); seatArrangement.ts unchanged; STATUS.ship-ready; **return-side: launch checkout identical, all writes in-worktree**; PR #257 opened; one `nohup` graph-boundary deny handled via run_in_background (not routed around) | 2026-10-04 |
+| 7 | review | opus | ok | `0 → 12` | APPROVE → close. No Critical/Important. Independent no-write (Explore) reviewer verified near-edge split correct per seat/column from diff+source (grid `decrease=placement.side`; list head/foot unchanged, right-of-pair mirrored via `isRightOfPair` on gridColumn/columns); re-ran tests read-only 46/46 pass; non-goals untouched (seatArrangement.ts empty diff, DEFAULT_LAYOUT_MODE=grid, toggle/seed/persistence absent); REQ-217 4-file edits match proposal intent. Non-blocking: phone 6/8p inner-edge `+` just-touches name pill (owner call); cosmetic stale comment fragment in PlayerLifeCard | 2026-10-04 |
 
 ## Open gate
 
@@ -353,6 +354,37 @@ Report back concisely:
 - confirmation seatArrangement.ts, the default layout, the Layout toggle, the Assistant seed, and persistence are untouched
 - whether the REQ-217 PRD edits match the finalized proposal's intent
 - your overall verdict: approve → close, or Critical/Important → loop back to build
+
+### close
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-seat-oriented-default
+
+You are node 8 (`close`) of an autonomous graph-implement run. Invoke the `thejudge-cleanup` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling; apply every gate as a park rather than a question. Return your result to the graph driver.
+
+Work slug: life-tracker-seat-oriented-default
+Run ID: graph-20261004-191418
+Implementation PR (open, do NOT merge or close it): https://github.com/ChrisMiho/TheJudge/pull/257 (head thejudge-auto/life-tracker-seat-oriented-default-work, base main)
+
+Do ALL work in the build worktree named in the Working directory line above — you are standing in it. This is the graph open-PR path: cleanup runs BEFORE the owner's merge.
+
+The package is STATUS.ship-ready, review approved, all slice docs `## Status: done`, all criteria true, worktree clean. Per thejudge-cleanup under graph control:
+- Confirm the durable REQ-217 PRD/sections truth is already present (build applied the four-file diff by intent — REQ-217 appended, DEC-170 amended in place, life-tracker/README.md, system-map.md). Re-write nothing build already applied; promote only any genuinely-unapplied leftover (expected: none).
+- Flip the system-map Player Life Tracker entry planned/partial → shipped only if both code and the receipt exist (REQ-217 is a table change, not a new feature flip — apply only if applicable).
+- Write the receipt at PRD/instructions/receipts/life-tracker-seat-oriented-default-<YYYY-MM-DD>.md, opening with the plain-language block (What happened / What it means for you), then date/slug/status (shipped), actions, files, verification, a `- PR:` line naming PR #257, the `## Graph run` section folding GRAPH-RUN.md's `## Node ledger` and `## Instruction ledger` VERBATIM, the `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/257` summary line, and the `## Intake` section naming the staged intake file(s). Carry these two non-blocking owner follow-ups into the receipt: (1) on phone grid at 6 and 8 players the inner-edge `+` glyph bounding box just touches the rotated name pill (readable, build left it for the owner); (2) a cosmetic stale comment fragment remains in PlayerLifeCard.tsx.
+- Update PRD/work/STATUS.md (strip the row), delete PRD/work/life-tracker-seat-oriented-default/, and commit all of this on thejudge-auto/life-tracker-seat-oriented-default-work, then push so it rides in PR #257.
+- Remove NO worktree and NO branch — `npm run graph:prune` lists them after the owner merges. Never merge/close the PR, never push main, never force-push.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- the receipt path and its Terminal state line
+- confirmation the `## Graph run` section folded both ledgers verbatim
+- confirmation durable REQ-217 truth was already present (nothing re-written) and any leftover promoted (expected none)
+- the PRD/work/STATUS.md strip and the PRD/work/<slug>/ deletion
+- the commit SHA(s) pushed on the branch
+- confirmation no worktree/branch was removed and the PR was not merged/closed
 
 ## Instruction ledger
 
