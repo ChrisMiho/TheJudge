@@ -401,7 +401,8 @@ describe("QuickLookupApp", () => {
     await user.clear(questionInput);
     await user.type(questionInput, "a".repeat(301));
     expect(questionInput).toHaveValue("a".repeat(300));
-    expect(screen.getByText("300 / 300")).toBeInTheDocument();
+    expect(screen.queryByText("300 / 300")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("0 characters remaining");
     expect(submitButton).toBeEnabled();
 
     await user.click(submitButton);
@@ -417,11 +418,12 @@ describe("QuickLookupApp", () => {
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
     const questionInput = screen.getByRole("textbox", { name: "Magic question" });
-    // REQ-206: at 0 characters the box carries data-fill="0", which hides the count and the ring (flow.css).
+    // REQ-206: at 0 characters the box carries data-fill="0", which hides the ring (flow.css).
     expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "0");
 
     await user.type(questionInput, "x");
-    expect(screen.getByText("1 / 300")).toBeInTheDocument();
+    expect(screen.queryByText("1 / 300")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("299 characters remaining");
     expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "some");
 
     await user.clear(questionInput);

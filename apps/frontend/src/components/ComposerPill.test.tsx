@@ -97,7 +97,8 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
 
     const box = screen.getByTestId("composer-pill");
     expect(box).toHaveAttribute("data-fill", "0");
-    expect(flowCss).toMatch(/\.q-box\[data-fill="0"\] \.q-count[^{]*\{[^}]*display: none/);
+    expect(flowCss).not.toMatch(/\.q-count|\.fu-count/);
+    expect(screen.queryByTestId("composer-pill-count")).not.toBeInTheDocument();
     expect(flowCss).toMatch(/\.q-box\[data-fill="0"\] \.send-ring \.track[\s\S]*opacity: 0/);
     // the ring is always in the DOM; CSS draws it from the box's --fill
     expect(screen.getByTestId("composer-pill-ring")).toBeInTheDocument();
@@ -118,7 +119,12 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     );
 
     const box = screen.getByTestId("composer-pill");
-    expect(screen.getByTestId("composer-pill-count")).toHaveTextContent("37 / 300");
+    expect(screen.queryByTestId("composer-pill-count")).not.toBeInTheDocument();
+    expect(screen.queryByText(/37 ?\/ ?300/)).not.toBeInTheDocument();
+    const remaining = screen.getByTestId("composer-pill-remaining");
+    expect(remaining).toHaveTextContent("263 characters remaining");
+    expect(remaining).toHaveClass("sr-only");
+    expect(remaining).toHaveAttribute("aria-live", "polite");
     expect(box).toHaveAttribute("data-fill", "some");
     expect(box).toHaveAttribute("data-near", "false");
     expect(box.style.getPropertyValue("--fill")).toBe("12.3");
@@ -139,7 +145,7 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
 
     expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-near", "true");
     expect(screen.getByTestId("composer-pill").style.getPropertyValue("--fill")).toBe("93.3");
-    expect(screen.getByTestId("composer-pill-count")).toHaveAttribute("data-near", "true");
+    expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("20 characters remaining");
   });
 
   it("starts the ring at the top of the mic|send seam and runs it clockwise round the pill (the mockup's path)", () => {
@@ -161,7 +167,7 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     expect(ring.querySelector("path.fill")).toHaveAttribute("d", "M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z");
   });
 
-  it("is the follow-up box (.followup, .fu-count, no In-depth chip) in the followup variant", () => {
+  it("is the follow-up box (.followup, no In-depth chip) in the followup variant", () => {
     render(
       <ComposerPill
         variant="followup"
@@ -180,7 +186,8 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     const box = screen.getByTestId("composer-pill");
     expect(box).toHaveClass("followup");
     expect(box).not.toHaveClass("q-box");
-    expect(screen.getByTestId("composer-pill-count")).toHaveClass("fu-count");
+    expect(screen.queryByTestId("composer-pill-count")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("298 characters remaining");
     expect(screen.queryByTestId("composer-pill-in-depth")).not.toBeInTheDocument();
   });
 

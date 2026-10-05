@@ -98,14 +98,14 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
   the silent fallback `Tell me about {Card Name}.` for a single card or
   `Tell me about {Card A}, {Card B} and {Card C}.` for several (never shown to
   the user). (REQ-091, REQ-167, FLOW-011)
-- Built: the visible counter, the textarea `maxLength`, and the submit gate all
+- Built: the ring, the screen-reader remaining count, the textarea `maxLength`, and the submit gate all
   measure the raw editable textarea content, not the composed string, so an
-  empty field with a card attached reads `0/300` and a full
+  empty field with a card attached has 300 characters remaining and a full
   300-character question stays submittable. (REQ-091 as amended by REQ-134,
   REQ-011)
 - Built: the Question box has two rows — the text on top, the Add in-depth
   details chip at the bottom-left and the round mic|send pill at the
-  bottom-right, with the character count where the mockup places it. The box
+  bottom-right; the character budget is the ring round the pill, with no visible numeric count (a visually-hidden polite live region announces the remaining characters). The box
   rests at its natural top position directly under the cards in the anchored
   Ask-screen frame (REQ-218). One line of text is one row; typed content grows
   the box **downward**, until it must leave room for its own chip + mic|send
@@ -115,7 +115,7 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
 - Built: the 300-character budget is drawn as a ring traced round the send
   pill's edge, starting at the top of the pill's split and running clockwise,
   brighter in the last 30 characters, closed at 300; at 0 characters no ring
-  is drawn and the numeric count is hidden. (REQ-011, REQ-134, REQ-206)
+  is drawn, and no numeric count is shown at any fill. (REQ-011, REQ-134, REQ-206)
 - Built: the initial submit control is the round send pill inside the
   question box, with no visible text label (its accessible name keeps Ask
   semantics); the answered-view follow-up composer keeps its own compact

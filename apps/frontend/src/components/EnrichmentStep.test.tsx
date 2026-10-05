@@ -61,7 +61,8 @@ describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
     expect(screen.getByRole("textbox", { name: "Optional question" })).toHaveValue(
       "Does this resolve?"
     );
-    expect(screen.getByText("18 / 300")).toBeInTheDocument();
+    expect(screen.queryByText("18 / 300")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("282 characters remaining");
   });
 
   // Look-matching pass (slice N, review 1 fix — finding 3): `ComposerPill` hides

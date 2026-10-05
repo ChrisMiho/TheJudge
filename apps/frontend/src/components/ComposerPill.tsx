@@ -42,7 +42,7 @@ export interface ComposerPillProps {
 
 /**
  * FLOW-011 / REQ-206: Ask a Question's question box in the mockup's own markup, so the ported
- * `flow.css` shapes it: the In-depth chip, the text, the `n / 300` count and the mic|send pill with
+ * `flow.css` shapes it: the In-depth chip, the text, and the mic|send pill (no numeric count; the ring is the budget cue) with
  * the budget ring round it. Its shape follows the text: one line shares a row with the chip and the
  * send; from a second line (or a hint that wraps) the text takes the top row and the chip (left) and
  * the mic|send pill (right) step down onto the row beneath (`flow.css` `:has(textarea.grown)`). The
@@ -179,8 +179,9 @@ export function ComposerPill({
         disabled={isSubmitting}
       />
 
-      <span data-testid="composer-pill-count" className={variant === "followup" ? "fu-count" : "q-count"} data-near={isNear}>
-        {length} / {maxLength}
+      {/* The numeric "n / 300" is not drawn: the budget ring is the visual cue. Assistive tech still gets the remaining count. */}
+      <span className="sr-only" role="status" aria-live="polite" data-testid="composer-pill-remaining">
+        {maxLength - length} characters remaining
       </span>
 
       <span className="send-wrap">

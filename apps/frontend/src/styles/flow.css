@@ -205,15 +205,15 @@
 }
 /* round 11 ("the in-depth button lost its position and fell to the bottom …
    the text stayed floating up higher, out of sync"): the box has two shapes.
-   One line of text: a single row — In-depth, the text, the count, the send.
+   One line of text: a single row — In-depth, the text, the send.
    Two lines or more: the text takes the whole top row at full width and the
    controls step down onto a row of their own beneath it, In-depth at the left
-   and the count + send at the right, so they always sit together and the text
+   and the send at the right, so they always sit together and the text
    is never squeezed into a thin column between them on a phone. */
 .q-box:has(textarea.grown), .followup:has(textarea.grown) { padding: 0.55rem 0.45rem 0.45rem 0.45rem; }
 .q-box:has(textarea.grown) textarea, .followup:has(textarea.grown) textarea { flex: 1 0 100%; order: -1; padding: 0.3rem 0.6rem 0.2rem; }
 .q-box:has(textarea.grown) .deep { margin-right: auto; }
-.followup:has(textarea.grown) .fu-count { margin-left: auto; }
+.followup:has(textarea.grown) .send-wrap { margin-left: auto; }
 .q-box:focus-within, .followup:focus-within { border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent); }
 .q-box textarea, .followup textarea {
   flex: 1; min-width: 0; resize: none; background: transparent; border: 0; padding: 0.6rem 0;
@@ -221,8 +221,6 @@
 }
 .q-box textarea:focus, .followup textarea:focus { outline: none; }
 .q-box textarea::placeholder, .followup textarea::placeholder { color: color-mix(in srgb, var(--text-muted) 80%, transparent); }
-.q-count, .fu-count { align-self: flex-end; margin-bottom: 0.8rem; font-size: 0.66rem; color: var(--text-muted); letter-spacing: 0.02em; font-variant-numeric: tabular-nums; white-space: nowrap; }
-.q-count[data-near="true"] { color: var(--accent-soft); }
 /* round 9: a microphone inside the send control (owner: "add a microphone
    icon inside of the send icon … leverage the phone's own voice-to-text").
    The round send is one pill with two halves now: the mic on the left, the
@@ -281,8 +279,6 @@
 .q-box:has(.deep) { padding-left: 0.45rem; }
 .q-box:has(.deep) textarea { padding-left: 0.3rem; }
 @media (max-width: 479px) { .q-box .deep .lbl { display: none; } .q-box .deep { padding: 0 0.6rem; } }
-/* round 11: the count waits until there is something to count — an empty box shows the hint, the ring and the send, nothing more */
-.q-box[data-fill="0"] .q-count, .followup[data-fill="0"] .fu-count { display: none; }
 
 /* ---- card detail panel — round 3: the art leads, the close sits in the
    corner, the oracle text reads like a card's own text box ---- */
