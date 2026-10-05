@@ -345,6 +345,28 @@ Report back:
 - The final commit hash
 - Every path you wrote (so the driver can confirm all writes are inside the worktree)
 
+### review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-anchor-ask-composer
+
+You are node 7 (review), attempt 1, of the build half (run graph-20261005-133503). You are a fresh-context, no-write reviewer. You grade the shipped slices of anchor-ask-composer against each slice's own stated acceptance criteria — nothing else. You did not see the build node's work and must not assume it.
+
+From the Working directory above, read:
+- The full diff of the work: `git diff origin/main...HEAD` (code + the five PRD/sections files).
+- Each slice doc and its `## Acceptance criteria`: `PRD/work/anchor-ask-composer/slice-a-ask-frame.md`, `slice-b-indepth-frame.md`, `slice-c-keyboard.md`, `slice-d-truth-and-ship.md`, and the `slice-*.criteria.json` beside them.
+- Package artifacts for context only: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GAMEPLAN.md`, `build-evidence.md`.
+
+Rubric: each slice's own acceptance criteria. Flag only gaps that affect correctness or those stated requirements. A style note, a preference, or any improvement outside a slice's stated requirements is NEVER Critical or Important and must not loop the run back to build — say so when you note one. Check in particular: REQ-206's chip clause is left at the approved width-only wording (the in-depth collapse behavior must NOT be pre-applied); REQ-218 is placed between REQ-217 and REQ-219; the scanner's 31.5rem width override is scoped to the scanner host only (the Ask column stays 36rem); PRD/sections edits were applied by intent and match the approved GATE-QUESTIONS intent.
+
+You hold no write tools. Do not edit, commit, or push anything. Copy the Working directory line above unchanged into every prompt you write.
+
+Report back:
+- Per slice (A–D): PASS or the findings
+- Each finding with a severity: Critical, Important, or Minor/preference (and whether it falls outside the slice's stated criteria)
+- Overall verdict: APPROVE (advance to close) or LOOP TO BUILD (only on a Critical or Important finding inside a slice's criteria), with the specific fix
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
