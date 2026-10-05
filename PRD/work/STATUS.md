@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| life-tracker-seat-oriented-default | slices A, B, C done 2026-10-04; code PR into main awaits owner merge. |
 
 ## active
 
