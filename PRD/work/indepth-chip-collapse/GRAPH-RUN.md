@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/indepth-chip-collapse` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-indepth-chip-collapse`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-234937/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff` (spec-forming half)
+- Current node: `owner-action` (parked at gate-qc PASS)
+- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR into `main`; `graph-implement` then builds
 
 ## Node ledger
 
@@ -16,10 +16,17 @@
 | 1 | preflight | haiku | ok | degraded (no run state) | branch `thejudge-auto/indepth-chip-collapse` pushed to origin (`git ls-remote` 05fd714); kickoff worktree created; launch checkout untouched; canary denied -> hook live | 2026-10-04 |
 | 2 | shape | sonnet | ok | degraded (no run state) | package `PRD/work/indepth-chip-collapse/` created with `STATUS.ideation`; intake copied verbatim to `intake/`; 4 prior-run receipts noted in IDEA.md | 2026-10-04 |
 | 3 | define | opus | ok | `0 → 24` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` written; proposes one stable ID (REQ-206 edit, state-aware label/icon-only sub-clause), Blocker questions none; STATUS.refined | 2026-10-05 |
+| 4 | gate-qc | sonnet | ok | `0 → 8` | thejudge-quality-check PASS (first PASS → stop); proposed REQ-206 replace-line matches functional-requirements.md:5240 char-for-char; 3 non-blocking findings; STATUS.refined left for driver to park | 2026-10-05 |
 
 ## Open gate
 
-- None
+- Parked at `owner-action` on gate-qc PASS (run one terminal state: PARKED).
+- Action: answer the REQ-206 edit slot in `PRD/work/indepth-chip-collapse/GATE-QUESTIONS.md`
+  (accept / edit / reject), then merge the docs PR into `main`. That merge is the build signal.
+- Resume (build half): `/graph-implement PRD/work/indepth-chip-collapse/`
+- Coordination note: anchor-ask-composer (owner-action, docs PR #249 merged) rewrites the
+  same REQ-206 acceptance line; build applies this as a sub-clause substitution and re-reads
+  REQ-206 before applying.
 
 ## Dispatch prompts
 
