@@ -3,11 +3,12 @@
 - Run ID: `graph-20261003-205515`
 - Profile: `loaded (env sentinel)` — observed by node 1 (session launched `claude --settings .claude/graph-profile.json`)
 - Canary: `denied — hook live (rm -rf ...)`; graph-canary `denied — tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/anchor-ask-composer` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-anchor-ask-composer`
+- Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/anchor-ask-composer` by the build half's claim, run `graph-20261005-133503`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-anchor-ask-composer`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261003-205515/`
-- Current node: `owner-action` (parked at gate-qc PASS — spec-forming half complete)
-- Next action: owner answers `GATE-QUESTIONS.md` verdict slots and merges the docs PR; `graph-implement` then builds
+- Current node: `owner-action` (build half claimed; resolving the answered gate before `plan`)
+- Build run ID: `graph-20261005-133503`
+- Next action: `/graph-implement PRD/work/anchor-ask-composer/`
 
 ## Node ledger
 

@@ -6,7 +6,7 @@ See IDEA.md. Intake: intake/GRAPH-BRIEF.md.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/anchor-ask-composer
+- Autonomous base: origin/main
 
 ## Preparation gate
 
