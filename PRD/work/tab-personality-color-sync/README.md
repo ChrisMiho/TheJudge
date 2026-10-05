@@ -1,4 +1,4 @@
-status: owner-action
+status: refined
 
 # tab-personality-color-sync
 

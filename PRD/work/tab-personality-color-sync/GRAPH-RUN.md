@@ -33,14 +33,26 @@ place). Rows below with dates after this note belong to the correction pass.
 | 4 | gate-qc | sonnet | ok | `1 → 15` | attempt 2: PASS, 0 findings; all 4 prior findings verified resolved against live PRD; REQ-219 id free (last is REQ-217), 48px row ≥ NFR-001 44px, Q-219 confirmed genuine blocker; STATUS.refined; non-blocking note: DEC-135 is `retired` but the shared-chrome line carries the truth and REQ-219 cites it alongside — **STOP at first PASS** | 2026-10-04 |
 | 3 | define | opus | ok | `1 → 40` | **correction pass** (run `graph-20261004-212625`): DESIGN-BRIEF.md + GATE-QUESTIONS.md rewritten for the browser tab (favicon + title + theme-color sync); REQ-219 content fully replaced, no blocker (A/B fork dropped); verified current state from code (no favicon, static `<title>TheJudge`, no theme-color meta, no manifest); reuse applyPalette.ts / useThemePalette.ts / tokens.css `[data-profile]` / motifSymbols.ts / BrandMark.tsx; removed retired DEC-149, cites live REQ-126/200/201/207/216/099; STATUS.refined | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `1 → 12` | **correction pass**: PASS, 0 findings on first grade; all cited ids verified live (REQ-126/200/201/207/216/099; no retired id cited; DEC-149 only in history); REQ-219 free (last id REQ-217; REQ-218 reserved by anchor-ask-composer); current-state premises confirmed from code; every acceptance criterion has a checkable bar; STATUS.refined — **STOP at first PASS**. Non-blocking for map-out: pin the exact title string (brief shows `TheJudge · MTG Assistant` as an example) | 2026-10-04 |
+| — | gate-review | sonnet | ok | `0 → 8` | build-half run `graph-20261004-215150`: REQ-219 verdict `accept` applied (GATE-QUESTIONS.md unchanged); `### Brief reconciliation` none; `## Gate verdicts` written; `## Open gate` RESOLVED; STATUS.owner-action→refined; PRD/sections untouched (`git status --porcelain \| grep -c PRD/sections/` = 0) | 2026-10-04 |
 
 ## Open gate
 
-- State: PARKED at `owner-action` (correction-pass gate-qc PASS, 2026-10-04). Spec-forming half complete for the **browser-tab** feature.
+- **RESOLVED 2026-10-04** — 1 verdict (1 accept / 0 edit / 0 reject); see `## Gate verdicts`. Status restored to `refined`; run resumes at gate-qc.
+- State (historical): PARKED at `owner-action` (correction-pass gate-qc PASS, 2026-10-04). Spec-forming half complete for the **browser-tab** feature.
 - Docs PR: https://github.com/ChrisMiho/TheJudge/pull/258 (docs-only, into `main`; rewritten in place for the browser tab)
 - Question: answer the one verdict slot in `PRD/work/tab-personality-color-sync/GATE-QUESTIONS.md` — **REQ-219** (accept/edit/reject): the browser tab (favicon + document title + mobile `theme-color`) carries personality and syncs to the active colour profile. **No blocker** — the earlier Q-219 A/B colour fork is resolved (one browser tab follows the one active profile).
 - Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, this ledger; correction-pass gate-qc PASS with 0 findings. Current state confirmed: no favicon, static `<title>TheJudge`, no `theme-color` meta, no manifest — the feature adds all three. Non-blocking for map-out: pin the exact title string.
 - Resume command (after you answer REQ-219 and merge the docs PR to `main`): `/graph-implement PRD/work/tab-personality-color-sync/`
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-219` | accept | — |
+
+### Brief reconciliation
+
+none (every verdict was `accept`; DESIGN-BRIEF.md and README intake pointer untouched, no grep required)
 
 ## Dispatch prompts
 
@@ -280,6 +292,30 @@ Report back:
 - the STATUS marker now set
 - confirmation the README `## Preparation gate` section was updated
 Report evidence as paths/quotes, not bare claims. End with a one-line status: gate-qc PASS or gate-qc FAIL (with the finding count).
+
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync
+
+You are the gate-resolution step (the owner-facing half of the `define` gate) at the start of the build half of an autonomous graph run. Invoke the `graph-gate-review` skill (Skill tool, skill name `graph-gate-review`) and follow it exactly. This step applies the owner's recorded verdict only; it decides no product truth of its own, advances no node, and dispatches no subagent.
+
+Run ID: graph-20261004-215150. Work ENTIRELY inside the working directory above (the build worktree, on branch thejudge-auto/tab-personality-color-sync-work). Every file you read or write is under /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync/ — not the launch checkout. Copy the `Working directory:` line unchanged into any prompt you write.
+
+Package: PRD/work/tab-personality-color-sync/ (relative to the working directory above). The owner answered GATE-QUESTIONS.md and merged the docs PR #258; that merge is the build signal. Apply the recorded verdict(s) per the skill:
+- Read GATE-QUESTIONS.md and GRAPH-RUN.md `## Open gate`.
+- Parse every `## <STABLE-ID>` block; confirm each `Verdict:` slot is filled with accept / edit / reject and that edit / reject carry a Reason. Refuse (do not guess) on any blank or malformed slot.
+- Apply each verdict inside that ID's proposed diff in GATE-QUESTIONS.md only — not PRD/sections/.
+- Reconcile DESIGN-BRIEF.md (and the README intake pointer) to every edit / reject using a grep you quote; an accept touches nothing. Require zero grep hits before resolving the gate.
+- Write `## Gate verdicts` (with its `### Brief reconciliation` list), mark `## Open gate` resolved, and restore the status to `refined` (README `status:` field, the STATUS.* marker, the PRD/work/STATUS.md board row).
+
+Report back:
+- the verdict counts (accept / edit / reject)
+- the `### Brief reconciliation` result (passages rewritten, or `none`)
+- the restored STATUS marker
+- confirmation that PRD/sections/ was not touched
+Report evidence as commands/paths, not bare claims. End with a one-line status: gate-review OK (status restored to refined; resumes at gate-qc) or REFUSED (with the reason).
 
 ## Instruction ledger
 
