@@ -7,7 +7,8 @@
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-indepth-chip-collapse`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-234937/`
 - Current node: `owner-action` (parked at gate-qc PASS)
-- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR into `main`; `graph-implement` then builds
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/261 (base `main`, head `thejudge-auto/indepth-chip-collapse`)
+- Next action: owner answers `GATE-QUESTIONS.md` and merges docs PR #261 into `main`; `graph-implement` then builds
 
 ## Node ledger
 
@@ -22,7 +23,8 @@
 
 - Parked at `owner-action` on gate-qc PASS (run one terminal state: PARKED).
 - Action: answer the REQ-206 edit slot in `PRD/work/indepth-chip-collapse/GATE-QUESTIONS.md`
-  (accept / edit / reject), then merge the docs PR into `main`. That merge is the build signal.
+  (accept / edit / reject), then merge docs PR #261
+  (https://github.com/ChrisMiho/TheJudge/pull/261) into `main`. That merge is the build signal.
 - Resume (build half): `/graph-implement PRD/work/indepth-chip-collapse/`
 - Coordination note: anchor-ask-composer (owner-action, docs PR #249 merged) rewrites the
   same REQ-206 acceptance line; build applies this as a sub-clause substitution and re-reads
