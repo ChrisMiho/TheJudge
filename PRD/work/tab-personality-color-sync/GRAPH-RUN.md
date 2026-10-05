@@ -36,6 +36,7 @@ place). Rows below with dates after this note belong to the correction pass.
 | — | gate-review | sonnet | ok | `0 → 8` | build-half run `graph-20261004-215150`: REQ-219 verdict `accept` applied (GATE-QUESTIONS.md unchanged); `### Brief reconciliation` none; `## Gate verdicts` written; `## Open gate` RESOLVED; STATUS.owner-action→refined; PRD/sections untouched (`git status --porcelain \| grep -c PRD/sections/` = 0) | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `0 → 8` | build-half re-grade: PASS, 0 findings; six cited authorities verified live (REQ-099/126/200/201/207/216 in functional-requirements.md); no retired id cited; REQ-219 free; current-state premises confirmed from code (no favicon, static `<title>TheJudge`, no theme-color meta, no manifest); every acceptance criterion measurable; STATUS.refined; README `## Preparation gate` rewritten for this run | 2026-10-04 |
 | 5 | plan | sonnet | ok | `0 → 17` | 3 sequential slices: A title (`TheJudge · MTG Assistant`) + theme-color meta synced by applyPalette; B faviconArt.ts SVG-data-URI helper + per-profile favicon swap; C six-profile real-browser check + REQ-219 apply to PRD/sections + ship gates. GAMEPLAN.md + slice-a/b/c docs + criteria.json (6/6/8; C's 5 browser checks manual). STATUS.active | 2026-10-04 |
+| 6 | build | sonnet | ok | `0 → 57` | 3 slices implemented on thejudge-auto/tab-personality-color-sync-work; **code PR #259** opened into main. Code: apps/frontend/index.html, applyPalette.ts, faviconArt.ts (+ applyPalette.test.ts / faviconArt.test.ts). Criteria all true (a 6/6, b 6/6, c 8/8; slice-c manual C1–C5 earned via dated observation in slice-c doc). Real-browser check (Playwright, dev server :5391 in worktree, 390x844): six profiles + custom Colorless re-skin favicon/title/theme-color with no reload; capture `favicon-strip-390.png` (gitignored). REQ-219 applied to product truth: functional-requirements.md:5623 + shared-chrome/README.md:140. Gates: `npm --workspace apps/frontend run test` 1529 pass; `npm run typecheck`/`lint` clean; `npm run quality:check` exit 0. Return-side: launch checkout identical to baseline (empty); all writes inside the worktree. STATUS.ship-ready | 2026-10-04 |
 
 ## Open gate
 
@@ -368,6 +369,38 @@ Report back:
 - the exact branded title string you pinned
 - the STATUS marker now set
 Report evidence as paths, not bare claims. End with a one-line status: plan OK (ready for build, N slices) or BLOCKED (reason).
+
+### build (build half — run graph-20261004-215150)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync
+
+You are node 6 (`build`) of the build half of an autonomous graph run. Invoke the `thejudge-implement-all` skill (Skill tool, skill name `thejudge-implement-all`) and follow it exactly in graph-controlled mode. Because `graph is controlling`, do NOT stop to ask the user anything — implement every remaining slice end to end and hand back.
+
+Run ID: graph-20261004-215150. Branch: thejudge-auto/tab-personality-color-sync-work. Work ENTIRELY inside the working directory above (the build worktree). First cd there and run every command from there — never the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge. Every file you create or edit MUST be under /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-tab-personality-color-sync/ — a write anywhere else fails this node. Copy the `Working directory:` line unchanged into any prompt you write.
+
+Package: PRD/work/tab-personality-color-sync/, STATUS.active. Read GAMEPLAN.md and slice-a/b/c docs. Implement the three slices in order A then B then C, each end to end: code, tests, verification, and flip that slice's criteria.json entries to true as you earn them.
+
+Scope (REQ-219, the browser tab):
+- Slice A: set the index.html title to the exact string TheJudge, space, middot U+00B7, space, MTG Assistant; add a theme-color meta tag and an svg icon link to apps/frontend/index.html; make applyPalette.ts set the theme-color content to triplet(palette.accent) on every call for all six profiles and custom Colorless (REQ-099), creating the meta if absent, with no hex table in tab code (REQ-216). Add the tests the slice lists.
+- Slice B: add the pure helper apps/frontend/src/lib/theme/faviconArt.ts exporting buildFaviconHref(motif, accentHex) that wraps MOTIF_SYMBOLS[motif] in a 100x100 svg, replaces currentColor with the accent, returns a data:image/svg+xml URI (read-only reuse of MOTIF_SYMBOLS, no fetch, no CDN); make applyPalette set the icon link href per profile and custom Colorless, creating the link if absent, with no animation or timers. Add the tests the slice lists.
+- Slice C: run the real-browser check and apply the PRD truth.
+  - Start the frontend dev server, open the app in a browser (Playwright MCP, plugin-playwright-playwright), and for each of White, Blue, Black, Red, Green, Colorless switch Theme and observe the favicon href (motif plus accent), document.title, and theme-color content; at a 390x844 phone viewport confirm the theme-color meta equals the accent after each switch with no reload; set a custom Colorless colour and confirm favicon and theme-color follow it. Write captures under PRD/work/tab-personality-color-sync/.playwright-mcp/ (create it). Record a DATED observation line naming each manual criterion id you earned. Then close the browser (browser_close), stop the dev server you started, and release the port (runtime-process-hygiene).
+  - Apply REQ-219 to PRD/sections/functional-requirements.md exactly per the accepted diff in GATE-QUESTIONS.md (append after REQ-217; if a REQ-219 already exists with different content, replace it whole), and add the one REQ-219 bullet to PRD/sections/shared-chrome/README.md as specified in the slice. This is the one place durable product truth is written.
+
+Gates: npm --workspace apps/frontend run test green (including the new title, theme-color x6, favicon x6, custom Colorless tests); npm run quality:check green. Node 6 reports ok only when every criterion in every slice criteria.json is true, read from the files.
+
+Commit your code to the branch thejudge-auto/tab-personality-color-sync-work (stage explicit paths, never git add -A or git add .) and push to origin. Then ensure a code PR exists from thejudge-auto/tab-personality-color-sync-work into main — create it with gh pr create --base main --head thejudge-auto/tab-personality-color-sync-work if none exists, with a plain-language body per PRD/instructions/plain-language-standard.md. Do NOT merge or close any PR, do NOT push or merge into main.
+
+Report back:
+- each slice A/B/C: implemented, tests added, criteria all true (show the criteria.json true counts)
+- the browser-check observations (per-profile favicon, title, theme-color, plus custom Colorless) and where captures live
+- the npm --workspace apps/frontend run test and npm run quality:check results (the commands and their pass/fail)
+- the REQ-219 apply (functional-requirements.md plus the shared-chrome bullet) with grep evidence
+- the code PR URL
+- confirmation every write stayed inside the build worktree
+Report evidence as commands/paths/URLs, not bare claims. End with a one-line status: build OK (ready for review, PR url) or BLOCKED/PARKED (reason).
 
 ## Instruction ledger
 
