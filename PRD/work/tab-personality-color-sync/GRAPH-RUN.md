@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/tab-personality-color-sync` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync`
 - Staging: none (inline request; no files or pasted markdown staged)
-- Current node: `gate-qc`
+- Current node: `define` (attempt 2 — gate-qc FAIL loop)
 - Next action: `/graph-kickoff` (spec-forming half continues)
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/tab-personality-color-sync` pushed from `.worktrees/kickoff-tab-personality-color-sync` (commit 9886f86); launch checkout unchanged (`main`); both canaries denied | 2026-10-04 |
 | 2 | shape | sonnet | ok | `1 → 11` | `PRD/work/tab-personality-color-sync/` created (IDEA.md, README.md, STATUS.ideation); 10 `## Prior run` matches in IDEA.md; board row added under `## ideation` | 2026-10-04 |
 | 3 | define | opus | ok | `0 → 52` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written (REQ-219 proposed new; one `## Blocker questions` fork Q-219); STATUS.refining; zero `PRD/sections/` edits | 2026-10-04 |
+| 4 | gate-qc | sonnet | failed | `1 → 13` | FAIL — 4 findings (F1 retired DEC-081 token clause → REQ-060/REQ-200; F2 DEC-104 "identical rows" is a code comment → cite DEC-135/shared-chrome; F3 add live deps REQ-060/REQ-200/REQ-059/DEC-135; F4 untestable acceptance wording); README Preparation gate updated; loops to define (attempt 2 of max 3) | 2026-10-04 |
 
 ## Open gate
 
@@ -117,6 +118,31 @@ Report back:
 - where you verified premises live vs. from code
 - the STATUS marker now set (refining or refined)
 End with a one-line status: define OK (ready for gate-qc) — note if GATE-QUESTIONS.md was written or not.
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync
+
+You are node 4 (`gate-qc`) of an autonomous graph run. Invoke the `thejudge-quality-check` skill (Skill tool, skill name `thejudge-quality-check`) and follow it exactly in graph-controlled mode. Because `graph is controlling`, do NOT stop to ask the user anything — produce a PASS/FAIL report and hand back.
+
+Run all work inside the working directory above (the kickoff worktree), never the launch checkout. Copy the `Working directory:` line unchanged into any prompt you write for a sub-subagent.
+
+The package is `PRD/work/tab-personality-color-sync/`. Run ID: `graph-20261004-204628`.
+
+Validate `PRD/work/tab-personality-color-sync/DESIGN-BRIEF.md` for PRD alignment and agent-readiness, per the skill. Produce a PASS/FAIL report. Do NOT write a GAMEPLAN or slice docs — that is a later node. On FAIL, set `STATUS.refining` and list the complete findings. On PASS, leave the package ready to stop at this gate.
+
+Also update the package README's `## Preparation gate` section with the result, using the exact shape from the preparation-contract (Quality-check: PASS | FAIL, Checked artifact, Findings).
+
+Note the proposal in `GATE-QUESTIONS.md`: REQ-219 (new) plus one `## Blocker questions` fork (Q-219). The brief is what you grade; it should be consistent with that proposal.
+
+Report back:
+- the verdict (PASS or FAIL)
+- the complete findings list (none, or each issue)
+- the STATUS marker now set
+- confirmation the README `## Preparation gate` section was updated
+Report evidence as paths/quotes, not bare claims. End with a one-line status: gate-qc PASS or gate-qc FAIL (with the finding count).
 
 ## Instruction ledger
 
