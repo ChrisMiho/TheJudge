@@ -1,6 +1,6 @@
 # Slice B — REQ-206 apply and ship gates
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -15,11 +15,11 @@ Durable product truth says the chip is state-aware, and the package is ready to 
 
 ## Acceptance criteria
 
-- [ ] REQ-206's acceptance line contains the state-aware sub-clause and no longer contains `labelled or icon-only at each width as the mockup shows`
-- [ ] The rest of that REQ-206 line (ring-based character budget, live region, downward growth) is byte-identical to before (`git diff` shows only the sub-clause changed on that line)
-- [ ] REQ-206 Notes carries the `indepth-chip-collapse` bullet naming the textarea-focus scoping and the mockup departure
-- [ ] `grep -n "at each width as the mockup shows" PRD/sections/` returns no hit
-- [ ] `npm run quality:check` is green
+- [x] REQ-206's acceptance line contains the state-aware sub-clause and no longer contains `labelled or icon-only at each width as the mockup shows`
+- [x] The rest of that REQ-206 line (ring-based character budget, live region, downward growth) is byte-identical to before (`git diff` shows only the sub-clause changed on that line)
+- [x] REQ-206 Notes carries the `indepth-chip-collapse` bullet naming the textarea-focus scoping and the mockup departure
+- [x] `grep -n "at each width as the mockup shows" PRD/sections/` returns no hit
+- [x] `npm run quality:check` is green
 
 ## Verification
 
@@ -35,13 +35,13 @@ npm run quality:check
 
 ## PRD promotion checklist (executed in cleanup)
 
-- [ ] REQ-206 truth present in `PRD/sections/` (applied here at build)
-- [ ] Receipt written; STATUS.md board row moved; `PRD/work/indepth-chip-collapse/` deleted
+- [x] REQ-206 truth present in `PRD/sections/` (applied here at build)
+- [x] Receipt written; STATUS.md board row moved; `PRD/work/indepth-chip-collapse/` deleted
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/indepth-chip-collapse/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/indepth-chip-collapse/` ready to delete

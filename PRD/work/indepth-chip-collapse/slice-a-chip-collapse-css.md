@@ -1,6 +1,6 @@
 # Slice A — In-depth chip collapse (CSS state rule)
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -17,16 +17,16 @@ The In-depth chip shows only its glyph while the Ask composer is engaged (textar
 
 ## Acceptance criteria
 
-- [ ] flow.css hides `.q-box .deep .lbl` on `.q-box:has(textarea:focus)` and on `.q-box:not([data-fill="0"])`, and contains no `.q-box:focus-within` rule touching `.lbl` (CSS-contract test passes)
-- [ ] At 1440px, the label is hidden when the textarea is focused (computed `display: none`)
-- [ ] At 1440px, the label is hidden when the box holds text, even after the textarea blurs
-- [ ] At 1440px with an empty box and the textarea not focused, the label is visible while keyboard focus is on the chip, on the mic, and on the send button
-- [ ] At 1440px, emptying the box and blurring the textarea restores the label
-- [ ] At 390px the label is hidden in every state (rest, focused, holding text)
-- [ ] The chip's accessible name is still "Add in-depth details" and `.lbl` stays `aria-hidden` (test passes)
-- [ ] `ComposerPill.tsx` markup unchanged (`git diff --stat` shows no change to it)
-- [ ] `npm run quality:check` is green
-- [ ] Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/indepth-chip-collapse/.playwright-mcp/`
+- [x] flow.css hides `.q-box .deep .lbl` on `.q-box:has(textarea:focus)` and on `.q-box:not([data-fill="0"])`, and contains no `.q-box:focus-within` rule touching `.lbl` (CSS-contract test passes)
+- [x] At 1440px, the label is hidden when the textarea is focused (computed `display: none`)
+- [x] At 1440px, the label is hidden when the box holds text, even after the textarea blurs
+- [x] At 1440px with an empty box and the textarea not focused, the label is visible while keyboard focus is on the chip, on the mic, and on the send button
+- [x] At 1440px, emptying the box and blurring the textarea restores the label
+- [x] At 390px the label is hidden in every state (rest, focused, holding text)
+- [x] The chip's accessible name is still "Add in-depth details" and `.lbl` stays `aria-hidden` (test passes)
+- [x] `ComposerPill.tsx` markup unchanged (`git diff --stat` shows no change to it)
+- [x] `npm run quality:check` is green
+- [x] Browser closed, owned server(s) stopped, ports released; captures written to `PRD/work/indepth-chip-collapse/.playwright-mcp/`
 
 ## Verification
 
