@@ -1,13 +1,13 @@
 # Graph run — life-tracker-seat-oriented-default
 
-- Run ID: `graph-20261003-190748`
-- Profile: `loaded (env sentinel)` (reported by graph-preflight at node 1)
-- Canary: `denied — hook live (universal: rm -rf denied in every session; graph: nohup denied while lock held)`
-- Autonomous base: `origin/thejudge-auto/life-tracker-seat-oriented-default` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-life-tracker-seat-oriented-default`
+- Run ID: `graph-20261004-191418` (build half; spec-forming half was `graph-20261003-190748`, rows 1–4)
+- Profile: `unverified` (build half; launch command not stated this session)
+- Canary: `denied — hook live (universal: rm -rf denied in every session; graph: nohup denied while lock held)` (spec-forming half; build-half canary recorded at the lock row below)
+- Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/life-tracker-seat-oriented-default` by the build half's claim)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-seat-oriented-default`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261003-190748/`
-- Current node: `owner-action` (parked at gate-qc PASS)
-- Next action: owner answers `GATE-QUESTIONS.md` (REQ-217 verdict) and merges the docs PR; `graph-implement` builds it
+- Current node: `owner-action` (claimed by the build half; gate resolution next)
+- Next action: `/graph-implement PRD/work/life-tracker-seat-oriented-default/` — resolve the answered gate, then plan → build → review → close
 
 ## Node ledger
 

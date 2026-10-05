@@ -15,7 +15,7 @@ idea, which the owner dropped (default stays grid).
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/life-tracker-seat-oriented-default
+- Autonomous base: origin/main
 
 ## Preparation gate
 
