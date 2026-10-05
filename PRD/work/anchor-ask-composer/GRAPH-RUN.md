@@ -27,6 +27,7 @@
 | 5 | plan | sonnet | ok | `0 → 14` | 4 slices mapped (A scope scanner 31.5rem override + Ask `narrow-fit` frame + 1440px width criterion; B frame In-depth Enrichment station only, DEC-145 holds for Game/Zones/Cards; C `visualViewport` keyboard hook; D apply PRD/sections diffs REQ-218/110/129/206 + screen-layout/quick-lookup/in-depth/user-flows, final measured pass, ship gates); `slice-{a,b,c,d}.criteria.json` emitted, all criteria `false`; REQ-218 placement note carried to GAMEPLAN + slice D; STATUS.active; committed `4ab8916`; no blocker | 2026-10-05 |
 | 6 | build | sonnet | ok | `0 → 98` | slices A–D implemented end to end; all criteria earned (A1–A8, B1–B7, C1–C4, D1–D7 true, no `false` remaining); PRD/sections truth applied by intent (REQ-218 new between REQ-217/219, REQ-110/129/206 amended; screen-layout, quick-lookup, in-depth, user-flows); REQ-206 chip clause kept at approved width-only wording (indepth sub-clause not pre-applied); scanner 31.5rem override scoped via `:has(> .idq > .flow-head .scan-exit)`; new `useVisualViewportHeight` hook; measured 1440×716 + 390×740 (Ask/In-depth col 576px, scanner 504px; send pill on-screen; keyboard-stub pill bottom 359.8/397.6 < 400); `npm run quality:check` + frontend suite (1538) + `test:scripts` (595) green; STATUS.ship-ready; **code PR #262** open (`thejudge-auto/anchor-ask-composer-work → main`, 64c846c). Return-side (REQ-193): launch porcelain identical before/after; product writes all inside the worktree (stray gitignored Playwright auto-snapshots landed in the pre-existing launch-root `.playwright-mcp/` scratch — no tracked change, assertion holds) | 2026-10-05 |
 | 7 | review | opus | failed | `0 → 28` | **LOOP TO BUILD** (loop 1 of 2) — slices A/B/C PASS; one Important finding inside slice D's criteria (D-1): REQ-110 amendment in `functional-requirements.md` applied incorrectly — `- Acceptance Criteria:` header dropped and not re-added; first criterion malformed as `-  - as the user types…` (literal `-  - ` prefix, line 2702); stale duplicate bullet left (line 2707 `…while the field is expanded`) beside the new line 2706 (`…while the box is expanded`). Drifts from approved GATE-QUESTIONS REQ-110 diff; no Critical. Focus checks clean: REQ-206 chip clause width-only (collapse not pre-applied), REQ-218 between REQ-217/219, scanner 31.5rem scoped to host, other 4 edits match intent | 2026-10-05 |
+| 6 | build | sonnet | ok | `0 → 7` | attempt 2 — D-1 fix: REQ-110 Acceptance Criteria corrected in `functional-requirements.md` (restored `- Acceptance Criteria:` header; fixed malformed `-  - ` first bullet to a nested bullet; deleted stale duplicate `…while the field is expanded`, keeping `…while the box is expanded`); now matches approved GATE-QUESTIONS REQ-110; only REQ-110 changed (1 hunk, 2+/2−); `npm run quality:check` green (595 pass); slice D criteria stay true; committed `25b5bdc`, pushed, PR #262 updated. Return-side (REQ-193): launch porcelain identical; sole product write `functional-requirements.md` inside the worktree | 2026-10-05 |
 
 ## Open gate
 
@@ -389,6 +390,26 @@ Report back:
 - quality:check result
 - The commit hash and confirmation it is pushed
 - Every path you wrote
+
+### review (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-anchor-ask-composer
+
+You are node 7 (review), attempt 2, of the build half (run graph-20261005-133503). You are a fresh-context, no-write reviewer. Attempt 1 returned one Important finding (D-1): REQ-110's amended Acceptance Criteria in PRD/sections/functional-requirements.md was applied incorrectly. Build attempt 2 says it corrected it (commit 25b5bdc). Confirm the fix and that it introduced no new drift; re-confirm nothing else regressed.
+
+From the Working directory above, read:
+- The REQ-110 block in PRD/sections/functional-requirements.md and the approved REQ-110 block in PRD/work/anchor-ask-composer/GATE-QUESTIONS.md — they must match in structure and content (the `- Acceptance Criteria:` header present, five correct nested bullets, no malformed `-  - ` prefix, no stale `…while the field is expanded` duplicate).
+- The fix diff: `git diff 64c846c HEAD -- PRD/sections/functional-requirements.md` — confirm it only touches REQ-110 and nothing else in that file.
+- Re-confirm the attempt-1 focus checks still hold: REQ-206 chip clause width-only (collapse NOT pre-applied), REQ-218 between REQ-217/219, scanner 31.5rem scoped to the scanner host (Ask column 36rem).
+
+Severity rule unchanged: a style note or an improvement outside a slice's stated criteria is NEVER Critical or Important. You hold no write tools; do not edit, commit, or push. Copy the Working directory line above unchanged into every prompt you write.
+
+Report back:
+- Is D-1 fully fixed? (yes/no, with the evidence)
+- Any new finding, with severity
+- Overall verdict: APPROVE (advance to close) or LOOP TO BUILD (only on a Critical or Important finding inside a slice's criteria)
 
 ## Instruction ledger
 
