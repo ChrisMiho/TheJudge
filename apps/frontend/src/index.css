@@ -280,6 +280,15 @@ html {
     --card-w: min(280px, calc(var(--frame-h) * var(--card-cap) * 63 / 88), var(--card-room));
   }
 }
+/* REQ-218: on a small, short phone (iPhone SE class, e.g. 375x667) the image steps down a further
+   ~25% (cap 0.40 -> 0.30, natural-width ceiling 196px -> 147px) so the box gets the room. Tall
+   modern phones (390x844) do not match the height clause and are unchanged. */
+@media (max-width: 480px) and (max-height: 700px) {
+  .page-content-narrow-fit { --card-cap: 0.3; }
+  .page-content-narrow-fit .ring {
+    --card-w: min(147px, calc(var(--frame-h) * var(--card-cap) * 63 / 88), var(--card-room));
+  }
+}
 
 /* REQ-218: the box's text area has no fixed cap here — `useAutoGrowTextarea` sizes it to fill
    the visible height down to its own control row (and the phone keyboard), then the text scrolls

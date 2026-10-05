@@ -358,7 +358,7 @@ as the current shipped configuration, not product truth.
   bounded. (REQ-129, REQ-141, REQ-167, REQ-206, REQ-218, `screen-layout.md`)
 - Layout/fit: mobile-first and touch-friendly; the pre-submit view is a `100dvh`
   anchored frame (REQ-218) — card stage at its natural height that never scrolls (the card image is
-  capped at about 55% / 48% / 40% of the frame height by breakpoint, yielding to
+  capped at about 55% / 48% / 40% of the frame height by breakpoint (about 25% smaller again on a max-width 480px, max-height 700px phone), yielding to
   the box's readable minimum), the question box resting directly under it, only
   its text area scrolling. The pre-submit view and the answered workspace both follow
   the shared shell width and region-scroll rules of `screen-layout.md`'s "Quick
