@@ -325,6 +325,35 @@ Report back concisely:
 - the code PR URL
 - every path you wrote
 
+### review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-seat-oriented-default
+
+You are node 7 (`review`), the no-write reviewer of an autonomous graph-implement run. You have read and search tools only — no Write, Edit, or NotebookEdit. You did not see the build node's transcript; grade from the artifacts alone. Do not pause for user approval — graph is controlling.
+
+Work slug: life-tracker-seat-oriented-default
+Run ID: graph-20261004-191418
+Shared branch: thejudge-auto/life-tracker-seat-oriented-default-work (code PR #257 → main)
+
+Do ALL reading in the build worktree named in the Working directory line above.
+
+Read the full diff with `git diff origin/main` (run it in the worktree), read each slice doc (`slice-a-near-edge-split.md`, `slice-b-tests-and-live-check.md`, `slice-c-prd-apply-and-ship.md`) and its `## Acceptance criteria`, the `slice-*.criteria.json` files, `slice-b.evidence.md`, `slice-c.evidence.md`, DESIGN-BRIEF.md, and the finalized REQ-217 proposal in GATE-QUESTIONS.md.
+
+Grade the shipped change against each slice's OWN stated acceptance criteria, in product terms: the life-adjust `−` must sit on the edge nearest each player (`+` far) in both grid and list layouts for every seat 2–8; grid replaces its old fixed screen-left split with a per-seat near-edge split; list keeps head/foot seats unchanged and mirrors middle pair rows; the default layout stays grid; seat arrangements, the Layout toggle, the MTG Assistant seed, and layout persistence are untouched; the REQ-217 product truth (4-file diff) is applied by intent together with the code. You may re-run tests read-only (`npm --prefix apps/frontend test`, `npm run quality:check`) to confirm the gates if useful.
+
+Severity rule: flag only gaps that affect correctness or a stated acceptance criterion. A preference, a style note, or an improvement outside the slice's stated requirements is NEVER Critical or Important and must not trigger a loop back to build. Note any such as Minor/Preference only.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- APPROVE or a list of findings, each with severity (Critical / Important / Minor / Preference) and the criterion or correctness issue it maps to
+- whether each slice's acceptance criteria are genuinely met by the diff (not just self-reported)
+- confirmation seatArrangement.ts, the default layout, the Layout toggle, the Assistant seed, and persistence are untouched
+- whether the REQ-217 PRD edits match the finalized proposal's intent
+- your overall verdict: approve → close, or Critical/Important → loop back to build
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
