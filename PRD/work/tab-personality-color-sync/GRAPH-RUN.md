@@ -23,6 +23,7 @@
 ## Open gate
 
 - State: PARKED at `owner-action` (gate-qc PASS, 2026-10-04). Spec-forming half complete.
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/258 (docs-only, into `main`)
 - Question: answer the verdict slots in `PRD/work/tab-personality-color-sync/GATE-QUESTIONS.md` — REQ-219 (accept/edit/reject) and the one product fork **Q-219**: do the Menu tabs all reflect the single active Theme colour you've picked (reading A, proposed/recommended), or does each tab wear its own fixed Magic colour independent of Theme (reading B)? Reading B would reshape REQ-219 into a per-destination colour mapping.
 - Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, this ledger; gate-qc PASS with 0 findings (attempt 2). Non-blocking note: DEC-135 is marked `retired` in `PRD/sections/decisions.md`, but the row-presentation truth also lives in the shared-chrome spec line, which REQ-219 cites alongside it.
 - Resume command (after you answer the slots and merge the docs PR to `main`): `/graph-implement PRD/work/tab-personality-color-sync/`
