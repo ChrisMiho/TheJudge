@@ -249,7 +249,7 @@ describe("QuickLookupApp", () => {
     expect(css).toMatch(/@media \(min-width: 600px\)\s*\{\s*\.page-content-narrow-fit\s*\{\s*--card-cap:\s*0\.48/);
     expect(css).toMatch(/@media \(min-width: 720px\)\s*\{\s*\.page-content-narrow-fit\s*\{\s*--card-cap:\s*0\.55/);
     expect(css).toMatch(
-      /@media \(max-width: 480px\) and \(max-height: 700px\)\s*\{\s*\.page-content-narrow-fit\s*\{\s*--card-cap:\s*0\.3;\s*\}\s*\.page-content-narrow-fit \.ring\s*\{\s*--card-w:\s*min\(147px,[^;]*--card-room/,
+      /@media \(max-width: 480px\) and \(max-height: 700px\)\s*\{\s*\.page-content-narrow-fit\s*\{\s*--card-cap:\s*0\.33;\s*\}\s*\.page-content-narrow-fit \.ring\s*\{\s*--card-w:\s*min\(162px,[^;]*--card-room/,
     );
     expect(css).toMatch(/\.page-content-narrow-fit \.ring\s*\{\s*--card-w:\s*min\(196px,[^;]*--card-room/);
     expect(css).toMatch(/\.page-content-narrow-fit \.q-box textarea\s*\{\s*max-height:\s*none/);
