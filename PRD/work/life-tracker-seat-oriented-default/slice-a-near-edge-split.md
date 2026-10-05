@@ -1,6 +1,6 @@
 # Slice A — Near-edge split rule and card wiring
 
-## Status: planned
+## Status: done
 
 ## Goal
 
