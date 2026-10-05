@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/tab-personality-color-sync` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync`
 - Staging: none (inline request; no files or pasted markdown staged)
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half continues)
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/tab-personality-color-sync` pushed from `.worktrees/kickoff-tab-personality-color-sync` (commit 9886f86); launch checkout unchanged (`main`); both canaries denied | 2026-10-04 |
 | 2 | shape | sonnet | ok | `1 → 11` | `PRD/work/tab-personality-color-sync/` created (IDEA.md, README.md, STATUS.ideation); 10 `## Prior run` matches in IDEA.md; board row added under `## ideation` | 2026-10-04 |
+| 3 | define | opus | ok | `0 → 52` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written (REQ-219 proposed new; one `## Blocker questions` fork Q-219); STATUS.refining; zero `PRD/sections/` edits | 2026-10-04 |
 
 ## Open gate
 
@@ -89,6 +90,33 @@ Report back:
 - any `## Prior run` matches found (paths)
 - whether you hit NO ACTIONABLE PACKAGE (and why) or the package is ready for node 3 (define)
 Report evidence as commands/paths, not bare claims. End with a one-line status: shape OK (ready for define) or NO ACTIONABLE PACKAGE (reason).
+
+### define
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync
+
+You are node 3 (`define`) of an autonomous graph run. Invoke the `thejudge-refinement` skill (Skill tool, skill name `thejudge-refinement`) and follow it exactly in graph-controlled mode. Because `graph is controlling`, do NOT stop for the usual rounds of clarifying questions or for explicit user approval — apply the assumption ladder in `PRD/instructions/preparation-contract.md` per question, record any genuine decision blocker in `GATE-QUESTIONS.md` under `## Blocker questions`, and hand back. The owner reviews asynchronously via the gate.
+
+Run all work inside the working directory above (the kickoff worktree), never the launch checkout. Copy the `Working directory:` line unchanged into any prompt you write for a sub-subagent.
+
+The package is `PRD/work/tab-personality-color-sync/`. Read its `IDEA.md` (the owner's request and 10 prior-run receipt pointers). Run ID: `graph-20261004-204628`.
+
+Your job: shape the idea into `DESIGN-BRIEF.md`, and propose the `PRD/sections/` product truth it needs as the exact diff in `GATE-QUESTIONS.md` (one `## <STABLE-ID>` block per new/changed stable ID, each opening with the gate-question plain-language block from `PRD/instructions/plain-language-standard.md`, then the complete diff, then `- Verdict:` and `- Reason:` slots). Do NOT edit `PRD/sections/` — the proposal lives entirely in the work folder; implementation applies it later.
+
+Grounding (a hard-won repo lesson — do not skip): this is a UI feature about how the app's tabs look and how they relate to the existing MTG color-identity / color-profile theming. Code-reading alone has produced wrong requirement premises here before. Before you state any premise about the current tabs or the existing color-profile system, verify it against the real code (find the actual tab components and the color-identity/theming source) — and against the live UI if you can reasonably run the app or its mockup. Do not assert what the tabs currently look like or how color profiles currently map without checking. Note in the brief where you verified live vs. from code.
+
+Scope discipline: resolve what you reasonably can with the assumption ladder (e.g. sensible defaults for which tabs, what "personality" concretely means) and record those as decided-with-rationale in the brief. Reserve `GATE-QUESTIONS.md` blocker slots for genuine product forks only — the three-condition genuine-blocker test, never waived. Every new stable ID you propose gets its own accept/edit/reject slot.
+
+Do NOT open or fetch any document a source cites; cite paths only.
+
+Report back:
+- the brief path and a 2-3 sentence summary of the shaped design (lead with what a player sees/does)
+- whether `GATE-QUESTIONS.md` was written, and if so the list of stable IDs proposed (and any `## Blocker questions`)
+- where you verified premises live vs. from code
+- the STATUS marker now set (refining or refined)
+End with a one-line status: define OK (ready for gate-qc) — note if GATE-QUESTIONS.md was written or not.
 
 ## Instruction ledger
 

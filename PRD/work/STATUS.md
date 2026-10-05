@@ -23,12 +23,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| tab-personality-color-sync | define done; DESIGN-BRIEF + GATE-QUESTIONS (REQ-219 new) at gate; 1 blocker (Q-219: tabs reflect one active colour vs each tab a fixed colour) |
 
 ## ideation
 
 | Package | Note |
 | --- | --- |
-| tab-personality-color-sync | owner idea: give app tabs personality, synced to each tab's color profile |
 
 ## owner-action
 

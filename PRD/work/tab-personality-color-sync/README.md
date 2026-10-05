@@ -1,8 +1,9 @@
-status: ideation
+status: refining
 
 # tab-personality-color-sync
 
-See IDEA.md.
+See IDEA.md. Define node (node 3) shaped DESIGN-BRIEF.md and GATE-QUESTIONS.md
+(REQ-219 proposed; one blocker, Q-219). Ready for gate-qc (node 4).
 
 ## Autonomous metadata
 
