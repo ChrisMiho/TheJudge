@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 9` | PASS — brief + REQ-217 diff checked against live PRD (no section pins grid as default; REQ-217 free; all 3 diff anchors + cited DEC/REQ verified); no changes/commit; STATUS.refined stood → moved to owner-action at park | 2026-10-03 |
 | — | gate-review | sonnet | ok | `0 → 16` | REQ-217 accept applied in GATE-QUESTIONS.md (proposal unchanged, no PRD/sections edit); brief reconciliation none; STATUS.refined restored, board row moved; Open gate RESOLVED; commit 1fe8212 | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `0 → 10` | PASS (build-half re-grade) — brief consistent with REQ-217/DEC-136/DEC-170; all 4 REQ-217 diff anchors verified live (functional-requirements.md append after REQ-216 line 5563; decisions.md DEC-170 row line 211; life-tracker/README.md Backed-by + split bullet; system-map.md line 543); code anchors confirmed (PlayerLifeCard.tsx grid fixed split + lifeHalvesForRotation; state.ts:17 DEFAULT_LAYOUT_MODE=grid); STATUS.refined stands; no commit | 2026-10-04 |
+| 5 | plan | sonnet | ok | `0 → 25` | GAMEPLAN + slices A/B/C with criteria (7/7/6, all false w/ evidence); split sourced from `SeatPlacement.side` (grid) + `gridColumn`/`layout.columns` (list), seatArrangement.ts untouched; new helper `lib/lifeTracker/lifeHalves.ts`; STATUS.active; README slice table + board row; commit d3f22c1 | 2026-10-04 |
 
 ## Open gate
 
@@ -246,6 +247,42 @@ Report back concisely:
 - each slice doc and its `slice-<letter>.criteria.json` path, with the criterion count per slice
 - STATUS.active confirmed
 - the commit SHA(s) on the branch
+
+### build
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-seat-oriented-default
+
+You are node 6 (`build`) of an autonomous graph-implement run. Invoke the `thejudge-implement-all` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Return your result to the graph driver.
+
+Work slug: life-tracker-seat-oriented-default
+Run ID: graph-20261004-191418
+Shared branch (REQUIRED, already checked out in this worktree): thejudge-auto/life-tracker-seat-oriented-default-work
+Recorded autonomous base: origin/main — the code PR is thejudge-auto/life-tracker-seat-oriented-default-work → main.
+
+Do ALL work in the build worktree named in the Working directory line above — never in the launch checkout. Every path you write must stay inside this worktree; a bare `PRD/work/<slug>/…` path written to the launch checkout fails the run. Under `graph is controlling` work in place in this worktree on the shared branch (no second worktree, no contributor branch).
+
+Implement every remaining slice in GAMEPLAN.md in order (A → B → C), committing and pushing each to the shared branch, earning each slice's acceptance criteria (the `slice-<letter>.criteria.json` files — command/path criteria by running the commands; the manual criteria B4/B5/B6/B7 and C6 by a dated observation line naming the id after the live/visual check). When every registered slice is done, set STATUS.ship-ready and ensure the review PR into main is open.
+
+Key scope reminders (full detail in the slice docs):
+- Slice A: new `apps/frontend/src/lib/lifeTracker/lifeHalves.ts` (`lifeHalvesForSeat`) keyed to `SeatPlacement.side` (grid) and `gridColumn`/`layout.columns` (list); wire `PlayerLifeCard.tsx` to it, replacing the fixed grid `{decrease:"left", increase:"right"}`; `seatArrangement.ts` must stay byte-unchanged; helper + card unit tests.
+- Slice B: update the downstream tests that assert the old split, run the full frontend vitest suite + `npm run quality:check` green, then a live browser check (grid and list at 2/3/4/6/8 players, 390x844 and 1280x800) that each `−` sits nearest its player and the table fits one screen. Follow the Playwright cleanup contract: close the browser, stop any dev server you own, put captures under `PRD/work/life-tracker-seat-oriented-default/.playwright-mcp/`.
+- Slice C: apply the finalized four-file REQ-217 diff from GATE-QUESTIONS.md to PRD/sections/ by intent against current truth (REQ-217 appended, DEC-170 amended in place, life-tracker/README.md, system-map.md) together with the code, run the ship gates.
+
+Do not touch: the default layout (grid stays), the seat arrangements themselves, the Game Setup Layout toggle, the MTG Assistant seed, or layout persistence. Never force-push, never merge or close a PR, never push main.
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- each slice's status (done/blocked) and its commit SHA(s)
+- the criteria state per slice (all true?) with the evidence kind earned for each
+- the full-suite + quality:check result (pass/fail with the command run)
+- the live browser check result and the capture path
+- the four PRD/sections files changed for REQ-217
+- STATUS.ship-ready confirmed
+- the code PR URL (head thejudge-auto/life-tracker-seat-oriented-default-work, base main)
+- every path you wrote, so the driver can confirm all writes stayed inside the worktree
 
 ## Instruction ledger
 
