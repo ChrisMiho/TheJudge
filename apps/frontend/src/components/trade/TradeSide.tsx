@@ -201,18 +201,22 @@ export function TradeSide({
         )}
         {!isScanOpen && (
           <div className="attach">
+            {/* The chip toggles this side's card search. While it is open, the
+                label/glyph (and its screen-reader name) flip to "✕ Close search"
+                — the only hint that tapping it again closes the search. Mirrors
+                Ask a Question's own Add-card chip (QuickLookupApp). */}
             <button
               type="button"
-              aria-label="Add card"
+              aria-label={isSearchOpen ? "Close search" : "Add card"}
               aria-expanded={isSearchOpen}
               disabled={isInputDisabled}
               onClick={() => setIsSearchOpen((open) => !open)}
               className="icon-chip"
             >
               <span className="glyph" aria-hidden="true">
-                ＋
+                {isSearchOpen ? "✕" : "＋"}
               </span>
-              Add card
+              {isSearchOpen ? "Close search" : "Add card"}
             </button>
             <button
               type="button"
@@ -238,7 +242,22 @@ export function TradeSide({
 
       {isScanOpen ? (
         <div className="scan-panel">
-          <p className="scan-title">{`Scanning onto ${sideLabel}`}</p>
+          {/* REQ-214: the way out is a square ✕ box above the camera's top-right corner —
+              it lives in the panel header, not over the viewfinder, so it never sits on top
+              of the frame's own top-right chrome (the always-shown experimental-scan caution
+              triangle and, once cards are held, the count pill). Closing commits the holding
+              list below to this side. */}
+          <div className="scan-head">
+            <p className="scan-title">{`Scanning onto ${sideLabel}`}</p>
+            <button
+              type="button"
+              aria-label="Exit scan"
+              onClick={scan.closeScan}
+              className="icon-round"
+            >
+              <span aria-hidden="true">✕</span>
+            </button>
+          </div>
           {scan.isLoading ? (
             <p className="tb-note">Loading scan data...</p>
           ) : (
@@ -253,16 +272,6 @@ export function TradeSide({
                 debug={scan.scanDebug}
                 autoScanFps={3}
               />
-              {/* REQ-214: a box with an ✕ above the camera's top-right corner — the only
-                  way out; closing commits the holding list below to this side. */}
-              <button
-                type="button"
-                aria-label="Exit scan"
-                onClick={scan.closeScan}
-                className="icon-round absolute right-3 top-3 z-10"
-              >
-                <span aria-hidden="true">✕</span>
-              </button>
               <ScanReviewBubble
                 entries={scan.heldEntries.map((entry) => ({
                   id: entry.id,
@@ -292,6 +301,11 @@ export function TradeSide({
                 value={query}
                 disabled={isInputDisabled}
                 onChange={(event) => setQuery(event.target.value)}
+                // Escape closes the search, the same as the Close-search chip —
+                // parity with Ask a Question's own card search (QuickLookupApp).
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") setIsSearchOpen(false);
+                }}
                 className="field"
                 placeholder={
                   isMetadataLoading

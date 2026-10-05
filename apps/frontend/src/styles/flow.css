@@ -169,7 +169,16 @@
 .search-pop { display: none; }
 .search-pop.open { display: grid; gap: 0.35rem; }
 .search-row { position: relative; }
-.search-row .field { padding-left: 2.2rem; }
+.search-row .field {
+  padding-left: 2.2rem; padding-right: 1.05rem; border-radius: 1.6rem;
+  border: 1px solid var(--surface-edge); background: color-mix(in srgb, var(--surface-panel) 78%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 6%, transparent), 0 8px 24px -16px color-mix(in srgb, var(--accent) 80%, transparent);
+  transition: border-color 150ms ease;
+}
+.search-row .field:focus {
+  border-color: color-mix(in srgb, var(--accent-soft) 55%, transparent);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 6%, transparent), 0 8px 24px -16px color-mix(in srgb, var(--accent) 80%, transparent);
+}
 .search-row .glyph { position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--accent-soft); }
 .search-results { display: grid; gap: 0.2rem; max-height: 156px; overflow-y: auto; padding-right: 2px; }
 .search-results button {
@@ -352,13 +361,13 @@
 .chat-head .icon-chip { min-height: 38px; font-size: 0.8rem; }
 .thread { display: grid; gap: 0.8rem; padding: 0.4rem 0.1rem; max-height: 52dvh; overflow-y: auto; }
 @media (min-width: 720px) { .thread { max-height: 56dvh; } }
-.msg { max-width: 86%; font-size: 0.94rem; line-height: 1.5; animation: msg-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.msg { max-width: 86%; min-width: 0; font-size: 0.94rem; line-height: 1.5; overflow-wrap: anywhere; animation: msg-in 360ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 @keyframes msg-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
 .msg.you { justify-self: end; padding: 0.65rem 0.95rem; border-radius: 1.1rem; border-top-right-radius: 0.3rem;
   background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 85%, var(--accent-strong)), var(--accent-strong)); color: var(--text-on-accent);
   box-shadow: 0 8px 22px -12px color-mix(in srgb, var(--accent) 90%, transparent); }
 .msg.judge { justify-self: start; display: grid; grid-template-columns: 30px 1fr; gap: 0.6rem; align-items: start; }
-.msg.judge > div { padding: 0.65rem 0.95rem; border-radius: 1.1rem; border-top-left-radius: 0.3rem;
+.msg.judge > div { padding: 0.65rem 0.95rem; border-radius: 1.1rem; border-top-left-radius: 0.3rem; min-width: 0;
   background: var(--surface-panel); border: 1px solid var(--surface-edge); box-shadow: 0 8px 22px -14px rgba(0, 0, 0, 0.9); }
 .msg.judge .seal { width: 30px; height: 30px; border-radius: 999px; background: var(--motif) center / cover no-repeat, var(--surface-ground);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent-soft) 55%, transparent), 0 0 14px color-mix(in srgb, var(--accent) 70%, transparent); animation: seal-in 900ms ease-out both; }
@@ -371,7 +380,7 @@
    the name sits in a chip — a tint of the colour's light behind it, a hairline
    round it, a solid underline — so it reads as a thing to tap even when the
    accent is as pale as the body text. Hover/press brightens the chip. */
-.msg.judge .ref { display: inline; color: var(--accent-soft); font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap;
+.msg.judge .ref { display: inline; color: var(--accent-soft); font-weight: 600; cursor: pointer; text-decoration: none; overflow-wrap: anywhere;
   padding: 0.04em 0.4em 0.06em; margin: 0 0.04em; border-radius: 0.4em;
   background: color-mix(in srgb, var(--accent-soft) 14%, transparent);
   box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent-soft) 32%, transparent), inset 0 -2px 0 0 color-mix(in srgb, var(--accent-soft) 70%, transparent);

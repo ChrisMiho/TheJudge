@@ -45,11 +45,15 @@ function makeEntry(overrides: Partial<ScanReviewEntry> = {}): ScanReviewEntry {
 
 describe("Frontend - Card Scan", () => {
   describe("Review bubble", () => {
-    it("renders nothing when the holding list is empty", () => {
-      const { container } = render(
+    it("shows the caution triangle but no count pill when the holding list is empty", () => {
+      render(
         <ScanReviewBubble entries={[]} onRemove={vi.fn()} destinationLabel="the Stack" />
       );
-      expect(container.firstChild).toBeNull();
+      // The experimental-scanning warning must reach the player the moment the scanner opens
+      // (REQ-214), so the caution triangle is present even before any card is held...
+      expect(screen.getByRole("button", { name: "Card scanning is experimental" })).toBeInTheDocument();
+      // ...while the scanned-count pill only appears once something is held.
+      expect(screen.queryByRole("button", { name: /Scanned this session/i })).not.toBeInTheDocument();
     });
 
     it("shows a count badge sized by the holding list", () => {

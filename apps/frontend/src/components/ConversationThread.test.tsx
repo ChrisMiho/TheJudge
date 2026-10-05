@@ -21,6 +21,10 @@ const originalClientHeight = Object.getOwnPropertyDescriptor(
   "clientHeight"
 );
 const originalScrollTo = Object.getOwnPropertyDescriptor(HTMLElement.prototype, "scrollTo");
+const originalGetBoundingClientRect = Object.getOwnPropertyDescriptor(
+  HTMLElement.prototype,
+  "getBoundingClientRect"
+);
 
 const scrollToMock = vi.fn(function (
   this: HTMLElement,
@@ -31,8 +35,40 @@ const scrollToMock = vi.fn(function (
     typeof options === "number" ? (y ?? 0) : (options.top ?? this.scrollTop);
 });
 
+// jsdom has no layout, so getBoundingClientRect returns zeroes and the new
+// anchor-to-top scroll math can't be exercised. Give each message a stable
+// absolute top (index × step) and report it relative to the thread's current
+// scroll — exactly as a real browser would — so a test can assert which
+// message the thread anchored to.
+const MESSAGE_ABS_TOP_STEP = 200;
+
+function mockRect(top: number): DOMRect {
+  return {
+    top,
+    bottom: top,
+    left: 0,
+    right: 0,
+    width: 0,
+    height: 0,
+    x: 0,
+    y: top,
+    toJSON: () => ({})
+  } as DOMRect;
+}
+
+const getBoundingClientRectMock = vi.fn(function (this: HTMLElement): DOMRect {
+  const indexAttr = this.getAttribute("data-conversation-message-index");
+  if (indexAttr !== null) {
+    const container = this.closest('[role="log"]');
+    const scrollTop = container ? container.scrollTop : 0;
+    return mockRect(Number(indexAttr) * MESSAGE_ABS_TOP_STEP - scrollTop);
+  }
+  // The thread container (and anything else) is pinned at the viewport top.
+  return mockRect(0);
+});
+
 function restorePrototypeProperty(
-  property: "scrollHeight" | "clientHeight" | "scrollTo",
+  property: "scrollHeight" | "clientHeight" | "scrollTo" | "getBoundingClientRect",
   descriptor: PropertyDescriptor | undefined
 ): void {
   if (descriptor) {
@@ -59,6 +95,11 @@ beforeEach(() => {
     configurable: true,
     value: scrollToMock
   });
+  getBoundingClientRectMock.mockClear();
+  Object.defineProperty(HTMLElement.prototype, "getBoundingClientRect", {
+    configurable: true,
+    value: getBoundingClientRectMock
+  });
   vi.stubGlobal("matchMedia", vi.fn(() => ({ matches: false })));
 });
 
@@ -68,19 +109,22 @@ afterEach(() => {
   restorePrototypeProperty("scrollHeight", originalScrollHeight);
   restorePrototypeProperty("clientHeight", originalClientHeight);
   restorePrototypeProperty("scrollTo", originalScrollTo);
+  restorePrototypeProperty("getBoundingClientRect", originalGetBoundingClientRect);
 });
 
 describe("Frontend - MTG Assistant", () => {
   describe("ConversationThread", () => {
-    it("exposes a non-atomic polite live log and positions the first answer at the latest message", () => {
+    it("exposes a non-atomic polite live log and anchors the first answer to its own start", () => {
       render(<ConversationThread messages={initialMessages} />);
 
       const log = screen.getByRole("log");
       expect(log).toHaveAttribute("aria-live", "polite");
       expect(log).toHaveAttribute("aria-relevant", "additions text");
       expect(log).toHaveAttribute("aria-atomic", "false");
-      expect(scrollToMock).toHaveBeenLastCalledWith({ top: 640, behavior: "smooth" });
-      expect(log.scrollTop).toBe(640);
+      // The lone answer (index 0) anchors to the top of the thread so it is read
+      // from its first line, not scrolled to its end.
+      expect(scrollToMock).toHaveBeenLastCalledWith({ top: 0, behavior: "smooth" });
+      expect(log.scrollTop).toBe(0);
     });
 
     it("follows an append when the reader is exactly 64px from the bottom", () => {
@@ -101,7 +145,9 @@ describe("Frontend - MTG Assistant", () => {
         />
       );
 
-      expect(scrollToMock).toHaveBeenLastCalledWith({ top: 840, behavior: "smooth" });
+      // Follows the append by anchoring the new question (index 1) to the top,
+      // so the reader starts at the question and reads the answer downward.
+      expect(scrollToMock).toHaveBeenLastCalledWith({ top: 200, behavior: "smooth" });
       expect(screen.queryByRole("button", { name: "New response" })).not.toBeInTheDocument();
     });
 
@@ -169,7 +215,8 @@ describe("Frontend - MTG Assistant", () => {
       expect(firstAssistant).not.toHaveAttribute("tabindex");
       expect(newestAssistant).toHaveAttribute("tabindex", "-1");
       expect(newestAssistant).toHaveFocus();
-      expect(scrollToMock).toHaveBeenLastCalledWith({ top: 840, behavior: "smooth" });
+      // "New response" anchors the newest exchange's question (index 1) to the top.
+      expect(scrollToMock).toHaveBeenLastCalledWith({ top: 200, behavior: "smooth" });
       expect(screen.queryByRole("button", { name: "New response" })).not.toBeInTheDocument();
     });
 
@@ -200,7 +247,7 @@ describe("Frontend - MTG Assistant", () => {
 
       render(<ConversationThread messages={initialMessages} />);
 
-      expect(scrollToMock).toHaveBeenLastCalledWith({ top: 640, behavior: "auto" });
+      expect(scrollToMock).toHaveBeenLastCalledWith({ top: 0, behavior: "auto" });
     });
 
     it("renders the question as an accent bubble and the judge's reply in a sealed bubble with its own label (look-matching pass, slice M)", () => {
