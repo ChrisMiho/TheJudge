@@ -23,6 +23,7 @@
 | 3 | define | opus | ok | `0 → 32` | attempt 3 — width-override finding fixed: REQ-218 now requires re-scoping the global `narrow-fit` 31.5rem override to the scanner host (`:has(.scan)` / modifier) so Ask inherits the 36rem cap and the scanner stays 31.5rem; added a measured 1440px width criterion; brief propagated; same 4 ids, no new ids, no `-` anchors touched; STATUS.refined; committed `277aaab`; no blocker | 2026-10-03 |
 | 4 | gate-qc | sonnet | ok | `0 → 11` | attempt 3 — **PASS**, no findings; all 17 proposed diff `-` anchors verified against current PRD/sections (functional-requirements, screen-layout, quick-lookup, in-depth, user-flows); REQ-218 free (last is REQ-216; REQ-217 held by life-tracker run); nothing applied to PRD/sections; STATUS.refined; committed `d8b4458` | 2026-10-03 |
 | — | gate-review | sonnet | ok | `0 → 8` | build half (run graph-20261005-133503): 4 verdicts applied (all accept — REQ-218 new, REQ-110/129/206 amend), 0 edit/reject; `## Gate verdicts` recorded; no brief reconciliation (all accepts); STATUS.owner-action → refined; board row moved; committed `72b3d44` | 2026-10-05 |
+| 4 | gate-qc | sonnet | ok | `0 → 9` | build-half re-grade — **PASS**, no findings; all 69 proposed diff `-` anchors re-verified against current PRD/sections (functional-requirements, screen-layout, quick-lookup, in-depth, user-flows); the 4 accept verdicts introduce no inconsistency; REQ-218 id still free; STATUS.refined; non-blocking build note — place REQ-218 between REQ-217 and REQ-219 (the diff says after REQ-216 but ids shifted since it was authored); no commit (no artifact) | 2026-10-05 |
 
 ## Open gate
 
@@ -275,6 +276,27 @@ Report back:
 - The STATUS marker now set
 - The commit hash
 - The exact resume command
+
+### gate-qc (build half)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-anchor-ask-composer
+
+You are node 4 (gate-qc), build-half re-grade after gate resolution (run graph-20261005-133503). Invoke the Skill named thejudge-quality-check for package PRD/work/anchor-ask-composer/. The owner answered all four verdict slots in GATE-QUESTIONS.md as accept (REQ-218 new, REQ-110/129/206 amend); no edit, no reject. Gate-review applied them and made no change to DESIGN-BRIEF.md or the proposal diffs, so you are re-grading the same package that already PASSed at kickoff attempt 3.
+
+Validate PRD/work/anchor-ask-composer/DESIGN-BRIEF.md against PRD alignment and agent-readiness, producing a PASS or FAIL report. Confirm every proposed diff `-` anchor in GATE-QUESTIONS.md still matches current PRD/sections text, and that the all-accept verdicts introduced no inconsistency. The amendments are NOT applied to PRD/sections and must not be. Do NOT write a GAMEPLAN or slice docs.
+
+Rules:
+- On PASS, leave STATUS.refined.
+- On FAIL, set STATUS.refining and give the complete findings list.
+- Do NOT edit PRD/sections/. Commit any report artifact on branch thejudge-auto/anchor-ask-composer-work with explicit paths only — never git add -A, git add ., or git add --all. Do not push, do not push main, do not force-push, do not touch the launch checkout, do not edit any thejudge-* skill. Copy the Working directory line above unchanged into every prompt you write.
+
+Report back:
+- The verdict: PASS or FAIL
+- The complete findings list (or none)
+- The STATUS marker now set
+- The commit hash if you committed a report artifact
 
 ## Instruction ledger
 
