@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| indepth-chip-collapse | slices A (CSS) and B (REQ-206 apply) done; PR #263 awaits owner merge |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| indepth-chip-collapse | mapped: slices A (CSS) and B (REQ-206 apply + ship gates) |
 
 ## refined
 

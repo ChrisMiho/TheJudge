@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "flow.css hides .lbl on textarea focus and non-empty box; no .q-box:focus-within rule on .lbl (CSS-contract test)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "test.*ComposerPill",
         "paths": [
@@ -16,7 +16,7 @@
     {
       "id": "A2",
       "statement": "At 1440px label hidden when textarea focused",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -24,7 +24,7 @@
     {
       "id": "A3",
       "statement": "At 1440px label hidden when box holds text, even after blur",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -32,7 +32,7 @@
     {
       "id": "A4",
       "statement": "At 1440px empty+unfocused: label visible with keyboard focus on chip, mic, send",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -40,7 +40,7 @@
     {
       "id": "A5",
       "statement": "At 1440px emptying box and blurring restores label",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -48,7 +48,7 @@
     {
       "id": "A6",
       "statement": "At 390px label hidden in every state",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -56,7 +56,7 @@
     {
       "id": "A7",
       "statement": "Accessible name unchanged and .lbl aria-hidden (test passes)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "test.*ComposerPill",
         "paths": [
@@ -67,7 +67,7 @@
     {
       "id": "A8",
       "statement": "ComposerPill.tsx markup unchanged",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git diff.*ComposerPill\\.tsx"
       }
@@ -75,7 +75,7 @@
     {
       "id": "A9",
       "statement": "npm run quality:check is green",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }
@@ -83,7 +83,7 @@
     {
       "id": "A10",
       "statement": "Browser closed, servers stopped, ports released; captures in .playwright-mcp",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
