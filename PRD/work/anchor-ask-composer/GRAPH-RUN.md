@@ -25,6 +25,8 @@
 
 ## Open gate
 
+- **RESOLVED 2026-10-05** — 4 verdicts applied (4 accept, 0 edit, 0 reject); see `## Gate verdicts`.
+
 - Parked at `owner-action` on gate-qc PASS (spec-forming half complete, 2026-10-03).
 - Docs PR (docs-only, into `main`): https://github.com/ChrisMiho/TheJudge/pull/249
 - **What the owner does:** answer the `accept / edit / reject` verdict slots in
@@ -254,8 +256,40 @@ Report back:
 - The STATUS marker now set
 - The commit hash if you committed a report artifact
 
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-anchor-ask-composer
+
+You are the gate-review node of the build half (run graph-20261005-133503). Invoke the Skill named graph-gate-review for package PRD/work/anchor-ask-composer/. The owner has answered every verdict slot in GATE-QUESTIONS.md: all four stable IDs (REQ-218 new, REQ-110, REQ-129, REQ-206) carry an accept verdict — no edit, no reject.
+
+Apply the accept verdicts to the proposed diff inside GATE-QUESTIONS.md, finalizing the proposal in the work folder. Never edit PRD/sections/ — the build node applies the approved diff there later. Because every verdict is accept, DESIGN-BRIEF.md and the README intake pointer need no reconciliation; confirm that and report an empty Brief reconciliation list. Record the verdicts, resolve the gate, and restore STATUS.refined.
+
+Commit any change on branch thejudge-auto/anchor-ask-composer-work in this worktree with explicit paths only — never git add -A, git add ., or git add --all. Do not push main, do not force-push, do not touch the launch checkout, do not edit any thejudge-* skill. Copy the Working directory line above unchanged into every prompt you write.
+
+Report back:
+- The verdict applied per stable ID
+- The Brief reconciliation list (expected empty, all accepts)
+- The STATUS marker now set
+- The commit hash
+- The exact resume command
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "Anchor the Quick + In-depth question box so typing a long question grows it in place instead of scrolling the card stage off-screen" | answered-once | shape | — |
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-218` | accept | — |
+| `REQ-110` | accept | — |
+| `REQ-129` | accept | — |
+| `REQ-206` | accept | — |
+
+### Brief reconciliation
+
+none

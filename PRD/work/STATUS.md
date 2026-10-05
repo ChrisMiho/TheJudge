@@ -17,6 +17,7 @@ Do not rename package folders to encode status.
 ## refined
 
 | Package | Note |
+| anchor-ask-composer | refined — gate verdicts applied 2026-10-05 (all 4 accept: REQ-218 new, REQ-110/129/206 amend); resumes at gate-qc via `/graph-implement PRD/work/anchor-ask-composer/` |
 | --- | --- |
 
 ## refining
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| anchor-ask-composer | APPROVED — docs PR #249 merged, all verdicts `accept` (REQ-218 new + REQ-110/129/206 amend); ready to build via `/graph-implement PRD/work/anchor-ask-composer/` |
 | indepth-chip-collapse | AWAITING OWNER — gate-qc PASS, docs PR open; answer the REQ-206 edit slot in `GATE-QUESTIONS.md`, then merge the docs PR to build. Coordinates with anchor-ask-composer (same REQ-206 line) |
 
 
