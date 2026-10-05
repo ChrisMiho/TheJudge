@@ -1,6 +1,6 @@
 # Slice C — Real-browser check, PRD apply, ship gates
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -50,3 +50,17 @@ npm run quality:check
 - [ ] Public contract unchanged unless slice scoped a change
 - [ ] No secrets committed
 - [ ] Durable outcomes promoted; `PRD/work/tab-personality-color-sync/` ready to delete
+
+## Observations
+
+- 2026-10-04 (Playwright Chromium, dev server on :5391 from the build worktree, 390x844, real Theme buttons clicked in the menu, no reload — a window marker survived every switch). Earned C1, C2, C3, C4.
+  - White: motif beams, theme-color #ede7d6, favicon contains #ede7d6 and no currentColor, title "TheJudge · MTG Assistant".
+  - Blue: runes, #0050d8, same checks.
+  - Black: fog, #7c3aed, same checks.
+  - Red: embers, #c10230, same checks.
+  - Green: leaves, #0a7a42, same checks.
+  - Colorless: geometry, #52525b, same checks.
+  - Six favicon hrefs differ (lengths 957, 906, 1088, 897, 1447, 909); exactly one icon link and one theme-color meta throughout.
+  - Custom Colorless #ff8800: theme-color #ff8800, favicon drawn in #ff8800, title unchanged.
+  - Capture: `PRD/work/tab-personality-color-sync/.playwright-mcp/favicon-strip-390.png` (the six live data-URL icons rendered with their theme-color values).
+- 2026-10-04 cleanup (C5): `browser_close` called; dev server task stopped; `lsof -iTCP:5391 -sTCP:LISTEN` empty; no vite process left.
