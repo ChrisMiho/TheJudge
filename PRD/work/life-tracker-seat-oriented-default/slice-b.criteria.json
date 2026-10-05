@@ -5,7 +5,7 @@
     {
       "id": "B1",
       "statement": "Every grep hit for the old split assertions has a disposition row in `slice-b.evidence.md` and no test asserts the old fixed grid split or un-mirrored pair split",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/work/life-tracker-seat-oriented-default/slice-b.evidence.md"
@@ -15,7 +15,7 @@
     {
       "id": "B2",
       "statement": "The full frontend vitest suite passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "vitest run|npm.*test"
       }
@@ -23,7 +23,7 @@
     {
       "id": "B3",
       "statement": "`npm run quality:check` is green for the touched frontend areas",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }
@@ -31,7 +31,7 @@
     {
       "id": "B4",
       "statement": "Live, grid layout at 2, 3, 4, 6, 8 players on 390x844 and 1280x800: each seat's `−` is on its near edge (bottom/top for 2-3p, outer left/right for 4-8p) and the table fits one screen with no scroll",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -39,7 +39,7 @@
     {
       "id": "B5",
       "statement": "Live, list layout at 2, 3, 4, 6, 8 players on 390x844 and 1280x800: head/foot unchanged, each middle-pair player's `−` is on their own outer side, and the table fits one screen with no scroll",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -47,7 +47,7 @@
     {
       "id": "B6",
       "statement": "Live: tapping `−` on a seat lowers that player's life by 1 and the life total, commander-damage preview and inline life input still take their own taps",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -55,7 +55,7 @@
     {
       "id": "B7",
       "statement": "Cleanup evidence recorded: browser closed, owned dev server stopped, port released, captures under `PRD/work/life-tracker-seat-oriented-default/.playwright-mcp/`",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

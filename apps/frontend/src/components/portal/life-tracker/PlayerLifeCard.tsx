@@ -71,8 +71,8 @@ const LIFE_TINTS = {
  * card reads exactly as it did when the bands were edge strips.
  */
 const HALF_CLASSES = {
-  left: "inset-y-0 left-0 w-1/2 justify-start pl-5",
-  right: "inset-y-0 right-0 w-1/2 justify-end pr-5",
+  left: "inset-y-0 left-0 w-1/2 items-center justify-start pl-5",
+  right: "inset-y-0 right-0 w-1/2 items-center justify-end pr-5",
   top: "inset-x-0 top-0 h-1/2 items-start justify-center pt-5",
   bottom: "inset-x-0 bottom-0 h-1/2 items-end justify-center pb-5"
 } as const;
@@ -81,8 +81,8 @@ const HALF_CLASSES = {
 // padding below), so the ± pin to the very edge of the freed gutter rather than the deeper pl-5/pr-5
 // inset the list bands use - otherwise the glyph would sit under the pulled-in mini-map / name pill.
 const GRID_HALF_CLASSES = {
-  left: "inset-y-0 left-0 w-1/2 justify-start pl-1.5",
-  right: "inset-y-0 right-0 w-1/2 justify-end pr-1.5",
+  left: "inset-y-0 left-0 w-1/2 items-center justify-start pl-1.5",
+  right: "inset-y-0 right-0 w-1/2 items-center justify-end pr-1.5",
   top: "inset-x-0 top-0 h-1/2 items-start justify-center pt-1.5",
   bottom: "inset-x-0 bottom-0 h-1/2 items-end justify-center pb-1.5"
 } as const;
@@ -157,7 +157,7 @@ export function PlayerLifeCard({
   const halves: LifeHalves = lifeHalvesForSeat(placement, layout, layoutMode);
   // Grid ± sit in the edge gutter and read a touch smaller; list keeps the deeper inset and size.
   const halfClasses = isGrid ? GRID_HALF_CLASSES : HALF_CLASSES;
-  const halfBaseClassName = `absolute z-0 flex items-center ${
+  const halfBaseClassName = `absolute z-0 flex ${
     isGrid ? "text-2xl" : "text-3xl"
   } font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10`;
   const decreaseBandClassName = `${halfBaseClassName} ${halfClasses[halves.decrease]}`;

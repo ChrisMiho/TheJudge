@@ -192,12 +192,13 @@ describe("Frontend - Shared", () => {
         });
       }
 
-      // Half-card life zones orientated by the seat's own rotation, not by layout mode or
-      // seat width: the head seat (now Player 3) faces the top edge (180) so its halves mirror,
-      // while the upright foot (Player 1) and pair (Player 2) seats keep `−` on the screen-left half.
+      // Half-card life zones sit on each seat's near edge (REQ-217): the head seat (Player 3) faces
+      // the top edge (180) so its halves mirror, the foot (Player 1) and left-of-pair (Player 2)
+      // keep `−` on the screen-left half, and right-of-pair (Player 4) mirrors to `−` on the right.
       expect(screen.getByRole("button", { name: "Decrease life for Player 3" })).toHaveClass("right-0", "w-1/2");
       expect(screen.getByRole("button", { name: "Decrease life for Player 1" })).toHaveClass("left-0", "w-1/2");
       expect(screen.getByRole("button", { name: "Decrease life for Player 2" })).toHaveClass("left-0", "w-1/2");
+      expect(screen.getByRole("button", { name: "Decrease life for Player 4" })).toHaveClass("right-0", "w-1/2");
     });
 
     it("changes only the selected player's life and applies starting life to the full table", async () => {

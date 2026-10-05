@@ -1,6 +1,6 @@
 # Slice B — Downstream tests and live one-screen check
 
-## Status: planned
+## Status: done
 
 ## Goal
 
