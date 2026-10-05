@@ -6,9 +6,9 @@
 - Autonomous base: `origin/main` (rewritten from `origin/thejudge-auto/indepth-chip-collapse` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-indepth-chip-collapse`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261004-234937/`
-- Current node: `owner-action` (parked at gate-qc PASS)
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/261 (base `main`, head `thejudge-auto/indepth-chip-collapse`)
-- Next action: owner answers `GATE-QUESTIONS.md` and merges docs PR #261 into `main`; `graph-implement` then builds
+- Current node: `gate-qc` (build half; gate resolved, re-grading)
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/261 (MERGED — the build signal; base `main`, head `thejudge-auto/indepth-chip-collapse`)
+- Next action: `/graph-implement PRD/work/indepth-chip-collapse/` — continues gate-qc → plan → build → review → close on `thejudge-auto/indepth-chip-collapse-work`
 
 ## Node ledger
 
@@ -18,20 +18,15 @@
 | 2 | shape | sonnet | ok | degraded (no run state) | package `PRD/work/indepth-chip-collapse/` created with `STATUS.ideation`; intake copied verbatim to `intake/`; 4 prior-run receipts noted in IDEA.md | 2026-10-04 |
 | 3 | define | opus | ok | `0 → 24` | `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` written; proposes one stable ID (REQ-206 edit, state-aware label/icon-only sub-clause), Blocker questions none; STATUS.refined | 2026-10-05 |
 | 4 | gate-qc | sonnet | ok | `0 → 8` | thejudge-quality-check PASS (first PASS → stop); proposed REQ-206 replace-line matches functional-requirements.md:5240 char-for-char; 3 non-blocking findings; STATUS.refined left for driver to park | 2026-10-05 |
+| — | gate-review | sonnet | ok | `1 → 19` | build half (run graph-20261005-150943): REQ-206 `edit` verdict applied; brief reconciled (DESIGN-BRIEF Material assumption 3 + README Preparation-gate finding 2 to textarea-focus, not bare `:focus-within`); `## Gate verdicts` recorded in README; no intake supersession note needed; STATUS.owner-action → refined; board row updated; no commit (driver commits) | 2026-10-05 |
 
-## Open gate
-
-- Parked at `owner-action` on gate-qc PASS (run one terminal state: PARKED).
-- GATE-QUESTIONS.md ANSWERED by the owner 2026-10-05: REQ-206 verdict `edit` — behavior
-  accepted (Option B); implementation hint tightened to scope the collapse to the textarea's
-  focus (or the box holding text), not bare `.q-box:focus-within`. Build sequencing: build
-  `anchor-ask-composer` first, then this folds in as a sub-clause substitution.
-- Remaining owner action: merge docs PR #261
-  (https://github.com/ChrisMiho/TheJudge/pull/261) into `main`. That merge is the build signal.
-- Resume (build half): `/graph-implement PRD/work/indepth-chip-collapse/` — graph-gate-review
-  applies the `edit` verdict and reconciles the brief, then the run continues plan → build → review → close.
-- Coordination note: anchor-ask-composer (owner-action, docs PR #249 merged) rewrites the
-  same REQ-206 acceptance line; build applies this as a sub-clause substitution and re-reads
+- None. The `define` gate is resolved: docs PR #261 merged (the build signal), the build
+  half claimed the spec on `thejudge-auto/indepth-chip-collapse-work`, and gate-review applied
+  the REQ-206 `edit` verdict (2026-10-05). Resuming at `gate-qc`.
+- Current node: `gate-qc` (build-half re-grade).
+- Coordination note (carries to build): anchor-ask-composer merged (#262) and rewrote the
+  REQ-206 acceptance line to the width-only chip clause; build applies this as a sub-clause
+  substitution of `(labelled or icon-only at each width as the mockup shows)` and re-reads
   REQ-206 before applying.
 
 ## Dispatch prompts
@@ -104,6 +99,24 @@ Run context: Slug: indepth-chip-collapse. Run ID: graph-20261004-234937. Package
 Validate `PRD/work/indepth-chip-collapse/DESIGN-BRIEF.md` against PRD alignment and agent-readiness and produce a PASS or FAIL report -- never a GAMEPLAN or slice docs. The package proposes one stable-ID change in GATE-QUESTIONS.md: an edit to REQ-206 (functional-requirements.md) making the In-depth chip label state-aware. Check the brief and the proposed diff are internally consistent, aligned to current PRD truth, and implementation-ready. On FAIL, set STATUS.refining and list every finding. On PASS, leave STATUS.refined.
 
 Report back concisely: the verdict (PASS or FAIL); the complete findings list (or none); and the STATUS marker you left.
+
+### gate-review
+
+graph is controlling
+
+You are the `gate-review` step of a graph-implement (build half) run, resolving the answered `define` gate before the run re-enters `gate-qc`. Invoke the `graph-gate-review` skill (Skill tool, skill name `graph-gate-review`) and follow it exactly. Do not run interactively; `graph is controlling`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-indepth-chip-collapse
+
+ALL work happens in that build worktree on branch `thejudge-auto/indepth-chip-collapse-work`, never the launch checkout. Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Run context: Slug: indepth-chip-collapse. Run ID: graph-20261005-150943. Package: PRD/work/indepth-chip-collapse/.
+
+The owner has answered `GATE-QUESTIONS.md`. One stable ID, REQ-206, verdict `edit`: the state-aware collapse behavior is accepted as proposed (Option B -- the In-depth label shows at rest, the glyph alone shows when the composer is engaged), with one tightening to the implementation hint only -- scope the collapse trigger to the textarea being focused (or the box holding text), NOT a bare `.q-box:focus-within`, so keyboard focus landing on the chip, mic, or send button does not drop the label. The acceptance-criteria line is unchanged by the edit (its wording, focused or holds text, already carries this intent); only the Notes bullet selector hint is tightened.
+
+Apply the `edit` verdict inside the proposal in `GATE-QUESTIONS.md` (finalize it in the work folder; never edit `PRD/sections/`). Then reconcile `DESIGN-BRIEF.md` (and the README intake pointer, if it carries one) to the edit -- the brief selector guidance must match the tightened textarea-focus hint, not `:focus-within` -- so the gate-qc re-grade grades one consistent package. The `intake/` files stay verbatim. Restore `STATUS.refined` and record the verdicts under `## Gate verdicts`.
+
+Report back concisely: the verdict applied per stable ID; a `### Brief reconciliation` list naming every passage of DESIGN-BRIEF.md (and the README pointer) you changed to match the edit, or a note that none was needed with why; the STATUS marker you left; and whether the node is ok or needs to park.
 
 ## Instruction ledger
 

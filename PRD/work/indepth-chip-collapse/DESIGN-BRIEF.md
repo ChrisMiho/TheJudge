@@ -69,8 +69,11 @@ beyond the mockup for the single-row typing state.
 2. **Option B over A** — see The decision above. (Ladder #4/#5: smallest reversible
    scope, resting state preserved.)
 3. **Product truth is state-based; the CSS selector is an implementation note.**
-   The requirement says "focused or holds text"; the build expresses it as
-   `.q-box:focus-within` / a non-empty-fill state, extending the existing
+   The requirement says "focused or holds text"; the build expresses it as the
+   textarea being focused (scoped to the text field, not a bare `.q-box:focus-within`,
+   so keyboard focus on the chip, mic, or send button does not drop the label)
+   or a non-empty-fill state, per the owner's REQ-206 `edit` verdict
+   (2026-10-05), extending the existing
    `@media (max-width:479px) { .q-box .deep .lbl { display:none } }` block in
    `apps/frontend/src/styles/flow.css`. (Ladder #3: established local pattern.)
 4. **Coordination with `anchor-ask-composer`.** That package (owner-action, docs
