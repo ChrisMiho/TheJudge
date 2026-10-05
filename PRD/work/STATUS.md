@@ -13,11 +13,11 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| anchor-ask-composer | mapped 2026-10-05: slices A-D (frame Ask a Question, frame In-depth Enrichment, keyboard, PRD apply + ship) |
 
 ## refined
 
 | Package | Note |
-| anchor-ask-composer | refined — gate verdicts applied 2026-10-05 (all 4 accept: REQ-218 new, REQ-110/129/206 amend); resumes at gate-qc via `/graph-implement PRD/work/anchor-ask-composer/` |
 | --- | --- |
 
 ## refining

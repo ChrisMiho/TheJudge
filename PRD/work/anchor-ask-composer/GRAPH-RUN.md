@@ -298,6 +298,26 @@ Report back:
 - The STATUS marker now set
 - The commit hash if you committed a report artifact
 
+### plan
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-anchor-ask-composer
+
+You are node 5 (plan) of the build half (run graph-20261005-133503). From the Working directory above, invoke the Skill named thejudge-map-out for package PRD/work/anchor-ask-composer/. The package README `## Preparation gate` records Quality-check: PASS (2026-10-05, build-half re-grade); verify that PASS is present and do not self-certify one.
+
+Scope to slice (all four verdicts accept): REQ-218 (new — the whole Ask screen becomes a screen-height anchored frame with the question box pinned at the bottom; keep the Ask column at 36rem/92vw by re-scoping the scanner's 31.5rem narrow-fit override to the scanner host; the frame applies only at the In-depth Enrichment station, not Game/Zones/Cards which stay content-sized per DEC-145; a measured 1440px width criterion), REQ-110 (the box grows upward in place instead of pushing the page), REQ-129 (the send button stays on screen because the box is pinned), and REQ-206 (two-row question box: text grows up over a stable control row). Read DESIGN-BRIEF.md and GATE-QUESTIONS.md for the full approved intent and the complete proposed PRD/sections diffs.
+
+Produce GAMEPLAN.md and lettered slice docs with one slice-<letter>.criteria.json beside each, every criterion initialised false with an evidence block. Set STATUS.active. Do NOT write code and do NOT apply the GATE-QUESTIONS diffs to PRD/sections/ — the build node applies product truth by intent together with the code. Carry this note into the plan: build must place the new REQ-218 entry between REQ-217 and REQ-219 (the diff text says after REQ-216 but ids shifted since it was authored).
+
+Commit the planning artifacts on branch thejudge-auto/anchor-ask-composer-work with explicit paths only — never git add -A, git add ., or git add --all. Do not push, do not push main, do not force-push, do not touch the launch checkout, do not edit any thejudge-* skill. Copy the Working directory line above unchanged into every prompt you write.
+
+Report back:
+- The slice letters and a one-line summary of each
+- Confirmation STATUS.active is set
+- The commit hash (do NOT push; the driver pushes between nodes)
+- Any blocker that would stop build
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
