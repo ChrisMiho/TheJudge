@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| tab-personality-color-sync | owner idea: give app tabs personality, synced to each tab's color profile |
 
 ## owner-action
 
