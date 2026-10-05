@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| indepth-chip-collapse | Collapse Ask composer In-depth chip to ◈ when focused/has text; amends REQ-206 |
 
 ## owner-action
 
