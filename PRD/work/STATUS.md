@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| life-tracker-seat-oriented-default | mapped out 2026-10-04: slices A (helper+card), B (tests+live check), C (PRD apply+ship). |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| life-tracker-seat-oriented-default | REQ-217 gate verdict accept (2026-10-04); build resumes at gate-qc. |
 
 ## refining
 

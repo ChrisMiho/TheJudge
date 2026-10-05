@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # life-tracker-seat-oriented-default
 
@@ -16,6 +16,16 @@ idea, which the owner dropped (default stays grid).
 ## Autonomous metadata
 
 - Autonomous base: origin/main
+
+## Slices
+
+| Slice | Doc | Scope | Depends on |
+| --- | --- | --- | --- |
+| A | slice-a-near-edge-split.md | Near-edge helper + card wiring + unit tests | none |
+| B | slice-b-tests-and-live-check.md | Downstream tests, full suite, live one-screen check | A |
+| C | slice-c-prd-apply-and-ship.md | REQ-217 PRD apply, ship gates | A, B |
+
+Implementation map: see GAMEPLAN.md. Status: active.
 
 ## Preparation gate
 

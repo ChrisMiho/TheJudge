@@ -1,4 +1,4 @@
-status: refined
+status: active
 
 # Design Brief — Life-adjust `−` always sits nearest each player
 
