@@ -288,3 +288,4 @@ Report evidence as paths/quotes, not bare claims. End with a one-line status: ga
 | "i noticed the tabs for the app are kinda plain and boring, can we bring some personality to the tab? can we have it sync up with its respective color profile even?" | answered-once | shape | — |
 | "i think theres been a misunderstanding, im talking about the chrome or mozilla tab, not the hamburger menu" | answered-once | define | — |
 | Scope answer: browser-tab personality + colour sync covers the favicon, the document title, and the mobile/PWA theme-color (owner selection, correction pass) | answered-once | define | — |
+| Owner verdict on REQ-219: accept as proposed, no edits (in-session, 2026-10-04) | answered-once | gate-qc | — |

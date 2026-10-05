@@ -158,8 +158,8 @@ and the personality and colour-sync the owner asked for are not built.
 +  REQ-099)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner accepted REQ-219 as proposed (in-session, 2026-10-04); no edits — favicon + branded title + mobile theme-color syncing to the active profile, reusing existing motif/brand art and the one token source.
 
 ---
 
