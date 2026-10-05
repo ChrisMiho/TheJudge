@@ -166,6 +166,30 @@ Do NOT commit; the driver commits between nodes. Do NOT touch GRAPH-RUN.md (the 
 
 Report back concisely: GAMEPLAN.md path; the slice letters with a one-line scope each; the criteria files emitted; the STATUS marker; and whether the node is ok or needs to park.
 
+### build
+
+graph is controlling
+
+You are node 6 (`build`) of a graph-implement (build half) run. Invoke the `thejudge-implement-all` skill (Skill tool, skill name `thejudge-implement-all`) and follow it exactly. Do not run interactively; `graph is controlling`.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-indepth-chip-collapse
+
+ALL work happens in that build worktree, in place, on the shared branch `thejudge-auto/indepth-chip-collapse-work` (cut from origin/main). Do NOT create a second worktree or a contributor branch. Do NOT write anything in the launch checkout at /Users/chrismiho/Coding/Projects/TheJudge — every path you write must be inside `.worktrees/implement-indepth-chip-collapse/`. Copy the `Working directory:` line above, unchanged, into every prompt you write for any subagent you dispatch.
+
+Run context: Slug: indepth-chip-collapse. Run ID: graph-20261005-150943. Package: PRD/work/indepth-chip-collapse/. The shared branch is `thejudge-auto/indepth-chip-collapse-work`.
+
+Implement every remaining slice in GAMEPLAN.md end to end — slice A (`slice-a-chip-collapse-css.md`) then slice B (`slice-b-req206-promotion.md`) — code, tests, verification, status, and the durable PRD/sections/ truth. Each slice's `slice-<letter>.criteria.json` must end with every criterion `true`, earned by the evidence the hook observes. When the last slice is done, set STATUS.ship-ready.
+
+Apply product truth BY INTENT (not a blind replay of the frozen GATE-QUESTIONS.md patch): anchor-ask-composer (PR #262) has MERGED and already rewrote the REQ-206 acceptance line in `PRD/sections/functional-requirements.md`. Re-read the current REQ-206 line, then substitute ONLY the sub-clause `(labelled or icon-only at each width as the mockup shows)` with the approved state-aware wording (label shown at rest; glyph alone while the composer is engaged — textarea focused or box non-empty; the `<480px` glyph-only rule and the chip's accessible name unchanged), leaving the rest of the line (ring-based character budget, live region, downward growth) intact. Append the approved REQ-206 Notes bullet. Do not add or renumber any stable ID.
+
+Code constraint (owner's edit verdict): key the label collapse to the textarea being focused or the box being non-empty — NOT a bare `.q-box:focus-within`, which would drop the label when a keyboard user tabs onto the chip, mic, or send button. The CSS hook is `apps/frontend/src/styles/flow.css` near line 281. No `ComposerPill.tsx` structure change. If the non-empty trigger cannot rely on a non-zero `data-fill` for every non-empty value, use the `:has(textarea:not(:placeholder-shown))` fallback the GAMEPLAN records (the placeholder is always non-empty).
+
+Run `npm run quality:check` and confirm it is green before setting STATUS.ship-ready. Open or update the code PR `thejudge-auto/indepth-chip-collapse-work → main`.
+
+Do NOT touch GRAPH-RUN.md (the driver's ledger).
+
+Report back concisely: each slice's outcome and the files changed (paths relative to the worktree); confirmation every criteria file is all-`true`; the `npm run quality:check` result; the PR URL; the STATUS marker; and whether the node is ok or needs to park.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
