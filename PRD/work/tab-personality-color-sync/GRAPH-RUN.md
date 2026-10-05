@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/tab-personality-color-sync` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync`
 - Staging: none (inline request; no files or pasted markdown staged)
-- Current node: `gate-qc` (attempt 2 — re-grade after define fix)
-- Next action: `/graph-kickoff` (spec-forming half continues)
+- Current node: `owner-action` (gate-qc PASS — spec-forming half stopped)
+- Next action: owner answers `GATE-QUESTIONS.md` (Q-219) + merges the docs PR; then `/graph-implement PRD/work/tab-personality-color-sync/` builds it
 
 ## Node ledger
 
@@ -18,10 +18,14 @@
 | 3 | define | opus | ok | `0 → 52` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written (REQ-219 proposed new; one `## Blocker questions` fork Q-219); STATUS.refining; zero `PRD/sections/` edits | 2026-10-04 |
 | 4 | gate-qc | sonnet | failed | `1 → 13` | FAIL — 4 findings (F1 retired DEC-081 token clause → REQ-060/REQ-200; F2 DEC-104 "identical rows" is a code comment → cite DEC-135/shared-chrome; F3 add live deps REQ-060/REQ-200/REQ-059/DEC-135; F4 untestable acceptance wording); README Preparation gate updated; loops to define (attempt 2 of max 3) | 2026-10-04 |
 | 3 | define | opus | ok | `1 → 25` | attempt 2: all 4 gate-qc findings fixed in DESIGN-BRIEF.md + GATE-QUESTIONS.md (DEC-081/DEC-104 citations removed; live deps REQ-060/REQ-200/REQ-059/DEC-135/NFR-006 added; measurable glyph-box acceptance bar); REQ-219 + Q-219 unchanged; citations re-verified against live PRD/sections/ | 2026-10-04 |
+| 4 | gate-qc | sonnet | ok | `1 → 15` | attempt 2: PASS, 0 findings; all 4 prior findings verified resolved against live PRD; REQ-219 id free (last is REQ-217), 48px row ≥ NFR-001 44px, Q-219 confirmed genuine blocker; STATUS.refined; non-blocking note: DEC-135 is `retired` but the shared-chrome line carries the truth and REQ-219 cites it alongside — **STOP at first PASS** | 2026-10-04 |
 
 ## Open gate
 
-- None
+- State: PARKED at `owner-action` (gate-qc PASS, 2026-10-04). Spec-forming half complete.
+- Question: answer the verdict slots in `PRD/work/tab-personality-color-sync/GATE-QUESTIONS.md` — REQ-219 (accept/edit/reject) and the one product fork **Q-219**: do the Menu tabs all reflect the single active Theme colour you've picked (reading A, proposed/recommended), or does each tab wear its own fixed Magic colour independent of Theme (reading B)? Reading B would reshape REQ-219 into a per-destination colour mapping.
+- Evidence: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, this ledger; gate-qc PASS with 0 findings (attempt 2). Non-blocking note: DEC-135 is marked `retired` in `PRD/sections/decisions.md`, but the row-presentation truth also lives in the shared-chrome spec line, which REQ-219 cites alongside it.
+- Resume command (after you answer the slots and merge the docs PR to `main`): `/graph-implement PRD/work/tab-personality-color-sync/`
 
 ## Dispatch prompts
 
@@ -172,6 +176,34 @@ Report back:
 End with a one-line status: define OK (ready for gate-qc re-grade).
 
 Transcription note: the owner-facing run quoted technical PRD/code spans in this prompt. In the dispatch prompt as sent, the embedded fragments 'no new token roles', 'identical rows', 'rendered identically', 'rendered identically in array order', 'Rows render full-bleed ... active entry keeps a check mark and quiet fill', and 'bolder, consistently-sized identity mark' were straight-double-quoted; they are transcribed here with single quotes because they are citations of PRD/code/finding text, not user instructions, and the delimiter change preserves every word.
+
+### gate-qc (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync
+
+You are node 4 (`gate-qc`), attempt 2 (re-grade after a define fix), of an autonomous graph run. Invoke the `thejudge-quality-check` skill (Skill tool, skill name `thejudge-quality-check`) and follow it exactly in graph-controlled mode. Because `graph is controlling`, do NOT stop to ask the user anything — produce a PASS/FAIL report and hand back.
+
+Run all work inside the working directory above (the kickoff worktree), never the launch checkout. Copy the `Working directory:` line unchanged into any prompt you write for a sub-subagent.
+
+The package is `PRD/work/tab-personality-color-sync/`. Run ID: `graph-20261004-204628`.
+
+Validate `PRD/work/tab-personality-color-sync/DESIGN-BRIEF.md` for PRD alignment and agent-readiness, per the skill. Grade the brief fresh — do not assume the prior findings are fixed; verify. The attempt-1 FAIL raised 4 findings now claimed fixed: (1) retired DEC-081 token clause replaced with REQ-060/REQ-200 surface-role wording, (2) the DEC-104 'identical rows' mis-citation replaced with DEC-135 / shared-chrome authority with the active-row check mark kept, (3) live dependencies REQ-060/REQ-200/REQ-059/DEC-135 added, (4) a measurable glyph-box acceptance bar replacing the untestable wording. Confirm each against the live PRD/sections/ truth and against the brief and GATE-QUESTIONS.md.
+
+Produce a PASS/FAIL report. Do NOT write a GAMEPLAN or slice docs. On FAIL, set `STATUS.refining` and list the complete findings. On PASS, set `STATUS.refined` and leave the package ready to stop at this gate. Update the package README's `## Preparation gate` section with the result (Quality-check: PASS | FAIL, Checked artifact, Findings), exact preparation-contract shape.
+
+The proposal in GATE-QUESTIONS.md is REQ-219 (new) + one blocker Q-219.
+
+Report back:
+- the verdict (PASS or FAIL)
+- for each of the 4 prior findings, whether it is now resolved (with the citation/wording you verified)
+- any NEW findings
+- the STATUS marker now set
+- confirmation the README `## Preparation gate` section was updated
+Report evidence as paths/quotes, not bare claims. End with a one-line status: gate-qc PASS or gate-qc FAIL (with the finding count).
+
+Transcription note: the single embedded fragment 'identical rows' was straight-double-quoted in the dispatch prompt as sent; transcribed here with single quotes because it is a citation of a prior finding, not a user instruction.
 
 ## Instruction ledger
 

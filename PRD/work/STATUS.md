@@ -23,7 +23,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| tab-personality-color-sync | define done; DESIGN-BRIEF + GATE-QUESTIONS (REQ-219 new) at gate; 1 blocker (Q-219: tabs reflect one active colour vs each tab a fixed colour) |
 
 ## ideation
 
@@ -35,6 +34,7 @@ Do not rename package folders to encode status.
 | Package | Note |
 | --- | --- |
 | anchor-ask-composer | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-218 new + REQ-110/129/206 amend) and merge to build |
+| tab-personality-color-sync | gate-qc PASS; docs PR open into main — answer GATE-QUESTIONS.md (REQ-219 new + Q-219 fork: one active colour vs fixed per-tab colour) and merge to build |
 
 
 ## deferred
