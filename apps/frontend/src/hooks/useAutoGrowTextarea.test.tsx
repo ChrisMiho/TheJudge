@@ -164,7 +164,7 @@ describe("Frontend - Shared", () => {
     it("caps growth at the viewport ceiling instead of scrollHeight, so it never forces a page scroll", () => {
       // Field top sits at 700px in an 800px-tall viewport, leaving room for well under the
       // field's full requested scrollHeight once the bottom margin is subtracted.
-      boundingTop = 700;
+      boundingTop = 600;
       setScrollHeight("", 20);
       setScrollHeight("very long content that wants a lot of vertical space", 500);
       render(<Harness />);
@@ -174,8 +174,8 @@ describe("Frontend - Shared", () => {
         target: { value: "very long content that wants a lot of vertical space" }
       });
 
-      // Ceiling = innerHeight(800) - top(700) - margin(24) = 76px, well under the requested 500px.
-      expect(field.style.height).toBe("76px");
+      // Ceiling = innerHeight(800) - top(600) - control-row reserve(64) - margin(24) = 112px, well under the requested 500px.
+      expect(field.style.height).toBe("112px");
     });
 
     it("recalculates on window resize", () => {
@@ -184,13 +184,32 @@ describe("Frontend - Shared", () => {
       const field = screen.getByLabelText("Grow test field") as HTMLTextAreaElement;
       expect(field.style.height).toBe("300px");
 
-      boundingTop = 750;
+      boundingTop = 650;
       act(() => {
         fireEvent(window, new Event("resize"));
       });
 
-      // Ceiling = 800 - 750 - 24 = 26px, below the 300px scrollHeight.
-      expect(field.style.height).toBe("26px");
+      // Ceiling = 800 - 650 - 64 - 24 = 62px, below the 300px scrollHeight.
+      expect(field.style.height).toBe("62px");
+    });
+
+    it("caps against the visual viewport (phone keyboard open) when it is present", () => {
+      const original = Object.getOwnPropertyDescriptor(window, "visualViewport");
+      Object.defineProperty(window, "visualViewport", {
+        configurable: true,
+        value: { offsetTop: 0, height: 400, addEventListener: () => undefined, removeEventListener: () => undefined }
+      });
+      try {
+        boundingTop = 100;
+        setScrollHeight("some content", 500);
+        render(<Harness initialValue="some content" />);
+        const field = screen.getByLabelText("Grow test field") as HTMLTextAreaElement;
+        // Ceiling = 400 - 100 - 64 - 24 = 212px (the keyboard-shortened viewport, not innerHeight 800).
+        expect(field.style.height).toBe("212px");
+      } finally {
+        if (original) Object.defineProperty(window, "visualViewport", original);
+        else delete (window as unknown as Record<string, unknown>).visualViewport;
+      }
     });
 
     it("keeps the last visible height when a resize fires while the field is unrendered", () => {

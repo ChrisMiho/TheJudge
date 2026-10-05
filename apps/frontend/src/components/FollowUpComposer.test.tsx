@@ -56,17 +56,19 @@ describe("Frontend - Conversation composer", () => {
       await user.type(composer, "a".repeat(310));
 
       expect(composer).toHaveValue("a".repeat(300));
-      expect(screen.getByText("300 / 300")).toBeInTheDocument();
+      expect(screen.queryByText("300 / 300")).not.toBeInTheDocument();
+      expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("0 characters remaining");
 
       // Look-matching pass (slice M, review 1 fix — finding 4): `ComposerPill` only
       // shows the count badge once there is something to count (REQ-206's
       // content-sized composer — an empty box carries no "0/300"), so clearing the
       // field hides the badge instead of showing "0/300".
       await user.clear(composer);
-      // An empty box marks itself data-fill="0", which hides the count (flow.css's `.followup[data-fill="0"] .fu-count`).
+      // An empty box marks itself data-fill="0"; the ring is the only budget cue and no numeric count is drawn.
       expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "0");
       await user.type(composer, "abc");
-      expect(screen.getByText("3 / 300")).toBeInTheDocument();
+      expect(screen.queryByText("3 / 300")).not.toBeInTheDocument();
+      expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("297 characters remaining");
     });
 
     it("shows a spinner and disables the control while submitting", () => {

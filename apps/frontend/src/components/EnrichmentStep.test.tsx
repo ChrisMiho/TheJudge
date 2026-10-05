@@ -61,7 +61,8 @@ describe("EnrichmentStep Send Request label + ready copy (DEC-153)", () => {
     expect(screen.getByRole("textbox", { name: "Optional question" })).toHaveValue(
       "Does this resolve?"
     );
-    expect(screen.getByText("18 / 300")).toBeInTheDocument();
+    expect(screen.queryByText("18 / 300")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("282 characters remaining");
   });
 
   // Look-matching pass (slice N, review 1 fix — finding 3): `ComposerPill` hides
@@ -289,6 +290,22 @@ describe("EnrichmentStep Optional question dictation (REQ-212)", () => {
     await user.click(screen.getByRole("button", { name: "Decrypt Stack" }));
 
     expect(getLastDictationInstance().stop).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("EnrichmentStep fit frame (REQ-218)", () => {
+  it("renders the station in the narrow-fit variant with the question box inside the frame", async () => {
+    const user = renderEnrichment();
+    await user.click(screen.getByRole("button", { name: "OK — finish context" }));
+    expect(document.querySelector(".page-shell-fit")).not.toBeNull();
+    expect(document.querySelector(".page-content-narrow-fit > .idq-fit")).not.toBeNull();
+    expect(document.querySelector(".idq-fit .enrichment-question-surface textarea")).not.toBeNull();
+  });
+
+  it("keeps the answered conversation shell on plain narrow (DEC-145)", () => {
+    renderEnrichment({ isConversationActive: true });
+    expect(document.querySelector(".page-shell-fit")).toBeNull();
+    expect(document.querySelector(".page-content-narrow")).not.toBeNull();
   });
 });
 });

@@ -97,7 +97,8 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
 
     const box = screen.getByTestId("composer-pill");
     expect(box).toHaveAttribute("data-fill", "0");
-    expect(flowCss).toMatch(/\.q-box\[data-fill="0"\] \.q-count[^{]*\{[^}]*display: none/);
+    expect(flowCss).not.toMatch(/\.q-count|\.fu-count/);
+    expect(screen.queryByTestId("composer-pill-count")).not.toBeInTheDocument();
     expect(flowCss).toMatch(/\.q-box\[data-fill="0"\] \.send-ring \.track[\s\S]*opacity: 0/);
     // the ring is always in the DOM; CSS draws it from the box's --fill
     expect(screen.getByTestId("composer-pill-ring")).toBeInTheDocument();
@@ -118,7 +119,12 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     );
 
     const box = screen.getByTestId("composer-pill");
-    expect(screen.getByTestId("composer-pill-count")).toHaveTextContent("37 / 300");
+    expect(screen.queryByTestId("composer-pill-count")).not.toBeInTheDocument();
+    expect(screen.queryByText(/37 ?\/ ?300/)).not.toBeInTheDocument();
+    const remaining = screen.getByTestId("composer-pill-remaining");
+    expect(remaining).toHaveTextContent("263 characters remaining");
+    expect(remaining).toHaveClass("sr-only");
+    expect(remaining).toHaveAttribute("aria-live", "polite");
     expect(box).toHaveAttribute("data-fill", "some");
     expect(box).toHaveAttribute("data-near", "false");
     expect(box.style.getPropertyValue("--fill")).toBe("12.3");
@@ -139,7 +145,7 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
 
     expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-near", "true");
     expect(screen.getByTestId("composer-pill").style.getPropertyValue("--fill")).toBe("93.3");
-    expect(screen.getByTestId("composer-pill-count")).toHaveAttribute("data-near", "true");
+    expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("20 characters remaining");
   });
 
   it("starts the ring at the top of the mic|send seam and runs it clockwise round the pill (the mockup's path)", () => {
@@ -161,7 +167,7 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     expect(ring.querySelector("path.fill")).toHaveAttribute("d", "M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z");
   });
 
-  it("is the follow-up box (.followup, .fu-count, no In-depth chip) in the followup variant", () => {
+  it("is the follow-up box (.followup, no In-depth chip) in the followup variant", () => {
     render(
       <ComposerPill
         variant="followup"
@@ -180,7 +186,8 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     const box = screen.getByTestId("composer-pill");
     expect(box).toHaveClass("followup");
     expect(box).not.toHaveClass("q-box");
-    expect(screen.getByTestId("composer-pill-count")).toHaveClass("fu-count");
+    expect(screen.queryByTestId("composer-pill-count")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("298 characters remaining");
     expect(screen.queryByTestId("composer-pill-in-depth")).not.toBeInTheDocument();
   });
 
@@ -398,5 +405,83 @@ describe("Frontend - ComposerPill dictation (REQ-212)", () => {
     expect(appCss).toMatch(/\.q-box \.deep \{[^}]*height: 44px/);
     expect(screen.getByTestId("dictation-mic")).toHaveClass("mic");
     expect(screen.getByTestId("composer-pill-send")).toHaveClass("send");
+  });
+
+  describe("hint tiers fit one line with a safety margin", () => {
+    const tiers = ["What would you like to know?", "Ask your question…", "Your question…", "Ask…"];
+    const originalGetContext = HTMLCanvasElement.prototype.getContext;
+
+    const originalMatchMedia = window.matchMedia;
+    // Stand in for a viewport of `viewport` px wide: min-width queries match when it is at least that.
+    function setViewport(viewport: number): void {
+      window.matchMedia = ((query: string) => {
+        const min = Number(/min-width:\s*(\d+)px/.exec(query)?.[1] ?? 0);
+        return { matches: viewport >= min, media: query, addEventListener: vi.fn(), removeEventListener: vi.fn() };
+      }) as unknown as typeof window.matchMedia;
+    }
+
+    beforeEach(() => setViewport(1440));
+
+    afterEach(() => {
+      window.matchMedia = originalMatchMedia;
+      HTMLCanvasElement.prototype.getContext = originalGetContext;
+      delete (HTMLTextAreaElement.prototype as { clientWidth?: number }).clientWidth;
+    });
+
+    function placeholderAtWidth(clientWidth: number): string {
+      // 8px per character stands in for the canvas measurement; padding is 0 in jsdom.
+      HTMLCanvasElement.prototype.getContext = (() => ({
+        font: "",
+        measureText: (text: string) => ({ width: text.length * 8 })
+      })) as unknown as typeof HTMLCanvasElement.prototype.getContext;
+      Object.defineProperty(HTMLTextAreaElement.prototype, "clientWidth", { configurable: true, value: clientWidth });
+      render(
+        <ComposerPill
+          value=""
+          onChange={vi.fn()}
+          onSubmit={vi.fn()}
+          maxLength={300}
+          placeholder={tiers[0]!}
+          placeholders={tiers}
+          textareaAriaLabel="Magic question"
+          submitLabel="Ask TheJudge"
+          pendingLabel="Asking…"
+        />
+      );
+      return (screen.getByRole("textbox", { name: "Magic question" }) as HTMLTextAreaElement).placeholder;
+    }
+
+    it("keeps the full prompt when the box is wide on a desktop viewport", () => {
+      expect(placeholderAtWidth(400)).toBe(tiers[0]);
+    });
+
+    it("keeps the full prompt on a tablet viewport (600-719px)", () => {
+      setViewport(650);
+      expect(placeholderAtWidth(400)).toBe(tiers[0]);
+    });
+
+    it("shows the short hint on a phone viewport even when the long one fits the wide empty row", () => {
+      setViewport(450);
+      expect(placeholderAtWidth(300)).toBe("Ask your question…");
+    });
+
+    it("shows the shortest-but-one hint on a small phone (375px) in the two-row empty box", () => {
+      setViewport(375);
+      expect(placeholderAtWidth(300)).toBe("Your question…");
+    });
+
+    it("still steps down past the breakpoint tier when that tier would overflow", () => {
+      setViewport(390);
+      expect(placeholderAtWidth(40)).toBe("Ask…");
+    });
+
+    it("steps down a tier when the longest only barely fits (inside the margin)", () => {
+      // The full tier is 28 chars = 224px; 230px would fit with no margin but must step down with one.
+      expect(placeholderAtWidth(230)).toBe("Ask your question…");
+    });
+
+    it("falls to the shortest tier in a very narrow box", () => {
+      expect(placeholderAtWidth(40)).toBe("Ask…");
+    });
   });
 });

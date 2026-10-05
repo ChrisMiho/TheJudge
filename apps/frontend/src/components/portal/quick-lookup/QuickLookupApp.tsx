@@ -42,7 +42,7 @@ const CARD_METADATA_URL = "/data/cardMetadata.json";
 const ADD_CARD_MIN_QUERY_LENGTH = 1;
 const MAX_QUESTION_LENGTH = 300;
 /** The hint shortens in tiers as the box narrows (the mockup's `data-placeholders`). */
-const QUESTION_PLACEHOLDER_TIERS = ["What would you like to know?", "Ask your question…", "Ask…"];
+const QUESTION_PLACEHOLDER_TIERS = ["What would you like to know?", "Ask your question…", "Your question…", "Ask…"];
 const RETRY_COOLDOWN_SECONDS = 13;
 
 /**
@@ -537,9 +537,9 @@ export function QuickLookupApp({ onSubmit, isActive = true }: QuickLookupAppProp
   return (
     // Requirement 7: while scanning, this screen takes the same `100dvh`
     // fit Trade Balancer's scale screen uses (slice O), at the narrow 36rem
-    // width instead of wide-fit's 56rem — the non-scanning state keeps
-    // plain "narrow" (it scrolls by design).
-    <PageShell variant={scanCapture.isOpen ? "narrow-fit" : "narrow"}>
+    // width instead of wide-fit's 56rem. REQ-218: the pre-submit screen takes the
+    // same fit frame, so a long question grows the box downward in place.
+    <PageShell variant="narrow-fit">
       {/* Look-matching pass (slice P), requirement 1 (deviation from this
           slice's own files-touched list — see slice-p.evidence.md): the
           header and mock-mode strip now stay visible while scanning, instead

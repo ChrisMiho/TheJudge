@@ -98,21 +98,24 @@ not a full rules browser or a judge authority (canonical rule: `goals-and-non-go
   the silent fallback `Tell me about {Card Name}.` for a single card or
   `Tell me about {Card A}, {Card B} and {Card C}.` for several (never shown to
   the user). (REQ-091, REQ-167, FLOW-011)
-- Built: the visible counter, the textarea `maxLength`, and the submit gate all
+- Built: the ring, the screen-reader remaining count, the textarea `maxLength`, and the submit gate all
   measure the raw editable textarea content, not the composed string, so an
-  empty field with a card attached reads `0/300` and a full
+  empty field with a card attached has 300 characters remaining and a full
   300-character question stays submittable. (REQ-091 as amended by REQ-134,
   REQ-011)
 - Built: the Question box has two rows — the text on top, the Add in-depth
   details chip at the bottom-left and the round mic|send pill at the
-  bottom-right, with the character count where the mockup places it. One line
-  of text is one row; typed content grows the box up to the space available
-  before bottom chrome, capped so the page itself never scrolls from field
-  growth. (DEC-146, DEC-131, REQ-110, REQ-121, REQ-206)
+  bottom-right; the character budget is the ring round the pill, with no visible numeric count (a visually-hidden polite live region announces the remaining characters). The box
+  rests at its natural top position directly under the cards in the anchored
+  Ask-screen frame (REQ-218). One line of text is one row; typed content grows
+  the box **downward**, until it must leave room for its own chip + mic|send
+  control row and, on a phone, the on-screen keyboard — the page never scrolls —
+  past which the text area scrolls inside itself — the only element that scrolls. (DEC-146, DEC-131,
+  REQ-110, REQ-121, REQ-206, REQ-218)
 - Built: the 300-character budget is drawn as a ring traced round the send
   pill's edge, starting at the top of the pill's split and running clockwise,
   brighter in the last 30 characters, closed at 300; at 0 characters no ring
-  is drawn and the numeric count is hidden. (REQ-011, REQ-134, REQ-206)
+  is drawn, and no numeric count is shown at any fill. (REQ-011, REQ-134, REQ-206)
 - Built: the initial submit control is the round send pill inside the
   question box, with no visible text label (its accessible name keeps Ask
   semantics); the answered-view follow-up composer keeps its own compact
@@ -324,8 +327,9 @@ as the current shipped configuration, not product truth.
   fallback the client composes (the locked-pill prefix it was also sized for is
   retired with REQ-079). (REQ-134,
   REQ-091, `askAiRequest.ts`)
-- Frontend display cap: the visible counter, textarea `maxLength`, and submit
-  gate measure the raw editable textarea at 300 characters (REQ-011); the
+- Frontend display cap: the budget ring, the screen-reader remaining-count live
+  region, textarea `maxLength`, and submit gate measure the raw editable textarea
+  at 300 characters (REQ-011); no visible numeric counter is drawn; the
   composed wire value may exceed 300, accepted against DEC-042's
   1,000,000-char prompt budget. (REQ-091 as amended by REQ-134)
 - Conversation limits: 1–20 turns, alternating roles starting with user and
@@ -347,14 +351,20 @@ as the current shipped configuration, not product truth.
   bounded ≤2500-char constant. (DEC-045, DEC-025)
 - Pre-submit card stage: the front card is the only full-size image; the one
   other card peeks and the rest are off-stage, so the stage's height does not
-  grow with the card count and the send pill stays in the first viewport at
-  every card count up to the cap. The former per-image `25dvh` / `42dvh`
-  stacked cap (ui-review, 2026-08-30) retires with the stacked list it bounded.
-  (REQ-129, REQ-141, REQ-167, REQ-206, `screen-layout.md`)
-- Layout/fit: mobile-first and touch-friendly; the pre-submit stack and the
-  answered workspace follow the shared shell width and region-scroll rules of
-  `screen-layout.md`'s "Quick Question — pre-submit" and "— answered workspace"
-  rows. (NFR-001, `screen-layout.md`)
+  grow with the card count. The send pill stays in the first viewport at every
+  card count up to the cap and at every typed length because the screen is a
+  `100dvh` anchored frame (REQ-218): the composer rests under the card
+  stage and its growth is capped above its control row. The former per-image `25dvh` /
+  `42dvh` stacked cap (ui-review, 2026-08-30) retires with the stacked list it
+  bounded. (REQ-129, REQ-141, REQ-167, REQ-206, REQ-218, `screen-layout.md`)
+- Layout/fit: mobile-first and touch-friendly; the pre-submit view is a `100dvh`
+  anchored frame (REQ-218) — card stage at its natural height that never scrolls (the card image is
+  capped at about 55% / 48% / 40% of the frame height by breakpoint (about 18% smaller again on a max-width 480px, max-height 700px phone), yielding to
+  the box's readable minimum), the question box resting directly under it, only
+  its text area scrolling. The pre-submit view and the answered workspace both follow
+  the shared shell width and region-scroll rules of `screen-layout.md`'s "Quick
+  Question — pre-submit" and "— answered workspace" rows. (NFR-001, REQ-218,
+  `screen-layout.md`)
 
 ## Rejected alternatives and deferred scope
 

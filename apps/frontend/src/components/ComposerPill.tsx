@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, type Ref } from "react";
+import { useLayoutEffect, useRef, type Ref } from "react";
 import { DictationMicButton } from "./DictationMicButton";
 import { useDictation } from "../hooks/useDictation";
 import { budgetFillStyle } from "../lib/theme/flowStyles";
@@ -10,6 +10,22 @@ const SEND_RING_PATH = "M44 4 H64 A20 20 0 0 1 64 44 H24 A20 20 0 0 1 24 4 Z";
 const NEAR_CAP_CHARACTERS = 30;
 /** A textarea taller than this many pixels has crossed the one-line threshold (the mockup's `autoGrow`). */
 const ONE_LINE_THRESHOLD_PX = 56;
+// Safety margin for the hint fit: a fixed gutter plus a share of the line, so a tier that only barely fits steps down.
+const PLACEHOLDER_MARGIN_PX = 12;
+const PLACEHOLDER_MARGIN_RATIO = 0.04;
+
+/** Viewport seams for the hint (the app's ~720px / ~600px seams plus an iPhone-SE-class step). */
+const BREAKPOINT_QUERIES = ["(min-width: 600px)", "(min-width: 401px)"] as const;
+
+/**
+ * Index of the longest hint tier a viewport may show: tablet and desktop (>= 600px) the full prompt,
+ * phones (< 600px) the second tier, small phones (<= 400px) the third. Without matchMedia: 0.
+ */
+function placeholderFloorForViewport(): number {
+  if (typeof window === "undefined" || !window.matchMedia) return 0;
+  if (window.matchMedia(BREAKPOINT_QUERIES[0]).matches) return 0;
+  return window.matchMedia(BREAKPOINT_QUERIES[1]).matches ? 1 : 2;
+}
 
 export interface ComposerPillProps {
   value: string;
@@ -42,7 +58,7 @@ export interface ComposerPillProps {
 
 /**
  * FLOW-011 / REQ-206: Ask a Question's question box in the mockup's own markup, so the ported
- * `flow.css` shapes it: the In-depth chip, the text, the `n / 300` count and the mic|send pill with
+ * `flow.css` shapes it: the In-depth chip, the text, and the mic|send pill (no numeric count; the ring is the budget cue) with
  * the budget ring round it. Its shape follows the text: one line shares a row with the chip and the
  * send; from a second line (or a hint that wraps) the text takes the top row and the chip (left) and
  * the mic|send pill (right) step down onto the row beneath (`flow.css` `:has(textarea.grown)`). The
@@ -101,29 +117,58 @@ export function ComposerPill({
   }, [value, dictation.isListening]);
 
   // The hint comes in tiers (the mockup's `fitPlaceholder`): the longest that fits the box on one line
-  // is shown, re-measured whenever the box changes width. Idle while listening ("Listening…").
-  useEffect(() => {
+  // is shown, re-measured whenever the box changes width or a font finishes loading. Idle while
+  // listening ("Listening…"). A layout effect, so the first paint already shows the fitting tier (no
+  // flash of the longest one). The tier must clear the line by a safety margin so a string that only
+  // barely fits steps down instead of cramming to the edge on real phone text rendering.
+  useLayoutEffect(() => {
     const textarea = ownTextareaRef.current;
     if (!textarea || !placeholders || placeholders.length < 2 || dictation.isListening) return;
     const context = document.createElement("canvas").getContext?.("2d");
-    if (!context) return;
     const fit = (): void => {
-      const styles = getComputedStyle(textarea);
-      context.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
-      const room =
-        textarea.clientWidth - (parseFloat(styles.paddingLeft) || 0) - (parseFloat(styles.paddingRight) || 0) - 2;
-      const pick = placeholders.find((tier) => context.measureText(tier).width <= room) ?? placeholders[placeholders.length - 1]!;
+      // The viewport breakpoint sets the longest tier a screen may show (phones get the short hint
+      // even where the long one would fit the wide empty row); the measurement is the safety net.
+      const floor = Math.min(placeholderFloorForViewport(), placeholders.length - 1);
+      const candidates = placeholders.slice(floor);
+      let pick = candidates[0]!;
+      if (context) {
+        const styles = getComputedStyle(textarea);
+        context.font = `${styles.fontStyle} ${styles.fontWeight} ${styles.fontSize} ${styles.fontFamily}`;
+        const inner =
+          textarea.clientWidth - (parseFloat(styles.paddingLeft) || 0) - (parseFloat(styles.paddingRight) || 0);
+        const room = inner - PLACEHOLDER_MARGIN_PX - inner * PLACEHOLDER_MARGIN_RATIO;
+        pick = candidates.find((tier) => context.measureText(tier).width <= room) ?? candidates[candidates.length - 1]!;
+      }
       if (textarea.placeholder !== pick) textarea.placeholder = pick;
     };
     fit();
+    window.addEventListener("resize", fit);
+    window.addEventListener("orientationchange", fit);
+    const queries = BREAKPOINT_QUERIES.map((query) => window.matchMedia?.(query)).filter(Boolean) as MediaQueryList[];
+    queries.forEach((mq) => mq.addEventListener?.("change", fit));
+    const stopViewport = (): void => {
+      window.removeEventListener("resize", fit);
+      window.removeEventListener("orientationchange", fit);
+      queries.forEach((mq) => mq.removeEventListener?.("change", fit));
+    };
+    // A web font that arrives after mount changes glyph widths without changing the box width, so the
+    // observer alone would never re-fit; `loadingdone` covers it (and `ready` the already-loading case).
+    const fonts = document.fonts;
+    fonts?.addEventListener?.("loadingdone", fit);
+    void fonts?.ready.then(fit);
     if (typeof ResizeObserver === "undefined") {
-      window.addEventListener("resize", fit);
-      return () => window.removeEventListener("resize", fit);
+      return () => {
+        stopViewport();
+        fonts?.removeEventListener?.("loadingdone", fit);
+      };
     }
     const observer = new ResizeObserver(fit);
     observer.observe(textarea);
-    void document.fonts?.ready.then(fit);
-    return () => observer.disconnect();
+    return () => {
+      stopViewport();
+      observer.disconnect();
+      fonts?.removeEventListener?.("loadingdone", fit);
+    };
   }, [placeholders, dictation.isListening]);
 
   function handleSubmit(): void {
@@ -179,8 +224,9 @@ export function ComposerPill({
         disabled={isSubmitting}
       />
 
-      <span data-testid="composer-pill-count" className={variant === "followup" ? "fu-count" : "q-count"} data-near={isNear}>
-        {length} / {maxLength}
+      {/* The numeric "n / 300" is not drawn: the budget ring is the visual cue. Assistive tech still gets the remaining count. */}
+      <span className="sr-only" role="status" aria-live="polite" data-testid="composer-pill-remaining">
+        {maxLength - length} characters remaining
       </span>
 
       <span className="send-wrap">

@@ -1,5 +1,7 @@
 import { act, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CardMetadataItem } from "../../../types";
 import { NO_MATCH_COPY } from "../../../lib/search";
@@ -74,6 +76,7 @@ const allLookupCards = [
 ];
 
 const scrollIntoView = vi.fn();
+const scanState = vi.hoisted(() => ({ isOpen: false }));
 
 vi.mock("../../../hooks/useScanCapture", () => ({
   useScanCapture: ({
@@ -83,7 +86,9 @@ vi.mock("../../../hooks/useScanCapture", () => ({
     cardMetadata: CardMetadataItem[];
     onScanCandidateSelected: (card: CardMetadataItem, scanImageUrl: string) => unknown;
   }) => ({
-    isOpen: false,
+    isOpen: scanState.isOpen,
+    heldEntries: [],
+    removeHeld: vi.fn(),
     isLoading: false,
     error: null,
     convergence: {
@@ -186,6 +191,7 @@ async function openCardSearch(user: ReturnType<typeof userEvent.setup>): Promise
 describe("Frontend - Quick Lookup", () => {
 describe("QuickLookupApp", () => {
   beforeEach(() => {
+    scanState.isOpen = false;
     scrollIntoView.mockClear();
     Object.defineProperty(Element.prototype, "scrollIntoView", {
       configurable: true,
@@ -206,6 +212,55 @@ describe("QuickLookupApp", () => {
         throw new Error(`Unexpected fetch: ${url}`);
       })
     );
+  });
+
+  it("frames the pre-submit screen in the narrow-fit variant with the question box resting under the card stage, scanner open or not (REQ-218)", async () => {
+    const user = userEvent.setup();
+    const { container, unmount } = render(<QuickLookupApp />);
+
+    expect(container.querySelector(".page-shell-fit")).not.toBeNull();
+    expect(container.querySelector(".page-content-narrow-fit")).not.toBeNull();
+    const qq = container.querySelector(".page-content-narrow-fit > .qq");
+    expect(qq).not.toBeNull();
+    // The composer sits directly under the card stage (top-rest), after the title row — it is
+    // not bottom-pinned: no stylesheet rule pushes it to the foot or lets the stage eat the slack.
+    const children = Array.from(qq?.children ?? []);
+    const composerIndex = children.findIndex((child) => child.classList.contains("composer"));
+    expect(composerIndex).toBeGreaterThan(0);
+    const stageIndex = children.findIndex((child) => child.classList.contains("stage"));
+    if (stageIndex >= 0) expect(stageIndex).toBeLessThan(composerIndex);
+    const composer = qq?.children[composerIndex] as HTMLElement;
+    expect(composer.style.marginTop).toBe("");
+
+    // jsdom applies no stylesheet, so assert the frame rules at source: no bottom pin, no fixed
+    // 176px textarea cap, and the stage no longer flexes to eat the slack above the box.
+    const css = readFileSync(resolve(process.cwd(), "src/index.css"), "utf8");
+    expect(css).not.toMatch(/\.page-content-narrow-fit > \.qq > \.composer\s*\{[^}]*margin-top:\s*auto/);
+    expect(css).not.toMatch(/\.enrichment-question-surface\s*\{[^}]*margin-top:\s*auto/);
+    expect(css).not.toMatch(/\.page-content-narrow-fit \.q-box textarea\s*\{[^}]*176px/);
+    // The only element that scrolls is the textarea: the card stage and the In-depth context
+    // region never scroll, and the card image is capped by the responsive breakpoints instead.
+    const stageRule = css.match(/\.page-content-narrow-fit > \.qq > \.stage\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(stageRule).toMatch(/flex:\s*0 0 auto/);
+    expect(stageRule).not.toMatch(/overflow-y:\s*auto/);
+    const plateRule = css.match(/\.idq-fit > \.idq-step > \.plate\s*\{([^}]*)\}/)?.[1] ?? "";
+    expect(plateRule).not.toMatch(/overflow/);
+    expect(css).toMatch(/\.page-content-narrow-fit\s*\{[^}]*--card-cap:\s*0\.4/);
+    expect(css).toMatch(/@media \(min-width: 600px\)\s*\{\s*\.page-content-narrow-fit\s*\{\s*--card-cap:\s*0\.48/);
+    expect(css).toMatch(/@media \(min-width: 720px\)\s*\{\s*\.page-content-narrow-fit\s*\{\s*--card-cap:\s*0\.55/);
+    expect(css).toMatch(
+      /@media \(max-width: 480px\) and \(max-height: 700px\)\s*\{\s*\.page-content-narrow-fit\s*\{\s*--card-cap:\s*0\.33;\s*\}\s*\.page-content-narrow-fit \.ring\s*\{\s*--card-w:\s*min\(162px,[^;]*--card-room/,
+    );
+    expect(css).toMatch(/\.page-content-narrow-fit \.ring\s*\{\s*--card-w:\s*min\(196px,[^;]*--card-room/);
+    expect(css).toMatch(/\.page-content-narrow-fit \.q-box textarea\s*\{\s*max-height:\s*none/);
+    expect(qq?.querySelector(".composer textarea")).not.toBeNull();
+    await user.click(screen.getByRole("button", { name: "Add card" }));
+    unmount();
+
+    scanState.isOpen = true;
+    const scanning = render(<QuickLookupApp />);
+    expect(scanning.container.querySelector(".page-content-narrow-fit")).not.toBeNull();
+    expect(scanning.container.querySelector(".page-content-narrow-fit > .idq .scan-exit")).not.toBeNull();
   });
 
   it("renders the Ask a Question title with Add card/Scan beside it, then the card search, then the question box — and no General rules topics panel (REQ-079 retired)", async () => {
@@ -346,7 +401,8 @@ describe("QuickLookupApp", () => {
     await user.clear(questionInput);
     await user.type(questionInput, "a".repeat(301));
     expect(questionInput).toHaveValue("a".repeat(300));
-    expect(screen.getByText("300 / 300")).toBeInTheDocument();
+    expect(screen.queryByText("300 / 300")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("0 characters remaining");
     expect(submitButton).toBeEnabled();
 
     await user.click(submitButton);
@@ -362,11 +418,12 @@ describe("QuickLookupApp", () => {
     await user.click(await screen.findByRole("button", { name: "Lightning Bolt" }));
 
     const questionInput = screen.getByRole("textbox", { name: "Magic question" });
-    // REQ-206: at 0 characters the box carries data-fill="0", which hides the count and the ring (flow.css).
+    // REQ-206: at 0 characters the box carries data-fill="0", which hides the ring (flow.css).
     expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "0");
 
     await user.type(questionInput, "x");
-    expect(screen.getByText("1 / 300")).toBeInTheDocument();
+    expect(screen.queryByText("1 / 300")).not.toBeInTheDocument();
+    expect(screen.getByTestId("composer-pill-remaining")).toHaveTextContent("299 characters remaining");
     expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "some");
 
     await user.clear(questionInput);

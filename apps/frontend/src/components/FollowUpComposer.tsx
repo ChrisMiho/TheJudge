@@ -12,7 +12,7 @@ type FollowUpComposerProps = {
  * Look-matching pass (slice M, review 1 fix — finding 4): the follow-up box reuses
  * `ComposerPill`, the same split mic/send pill and 300-character budget ring the
  * main composer uses (`flow.css:187-274`), instead of its own hand-rolled row with
- * two separate round mic/send circles and a "0/300" count line stacked above them
+ * two separate round mic/send circles and a count line stacked above them
  * (LOOK-GAPS.md's Ask a Question section, "Follow-up box": "The mockup uses the
  * same split pill as the composer"). Behaviour is unchanged: the field's
  * accessible name stays "Follow-up question", the send control's stays "Send", a

@@ -163,7 +163,7 @@
   - submit flow
 - Notes:
   - question is optional in the core product
-  - "up to 300 characters" means **what the user types**: REQ-091 as amended (`ui-review`, 2026-08-06) confirms the cap and the visible counter both measure raw editable text, not the client-composed submitted string
+  - "up to 300 characters" means **what the user types**: REQ-091 as amended (`ui-review`, 2026-08-06) confirms the cap and the character-budget measurement (now the send-pill ring and its screen-reader remaining-count live region — no visible numeric counter since `anchor-ask-composer`, 2026-10-05) both measure raw editable text, not the client-composed submitted string
 
 ### REQ-012
 - Title: Decrypt Stack submit action
@@ -2698,12 +2698,13 @@
 ### REQ-110
 - Title: Growing pre-submit question composers
 - Priority: high
-- Description: The Enrichment optional-question field and the Quick Question question field must grow with typed content so long messages remain readable and editable, up to the available space before chrome **below** the composer, without causing the page/document to scroll from field growth or clipping that lower UI.
+- Description: The Enrichment optional-question field and the Quick Question (Ask a Question) question field must grow with typed content so long messages remain readable and editable. Both boxes rest at their natural top position directly under the cards/context region of the anchored Ask-screen frame (REQ-218), not pinned to the viewport bottom; the box grows **downward** as the user types, pushing its bottom edge toward the screen bottom, until it must leave room for its own control row (the Add in-depth details chip and the mic|send pill) and, on a phone, the on-screen keyboard — a dynamic cap, not a fixed pixel height — past which the text area scrolls inside itself — the only scrolling element; the card carousel above never scrolls and its image is capped by the REQ-218 breakpoints. The page/document never scrolls from field growth and chrome below the composer is never clipped.
 - Acceptance Criteria:
-  - as the user types a long question on Enrichment (optional question) and on Quick Question, the field grows vertically with the content rather than staying a single-line-height box that clips text
-  - growth stops when further expansion would push UI below the composer (submit row / equivalent destination chrome) off-screen or force document/page scroll — not when the field's bottom merely reaches the viewport bottom while lower chrome is lost
-  - the same grow-without-page-scroll behavior holds on desktop (more available space) and mobile
-  - character counter and submit control remain usable while the field is expanded
+  - as the user types a long question on Enrichment (optional question) and on Ask a Question, the box grows downward with the content rather than staying a single-line-height box that clips text; the control row (chip + mic|send pill) stays on the box's bottom row, does not reorder as the box grows, and stays within the visible viewport
+  - the empty box rests directly under the card stage/context region of the `100dvh` anchored frame (REQ-218), with the slack space below it; its growth consumes that slack, never the page, so document/page scroll does not appear
+  - growth stops at a dynamic cap — the available height down to the box's own control row (plus the on-screen keyboard on a phone), so on a tall desktop it can grow well past a few lines — past which the text area scrolls inside itself, never the page; lower chrome is never pushed off-screen or clipped. Internal scroll is normal on a phone (the 300-character maximum will not fit) and rare on desktop
+  - the same grow-downward-without-page-scroll behavior holds on desktop (more available space) and mobile, including above the on-screen keyboard (REQ-218)
+  - the budget ring and submit control remain usable while the box is expanded
 - Constraints:
   - does not require filling empty lower-half dead space on pre-submit screens beyond what field growth naturally occupies
   - no Ask AI contract change; existing character caps unchanged
@@ -2711,8 +2712,11 @@
   - DEC-131
   - REQ-011
   - REQ-073
+  - REQ-206
+  - REQ-218
 - Notes:
   - PR #75 review clarified the ceiling is the whole app composition under the field, not the field-vs-viewport-bottom alone
+  - amended by `anchor-ask-composer` (2026-10-03): the no-page-scroll ceiling is now delivered structurally by the anchored `100dvh` frame (REQ-218) rather than only by the field stopping before it forces scroll. Direction reversed by owner direction on PR #262 (2026-10-05): the box rests at the top under the cards and grows downward to a dynamic cap above its control row and the keyboard, then scrolls internally (the earlier bottom-pinned, grows-upward design is withdrawn)
 
 ### REQ-111
 - Title: Always-on game-wide day/night designation
@@ -2947,7 +2951,7 @@
 ### REQ-121
 - Title: Pre-submit composer row composition
 - Priority: high
-- Description: The Enrichment optional-question and Ask a Question composers present the field as the dominant element of their row, with an inline character counter and a compact submit control, matching the answered view's follow-up composer composition (DEC-146). The submit control is the send pill with no visible text label (REQ-132 as amended, REQ-206).
+- Description: The Enrichment optional-question and Ask a Question composers present the field as the dominant element of their row, with the send pill's budget ring (no visible numeric count, REQ-206) and a compact submit control, matching the answered view's follow-up composer composition (DEC-146). The submit control is the send pill with no visible text label (REQ-132 as amended, REQ-206).
 - Acceptance Criteria:
   - at a 390px-wide viewport the composer's text field measures at least 65% of its composer row's width (baseline defect: 136px of 340px = 40%; the answered-view follow-up composer measures 230px at the same viewport)
   - the placeholder and typed content are not clipped: the field's `scrollHeight` does not exceed its `clientHeight` at rest
@@ -3147,7 +3151,7 @@
 - Acceptance Criteria:
   - at 390×844 on zone-collection card detail, the add action's `top` is ≤ 844px (REQ-125)
   - In-Depth Enrichment and Quick Question pre-submit card surfaces do not force page scroll solely because of card image size
-  - on Quick Question pre-submit at 390x844, the composer and **Send Request** stay inside the first viewport (`bottom` no greater than 844px) with **every permitted number of attached cards up to the REQ-167 cap of five**, not only with one. Measured baseline this replaces (2026-09-24): with two cards attached the document measured 1159px against an 844px viewport and Send Request sat at `top` 1023 / `bottom` 1067, 179px below the fold. The per-image cap is not the fix — the attached-card list becomes a bounded region (a strip and/or a region-scrolled list) so total attached-card height stops growing with the card count
+  - on Ask a Question (Quick Question) pre-submit at 390x844, the composer and send pill stay inside the first viewport (`bottom` no greater than 844px) with **every permitted number of attached cards up to the REQ-167 cap**, not only with one, and at every typed question length up to the character cap. Measured baseline this replaces (2026-09-24): with two cards attached the document measured 1159px against an 844px viewport and Send Request sat at `top` 1023 / `bottom` 1067, 179px below the fold. This is now delivered structurally by the anchored `100dvh` frame (REQ-218) — the composer rests directly under the card stage and its growth is capped above its control row, so the send pill stays in the viewport — rather than only by bounding the attached-card region; the per-image cap is not the fix
   - Scan review's card list does not displace or overlap the scan camera chrome (DEC-090)
   - images remain uncropped and aspect-ratio preserving; identity remains image-first
   - where container-relative sizing (DEC-160) would violate any criterion above on a given surface, that surface's `screen-layout.md` row records a bounded cap and the row is the authority — the shared component is not forked and gains no size variant
@@ -3164,6 +3168,7 @@
   - NFR-001
   - REQ-167
   - REQ-204
+  - REQ-218
 - Notes:
   - **amended during the `ui-review` pass (2026-08-06)**: originally titled "Compact card images for first-viewport fit" and framed as a smallness mandate, which DEC-160 retires — a 92×128px image on every surface at every viewport width was the defect REQ-141 exists to fix. The behavioral criteria are unchanged and now serve as the ceiling on growth rather than as a floor on shrinking.
   - **amended during the `ui-reimagining` pass (2026-09-24)**: the multi-card consequence the layout catalog accepted on 2026-08-30 — "the page now scrolls past the composer with 2+ cards attached … an accepted consequence of the per-image cap holding" — is reversed. It was measured again live and is the owner-reported friction. The ceiling now binds the pre-submit page as a whole at the full five-card cap, not each image in isolation.
@@ -3265,7 +3270,7 @@
 ### REQ-134
 - Title: Question composer character counter integrity
 - Priority: medium
-- Description: The Quick Question pre-submit composer's character counter must always match the actual editable text, including after backspace/delete edits and with a locked topic prefix present; the counter must never diverge from what the user can see and edit.
+- Description: The Quick Question pre-submit composer's character counter must always match the actual editable text, including after backspace/delete edits and with a locked topic prefix present; the counter must never diverge from what the user can see and edit. **Amended 2026-10-05 (REQ-206):** the numeric counter is no longer drawn; its measurement now drives the budget ring and the visually-hidden remaining-characters live region, and the integrity rules below apply to those.
 - Acceptance Criteria:
   - typing then deleting characters (including full clearing) keeps the displayed counter equal to the current visible/editable length at every step — it does not stall, undercount, or overcount
   - specifically, the two measured defects no longer reproduce: (a) with a card selected and no topic, backspacing the field from one character to empty must not raise the counter (baseline: jumps `1/300` → `29/300`); (b) with a topic locked, an empty field must not report a non-zero count (baseline: `22/300` for "Targets"; the original report's "sticks at 35" is the same defect with a longer topic title)
@@ -5237,8 +5242,8 @@
   - with no card attached there is no stage; with cards attached the front card renders full size on a glass stage (REQ-207) with the one other card peeking out each side (three or more cards peek one on each side; exactly two cards peek on one side only, so the same card is never rendered twice); a tap on a neighbour or the ‹/› arrows turns the ring
   - ✕ Remove and ⓘ Details straddle the front card's top corners; a row of position dots, one per attached card with the front card's dot lit, shows where the player is in the ring, placed and drawn as the mockup page shows it, with the accessible name "Card <n> of <total>"; there is no `n / <cap>` count pill, and the cap (REQ-167) is stated by the existing message when the player tries to add past it
   - **Add card** and **Scan** sit beside the title; the card search field stays available for typed autocomplete search and is not gated behind a separate reveal step
-  - the question box has two rows, as the mockup page draws it: the text on top; the Add in-depth details chip at the bottom-left (labelled or icon-only at each width as the mockup shows) and the send pill, with its microphone half (REQ-212), at the bottom-right; the character count sits where the mockup places it
-  - the 300-character budget (REQ-011, measured on the raw typed text per REQ-134) is drawn as a ring round the send pill's edge in the profile's accent light over a faint track, brighter in the last 30 characters and closed at 300; it starts at the top of the pill's split and runs clockwise; at 0 characters no track, fill or dot is drawn and the numeric count is hidden; there is no separate Send Request button, no bar under the box, and no hint line under the title
+  - the question box has two rows, as the mockup page draws it: the text on top; the Add in-depth details chip at the bottom-left (labelled or icon-only at each width as the mockup shows) and the send pill, with its microphone half (REQ-212), at the bottom-right; the character budget is shown by the ring around the send pill, with no visible numeric count, and the remaining count is exposed to assistive tech through a visually-hidden polite live region ("N characters remaining"). The box rests at the top directly under the card stage in the anchored Ask-screen frame (REQ-218); as the player types, the box grows **downward** into the remaining space while the page does not scroll — up to a cap, past which only the text area scrolls inside itself (the card carousel never scrolls); on a phone the box stays above the on-screen keyboard
+  - the 300-character budget (REQ-011, measured on the raw typed text per REQ-134) is drawn as a ring round the send pill's edge in the profile's accent light over a faint track, brighter in the last 30 characters and closed at 300; it starts at the top of the pill's split and runs clockwise; at 0 characters no track, fill or dot is drawn; no numeric `n / 300` count is drawn at any fill (ring is the only visible cue, amended 2026-10-05); there is no separate Send Request button, no bar under the box, and no hint line under the title
   - **Add in-depth details** switches the active destination to In-depth details, carrying every attached card and the typed question (or its silent fallback); the carry is queued in a one-slot mailbox (`lib/portal/seedContext.tsx`'s `queueLookupCarry`/`consumeLookupCarry`) alongside the existing Life Tracker roster-seed mailbox; a quick-lookup visit entered directly from Life Tracker still carries the roster seed forward through this one gesture, narrowly tied to it the same way the retired direct Menu transition was (App.player-life-tracker-seed.test.tsx's negative tests: a deep link, browser Back, or a raw route jump never seeds)
   - the answered view keeps the existing frozen-card trigger (naming the single card or the count, "N cards") opening the frozen set's read-only presentation; a card name in the judge's message that exactly matches a card attached to this conversation renders as a tappable chip (an accent-tinted, underlined inline control) that opens that card's detail directly in the thread
   - two actions sit top-right beside the title once a ruling exists: **✎ Edit cards** returns to the pre-submit page with the cards and question exactly as they were (the conversation is already auto-saved to history, REQ-103), and **↺ Start over** clears cards and question to the empty page
@@ -5255,10 +5260,12 @@
   - REQ-091
   - REQ-103
   - REQ-108
+  - REQ-110
   - REQ-134
   - REQ-140
   - REQ-167
   - REQ-207
+  - REQ-218
   - FLOW-011
 - Notes:
   - "Quick Question" in older requirements names the Ask a Question page (route `/quick-lookup`) and "In-Depth Question" names In-depth details (route `/in-depth`); older entries keep those names as internal labels rather than being rewritten
@@ -5619,6 +5626,34 @@
 - Notes:
   - the production change is a pure helper, `apps/frontend/src/lib/lifeTracker/lifeHalves.ts` (`lifeHalvesForSeat`), wired into `apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx`; it reads each seat's table edge (`side`) from `seatArrangement.ts` and, for list pair rows, which column the seat is in from `gridColumn`, because left/right pair seats share rotation 0° and the split cannot be derived from rotation alone. `seatArrangement.ts` is unchanged
   - reserved and proposed by the `life-tracker-seat-oriented-default` package; redefined 2026-10-04 from the earlier "open in list by default" proposal, which the owner dropped (default stays grid)
+
+### REQ-218
+- Title: Anchored Ask-screen frame with top-resting question box
+- Priority: high
+- Description: Both Ask screens — Ask a Question (route `/quick-lookup`, the pre-submit view) and In-depth details' Enrichment surface (route `/in-depth`, station 4 / Context) — lay out inside a screen-height (`100dvh`) flex-column frame that never scrolls the page. Header, mock-mode banner, title/actions row, and flow head take their natural height; the **card stage (Ask a Question) or the per-card context list (In-depth Enrichment)** keeps its natural height and never scrolls (the card image is sized down by responsive caps instead); the **question box rests directly under it at its natural top position**, with the slack space below the box, and grows downward as the user types to a dynamic cap (the available height down to the box's own control row and, on a phone, the on-screen keyboard), past which the text area scrolls inside itself — never the page. **The only element that ever scrolls is the question's text area**: the card carousel (one card with nav dots) sizes by its image and never scrolls. The card image is capped by a share of the visible frame height at the app's breakpoints — about **55%** at 720px and up, **48%** from 600 to 719px, **40%** below 600px — so it stays the visual star, and the cap yields to guarantee the box a readable minimum (about 2 lines of text plus its control row, with the stage chrome above it), never the other way round. The frame reuses the existing shipped no-page-scroll pattern — the `page-shell-fit` shell with the `narrow-fit` content child (`page-content page-content-narrow page-content-narrow-fit`), the 36rem fit sibling of Trade Balancer's `wide-fit` child — not a new one. The Ask column width does not change: both screens stay the `narrow` width they ship today (36rem / 92vw); only the vertical `100dvh` fit is added. On In-depth the frame is applied **only** at the Enrichment station (station 4 / Context): because `PageShell`'s `variant` is set per staged step, Enrichment switches to the `narrow-fit` variant while the earlier Game / Zones / Cards steps keep the plain `narrow` variant. On a phone the growing box stops above the on-screen keyboard. Today the shared `narrow-fit` content class carries a scanner-only desktop width override — `@media (min-width: 720px) { .page-content-narrow-fit { width: min(31.5rem, 92vw) } }` (`index.css` ~line 4268, added so the ✕ sits over the camera box) — written as a global selector, so adopting `narrow-fit` as-is would shrink the Ask column to 31.5rem on desktop. That override is scoped to the scanner host only (it fires when the scanner surface is present, not for the Ask frame), leaving the Ask column at the inherited `narrow` 36rem / 92vw cap and the scanner's 31.5rem unchanged.
+- Acceptance Criteria:
+  - both Ask screens render as a `100dvh` (or `100dvh`-equivalent) flex column: page/document scroll does not appear at 1440×716 or 390×740 even with a 300-character question typed
+  - the card stage (Ask a Question) / per-card context list (In-depth Enrichment) keeps its natural height above the box and never scrolls — the card image is capped at about 55% (desktop, 720px and up) / 48% (tablet, 600-719px) / 40% (phone, below 600px) of the frame height, with one further step on a small, short phone (iPhone-SE class: max-width 480px and max-height 700px) where the image is about 18% smaller (cap about 33%) so the box gets more room while the card stays recognizable (tall phones such as 390×844 are unchanged), yielding to keep the box a readable minimum of about 2 lines plus its control row; the empty slack sits below the box, not between the cards and the box
+  - the question box (`ComposerPill`) rests at its natural top position directly under the cards/context on both screens — not pinned to the viewport bottom — and grows downward as the user types; its structure is unchanged (no new row, no moved control)
+  - on a focused phone viewport the box's cap leaves room for its control row above the on-screen keyboard (height resolved against the visual viewport), so the send pill is never hidden behind it; past the cap the text area scrolls internally — the only scrolling element on the screen — which is normal on a phone with a long question and rare on desktop, and the page never scrolls
+  - the frame reuses the Trade Balancer `page-shell-fit` no-page-scroll pattern through the `narrow-fit` content child (`page-content page-content-narrow page-content-narrow-fit`), the 36rem fit sibling of Trade Balancer's `wide-fit` child — not a new frame; it does **not** re-add `overflow: hidden` on the inner content column at 1440px (the clipping the Trade Balancer review bound against, because the column is narrower than the viewport — which the 36rem Ask column also is)
+  - the Ask column width does not change: both screens keep the `narrow` 36rem / 92vw cap they ship today; the frame adds only the vertical `100dvh` fit and must not widen the column to `wide-fit`'s 56rem nor shrink it to the scanner's 31.5rem. The shared `narrow-fit` class today carries a scanner-only desktop width override — `@media (min-width: 720px) { .page-content-narrow-fit { width: min(31.5rem, 92vw) } }` (`index.css` ~line 4268) — written as a global selector; it is re-scoped to the scanner host only (e.g. qualified to the `narrow-fit` column that contains the scanner `.scan` surface, via `:has(.scan)` or a scanner-set modifier class on the column) so the Ask `narrow-fit` column inherits the `narrow` 36rem cap while the scanner column still renders 31.5rem
+  - at 1440px the Ask column measures the `narrow` 36rem / 92vw cap on both Ask screens — unchanged from today — not the scanner's 31.5rem; the scanner column, when its surface is open, still measures 31.5rem (unchanged)
+  - after the frame change these keep working on both screens: the phone search-fold (card stage folds to a strip while the search field is open), the suite card-detail popup, and the answered-view follow-up composer
+  - on In-depth the frame is applied only at the Enrichment station (station 4 / Context): `PageShell`'s `variant` is set per staged step, so Enrichment switches to the `narrow-fit` variant while the earlier Game, Zones, and Cards steps keep the plain `narrow` variant and stay content-sized vertically (DEC-145); only the Enrichment composer surface is re-framed
+- Constraints:
+  - frontend layout only; no change to `ComposerPill` structure, the card stage, either request mode, `AskAiRequest`, Zod schemas, prompt assembly, routes, or the mock default
+  - reuse the existing fit pattern; do not invent a parallel frame (idea non-goal)
+- Dependencies:
+  - REQ-110
+  - REQ-129
+  - REQ-206
+  - REQ-124
+  - NFR-001
+- Notes:
+  - reserved and proposed by the `anchor-ask-composer` package (2026-10-03). Root cause of the defect: the composer sits below the card stage in normal document flow inside a `<main>` flex column allowed to grow past the viewport (`overflow: visible`, no `100dvh` cap) and is `position: relative`, not pinned — so box growth lengthens the page and the browser auto-scrolls to the caret. The fix is the page frame plus a textarea cap that follows the available height. Direction reversed by owner direction on PR #262 (2026-10-05): the first build pinned the box at the bottom growing upward; the owner rejected that resting position, so the box now rests at the top under the cards and grows downward. Refined the same day: the rule is that only the textarea scrolls — the card carousel never scrolls, and the card image is sized down by the responsive caps (about 55% / 48% / 40% of the frame height) instead
+  - the two page columns are `QuickLookupApp.tsx`'s `.qq` section and `MtgAssistantApp.tsx`'s `.idq` / Enrichment composer surface; `ComposerPill` and `flow.css` `.q-box` are shared and untouched
+  - the `narrow-fit` variant is today used only when the scanner is open (`QuickLookupApp.tsx` toggles `narrow`↔`narrow-fit` on `scanCapture.isOpen`); the 31.5rem desktop width override (`index.css` ~line 4268) was written as a global `.page-content-narrow-fit` selector and must be re-scoped to the scanner surface so adopting `narrow-fit` for the Ask frame keeps the 36rem column — the scanner's rendered 31.5rem is untouched
 
 ### REQ-219
 - Title: The browser tab carries personality and stays synced to the active colour profile

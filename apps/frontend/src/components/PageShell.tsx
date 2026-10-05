@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from "react";
+import { useState, type CSSProperties, type ReactNode } from "react";
 import { useActiveThemeMotif } from "../hooks/useActiveThemeMotif";
+import { useVisualViewportHeight } from "../hooks/useVisualViewportHeight";
 import { AmbientScene } from "./AmbientScene";
 import { MockModeBanner } from "./MockModeBanner";
 import { PageShellHeaderSlotContext } from "./pageShellContext";
@@ -13,7 +14,7 @@ type PageShellProps = {
    * same column at the mockup's 36rem cap (Ask a Question, In-depth details).
    * "wide-fit": a 56rem column that fits the viewport instead of scrolling
    * (Trade Balancer). "narrow-fit": the 36rem column with the same viewport
-   * fit (the scanner).
+   * fit (the scanner, Ask a Question, the In-depth Enrichment station).
    */
   variant?: "standard" | "full-bleed" | "narrow" | "wide-fit" | "narrow-fit";
 };
@@ -27,9 +28,19 @@ type PageShellProps = {
 export function PageShell({ children, variant = "standard" }: PageShellProps): JSX.Element {
   const motif = useActiveThemeMotif();
   const [headerSlot, setHeaderSlot] = useState<HTMLElement | null>(null);
+  const visualViewportHeight = useVisualViewportHeight();
+  // REQ-218: the 36rem fit frame resolves its height against the visual viewport so a growing
+  // question box stays above the phone keyboard; `.page-shell-fit` falls back to `100dvh`.
+  const fitStyle =
+    variant === "narrow-fit" && visualViewportHeight !== null
+      ? ({ "--visual-viewport-height": `${visualViewportHeight}px` } as CSSProperties)
+      : undefined;
 
   return (
-    <main className={variant === "wide-fit" || variant === "narrow-fit" ? "page-shell page-shell-fit" : "page-shell"}>
+    <main
+      className={variant === "wide-fit" || variant === "narrow-fit" ? "page-shell page-shell-fit" : "page-shell"}
+      style={fitStyle}
+    >
       <AmbientScene motif={motif} />
       <div ref={setHeaderSlot} className="page-shell-header" />
       <PageShellHeaderSlotContext.Provider value={headerSlot}>
