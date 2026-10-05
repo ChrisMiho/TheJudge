@@ -8,9 +8,9 @@ Intake origin: .worktrees/.graph-intake/graph-20261004-234937 (probe-indepth-chi
 
 ## Preparation gate
 
-- Quality-check: PASS
+- Quality-check: PASS (build-half re-grade, 2026-10-05, after gate-review applied the owner's REQ-206 edit)
 - Checked artifact: `PRD/work/indepth-chip-collapse/DESIGN-BRIEF.md`
-- Findings: none blocking. Three non-blocking notes carried to build: (1) anchor-ask-composer (owner-action, docs PR #249 merged) rewrites the same REQ-206 acceptance line — apply this as a sub-clause substitution and re-read REQ-206 before applying; (2) the `:focus-within` selector also fires on chip/mic/send focus — resolved by the owner's REQ-206 `edit` verdict: scope the collapse to the textarea being focused (or the box holding text); (3) the proposed REQ-206 Notes "owner signed off" bullet must track the owner's actual verdict (gate-review keeps it in step).
+- Findings: none. Three non-blocking notes carried to build: (1) anchor-ask-composer (PR #262) has MERGED — the current REQ-206 line (functional-requirements.md:5245) carries its rewrite (ring-based character budget, live region, downward growth), so the proposed diff's frozen replace-anchor no longer matches char-for-char; build substitutes only the sub-clause `(labelled or icon-only at each width as the mockup shows)` with the state-aware wording and leaves the rest of the line intact; (2) DESIGN-BRIEF Material assumption 4 is stale (it says anchor-ask-composer is not yet built) — informational only, build treats the merged text as the base; (3) the collapse is scoped to the textarea being focused (or the box holding text), not a bare `.q-box:focus-within` — the owner's edit verdict. The CSS hook is `apps/frontend/src/styles/flow.css` line 281, `@media (max-width: 479px) { .q-box .deep .lbl … }`.
 
 ## Gate verdicts
 
