@@ -1,20 +1,29 @@
 # Design brief — tab-personality-color-sync
 
+> **Correction pass (2026-10-04).** The first pass shaped the wrong surface — it
+> described the in-app ☰ Menu tray rows. The owner corrected this, verbatim:
+> *"i think theres been a misunderstanding, im talking about the chrome or
+> mozilla tab, not the hamburger menu."* The feature is the **actual browser
+> tab** — what Chrome/Firefox shows for the page — not any in-app navigation.
+> This brief and `GATE-QUESTIONS.md` are rewritten for that surface. REQ-219 is
+> reused as the stable id but its whole content is replaced.
+
 ## What a player sees
 
-A player opens the ☰ Menu and the navigation list stops looking like a flat
-column of grey text rows. Each row — **Ask a Question, Question History, Life
-Tracker, Trade Balancer, Send feedback** — now carries a bolder, more
-characterful identity mark and a livelier hover/press feel, and the whole list
-visibly wears the MTG colour the player has chosen in Theme: pick Red and the
-tabs glow in Red's light, pick Green and they shift to Green. The current screen
-still reads clearly as current. Nothing about *what* the tabs do changes — they
-still switch destinations in the same order.
+A player looking at their browser's row of tabs sees TheJudge stand out. The
+tab's little **icon** (the favicon) is no longer the blank default page sheet —
+it shows TheJudge's own mark drawn in the Magic colour the player has chosen,
+and it carries the character of that colour's element. The **title** on the tab
+reads as TheJudge rather than a bare placeholder. On a phone, the **browser's
+top bar / address-bar tint** picks up the chosen colour too. Switch the Theme
+from Blue to Red and the tab's icon — and, on mobile, the browser bar — re-skin
+to Red; switch to Green and they shift to Green. Nothing inside the app's pages
+changes; this is only the tab the browser paints around the page.
 
-That is the recommended shape. There is one real fork the owner must settle
-first (see Blocker), because the owner's words — "sync up with its **respective**
-colour profile" — could instead mean each tab wears its own fixed Magic colour,
-which is a different and larger feature.
+There is no open fork: the app is a single-page app that lives in one browser
+tab, so the tab follows the **one** colour profile the player has active. The
+earlier A/B question (one active colour vs a fixed colour per tab) does not
+arise for the browser tab and is dropped.
 
 ## The request
 
@@ -22,151 +31,177 @@ Owner, verbatim: *"i noticed the tabs for the app are kinda plain and boring, ca
 we bring some personality to the tab? can we have it sync up with its respective
 color profile even?"*
 
-Two asks: (1) the tabs look plain — give them personality; (2) have them sync
-with "its respective color profile."
+Clarified by the owner to mean the browser/Chrome/Firefox tab, not the in-app
+hamburger menu. Two asks: (1) the tab looks plain — give it personality;
+(2) have it sync with the active colour profile.
 
-## What the "tabs" actually are (verified)
+## What the browser tab is made of, today (verified)
 
-The app has no tab bar. Its one navigation affordance is the ☰ Menu button that
-opens a left tray; the tray's destination rows are the "tabs" the owner means.
-This is the current-state truth in `PRD/sections/shared-chrome/README.md`
-("The Menu corner rail and tray") and matches the code.
+The browser paints three things for a page, and TheJudge sets almost none of
+them. Verified **from code** at this node (static source facts, cited with file
+and line); the live-browser confirmation is noted at the end.
 
-Verified **from code** (not run live this node — the premises below are
-structural facts from the source and the authoritative current-state spec, not a
-guess at the look; the owner's "plain and boring" is their own live observation):
+- **The favicon (the tab's icon).** `apps/frontend/index.html` (lines 1–12) has
+  **no** `<link rel="icon">`, and `apps/frontend/public/` contains **no**
+  favicon file (`favicon.ico` / icon SVG / icon PNG — directory listing: only
+  `.well-known/`, `assets/`, `data/`, `fonts/`, `robots.txt`). So the browser
+  shows its own generic default page icon. Verified from code and the public
+  directory listing.
+- **The document title shown on the tab.** `apps/frontend/index.html:6` is a
+  static `<title>TheJudge</title>`. Nothing sets `document.title` at runtime — a
+  repo-wide grep for `document.title` found only test/manifest noise, no
+  assignment. So the tab text is the fixed word "TheJudge". Verified from code.
+- **The mobile/PWA theme-color (the browser-chrome / address-bar tint).**
+  `index.html` has **no** `<meta name="theme-color">`, and there is **no** web
+  app manifest anywhere under `apps/frontend` (no `manifest.json` /
+  `manifest.webmanifest` / `site.webmanifest`; no `VitePWA` in
+  `apps/frontend/vite.config.ts`). So on mobile the browser bar uses its own
+  default colour. Verified from code and an exhaustive find.
 
-- Rows render in `apps/frontend/src/components/portal/FeaturePortalMenu.tsx`
-  (`.tray-nav-list`, lines 247–305). Every row is the same
-  `<button role="menuitem">` grid, by design — a code comment at
-  `FeaturePortalMenu.tsx:45` calls this "rendered identically in array order."
-  The PRD rule on row presentation is DEC-135 plus the `shared-chrome` current-state
-  line "Rows render full-bleed ... the active entry keeps a check mark and quiet
-  fill." (DEC-104 only adds the registry's action-entry kind; it does not say rows
-  render identically.)
-- The only per-row visual difference today is a single mono-colour glyph:
-  `ROW_GLYPHS` (lines 37–42) gives Ask-a-Question a card silhouette SVG, Life
-  Tracker `♥`, Trade Balancer `⚖`; Question History is `◷`, Send feedback `✎`.
-  In-Depth has no Menu row of its own (filtered in `App.tsx`; it reads as current
-  under "Ask a Question", REQ-067/REQ-206).
-- Styling in `apps/frontend/src/styles/shell.css` (lines 486–540): the glyph is
-  `color: var(--accent-soft)`, the current row gets an `--accent` fill plus a lit
-  `--accent-soft` bar with a glow. So the rows **already** tint to the one active
-  theme accent. They are not monochrome — they are a flat list in a single
-  colour, with small generic glyphs.
+Reference art that is **not** wired in: `docs/design/tab-icon/` holds three
+generated favicon candidate PNGs plus a `README.md` that states "None is wired
+into the app yet — the shipped app has no favicon work package." Evidence only,
+not product truth, and not a committed app asset.
 
-## The colour system (verified from code)
+**Net: the browser tab is entirely plain today — default icon, fixed one-word
+title, default browser-bar colour.** The owner's "plain and boring" is their own
+live observation of exactly this.
+
+## The colour system this syncs to (verified from code)
 
 - Six globally-shared MTG profiles — White, Blue, Black, Red, Green, Colorless —
-  in `apps/frontend/src/lib/theme/palettes.ts`. Each supplies four accent tokens
-  (`accent` / `accentStrong` / `accentSoft` / `accentContrast`), REQ-200 surface
-  roles, and one `motif` element (beams / runes / fog / embers / leaves /
-  geometry). Blue is the default.
-- Exactly **one** profile is active at a time, applied app-wide via
-  `data-profile` + `--accent*` CSS variables (`useThemePalette.ts`,
-  `applyPalette.ts`). The whole app — ground, wash, ambient scene, accents — wears
-  that one colour; the colour reads as a faint wash over a neutral majority
-  (REQ-200). The tray even plays the active colour's element at a whisper already
-  (`AmbientScene variant="tray"`, the `.tray-flair`).
-- A **separate** colour-identity vocabulary exists for cards:
-  `apps/frontend/src/lib/cardIdentityRing.ts` maps a card's `colors` to a ring —
-  one WUBRG hue for mono, a WUBRG-ordered gradient for multi, silver-grey when
-  empty/unknown (DEC-078/REQ-058). These ring hues are not the same values as the
-  six theme profiles.
-- **No destination/feature has an assigned colour anywhere.** Exhaustive grep
-  found no `signature`/`featureColor`/`destinationColor` concept. Per-tab colour
-  would be net-new.
-
-## The one real fork (see Blocker question)
-
-"Sync up with its respective colour profile" has two materially different
-readings:
-
-- **A — tabs reflect the one active profile (recommended default).** Strengthen
-  the tabs' personality and keep them synced to whichever Theme colour the player
-  wears. Consistent with the whole one-profile-app-wide model; reuses existing
-  tokens and motion; low risk. Caveat: the colour-sync half is *already largely
-  true* (glyphs and the current row are accent-tinted), so A mostly delivers the
-  "personality" half.
-- **B — each tab wears its own fixed Magic colour.** A new per-destination colour
-  mapping, independent of the active Theme, so the five tabs show five different
-  colours at once. This is the literal reading of "respective" and delivers the
-  most distinct per-tab personality, but it is net-new, departs from the
-  one-active-profile model (five accents fighting REQ-200's neutral-majority
-  wash), and needs an invented tab→colour mapping.
-
-This brief and the proposed REQ-219 are written for **A**. B would reshape the
-REQ. The owner settles this at the gate (Blocker question Q-219).
+  in `apps/frontend/src/lib/theme/palettes.ts`. Blue is the default
+  (`DEFAULT_PALETTE_ID = "blue"`). Each profile supplies accent tokens
+  (`accent` / `accentStrong` / `accentSoft` / `accentContrast`, as `"R G B"`
+  triples), REQ-200 surface roles, a `swatch` preview hex, and one `motif`
+  (`beams` / `runes` / `fog` / `embers` / `leaves` / `geometry`).
+- Exactly **one** profile is active at a time. `apps/frontend/src/lib/theme/applyPalette.ts`
+  is the single apply point: it sets `data-profile` (plus `data-theme`,
+  `data-theme-motif`, `data-accent`) on `document.documentElement` and, for a
+  custom Colorless colour, writes the `--accent*` CSS variables inline. The six
+  built-in profiles' colour values live once in `apps/frontend/src/styles/tokens.css`
+  under `[data-profile="<id>"]` (REQ-216: one token source). `applyPalette`
+  already owns a `triplet()` helper that converts an `"R G B"` triple to a
+  `#rrggbb` hex.
+- `apps/frontend/src/hooks/useThemePalette.ts` owns the active palette in React:
+  it calls `applyPalette` on mount (restoring the saved profile) and again on
+  every `setPalette` / custom-Colorless change. **This is the one place that
+  already runs on exactly the events the tab must react to** — so the tab's
+  icon/title/theme-color sync hangs off the same apply point, with no new state
+  channel invented.
+- **Personality art already exists per profile.** `apps/frontend/src/lib/theme/motifSymbols.ts`
+  (`MOTIF_SYMBOLS`, REQ-201) holds the six profiles' motif glyphs, each drawn in
+  a 100×100 box in `currentColor`; the in-app brand mark
+  (`apps/frontend/src/components/BrandMark.tsx`, REQ-201/REQ-207) already paints
+  a "breathing orb holding the colour's badge". The favicon reuses this shipped,
+  local, `currentColor`-driven art rather than inventing a new mark.
 
 ## Decided with rationale (assumption ladder)
 
-- **Which tabs.** All rows in the Menu tray's nav list: Ask a Question, Question
-  History, Life Tracker, Trade Balancer, and the Send feedback action row. The
-  Theme band stays out of scope — its six cells already show per-profile colour
-  (`ThemeSection.tsx` / `themeOrbStyle`). Rationale: ladder #3 (the tray rows are
-  the "tabs"; the Theme band is a different, already-coloured control).
-- **What "personality" means, concretely.** Keep the existing per-destination
-  glyph vocabulary (card / ♥ / ⚖ / ◷ / ✎) and make it the carrier of character —
-  render every row's glyph in one shared glyph-box size, the same for all five
-  rows and larger than today's, with its accent applied through the palette tokens
-  — plus a restrained ambient-accent treatment (rest → hover/`focus-visible` →
-  current) and the app-wide decorative-motion micro-interaction on hover/press.
-  Rationale: ladder #1/#3 — reuse the shipped restrained-ambient-accent hierarchy
-  (REQ-060, the View-Context trigger and composer already do exactly this) and the
-  CSS-only motion baseline (REQ-059), so no new primitive is invented.
-- **Colour comes from shared tokens, defined once.** All tab colour reuses the
-  existing four accent tokens plus REQ-200's named surface roles, with no
-  per-component overrides, and the rest/hover/current treatment is defined once
-  through shared semantic styling and reused rather than duplicated per row
-  (REQ-060 Constraints). No palette-tinted page background beyond what REQ-200
-  already allows. Rationale: ladder #1/#6 — REQ-060's token rule, which supersedes
-  the old "no new token roles" clause.
-- **Honour reduced motion and touch/keyboard parity.** Motion is `auto` under
-  `prefers-reduced-motion`; hover is never the sole carrier of state (NFR-006;
-  REQ-060 already requires this). Touch targets stay ≥44px
-  (NFR-001) — the current rows are 48px.
-- **No new screen-layout row.** This restyles existing tray chrome; it adds no
-  user-visible screen or major overlay, so DEC-149/REQ-126 needs no catalog row.
-  Rationale: ladder #5 (preserve layout; the tray already exists).
-- **Order, routing, selection, state preservation unchanged.** Ladder #5 — this
-  is presentation only; it touches no `PortalEntry` contract, no registry field,
-  no routing.
-- **Row presentation (DEC-135 / `shared-chrome`) is refined, not broken.** The PRD
-  rule is DEC-135 plus the `shared-chrome` line "Rows render full-bleed ... the
-  active entry keeps a check mark and quiet fill." Rows keep the same structure,
-  order, grid, 48px height, and the active row's check mark and quiet fill; within
-  that rule REQ-219 adds per-destination identity and profile-synced accent. (DEC-104
-  only adds the registry's action-entry kind; the "rendered identically" phrasing is
-  a code comment, not a PRD rule.) REQ-219 records this refinement.
+- **Scope is all three tab surfaces.** Favicon, document title, and the
+  `theme-color` meta — the three things the browser paints for the tab, and the
+  three the owner confirmed. Rationale: owner-confirmed scope.
+- **Favicon = the active profile's mark, recoloured to the active accent.** Ship
+  a small **SVG** favicon wired into `index.html` (`<link rel="icon" type="image/svg+xml">`)
+  whose artwork reuses the shipped per-profile motif/brand art
+  (`MOTIF_SYMBOLS` / BrandMark orb, drawn in `currentColor`, REQ-201) and whose
+  colour is the active profile's accent. On a profile change `applyPalette`
+  updates the icon (swap the `href` to a data-URI SVG recoloured and re-mothed
+  for the new profile). "Personality" = it carries the profile's element and
+  TheJudge's own mark, not a blank sheet; "sync" = it is drawn in the active
+  accent. Rationale: ladder #1/#3 — reuse REQ-201 motif art and the REQ-207 brand
+  orb; hang the swap off the existing single apply point (`applyPalette`); no new
+  art invented, no CDN (REQ-201 requires local static art).
+- **Favicon is static per profile (no animation).** It recolours/re-moths only
+  when the profile changes. Rationale: ladder #4/#5 — smallest reversible scope,
+  preserve behaviour; an animated favicon is a bigger, unrequested idea, so it is
+  out of scope and NFR-006 motion is not engaged.
+- **theme-color = the active profile's accent hex, from the token layer.** Add a
+  `<meta name="theme-color">` to `index.html`; `applyPalette` keeps its `content`
+  equal to the active profile's `--accent` value (via the existing `triplet()`
+  conversion for a custom Colorless colour, or the token-layer value for a
+  built-in). Rationale: ladder #1/#6 — the accent is the profile's identity
+  colour and the value the player already sees; it comes from the one token
+  source (REQ-216), never a second hard-coded copy.
+- **Document title carries a light touch of personality.** Replace the bare
+  `<title>TheJudge</title>` with a single defined branded string that pairs the
+  wordmark with the app's own persona line (the brand already carries "MTG
+  Assistant", REQ-207) — e.g. `TheJudge · MTG Assistant`. One fixed string, not
+  per-profile and not per-destination. Rationale: owner said the title "may carry
+  a touch of personality"; ladder #4 — smallest reversible scope keeps it a
+  single string and avoids coupling the tab title to routing.
+- **Colour comes from shared tokens, defined once; no hard-coded per-profile
+  hex.** All tab colour (favicon fill, theme-color content) derives from the
+  active profile's token-layer value through `applyPalette`, with no second
+  table of six hex strings living in the tab code. Rationale: REQ-216 bars a
+  colour value outside the token layer; `applyPalette` is named by REQ-216 as
+  belonging to that token layer.
+- **Custom Colorless is honoured.** When the player sets a custom Colorless
+  colour (REQ-099), the favicon and theme-color follow the resolved custom
+  colour, the same way `applyPalette` already derives the inline `--accent*`.
+  Rationale: ladder #1 — REQ-099 is live truth; the apply point already handles
+  this case.
+- **No new in-app screen or overlay.** The browser tab is browser chrome, not an
+  app screen/overlay, so REQ-126 (the screen-layout catalog) needs no
+  `screen-layout.md` row.
+  Rationale: ladder #5.
+- **No PWA/manifest build.** The `theme-color` meta tints the mobile browser bar
+  on its own; a full web app manifest / installable-PWA is a separate, larger
+  feature the owner did not ask for. Rationale: ladder #6 — no new artifact
+  without authoritative scope.
 
 ## Non-goals
 
-- No per-destination fixed colour mapping (that is fork B, deferred to the
-  owner's answer).
-- No change to the Theme band, the six profiles, or the card-identity ring.
-- No change to navigation order, routing, labels, or what a tab does.
-- No new palette tokens, no animation library, no new screen/overlay.
-- No change to In-Depth's lack of its own Menu row (REQ-067/REQ-206).
+- No installable PWA, no web app manifest, no service worker.
+- No per-destination or per-screen tab icon/title (the title does not change as
+  the player navigates).
+- No animated favicon.
+- No change to the in-app ☰ Menu tray, its rows, the six profiles, the card
+  identity ring, or any in-page surface.
+- No new palette tokens, no second copy of any profile colour, no icon-font or
+  CDN art.
 
 ## Proposed product truth
 
-One new requirement, **REQ-219** — the Menu tray's tabs carry per-destination
-personality and stay synced to the active colour profile. Full diff and
-accept/edit/reject in `GATE-QUESTIONS.md`. One Blocker question, **Q-219** — the
-A-vs-B fork above.
+One requirement, **REQ-219** (reused stable id, content fully replaced) — the
+browser tab carries personality and stays synced to the active colour profile
+across the favicon, the document title, and the `theme-color` meta. Full diff and
+accept/edit/reject in `GATE-QUESTIONS.md`. **No blocker question** — the
+single-tab / one-active-profile model resolves the earlier A/B fork.
+
+## Dependencies (each verified live in PRD/sections)
+
+- **REQ-200** — the token set / surface roles; source of the accent colour.
+- **REQ-201** — the per-colour motif kit (local static art, no CDN); the
+  favicon's personality art.
+- **REQ-207** — shared chrome; the in-app brand mark that holds the colour's
+  element, the tab's in-app analogue.
+- **REQ-216** — one token layer; colours defined once and the theme code
+  (`apps/frontend/src/lib/theme/`) belongs to it; bars a hard-coded per-profile
+  hex outside the token layer.
+- **REQ-099** — the remembered, resettable custom Colorless colour the tab must
+  follow.
 
 ## Affected code (for map-out later, not decided here)
 
-- `apps/frontend/src/components/portal/FeaturePortalMenu.tsx` — row glyph/identity
-  rendering.
-- `apps/frontend/src/styles/shell.css` — `.tray-nav-list` row, glyph, hover/current
-  treatment and motion.
-- Possibly `apps/frontend/src/lib/theme/motifSymbols.ts` / `AmbientScene` if the
-  active row borrows the profile element (kept minimal).
+- `apps/frontend/index.html` — add `<link rel="icon" type="image/svg+xml">`,
+  `<meta name="theme-color">`, and the branded `<title>` string.
+- `apps/frontend/src/lib/theme/applyPalette.ts` — on each apply, recolour/swap
+  the favicon and set the theme-color `content` from the active profile (reusing
+  the existing `triplet()` helper and the motif art).
+- `apps/frontend/src/lib/theme/motifSymbols.ts` / `BrandMark.tsx` — source of the
+  reused favicon artwork (read-only reuse).
+- possibly a small favicon-art helper under `apps/frontend/src/lib/theme/` that
+  builds the per-profile SVG data URI.
 
 ## Verification note
 
-Premises verified from source and the current-state `shared-chrome` spec (cited
-above with file paths and line numbers). The live UI was not run at this define
-node; the build/review nodes verify the look in the browser against the owner's
+Current-state premises (no favicon link, static one-word title, no theme-color
+meta, no manifest, no runtime `document.title`) were verified **from code** at
+this node, cited above with file paths and line numbers (and directory listings
+for the absences). The colour-system premises were verified **from code**
+(`applyPalette.ts`, `useThemePalette.ts`, `palettes.ts`, `tokens.css`,
+`motifSymbols.ts`). The live browser tab was **not** opened at this define node;
+the build/review nodes confirm in a real browser that the tab icon, title, and
+mobile browser-bar tint change across the six profiles against the owner's
 "plain and boring" starting point.

@@ -1,11 +1,21 @@
-status: owner-action
+status: refined
 
 # tab-personality-color-sync
 
-See IDEA.md. Spec-forming half complete (gate-qc PASS). DESIGN-BRIEF.md and
-GATE-QUESTIONS.md (REQ-219 proposed new; one blocker, Q-219) are at the gate,
-awaiting the owner's verdicts and the docs-PR merge. The build half
-(`graph-implement`) applies REQ-219 to `PRD/sections/` and ships the code.
+See IDEA.md. The feature is the **browser tab** (Chrome/Firefox) — its favicon,
+its document title, and the mobile `theme-color` browser-bar tint — given
+personality and synced to the active colour profile. NOT the in-app hamburger
+Menu.
+
+Correction pass (2026-10-04): the first pass shaped the wrong surface (the ☰
+Menu tray rows). The owner clarified, verbatim: *"i think theres been a
+misunderstanding, im talking about the chrome or mozilla tab, not the hamburger
+menu."* DESIGN-BRIEF.md and GATE-QUESTIONS.md are rewritten for the browser tab.
+
+Proposal at the gate: REQ-219 (reused stable id, content fully replaced) +
+amend `shared-chrome/README.md`. **No blocker** — the single-page app lives in
+one browser tab, so it follows the one active profile; the earlier A/B fork
+(Q-219) is dropped. Next node: gate-qc (quality-check).
 
 ## Autonomous metadata
 
@@ -13,6 +23,7 @@ awaiting the owner's verdicts and the docs-PR merge. The build half
 
 ## Preparation gate
 
-- Quality-check: PASS
+- Quality-check: (pending re-grade after this correction pass)
 - Checked artifact: `PRD/work/tab-personality-color-sync/DESIGN-BRIEF.md`
-- Findings: none. Attempt-1 findings 1-4 verified resolved against live PRD. (1) Token rule now cites REQ-060/REQ-200 surface roles, no retired DEC-081 clause. (2) Row-presentation authority is DEC-135 / shared-chrome "Rows render full-bleed ... the active entry keeps a check mark and quiet fill", check mark kept in acceptance. (3) Dependencies REQ-060, REQ-200, REQ-059, DEC-135, NFR-006 present; REQ-060 inventory stated as a minimum. (4) Acceptance is one shared glyph-box size for all five rows, larger than today's 28px (`shell.css` `.tray-nav-list button .glyph`). Q-219 (one active colour vs fixed per-tab colour) is a genuine owner blocker.
+- Findings: superseded — prior PASS was against the wrong (Menu-tray) surface.
+  Re-run gate-qc against the corrected browser-tab brief.

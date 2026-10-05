@@ -1,44 +1,48 @@
 # Gate questions — tab-personality-color-sync
 
-Proposed product truth for the `define` gate. One `## <STABLE-ID>` block per new
+Proposed product truth for the `define` gate. One `## <STABLE-ID>` block per
 stable id, each with its plain-language block, the complete proposed
 `PRD/sections/` diff, and an accept/edit/reject slot. Blocker questions follow.
 
 Nothing here is written to `PRD/sections/` — implementation applies the accepted
 proposal later.
 
+> **Correction pass (2026-10-04).** The owner clarified the request is the
+> **browser tab** (Chrome/Firefox), not the in-app ☰ Menu tray. REQ-219 is the
+> same stable id but its content is fully replaced for the browser-tab surface,
+> and the earlier blocker Q-219 (one active colour vs fixed per-tab colour) is
+> dropped — a single-page app lives in one browser tab, so the tab follows the
+> one active profile.
+
 ---
 
-## REQ-219 — give the Menu tabs personality and keep them in the chosen colour
+## REQ-219 — give the browser tab personality and keep it in the chosen colour
 
-**What this decides:** whether the rows in the ☰ Menu — Ask a Question, Question
-History, Life Tracker, Trade Balancer, Send feedback — get a bolder, more
-characterful look that visibly wears whichever Magic colour the player has chosen
-in Theme.
+**What this decides:** whether the browser tab TheJudge opens in — its icon, its
+title text, and (on mobile) the browser's top-bar colour — gets TheJudge's own
+character and visibly wears whichever Magic colour the player has chosen in
+Theme.
 
-**In plain terms:** today every Menu row is the same flat grey text line with a
-small symbol in front (a card for Ask a Question, a heart for Life Tracker,
-scales for Trade Balancer, a clock for History, a pen for feedback). They all
-already tint faintly to the one active Theme colour, and the current screen shows
-a lit bar — but the owner finds them "plain and boring." This change keeps the
-same rows, same order, and same thing-each-does, and gives each row a stronger
-identity mark plus a livelier hover/press feel, all drawn in the active colour
-profile's light — so switching Theme to Red makes the tabs glow red, Green shifts
-them green, and so on. It reuses the colour tokens and motion the app already
-ships (the same restrained rest→hover→current accent hierarchy the View Context
-button and the chat composer already use, REQ-060; the app's existing CSS-only
-hover/press motion, REQ-059) — no new colours, no animation library, and it honours
-reduced-motion and keeps every row tappable at 44px. It refines the tray's
-row-presentation rule (DEC-135 and the shared-chrome "Rows render full-bleed ...
-the active entry keeps a check mark and quiet fill" line) so rows keep their shared
-shape, order, and the active row's check mark but carry per-row identity. (This is
-reading **A** in the brief — the tabs reflect the *one active*
-Theme colour. If instead each tab should wear its *own fixed* Magic colour, see
-Blocker question Q-219 — that reshapes this requirement.)
+**In plain terms:** today the browser tab is plain. Its little icon is the
+browser's blank default page icon (the app ships no favicon at all); the tab
+text is the bare word "TheJudge"; and on a phone the browser's top bar/address
+bar uses the browser's own default colour (the app sets no `theme-color`). This
+change gives the tab a proper **favicon** — TheJudge's own mark, carrying the
+character of the active profile's element (the same motif art the app already
+draws for each colour, REQ-201/REQ-207), drawn in the active colour; a tab
+**title** with a touch of personality (the wordmark paired with the app's own
+persona line, not a bare placeholder); and a **`theme-color`** so the mobile
+browser bar is tinted to the active colour. Because the app runs in one browser
+tab and wears exactly one colour profile at a time (applied once through
+`applyPalette`), switching Theme to Red re-skins the tab icon — and, on mobile,
+the browser bar — to Red, Green shifts them green, and so on. All tab colour
+comes from the one token source the app already uses (REQ-216); no second copy
+of any profile colour, no icon-font or CDN art (REQ-201 requires local static
+art), no animated icon, and no change to anything inside the app's pages.
 
-**What happens if you say no:** the Menu rows stay a flat single-colour list with
-small generic symbols; the colour-sync and personality the owner asked for are
-not built.
+**What happens if you say no:** the browser tab stays plain — the browser's
+default blank icon, a bare one-word title, and an untinted mobile browser bar —
+and the personality and colour-sync the owner asked for are not built.
 
 ### Proposed diff
 
@@ -46,80 +50,89 @@ not built.
 
 ```diff
 +### REQ-219
-+- Title: The Menu tabs carry per-destination personality and stay synced to the active colour profile
++- Title: The browser tab carries personality and stays synced to the active colour profile
 +- Priority: medium
-+- Description: The rows of the ☰ Menu tray — the app's "tabs" — must read as
-+  characterful and must visibly wear the active MTG colour profile, without
-+  changing what any row does. Each destination/action row (Ask a Question,
-+  Question History, Life Tracker, Trade Balancer, Send feedback) keeps its
-+  existing per-destination glyph (the card silhouette, ♥, ⚖, ◷, ✎) but renders
-+  it in one shared glyph-box size, the same for all five rows and larger than
-+  today's, and the row carries the
-+  shipped restrained ambient-accent treatment (a low-intensity accent at rest, a
-+  strengthened accent on hover/`focus-visible`, a sustained-but-restrained
-+  treatment on the current row) drawn from the active palette's four accent
-+  tokens, plus the app-wide CSS-only decorative hover/press micro-interaction.
-+  Because the colour comes from the single active profile applied app-wide
-+  (`data-profile`/`--accent*`), switching the Theme colour re-skins every tab to
-+  match — Red glows red, Green shifts green, and so on. The rows keep their shared
-+  structure, array order, grid, ≥44px height, and the active row's check mark and
-+  quiet fill; within the tray's row-presentation rule (DEC-135 and the
-+  `shared-chrome` full-bleed-rows line) this adds per-destination identity and
-+  profile-synced accent. Presentation only: no change to navigation
-+  order, routing, labels, the `PortalEntry`/registry contract, state preservation,
-+  In-Depth's lack of its own Menu row (REQ-067/REQ-206), or the Theme band.
++- Description: The browser tab the app opens in — the Chrome/Firefox tab, not any
++  in-app navigation — must read as characterful and must visibly wear the active
++  MTG colour profile, across the three things the browser paints for a page: the
++  favicon (the tab icon), the document title shown on the tab, and the
++  `theme-color` meta that tints the mobile/PWA browser chrome (the top
++  bar / address bar). The app ships a favicon that carries TheJudge's own mark
++  with the active profile's element — reusing the shipped per-profile motif/brand
++  art (REQ-201/REQ-207), drawn so its colour is the active profile's accent — in
++  place of the browser's default blank page icon. The document title carries a
++  light touch of personality: a single defined branded string pairing the
++  wordmark with the app's own persona line, in place of a bare placeholder. A
++  `theme-color` meta is set so the mobile browser bar is tinted to the active
++  profile's accent colour. Because exactly one profile is active at a time and is
++  applied app-wide through the single theme apply point
++  (`apps/frontend/src/lib/theme/applyPalette.ts`, which sets `data-profile` and,
++  for a custom colour, the `--accent*` variables), switching the Theme colour
++  re-skins the tab's favicon and the `theme-color` to match — Red glows red,
++  Green shifts green, and so on — including a custom Colorless colour (REQ-099).
++  Presentation/browser-chrome only: no change to in-app screens, the ☰ Menu tray,
++  routing, request contracts, the six profiles, or the card identity ring.
 +- Acceptance Criteria:
-+  - each of the five Menu rows renders its existing per-destination glyph in one
-+    shared glyph-box size — the same measured size for all five rows and larger
-+    than today's — with the accent applied through the palette tokens; no row
-+    loses or swaps its glyph
-+  - every tab's accent (glyph, hover, current-row fill and lit bar) is driven by
-+    the active palette tokens, so selecting each of the six Theme profiles
-+    re-skins all tabs to that profile's colour with no per-tab hard-coded colour
-+  - the current screen still reads unambiguously as current (its check mark and
-+    quiet fill persist, per DEC-135 / the `shared-chrome` rule), and
-+    hover/`focus-visible` state is reachable by touch and keyboard, never by hover
-+    alone
-+  - decorative motion is CSS-only (no library) and becomes `auto`/none under
-+    `prefers-reduced-motion`; no flow requires motion to complete (NFR-006)
-+  - every row keeps a ≥44px touch target (the current 48px rows satisfy this) and
-+    body text stays at or above the `text-sm`/`text-xs` floor (NFR-001)
-+  - navigation order, routing, labels, selection, reload persistence, and the
-+    Theme band are unchanged
++  - the served page declares a favicon (`<link rel="icon">`) that renders
++    TheJudge's own mark carrying the active profile's motif/element (reusing the
++    REQ-201 motif / REQ-207 brand art), not the browser's default blank page icon;
++    the favicon is a local static asset or an inline data URI, with no runtime
++    request to an icon font, CDN, or external art source (REQ-201)
++  - the favicon's colour is the active profile's accent: selecting each of the six
++    Theme profiles re-skins the favicon to that profile's colour, and a custom
++    Colorless colour (REQ-099) re-skins it to the resolved custom colour; the
++    favicon colour is never a per-profile hex hard-coded outside the token layer
++    (REQ-216) — it derives from the active profile's token-layer accent value
++  - the document title shown on the tab is a single defined branded string that is
++    not the bare default (it pairs the wordmark with the app's persona line);
++    asserted by an exact-string test against the served `<title>` / `document.title`
++  - a `<meta name="theme-color">` is present and its `content` equals the active
++    profile's accent colour taken from the one token source; switching profile
++    updates it across all six profiles (and to the resolved colour for a custom
++    Colorless), with no second hard-coded copy of a profile colour (REQ-216)
++  - the favicon and `theme-color` update through the existing single theme apply
++    point (`applyPalette`) on mount and on every profile change; the tab needs no
++    page reload to re-sync
++  - no animated favicon; the icon changes only when the profile changes, so no
++    decorative-motion loop is introduced (NFR-006 is not engaged)
++  - no change to in-app screens, the ☰ Menu tray and its rows, navigation,
++    routing, request contracts, the six profiles, or the card identity ring
 +- Constraints:
-+  - pure frontend/presentation; no backend, no `AskAiRequest`/`GameContext`, no
-+    routing or `PortalEntry`/registry contract change
-+  - reuse the existing four accent tokens plus REQ-200's named surface roles,
-+    with no per-component overrides; define the rest/hover/current treatment once
-+    through shared semantic styling and reuse it (REQ-060 Constraints); no
-+    palette-tinted page background beyond REQ-200's existing allowance
-+  - no per-destination hard-coded colour (that is Q-219's fork B, not this
-+    requirement); all tab colour derives from the one active profile
-+  - adds no user-visible screen or major overlay, so no new `screen-layout.md`
-+    row is required (DEC-149/REQ-126)
++  - pure frontend/browser-chrome; no backend, no `AskAiRequest`/`GameContext`, no
++    routing or registry contract change
++  - all tab colour (favicon fill, `theme-color` content) derives from the active
++    profile's token-layer value through `applyPalette` (which REQ-216 names as part
++    of the token layer); no second table of per-profile hex strings lives in the
++    tab code, and no colour value is hard-coded outside the token layer (REQ-216)
++  - favicon art is local static art or an inline data URI built from the shipped
++    motif/brand art; no icon font, no CDN, no external art source (REQ-201)
++  - no web app manifest, no service worker, no installable PWA in scope; the
++    `theme-color` meta alone tints the mobile browser bar
++  - browser chrome only: adds no in-app screen or major overlay, so no new
++    `screen-layout.md` row is required (REQ-126)
 +- Dependencies:
-+  - REQ-060
 +  - REQ-200
-+  - REQ-059
-+  - REQ-067
-+  - REQ-206
++  - REQ-201
 +  - REQ-207
-+  - REQ-213
-+  - DEC-135
-+  - NFR-006
++  - REQ-216
++  - REQ-099
 +- Notes:
-+  - the "tabs" are the Menu tray's `.tray-nav-list` rows
-+    (`apps/frontend/src/components/portal/FeaturePortalMenu.tsx`), styled in
-+    `apps/frontend/src/styles/shell.css` (`.tray-nav-list`); the per-destination
-+    glyphs live in `ROW_GLYPHS`. The six profiles and their accent tokens are in
-+    `apps/frontend/src/lib/theme/palettes.ts`
-+  - extends REQ-060's restrained rest/hover/current accent hierarchy to the tray's
-+    nav rows. REQ-060's surface inventory is a stated minimum, not a ceiling, so no
-+    REQ-060 amendment is needed to reach these rows
-+  - reserved and proposed by the `tab-personality-color-sync` package; written for
-+    reading A (tabs reflect the one active profile). If the owner chooses reading B
-+    at Q-219 (each tab wears its own fixed Magic colour), this requirement is
-+    reshaped before build
++  - the "tab" is the browser (Chrome/Firefox) tab, not the in-app ☰ Menu. Today
++    `apps/frontend/index.html` has no `<link rel="icon">` and no
++    `<meta name="theme-color">`, ships no favicon file under
++    `apps/frontend/public/`, and sets a static `<title>TheJudge</title>` with no
++    runtime `document.title`; there is no web app manifest
++  - the active profile is applied once through
++    `apps/frontend/src/lib/theme/applyPalette.ts` (sets `data-profile`; converts an
++    `"R G B"` triple to hex via its `triplet()` helper), driven by
++    `apps/frontend/src/hooks/useThemePalette.ts` on mount and on every change; the
++    per-profile motif art is `apps/frontend/src/lib/theme/motifSymbols.ts`
++    (`MOTIF_SYMBOLS`, drawn in `currentColor`) and the brand orb is
++    `apps/frontend/src/components/BrandMark.tsx`; the six profiles' colours live in
++    `apps/frontend/src/styles/tokens.css` under `[data-profile]` (REQ-216)
++  - reserved and proposed by the `tab-personality-color-sync` package. The owner
++    clarified the request is the browser tab, not the in-app hamburger menu; this
++    id's earlier (Menu-tray) content and its A/B blocker are superseded
 ```
 
 **2. `PRD/sections/shared-chrome/README.md` — amend "The Menu corner rail and tray" (add one bullet after the "Built: the tray lists …" bullet, which currently ends "The no-stored-preference default is still `quick-lookup`. (REQ-067, REQ-206, REQ-213, DEC-135, DEC-104, DEC-095)"):**
@@ -130,19 +143,19 @@ not built.
    by rules that meet the tray's left wall; the active entry keeps a check mark and
    quiet fill. The no-stored-preference default is still `quick-lookup`. (REQ-067,
    REQ-206, REQ-213, DEC-135, DEC-104, DEC-095)
-+- Built: each tray row carries per-destination personality and stays synced to the
-+  active colour profile — its existing glyph (card / ♥ / ⚖ / ◷ / ✎) rendered in one
-+  shared glyph-box size, the same for all five rows and larger than before, with the
-+  shipped restrained ambient-accent treatment (rest → hover/`focus-visible` →
-+  current) and the app-wide CSS-only hover/press micro-interaction, all drawn from
-+  the active profile's accent tokens so switching Theme re-skins every tab. Rows keep
-+  their shared structure, array order, grid, ≥44px height, and the active row's check
-+  mark and quiet fill; within that row-presentation rule (DEC-135 and the
-+  full-bleed-rows line above) each row adds per-destination identity. Reuses the four
-+  accent tokens plus REQ-200's surface roles with no per-component overrides, defines
-+  the rest/hover/current treatment once through shared semantic styling (REQ-060),
-+  honours reduced motion (NFR-006), and gives no tab a hard-coded per-destination
-+  colour. (REQ-219, REQ-060, REQ-200, REQ-059, DEC-135, NFR-006)
++- Built: the browser tab itself carries personality and stays synced to the active
++  colour profile. The app ships a favicon carrying TheJudge's own mark with the
++  active profile's element (reusing the REQ-201 motif / REQ-207 brand art, local
++  static art, no CDN), drawn in the active profile's accent in place of the
++  browser's default blank icon; the document title on the tab is a single branded
++  string with a touch of personality rather than a bare placeholder; and a
++  `theme-color` meta tints the mobile browser bar to the active accent. All of it
++  updates through the single theme apply point (`applyPalette`) on mount and on
++  every profile change, so switching Theme re-skins the tab (including a custom
++  Colorless colour, REQ-099) with no page reload; all tab colour derives from the
++  one token source with no hard-coded per-profile hex (REQ-216), and there is no
++  web app manifest or animated icon. (REQ-219, REQ-200, REQ-201, REQ-207, REQ-216,
++  REQ-099)
 ```
 
 - Verdict:
@@ -152,37 +165,8 @@ not built.
 
 ## Blocker questions
 
-### Q-219 — does each tab wear its own fixed colour, or all share the chosen colour?
-
-**What this decides:** the whole character of the feature — whether "sync up with
-its respective colour profile" means (A) every tab reflects the *one* Magic colour
-the player picks in Theme, or (B) each tab wears its *own fixed* Magic colour,
-different from the others, no matter which Theme is chosen.
-
-**In plain terms:** the app wears exactly one Magic colour at a time — pick Blue
-and the whole app (background, accents, the drifting element behind the page) is
-Blue. The tabs already follow that one colour faintly. Reading **A** keeps that:
-give the tabs more personality and let them keep glowing in whichever single
-colour is active — low risk, consistent with the rest of the app, but the
-colour-sync part is already most of the way there, so A mainly delivers the
-"personality" half. Reading **B** is new: each tab gets its own permanent colour
-(for example Life Tracker always green, Trade Balancer always its own colour), so
-you'd see several colours in the Menu at once. B matches the literal word
-"respective" and gives the strongest per-tab personality, but it is a brand-new
-idea for this app — nothing today gives a feature its own colour — it would put
-five different colours against the app's "one quiet colour" look, and it needs a
-made-up tab→colour map the owner should approve.
-
-**Recommendation:** start with **A** (proposed as REQ-219) — it is coherent with
-the whole app, reuses what is shipped, and ships safely; if the owner wants the
-bolder per-tab-colour look, answer **B** here and REQ-219 is reshaped into a
-per-destination colour mapping (and the owner picks, or approves, each tab's
-colour).
-
-**Why it meets the genuine-blocker test (all three):** (1) A and B are materially
-different features and different code; (2) the PRD describes the current
-one-active-profile model but cannot say which the owner intends for a new request,
-and the owner's own word "respective" points at B while the architecture points at
-A; (3) building A silently forecloses B, and vice versa.
-
-- Answer (A / B, and if B, any tab→colour preferences):
+None. The app is a single-page app that lives in one browser tab and wears
+exactly one colour profile at a time, so "sync up with its respective colour
+profile" has one reading for the browser tab: the tab follows the one active
+profile. The earlier A/B fork (one active colour vs a fixed colour per tab) does
+not arise for the browser tab and is dropped.

@@ -6,8 +6,20 @@
 - Autonomous base: `origin/thejudge-auto/tab-personality-color-sync` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync`
 - Staging: none (inline request; no files or pasted markdown staged)
-- Current node: `owner-action` (gate-qc PASS — spec-forming half stopped)
-- Next action: owner answers `GATE-QUESTIONS.md` (Q-219) + merges the docs PR; then `/graph-implement PRD/work/tab-personality-color-sync/` builds it
+- Current node: `gate-qc` (correction pass re-grade — run id `graph-20261004-212625`)
+- Next action: `/graph-kickoff` (spec-forming half continues)
+
+## Correction
+
+The first pass shaped the wrong surface: the in-app ☰ Menu tray rows. The owner
+clarified the request means the **browser tab** (the Chrome/Firefox tab), not the
+hamburger menu. Scope confirmed by the owner: the favicon, the document title, and
+the mobile/PWA `theme-color` all carry personality and sync to the active colour
+profile. One browser tab for the SPA, so the Q-219 A/B fork (one active colour vs
+per-tab colour) is resolved — the single tab follows the active profile; no blocker
+remains. A correction pass re-runs `define → gate-qc` under new run id
+`graph-20261004-212625` on the same package, branch, and docs PR (#258 rewritten in
+place). Rows below with dates after this note belong to the correction pass.
 
 ## Node ledger
 
@@ -19,6 +31,7 @@
 | 4 | gate-qc | sonnet | failed | `1 → 13` | FAIL — 4 findings (F1 retired DEC-081 token clause → REQ-060/REQ-200; F2 DEC-104 "identical rows" is a code comment → cite DEC-135/shared-chrome; F3 add live deps REQ-060/REQ-200/REQ-059/DEC-135; F4 untestable acceptance wording); README Preparation gate updated; loops to define (attempt 2 of max 3) | 2026-10-04 |
 | 3 | define | opus | ok | `1 → 25` | attempt 2: all 4 gate-qc findings fixed in DESIGN-BRIEF.md + GATE-QUESTIONS.md (DEC-081/DEC-104 citations removed; live deps REQ-060/REQ-200/REQ-059/DEC-135/NFR-006 added; measurable glyph-box acceptance bar); REQ-219 + Q-219 unchanged; citations re-verified against live PRD/sections/ | 2026-10-04 |
 | 4 | gate-qc | sonnet | ok | `1 → 15` | attempt 2: PASS, 0 findings; all 4 prior findings verified resolved against live PRD; REQ-219 id free (last is REQ-217), 48px row ≥ NFR-001 44px, Q-219 confirmed genuine blocker; STATUS.refined; non-blocking note: DEC-135 is `retired` but the shared-chrome line carries the truth and REQ-219 cites it alongside — **STOP at first PASS** | 2026-10-04 |
+| 3 | define | opus | ok | `1 → 40` | **correction pass** (run `graph-20261004-212625`): DESIGN-BRIEF.md + GATE-QUESTIONS.md rewritten for the browser tab (favicon + title + theme-color sync); REQ-219 content fully replaced, no blocker (A/B fork dropped); verified current state from code (no favicon, static `<title>TheJudge`, no theme-color meta, no manifest); reuse applyPalette.ts / useThemePalette.ts / tokens.css `[data-profile]` / motifSymbols.ts / BrandMark.tsx; removed retired DEC-149, cites live REQ-126/200/201/207/216/099; STATUS.refined | 2026-10-04 |
 
 ## Open gate
 
@@ -206,8 +219,43 @@ Report evidence as paths/quotes, not bare claims. End with a one-line status: ga
 
 Transcription note: the single embedded fragment 'identical rows' was straight-double-quoted in the dispatch prompt as sent; transcribed here with single quotes because it is a citation of a prior finding, not a user instruction.
 
+### define (correction pass — run graph-20261004-212625)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync
+
+You are node 3 (`define`) of an autonomous graph run — a CORRECTION pass after the owner clarified the request. Invoke the `thejudge-refinement` skill (Skill tool, skill name `thejudge-refinement`) and follow it in graph-controlled mode. Because `graph is controlling`, do NOT stop for clarifying questions or approval — apply the assumption ladder per question, record any genuine blocker under `## Blocker questions`, and hand back.
+
+Run all work inside the working directory above (the kickoff worktree), never the launch checkout. Copy the `Working directory:` line unchanged into any prompt you write for a sub-subagent. Run ID: `graph-20261004-212625`. Package: `PRD/work/tab-personality-color-sync/`.
+
+IMPORTANT — the first pass shaped the WRONG surface and must be rewritten. The existing DESIGN-BRIEF.md and GATE-QUESTIONS.md describe the in-app hamburger Menu tray rows. That is wrong. The owner said, verbatim: "i think theres been a misunderstanding, im talking about the chrome or mozilla tab, not the hamburger menu". The feature is the actual BROWSER TAB — what Chrome/Firefox shows for the page — not any in-app navigation.
+
+Rewrite DESIGN-BRIEF.md and GATE-QUESTIONS.md for this corrected feature:
+- Surface: the browser tab. Owner-confirmed scope covers all three of these, each gaining personality and syncing to the active colour profile:
+  1. the favicon (the tab icon) — give it personality and recolour it to the active profile;
+  2. the document title shown in the tab — may carry a touch of personality;
+  3. the mobile/PWA theme-color meta (the browser chrome/address-bar tint) — sync to the active profile.
+- Colour sync: the app runs in one browser tab (single-page app), so the tab follows the ONE active colour profile the player has chosen. The previous A/B fork (one active colour vs per-tab fixed colour) is RESOLVED by this — drop blocker Q-219 unless you find a genuinely new one.
+- Reuse the stable id REQ-219 but replace its entire content with the browser-tab feature. One accept/edit/reject slot for REQ-219; add a blocker slot only for a real new fork.
+
+Grounding (a hard-won repo lesson — do not skip, and the first pass already picked the wrong premise once): verify the CURRENT state against real code before writing any premise. Find and read the real sources: the app HTML entry/head (favicon link, document title, any `theme-color` meta), the PWA/web-app manifest if any, any code that sets `document.title` or swaps the favicon or the theme-color at runtime, and how the active colour profile/theme is represented (the palette tokens and the `data-profile`/accent mechanism). Confirm what exists today (static favicon? fixed theme-color? any dynamic title?) and cite file paths and line numbers. Verify in the live app/mockup if you can reasonably run it. Note in the brief where each premise was verified live vs. from code.
+
+Citation discipline (the first pass FAILed gate-qc on these): cite only LIVE `PRD/sections/` truth, never retired decisions. Add the real live dependencies the feature touches (theming/accent tokens, any performance or accessibility NFRs that apply) and verify each exists before citing. Give every acceptance criterion a measurable, checkable bar — no vague wording like livelier or bolder.
+
+Do NOT edit `PRD/sections/`. Do NOT open or fetch any document a source cites; cite paths only.
+
+Report back:
+- the brief path and a 2-3 sentence summary (lead with what a player sees in their browser tab)
+- the stable IDs in GATE-QUESTIONS.md now, and whether any blocker remains
+- what you found about the CURRENT favicon/title/theme-color setup, with file paths/lines, and where you verified live vs from code
+- the STATUS marker now set
+End with a one-line status: define OK (ready for gate-qc) — note GATE-QUESTIONS.md written.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "i noticed the tabs for the app are kinda plain and boring, can we bring some personality to the tab? can we have it sync up with its respective color profile even?" | answered-once | shape | — |
+| "i think theres been a misunderstanding, im talking about the chrome or mozilla tab, not the hamburger menu" | answered-once | define | — |
+| Scope answer: browser-tab personality + colour sync covers the favicon, the document title, and the mobile/PWA theme-color (owner selection, correction pass) | answered-once | define | — |
