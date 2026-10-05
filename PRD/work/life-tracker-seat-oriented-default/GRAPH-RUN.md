@@ -219,6 +219,34 @@ Report back concisely:
 - the checked artifact path
 - any commit SHA(s)
 
+### plan
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-life-tracker-seat-oriented-default
+
+You are node 5 (`plan`) of an autonomous graph-implement run. Invoke the `thejudge-map-out` skill and run it to completion under graph control. Do not pause for user approval — graph is controlling. Return your result to the graph driver.
+
+Work slug: life-tracker-seat-oriented-default
+Run ID: graph-20261004-191418
+
+Do ALL work in the build worktree named in the Working directory line above — never in the launch checkout.
+
+The package is STATUS.refined with a PASS recorded in README `## Preparation gate` (build-half re-grade). Read that section and confirm `Quality-check: PASS` before writing any planning artifact — do not self-certify a PASS. Then create GAMEPLAN.md and the lettered slice docs plus one `slice-<letter>.criteria.json` beside each slice doc (schema and worked example in thejudge-map-out/reference.md — every criterion initialised false with an evidence block), and set STATUS.active.
+
+Scope to build (from DESIGN-BRIEF.md + the finalized REQ-217 proposal in GATE-QUESTIONS.md): the life-adjust `−`/`+` split must be keyed to each seat's near table edge in both layouts — grid replaces its fixed `{decrease:"left", increase:"right"}` with a per-seat near-edge split (bottom/top for 2–3p upright/upside-down seats, outer left/right for 4–8p side-column seats); list keeps head/foot seats unchanged and mirrors middle pair rows so the right-of-pair player's `−` moves to their own right near edge. The split cannot be derived from rotation alone (left/right pair seats share 0°) — map out whether the needed edge/side is on the seat placement in `apps/frontend/src/lib/lifeTracker/seatArrangement.ts` or must be surfaced from it. Build applies the REQ-217 product truth (the 4-file diff) together with the code. Update PlayerLifeCard/seat tests that assert the old split. Non-goals (do not touch): default layout (grid stays), seat arrangements themselves, the Game Setup Layout toggle, the MTG Assistant seed, layout persistence.
+
+The acceptance criteria in each slice doc's `## Acceptance criteria` and the emitted criteria.json must be verifiable; the one-screen-fit rule at 2–8 players still holds (screen-layout.md, DEC-136).
+
+Copy the `Working directory:` line above unchanged into any prompt you write.
+
+Report back concisely:
+- confirmation you read `Quality-check: PASS` in the README preparation gate
+- the GAMEPLAN.md slice list (each slice letter + one-line scope)
+- each slice doc and its `slice-<letter>.criteria.json` path, with the criterion count per slice
+- STATUS.active confirmed
+- the commit SHA(s) on the branch
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
