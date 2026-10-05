@@ -5619,3 +5619,88 @@
 - Notes:
   - the production change is a pure helper, `apps/frontend/src/lib/lifeTracker/lifeHalves.ts` (`lifeHalvesForSeat`), wired into `apps/frontend/src/components/portal/life-tracker/PlayerLifeCard.tsx`; it reads each seat's table edge (`side`) from `seatArrangement.ts` and, for list pair rows, which column the seat is in from `gridColumn`, because left/right pair seats share rotation 0° and the split cannot be derived from rotation alone. `seatArrangement.ts` is unchanged
   - reserved and proposed by the `life-tracker-seat-oriented-default` package; redefined 2026-10-04 from the earlier "open in list by default" proposal, which the owner dropped (default stays grid)
+
+### REQ-219
+- Title: The browser tab carries personality and stays synced to the active colour profile
+- Priority: medium
+- Description: The browser tab the app opens in — the Chrome/Firefox tab, not any
+  in-app navigation — must read as characterful and must visibly wear the active
+  MTG colour profile, across the three things the browser paints for a page: the
+  favicon (the tab icon), the document title shown on the tab, and the
+  `theme-color` meta that tints the mobile/PWA browser chrome (the top
+  bar / address bar). The app ships a favicon that carries TheJudge's own mark
+  with the active profile's element — reusing the shipped per-profile motif/brand
+  art (REQ-201/REQ-207), drawn so its colour is the active profile's accent — in
+  place of the browser's default blank page icon. The document title carries a
+  light touch of personality: a single defined branded string pairing the
+  wordmark with the app's own persona line, in place of a bare placeholder. A
+  `theme-color` meta is set so the mobile browser bar is tinted to the active
+  profile's accent colour. Because exactly one profile is active at a time and is
+  applied app-wide through the single theme apply point
+  (`apps/frontend/src/lib/theme/applyPalette.ts`, which sets `data-profile` and,
+  for a custom colour, the `--accent*` variables), switching the Theme colour
+  re-skins the tab's favicon and the `theme-color` to match — Red glows red,
+  Green shifts green, and so on — including a custom Colorless colour (REQ-099).
+  Presentation/browser-chrome only: no change to in-app screens, the ☰ Menu tray,
+  routing, request contracts, the six profiles, or the card identity ring.
+- Acceptance Criteria:
+  - the served page declares a favicon (`<link rel="icon">`) that renders
+    TheJudge's own mark carrying the active profile's motif/element (reusing the
+    REQ-201 motif / REQ-207 brand art), not the browser's default blank page icon;
+    the favicon is a local static asset or an inline data URI, with no runtime
+    request to an icon font, CDN, or external art source (REQ-201)
+  - the favicon's colour is the active profile's accent: selecting each of the six
+    Theme profiles re-skins the favicon to that profile's colour, and a custom
+    Colorless colour (REQ-099) re-skins it to the resolved custom colour; the
+    favicon colour is never a per-profile hex hard-coded outside the token layer
+    (REQ-216) — it derives from the active profile's token-layer accent value
+  - the document title shown on the tab is a single defined branded string that is
+    not the bare default (it pairs the wordmark with the app's persona line);
+    asserted by an exact-string test against the served `<title>` / `document.title`
+  - a `<meta name="theme-color">` is present and its `content` equals the active
+    profile's accent colour taken from the one token source; switching profile
+    updates it across all six profiles (and to the resolved colour for a custom
+    Colorless), with no second hard-coded copy of a profile colour (REQ-216)
+  - the favicon and `theme-color` update through the existing single theme apply
+    point (`applyPalette`) on mount and on every profile change; the tab needs no
+    page reload to re-sync
+  - no animated favicon; the icon changes only when the profile changes, so no
+    decorative-motion loop is introduced (NFR-006 is not engaged)
+  - no change to in-app screens, the ☰ Menu tray and its rows, navigation,
+    routing, request contracts, the six profiles, or the card identity ring
+- Constraints:
+  - pure frontend/browser-chrome; no backend, no `AskAiRequest`/`GameContext`, no
+    routing or registry contract change
+  - all tab colour (favicon fill, `theme-color` content) derives from the active
+    profile's token-layer value through `applyPalette` (which REQ-216 names as part
+    of the token layer); no second table of per-profile hex strings lives in the
+    tab code, and no colour value is hard-coded outside the token layer (REQ-216)
+  - favicon art is local static art or an inline data URI built from the shipped
+    motif/brand art; no icon font, no CDN, no external art source (REQ-201)
+  - no web app manifest, no service worker, no installable PWA in scope; the
+    `theme-color` meta alone tints the mobile browser bar
+  - browser chrome only: adds no in-app screen or major overlay, so no new
+    `screen-layout.md` row is required (REQ-126)
+- Dependencies:
+  - REQ-200
+  - REQ-201
+  - REQ-207
+  - REQ-216
+  - REQ-099
+- Notes:
+  - the "tab" is the browser (Chrome/Firefox) tab, not the in-app ☰ Menu. Today
+    `apps/frontend/index.html` has no `<link rel="icon">` and no
+    `<meta name="theme-color">`, ships no favicon file under
+    `apps/frontend/public/`, and sets a static `<title>TheJudge</title>` with no
+    runtime `document.title`; there is no web app manifest
+  - the active profile is applied once through
+    `apps/frontend/src/lib/theme/applyPalette.ts` (sets `data-profile`; converts an
+    `"R G B"` triple to hex via its `triplet()` helper), driven by
+    `apps/frontend/src/hooks/useThemePalette.ts` on mount and on every change; the
+    per-profile motif art is `apps/frontend/src/lib/theme/motifSymbols.ts`
+    (`MOTIF_SYMBOLS`, drawn in `currentColor`) and the brand orb is
+    `apps/frontend/src/components/BrandMark.tsx`; the six profiles' colours live in
+    `apps/frontend/src/styles/tokens.css` under `[data-profile]` (REQ-216)
+  - reserved and proposed by the `tab-personality-color-sync` package. The owner
+    clarified the request is the browser tab, not the in-app hamburger menu; this
+    id's earlier (Menu-tray) content and its A/B blocker are superseded

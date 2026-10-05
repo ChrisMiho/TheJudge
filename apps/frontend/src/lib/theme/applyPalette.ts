@@ -1,3 +1,4 @@
+import { buildFaviconHref } from "./faviconArt";
 import { getPaletteById, type Palette } from "./palettes";
 
 const customVarNames = ["--accent", "--accent-strong", "--accent-soft", "--accent-contrast", "--wash-tint", "--focus-ring"] as const;
@@ -8,6 +9,32 @@ function triplet(channels: string): string {
     .map((part) => Number(part).toString(16).padStart(2, "0"))
     .join("");
   return `#${hex}`;
+}
+
+/**
+ * REQ-219: the browser tab follows the active profile. Sets the mobile browser
+ * bar tint (`theme-color`) and the tab icon to the profile accent, derived from the
+ * palette (the one token source, REQ-216), creating the tags when absent and
+ * never duplicating them.
+ */
+function syncTabChrome(palette: Palette): void {
+  const accent = triplet(palette.accent);
+  let meta = document.head.querySelector<HTMLMetaElement>('meta[name="theme-color"]');
+  if (meta === null) {
+    meta = document.createElement("meta");
+    meta.name = "theme-color";
+    document.head.appendChild(meta);
+  }
+  meta.content = accent;
+
+  let icon = document.head.querySelector<HTMLLinkElement>('link[rel="icon"]');
+  if (icon === null) {
+    icon = document.createElement("link");
+    icon.rel = "icon";
+    icon.type = "image/svg+xml";
+    document.head.appendChild(icon);
+  }
+  icon.href = buildFaviconHref(palette.motif, accent);
 }
 
 /**
@@ -24,6 +51,7 @@ export function applyPalette(palette: Palette): void {
   root.dataset.theme = palette.id;
   root.dataset.themeMotif = palette.motif;
   root.setAttribute("data-profile", palette.id);
+  syncTabChrome(palette);
   const base = getPaletteById(palette.id);
   const custom = base !== undefined && palette.swatch !== base.swatch;
   if (!custom) {

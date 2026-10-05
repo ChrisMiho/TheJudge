@@ -1,12 +1,28 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 
 import { applyPalette } from "./applyPalette";
-import { getPaletteById, resolveColorlessPalette } from "./palettes";
+import { buildFaviconHref } from "./faviconArt";
+import { getPaletteById, PALETTES, resolveColorlessPalette } from "./palettes";
 
 const blue = getPaletteById("blue")!;
 const white = getPaletteById("white")!;
 
 const overrideVars = ["--accent", "--accent-strong", "--accent-soft", "--accent-contrast", "--wash-tint", "--focus-ring"];
+
+const tokensCss = readFileSync(resolve(process.cwd(), "src/styles/tokens.css"), "utf8");
+const indexHtml = readFileSync(resolve(process.cwd(), "index.html"), "utf8");
+
+function tokenAccent(id: string): string {
+  const start = tokensCss.indexOf(`[data-profile="${id}"] {`);
+  const block = tokensCss.slice(start, tokensCss.indexOf("}", start));
+  return /--accent:\s*(#[0-9a-fA-F]{6})/.exec(block)![1].toLowerCase();
+}
+
+function themeColor(): string | null {
+  return document.head.querySelector<HTMLMetaElement>('meta[name="theme-color"]')?.content ?? null;
+}
 
 describe("Frontend - Theme", () => {
 describe("applyPalette", () => {
@@ -54,6 +70,78 @@ describe("applyPalette", () => {
     applyPalette(resolveColorlessPalette(undefined));
     overrideVars.forEach((name) => expect(root.style.getPropertyValue(name)).toBe(""));
     expect(root.hasAttribute("data-accent")).toBe(false);
+  });
+  describe("REQ-219: browser tab", () => {
+    afterEach(() => {
+      document.head.querySelectorAll('meta[name="theme-color"], link[rel="icon"]').forEach((el) => el.remove());
+    });
+
+    it("ships the exact branded title and no manifest in index.html", () => {
+      expect(/<title>([^<]*)<\/title>/.exec(indexHtml)![1]).toBe("TheJudge \u00b7 MTG Assistant");
+      expect(indexHtml).not.toMatch(/rel="manifest"/);
+      expect(indexHtml).toMatch(/<meta name="theme-color"/);
+      expect(indexHtml).toMatch(/<link rel="icon" type="image\/svg\+xml"/);
+    });
+
+    it.each(PALETTES.map((palette) => [palette.id, palette] as const))("sets theme-color to the %s accent from tokens.css", (id, palette) => {
+      applyPalette(palette);
+      expect(themeColor()).toBe(tokenAccent(id));
+    });
+
+    it("sets theme-color to the resolved custom Colorless accent", () => {
+      const custom = resolveColorlessPalette("#ff8800");
+      applyPalette(custom);
+      expect(themeColor()).toBe(document.documentElement.style.getPropertyValue("--accent"));
+      expect(themeColor()).not.toBe(tokenAccent("colorless"));
+    });
+
+    it("creates the theme-color meta when absent and never duplicates it", () => {
+      expect(document.head.querySelectorAll('meta[name="theme-color"]')).toHaveLength(0);
+      applyPalette(blue);
+      applyPalette(white);
+      applyPalette(blue);
+      expect(document.head.querySelectorAll('meta[name="theme-color"]')).toHaveLength(1);
+    });
+
+    it.each(PALETTES.map((palette) => [palette.id, palette] as const))("sets one favicon for %s: its motif in its accent", (id, palette) => {
+      applyPalette(palette);
+      const icons = document.head.querySelectorAll<HTMLLinkElement>('link[rel="icon"]');
+      expect(icons).toHaveLength(1);
+      expect(icons[0].getAttribute("href")).toBe(buildFaviconHref(palette.motif, tokenAccent(id)));
+      expect(decodeURIComponent(icons[0].getAttribute("href")!)).toContain(tokenAccent(id));
+    });
+
+    it("gives the six profiles six distinct favicons, created once and never duplicated", () => {
+      const hrefs = PALETTES.map((palette) => {
+        applyPalette(palette);
+        return document.head.querySelector<HTMLLinkElement>('link[rel="icon"]')!.getAttribute("href");
+      });
+      expect(new Set(hrefs).size).toBe(PALETTES.length);
+      expect(document.head.querySelectorAll('link[rel="icon"]')).toHaveLength(1);
+    });
+
+    it("draws the favicon in the resolved custom Colorless accent", () => {
+      applyPalette(resolveColorlessPalette("#ff8800"));
+      const accent = document.documentElement.style.getPropertyValue("--accent");
+      const href = document.head.querySelector<HTMLLinkElement>('link[rel="icon"]')!.getAttribute("href")!;
+      expect(decodeURIComponent(href)).toContain(accent);
+    });
+
+    it("uses an inline data URI with no http URL and no timers", () => {
+      applyPalette(blue);
+      const href = document.head.querySelector<HTMLLinkElement>('link[rel="icon"]')!.getAttribute("href")!;
+      expect(href.startsWith("data:image/svg+xml")).toBe(true);
+      expect(decodeURIComponent(href).replace("http://www.w3.org/2000/svg", "")).not.toMatch(/https?:/);
+      for (const file of ["faviconArt.ts", "applyPalette.ts"]) {
+        const source = readFileSync(resolve(process.cwd(), "src/lib/theme", file), "utf8");
+        expect(source).not.toMatch(/setInterval|setTimeout|requestAnimationFrame/);
+      }
+    });
+
+    it("keeps applyPalette free of per-profile hex tables", () => {
+      const source = readFileSync(resolve(process.cwd(), "src/lib/theme/applyPalette.ts"), "utf8");
+      for (const palette of PALETTES) expect(source.toLowerCase()).not.toContain(tokenAccent(palette.id));
+    });
   });
 });
 });

@@ -126,6 +126,19 @@ language live here.
   by rules that meet the tray's left wall; the active entry keeps a check mark and
   quiet fill. The no-stored-preference default is still `quick-lookup`. (REQ-067,
   REQ-206, REQ-213, DEC-135, DEC-104, DEC-095)
+- Built: the browser tab itself carries personality and stays synced to the active
+  colour profile. The app ships a favicon carrying TheJudge's own mark with the
+  active profile's element (reusing the REQ-201 motif / REQ-207 brand art, local
+  static art, no CDN), drawn in the active profile's accent in place of the
+  browser's default blank icon; the document title on the tab is a single branded
+  string with a touch of personality rather than a bare placeholder; and a
+  `theme-color` meta tints the mobile browser bar to the active accent. All of it
+  updates through the single theme apply point (`applyPalette`) on mount and on
+  every profile change, so switching Theme re-skins the tab (including a custom
+  Colorless colour, REQ-099) with no page reload; all tab colour derives from the
+  one token source with no hard-coded per-profile hex (REQ-216), and there is no
+  web app manifest or animated icon. (REQ-219, REQ-200, REQ-201, REQ-207, REQ-216,
+  REQ-099)
 - Built: below `768px` the tray fills the visible shell side (viewport ∩ shell on
   tall scrollable pages), with matching top- and bottom-left shell radii; at
   `768px`+ it is a floating card inset from the viewport edges, rounded, sized to
