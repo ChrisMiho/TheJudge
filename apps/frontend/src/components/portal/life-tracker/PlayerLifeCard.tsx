@@ -1,6 +1,7 @@
 import { useRef, useState, type FormEvent } from "react";
 import type { PlayerLabel } from "../../../types";
 import type { SeatArrangementLayout, SeatPlacement } from "../../../lib/lifeTracker/seatArrangement";
+import { lifeHalvesForSeat, type LifeHalves } from "../../../lib/lifeTracker/lifeHalves";
 import { buildSeatMapCells } from "../../../lib/lifeTracker/seatMap";
 import type { CardStyle, LayoutMode, TrackerPlayer } from "../../../lib/lifeTracker/types";
 import { formatPlayerDisplayLabel } from "../../../lib/playerLabels";
@@ -9,9 +10,8 @@ export interface PlayerLifeCardProps {
   player: TrackerPlayer;
   players: TrackerPlayer[];
   /**
-   * Placement *and* the seat's rotation, which is now the sole input to where the `−` / `+`
-   * halves sit. Layout mode and seat width no longer participate: what a player needs is `−`
-   * on their left and `+` on their right, and the rotation already says which way they face.
+   * Placement (side, rotation, grid column): with the layout and layout mode it decides which
+   * card edge carries `−` (the edge nearest the seated player) and which carries `+` (REQ-217).
    */
   placement: SeatPlacement;
   /**
@@ -23,9 +23,9 @@ export interface PlayerLifeCardProps {
   /** Surface treatment for the card: the original three-stop ombre, or a single solid tint. */
   cardStyle: CardStyle;
   /**
-   * The active layout. Grid mode splits the life-adjust halves on a fixed screen left/right
-   * (− left, + right) for every card; list mode keeps the per-seat rotation split. Defaults to
-   * list (the per-seat split) when unspecified.
+   * The active layout. Both modes put `−` on the edge nearest the seated player (REQ-217): grid
+   * by the seat's table side, list by rotation plus which column of a pair row the seat is in.
+   * Defaults to list when unspecified.
    */
   layoutMode?: LayoutMode;
   onAdjustLife: (label: PlayerLabel, delta: number) => void;
@@ -77,28 +77,15 @@ const HALF_CLASSES = {
   bottom: "inset-x-0 bottom-0 h-1/2 items-end justify-center pb-5"
 } as const;
 
-// Grid mode always splits left/right and reflows the card content inward (see the content's grid
+// Grid mode splits on the seat's near edge and reflows the card content inward (see the content's grid
 // padding below), so the ± pin to the very edge of the freed gutter rather than the deeper pl-5/pr-5
 // inset the list bands use - otherwise the glyph would sit under the pulled-in mini-map / name pill.
 const GRID_HALF_CLASSES = {
   left: "inset-y-0 left-0 w-1/2 justify-start pl-1.5",
-  right: "inset-y-0 right-0 w-1/2 justify-end pr-1.5"
+  right: "inset-y-0 right-0 w-1/2 justify-end pr-1.5",
+  top: "inset-x-0 top-0 h-1/2 items-start justify-center pt-1.5",
+  bottom: "inset-x-0 bottom-0 h-1/2 items-end justify-center pb-1.5"
 } as const;
-
-type LifeHalves = { decrease: keyof typeof HALF_CLASSES; increase: keyof typeof HALF_CLASSES };
-
-function lifeHalvesForRotation(rotation: number): LifeHalves {
-  switch (rotation) {
-    case 180:
-      return { decrease: "right", increase: "left" };
-    case 90:
-      return { decrease: "top", increase: "bottom" };
-    case 270:
-      return { decrease: "bottom", increase: "top" };
-    default:
-      return { decrease: "left", increase: "right" };
-  }
-}
 
 /**
  * Parses typed life entry. Any finite number is legal - negative totals and totals far past the
@@ -132,7 +119,7 @@ export function PlayerLifeCard({
   const status = lifeState(player.life);
   const rotation = `rotate(${placement.rotation}deg)`;
   // In list mode the ± glyph rotates with the seat so it faces the seated player. In grid mode the
-  // split is a fixed screen left/right, so the glyph reads screen-upright - a rotated `−` becomes an
+  // glyph reads screen-upright - a rotated `−` becomes an
   // ambiguous vertical bar, which is exactly what we're moving away from.
   const glyphTransform = layoutMode === "grid" ? "none" : rotation;
   // The preview is a miniature of the real table (REQ-173): every seat placed at its own
@@ -165,21 +152,16 @@ export function PlayerLifeCard({
         height: "clamp(1.1rem, 26cqh, 4.5rem)",
         width: `clamp(${1.05 * layout.columns}rem, ${16 * layout.columns}cqh, ${1.75 * layout.columns}rem)`
       };
-  // Grid cards split on a fixed screen left/right (− left, + right) regardless of seat rotation:
-  // with four cards facing in from every side, a per-seat top/bottom split read as awkward, and a
-  // consistent on-screen left/right is the thumb-reachable control. List mode keeps the per-seat
-  // rotation split so − still lands on the seated player's own left.
+  // Both layouts put `−` on the edge nearest the seated player and `+` on the far edge (REQ-217).
   const isGrid = layoutMode === "grid";
-  const halves: LifeHalves = isGrid
-    ? { decrease: "left", increase: "right" }
-    : lifeHalvesForRotation(placement.rotation);
+  const halves: LifeHalves = lifeHalvesForSeat(placement, layout, layoutMode);
   // Grid ± sit in the edge gutter and read a touch smaller; list keeps the deeper inset and size.
   const halfClasses = isGrid ? GRID_HALF_CLASSES : HALF_CLASSES;
   const halfBaseClassName = `absolute z-0 flex items-center ${
     isGrid ? "text-2xl" : "text-3xl"
   } font-light opacity-60 hover:bg-black/5 hover:opacity-100 active:bg-black/10`;
-  const decreaseBandClassName = `${halfBaseClassName} ${halfClasses[halves.decrease as "left" | "right"]}`;
-  const increaseBandClassName = `${halfBaseClassName} ${halfClasses[halves.increase as "left" | "right"]}`;
+  const decreaseBandClassName = `${halfBaseClassName} ${halfClasses[halves.decrease]}`;
+  const increaseBandClassName = `${halfBaseClassName} ${halfClasses[halves.increase]}`;
   const isEditingLife = lifeDraft !== null;
 
   function commitLifeDraft(): void {
