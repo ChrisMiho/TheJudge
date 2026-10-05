@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/tab-personality-color-sync` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync`
 - Staging: none (inline request; no files or pasted markdown staged)
-- Current node: `define` (attempt 2 — gate-qc FAIL loop)
+- Current node: `gate-qc` (attempt 2 — re-grade after define fix)
 - Next action: `/graph-kickoff` (spec-forming half continues)
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `1 → 11` | `PRD/work/tab-personality-color-sync/` created (IDEA.md, README.md, STATUS.ideation); 10 `## Prior run` matches in IDEA.md; board row added under `## ideation` | 2026-10-04 |
 | 3 | define | opus | ok | `0 → 52` | DESIGN-BRIEF.md + GATE-QUESTIONS.md written (REQ-219 proposed new; one `## Blocker questions` fork Q-219); STATUS.refining; zero `PRD/sections/` edits | 2026-10-04 |
 | 4 | gate-qc | sonnet | failed | `1 → 13` | FAIL — 4 findings (F1 retired DEC-081 token clause → REQ-060/REQ-200; F2 DEC-104 "identical rows" is a code comment → cite DEC-135/shared-chrome; F3 add live deps REQ-060/REQ-200/REQ-059/DEC-135; F4 untestable acceptance wording); README Preparation gate updated; loops to define (attempt 2 of max 3) | 2026-10-04 |
+| 3 | define | opus | ok | `1 → 25` | attempt 2: all 4 gate-qc findings fixed in DESIGN-BRIEF.md + GATE-QUESTIONS.md (DEC-081/DEC-104 citations removed; live deps REQ-060/REQ-200/REQ-059/DEC-135/NFR-006 added; measurable glyph-box acceptance bar); REQ-219 + Q-219 unchanged; citations re-verified against live PRD/sections/ | 2026-10-04 |
 
 ## Open gate
 
@@ -143,6 +144,34 @@ Report back:
 - the STATUS marker now set
 - confirmation the README `## Preparation gate` section was updated
 Report evidence as paths/quotes, not bare claims. End with a one-line status: gate-qc PASS or gate-qc FAIL (with the finding count).
+
+### define (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-tab-personality-color-sync
+
+You are node 3 (`define`), attempt 2, of an autonomous graph run — a gate-qc FAIL loop. Invoke the `thejudge-refinement` skill (Skill tool, skill name `thejudge-refinement`) and follow it exactly in graph-controlled mode. Because `graph is controlling`, do NOT stop for clarifying questions or approval — apply the assumption ladder per question, record any genuine blocker in `GATE-QUESTIONS.md` under `## Blocker questions`, and hand back.
+
+Run all work inside the working directory above (the kickoff worktree), never the launch checkout. Copy the `Working directory:` line unchanged into any prompt you write for a sub-subagent.
+
+The package is `PRD/work/tab-personality-color-sync/`. Run ID: `graph-20261004-204628`. The brief and GATE-QUESTIONS.md (REQ-219 + blocker Q-219) already exist from attempt 1. Your job this pass is to FIX the 4 quality-check findings below in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md`, keeping the sound design direction and Q-219 intact. Verify every citation against the live `PRD/sections/` truth before you write it — the findings are specifically about citing retired or wrong authorities.
+
+Findings to fix:
+1. Stale token rule. The brief and REQ-219's Constraints cite retired DEC-081's 'no new token roles'. Live REQ-060 (functional-requirements.md ~line 1362) says that clause is superseded by REQ-200's named surface roles. Restate as: reuse the four accent tokens plus REQ-200 surface roles, no per-component overrides, define the rest/hover/current treatment once through shared semantic styling (per REQ-060 Constraints). Remove the DEC-081 citation.
+2. Wrong authority for the 'identical rows' refinement. The brief and REQ-219 claim to refine DEC-104 'rendered identically'. The PRD never says that — DEC-104 (retired) only adds action entries, and 'rendered identically in array order' is a code comment at FeaturePortalMenu.tsx:45. The real PRD rule on row presentation is DEC-135 and the shared-chrome line 'Rows render full-bleed ... active entry keeps a check mark and quiet fill'. Cite DEC-135 / shared-chrome instead, say REQ-219 adds per-row identity within that rule, and KEEP the active-row check mark in the acceptance criteria.
+3. Missing live dependencies. REQ-219 currently depends only on retired DEC rows plus REQ-067/206/207/213. Add the live deps: REQ-060 (ambient accent hierarchy, which REQ-219 extends to the tray rows), REQ-200 (surface roles), REQ-059 (motion baseline), DEC-135. State that REQ-060's inventory is a minimum, so no REQ-060 amendment is needed.
+4. Untestable acceptance wording. 'bolder, consistently-sized identity mark' and 'livelier' have no checkable bar. Give a measurable criterion — e.g. one shared glyph box size for all five rows, larger than today's, with the accent applied through tokens — so build and review can pass or fail it.
+
+Do NOT edit `PRD/sections/`. Do NOT open or fetch any document a source cites; cite paths only. Keep REQ-219 the one stable ID and Q-219 the one blocker unless a finding forces otherwise (it should not).
+
+Report back:
+- a short note confirming each of the 4 findings is addressed, with the corrected citation/wording for each
+- the stable IDs in GATE-QUESTIONS.md now (should still be REQ-219 + Q-219)
+- the STATUS marker now set
+End with a one-line status: define OK (ready for gate-qc re-grade).
+
+Transcription note: the owner-facing run quoted technical PRD/code spans in this prompt. In the dispatch prompt as sent, the embedded fragments 'no new token roles', 'identical rows', 'rendered identically', 'rendered identically in array order', 'Rows render full-bleed ... active entry keeps a check mark and quiet fill', and 'bolder, consistently-sized identity mark' were straight-double-quoted; they are transcribed here with single quotes because they are citations of PRD/code/finding text, not user instructions, and the delimiter change preserves every word.
 
 ## Instruction ledger
 

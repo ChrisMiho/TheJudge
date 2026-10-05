@@ -38,8 +38,12 @@ guess at the look; the owner's "plain and boring" is their own live observation)
 
 - Rows render in `apps/frontend/src/components/portal/FeaturePortalMenu.tsx`
   (`.tray-nav-list`, lines 247–305). Every row is the same
-  `<button role="menuitem">` grid, by design — "rendered identically in array
-  order" (DEC-104).
+  `<button role="menuitem">` grid, by design — a code comment at
+  `FeaturePortalMenu.tsx:45` calls this "rendered identically in array order."
+  The PRD rule on row presentation is DEC-135 plus the `shared-chrome` current-state
+  line "Rows render full-bleed ... the active entry keeps a check mark and quiet
+  fill." (DEC-104 only adds the registry's action-entry kind; it does not say rows
+  render identically.)
 - The only per-row visual difference today is a single mono-colour glyph:
   `ROW_GLYPHS` (lines 37–42) gives Ask-a-Question a card silhouette SVG, Life
   Tracker `♥`, Trade Balancer `⚖`; Question History is `◷`, Send feedback `✎`.
@@ -103,18 +107,23 @@ REQ. The owner settles this at the gate (Blocker question Q-219).
   the "tabs"; the Theme band is a different, already-coloured control).
 - **What "personality" means, concretely.** Keep the existing per-destination
   glyph vocabulary (card / ♥ / ⚖ / ◷ / ✎) and make it the carrier of character —
-  a bolder, consistently-sized identity mark per row — plus a restrained
-  ambient-accent treatment (rest → hover/`focus-visible` → current) and the
-  app-wide decorative-motion micro-interaction on hover/press. Rationale: ladder
-  #1/#3 — reuse the shipped ambient-accent pattern (DEC-081, the View-Context
-  trigger and composer already do exactly this) and the CSS-only motion baseline
-  (DEC-079/REQ-059), so no new primitive is invented.
-- **No new token roles.** All colour comes from the existing four palette tokens;
-  no palette-tinted page background beyond what REQ-200 already allows. Rationale:
-  ladder #6 and DEC-081's explicit "no new token roles."
+  render every row's glyph in one shared glyph-box size, the same for all five
+  rows and larger than today's, with its accent applied through the palette tokens
+  — plus a restrained ambient-accent treatment (rest → hover/`focus-visible` →
+  current) and the app-wide decorative-motion micro-interaction on hover/press.
+  Rationale: ladder #1/#3 — reuse the shipped restrained-ambient-accent hierarchy
+  (REQ-060, the View-Context trigger and composer already do exactly this) and the
+  CSS-only motion baseline (REQ-059), so no new primitive is invented.
+- **Colour comes from shared tokens, defined once.** All tab colour reuses the
+  existing four accent tokens plus REQ-200's named surface roles, with no
+  per-component overrides, and the rest/hover/current treatment is defined once
+  through shared semantic styling and reused rather than duplicated per row
+  (REQ-060 Constraints). No palette-tinted page background beyond what REQ-200
+  already allows. Rationale: ladder #1/#6 — REQ-060's token rule, which supersedes
+  the old "no new token roles" clause.
 - **Honour reduced motion and touch/keyboard parity.** Motion is `auto` under
   `prefers-reduced-motion`; hover is never the sole carrier of state (NFR-006;
-  the DEC-081 pattern already requires this). Touch targets stay ≥44px
+  REQ-060 already requires this). Touch targets stay ≥44px
   (NFR-001) — the current rows are 48px.
 - **No new screen-layout row.** This restyles existing tray chrome; it adds no
   user-visible screen or major overlay, so DEC-149/REQ-126 needs no catalog row.
@@ -122,9 +131,13 @@ REQ. The owner settles this at the gate (Blocker question Q-219).
 - **Order, routing, selection, state preservation unchanged.** Ladder #5 — this
   is presentation only; it touches no `PortalEntry` contract, no registry field,
   no routing.
-- **"Identical rows" (DEC-104) is refined, not broken.** Rows keep the same
-  structure, order, grid, and 48px height; they gain per-destination identity and
-  profile-synced accent within that frame. REQ-219 records this refinement.
+- **Row presentation (DEC-135 / `shared-chrome`) is refined, not broken.** The PRD
+  rule is DEC-135 plus the `shared-chrome` line "Rows render full-bleed ... the
+  active entry keeps a check mark and quiet fill." Rows keep the same structure,
+  order, grid, 48px height, and the active row's check mark and quiet fill; within
+  that rule REQ-219 adds per-destination identity and profile-synced accent. (DEC-104
+  only adds the registry's action-entry kind; the "rendered identically" phrasing is
+  a code comment, not a PRD rule.) REQ-219 records this refinement.
 
 ## Non-goals
 
