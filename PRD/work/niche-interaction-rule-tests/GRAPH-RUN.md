@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
+- Current node: `owner-action`
+- Next action: owner resolves the open gate below, then `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
 
 ## Node ledger
 
@@ -24,10 +24,11 @@
 | 9 | define | opus | ok | `0 → 48` | attempt 4: 6 gate-qc findings fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (Q1 System 2 label only, one new vector; both-rules top-ten claim; `node scripts/build-game-rules.mjs` build step with local `source.txt` copy + byte-identical outputs; case-insensitive grep 28 hits; whole-word match; measured cost range); `STATUS.refined` | 2026-10-06 |
 | 10 | gate-qc | sonnet | failed | `0 → 62` | FAIL attempt 4 (3rd FAIL; final loop to define): 5 findings (2 Important: build source is 2026-08-07 text vs committed 2026-06-05 artifacts — 50 rule texts change incl. 616.2/514.3a; `gameRulesBuildPolicy.test.ts` 23-topic / 22,000-char guard; 3 Minor: checklist-report golden, ~3,720 formatted cost, three disposition rows); `STATUS.refining`; findings in README `## Preparation gate` | 2026-10-06 |
 | 11 | define | opus | ok | `0 → 61` | attempt 5: 5 findings fixed; topic built from committed `gameRulesRuleIndex.json` (2026-06-05 text) via new `build-topic-from-index.mjs` — 23/23 topics byte-identical, index/stats/embeddings unchanged (scratch export of `origin/main`); build-policy guard proposed 23→24 topics, 22,000→26,000 chars (measured 25,632); checklist golden, ~3,720 cost, three disposition rows; `STATUS.refined` | 2026-10-06 |
+| 12 | gate-qc | sonnet | parked | `0 → 76` | FAIL attempt 5 = 4th FAIL → parked at owner-action per the three-loop cap: 2 findings (1 Important: game-mode topic scope phrased as stack/battlefield/in play in `GATE-QUESTIONS.md:31`, `:219`, `DESIGN-BRIEF.md:196` vs every populated zone; 1 Minor: three disposition rows); build path, numbers, IDs, diff anchors all verified clean; findings in README `## Preparation gate` | 2026-10-06 |
 
 ## Open gate
 
-- None. The owner-action gate on docs PR https://github.com/ChrisMiho/TheJudge/pull/266 was reopened 2026-10-06: the owner redirected scope before answering (Instruction ledger) and approved re-writing the proposal. Lock re-taken (`graph-preflight --take-lock`), graph canary `nohup true` denied — armed.
+- Question: gate-qc failed a fourth time (attempt 5), so the run parked under the three-loop cap. Both findings are small (README `## Preparation gate`): one game-mode scope phrase used three different ways, and three missing disposition rows. Does the owner authorize one more define pass limited to those two findings, followed by gate-qc? Evidence: ledger rows 10–12; `build-topic-from-index.mjs` and `measure-candidates.mjs` re-verified clean at attempt 5. Docs PR: https://github.com/ChrisMiho/TheJudge/pull/266 (carries the re-scoped proposal; not ready to answer until gate-qc passes). Resume: owner says go → `/graph-kickoff PRD/work/niche-interaction-rule-tests/` (re-take lock, define attempt 6 on these two findings, gate-qc attempt 6).
 
 ## Dispatch prompts
 
