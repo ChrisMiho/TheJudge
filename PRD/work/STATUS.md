@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Refined after owner re-scope: replacement-effect interaction rules topic (REQ-220, REQ-022 amended) fixes the Manufactor + Esix miss with no movement on any existing rule-output suite; tester questions as gating fixtures (REQ-221); prompt format is the next package |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Gate-qc FAIL (attempt 3 grade): returned to refinement after owner re-scope; replacement-effect interaction rules topic (REQ-220, REQ-022 amended) fixes the Manufactor + Esix miss with no movement on any existing rule-output suite; tester questions as gating fixtures (REQ-221); prompt format is the next package |
 
 ## ideation
 

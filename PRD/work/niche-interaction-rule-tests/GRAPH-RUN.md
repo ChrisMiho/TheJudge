@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 5 | define | opus | ok | `0 → 29` | attempt 2: 3 gate-qc findings fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (REQ-220 `source` cites reporter/date/channel/CR ids, two-card list, REQ-188 credited); `STATUS.refined` | 2026-10-06 |
 | 6 | gate-qc | sonnet | ok | `0 → 32` | PASS attempt 2, findings none; README `## Preparation gate` PASS; parked `STATUS.owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/266 | 2026-10-06 |
 | 7 | define | opus | ok | `0 → 56` | attempt 3 (owner re-scope, not a gate-qc loop): `DESIGN-BRIEF.md` rewritten, `GATE-QUESTIONS.md` = new REQ-220, REQ-022 amended, new REQ-221; `measure-candidates.mjs` + `measure-candidates.out.txt` (C7 fixes Manufactor + Esix, 0 suites move); `STATUS.refined` | 2026-10-06 |
+| 8 | gate-qc | sonnet | failed | `0 → 62` | FAIL attempt 3 (2nd FAIL of 3 allowed loops): 6 findings (3 Important: Q1 fixture gets no frozen vector, 616.1 top-ten claim vs lexical #7/#8, topic build needs gitignored `apps/backend/data/cr/source.txt`; 3 Minor: case-insensitive amendment grep, whole-word match rule, cost range); `STATUS.refining`; findings in README `## Preparation gate` | 2026-10-06 |
 
 ## Open gate
 
@@ -189,6 +190,29 @@ Check cross-cutting consistency by grep, not memory. Re-run the brief's amendmen
 Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driver commits.
 
 Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
+
+### define (attempt 4)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests
+
+You are node 3 (`define`) of graph run `graph-20261006-150550`, attempt 4, after a `gate-qc` FAIL (the second FAIL of three allowed loops). Run the `thejudge-refinement` skill (read `.claude/skills/thejudge-refinement/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.refining). Your attempt-3 rewrite is committed (`DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` with REQ-220, REQ-022 amended, REQ-221, `measure-candidates.mjs`, `measure-candidates.out.txt`). The design holds; resolve exactly these gate-qc findings, recorded in the README `## Preparation gate` section, and nothing else:
+
+  1. (Important) Q1's fixture cannot carry a frozen vector or a semantic check as written. REQ-221 says each fixture has committed prompt and context goldens, a frozen query embedding, and passes the semantic-path relevance check; the brief says the build produces two new vectors. `scripts/build-frozen-query-embeddings.mjs` and `contextEvaluationHarness.test.ts:265` only treat a fixture as labelled when it carries `expectedSupplementalRuleIds` or `forbiddenSupplementalRuleIds`. `quick-lookup-replacement-interaction` carries only `expectedSystem2TopicIds`, so it gets no vector and no semantic System 3 check. Fix: say Q1 has goldens and the System 2 topic label only, with one new vector (Q2's), and correct the brief's two-new-vectors wording — or deliberately add a System 3 label to Q1.
+  2. (Important) The claim that no candidate got 616.1 into the top ten contradicts the measurement. `GATE-QUESTIONS.md` REQ-220 In plain terms and the brief both say it. Under lexical ranking C3 puts 616.1 at #8 and C4 at #7. What holds across every candidate and both rankings is that 616.1f stays at #25 or worse; under hybrid (shipped) 616.1 reaches #31–35. Fix: restate as no search-side candidate got both 616.1 and 616.1f into the top ten under both rankings, and have the REQ-220 Notes line name the lexical #7/#8 alongside hybrid #31–35.
+  3. (Important) The topic cannot be built as the brief instructs. The brief says the topic is rebuilt into `gameRulesByTopic.json` by `npm run data:build`. `apps/backend/data/cr/source.txt` is gitignored and absent in worktrees (it exists only in the launch checkout, the 2026-08-07 text, containing all nine rules). Without it `scripts/build-game-rules.mjs` takes the `validateExistingArtifact()` path, prints Preserved existing artifact, exits 0, and silently does not write the topic. Fix: the brief tells the builder to copy that local file into the worktree (no download — that would need human approval), run `node scripts/build-game-rules.mjs` only, and require the topic present in the artifact with verbatim rule text, and the rule index and embeddings byte-identical.
+  4. (Minor) The amendment-set grep is case-sensitive and misses restatements. Case-insensitive gives 28 hits; the extra, `quick-lookup/README.md:349` (always-on core topics, a fixed four-topic core set), needs a disposition row (unchanged, with reason). Also missing rows: `system-map/game-rules-retrieval.md:94` (still true), `PRD/ideasForLater/future-infra/sections/retrieval-architecture.md:10` (parked idea file, not truth), and the JSDoc at `gameRulesTopicSelection.ts:93` (game-state signals only; build updates it with the header at `:7`).
+  5. (Minor) REQ-220's matching rule is under-specified. It says the oracle text contains the word instead / prevent / prevents / prevented; the measurement used `/\binstead\b/i` and `/\bprevent(s|ed)?\b/i` — case-insensitive, whole word, so prevention and preventing do not count, and the 4.8% rate and 0-of-31 churn depend on that. Fix: add case-insensitive, whole word to the criterion.
+  6. (Minor) The follow-up cost range does not reproduce. The brief says the two prompts are about 14,500–18,200 characters (costed at about $0.012–$0.014). Measured: Q1 14,524; Q2 14,699 (hybrid) or 15,136 (lexical). Fix: correct the upper bound or drop it.
+
+For finding 1, choose the option the measurement supports and say why in the brief; if you add a System 3 label to Q1, measure it with `measure-candidates.mjs` first. For finding 3, describe the build step only — do not copy the source file yourself. For each finding, grep the whole package (brief, every `GATE-QUESTIONS.md` block and diff, README, IDEA, script comments) case-insensitively at line level for every occurrence of the affected wording and fix each hit, so no stale copy survives in another file. Keep the plain-language block and verdict slot shape in `GATE-QUESTIONS.md`. When done, set `STATUS.refined` (single marker, `git mv`), README frontmatter, and move the `PRD/work/STATUS.md` board row fully from refining to refined.
+
+Never edit `PRD/sections/`, code, `GRAPH-RUN.md`, or the README `## Preparation gate` section. Do not commit or push; the driver commits. No live model calls. Apply the assumption ladder and genuine-blocker test from `PRD/instructions/preparation-contract.md` per question as each arises.
+
+Report back: outcome, each finding and the lines you changed for it, files changed, and the STATUS marker set.
 
 ## Instruction ledger
 
