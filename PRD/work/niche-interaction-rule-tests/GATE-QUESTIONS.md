@@ -5,7 +5,8 @@ reject; a reason is required for edit or reject), then merge the docs PR to
 start the build.
 
 - `REQ-220` (new) — the fix: a rules topic that switches on when two or more
-  cards replace or prevent.
+  cards replace or prevent, and the size guard on the stored rules topics
+  raised to fit it (23 → 24 topics, 22,000 → 26,000 characters).
 - `REQ-022` (amended) — the curated rules baseline stops being strictly
   "card-agnostic" to allow that one switch.
 - `REQ-221` (new) — the tester's two questions become gating tests.
@@ -17,7 +18,9 @@ candidate tried with its measured result: `DESIGN-BRIEF.md` in this folder.
 
 **What this decides:** whether The Judge adds the Comprehensive Rules on how
 replacement and prevention effects interact to the AI's prompt whenever two or
-more cards in the question say "instead" or "prevent".
+more cards in the question say "instead" or "prevent", and whether the size
+cap on the stored rules topics rises to fit it (24 topics, 26,000
+characters).
 
 **In plain terms:** a tester attached Academy Manufactor and Esix, Fractal
 Bloom and asked how they combine when he makes a Treasure. Both cards are
@@ -40,6 +43,21 @@ Necropotence question and the retrieval benchmark. The rules search itself (Syst
 to ten rule excerpts) is not changed: it still searches the question plus each
 card's name, type line, and keywords, never its full text (REQ-178).
 
+The topic's text is the same rules version every other stored rule already
+uses (the Comprehensive Rules of 2026-06-05, taken from the committed rule
+index), so nothing else in the stored rules data changes. Moving to the
+newer rules text is a separate job.
+
+This also raises a size guard, which is your call. A test caps the stored
+curated rules topics at 23 topics and 22,000 characters in total; today they
+total 21,962. The new topic brings the total to 25,632, so the proposal sets
+the count to 24 and the cap to 26,000, keeping the 18,000 floor. The cap
+covers the stored topic library, not any one prompt: a prompt only carries
+the topics picked for it, and this one is picked only when two such cards
+are present. 26,000 leaves 368 characters of room, so the next topic
+anyone adds needs your sign-off again. If you want a different cap, answer
+`edit` with the number.
+
 **What happens if you say no:** retrieval stays as it is. The Manufactor + Esix
 question keeps reaching the AI without the rules that decide it, and `REQ-221`'s
 Manufactor test could not pass.
@@ -53,7 +71,8 @@ Manufactor test could not pass.
 +- Priority: high
 +- Description: When two or more cards in a request carry replacement or prevention wording, the assembled prompt's `GAME RULES (reference)` section includes the curated topic `replacement-effects-interaction` — the Comprehensive Rules for how replacement and prevention effects interact (the affected player chooses the order, the special cases that apply first, and the process repeating until no effect is left to apply). It applies in lookup mode and game mode alike. It is the one System 2 topic selected by card wording rather than game state.
 +- Acceptance Criteria:
-+  - `apps/backend/data/gameRulesTopicManifest.json` gains topic `replacement-effects-interaction`, titled "Interaction of Replacement and Prevention Effects", with rule numbers `616.1`, `616.1a`, `616.1b`, `616.1c`, `616.1d`, `616.1e`, `616.1f`, `616.1g`, `616.2`; `node scripts/build-game-rules.mjs`, run against the local Comprehensive Rules source (`apps/backend/data/cr/source.txt`, gitignored), writes it into `gameRulesByTopic.json` as verbatim Comprehensive Rules text, like every other topic, while `gameRulesRuleIndex.json`, `gameRulesTokenStats.json`, `gameRulesCoreTopics.json`, and `gameRulesRuleEmbeddings.json` stay byte-identical
++  - `apps/backend/data/gameRulesTopicManifest.json` gains topic `replacement-effects-interaction`, titled "Interaction of Replacement and Prevention Effects", with rule numbers `616.1`, `616.1a`, `616.1b`, `616.1c`, `616.1d`, `616.1e`, `616.1f`, `616.1g`, `616.2`; `gameRulesByTopic.json` gains it as verbatim Comprehensive Rules text taken from the committed rule index (`gameRulesRuleIndex.json`, the 2026-06-05 rules text every shipped game-rules artifact was built from) and extracted the way `scripts/build-game-rules.mjs` extracts every topic; no rules-text refresh: every existing topic entry, `gameRulesRuleIndex.json`, `gameRulesTokenStats.json`, `gameRulesRuleEmbeddings.json`, and `apps/frontend/public/data/gameRulesCoreTopics.json` stay byte-identical
++  - the build-policy test (`apps/frontend/src/lib/gameRulesBuildPolicy.test.ts`) expects 24 curated topics instead of 23 and caps total topic text at 26,000 characters instead of 22,000, keeping its 18,000 floor; measured total with the new topic 25,632 (21,962 before). The cap bounds the stored topic library, not any single prompt
 +  - a card carries replacement or prevention wording when its oracle text contains, as a whole word in any letter case, "instead" (CR 614.1a: effects that use the word "instead" are replacement effects) or "prevent", "prevents", or "prevented"; other forms such as "prevention" or "preventing" do not count
 +  - the topic is selected when two or more cards in the request carry that wording — in lookup mode the attached cards, in game mode every card on the stack and in populated zones; two copies of one card count as two. With fewer than two it is not selected
 +  - one shared selection function serves both modes, so lookup and game mode cannot drift apart
@@ -61,7 +80,7 @@ Manufactor test could not pass.
 +  - the topic's rule numbers join the curated exclusion set, so System 3 never repeats them (REQ-179)
 +  - System 3's search text, scoring, cap, and embeddings are unchanged: the query stays the question plus each card's name, type line, and keywords, never oracle text (REQ-167, REQ-178, REQ-190)
 +  - with Academy Manufactor and Esix, Fractal Bloom attached to the question "How do academy manufactor and esix, fractal bloom interact when I'm attempting to create a treasure token?", rules `616.1` and `616.1f` are in the prompt under both hybrid and lexical ranking (REQ-221 holds this as a gating fixture)
-+  - no existing rule-output result moves from its 2026-10-06 measurement: worked-solutions retrieval 16/18 in System 3 under hybrid ranking and 14/18 under lexical; the context-evaluation harness's labelled System 3 checks 14/14 semantic and 14/14 lexical; none of the 31 existing prompt or context goldens changes; the retrieval benchmark's recall@5 stays at 0.5833 clean / 0.5769 polluted lexical and 0.8974 clean / 0.8910 polluted hybrid
++  - no existing rule-output result moves from its 2026-10-06 measurement: worked-solutions retrieval 16/18 in System 3 under hybrid ranking and 14/18 under lexical; the context-evaluation harness's labelled System 3 checks 14/14 semantic and 14/14 lexical; none of the 31 existing fixtures' prompt or context goldens changes (the checklist report golden gains only REQ-221's two rows); the retrieval benchmark's recall@5 stays at 0.5833 clean / 0.5769 polluted lexical and 0.8974 clean / 0.8910 polluted hybrid
 +- Constraints:
 +  - card wording selects this one topic only; card names and keywords never select a System 2 topic
 +  - no live AI call, no new runtime dependency, no per-request external call
@@ -74,8 +93,8 @@ Manufactor test could not pass.
 +  - REQ-221 (the gating fixtures that hold this result)
 +- Notes:
 +  - measured at define, 2026-10-06 (`niche-interaction-rule-tests`), offline against the committed corpus with the local embedder: before, with both cards attached, 616.1 ranked 50th (lexical) and beyond 300th (hybrid) and 616.1f beyond 300th; System 3's top ten was token and copy rules. After, both rules are in the prompt through this topic
-+  - candidates measured and rejected: the attached cards' oracle text in the System 3 search (616.1 still out of the top ten; it pushed the Necropotence + Silence question's rule 514.2 out of the prompt; benchmark polluted recall@5 fell from 0.5769 to 0.3782 lexical and from 0.8910 to 0.7756 hybrid; 25 of 31 goldens changed); oracle text in the embedding only (514.2 pushed to 12th; hybrid polluted recall@5 0.8333); the terms "replacement effect" / "prevention effect" added to the search from card wording, card side or question side (616.1 reached 8th and 7th under lexical ranking but only 31st–35th under hybrid, the shipped ranking; 616.1f stayed 25th or worse under both; polluted recall@5 fell); no search-side candidate got both 616.1 and 616.1f into the top ten under both rankings; the topic on any one marked card (fired on Questing Beast's "can't be prevented" alone and changed a golden)
-+  - the full 616.1 family is shipped rather than a minimal subset because rule 616.1 directs the player through "the steps listed in rules 616.1a–f", and listing 616.1 bars System 3 from every 616.1 sub-rule; the topic adds 3,662 characters to a prompt when it fires (about 25% on the Manufactor + Esix prompt). 4.8% of cards carry the wording (matched as whole words in any letter case), so two random attached cards both carry it about 0.2% of the time
++  - candidates measured and rejected: the attached cards' oracle text in the System 3 search (616.1 still out of the top ten; it pushed the Necropotence + Silence question's rule 514.2 out of the prompt; benchmark polluted recall@5 fell from 0.5769 to 0.3782 lexical and from 0.8910 to 0.7756 hybrid; 25 of 31 prompt goldens changed); oracle text in the embedding only (514.2 pushed to 12th; hybrid polluted recall@5 0.8333); the terms "replacement effect" / "prevention effect" added to the search from card wording, card side or question side (616.1 reached 8th and 7th under lexical ranking but only 31st–35th under hybrid, the shipped ranking; 616.1f stayed 25th or worse under both; polluted recall@5 fell); no search-side candidate got both 616.1 and 616.1f into the top ten under both rankings; the topic on any one marked card (fired on Questing Beast's "can't be prevented" alone and changed a prompt golden)
++  - the full 616.1 family is shipped rather than a minimal subset because rule 616.1 directs the player through "the steps listed in rules 616.1a–f", and listing 616.1 bars System 3 from every 616.1 sub-rule; the topic adds about 3,720 characters to a prompt when it fires (3,722 measured: 3,662 of rule text plus line breaks, the title line, and the blank line between topics; about 26% on the Manufactor + Esix prompt). 4.8% of cards carry the wording (matched as whole words in any letter case), so two random attached cards both carry it about 0.2% of the time
 +  - the build re-runs every suite above and records its before/after here
 ```
 
@@ -299,7 +318,7 @@ but nothing stops a later retrieval change from losing it again.
 +  - two fixtures in `apps/backend/src/eval/fixtures/`, both `mode: "lookup"`, cards attached by real oracle id with their committed oracle text, type line, and keywords:
 +    - `quick-lookup-replacement-interaction` — question, verbatim: "How do academy manufactor and esix, fractal bloom interact when I'm attempting to create a treasure token?"; cards `Academy Manufactor` and `Esix, Fractal Bloom` (two cards; the comma is part of Esix's name); expects System 2 topics `stack-and-priority`, `targets-basics`, `zones-basics`, `abilities-trigger-basics`, and `replacement-effects-interaction`, which carries rules `616.1` and `616.1f` (REQ-220)
 +    - `quick-lookup-cleanup-trigger` — question, verbatim: "Can I use the triggered ability of necropotence during my cleanup step to dodge silence effects and cast borne upon a wind?"; cards `Silence`, `Necropotence`, `Borne Upon a Wind`; expects supplemental rule ids `514.2` and `514.3a` in System 3's top ten
-+  - each fixture has committed prompt and context goldens and passes the golden-scenario check in `contextEvaluationHarness.test.ts`, which also runs its labelled checks
++  - each fixture has committed prompt and context goldens and a PASS row in the checklist report golden (`apps/backend/src/eval/fixtures/checklist-report.golden.txt`, one row per fixture), and passes the golden-scenario check in `contextEvaluationHarness.test.ts`, which also runs its labelled checks; no existing fixture's prompt or context golden changes, and the checklist report's existing rows stay as they are
 +  - `quick-lookup-replacement-interaction` carries the System 2 topic label only (`expectedSystem2TopicIds`), checked in the golden-scenario test; topic selection does not depend on ranking. It carries no System 3 label, because once its topic fires the curated exclusion (REQ-179) bars every 616.1 rule from System 3, so it gets no frozen query embedding and no semantic-path check
 +  - `quick-lookup-cleanup-trigger` carries the System 3 label (`expectedSupplementalRuleIds`), so it gets one frozen query embedding (`npm run eval:build-frozen-query-embeddings`) and passes the System 3 checks under both the lexical golden-scenario test and the semantic-path relevance check
 +  - each fixture's `description` says in words where the question came from — tester feedback, 2026-10-06, a player's replies in a friend's Magic group chat, relayed to the owner as screenshots — and never names a repo path to intake evidence (the work package holding it is deleted at cleanup)

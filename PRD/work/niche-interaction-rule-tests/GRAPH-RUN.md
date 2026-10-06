@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
 
 ## Node ledger
@@ -23,6 +23,7 @@
 | 8 | gate-qc | sonnet | failed | `0 → 62` | FAIL attempt 3 (2nd FAIL of 3 allowed loops): 6 findings (3 Important: Q1 fixture gets no frozen vector, 616.1 top-ten claim vs lexical #7/#8, topic build needs gitignored `apps/backend/data/cr/source.txt`; 3 Minor: case-insensitive amendment grep, whole-word match rule, cost range); `STATUS.refining`; findings in README `## Preparation gate` | 2026-10-06 |
 | 9 | define | opus | ok | `0 → 48` | attempt 4: 6 gate-qc findings fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (Q1 System 2 label only, one new vector; both-rules top-ten claim; `node scripts/build-game-rules.mjs` build step with local `source.txt` copy + byte-identical outputs; case-insensitive grep 28 hits; whole-word match; measured cost range); `STATUS.refined` | 2026-10-06 |
 | 10 | gate-qc | sonnet | failed | `0 → 62` | FAIL attempt 4 (3rd FAIL; final loop to define): 5 findings (2 Important: build source is 2026-08-07 text vs committed 2026-06-05 artifacts — 50 rule texts change incl. 616.2/514.3a; `gameRulesBuildPolicy.test.ts` 23-topic / 22,000-char guard; 3 Minor: checklist-report golden, ~3,720 formatted cost, three disposition rows); `STATUS.refining`; findings in README `## Preparation gate` | 2026-10-06 |
+| 11 | define | opus | ok | `0 → 61` | attempt 5: 5 findings fixed; topic built from committed `gameRulesRuleIndex.json` (2026-06-05 text) via new `build-topic-from-index.mjs` — 23/23 topics byte-identical, index/stats/embeddings unchanged (scratch export of `origin/main`); build-policy guard proposed 23→24 topics, 22,000→26,000 chars (measured 25,632); checklist golden, ~3,720 cost, three disposition rows; `STATUS.refined` | 2026-10-06 |
 
 ## Open gate
 
@@ -257,6 +258,22 @@ For each finding, grep the whole package (brief, every `GATE-QUESTIONS.md` block
 Never edit `PRD/sections/`, code, `GRAPH-RUN.md`, or the README `## Preparation gate` section. Do not commit or push; the driver commits. No live model calls. Apply the assumption ladder and genuine-blocker test from `PRD/instructions/preparation-contract.md` per question as each arises.
 
 Report back: outcome, each finding and the lines you changed for it, the build path chosen for finding 1 with its measured evidence, the proposed limits for finding 2, files changed, and the STATUS marker set.
+
+### gate-qc (attempt 5)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests
+
+You are node 4 (`gate-qc`) of graph run `graph-20261006-150550`, attempt 5 (three FAILs so far; a fourth FAIL parks the run at owner-action). The owner re-scoped the package before answering its gate, and define attempt 3 rewrote it: the build goal is now a rule-retrieval fix (a curated replacement/prevention-effects topic that switches on when two or more attached cards carry the wording), validated by every existing rule-output suite plus the tester's two cards-attached questions. Define attempt 5 then addressed the five attempt-4 findings recorded in the README `## Preparation gate` section. Grade the whole package fresh, not only those findings. Run the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.refined). Grade `DESIGN-BRIEF.md` together with the proposed product truth in `GATE-QUESTIONS.md` (new REQ-220, REQ-022 amended in place, new REQ-221, and the supporting section edits carried in those blocks) against current `PRD/sections/` truth and agent-readiness. Intake under `intake/` is evidence only. The ledger `GRAPH-RUN.md` and the README `## Preparation gate` section are the driver's; do not edit them.
+
+Check cross-cutting consistency by grep, not memory. Re-run the brief's amendment-set grep yourself as a quoted line-level grep over `PRD/sections/` (and the other places product truth or docs restate it, such as `apps/backend/src/eval/` READMEs) for every wording the REQ-022 amendment changes (for example card-agnostic and its variants), and confirm every hit has a disposition row and, where it needs an edit, a diff in `GATE-QUESTIONS.md`. Do the same for every existing stable ID the proposal touches. Confirm REQ-220 and REQ-221 are not already used anywhere in `PRD/`. Run the new `build-topic-from-index.mjs` on a scratch export outside the repo to confirm the brief's build path and byte-identical claims hold, and confirm every existing gating test the change touches is named. Re-run `measure-candidates.mjs` offline and confirm the numbers the brief and the acceptance targets cite reproduce; a numeric target that does not match a measured number is a finding.
+
+Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driver commits.
+
+Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
 
 ## Instruction ledger
 

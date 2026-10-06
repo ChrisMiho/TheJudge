@@ -275,6 +275,9 @@ const f4 = (x) => x.toFixed(4);
 let baselineGolden = null;
 const lexicalParity = bench.scoreBenchmark(corpus, index, bench.buildPollutionText(resources.cardDetailIndex, nameIndex));
 console.log(`Benchmark parity (production scoreBenchmark, lexical): clean ${f4(lexicalParity.clean.recall5)} polluted ${f4(lexicalParity.polluted.recall5)}`);
+// Rule text only (the sum of the rules' own text). Through `formatGameRulesSection`
+// the prompt grows by more: line breaks between rules, the topic's title line, and
+// the blank line between topics. Measured at define attempt 5: full set 3,722.
 console.log(`Prompt cost of the 616 topic: min ${T_MIN.reduce((s, id) => s + ruleText.get(id).length, 0)} chars, full ${T_FULL.reduce((s, id) => s + ruleText.get(id).length, 0)} chars\n`);
 
 for (const [name, cand] of Object.entries(CANDIDATES)) {
