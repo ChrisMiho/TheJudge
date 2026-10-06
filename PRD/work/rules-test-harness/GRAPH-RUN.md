@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-181340/`
-- Current node: `review`
+- Current node: `close`
 - Next action: `/graph-implement PRD/work/rules-test-harness/`
 
 ## Node ledger
@@ -31,6 +31,7 @@
 | 16 | gate-qc | sonnet | ok | `0 → 28` | PASS attempt 7 (build-half re-grade), findings none; base `origin/main` 652ed0e unchanged since attempt 6; live grep 219 hits all with disposition rows (220th was this package's board row, rewritten at the gate move — advisory only); 15 diff blocks, 40 removed lines exact; REQ-222–225 unused; M17, M6 (16/18), M1 (258), M16, M8, M12 reproduced; README `## Preparation gate` PASS; `STATUS.refined` | 2026-10-06 |
 | 17 | plan | sonnet | ok | `0 → 29` | `GAMEPLAN.md`, `slice-a-format-v2-loader.md` … `slice-g-hard-area-depth.md` (7 slices), `slice-a.criteria.json` … `slice-g.criteria.json` (77 criteria, all `false`); `STATUS.refined` → `STATUS.active`; `PRD/work/STATUS.md` row moved refined → active; no provider call in any slice (GAMEPLAN non-goals) | 2026-10-06 |
 | 18 | build | sonnet | ok | `0 → 458` | PR https://github.com/ChrisMiho/TheJudge/pull/269 (open, MERGEABLE, head 6a23ee2); slices A–G commits 7724cad 5ed9047 a78c9c1 f9e0ef7 3de528c a61e530 6a23ee2; criteria 77/77 `true` (self-reported — hook evidence log holds 0 entries for this run, the known criteria-root gap: the hook reads criteria from the launch checkout); quality:check exit 0 per build report; launch `git status --porcelain` identical before/after; `classifyBuildWrites` over `git diff --name-only 2ceaf23..HEAD` (462 paths) → ok; `STATUS.ship-ready`; PRD applied: system-map, REQ-185–190, NFR-018, REQ-222–225, goals-and-non-goals. Disclosed deviation: slice A ran `npm run eval:answer-quality` dry run, which (by design since 549b12c) loads the key from the main checkout `.secrets/openai-dev.env` and issued one models-list access check — no completion, no cost; later dry runs used a no-key wrapper | 2026-10-06 |
+| 19 | review | opus | ok | `0 → 69` | APPROVE at `cb9ba45`, no Critical or Important; reviewer re-ran `npm run quality:check` (exit 0), `eval:worked-solutions` (290/393, 16/18 approved unchanged), `eval:rules-staleness` (0 stale), coverage command to scratch (deep-equals committed `coverage.json`, 256/256, 63/120 does-not-work), a key-free network-blocked `eval:answer-quality` dry run (18 selected, $0.40); verified each slice's `PRD/sections/` edits against `GATE-QUESTIONS.md`. 4 Minor: D4 wording says draft but build writes `needs-edit` per REQ-224; C4 real estimate $0.40 vs about $0.35; an empty `OPENAI_API_KEY` does not stop the loader filling the key from the main checkout, so a plain dry run makes a models-list call; 14 of 58 two-card cases lead with a rule outside the twelve hard areas. Launch checkout unchanged; worktree clean | 2026-10-06 |
 
 ## Open gate
 
@@ -542,6 +543,20 @@ Severity rule: flag only gaps against these acceptance criteria or correctness o
 - [x] **G10.** No provider call was made during the slice: no `--confirm-live-calls` run (dated observation line in `slice-g.evidence.md`)
 
 Report back: APPROVE or CHANGES REQUESTED; the findings list with severity, file:line, and the criterion id; each command you ran with its exit code; and the criteria you could not verify, with why.
+
+### close
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness
+
+You are node 8 (`close`) of graph run `graph-20261006-181340` for package `PRD/work/rules-test-harness/` (`STATUS.ship-ready`), on the shared branch `thejudge-auto/rules-test-harness-work`, whose code PR https://github.com/ChrisMiho/TheJudge/pull/269 into `main` is open and not merged. Run the `thejudge-cleanup` skill (read `.claude/skills/thejudge-cleanup/SKILL.md` in the working directory above and follow its graph-controlled, PR-ready path: on the code branch, before the owner's merge). Copy the `Working directory:` line above, unchanged, into any prompt you write. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/` outside `.worktrees/implement-rules-test-harness/`.
+
+Durable `PRD/sections/` truth was already applied at build (review confirmed each slice's edits); confirm it is present and promote only a genuine leftover, never re-write it. Write the receipt under `PRD/instructions/receipts/` named `rules-test-harness-<date>.md`, folding `GRAPH-RUN.md`'s `## Node ledger` and `## Instruction ledger` verbatim into its `## Graph run` section, with a `- PR:` line for PR #269 and the summary line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/269`. Write an `## Intake` section naming each file under `intake/` and its stated origin. Record as owner follow-ups the four Minor review findings in ledger row 19, the build's disclosed models-list access check in slice A, the hook evidence log holding 0 entries for this run (the known criteria-root gap), and the owner's next steps: approve the 375 drafts in batches with the review commands, run live grading only when wanted, and `npm run graph:prune` after the merge. Update `PRD/work/STATUS.md` and delete `PRD/work/rules-test-harness/`.
+
+Stage explicit paths only (for the deletion, `git rm -r PRD/work/rules-test-harness`). Commit on `thejudge-auto/rules-test-harness-work` and push with `git push -u origin thejudge-auto/rules-test-harness-work`. Never force-push, never merge or close a PR. Your tool-call cap is 120 for this node.
+
+Report back: outcome (ok / failed / blocked), the receipt path, the commit SHA and push result, every path you wrote or deleted, and any leftover truth you promoted.
 
 ## Instruction ledger
 
