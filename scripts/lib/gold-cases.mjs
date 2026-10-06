@@ -45,6 +45,14 @@ export const REVIEW_STATUSES = ["draft", "approved", "needs-edit", "rejected"];
 export const OUTCOMES = ["works", "does-not-work", "depends"];
 export const ZONE_IDS = ["stack", "battlefield", "hand", "graveyard", "exile", "library", "command"];
 export const SNAPSHOT_DEPENDENCIES = ["rules", "oracle", "rulings"];
+/**
+ * The authored block a case came from, an optional `source.pool` the coverage
+ * report counts by: one case per real mechanic, a hard-area case built from an
+ * unused Comprehensive Rules `Example:` line, one built from a WotC ruling that
+ * names a second card, or one of the owner's tester cases. A case without it
+ * (the 18 first-ship cases) belongs to no pool.
+ */
+export const SOURCE_POOLS = ["mechanic", "cr-example", "two-card-ruling", "tester"];
 
 /** The answer authority each tier's `source.authority` must name. */
 export const TIER_AUTHORITIES = {
@@ -251,6 +259,9 @@ export function validateGoldCase(caseEntry) {
     }
     if (!isNonEmptyString(source.license)) {
       errors.push(`${id}: source.license must be non-empty`);
+    }
+    if (source.pool !== undefined && !SOURCE_POOLS.includes(source.pool)) {
+      errors.push(`${id}: source.pool must be one of ${SOURCE_POOLS.join(", ")} when present, got ${JSON.stringify(source.pool)}`);
     }
     if (caseEntry?.tier === 1) {
       if (!isNonEmptyString(source.ruleId)) {

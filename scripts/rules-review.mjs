@@ -22,6 +22,7 @@ import { fileURLToPath } from "node:url";
 import { CASES_DIR, loadGoldCases, loadSnapshotSources, readCaseFiles } from "./lib/gold-cases.mjs";
 import { DEFAULT_BATCH_SIZE, applyVerdicts, parseBatch, renderBatches } from "./lib/rules-review.mjs";
 import { writeFormattedJson } from "./lib/write-formatted-json.mjs";
+import { COVERAGE_PATH, EXCLUDED_PATH, loadExcludedMechanics, rewriteCoverage } from "./rules-coverage.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 export const DEFAULT_REVIEW_DIR = "output/rules-review";
@@ -75,9 +76,12 @@ export async function renderCommand({
 export async function applyCommand({
   argv = [],
   casesDir = CASES_DIR,
+  loadCases = loadGoldCases,
   loadSources = loadSnapshotSources,
   readBatch = (filePath) => readFile(filePath, "utf8"),
   writeCase = (filePath, value) => writeFormattedJson(filePath, value),
+  coveragePath = COVERAGE_PATH,
+  excludedPath = EXCLUDED_PATH,
   log = console.log,
   now = today
 } = {}) {
@@ -102,6 +106,13 @@ export async function applyCommand({
     result.updated.push(...applied.updated);
     result.refused.push(...applied.refused);
     result.skipped.push(...applied.skipped);
+  }
+  // Step 5 of the flow (A20): after writing verdicts, rewrite the counts-only coverage file so the
+  // owner's own review never leaves it out of date (and never fails the next pull request's coverage gate).
+  if (result.updated.length > 0) {
+    const excluded = await loadExcludedMechanics(excludedPath);
+    await rewriteCoverage({ cases: await loadCases(casesDir), ruleIndex: sources.ruleIndex, excluded, path: coveragePath });
+    log(`Rewrote ${coveragePath}`);
   }
   for (const refusal of result.refused) log(`Refused: ${refusal.id} -- ${refusal.reason}`);
   log(`${result.updated.length} applied, ${result.refused.length} refused, ${result.skipped.length} skipped (blank verdict).`);

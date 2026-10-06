@@ -78,6 +78,7 @@ export const REVIEW_STATUSES: ReviewStatus[];
 export const OUTCOMES: CaseOutcome[];
 export const ZONE_IDS: string[];
 export const SNAPSHOT_DEPENDENCIES: SnapshotDependency[];
+export const SOURCE_POOLS: string[];
 export const TIER_AUTHORITIES: Record<CaseTier, string>;
 export const REQUIRED_SIX_CASE_IDS: string[];
 

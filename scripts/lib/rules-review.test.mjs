@@ -25,6 +25,8 @@ function makeSources(overrides = {}) {
   };
   return {
     ruleIndexHash: sha256("index"),
+    // The committed rule index's entries: the coverage rewrite reads the mechanic list from it.
+    ruleIndex: Object.entries(data.rules).map(([ruleId, text]) => ({ ruleId, text })),
     ruleText: (ruleId) => data.rules[ruleId] ?? null,
     oracleText: (oracleId) => data.oracle[oracleId] ?? null,
     rulings: (oracleId) => data.rulings[oracleId] ?? []
@@ -65,6 +67,15 @@ function makeCasesDir(cases) {
   test.after(() => fs.rmSync(dir, { recursive: true, force: true }));
   for (const raw of cases) fs.writeFileSync(path.join(dir, `${raw.id}.case.json`), `${JSON.stringify(raw, null, 2)}\n`, "utf8");
   return dir;
+}
+
+/** Where a test's apply command writes its coverage file and finds its excluded list: inside the test's temp dir, never the repo. */
+function coverageFiles(casesDir) {
+  const excludedPath = path.join(casesDir, "excluded-mechanics.json");
+  if (!fs.existsSync(excludedPath)) {
+    fs.writeFileSync(excludedPath, JSON.stringify({ excluded: [{ id: "701.2", name: "Activate", reason: "a fixture exclusion" }] }), "utf8");
+  }
+  return { coveragePath: path.join(casesDir, "coverage.json"), excludedPath };
 }
 
 function readCase(dir, id) {
@@ -176,7 +187,14 @@ test("round trip: render a batch, fill verdicts, apply; only review.* changes, p
   });
   fs.writeFileSync(written[0], filled, "utf8");
 
-  const result = await applyCommand({ argv: [written[0]], casesDir, loadSources: async () => sources, log: silent, now: () => "2026-10-08" });
+  const result = await applyCommand({
+    argv: [written[0]],
+    casesDir,
+    loadSources: async () => sources,
+    ...coverageFiles(casesDir),
+    log: silent,
+    now: () => "2026-10-08"
+  });
   assert.deepEqual(result.refused, []);
   assert.deepEqual(result.skipped, ["to-skip"]);
 
@@ -216,7 +234,14 @@ test("stale path: a stale approved case renders marked stale with the changed te
   assert.match(markdown, /Changed rulings text:\nTarmogoyf\n> - 2021-03-19: Counts card types, not cards\.\n> - 2026-10-01: A brand new ruling\./);
 
   fs.writeFileSync(file, fill(markdown, { "goyf-case": { verdict: "approve" } }), "utf8");
-  const result = await applyCommand({ argv: [file], casesDir, loadSources: async () => after, log: silent, now: () => "2026-10-09" });
+  const result = await applyCommand({
+    argv: [file],
+    casesDir,
+    loadSources: async () => after,
+    ...coverageFiles(casesDir),
+    log: silent,
+    now: () => "2026-10-09"
+  });
   assert.deepEqual(result.refused, []);
 
   const reapproved = loaded(readCase(casesDir, "goyf-case"));
@@ -225,6 +250,35 @@ test("stale path: a stale approved case renders marked stale with the changed te
   assert.equal(isGradable(reapproved, isStale), true);
   const selection = selectCases({ cases: [reapproved], records: [], models: ["gpt-4.1"], excerptCaps: [10], mode: { kind: "changed" }, isStale });
   assert.deepEqual(selection.selected.map(({ caseEntry }) => caseEntry.id), ["goyf-case"], "the runner's filter selects the case again");
+});
+
+test("applying a filled batch that changes a status rewrites coverage.json, so the gate's out-of-date check still passes (A20)", async () => {
+  const sources = makeSources();
+  const trample = rawCase("trample", { expected: { ...rawCase("trample").expected, decidingRuleIds: ["702.19b"] } });
+  const casesDir = makeCasesDir([trample]);
+  const excludedPath = path.join(casesDir, "excluded.json");
+  fs.writeFileSync(excludedPath, JSON.stringify({ excluded: [] }), "utf8");
+  const coveragePath = path.join(casesDir, "coverage.json");
+  const loadCases = async () => [loaded(trample)];
+
+  // The committed coverage file as the corpus stands before the review: the case is a draft.
+  const { rewriteCoverage } = await import("../rules-coverage.mjs");
+  await rewriteCoverage({ cases: await loadCases(), ruleIndex: sources.ruleIndex, excluded: [], path: coveragePath });
+  assert.deepEqual(JSON.parse(fs.readFileSync(coveragePath, "utf8")).mechanics.draft, ["702.19"]);
+
+  const [file] = await renderCommand({ argv: ["--out", path.join(casesDir, "out")], casesDir, loadCases, loadSources: async () => sources, log: silent });
+  fs.writeFileSync(file, fill(fs.readFileSync(file, "utf8"), { trample: { verdict: "approve" } }), "utf8");
+  await applyCommand({ argv: [file], casesDir, loadSources: async () => sources, coveragePath, excludedPath, log: silent, now: () => "2026-10-09" });
+
+  const committed = JSON.parse(fs.readFileSync(coveragePath, "utf8"));
+  assert.deepEqual(committed.mechanics.approved, ["702.19"], "the apply command moved the mechanic from draft to approved");
+  assert.deepEqual(committed.mechanics.draft, []);
+  assert.equal(committed.reviewStatus.approved, 1);
+
+  const { loadGoldCases } = await import("./gold-cases.mjs");
+  const { checkCoverageGate } = await import("./rules-coverage.mjs");
+  const gate = checkCoverageGate({ cases: await loadGoldCases(casesDir), ruleIndex: sources.ruleIndex, excluded: [], committed });
+  assert.equal(gate.failures.some((failure) => /out of date/.test(failure)), false, gate.failures.join("; "));
 });
 
 function entryFor(raw, sources, verdict, note = "") {

@@ -177,6 +177,14 @@ test("validateGoldCase checks the citation each tier requires, and the authority
   );
 });
 
+test("validateGoldCase accepts an optional source.pool from the known pools and rejects any other", () => {
+  for (const pool of ["mechanic", "cr-example", "two-card-ruling", "tester"]) {
+    const caseEntry = validTier1Case({ source: { ...validTier1Case().source, pool } });
+    assert.equal(validateGoldCase(caseEntry).valid, true, pool);
+  }
+  assert.match(errorsOf(validTier1Case({ source: { ...validTier1Case().source, pool: "other" } })), /source\.pool must be one of/);
+});
+
 test("validateGoldCase refuses hand-written tags and difficulty: the loader derives them", () => {
   assert.match(errorsOf(validTier1Case({ tags: ["mechanic:none"] })), /"tags" is derived by the loader/);
   assert.match(errorsOf(validTier1Case({ difficulty: 3 })), /"difficulty" is derived by the loader/);

@@ -1,6 +1,6 @@
 # Slice E — Coverage command and report, coverage.json, staleness report
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -28,15 +28,15 @@ The build re-derives each edit by intent against current `PRD/sections/` truth, 
 
 ## Acceptance criteria
 
-- [ ] **E1.** Fixture-corpus tests: an uncovered mechanic fails the gate, an excluded id the index lacks fails it, an out-of-date coverage file fails it, and a fully covered fixture passes
-- [ ] **E2.** Applying a filled review batch that changes a status leaves the out-of-date check passing (the apply command rewrites `coverage.json`, A20)
-- [ ] **E3.** On the real corpus the coverage command lists the 255 mechanics still uncovered as report output, not a failure, and writes `coverage.json`
-- [ ] **E4.** `coverage.json` carries counts and ids only (no prose), including counts per `outcome`
-- [ ] **E5.** The excluded-mechanics list holds 701.45 and 702.158 with a reason each, and the gate reads the mechanic list from the committed rule index
-- [ ] **E6.** The coverage gate is not wired into `quality:check` yet, and `npm run quality:check` is green (A17)
-- [ ] **E7.** The staleness report is clean on unchanged data (run on the real corpus)
-- [ ] **E8.** Staleness fixture test: a fixture case with a changed ruling hash is listed as stale naming that dependency, and a fixture case whose stored query-text hash no longer matches is listed as awaiting a re-freeze (a backend vitest test, because slice B's re-freeze check rebuilds query text); neither run fails any gate
-- [ ] **E9.** REQ-189, REQ-222, REQ-224 and REQ-225 are applied to `PRD/sections/functional-requirements.md` by intent against current truth
+- [x] **E1.** Fixture-corpus tests: an uncovered mechanic fails the gate, an excluded id the index lacks fails it, an out-of-date coverage file fails it, and a fully covered fixture passes
+- [x] **E2.** Applying a filled review batch that changes a status leaves the out-of-date check passing (the apply command rewrites `coverage.json`, A20)
+- [x] **E3.** On the real corpus the coverage command lists the 255 mechanics still uncovered as report output, not a failure, and writes `coverage.json`
+- [x] **E4.** `coverage.json` carries counts and ids only (no prose), including counts per `outcome`
+- [x] **E5.** The excluded-mechanics list holds 701.45 and 702.158 with a reason each, and the gate reads the mechanic list from the committed rule index
+- [x] **E6.** The coverage gate is not wired into `quality:check` yet, and `npm run quality:check` is green (A17)
+- [x] **E7.** The staleness report is clean on unchanged data (run on the real corpus)
+- [x] **E8.** Staleness fixture test: a fixture case with a changed ruling hash is listed as stale naming that dependency, and a fixture case whose stored query-text hash no longer matches is listed as awaiting a re-freeze (a backend vitest test, because slice B's re-freeze check rebuilds query text); neither run fails any gate
+- [x] **E9.** REQ-189, REQ-222, REQ-224 and REQ-225 are applied to `PRD/sections/functional-requirements.md` by intent against current truth
 
 ## Verification
 

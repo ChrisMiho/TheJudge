@@ -34,6 +34,7 @@ Build progress (graph node 6, `build`, one commit per slice on `thejudge-auto/ru
 - B: done (offline prompt gate in `apps/backend/src/eval/rules-gate/`, frozen vectors, baseline at 16 hits, system-map entry as partial)
 - C: done (live runner: selection, per-case merge, per-tier headline, judge usage; REQ-186/187/190 and the answer-quality system-map entry applied)
 - D: done (review render and apply commands; an edit verdict lands in `needs-edit`, see the slice doc note)
+- E: done (coverage command and gate as tested code, not yet in `quality:check`; `coverage.json`; staleness report; REQ-189/222/224/225 applied; optional `source.pool` field added for the coverage split)
 
 ## Autonomous metadata
 
