@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Refined (define attempt 4): gate-qc attempt-3 findings resolved; replacement-effect interaction rules topic (REQ-220, REQ-022 amended) fixes the Manufactor + Esix miss with no movement on any existing rule-output suite; tester questions as gating fixtures (REQ-221); prompt format is the next package |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Gate-qc FAIL (attempt 4 grade): returned to refinement; the topic build step and one existing budget test do not hold as written; replacement-effect interaction rules topic (REQ-220, REQ-022 amended) and tester fixtures (REQ-221) otherwise measured clean; prompt format is the next package |
 
 ## ideation
 

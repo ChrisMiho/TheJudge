@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
 
 ## Node ledger
@@ -22,6 +22,7 @@
 | 7 | define | opus | ok | `0 → 56` | attempt 3 (owner re-scope, not a gate-qc loop): `DESIGN-BRIEF.md` rewritten, `GATE-QUESTIONS.md` = new REQ-220, REQ-022 amended, new REQ-221; `measure-candidates.mjs` + `measure-candidates.out.txt` (C7 fixes Manufactor + Esix, 0 suites move); `STATUS.refined` | 2026-10-06 |
 | 8 | gate-qc | sonnet | failed | `0 → 62` | FAIL attempt 3 (2nd FAIL of 3 allowed loops): 6 findings (3 Important: Q1 fixture gets no frozen vector, 616.1 top-ten claim vs lexical #7/#8, topic build needs gitignored `apps/backend/data/cr/source.txt`; 3 Minor: case-insensitive amendment grep, whole-word match rule, cost range); `STATUS.refining`; findings in README `## Preparation gate` | 2026-10-06 |
 | 9 | define | opus | ok | `0 → 48` | attempt 4: 6 gate-qc findings fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (Q1 System 2 label only, one new vector; both-rules top-ten claim; `node scripts/build-game-rules.mjs` build step with local `source.txt` copy + byte-identical outputs; case-insensitive grep 28 hits; whole-word match; measured cost range); `STATUS.refined` | 2026-10-06 |
+| 10 | gate-qc | sonnet | failed | `0 → 62` | FAIL attempt 4 (3rd FAIL; final loop to define): 5 findings (2 Important: build source is 2026-08-07 text vs committed 2026-06-05 artifacts — 50 rule texts change incl. 616.2/514.3a; `gameRulesBuildPolicy.test.ts` 23-topic / 22,000-char guard; 3 Minor: checklist-report golden, ~3,720 formatted cost, three disposition rows); `STATUS.refining`; findings in README `## Preparation gate` | 2026-10-06 |
 
 ## Open gate
 
@@ -231,6 +232,32 @@ Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driv
 
 Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
 
+### define (attempt 5)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests
+
+You are node 3 (`define`) of graph run `graph-20261006-150550`, attempt 5, after a third `gate-qc` FAIL. This is the final loop: a fourth FAIL parks the run at owner-action. Run the `thejudge-refinement` skill (read `.claude/skills/thejudge-refinement/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.refining). The attempt-4 package is committed. Resolve exactly these gate-qc findings, recorded in the README `## Preparation gate` section, and nothing else:
+
+  1. (Important) The topic build step cannot produce its required result. The brief requires `gameRulesRuleIndex.json`, `gameRulesTokenStats.json`, and every existing topic to come out unchanged, and tells the builder to copy the launch checkout's `apps/backend/data/cr/source.txt`. That file is the 2026-08-07 rules text; the committed artifacts were built from the 2026-06-05 text. A scratch run of `node scripts/build-game-rules.mjs` with the nine rules added and that source: rule index 2,873 → 2,890 entries with 50 old entries' text changed (including 616.2, which the new topic carries, and 514.3a, which the Necropotence + Silence fixture needs); `gameRulesTokenStats.json` changes; existing topic `damage-lifelink-deathtouch` changes (820 vs 790 chars). Embeddings and core-topics stayed identical but would no longer match the rewritten index. Following the brief ends in its own stop-and-report. Fix: pick one path and say so — add only the new topic and leave every other artifact untouched (stating which rules text the nine rules come from), or make a rules-text refresh explicit scope with index, stats, embeddings, goldens re-measured and brought to the owner. Reconcile REQ-220's byte-identical criterion with the chosen path.
+  2. (Important) The new topic breaks an existing gating test neither the brief nor REQ-220 names: `apps/frontend/src/lib/gameRulesBuildPolicy.test.ts` asserts exactly 23 topics (line 202) and total topic text between 18,000 and 22,000 characters. Committed total 21,962; +~3,670 → ~25,630, failing both limits. Fix: name the test in Scope and in Mechanism tests to expect touching, and in REQ-220's acceptance criteria give the new topic count (24) and the new ceiling. Raising a prompt-size guard is an owner-visible choice.
+  3. (Minor) `apps/backend/src/eval/fixtures/checklist-report.golden.txt` is a third committed golden (one row per fixture), asserted by the golden-scenario test; it must gain two rows. Name it in the fixture scope and REQ-221's golden criterion, and keep the 0-of-31-goldens wording scoped to prompt and context goldens.
+  4. (Minor) The 3,662-character topic cost is rule text only; through `formatGameRulesSection` the real addition is about 3,720 (title line plus separators). Say about 3,700, or state that 3,662 is rule text only.
+  5. (Minor) Neighbouring restatements lack disposition rows: `functional-requirements.md:1782` (REQ-074, lookup omits System 2 game-state topic gating), `quick-lookup/README.md:215` (same), and `quick-lookup/README.md:200` (three things always run regardless of the attached card set). All still true (the new gate is card-wording, not game-state; the lookup topic list stays a superset of the core four). Add unchanged, still-true rows.
+
+On finding 1, the driver notes a third path for you to evaluate alongside the two gate-qc named: take the nine rules' text from the committed `apps/backend/data/gameRulesRuleIndex.json` (the 2026-06-05 text the shipped artifacts already use; gate-qc attempt 3 confirmed all nine rules are in it), so the new topic needs no source file and every other artifact stays on one rules version. Check whether the build script or manifest can take that path, or what the builder would do instead, and verify by measurement (a scratch build outside the repo is fine) rather than by reasoning. Choose the path the evidence supports, state it and its reason in the brief, and make REQ-220's byte-identical criterion match. A full rules-text refresh is a separate scope; if you conclude it is required, put it to the owner as its own gate question rather than folding it in.
+
+On finding 2, the new topic count and character ceiling are an owner-visible choice: propose the specific new limits, measured, inside REQ-220's acceptance criteria and its plain-language block, so the owner's verdict on REQ-220 covers them.
+
+For each finding, grep the whole package (brief, every `GATE-QUESTIONS.md` block and diff, README, IDEA, script comments) case-insensitively at line level for every occurrence of the affected wording and fix each hit. Before you finish, re-read the brief's build instructions as the builder will and confirm each step can actually be executed in a fresh `.worktrees/implement-niche-interaction-rule-tests` worktree cut from `origin/main` (gitignored files absent), and that every existing gating test the change touches is named. Keep the plain-language block and verdict slot shape in `GATE-QUESTIONS.md`. When done, set `STATUS.refined` (single marker, `git mv`), README frontmatter, and move the `PRD/work/STATUS.md` board row fully from refining to refined.
+
+Never edit `PRD/sections/`, code, `GRAPH-RUN.md`, or the README `## Preparation gate` section. Do not commit or push; the driver commits. No live model calls. Apply the assumption ladder and genuine-blocker test from `PRD/instructions/preparation-contract.md` per question as each arises.
+
+Report back: outcome, each finding and the lines you changed for it, the build path chosen for finding 1 with its measured evidence, the proposed limits for finding 2, files changed, and the STATUS marker set.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -242,3 +269,4 @@ Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS
 | "i want to operate under the assumption that he did add the cards (even if he really didnt)" | answered-once | define | — |
 | "we should be doing a full test of all use cases were using to validate output of rules, this is just expanding on it" | answered-once | define | — |
 | "if were going to adjust the output format, we again need to test, lets start with making the rules correct, and then we can make the output pretty" | answered-once | define | — |
+| "dont worry about usage, keep going" | answered-once | gate-qc | — |
