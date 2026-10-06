@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rules-test-harness](rules-test-harness/) | Run 1 of the rules test harness: six-layer-ready case format, offline card and rule gate, on-demand answer grader, owner review flow, ~400 cases. Graph run `graph-20261006-181340`; intake is evidence only |
 
 ## owner-action
 
