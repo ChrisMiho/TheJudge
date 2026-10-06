@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/rules-test-harness` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rules-test-harness` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-181340/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/rules-test-harness/`
+- Current node: `owner-action` (parked after the fourth gate-qc FAIL)
+- Next action: owner decides on one more define pass (see `## Open gate`), then `/graph-kickoff PRD/work/rules-test-harness/`
 
 ## Node ledger
 
@@ -22,10 +22,13 @@
 | 7 | define | opus | ok | `0 → 50` | attempt 3: 8 attempt-2 findings fixed in `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `IDEA.md` (review command renders stale approved cases and apply re-records `snapshot`, slice D; stack `owner`/`caster` loader rule; slice A builds the In-Depth request; apply-order rule A21 moves REQ-185→G, REQ-188→F, REQ-189→E, REQ-222→E, REQ-224→E; apply rewrites `coverage.json`; tier-3 ceiling 15 − 2 = 13 sourced; Q-007 intake count 253/252; one twelve-area hard list); M16 re-run with twelve areas (2,651 hard-area two-card rulings, 1,232 negative-phrased); `STATUS.refined` | 2026-10-06 |
 | 8 | gate-qc | sonnet | failed | `0 → 56` | FAIL attempt 3 (3rd FAIL; final loop to define): all 8 attempt-2 findings confirmed resolved, no attempt-1 regression; 2 Minor findings (18 migrated cases ship `approved` vs no-agent-approves rule in REQ-185/REQ-224/A19; awaiting-re-freeze state has no owning slice or test); 3 advisories; diffs exact, 220 hits = 220 rows, M1/M7/M8/M15/M16 reproduced; `STATUS.refining`; findings in README `## Preparation gate` | 2026-10-06 |
 | 9 | define | opus | ok | `0 → 56` | attempt 4: 2 attempt-3 findings + 2 advisories fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (18 first-ship cases approved by the owner accept of REQ-185 — carve-out in REQ-185, REQ-224, A1, A19; slice B owns the query-text hash re-freeze check, slice E staleness reads it, fixture tests both; slice A names `scripts/eval-answer-quality.mjs`, `eval-worked-solutions.mjs`, `gold-cases.mjs` + tests; stale case excluded from REQ-187 headline with a stale count, A22); no new blocker questions; `STATUS.refined` | 2026-10-06 |
+| 10 | gate-qc | sonnet | parked | `0 → 25` | FAIL attempt 4 = 4th FAIL → parked at owner-action per the three-loop cap: 2 Minor findings (re-approved stale case never re-graded under `--changed` when only its reference answer changed — add the reference-answer hash to the trigger and pin when it counts again; `DESIGN-BRIEF.md:125` cites M14, should be M13); 3 advisories; attempt-3 findings and advisories confirmed resolved, no regression; 220 hits = 220 rows, diffs exact, M1/M12/M15/M16 reproduced; `STATUS.owner-action`; findings in README `## Preparation gate` | 2026-10-06 |
 
 ## Open gate
 
-- None
+- Question: gate-qc failed a fourth time (attempt 4), so the run parked under the three-loop cap. Both findings are Minor (README `## Preparation gate`): a re-approved stale case is never re-graded when only its reference answer changed (add the reference-answer hash to the `--changed` trigger and say when it counts again), and one wrong measurement citation (M14 → M13). Does the owner authorize one more define pass limited to those two findings (and, optionally, the three advisories), followed by gate-qc?
+- Evidence: ledger rows 4–10; README `## Preparation gate`; branch `thejudge-auto/rules-test-harness` at the commit that records this park. No docs PR is open yet — it opens only at a gate-qc PASS.
+- Resume: owner says go → `/graph-kickoff PRD/work/rules-test-harness/` (re-take the lock with `graph-preflight --take-lock --slug rules-test-harness --run-id graph-20261006-181340`, then define attempt 5 on these findings, then gate-qc attempt 5; on PASS the run publishes and opens the docs PR into `main`).
 
 ## Dispatch prompts
 
