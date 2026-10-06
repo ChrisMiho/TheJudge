@@ -1,0 +1,50 @@
+{
+  "id": "ward-winter-cursed-rider",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "343833c1-19fd-4e8f-b82e-0f20903caaff",
+      "name": "Winter, Cursed Rider"
+    }
+  ],
+  "gameState": null,
+  "question": "A permanent has two instances of ward. When it becomes the target of a spell, do both ward abilities trigger?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: multiple instances of ward each trigger separately.",
+    "answer": "Multiple instances of ward each trigger separately.",
+    "decidingRuleIds": ["702.21a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Winter, Cursed Rider",
+    "oracleId": "343833c1-19fd-4e8f-b82e-0f20903caaff",
+    "rulingDate": "2025-02-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "504235b161fe4693ada2ff38e4315835f36dc650e0c92195d8d49b0ea97b6fcc",
+      "oracle": "ee6c8e8811bdcf9e8a1762003d274f698e991c7a85545e419bc2bd73d32bcdb3",
+      "rulings": "fc1a70fb881a9fe9b989e574ebd7282e1d94444f4680f6d67f0866de02c12784"
+    }
+  },
+  "whyHard": "Players treat repeated keywords as redundant, which is true for some keywords but not for ward."
+}

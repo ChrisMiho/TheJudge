@@ -1,0 +1,50 @@
+{
+  "id": "champion-wren-s-run-packmaster",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "d4d27fef-e86b-4dd3-a15e-a0db8d0725ee",
+      "name": "Wren's Run Packmaster"
+    }
+  ],
+  "gameState": null,
+  "question": "Does Wren's Run Packmaster give deathtouch only to the Wolf tokens it creates?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it gives deathtouch to all Wolf permanents you control, not just the tokens it creates.",
+    "answer": "Wren's Run Packmaster gives deathtouch to all Wolf permanents you control, not just the tokens it creates.",
+    "decidingRuleIds": ["702.72a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Wren's Run Packmaster",
+    "oracleId": "d4d27fef-e86b-4dd3-a15e-a0db8d0725ee",
+    "rulingDate": "2007-10-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "07292f71b47cccd9beafd3a367a454c2d845d3d8a3af44d9af7dfa30dcf28365",
+      "oracle": "4e12abc6ceaf023d6bfaf502a6fce6bb68db2758fcb23ff8baf0ed1c20bc9156",
+      "rulings": "5e4c1208858502965044b06372cf91142afd01b8ea135ac696a01092d3d60e81"
+    }
+  },
+  "whyHard": "The Wolf tokens are created by the same card, so players assume its bonus is for them alone."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "destroy-knight-of-the-mists",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "e9893534-3d05-42c2-93ff-f28ffae89aa3",
+      "name": "Knight of the Mists"
+    }
+  ],
+  "gameState": null,
+  "question": "Knight of the Mists says that when it enters I may pay {U}, and if I don't, I destroy target Knight. Can the Knight I destroy belong to an opponent?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it can destroy an opponent's Knight.",
+    "answer": "Can destroy an opponent’s knight.",
+    "decidingRuleIds": ["701.8a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Knight of the Mists",
+    "oracleId": "e9893534-3d05-42c2-93ff-f28ffae89aa3",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c9b608ac116056f49e960ce57fe81e467bfccf68de7e409fe63271c132335a82",
+      "oracle": "ddbc0604f37f7b5bf7079dfa40b24e5e4d9891e224583dfb9148a6af65d30dd3",
+      "rulings": "1e473aa97ebf624f1033f62480e0379bed2b07f0e5c85bf9a97d24847e95bd76"
+    }
+  },
+  "whyHard": "The effect reads as a drawback, so players assume the target must be their own Knight."
+}

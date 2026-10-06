@@ -1,0 +1,50 @@
+{
+  "id": "venture-into-the-dungeon-zalto-fire-giant-duke",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "fb1c507d-ef94-438e-bee5-29eb48dc8e70",
+      "name": "Zalto, Fire Giant Duke"
+    }
+  ],
+  "gameState": null,
+  "question": "If Zalto, Fire Giant Duke is dealt lethal damage, do I still get to venture into the dungeon?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you still venture into the dungeon.",
+    "answer": "If Zalto is dealt lethal damage, you will still get to venture into the dungeon.",
+    "decidingRuleIds": ["701.49a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Zalto, Fire Giant Duke",
+    "oracleId": "fb1c507d-ef94-438e-bee5-29eb48dc8e70",
+    "rulingDate": "2021-07-23",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "6affa68293b6f6f2767e985d85d08edbb24230874f415be676afb7f790f6748b",
+      "oracle": "cbcc1625c5dbd02e3df7d63772ddc54901fb8d78de70c255a79a23f1c10009ca",
+      "rulings": "1fe9b0733b1ed9ea9350484d8e37e1f10354e19046ba55d475bdf9a933e08a02"
+    }
+  },
+  "whyHard": "Players expect a creature that dies from damage not to get to use its damage trigger."
+}

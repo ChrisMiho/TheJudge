@@ -470,9 +470,9 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 ## Eval harness
 
 - Status: shipped
-- Summary: Context-evaluation harness with fixtures, golden comparisons, labeled retrieval-relevance checks over prompt assembly and retrieval, and an on-demand answer-quality baseline that scores the model's final answer against published worked solutions.
+- Summary: Context-evaluation harness with fixtures, golden comparisons, labeled retrieval-relevance checks over prompt assembly and retrieval, an offline gate over the rules test corpus that checks every attached card and deciding rule reaches the prompt and every real mechanic has a case, and an on-demand answer-quality baseline that scores the model's final answer against each case's approved answer.
 - Lives in: `apps/backend/src/eval/`
-- Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032, NFR-018, REQ-185
+- Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032, NFR-018, REQ-185, REQ-222, REQ-223, REQ-224, REQ-225
 
 ### Context evaluation harness
 

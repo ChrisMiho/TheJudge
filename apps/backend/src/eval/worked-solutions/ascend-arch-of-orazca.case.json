@@ -1,0 +1,50 @@
+{
+  "id": "ascend-arch-of-orazca",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "3bb518ff-399b-4ce7-b9ad-a1d563dd7792",
+      "name": "Arch of Orazca"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast a spell with ascend, do I get the city's blessing before the spell resolves?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you do not get the city's blessing until the spell resolves, and players may respond to change that.",
+    "answer": "If you cast a spell with ascend, you don't get the city's blessing until it resolves. Players may respond to that spell by trying to change whether you get the city's blessing.",
+    "decidingRuleIds": ["702.131a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Arch of Orazca",
+    "oracleId": "3bb518ff-399b-4ce7-b9ad-a1d563dd7792",
+    "rulingDate": "2018-01-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "3f98786f61abacc71ef96ef3bbea73adad8d027801b83dee39d9294b1c7c7a0c",
+      "oracle": "b3e88f5bef613cb6f208e1481b75b48a8dcbc1feb0b71a88c2a6ff61e16a1b58",
+      "rulings": "634489bcae55bc974a0c7917b64fa26632b14f0e34ea2631c22f2079f6c176a5"
+    }
+  },
+  "whyHard": "Ascend checks your permanents, so players expect it to apply as soon as the spell is cast."
+}

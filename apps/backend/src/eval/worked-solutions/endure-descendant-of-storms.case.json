@@ -1,0 +1,50 @@
+{
+  "id": "endure-descendant-of-storms",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "ca773c52-ca64-463c-99cf-e71b59d2cff7",
+      "name": "Descendant of Storms"
+    }
+  ],
+  "gameState": null,
+  "question": "If a noncreature permanent is told to endure, can it still get +1/+1 counters or make a Spirit token?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the effect is the same, either +1/+1 counters on that permanent or a Spirit token.",
+    "answer": "If a noncreature permanent is instructed to endure, the effect is the same. You can put +1/+1 counters on that permanent or create a Spirit token.",
+    "decidingRuleIds": ["701.63a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Descendant of Storms",
+    "oracleId": "ca773c52-ca64-463c-99cf-e71b59d2cff7",
+    "rulingDate": "2025-04-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "1e5c5318adbfee49b345888705343d95216fe8b63f89c8ec4baacf734317d330",
+      "oracle": "d8557d4df5c5dec1a81c22e2c9ddd7dec0358cf3685609efce7521dcd9bd7051",
+      "rulings": "f672801b702a971a4ebc0366e80426c18f33408bedcecfa82cb4043799f1f4b9"
+    }
+  },
+  "whyHard": "Counters on a noncreature permanent look pointless, so players think only the token option applies."
+}

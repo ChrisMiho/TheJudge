@@ -1,0 +1,50 @@
+{
+  "id": "incubate-merciless-repurposing",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "2e1b5ae6-a29d-4f37-a380-eebee6cdcbd2",
+      "name": "Merciless Repurposing"
+    }
+  ],
+  "gameState": null,
+  "question": "If the target of Merciless Repurposing becomes illegal before it resolves, do I still incubate 3?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the spell does not resolve, so none of its effects happen and you do not incubate.",
+    "answer": "If the target of Merciless Repurposing is illegal as the spell tries to resolve, it won't resolve and none of its effects will happen. You won't incubate.",
+    "decidingRuleIds": ["701.53a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Merciless Repurposing",
+    "oracleId": "2e1b5ae6-a29d-4f37-a380-eebee6cdcbd2",
+    "rulingDate": "2023-04-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "3012685ba46517f5134808af5c80c551db7bb21e229f07ac38698513ff265789",
+      "oracle": "3bbbd53313f29f8e2207494c8ce25f24b36e545f83b3e9b10edbe0d1b6fb3e72",
+      "rulings": "74fa9b7f7a722807949275004f25fe05a2555b2e767c9f71cfd5fd4703c13abf"
+    }
+  },
+  "whyHard": "Incubate is not targeted, so players think it happens even when the exile does not."
+}

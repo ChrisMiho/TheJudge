@@ -1,0 +1,50 @@
+{
+  "id": "harness-the-soul-stone",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "92cfba68-12f6-4f97-9187-0f6a39656a0f",
+      "name": "The Soul Stone"
+    }
+  ],
+  "gameState": null,
+  "question": "Does the word 'harnessed' mean anything special in the rules for The Soul Stone, beyond being a mark that its infinity ability can see?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: harnessed is only a designation that the permanent has once it is harnessed.",
+    "answer": "\"Harnessed\" is a designation that the permanent has once an ability instructs you to harness it. It has no special rules meaning other than being a designation that the ∞ ability (and, theoretically, other effects) can see.",
+    "decidingRuleIds": ["701.64a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "The Soul Stone",
+    "oracleId": "92cfba68-12f6-4f97-9187-0f6a39656a0f",
+    "rulingDate": "2025-09-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "bf9c99a6cc6995265a7749067021d07c5652b91e68806b5fc389a4e500eba2ac",
+      "oracle": "f67a2fa48d29665ccfde5a8ae6965a541d474a6464d11b655714e1379f648b71",
+      "rulings": "f7e144c49d8b300b0084880602a4eaad1821bdf816bb743c6c766f8a270ffdbd"
+    }
+  },
+  "whyHard": "Players treat harnessed like a state with its own rules, such as tapped or transformed."
+}

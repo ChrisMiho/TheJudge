@@ -1,0 +1,50 @@
+{
+  "id": "riot-spider-punk",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "03bf7a90-78c1-4e83-8553-e22d85e49876",
+      "name": "Spider-Punk"
+    }
+  ],
+  "gameState": null,
+  "question": "Can players respond to my choice of a +1/+1 counter or haste for riot?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: riot is a replacement effect, so players cannot respond to your choice.",
+    "answer": "Riot is a replacement effect. Players can't respond to your choice of a +1/+1 counter or haste.",
+    "decidingRuleIds": ["702.136a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Spider-Punk",
+    "oracleId": "03bf7a90-78c1-4e83-8553-e22d85e49876",
+    "rulingDate": "2025-09-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "f240515c7f7278560a64342bedfc14ab5de640aafa35e424f29eed419a4620b5",
+      "oracle": "610cc83558311edb6adc7b8fbda4fd997b2c8537e0c76714cd3e45ada71e25dc",
+      "rulings": "3e98a907220b163302e76db209c78408a416804781175e677dced98930e7c82f"
+    }
+  },
+  "whyHard": "Players treat riot as a triggered ability and expect to get priority to respond."
+}

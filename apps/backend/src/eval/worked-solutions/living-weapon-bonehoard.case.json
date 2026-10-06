@@ -1,0 +1,50 @@
+{
+  "id": "living-weapon-bonehoard",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "83c69c05-173d-4c1b-9541-1dde474fef5f",
+      "name": "Bonehoard"
+    }
+  ],
+  "gameState": null,
+  "question": "If no creature cards are in any graveyard when Bonehoard's living weapon ability resolves, does the Germ token survive?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the Germ is 0/0 and goes to its owner's graveyard.",
+    "answer": "If there are no creature cards in any graveyard when Bonehoard's living weapon ability resolves, the Germ will be 0/0 and put into its owner's graveyard.",
+    "decidingRuleIds": ["702.92a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Bonehoard",
+    "oracleId": "83c69c05-173d-4c1b-9541-1dde474fef5f",
+    "rulingDate": "2011-06-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "78039f5dc1247543526689a0506b598e32fc8569915b1b25a2714885cf5c219d",
+      "oracle": "3706e6dc31318fd342da1a40c3009854b9033ea9d58d29edfc98d832dac9713a",
+      "rulings": "5653f6a29b6c9bbb268e4ac3ba898a7a52de7c27206b0e33232537bdb6d17457"
+    }
+  },
+  "whyHard": "The Germ is created before the Equipment's bonus is counted, but with nothing to count it dies as soon as state-based actions are checked."
+}

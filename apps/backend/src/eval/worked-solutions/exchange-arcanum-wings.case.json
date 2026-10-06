@@ -1,0 +1,50 @@
+{
+  "id": "exchange-arcanum-wings",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "b8cc7a78-a627-4e56-b1fc-0b2bd844ef68",
+      "name": "Arcanum Wings"
+    }
+  ],
+  "gameState": null,
+  "question": "Arcanum Wings has Aura swap, which exchanges it with an Aura card in my hand. Does the exchange happen all at once when the ability resolves?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the exchange is simultaneous and happens on resolution.",
+    "answer": "The exchange is simultaneous, and happens on resolution.",
+    "decidingRuleIds": ["701.12a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Arcanum Wings",
+    "oracleId": "b8cc7a78-a627-4e56-b1fc-0b2bd844ef68",
+    "rulingDate": "2007-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "1b89f7e2ca985f5fd69b50c6a34c17bf44b17ee810f9e348cd37c446accae965",
+      "oracle": "de82c98ee08a4313dfe3b44851fd7337c7a9f955f93505fcf9e20063fe6a38a4",
+      "rulings": "375880ca6f80d17bc68d39877aff79b8d42c4fb02199558454001d81c4a1adac"
+    }
+  },
+  "whyHard": "Players imagine the old Aura leaving and the new one entering as two separate steps."
+}

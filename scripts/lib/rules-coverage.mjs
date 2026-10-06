@@ -214,10 +214,17 @@ export function formatCoverageReport({ coverage, mechanics, excluded, uncoveredL
   const label = (id) => (names.get(id) ? `${id} ${names.get(id)}` : id);
   const required = mechanics.length - buckets.excluded.length;
   const covered = buckets.approved.length + buckets.draft.length + buckets.needsEdit.length;
+  const coveredIds = new Set([...buckets.approved, ...buckets.draft, ...buckets.needsEdit]);
+  const excludedIds = new Set(buckets.excluded);
+  const byKind = (kind) => {
+    const ofKind = mechanics.filter((mechanic) => mechanic.kind === kind && !excludedIds.has(mechanic.id));
+    return `${ofKind.filter((mechanic) => coveredIds.has(mechanic.id)).length} of ${ofKind.length}`;
+  };
   const lines = [
     "RULES TEST CORPUS COVERAGE (REQ-223)",
     `Mechanics in the committed rule index: ${mechanics.length} (${mechanics.filter((m) => m.kind === "action").length} keyword actions, ${mechanics.filter((m) => m.kind === "ability").length} keyword abilities); excluded: ${buckets.excluded.length}; need a case: ${required}`,
     `Covered: ${covered} of ${required} (${percent(covered, required)}): ${buckets.approved.length} approved, ${buckets.draft.length} draft only, ${buckets.needsEdit.length} needs-edit only. Uncovered: ${buckets.none.length}.`,
+    `Covered by kind: ${byKind("action")} keyword actions, ${byKind("ability")} keyword abilities.`,
     "",
     "Excluded (joke-only, owner's list):",
     ...(excluded.length === 0 ? ["  (none)"] : excluded.map((entry) => `  ${entry.id} ${entry.name}: ${entry.reason}`)),

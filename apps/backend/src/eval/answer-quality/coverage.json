@@ -2,9 +2,7 @@
   "mechanics": {
     "total": 258,
     "approved": ["702.19"],
-    "draft": [],
-    "needsEdit": [],
-    "none": [
+    "draft": [
       "701.2",
       "701.3",
       "701.4",
@@ -261,6 +259,8 @@
       "702.191",
       "702.192"
     ],
+    "needsEdit": [],
+    "none": [],
     "excluded": ["701.45", "702.158"]
   },
   "sections": {
@@ -274,24 +274,34 @@
     "608": 1,
     "613": 1,
     "614": 2,
-    "702": 2,
+    "701": 66,
+    "702": 191,
     "704": 2,
     "707": 2
   },
   "tiers": {
-    "1": 15,
-    "2": 3
+    "1": 20,
+    "2": 253
   },
   "reviewStatus": {
-    "draft": 0,
+    "draft": 255,
     "approved": 18,
     "needs-edit": 0,
     "rejected": 0
   },
   "outcomes": {
-    "works": 10,
-    "does-not-work": 8,
+    "works": 137,
+    "does-not-work": 136,
     "depends": 0
   },
-  "pools": {}
+  "pools": {
+    "mechanic": {
+      "cases": 255,
+      "outcomes": {
+        "works": 127,
+        "does-not-work": 128,
+        "depends": 0
+      }
+    }
+  }
 }

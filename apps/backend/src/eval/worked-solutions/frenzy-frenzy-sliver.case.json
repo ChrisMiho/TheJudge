@@ -1,0 +1,50 @@
+{
+  "id": "frenzy-frenzy-sliver",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "d512d4ae-5db3-4fe5-8017-6a942004712d",
+      "name": "Frenzy Sliver"
+    }
+  ],
+  "gameState": null,
+  "question": "Does an ability that triggers when a creature attacks and is not blocked, like frenzy, trigger for a creature that was put onto the battlefield attacking and is not blocked?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it triggers after blockers are declared if the creature is attacking and no creature blocks it, even if it was put onto the battlefield attacking.",
+    "answer": "An ability that triggers when something “attacks and isn’t blocked” triggers in the declare blockers step after blockers are declared if (1) that creature is attacking and (2) no creatures are declared to block it. It will trigger even if that creature was put onto the battlefield attacking rather than having been declared as an attacker in the declare attackers step.",
+    "decidingRuleIds": ["702.68a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Frenzy Sliver",
+    "oracleId": "d512d4ae-5db3-4fe5-8017-6a942004712d",
+    "rulingDate": "2013-04-15",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c56949225021645565e2f174ed71e7da53953904649d5a6f4303e489e963d72d",
+      "oracle": "08e9db9328b14eed36879ea415207ab9cbba3a1513fe30675c35dc1e61c2d453",
+      "rulings": "060cf7d9d630f24cfe57c352c787913bf812123cfd0aed017bc9b1bb63787557"
+    }
+  },
+  "whyHard": "Players think the creature has to be declared as an attacker for the trigger to happen."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "assist-bloodborn-scoundrels",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "37c1de8d-30d6-4b08-9368-279cf66d3e85",
+      "name": "Bloodborn Scoundrels"
+    }
+  ],
+  "gameState": null,
+  "question": "Can the player who assists with a spell pay colored mana toward that spell's cost?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: assist can pay only the generic mana portion, and the spell's controller pays all colored mana.",
+    "answer": "Only the generic mana portion of a spell’s cost can be paid with assist. Any colored mana costs must be paid by the spell’s controller, even if the assisting player paid mana of that color.",
+    "decidingRuleIds": ["702.132a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Bloodborn Scoundrels",
+    "oracleId": "37c1de8d-30d6-4b08-9368-279cf66d3e85",
+    "rulingDate": "2018-06-08",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "de00140e0c7760dcf8040ae92a44f9a3b6015c8b2f0a74bd500566591f2111b4",
+      "oracle": "f090cab29b0185e536b469323574a572aba752742a541461386f590ab7d71cd5",
+      "rulings": "f85eafed5de89d979a2778f43351357dcfa179cde5126dfd3dbfc6a034fc3910"
+    }
+  },
+  "whyHard": "Assist lets another player pay up to some mana, and players assume any type works."
+}

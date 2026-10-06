@@ -1,0 +1,50 @@
+{
+  "id": "reach-canopy-spider",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "37f3733e-cc4e-4d84-b29b-d474f6e254a2",
+      "name": "Canopy Spider"
+    }
+  ],
+  "gameState": null,
+  "question": "Can a creature with reach block a creature that has flying?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: a creature with flying can be blocked by creatures with flying or reach.",
+    "answer": "This card now uses the Reach keyword ability to enable the blocking of flying creatures. This works because a creature with flying can only be blocked by creatures with flying or reach.",
+    "decidingRuleIds": ["702.17a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Canopy Spider",
+    "oracleId": "37f3733e-cc4e-4d84-b29b-d474f6e254a2",
+    "rulingDate": "2008-04-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "dfbd52479752200149316b05e3040895ac903bce630fe0280402fa9b72242098",
+      "oracle": "d83f4c195d1575f0b641ff45964f986ffd5c2fd30a9057e8d70ee471723a0958",
+      "rulings": "db47bb895a28b94140e1a7619f485e06224c00642e25c2d6c69585dafadaf5f2"
+    }
+  },
+  "whyHard": "Reach is a separate keyword from flying, so players think a flyer needs a flying blocker."
+}

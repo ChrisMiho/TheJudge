@@ -1,0 +1,50 @@
+{
+  "id": "explore-nicanzil-current-conductor",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "4cb86fb6-3e06-4c67-aee0-d5952178f664",
+      "name": "Nicanzil, Current Conductor"
+    }
+  ],
+  "gameState": null,
+  "question": "If a creature leaves the battlefield before an effect tells it to explore, does it still explore, and do abilities like Nicanzil's that trigger when it explores still trigger?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it still explores and the abilities still trigger.",
+    "answer": "If a creature leaves the battlefield before an effect instructs it to explore, it still explores. Abilities like Nicanzil's that trigger whenever a creature you control explores will still trigger.",
+    "decidingRuleIds": ["701.44a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Nicanzil, Current Conductor",
+    "oracleId": "4cb86fb6-3e06-4c67-aee0-d5952178f664",
+    "rulingDate": "2023-11-10",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a2af59fd5ecbb9ee5471402e1a9631e83ffb8674e54f856bfade1909ed5699f0",
+      "oracle": "5b33cc4c8df6613b1a6b2993a3f38a2dca043cd256ea9313a1db0f3f1d64c610",
+      "rulings": "6caffd2c5b1e33eec8e97c18e111d680d3dee6002f7f0377114eebe242c2344d"
+    }
+  },
+  "whyHard": "Players think a creature that is gone cannot do anything, including exploring."
+}

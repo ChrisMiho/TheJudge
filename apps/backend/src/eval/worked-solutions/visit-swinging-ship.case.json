@@ -1,0 +1,50 @@
+{
+  "id": "visit-swinging-ship",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "65215f0d-d664-44ac-8c27-c4b5a1a01c11",
+      "name": "Swinging Ship"
+    }
+  ],
+  "gameState": null,
+  "question": "If I somehow visit Swinging Ship after the first combat phase of a turn has already ended, does it create an additional combat phase?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: visiting it after the first combat phase has ended has no effect and no additional combat phase is created.",
+    "answer": "If you somehow visit Swinging Ship after the first combat phase of a turn has ended, it won’t have any effect. No additional combat phase will be created.",
+    "decidingRuleIds": ["702.159a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Swinging Ship",
+    "oracleId": "65215f0d-d664-44ac-8c27-c4b5a1a01c11",
+    "rulingDate": "2022-10-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "eb5b91b9d49672bc81d6ffa130dc66e18b030f5e5ab6d3c2c5d78b65f849e314",
+      "oracle": "96566abe1d8ba281fea063036266054c027f96a508fac23f2789d7c9f25b72cf",
+      "rulings": "b4e069d70896d339838fa4125935367813aacfaf493de392dda063df658c2979"
+    }
+  },
+  "whyHard": "Players read 'after the first combat phase' as a trigger that can happen at any later time."
+}

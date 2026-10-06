@@ -1,0 +1,50 @@
+{
+  "id": "daybound-and-nightbound-shady-traveler-stalking-predator",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "10be1b27-bc9f-4c6e-ac85-f1fa8b2a34d6",
+      "name": "Shady Traveler // Stalking Predator"
+    }
+  ],
+  "gameState": null,
+  "question": "Is 'day' or 'night' a designation that the game itself can have, going back and forth once it has started?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the game starts as neither, and once it becomes day or night it is exactly one of them from then on.",
+    "answer": "Day and night are designations that the game itself can have. The game starts as neither. Once the game becomes day (or less commonly, night), the game will be exactly one of them—day or night—going back and forth for the rest of the game.",
+    "decidingRuleIds": ["702.145a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Shady Traveler // Stalking Predator",
+    "oracleId": "10be1b27-bc9f-4c6e-ac85-f1fa8b2a34d6",
+    "rulingDate": "2021-09-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "24b809b7e841c4ec108f70b9ba7444f70ae874e46077eb8079355003aa71894b",
+      "oracle": "d9f4fbd8258587552ce015d0ee70c437461d99759e0373167426f6c94af4f314",
+      "rulings": "66287789ffabb9485a3bc61284b7cc6d6b3c037ff70ded42f0d775707f29cf51"
+    }
+  },
+  "whyHard": "Day and night are not zones or counters on a card, so players are unsure what object holds them."
+}

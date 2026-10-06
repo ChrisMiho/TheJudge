@@ -1,0 +1,50 @@
+{
+  "id": "web-slinging-spider-man-brooklyn-visionary",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "2ca85872-9436-4515-af50-c13e59605627",
+      "name": "Spider-Man, Brooklyn Visionary"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I cast a creature spell for its web-slinging cost at instant speed?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you must follow all normal timing rules, so a creature is usually cast in a main phase with the stack empty.",
+    "answer": "You must follow all normal timing rules when casting a spell with web-slinging. For creatures, that usually means you must cast it during a main phase of your turn while the stack is empty.",
+    "decidingRuleIds": ["702.188a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Spider-Man, Brooklyn Visionary",
+    "oracleId": "2ca85872-9436-4515-af50-c13e59605627",
+    "rulingDate": "2025-09-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "f21ee8b717e39fab0d88a363340d116fb8cbfa135dca86f42efc76a09279d53b",
+      "oracle": "640cd43324c0956b64e1a240168e40c66fd303aedd1c767335d82bbf9f7da7c7",
+      "rulings": "a4adf365fbc3b9f861623465e15111580adcafe1c24930941244817578cdbaf3"
+    }
+  },
+  "whyHard": "Returning a creature as part of the cost looks like a surprise play with flash-like timing."
+}

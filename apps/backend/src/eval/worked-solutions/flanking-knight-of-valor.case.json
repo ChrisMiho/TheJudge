@@ -1,0 +1,50 @@
+{
+  "id": "flanking-knight-of-valor",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "f2edb543-de33-4eed-892c-98038eec96e2",
+      "name": "Knight of Valor"
+    }
+  ],
+  "gameState": null,
+  "question": "If an effect removes flanking from Knight of Valor, does it also remove the Knight's second ability that gives blocking creatures -1/-1?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the second ability is not flanking and is not removed by an effect that removes flanking.",
+    "answer": "The second ability is not Flanking and is not removed by an effect that removes Flanking.",
+    "decidingRuleIds": ["702.25a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Knight of Valor",
+    "oracleId": "f2edb543-de33-4eed-892c-98038eec96e2",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "95e57ca522156b4dacf29ccc9258425d650000cf72d03dd22de35336e0f165f5",
+      "oracle": "40f2848c20472d9c65971bcd3434e46b3d808aa9299c97545d5ef761a1407799",
+      "rulings": "62d0338985797fd219ca433ec0ad46df0d3b78fdaa26f623bde2afad1d25b9b6"
+    }
+  },
+  "whyHard": "Two abilities on one card that work almost the same way make players treat them as one."
+}

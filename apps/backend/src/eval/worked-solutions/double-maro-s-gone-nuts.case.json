@@ -1,0 +1,50 @@
+{
+  "id": "double-maro-s-gone-nuts",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "8b72aca0-69b6-4829-b3cd-0f8713b7303f",
+      "name": "Maro's Gone Nuts"
+    }
+  ],
+  "gameState": null,
+  "question": "Maro's Gone Nuts doubles any effect that doubles. Does it also double a creature's double strike?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: double strike is not an effect, so it is not doubled.",
+    "answer": "Double strike isn’t an effect, so it’s not doubled.",
+    "decidingRuleIds": ["701.10a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Maro's Gone Nuts",
+    "oracleId": "8b72aca0-69b6-4829-b3cd-0f8713b7303f",
+    "rulingDate": "2019-11-12",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "bf019ac298e435a74c7ce16637ce9a735356b86482403f096d7670b75c7e2d5f",
+      "oracle": "a69d6690f9f61078b20a5272132b0290a45f6ec43c0df99f2faf831c982de71f",
+      "rulings": "7c2b4c1550f3999f06d014b5accce56dea4030e6754aef4109ddc88ba8f0a0c9"
+    }
+  },
+  "whyHard": "The word 'double' is shared, so players assume the doubler applies to double strike too."
+}

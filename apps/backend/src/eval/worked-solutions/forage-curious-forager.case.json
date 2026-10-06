@@ -1,0 +1,50 @@
+{
+  "id": "forage-curious-forager",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "30af656a-99ab-4e0a-81fe-3cdb0ea6a0cc",
+      "name": "Curious Forager"
+    }
+  ],
+  "gameState": null,
+  "question": "If I have fewer than three cards in my graveyard and no Food on the battlefield, can I still choose to forage?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if you cannot pay either way, you cannot choose to forage.",
+    "answer": "If you don't have enough cards in your graveyard or a Food on the battlefield, you can't choose to forage.",
+    "decidingRuleIds": ["701.61a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Curious Forager",
+    "oracleId": "30af656a-99ab-4e0a-81fe-3cdb0ea6a0cc",
+    "rulingDate": "2024-07-26",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "863471667655a0e7c5611d256c083a70f372ee9ea33680ef6b33e077220e5f58",
+      "oracle": "0f5c01b224f41f08bc53029441ab6e5f2975ed47c9482ad23a500ce016d74b2f",
+      "rulings": "22b7a4e3b6a1b20c372480d2bd07973e149ae013146e2a7efda6156fa5509ace"
+    }
+  },
+  "whyHard": "A 'you may' effect reads as always available, even when its cost cannot be paid."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "shadow-augur-il-vec",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "34e05dc1-35af-402d-96ae-e249b3738493",
+      "name": "Augur il-Vec"
+    }
+  ],
+  "gameState": null,
+  "question": "If a creature has shadow twice, is it harder to block than a creature with a single shadow?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: multiple instances of shadow on the same creature are redundant.",
+    "answer": "Multiple instances of shadow on the same creature are redundant.",
+    "decidingRuleIds": ["702.28a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Augur il-Vec",
+    "oracleId": "34e05dc1-35af-402d-96ae-e249b3738493",
+    "rulingDate": "2021-03-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "dfdf625e5a5629f50bfc9c71c45dd25ea13bf18461a117a9d07d8020111b832c",
+      "oracle": "190f70118f770baf49bcde6622c3a03ce8bdb8d4bee99ef38eedb9e516f97db8",
+      "rulings": "a8addce1916016f8f2dc55b6419bf0de2aadcd2d0505078825f26c11a11c3e21"
+    }
+  },
+  "whyHard": "Stacking the same evasion keyword looks like it should make a creature even harder to block."
+}

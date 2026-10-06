@@ -1,0 +1,50 @@
+{
+  "id": "fortify-darksteel-garrison",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "48bf020e-45b9-4c27-82e0-80d942656a67",
+      "name": "Darksteel Garrison"
+    }
+  ],
+  "gameState": null,
+  "question": "Does Darksteel Garrison's second ability trigger only when the fortified land is tapped for mana?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it triggers whenever the fortified land becomes tapped, not just when it is tapped for mana.",
+    "answer": "The second ability triggers whenever the fortified land becomes tapped, not just when it’s tapped for mana.",
+    "decidingRuleIds": ["702.67a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Darksteel Garrison",
+    "oracleId": "48bf020e-45b9-4c27-82e0-80d942656a67",
+    "rulingDate": "2007-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "6a374503f29403e94b560ab4deaafcb6d69c5f2211ca6afb9dd4dfc945e83ac6",
+      "oracle": "c8cc0732b4d3f4874a482e27a0f7f2d5d125a7b5242f03fea9ca111dbaf40957",
+      "rulings": "d8c7e5ec63fc24a6c89b9ec9706762d7b507843fec4794d0dd2052e01db5699c"
+    }
+  },
+  "whyHard": "Lands usually become tapped for mana, so players assume 'becomes tapped' is limited to that."
+}

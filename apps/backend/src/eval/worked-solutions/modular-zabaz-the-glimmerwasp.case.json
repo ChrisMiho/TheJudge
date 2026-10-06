@@ -1,0 +1,50 @@
+{
+  "id": "modular-zabaz-the-glimmerwasp",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "549dc9f3-1fda-4ad3-87bc-8a990800380b",
+      "name": "Zabaz, the Glimmerwasp"
+    }
+  ],
+  "gameState": null,
+  "question": "Zabaz, the Glimmerwasp adds one extra +1/+1 counter whenever a modular triggered ability puts counters on a creature I control. Does it add one to the counters from its own modular ability?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the replacement effect needs Zabaz on the battlefield, so it does not increase its own modular counters.",
+    "answer": "Zabaz the Glimmerwasp's replacement effect requires it to be on the battlefield to work. Notably, that means it won't increase the counters given by its own modular ability.",
+    "decidingRuleIds": ["702.43a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Zabaz, the Glimmerwasp",
+    "oracleId": "549dc9f3-1fda-4ad3-87bc-8a990800380b",
+    "rulingDate": "2021-06-18",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8844792d04b961789a1ce623db6ecd168c09a59056352994f82c0ada6b5d95c9",
+      "oracle": "b93053ba3cae659a055f8baf58f23c993d534987e36d3576d509e1a55b968c70",
+      "rulings": "1e848a849eb63424036bd065634f69afcb76cf9b794bdf366b39c53e079e62e1"
+    }
+  },
+  "whyHard": "Zabaz has both abilities, so players expect them to work together; modular triggers only after it has died."
+}

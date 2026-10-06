@@ -1,0 +1,50 @@
+{
+  "id": "improvise-barricade-breaker",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "93491d5c-8579-42ed-a700-e5c6f4238dea",
+      "name": "Barricade Breaker"
+    }
+  ],
+  "gameState": null,
+  "question": "Does improvise change a spell's mana cost or mana value?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: improvise does not change a spell's mana cost or mana value.",
+    "answer": "Improvise doesn't change a spell's mana cost or mana value.",
+    "decidingRuleIds": ["702.126a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Barricade Breaker",
+    "oracleId": "93491d5c-8579-42ed-a700-e5c6f4238dea",
+    "rulingDate": "2017-02-09",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "56a20787d386d404e1b21edd3a092c38d947a9cda0f38bd2166e0e59109837ab",
+      "oracle": "be60d694b0323eb36896df2475834742673a847b8fc340f0e3ca00070ea734c9",
+      "rulings": "1e83339a8c5e7c39ba3b686f1cbe347326da9a38abcce8f0d582279ad6db7f4f"
+    }
+  },
+  "whyHard": "Tapping artifacts to help pay looks like a discount on the spell itself."
+}

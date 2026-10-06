@@ -1,0 +1,50 @@
+{
+  "id": "max-speed-amonkhet-raceway",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "fe174586-d36b-40f6-babd-1f98e76eec22",
+      "name": "Amonkhet Raceway"
+    }
+  ],
+  "gameState": null,
+  "question": "Does a player have max speed once their speed is 4?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: a player has max speed if their speed is 4.",
+    "answer": "A player “has max speed” if their speed is 4.",
+    "decidingRuleIds": ["702.178a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Amonkhet Raceway",
+    "oracleId": "fe174586-d36b-40f6-babd-1f98e76eec22",
+    "rulingDate": "2025-02-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ecaeed7c065e85f6c0772f2e54c31b3982fc80871885c6a620ee0058e14cc805",
+      "oracle": "04d3505fdfee496195ef5892aaad2bea8e0d3182fac2176e14813c56a89e21a3",
+      "rulings": "b7f9d0e4d8833424625bc9a1720c75bfebb1fdd2937dcc46c44bd2b53a24e014"
+    }
+  },
+  "whyHard": "Speed starts at 1 and increases on certain turns, so players are unsure where the cap is."
+}

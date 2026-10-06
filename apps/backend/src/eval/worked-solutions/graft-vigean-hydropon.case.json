@@ -1,0 +1,50 @@
+{
+  "id": "graft-vigean-hydropon",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "3eab4c00-a8ae-4912-bee1-68376de700a3",
+      "name": "Vigean Hydropon"
+    }
+  ],
+  "gameState": null,
+  "question": "Vigean Hydropon can't attack or block. Does that mean it has defender?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: even though it can't attack, it doesn't have defender.",
+    "answer": "Even though this creature can't attack, it doesn't have defender.",
+    "decidingRuleIds": ["702.58a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Vigean Hydropon",
+    "oracleId": "3eab4c00-a8ae-4912-bee1-68376de700a3",
+    "rulingDate": "2006-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "859b0e7543f711245cd8ceed0731cc23acbe514186c381c153fa7f99c90e6ad5",
+      "oracle": "a4c8bbf8a1fd40ab44f79fc253eba356d326ebd8b56061684cca7e6027c172c6",
+      "rulings": "f643f757b4204478aa5da7b8f975d8a8a1fa9ab563e7bad89ae1d61d692b26eb"
+    }
+  },
+  "whyHard": "Cannot-attack effects look like defender, but defender is a keyword other cards care about."
+}

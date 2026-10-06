@@ -1,0 +1,50 @@
+{
+  "id": "freerunning-brotherhood-ambushers",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "aea65f96-3c76-4761-9a7a-2d5c10d75ca0",
+      "name": "Brotherhood Ambushers"
+    }
+  ],
+  "gameState": null,
+  "question": "Once an Assassin or commander I control has dealt combat damage to a player, can I cast spells for their freerunning costs for the rest of the turn even if that creature leaves the battlefield?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it does not matter what happens to the Assassin or commander after it deals combat damage.",
+    "answer": "Once an Assassin creature or commander you control deals combat damage to a player in a turn, you can cast spells for their freerunning costs for the rest of that turn. It doesn’t matter what happens to that Assassin or commander after that.",
+    "decidingRuleIds": ["702.173a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Brotherhood Ambushers",
+    "oracleId": "aea65f96-3c76-4761-9a7a-2d5c10d75ca0",
+    "rulingDate": "2024-07-05",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "68af0f71a33a7fb46c2f305afbc90a6f65d5a13fabe467009f97a43c1dd79d64",
+      "oracle": "27e73a9c77e624d78669d52c3514fcbafc3da9100aa2a8d514d70345d4a6a68e",
+      "rulings": "4cc8ceb2bdaf32efd912be96e3b2df528033a91564c0d726920c5a02ee1d7578"
+    }
+  },
+  "whyHard": "Players think the Assassin has to still be around to enable the cost."
+}

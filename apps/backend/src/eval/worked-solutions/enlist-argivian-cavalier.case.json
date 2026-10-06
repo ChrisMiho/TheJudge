@@ -1,0 +1,50 @@
+{
+  "id": "enlist-argivian-cavalier",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "c45090bd-a589-45a0-8388-025b8e0b3487",
+      "name": "Argivian Cavalier"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I tap two creatures for one enlist ability, or use one creature for several enlist abilities?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you may tap only one creature for an enlist ability, and a creature cannot be tapped for more than one.",
+    "answer": "You may tap only one creature for an enlist ability of an attacking creature, and a single creature can’t be tapped for more than one enlist ability.",
+    "decidingRuleIds": ["702.154a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Argivian Cavalier",
+    "oracleId": "c45090bd-a589-45a0-8388-025b8e0b3487",
+    "rulingDate": "2022-09-09",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c9ef4e7b7b170d068ff80cbe594decd4b7270e9f0112de716af9bb62504e9442",
+      "oracle": "491764b32f0ddb637c3cca01daba177803a17997665efb34ccdd34cb5aa97dae",
+      "rulings": "1b65a251610ae87ad4b2dd42911bb6849ddfaaaa3e6f9044c1e74f956c1aabf5"
+    }
+  },
+  "whyHard": "Enlist looks like it adds power to the attacker, so players try to feed it as many creatures as possible."
+}

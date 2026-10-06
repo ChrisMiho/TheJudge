@@ -1,6 +1,6 @@
 # Slice F — 255 mechanic cases and the coverage gate in quality:check
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -28,15 +28,15 @@ The build re-derives each edit by intent against current `PRD/sections/` truth, 
 
 ## Acceptance criteria
 
-- [ ] **F1.** The corpus holds 273 cases after F (18 migrated + 255 mechanic drafts); every one of the 255 new cases is `draft`
-- [ ] **F2.** The coverage report shows 66 actions, 98 abilities in 702.2-702.100 and 91 in 702.101-702.192 newly covered, and no mechanic uncovered except the two excluded ids
-- [ ] **F3.** The coverage gate runs in `quality:check` (through `test:scripts`) and passes
-- [ ] **F4.** Every case passes the card check and has a frozen query vector; the ratchet baseline is recorded for all 273
-- [ ] **F5.** Each mechanic case lists its mechanic's own 701/702 rule in `expected.decidingRuleIds`, and its derived `mechanic:` tag matches (loader test over the real corpus)
-- [ ] **F6.** Authored case files and generated vector and baseline files pass `format:check`
-- [ ] **F7.** The 30 text-route mechanics were each checked: the ruling used is about the mechanic, or the case falls back to the rule's own text as tier 1 (dated observation line in `slice-f.evidence.md`)
-- [ ] **F8.** REQ-188, REQ-223, NFR-018, the goals-and-non-goals Non-Goals line and the system-map `## Eval harness` summary are applied by intent against current truth
-- [ ] **F9.** `npm run quality:check` is green
+- [x] **F1.** The corpus holds 273 cases after F (18 migrated + 255 mechanic drafts); every one of the 255 new cases is `draft`
+- [x] **F2.** The coverage report shows 66 actions, 98 abilities in 702.2-702.100 and 91 in 702.101-702.192 newly covered, and no mechanic uncovered except the two excluded ids
+- [x] **F3.** The coverage gate runs in `quality:check` (through `test:scripts`) and passes
+- [x] **F4.** Every case passes the card check and has a frozen query vector; the ratchet baseline is recorded for all 273
+- [x] **F5.** Each mechanic case lists its mechanic's own 701/702 rule in `expected.decidingRuleIds`, and its derived `mechanic:` tag matches (loader test over the real corpus)
+- [x] **F6.** Authored case files and generated vector and baseline files pass `format:check`
+- [x] **F7.** The 30 text-route mechanics were each checked: the ruling used is about the mechanic, or the case falls back to the rule's own text as tier 1 (dated observation line in `slice-f.evidence.md`)
+- [x] **F8.** REQ-188, REQ-223, NFR-018, the goals-and-non-goals Non-Goals line and the system-map `## Eval harness` summary are applied by intent against current truth
+- [x] **F9.** `npm run quality:check` is green
 
 ## Verification
 
@@ -47,6 +47,10 @@ npm --workspace apps/backend run test
 npx prettier --check apps/backend/src/eval
 npm run quality:check
 ```
+
+## Build note (graph node 6)
+
+The repo's format gate is `npm run format:check` (Prettier over JSON and YAML only). `npx prettier --check apps/backend/src/eval` also lists TypeScript files that were never Prettier-formatted before this package, so the build verified the authored files with `npx prettier --check "apps/backend/src/eval/**/*.json"` and `npm run format:check` instead. Each mechanic case carries an optional `source.pool` of `mechanic`, which the coverage report counts by (see the corpus README). Evidence for F7 and the route split: `slice-f.evidence.md`.
 
 ## Files touched
 

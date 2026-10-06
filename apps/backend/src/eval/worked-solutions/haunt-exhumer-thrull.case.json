@@ -1,0 +1,50 @@
+{
+  "id": "haunt-exhumer-thrull",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "cd2ae326-1a74-4b67-9718-92b6a209303b",
+      "name": "Exhumer Thrull"
+    }
+  ],
+  "gameState": null,
+  "question": "If I own the creature that Exhumer Thrull is haunting, can that creature be targeted by the haunt trigger returning a creature card to my hand?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: that creature will generally be a legal target for the haunt trigger.",
+    "answer": "If you own the creature Exhumer Thrull was haunting, that creature will generally be a legal target for the haunt trigger to return to your hand.",
+    "decidingRuleIds": ["702.55a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Exhumer Thrull",
+    "oracleId": "cd2ae326-1a74-4b67-9718-92b6a209303b",
+    "rulingDate": "2006-02-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "406f1cd55c5fc0a9d829ad809d43a71ff03589a83d0d43f3f8b6b6a800b2ebf0",
+      "oracle": "dae3599cae5c672b6c291fe68a83fe93a456c603c2652f548b11067cafcf196f",
+      "rulings": "9903d2d2bf219270ba4468a058bed2e2789535dc01ab4f6f04b505569e92a4e0"
+    }
+  },
+  "whyHard": "The haunted creature has just died, and players forget it is in the graveyard by the time the trigger resolves."
+}

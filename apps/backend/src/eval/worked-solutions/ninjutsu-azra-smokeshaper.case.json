@@ -1,0 +1,50 @@
+{
+  "id": "ninjutsu-azra-smokeshaper",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "6f6e0abb-18d0-4a15-9b21-0a72542998ac",
+      "name": "Azra Smokeshaper"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I activate ninjutsu before blockers are declared, since my attacking creature has not been blocked yet?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: ninjutsu can be activated only after blockers have been declared.",
+    "answer": "The ninjutsu ability can be activated only after blockers have been declared. Before then, attacking creatures are neither blocked nor unblocked.",
+    "decidingRuleIds": ["702.49a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Azra Smokeshaper",
+    "oracleId": "6f6e0abb-18d0-4a15-9b21-0a72542998ac",
+    "rulingDate": "2019-06-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "69796c0b5fa8eb436bcca6062945345ceb08261f81a1086db1e0bf853808a229",
+      "oracle": "cabb2ab1d3550e21dad6b43236c0e7fe1b63727d1c1d788c740ec8b3a64ccb59",
+      "rulings": "a48ce35da6b1e510158d2d01bd91baa81c88496d6e717e0524c6c8bd87f69b4b"
+    }
+  },
+  "whyHard": "An attacker that has not been blocked yet looks unblocked, but before blockers it is neither blocked nor unblocked."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "undying-demonlord-of-ashmouth",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "049777d0-910d-46d2-9ca1-10277b2fb845",
+      "name": "Demonlord of Ashmouth"
+    }
+  ],
+  "gameState": null,
+  "question": "If Demonlord of Ashmouth returns to the battlefield because of undying, does its 'when this creature enters' ability trigger?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the enters ability triggers no matter how it entered, including through undying.",
+    "answer": "Demonlord of Ashmouth's \"enters\" ability will trigger no matter how it entered, including because of its undying ability.",
+    "decidingRuleIds": ["702.93a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Demonlord of Ashmouth",
+    "oracleId": "049777d0-910d-46d2-9ca1-10277b2fb845",
+    "rulingDate": "2012-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "fe18f866d5aa04342ddc86fa76da9087f4ccd8410b28823671db78581d6e22fc",
+      "oracle": "fe3c4009b18e83176728492a54e02eb08cc7b1c4bf89ea4fa748a76f18ef67ad",
+      "rulings": "213c9f342e3d94917afe8a2557347a35b6659bace8db9c38be7c13330f787b17"
+    }
+  },
+  "whyHard": "Players forget that a creature returning from the graveyard is a new object that enters the battlefield."
+}

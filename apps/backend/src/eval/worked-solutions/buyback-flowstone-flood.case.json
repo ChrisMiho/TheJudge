@@ -1,0 +1,50 @@
+{
+  "id": "buyback-flowstone-flood",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "7f77de5d-1088-42d0-8f68-5633aeab0d74",
+      "name": "Flowstone Flood"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I pay Flowstone Flood's buyback cost when I have no cards in my hand to discard at random?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you cannot pay the buyback cost unless you have at least one card in your hand to discard.",
+    "answer": "You can’t pay the Buyback cost unless you have at least one card in your hand to discard.",
+    "decidingRuleIds": ["702.27a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Flowstone Flood",
+    "oracleId": "7f77de5d-1088-42d0-8f68-5633aeab0d74",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c2b060c6f2826376795cdadc6e3d422d2a41450c222036862c8314e6b30ecfcf",
+      "oracle": "59a8a08f0bc9671b88c419cc3d3f4bc538db9599f41c34a12b1bb69fd754abcc",
+      "rulings": "dbdd03361ba4a16966a5cd62478b5f47cb79d8b44f36f10529a0ab55ecb5a7af"
+    }
+  },
+  "whyHard": "Players assume that random discard simply discards nothing when the hand is empty."
+}

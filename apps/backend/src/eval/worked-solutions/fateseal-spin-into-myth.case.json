@@ -1,0 +1,50 @@
+{
+  "id": "fateseal-spin-into-myth",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "4a4cf6e2-8673-45b8-bc21-cd030f312cd1",
+      "name": "Spin into Myth"
+    }
+  ],
+  "gameState": null,
+  "question": "Spin into Myth puts a creature on top of its owner's library and then fateseals 2. Must the player I fateseal be the owner of that creature?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the opponent you fateseal does not have to be the creature's owner.",
+    "answer": "The opponent chosen for the fateseal action doesn’t have to be the player who controlled the target creature.",
+    "decidingRuleIds": ["701.29a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Spin into Myth",
+    "oracleId": "4a4cf6e2-8673-45b8-bc21-cd030f312cd1",
+    "rulingDate": "2007-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9f639d564c6689d397cbf50f6489640bac7d1ab926db2817bad2fd72c6bcec16",
+      "oracle": "f3e9c57cc02c6c7a41ea7000c940568c302080b367571a1cc80cea893b58ec8b",
+      "rulings": "6a62297e18c66e7b907b3366e4871c71b9db443721427d6b30ff3ea6eb089184"
+    }
+  },
+  "whyHard": "Players link the two halves of the spell and assume they have to affect the same player."
+}

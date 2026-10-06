@@ -1,0 +1,50 @@
+{
+  "id": "manifest-dread-glitch-interpreter",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "cf2c507a-41b4-457b-bbe8-edcdfcc681ac",
+      "name": "Glitch Interpreter"
+    }
+  ],
+  "gameState": null,
+  "question": "If Glitch Interpreter is no longer on the battlefield when its first ability resolves and I control no face-down permanents, do I still manifest dread?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you still manifest dread.",
+    "answer": "If Glitch Interpreter is no longer on the battlefield when its first ability resolves and you control no face-down permanents, you'll still manifest dread.",
+    "decidingRuleIds": ["701.62a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Glitch Interpreter",
+    "oracleId": "cf2c507a-41b4-457b-bbe8-edcdfcc681ac",
+    "rulingDate": "2024-09-20",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "78adc9117ae9de5323342bb8b105c2deff547641366d92cefebfb21096545d53",
+      "oracle": "39cf9e31d65faa4e3d18ef6c3fb39baeeb43d2ac319dc8ff663acb35bd4641ab",
+      "rulings": "106e8d113e14785b154506d327cd629e1a1161f91514a51b338ac4712c7a9896"
+    }
+  },
+  "whyHard": "The ability returns the creature and then manifests dread, so players think the creature has to be there to finish the job."
+}

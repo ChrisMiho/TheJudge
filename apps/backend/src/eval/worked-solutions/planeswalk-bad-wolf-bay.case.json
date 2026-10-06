@@ -1,0 +1,50 @@
+{
+  "id": "planeswalk-bad-wolf-bay",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "706720f6-bb04-4a7b-8471-0f3d662d6eeb",
+      "name": "Bad Wolf Bay"
+    }
+  ],
+  "gameState": null,
+  "question": "Bad Wolf Bay's chaos ability tells me to planeswalk as part of its effect. Do I planeswalk right away as the ability resolves?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you planeswalk immediately as the chaos ability resolves.",
+    "answer": "You planeswalk immediately as the chaos ability resolves.",
+    "decidingRuleIds": ["701.31a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Bad Wolf Bay",
+    "oracleId": "706720f6-bb04-4a7b-8471-0f3d662d6eeb",
+    "rulingDate": "2023-10-13",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "93357793795f0fb60ea8290f5926a78c94b01710a0e742bfd47252fbde820edd",
+      "oracle": "82ab1ff997a1a4736aa70615bc4acca42090b198ba380fc3e5bee7e143f48db1",
+      "rulings": "5f6a484c6fea536cf35fff98c28daad54ee984fa97bbe7ee40872ef045792880"
+    }
+  },
+  "whyHard": "Players think planeswalking waits for the end of the turn or for the next time they could planeswalk."
+}

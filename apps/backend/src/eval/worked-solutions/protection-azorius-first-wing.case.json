@@ -1,0 +1,50 @@
+{
+  "id": "protection-azorius-first-wing",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "08d02fdb-4b3f-4f55-b5fc-6bb4d2a14b1f",
+      "name": "Azorius First-Wing"
+    }
+  ],
+  "gameState": null,
+  "question": "Azorius First-Wing has protection from enchantments. Does it also have protection from creatures that are enchanted?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it does not have protection from enchanted creatures.",
+    "answer": "Azorius First-Wing doesn’t have protection from creatures that are enchanted.",
+    "decidingRuleIds": ["702.16a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Azorius First-Wing",
+    "oracleId": "08d02fdb-4b3f-4f55-b5fc-6bb4d2a14b1f",
+    "rulingDate": "2006-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "84f95a4299d47d5f6e89b9cffbb21865ed23e8226026b192a7114ac070f5dda0",
+      "oracle": "093eaa97727ad876094a5f6f83d67a2ec7d487d6fc14411298baea11027d2b1a",
+      "rulings": "da7710963172090f5af90d255572f978b53cef758c9d5a0788aade71f92a9df2"
+    }
+  },
+  "whyHard": "Protection looks like it extends to anything touched by the quality, but it covers only the object's own qualities."
+}

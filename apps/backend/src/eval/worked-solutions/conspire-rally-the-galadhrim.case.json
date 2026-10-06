@@ -1,0 +1,50 @@
+{
+  "id": "conspire-rally-the-galadhrim",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "84b2d0f6-ad98-4a71-a3d5-645b0f2db6c6",
+      "name": "Rally the Galadhrim"
+    }
+  ],
+  "gameState": null,
+  "question": "If a spell with conspire has targets, can I choose new targets for the copy conspire creates?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you may choose new targets for the copy.",
+    "answer": "If a spell with conspire has targets, you may choose new targets for the copy.",
+    "decidingRuleIds": ["702.78a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Rally the Galadhrim",
+    "oracleId": "84b2d0f6-ad98-4a71-a3d5-645b0f2db6c6",
+    "rulingDate": "2023-11-03",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "cbdb2d06cb026bcd07ea3dbc0d5e8811935977d5463f742e88534763d7659a8a",
+      "oracle": "869caecda58b69ef729711ba98906f7e49a0434c11438eded2803343de9d5056",
+      "rulings": "baedcbef22a67f8d2e2a4c4234f5061372fbbe1312d55886eea1611bc679cf18"
+    }
+  },
+  "whyHard": "Copies made as you cast a spell are not always given a chance to pick new targets, and players assume they keep the original."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "gravestorm-follow-the-bodies",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "2d6a0d89-7ebd-420e-9892-be1506ab3714",
+      "name": "Follow the Bodies"
+    }
+  ],
+  "gameState": null,
+  "question": "If I counter a spell with gravestorm, are the copies created by gravestorm countered too?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: countering the spell does not affect its copies, and each copy must be countered individually.",
+    "answer": "A copy of a spell can be countered like any other spell, but it must be countered individually. Countering a spell with gravestorm won't affect the copies.",
+    "decidingRuleIds": ["702.69a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Follow the Bodies",
+    "oracleId": "2d6a0d89-7ebd-420e-9892-be1506ab3714",
+    "rulingDate": "2024-02-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "135328bb7a2d607bec3dec9774a620ff3748e4b9a31fd4e06f4250e4bb326d19",
+      "oracle": "1c7fa1f003401311dd97a8a460123283b8da2a42ceba422825f87170f9330a7a",
+      "rulings": "1df130b9de17c486f0e362079523f5018dedf52dc07ab8386845ce4ec04fb26a"
+    }
+  },
+  "whyHard": "The copies feel like part of the original spell, but they are separate spells on the stack."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "paradigm-decorum-dissertation",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "f4c57454-d36f-4f38-b7ac-76477a516c3e",
+      "name": "Decorum Dissertation"
+    }
+  ],
+  "gameState": null,
+  "question": "Does the Lesson subtype on a spell with paradigm have any inherent rules meaning?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the Lesson subtype has no inherent rules meaning, though other effects can refer to it.",
+    "answer": "Each spell with paradigm has the Lesson subtype. The Lesson subtype appears on instants and sorceries and has no inherent rules meaning. Other effects (such as the learn ability from the original Strixhaven release) may refer to it.",
+    "decidingRuleIds": ["702.192a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Decorum Dissertation",
+    "oracleId": "f4c57454-d36f-4f38-b7ac-76477a516c3e",
+    "rulingDate": "2026-03-20",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "39867a93d3dbec39d3c767c5f4f67d27f9c8d41b0017d03e45d0f742ba7d26cd",
+      "oracle": "2c31ee6f6089185a358a38d7d504d91603e9d22e83b460165ed7dcdb19fdbf98",
+      "rulings": "617b1358386907202e7012645e098235ea64324216d2066d417496e33dbd0e58"
+    }
+  },
+  "whyHard": "Because Lessons usually go with learn, players think the subtype does something by itself."
+}

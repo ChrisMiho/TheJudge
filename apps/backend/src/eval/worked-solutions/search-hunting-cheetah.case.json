@@ -1,0 +1,50 @@
+{
+  "id": "search-hunting-cheetah",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "057e1cfc-d528-49e1-a386-9fb1edc1d135",
+      "name": "Hunting Cheetah"
+    }
+  ],
+  "gameState": null,
+  "question": "Hunting Cheetah lets me search my library for a Forest card. If there is a Forest in my library, do I have to find it?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: because the search looks for a card with certain characteristics, you do not have to find the card.",
+    "answer": "Because the \"search\" requires you to find a card with certain characteristics, you don't have to find the card if you don't want to.",
+    "decidingRuleIds": ["701.23a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Hunting Cheetah",
+    "oracleId": "057e1cfc-d528-49e1-a386-9fb1edc1d135",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8bbd14b4a5a58713370747d382827e5bb2ad57b8565564dae09054677a565fe1",
+      "oracle": "54913b20b04e6b209744d3232ecb84f46e6bf809359a989d497bf981a99ed4dd",
+      "rulings": "fcbacb9d8691146f21ec4d94978100cae8326724e635ebea2767e3cf8f676d93"
+    }
+  },
+  "whyHard": "Players think a search must find a matching card whenever one is there."
+}

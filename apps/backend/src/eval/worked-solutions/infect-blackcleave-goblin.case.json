@@ -1,0 +1,50 @@
+{
+  "id": "infect-blackcleave-goblin",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "156d1a58-c970-4b81-b6c7-5a0caa1699cd",
+      "name": "Blackcleave Goblin"
+    }
+  ],
+  "gameState": null,
+  "question": "Does infect apply to noncombat damage as well as combat damage?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: infect's effect applies to any damage, not just combat damage.",
+    "answer": "Infect’s effect applies to any damage, not just combat damage.",
+    "decidingRuleIds": ["702.90a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Blackcleave Goblin",
+    "oracleId": "156d1a58-c970-4b81-b6c7-5a0caa1699cd",
+    "rulingDate": "2011-01-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "2922ad92f29cd6b400ddaf9ae93bffd348413cbabce6587338eac9b462fad8c0",
+      "oracle": "9e75dc2826e7312829344ce0eb54b72ae949fdda8ce7eaf94611f944c8c3e4b0",
+      "rulings": "4a0b389551ad973a5a83bd26828d38a77a8be7e3aba372e10e4816e35b92ca5f"
+    }
+  },
+  "whyHard": "Infect is usually discussed alongside attacking, so players think it only changes combat damage."
+}

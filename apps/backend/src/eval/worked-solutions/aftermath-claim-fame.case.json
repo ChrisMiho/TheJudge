@@ -1,0 +1,50 @@
+{
+  "id": "aftermath-claim-fame",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "16da9e4b-c6ee-4e70-8653-31ca147f3b01",
+      "name": "Claim // Fame"
+    }
+  ],
+  "gameState": null,
+  "question": "If another effect lets me cast a split card with aftermath from my hand, can I cast the aftermath half?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if you cast it from any zone other than a graveyard, you cannot cast the half with aftermath.",
+    "answer": "If another effect allows you to cast a split card with aftermath from any zone other than a graveyard, you can’t cast the half with aftermath.",
+    "decidingRuleIds": ["702.127a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Claim // Fame",
+    "oracleId": "16da9e4b-c6ee-4e70-8653-31ca147f3b01",
+    "rulingDate": "2017-04-18",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4e3aab26fa489872cb9f74de4f01f43abc6c23ff3099ccb482eeb880ac285870",
+      "oracle": "77127f1ab512e2af4b0cd6699d0bad2b5e9ba5f54fa651b6491f4c7be7bdeec3",
+      "rulings": "5b41ef30682dce9bdc5f216fcee1eddea7945b5aecef435d4a37965040bb9565"
+    }
+  },
+  "whyHard": "Another effect granting permission looks like it overrides the aftermath restriction."
+}

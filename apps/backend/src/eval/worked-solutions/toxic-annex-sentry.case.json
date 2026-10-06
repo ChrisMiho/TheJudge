@@ -1,0 +1,50 @@
+{
+  "id": "toxic-annex-sentry",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "be31fa46-d5ac-4c85-9c19-3f0e2b1f223b",
+      "name": "Annex Sentry"
+    }
+  ],
+  "gameState": null,
+  "question": "Does toxic give a player poison counters if the creature with toxic deals combat damage to a creature or planeswalker?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: toxic works only when the creature deals combat damage to a player.",
+    "answer": "If a creature with toxic deals combat damage to a creature or planeswalker, or if it deals noncombat damage, toxic has no effect and no player gets poison counters.",
+    "decidingRuleIds": ["702.164a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Annex Sentry",
+    "oracleId": "be31fa46-d5ac-4c85-9c19-3f0e2b1f223b",
+    "rulingDate": "2023-02-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "63a539bb13cb447024c99cfd5a82babe43f603f13b3169c99db3dd680edc8ddf",
+      "oracle": "98d51737cc8d4512d312ba148ca8080769dcbe9f419780551e9283fcb9680615",
+      "rulings": "b6bb587894ace8560c2758b214a14ecad2dbe43d04f8bcc4c5e72b9c2e6dc7c1"
+    }
+  },
+  "whyHard": "Toxic adds poison counters on top of normal damage, so players think it applies to any combat damage."
+}

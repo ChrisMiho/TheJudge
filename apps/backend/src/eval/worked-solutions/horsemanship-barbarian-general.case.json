@@ -1,0 +1,50 @@
+{
+  "id": "horsemanship-barbarian-general",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "d4f2e305-bec0-48c8-8040-f85618c71cc9",
+      "name": "Barbarian General"
+    }
+  ],
+  "gameState": null,
+  "question": "Horsemanship works a lot like flying. Does a creature with horsemanship interact with flying or reach?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: horsemanship does not interact with flying or reach.",
+    "answer": "Despite the similarities between horsemanship and flying, horsemanship doesn’t interact with flying or reach.",
+    "decidingRuleIds": ["702.31a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Barbarian General",
+    "oracleId": "d4f2e305-bec0-48c8-8040-f85618c71cc9",
+    "rulingDate": "2009-10-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "990dc043ca9b3df9aacc131889a9dff47078d892752b806098d9902d08327d64",
+      "oracle": "fddb2ec069dae700b7bd1c7aa1f144d816f928c319d2910e5fae998f12454e14",
+      "rulings": "f8a858b798eb8ff736714e83e3b4e5837dd93e79223211c36687439e4c46c4fd"
+    }
+  },
+  "whyHard": "The similarity to flying makes players expect that reach can block it."
+}

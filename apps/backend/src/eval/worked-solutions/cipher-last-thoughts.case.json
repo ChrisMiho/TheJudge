@@ -1,0 +1,50 @@
+{
+  "id": "cipher-last-thoughts",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "649d983a-e861-4893-8ae8-fb0a22cfad0a",
+      "name": "Last Thoughts"
+    }
+  ],
+  "gameState": null,
+  "question": "When I cast the copy of a card encoded with cipher, is the copy created in and cast from exile?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the copy is created in and cast from exile.",
+    "answer": "The copy of the card with cipher is created in and cast from exile.",
+    "decidingRuleIds": ["702.99a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Last Thoughts",
+    "oracleId": "649d983a-e861-4893-8ae8-fb0a22cfad0a",
+    "rulingDate": "2013-04-15",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "bc8ddf61663a186de06a5d142c60d97799de240cc0b22b1c6ce9c4d516e3e5bd",
+      "oracle": "8f41f5cf15a947791290ef56c36581af06c505880f04cffa6944cec84d31acff",
+      "rulings": "f245b8aee29eda1a6b744234a385959b9951ff3afeed837c7a5f1e992bd6626a"
+    }
+  },
+  "whyHard": "Players think a copy of a spell is made on the stack, so they do not see where it is cast from."
+}

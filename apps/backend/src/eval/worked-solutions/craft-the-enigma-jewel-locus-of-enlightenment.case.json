@@ -1,0 +1,50 @@
+{
+  "id": "craft-the-enigma-jewel-locus-of-enlightenment",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "c0d2bdd9-1e68-4d3a-83f8-ec2ba440a494",
+      "name": "The Enigma Jewel // Locus of Enlightenment"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I spend mana from The Enigma Jewel's activated ability to activate its own craft ability?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: craft abilities are activated abilities, so that mana can be spent on its own craft ability.",
+    "answer": "Craft abilities are activated abilities. You can spend mana from The Enigma Jewel's activated ability to activate its own craft ability, for example.",
+    "decidingRuleIds": ["702.167a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "The Enigma Jewel // Locus of Enlightenment",
+    "oracleId": "c0d2bdd9-1e68-4d3a-83f8-ec2ba440a494",
+    "rulingDate": "2023-11-10",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "fd4fddc9c60cda6399d86f36a3e8d1600f77b1da22fe48b1dab39e74d7179d49",
+      "oracle": "f2e99e00892a415371da0b806fd979a670b00d39dd40902ba7f8480964afbd54",
+      "rulings": "7e6860f77ec6058b7e891fb6d5dbb059840cb9f506ce7af7c40875ff03816f3f"
+    }
+  },
+  "whyHard": "Craft exiles the artifact as a cost, and players do not think its mana can pay for it."
+}

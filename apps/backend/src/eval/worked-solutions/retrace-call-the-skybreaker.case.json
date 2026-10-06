@@ -1,0 +1,50 @@
+{
+  "id": "retrace-call-the-skybreaker",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "a7213bef-0e9c-44e1-97cb-d1da0ef370bf",
+      "name": "Call the Skybreaker"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I cast Call the Skybreaker, a sorcery, from my graveyard with retrace during my opponent's turn?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: a retrace card cast from the graveyard follows the normal timing rules for its card type.",
+    "answer": "A retrace card cast from your graveyard follows the normal timing rules for its card type.",
+    "decidingRuleIds": ["702.81a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Call the Skybreaker",
+    "oracleId": "a7213bef-0e9c-44e1-97cb-d1da0ef370bf",
+    "rulingDate": "2008-08-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "420c0e3d1184165f6cb7289250a210ee69d4137870304e2fc15def9ba011e0a0",
+      "oracle": "441664f532fa1e6d900e0732f9adeb5ef712980d9bac5ccce84d6a5da719f512",
+      "rulings": "9d943d6fa4ee891b2330293eab950729d985bcbd21f1c8059de3f4d1525bc020"
+    }
+  },
+  "whyHard": "Casting from the graveyard looks like a special case that might ignore normal timing."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "support-expedition-raptor",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "0a44da1d-7914-4592-a00f-7e40e0d07f91",
+      "name": "Expedition Raptor"
+    }
+  ],
+  "gameState": null,
+  "question": "Expedition Raptor's support 2 puts +1/+1 counters on other target creatures. Can one of the targets be a creature I do not control?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: support can target a creature you do not control.",
+    "answer": "Support can target a creature you don't control.",
+    "decidingRuleIds": ["701.41a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Expedition Raptor",
+    "oracleId": "0a44da1d-7914-4592-a00f-7e40e0d07f91",
+    "rulingDate": "2016-01-22",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "6b4b76c5c7afb53d3846d5ab7bac2bae582103f571e046f928e2fc3416e976c2",
+      "oracle": "4f83fc6d3c2cc06610bb1952f8fd46f86fc7409457d4b4da12b2a3e594cb564d",
+      "rulings": "bebe0c014ffb9898de7e25da9384058050c89fef42066865f45a7fe2ad45ed75"
+    }
+  },
+  "whyHard": "Players assume a beneficial effect can only target their own creatures."
+}

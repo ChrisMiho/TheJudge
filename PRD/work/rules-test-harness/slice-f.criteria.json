@@ -5,7 +5,7 @@
     {
       "id": "F1",
       "statement": "The corpus holds 273 cases after F (18 migrated + 255 mechanic drafts); every one of the 255 new cases is `draft`",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(eval:rules-coverage|rules-coverage|npm run test:scripts|node --test|npm run quality:check)"
       }
@@ -13,7 +13,7 @@
     {
       "id": "F2",
       "statement": "The coverage report shows 66 actions, 98 abilities in 702.2-702.100 and 91 in 702.101-702.192 newly covered, and no mechanic uncovered except the two excluded ids",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(eval:rules-coverage|rules-coverage)"
       }
@@ -21,7 +21,7 @@
     {
       "id": "F3",
       "statement": "The coverage gate runs in `quality:check` (through `test:scripts`) and passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }
@@ -29,7 +29,7 @@
     {
       "id": "F4",
       "statement": "Every case passes the card check and has a frozen query vector; the ratchet baseline is recorded for all 273",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(vitest|test:coverage|npm run coverage:check|npm run quality:check|npm test|run test)"
       }
@@ -37,7 +37,7 @@
     {
       "id": "F5",
       "statement": "Each mechanic case lists its mechanic's own 701/702 rule in `expected.decidingRuleIds`, and its derived `mechanic:` tag matches (loader test over the real corpus)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(npm run test:scripts|node --test|npm run quality:check|npm test)"
       }
@@ -45,7 +45,7 @@
     {
       "id": "F6",
       "statement": "Authored case files and generated vector and baseline files pass `format:check`",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(npm run format:check|npm run quality:check|prettier)"
       }
@@ -53,7 +53,7 @@
     {
       "id": "F7",
       "statement": "The 30 text-route mechanics were each checked: the ruling used is about the mechanic, or the case falls back to the rule's own text as tier 1 (dated observation line in `slice-f.evidence.md`)",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -61,7 +61,7 @@
     {
       "id": "F8",
       "statement": "REQ-188, REQ-223, NFR-018, the goals-and-non-goals Non-Goals line and the system-map `## Eval harness` summary are applied by intent against current truth",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",
@@ -74,7 +74,7 @@
     {
       "id": "F9",
       "statement": "`npm run quality:check` is green",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }

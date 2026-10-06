@@ -1,0 +1,50 @@
+{
+  "id": "vote-mob-verdict",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "cb91e09e-f7fb-44bc-b78f-de29705bd2d6",
+      "name": "Mob Verdict"
+    }
+  ],
+  "gameState": null,
+  "question": "In Mob Verdict's secret council vote, can a player decide not to vote for anyone?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: each player must vote for another player and cannot abstain.",
+    "answer": "Each player must vote for another player. They can’t abstain.",
+    "decidingRuleIds": ["701.38a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Mob Verdict",
+    "oracleId": "cb91e09e-f7fb-44bc-b78f-de29705bd2d6",
+    "rulingDate": "2024-02-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "de2eadba784fb371eb4ce4f58bd572aeb3f288e2973681e77d88e0c22c5ed124",
+      "oracle": "2de5ccb3383375cc2ed89172b327ae2a3aa34602b0947607ffda948c93dc1bdd",
+      "rulings": "4e3a18fa93bf712225d9a4601f19a73851746ffeb63497b1d391c4afb9cc40da"
+    }
+  },
+  "whyHard": "Voting reads as optional, so players expect to be able to pass."
+}

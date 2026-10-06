@@ -78,7 +78,7 @@ describe("Backend - Eval - staleness report (REQ-225)", () => {
     expect(result.stale).toEqual([{ id: first.id, status: first.review.status, changed: ["rulings"] }]);
     expect(result.awaitingRefreeze).toEqual([second.id]);
     const text = formatStalenessReport(result);
-    expect(text).toContain(`${first.id} (approved): rulings text changed`);
+    expect(text).toContain(`${first.id} (${first.review.status}): rulings text changed`);
     expect(text).toContain(`  ${second.id}`);
     expect(text).toContain("never edits a case and never fails a build");
   });
@@ -101,7 +101,7 @@ describe("Backend - Eval - staleness report (REQ-225)", () => {
     const result = report(cases, vectors);
 
     expect(result.checked).toBe(1);
-    expect(result.stale).toEqual([{ id: first.id, status: "approved", changed: ["rules", "oracle", "rulings"] }]);
+    expect(result.stale).toEqual([{ id: first.id, status: first.review.status, changed: ["rules", "oracle", "rulings"] }]);
     expect(result.missingVector).toEqual([first.id]);
     expect(formatStalenessReport(result)).toContain("No frozen vector at all (1; the offline gate fails these)");
   });

@@ -1,0 +1,50 @@
+{
+  "id": "companion-gyruda-doom-of-depths",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "25eaa977-ca85-4f8d-8be5-9297a3edb14f",
+      "name": "Gyruda, Doom of Depths"
+    }
+  ],
+  "gameState": null,
+  "question": "Do the requirements of the companion ability apply to my sideboard as well as my starting deck?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the requirements apply only to your starting deck, not your sideboard.",
+    "answer": "The requirements of the companion ability apply only to your starting deck. They do not apply to your sideboard.",
+    "decidingRuleIds": ["702.139a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Gyruda, Doom of Depths",
+    "oracleId": "25eaa977-ca85-4f8d-8be5-9297a3edb14f",
+    "rulingDate": "2020-04-17",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "f07235dc02e0b9480fb3d8cf5de8a9a9fc7f3eec8742b932dc3973990e802bcd",
+      "oracle": "a338739a6e0ada0022e96076d6ed31537fa15ce16ec647df32e548f8ed1170a7",
+      "rulings": "e4f732525e878069537a2645fcc01e23ee7262d525d174e3180edeef00c66e2b"
+    }
+  },
+  "whyHard": "Companions come from the sideboard, so players expect the sideboard to be checked too."
+}

@@ -77,8 +77,16 @@ describe("Backend - Eval - rules test case request (REQ-185)", () => {
 
   it("asks a case without a game state as a lookup that attaches every card by oracle id, and the request schema accepts it", async () => {
     const cases = await loadGoldCases();
-    const withCards = cases.filter((caseEntry) => caseEntry.cards.length > 0);
-    expect(withCards.length).toBe(4);
+    const withCards = cases.filter((caseEntry) => caseEntry.cards.length > 0 && caseEntry.gameState === null);
+    // The four first-ship cases that name a real card (three tier-2 rulings and the Tarmogoyf token question), and every
+    // later case that attaches one: each is asked as a lookup carrying exactly its attached cards.
+    const firstShipWithCards = [
+      "panharmonicon-controller-not-entering-permanent",
+      "restoration-angel-blink-resets-counters",
+      "sensei-top-leaves-battlefield-ability-on-stack",
+      "token-created-by-name-uses-oracle-card"
+    ];
+    expect(withCards.map((caseEntry) => caseEntry.id)).toEqual(expect.arrayContaining(firstShipWithCards));
     for (const caseEntry of withCards) {
       const request = buildCaseRequest(caseEntry);
       expect(request.mode).toBe("lookup");

@@ -1,0 +1,50 @@
+{
+  "id": "cloak-become-anonymous",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "bac0fcee-9c1a-46b7-86c8-ffbfcc1e96de",
+      "name": "Become Anonymous"
+    }
+  ],
+  "gameState": null,
+  "question": "When I cloak a shuffled face-down pile of two cards, can I look at them after they are cloaked?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: after you cloak the cards you may look at them.",
+    "answer": "The pile is shuffled to disguise from your opponents which card is which. After you cloak the cards, you may look at them.",
+    "decidingRuleIds": ["701.58a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Become Anonymous",
+    "oracleId": "bac0fcee-9c1a-46b7-86c8-ffbfcc1e96de",
+    "rulingDate": "2024-07-05",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "3a130dc375903c8aba54f6f33b44dd0874973cc8ed71e9d744c52d54ef387d6e",
+      "oracle": "3f54fcef452ef3d36d275060f5c3e5eef7e94224e9b9e88d818975991d236051",
+      "rulings": "c62241a78b9b4f4aa0fd25ad06eda28d7f5ccaf086c364353f8170f60899b839"
+    }
+  },
+  "whyHard": "The shuffle hides which card is which from opponents, and players assume it hides it from you too."
+}

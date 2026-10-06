@@ -1,0 +1,50 @@
+{
+  "id": "manifest-wildcall",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "d96ac790-428b-4a64-8dbd-6baa73eb6210",
+      "name": "Wildcall"
+    }
+  ],
+  "gameState": null,
+  "question": "If I choose 0 for X on Wildcall, do I still manifest the top card of my library?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you just manifest the top card of your library.",
+    "answer": "If you choose 0 for X, you'll just manifest the top card of your library.",
+    "decidingRuleIds": ["701.40a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Wildcall",
+    "oracleId": "d96ac790-428b-4a64-8dbd-6baa73eb6210",
+    "rulingDate": "2014-11-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "965f53177a6a709099b20f8a0dfc4c29252d5b17e4a1e1d868e28083af39aa9e",
+      "oracle": "9120010f87c4dac6e8726ce89ee2f6e219ecfb5e766ffa5c30ede1072b0e9179",
+      "rulings": "f1b68557559c8a39996ad337ea72075263720d7812b0c89fb1bbaed48ff10cb0"
+    }
+  },
+  "whyHard": "Players think X equal to 0 turns off the whole spell, not just the counters."
+}

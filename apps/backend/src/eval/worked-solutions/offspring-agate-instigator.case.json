@@ -1,0 +1,50 @@
+{
+  "id": "offspring-agate-instigator",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "e1a2bd31-b800-47cd-8866-1b849a601b09",
+      "name": "Agate Instigator"
+    }
+  ],
+  "gameState": null,
+  "question": "If a spell with offspring is countered, is a token created?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the offspring ability will not trigger, so no token is created.",
+    "answer": "If the spell is countered, the offspring ability will not trigger, and no token will be created.",
+    "decidingRuleIds": ["702.175a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Agate Instigator",
+    "oracleId": "e1a2bd31-b800-47cd-8866-1b849a601b09",
+    "rulingDate": "2024-07-26",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "3f27c1d3b29232a057332d54e594a5408f3b706bed8d621bd5384e335ce94752",
+      "oracle": "ac7605d7ce29422d6518f1a3d47011d1558900370a2ca8ad577e52d29f9bbd5e",
+      "rulings": "0f2123e6df26f97c4a532cd52b496ce139cf1c2dd852fe4592f6e30c0c2befb6"
+    }
+  },
+  "whyHard": "Offspring is paid as an additional cost, so players expect the token even if the spell does not resolve."
+}

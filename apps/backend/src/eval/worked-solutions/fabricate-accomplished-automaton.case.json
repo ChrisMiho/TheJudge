@@ -1,0 +1,50 @@
+{
+  "id": "fabricate-accomplished-automaton",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "f5af0d1b-531e-4053-848a-5e0fa1022f9a",
+      "name": "Accomplished Automaton"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cannot put +1/+1 counters on a creature as fabricate resolves, do I still create Servo tokens?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you just create the Servo tokens.",
+    "answer": "If you can't put +1/+1 counters on the creature for any reason as fabricate resolves (for instance, if it's no longer on the battlefield), you just create Servo tokens.",
+    "decidingRuleIds": ["702.123a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Accomplished Automaton",
+    "oracleId": "f5af0d1b-531e-4053-848a-5e0fa1022f9a",
+    "rulingDate": "2016-09-20",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ff7ee6ca4ea773678712e49cde67833fd5efc93754486d8a0e9bdb5aa83a8f8e",
+      "oracle": "35b3bbc3cc6b954eb020802c2129ae81ef69ca9910c58c757aacf66969be02bb",
+      "rulings": "7fa16ee71c7cc9cecddb37ecc9beaaa16fa7297d52a5b43560dd7c84ccb72083"
+    }
+  },
+  "whyHard": "Fabricate is a choice between two outcomes, and players think a failed choice means nothing happens."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "mutate-mindleecher",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "4864cc98-4fde-4010-81e9-ea4944347e7e",
+      "name": "Mindleecher"
+    }
+  ],
+  "gameState": null,
+  "question": "When I cast cards exiled by Mindleecher, may I use alternative costs such as mutate rather than the card's mana cost?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you may pay alternative costs such as mutate instead of the card's mana cost.",
+    "answer": "You pay the costs for the exiled cards if you cast them. You may pay alternative costs such as mutate rather than a card’s mana cost.",
+    "decidingRuleIds": ["702.140a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Mindleecher",
+    "oracleId": "4864cc98-4fde-4010-81e9-ea4944347e7e",
+    "rulingDate": "2020-04-17",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "3f3d07eb4edb1e417fc0016c9ce29b45bf35119482e3906c33cbb5f26015ca56",
+      "oracle": "6828b13bbdd64243863bbcc6395fc6fd93b50afc510f19b1fba22754146d7708",
+      "rulings": "6ebbdcae0b4770d7b1887dab208a464d088417db40171e93e228a55cbe5fab51"
+    }
+  },
+  "whyHard": "Cards cast from another player's library are assumed to be limited to their normal mana cost."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "outlast-abzan-battle-priest",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "1b44fe0a-4a99-4166-b0b3-102b36b54ffa",
+      "name": "Abzan Battle Priest"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I activate outlast on a creature that came under my control this turn?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: outlast includes the tap symbol, so the creature must have been under your control since the beginning of your turn.",
+    "answer": "The cost to activate a creature's outlast ability includes the tap symbol ({T}). A creature's outlast ability can't be activated unless that creature has been under your control continuously since the beginning of your turn.",
+    "decidingRuleIds": ["702.107a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Abzan Battle Priest",
+    "oracleId": "1b44fe0a-4a99-4166-b0b3-102b36b54ffa",
+    "rulingDate": "2014-09-20",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d5dda2a8da66125129198202096ddd7b5361279909e09bbbd0ee3fb36f3316b8",
+      "oracle": "69ea4017ade4a664de5ccce049a5a81154dfee1b37f4195d1b3f191ac6831f49",
+      "rulings": "5706200493198733760e1b3c2c093ef415dbcb02c403cd4b7b168a79f6227fdb"
+    }
+  },
+  "whyHard": "Outlast looks like a simple counter-adding ability, so players forget that tap costs carry the summoning-sickness restriction."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "menace-boggart-brute",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "880793a2-84b0-4ae1-9bb8-6e942e3dc723",
+      "name": "Boggart Brute"
+    }
+  ],
+  "gameState": null,
+  "question": "An attacking creature with menace has been blocked by two creatures. If one of those blockers is removed from combat, is the attacker now blocked illegally or unblocked?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: once it is legally blocked by two or more creatures, removing a blocker does not change or undo that block.",
+    "answer": "Once an attacking creature with menace is legally blocked by two or more creatures, removing one or more of those blockers from combat won't change or undo that block.",
+    "decidingRuleIds": ["702.111a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Boggart Brute",
+    "oracleId": "880793a2-84b0-4ae1-9bb8-6e942e3dc723",
+    "rulingDate": "2015-06-22",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9c266c5a21825f11f3c17664dacd4dd7cf857306217b28afcc19e5cb41646d43",
+      "oracle": "a4acc1a7cc1f2af4fcb102d60141c022a80ec93e6bd968cafd267d1408397c2f",
+      "rulings": "c6961cefeed20973ff45921c9a928502d76b8206577d37a96a6a27280cc7eb50"
+    }
+  },
+  "whyHard": "Menace asks for two blockers, and players think the requirement is checked all through combat."
+}

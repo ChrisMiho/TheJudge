@@ -1,0 +1,50 @@
+{
+  "id": "soulshift-promised-kannushi",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "b92bd85f-20c4-410e-af19-77d987d7dc02",
+      "name": "Promised Kannushi"
+    }
+  ],
+  "gameState": null,
+  "question": "Promised Kannushi has soulshift 7 but is a Human Druid, not a Spirit. When it dies, can it return a Spirit card with mana value 7 or less from my graveyard?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it can return any Spirit with mana value 7 or less, though it is not a Spirit itself.",
+    "answer": "Yes, Soulshift 7. Promised Kannushi can return any Spirit with mana value of 7 or less. However, Promised Kannushi is a Human Druid, not a Spirit.",
+    "decidingRuleIds": ["702.46a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Promised Kannushi",
+    "oracleId": "b92bd85f-20c4-410e-af19-77d987d7dc02",
+    "rulingDate": "2005-06-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4e9f422dffd8a86005bf2ddabf67f27f7247abe771fabb06937404faf0513aa1",
+      "oracle": "a4b6d3cdeb26859545c94d1322a01677d4e0b9a8563305f848c2da93b14df9dc",
+      "rulings": "b8cc067d5d60478f341f0afcbb1781f692c963e74ea407f57cd1530c31364607"
+    }
+  },
+  "whyHard": "Players assume a creature with soulshift has to be a Spirit itself."
+}

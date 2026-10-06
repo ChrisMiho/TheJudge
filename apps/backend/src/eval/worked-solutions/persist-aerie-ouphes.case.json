@@ -1,0 +1,50 @@
+{
+  "id": "persist-aerie-ouphes",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "70cdd24a-8dc5-47b5-8729-9ebf486f4821",
+      "name": "Aerie Ouphes"
+    }
+  ],
+  "gameState": null,
+  "question": "If a creature with persist stops being a creature, does persist still work when it dies?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: persist still works if the permanent stopped being a creature.",
+    "answer": "If a creature with persist stops being a creature, persist will still work.",
+    "decidingRuleIds": ["702.79a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Aerie Ouphes",
+    "oracleId": "70cdd24a-8dc5-47b5-8729-9ebf486f4821",
+    "rulingDate": "2013-06-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "10ee5f7a5a3c5bc02826ad1dbf5168e132c7bc5bab9d65dfe7dcebd924c459f9",
+      "oracle": "da9f588230ce093766aadc1b1308afa7fdbcb8cdc22b94b90777ab5f77ca1040",
+      "rulings": "5e6d881ac9705f7f11091d49445511656e234bd917a4fef85f5b27895e3cbee0"
+    }
+  },
+  "whyHard": "Persist reads 'when this creature dies', so players think the permanent has to be a creature at the end."
+}

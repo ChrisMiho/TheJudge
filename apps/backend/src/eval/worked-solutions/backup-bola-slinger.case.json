@@ -1,0 +1,50 @@
+{
+  "id": "backup-bola-slinger",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "6ff995f9-080d-4316-8fbe-39bf195db91b",
+      "name": "Bola Slinger"
+    }
+  ],
+  "gameState": null,
+  "question": "If backup gives another creature abilities, does the creature with backup still have those abilities too?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the creature with backup still has the abilities it gave.",
+    "answer": "If a backup ability causes another creature to gain abilities, the creature with backup will still have those abilities.",
+    "decidingRuleIds": ["702.165a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Bola Slinger",
+    "oracleId": "6ff995f9-080d-4316-8fbe-39bf195db91b",
+    "rulingDate": "2023-04-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c5e47c816306a21c2c585df841a9820a20b7fd169887b42508661b9f783602ca",
+      "oracle": "5cba25fb61116f04d5ca53ec672531dd33cab6fe7e088c93c7c5faf867edfb6f",
+      "rulings": "e1a4c92941044e8d17183f9e8fe029a7f80e479822258aa61ba2272c210336f9"
+    }
+  },
+  "whyHard": "Giving abilities away looks like it takes them off the source."
+}
