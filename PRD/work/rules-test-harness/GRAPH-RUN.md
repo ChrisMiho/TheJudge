@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-181340/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/rules-test-harness/`
 
 ## Node ledger
@@ -30,6 +30,7 @@
 | 15 | gate-review | sonnet | ok | `0 → 13` | build-half claim: `.worktrees/kickoff-rules-test-harness` removed clean, `.worktrees/implement-rules-test-harness` on `thejudge-auto/rules-test-harness-work` cut from `origin/main` 652ed0e, claim commit pushed; lock re-taken (`graph-preflight --take-lock`), graph canary `nohup true` denied; `GRAPH-RUN.md` `## Gate verdicts` 11 accept + Q-007/Q-008 accept, brief reconciliation none; `STATUS.owner-action` → `STATUS.refined`; `PRD/work/STATUS.md` row moved to refined | 2026-10-06 |
 | 16 | gate-qc | sonnet | ok | `0 → 28` | PASS attempt 7 (build-half re-grade), findings none; base `origin/main` 652ed0e unchanged since attempt 6; live grep 219 hits all with disposition rows (220th was this package's board row, rewritten at the gate move — advisory only); 15 diff blocks, 40 removed lines exact; REQ-222–225 unused; M17, M6 (16/18), M1 (258), M16, M8, M12 reproduced; README `## Preparation gate` PASS; `STATUS.refined` | 2026-10-06 |
 | 17 | plan | sonnet | ok | `0 → 29` | `GAMEPLAN.md`, `slice-a-format-v2-loader.md` … `slice-g-hard-area-depth.md` (7 slices), `slice-a.criteria.json` … `slice-g.criteria.json` (77 criteria, all `false`); `STATUS.refined` → `STATUS.active`; `PRD/work/STATUS.md` row moved refined → active; no provider call in any slice (GAMEPLAN non-goals) | 2026-10-06 |
+| 18 | build | sonnet | ok | `0 → 458` | PR https://github.com/ChrisMiho/TheJudge/pull/269 (open, MERGEABLE, head 6a23ee2); slices A–G commits 7724cad 5ed9047 a78c9c1 f9e0ef7 3de528c a61e530 6a23ee2; criteria 77/77 `true` (self-reported — hook evidence log holds 0 entries for this run, the known criteria-root gap: the hook reads criteria from the launch checkout); quality:check exit 0 per build report; launch `git status --porcelain` identical before/after; `classifyBuildWrites` over `git diff --name-only 2ceaf23..HEAD` (462 paths) → ok; `STATUS.ship-ready`; PRD applied: system-map, REQ-185–190, NFR-018, REQ-222–225, goals-and-non-goals. Disclosed deviation: slice A ran `npm run eval:answer-quality` dry run, which (by design since 549b12c) loads the key from the main checkout `.secrets/openai-dev.env` and issued one models-list access check — no completion, no cost; later dry runs used a no-key wrapper | 2026-10-06 |
 
 ## Open gate
 
@@ -425,6 +426,122 @@ Boundaries: no provider or model call of any kind (no `--confirm-live-calls`, no
 Open the code PR `thejudge-auto/rules-test-harness-work → main` with `gh pr create --base main --head thejudge-auto/rules-test-harness-work`; this is a new PR, separate from the merged docs PR #268. Your tool-call cap is 4000 for this node.
 
 Report back: outcome (ok / failed / blocked); per slice, its commit SHA(s), the quality-check result, and its criteria count true / total; the PRD sections each slice applied; the PR URL; every path you wrote, as absolute paths; and any open question or deviation from the slice docs.
+
+### review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness
+
+You are node 7 (`review`) of graph run `graph-20261006-181340`: a fresh-context, no-write reviewer for package `PRD/work/rules-test-harness/` on branch `thejudge-auto/rules-test-harness-work`, code PR https://github.com/ChrisMiho/TheJudge/pull/269. You hold no Write, Edit, or NotebookEdit tool, and you must not change any file by any other means (no shell redirection into repo files, no git commit, no git checkout of files, no gh pr comment or review). Read-only git, gh pr view, grep, and running the test commands are allowed. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Review the diff `git diff 2ceaf23..HEAD` (slices A–G; 462 files, of which 393 are case files under `apps/backend/src/eval/worked-solutions/`) against the package artifacts: `GAMEPLAN.md`, the seven `slice-*.md` docs, `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md`, and the `slice-*.evidence.md` files. You have not seen the build and must not rely on its account: re-run the checks yourself. At minimum run `npm run quality:check`, the dry run of `npm run eval:answer-quality` with no key in reach (run it with `OPENAI_API_KEY=` empty and confirm from the code in `scripts/lib/local-openai-env.mjs` and `resolveRunEnv` that no key is loaded and no network call is made; if you cannot guarantee that, skip the dry run and say so), and the coverage and staleness commands named in the GAMEPLAN. Never make a provider call, never run `npm run data:refresh`, never rebuild the rule index.
+
+The rubric is the slices' own acceptance criteria, quoted below. Also check that each slice applied to `PRD/sections/` exactly the stable IDs its slice doc names, by intent and consistent with the finalized `GATE-QUESTIONS.md` diff, and that every `true` in a `slice-*.criteria.json` is backed by something you can observe now (the hook earned no evidence for this run, so you are the integrity gate for those flips). Sample the case files: check the 18 migrated cases kept their content, at least ten new mechanic drafts and ten hard-area drafts are well-formed drafts (status draft, not approved), and the does-not-work count meets its target.
+
+Severity rule: flag only gaps against these acceptance criteria or correctness of the stated requirements. A preference, a style note, or an improvement outside a slice's stated requirements is never Critical or Important and never sends the run back to build. Rate each finding Critical, Important, or Minor, with file:line and the criterion it breaks.
+
+(The acceptance criteria below are quoted from the slice docs with double quotes rendered as single quotes, so the ledger check reads them as criteria text, not owner instructions.)
+
+#### slice-a-format-v2-loader.md
+
+- [x] **A1.** The 18 migrated cases have byte-identical question and answer text: a committed test pins the SHA-256 of each case's pre-migration `question` and `workedSolution` and compares them with the migrated `question` and `expected.answer`
+- [x] **A2.** Each migrated case has `review.status` `approved`, `review.reviewedOn` set to the migration commit's date, and a review note naming the approval source ('approved by the owner's accept of REQ-185 at the define gate; migrated to format version 2') (A1)
+- [x] **A3.** Each migrated case's `cards` matches A14: three tier-2 cases carry their cited card, `token-created-by-name-uses-oracle-card` carries Tarmogoyf (`45900b2f-f6a9-4c42-9642-008f3c1cf6dd`), the other 14 are empty (test)
+- [x] **A4.** No case-file read of `workedSolution` or `expectedSupplementalRuleIds` remains in `scripts/` or `apps/backend/src/eval/`: a grep shows only the context-eval fixture readers, the parameter and transcript keys, and the no-prose list line in `artifact.ts`
+- [x] **A5.** `scripts/eval-answer-quality.mjs` passes the case's `expected.answer` to the judge and its `expected.decidingRuleIds` to the assertions and retrieval check; its existing tests pass and its dry run (no key, no network) runs on the migrated 18
+- [x] **A6.** `npm run eval:worked-solutions` still reports 16/18 with the same two misses (`panharmonicon-controller-not-entering-permanent`, `restoration-angel-blink-resets-counters`) (M15)
+- [x] **A7.** A unit test shows the stale comparison flags a changed rule, oracle or ruling hash and passes unchanged data (A18)
+- [x] **A8.** `buildCaseRequest` test: a case without a `gameState` gives a lookup with every `cards` entry attached by oracle id (`test:scripts`)
+- [x] **A9.** `buildCaseRequest` test: a fixture case with a `gameState` (two stack items, a battlefield card with an owner) gives a `mode: 'game'` request that the In-Depth request schema accepts, with each card in its zone and the stack in order (a backend vitest test, because the schema is TypeScript)
+- [x] **A10.** The loader rejects a fixture `gameState` with `owner` on a stack item, and one with `caster` on a battlefield card (A15)
+- [x] **A11.** Loader tests cover dedup, the derived `mechanic:` tag, `snapshot` hashing, and each v2 validation error
+- [x] **A12.** `preparation.test.ts`, the REQ-177 benchmark and the context-eval fixtures pass unchanged: `git diff` shows `apps/backend/src/prompt/preparation.test.ts` and `rag-retrieval-benchmark.json` untouched, and the backend tests pass
+- [x] **A13.** `scripts/lib/gold-cases.d.mts` and `scripts/lib/prompt-fidelity.d.mts` exist and a backend vitest test imports both modules statically; `npm run typecheck` is green (A3, M17)
+- [x] **A14.** The corpus README `apps/backend/src/eval/worked-solutions/README.md` is rewritten for format version 2 and names the shared loader
+- [x] **A15.** `npm run quality:check` is green
+
+#### slice-b-offline-prompt-gate.md
+
+- [x] **B1.** The gate's tests are backend vitest tests under `apps/backend/src/eval/` that read cases through `scripts/lib/gold-cases.mjs` and run in `coverage:check` (A3)
+- [x] **B2.** The gate passes on the 18 migrated cases with a committed baseline of 16 hits
+- [x] **B3.** A planted fixture case with a dropped attached card fails the card check, and a planted case that lost a deciding rule fails the ratchet (tests)
+- [x] **B4.** State-fact check: a fixture case with a `gameState` (stack of two items with a caster, a battlefield card with an owner, a controller note) passes through `buildCaseRequest` and the real `preparePromptInput`, and a unit test fails the check when one stated fact's line is missing from the prompt
+- [x] **B5.** Re-freeze test: a fixture case whose stored query-text hash differs from its rebuilt query text, and whose baseline records a hit, is reported as awaiting a re-freeze, does not fail the gate, is neither a hit nor a miss in the ratchet, and the summary prints an awaiting-re-freeze count of 1; the same case with no vector at all fails the gate
+- [x] **B6.** Schema check: every non-null `gameState` in the corpus parses under `gameContextSchema`, and a planted fixture `gameState` the schema rejects (a turn phase outside `turnPhaseSchema`) fails the gate, naming the case
+- [x] **B7.** No network or model call: the gate test fails if the embedder is invoked
+- [x] **B8.** The frozen-vector build command stores a SHA-256 of each vector's query text, and the baseline raise command exists and is covered by a test
+- [x] **B9.** Lambda packaging does not pick up the frozen-vector file (dated observation line in `slice-b.evidence.md`)
+- [x] **B10.** The system-map entry `Rules test corpus gates and review` is in `PRD/sections/system-map.md` as `Status: partial`, with its `Lives in` line naming `apps/backend/src/eval/`
+- [x] **B11.** `npm run typecheck` is green with the gate tests importing the two `.mjs` modules (A3, M17)
+- [x] **B12.** `npm run quality:check` is green
+
+#### slice-c-live-runner.md
+
+- [x] **C1.** The dry run prints the selection and a cost estimate with no network call when there is no key
+- [x] **C2.** Selection test: `--changed` picks a case whose prompt hash matches its last record but whose `expected.answer` hash differs from that record's reference-answer hash, and skips a case where both match (`test:scripts`, injected fakes)
+- [x] **C3.** Legacy-record test: a fixture record with no prompt hash and no reference-answer hash counts as ungraded in the headline and is selected by `--changed`
+- [x] **C4.** The dry run on the real corpus selects all 18 migrated cases and prints its cost estimate (about $0.35: 18 x ($0.0098 + $0.0099), M8)
+- [x] **C5.** Unknown-rule-id test: a fixture answer citing a rule id the committed index lacks records that id in the per-case list, worded 'not in the committed rule index'; one citing only existing ids records an empty list
+- [x] **C6.** Judge-usage test: a fake judge's token usage lands in the per-case record and in the run totals, with answer and judge shown separately
+- [x] **C7.** No-prose test: `writeResultsFile` throws on a record carrying `shortAnswer`
+- [x] **C8.** Drop test: a merge where a previously recorded case is now `needs-edit`, and one where a case left the corpus, drops both records and keeps every other case's record unchanged
+- [x] **C9.** Headline test (A22): a stale approved case with a Correctness-2 record is left out of the count and a stale count of 1 prints
+- [x] **C10.** Headline test (A22): a re-approved case whose answer did not change counts at once from its existing record
+- [x] **C11.** Headline test (A22): a re-approved case whose answer was reworked counts as ungraded, is selected by `--changed` although its prompt hash is unchanged, and after a fake re-grade merges a new record counts from that record
+- [x] **C12.** Ranking skip test: a one-model run skips the blind ranking; the default lineup is `gpt-4.1` at cap `[10]`
+- [x] **C13.** The regression guard still passes: `eval:answer-quality` is wired into no gate script
+- [x] **C14.** REQ-186, REQ-187, REQ-190 and the answer-quality system-map entry are applied to `PRD/sections/` by intent against current truth
+- [x] **C15.** `npm run quality:check` is green
+
+#### slice-d-owner-review-flow.md
+
+- [x] **D1.** Round-trip test: render a batch, fill verdicts, apply; the apply changes only `review.*`, plus `snapshot` on an `approve` verdict
+- [x] **D2.** Stale path test: a fixture approved case whose ruling hash no longer matches is rendered marked stale with the changed dependency's current text; applying `approve` re-records its hashes, after which slice A's stale comparison passes and slice C's filter selects it again
+- [x] **D3.** Refusal tests: unknown case id, question changed since render, `expected.answer` changed since render, committed rule/oracle/ruling text changed since render, and `edit` with no note are each refused and reported
+- [x] **D4.** An `edit` verdict leaves the case at `draft` and never replaces a tier-1 or tier-2 reference answer with non-official text (test)
+- [x] **D5.** Batches are grouped by mechanic then rules section, and `output/rules-review/` is gitignored
+- [x] **D6.** Tests place per A3: logic needing no TypeScript runs under `test:scripts` (`node --test`, injected fakes); anything needing TypeScript is a backend vitest test
+- [x] **D7.** `npm run quality:check` is green
+
+#### slice-e-coverage-staleness.md
+
+- [x] **E1.** Fixture-corpus tests: an uncovered mechanic fails the gate, an excluded id the index lacks fails it, an out-of-date coverage file fails it, and a fully covered fixture passes
+- [x] **E2.** Applying a filled review batch that changes a status leaves the out-of-date check passing (the apply command rewrites `coverage.json`, A20)
+- [x] **E3.** On the real corpus the coverage command lists the 255 mechanics still uncovered as report output, not a failure, and writes `coverage.json`
+- [x] **E4.** `coverage.json` carries counts and ids only (no prose), including counts per `outcome`
+- [x] **E5.** The excluded-mechanics list holds 701.45 and 702.158 with a reason each, and the gate reads the mechanic list from the committed rule index
+- [x] **E6.** The coverage gate is not wired into `quality:check` yet, and `npm run quality:check` is green (A17)
+- [x] **E7.** The staleness report is clean on unchanged data (run on the real corpus)
+- [x] **E8.** Staleness fixture test: a fixture case with a changed ruling hash is listed as stale naming that dependency, and a fixture case whose stored query-text hash no longer matches is listed as awaiting a re-freeze (a backend vitest test, because slice B's re-freeze check rebuilds query text); neither run fails any gate
+- [x] **E9.** REQ-189, REQ-222, REQ-224 and REQ-225 are applied to `PRD/sections/functional-requirements.md` by intent against current truth
+
+#### slice-f-mechanic-cases.md
+
+- [x] **F1.** The corpus holds 273 cases after F (18 migrated + 255 mechanic drafts); every one of the 255 new cases is `draft`
+- [x] **F2.** The coverage report shows 66 actions, 98 abilities in 702.2-702.100 and 91 in 702.101-702.192 newly covered, and no mechanic uncovered except the two excluded ids
+- [x] **F3.** The coverage gate runs in `quality:check` (through `test:scripts`) and passes
+- [x] **F4.** Every case passes the card check and has a frozen query vector; the ratchet baseline is recorded for all 273
+- [x] **F5.** Each mechanic case lists its mechanic's own 701/702 rule in `expected.decidingRuleIds`, and its derived `mechanic:` tag matches (loader test over the real corpus)
+- [x] **F6.** Authored case files and generated vector and baseline files pass `format:check`
+- [x] **F7.** The 30 text-route mechanics were each checked: the ruling used is about the mechanic, or the case falls back to the rule's own text as tier 1 (dated observation line in `slice-f.evidence.md`)
+- [x] **F8.** REQ-188, REQ-223, NFR-018, the goals-and-non-goals Non-Goals line and the system-map `## Eval harness` summary are applied by intent against current truth
+- [x] **F9.** `npm run quality:check` is green
+
+#### slice-g-hard-area-depth.md
+
+- [x] **G1.** The coverage report shows 120 hard-area cases split 60 `Example:` lines, 58 two-card rulings, 2 tester cases; the corpus holds 393 cases in total
+- [x] **G2.** At least 40 of the 120 hard-area cases have `outcome` `does-not-work`, shown by the coverage report's per-outcome counts
+- [x] **G3.** All twelve hard areas are represented, SBA by its one unused `Example:` line
+- [x] **G4.** Q2 (Silence, Necropotence, Borne Upon a Wind) is a tier-3 `draft` with all three cards attached, outcome `works`, deciding rules 514.1, 514.2, 514.3a, `source.research` naming Jon's app in words and no copied text, and Jon's two-step wording in `layers.variants`
+- [x] **G5.** Q1 (Academy Manufactor with Esix) is a tier-3 `draft` with deciding rules 614.1a, 616.1, 616.1e, 616.1f
+- [x] **G6.** Every case passes the card check and has a frozen query vector; the ratchet baseline is re-recorded
+- [x] **G7.** Both gates pass in `quality:check`: the offline prompt gate and the coverage gate
+- [x] **G8.** The corpus README names format version 2, the loader, the review commands (slice D) and the coverage and staleness commands (slice E), meeting REQ-185's README criterion
+- [x] **G9.** REQ-185 is applied to `PRD/sections/functional-requirements.md` by intent, with the 18-case carve-out wording
+- [x] **G10.** No provider call was made during the slice: no `--confirm-live-calls` run (dated observation line in `slice-g.evidence.md`)
+
+Report back: APPROVE or CHANGES REQUESTED; the findings list with severity, file:line, and the criterion id; each command you ran with its exit code; and the criteria you could not verify, with why.
 
 ## Instruction ledger
 
