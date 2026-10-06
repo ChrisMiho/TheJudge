@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `gate-qc`
-- Next action: `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
+- Current node: `owner-action`
+- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/niche-interaction-rule-tests/`
 
 ## Node ledger
 
@@ -18,10 +18,11 @@
 | 3 | define | opus | ok | `0 → 82` | `PRD/work/niche-interaction-rule-tests/DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-220; Blocker questions: none), `measure-retrieval.mjs`, `STATUS.refined`; owner added intake `intake/screenwriter_temp_1791299243121.jpg` mid-node (the tester's exact prompts), relayed to the node by the driver | 2026-10-06 |
 | 4 | gate-qc | sonnet | failed | `0 → 38` | FAIL attempt 1 of 3: 3 findings (1 Important: REQ-220 `source` cites an intake path cleanup deletes; 2 Minor: two-card list ambiguity, lexical-fallback refusal credited to REQ-185 not REQ-188); `STATUS.refining`; findings in `README.md` `## Preparation gate` | 2026-10-06 |
 | 5 | define | opus | ok | `0 → 29` | attempt 2: 3 gate-qc findings fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (REQ-220 `source` cites reporter/date/channel/CR ids, two-card list, REQ-188 credited); `STATUS.refined` | 2026-10-06 |
+| 6 | gate-qc | sonnet | ok | `0 → 32` | PASS attempt 2, findings none; README `## Preparation gate` PASS; parked `STATUS.owner-action` | 2026-10-06 |
 
 ## Open gate
 
-- None
+- Answer `GATE-QUESTIONS.md`, then merge to build: `PRD/work/niche-interaction-rule-tests/GATE-QUESTIONS.md` (one slot, REQ-220). Evidence: gate-qc attempt 2 PASS, `DESIGN-BRIEF.md`. Docs PR: pending. Resume: merge the docs PR; `graph-implement` builds it (`/graph-implement PRD/work/niche-interaction-rule-tests/`).
 
 ## Dispatch prompts
 

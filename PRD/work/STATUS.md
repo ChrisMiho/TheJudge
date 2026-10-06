@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Report-only tests that the right rules reach the prompt for two tester-reported interactions; gate proposes REQ-220 |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Docs PR open: answer `GATE-QUESTIONS.md` (REQ-220, report-only rule-retrieval checks for the tester's two hard questions), then merge to build |
 
 
 ## deferred
