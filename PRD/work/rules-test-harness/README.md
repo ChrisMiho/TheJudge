@@ -1,4 +1,4 @@
-status: ideation
+status: refined
 
 # rules-test-harness
 
@@ -6,8 +6,11 @@ Rules test harness, run 1: six-layer-ready case format, offline gate (dropped ca
 
 - Idea: [IDEA.md](IDEA.md)
 - Intake (evidence, never authority): [intake/GRAPH-BRIEF.md](intake/GRAPH-BRIEF.md)
+- Design brief: [DESIGN-BRIEF.md](DESIGN-BRIEF.md)
+- Proposed product truth and owner questions: [GATE-QUESTIONS.md](GATE-QUESTIONS.md) — REQ-185–190, NFR-018 amended; REQ-222–225 new; Q-007, Q-008
+- Scratch measurement scripts: [measure/](measure/)
 
-Next: `thejudge-refinement`.
+Next: `thejudge-quality-check`.
 
 ## Autonomous metadata
 

@@ -1,0 +1,2482 @@
+{
+ "summary": {
+  "crEffective": "August 7, 2026",
+  "indexEntries": 2873,
+  "indexMechanics": 258,
+  "indexActions": 67,
+  "indexAbilities": 191,
+  "crMechanics": 263,
+  "inCrNotIndex": [
+   {
+    "id": "701.69",
+    "name": "Heal"
+   },
+   {
+    "id": "701.70",
+    "name": "Recruit"
+   },
+   {
+    "id": "702.193",
+    "name": "Power-up"
+   },
+   {
+    "id": "702.194",
+    "name": "Teamwork"
+   },
+   {
+    "id": "702.195",
+    "name": "Storied"
+   }
+  ],
+  "nameMismatch": [],
+  "zeroKeywordCards": [
+   "701.2 Activate",
+   "701.3 Attach",
+   "701.5 Cast",
+   "701.6 Counter",
+   "701.7 Create",
+   "701.8 Destroy",
+   "701.9 Discard",
+   "701.12 Exchange",
+   "701.13 Exile",
+   "701.18 Play",
+   "701.20 Reveal",
+   "701.21 Sacrifice",
+   "701.23 Search",
+   "701.24 Shuffle",
+   "701.26 Tap and Untap",
+   "701.31 Planeswalk",
+   "701.32 Set in Motion",
+   "701.33 Abandon",
+   "701.38 Vote",
+   "701.54 The Ring Tempts You",
+   "701.55 Face a Villainous Choice",
+   "701.64 Harness",
+   "702.64 Absorb",
+   "702.70 Poisonous",
+   "702.145 Daybound and Nightbound",
+   "702.158 Space Sculptor",
+   "702.159 Visit",
+   "702.186 ∞ (Infinity)"
+  ],
+  "withKeywordRuling": 226,
+  "withExampleLine": 20,
+  "joke": [
+   {
+    "id": "701.51",
+    "name": "Open an Attraction",
+    "kind": "action",
+    "subrules": 3,
+    "cardsWithKeyword": 46,
+    "cardsWithKeywordAndRuling": 15,
+    "exampleLines": 0,
+    "firstSubrule": "701.51a A player may open an Attraction only during a game in which that player is playing with an Attraction deck (see rule 717, “Attraction Cards”)."
+   },
+   {
+    "id": "701.52",
+    "name": "Roll to Visit Your Attractions",
+    "kind": "action",
+    "subrules": 1,
+    "cardsWithKeyword": 3,
+    "cardsWithKeywordAndRuling": 1,
+    "exampleLines": 0,
+    "firstSubrule": "701.52a To roll to visit your Attractions, roll a six-sided die. Then if you control one or more Attractions with a number lit up that is equal to that result, "
+   },
+   {
+    "id": "702.158",
+    "name": "Space Sculptor",
+    "kind": "ability",
+    "subrules": 5,
+    "cardsWithKeyword": 0,
+    "cardsWithKeywordAndRuling": 0,
+    "exampleLines": 0,
+    "firstSubrule": "702.158a One card (Space Beleren) has the space sculptor ability. This keyword ability causes creatures to gain sector designations."
+   },
+   {
+    "id": "702.159",
+    "name": "Visit",
+    "kind": "ability",
+    "subrules": 2,
+    "cardsWithKeyword": 0,
+    "cardsWithKeywordAndRuling": 0,
+    "exampleLines": 0,
+    "firstSubrule": "702.159a Visit is a keyword ability found on Attraction cards (see rule 717). “Visit — [Effect]” means “Whenever you roll to visit your Attractions, if the resu"
+   },
+   {
+    "id": "702.186",
+    "name": "∞ (Infinity)",
+    "kind": "ability",
+    "subrules": 2,
+    "cardsWithKeyword": 0,
+    "cardsWithKeywordAndRuling": 0,
+    "exampleLines": 0,
+    "firstSubrule": "702.186a ∞ (the mathematical symbol for infinity) is a keyword found on Infinity cards. “∞” is followed by ability text. Together, they represent a static abili"
+   }
+  ],
+  "attractionOrUnMention": [
+   "701.45 Assemble",
+   "701.51 Open an Attraction",
+   "701.52 Roll to Visit Your Attractions",
+   "702.26 Phasing",
+   "702.33 Kicker",
+   "702.159 Visit"
+  ],
+  "exampleEntries": 215,
+  "exampleLines": 277,
+  "cardsWithRulings": 19854,
+  "totalRulings": 78734,
+  "cardDetailCards": 37564,
+  "hardAreaExampleLines": {
+   "copies 707": 23,
+   "multiplayer 801": 15,
+   "triggers 603": 12,
+   "layers 613": 12,
+   "double-faced 712": 10,
+   "resolution 608": 9,
+   "two-headed giant 810": 9,
+   "replacement/prevention 614-616": 15,
+   "copiable 611?": 6,
+   "commander 903": 5,
+   "combat 508-510": 7,
+   "SBA 704": 3
+  },
+  "hardAreaExampleEntries": {
+   "copies 707": 14,
+   "multiplayer 801": 11,
+   "triggers 603": 11,
+   "layers 613": 5,
+   "double-faced 712": 7,
+   "resolution 608": 7,
+   "two-headed giant 810": 5,
+   "replacement/prevention 614-616": 12,
+   "copiable 611?": 5,
+   "commander 903": 5,
+   "combat 508-510": 7,
+   "SBA 704": 3
+  }
+ },
+ "rows": [
+  {
+   "id": "701.2",
+   "name": "Activate",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.3",
+   "name": "Attach",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.4",
+   "name": "Behold",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 21,
+   "cardsWithKeywordAndRuling": 19,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.5",
+   "name": "Cast",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.6",
+   "name": "Counter",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.7",
+   "name": "Create",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.8",
+   "name": "Destroy",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.9",
+   "name": "Discard",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.10",
+   "name": "Double",
+   "kind": "action",
+   "subrules": 7,
+   "cardsWithKeyword": 142,
+   "cardsWithKeywordAndRuling": 119,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.11",
+   "name": "Triple",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 6,
+   "cardsWithKeywordAndRuling": 5,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.12",
+   "name": "Exchange",
+   "kind": "action",
+   "subrules": 8,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 1
+  },
+  {
+   "id": "701.13",
+   "name": "Exile",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.14",
+   "name": "Fight",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 149,
+   "cardsWithKeywordAndRuling": 119,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.15",
+   "name": "Goad",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 90,
+   "cardsWithKeywordAndRuling": 59,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.16",
+   "name": "Investigate",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 146,
+   "cardsWithKeywordAndRuling": 115,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.17",
+   "name": "Mill",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 607,
+   "cardsWithKeywordAndRuling": 384,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.18",
+   "name": "Play",
+   "kind": "action",
+   "subrules": 5,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.19",
+   "name": "Regenerate",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 276,
+   "cardsWithKeywordAndRuling": 92,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.20",
+   "name": "Reveal",
+   "kind": "action",
+   "subrules": 5,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 1
+  },
+  {
+   "id": "701.21",
+   "name": "Sacrifice",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.22",
+   "name": "Scry",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 455,
+   "cardsWithKeywordAndRuling": 280,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.23",
+   "name": "Search",
+   "kind": "action",
+   "subrules": 10,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 3
+  },
+  {
+   "id": "701.24",
+   "name": "Shuffle",
+   "kind": "action",
+   "subrules": 7,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 4
+  },
+  {
+   "id": "701.25",
+   "name": "Surveil",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 223,
+   "cardsWithKeywordAndRuling": 115,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.26",
+   "name": "Tap and Untap",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.27",
+   "name": "Transform",
+   "kind": "action",
+   "subrules": 7,
+   "cardsWithKeyword": 437,
+   "cardsWithKeywordAndRuling": 357,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.28",
+   "name": "Convert",
+   "kind": "action",
+   "subrules": 6,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.29",
+   "name": "Fateseal",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 3,
+   "cardsWithKeywordAndRuling": 2,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.30",
+   "name": "Clash",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 29,
+   "cardsWithKeywordAndRuling": 16,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.31",
+   "name": "Planeswalk",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.32",
+   "name": "Set in Motion",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.33",
+   "name": "Abandon",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.34",
+   "name": "Proliferate",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 102,
+   "cardsWithKeywordAndRuling": 93,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.35",
+   "name": "Detain",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 14,
+   "cardsWithKeywordAndRuling": 13,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.36",
+   "name": "Populate",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 27,
+   "cardsWithKeywordAndRuling": 26,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.37",
+   "name": "Monstrosity",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 37,
+   "cardsWithKeywordAndRuling": 34,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.38",
+   "name": "Vote",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.39",
+   "name": "Bolster",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 25,
+   "cardsWithKeywordAndRuling": 24,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.40",
+   "name": "Manifest",
+   "kind": "action",
+   "subrules": 8,
+   "cardsWithKeyword": 63,
+   "cardsWithKeywordAndRuling": 57,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.41",
+   "name": "Support",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 20,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.42",
+   "name": "Meld",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 7,
+   "cardsWithKeywordAndRuling": 7,
+   "exampleLines": 1
+  },
+  {
+   "id": "701.43",
+   "name": "Exert",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 36,
+   "cardsWithKeywordAndRuling": 34,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.44",
+   "name": "Explore",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 57,
+   "cardsWithKeywordAndRuling": 52,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.45",
+   "name": "Assemble",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 25,
+   "cardsWithKeywordAndRuling": 4,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.46",
+   "name": "Adapt",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 25,
+   "cardsWithKeywordAndRuling": 25,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.47",
+   "name": "Amass",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 71,
+   "cardsWithKeywordAndRuling": 71,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.48",
+   "name": "Learn",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 21,
+   "cardsWithKeywordAndRuling": 21,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.49",
+   "name": "Venture into the Dungeon",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 38,
+   "cardsWithKeywordAndRuling": 36,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.50",
+   "name": "Connive",
+   "kind": "action",
+   "subrules": 5,
+   "cardsWithKeyword": 50,
+   "cardsWithKeywordAndRuling": 30,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.51",
+   "name": "Open an Attraction",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 46,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.52",
+   "name": "Roll to Visit Your Attractions",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 3,
+   "cardsWithKeywordAndRuling": 1,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.53",
+   "name": "Incubate",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 36,
+   "cardsWithKeywordAndRuling": 13,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.54",
+   "name": "The Ring Tempts You",
+   "kind": "action",
+   "subrules": 5,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.55",
+   "name": "Face a Villainous Choice",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.56",
+   "name": "Time Travel",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 10,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.57",
+   "name": "Discover",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 32,
+   "cardsWithKeywordAndRuling": 28,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.58",
+   "name": "Cloak",
+   "kind": "action",
+   "subrules": 8,
+   "cardsWithKeyword": 9,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.59",
+   "name": "Collect Evidence",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 22,
+   "cardsWithKeywordAndRuling": 22,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.60",
+   "name": "Suspect",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 19,
+   "cardsWithKeywordAndRuling": 19,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.61",
+   "name": "Forage",
+   "kind": "action",
+   "subrules": 1,
+   "cardsWithKeyword": 9,
+   "cardsWithKeywordAndRuling": 7,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.62",
+   "name": "Manifest Dread",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 32,
+   "cardsWithKeywordAndRuling": 30,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.63",
+   "name": "Endure",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 10,
+   "cardsWithKeywordAndRuling": 10,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.64",
+   "name": "Harness",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.65",
+   "name": "Airbend",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 13,
+   "cardsWithKeywordAndRuling": 13,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.66",
+   "name": "Earthbend",
+   "kind": "action",
+   "subrules": 2,
+   "cardsWithKeyword": 36,
+   "cardsWithKeywordAndRuling": 35,
+   "exampleLines": 0
+  },
+  {
+   "id": "701.67",
+   "name": "Waterbend",
+   "kind": "action",
+   "subrules": 3,
+   "cardsWithKeyword": 28,
+   "cardsWithKeywordAndRuling": 28,
+   "exampleLines": 1
+  },
+  {
+   "id": "701.68",
+   "name": "Blight",
+   "kind": "action",
+   "subrules": 4,
+   "cardsWithKeyword": 27,
+   "cardsWithKeywordAndRuling": 25,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.2",
+   "name": "Deathtouch",
+   "kind": "ability",
+   "subrules": 6,
+   "cardsWithKeyword": 354,
+   "cardsWithKeywordAndRuling": 202,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.3",
+   "name": "Defender",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 327,
+   "cardsWithKeywordAndRuling": 137,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.4",
+   "name": "Double Strike",
+   "kind": "ability",
+   "subrules": 5,
+   "cardsWithKeyword": 123,
+   "cardsWithKeywordAndRuling": 70,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.5",
+   "name": "Enchant",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 1278,
+   "cardsWithKeywordAndRuling": 735,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.6",
+   "name": "Equip",
+   "kind": "ability",
+   "subrules": 5,
+   "cardsWithKeyword": 629,
+   "cardsWithKeywordAndRuling": 360,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.7",
+   "name": "First Strike",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 402,
+   "cardsWithKeywordAndRuling": 206,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.8",
+   "name": "Flash",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 617,
+   "cardsWithKeywordAndRuling": 334,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.9",
+   "name": "Flying",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 3398,
+   "cardsWithKeywordAndRuling": 1792,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.10",
+   "name": "Haste",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 708,
+   "cardsWithKeywordAndRuling": 394,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.11",
+   "name": "Hexproof",
+   "kind": "ability",
+   "subrules": 8,
+   "cardsWithKeyword": 104,
+   "cardsWithKeywordAndRuling": 47,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.12",
+   "name": "Indestructible",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 119,
+   "cardsWithKeywordAndRuling": 70,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.13",
+   "name": "Intimidate",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 23,
+   "cardsWithKeywordAndRuling": 16,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.14",
+   "name": "Landwalk",
+   "kind": "ability",
+   "subrules": 5,
+   "cardsWithKeyword": 136,
+   "cardsWithKeywordAndRuling": 30,
+   "exampleLines": 1
+  },
+  {
+   "id": "702.15",
+   "name": "Lifelink",
+   "kind": "ability",
+   "subrules": 6,
+   "cardsWithKeyword": 398,
+   "cardsWithKeywordAndRuling": 224,
+   "exampleLines": 1
+  },
+  {
+   "id": "702.16",
+   "name": "Protection",
+   "kind": "ability",
+   "subrules": 14,
+   "cardsWithKeyword": 215,
+   "cardsWithKeywordAndRuling": 81,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.17",
+   "name": "Reach",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 445,
+   "cardsWithKeywordAndRuling": 213,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.18",
+   "name": "Shroud",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 40,
+   "cardsWithKeywordAndRuling": 13,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.19",
+   "name": "Trample",
+   "kind": "ability",
+   "subrules": 7,
+   "cardsWithKeyword": 1062,
+   "cardsWithKeywordAndRuling": 623,
+   "exampleLines": 3
+  },
+  {
+   "id": "702.20",
+   "name": "Vigilance",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 781,
+   "cardsWithKeywordAndRuling": 440,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.21",
+   "name": "Ward",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 192,
+   "cardsWithKeywordAndRuling": 139,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.22",
+   "name": "Banding",
+   "kind": "ability",
+   "subrules": 12,
+   "cardsWithKeyword": 26,
+   "cardsWithKeywordAndRuling": 25,
+   "exampleLines": 1
+  },
+  {
+   "id": "702.23",
+   "name": "Rampage",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 3,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.24",
+   "name": "Cumulative Upkeep",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 82,
+   "cardsWithKeywordAndRuling": 59,
+   "exampleLines": 3
+  },
+  {
+   "id": "702.25",
+   "name": "Flanking",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 31,
+   "cardsWithKeywordAndRuling": 10,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.26",
+   "name": "Phasing",
+   "kind": "ability",
+   "subrules": 14,
+   "cardsWithKeyword": 13,
+   "cardsWithKeywordAndRuling": 5,
+   "exampleLines": 2
+  },
+  {
+   "id": "702.27",
+   "name": "Buyback",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 41,
+   "cardsWithKeywordAndRuling": 16,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.28",
+   "name": "Shadow",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 40,
+   "cardsWithKeywordAndRuling": 35,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.29",
+   "name": "Cycling",
+   "kind": "ability",
+   "subrules": 6,
+   "cardsWithKeyword": 400,
+   "cardsWithKeywordAndRuling": 222,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.30",
+   "name": "Echo",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 52,
+   "cardsWithKeywordAndRuling": 13,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.31",
+   "name": "Horsemanship",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 30,
+   "cardsWithKeywordAndRuling": 27,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.32",
+   "name": "Fading",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 18,
+   "cardsWithKeywordAndRuling": 3,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.33",
+   "name": "Kicker",
+   "kind": "ability",
+   "subrules": 8,
+   "cardsWithKeyword": 230,
+   "cardsWithKeywordAndRuling": 224,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.34",
+   "name": "Flashback",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 213,
+   "cardsWithKeywordAndRuling": 206,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.35",
+   "name": "Madness",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 63,
+   "cardsWithKeywordAndRuling": 63,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.36",
+   "name": "Fear",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 40,
+   "cardsWithKeywordAndRuling": 18,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.37",
+   "name": "Morph",
+   "kind": "ability",
+   "subrules": 7,
+   "cardsWithKeyword": 153,
+   "cardsWithKeywordAndRuling": 90,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.38",
+   "name": "Amplify",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 9,
+   "cardsWithKeywordAndRuling": 1,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.39",
+   "name": "Provoke",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 9,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.40",
+   "name": "Storm",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 38,
+   "cardsWithKeywordAndRuling": 34,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.41",
+   "name": "Affinity",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 78,
+   "cardsWithKeywordAndRuling": 35,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.42",
+   "name": "Entwine",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 33,
+   "cardsWithKeywordAndRuling": 16,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.43",
+   "name": "Modular",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 24,
+   "cardsWithKeywordAndRuling": 21,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.44",
+   "name": "Sunburst",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 16,
+   "cardsWithKeywordAndRuling": 6,
+   "exampleLines": 1
+  },
+  {
+   "id": "702.45",
+   "name": "Bushido",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 38,
+   "cardsWithKeywordAndRuling": 5,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.46",
+   "name": "Soulshift",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 26,
+   "cardsWithKeywordAndRuling": 3,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.47",
+   "name": "Splice",
+   "kind": "ability",
+   "subrules": 5,
+   "cardsWithKeyword": 32,
+   "cardsWithKeywordAndRuling": 31,
+   "exampleLines": 2
+  },
+  {
+   "id": "702.48",
+   "name": "Offering",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 6,
+   "cardsWithKeywordAndRuling": 5,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.49",
+   "name": "Ninjutsu",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 35,
+   "cardsWithKeywordAndRuling": 31,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.50",
+   "name": "Epic",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 5,
+   "cardsWithKeywordAndRuling": 1,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.51",
+   "name": "Convoke",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 103,
+   "cardsWithKeywordAndRuling": 101,
+   "exampleLines": 1
+  },
+  {
+   "id": "702.52",
+   "name": "Dredge",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 14,
+   "cardsWithKeywordAndRuling": 14,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.53",
+   "name": "Transmute",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 14,
+   "cardsWithKeywordAndRuling": 3,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.54",
+   "name": "Bloodthirst",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 23,
+   "cardsWithKeywordAndRuling": 7,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.55",
+   "name": "Haunt",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 10,
+   "cardsWithKeywordAndRuling": 5,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.56",
+   "name": "Replicate",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 20,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.57",
+   "name": "Forecast",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 12,
+   "cardsWithKeywordAndRuling": 2,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.58",
+   "name": "Graft",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 13,
+   "cardsWithKeywordAndRuling": 4,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.59",
+   "name": "Recover",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 7,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.60",
+   "name": "Ripple",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 5,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.61",
+   "name": "Split Second",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 25,
+   "cardsWithKeywordAndRuling": 21,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.62",
+   "name": "Suspend",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 73,
+   "cardsWithKeywordAndRuling": 70,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.63",
+   "name": "Vanishing",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 22,
+   "cardsWithKeywordAndRuling": 11,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.64",
+   "name": "Absorb",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.65",
+   "name": "Aura Swap",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 1,
+   "cardsWithKeywordAndRuling": 1,
+   "exampleLines": 2
+  },
+  {
+   "id": "702.66",
+   "name": "Delve",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 30,
+   "cardsWithKeywordAndRuling": 27,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.67",
+   "name": "Fortify",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 2,
+   "cardsWithKeywordAndRuling": 2,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.68",
+   "name": "Frenzy",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 1,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.69",
+   "name": "Gravestorm",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 3,
+   "cardsWithKeywordAndRuling": 2,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.70",
+   "name": "Poisonous",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.71",
+   "name": "Transfigure",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 1,
+   "cardsWithKeywordAndRuling": 1,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.72",
+   "name": "Champion",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 12,
+   "cardsWithKeywordAndRuling": 1,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.73",
+   "name": "Changeling",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 71,
+   "cardsWithKeywordAndRuling": 44,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.74",
+   "name": "Evoke",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 36,
+   "cardsWithKeywordAndRuling": 35,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.75",
+   "name": "Hideaway",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.76",
+   "name": "Prowl",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 10,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.77",
+   "name": "Reinforce",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 11,
+   "cardsWithKeywordAndRuling": 3,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.78",
+   "name": "Conspire",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 11,
+   "cardsWithKeywordAndRuling": 3,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.79",
+   "name": "Persist",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 25,
+   "cardsWithKeywordAndRuling": 24,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.80",
+   "name": "Wither",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 26,
+   "cardsWithKeywordAndRuling": 11,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.81",
+   "name": "Retrace",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 18,
+   "cardsWithKeywordAndRuling": 17,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.82",
+   "name": "Devour",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 24,
+   "cardsWithKeywordAndRuling": 20,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.83",
+   "name": "Exalted",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 35,
+   "cardsWithKeywordAndRuling": 22,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.84",
+   "name": "Unearth",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 56,
+   "cardsWithKeywordAndRuling": 49,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.85",
+   "name": "Cascade",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 38,
+   "cardsWithKeywordAndRuling": 37,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.86",
+   "name": "Annihilator",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 14,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.87",
+   "name": "Level Up",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 26,
+   "cardsWithKeywordAndRuling": 26,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.88",
+   "name": "Rebound",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 35,
+   "cardsWithKeywordAndRuling": 31,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.89",
+   "name": "Umbra Armor",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 17,
+   "cardsWithKeywordAndRuling": 16,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.90",
+   "name": "Infect",
+   "kind": "ability",
+   "subrules": 6,
+   "cardsWithKeyword": 49,
+   "cardsWithKeywordAndRuling": 26,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.91",
+   "name": "Battle Cry",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 5,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.92",
+   "name": "Living Weapon",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 19,
+   "cardsWithKeywordAndRuling": 16,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.93",
+   "name": "Undying",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 24,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.94",
+   "name": "Miracle",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 19,
+   "cardsWithKeywordAndRuling": 11,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.95",
+   "name": "Soulbond",
+   "kind": "ability",
+   "subrules": 5,
+   "cardsWithKeyword": 25,
+   "cardsWithKeywordAndRuling": 7,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.96",
+   "name": "Overload",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 27,
+   "cardsWithKeywordAndRuling": 27,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.97",
+   "name": "Scavenge",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 14,
+   "cardsWithKeywordAndRuling": 14,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.98",
+   "name": "Unleash",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 14,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.99",
+   "name": "Cipher",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.100",
+   "name": "Evolve",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 22,
+   "cardsWithKeywordAndRuling": 21,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.101",
+   "name": "Extort",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 17,
+   "cardsWithKeywordAndRuling": 16,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.102",
+   "name": "Fuse",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 22,
+   "cardsWithKeywordAndRuling": 16,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.103",
+   "name": "Bestow",
+   "kind": "ability",
+   "subrules": 7,
+   "cardsWithKeyword": 43,
+   "cardsWithKeywordAndRuling": 43,
+   "exampleLines": 2
+  },
+  {
+   "id": "702.104",
+   "name": "Tribute",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 11,
+   "cardsWithKeywordAndRuling": 11,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.105",
+   "name": "Dethrone",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 9,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.106",
+   "name": "Hidden Agenda",
+   "kind": "ability",
+   "subrules": 6,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.107",
+   "name": "Outlast",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 13,
+   "cardsWithKeywordAndRuling": 10,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.108",
+   "name": "Prowess",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 93,
+   "cardsWithKeywordAndRuling": 49,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.109",
+   "name": "Dash",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 22,
+   "cardsWithKeywordAndRuling": 22,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.110",
+   "name": "Exploit",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 23,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.111",
+   "name": "Menace",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 407,
+   "cardsWithKeywordAndRuling": 257,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.112",
+   "name": "Renown",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 20,
+   "cardsWithKeywordAndRuling": 20,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.113",
+   "name": "Awaken",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.114",
+   "name": "Devoid",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 134,
+   "cardsWithKeywordAndRuling": 110,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.115",
+   "name": "Ingest",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 9,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.116",
+   "name": "Myriad",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 23,
+   "cardsWithKeywordAndRuling": 23,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.117",
+   "name": "Surge",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 11,
+   "cardsWithKeywordAndRuling": 11,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.118",
+   "name": "Skulk",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 16,
+   "cardsWithKeywordAndRuling": 10,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.119",
+   "name": "Emerge",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.120",
+   "name": "Escalate",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 9,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.121",
+   "name": "Melee",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 12,
+   "cardsWithKeywordAndRuling": 10,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.122",
+   "name": "Crew",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 195,
+   "cardsWithKeywordAndRuling": 92,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.123",
+   "name": "Fabricate",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 16,
+   "cardsWithKeywordAndRuling": 16,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.124",
+   "name": "Partner",
+   "kind": "ability",
+   "subrules": 13,
+   "cardsWithKeyword": 143,
+   "cardsWithKeywordAndRuling": 118,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.125",
+   "name": "Undaunted",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 5,
+   "cardsWithKeywordAndRuling": 5,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.126",
+   "name": "Improvise",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 23,
+   "cardsWithKeywordAndRuling": 19,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.127",
+   "name": "Aftermath",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 27,
+   "cardsWithKeywordAndRuling": 27,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.128",
+   "name": "Embalm",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.129",
+   "name": "Eternalize",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 13,
+   "cardsWithKeywordAndRuling": 13,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.130",
+   "name": "Afflict",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 11,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.131",
+   "name": "Ascend",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 31,
+   "cardsWithKeywordAndRuling": 29,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.132",
+   "name": "Assist",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 17,
+   "cardsWithKeywordAndRuling": 17,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.133",
+   "name": "Jump-Start",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 12,
+   "cardsWithKeywordAndRuling": 12,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.134",
+   "name": "Mentor",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 21,
+   "cardsWithKeywordAndRuling": 19,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.135",
+   "name": "Afterlife",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 11,
+   "cardsWithKeywordAndRuling": 11,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.136",
+   "name": "Riot",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 13,
+   "cardsWithKeywordAndRuling": 13,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.137",
+   "name": "Spectacle",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 11,
+   "cardsWithKeywordAndRuling": 11,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.138",
+   "name": "Escape",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 32,
+   "cardsWithKeywordAndRuling": 31,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.139",
+   "name": "Companion",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 12,
+   "cardsWithKeywordAndRuling": 11,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.140",
+   "name": "Mutate",
+   "kind": "ability",
+   "subrules": 6,
+   "cardsWithKeyword": 34,
+   "cardsWithKeywordAndRuling": 18,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.141",
+   "name": "Encore",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 26,
+   "cardsWithKeywordAndRuling": 25,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.142",
+   "name": "Boast",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 18,
+   "cardsWithKeywordAndRuling": 17,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.143",
+   "name": "Foretell",
+   "kind": "ability",
+   "subrules": 6,
+   "cardsWithKeyword": 51,
+   "cardsWithKeywordAndRuling": 51,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.144",
+   "name": "Demonstrate",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 7,
+   "cardsWithKeywordAndRuling": 6,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.145",
+   "name": "Daybound and Nightbound",
+   "kind": "ability",
+   "subrules": 7,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.146",
+   "name": "Disturb",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 25,
+   "cardsWithKeywordAndRuling": 17,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.147",
+   "name": "Decayed",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 2,
+   "cardsWithKeywordAndRuling": 1,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.148",
+   "name": "Cleave",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 12,
+   "cardsWithKeywordAndRuling": 12,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.149",
+   "name": "Training",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 12,
+   "cardsWithKeywordAndRuling": 10,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.150",
+   "name": "Compleated",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 7,
+   "cardsWithKeywordAndRuling": 7,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.151",
+   "name": "Reconfigure",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 17,
+   "cardsWithKeywordAndRuling": 17,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.152",
+   "name": "Blitz",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 17,
+   "cardsWithKeywordAndRuling": 17,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.153",
+   "name": "Casualty",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.154",
+   "name": "Enlist",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 12,
+   "cardsWithKeywordAndRuling": 12,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.155",
+   "name": "Read Ahead",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 10,
+   "cardsWithKeywordAndRuling": 10,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.156",
+   "name": "Ravenous",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 12,
+   "cardsWithKeywordAndRuling": 12,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.157",
+   "name": "Squad",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.158",
+   "name": "Space Sculptor",
+   "kind": "ability",
+   "subrules": 5,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.159",
+   "name": "Visit",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.160",
+   "name": "Prototype",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 19,
+   "cardsWithKeywordAndRuling": 19,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.161",
+   "name": "Living Metal",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 13,
+   "cardsWithKeywordAndRuling": 13,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.162",
+   "name": "More Than Meets the Eye",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 15,
+   "cardsWithKeywordAndRuling": 15,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.163",
+   "name": "For Mirrodin!",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 13,
+   "cardsWithKeywordAndRuling": 13,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.164",
+   "name": "Toxic",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 42,
+   "cardsWithKeywordAndRuling": 37,
+   "exampleLines": 1
+  },
+  {
+   "id": "702.165",
+   "name": "Backup",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 26,
+   "cardsWithKeywordAndRuling": 25,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.166",
+   "name": "Bargain",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 20,
+   "cardsWithKeywordAndRuling": 20,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.167",
+   "name": "Craft",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 24,
+   "cardsWithKeywordAndRuling": 24,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.168",
+   "name": "Disguise",
+   "kind": "ability",
+   "subrules": 6,
+   "cardsWithKeyword": 43,
+   "cardsWithKeywordAndRuling": 43,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.169",
+   "name": "Solved",
+   "kind": "ability",
+   "subrules": 4,
+   "cardsWithKeyword": 13,
+   "cardsWithKeywordAndRuling": 13,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.170",
+   "name": "Plot",
+   "kind": "ability",
+   "subrules": 6,
+   "cardsWithKeyword": 40,
+   "cardsWithKeywordAndRuling": 39,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.171",
+   "name": "Saddle",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 31,
+   "cardsWithKeywordAndRuling": 30,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.172",
+   "name": "Spree",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 21,
+   "cardsWithKeywordAndRuling": 21,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.173",
+   "name": "Freerunning",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 12,
+   "cardsWithKeywordAndRuling": 12,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.174",
+   "name": "Gift",
+   "kind": "ability",
+   "subrules": 12,
+   "cardsWithKeyword": 25,
+   "cardsWithKeywordAndRuling": 25,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.175",
+   "name": "Offspring",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 20,
+   "cardsWithKeywordAndRuling": 20,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.176",
+   "name": "Impending",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 5,
+   "cardsWithKeywordAndRuling": 5,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.177",
+   "name": "Exhaust",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 36,
+   "cardsWithKeywordAndRuling": 33,
+   "exampleLines": 1
+  },
+  {
+   "id": "702.178",
+   "name": "Max Speed",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 36,
+   "cardsWithKeywordAndRuling": 32,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.179",
+   "name": "Start Your Engines!",
+   "kind": "ability",
+   "subrules": 7,
+   "cardsWithKeyword": 46,
+   "cardsWithKeywordAndRuling": 38,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.180",
+   "name": "Harmonize",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 11,
+   "cardsWithKeywordAndRuling": 8,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.181",
+   "name": "Mobilize",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 14,
+   "cardsWithKeywordAndRuling": 11,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.182",
+   "name": "Job Select",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 19,
+   "cardsWithKeywordAndRuling": 18,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.183",
+   "name": "Tiered",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 7,
+   "cardsWithKeywordAndRuling": 7,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.184",
+   "name": "Station",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 33,
+   "cardsWithKeywordAndRuling": 8,
+   "exampleLines": 1
+  },
+  {
+   "id": "702.185",
+   "name": "Warp",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 32,
+   "cardsWithKeywordAndRuling": 16,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.186",
+   "name": "∞ (Infinity)",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 0,
+   "cardsWithKeywordAndRuling": 0,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.187",
+   "name": "Mayhem",
+   "kind": "ability",
+   "subrules": 3,
+   "cardsWithKeyword": 16,
+   "cardsWithKeywordAndRuling": 12,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.188",
+   "name": "Web-slinging",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 10,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.189",
+   "name": "Firebending",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 28,
+   "cardsWithKeywordAndRuling": 26,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.190",
+   "name": "Sneak",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 27,
+   "cardsWithKeywordAndRuling": 26,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.191",
+   "name": "Increment",
+   "kind": "ability",
+   "subrules": 2,
+   "cardsWithKeyword": 9,
+   "cardsWithKeywordAndRuling": 9,
+   "exampleLines": 0
+  },
+  {
+   "id": "702.192",
+   "name": "Paradigm",
+   "kind": "ability",
+   "subrules": 1,
+   "cardsWithKeyword": 5,
+   "cardsWithKeywordAndRuling": 5,
+   "exampleLines": 0
+  }
+ ]
+}
