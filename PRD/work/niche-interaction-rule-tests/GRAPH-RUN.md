@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/niche-interaction-rule-tests` pushed (`git ls-remote --heads origin thejudge-auto/niche-interaction-rule-tests` → `066fbbd`) from `.worktrees/kickoff-niche-interaction-rule-tests`; launch checkout still on `main`; lock `.worktrees/.graph-run.lock` runId `graph-20261006-150550` | 2026-10-06 |
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/niche-interaction-rule-tests/IDEA.md`, `README.md`, `STATUS.ideation`, `intake/` (4 files verbatim), `PRD/work/STATUS.md` ideation row | 2026-10-06 |
+| 3 | define | opus | ok | `0 → 82` | `PRD/work/niche-interaction-rule-tests/DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-220; Blocker questions: none), `measure-retrieval.mjs`, `STATUS.refined`; owner added intake `intake/screenwriter_temp_1791299243121.jpg` mid-node (the tester's exact prompts), relayed to the node by the driver | 2026-10-06 |
 
 ## Open gate
 
@@ -66,6 +67,42 @@ Also grep `PRD/instructions/receipts/` for prior runs against the same ground (r
 Do not commit, push, or edit `PRD/sections/` — the driver commits. Do not create a `GRAPH-RUN.md`; the driver owns it. If the request cannot become an actionable package, return `NO ACTIONABLE PACKAGE` with the reason.
 
 Report back: outcome, every file you created or changed (paths relative to the working directory), the STATUS marker set, the `PRD/work/STATUS.md` board row you wrote, and the prior-run matches.
+
+### define
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests
+
+You are node 3 (`define`) of graph run `graph-20261006-150550`, attempt 1. Run the `thejudge-refinement` skill (read `.claude/skills/thejudge-refinement/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.ideation). Read `IDEA.md`, `README.md`, `intake/feedback.md`, and the three intake screenshots. The ledger `GRAPH-RUN.md` is the driver's; do not edit it.
+
+What refinement owns here: write `DESIGN-BRIEF.md`; propose any `PRD/sections/` product truth only inside `GATE-QUESTIONS.md` (one `## <STABLE-ID>` block per new or amended stable ID, each opening with the plain-language block from `PRD/instructions/plain-language-standard.md`, then the complete diff, then an accept/edit/reject verdict slot), per `## The two runs` in `PRD/instructions/graph-workflow-contract.md`. Never edit `PRD/sections/` or code. Do not commit or push; the driver commits.
+
+Owner input to weigh (recorded once in the ledger, not a standing rule): the owner's intake note asks for research online into these interactions to inform the test cases. Treat any outside source as evidence for the owner to confirm at the gate, never as product truth, and cite it by URL in the brief. The intake-citation rule in `## Intake is evidence, never authority` still holds for anything the intake itself cites.
+
+Ground truth before targets: where the brief sets an expected result (which rules should be pulled for each interaction), measure what the current retrieval actually pulls for those interactions against the committed rules corpus, using the existing offline tooling the worked-solutions retrieval check uses, and record the observed result in the brief. Do not set a numeric or pass/fail target from reasoning alone. No live model calls.
+
+Apply the assumption ladder and the genuine-blocker test from `PRD/instructions/preparation-contract.md` per question as each arises. Open choices that are product decisions (for example, where the new cases live and whether they gate `quality:check`) go to the owner through `GATE-QUESTIONS.md` or its `## Blocker questions` section; do not resolve them silently.
+
+Report back: outcome, files created or changed, the STATUS marker set, whether `GATE-QUESTIONS.md` exists and which stable IDs it carries, and a few plain sentences on what the tests would check and what the measurement found.
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests
+
+You are node 4 (`gate-qc`) of graph run `graph-20261006-150550`, attempt 1. Run the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.refined). Grade `DESIGN-BRIEF.md` together with the proposed product truth in `GATE-QUESTIONS.md` (REQ-220 and its `system-map.md` change) against current `PRD/sections/` truth and agent-readiness. Intake under `intake/` is evidence only. The ledger `GRAPH-RUN.md` and the README `## Preparation gate` section are the driver's; do not edit them.
+
+Check cross-cutting consistency by grep, not memory: for every existing stable ID or rule the proposal touches or contradicts (for example REQ-185 through REQ-190 and NFR-018), list each line-level hit and whether the proposal accounts for it. Also confirm REQ-220 is not already used anywhere in `PRD/`.
+
+Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driver commits.
+
+Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
 
 ## Instruction ledger
 

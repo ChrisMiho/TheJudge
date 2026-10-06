@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Report-only tests that the right rules reach the prompt for two tester-reported interactions; gate proposes REQ-220 |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Tests that check the right rules reach the prompt for tester-reported hard interactions (Academy Manufactor + Esix; Silence + Necropotence + Borne Upon a Wind) |
 
 ## owner-action
 
