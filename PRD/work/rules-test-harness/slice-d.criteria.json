@@ -5,7 +5,7 @@
     {
       "id": "D1",
       "statement": "Round-trip test: render a batch, fill verdicts, apply; the apply changes only `review.*`, plus `snapshot` on an `approve` verdict",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(npm run test:scripts|npm run coverage:check|npm run quality:check|npm test|vitest|node --test)"
       }
@@ -13,7 +13,7 @@
     {
       "id": "D2",
       "statement": "Stale path test: a fixture approved case whose ruling hash no longer matches is rendered marked stale with the changed dependency's current text; applying `approve` re-records its hashes, after which slice A's stale comparison passes and slice C's filter selects it again",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(npm run test:scripts|npm run coverage:check|npm run quality:check|npm test|vitest|node --test)"
       }
@@ -21,7 +21,7 @@
     {
       "id": "D3",
       "statement": "Refusal tests: unknown case id, question changed since render, `expected.answer` changed since render, committed rule/oracle/ruling text changed since render, and `edit` with no note are each refused and reported",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(npm run test:scripts|npm run coverage:check|npm run quality:check|npm test|vitest|node --test)"
       }
@@ -29,7 +29,7 @@
     {
       "id": "D4",
       "statement": "An `edit` verdict leaves the case at `draft` and never replaces a tier-1 or tier-2 reference answer with non-official text (test)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(npm run test:scripts|npm run coverage:check|npm run quality:check|npm test|vitest|node --test)"
       }
@@ -37,7 +37,7 @@
     {
       "id": "D5",
       "statement": "Batches are grouped by mechanic then rules section, and `output/rules-review/` is gitignored",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(git check-ignore|git status|npm run test:scripts|node --test|vitest)",
         "paths": [
@@ -48,7 +48,7 @@
     {
       "id": "D6",
       "statement": "Tests place per A3: logic needing no TypeScript runs under `test:scripts` (`node --test`, injected fakes); anything needing TypeScript is a backend vitest test",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(npm run test:scripts|npm run coverage:check|npm run quality:check|npm test|vitest|node --test)"
       }
@@ -56,7 +56,7 @@
     {
       "id": "D7",
       "statement": "`npm run quality:check` is green",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }

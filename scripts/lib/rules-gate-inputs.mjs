@@ -5,10 +5,9 @@
 // written file passes `format:check`. TypeScript imports stay inside function
 // bodies, so importing this module never needs tsx.
 
-import { writeFile } from "node:fs/promises";
-
 import { loadGoldCases } from "./gold-cases.mjs";
 import { buildCaseRequest, loadPromptResources } from "./prompt-fidelity.mjs";
+import { writeFormattedJson } from "./write-formatted-json.mjs";
 
 /** Every non-rejected case, the way the gate runs them. */
 export async function loadGateCases() {
@@ -31,11 +30,4 @@ export async function loadGateInputs() {
   return { cases, resources, buildRequest: buildCaseRequest };
 }
 
-/** Writes JSON formatted with the repo's own Prettier config, so `format:check` stays green. */
-export async function writeFormattedJson(filePath, value) {
-  const prettier = await import("prettier");
-  const config = (await prettier.resolveConfig(filePath)) ?? {};
-  const text = await prettier.format(`${JSON.stringify(value, null, 2)}\n`, { ...config, filepath: filePath });
-  await writeFile(filePath, text, "utf8");
-  return text.length;
-}
+export { writeFormattedJson };

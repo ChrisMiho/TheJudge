@@ -67,6 +67,10 @@ output/combo-answer-quality/
 # file is apps/backend/src/eval/answer-quality/results.json, REQ-189)
 output/answer-quality/
 
+# Rules test review batches (developer-local; the owner's verdicts land in the case
+# files under apps/backend/src/eval/worked-solutions/ through the apply command, REQ-224)
+output/rules-review/
+
 # Card-scan fingerprint build logs / pid (transient; the bin ships under public/data/)
 output/cardhash-build/
 

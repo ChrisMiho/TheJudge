@@ -1,6 +1,6 @@
 # Slice D — Owner review flow: render and apply
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -24,13 +24,13 @@ None. REQ-224 is applied in slice E, where its coverage-file step lands (A21). S
 
 ## Acceptance criteria
 
-- [ ] **D1.** Round-trip test: render a batch, fill verdicts, apply; the apply changes only `review.*`, plus `snapshot` on an `approve` verdict
-- [ ] **D2.** Stale path test: a fixture approved case whose ruling hash no longer matches is rendered marked stale with the changed dependency's current text; applying `approve` re-records its hashes, after which slice A's stale comparison passes and slice C's filter selects it again
-- [ ] **D3.** Refusal tests: unknown case id, question changed since render, `expected.answer` changed since render, committed rule/oracle/ruling text changed since render, and `edit` with no note are each refused and reported
-- [ ] **D4.** An `edit` verdict leaves the case at `draft` and never replaces a tier-1 or tier-2 reference answer with non-official text (test)
-- [ ] **D5.** Batches are grouped by mechanic then rules section, and `output/rules-review/` is gitignored
-- [ ] **D6.** Tests place per A3: logic needing no TypeScript runs under `test:scripts` (`node --test`, injected fakes); anything needing TypeScript is a backend vitest test
-- [ ] **D7.** `npm run quality:check` is green
+- [x] **D1.** Round-trip test: render a batch, fill verdicts, apply; the apply changes only `review.*`, plus `snapshot` on an `approve` verdict
+- [x] **D2.** Stale path test: a fixture approved case whose ruling hash no longer matches is rendered marked stale with the changed dependency's current text; applying `approve` re-records its hashes, after which slice A's stale comparison passes and slice C's filter selects it again
+- [x] **D3.** Refusal tests: unknown case id, question changed since render, `expected.answer` changed since render, committed rule/oracle/ruling text changed since render, and `edit` with no note are each refused and reported
+- [x] **D4.** An `edit` verdict leaves the case at `draft` and never replaces a tier-1 or tier-2 reference answer with non-official text (test)
+- [x] **D5.** Batches are grouped by mechanic then rules section, and `output/rules-review/` is gitignored
+- [x] **D6.** Tests place per A3: logic needing no TypeScript runs under `test:scripts` (`node --test`, injected fakes); anything needing TypeScript is a backend vitest test
+- [x] **D7.** `npm run quality:check` is green
 
 ## Verification
 
@@ -39,6 +39,10 @@ npm run test:scripts
 npm --workspace apps/backend run test
 npm run quality:check
 ```
+
+## Build note (graph node 6)
+
+D4 says an `edit` verdict "leaves the case at `draft`"; REQ-224 and requirement 2 above say apply writes `review.status` `needs-edit`. The build follows REQ-224: an `edit` writes `needs-edit` with the owner's note (so the rework request is recorded, and `--include-needs-edit` can show it again); the case goes back to `draft` when its author reworks it, which is outside the apply command. What D4 protects holds either way: apply never touches `expected.answer`, the question, the cards or `snapshot` on an `edit`. Recorded as a deviation in the build report.
 
 ## Files touched
 

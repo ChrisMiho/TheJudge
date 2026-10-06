@@ -38,6 +38,8 @@
     "eval:build-frozen-query-embeddings": "tsx scripts/build-frozen-query-embeddings.mjs",
     "eval:build-rules-gate-vectors": "tsx scripts/build-rules-gate-vectors.mjs",
     "eval:rules-gate:baseline": "tsx scripts/raise-rules-gate-baseline.mjs",
+    "eval:rules-review:render": "node scripts/rules-review.mjs render",
+    "eval:rules-review:apply": "node scripts/rules-review.mjs apply",
     "combo:answer-quality": "tsx scripts/compare-combo-answer-quality.mjs",
     "eval:worked-solutions": "tsx scripts/eval-worked-solutions.mjs",
     "eval:answer-quality": "tsx scripts/eval-answer-quality.mjs",
