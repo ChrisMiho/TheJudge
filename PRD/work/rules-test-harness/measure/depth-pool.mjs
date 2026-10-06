@@ -1,5 +1,6 @@
 // Scratch measurement for the rules-test-harness DESIGN-BRIEF (define node,
-// attempt 2, 2026-10-06; gate-qc finding 2). Sizes the two official pools the
+// attempt 2, 2026-10-06; gate-qc finding 2; ruling terms widened to the twelve
+// hard areas in attempt 3, gate-qc finding 8). Sizes the two official pools the
 // 120 hard-area cases are drawn from, and how many "does-not-work"
 // candidates each pool holds. Committed data only; no network, no model call.
 //
@@ -72,15 +73,23 @@ for (const c of meta) {
 }
 const ownNames = new Map();
 for (const c of meta) ownNames.set(c.cardId, new Set([c.name, ...(c.name.includes(" // ") ? c.name.split(" // ") : [])]));
+// One term pattern per hard area, keyed by the same twelve areas as HARD
+// above (define attempt 3, gate-qc finding 8: one hard-area list everywhere).
+// Attempt 2 used eight patterns, folding Commander and Two-Headed Giant into
+// multiplayer and having none for resolution or continuous effects.
 const AREA_TERMS = {
-  copies: /\bcop(y|ies)\b/i,
-  layers: /\blayer|\btimestamp|\bdependen/i,
-  replacement: /\binstead\b|\bprevent|replacement effect/i,
-  triggers: /\btrigger/i,
-  combat: /combat damage|\bblock|\battack/i,
-  sba: /state-based action/i,
-  dfc: /\btransform|double-faced|back face|front face/i,
-  multiplayer: /multiplayer|each opponent|\bcommander\b|two-headed giant/i
+  "copies 707": /\bcop(y|ies)\b/i,
+  "layers 613": /\blayer|\btimestamp|\bdependen/i,
+  "continuous effects 611": /continuous effect/i,
+  "replacement/prevention 614-616": /\binstead\b|\bprevent|replacement effect/i,
+  "triggers 603": /\btrigger/i,
+  "resolution 608": /\bresolv(e|es|ed|ing)\b|\bresolution\b/i,
+  "combat 508-510": /combat damage|\bblock|\battack/i,
+  "SBA 704": /state-based action/i,
+  "double-faced 712": /\btransform|double-faced|back face|front face/i,
+  "multiplayer 801": /multiplayer|each opponent/i,
+  "two-headed giant 810": /two-headed giant/i,
+  "commander 903": /\bcommander\b|command zone/i
 };
 let twoCard = 0, twoCardHard = 0, twoCardHardNeg = 0;
 const pairs = new Set();

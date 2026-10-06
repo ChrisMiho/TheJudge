@@ -68,7 +68,7 @@ format to build on.
 +  - **tier 2** — the reference answer is a WotC card ruling verbatim from `apps/backend/data/cardRulingsByOracleId.json.br` (78,734 rulings over 19,854 cards, measured 2026-10-06), cited by card name, oracle id, and ruling date; the question is hand-authored. A tier-2 case tests whether the model honours the ruling the prompt already attaches for that card (`cardRulings.ts`), which is the failure a player actually sees at the table
 +  - **tier 3** — where no official text answers the question, the reference answer is a ruling the owner researched and approved. An agent may draft a tier-3 answer only as a `draft`: it cites a Comprehensive Rules rule id for every step of its reasoning and lists the research it rests on (links used for discovery, never copied text). A tier-3 answer is never ground truth until the owner approves it, and then only as tier 3. Tier-3 scores are always reported on their own line, never pooled with tiers 1 and 2
 +  - **every card attached** — every case lists, in `cards`, each card its question names (oracle id and name), and every run asks the case the way a player asks it, with all of those cards attached — as a lookup, or, when the case has a `gameState`, as an In-Depth request with those cards in their zones; a case naming no real card (for example a CR worked example about a hypothetical creature) has an empty `cards` list and is asked as the bare question
-+  - **format version 2** — a case is valid only when it carries: `id`; `formatVersion` 2; `tier` 1, 2, or 3; `review` (`status` one of `draft`, `approved`, `needs-edit`, `rejected`, plus `reviewedOn` and an optional reviewer note); `cards`; `gameState` (null, or an In-Depth game context in the same shape and under the same validation as the In-Depth request's `gameContext` — players, turn phase, and zones whose cards carry owner, caster, targets, and a note — holding only the facts the ruling depends on; stack order is the order of the stack zone, bottom first, and a controller that differs from the owner is stated in that card's note); a non-empty `question`; `expected` with `outcome` (`works`, `does-not-work`, or `depends`), a one-line `shortAnswer` shown to the reviewer, the reference `answer` (verbatim official text for tiers 1 and 2; the owner-approved ruling for tier 3), and at least one `decidingRuleIds` entry; `source` naming the authority, the citation its tier requires (rule id for tier 1; card name, oracle id, and ruling date for tier 2; a rule id per reasoning step for tier 3), its research links (tier 3 only), and licensing; `layers` with `requiredFacts`, `irrelevantFacts`, and `variants` (defined now, left empty in run 1); `snapshot` with content hashes of the rule text, oracle text, and ruling text the case depends on (REQ-225); and a non-empty `whyHard`. `scripts/lib/gold-cases.mjs` asserts all of these for every case, and every reader — the offline gate (REQ-222), the coverage gate (REQ-223), the review command (REQ-224), `npm run eval:worked-solutions`, and the answer-quality run — reads cases through this one shared loader, so a malformed case fails loudly rather than scoring as a miss
++  - **format version 2** — a case is valid only when it carries: `id`; `formatVersion` 2; `tier` 1, 2, or 3; `review` (`status` one of `draft`, `approved`, `needs-edit`, `rejected`, plus `reviewedOn` and an optional reviewer note); `cards`; `gameState` (null, or an In-Depth game context in the same shape and under the same validation as the In-Depth request's `gameContext` — players, turn phase, and zones whose cards carry owner, caster, targets, and a note — holding only the facts the ruling depends on; stack order is the order of the stack zone, bottom first, and a controller that differs from the owner is stated in that card's note; `owner` is set only on cards outside the stack and `caster` only on stack items, the only places the prompt prints them, and any other such fact goes in the card's note); a non-empty `question`; `expected` with `outcome` (`works`, `does-not-work`, or `depends`), a one-line `shortAnswer` shown to the reviewer, the reference `answer` (verbatim official text for tiers 1 and 2; the owner-approved ruling for tier 3), and at least one `decidingRuleIds` entry; `source` naming the authority, the citation its tier requires (rule id for tier 1; card name, oracle id, and ruling date for tier 2; a rule id per reasoning step for tier 3), its research links (tier 3 only), and licensing; `layers` with `requiredFacts`, `irrelevantFacts`, and `variants` (defined now, left empty in run 1); `snapshot` with content hashes of the rule text, oracle text, and ruling text the case depends on (REQ-225), recorded when the case is authored and re-recorded each time the owner approves it (REQ-224); and a non-empty `whyHard`. `scripts/lib/gold-cases.mjs` asserts all of these for every case, and every reader — the offline gate (REQ-222), the coverage gate (REQ-223), the review command (REQ-224), `npm run eval:worked-solutions`, and the answer-quality run — reads cases through this one shared loader, so a malformed case fails loudly rather than scoring as a miss
 +  - `shortAnswer` and `outcome` are review and reporting aids; the judge is never given them as the reference (REQ-186 grades against `answer` only)
 +  - **tags are derived, never hand-written**: `mechanic:` tags come from the 701/702 rule ids in `decidingRuleIds` (a mechanic case always lists that mechanic's own rule), `cr:` tags from every `decidingRuleIds` section, and difficulty from the number of attached cards and distinct rule sections plus flags for layers, replacement effects, and multiplayer
 +  - **no duplicates**: the loader rejects two cases with the same set of attached cards and the same answer source; a second case on the same mechanic or rules area must test a different interaction (different cards or a different deciding rule) — a rewording of an existing case is a future `layers.variants` entry, not a new case
@@ -77,7 +77,7 @@ format to build on.
    - the ten labelled eval fixtures (`cascade-keyword`, `combat-deathtouch`, `counterspell-stack`, `quick-lookup-card`, `quick-lookup-multi-card`, `quick-lookup-multi-keyword-card`, `quick-lookup-no-card`, `quick-lookup-off-domain`, `state-based-actions`, `upkeep-trigger`) are recorded as **needing an answer key** and are not in the gold set; measured 2026-09-06, every one of them carries only retrieval labels (`expectedSystem2TopicIds`, `expectedSupplementalRuleIds`, `forbiddenSupplementalRuleIds`) and no answer of any kind
 -  - the set grows only through tier 1 or tier 2, under the same licensing resolution NFR-018 already required; there is no tier 3. Community sources — "common mistakes" articles, judge blogs, forums — may choose which questions enter and are cited in the case as why it matters, never as its answer. An answer written by a contributor or an agent is never ground truth. Commander Spellbook combos are excluded: they are community-curated, not official, and REQ-146 already inspects real answers on combo scenarios
 +  - the corpus grows through tiers 1 and 2 first, under the same licensing resolution NFR-018 already required, and through tier 3 only by owner approval. Community sources — "common mistakes" articles, judge blogs, forums, Stack Exchange — may choose which questions enter and may be listed as tier-3 research, never copied as an answer; no outside-source text is committed in run 1. An answer written by a contributor or an agent is never ground truth unless the owner approves it, and then only as tier 3. Commander Spellbook combos are excluded: they are community-curated, not official, and REQ-146 already inspects real answers on combo scenarios
-+  - run 1 of the rules test harness authors, as `draft`: one case for each real mechanic in the committed rule index not already covered (REQ-223), and 120 hard-area cases — copies, layers, replacement and prevention effects, triggers, combat, state-based actions, double-faced cards, and multiplayer — drawn from unused CR `Example:` lines and from WotC rulings that name a second card, at least a third of them (40 or more) `does-not-work` cases, weighted toward the areas the AI has already been wrong on (replacement-effect ordering, cleanup-step timing, the post-2024 combat damage rule 510.1c, copy effects); plus the two tester cases from the deferred `niche-interaction-rule-tests` package as tier-3 drafts
++  - run 1 of the rules test harness authors, as `draft`: one case for each real mechanic in the committed rule index not already covered (REQ-223), and 120 hard-area cases across twelve rules areas — copies (707), layers (613), continuous effects (611), replacement and prevention effects (614–616), triggered abilities (603), resolution (608), combat (508–510), state-based actions (704), double-faced cards (712), multiplayer (801), Two-Headed Giant (810), and Commander (903), each represented — drawn from unused CR `Example:` lines and from WotC rulings that name a second card, at least a third of them (40 or more) `does-not-work` cases, weighted toward the areas the AI has already been wrong on (replacement-effect ordering, cleanup-step timing, the post-2024 combat damage rule 510.1c, copy effects); plus the two tester cases from the deferred `niche-interaction-rule-tests` package as tier-3 drafts
 -  - `apps/backend/src/eval/worked-solutions/README.md` describes both uses of the set — the retrieval check and the answer-quality run — applied in Slice E of the `ai-answer-quality-baseline` package
 +  - `apps/backend/src/eval/worked-solutions/README.md` describes the corpus, its three tiers, format version 2, the review flow, and every reader of it, applied in the build half of the `rules-test-harness` package
  - Constraints:
@@ -100,7 +100,7 @@ format to build on.
 +  - eighteen cases across two tiers was a small seed: honest signal on hard cases rather than broad signal on easy ones. The tier entry bar above is what keeps the grown corpus honest; tier-1 and tier-2 scores are reported with their tier so the two are never pooled without saying so, and tier-3 scores are never pooled with either
 +  - measured 2026-10-06 (define node of the `rules-test-harness` run): the committed rule index holds 258 mechanics (67 keyword actions under 701, 191 keyword abilities under 702, excluding the general rules 701.1 and 702.1); of the 18 cases, only the two trample cases touch a 701/702 rule (702.19); `npm run eval:worked-solutions` with the local embedder reports 16/18 cases whose deciding rule reaches the prompt at cap 10, the misses being `panharmonicon-controller-not-entering-permanent` (603.2) and `restoration-angel-blink-resets-counters` (400.7)
 +  - measured 2026-10-06: migrating the 18 cases with the `cards` lists above — Tarmogoyf newly attached to `token-created-by-name-uses-oracle-card` — keeps 16/18 with the same two misses, and every attached card's oracle text and rulings reach the prompt
-+  - measured 2026-10-06, for the hard-area block: the committed rule index has 126 `Example:` lines in the hard areas, 13 of them used by the 18 cases, leaving 113 (20 negative-phrased); 2,371 committed WotC rulings name a second committed card and match a hard-area term (1,063 negative-phrased). Run 1 takes 60 and 58 from these two pools plus the two tester cases, so the at-least-a-third `does-not-work` target (40 of 120) is within the measured supply
++  - measured 2026-10-06, for the hard-area block: the committed rule index has 126 `Example:` lines in the hard areas, 13 of them used by the 18 cases, leaving 113 (20 negative-phrased); 2,651 committed WotC rulings name a second committed card and match a term for one of the same twelve areas (1,232 negative-phrased). Run 1 takes 60 and 58 from these two pools plus the two tester cases, so the at-least-a-third `does-not-work` target (40 of 120) is within the measured supply
 ```
 
 - Verdict:
@@ -274,7 +274,7 @@ file, so the "re-pay only for changed cases" plan in REQ-188 cannot work.
 +  - a recorded run **merges** into the committed results file: each graded case's record for that leg replaces its previous record, every other case's record is kept unchanged, and the run-level metadata describes the latest run. A case removed from the corpus or no longer `approved` is dropped from the file on the next recorded run. Run-to-run history is the file's git history, so a comparison of two runs is a git diff
 -  - the run tooling reports two runs (`compareRuns`) as **incomparable** when their gold set, judge model, rubric revision, or `EMBEDDING_PROVIDER` differ, and as a **model comparison** (shared models compared, unshared ones listed) — never incomparable — when only the answer-model lineup differs
 +  - the run tooling compares records (`compareRuns`) per case: **incomparable** when the reference-answer hash, judge model, rubric revision, or `EMBEDDING_PROVIDER` differ, and a **model comparison** (shared models compared, unshared ones listed) — never incomparable — when only the answer-model lineup differs
-+  - a counts-only coverage file sits beside it (`apps/backend/src/eval/answer-quality/coverage.json`), written by the coverage command (REQ-223): mechanics by approved / draft / none, case counts per Comprehensive Rules section, and case counts per tier, review status, and `outcome` — numbers and ids only, no prose
++  - a counts-only coverage file sits beside it (`apps/backend/src/eval/answer-quality/coverage.json`), written by the coverage command (REQ-223) and rewritten by the review apply command each time it writes a batch's verdicts (REQ-224): mechanics by approved / draft / none, case counts per Comprehensive Rules section, and case counts per tier, review status, and `outcome` — numbers and ids only, no prose
 ```
 
 - Verdict:
@@ -394,7 +394,7 @@ answers.
 +  - **card check (absolute)**: for every attached card, the assembled prompt contains that card's oracle text and every WotC ruling the committed rulings index holds for it; any miss fails the gate, naming the case and the card. Measured 2026-10-06, no card in the committed rulings index exceeds the prompt's ruling limits (the most rulings on one card is 32 against a per-card limit of 100; the largest single card's rulings section is 8,937 characters against a section limit of 1,000,000), so this check passes for any card in today's data
 +  - **rule check (ratchet)**: a committed baseline file records, per case, whether at least one of its `decidingRuleIds` was among the System 3 excerpts in the prompt at the production cap; the gate fails when a case recorded as a hit is now a miss, naming each such case. Cases that are new hits, and cases not yet in the baseline, are reported and never fail the gate. The baseline is raised only by an explicit command, never automatically, following REQ-177's recorded-baseline gate. At first ship the 18 migrated cases reproduce today's measurement: 16 hits, with `panharmonicon-controller-not-entering-permanent` (603.2) and `restoration-angel-blink-resets-counters` (400.7) recorded as misses
 +  - **frozen query vectors**: the System 3 ranking uses one committed query vector per case, embedded once from the exact retrieval query text production builds (`buildRetrievalQueryText`) by the shipped local embedder, following the frozen-vector fixture REQ-181 established (`npm run eval:build-frozen-query-embeddings`); a command (re)builds them and refuses to write a vector when the local model is unavailable. A non-rejected case with no frozen vector fails the gate. A case whose query text no longer matches the text its vector was built from — for example after a card-data refresh changes a card's keywords — is reported as needing a re-freeze and listed by the staleness report (REQ-225), and is not scored by the ratchet until re-frozen, so a weekly `data:refresh-pr` is never blocked by it
-+  - **state-fact check (layer 3)**: for every case with a non-null `gameState`, every fact it states appears in the assembled prompt as the line the prompt prints for it — each card under its zone's section, each stack item at its position (bottom to top), each `owner` and `caster`, each target, and each card note (where a controller that differs from the owner is stated, since the In-Depth request has no controller field); a miss fails the gate, naming the case and the fact
++  - **state-fact check (layer 3)**: for every case with a non-null `gameState`, every fact it states appears in the assembled prompt as the line the prompt prints for it — each card under its zone's section, each stack item at its position (bottom to top), each `owner` (cards outside the stack) and each `caster` (stack items), each target, and each card note (where a controller that differs from the owner is stated, since the In-Depth request has no controller field); a miss fails the gate, naming the case and the fact
 +  - the gate prints a summary: cases checked, card-check passes, rule-check hits / misses / new hits / awaiting re-freeze, and state-fact passes
 +- Constraints:
 +  - no provider call, no live embedding call, no network call; deterministic run to run
@@ -455,8 +455,9 @@ rules refresh is picked up automatically, and fails a pull request when a
 mechanic that is not on the committed excluded list has no case (draft or
 approved; a rejected case does not count). A coverage report shows, for every
 mechanic, whether it has an approved case, only a draft, or none, plus counts
-per rules section, per tier, and per outcome (works, does-not-work, depends). Which mechanics are joke-only is your call:
-see Q-007 below.
+per rules section, per tier, and per outcome (works, does-not-work, depends). Applying your review verdicts
+updates those counts too, so your own review never fails a pull request.
+Which mechanics are joke-only is your call: see Q-007 below.
 
 **What happens if you say no:** nothing stops a mechanic from silently having
 no case, and coverage is only known by counting files by hand.
@@ -471,7 +472,7 @@ no case, and coverage is only known by counting files by hand.
 +  - a committed excluded list names each joke-only mechanic by rule number and name with a one-line reason; at first ship it holds exactly the mechanics the owner confirms at the define gate (Q-007)
 +  - a case covers a mechanic when one of its `decidingRuleIds` is that mechanic's rule or one of its subrules (REQ-185's derived `mechanic:` tag)
 +  - the gate fails, in `npm run quality:check`, when a listed mechanic not on the excluded list has no case whose review status is `draft`, `approved`, or `needs-edit`, naming each uncovered mechanic; it also fails when the excluded list names a rule number the index does not contain
-+  - a coverage command prints mechanic × {approved, draft, none}, case counts per Comprehensive Rules section, and case counts per tier, review status, and `outcome`, and rewrites the counts-only coverage file (REQ-189); the gate fails when the committed coverage file is out of date with the corpus
++  - a coverage command prints mechanic × {approved, draft, none}, case counts per Comprehensive Rules section, and case counts per tier, review status, and `outcome`, and rewrites the counts-only coverage file (REQ-189); the review apply command (REQ-224) rewrites the same file after writing verdicts, so an owner review never leaves it out of date; the gate fails when the committed coverage file is out of date with the corpus
 +  - no provider call, no network call, no live embedding call
 +- Constraints:
 +  - the gate reads the committed rule index only, never the gitignored raw CR text, and never triggers a rule-index rebuild
@@ -500,8 +501,14 @@ command. The command shows pending cases in batches grouped by mechanic: the
 question, each attached card's text, the official answer word for word, and
 where it comes from. You mark each one approve, reject, or edit (with a note),
 and a second command writes your verdicts back into the case files. An edit
-sends the case back for rework; it returns as a draft. The build does not wait
-for your review — review happens after merge, whenever you choose.
+sends the case back for rework; it returns as a draft. A case you already
+approved comes back in a batch, marked stale, when a rules or card update
+changes the text it depends on (REQ-225: each case keeps a fingerprint of that
+text, and a stale case is not graded). The batch shows what changed.
+Approving it again records the new fingerprint, so it is graded again.
+Applying your verdicts also updates the coverage counts file (REQ-223), so
+your own review never fails a pull request. The build does not wait for your
+review — review happens after merge, whenever you choose.
 
 **What happens if you say no:** there is no way to approve a case except
 hand-editing its file, and nothing records who approved what and when.
@@ -512,9 +519,10 @@ hand-editing its file, and nothing records who approved what and when.
 +- Priority: high
 +- Description: Every rules test case (REQ-185) is written as `draft` and counts toward no score until the owner approves it. A review command renders pending cases for the owner in batches; a second step writes the owner's verdicts back into the case files. Review happens after merge on the owner's schedule; no build waits on it.
 +- Acceptance Criteria:
-+  - a review command renders every case whose status is `draft` (and, on request, `needs-edit`), grouped by mechanic and then by rules section, in batches of a size the owner chooses, to a gitignored file under `output/`; each entry shows the case id, tier, question, every attached card's name and oracle text, the reference answer verbatim, the `shortAnswer`, the `outcome`, the deciding rule ids, the citation, and for tier 3 the research list
-+  - each rendered batch carries a verdict slot per case (`approve`, `reject`, or `edit` with a required note); an apply command reads a filled batch and writes `review.status` (`approved`, `rejected`, or `needs-edit`), `review.reviewedOn`, and the note into each case file, changing no other field
-+  - the apply command refuses a verdict for a case id it cannot find, a case whose question or reference answer changed since the batch was rendered, or an `edit` with no note, and reports each refusal
++  - a review command renders every case whose status is `draft`, every `approved` case the staleness check flags (REQ-225), and, on request, every `needs-edit` case, grouped by mechanic and then by rules section, in batches of a size the owner chooses, to a gitignored file under `output/`; each entry shows the case id, tier, question, every attached card's name and oracle text, the reference answer verbatim, the `shortAnswer`, the `outcome`, the deciding rule ids, the citation, and for tier 3 the research list; a stale case is marked stale, and its entry names each dependency that changed and shows that dependency's current committed text
++  - each rendered batch carries a verdict slot per case (`approve`, `reject`, or `edit` with a required note); an apply command reads a filled batch and writes `review.status` (`approved`, `rejected`, or `needs-edit`), `review.reviewedOn`, and the note into each case file; on an `approve` verdict it also re-records the case's `snapshot` hashes (REQ-225) from the committed data, which is how a stale approved case returns to live grading; it changes no other field, and it is the only command that rewrites `snapshot` after a case is authored
++  - after writing a batch's verdicts, the apply command rewrites the counts-only coverage file (REQ-189, REQ-223), so an owner review never leaves that file out of date
++  - the apply command refuses a verdict for a case id it cannot find, a case whose question or reference answer changed since the batch was rendered, a case whose committed rule, oracle, or ruling text changed since the batch was rendered, or an `edit` with no note, and reports each refusal
 +  - an `edit` verdict never changes a tier-1 or tier-2 reference answer to non-official text: the rework may change the question, the attached cards, or choose a different official source, and the case returns to `draft`
 +  - no agent sets `approved`; only the apply command, run on an owner-filled batch, does
 +  - the review and apply commands make no provider call and no network call
@@ -523,7 +531,8 @@ hand-editing its file, and nothing records who approved what and when.
 +  - rejected cases stay in the corpus with status `rejected` (so dedup still sees them) and are excluded from every gate and score
 +- Dependencies:
 +  - REQ-185 (the case format and review field)
-+  - REQ-223 (the coverage gate that counts review statuses)
++  - REQ-223 (the coverage gate that counts review statuses, and the coverage file the apply command rewrites)
++  - REQ-225 (the stale cases it renders and the `snapshot` hashes an approval re-records)
 +  - REQ-186 (grading only `approved` cases)
 ```
 
@@ -540,8 +549,10 @@ refresh changes the text it depends on.
 **In plain terms:** each case remembers a fingerprint (a hash) of the rule
 text, card text, and ruling text it depends on. When a data refresh changes
 any of them, a report flags the case as stale. A stale case drops out of live
-grading until you re-approve it, so the AI is never graded against an answer
-that may be out of date. The report never blocks a pull request, so the weekly
+grading until you re-approve it: it comes back in your next review batch,
+marked stale with what changed, and approving it records the new fingerprint
+(REQ-224, the review flow). So the AI is never graded against an answer that
+may be out of date. The report never blocks a pull request, so the weekly
 data refresh keeps flowing. The corpus keeps only the current answer; git
 keeps the history.
 
@@ -557,17 +568,17 @@ at which ones to re-check.
 +- Acceptance Criteria:
 +  - each case's `snapshot` stores a hash of the rule-index text of every `decidingRuleIds` entry, of every attached card's oracle text, and of every attached card's rulings, plus a hash of the whole rule-index file it was authored against
 +  - a staleness command lists every non-rejected case whose stored hashes differ from the committed data, naming which dependency changed, and every case awaiting a query-vector re-freeze (REQ-222)
-+  - a stale `approved` case is not selected by the answer-quality run (REQ-188) until the owner re-approves it through the review flow (REQ-224), which re-records its hashes
++  - a stale `approved` case is not selected by the answer-quality run (REQ-188) until the owner re-approves it: the review command renders it marked stale, and applying an `approve` verdict re-records its `snapshot` hashes from the committed data (REQ-224), after which it is no longer stale
 +  - the staleness command is never part of `npm run quality:check` or any build gate and never blocks `npm run data:refresh-pr`
 +  - no provider call, no network call
 +- Constraints:
 +  - the corpus holds only each case's current answer; history is git history
-+  - the staleness report never edits a case
++  - the staleness report never edits a case; apart from authoring a case, only the review apply command writes `snapshot`, and only on an owner's `approve` verdict
 +- Dependencies:
 +  - REQ-185 (the `snapshot` field)
 +  - REQ-188 (the run that skips stale cases)
 +  - REQ-222 (the re-freeze state it lists)
-+  - REQ-224 (re-approval)
++  - REQ-224 (re-approval, which renders a stale case and re-records its hashes)
 +- Notes:
 +  - the committed rule index carries no Comprehensive Rules date of its own (measured 2026-10-06), so a case records a hash of the index file rather than a rules date
 ```
@@ -592,22 +603,29 @@ cards printed with a small acorn symbol (the "acorn stamp") are joke-only,
 but its cards without the acorn are legal in eternal formats, the formats
 that allow cards from all of Magic's history, such as Commander, Legacy, and
 Vintage. The app's card data keeps Un-set cards but does not record the acorn
-stamp, so the data cannot settle this. The split below comes from general
-Magic knowledge, for you to confirm:
+stamp, so the data cannot settle this.
+
+The intake is this run's starting brief, written on 2026-10-06 from your
+planning notes and the probe that measured them (`intake/GRAPH-BRIEF.md` in
+this work folder). It excluded four mechanics: the three Attraction mechanics
+and Space Sculptor. It did not list Assemble, and it left Infinity (∞)
+undecided because it found no cards for it.
+
+The split below comes from general Magic knowledge, for you to confirm:
 
 - **Excluded, clearly joke-only:** 701.45 Assemble, the Contraption mechanic
   from Unstable, on 25 cards (no Unstable card is legal in normal play; the
-  intake missed this one); and 702.158 Space Sculptor, on one card, Space
+  intake did not list it); and 702.158 Space Sculptor, on one card, Space
   Beleren, an acorn card.
 - **Kept, because they are real:** the three Attraction mechanics from
   Unfinity: 701.51 Open an Attraction (46 cards), 701.52 Roll to Visit Your
   Attractions (3 cards), and 702.159 Visit (56 cards name it). Attraction
   cards without the acorn are legal in eternal formats, so a Commander player
-  can bring them to the table. The intake had excluded these three.
-- **Kept, real:** 702.186 Infinity (∞). The ∞ ability is on the two Infinity
-  Stone cards, The Soul Stone (3 Wizards rulings) and The Mind Stone. Two
-  Un-set cards also print the ∞ symbol, so four cards in the app's data name
-  ∞, two of them with rulings.
+  can bring them to the table. The intake excluded these three.
+- **Kept, real:** 702.186 Infinity (∞), which the intake left undecided. The
+  ∞ ability is on the two Infinity Stone cards, The Soul Stone (3 Wizards
+  rulings) and The Mind Stone. Two Un-set cards also print the ∞ symbol, so
+  four cards in the app's data name ∞, two of them with rulings.
 
 **Recommendation:** exclude Assemble and Space Sculptor, and keep everything
 else, including the three Attraction mechanics and Infinity. That leaves 256
@@ -617,8 +635,9 @@ can still reject any of them when you review.
 
 **Default:** write `accept` to take the recommendation. To change it, list
 the mechanics to exclude instead. Each mechanic you add to or drop from the
-list changes run 1 by one case; the intake's original list (the three
-Attraction mechanics, Space Sculptor, and Assemble) would mean 252.
+list changes run 1 by one case. For example, the intake's own list (the three
+Attraction mechanics and Space Sculptor, with Infinity kept) means 253
+mechanic cases; that list plus Assemble means 252.
 
 **What happens if you say no or leave it blank:** saying no means writing
 your own list, as above. Leaving it blank means nothing gets built: the build
@@ -636,10 +655,13 @@ answer, which sets how much of your time the review takes.
 is for questions no official text answers: an agent drafts the answer with a
 rule cited for every step, and you research and approve it. Your two tester
 cases (Academy Manufactor with Esix, and the cleanup-step case) are tier 3
-either way. The question is how many more. Run 1's 120 hard-area cases have
-room for up to 13 more. Any you choose replace official cases built from a
-Wizards ruling that names a second card, one for one, so run 1 stays at 120
-hard-area cases and 393 cases in total whatever you pick.
+either way. The question is how many more, from 0 to 13. The cap of 13 comes
+from the intake (this run's starting brief, written on 2026-10-06 from your
+planning notes): it set your tier-3 research bucket at 15 at most, and this
+plan counts the two tester cases inside that bucket, leaving 13. Each extra case you choose replaces one of the
+58 official cases built from a Wizards ruling that names a second card; any
+of the 58 can be swapped. So run 1 stays at 120 hard-area cases and 393 cases
+in total whatever you pick.
 
 **Recommendation:** 0 more, to keep your research light. The two tester cases
 are the only tier-3 cases in run 1; the rest of the 120 are 60 Comprehensive

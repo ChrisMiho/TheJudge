@@ -2,9 +2,10 @@
 
 **What this is:** the design for run 1 of the rules test harness. Today the
 app's AI is graded on 18 hard rules cases. After run 1 it is checked against
-393 cases: one for every real Magic mechanic, plus 120 in the
-rules areas players get wrong (copies, layers, replacement effects, triggers,
-combat, multiplayer).
+393 cases: one for every real Magic mechanic, plus 120 in the twelve
+rules areas players get wrong most, such as copies, layers, replacement
+effects, triggers, combat, and multiplayer (the full list is in the REQ-185
+slot).
 
 **What you need to do:** answer `GATE-QUESTIONS.md` — eleven accept/edit/reject
 slots and two questions (which mechanics are joke-only, and how many tier-3
@@ -43,8 +44,9 @@ Run 1 builds, in order:
    - the blind ranking skipped for a one-model run;
    - the free check for cited rule ids that are not in the rule index (test
      layers 5 and 6).
-4. **Owner review flow**: render pending cases in batches, then apply your
-   verdicts.
+4. **Owner review flow**: render pending cases in batches (new drafts, and
+   approved cases whose official text changed), then apply your verdicts.
+   Approving a case records the fingerprint of the text you approved.
 5. **Coverage report and mechanic coverage gate**, with the committed excluded
    list, plus the **staleness report**.
 6. **Mechanic cases**: 255 drafts at the recommended exclusion list (Q-007),
@@ -82,6 +84,11 @@ Proposed product truth, all inside `GATE-QUESTIONS.md`:
   - `npm run eval:worked-solutions`.
 
 ## Owner decisions taken as input (2026-10-06, from the intake)
+
+The intake is this run's starting brief (`intake/GRAPH-BRIEF.md`). It was
+written on 2026-10-06 from your planning notes and from the probe, the
+investigation that measured them. It is evidence, not a decision: anything it
+proposes still needs your accept.
 
 These are not argued again. Each one that becomes product truth sits in a
 `GATE-QUESTIONS.md` slot for your accept.
@@ -162,15 +169,18 @@ In-Depth game context in the exact shape the In-Depth request already carries
 (`gameContext` in `apps/backend/src/validation/askAiRequest.ts`), validated by
 that same schema. A case with a `gameState` is asked as an In-Depth
 (`mode: "game"`) request, with its `cards` placed in those zones; a case
-without one is asked as a lookup with `cards` attached. The facts map as
-follows, checked against the request type in code:
+without one is asked as a lookup with `cards` attached. Slice A builds both
+in `buildCaseRequest` (`scripts/lib/prompt-fidelity.mjs`), the one request
+builder the offline gate (slice B) and the live runner (slice C) share. Today
+it attaches only a tier-2 case's cited card. The facts map as follows,
+checked against the request type in code:
 
 | Fact the ruling depends on | Request field | What the prompt prints |
 | --- | --- | --- |
 | Which zone a card is in | `gameContext.zones.<zone>[]` (stack, battlefield, hand, graveyard, exile, library, command) | a `ZONE:` section per populated zone |
 | Stack order | the order of `zones.stack[]`, bottom first | `ZONE: STACK (BOTTOM TO TOP)`, `Stack item N` |
 | Who cast a stack item | `zones.stack[].caster` | `caster:` |
-| Who owns a card | `zones.<zone>[].owner` | `owner:` |
+| Who owns a card that is not on the stack | `zones.<zone>[].owner`, every zone but the stack | `owner:` |
 | What a card targets | `zones.<zone>[].targets[]` | `targets:` |
 | Who controls a card, when that differs from its owner | `zones.<zone>[].contextNotes` (up to 280 characters), for example "controlled by Player 2" | `contextNotes:` |
 | Turn phase, combat step, active player, life and counters | `turnPhase`, `combatStep`, `activePlayer`, `players[]` | the general game-context lines |
@@ -178,6 +188,15 @@ follows, checked against the request type in code:
 The request type has no controller field, so a controller fact rides the
 card's note. That needs no product change; a dedicated controller field
 would be a separate In-Depth decision.
+
+The prompt prints `owner:` only for cards outside the stack
+(`apps/backend/src/prompt/promptFormatting.ts`, `formatNonStackZoneSections`,
+line 255) and `caster:` only for stack items (`formatStackSection`). The
+request schema accepts both fields in every zone, but the one it does not
+print would be a fact no check can see. So the case loader rejects a
+`gameState` that sets `owner` on a stack item or `caster` on a card outside
+the stack; a fact like that goes in the card's `contextNotes`. The In-Depth
+request itself is unchanged.
 
 ### Offline prompt gate (REQ-222)
 
@@ -196,8 +215,11 @@ already assembles. It makes three checks:
   the migrated `cards` lists (M15).
 - **State-fact check.** Applies only where `gameState` is set. For each fact
   in the mapping table above, the field's printed line (for example
-  `owner: Player 2`, `Stack item 2`, or the note text) appears in the
-  assembled prompt. A missing line fails the gate.
+  `owner: Player 2` for a battlefield card, `caster: Player 1` and
+  `Stack item 2` for a stack item, or the note text) appears in the assembled
+  prompt. `owner` is checked on cards outside the stack and `caster` on stack
+  items, the only places the loader allows them (A15). A missing line fails
+  the gate.
 
 The ranking uses committed frozen query vectors, built by the shipped local
 embedder. This follows REQ-181's
@@ -210,8 +232,8 @@ lexical pass gives 14/18, not production's 16/18 (M6).
 The runner grades only `approved`, non-stale cases. "Stale" uses one
 comparison, owned by slice A: the shared loader computes the hashes REQ-225
 names from committed data and reports whether a case's stored `snapshot`
-still matches. Slice C's filter and slice E's staleness report both call that
-function; neither re-implements it.
+still matches. Slice C's filter, slice D's review render, and slice E's
+staleness report all call that function; none re-implements it.
 
 - **Selection.** `--changed` is the default. It picks a case when its prompt
   hash at that model and cap differs from its last graded record, or when the
@@ -231,14 +253,28 @@ function; neither re-implements it.
 
 ### Owner review flow (REQ-224)
 
-1. A render command writes pending drafts in batches to a gitignored
-   `output/` file. Batches are grouped by mechanic, then by rules section.
+1. A render command writes pending cases in batches to a gitignored
+   `output/` file. Pending means every `draft`, every `approved` case the
+   stale comparison flags (A18), and, on request, `needs-edit` cases. Batches
+   are grouped by mechanic, then by rules section. A stale case is marked
+   stale, and its entry names each dependency that changed and shows that
+   dependency's current committed text.
 2. You fill in a verdict for each case: approve, reject, or edit (with a
    required note).
 3. An apply command writes `review.status`, `reviewedOn`, and the note back
-   into each case file, and changes nothing else.
+   into each case file. On an `approve` verdict it also re-records the case's
+   `snapshot` hashes from the committed data. It changes no other field. This
+   is how a stale approved case returns to live grading: you re-approve it in
+   a batch, its hashes now match, and the runner's filter selects it again.
+   It is the only command that writes `snapshot` after a case is authored.
 4. The apply command refuses a case whose question or answer changed since the
-   batch was rendered.
+   batch was rendered. It also refuses one whose committed rule, oracle, or
+   ruling text changed since the render, so you never approve text you did
+   not see.
+5. After writing verdicts, the apply command rewrites `coverage.json`, so your
+   own review never leaves that file out of date and never fails the next
+   pull request. Slice D builds steps 1 to 4; slice E, which creates
+   `coverage.json`, adds step 5 (A20).
 
 Nothing in the build waits for your review.
 
@@ -252,6 +288,10 @@ when one of its deciding rule ids sits under that mechanic.
 
 A mechanic with no `draft`, `approved`, or `needs-edit` case fails the gate.
 The coverage command also rewrites `coverage.json`, which holds counts only.
+The review apply command rewrites it the same way after writing verdicts
+(A20). Slices F and G, which add cases, rerun the coverage command as part
+of their done-when. So the gate's out-of-date check fails only when someone
+edits a case by hand and does not rerun the coverage command.
 
 The staleness report compares each case's stored hashes with the committed
 data. It lists stale cases and cases awaiting a query-vector re-freeze. It
@@ -282,12 +322,12 @@ scripts are kept in `measure/`.
 | M7 | Can the card check be absolute? | inline `node -e` over `cardRulingsByOracleId.json.br`; `apps/backend/src/prompt/normalization.ts` constants | The most rulings on one card is 32, against `MAX_RULINGS_PER_CARD` 100. The largest single card's rulings section is 8,937 characters, against `MAX_RULINGS_SECTION_CHARS` 1,000,000. No card is truncated |
 | M8 | Live cost per case | inline `node -e` over `apps/backend/src/eval/answer-quality/results.json` | `gpt-4.1` at cap 10: 57,327 input and 7,614 output tokens over 18 answers, $0.1756, so **$0.0098 per answer** (measured). `totalCostUsd` $0.6275 equals the answer calls exactly: **judge usage was never recorded**. The judge estimate from the run's own assumptions (`scripts/eval-answer-quality.mjs`: 1,500 input and 800 output tokens at $1.25/$10.00) is $0.0099 per lone call. So a routine case is about **$0.02** and 400 cases about **$8**. This is an estimate, higher than the intake's $5–6 |
 | M9 | Frozen-vector footprint | `ls -la` and `node -e` on `apps/backend/src/eval/fixtures/frozen-query-embeddings.json` | 9 vectors of 384 dimensions in 81,915 bytes, about 9.1 KB each, so about **3.6 MB** for 400 cases in the same JSON encoding |
-| M10 | Line-level grep of the IDs the proposal amends or relies on | `grep -rnE "REQ-177\|REQ-18[5-9]\|REQ-190\|NFR-018" PRD/ apps/backend/src/eval/ scripts/ --exclude-dir=rules-test-harness` | **220** hit lines (re-run in define attempt 2); disposition per line in `## Cross-cutting disposition` |
+| M10 | Line-level grep of the IDs the proposal amends or relies on | `grep -rnE "REQ-177\|REQ-18[5-9]\|REQ-190\|NFR-018" PRD/ apps/backend/src/eval/ scripts/ --exclude-dir=rules-test-harness` | **220** hit lines (re-run in define attempt 3, unchanged from attempt 2); disposition per line in `## Cross-cutting disposition` |
 | M11 | New IDs unused | `grep -rl "REQ-22[2-5]" PRD/ --exclude-dir=rules-test-harness`; `grep -rnE '(^\|[^A-Z-])Q-00[78]' PRD/` | REQ-222 to REQ-225: 0 files. Q-007, Q-008: unused (the highest Q in use is Q-006). REQ-220 and REQ-221 are left to the deferred package |
 | M12 | Eval fixtures | `ls apps/backend/src/eval/fixtures/*.fixture.json \| wc -l` | 31 |
 | M13 | Rule-index date | `grep -l -i 'effective as of' apps/backend/data/*.json` | none. The index carries no CR date; the git log last touched it 2026-09-05. The intake's "2026-06-05" is not verifiable from committed data |
 | M15 | Does migrating `cards` move the 16/18 baseline? (attempt 2) | `npx tsx PRD/work/rules-test-harness/measure/migration-cards.mjs` (local embedder, same path as `eval:worked-solutions`), timed with `/usr/bin/time -p` | Today's attachment (tier-2 cited card only): **16/18**, misses `panharmonicon-controller-not-entering-permanent` and `restoration-angel-blink-resets-counters`. Proposed migration (also Tarmogoyf on `token-created-by-name-uses-oracle-card`): **16/18, the same two misses**, under both "every deciding rule" and "at least one deciding rule" counting. Card check on the attached cards: oracle text present for all four; rulings Panharmonicon 9/9, Restoration Angel 3/3, Sensei's Divining Top 2/2, Tarmogoyf 5/5. Only `token-created-by-name-uses-oracle-card` names a real card among the 15 tier-1 questions. 1.61 s wall time for both variants |
-| M16 | Hard-area depth pools and their `does-not-work` supply (attempt 2) | `node PRD/work/rules-test-harness/measure/depth-pool.mjs` | **`Example:` lines** in the hard areas (M1b's sections): 126, of which 13 are already used by the 18 gold cases, leaving **113 unused**; 20 of the 113 are negative-phrased. Unused per area: combat 6, triggers 10, resolution 7, continuous effects 6, layers 10, replacement/prevention 13, SBA 1, copies 21, double-faced 10, multiplayer 15, two-headed giant 9, Commander 5. **Rulings naming a second card** (the full name of another committed card of two or more words, word-bounded; single-word names skipped, so this undercounts): 4,988 rulings over 5,101 card pairs; **2,371** of them match a hard-area term (copies 388, layers 21, replacement/prevention 308, triggers 1,010, combat 344, SBA 17, double-faced 174, multiplayer 675; a ruling can match several); **1,063** of those 2,371 are negative-phrased (doesn't, can't, won't, isn't, not, never, no longer). Negative phrasing is a proxy for supply only; each case's outcome is set when it is authored |
+| M16 | Hard-area depth pools and their `does-not-work` supply (attempt 2; ruling terms widened to the twelve hard areas in attempt 3, timed with `/usr/bin/time -p`: 2.94 s) | `node PRD/work/rules-test-harness/measure/depth-pool.mjs` | **`Example:` lines** in the hard areas (M1b's sections): 126, of which 13 are already used by the 18 gold cases, leaving **113 unused**; 20 of the 113 are negative-phrased. Unused per area: combat 6, triggers 10, resolution 7, continuous effects 6, layers 10, replacement/prevention 13, SBA 1, copies 21, double-faced 10, multiplayer 15, two-headed giant 9, Commander 5. **Rulings naming a second card** (the full name of another committed card of two or more words, word-bounded; single-word names skipped, so this undercounts): 4,988 rulings over 5,101 card pairs; **2,651** of them match a term for one of the same twelve hard areas (copies 388, layers 21, continuous effects 31, replacement/prevention 308, triggers 1,010, resolution 566, combat 344, SBA 17, double-faced 174, multiplayer 29, two-headed giant 402, Commander 255; a ruling can match several); **1,232** of those 2,651 are negative-phrased (doesn't, can't, won't, isn't, not, never, no longer). Negative phrasing is a proxy for supply only; each case's outcome is set when it is authored |
 
 ### Run-1 size, from the measurements
 
@@ -295,7 +335,7 @@ scripts are kept in `measure/`.
 | --- | --- | --- |
 | Migrated gold set | 18 | unchanged |
 | One per real mechanic | **255** | 258 mechanics (M1) − 2 excluded at the Q-007 recommendation (701.45 Assemble, 702.158 Space Sculptor) − 1 already covered (702.19 Trample, M3). The split is 66 keyword actions (67 − Assemble) and 189 keyword abilities (191 − Space Sculptor − Trample). Each mechanic Q-007 moves in or out adds or removes one case |
-| Hard-area depth | **120** | 60 from the 113 unused hard-area `Example:` lines (M16) + 58 from the 2,371 hard-area rulings that name a second card (M16) + the 2 tester cases as tier 3. 60 + 58 + 2 = 120 |
+| Hard-area depth | **120** | 60 from the 113 unused hard-area `Example:` lines (M16) + 58 from the 2,651 hard-area rulings that name a second card (M16) + the 2 tester cases as tier 3. 60 + 58 + 2 = 120 |
 | **Total** | **393** | 18 + 255 + 120, the owner's "~400" |
 
 How the hard-area block is split (A16):
@@ -303,17 +343,21 @@ How the hard-area block is split (A16):
 - **60 `Example:` lines** is about half of the 113 unused (M16). Run 1 takes
   every area's lines before a second from the same rule, so all twelve hard
   areas are represented. SBA has only 1 unused line and supplies 1.
-- **58 two-card rulings** come from a pool of 2,371 (M16), weighted toward the
+- **58 two-card rulings** come from a pool of 2,651 (M16), weighted toward the
   areas the AI has already been wrong on: replacement-effect ordering,
   cleanup-step timing, the post-2024 combat damage rule 510.1c, and copy effects.
 - **Tier 3 and Q-008.** The 2 testers are the only tier-3 drafts at the Q-008
-  recommendation. If you choose N more tier-3 cases (0 to 13), N of the 58
-  two-card ruling slots become tier-3 drafts instead. The block stays 120 and
-  the total stays 393.
+  recommendation. The ceiling of 13 more comes from the intake: its hard-area
+  table caps your tier-3 bucket at 15 (`intake/GRAPH-BRIEF.md`, the tier-3
+  row of its hard-area table). This brief counts the 2 testers inside that bucket,
+  so 15 − 2 = 13 remain. If you choose N more (0 to 13), N of the 58 two-card
+  ruling slots become tier-3 drafts instead. Any of the 58 may be the one
+  swapped; 13 is a cap on your research load, not a count of eligible slots.
+  The block stays 120 and the total stays 393.
 
 **At least a third `does-not-work`** (REQ-185) is an acceptance criterion
 with a measured basis. A third of 120 is 40. The two pools hold 20
-negative-phrased unused `Example:` lines and 1,063 negative-phrased hard-area
+negative-phrased unused `Example:` lines and 1,232 negative-phrased hard-area
 two-card rulings (M16), so 40 is reachable from the rulings pool alone.
 Negative phrasing only shows supply. Each case's `outcome` is set when it is
 authored, and the coverage report counts cases per `outcome` (REQ-223), which
@@ -325,7 +369,7 @@ is how slice G proves the criterion.
    them have rulings. The ∞ ability itself is on the two Infinity Stone cards
    (The Soul Stone has 3 official rulings; The Mind Stone has none), so run 1
    should cover it (M4).
-2. **The intake missed Assemble.** It is an Unstable mechanic on 25 cards (M4).
+2. **The intake did not list Assemble.** It is an Unstable mechanic on 25 cards (M4).
    The card data cannot tell acorn from non-acorn, so the excluded list is your
    call (Q-007).
 3. **Attractions may be real.** The intake excluded the three Attraction
@@ -363,10 +407,13 @@ is how slice G proves the criterion.
 | A12 | `npm run eval:worked-solutions` keeps its behavior and reads all non-rejected cases through the v2 loader | Rung 1: REQ-185's constraint that it "keeps working unchanged" |
 | A13 | The REQ-177 benchmark is untouched by corpus growth | Rung 2: `rag-retrieval-benchmark.json` embeds its own 6 gold copies (`grep -c '"source": "gold"'` gives 6) |
 | A14 | Migrated `cards`: the tier-2 cited card for the three tier-2 cases, Tarmogoyf for `token-created-by-name-uses-oracle-card`, and an empty list for the other 14 tier-1 cases | Rung 1, REQ-185 as proposed (every card the question names is attached) plus rung 5: measured, the change keeps 16/18 with the same two misses (M15) |
-| A15 | `gameState` is an In-Depth `gameContext` validated by the existing schema; a controller that differs from the owner is stated in the card's `contextNotes` | Rungs 2 and 6: the request type in `apps/backend/src/validation/askAiRequest.ts` has zones, stack order, `owner`, `caster`, `targets`, and `contextNotes`, and no controller field; reusing it adds no new data contract |
-| A16 | The 120 hard-area cases split 60 `Example:` lines, 58 two-card rulings, 2 tester cases; Q-008's extra tier-3 cases replace two-card ruling slots one for one | Rung 4: both pools are measured and each pick is about half or less of its pool (M16); the total stays fixed whatever Q-008 says |
+| A15 | `gameState` is an In-Depth `gameContext` validated by the existing schema; a controller that differs from the owner is stated in the card's `contextNotes`; the case loader also rejects `owner` on a stack item and `caster` on a card outside the stack, so every stated fact is one the prompt prints; slice A's `buildCaseRequest` turns a `gameState` into the In-Depth request | Rungs 2 and 6: the request type in `apps/backend/src/validation/askAiRequest.ts` has zones, stack order, `owner`, `caster`, `targets`, and `contextNotes`, and no controller field; reusing it adds no new data contract. `promptFormatting.ts` prints `owner:` only outside the stack (line 255) and `caster:` only on the stack, so the narrower case rule is the smallest one that keeps the state-fact check complete |
+| A16 | The 120 hard-area cases split 60 `Example:` lines, 58 two-card rulings, 2 tester cases, over one list of twelve hard areas (M1b, M16, and the REQ-185 criterion); Q-008's extra tier-3 cases, at most 13 (the intake's tier-3 cap of 15 minus the 2 testers), replace two-card ruling slots one for one | Rung 4: both pools are measured over the same twelve areas and each pick is about half or less of its pool (M16); the total stays fixed whatever Q-008 says |
 | A17 | Slice E ships the coverage gate as tested code that is not yet wired into `quality:check`; slice F wires it in when its 255 cases land | Rung 4: every slice stays green on its own, and the gate never runs while it is known to fail. Fixture-corpus tests prove E's gate logic before F |
-| A18 | The stale comparison is one loader function built in slice A, beside `snapshot` hashing; slice C's filter and slice E's report call it | Rung 3: one shared loader (REQ-185) already serves every reader |
+| A18 | The stale comparison is one loader function built in slice A, beside `snapshot` hashing; slice C's filter, slice D's review render, and slice E's report call it | Rung 3: one shared loader (REQ-185) already serves every reader |
+| A19 | A stale approved case returns through the review flow: the render includes every flagged approved case, and an `approve` verdict makes the apply command re-record its `snapshot` hashes. Every approval re-records them, and the apply command refuses a case whose committed text changed after the render. Slice D builds it | Rung 4, smallest reversible: reuses REQ-224's one write path instead of adding a separate re-snapshot command, and keeps "no agent sets `approved`" true, because only an owner verdict re-records the hashes that make a case gradable again |
+| A20 | The review apply command rewrites `coverage.json` after writing verdicts; slice E adds that step when it creates the file | Rung 4: the owner's own review must never fail the next pull request on REQ-223's out-of-date check; rerunning a separate command by hand is the failure the gate-qc found |
+| A21 | Each `GATE-QUESTIONS.md` slot is applied in the first slice where every behavior it states is true. A bare citation of an ID this package reserves (REQ-222 to REQ-225) may be applied ahead of that ID's own entry | Rung 3: the build half lands every slice in one code PR into `main` (`PRD/instructions/graph-workflow-contract.md`, `## The two runs`: a second, code PR carries the code and the applied truth), so `main` never holds a citation of an ID that is not there; a citation states a relation, not a behavior |
 
 Two genuine decision blockers went to the owner as Q-007 and Q-008. Each
 changes scope and has no PRD basis, and taking the smaller option would
@@ -374,28 +421,62 @@ silently decide it.
 
 ## Slices (ordered, for map-out)
 
-Each slice applies the PRD truth for the IDs it implements, in the build's
-apply-by-intent step.
+Each slice applies PRD truth in the build's apply-by-intent step, by one
+rule (A21): a `GATE-QUESTIONS.md` slot is applied in the first slice where
+every behavior it states is true in code. A slot whose diffs describe
+different slices' work is applied in parts, as listed.
 
 | Slice | Delivers | Applies | Done when |
 | --- | --- | --- | --- |
-| A | Format v2 schema and loader (`scripts/lib/gold-cases.mjs`), dedup, derived tags, `snapshot` hashing and the one stale comparison every reader calls (A18), migration of the 18 with the `cards` lists in A14, `buildCaseRequest` attaching every case's `cards`, README rewrite | REQ-185 | The 18 migrated cases have byte-identical question and answer text (a test diff). Each migrated case's `cards` matches A14. `eval:worked-solutions` still reports 16/18 with the same two misses (measured for this exact migration, M15). A unit test shows the stale comparison flags a changed rule, oracle, or ruling hash and passes unchanged data. `preparation.test.ts`, the benchmark, and the context-eval fixtures pass unchanged |
-| B | Offline prompt gate: card check, frozen-vector build command and file, ratchet baseline and raise command, state-fact check over the A15 mapping, wired into `quality:check` | REQ-222; the new system-map entry `Rules test corpus gates and review` added as `Status: partial` | The gate passes on the 18 with a baseline of 16 hits. A planted dropped card and a planted lost rule each fail it. State-fact check: a fixture case with a `gameState` (a stack of two items, an owner, and a controller note) passes through the real `preparePromptInput`, and a unit test fails the check when one stated fact's line is missing from the prompt. No network or model call (the test fails if the embedder is invoked) |
-| C | Live runner: selection flags, the approved-and-non-stale filter (calling slice A's stale comparison), prompt hash, per-case merge, judge usage, default `gpt-4.1` at cap `[10]`, ranking skipped for one model, unknown-rule-id assertion, `shortAnswer` added to the no-prose guard | REQ-186, REQ-187, REQ-188, REQ-189, REQ-190, system-map answer-quality | The dry run prints selection and cost with no network call when there is no key. Unit tests cover the merge, selection, the stale filter, and the ranking skip. The regression guard still passes |
-| D | Review command (render batches) and apply command | REQ-224 | Round-trip test: render, fill, apply changes only `review.*`. Each refusal case is tested |
-| E | Coverage command and report (including counts per `outcome`), `coverage.json`, excluded list (per Q-007), the coverage gate as a tested function **not yet wired into `quality:check`** (A17), staleness command | REQ-225 | Fixture-corpus tests: an uncovered mechanic fails the gate, an excluded id the index lacks fails it, an out-of-date coverage file fails it, and a fully covered fixture passes. Run on the real corpus, the coverage command lists the 255 mechanics still uncovered as report output, not a failure. `quality:check` is green. The staleness report is clean on unchanged data |
-| F | 255 mechanic cases as `draft` with frozen vectors; coverage file rewritten; the coverage gate wired into `quality:check`; map-out may split by family (701 actions 66; 702.2–702.100; 702.101–702.192) | REQ-223, NFR-018, goals line, system-map `## Eval harness` | The coverage gate runs in `quality:check` and passes. Every case passes the card check. The ratchet baseline is recorded |
-| G | 120 hard-area cases as `draft` with frozen vectors (A16: 60 from unused `Example:` lines, 58 from two-card rulings, the 2 tester cases as tier-3 drafts — Q1 via 614.1a, 616.1, 616.1e, 616.1f; Q2 via 514.1, 514.2, 514.3a), with any Q-008 tier-3 drafts taking two-card ruling slots; coverage file rewritten | — | The coverage report shows the 60 / 58 / 2 split and at least 40 of the 120 with `outcome` `does-not-work`. Both gates pass. The ratchet baseline is re-recorded at the end. No live run is needed to merge |
+| A | Format v2 schema and loader (`scripts/lib/gold-cases.mjs`), including the A15 rule (no `owner` on a stack item, no `caster` outside the stack), dedup, derived tags, `snapshot` hashing and the one stale comparison every reader calls (A18), migration of the 18 with the `cards` lists in A14, `buildCaseRequest` building every case's request (A15: a lookup with every `cards` entry attached, or, for a case with a `gameState`, the In-Depth `mode: "game"` request with that `gameState` as its `gameContext`), README rewrite | — (REQ-185 is applied in G, where its run-1 authoring criterion becomes true) | The 18 migrated cases have byte-identical question and answer text (a test diff). Each migrated case's `cards` matches A14. `eval:worked-solutions` still reports 16/18 with the same two misses (measured for this exact migration, M15). A unit test shows the stale comparison flags a changed rule, oracle, or ruling hash and passes unchanged data. `buildCaseRequest` tests: a case without a `gameState` gives a lookup with every `cards` entry attached by oracle id; a fixture case with a `gameState` (two stack items, a battlefield card with an owner) gives a `mode: "game"` request that the In-Depth request schema accepts, with each card in its zone and the stack in order. The loader rejects a fixture `gameState` with `owner` on a stack item. `preparation.test.ts`, the benchmark, and the context-eval fixtures pass unchanged |
+| B | Offline prompt gate: card check, frozen-vector build command and file, ratchet baseline and raise command, state-fact check over the A15 mapping (requests built by slice A's `buildCaseRequest`), wired into `quality:check` | The new system-map entry `Rules test corpus gates and review` (from the REQ-222 slot) added as `Status: partial`. REQ-222's own entry is applied in E, because its re-freeze criterion names the staleness report | The gate passes on the 18 with a baseline of 16 hits. A planted dropped card and a planted lost rule each fail it. State-fact check: a fixture case with a `gameState` (a stack of two items with a caster, a battlefield card with an owner, and a controller note) passes through `buildCaseRequest` and the real `preparePromptInput`, and a unit test fails the check when one stated fact's line is missing from the prompt. No network or model call (the test fails if the embedder is invoked) |
+| C | Live runner: selection flags, the approved-and-non-stale filter (calling slice A's stale comparison), requests from slice A's `buildCaseRequest`, prompt hash, per-case merge, judge usage, default `gpt-4.1` at cap `[10]`, ranking skipped for one model, unknown-rule-id assertion, `shortAnswer` added to the no-prose guard | REQ-186, REQ-187, REQ-190, and the system-map answer-quality entry (from the REQ-188 slot). REQ-188 is applied in F, because it says the coverage gate runs in `quality:check`; REQ-189 in E, because it names the coverage file | The dry run prints selection and cost with no network call when there is no key. Unit tests cover the merge, selection, the stale filter, and the ranking skip. The regression guard still passes |
+| D | Review command (render batches, including approved cases the stale comparison flags, marked stale with each changed dependency's current text) and apply command (writes `review.*`, and on `approve` re-records `snapshot`, A19). The apply command's `coverage.json` rewrite is added in E, which creates that file (A20) | — (REQ-224 is applied in E, where its coverage-file step lands) | Round-trip test: render, fill, apply changes only `review.*`, plus `snapshot` on an `approve` verdict. Stale path test: a fixture approved case whose ruling hash no longer matches is rendered marked stale; applying `approve` re-records its hashes, after which slice A's stale comparison passes and slice C's filter selects it again. Each refusal case is tested, including committed text changed between render and apply |
+| E | Coverage command and report (including counts per `outcome`), `coverage.json`, excluded list (per Q-007), the coverage gate as a tested function **not yet wired into `quality:check`** (A17), staleness command, and the `coverage.json` rewrite at the end of slice D's apply command (A20) | REQ-189, REQ-222, REQ-224, REQ-225 | Fixture-corpus tests: an uncovered mechanic fails the gate, an excluded id the index lacks fails it, an out-of-date coverage file fails it, and a fully covered fixture passes. Applying a filled review batch that changes a status leaves the out-of-date check passing. Run on the real corpus, the coverage command lists the 255 mechanics still uncovered as report output, not a failure. `quality:check` is green. The staleness report is clean on unchanged data |
+| F | 255 mechanic cases as `draft` with frozen vectors; coverage file rewritten; the coverage gate wired into `quality:check`; map-out may split by family (701 actions 66; 702.2–702.100; 702.101–702.192) | REQ-188, REQ-223, NFR-018, goals line, system-map `## Eval harness` (from the REQ-222 slot) | The coverage gate runs in `quality:check` and passes. Every case passes the card check. The ratchet baseline is recorded |
+| G | 120 hard-area cases as `draft` with frozen vectors (A16: 60 from unused `Example:` lines, 58 from two-card rulings, the 2 tester cases as tier-3 drafts — Q1 via 614.1a, 616.1, 616.1e, 616.1f; Q2 via 514.1, 514.2, 514.3a), with any Q-008 tier-3 drafts taking two-card ruling slots; coverage file rewritten; the corpus README brought up to REQ-185's README criterion, including slice D's and E's commands | REQ-185 | The coverage report shows the 60 / 58 / 2 split and at least 40 of the 120 with `outcome` `does-not-work`. Both gates pass. The ratchet baseline is re-recorded at the end. No live run is needed to merge |
 
 The order is the intake's. Every slice builds and tests green on its own:
 slice E's gate does not run in `quality:check` until slice F gives it the
-cases it needs. Each slice applies only the truth that is true once it lands,
-so NFR-018, the goals line, and the `## Eval harness` summary, which all name
-the coverage gate, are applied in F. The new system-map entry goes in at slice B
-as `partial` (system-map.md: some features shipped, others planned), because
-the review, coverage, and staleness commands it describes arrive in slices D
-and E. Cleanup promotes it to `shipped` under the system-map promotion rule
-(code exists and a cleanup receipt records it).
+cases it needs.
+
+Each slice applies only the truth that is true once it lands (A21). So:
+
+- REQ-186, REQ-187, REQ-190, and the answer-quality system-map summary go in
+  at C, where every behavior they state lands.
+- REQ-189, REQ-222, REQ-224, and REQ-225 go in at E: REQ-189 and REQ-224
+  name the coverage file E creates, and REQ-222 and REQ-225 name E's
+  staleness report.
+- REQ-188, REQ-223, NFR-018, the goals line, and the `## Eval harness`
+  summary go in at F, because each says the coverage gate runs in
+  `quality:check`.
+- REQ-185 goes in at G, because its run-1 criterion is true only once the
+  120 hard-area cases exist.
+
+A slot may cite an ID, or rely on wording, from another slot of this
+proposal before that slot is applied. Two kinds occur:
+
+- **A new ID cited before its entry goes in.** REQ-186 (at C) cites
+  REQ-225's staleness rule (E). The system-map entry added at B cites REQ-222
+  to REQ-225. REQ-189 and REQ-224 (at E) cite REQ-223 (F).
+- **An amended entry's new wording relied on before the amendment goes
+  in.** REQ-225 (at E) names REQ-188's skip of stale cases (F). REQ-186,
+  REQ-187 (at C), REQ-222, REQ-224, REQ-225 (at E), and NFR-018 (at F) use
+  REQ-185's new terms (tier 3, `approved`, the rules test corpus), which go
+  in at G.
+
+That is acceptable for two reasons. First, the behavior behind each citation
+already works in code when the citing slot lands: slice A's format and stale
+comparison exist from A, slice C's filter from C, and E's coverage command
+from E; the B entry is marked `partial` for the rest. Second, every slice
+lands in the one code PR into `main` (A21), so `main` never holds a citation
+of an ID, or a term, that is not there.
+
+The new system-map entry goes in at slice B as `partial` (system-map.md:
+some features shipped, others planned), because the review, coverage, and
+staleness commands it describes arrive in slices D and E. Cleanup promotes it
+to `shipped` under the system-map promotion rule (code exists and a cleanup
+receipt records it).
 
 ## Risks
 
@@ -415,13 +496,26 @@ and E. Cleanup promotes it to `shipped` under the system-map promotion rule
 | # | Finding (README `## Preparation gate`) | Resolution |
 | --- | --- | --- |
 | 1 | Slice E not green on its own; stale comparison has no owner | Slice E ships the coverage gate as tested code, wired into `quality:check` only in slice F (A17). Slice A owns the one stale comparison that slices C and E call (A18). REQ-223, NFR-018, the goals line, and the `## Eval harness` summary are applied in F |
-| 2 | Run-1 size does not add up; counts untraced | New M16 measures both pools (113 unused `Example:` lines; 2,371 hard-area two-card rulings) and their `does-not-work` supply. The block is 60 + 58 + 2 = 120 and the total 18 + 255 + 120 = 393. Q-008's extra tier-3 cases replace two-card ruling slots one for one. The at-least-a-third criterion stays, with its measured basis in the REQ-185 notes and outcome counts in the coverage report (REQ-223, REQ-189) |
+| 2 | Run-1 size does not add up; counts untraced | New M16 measures both pools (113 unused `Example:` lines; 2,371 hard-area two-card rulings, re-measured as 2,651 over the twelve areas in attempt 3) and their `does-not-work` supply. The block is 60 + 58 + 2 = 120 and the total 18 + 255 + 120 = 393. Q-008's extra tier-3 cases replace two-card ruling slots one for one. The at-least-a-third criterion stays, with its measured basis in the REQ-185 notes and outcome counts in the coverage report (REQ-223, REQ-189) |
 | 3 | Migrated `cards` unspecified | A14 and the REQ-185 migrated-cases criterion state each case's `cards`. New M15 measures it: 16/18, the same two misses |
 | 4 | Q-007 and Q-008 not plain language | Both rewritten: decision first, every term glossed, a default, and "nothing gets built until you answer" for a blank. Q-007 now recommends keeping the three Attraction mechanics, matching its own caution (255 mechanic cases, not 252) |
 | 5 | Disposition table missing a row; one row miscited | Added `PRD/work/STATUS.md:21`; corrected `STATUS.md:52`; the grep re-run gives 220 hits and 220 rows |
 | 6 | Unamended wording inside amended entries | REQ-187's Correctness, Calibration, and no-axis bullets are now amended. REQ-189's no-prose guard keeps `workedSolution` on purpose (a version-1 field name must never leak in), says so, and adds `shortAnswer` |
 | 7 | State-fact check untested; mapping unspecified; system-map status | The `gameState` mapping table (A15), checked against `apps/backend/src/validation/askAiRequest.ts`; slice B's done-when tests the state-fact check; the new system-map entry goes in as `partial` |
 | 8 | Infinity count | M4, owner finding 1, and Q-007 now say 4 cards print ∞, 2 with rulings, and name all four |
+
+## Define attempt 3 — what changed for the gate-qc findings
+
+| # | Finding (README `## Preparation gate`) | Resolution |
+| --- | --- | --- |
+| 1 | A stale approved case has no path back | The review render now includes every approved case the stale comparison flags, marked stale with each changed dependency's current text. An `approve` verdict makes the apply command re-record `snapshot`; the apply command also refuses a case whose committed text changed after the render (A19). Slice D owns it, with a stale-path test in its done-when. REQ-224's render and apply criteria, REQ-225's re-approval criterion, and REQ-185's `snapshot` wording now agree |
+| 2 | State-fact check cannot pass on the stack | The prompt prints `owner:` only outside the stack and `caster:` only on it (`promptFormatting.ts` line 255). The loader now rejects `owner` on a stack item and `caster` off the stack; the check covers `owner` off the stack and `caster` on it. A15, the mapping table, the state-fact paragraph, REQ-185's `gameState` wording, and the REQ-222 state-fact criterion say the same |
+| 3 | No slice turns `gameState` into an In-Depth request | Slice A's `buildCaseRequest` builds it, with tests in A's done-when; B and C use it |
+| 4 | Slices cite REQ-222 to REQ-225 before they are applied | Slots now apply where every behavior they state lands (A21): REQ-185 moves from A to G, REQ-188 from C to F, REQ-189 from C to E, REQ-222 from B to E, REQ-224 from D to E. The brief says why the remaining citations ahead of an entry are acceptable (one code PR into `main`) |
+| 5 | Owner review leaves `coverage.json` out of date | The apply command rewrites `coverage.json` after writing verdicts; slice E adds that step when it creates the file (A20). REQ-189, REQ-223, REQ-224, and slices D and E say so |
+| 6 | Up to 13 extra tier-3 cases has no source | The intake caps the tier-3 bucket at 15, and the 2 testers count inside it, so 13 remain (A16, run-1 size, Q-008). Q-008 now says any of the 58 two-card ruling cases can be swapped and 13 is a cap on research load |
+| 7 | Q-007 miscounts the intake's list; the intake is undefined | Q-007 now says the intake excluded four mechanics (the three Attraction mechanics and Space Sculptor), did not list Assemble, and left ∞ undecided: 253 mechanic cases with its list and ∞ kept, 252 with Assemble added. Q-007 and the brief define the intake where they first name it |
+| 8 | Two hard-area lists | One list of twelve everywhere. M16's ruling search now has one term per area (re-run: 2,651 hard-area two-card rulings, 1,232 negative-phrased; `Example:` counts unchanged), and the REQ-185 criterion and notes name the same twelve |
 
 ## Cross-cutting disposition
 
@@ -436,7 +530,7 @@ and `scripts/`. The package's own folder is excluded. One row per hit line.
 `PRD/sections/in-depth/README.md` has no hit for any of the eight IDs; its row
 is added at the end.
 
-Hits: 220 lines (re-run on 2026-10-06 in define attempt 2, after the board row moved to `## refined`).
+Hits: 220 lines (re-run on 2026-10-06 in define attempt 3, after the board row moved to `## refined`; same 220 file:line keys as attempt 2).
 
 | Hit | IDs | Line (trimmed) | Disposition |
 | --- | --- | --- | --- |
@@ -586,7 +680,7 @@ Hits: 220 lines (re-run on 2026-10-06 in define attempt 2, after the board row m
 | `PRD/ideasForLater/combo-context-validation/IDEA.md:64` | NFR-018 | partial-combo, shipped via PR #152). Extends the validation goal behind NFR-018. | No change: parked-idea note citing NFR-018 as related work; still true |
 | `PRD/ideasForLater/combo-context-validation/README.md:12` | NFR-018 | Follow-up to `prompt-context-refinement`; extends NFR-018. | No change: parked-idea note citing NFR-018 as related work; still true |
 | `PRD/ideasForLater/combo-context-validation/HANDOFF.md:78` | NFR-018 | - **Related pattern:** the just-shipped worked-solutions eval (NFR-018) at | No change: parked-idea note citing NFR-018 as related work; still true |
-| `PRD/work/STATUS.md:21` | REQ-185, NFR-018 | \| [rules-test-harness](rules-test-harness/) \| Refined (define attempt 2, after gate-qc FAIL loop 1)… | No change: this package's own board row, naming the IDs it proposes to amend; the graph lifecycle rewrites it at each status move |
+| `PRD/work/STATUS.md:21` | REQ-185, NFR-018 | \| [rules-test-harness](rules-test-harness/) \| Refined (define attempt 3, after gate-qc FAIL loop 2)… | No change: this package's own board row, naming the IDs it proposes to amend; the graph lifecycle rewrites it at each status move |
 | `PRD/work/STATUS.md:52` | REQ-177, REQ-185 | \| [combo-context-validation](../ideasForLater/combo-context-validation/) \| ideation — in… | No change: parked-idea board note citing REQ-177's note (where its throwaway harness is recorded) and the answer-quality instrument (REQ-185–190) as related work; both citations stay true |
 | `apps/backend/src/eval/benchmark/step1-baseline.json:3` | REQ-177 | "requirement": "REQ-177", | Leaves true: REQ-177 benchmark, parity test, and baseline are unchanged |
 | `apps/backend/src/eval/ragRetrievalBenchmark.ts:1` | REQ-177 | // REQ-177 (Step 1 of the RAG gameplan): a committed, offline, deterministic | Leaves true: REQ-177 benchmark, parity test, and baseline are unchanged |
