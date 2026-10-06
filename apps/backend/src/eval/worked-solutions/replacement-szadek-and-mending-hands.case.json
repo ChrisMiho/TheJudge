@@ -1,0 +1,54 @@
+{
+  "id": "replacement-szadek-and-mending-hands",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "c40c823c-5954-457a-81a6-02683da57f7f",
+      "name": "Szadek, Lord of Secrets"
+    },
+    {
+      "oracleId": "a612f30d-cd55-438b-a7de-8c80509183aa",
+      "name": "Mending Hands"
+    }
+  ],
+  "gameState": null,
+  "question": "If Mending Hands would prevent Szadek's combat damage to the defending player and Szadek's own effect would replace it, does the defending player choose which effect applies first?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: that player chooses which effect applies first, so they could prevent 4 and then let Szadek put only one counter.",
+    "answer": "If another effect would prevent Szadek's combat damage from being dealt to the defending player or replace it with something else, that player chooses which effect applies first. For example, the player can choose to first have Mending Hands prevent 4 of the damage and then apply Szadek's ability so that it gets only one counter.",
+    "decidingRuleIds": ["616.1", "615.1"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Szadek, Lord of Secrets",
+    "oracleId": "c40c823c-5954-457a-81a6-02683da57f7f",
+    "rulingDate": "2005-10-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ddbee8d7c97e5e7fc44def3f57b04fcf4b12106510f7a76ee848d10a59814923",
+      "oracle": "d2bd6275738f73264922a23bb50d0817ca69443e680be48b95b066decf8df3c5",
+      "rulings": "58483d7a0318227a667e401b8234b29438a00880d9b7f753f1acb6ec8a01fd25"
+    }
+  },
+  "whyHard": "The creature's controller usually decides, so players think Szadek's controller chooses."
+}

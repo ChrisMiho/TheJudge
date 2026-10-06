@@ -1,0 +1,45 @@
+{
+  "id": "continuous-static-ability-changes-token-as-it-enters",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [],
+  "gameState": null,
+  "question": "A permanent with the static ability 'All white creatures get +1/+1' is on the battlefield, and a creature spell would create a 1/1 white creature. Does the creature enter as a 1/1 and then change to a 2/2?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it enters already as a 2/2 white creature.",
+    "answer": "A permanent with the static ability “All white creatures get +1/+1” is on the battlefield. A creature spell that would normally create a 1/1 white creature instead creates a 2/2 white creature. The creature doesn’t enter the battlefield as 1/1 and then change to 2/2.",
+    "decidingRuleIds": ["611.3c"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "611.3c",
+    "sectionTitle": "Continuous Effects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "3474a4408ae5021e0a557e078f36142268763cb57ad8386a5133b481eea6d940",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "whyHard": "Players picture the bonus applying only after the creature is on the battlefield."
+}

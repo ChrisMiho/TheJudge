@@ -1,0 +1,54 @@
+{
+  "id": "replacement-unpreventable-damage-hydra",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "b16085d5-6d00-4d47-ab8b-d18d55c72141",
+      "name": "Phyrexian Hydra"
+    },
+    {
+      "oracleId": "2608df54-dfbe-417d-aef5-49afbdfb03da",
+      "name": "Leyline of Punishment"
+    }
+  ],
+  "gameState": null,
+  "question": "Leyline of Punishment says damage can't be prevented. If damage is dealt to Phyrexian Hydra, does the Hydra still put -1/-1 counters on itself?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the damage is dealt as normal and does not cause the Hydra to put -1/-1 counters on itself.",
+    "answer": "If damage dealt to Phyrexian Hydra can’t be prevented (due to Leyline of Punishment, for example), it will be dealt as normal and won’t cause Phyrexian Hydra to put -1/-1 counters on itself.",
+    "decidingRuleIds": ["615.12", "615.1"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Phyrexian Hydra",
+    "oracleId": "b16085d5-6d00-4d47-ab8b-d18d55c72141",
+    "rulingDate": "2011-06-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "3c05edbfb952604597e96c39cd2c2497fdf4153f0c2a43867ae7a410f95b797b",
+      "oracle": "43861c48d6dcec2575bb3b009f69486f50c7e2b9796da8df71c6a1b6caa72a44",
+      "rulings": "dc2896378d22fd6f92f9b8b01d271b78919087b8ffdbfd413d59c97e9f56bd52"
+    }
+  },
+  "whyHard": "The Hydra's counters come from its prevention effect, so when prevention is turned off its counters disappear with it."
+}

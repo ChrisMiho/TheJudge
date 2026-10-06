@@ -1,0 +1,50 @@
+{
+  "id": "layers-honor-of-the-pure-color-changes",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "eb4188bb-62df-4309-bde1-f66318fe2f05",
+      "name": "Honor of the Pure"
+    }
+  ],
+  "gameState": null,
+  "question": "Honor of the Pure gives white creatures I control +1/+1. A 2/2 black creature I control is turned white and later turned red. Does it get the bonus while it is white but not once it is red?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it becomes 3/3 while white and returns to 2/2 when it is red.",
+    "answer": "Honor of the Pure is an enchantment that reads “White creatures you control get +1/+1.” Honor of the Pure and a 2/2 black creature are on the battlefield under your control. If an effect then turns the creature white (layer 5), it gets +1/+1 from Honor of the Pure (layer 7c), becoming 3/3. If the creature’s color is later changed to red (layer 5), Honor of the Pure’s effect stops applying to it, and it will return to being 2/2.",
+    "decidingRuleIds": ["613.5"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "613.5",
+    "sectionTitle": "Interaction of Continuous Effects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e5c34180dc3f56e982d5f30217aad1c1caf3b5ff987313d5107613100128dc85",
+      "oracle": "0056ec01fb8ebbb2c4c38825e3676639e09b0c7a3ea1f2682ad993b9532b4ce4",
+      "rulings": "a4f0864b7e4957c4ffcd343ee40fc48111ffac4ff2a3ca2262dd6ca16102aa7d"
+    }
+  },
+  "whyHard": "A color-changing effect and a power-changing effect are applied in different layers, so the order matters."
+}

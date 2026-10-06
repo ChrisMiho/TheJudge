@@ -1,0 +1,54 @@
+{
+  "id": "copies-siege-of-towers-replicate-countered",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "d8eb0897-0d2f-4f2d-a09b-87d57d5a0fa9",
+      "name": "Siege of Towers"
+    },
+    {
+      "oracleId": "fe725b27-49ef-41bc-91f9-9cd9871ad863",
+      "name": "Shattering Spree"
+    }
+  ],
+  "gameState": null,
+  "question": "If Shattering Spree was cast with replicate and the original is countered, do I still copy Shattering Spree for each time I paid its replicate cost?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: as the replicate trigger resolves, you copy it for each time you paid, even if the original is no longer on the stack.",
+    "answer": "As the replicate triggered ability resolves, you'll copy Shattering Spree for each time you paid its replicate cost, even if the original spell is no longer on the stack at that time (perhaps because it was countered).",
+    "decidingRuleIds": ["702.56a", "707.10"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Siege of Towers",
+    "oracleId": "d8eb0897-0d2f-4f2d-a09b-87d57d5a0fa9",
+    "rulingDate": "2024-01-12"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "11d4ed97fcd859a59b6281124a648288e9ff1dc5954dd9be1ec42522d4256d9c",
+      "oracle": "4e9431ba046c598cc537c82791506d126193e4d60bff1acb97c838818972334e",
+      "rulings": "99ddd62e646be75a8cf2189dab4aa466585bd1621166944d13fd6ee88a6b25af"
+    }
+  },
+  "whyHard": "The copies feel like they depend on the original spell still being there."
+}

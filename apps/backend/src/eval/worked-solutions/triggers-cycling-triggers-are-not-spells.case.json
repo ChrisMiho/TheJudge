@@ -1,0 +1,54 @@
+{
+  "id": "triggers-cycling-triggers-are-not-spells",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "05e910aa-cf84-468c-8a48-256588cbbf08",
+      "name": "Rampaging War Mammoth"
+    },
+    {
+      "oracleId": "1b415806-a3e3-4d87-b4c1-ccd11a8ee589",
+      "name": "Saruman's Trickery"
+    }
+  ],
+  "gameState": null,
+  "question": "Are the triggered abilities from cycling a card, or the cycling ability itself, spells that an effect like Saruman's Trickery can affect?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: triggered abilities from cycling and the cycling ability itself aren't spells, so effects that interact with spells don't affect them.",
+    "answer": "Triggered abilities from cycling a card and the cycling ability itself aren't spells. Effects that interact with spells (such as Saruman's Trickery) won't affect them.",
+    "decidingRuleIds": ["702.29a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Rampaging War Mammoth",
+    "oracleId": "05e910aa-cf84-468c-8a48-256588cbbf08",
+    "rulingDate": "2023-06-16"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "78a853ece72b9bf8a7bff51bb45eb3425cd3ab273fc9810fe96300fdf6f8fe88",
+      "oracle": "c7c34767b2dd20aab8d37caa1ab50a13c4f4672cd7fda29f9d3eb2b8ea7b59c2",
+      "rulings": "10938bfa68f8550faa07e84a2a17be5c8a418e26fc2dbe66a25ef6ac473f3cd5"
+    }
+  },
+  "whyHard": "Cycling is done from hand, which feels like casting, but abilities are never spells."
+}

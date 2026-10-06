@@ -1,0 +1,54 @@
+{
+  "id": "replacement-felix-and-charging-tuskodon",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "95175d35-c815-47bd-8e69-427972b567b6",
+      "name": "Felix Five-Boots"
+    },
+    {
+      "oracleId": "1198d47a-4235-4678-bd2e-20f2a97b5924",
+      "name": "Charging Tuskodon"
+    }
+  ],
+  "gameState": null,
+  "question": "Felix Five-Boots' last ability does not change replacement effects. When Charging Tuskodon deals double combat damage to a player, does Felix's ability double that damage again?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Felix's ability won't cause the damage to be doubled an additional time.",
+    "answer": "Replacement effects are unaffected by Felix’s last ability. For example, if Charging Tuskodon (“If Charging Tuskodon would deal combat damage to a player, it deals double that damage to that player instead”) deals combat damage to a player, Felix’s ability won’t cause the damage it deals to be doubled an additional time.",
+    "decidingRuleIds": ["614.1", "614.5"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Felix Five-Boots",
+    "oracleId": "95175d35-c815-47bd-8e69-427972b567b6",
+    "rulingDate": "2024-04-12"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "94e35da98bfeeafdec0263ddd55938df14cf38b73e40c356440f3109e3c9adb3",
+      "oracle": "2c8888484c4ae213d6942238897dd003640d0b7a339793bc69f27f7077b14d62",
+      "rulings": "2586317c5c251c983559a924c370d79ac7d9a6ef85bbcbab21d39a46ee082d76"
+    }
+  },
+  "whyHard": "Two doubling-type effects look like they stack, but one of them does not affect replacement effects."
+}

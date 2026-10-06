@@ -1,0 +1,45 @@
+{
+  "id": "triggers-damage-prevented-no-trigger",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [],
+  "gameState": null,
+  "question": "An ability triggers whenever damage is dealt. If all of that damage is prevented, does the ability trigger?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: an ability that triggers on damage being dealt does not trigger if all the damage is prevented.",
+    "answer": "An ability that triggers on damage being dealt won’t trigger if all the damage is prevented.",
+    "decidingRuleIds": ["603.2g"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "603.2g",
+    "sectionTitle": "Handling Triggered Abilities"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "74a085b0e246201fc31772846b55d92a50cd67c66b762c806fe06fae71e686f0",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "whyHard": "The source tried to deal damage, so players think the event happened."
+}

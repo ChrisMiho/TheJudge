@@ -1,0 +1,50 @@
+{
+  "id": "copies-dawnglow-infusion-copy",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "4db813f4-3bd1-4177-9cf7-6c9799a343c5",
+      "name": "Dawnglow Infusion"
+    }
+  ],
+  "gameState": null,
+  "question": "Dawnglow Infusion gains me life if green mana or white mana was spent to cast it. Does a copy of Dawnglow Infusion gain me any life?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: mana isn't an object, so a copy won't cause you to gain life, whatever mana was spent on the original.",
+    "answer": "Dawnglow Infusion is a sorcery that reads, “You gain X life if {G} was spent to cast this spell and X life if {W} was spent to cast it.” Because mana isn’t an object, a copy of Dawnglow Infusion won’t cause you to gain any life, no matter what mana was spent to cast the original spell.",
+    "decidingRuleIds": ["707.10"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "707.10",
+    "sectionTitle": "Copying Objects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5d195126665f2f15cae2fb0be6cc1fb4da9713309b788bed48e92739cc382efd",
+      "oracle": "39e72d0e90beeb828f8f7091d10c7d1ea3f40436e98567acfee946e06c31bac3",
+      "rulings": "2a55df22275ef553d4ec76762a49e15cd5200e41b774dc391341c06964de66c4"
+    }
+  },
+  "whyHard": "A copy copies everything about the spell, so players think it also copies how the original was paid for."
+}

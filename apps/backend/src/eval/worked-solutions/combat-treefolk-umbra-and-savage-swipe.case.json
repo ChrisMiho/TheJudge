@@ -1,0 +1,54 @@
+{
+  "id": "combat-treefolk-umbra-and-savage-swipe",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "fa321366-9bc1-48c7-873a-0b12a026ce49",
+      "name": "Treefolk Umbra"
+    },
+    {
+      "oracleId": "c74c87f7-3120-4fd7-8735-1d7a7a429643",
+      "name": "Savage Swipe"
+    }
+  ],
+  "gameState": null,
+  "question": "Treefolk Umbra makes the enchanted creature assign combat damage equal to its toughness. Does Savage Swipe then make that creature fight with its toughness?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the Umbra changes only the combat damage the creature assigns, so other effects use its real power and toughness.",
+    "answer": "Treefolk Umbra's effect doesn't actually change the enchanted creature's power. It changes only the amount of combat damage the creature assigns. All other rules and effects that check power or toughness use the real values. For example, Savage Swipe won't cause the enchanted creature to fight with its toughness.",
+    "decidingRuleIds": ["510.1a", "701.14a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Treefolk Umbra",
+    "oracleId": "fa321366-9bc1-48c7-873a-0b12a026ce49",
+    "rulingDate": "2019-06-14"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "dba8e3c98101157b049b891f539b3b77c949b79c4a09d6ebcef31d9eed2da84e",
+      "oracle": "ccbba1d3b1a3a616f06bcbff1f4002a2919013f28cbb37b0d91e74da65afe268",
+      "rulings": "903afc9a4c0965741fa6f85a8e5845bd13c4adeb48687fee0c987c9396ce60fc"
+    }
+  },
+  "whyHard": "Using toughness for damage looks like swapping the creature's power, but it only affects combat damage assignment."
+}

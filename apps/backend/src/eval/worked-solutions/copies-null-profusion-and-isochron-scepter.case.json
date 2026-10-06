@@ -1,0 +1,54 @@
+{
+  "id": "copies-null-profusion-and-isochron-scepter",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "7077ee9a-59c6-4b8e-bf33-9b094412ad38",
+      "name": "Null Profusion"
+    },
+    {
+      "oracleId": "ddd649f4-dbaf-48ec-8ff7-95581257772d",
+      "name": "Isochron Scepter"
+    }
+  ],
+  "gameState": null,
+  "question": "Does Null Profusion's triggered ability trigger when I play a copy of a card, such as with Isochron Scepter?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it triggers when you play a land card or cast a nonland card as a spell, not when you play a copy of a card.",
+    "answer": "The triggered ability will trigger when you play a land card or cast a nonland card as a spell. It won't trigger when you play a copy of a card, such as with Isochron Scepter.",
+    "decidingRuleIds": ["603.2", "707.10"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Null Profusion",
+    "oracleId": "7077ee9a-59c6-4b8e-bf33-9b094412ad38",
+    "rulingDate": "2007-02-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "6288d45de46dbb4f232ffe4a8dab0852cba9f75141cef5d91bdabd425357d9fe",
+      "oracle": "4e93368dd105109f2982714ab354be39f64e5f1163eb7d84f14564b61f8d5561",
+      "rulings": "4a0517be5173119454fb3cfc3e424ee58ea6b6f2d064c22ce3c6b0db0ec4e67a"
+    }
+  },
+  "whyHard": "A copy cast from a card looks the same as casting the card itself."
+}

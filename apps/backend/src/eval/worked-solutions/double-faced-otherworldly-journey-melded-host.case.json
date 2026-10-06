@@ -1,0 +1,54 @@
+{
+  "id": "double-faced-otherworldly-journey-melded-host",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "4a080242-412d-4968-ad57-2667dab977f5",
+      "name": "Otherworldly Journey"
+    },
+    {
+      "oracleId": "6923cf6b-7d3e-4d95-abaf-1df1a04ac7c1",
+      "name": "Chittering Host"
+    }
+  ],
+  "gameState": null,
+  "question": "Otherworldly Journey exiles a melded Chittering Host. At the next end step, do both Midnight Scavengers and Graf Rats return to the battlefield, each with a +1/+1 counter?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: both are returned to the battlefield, each with a +1/+1 counter on it.",
+    "answer": "Otherworldly Journey is an instant that reads “Exile target creature. At the beginning of the next end step, return that card to the battlefield under its owner’s control with a +1/+1 counter on it.” A player casts Otherworldly Journey targeting Chittering Host, a melded permanent. Chittering Host is exiled. At the beginning of the next end step, Midnight Scavengers and Graf Rats are both returned to the battlefield, each with a +1/+1 counter on it.",
+    "decidingRuleIds": ["712.21c"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "712.21c",
+    "sectionTitle": "Double-Faced Cards"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5b8f68455c0a4da0568c79a09852e98faa829b9c5aec9f29d07003fdd671d6cc",
+      "oracle": "63f45aa69181c3e18ed1f08309c1a05129a9a9ef7d33518721595f7567cf2d0c",
+      "rulings": "e76bb9edd323d5913d9f05366a6e9c2972b095d9285e10686eff7a58095c70e4"
+    }
+  },
+  "whyHard": "The spell targets one creature, so players expect one card to return."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "replacement-two-devour-effects-one-sacrifice",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "aef6c5b3-824f-4b7d-9671-1ed61d547717",
+      "name": "Thunder-Thrash Elder"
+    }
+  ],
+  "gameState": null,
+  "question": "Thunder-Thrash Elder has devour 3 and a plane card gives it devour 5 as it is cast. Can I sacrifice the same Runeclaw Bear to both devour effects?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you can sacrifice the Bear when applying one of the devour effects, but not both.",
+    "answer": "Jund (a plane card) says, “Whenever a player casts a black, red, or green creature spell, it gains devour 5.” A player controls Runeclaw Bear and casts Thunder-Thrash Elder, a red creature spell with devour 3. As Thunder-Thrash Elder enters the battlefield, its controller can choose to sacrifice Runeclaw Bear when applying the devour 3 effect or when applying the devour 5 effect, but not both. Thunder-Thrash Elder will enter the battlefield with zero, three, or five +1/+1 counters, depending on this choice.",
+    "decidingRuleIds": ["614.13b"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "614.13b",
+    "sectionTitle": "Replacement Effects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c26d33aef53d5f49a30fa40360cb3f75ee1efaa0893e8c60e01d3b814ad1328c",
+      "oracle": "69b03f3673a8bfa5f6e7b2aeb471df10116e65cb1babe374683795efcb73a1c8",
+      "rulings": "cbe7e533bac2656d6e363681788b93c9c26655d6b5ff90c6fdca604cc79927ad"
+    }
+  },
+  "whyHard": "Each devour replacement effect looks like a separate offer that can be paid with the same creature."
+}

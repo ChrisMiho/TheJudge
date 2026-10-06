@@ -1,0 +1,54 @@
+{
+  "id": "copies-clone-of-face-down-creature",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "name": "Clone"
+    },
+    {
+      "oracleId": "3db0207d-d80b-4915-b157-6a3e5b3a154e",
+      "name": "Grinning Demon"
+    }
+  ],
+  "gameState": null,
+  "question": "A Clone enters as a copy of a face-down Grinning Demon. Can its controller pay {2}{B}{B} to turn the Clone face up?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the Clone is a face-up colorless 2/2 with no name, types or abilities, so it has no morph cost to pay.",
+    "answer": "Clone enters the battlefield as a copy of a face-down Grinning Demon (a creature with morph {2}{B}{B}). The Clone is a colorless 2/2 creature with no name, no types, no abilities, and no mana cost. It will still be face up. Its controller can’t pay {2}{B}{B} to turn it face up.",
+    "decidingRuleIds": ["707.2"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "707.2",
+    "sectionTitle": "Copying Objects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4642e1bae16502c7bb21c1b60587d437764ef7c172a89917c07d966dd5370572",
+      "oracle": "f0b5e6ac10f32bccb68241a7d16d8dc072d983a0d276aa82c20948aaad64bf9b",
+      "rulings": "60c638d45151199260ff5c46f19a53167e12636d199eb6b228963ad24313327b"
+    }
+  },
+  "whyHard": "Players think the copy remembers the hidden card, but only the face-down characteristics are copied."
+}

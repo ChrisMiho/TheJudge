@@ -1,0 +1,58 @@
+{
+  "id": "resolution-clone-cannot-copy-land-creature-under-worms",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "9638ec0c-c8bf-4aa5-a7ca-8677e4b9f241",
+      "name": "Worms of the Earth"
+    },
+    {
+      "oracleId": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "name": "Clone"
+    },
+    {
+      "oracleId": "e996cd67-739c-40f4-b276-0042acf26c71",
+      "name": "Dryad Arbor"
+    }
+  ],
+  "gameState": null,
+  "question": "Worms of the Earth says lands can't enter the battlefield. If I cast Clone and choose to copy Dryad Arbor, a land creature, can Clone enter the battlefield?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Clone would enter as a land, so it can't enter the battlefield from the stack and is put into its owner's graveyard.",
+    "answer": "Worms of the Earth has the ability “Lands can’t enter the battlefield.” Clone says “You may have this creature enter as a copy of any creature on the battlefield.” If a player casts Clone and chooses to copy Dryad Arbor (a land creature) while Worms of the Earth is on the battlefield, Clone can’t enter the battlefield from the stack. It’s put into its owner’s graveyard.",
+    "decidingRuleIds": ["608.3e"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "608.3e",
+    "sectionTitle": "Resolving Spells and Abilities"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9b8d88f950cb6ea31a8b54dae41ebeb9a901b706796fb86bf460da97c15fd767",
+      "oracle": "c7c465791a03f3914a8505f9dcc247702514959454bb8086442d021f7b5ed4dd",
+      "rulings": "df67d8ef60cf48acf26bb1932c86c07b8627be048896e085d3baf16946cad987"
+    }
+  },
+  "whyHard": "Clone is a creature spell, and players forget that what it copies is checked as it enters."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "commander-bosh-color-identity",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "2fb6f65f-a0fb-4d45-be1b-d6405e61d47a",
+      "name": "Bosh, Iron Golem"
+    }
+  ],
+  "gameState": null,
+  "question": "Bosh, Iron Golem has a mana cost of {8} and an ability that costs {3}{R}. Is its color identity red?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: Bosh's color identity is red.",
+    "answer": "Bosh, Iron Golem is a legendary artifact creature with mana cost {8} and the ability “{3}{R}, Sacrifice an artifact: Bosh, Iron Golem deals damage equal to the sacrificed artifact’s mana value to any target.” Bosh’s color identity is red.",
+    "decidingRuleIds": ["903.4"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "903.4",
+    "sectionTitle": "Commander"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "86e5904d8afff7f941079c3d09b7ca9642d25dcb570ea1f2a762aa5acd13d38c",
+      "oracle": "0aa9e9344147009694fac0ce5fcfe616c1fdccb3b702fd004e017ad5e8d99dc0",
+      "rulings": "696ea9f128b76236e1166d8815d1575f8400a5626671af360eb1b3524f376794"
+    }
+  },
+  "whyHard": "The card is colorless, so players think its identity is colorless too."
+}

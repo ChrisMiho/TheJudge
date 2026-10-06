@@ -1,0 +1,50 @@
+{
+  "id": "two-headed-giant-beacon-of-immortality-two-headed-giant",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "bfcdf563-c6e5-4a54-bb63-4aba219b94e2",
+      "name": "Beacon of Immortality"
+    }
+  ],
+  "gameState": null,
+  "question": "In a Two-Headed Giant game, a player on a team with 17 life is targeted by Beacon of Immortality, which doubles target player's life total. Does the team end up at 34 life?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: that player gains 17 life, so the team winds up at 34 life.",
+    "answer": "In a Two-Headed Giant game, a player on a team that has 17 life is targeted by Beacon of Immortality, which reads, in part, “Double target player’s life total.” That player gains 17 life, so the team winds up at 34 life.",
+    "decidingRuleIds": ["810.9a"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "810.9a",
+    "sectionTitle": "Two-Headed Giant Variant"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "bcbe3cffaaf97f1329089de6fd86b1619082bda9929b161794bfe232952cd0e1",
+      "oracle": "52c6128a3fda3e968bb2f892fd4dd0f09eef8f6dbcb4d3bcaf8a34f7435b5e45",
+      "rulings": "74b660bc3e22dad7c9845524afd758a82bbf6195b012820eb5544b67c2f3dbba"
+    }
+  },
+  "whyHard": "Players think doubling applies to a player's half of the team's life."
+}

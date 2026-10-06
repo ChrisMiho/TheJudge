@@ -1,0 +1,54 @@
+{
+  "id": "dfc-bolas-copy-exile-and-return-transformed",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "55e4b27e-5447-4fc2-8cae-a03e344600c6",
+      "name": "Nicol Bolas, the Ravager // Nicol Bolas, the Arisen"
+    },
+    {
+      "oracleId": "7275fb8c-571a-4c4c-889a-829419332e51",
+      "name": "Mirror Image"
+    }
+  ],
+  "gameState": null,
+  "question": "If a permanent that isn't a double-faced card, such as Mirror Image, becomes a copy of Nicol Bolas, the Ravager, and I use the ability to exile it and return it transformed, does it come back?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it will only be exiled and won't return to the battlefield at all.",
+    "answer": "If another permanent that isn't a double-faced card (such as Mirror Image) becomes a copy of Nicol Bolas, the Ravager, activating the ability to exile it and return it transformed will only exile it. It won't return to the battlefield at all.",
+    "decidingRuleIds": ["712.9", "701.27a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Nicol Bolas, the Ravager // Nicol Bolas, the Arisen",
+    "oracleId": "55e4b27e-5447-4fc2-8cae-a03e344600c6",
+    "rulingDate": "2018-07-13"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9903ec2c74fc3c76f1a7c97cfd23cdf216ab0e9a8afca33a6338e66b0273f7f8",
+      "oracle": "d33d9bbe27a0f52d04646501955d2c1415a36c31b9f719447547ec7313179ab9",
+      "rulings": "8d0acb43bc4ba8ccdbc6e6c26b40f257a996c81fd382efb39470955b55ea6b08"
+    }
+  },
+  "whyHard": "The copy has the ability to return transformed, but only double-faced cards can be returned that way."
+}

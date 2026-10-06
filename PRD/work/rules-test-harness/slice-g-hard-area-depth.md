@@ -1,6 +1,6 @@
 # Slice G — 120 hard-area cases, tester cases, REQ-185 applied
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -30,16 +30,16 @@ The build re-derives each edit by intent against current `PRD/sections/` truth, 
 
 ## Acceptance criteria
 
-- [ ] **G1.** The coverage report shows 120 hard-area cases split 60 `Example:` lines, 58 two-card rulings, 2 tester cases; the corpus holds 393 cases in total
-- [ ] **G2.** At least 40 of the 120 hard-area cases have `outcome` `does-not-work`, shown by the coverage report's per-outcome counts
-- [ ] **G3.** All twelve hard areas are represented, SBA by its one unused `Example:` line
-- [ ] **G4.** Q2 (Silence, Necropotence, Borne Upon a Wind) is a tier-3 `draft` with all three cards attached, outcome `works`, deciding rules 514.1, 514.2, 514.3a, `source.research` naming Jon's app in words and no copied text, and Jon's two-step wording in `layers.variants`
-- [ ] **G5.** Q1 (Academy Manufactor with Esix) is a tier-3 `draft` with deciding rules 614.1a, 616.1, 616.1e, 616.1f
-- [ ] **G6.** Every case passes the card check and has a frozen query vector; the ratchet baseline is re-recorded
-- [ ] **G7.** Both gates pass in `quality:check`: the offline prompt gate and the coverage gate
-- [ ] **G8.** The corpus README names format version 2, the loader, the review commands (slice D) and the coverage and staleness commands (slice E), meeting REQ-185's README criterion
-- [ ] **G9.** REQ-185 is applied to `PRD/sections/functional-requirements.md` by intent, with the 18-case carve-out wording
-- [ ] **G10.** No provider call was made during the slice: no `--confirm-live-calls` run (dated observation line in `slice-g.evidence.md`)
+- [x] **G1.** The coverage report shows 120 hard-area cases split 60 `Example:` lines, 58 two-card rulings, 2 tester cases; the corpus holds 393 cases in total
+- [x] **G2.** At least 40 of the 120 hard-area cases have `outcome` `does-not-work`, shown by the coverage report's per-outcome counts
+- [x] **G3.** All twelve hard areas are represented, SBA by its one unused `Example:` line
+- [x] **G4.** Q2 (Silence, Necropotence, Borne Upon a Wind) is a tier-3 `draft` with all three cards attached, outcome `works`, deciding rules 514.1, 514.2, 514.3a, `source.research` naming Jon's app in words and no copied text, and Jon's two-step wording in `layers.variants`
+- [x] **G5.** Q1 (Academy Manufactor with Esix) is a tier-3 `draft` with deciding rules 614.1a, 616.1, 616.1e, 616.1f
+- [x] **G6.** Every case passes the card check and has a frozen query vector; the ratchet baseline is re-recorded
+- [x] **G7.** Both gates pass in `quality:check`: the offline prompt gate and the coverage gate
+- [x] **G8.** The corpus README names format version 2, the loader, the review commands (slice D) and the coverage and staleness commands (slice E), meeting REQ-185's README criterion
+- [x] **G9.** REQ-185 is applied to `PRD/sections/functional-requirements.md` by intent, with the 18-case carve-out wording
+- [x] **G10.** No provider call was made during the slice: no `--confirm-live-calls` run (dated observation line in `slice-g.evidence.md`)
 
 ## Verification
 
@@ -60,8 +60,8 @@ npm run quality:check
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/rules-test-harness/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/rules-test-harness/` ready to delete

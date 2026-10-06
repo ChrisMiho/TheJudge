@@ -1,0 +1,54 @@
+{
+  "id": "replacement-rhythm-of-the-wild-leaves-with-creature",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "acfa77fd-3610-4f12-9c3c-bd860ce91700",
+      "name": "Rhythm of the Wild"
+    },
+    {
+      "oracleId": "d4c4ad11-7e71-4ad0-aee7-58ac7b1b38f8",
+      "name": "Rescuer Sphinx"
+    }
+  ],
+  "gameState": null,
+  "question": "If Rhythm of the Wild leaves the battlefield at the same time a nontoken creature with a replacement effect, such as Rescuer Sphinx, enters, does that creature still get its +1/+1 counter or haste?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: that creature still gets a +1/+1 counter or haste.",
+    "answer": "If Rhythm of the Wild leaves the battlefield at the same time that a nontoken creature enters the battlefield (most likely because that creature has a replacement effect, such as that of Rescuer Sphinx), that creature still gets a +1/+1 counter or haste.",
+    "decidingRuleIds": ["614.12"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Rhythm of the Wild",
+    "oracleId": "acfa77fd-3610-4f12-9c3c-bd860ce91700",
+    "rulingDate": "2019-05-03"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c3092e80b6d5d9d7b4580ea94f715c8146c34b421e7df24f8a371d34a070f691",
+      "oracle": "6f7e29f07472785c1945901bc40f72a30b9a8a4aca425061259d315ba8e8d011",
+      "rulings": "604e9f742aeec377edf88d7d37bbf2c193be7400187693e7490181bcf770131f"
+    }
+  },
+  "whyHard": "Both things happen at the same moment, and players think the Rhythm is already gone when its replacement effect would apply."
+}

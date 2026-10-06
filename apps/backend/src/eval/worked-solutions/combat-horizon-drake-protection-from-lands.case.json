@@ -1,0 +1,54 @@
+{
+  "id": "combat-horizon-drake-protection-from-lands",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "9c724912-5afd-4813-affb-4dbda64fd4ee",
+      "name": "Horizon Drake"
+    },
+    {
+      "oracleId": "4a9437a6-4e61-48b6-8194-1c6ba6432250",
+      "name": "Teetering Peaks"
+    }
+  ],
+  "gameState": null,
+  "question": "Horizon Drake has protection from lands. Can it be targeted by an ability from my own land, such as Teetering Peaks?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it can't be the target of activated or triggered abilities from lands, including your own.",
+    "answer": "Protection from lands works like any other protection ability. Horizon Drake can’t be blocked by land creatures, all damage that would be dealt to it by lands (including combat damage from land creatures) is prevented, and it can’t be the target of activated or triggered abilities from lands (including your own Teetering Peaks, for example).",
+    "decidingRuleIds": ["702.16a", "702.16b"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Horizon Drake",
+    "oracleId": "9c724912-5afd-4813-affb-4dbda64fd4ee",
+    "rulingDate": "2010-03-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "99579737813db44d0a5c12a50dda385b29f6dbdcd2396e5c57d68203afe86349",
+      "oracle": "07394276818392e68ca56e031fc2562c70990dd9255e907de84f561a70c4ff7e",
+      "rulings": "a386868b8131e9e4cc562da1191be976f1ec29d8efaac2f44dcb691acc6707dc"
+    }
+  },
+  "whyHard": "Protection stops sources an opponent controls in most cases, and players think it ignores your own."
+}

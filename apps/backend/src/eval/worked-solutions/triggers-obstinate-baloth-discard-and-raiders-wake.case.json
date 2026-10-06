@@ -1,0 +1,54 @@
+{
+  "id": "triggers-obstinate-baloth-discard-and-raiders-wake",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "ee2ab1ab-be1e-4e56-99f2-7784f7350b41",
+      "name": "Obstinate Baloth"
+    },
+    {
+      "oracleId": "d5fd3060-358c-4a5b-aee9-1afcf6c506ba",
+      "name": "Raiders' Wake"
+    }
+  ],
+  "gameState": null,
+  "question": "If I discard Obstinate Baloth and put it onto the battlefield, have I still discarded it, so that an ability like Raiders' Wake's still triggers?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you've still discarded it, so abilities that trigger when you discard a card still trigger.",
+    "answer": "If you discard Obstinate Baloth and put it onto the battlefield, you've still discarded it. Abilities that trigger when you discard a card (such as that of Raiders' Wake) will still trigger.",
+    "decidingRuleIds": ["701.9a", "603.2"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Obstinate Baloth",
+    "oracleId": "ee2ab1ab-be1e-4e56-99f2-7784f7350b41",
+    "rulingDate": "2017-11-17"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "968659e5bc5db31d8613ed1ecdbfb180b5573aa74342eedbb3a40ea861761efe",
+      "oracle": "424d9bb9016ef64bd195d3a8a1607b0e230fc3e28563a3d48c7425c6024cab3d",
+      "rulings": "617150d610eaf48b746d4ac92ac13504e17e89605df9dcbc865bb05229102a36"
+    }
+  },
+  "whyHard": "Putting it onto the battlefield instead of into the graveyard looks like the discard was replaced."
+}

@@ -1,0 +1,64 @@
+{
+  "id": "necropotence-silence-borne-upon-a-wind-cleanup",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "94a844d2-0574-45a7-b347-e0e329767c42",
+      "name": "Necropotence"
+    },
+    {
+      "oracleId": "ce19962d-94f9-4b2b-b668-963c0acce308",
+      "name": "Borne Upon a Wind"
+    },
+    {
+      "oracleId": "8aed54cb-d1bb-45ad-adbe-38e55d84ff31",
+      "name": "Silence"
+    }
+  ],
+  "gameState": null,
+  "question": "I control Necropotence and have more than seven cards in hand at my cleanup step. An opponent cast Silence during that turn's main phase. Can I cast Borne Upon a Wind in the cleanup step, after discarding to hand size?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: Silence's this-turn effect has ended, and Necropotence's discard trigger gives you priority in the cleanup step.",
+    "answer": "Yes, you can cast it. In the cleanup step you first discard down to your maximum hand size (rule 514.1). Right after that, all damage is removed and all \"until end of turn\" and \"this turn\" effects end at the same time (514.2), so Silence, which only lasts this turn, no longer stops you from casting spells. Each card you discard triggers Necropotence, so a triggered ability is waiting after those actions, and players receive priority in the cleanup step (514.3a). Borne Upon a Wind is an instant, so you may cast it then. Once the stack is empty and all players pass in succession, another cleanup step begins (514.3a).",
+    "decidingRuleIds": ["514.1", "514.2", "514.3a"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "pool": "tester",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 514.1, 514.2, 514.3a",
+    "research": [
+      "Jon's Rulemancer app, screenshots shared with the owner, 2026-10-06. It was used only as an independent check of the derivation, never as the answer key, and none of its text is copied."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": [
+      {
+        "kind": "two-step follow-up",
+        "steps": [
+          "Can I cast [Borne Upon a Wind] after discarding cards to hand size with [Necropotence] on the field?",
+          "What if someone cast silence during the main phase of that turn?"
+        ],
+        "note": "The first question has no Silence; the follow-up adds it and relies on 'that turn' from the previous answer."
+      }
+    ]
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "17dfff391412229b1a05fc6b8c6e358d64fbb29b2f731423ab8cd2124017a13d",
+      "oracle": "f80583be5b931087b5461cf98ea903569ff56bdff4091674950a1dd143704f75",
+      "rulings": "e30afb5cc015df38a1d1c238330b5256b237c8da82cf3d64fd5b7d25328cc835"
+    }
+  },
+  "whyHard": "A this-turn effect ends during the cleanup step before anyone can act, and a trigger from the discard is what gives players priority in a step where they normally get none."
+}

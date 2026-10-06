@@ -1,0 +1,45 @@
+{
+  "id": "combat-two-cant-attack-alone",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [],
+  "gameState": null,
+  "question": "I control two creatures that each say 'This creature can't attack alone.' Is it legal to declare both of them as attackers together?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: declaring both as attackers is legal.",
+    "answer": "A player controls two creatures, each with a restriction that states “This creature can’t attack alone.” It’s legal to declare both as attackers.",
+    "decidingRuleIds": ["508.1c"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "508.1c",
+    "sectionTitle": "Declare Attackers Step"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "13f80455e5c419663919a7004da3ad997466311c288c8b084eebbb2de09d3761",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
+  },
+  "whyHard": "Each creature's restriction looks like it needs a different attacker to join it, so players think two restricted creatures lock each other out."
+}

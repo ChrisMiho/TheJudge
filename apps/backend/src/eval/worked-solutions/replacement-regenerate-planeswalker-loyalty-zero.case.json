@@ -1,0 +1,54 @@
+{
+  "id": "replacement-regenerate-planeswalker-loyalty-zero",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "963e36de-b803-417f-8166-4d328d358203",
+      "name": "Reknit"
+    },
+    {
+      "oracleId": "70034860-5198-421f-871d-7c1676337b6e",
+      "name": "Reaper King"
+    }
+  ],
+  "gameState": null,
+  "question": "Reknit regenerates a planeswalker. Does that stop it from being put into its owner's graveyard when its loyalty becomes 0, the way it stops a destroy effect like Reaper King's?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it stops destruction from an effect such as Reaper King's, but not the state-based action for 0 loyalty.",
+    "answer": "Regenerating a planeswalker will prevent it from being destroyed as a result of a “destroy” effect (like the one from Reaper King). However, it won’t prevent that planeswalker from being put into its owner’s graveyard when its loyalty becomes 0.",
+    "decidingRuleIds": ["701.19a", "704.5i"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Reknit",
+    "oracleId": "963e36de-b803-417f-8166-4d328d358203",
+    "rulingDate": "2008-05-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "15068dafa411c2b4a484e3b5575ac84df469f8dcbebc04299d6246615c636450",
+      "oracle": "a582892c4533290476aa58744baf4f5be1a347736d199c021e974744824f070f",
+      "rulings": "20f055393e1abb539e5bafdb16a48b45a02dcc4d8a400da7f5797f5993f4c4c0"
+    }
+  },
+  "whyHard": "Regeneration is thought of as a general shield, but it only replaces destruction."
+}

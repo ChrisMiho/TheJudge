@@ -1,0 +1,50 @@
+{
+  "id": "resolution-illegal-target-no-lifegain",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "ff27ff37-96c0-41af-8881-a078e884e67b",
+      "name": "Sorin's Thirst"
+    }
+  ],
+  "gameState": null,
+  "question": "Sorin's Thirst deals 2 damage to a target creature and I gain 2 life. If the creature becomes an illegal target before the spell resolves, do I still gain 2 life?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if its only target is illegal, the spell does not resolve and its controller does not gain any life.",
+    "answer": "Sorin’s Thirst is a black instant that reads, “Sorin’s Thirst deals 2 damage to target creature and you gain 2 life.” If the creature isn’t a legal target during the resolution of Sorin’s Thirst (say, if the creature has gained protection from black or left the battlefield), then Sorin’s Thirst doesn’t resolve. Its controller doesn’t gain any life.",
+    "decidingRuleIds": ["608.2b"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "608.2b",
+    "sectionTitle": "Resolving Spells and Abilities"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e1030e4e00f144095416786e9a33fc3966603b7fabef76964f3f7ecb46658a6d",
+      "oracle": "1a0ed297552b6be875bc85a70b2c630740e070c1e3a6ce530aeefbadd9964807",
+      "rulings": "675129b804820d056b97506f7f3f13e5ff1c58bf3fdc78008e2bff4eb0f412a5"
+    }
+  },
+  "whyHard": "The life gain is not targeted, so players think it can happen on its own."
+}
