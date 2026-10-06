@@ -1,5 +1,5 @@
 ---
-status: refining
+status: refined
 ---
 
 # niche-interaction-rule-tests

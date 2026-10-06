@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
 
 ## Node ledger
@@ -17,6 +17,7 @@
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/niche-interaction-rule-tests/IDEA.md`, `README.md`, `STATUS.ideation`, `intake/` (4 files verbatim), `PRD/work/STATUS.md` ideation row | 2026-10-06 |
 | 3 | define | opus | ok | `0 → 82` | `PRD/work/niche-interaction-rule-tests/DESIGN-BRIEF.md`, `GATE-QUESTIONS.md` (REQ-220; Blocker questions: none), `measure-retrieval.mjs`, `STATUS.refined`; owner added intake `intake/screenwriter_temp_1791299243121.jpg` mid-node (the tester's exact prompts), relayed to the node by the driver | 2026-10-06 |
 | 4 | gate-qc | sonnet | failed | `0 → 38` | FAIL attempt 1 of 3: 3 findings (1 Important: REQ-220 `source` cites an intake path cleanup deletes; 2 Minor: two-card list ambiguity, lexical-fallback refusal credited to REQ-185 not REQ-188); `STATUS.refining`; findings in `README.md` `## Preparation gate` | 2026-10-06 |
+| 5 | define | opus | ok | `0 → 29` | attempt 2: 3 gate-qc findings fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (REQ-220 `source` cites reporter/date/channel/CR ids, two-card list, REQ-188 credited); `STATUS.refined` | 2026-10-06 |
 
 ## Open gate
 
@@ -124,6 +125,22 @@ For each finding, grep the whole package (brief, `GATE-QUESTIONS.md` diff, READM
 Never edit `PRD/sections/`, code, `GRAPH-RUN.md`, or the README `## Preparation gate` section. Do not commit or push; the driver commits. Apply the assumption ladder and genuine-blocker test from `PRD/instructions/preparation-contract.md` per question as each arises.
 
 Report back: outcome, each finding and the lines you changed for it, files changed, and the STATUS marker set.
+
+### gate-qc (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests
+
+You are node 4 (`gate-qc`) of graph run `graph-20261006-150550`, attempt 2, re-grading after define attempt 2 addressed the attempt-1 findings recorded in the README `## Preparation gate` section (grade the whole package fresh, not only those findings). Run the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.refined). Grade `DESIGN-BRIEF.md` together with the proposed product truth in `GATE-QUESTIONS.md` (REQ-220 and its `system-map.md` change) against current `PRD/sections/` truth and agent-readiness. Intake under `intake/` is evidence only. The ledger `GRAPH-RUN.md` and the README `## Preparation gate` section are the driver's; do not edit them.
+
+Check cross-cutting consistency by grep, not memory: for every existing stable ID or rule the proposal touches or contradicts (for example REQ-185 through REQ-190 and NFR-018), list each line-level hit and whether the proposal accounts for it. Also confirm REQ-220 is not already used anywhere in `PRD/`.
+
+Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driver commits.
+
+Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
 
 ## Instruction ledger
 

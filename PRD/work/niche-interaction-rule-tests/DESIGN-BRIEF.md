@@ -193,14 +193,17 @@ instrument that can, but only for cases with an official published answer
 
 1. **Four committed interaction cases** — the tester's two questions verbatim,
    each asked two ways: bare (names typed only) and with the named cards
-   attached by oracle id, the way Quick Lookup's card picker sends them.
+   attached by oracle id, the way Quick Lookup's card picker sends them. Q1's
+   cards are two, not three: `Academy Manufactor` and `Esix, Fractal Bloom` (the
+   comma is part of Esix's name), so its `cards` list has two entries. Q2's are
+   three: `Silence`, `Necropotence`, `Borne Upon a Wind`.
 
    | Case id | Question | Cards attached | Expected rule ids (hand-labelled) | Today (measured) |
    | --- | --- | --- | --- | --- |
    | `manufactor-esix-treasure-bare` | Q1 verbatim | none | 616.1, 616.1f | MISS (neither) |
-   | `manufactor-esix-treasure-cards` | Q1 verbatim | Academy Manufactor, Esix, Fractal Bloom | 616.1, 616.1f | MISS (neither) |
+   | `manufactor-esix-treasure-cards` | Q1 verbatim | two: `Academy Manufactor`; `Esix, Fractal Bloom` | 616.1, 616.1f | MISS (neither) |
    | `necropotence-silence-cleanup-bare` | Q2 verbatim | none | 514.2, 514.3a | HIT (both) |
-   | `necropotence-silence-cleanup-cards` | Q2 verbatim | Silence, Necropotence, Borne Upon a Wind | 514.2, 514.3a | HIT (both) |
+   | `necropotence-silence-cleanup-cards` | Q2 verbatim | three: `Silence`; `Necropotence`; `Borne Upon a Wind` | 514.2, 514.3a | HIT (both) |
 
    Labels are the smallest set that decides each question: for Q1 the rule that
    lets the player choose the order (616.1) and the rule that re-applies the
@@ -212,9 +215,14 @@ instrument that can, but only for cases with an official published answer
 2. **A case loader and validator** — each case must carry a non-empty `id`,
    `question`, `whyHard`, at least one expected rule id, each expected rule id
    present in the committed `gameRulesRuleIndex.json`, a `cards` list (may be
-   empty) whose entries carry `name` and `oracleId`, and a `source` block naming
-   where the question came from (here: tester feedback, 2026-10-06, the intake
-   screenshot path) and the CR rule ids the labels come from. A malformed case
+   empty) whose entries carry `name` and `oracleId`, and a `source` block naming,
+   in words, where the question came from — reporter, date, and channel (here:
+   tester feedback, 2026-10-06, a player's replies in a friend's Magic group chat,
+   relayed to the owner as screenshots) — and the CR rule ids the labels come
+   from. The `source` block never names a repo path to intake evidence: cleanup
+   deletes this package folder, `intake/` with it, so a committed case would point
+   at a missing file. The screenshot is recorded only in the cleanup receipt's
+   `## Intake` section, not as a repo path. A malformed case
    fails loudly, like `scripts/lib/gold-cases.mjs`. No `workedSolution` field:
    these are not gold cases and the answer-quality run never reads them.
 
@@ -222,7 +230,8 @@ instrument that can, but only for cases with an official published answer
    case through the same production-fidelity path as `eval:worked-solutions`
    (`scripts/lib/prompt-fidelity.mjs`: committed indexes, cards attached by oracle
    id, question embedded by `EMBEDDING_PROVIDER`, refusal on silent lexical
-   fallback) and prints one line per case: HIT/MISS, semantic or lexical, each
+   fallback through `assertQueryEmbedded` and `describeRetrieval`, the guards
+   REQ-188 requires and `scripts/eval-worked-solutions.mjs` already uses) and prints one line per case: HIT/MISS, semantic or lexical, each
    expected rule's System 3 rank or "not in prompt", and a summary. It exits 0 on
    misses; a miss is a tuning signal.
 
@@ -318,7 +327,9 @@ instrument that can, but only for cases with an official published answer
 - REQ-167, REQ-178 — System 3 search text is the question plus each attached
   card's name, type line, and keywords.
 - REQ-185 — the worked-solutions gold set and its official-answer entry bar.
-- REQ-188 — the answer-quality run and its never-in-a-gate guard.
+- REQ-188 — the answer-quality run, its never-in-a-gate guard, and its refusal
+  to report a run whose embedder silently fell back to lexical ranking
+  (`assertQueryEmbedded`, `describeRetrieval` in `scripts/lib/prompt-fidelity.mjs`).
 - REQ-190 — System 3 cap of ten.
 - NFR-018 — the non-gating worked-solutions validation track.
 - Intake: `intake/feedback.md`, `intake/screenwriter_temp_1791297379886.jpg`,
