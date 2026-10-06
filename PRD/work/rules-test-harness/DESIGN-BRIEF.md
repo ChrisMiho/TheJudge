@@ -16,8 +16,9 @@ block it when an attached card stops reaching the AI, or when a deciding rule
 that used to reach the AI stops reaching it. Grading the AI's actual answer
 stays on demand and costs about two cents per case. By default it re-grades
 only the cases whose prompt changed, using the model and setting players
-actually get. You approve every case before it counts, in batches, after
-merge, whenever you choose.
+actually get. You approve every case before it counts: the 18 existing cases
+by accepting REQ-185, every new case in batches, after merge, whenever you
+choose.
 
 Graph-controlled refinement (`graph is controlling`, run
 `graph-20261006-181340`, node 3 `define`). Every material assumption is in
@@ -141,7 +142,37 @@ mechanic case always lists its mechanic's own rule as a deciding rule. That is
 also what makes the ratchet check whether the mechanic's rule reaches the
 prompt.
 
-The 18 cases migrate as `approved` (assumption A1).
+The 18 cases migrate as `approved` (assumption A1). That is the one carve-out
+from the rule that no agent sets `approved`: your accept of REQ-185 is the
+approval, and the slice A migration only writes it down. The REQ-185
+constraint, the REQ-185 description, REQ-224's description and its
+no-agent criterion, and A19 all carry the same exception. Every later case
+reaches `approved` only through the review apply command.
+
+**Every reader of the two renamed fields (slice A).** A grep of `scripts/`
+and `apps/backend/src/eval/` for `workedSolution` and
+`expectedSupplementalRuleIds` finds these case-file readers, which slice A
+moves to `expected.answer` and `expected.decidingRuleIds`:
+
+- `scripts/eval-answer-quality.mjs`, lines 408, 426, 431 (deciding rule ids)
+  and 433, 464, 480 (reference answer);
+- `scripts/eval-worked-solutions.mjs`, lines 65 and 120 (deciding rule ids);
+- `scripts/lib/gold-cases.mjs`, lines 9, 12, 55–62 (the loader's checks and
+  comment), which slice A rewrites for format version 2;
+- the test case objects in `scripts/lib/gold-cases.test.mjs` (lines 11, 12,
+  28, 29, 60–75) and `scripts/eval-worked-solutions.test.mjs` (lines 30, 31,
+  60, 94, 97);
+- `apps/backend/src/eval/worked-solutions/README.md`, rewritten in slice A.
+
+The other hits are not case-file reads and stay as they are.
+`apps/backend/src/eval/contextEvaluationHarness.ts`, `relevanceReport.test.ts`,
+`contextEvaluationHarness.test.ts`, `scripts/build-frozen-query-embeddings.mjs`
+and `apps/backend/src/eval/fixtures/README.md` read the context-eval
+fixtures' own `expectedSupplementalRuleIds` field, a separate format.
+`judge.ts`, `assertions.ts`, and the transcript type in `artifact.ts` use the
+old names as parameter and transcript keys; only their callers change.
+`artifact.ts` line 68 keeps `workedSolution` on the no-prose list on purpose
+(REQ-189).
 
 **What `cards` each migrated case carries (A14).** Every card the question
 names as a real card is attached, which is REQ-185's every-named-card rule
@@ -227,6 +258,17 @@ embedder. This follows REQ-181's
 `npm run eval:build-frozen-query-embeddings`. Frozen vectors are required: a
 lexical pass gives 14/18, not production's 16/18 (M6).
 
+**Awaiting a re-freeze (slice B).** The vector build command stores, with
+each vector, a SHA-256 hash of the query text (`buildRetrievalQueryText`)
+it was embedded from. One function, built in slice B beside the vector
+file, rebuilds each case's query text, hashes it, and compares. On a
+mismatch the case is awaiting a re-freeze: the gate reports it, does not
+score it in the ratchet (neither hit nor miss, whatever the baseline
+records), and counts it in the summary line. A card-data refresh that
+changes a card's keywords therefore never fails the weekly
+`data:refresh-pr`. Slice E's staleness command calls the same function to
+list those cases; nothing re-implements the comparison.
+
 ### Live runner (REQ-186 to REQ-190)
 
 The runner grades only `approved`, non-stale cases. "Stale" uses one
@@ -248,8 +290,11 @@ staleness report all call that function; none re-implements it.
 - **Scores file.** `results.json` merges per case: each case's record carries
   its own prompt hash, reference-answer hash, timestamp, commit, and the judge's
   token use.
-- **Headline.** Per tier over the latest graded records. Tier 3 is never
-  pooled with the official tiers.
+- **Headline.** Per tier over the latest graded records of approved,
+  non-stale cases, with the ungraded and stale counts beside it. Tier 3 is
+  never pooled with the official tiers. A stale case's last record stays in
+  `results.json` but is not counted, because REQ-225 says a stale case
+  leaves live scoring until you re-approve it (A22).
 
 ### Owner review flow (REQ-224)
 
@@ -294,7 +339,8 @@ of their done-when. So the gate's out-of-date check fails only when someone
 edits a case by hand and does not rerun the coverage command.
 
 The staleness report compares each case's stored hashes with the committed
-data. It lists stale cases and cases awaiting a query-vector re-freeze. It
+data. It lists stale cases, through slice A's stale comparison, and cases
+awaiting a query-vector re-freeze, through slice B's re-freeze check. It
 never gates.
 
 ## Measurements
@@ -322,7 +368,7 @@ scripts are kept in `measure/`.
 | M7 | Can the card check be absolute? | inline `node -e` over `cardRulingsByOracleId.json.br`; `apps/backend/src/prompt/normalization.ts` constants | The most rulings on one card is 32, against `MAX_RULINGS_PER_CARD` 100. The largest single card's rulings section is 8,937 characters, against `MAX_RULINGS_SECTION_CHARS` 1,000,000. No card is truncated |
 | M8 | Live cost per case | inline `node -e` over `apps/backend/src/eval/answer-quality/results.json` | `gpt-4.1` at cap 10: 57,327 input and 7,614 output tokens over 18 answers, $0.1756, so **$0.0098 per answer** (measured). `totalCostUsd` $0.6275 equals the answer calls exactly: **judge usage was never recorded**. The judge estimate from the run's own assumptions (`scripts/eval-answer-quality.mjs`: 1,500 input and 800 output tokens at $1.25/$10.00) is $0.0099 per lone call. So a routine case is about **$0.02** and 400 cases about **$8**. This is an estimate, higher than the intake's $5–6 |
 | M9 | Frozen-vector footprint | `ls -la` and `node -e` on `apps/backend/src/eval/fixtures/frozen-query-embeddings.json` | 9 vectors of 384 dimensions in 81,915 bytes, about 9.1 KB each, so about **3.6 MB** for 400 cases in the same JSON encoding |
-| M10 | Line-level grep of the IDs the proposal amends or relies on | `grep -rnE "REQ-177\|REQ-18[5-9]\|REQ-190\|NFR-018" PRD/ apps/backend/src/eval/ scripts/ --exclude-dir=rules-test-harness` | **220** hit lines (re-run in define attempt 3, unchanged from attempt 2); disposition per line in `## Cross-cutting disposition` |
+| M10 | Line-level grep of the IDs the proposal amends or relies on | `grep -rnE "REQ-177\|REQ-18[5-9]\|REQ-190\|NFR-018" PRD/ apps/backend/src/eval/ scripts/ --exclude-dir=rules-test-harness` | **220** hit lines (re-run in define attempt 4, unchanged from attempts 2 and 3); disposition per line in `## Cross-cutting disposition` |
 | M11 | New IDs unused | `grep -rl "REQ-22[2-5]" PRD/ --exclude-dir=rules-test-harness`; `grep -rnE '(^\|[^A-Z-])Q-00[78]' PRD/` | REQ-222 to REQ-225: 0 files. Q-007, Q-008: unused (the highest Q in use is Q-006). REQ-220 and REQ-221 are left to the deferred package |
 | M12 | Eval fixtures | `ls apps/backend/src/eval/fixtures/*.fixture.json \| wc -l` | 31 |
 | M13 | Rule-index date | `grep -l -i 'effective as of' apps/backend/data/*.json` | none. The index carries no CR date; the git log last touched it 2026-09-05. The intake's "2026-06-05" is not verifiable from committed data |
@@ -393,11 +439,11 @@ is how slice G proves the criterion.
 
 | # | Assumption | Rung and evidence |
 | --- | --- | --- |
-| A1 | The 18 migrated cases are `approved` | Rung 5, preserve behavior: they score in today's baseline (REQ-185 notes; `results.json`). This is stated in the REQ-185 slot so you can edit it |
+| A1 | The 18 migrated cases are `approved`, approved by the owner's accept of REQ-185; this is the one carve-out from "no agent sets `approved`", and the REQ-185 constraint and description, REQ-224's description and no-agent criterion, and A19 all state it | Rung 5, preserve behavior: they score in today's baseline (REQ-185 notes; `results.json`). This is stated in the REQ-185 slot so you can edit it; an `edit` there that makes them `draft` removes the carve-out |
 | A2 | Case files stay flat in `apps/backend/src/eval/worked-solutions/` under their names | Rung 2: `preparation.test.ts` reads six by path, and `scripts/eval-worked-solutions.mjs` reads the folder |
 | A3 | The offline gate runs as tests already inside `quality:check` (`coverage:check` or `test:scripts`) | Rung 3: the REQ-177 benchmark gate is `ragRetrievalBenchmark.test.ts` |
 | A4 | Frozen vectors follow REQ-181's JSON fixture; the build may choose a more compact encoding if determinism holds | Rungs 3 and 4; about 3.6 MB at today's encoding (M9) |
-| A5 | When card data changes a case's query text, the case is reported as needing a re-freeze and is not failed | Rung 4, smallest reversible. Owner decision: staleness never blocks `data:refresh-pr`. A missing vector on a new case does fail |
+| A5 | When card data changes a case's query text, the case is reported as awaiting a re-freeze and is not failed. Slice B owns it: each frozen vector stores a SHA-256 hash of its query text, and one re-freeze check compares it with the query text built now, skips the case in the ratchet, and counts it in the gate summary. Slice E's staleness command calls that check to list the cases | Rung 4, smallest reversible. Owner decision: staleness never blocks `data:refresh-pr`. A missing vector on a new case does fail. Under A21 the behavior lands in B and E, and REQ-222 is applied at E, where the staleness listing it names lands |
 | A6 | The routine lineup is `gpt-4.1` at cap 10 | The probe recommendation; the deployed model and cap (`scripts/aws-deploy.sh`, REQ-190). Owner confirms in the REQ-188 and REQ-190 slots |
 | A7 | Coverage counts `draft`, `approved`, and `needs-edit`; `rejected` does not | Rung 4. Owner decision 4 ("at least one case") read as "a non-rejected case" |
 | A8 | Rejected cases stay in the corpus with status `rejected` | Rung 4: dedup still sees them; git keeps the history either way |
@@ -411,9 +457,10 @@ is how slice G proves the criterion.
 | A16 | The 120 hard-area cases split 60 `Example:` lines, 58 two-card rulings, 2 tester cases, over one list of twelve hard areas (M1b, M16, and the REQ-185 criterion); Q-008's extra tier-3 cases, at most 13 (the intake's tier-3 cap of 15 minus the 2 testers), replace two-card ruling slots one for one | Rung 4: both pools are measured over the same twelve areas and each pick is about half or less of its pool (M16); the total stays fixed whatever Q-008 says |
 | A17 | Slice E ships the coverage gate as tested code that is not yet wired into `quality:check`; slice F wires it in when its 255 cases land | Rung 4: every slice stays green on its own, and the gate never runs while it is known to fail. Fixture-corpus tests prove E's gate logic before F |
 | A18 | The stale comparison is one loader function built in slice A, beside `snapshot` hashing; slice C's filter, slice D's review render, and slice E's report call it | Rung 3: one shared loader (REQ-185) already serves every reader |
-| A19 | A stale approved case returns through the review flow: the render includes every flagged approved case, and an `approve` verdict makes the apply command re-record its `snapshot` hashes. Every approval re-records them, and the apply command refuses a case whose committed text changed after the render. Slice D builds it | Rung 4, smallest reversible: reuses REQ-224's one write path instead of adding a separate re-snapshot command, and keeps "no agent sets `approved`" true, because only an owner verdict re-records the hashes that make a case gradable again |
+| A19 | A stale approved case returns through the review flow: the render includes every flagged approved case, and an `approve` verdict makes the apply command re-record its `snapshot` hashes. Every approval re-records them, and the apply command refuses a case whose committed text changed after the render. Slice D builds it | Rung 4, smallest reversible: reuses REQ-224's one write path instead of adding a separate re-snapshot command, and keeps "no agent sets `approved`" true, because only an owner verdict re-records the hashes that make a case gradable again. Its one exception, the 18 first-ship cases the slice A migration writes as `approved`, is also an owner decision: the owner's accept of REQ-185 (A1) |
 | A20 | The review apply command rewrites `coverage.json` after writing verdicts; slice E adds that step when it creates the file | Rung 4: the owner's own review must never fail the next pull request on REQ-223's out-of-date check; rerunning a separate command by hand is the failure the gate-qc found |
 | A21 | Each `GATE-QUESTIONS.md` slot is applied in the first slice where every behavior it states is true. A bare citation of an ID this package reserves (REQ-222 to REQ-225) may be applied ahead of that ID's own entry | Rung 3: the build half lands every slice in one code PR into `main` (`PRD/instructions/graph-workflow-contract.md`, `## The two runs`: a second, code PR carries the code and the applied truth), so `main` never holds a citation of an ID that is not there; a citation states a relation, not a behavior |
+| A22 | A stale approved case's last graded record stays in `results.json` but is not counted in REQ-187's headline; the headline prints a stale count beside the ungraded count, and the case counts again from its next graded record after re-approval | Rung 1, derived from REQ-225's existing rule that a stale case leaves live scoring until the owner re-approves it, and its plain-terms promise that the AI is never graded against an answer that may be out of date. REQ-189 drops a record only when the case leaves the corpus or is no longer `approved`, so the record is kept. Not a blocker question: the existing rule settles it |
 
 Two genuine decision blockers went to the owner as Q-007 and Q-008. Each
 changes scope and has no PRD basis, and taking the smaller option would
@@ -428,11 +475,11 @@ different slices' work is applied in parts, as listed.
 
 | Slice | Delivers | Applies | Done when |
 | --- | --- | --- | --- |
-| A | Format v2 schema and loader (`scripts/lib/gold-cases.mjs`), including the A15 rule (no `owner` on a stack item, no `caster` outside the stack), dedup, derived tags, `snapshot` hashing and the one stale comparison every reader calls (A18), migration of the 18 with the `cards` lists in A14, `buildCaseRequest` building every case's request (A15: a lookup with every `cards` entry attached, or, for a case with a `gameState`, the In-Depth `mode: "game"` request with that `gameState` as its `gameContext`), README rewrite | — (REQ-185 is applied in G, where its run-1 authoring criterion becomes true) | The 18 migrated cases have byte-identical question and answer text (a test diff). Each migrated case's `cards` matches A14. `eval:worked-solutions` still reports 16/18 with the same two misses (measured for this exact migration, M15). A unit test shows the stale comparison flags a changed rule, oracle, or ruling hash and passes unchanged data. `buildCaseRequest` tests: a case without a `gameState` gives a lookup with every `cards` entry attached by oracle id; a fixture case with a `gameState` (two stack items, a battlefield card with an owner) gives a `mode: "game"` request that the In-Depth request schema accepts, with each card in its zone and the stack in order. The loader rejects a fixture `gameState` with `owner` on a stack item. `preparation.test.ts`, the benchmark, and the context-eval fixtures pass unchanged |
-| B | Offline prompt gate: card check, frozen-vector build command and file, ratchet baseline and raise command, state-fact check over the A15 mapping (requests built by slice A's `buildCaseRequest`), wired into `quality:check` | The new system-map entry `Rules test corpus gates and review` (from the REQ-222 slot) added as `Status: partial`. REQ-222's own entry is applied in E, because its re-freeze criterion names the staleness report | The gate passes on the 18 with a baseline of 16 hits. A planted dropped card and a planted lost rule each fail it. State-fact check: a fixture case with a `gameState` (a stack of two items with a caster, a battlefield card with an owner, and a controller note) passes through `buildCaseRequest` and the real `preparePromptInput`, and a unit test fails the check when one stated fact's line is missing from the prompt. No network or model call (the test fails if the embedder is invoked) |
-| C | Live runner: selection flags, the approved-and-non-stale filter (calling slice A's stale comparison), requests from slice A's `buildCaseRequest`, prompt hash, per-case merge, judge usage, default `gpt-4.1` at cap `[10]`, ranking skipped for one model, unknown-rule-id assertion, `shortAnswer` added to the no-prose guard | REQ-186, REQ-187, REQ-190, and the system-map answer-quality entry (from the REQ-188 slot). REQ-188 is applied in F, because it says the coverage gate runs in `quality:check`; REQ-189 in E, because it names the coverage file | The dry run prints selection and cost with no network call when there is no key. Unit tests cover the merge, selection, the stale filter, and the ranking skip. The regression guard still passes |
+| A | Format v2 schema and loader (`scripts/lib/gold-cases.mjs`), including the A15 rule (no `owner` on a stack item, no `caster` outside the stack), dedup, derived tags, `snapshot` hashing and the one stale comparison every reader calls (A18), migration of the 18 with the `cards` lists in A14 (as `approved`, A1), the field rename in every case-file reader (`workedSolution` to `expected.answer` and `expectedSupplementalRuleIds` to `expected.decidingRuleIds` in `scripts/eval-answer-quality.mjs` lines 408, 426, 431, 433, 464, 480, `scripts/eval-worked-solutions.mjs` lines 65 and 120, `scripts/lib/gold-cases.mjs`, and the case objects in `scripts/lib/gold-cases.test.mjs` and `scripts/eval-worked-solutions.test.mjs`; the full list is under `### Case format version 2`), `buildCaseRequest` building every case's request (A15: a lookup with every `cards` entry attached, or, for a case with a `gameState`, the In-Depth `mode: "game"` request with that `gameState` as its `gameContext`), README rewrite | — (REQ-185 is applied in G, where its run-1 authoring criterion becomes true) | The 18 migrated cases have byte-identical question and answer text (a test diff), and each has `review.status` `approved`. Each migrated case's `cards` matches A14. No case-file read of `workedSolution` or `expectedSupplementalRuleIds` remains in `scripts/` or `apps/backend/src/eval/` (a grep; the context-eval fixture readers, parameter names, and the no-prose list stay, as listed under `### Case format version 2`). `scripts/eval-answer-quality.mjs` passes the case's `expected.answer` to the judge and its `expected.decidingRuleIds` to the assertions and retrieval check, and its existing tests and dry run (no key, no network) pass on the migrated 18. `eval:worked-solutions` still reports 16/18 with the same two misses (measured for this exact migration, M15). A unit test shows the stale comparison flags a changed rule, oracle, or ruling hash and passes unchanged data. `buildCaseRequest` tests: a case without a `gameState` gives a lookup with every `cards` entry attached by oracle id; a fixture case with a `gameState` (two stack items, a battlefield card with an owner) gives a `mode: "game"` request that the In-Depth request schema accepts, with each card in its zone and the stack in order. The loader rejects a fixture `gameState` with `owner` on a stack item. `preparation.test.ts`, the benchmark, and the context-eval fixtures pass unchanged |
+| B | Offline prompt gate: card check, frozen-vector build command and file (each vector stored with a SHA-256 hash of the query text it was embedded from), the one re-freeze check (rebuilds a case's query text and compares its hash; on a mismatch the case is awaiting a re-freeze, is skipped by the ratchet, and is counted in the gate summary, A5), ratchet baseline and raise command, state-fact check over the A15 mapping (requests built by slice A's `buildCaseRequest`), wired into `quality:check` | The new system-map entry `Rules test corpus gates and review` (from the REQ-222 slot) added as `Status: partial`. REQ-222's own entry is applied in E, because its re-freeze criterion names the staleness report | The gate passes on the 18 with a baseline of 16 hits. A planted dropped card and a planted lost rule each fail it. State-fact check: a fixture case with a `gameState` (a stack of two items with a caster, a battlefield card with an owner, and a controller note) passes through `buildCaseRequest` and the real `preparePromptInput`, and a unit test fails the check when one stated fact's line is missing from the prompt. Re-freeze test: a fixture case whose stored query-text hash differs from its rebuilt query text, and whose baseline records a hit, is reported as awaiting a re-freeze, does not fail the gate, is neither a hit nor a miss in the ratchet, and the summary prints an awaiting-re-freeze count of 1; the same case with no vector at all fails the gate. No network or model call (the test fails if the embedder is invoked) |
+| C | Live runner: selection flags, the approved-and-non-stale filter (calling slice A's stale comparison), requests from slice A's `buildCaseRequest`, prompt hash, per-case merge, judge usage, default `gpt-4.1` at cap `[10]`, ranking skipped for one model, unknown-rule-id assertion, `shortAnswer` added to the no-prose guard | REQ-186, REQ-187, REQ-190, and the system-map answer-quality entry (from the REQ-188 slot). REQ-188 is applied in F, because it says the coverage gate runs in `quality:check`; REQ-189 in E, because it names the coverage file | The dry run prints selection and cost with no network call when there is no key. Unit tests cover the merge, selection, the stale filter, and the ranking skip. A headline test: a fixture with one stale approved case that has a Correctness-2 record leaves it out of the count and prints a stale count of 1 (A22). The regression guard still passes |
 | D | Review command (render batches, including approved cases the stale comparison flags, marked stale with each changed dependency's current text) and apply command (writes `review.*`, and on `approve` re-records `snapshot`, A19). The apply command's `coverage.json` rewrite is added in E, which creates that file (A20) | — (REQ-224 is applied in E, where its coverage-file step lands) | Round-trip test: render, fill, apply changes only `review.*`, plus `snapshot` on an `approve` verdict. Stale path test: a fixture approved case whose ruling hash no longer matches is rendered marked stale; applying `approve` re-records its hashes, after which slice A's stale comparison passes and slice C's filter selects it again. Each refusal case is tested, including committed text changed between render and apply |
-| E | Coverage command and report (including counts per `outcome`), `coverage.json`, excluded list (per Q-007), the coverage gate as a tested function **not yet wired into `quality:check`** (A17), staleness command, and the `coverage.json` rewrite at the end of slice D's apply command (A20) | REQ-189, REQ-222, REQ-224, REQ-225 | Fixture-corpus tests: an uncovered mechanic fails the gate, an excluded id the index lacks fails it, an out-of-date coverage file fails it, and a fully covered fixture passes. Applying a filled review batch that changes a status leaves the out-of-date check passing. Run on the real corpus, the coverage command lists the 255 mechanics still uncovered as report output, not a failure. `quality:check` is green. The staleness report is clean on unchanged data |
+| E | Coverage command and report (including counts per `outcome`), `coverage.json`, excluded list (per Q-007), the coverage gate as a tested function **not yet wired into `quality:check`** (A17), staleness command (stale cases through slice A's stale comparison, cases awaiting a re-freeze through slice B's re-freeze check), and the `coverage.json` rewrite at the end of slice D's apply command (A20) | REQ-189, REQ-222, REQ-224, REQ-225 | Fixture-corpus tests: an uncovered mechanic fails the gate, an excluded id the index lacks fails it, an out-of-date coverage file fails it, and a fully covered fixture passes. Applying a filled review batch that changes a status leaves the out-of-date check passing. Run on the real corpus, the coverage command lists the 255 mechanics still uncovered as report output, not a failure. `quality:check` is green. The staleness report is clean on unchanged data. Staleness fixture test: a fixture case with a changed ruling hash is listed as stale naming that dependency, and a fixture case whose stored query-text hash no longer matches is listed as awaiting a re-freeze; neither run fails any gate |
 | F | 255 mechanic cases as `draft` with frozen vectors; coverage file rewritten; the coverage gate wired into `quality:check`; map-out may split by family (701 actions 66; 702.2–702.100; 702.101–702.192) | REQ-188, REQ-223, NFR-018, goals line, system-map `## Eval harness` (from the REQ-222 slot) | The coverage gate runs in `quality:check` and passes. Every case passes the card check. The ratchet baseline is recorded |
 | G | 120 hard-area cases as `draft` with frozen vectors (A16: 60 from unused `Example:` lines, 58 from two-card rulings, the 2 tester cases as tier-3 drafts — Q1 via 614.1a, 616.1, 616.1e, 616.1f; Q2 via 514.1, 514.2, 514.3a), with any Q-008 tier-3 drafts taking two-card ruling slots; coverage file rewritten; the corpus README brought up to REQ-185's README criterion, including slice D's and E's commands | REQ-185 | The coverage report shows the 60 / 58 / 2 split and at least 40 of the 120 with `outcome` `does-not-work`. Both gates pass. The ratchet baseline is re-recorded at the end. No live run is needed to merge |
 
@@ -456,8 +503,8 @@ Each slice applies only the truth that is true once it lands (A21). So:
 A slot may cite an ID, or rely on wording, from another slot of this
 proposal before that slot is applied. Two kinds occur:
 
-- **A new ID cited before its entry goes in.** REQ-186 (at C) cites
-  REQ-225's staleness rule (E). The system-map entry added at B cites REQ-222
+- **A new ID cited before its entry goes in.** REQ-186 and REQ-187 (at C)
+  cite REQ-225's staleness rule (E). The system-map entry added at B cites REQ-222
   to REQ-225. REQ-189 and REQ-224 (at E) cite REQ-223 (F).
 - **An amended entry's new wording relied on before the amendment goes
   in.** REQ-225 (at E) names REQ-188's skip of stale cases (F). REQ-186,
@@ -517,6 +564,15 @@ receipt records it).
 | 7 | Q-007 miscounts the intake's list; the intake is undefined | Q-007 now says the intake excluded four mechanics (the three Attraction mechanics and Space Sculptor), did not list Assemble, and left ∞ undecided: 253 mechanic cases with its list and ∞ kept, 252 with Assemble added. Q-007 and the brief define the intake where they first name it |
 | 8 | Two hard-area lists | One list of twelve everywhere. M16's ruling search now has one term per area (re-run: 2,651 hard-area two-card rulings, 1,232 negative-phrased; `Example:` counts unchanged), and the REQ-185 criterion and notes name the same twelve |
 
+## Define attempt 4 — what changed for the gate-qc findings
+
+| # | Finding or advisory (README `## Preparation gate`) | Resolution |
+| --- | --- | --- |
+| 1 | The 18 migrated cases ship `approved` against the no-agent-approves rule | One carve-out, worded the same everywhere: the 18 first-ship cases are approved by the owner's accept of REQ-185, and the migration only writes that down. It is in the REQ-185 constraint, description, migrated-cases criterion and plain terms; REQ-224's description, no-agent criterion and plain terms; A1; A19; and `### Case format version 2`. The migrated cases' `snapshot` is recorded at migration, which counts as their authoring, so REQ-224's and REQ-225's "only the apply command rewrites `snapshot` after authoring" still holds. Slice A's done-when checks the 18 are `approved` |
+| 2 | The awaiting-re-freeze state has no owner or test | Slice B owns it: each frozen vector stores a SHA-256 hash of its query text, and one re-freeze check compares it with the query text built now, skips the case in the ratchet, and counts it in the gate summary (A5). Slice E's staleness command calls that check. Fixture tests in B's and E's done-when. REQ-222's frozen-vector criterion names the stored hash and the shared check, and its plain terms say it. REQ-222 stays applied at E (A21) |
+| 3 | Slice A must name `scripts/eval-answer-quality.mjs` | Confirmed lines 408, 426, 431, 433, 464, 480. A grep of `scripts/` and `apps/backend/src/eval/` also found `scripts/eval-worked-solutions.mjs` lines 65 and 120, the loader, and two test files. All are named in slice A's delivers and done-when and listed under `### Case format version 2`, with the hits that stay (context-eval fixture readers, parameter names, the no-prose list) |
+| 4 | Does a stale approved case's last record count in REQ-187's headline | Derived, not a blocker: REQ-225 says a stale case leaves live scoring until re-approved, so the record stays in `results.json` but is not counted, and the headline prints a stale count (A22). REQ-187's headline criterion and plain terms, REQ-225's re-approval criterion, plain terms and dependencies, the live-runner headline bullet, and a slice C headline test say so |
+
 ## Cross-cutting disposition
 
 One quoted grep (M10), at line level, over `PRD/`, `apps/backend/src/eval/`,
@@ -530,7 +586,7 @@ and `scripts/`. The package's own folder is excluded. One row per hit line.
 `PRD/sections/in-depth/README.md` has no hit for any of the eight IDs; its row
 is added at the end.
 
-Hits: 220 lines (re-run on 2026-10-06 in define attempt 3, after the board row moved to `## refined`; same 220 file:line keys as attempt 2).
+Hits: 220 lines (re-run on 2026-10-06 in define attempt 4, after the board row moved to `## refined`; same 220 file:line keys as attempts 2 and 3, checked by a sorted diff of hit keys against this table's keys).
 
 | Hit | IDs | Line (trimmed) | Disposition |
 | --- | --- | --- | --- |
@@ -680,7 +736,7 @@ Hits: 220 lines (re-run on 2026-10-06 in define attempt 3, after the board row m
 | `PRD/ideasForLater/combo-context-validation/IDEA.md:64` | NFR-018 | partial-combo, shipped via PR #152). Extends the validation goal behind NFR-018. | No change: parked-idea note citing NFR-018 as related work; still true |
 | `PRD/ideasForLater/combo-context-validation/README.md:12` | NFR-018 | Follow-up to `prompt-context-refinement`; extends NFR-018. | No change: parked-idea note citing NFR-018 as related work; still true |
 | `PRD/ideasForLater/combo-context-validation/HANDOFF.md:78` | NFR-018 | - **Related pattern:** the just-shipped worked-solutions eval (NFR-018) at | No change: parked-idea note citing NFR-018 as related work; still true |
-| `PRD/work/STATUS.md:21` | REQ-185, NFR-018 | \| [rules-test-harness](rules-test-harness/) \| Refined (define attempt 3, after gate-qc FAIL loop 2)… | No change: this package's own board row, naming the IDs it proposes to amend; the graph lifecycle rewrites it at each status move |
+| `PRD/work/STATUS.md:21` | REQ-185, NFR-018 | \| [rules-test-harness](rules-test-harness/) \| Refined (define attempt 4, after gate-qc FAIL loop 3)… | No change: this package's own board row, naming the IDs it proposes to amend; the graph lifecycle rewrites it at each status move |
 | `PRD/work/STATUS.md:52` | REQ-177, REQ-185 | \| [combo-context-validation](../ideasForLater/combo-context-validation/) \| ideation — in… | No change: parked-idea board note citing REQ-177's note (where its throwaway harness is recorded) and the answer-quality instrument (REQ-185–190) as related work; both citations stay true |
 | `apps/backend/src/eval/benchmark/step1-baseline.json:3` | REQ-177 | "requirement": "REQ-177", | Leaves true: REQ-177 benchmark, parity test, and baseline are unchanged |
 | `apps/backend/src/eval/ragRetrievalBenchmark.ts:1` | REQ-177 | // REQ-177 (Step 1 of the RAG gameplan): a committed, offline, deterministic | Leaves true: REQ-177 benchmark, parity test, and baseline are unchanged |
