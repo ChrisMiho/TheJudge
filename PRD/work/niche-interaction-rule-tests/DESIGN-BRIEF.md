@@ -12,7 +12,8 @@ order; 616.1f: then whatever still applies gets its turn). The fix proposed
 here is a curated rules topic, "Interaction of Replacement and Prevention
 Effects" (all of CR 616.1, 616.1a–g, and 616.2), that switches on whenever two
 or more cards in the question carry replacement or prevention wording (the
-word "instead", or a form of "prevent"). Measured offline: the Manufactor +
+whole word "instead", "prevent", "prevents", or "prevented", in any letter
+case). Measured offline: the Manufactor +
 Esix question goes from MISS to HIT, and no existing rule-output test moves by
 a single case or a single decimal.
 
@@ -173,12 +174,15 @@ labelled checks (14/14) unchanged; the benchmark's clean condition has no
 cards, so no candidate can move it. Full per-rule ranks are in
 `measure-candidates.out.txt`.
 
-What this shows: search-side changes (C1–C4) cannot get 616.1 into the top ten
-— the rule's words ("two or more replacement and/or prevention effects are
-attempting to modify the way an event affects an object or player") look
-nothing like a question about Treasure tokens, and adding card text drowns the
-question (C1, C2 break Q2 and the benchmark). A topic switched on by the cards'
-own wording is deterministic and exact.
+What this shows: no search-side change (C1–C4) got both 616.1 and 616.1f into
+the top ten under both rankings. The closest, C3 and C4, lift 616.1 to #8 and
+#7 under lexical ranking only; under hybrid ranking (the shipped one) 616.1
+stays at #31–35, and 616.1f stays at #25 or worse under every candidate and
+both rankings. The rules' words ("two or more replacement and/or prevention
+effects are attempting to modify the way an event affects an object or
+player") look nothing like a question about Treasure tokens, and adding card
+text drowns the question (C1, C2 break Q2 and the benchmark). A topic switched
+on by the cards' own wording is deterministic and exact.
 
 ## Proposal: C7
 
@@ -198,8 +202,10 @@ make 616.1a–d and 616.1g unreachable whenever the topic is on.
 
 **Cost.** The topic adds 3,662 characters to a prompt when it fires (the
 minimal set: 2,057). On the Manufactor + Esix question that is the 14,524-
-character prompt growing about 25%. Measured firing rate: 1,790 of 37,564
-cards (4.8%) carry the wording, so two randomly chosen attached cards both
+character prompt growing about 25%. Measured firing rate, matching whole words
+in any letter case (`/\binstead\b/i`, `/\bprevent(s|ed)?\b/i` in
+`measure-candidates.mjs`, so "prevention" and "preventing" do not count):
+1,790 of 37,564 cards (4.8%) carry the wording, so two randomly chosen attached cards both
 carry it about 0.2% of the time. In the existing suites it fires on none of
 the 31 fixtures, 18 gold cases, or 156 benchmark questions.
 
@@ -226,7 +232,9 @@ After the build, the same measurement must show:
 - Worked-solutions: 16/18 hybrid and 14/18 lexical in System 3 (18/18 and
   16/18 in prompt) — unchanged.
 - Gating labelled checks: 14/14 semantic and 14/14 lexical on the existing
-  fixtures, plus the new fixtures' checks (REQ-221) passing.
+  fixtures, plus the new fixtures' checks (REQ-221) passing: Q1's System 2
+  topic check in the golden-scenario test, Q2's System 3 checks under both
+  the lexical and the semantic path.
 - Gating goldens: 0 of the 31 existing prompt or context goldens change.
 - Benchmark: lexical clean 0.5833 / polluted 0.5769, hybrid clean 0.8974 /
   polluted 0.8910 — unchanged.
@@ -246,6 +254,22 @@ rules stops reaching the prompt.
 - The harness already checks both shapes: `expectedSystem2TopicIds` (curated
   topics — Q1's rules arrive this way) and `expectedSupplementalRuleIds`
   (System 3 — Q2's).
+- Q1 carries prompt and context goldens and the System 2 topic label only. Its
+  topic check runs in the golden-scenario test, and topic selection does not
+  depend on ranking, so it holds under both rankings. Q1 gets no System 3
+  label, and so no frozen query embedding and no semantic-path check: the
+  harness (`contextEvaluationHarness.test.ts:265`) and
+  `scripts/build-frozen-query-embeddings.mjs` treat a fixture as labelled only
+  when it carries `expectedSupplementalRuleIds` or
+  `forbiddenSupplementalRuleIds`. The measurement supports leaving it off:
+  Q1's deciding rules arrive through the topic, and once the topic fires the
+  curated exclusion (REQ-179) bars every 616.1 rule from System 3, so a System
+  3 label on Q1 could only name a rule that does not decide the question —
+  picked from scorer output, which REQ-032 forbids — or forbid a rule the
+  exclusion already removes, which tests nothing.
+- Q2 carries goldens and the `expectedSupplementalRuleIds` label (514.2,
+  514.3a), so it is labelled: it gets one frozen query embedding and runs
+  under both the lexical and the semantic path.
 - The worked-solutions gold set is not an option: REQ-185 admits only cases
   with an official answer verbatim, and neither question has one.
 
@@ -255,10 +279,11 @@ C7 changes one standing invariant: "System 2 (the curated rules baseline) is
 card-agnostic". Every product-truth line asserting it, enumerated by:
 
 ```
-grep -rnE "card-agnostic|game-state-gated|state-gated|game-state signals|always-on core|fixed always-on|fixed curated set|DEC-045 core set|no card names|not card names|affect System 2|oracle text, or keywords|owns all card" PRD/sections
+grep -rniE "card-agnostic|game-state-gated|state-gated|game-state signals|always-on core|fixed always-on|fixed curated set|DEC-045 core set|no card names|not card names|affect System 2|oracle text, or keywords|owns all card" PRD/sections
 ```
 
-27 hits, 2026-10-06:
+Case-insensitive (`-i`), so a restatement that starts a sentence or a bullet
+("Always-on core topics") is caught. 28 hits, 2026-10-06:
 
 | Hit | Says | Disposition |
 | --- | --- | --- |
@@ -283,6 +308,7 @@ grep -rnE "card-agnostic|game-state-gated|state-gated|game-state signals|always-
 | `quick-lookup/README.md:276` | System 3 excludes "the curated rule numbers the always-on core topics already carry" | amend (REQ-220 block): "the selected curated topics" |
 | `quick-lookup/README.md:288` | "the always-on core game-rules topics are a fixed curated set" | amend (REQ-220 block): add the conditional topic |
 | `quick-lookup/README.md:290` | "not the state-gated selector the game flow uses" | amend (REQ-220 block), same bullet as 288 |
+| `quick-lookup/README.md:349` | "Always-on core topics: a fixed four-topic core set (stack-and-priority, targets, zones, triggered-ability basics)" | unchanged — still true: the four core topics stay fixed and always on; the new topic is a fifth, conditional topic added beside them, not a member of the core set |
 | `in-depth/README.md:375` | "selected by DEC-045's always-on core plus" | amend (REQ-220 block) |
 | `in-depth/README.md:376` | "card-agnostic game-state-gated expansion" | amend (REQ-220 block), same bullet |
 | `in-depth/README.md:377` | "no card names or oracle text" | amend (REQ-220 block), same bullet |
@@ -290,24 +316,57 @@ grep -rnE "card-agnostic|game-state-gated|state-gated|game-state signals|always-
 | `user-flows.md:257` | lookup flow step 7: "always-on core game-rules topics ... always runs" | unchanged — still true |
 | `decisions.md:86` | DEC-045 row, status `retired` | unchanged — retired historical index; the decision log is not amended (decisions are amended in place in feature specs) |
 
-Code comments that restate the invariant (`gameRulesTopicSelection.ts`'s
-header, "No card names, oracle text, or keywords influence this selection")
-are the build's to update with the code, not product truth.
+Lines outside the grep that restate or touch the invariant, found by reading
+the files the hits sit in, plus the parked-ideas folder and the selector's
+source:
+
+| Line | Says | Disposition |
+| --- | --- | --- |
+| `system-map/game-rules-retrieval.md:94` | worked example: System 2 "selects the always-on topics plus combat and battlefield-oriented curated topics" for a deathtouch combat question | unchanged — still true: that example carries no two cards with replacement or prevention wording, so the new topic does not fire |
+| `PRD/ideasForLater/future-infra/sections/retrieval-architecture.md:10` | System 2 is "keyed only on `turnPhase`, `combatStep`, and populated-zone presence (never card text or keywords)" | unchanged — a parked idea file describing the state when it was written, not product truth |
+| `apps/backend/src/gameRulesTopicSelection.ts:7` (header) | "Selection is driven only by card-agnostic game-state signals ... No card names, oracle text, or keywords influence this selection" | build updates it with the code (not product truth) |
+| `apps/backend/src/gameRulesTopicSelection.ts:93` (`selectGameRulesTopics` JSDoc) | "Normalized prompt context (game-state signals only are read)" | build updates it with the code, together with the header at `:7` |
 
 ## Scope
 
 1. **The topic** — `replacement-effects-interaction` added to
    `apps/backend/data/gameRulesTopicManifest.json` with rule numbers 616.1,
-   616.1a–616.1g, 616.2, and rebuilt into `gameRulesByTopic.json` by
-   `npm run data:build` (verbatim CR text, like every topic).
+   616.1a–616.1g, 616.2, and built into `gameRulesByTopic.json` as verbatim
+   CR text, like every topic. Build step, exactly:
+   - The Comprehensive Rules source, `apps/backend/data/cr/source.txt`, is
+     gitignored and absent from worktrees. Without it
+     `scripts/build-game-rules.mjs` takes its `validateExistingArtifact()`
+     path, prints "Preserved existing game rules artifact", exits 0, and
+     silently does not write the topic.
+   - Copy the local file from the launch checkout
+     (`/Users/chrismiho/Coding/Projects/TheJudge/apps/backend/data/cr/source.txt`,
+     the rules effective August 7, 2026, which contain all nine rules) to the
+     same path in the worktree. Do not download a fresh copy; a download
+     needs the owner's approval. The file stays gitignored and is never
+     committed.
+   - Run `node scripts/build-game-rules.mjs` only — not `npm run data:build`,
+     which also rebuilds card data, embeddings, and combos. Its output must
+     say "Wrote:" for `gameRulesByTopic.json`, never "Preserved".
+   - Required result: `gameRulesByTopic.json` gains the topic with all nine
+     rules' verbatim text, and every existing topic entry is unchanged.
+     `gameRulesRuleIndex.json`, `gameRulesTokenStats.json`,
+     `apps/frontend/public/data/gameRulesCoreTopics.json`, and
+     `gameRulesRuleEmbeddings.json` are byte-identical to the committed files
+     (`git diff` empty). If any of them changes, the local source differs from
+     the one that built the committed artifacts: stop and report it, never
+     commit the drift.
 2. **The selector** — one shared function decides whether the topic is on:
-   two or more cards whose oracle text contains "instead" or a form of
-   "prevent" (`prevent`, `prevents`, `prevented`). Lookup passes the attached
+   two or more cards whose oracle text contains the whole word "instead",
+   "prevent", "prevents", or "prevented", in any letter case (so "prevention"
+   and "preventing" do not count; the measured regexes are
+   `/\binstead\b/i` and `/\bprevent(s|ed)?\b/i`). Lookup passes the attached
    cards; game mode passes every stack and zone card. Lookup's topic list
    becomes the four always-on topics plus this one when it fires; game mode's
    `selectGameRulesTopics` adds it the same way.
-3. **The two gating fixtures** (REQ-221) with prompt and context goldens, frozen
-   query embeddings, and fixture rulings for the five cards.
+3. **The two gating fixtures** (REQ-221) with prompt and context goldens,
+   fixture rulings for the five cards, and one frozen query embedding — Q2's
+   only, since Q1 carries no System 3 label (see "How the new cases join the
+   suites").
 4. **PRD truth applied at build** — REQ-220 and REQ-221 added, REQ-022 amended,
    and the supporting system-map, data, and feature-spec lines amended, exactly
    as `GATE-QUESTIONS.md` proposes.
@@ -328,8 +387,10 @@ are the build's to update with the code, not product truth.
   their committed oracle text, type line, and keywords (the fixtures' existing
   convention, `cardDetailIndexFromRequest`); the five cards' rulings added to
   the test's fixture rulings map so the lookup card-enrichment check holds;
-  `npm run eval:build-frozen-query-embeddings` for the two new vectors (the
-  nine existing vectors do not change, because no query text changes).
+  `npm run eval:build-frozen-query-embeddings` for one new vector, Q2's
+  (`quick-lookup-cleanup-trigger`); Q1 is not System 3-labelled, so the
+  script gives it none. The nine existing vectors do not change, because no
+  query text changes.
 - Oracle ids: Academy Manufactor `f36d1d8b-8303-44a9-ab56-531931641ea2`; Esix,
   Fractal Bloom `9d22960b-babc-4cf3-b228-d32e13bc6014`; Silence
   `8aed54cb-d1bb-45ad-adbe-38e55d84ff31`; Necropotence
@@ -345,7 +406,7 @@ are the build's to update with the code, not product truth.
 | Typed-only or cards-attached cases? | Cards attached only | Owner direction (answered-once in the ledger). |
 | Which retrieval change? | C7 | Measured: the only candidates that fix Q1 are the topic ones (C5–C7); C6/C7 are the only ones with zero movement on every existing suite; C7 over C6 because 616.1 cites 616.1a–f (rung 1, the CR text itself). |
 | Fire on one marked card or two? | Two | Measured: one fires on an existing fixture and changes its golden; CR 616 governs two or more effects (rung 4, smallest scope). |
-| What counts as replacement/prevention wording? | "instead", or "prevent"/"prevents"/"prevented" | CR 614.1a defines replacement effects by "instead"; CR 616 covers "replacement and/or prevention effects". Rung 4: the narrowest marker that matches the CR's own definition. |
+| What counts as replacement/prevention wording? | The whole word "instead", "prevent", "prevents", or "prevented", any letter case ("prevention" and "preventing" do not count) — the rule the 4.8% rate and the zero-churn result were measured with | CR 614.1a defines replacement effects by "instead"; CR 616 covers "replacement and/or prevention effects". Rung 4: the narrowest marker that matches the CR's own definition. |
 | Both modes, or lookup only? | Both | Rung 3: REQ-178 already holds lookup and game mode to one shared card signal "so lookup and game mode cannot drift apart"; measured zero churn in game fixtures. |
 | Gate or report? | Gate, as REQ-221 (owner decides) | The owner asked for the cases to join "a full test of all use cases"; the cases pass after REQ-220, so a gate locks the fix in. Surfaced, not settled. |
 | Add to the worked-solutions gold set? | No | Rung 1: REQ-185 admits only official verbatim answers; neither case has one. |
@@ -378,11 +439,14 @@ as its own stable ID.
   rules were right and the answer was wrong, so the next lever is how the
   prompt presents them. That package must test any format change against the
   same suites as here, plus a live answer check; offline retrieval suites
-  cannot see answer quality. Measured basis for its cost: these two prompts
-  are about 14,500–18,200 characters (≈3,700–4,600 input tokens); at the
-  gpt-4.1 list rate in `scripts/eval-answer-quality.mjs` ($2 / $8 per million
-  input / output tokens, 600 assumed output tokens) one answer costs about
-  $0.012–$0.014.
+  cannot see answer quality. Measured basis for its cost: today the Q1 prompt
+  is 14,524 characters and the Q2 prompt 14,699 (hybrid) or 15,136
+  (lexical). Once REQ-220 ships, Q1 also carries the 3,662-character topic,
+  about 18,190 characters, and that is the prompt the format package starts
+  from. So its prompts run about 14,700–18,190 characters (≈3,700–4,550 input
+  tokens at about four characters a token); at the gpt-4.1 list rate in
+  `scripts/eval-answer-quality.mjs` ($2 / $8 per million input / output
+  tokens, 600 assumed output tokens) one answer costs about $0.012–$0.014.
 - **Worked-solutions check counts curated rules as misses.** Two of its 18
   cases (Panharmonicon 603.2, Restoration Angel 400.7) have their rule in the
   prompt through an always-on topic, yet report MISS. A small instrument fix.
