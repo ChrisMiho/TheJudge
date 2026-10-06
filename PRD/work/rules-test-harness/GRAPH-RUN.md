@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/rules-test-harness` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rules-test-harness` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-181340/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff PRD/work/rules-test-harness/`
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 10` | branch `thejudge-auto/rules-test-harness` pushed (`git ls-remote --heads origin thejudge-auto/rules-test-harness` → `066fbbd`) from `.worktrees/kickoff-rules-test-harness`; launch checkout still on `main` (reflog: no switch); lock `.worktrees/.graph-run.lock` runId `graph-20261006-181340` pid 19738 | 2026-10-06 |
 | 2 | shape | sonnet | ok | `0 → 14` | `PRD/work/rules-test-harness/IDEA.md` (10 `## Prior run` lines), `README.md`, `STATUS.ideation`, `intake/GRAPH-BRIEF.md` (`cmp` identical to staging), `PRD/work/STATUS.md` ideation row | 2026-10-06 |
 | 3 | define | opus | ok | `0 → 69` | `PRD/work/rules-test-harness/DESIGN-BRIEF.md` (13 measurements, 7 slices A–G, 220-row disposition table), `GATE-QUESTIONS.md` (amend REQ-185–190, NFR-018; new REQ-222–225; Blocker questions Q-007 joke-only list, Q-008 tier-3 count), `measure/` (3 scripts + `mechanics-result.json`), `STATUS.refined`; measured 258 mechanics in the committed rule index, gold deciding-rule hit 16/18 semantic | 2026-10-06 |
+| 4 | gate-qc | sonnet | failed | `0 → 42` | FAIL attempt 1 of 3: 8 findings (4 Important: slice E red on its own + stale-compare owner, run-1 size arithmetic/untraced counts, tier-1 `cards` migration, Q-007/Q-008 plain-language default; 4 Minor: disposition rows, REQ-187/189 leftover wording, state-fact test + system-map status, Infinity count); proposed diffs verified exact, IDs unused, 9 measurements reproduced; `STATUS.refining`; findings in README `## Preparation gate` | 2026-10-06 |
 
 ## Open gate
 
@@ -95,6 +96,51 @@ Your tool-call cap is 150 for this node, and any subagent you dispatch spends fr
 When done, set `STATUS.refined` (single marker, `git mv`), update the README frontmatter, and move the `PRD/work/STATUS.md` board row fully from ideation to refined (remove from the old section, add to the new).
 
 Report back: outcome, files created or changed, the STATUS marker set, whether `GATE-QUESTIONS.md` exists and which stable IDs it carries, each measurement and its result, and a few plain sentences on what the harness would do for the owner.
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rules-test-harness
+
+You are node 4 (`gate-qc`) of graph run `graph-20261006-181340`, attempt 1. Run the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/rules-test-harness/` (STATUS.refined). Grade `DESIGN-BRIEF.md` together with the proposed product truth in `GATE-QUESTIONS.md` (amended REQ-185 through REQ-190 and NFR-018; new REQ-222 through REQ-225; blocker questions Q-007 and Q-008) against current `PRD/sections/` truth and agent-readiness. Intake under `intake/` is evidence only. The ledger `GRAPH-RUN.md` and the README `## Preparation gate` and `## Autonomous metadata` sections are the driver's; do not edit them.
+
+Check cross-cutting consistency by grep, not memory: re-run the brief's line-level grep for each amended or relied-on ID (REQ-177, REQ-185 through REQ-190, NFR-018) across `PRD/`, `apps/backend/src/eval/`, and `scripts/`, and confirm every hit has a disposition row and that each amendment the rows promise appears in a `GATE-QUESTIONS.md` diff. Confirm each diff's removed lines match the live file text exactly. Confirm REQ-222 through REQ-225, Q-007 and Q-008 are unused anywhere in `PRD/` outside this package. Spot-check at least three of the brief's measurements by re-running the recorded command (the scripts are in `measure/`; no live model calls, no network refresh, never rebuild the rule index). Check the build slices are ordered so each one can be built and tested on its own, and that every numeric acceptance target in a slice or proposed REQ traces to a recorded measurement.
+
+Blocker questions Q-007 and Q-008 are owner decisions; grade whether each is stated to the plain-language standard with a recommendation and a clear default, not what the answer should be.
+
+Do not edit `PRD/sections/`, code, the brief, or `GATE-QUESTIONS.md`. Do not commit or push; the driver commits. Your tool-call cap is 60 for this node, and any subagent you dispatch spends from the same budget.
+
+Report back: PASS or FAIL, the complete findings list with severity (none if PASS), the STATUS marker you set, and any file you wrote.
+
+### define (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rules-test-harness
+
+You are node 3 (`define`) of graph run `graph-20261006-181340`, attempt 2, after a `gate-qc` FAIL (loop 1 of 3). Run the `thejudge-refinement` skill (read `.claude/skills/thejudge-refinement/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/rules-test-harness/` (STATUS.refining). Your prior output is committed: `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `measure/`. Resolve exactly the eight gate-qc findings recorded in the README `## Preparation gate` section, and nothing else. Read that section first; it is the authoritative list. In short:
+
+  1. (Important) Slice E must build and test green on its own; settle in the brief how the coverage gate ships before slice F's cases exist (no hidden choice left to map-out), and name which slice owns the stale comparison that slice C's approved-and-non-stale filter needs.
+  2. (Important) Make the run-1 size arithmetic add up and trace every count to a recorded measurement: the hard-area block, the total, the source of any extra fill-ins when Q-008 recommends 0, the two-card ruling pool (add a `## Measurements` row with its command), the unused `Example:` line count (measure it), and the basis for REQ-185's at-least-a-third `does-not-work` criterion (measure what the pool can supply, or state it as an authoring target outside the acceptance criterion, consistently in brief and diff).
+  3. (Important) State what `cards` each of the 15 tier-1 gold cases migrates with, such that slice A's unchanged 16/18 with the same two misses still holds, and reconcile REQ-185's every-named-card-attached rule with that (for example `token-created-by-name-uses-oracle-card` and Tarmogoyf). Measure, do not reason, whether any change moves the baseline.
+  4. (Important) Rewrite Q-007 and Q-008 to the plain-language standard in `PRD/instructions/plain-language-standard.md`: lead with the decision, gloss every term (Un-set, acorn, Unfinity, eternal formats), replace the undefined re-park jargon with what the owner experiences (nothing is built until they answer), and give a clear default. Reconcile Q-007's recommendation on the three Attraction mechanics (701.51, 701.52, 702.159) with its own caution.
+  5. (Minor) Disposition table: add the missing `PRD/work/STATUS.md:21` row and correct the `STATUS.md:52` row's cited IDs. Re-run the grep after your edits so the stated hit count matches the rows.
+  6. (Minor) REQ-187 Correctness bullet (published worked solution), REQ-187 no-axis bullet, REQ-189 no-prose guard naming `workedSolution`: amend each in its diff or record in the brief that it is intentionally kept and why.
+  7. (Minor) Add a test for the state-fact check to slice B's done-when and specify the `gameState` to In-Depth request mapping, checked against the request type in code (zones, stack, controllers). Fix the system-map entry's status so it does not claim shipped features that arrive in later slices.
+  8. (Minor) Reconcile the Infinity card count with `measure/text-search.mjs` output (4 cards naming it, 2 with rulings) in brief M4 and Q-007.
+
+For each finding, grep the whole package (brief, `GATE-QUESTIONS.md` diffs, README links, measurement script comments) at line level for every occurrence of the affected wording or number and fix each hit, so no stale copy survives in another file. Any new removed line in a `GATE-QUESTIONS.md` diff must match the live `PRD/sections/` text exactly. Keep the plain-language block and verdict slot shape in every `GATE-QUESTIONS.md` block. Measurements follow the same rules as attempt 1: committed data only, no live model calls, no network refresh, never `npm run data:refresh`, never rebuild the rule index, never record a lexical-fallback measurement (the copied `apps/backend/data/models/` is already in place).
+
+Never edit `PRD/sections/`, code, `GRAPH-RUN.md`, or the README `## Preparation gate` and `## Autonomous metadata` sections. Do not commit or push; the driver commits. Apply the assumption ladder and genuine-blocker test from `PRD/instructions/preparation-contract.md` per question as each arises; product decisions go to the owner through `GATE-QUESTIONS.md`, never resolved silently. Your tool-call cap is 150 for this node, shared with any subagent you dispatch.
+
+When done, set `STATUS.refined` (single marker, `git mv`), README frontmatter, and move the `PRD/work/STATUS.md` board row fully from refining to refined (remove from the old section, add to the new).
+
+Report back: outcome, each finding and what you changed for it (file and line), new measurements with commands and results, files changed, and the STATUS marker set.
 
 ## Instruction ledger
 
