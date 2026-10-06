@@ -23,6 +23,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Owner re-scoped before answering: fix rule retrieval for cards-attached hard interactions, validated by the full rule-output test suite; prompt format follows later |
 
 ## ideation
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Docs PR open: answer `GATE-QUESTIONS.md` (REQ-220, report-only rule-retrieval checks for the tester's two hard questions), then merge to build |
 
 
 ## deferred

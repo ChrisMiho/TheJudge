@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `owner-action`
-- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; then `/graph-implement PRD/work/niche-interaction-rule-tests/`
+- Current node: `define`
+- Next action: `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
 
 ## Node ledger
 
@@ -22,7 +22,7 @@
 
 ## Open gate
 
-- Answer `GATE-QUESTIONS.md`, then merge to build: `PRD/work/niche-interaction-rule-tests/GATE-QUESTIONS.md` (one slot, REQ-220). Evidence: gate-qc attempt 2 PASS, `DESIGN-BRIEF.md`. Docs PR: https://github.com/ChrisMiho/TheJudge/pull/266. Resume: merge the docs PR; `graph-implement` builds it (`/graph-implement PRD/work/niche-interaction-rule-tests/`).
+- None. The owner-action gate on docs PR https://github.com/ChrisMiho/TheJudge/pull/266 was reopened 2026-10-06: the owner redirected scope before answering (Instruction ledger) and approved re-writing the proposal. Lock re-taken (`graph-preflight --take-lock`), graph canary `nohup true` denied — armed.
 
 ## Dispatch prompts
 
@@ -143,8 +143,44 @@ Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driv
 
 Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
 
+### define (attempt 3)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests
+
+You are node 3 (`define`) of graph run `graph-20261006-150550`, attempt 3. This is an owner-directed re-scope, not a gate-qc loop: the owner reviewed docs PR #266 and, before answering its gate, redirected the package and approved re-writing the proposal. Run the `thejudge-refinement` skill (read `.claude/skills/thejudge-refinement/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.refining). Read everything in it first: `IDEA.md`, `README.md`, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `measure-retrieval.mjs`, `intake/`. The ledger `GRAPH-RUN.md` and the README `## Preparation gate` section are the driver's; do not edit them. The slug and folder name stay as they are.
+
+The owner's direction, verbatim (each recorded once in the ledger's Instruction ledger as answered-once; they are inputs to this define, not standing rules for future questions):
+- "if a user is not adding a card to the context, then i do not expect the agent to be able to answer the question"
+- "if they are adding all the cards, thats the use case id like to focus on"
+- "i want to operate under the assumption that he did add the cards (even if he really didnt)"
+- "the focus of this work should be on refining the rules retrieval process, as well as refining the output format of the initial prompt that goes to the agent"
+- "we should be doing a full test of all use cases were using to validate output of rules, this is just expanding on it"
+- "if were going to adjust the output format, we again need to test, lets start with making the rules correct, and then we can make the output pretty"
+
+What that means for the rewrite of `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md`:
+1. Cases are cards-attached only. Drop the typed-only variants. The tester's two verbatim questions, with every named card attached, are the new cases.
+2. This package's build goal changes from report-only tests to making rule retrieval correct for those cards-attached questions. Today the Manufactor + Esix question misses its deciding rules (616.1, 616.1f) even with both cards attached. Find what retrieval change gets the deciding rules into the prompt by measuring candidate changes offline against the committed corpus, not by reasoning. Record each candidate tried and its measured result in the brief. Where a candidate amends existing product truth (for example the requirements that keep oracle text out of System 3 search text), the proposal amends those requirements in place. Enumerate each cross-cutting amendment set with one quoted line-level grep and a disposition row per hit.
+3. Validation is the full set of existing rule-output test cases, expanded with the new ones: every suite the repo already uses to check which rules reach the prompt (the worked-solutions retrieval check, the gating context-evaluation and golden fixtures, the hybrid-retrieval regression gate, and any others you find). Measure a baseline across all of them now. Measure each candidate retrieval change against all of them, and record before and after in the brief. A change that fixes the new cases but regresses an existing case is reported as such. Any numeric acceptance target must come from these measured numbers.
+4. Prompt output format is the next step, not this package's build. Record it in the brief as the named follow-up, with what the measurement shows about it (the Silence + Necropotence case already gets its rules and was still answered wrong), and the owner's condition that a format change must be tested too. Do not propose format changes as product truth here.
+5. How the new cases join the existing suites (which suite, and whether they gate `quality:check`) is a product decision. Propose it with a recommendation in `GATE-QUESTIONS.md`; do not settle it silently. The same goes for any live model spend you think validation needs: offline retrieval measurement needs none, so propose a live run only as its own gate question with a measured cost estimate.
+6. Rewrite `REQ-220` to match, or replace it, and give every new or amended stable ID its own `## <STABLE-ID>` block with the plain-language opening, the complete diff, and a verdict slot (per `## The two runs` in `PRD/instructions/graph-workflow-contract.md`). Never edit `PRD/sections/` or code. Update `IDEA.md` and the README so nothing in the package still describes the old report-only scope.
+
+Apply the assumption ladder and the genuine-blocker test from `PRD/instructions/preparation-contract.md` per question as each arises. No live model calls. You have a tool-call budget of 150 for this dispatch, so measure economically: extend `measure-retrieval.mjs` or add one sibling script in the package rather than many ad hoc runs. When done, set `STATUS.refined` (single marker, `git mv`), README frontmatter, and move the `PRD/work/STATUS.md` board row fully from refining to refined. Do not commit or push; the driver commits.
+
+Report back, plainly: outcome; files changed; STATUS marker; the stable IDs in `GATE-QUESTIONS.md`; the baseline across all suites; which retrieval change you propose and its before/after on the new cases and on every existing suite; and the follow-up recorded for prompt format.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "scouring of the internet to see if we can find, some more input on these Use cases" | answered-once | define | — |
+| "if a user is not adding a card to the context, then i do not expect the agent to be able to answer the question" | answered-once | define | — |
+| "if they are adding all the cards, thats the use case id like to focus on" | answered-once | define | — |
+| "the focus of this work should be on refining the rules retrieval process, as well as refining the output format of the initial prompt that goes to the agent" | answered-once | define | — |
+| "i want to operate under the assumption that he did add the cards (even if he really didnt)" | answered-once | define | — |
+| "we should be doing a full test of all use cases were using to validate output of rules, this is just expanding on it" | answered-once | define | — |
+| "if were going to adjust the output format, we again need to test, lets start with making the rules correct, and then we can make the output pretty" | answered-once | define | — |
