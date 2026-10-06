@@ -1,6 +1,6 @@
 # Slice C — Live runner: selection, per-case merge, per-tier headline
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -31,21 +31,21 @@ The build re-derives each edit by intent against current `PRD/sections/` truth, 
 
 ## Acceptance criteria
 
-- [ ] **C1.** The dry run prints the selection and a cost estimate with no network call when there is no key
-- [ ] **C2.** Selection test: `--changed` picks a case whose prompt hash matches its last record but whose `expected.answer` hash differs from that record's reference-answer hash, and skips a case where both match (`test:scripts`, injected fakes)
-- [ ] **C3.** Legacy-record test: a fixture record with no prompt hash and no reference-answer hash counts as ungraded in the headline and is selected by `--changed`
-- [ ] **C4.** The dry run on the real corpus selects all 18 migrated cases and prints its cost estimate (about $0.35: 18 x ($0.0098 + $0.0099), M8)
-- [ ] **C5.** Unknown-rule-id test: a fixture answer citing a rule id the committed index lacks records that id in the per-case list, worded "not in the committed rule index"; one citing only existing ids records an empty list
-- [ ] **C6.** Judge-usage test: a fake judge's token usage lands in the per-case record and in the run totals, with answer and judge shown separately
-- [ ] **C7.** No-prose test: `writeResultsFile` throws on a record carrying `shortAnswer`
-- [ ] **C8.** Drop test: a merge where a previously recorded case is now `needs-edit`, and one where a case left the corpus, drops both records and keeps every other case's record unchanged
-- [ ] **C9.** Headline test (A22): a stale approved case with a Correctness-2 record is left out of the count and a stale count of 1 prints
-- [ ] **C10.** Headline test (A22): a re-approved case whose answer did not change counts at once from its existing record
-- [ ] **C11.** Headline test (A22): a re-approved case whose answer was reworked counts as ungraded, is selected by `--changed` although its prompt hash is unchanged, and after a fake re-grade merges a new record counts from that record
-- [ ] **C12.** Ranking skip test: a one-model run skips the blind ranking; the default lineup is `gpt-4.1` at cap `[10]`
-- [ ] **C13.** The regression guard still passes: `eval:answer-quality` is wired into no gate script
-- [ ] **C14.** REQ-186, REQ-187, REQ-190 and the answer-quality system-map entry are applied to `PRD/sections/` by intent against current truth
-- [ ] **C15.** `npm run quality:check` is green
+- [x] **C1.** The dry run prints the selection and a cost estimate with no network call when there is no key
+- [x] **C2.** Selection test: `--changed` picks a case whose prompt hash matches its last record but whose `expected.answer` hash differs from that record's reference-answer hash, and skips a case where both match (`test:scripts`, injected fakes)
+- [x] **C3.** Legacy-record test: a fixture record with no prompt hash and no reference-answer hash counts as ungraded in the headline and is selected by `--changed`
+- [x] **C4.** The dry run on the real corpus selects all 18 migrated cases and prints its cost estimate (about $0.35: 18 x ($0.0098 + $0.0099), M8)
+- [x] **C5.** Unknown-rule-id test: a fixture answer citing a rule id the committed index lacks records that id in the per-case list, worded "not in the committed rule index"; one citing only existing ids records an empty list
+- [x] **C6.** Judge-usage test: a fake judge's token usage lands in the per-case record and in the run totals, with answer and judge shown separately
+- [x] **C7.** No-prose test: `writeResultsFile` throws on a record carrying `shortAnswer`
+- [x] **C8.** Drop test: a merge where a previously recorded case is now `needs-edit`, and one where a case left the corpus, drops both records and keeps every other case's record unchanged
+- [x] **C9.** Headline test (A22): a stale approved case with a Correctness-2 record is left out of the count and a stale count of 1 prints
+- [x] **C10.** Headline test (A22): a re-approved case whose answer did not change counts at once from its existing record
+- [x] **C11.** Headline test (A22): a re-approved case whose answer was reworked counts as ungraded, is selected by `--changed` although its prompt hash is unchanged, and after a fake re-grade merges a new record counts from that record
+- [x] **C12.** Ranking skip test: a one-model run skips the blind ranking; the default lineup is `gpt-4.1` at cap `[10]`
+- [x] **C13.** The regression guard still passes: `eval:answer-quality` is wired into no gate script
+- [x] **C14.** REQ-186, REQ-187, REQ-190 and the answer-quality system-map entry are applied to `PRD/sections/` by intent against current truth
+- [x] **C15.** `npm run quality:check` is green
 
 ## Verification
 

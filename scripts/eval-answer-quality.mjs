@@ -1,45 +1,61 @@
-// Answer-quality baseline run (REQ-188, REQ-190; NFR-018).
+// Answer-quality run (REQ-188, REQ-190; NFR-018).
 //
-// Bake-off: every gold case (scripts/lib/gold-cases.mjs, REQ-185) answered
-// once per model in the answer-model lineup and once per excerpt cap,
-// through the production preparePromptInput path
+// Asks the live provider the selected approved cases of the rules test corpus
+// (scripts/lib/gold-cases.mjs, REQ-185) and scores each answer. By default it
+// asks only the deployed model, `gpt-4.1`, at the deployed excerpt cap, `10`,
+// and only the cases that need it: `--changed` picks an approved, non-stale
+// case whose prompt hash or reference-answer hash differs from its last graded
+// record, whose last record carries no hash, or that was never graded. The
+// four-model bake-off and other caps are explicit flags (`--bake-off`,
+// `--model`, `--excerpt-cap`), as are the other selections (`--tag`, `--tier`,
+// `--sample N`, `--all`).
+//
+// Every answer goes through the production preparePromptInput path
 // (apps/backend/src/prompt/preparation.ts) with the same inputs a player's
-// lookup gets -- the committed card-detail and card-rulings indexes, every
+// request gets -- the committed card-detail and card-rulings indexes, every
 // card the case names attached (buildCaseRequest), and the question
 // embedded by the configured EMBEDDING_PROVIDER (default `local`, what
 // production runs) so System 3 ranks semantically, never silently lexically
 // (assertQueryEmbedded / describeRetrieval refuse to record a run whose
-// embedder fell back) -- scored alone by the judge
-// (apps/backend/src/eval/answer-quality/judge.ts) and, once every model has
-// answered a case at a cap, ranked blind, then written to the committed
-// artifact (apps/backend/src/eval/answer-quality/artifact.ts). Argument
-// parsing, the dry-run plan and cost estimate, the confirmation gate, and
-// the pre-flight model-access check are always exercised (including under
-// plain `node --test`); the full live loop (`runLiveEvaluation`) is wired
-// here but, like `measurePromptChars`, isolates every TypeScript-module
-// import inside its own function body, evaluated lazily -- so it only ever
-// runs for real when this script is actually invoked via tsx with
-// --confirm-live-calls, never when this file is merely imported or its
-// other exports are unit-tested.
+// embedder fell back). Each answer is scored alone by the judge
+// (apps/backend/src/eval/answer-quality/judge.ts) and, when two or more models
+// answered, ranked blind. The judge's own token use is recorded beside the
+// answer's. The result merges per case into the committed scores file
+// (apps/backend/src/eval/answer-quality/results.json), each record carrying its
+// prompt hash and the hash of the reference answer it was judged against; the
+// selection, merge and per-tier headline logic is scripts/lib/answer-quality-run.mjs.
+//
+// Argument parsing, selection, the dry-run plan and cost estimate, the
+// confirmation gate, and the pre-flight model-access check are always exercised
+// (including under plain `node --test`); the live loop (`executeEvaluation`)
+// takes every TypeScript module and the provider as injected dependencies, so
+// the unit tests drive it with fakes. `runLiveEvaluation` loads the real ones
+// lazily and only ever runs for real when this script is invoked via tsx with
+// --confirm-live-calls.
 //
 // Costs money once confirmed, so it refuses to contact the provider without
 // --confirm-live-calls, mirroring scripts/compare-combo-answer-quality.mjs
-// (REQ-146):
+// (REQ-146). It is never part of any gate:
 //   npm run eval:answer-quality                          # dry: prints the plan
 //   npm run eval:answer-quality -- --confirm-live-calls  # live
 //
-// Run via tsx so the backend TypeScript modules resolve. The TS imports that
-// measure real prompt sizes (measurePromptChars) and that run the live loop
-// (runLiveEvaluation) are deliberately behind injectable options / lazy
-// dynamic imports, so `node --test` can exercise every other code path --
-// argument parsing, the plan, the confirmation guard, the model-access check,
-// the artifact-shape aggregation (buildRunArtifact) -- without a TypeScript
-// loader and without ever making a network call.
+// Run via tsx so the backend TypeScript modules resolve.
 
+import { readFile } from "node:fs/promises";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { loadGoldCases } from "./lib/gold-cases.mjs";
+import { compareSnapshot, loadGoldCases, loadSnapshotSources } from "./lib/gold-cases.mjs";
+import {
+  computeHeadline,
+  describeSelectionMode,
+  formatHeadline,
+  hashPrompt,
+  mergeCaseLegScores,
+  promptKey,
+  referenceAnswerHash,
+  selectCases
+} from "./lib/answer-quality-run.mjs";
 import { loadLocalOpenAiEnv } from "./lib/local-openai-env.mjs";
 import {
   DEFAULT_EMBEDDING_PROVIDER,
@@ -48,7 +64,8 @@ import {
   buildEmbedder,
   describeRetrieval,
   embedGoldCaseQueries,
-  loadPromptResources
+  loadPromptResources,
+  resolveEmbeddingProviderMode
 } from "./lib/prompt-fidelity.mjs";
 
 // The fidelity helpers are shared with scripts/eval-worked-solutions.mjs
@@ -60,13 +77,18 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 export const CONFIRM_FLAG = "--confirm-live-calls";
 export const DEFAULT_OUTPUT_DIR = "output/answer-quality";
-export const DEFAULT_LINEUP = ["gpt-4.1-mini", "gpt-4.1", "gpt-5-mini", "gpt-5-nano"];
-export const DEFAULT_EXCERPT_CAPS = [10, 15];
+export const RESULTS_RELATIVE_PATH = "apps/backend/src/eval/answer-quality/results.json";
+/** The deployed model alone (`scripts/aws-deploy.sh` sets OPENAI_MODEL=gpt-4.1): a routine run grades what players get (REQ-188). */
+export const DEFAULT_LINEUP = ["gpt-4.1"];
+/** The four-model bake-off, one flag away (`--bake-off`). */
+export const BAKE_OFF_LINEUP = ["gpt-4.1-mini", "gpt-4.1", "gpt-5-mini", "gpt-5-nano"];
+/** The deployed excerpt cap alone (REQ-190); `--excerpt-cap 10 --excerpt-cap 15` compares caps. */
+export const DEFAULT_EXCERPT_CAPS = [10];
+export const DEFAULT_SAMPLE_SEED = 1;
 // Deliberately duplicated from apps/backend/src/eval/answer-quality/judge.ts
 // (same value, same env var, independently tested there): this plain .mjs
 // script's dry-run path must resolve the judge model synchronously under
-// plain `node --test`, with no TypeScript loader -- the same constraint
-// documented on `measurePromptChars` below. The real per-call judge
+// plain `node --test`, with no TypeScript loader. The real per-call judge
 // functions use judge.ts's own copy.
 export const DEFAULT_JUDGE_MODEL = "gpt-5";
 
@@ -81,25 +103,33 @@ export const MODEL_PRICING_USD_PER_MILLION_TOKENS = {
 
 // Output-token assumptions behind the printed dry-run estimate only (REQ-188's
 // M3 estimate methodology). No numeric cost target is set anywhere in this
-// file -- the first live run records its own actual usage as the baseline.
+// file -- the live run records its own actual usage, judge included.
 const ASSUMED_ANSWER_OUTPUT_TOKENS = 600;
 const ASSUMED_LONE_JUDGE_INPUT_TOKENS = 1500;
 const ASSUMED_LONE_JUDGE_OUTPUT_TOKENS = 800;
 const ASSUMED_RANKING_JUDGE_INPUT_TOKENS = 3400;
 const ASSUMED_RANKING_JUDGE_OUTPUT_TOKENS = 1000;
 const CHARS_PER_TOKEN_ESTIMATE = 4;
+const MAX_REASON_LINES = 30;
 
 /**
  * Parses CLI args only -- never reads `OPENAI_MODEL` or any other env var for
  * the lineup (REQ-188): the answer-model lineup is a run option, not an
  * environment variable, so a stray environment value can never silently swap
- * a contestant.
+ * a contestant. Exactly one selection mode may be named; `--changed` is the
+ * default.
  */
 export function parseArgs(argv) {
   const models = [];
   const excerptCaps = [];
+  const selectionFlags = [];
   let outputDir;
   let confirmed = false;
+  let bakeOff = false;
+  let tag;
+  let tier;
+  let sampleCount;
+  let seed = DEFAULT_SAMPLE_SEED;
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -108,19 +138,55 @@ export function parseArgs(argv) {
     } else if (arg === "--model") {
       const value = argv[++i];
       if (value) models.push(value);
+    } else if (arg === "--bake-off") {
+      bakeOff = true;
     } else if (arg === "--excerpt-cap") {
       const value = Number(argv[++i]);
       if (Number.isFinite(value)) excerptCaps.push(value);
     } else if (arg === "--output-dir") {
       outputDir = argv[++i];
+    } else if (arg === "--changed" || arg === "--all") {
+      selectionFlags.push(arg);
+    } else if (arg === "--tag") {
+      selectionFlags.push(arg);
+      tag = argv[++i];
+    } else if (arg === "--tier") {
+      selectionFlags.push(arg);
+      tier = Number(argv[++i]);
+    } else if (arg === "--sample") {
+      selectionFlags.push(arg);
+      sampleCount = Number(argv[++i]);
+    } else if (arg === "--seed") {
+      seed = Number(argv[++i]);
     }
   }
 
+  if (selectionFlags.length > 1) {
+    throw new Error(`Name only one case selection, not ${selectionFlags.join(" and ")} (--changed is the default).`);
+  }
+  let mode = { kind: "changed" };
+  if (selectionFlags[0] === "--all") mode = { kind: "all" };
+  if (selectionFlags[0] === "--tag") {
+    if (!tag) throw new Error("--tag needs a tag, such as --tag mechanic:702.19.");
+    mode = { kind: "tag", tag };
+  }
+  if (selectionFlags[0] === "--tier") {
+    if (![1, 2, 3].includes(tier)) throw new Error("--tier needs 1, 2 or 3.");
+    mode = { kind: "tier", tier };
+  }
+  if (selectionFlags[0] === "--sample") {
+    if (!Number.isInteger(sampleCount) || sampleCount < 1) throw new Error("--sample needs a whole number of cases, such as --sample 20.");
+    if (!Number.isInteger(seed)) throw new Error("--seed needs a whole number.");
+    mode = { kind: "sample", count: sampleCount, seed };
+  }
+
+  const lineup = models.length > 0 ? models : bakeOff ? [...BAKE_OFF_LINEUP] : [...DEFAULT_LINEUP];
   return {
     confirmed,
-    models: models.length > 0 ? models : [...DEFAULT_LINEUP],
+    models: lineup,
     excerptCaps: excerptCaps.length > 0 ? excerptCaps : [...DEFAULT_EXCERPT_CAPS],
-    outputDir: resolve(repoRoot, outputDir ?? DEFAULT_OUTPUT_DIR)
+    outputDir: resolve(repoRoot, outputDir ?? DEFAULT_OUTPUT_DIR),
+    mode
   };
 }
 
@@ -210,25 +276,50 @@ async function defaultBuildClient(env) {
 }
 
 /**
- * Measures the real, current mean assembled-prompt character count per
- * excerpt cap over the current gold set, through the production
- * `preparePromptInput` path (lexical only -- no query embedding, so no
- * network call). Used only for the printed dry-run cost estimate. Behind
- * this exported hook so `node --test` can inject a fixed value and exercise
- * every other code path without a TypeScript loader.
+ * Measures, for every case at every excerpt cap, the assembled prompt the run
+ * would send: its SHA-256 (the prompt hash `--changed` compares) and its
+ * character count (the dry-run cost estimate). It goes through the production
+ * `preparePromptInput` path with the question embedded by the same in-process
+ * local embedder the live run uses, so the hash matches the live run's -- no
+ * network call. A real hosted embedder is never contacted from here: any
+ * provider other than `local` is measured lexically. Behind this exported hook
+ * so `node --test` can inject fixed values and exercise every other code path
+ * without a TypeScript loader.
+ *
+ * Returns a Map from `promptKey(caseId, cap)` to `{ promptHash, promptChars }`.
  */
-export async function measurePromptChars(goldCases, excerptCaps) {
+export async function measurePrompts({ cases, excerptCaps, env }) {
   const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
   const resources = await loadPromptResources();
+  const mode = resolveEmbeddingProviderMode(env);
+  const embedder = mode === "local" ? await buildEmbedder(env) : { mode: "mock", embed: async () => null };
+  const vectors = await embedGoldCaseQueries({ goldCases: cases, embedder, cardDetailIndex: resources.cardDetailIndex });
 
+  const measured = new Map();
+  for (const cap of excerptCaps) {
+    for (const caseEntry of cases) {
+      const prepared = preparePromptInput(buildCaseRequest(caseEntry), {
+        ...resources,
+        supplementalRuleCap: cap,
+        queryEmbedding: vectors.get(caseEntry.id) ?? null
+      });
+      measured.set(promptKey(caseEntry.id, cap), {
+        promptHash: hashPrompt(prepared.promptText),
+        promptChars: prepared.promptText.length
+      });
+    }
+  }
+  return measured;
+}
+
+/** Mean prompt characters per excerpt cap over the selected cases, for the cost estimate. */
+export function averagePromptChars(selectedCases, excerptCaps, measured) {
   const result = {};
   for (const cap of excerptCaps) {
-    let total = 0;
-    for (const caseEntry of goldCases) {
-      const prepared = preparePromptInput(buildCaseRequest(caseEntry), { ...resources, supplementalRuleCap: cap });
-      total += prepared.promptText.length;
-    }
-    result[cap] = goldCases.length > 0 ? total / goldCases.length : 0;
+    const values = selectedCases
+      .map((caseEntry) => measured.get(promptKey(caseEntry.id, cap))?.promptChars)
+      .filter((value) => typeof value === "number");
+    result[cap] = values.length > 0 ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
   }
   return result;
 }
@@ -238,7 +329,8 @@ export function estimateCost({ models, judgeModel, excerptCaps, goldCaseCount, a
   const legCount = models.length * excerptCaps.length;
   const answerCalls = goldCaseCount * legCount;
   const loneJudgeCalls = answerCalls;
-  const rankingCalls = goldCaseCount * excerptCaps.length;
+  // A single answer has nothing to be ranked against: a one-model run makes no ranking call (REQ-186).
+  const rankingCalls = models.length > 1 ? goldCaseCount * excerptCaps.length : 0;
 
   let answersCostUsd = 0;
   for (const model of models) {
@@ -281,45 +373,78 @@ export function computeCallCostUsd(model, inputTokens, outputTokens) {
   return (inputTokens * price.input + outputTokens * price.output) / 1_000_000;
 }
 
+function sumOf(records, field) {
+  return records.reduce((sum, record) => sum + (record[field] ?? 0), 0);
+}
+
 /**
- * Pure aggregation: turns already-computed per-call records into the
- * committed `AnswerQualityResults` shape (REQ-189) -- per-leg headline
- * counts and run totals. Takes plain data (never a TS type, never touches a
- * file or the network), so it is fully unit-testable under plain `node`,
- * independent of the live loop that produces its input.
+ * Pure aggregation: merges a run's fresh per-call records into the previous
+ * committed records (REQ-189: per case, never erasing a case the run did not
+ * grade) and turns the result into the committed `AnswerQualityResults` shape
+ * -- run metadata for the latest run, per-leg counts and the REQ-187 headline
+ * over every merged record. Takes plain data (never a TS type, never touches a
+ * file or the network), so it is fully unit-testable under plain `node`.
+ *
+ * `costUsd` and `judgeCostUsd` on a fresh record are this function's internal
+ * aggregation fields (answer-call and judge-call dollars), not part of the
+ * committed per-case schema -- stripped here; the totals carry them.
  */
 export function buildRunArtifact({
   models,
   excerptCaps,
   goldCases,
+  allCases,
+  previousResults,
+  isStale = () => false,
+  selectionMode = "changed",
   judgeModel,
   rubricRevision,
   askAiProvider,
   embeddingProvider,
   gitCommit,
   generatedAt,
-  caseLegScores
+  caseLegScores,
+  rankingJudgeUsage = { inputTokens: 0, outputTokens: 0, costUsd: 0 }
 }) {
-  const legs = [];
-  for (const model of models) {
-    for (const cap of excerptCaps) {
-      const legScores = caseLegScores.filter((record) => record.model === model && record.excerptCap === cap);
-      const fullyCorrectCount = legScores.filter(
-        (record) => !record.undetermined && record.scores?.correctness === 2
-      ).length;
-      legs.push({ model, excerptCap: cap, fullyCorrectCount, caseCount: legScores.length });
-    }
-  }
+  const corpus = allCases ?? goldCases;
+  const merged = mergeCaseLegScores({
+    previous: previousResults?.caseLegScores ?? [],
+    fresh: caseLegScores.map((record) => {
+      const stripped = { ...record };
+      delete stripped.costUsd;
+      delete stripped.judgeCostUsd;
+      return stripped;
+    }),
+    cases: corpus
+  });
 
-  const totalInputTokens = caseLegScores.reduce((sum, record) => sum + (record.inputTokens ?? 0), 0);
-  const totalOutputTokens = caseLegScores.reduce((sum, record) => sum + (record.outputTokens ?? 0), 0);
-  const totalCostUsd = caseLegScores.reduce((sum, record) => sum + (record.costUsd ?? 0), 0);
+  const legKeys = new Map();
+  for (const record of merged) legKeys.set(`${record.model}|${record.excerptCap}`, { model: record.model, excerptCap: record.excerptCap });
+  for (const model of models) for (const cap of excerptCaps) legKeys.set(`${model}|${cap}`, { model, excerptCap: cap });
+  const legs = [...legKeys.values()]
+    .sort((a, b) => a.model.localeCompare(b.model) || a.excerptCap - b.excerptCap)
+    .map(({ model, excerptCap }) => {
+      const legRecords = merged.filter((record) => record.model === model && record.excerptCap === excerptCap);
+      return {
+        model,
+        excerptCap,
+        fullyCorrectCount: legRecords.filter((record) => !record.undetermined && record.scores?.correctness === 2).length,
+        caseCount: legRecords.length,
+        headline: computeHeadline({ cases: corpus, records: merged, isStale, model, excerptCap })
+      };
+    });
+
+  const answerCostUsd = sumOf(caseLegScores, "costUsd");
+  const judgeLoneCostUsd = sumOf(caseLegScores, "judgeCostUsd");
+  const judgeCostUsd = judgeLoneCostUsd + (rankingJudgeUsage.costUsd ?? 0);
 
   return {
     runMetadata: {
       goldSetCaseIds: goldCases.map((caseEntry) => caseEntry.id),
       goldSetTier1Count: goldCases.filter((caseEntry) => caseEntry.tier === 1).length,
       goldSetTier2Count: goldCases.filter((caseEntry) => caseEntry.tier === 2).length,
+      goldSetTier3Count: goldCases.filter((caseEntry) => caseEntry.tier === 3).length,
+      selectionMode,
       answerModelLineup: models,
       judgeModel,
       judgeMatchesAnswerModel: models.includes(judgeModel),
@@ -328,18 +453,16 @@ export function buildRunArtifact({
       embeddingProvider,
       gitCommit,
       generatedAt,
-      totalInputTokens,
-      totalOutputTokens,
-      totalCostUsd
+      totalInputTokens: sumOf(caseLegScores, "inputTokens"),
+      totalOutputTokens: sumOf(caseLegScores, "outputTokens"),
+      totalCostUsd: answerCostUsd + judgeCostUsd,
+      judgeInputTokens: sumOf(caseLegScores, "judgeInputTokens") + (rankingJudgeUsage.inputTokens ?? 0),
+      judgeOutputTokens: sumOf(caseLegScores, "judgeOutputTokens") + (rankingJudgeUsage.outputTokens ?? 0),
+      answerCostUsd,
+      judgeCostUsd
     },
     legs,
-    // costUsd is this function's own internal aggregation field, not part of
-    // the committed per-case-per-leg schema (REQ-189) -- stripped here.
-    caseLegScores: caseLegScores.map((record) => {
-      const stripped = { ...record };
-      delete stripped.costUsd;
-      return stripped;
-    })
+    caseLegScores: merged
   };
 }
 
@@ -353,68 +476,54 @@ async function resolveGitCommit(repoRootPath) {
 }
 
 /**
- * The full live evaluation loop (REQ-188, REQ-190, REQ-186, REQ-189): for
- * every excerpt cap, for every gold case, for every model in the lineup --
+ * The live evaluation loop (REQ-188, REQ-190, REQ-186, REQ-189): for every
+ * excerpt cap, for every selected case, for every model in the lineup --
  * answer through the production `preparePromptInput` path, run the
- * deterministic assertions and the lone judge pass, and write that leg's
- * transcript; once every model has answered, run the blind side-by-side
- * ranking pass and write its transcript; finally assemble and write the
- * committed scorecard.
+ * deterministic assertions (including the cited-rule-id check against the
+ * committed rule index) and the lone judge pass, and write that leg's
+ * transcript; when two or more models answered, run the blind side-by-side
+ * ranking pass and write its transcript (a one-model run skips it); finally
+ * merge the fresh records into the committed scorecard per case and write it.
  *
- * Every TypeScript-module import is lazy and scoped to this function body
- * (the `measurePromptChars` pattern), so importing this file, or unit-
- * testing its sibling exports, never touches a TypeScript loader. This
- * function itself is exercised for real only by an owner-confirmed
- * `--confirm-live-calls` run (Slice E's E9), never by any automated test.
+ * Everything the loop touches that is TypeScript or live -- the prompt
+ * builder, the assertions, the judge, the artifact writers, the embedder, the
+ * clock -- arrives in `deps`, so a test drives the whole loop with fakes and
+ * never needs a loader or a provider. `runLiveEvaluation` below builds the real
+ * `deps`; only an owner-confirmed `--confirm-live-calls` run ever uses them.
  */
-export async function runLiveEvaluation({ client, judgeModel, models, excerptCaps, goldCases, outputDir, resultsPath, env, log }) {
-  const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
-  const { computeDeterministicAssertions } = await import("../apps/backend/src/eval/answer-quality/assertions.ts");
-  const { judgeAnswerAlone, judgeBlindRanking } = await import("../apps/backend/src/eval/answer-quality/judge.ts");
-  const { RUBRIC_REVISION } = await import("../apps/backend/src/eval/answer-quality/rubric.ts");
-  const { writeResultsFile, writeTranscript, writeRankingTranscript } = await import(
-    "../apps/backend/src/eval/answer-quality/artifact.ts"
-  );
-  const resources = await loadPromptResources();
-  const embedder = await buildEmbedder(env);
-
-  // One embedding per gold case, exactly as the route handler embeds the
-  // retrieval query text before `preparePromptInput`; shared by every cap
-  // and model, so every leg of a case ranks from the identical vector.
-  const queryEmbeddingByCaseId = await embedGoldCaseQueries({
-    goldCases,
-    embedder,
-    cardDetailIndex: resources.cardDetailIndex
-  });
-  log?.(`Embedded ${goldCases.length} gold-case queries with EMBEDDING_PROVIDER=${embedder.mode}.`);
+export async function executeEvaluation(
+  { client, judgeModel, models, excerptCaps, selectedCases, allCases, previousResults, isStale, mode, outputDir, resultsPath, env, log },
+  deps
+) {
+  const knownRuleIds = new Set(deps.ruleIds);
+  const queryEmbeddingByCaseId = await deps.embedQueries(selectedCases);
+  log?.(`Embedded ${selectedCases.length} case queries with EMBEDDING_PROVIDER=${deps.embeddingProvider}.`);
 
   const caseLegScores = [];
+  const rankingJudgeUsage = { inputTokens: 0, outputTokens: 0, costUsd: 0 };
 
   for (const cap of excerptCaps) {
-    for (const caseEntry of goldCases) {
+    for (const caseEntry of selectedCases) {
       const perModelRecord = new Map();
       const answersForRanking = [];
       const request = buildCaseRequest(caseEntry);
+      const referenceHash = referenceAnswerHash(caseEntry);
 
       for (const model of models) {
-        const prepared = preparePromptInput(request, {
-          ...resources,
+        const prepared = deps.preparePromptInput(request, {
+          ...deps.resources,
           supplementalRuleCap: cap,
           queryEmbedding: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
           collectEnrichmentDebug: true
         });
-        const retrieval = describeRetrieval(
-          prepared.enrichmentDebug?.supplemental,
-          caseEntry.expected.decidingRuleIds,
-          {
-            requireSemantic: embedder.mode !== "mock",
-            caseId: caseEntry.id
-          }
-        );
+        const retrieval = describeRetrieval(prepared.enrichmentDebug?.supplemental, caseEntry.expected.decidingRuleIds, {
+          requireSemantic: deps.requireSemantic,
+          caseId: caseEntry.id
+        });
 
-        const startedAt = Date.now();
+        const startedAt = deps.now();
         const response = await client.responses.create({ model, input: prepared.promptText });
-        const latencyMs = Date.now() - startedAt;
+        const latencyMs = deps.now() - startedAt;
         const answerText = response.output_text?.trim() ?? "";
 
         // Real usage from the API when the client reports it; a character
@@ -423,8 +532,8 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
         const inputTokens = response.usage?.input_tokens ?? Math.round(prepared.promptText.length / CHARS_PER_TOKEN_ESTIMATE);
         const outputTokens = response.usage?.output_tokens ?? Math.round(answerText.length / CHARS_PER_TOKEN_ESTIMATE);
 
-        const assertions = computeDeterministicAssertions(answerText, caseEntry.expected.decidingRuleIds);
-        const judgeResult = await judgeAnswerAlone({
+        const assertions = deps.computeDeterministicAssertions(answerText, caseEntry.expected.decidingRuleIds, knownRuleIds);
+        const judgeResult = await deps.judgeAnswerAlone({
           client,
           judgeModel,
           question: caseEntry.question,
@@ -437,21 +546,33 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
           caseId: caseEntry.id,
           model,
           excerptCap: cap,
+          tier: caseEntry.tier,
           undetermined: judgeResult.undetermined,
           scores: judgeResult.undetermined ? undefined : judgeResult.scores,
           namesGoldRuleId: assertions.namesGoldRuleId,
+          unknownRuleIds: assertions.unknownRuleIds ?? [],
           goldRuleInPrompt: retrieval.goldRuleInPrompt,
           promptChars: prepared.promptText.length,
+          promptHash: hashPrompt(prepared.promptText),
+          referenceAnswerHash: referenceHash,
           inputTokens,
           outputTokens,
+          judgeInputTokens: judgeResult.usage.inputTokens,
+          judgeOutputTokens: judgeResult.usage.outputTokens,
           latencyMs,
           blindRank: null,
-          costUsd: computeCallCostUsd(model, inputTokens, outputTokens)
+          judgeModel,
+          rubricRevision: deps.rubricRevision,
+          embeddingProvider: deps.embeddingProvider,
+          gradedAt: deps.nowIso(),
+          commit: deps.gitCommit,
+          costUsd: computeCallCostUsd(model, inputTokens, outputTokens),
+          judgeCostUsd: computeCallCostUsd(judgeModel, judgeResult.usage.inputTokens, judgeResult.usage.outputTokens)
         };
         perModelRecord.set(model, record);
         answersForRanking.push({ modelId: model, answerText });
 
-        await writeTranscript(
+        await deps.writeTranscript(
           {
             caseId: caseEntry.id,
             model,
@@ -471,32 +592,42 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
         );
 
         log?.(`  ${caseEntry.id} / ${model} / cap ${cap}: answered (${latencyMs}ms)`);
-      }
-
-      const rankingResult = await judgeBlindRanking({
-        client,
-        judgeModel,
-        question: caseEntry.question,
-        workedSolution: caseEntry.expected.answer,
-        answers: answersForRanking
-      });
-      if (!rankingResult.undetermined) {
-        for (const [modelId, rank] of Object.entries(rankingResult.ranks)) {
-          const record = perModelRecord.get(modelId);
-          if (record) record.blindRank = rank;
+        if (record.unknownRuleIds.length > 0) {
+          // Worded "not in the committed rule index", never "made up": the index lags the newest Comprehensive Rules (REQ-186).
+          log?.(`    cites rule id(s) ${record.unknownRuleIds.join(", ")} -- not in the committed rule index`);
         }
       }
-      await writeRankingTranscript(
-        {
-          caseId: caseEntry.id,
-          excerptCap: cap,
-          ranks: rankingResult.undetermined ? {} : rankingResult.ranks,
-          undetermined: rankingResult.undetermined,
-          reason: rankingResult.undetermined ? rankingResult.reason : undefined,
-          rationale: rankingResult.undetermined ? undefined : rankingResult.rationale
-        },
-        outputDir
-      );
+
+      // Ranking one answer against itself means nothing: a one-model run makes no ranking call (REQ-186).
+      if (models.length > 1) {
+        const rankingResult = await deps.judgeBlindRanking({
+          client,
+          judgeModel,
+          question: caseEntry.question,
+          workedSolution: caseEntry.expected.answer,
+          answers: answersForRanking
+        });
+        rankingJudgeUsage.inputTokens += rankingResult.usage.inputTokens;
+        rankingJudgeUsage.outputTokens += rankingResult.usage.outputTokens;
+        rankingJudgeUsage.costUsd += computeCallCostUsd(judgeModel, rankingResult.usage.inputTokens, rankingResult.usage.outputTokens);
+        if (!rankingResult.undetermined) {
+          for (const [modelId, rank] of Object.entries(rankingResult.ranks)) {
+            const record = perModelRecord.get(modelId);
+            if (record) record.blindRank = rank;
+          }
+        }
+        await deps.writeRankingTranscript(
+          {
+            caseId: caseEntry.id,
+            excerptCap: cap,
+            ranks: rankingResult.undetermined ? {} : rankingResult.ranks,
+            undetermined: rankingResult.undetermined,
+            reason: rankingResult.undetermined ? rankingResult.reason : undefined,
+            rationale: rankingResult.undetermined ? undefined : rankingResult.rationale
+          },
+          outputDir
+        );
+      }
 
       for (const record of perModelRecord.values()) caseLegScores.push(record);
     }
@@ -505,39 +636,124 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
   const results = buildRunArtifact({
     models,
     excerptCaps,
-    goldCases,
+    goldCases: selectedCases,
+    allCases,
+    previousResults,
+    isStale,
+    selectionMode: describeSelectionMode(mode),
     judgeModel,
-    rubricRevision: RUBRIC_REVISION,
+    rubricRevision: deps.rubricRevision,
     askAiProvider: env.ASK_AI_PROVIDER ?? "",
-    embeddingProvider: embedder.mode,
-    gitCommit: await resolveGitCommit(repoRoot),
-    generatedAt: new Date().toISOString(),
-    caseLegScores
+    embeddingProvider: deps.embeddingProvider,
+    gitCommit: deps.gitCommit,
+    generatedAt: deps.nowIso(),
+    caseLegScores,
+    rankingJudgeUsage
   });
 
-  await writeResultsFile(results, resultsPath);
-  const { readFile, writeFile } = await import("node:fs/promises");
-  await writeFile(resultsPath, await formatCommittedJson(await readFile(resultsPath, "utf8"), resultsPath), "utf8");
+  await deps.writeResults(results, resultsPath);
   log?.(`\nWrote ${resultsPath} and transcripts to ${outputDir}/`);
+  for (const leg of results.legs) {
+    if (models.includes(leg.model) && excerptCaps.includes(leg.excerptCap)) {
+      log?.(formatHeadline({ model: leg.model, excerptCap: leg.excerptCap, headline: leg.headline }));
+    }
+  }
   return results;
 }
 
-export function describePlan({ models, excerptCaps, outputDir, goldCaseCount, estimate, embeddingProvider }) {
+/**
+ * Loads the real TypeScript modules, the production prompt resources and the
+ * configured embedder, then runs `executeEvaluation`. Every TypeScript import
+ * is lazy and scoped to this function body, so importing this file, or
+ * unit-testing its sibling exports, never touches a TypeScript loader. Only an
+ * owner-confirmed `--confirm-live-calls` run calls it.
+ */
+export async function runLiveEvaluation(params) {
+  const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
+  const { computeDeterministicAssertions } = await import("../apps/backend/src/eval/answer-quality/assertions.ts");
+  const { judgeAnswerAlone, judgeBlindRanking } = await import("../apps/backend/src/eval/answer-quality/judge.ts");
+  const { RUBRIC_REVISION } = await import("../apps/backend/src/eval/answer-quality/rubric.ts");
+  const { writeResultsFile, writeTranscript, writeRankingTranscript } = await import(
+    "../apps/backend/src/eval/answer-quality/artifact.ts"
+  );
+  const resources = await loadPromptResources();
+  const embedder = await buildEmbedder(params.env);
+
+  return executeEvaluation(params, {
+    preparePromptInput,
+    computeDeterministicAssertions,
+    judgeAnswerAlone,
+    judgeBlindRanking,
+    writeTranscript,
+    writeRankingTranscript,
+    writeResults: async (results, resultsPath) => {
+      await writeResultsFile(results, resultsPath);
+      const { writeFile } = await import("node:fs/promises");
+      await writeFile(resultsPath, await formatCommittedJson(await readFile(resultsPath, "utf8"), resultsPath), "utf8");
+    },
+    resources,
+    ruleIds: resources.gameRulesRuleIndex.map((entry) => entry.ruleId),
+    // One embedding per case, exactly as the route handler embeds the retrieval
+    // query text before `preparePromptInput`; shared by every cap and model, so
+    // every leg of a case ranks from the identical vector.
+    embedQueries: (cases) =>
+      embedGoldCaseQueries({ goldCases: cases, embedder, cardDetailIndex: resources.cardDetailIndex }),
+    embeddingProvider: embedder.mode,
+    requireSemantic: embedder.mode !== "mock",
+    rubricRevision: RUBRIC_REVISION,
+    gitCommit: await resolveGitCommit(repoRoot),
+    now: () => Date.now(),
+    nowIso: () => new Date().toISOString()
+  });
+}
+
+/** The prior committed scores file, or null when none exists yet. */
+async function defaultReadResults(resultsPath) {
+  try {
+    return JSON.parse(await readFile(resultsPath, "utf8"));
+  } catch (error) {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  }
+}
+
+export function describePlan({
+  models,
+  excerptCaps,
+  outputDir,
+  estimate,
+  embeddingProvider,
+  mode,
+  corpusCount,
+  selectedCount,
+  skipped,
+  reasonLines = [],
+  headlineLines = []
+}) {
+  const shownReasons = reasonLines.slice(0, MAX_REASON_LINES);
+  const hiddenReasons = reasonLines.length - shownReasons.length;
   return [
-    "Answer-quality baseline plan (no provider request has been made):",
+    "Answer-quality run plan (no provider request has been made):",
     "",
-    `  Gold cases: ${goldCaseCount} (each case is asked with every card it names attached, as a player's lookup is)`,
+    `  Cases selected: ${selectedCount} of ${corpusCount} (selection: ${describeSelectionMode(mode)}; only approved, non-stale cases are ever graded;`,
+    `  skipped: ${skipped.notApproved} not approved, ${skipped.stale} stale, ${skipped.current} already current)`,
+    ...shownReasons.map((line) => `    ${line}`),
+    ...(hiddenReasons > 0 ? [`    ... and ${hiddenReasons} more`] : []),
+    `  Each case is asked with every card it names attached, as a player's lookup is.`,
     `  Answer-model lineup: ${models.join(", ")}`,
     `  Judge model: ${estimate.judgeModel}`,
     `  Excerpt caps: ${excerptCaps.join(", ")}`,
-    `  Embedding provider: ${embeddingProvider ?? DEFAULT_EMBEDDING_PROVIDER} (the live run embeds each question with it; the estimate below is lexical)`,
+    `  Embedding provider: ${embeddingProvider ?? DEFAULT_EMBEDDING_PROVIDER} (the live run embeds each question with it; the plan hashes prompts with the in-process local embedder, no network)`,
     `  Output: ${outputDir}/ (transcripts, gitignored) plus the committed`,
-    "    apps/backend/src/eval/answer-quality/results.json",
+    `    ${RESULTS_RELATIVE_PATH}, merged per case`,
     "",
     `  Calls: ${estimate.answerCalls} answer calls, ${estimate.loneJudgeCalls} lone judge calls,`,
     `  ${estimate.rankingCalls} blind-ranking calls (${estimate.totalCalls} total, sequential).`,
-    `  Estimated cost: $${estimate.totalCostUsd.toFixed(2)} (character-count estimate, ~${CHARS_PER_TOKEN_ESTIMATE} chars/token;`,
-    "  no numeric target is set -- the live run records its own actual cost as the baseline).",
+    `  Estimated cost: $${estimate.totalCostUsd.toFixed(2)} (character-count estimate, ~${CHARS_PER_TOKEN_ESTIMATE} chars/token, answers and judge;`,
+    "  no numeric target is set -- the live run records its own actual cost, judge included).",
+    "",
+    "  Headline as recorded now (approved, non-stale cases judged against their current reference answer):",
+    ...headlineLines.map((line) => `    ${line}`),
     "",
     `Re-run with ${CONFIRM_FLAG} to make the ${estimate.totalCalls} live provider calls.`
   ].join("\n");
@@ -554,18 +770,69 @@ export async function run(options = {}) {
     env: processEnv = process.env,
     log = console.log,
     loadCases = loadGoldCases,
-    measureChars = measurePromptChars,
+    measure = measurePrompts,
     buildClient = defaultBuildClient,
     client: injectedClient,
     runEvaluation = runLiveEvaluation,
-    loadLocalEnv = loadLocalOpenAiEnv
+    loadLocalEnv = loadLocalOpenAiEnv,
+    readResults = defaultReadResults,
+    loadSources = loadSnapshotSources,
+    isStale: injectedIsStale
   } = options;
 
   const parsed = parseArgs(argv);
   const env = resolveRunEnv({ processEnv, confirmed: parsed.confirmed, loadLocalEnv });
   const judgeModel = resolveJudgeModel(env);
-  const goldCases = await loadCases();
+  const resultsPath = resolve(repoRoot, RESULTS_RELATIVE_PATH);
+  const allCases = await loadCases();
   const hasKey = Boolean(env.OPENAI_API_KEY?.trim());
+
+  // Stale cases (REQ-225) are neither selected nor counted: one comparison, owned by the case loader.
+  let isStale = injectedIsStale;
+  if (!isStale) {
+    const sources = await loadSources();
+    isStale = (caseEntry) => compareSnapshot(caseEntry, sources).stale;
+  }
+  const previousResults = await readResults(resultsPath);
+  const records = previousResults?.caseLegScores ?? [];
+
+  const candidates = allCases.filter((caseEntry) => caseEntry.review.status === "approved" && !isStale(caseEntry));
+  let measured = new Map();
+  if (parsed.mode.kind === "changed") {
+    measured = await measure({ cases: candidates, excerptCaps: parsed.excerptCaps, env });
+  }
+  const promptHashes = new Map([...measured].map(([key, value]) => [key, value.promptHash]));
+  const selection = selectCases({
+    cases: allCases,
+    records,
+    models: parsed.models,
+    excerptCaps: parsed.excerptCaps,
+    mode: parsed.mode,
+    promptHashes,
+    isStale
+  });
+  const selectedCases = selection.selected.map(({ caseEntry }) => caseEntry);
+  if (parsed.mode.kind !== "changed" && selectedCases.length > 0) {
+    measured = await measure({ cases: selectedCases, excerptCaps: parsed.excerptCaps, env });
+  }
+
+  const estimate = estimateCost({
+    models: parsed.models,
+    judgeModel,
+    excerptCaps: parsed.excerptCaps,
+    goldCaseCount: selectedCases.length,
+    avgPromptCharsByCap: averagePromptChars(selectedCases, parsed.excerptCaps, measured)
+  });
+  const headlineLines = parsed.models.flatMap((model) =>
+    parsed.excerptCaps.map((excerptCap) =>
+      formatHeadline({
+        model,
+        excerptCap,
+        headline: computeHeadline({ cases: allCases, records, isStale, model, excerptCap })
+      })
+    )
+  );
+  const reasonLines = selection.selected.map(({ caseEntry, reasons }) => `${caseEntry.id}: ${reasons.join("; ")}`);
 
   if (!parsed.confirmed) {
     let accessNote = "";
@@ -577,23 +844,19 @@ export async function run(options = {}) {
           ? `\n\nWarning: the configured key currently lacks access to: ${missing.join(", ")}.`
           : "\n\nModel access check passed for the full lineup and the judge model.";
     }
-    const avgPromptCharsByCap = await measureChars(goldCases, parsed.excerptCaps);
-    const estimate = estimateCost({
-      models: parsed.models,
-      judgeModel,
-      excerptCaps: parsed.excerptCaps,
-      goldCaseCount: goldCases.length,
-      avgPromptCharsByCap
-    });
     log(
       describePlan({
         ...parsed,
-        goldCaseCount: goldCases.length,
         estimate,
-        embeddingProvider: env.EMBEDDING_PROVIDER
+        embeddingProvider: env.EMBEDDING_PROVIDER,
+        corpusCount: allCases.length,
+        selectedCount: selectedCases.length,
+        skipped: selection.skipped,
+        reasonLines,
+        headlineLines
       }) + accessNote
     );
-    return { ran: false, goldCaseCount: goldCases.length, accessChecked: hasKey };
+    return { ran: false, goldCaseCount: allCases.length, selectedCaseIds: selectedCases.map((c) => c.id), accessChecked: hasKey, estimate };
   }
 
   assertLiveProviderConfigured(env);
@@ -607,20 +870,24 @@ export async function run(options = {}) {
   }
 
   log(
-    `Model access verified for the full lineup and the judge model. Running the live evaluation over ${goldCases.length} gold cases...`
+    `Model access verified for the full lineup and the judge model. Running the live evaluation over ${selectedCases.length} of ${allCases.length} cases (selection: ${describeSelectionMode(parsed.mode)})...`
   );
   const results = await runEvaluation({
     client,
     judgeModel,
     models: parsed.models,
     excerptCaps: parsed.excerptCaps,
-    goldCases,
+    selectedCases,
+    allCases,
+    previousResults,
+    isStale,
+    mode: parsed.mode,
     outputDir: parsed.outputDir,
-    resultsPath: resolve(repoRoot, "apps/backend/src/eval/answer-quality/results.json"),
+    resultsPath,
     env,
     log
   });
-  return { ran: true, goldCaseCount: goldCases.length, accessChecked: true, results };
+  return { ran: true, goldCaseCount: allCases.length, selectedCaseIds: selectedCases.map((c) => c.id), accessChecked: true, results };
 }
 
 const invokedPath = process.argv[1] ? new URL(`file://${resolve(process.argv[1])}`).href : "";

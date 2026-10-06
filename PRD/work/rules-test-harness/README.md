@@ -32,6 +32,7 @@ Build progress (graph node 6, `build`, one commit per slice on `thejudge-auto/ru
 
 - A: done (format v2 loader, request builder, 18 migrated, README rewritten)
 - B: done (offline prompt gate in `apps/backend/src/eval/rules-gate/`, frozen vectors, baseline at 16 hits, system-map entry as partial)
+- C: done (live runner: selection, per-case merge, per-tier headline, judge usage; REQ-186/187/190 and the answer-quality system-map entry applied)
 
 ## Autonomous metadata
 

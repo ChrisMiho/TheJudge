@@ -7,17 +7,24 @@
 // alongside output/prompt-preview/, output/retrieval-relevance-report.txt,
 // and output/combo-answer-quality/). Nothing here is ever asserted
 // byte-for-byte against a stored answer; the committed file is a record, not
-// a test. The writer replaces the committed file on each recorded run; it
-// never appends -- run-to-run history is the file's git history.
+// a test. `writeResultsFile` writes whatever it is handed; the run command
+// (scripts/eval-answer-quality.mjs) hands it the previous file's records merged
+// per case with the cases it just graded, so a partial run never erases a case
+// it did not grade. Run-to-run history is the file's git history.
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join } from "node:path";
 import type { AxisScores } from "./rubric.js";
 
 export type RunMetadata = {
+  /** The cases the latest run selected and graded (a partial run names only those). */
   goldSetCaseIds: string[];
   goldSetTier1Count: number;
   goldSetTier2Count: number;
+  /** Tier 3 is the owner's own bucket, counted apart from the official tiers (REQ-185). Absent in a record written before tier 3 existed. */
+  goldSetTier3Count?: number;
+  /** How the latest run chose its cases: `changed`, `all`, `tag:<tag>`, `tier:<n>` or `sample:<n>@<seed>` (REQ-188). */
+  selectionMode?: string;
   answerModelLineup: string[];
   judgeModel: string;
   judgeMatchesAnswerModel: boolean;
@@ -27,36 +34,73 @@ export type RunMetadata = {
   gitCommit: string;
   /** UTC ISO-8601 timestamp. */
   generatedAt: string;
+  /** Answer-call token use and cost: the answer models' share of the run (REQ-188). */
   totalInputTokens: number;
   totalOutputTokens: number;
+  /** Answer calls plus judge calls. Records written before judge usage was recorded carry the answer calls alone. */
   totalCostUsd: number;
+  /** Judge token use (lone judge and blind ranking), shown apart from the answer calls. Absent in an older record. */
+  judgeInputTokens?: number;
+  judgeOutputTokens?: number;
+  answerCostUsd?: number;
+  judgeCostUsd?: number;
+};
+
+/** The count REQ-187's headline reports for one group of tiers at one leg. */
+export type HeadlineCounts = {
+  /** Approved, non-stale cases whose latest record was judged against the current reference answer and scored Correctness 2. */
+  fullyCorrect: number;
+  /** Approved, non-stale cases with such a record. */
+  graded: number;
+  /** Approved, non-stale cases with no such record: never graded, last graded against another reference answer, or a record without hashes. */
+  ungraded: number;
 };
 
 /** One leg is one answer model at one excerpt cap (REQ-189). */
 export type LegSummary = {
   model: string;
   excerptCap: number;
-  /** Count of this leg's gold cases scoring Correctness 2 -- the only headline figure (REQ-187). */
+  /** Count of this leg's recorded cases scoring Correctness 2. */
   fullyCorrectCount: number;
   caseCount: number;
+  /** REQ-187's headline: tiers 1 and 2 together, tier 3 apart, and the stale count. Absent in a record written before the per-tier headline. */
+  headline?: { official: HeadlineCounts; tier3: HeadlineCounts; stale: number };
 };
 
 export type CaseLegScore = {
   caseId: string;
   model: string;
   excerptCap: number;
+  /** The case's tier when it was graded. Absent in a record written before tier 3. */
+  tier?: 1 | 2 | 3;
   undetermined: boolean;
   /** Present only when `undetermined` is false. */
   scores?: AxisScores;
   namesGoldRuleId: boolean;
-  /** Whether one of the case's expected rule ids was among the System 3 excerpts the prompt carried (from the enrichment debug block). */
+  /** Cited Comprehensive Rules ids the committed rule index lacks (worded "not in the committed rule index", never "made up": the index can lag the newest rules). */
+  unknownRuleIds?: string[];
+  /** Whether one of the case's deciding rule ids was among the System 3 excerpts the prompt carried (from the enrichment debug block). */
   goldRuleInPrompt?: boolean;
   promptChars: number;
+  /** SHA-256 of the assembled prompt text. A record without it is selected again by `--changed` and counts as ungraded. */
+  promptHash?: string;
+  /** SHA-256 of the case's `expected.answer` it was judged against. A record without it counts as ungraded. */
+  referenceAnswerHash?: string;
   inputTokens: number;
   outputTokens: number;
+  /** The lone judge call's token use, shown apart from the answer call's. */
+  judgeInputTokens?: number;
+  judgeOutputTokens?: number;
   latencyMs: number;
-  /** This leg's model's rank among every model's answer to this case at this cap (1 = best), from the blind ranking pass. Null when undetermined. */
+  /** This leg's model's rank among every model's answer to this case at this cap (1 = best), from the blind ranking pass. Null when undetermined or when only one model answered. */
   blindRank: number | null;
+  /** What the record was judged under, so a later record is comparable per case. */
+  judgeModel?: string;
+  rubricRevision?: string;
+  embeddingProvider?: string;
+  /** UTC ISO-8601 timestamp and short git commit of the run that wrote this record. */
+  gradedAt?: string;
+  commit?: string;
 };
 
 export type AnswerQualityResults = {
@@ -65,12 +109,23 @@ export type AnswerQualityResults = {
   caseLegScores: CaseLegScore[];
 };
 
-const NO_PROSE_FIELDS = ["answer", "answerText", "rationale", "promptText", "prompt", "workedSolution"] as const;
+// `workedSolution` stays on the list on purpose (REQ-189): the version-1 name of
+// a case's reference answer must never leak into the committed file, and
+// `shortAnswer` is the version-2 one-line reviewer summary, which is prose too.
+const NO_PROSE_FIELDS = [
+  "answer",
+  "answerText",
+  "shortAnswer",
+  "rationale",
+  "promptText",
+  "prompt",
+  "workedSolution"
+] as const;
 
 /**
  * The committed file carries no model prose (REQ-189): no answer text, no
- * judge rationale, no prompt text. Recursively checks every object key in
- * the given value against the disallowed field names.
+ * judge rationale, no prompt text, no case summary. Recursively checks every
+ * object key in the given value against the disallowed field names.
  */
 export function assertNoProse(value: unknown, path = "results"): void {
   if (value === null || typeof value !== "object") return;
@@ -86,7 +141,7 @@ export function assertNoProse(value: unknown, path = "results"): void {
   }
 }
 
-/** Writes the committed scores file, replacing it (never appending). Throws if the record contains prose. */
+/** Writes the file it is handed (the caller merges per case first), replacing the old one. Throws if the record contains prose. */
 export async function writeResultsFile(results: AnswerQualityResults, resultsPath: string): Promise<void> {
   assertNoProse(results);
   await mkdir(dirname(resultsPath), { recursive: true });
@@ -130,14 +185,15 @@ export type FullTranscript = {
   model: string;
   excerptCap: number;
   question: string;
-  /** The cards attached to the lookup (a tier-2 case's cited card, by oracle id); empty for a bare question. */
+  /** The cards attached to the request (every card the case names, by oracle id); empty for a bare question. */
   cards?: Array<{ cardId: string; name: string }>;
   /** What System 3 did for this prompt: semantic or lexical, which excerpts it attached, whether a gold rule was among them. */
   retrieval?: { usedSemantic: boolean; selectedRuleIds: string[]; goldRuleInPrompt: boolean };
   promptText: string;
   answerText: string;
+  /** The transcript key for the case's reference answer (`expected.answer`); gitignored, never in the committed file. */
   workedSolution: string;
-  assertions: { namesGoldRuleId: boolean; nonEmpty: boolean; length: number };
+  assertions: { namesGoldRuleId: boolean; nonEmpty: boolean; length: number; unknownRuleIds?: string[] };
   scores?: AxisScores;
   undetermined: boolean;
   rationale?: string;
@@ -208,4 +264,29 @@ export function compareRuns(a: RunMetadata, b: RunMetadata): ComparisonResult {
     return { comparable: true, kind: "identical-lineup" };
   }
   return { comparable: true, kind: "model-comparison", sharedModels, onlyInA, onlyInB };
+}
+
+export type RecordComparison =
+  | { comparable: false; reason: string }
+  | { comparable: true; kind: "same-model" }
+  | { comparable: true; kind: "model-comparison"; models: [string, string] };
+
+/**
+ * REQ-189: records are compared per case, because a partial run grades only
+ * some cases. Two records of the same case are **incomparable** when they were
+ * judged against different reference answers or under a different judge model,
+ * rubric revision, or `EMBEDDING_PROVIDER`; records that differ only in answer
+ * model are a deliberate **model comparison**. A field a record never carried
+ * (every record written before the per-case fields) compares as unknown, so it
+ * is never claimed comparable to a record that carries it.
+ */
+export function compareRecords(a: CaseLegScore, b: CaseLegScore): RecordComparison {
+  if (a.referenceAnswerHash !== b.referenceAnswerHash) {
+    return { comparable: false, reason: "reference answers differ" };
+  }
+  if (a.judgeModel !== b.judgeModel) return { comparable: false, reason: "judge models differ" };
+  if (a.rubricRevision !== b.rubricRevision) return { comparable: false, reason: "rubric revisions differ" };
+  if (a.embeddingProvider !== b.embeddingProvider) return { comparable: false, reason: "EMBEDDING_PROVIDER differs" };
+  if (a.model !== b.model) return { comparable: true, kind: "model-comparison", models: [a.model, b.model] };
+  return { comparable: true, kind: "same-model" };
 }

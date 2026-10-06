@@ -1,19 +1,22 @@
 // Answer-quality judge (REQ-186 layers 2 and 2b).
 //
 // Layer 2, the lone judge pass: one call per answer, handed the question,
-// the attached rule ids, the answer, the case's published `workedSolution`
-// as the reference answer, and the rubric (REQ-187). It scores the four
+// the attached rule ids, the answer, the case's approved reference answer
+// (`expected.answer`, passed here as `workedSolution`: the parameter keeps
+// its version-1 name), and the rubric (REQ-187). It scores the four
 // axes and writes a one-paragraph rationale, or returns an explicit
 // `undetermined` when it cannot decide -- never a guess, never silently
-// counted as a pass or a fail.
+// counted as a pass or a fail. Every call returns the judge's own token use,
+// so a run can record what grading cost, not only what answering cost.
 //
-// Layer 2b, the blind side-by-side rank: for each gold case at each
-// excerpt cap, once every answer has been scored alone, one further judge
-// call sees all answers to that question together -- model labels hidden,
-// order shuffled -- with the reference answer and the rubric, and ranks
-// them by agreement with the reference. Side-by-side ranking is more
+// Layer 2b, the blind side-by-side rank: when two or more answer models ran,
+// for each case at each excerpt cap, once every answer has been scored alone,
+// one further judge call sees all answers to that question together -- model
+// labels hidden, order shuffled -- with the reference answer and the rubric,
+// and ranks them by agreement with the reference. Side-by-side ranking is more
 // reliable than lone scores and is what makes the model comparison
-// (REQ-188) trustworthy.
+// (REQ-188) trustworthy. A single answer has nothing to be ranked against, so
+// the run skips the call for a one-model lineup and this function refuses it.
 //
 // The judge is named by its own setting, ANSWER_QUALITY_JUDGE_MODEL,
 // defaults to gpt-5, and is never one of the answer models -- a model
@@ -30,9 +33,21 @@ import { RUBRIC_AXIS_IDS, formatRubricForJudge, type AxisScores } from "./rubric
 /** The same minimal Responses-API surface `openAiResponsesProvider.ts` already depends on. */
 export type JudgeClient = {
   responses: {
-    create(params: { model: string; input: string }): Promise<{ output_text?: string }>;
+    create(params: {
+      model: string;
+      input: string;
+    }): Promise<{ output_text?: string; usage?: { input_tokens?: number; output_tokens?: number } }>;
   };
 };
+
+/** The judge call's own token use (REQ-188: judge usage is recorded, apart from the answer's). Zero when the client reports none or the call failed. */
+export type JudgeUsage = { inputTokens: number; outputTokens: number };
+
+const NO_JUDGE_USAGE: JudgeUsage = { inputTokens: 0, outputTokens: 0 };
+
+function usageOf(response: { usage?: { input_tokens?: number; output_tokens?: number } }): JudgeUsage {
+  return { inputTokens: response.usage?.input_tokens ?? 0, outputTokens: response.usage?.output_tokens ?? 0 };
+}
 
 // Deliberately duplicated in scripts/eval-answer-quality.mjs (same value,
 // same env var): that plain .mjs script's dry-run path must resolve the
@@ -84,18 +99,18 @@ export type LoneJudgeInput = {
 };
 
 export type LoneJudgeResult =
-  | { undetermined: false; scores: AxisScores; rationale: string }
-  | { undetermined: true; reason: string };
+  | { undetermined: false; scores: AxisScores; rationale: string; usage: JudgeUsage }
+  | { undetermined: true; reason: string; usage: JudgeUsage };
 
 function buildLoneJudgePrompt(input: Omit<LoneJudgeInput, "client" | "judgeModel">): string {
   return [
-    "You are grading one Magic: The Gathering rules answer against a published official reference answer.",
+    "You are grading one Magic: The Gathering rules answer against an approved reference answer.",
     "The reference answer is authoritative. Your task is agreement with it, not independent adjudication from your own rules knowledge.",
     "You are not told which model produced this answer or what retrieval settings were used -- score only what is written below.",
     "",
     `Question: ${input.question}`,
     `Rule ids attached to the prompt: ${input.ruleIds.join(", ") || "(none)"}`,
-    `Reference answer (published, authoritative): ${input.workedSolution}`,
+    `Reference answer (approved, authoritative): ${input.workedSolution}`,
     `Answer under review: ${input.answerText}`,
     "",
     formatRubricForJudge(),
@@ -127,21 +142,27 @@ function parseLoneJudgeResponse(text: string): { scores: AxisScores; rationale: 
  */
 export async function judgeAnswerAlone(input: LoneJudgeInput): Promise<LoneJudgeResult> {
   let responseText: string;
+  let usage: JudgeUsage;
   try {
     const response = await input.client.responses.create({
       model: input.judgeModel,
       input: buildLoneJudgePrompt(input)
     });
     responseText = response.output_text ?? "";
+    usage = usageOf(response);
   } catch (error) {
-    return { undetermined: true, reason: `judge call failed: ${error instanceof Error ? error.message : String(error)}` };
+    return {
+      undetermined: true,
+      reason: `judge call failed: ${error instanceof Error ? error.message : String(error)}`,
+      usage: NO_JUDGE_USAGE
+    };
   }
 
   const parsed = parseLoneJudgeResponse(responseText);
   if (!parsed) {
-    return { undetermined: true, reason: "judge response was not valid scored JSON" };
+    return { undetermined: true, reason: "judge response was not valid scored JSON", usage };
   }
-  return { undetermined: false, scores: parsed.scores, rationale: parsed.rationale };
+  return { undetermined: false, scores: parsed.scores, rationale: parsed.rationale, usage };
 }
 
 export type BlindRankingEntry = { modelId: string; answerText: string };
@@ -160,8 +181,8 @@ export type BlindRankingInput = {
 };
 
 export type BlindRankingResult =
-  | { undetermined: false; ranks: Record<string, number>; rationale: string }
-  | { undetermined: true; reason: string };
+  | { undetermined: false; ranks: Record<string, number>; rationale: string; usage: JudgeUsage }
+  | { undetermined: true; reason: string; usage: JudgeUsage };
 
 function defaultShuffleIndices(length: number): number[] {
   const indices = Array.from({ length }, (_, index) => index);
@@ -184,11 +205,11 @@ function buildRankingPrompt(params: {
   labeledAnswers: Array<{ label: string; answerText: string }>;
 }): string {
   return [
-    "You are ranking multiple Magic: The Gathering rules answers to the SAME question against a published official reference answer.",
+    "You are ranking multiple Magic: The Gathering rules answers to the SAME question against an approved reference answer.",
     "You are not told which model produced any answer, or in what order they were originally generated -- the labels below are arbitrary and shuffled.",
     "",
     `Question: ${params.question}`,
-    `Reference answer (published, authoritative): ${params.workedSolution}`,
+    `Reference answer (approved, authoritative): ${params.workedSolution}`,
     "",
     formatRubricForJudge(),
     "",
@@ -222,17 +243,26 @@ function parseRankingResponse(
 }
 
 /**
- * The blind side-by-side rank (REQ-186 layer 2b): for one gold case at one
+ * The blind side-by-side rank (REQ-186 layer 2b): for one case at one
  * excerpt cap, once every answer has been scored alone, this sees all
  * answers together with model labels hidden and order shuffled per case, and
  * ranks them by agreement with the reference. The harness -- never the
  * judge -- knows which shuffled label maps to which real model id, so the
- * mapping back is always recoverable.
+ * mapping back is always recoverable. It needs two or more answers: a one-model
+ * run has nothing to rank, so the run never calls it, and a direct call with
+ * fewer than two answers returns `undetermined` without a provider call.
  */
 export async function judgeBlindRanking(input: BlindRankingInput): Promise<BlindRankingResult> {
+  if (input.answers.length < 2) {
+    return { undetermined: true, reason: "ranking needs two or more answers", usage: NO_JUDGE_USAGE };
+  }
   const order = input.shuffleIndices ?? defaultShuffleIndices(input.answers.length);
   if (order.length !== input.answers.length) {
-    return { undetermined: true, reason: "shuffleIndices length must match the number of answers" };
+    return {
+      undetermined: true,
+      reason: "shuffleIndices length must match the number of answers",
+      usage: NO_JUDGE_USAGE
+    };
   }
 
   const labelToModelId = new Map<string, string>();
@@ -245,22 +275,25 @@ export async function judgeBlindRanking(input: BlindRankingInput): Promise<Blind
   const labels = labeledAnswers.map(({ label }) => label);
 
   let responseText: string;
+  let usage: JudgeUsage;
   try {
     const response = await input.client.responses.create({
       model: input.judgeModel,
       input: buildRankingPrompt({ question: input.question, workedSolution: input.workedSolution, labeledAnswers })
     });
     responseText = response.output_text ?? "";
+    usage = usageOf(response);
   } catch (error) {
     return {
       undetermined: true,
-      reason: `judge ranking call failed: ${error instanceof Error ? error.message : String(error)}`
+      reason: `judge ranking call failed: ${error instanceof Error ? error.message : String(error)}`,
+      usage: NO_JUDGE_USAGE
     };
   }
 
   const parsedResponse = parseRankingResponse(responseText, labels);
   if (!parsedResponse) {
-    return { undetermined: true, reason: "judge ranking response was not valid ranked JSON" };
+    return { undetermined: true, reason: "judge ranking response was not valid ranked JSON", usage };
   }
 
   const ranks: Record<string, number> = {};
@@ -268,5 +301,5 @@ export async function judgeBlindRanking(input: BlindRankingInput): Promise<Blind
     const modelId = labelToModelId.get(label);
     if (modelId) ranks[modelId] = rank;
   }
-  return { undetermined: false, ranks, rationale: parsedResponse.rationale };
+  return { undetermined: false, ranks, rationale: parsedResponse.rationale, usage };
 }
