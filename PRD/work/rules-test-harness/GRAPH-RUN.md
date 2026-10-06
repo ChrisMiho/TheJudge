@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/rules-test-harness` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rules-test-harness` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-181340/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/rules-test-harness/`
 
 ## Node ledger
@@ -25,6 +25,7 @@
 | 10 | gate-qc | sonnet | parked | `0 → 25` | FAIL attempt 4 = 4th FAIL → parked at owner-action per the three-loop cap: 2 Minor findings (re-approved stale case never re-graded under `--changed` when only its reference answer changed — add the reference-answer hash to the trigger and pin when it counts again; `DESIGN-BRIEF.md:125` cites M14, should be M13); 3 advisories; attempt-3 findings and advisories confirmed resolved, no regression; 220 hits = 220 rows, diffs exact, M1/M12/M15/M16 reproduced; `STATUS.owner-action`; findings in README `## Preparation gate` | 2026-10-06 |
 | 11 | define | opus | ok | `0 → 57` | attempt 5 (owner-authorized pass 1 of 5): 2 attempt-4 findings + 3 advisories fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (reference-answer hash added to `--changed`; A22 rule — re-approved case counts from re-approval when its answer hash matches, else ungraded until re-graded; slice C tests; M14 → M13; `reviewedOn` = slice A migration date with approval source; slice C names four tests; A3 puts TypeScript-importing tests in backend vitest under `apps/backend/src/eval/`); `STATUS.refined` | 2026-10-06 |
 | 12 | gate-qc | sonnet | failed | `0 → 31` | FAIL attempt 5 (5th FAIL; owner-authorized loop to define 6 of 9): both attempt-4 findings + 3 advisories confirmed resolved, no regression; 1 Minor finding (backend vitest cannot import `scripts/lib/gold-cases.mjs` — TS7016 under `rootDir: src`, no `allowJs`, measured in a scratch tsconfig; `gameState` schema parse has no gate test); 1 advisory (records without hashes); 220 hits = 220 rows, diffs exact, M1/M1b/M3/M8/M9/M12 reproduced; `STATUS.refining`; findings in README `## Preparation gate` | 2026-10-06 |
+| 13 | define | opus | ok | `0 → 56` | attempt 6 (owner-authorized pass 2 of 5): 1 attempt-5 finding + 1 advisory fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (slice A adds `scripts/lib/gold-cases.d.mts` + `prompt-fidelity.d.mts`; backend vitest imports the `.mjs` statically, one copy; loader checks structural `gameState` rules, slice B vitest parses every `gameState` with `gameContextSchema`; typecheck-green in A and B done-when; records without hashes count as ungraded and are re-graded, ~$0.35 for 18); new M17 `measure/ts-boundary.mjs` (bare import TS7016 exit 2; `.d.mts` tsc exit 0 + vitest 1 pass; variable-path import rejected as untyped); `STATUS.refined` | 2026-10-06 |
 
 ## Open gate
 
@@ -316,6 +317,24 @@ Never edit `PRD/sections/`, code, `GRAPH-RUN.md`, or the README `## Preparation 
 When done, set `STATUS.refined` (single marker, `git mv`), README frontmatter, and move the `PRD/work/STATUS.md` board row fully from refining to refined (remove from the old section, add to the new).
 
 Report back: outcome, each item and what you changed for it (file and line), the new measurement with command and result, files changed, and the STATUS marker set.
+
+### gate-qc (attempt 6)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rules-test-harness
+
+You are node 4 (`gate-qc`) of graph run `graph-20261006-181340`, attempt 6 (the owner authorized passes through attempt 9), re-grading after define attempt 6 addressed the attempt-5 finding and advisory recorded in the README `## Preparation gate` section. Grade the whole package fresh, not only those findings, and confirm the finding and the advisory are actually resolved, and that earlier fixes did not regress. Run the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/rules-test-harness/` (STATUS.refined). Grade `DESIGN-BRIEF.md` together with the proposed product truth in `GATE-QUESTIONS.md` (amended REQ-185 through REQ-190 and NFR-018; new REQ-222 through REQ-225; blocker questions Q-007 and Q-008) against current `PRD/sections/` truth and agent-readiness. Intake under `intake/` is evidence only. The ledger `GRAPH-RUN.md` and the README `## Preparation gate` and `## Autonomous metadata` sections are the driver's; do not edit them.
+
+Check cross-cutting consistency by grep, not memory: re-run the brief's line-level grep for each amended or relied-on ID (REQ-177, REQ-185 through REQ-190, NFR-018) across `PRD/`, `apps/backend/src/eval/`, and `scripts/`, and confirm every hit has a disposition row and that each amendment the rows promise appears in a `GATE-QUESTIONS.md` diff. Confirm each diff's removed lines match the live file text exactly. Confirm REQ-222 through REQ-225, Q-007 and Q-008 are unused anywhere in `PRD/` outside this package. Re-run the new M17 (`measure/ts-boundary.mjs`, the TypeScript import-boundary proof) and spot-check at least one earlier measurement; no live model calls, no network refresh, never rebuild the rule index. Check the build slices are ordered so each one can be built and tested green on its own, and that every numeric acceptance target in a slice or proposed REQ traces to a recorded measurement, that the run-1 counts agree everywhere they appear in the package, and that each proposed slot is applied in a slice where its stated behavior is true in code (the brief's apply-order rule A21).
+
+Blocker questions Q-007 and Q-008 are owner decisions; grade whether each is stated to the plain-language standard with a recommendation and a clear default, not what the answer should be.
+
+Do not edit `PRD/sections/`, code, the brief, or `GATE-QUESTIONS.md`. Do not commit or push; the driver commits. Your tool-call cap is 60 for this node, and any subagent you dispatch spends from the same budget. Earlier passes used up to 58 of 60: batch your greps and checks into few calls, and leave room to report.
+
+Report back: PASS or FAIL, the complete findings list with severity (none if PASS), the STATUS marker you set, and any file you wrote.
 
 ## Instruction ledger
 
