@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rules-test-harness](rules-test-harness/) | Refined (define attempt 5, after gate-qc FAIL 4; the README `## Preparation gate` findings and advisories resolved). Proposal: DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-185–190, NFR-018 amended; REQ-222–225 new; Q-007, Q-008). Graph run `graph-20261006-181340` |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [rules-test-harness](rules-test-harness/) | Refining (gate-qc attempt 5 FAIL, 1 Minor finding: the shared loader and the In-Depth schema are TypeScript/mjs on opposite sides of a workspace boundary). Proposal: DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-185–190, NFR-018 amended; REQ-222–225 new; Q-007, Q-008). Graph run `graph-20261006-181340` |
 
 ## ideation
 
