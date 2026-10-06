@@ -1,6 +1,6 @@
 # Slice A — Case format v2, shared loader, migration of the 18
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -28,21 +28,21 @@ None. REQ-185 is applied in slice G (A21), where its run-1 authoring criterion b
 
 ## Acceptance criteria
 
-- [ ] **A1.** The 18 migrated cases have byte-identical question and answer text: a committed test pins the SHA-256 of each case's pre-migration `question` and `workedSolution` and compares them with the migrated `question` and `expected.answer`
-- [ ] **A2.** Each migrated case has `review.status` `approved`, `review.reviewedOn` set to the migration commit's date, and a review note naming the approval source ("approved by the owner's accept of REQ-185 at the define gate; migrated to format version 2") (A1)
-- [ ] **A3.** Each migrated case's `cards` matches A14: three tier-2 cases carry their cited card, `token-created-by-name-uses-oracle-card` carries Tarmogoyf (`45900b2f-f6a9-4c42-9642-008f3c1cf6dd`), the other 14 are empty (test)
-- [ ] **A4.** No case-file read of `workedSolution` or `expectedSupplementalRuleIds` remains in `scripts/` or `apps/backend/src/eval/`: a grep shows only the context-eval fixture readers, the parameter and transcript keys, and the no-prose list line in `artifact.ts`
-- [ ] **A5.** `scripts/eval-answer-quality.mjs` passes the case's `expected.answer` to the judge and its `expected.decidingRuleIds` to the assertions and retrieval check; its existing tests pass and its dry run (no key, no network) runs on the migrated 18
-- [ ] **A6.** `npm run eval:worked-solutions` still reports 16/18 with the same two misses (`panharmonicon-controller-not-entering-permanent`, `restoration-angel-blink-resets-counters`) (M15)
-- [ ] **A7.** A unit test shows the stale comparison flags a changed rule, oracle or ruling hash and passes unchanged data (A18)
-- [ ] **A8.** `buildCaseRequest` test: a case without a `gameState` gives a lookup with every `cards` entry attached by oracle id (`test:scripts`)
-- [ ] **A9.** `buildCaseRequest` test: a fixture case with a `gameState` (two stack items, a battlefield card with an owner) gives a `mode: "game"` request that the In-Depth request schema accepts, with each card in its zone and the stack in order (a backend vitest test, because the schema is TypeScript)
-- [ ] **A10.** The loader rejects a fixture `gameState` with `owner` on a stack item, and one with `caster` on a battlefield card (A15)
-- [ ] **A11.** Loader tests cover dedup, the derived `mechanic:` tag, `snapshot` hashing, and each v2 validation error
-- [ ] **A12.** `preparation.test.ts`, the REQ-177 benchmark and the context-eval fixtures pass unchanged: `git diff` shows `apps/backend/src/prompt/preparation.test.ts` and `rag-retrieval-benchmark.json` untouched, and the backend tests pass
-- [ ] **A13.** `scripts/lib/gold-cases.d.mts` and `scripts/lib/prompt-fidelity.d.mts` exist and a backend vitest test imports both modules statically; `npm run typecheck` is green (A3, M17)
-- [ ] **A14.** The corpus README `apps/backend/src/eval/worked-solutions/README.md` is rewritten for format version 2 and names the shared loader
-- [ ] **A15.** `npm run quality:check` is green
+- [x] **A1.** The 18 migrated cases have byte-identical question and answer text: a committed test pins the SHA-256 of each case's pre-migration `question` and `workedSolution` and compares them with the migrated `question` and `expected.answer`
+- [x] **A2.** Each migrated case has `review.status` `approved`, `review.reviewedOn` set to the migration commit's date, and a review note naming the approval source ("approved by the owner's accept of REQ-185 at the define gate; migrated to format version 2") (A1)
+- [x] **A3.** Each migrated case's `cards` matches A14: three tier-2 cases carry their cited card, `token-created-by-name-uses-oracle-card` carries Tarmogoyf (`45900b2f-f6a9-4c42-9642-008f3c1cf6dd`), the other 14 are empty (test)
+- [x] **A4.** No case-file read of `workedSolution` or `expectedSupplementalRuleIds` remains in `scripts/` or `apps/backend/src/eval/`: a grep shows only the context-eval fixture readers, the parameter and transcript keys, and the no-prose list line in `artifact.ts`
+- [x] **A5.** `scripts/eval-answer-quality.mjs` passes the case's `expected.answer` to the judge and its `expected.decidingRuleIds` to the assertions and retrieval check; its existing tests pass and its dry run (no key, no network) runs on the migrated 18
+- [x] **A6.** `npm run eval:worked-solutions` still reports 16/18 with the same two misses (`panharmonicon-controller-not-entering-permanent`, `restoration-angel-blink-resets-counters`) (M15)
+- [x] **A7.** A unit test shows the stale comparison flags a changed rule, oracle or ruling hash and passes unchanged data (A18)
+- [x] **A8.** `buildCaseRequest` test: a case without a `gameState` gives a lookup with every `cards` entry attached by oracle id (`test:scripts`)
+- [x] **A9.** `buildCaseRequest` test: a fixture case with a `gameState` (two stack items, a battlefield card with an owner) gives a `mode: "game"` request that the In-Depth request schema accepts, with each card in its zone and the stack in order (a backend vitest test, because the schema is TypeScript)
+- [x] **A10.** The loader rejects a fixture `gameState` with `owner` on a stack item, and one with `caster` on a battlefield card (A15)
+- [x] **A11.** Loader tests cover dedup, the derived `mechanic:` tag, `snapshot` hashing, and each v2 validation error
+- [x] **A12.** `preparation.test.ts`, the REQ-177 benchmark and the context-eval fixtures pass unchanged: `git diff` shows `apps/backend/src/prompt/preparation.test.ts` and `rag-retrieval-benchmark.json` untouched, and the backend tests pass
+- [x] **A13.** `scripts/lib/gold-cases.d.mts` and `scripts/lib/prompt-fidelity.d.mts` exist and a backend vitest test imports both modules statically; `npm run typecheck` is green (A3, M17)
+- [x] **A14.** The corpus README `apps/backend/src/eval/worked-solutions/README.md` is rewritten for format version 2 and names the shared loader
+- [x] **A15.** `npm run quality:check` is green
 
 ## Verification
 

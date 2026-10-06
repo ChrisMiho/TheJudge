@@ -369,22 +369,27 @@ test("a confirmed run with a key from the local env files and no exported provid
   assert.equal(result.ran, true);
 });
 
-test("buildCaseRequest asks a tier-1 case bare and attaches a tier-2 case's cited card the way a player's lookup does (REQ-185)", () => {
-  const tier1 = { id: "t1", tier: 1, question: "Does trample need lethal first?", source: { ruleId: "702.19b" } };
-  assert.deepEqual(buildCaseRequest(tier1), { mode: "lookup", question: "Does trample need lethal first?" });
+test("buildCaseRequest asks a case bare when it names no card and attaches every card it names the way a player's lookup does (REQ-185)", () => {
+  const bare = { id: "t1", tier: 1, question: "Does trample need lethal first?", cards: [], gameState: null };
+  assert.deepEqual(buildCaseRequest(bare), { mode: "lookup", question: "Does trample need lethal first?" });
 
-  const tier2 = {
+  const attached = {
     id: "t2",
     tier: 2,
     question: "Does Panharmonicon double it?",
-    source: { cardName: "Panharmonicon", oracleId: "76678885-3674-443d-b9a2-2a460cf6aac0" }
+    cards: [{ oracleId: "76678885-3674-443d-b9a2-2a460cf6aac0", name: "Panharmonicon" }],
+    gameState: null
   };
-  assert.deepEqual(buildCaseRequest(tier2), {
+  assert.deepEqual(buildCaseRequest(attached), {
     mode: "lookup",
     question: "Does Panharmonicon double it?",
     // cardId is the oracle id: the key both the rulings index and the card-detail index resolve by.
     cards: [{ cardId: "76678885-3674-443d-b9a2-2a460cf6aac0", name: "Panharmonicon" }]
   });
+
+  // A tier-1 case that names a real card (the Tarmogoyf token question) carries it too: every case attaches every card it names.
+  const tarmogoyf = { ...bare, id: "token", cards: [{ oracleId: "45900b2f-f6a9-4c42-9642-008f3c1cf6dd", name: "Tarmogoyf" }] };
+  assert.deepEqual(buildCaseRequest(tarmogoyf).cards, [{ cardId: "45900b2f-f6a9-4c42-9642-008f3c1cf6dd", name: "Tarmogoyf" }]);
 });
 
 test("resolveRunEnv defaults EMBEDDING_PROVIDER to local (what production runs) and never overrides an explicit value", () => {

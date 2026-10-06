@@ -22,27 +22,40 @@ test("parseArgs resolves an optional --output path against the repo root", () =>
   assert.ok(path.isAbsolute(resolved));
 });
 
+const ZERO_HASH = "0".repeat(64);
+
 function validCase(overrides = {}) {
   return {
     id: "sample",
+    formatVersion: 2,
     tier: 1,
+    review: { status: "approved", reviewedOn: "2026-10-06" },
+    cards: [],
+    gameState: null,
     question: "Sample question?",
-    workedSolution: "Sample worked solution text.",
-    expectedSupplementalRuleIds: ["100.1"],
+    expected: {
+      outcome: "works",
+      shortAnswer: "Yes.",
+      answer: "Sample worked solution text.",
+      decidingRuleIds: ["100.1"]
+    },
     whyHard: "Sample reason this is hard.",
     source: {
+      authority: "wotc-comprehensive-rules",
       publisher: "Wizards of the Coast",
       license: "Reproduced under the Wizards of the Coast Fan Content Policy.",
       ruleId: "100.1"
     },
+    layers: { requiredFacts: [], irrelevantFacts: [], variants: [] },
+    snapshot: { ruleIndexHash: ZERO_HASH, dependsOnHashes: { rules: ZERO_HASH, oracle: ZERO_HASH, rulings: ZERO_HASH } },
     ...overrides
   };
 }
 
 test("loadCases reads every *.case.json file, sorted, and rejects a malformed one (via the shared gold-cases validator, REQ-185)", async () => {
   const dir = makeTempCasesDir([
-    validCase({ id: "b" }),
-    validCase({ id: "a" })
+    validCase({ id: "b", question: "Question b?", expected: { ...validCase().expected, answer: "Answer b." } }),
+    validCase({ id: "a", question: "Question a?", expected: { ...validCase().expected, answer: "Answer a." } })
   ]);
 
   const cases = await loadCases(dir);
@@ -56,8 +69,24 @@ test("loadCases reads every *.case.json file, sorted, and rejects a malformed on
   await assert.rejects(() => loadCases(dir), /Invalid gold case\(s\)/);
 });
 
+test("loadCases leaves a rejected case out of the check but keeps every other case", async () => {
+  const dir = makeTempCasesDir([
+    validCase({ id: "kept", question: "Question kept?", expected: { ...validCase().expected, answer: "Answer kept." } }),
+    validCase({
+      id: "dropped",
+      question: "Question dropped?",
+      expected: { ...validCase().expected, answer: "Answer dropped." },
+      review: { status: "rejected", reviewedOn: "2026-10-06", note: "not a real interaction" }
+    })
+  ]);
+  assert.deepEqual(
+    (await loadCases(dir)).map((c) => c.id),
+    ["kept"]
+  );
+});
+
 test("evaluateCaseRecall reports a hit only when every expected rule id was retrieved", () => {
-  const caseEntry = { id: "example", expectedSupplementalRuleIds: ["613.9", "704.4"] };
+  const caseEntry = { id: "example", expected: { decidingRuleIds: ["613.9", "704.4"] } };
 
   const fullHit = evaluateCaseRecall(caseEntry, new Set(["613.9", "704.4", "999.9"]));
   assert.equal(fullHit.passed, true);
@@ -91,10 +120,10 @@ test("formatReport names every case's hit/miss status and a summary count", () =
 });
 
 test("formatReport names the embedding provider and which ranking produced each result, when the run records it", () => {
-  const tier2 = { id: "sensei", tier: 2, expectedSupplementalRuleIds: ["113.7a"] };
+  const tier2 = { id: "sensei", tier: 2, expected: { decidingRuleIds: ["113.7a"] } };
   const results = [
     evaluateCaseRecall(tier2, new Set(["113.7a", "603.2"]), { usedSemantic: true }),
-    evaluateCaseRecall({ id: "bare", expectedSupplementalRuleIds: ["510.1c"] }, new Set(), { usedSemantic: false })
+    evaluateCaseRecall({ id: "bare", expected: { decidingRuleIds: ["510.1c"] } }, new Set(), { usedSemantic: false })
   ];
   assert.equal(results[0].usedSemantic, true);
   assert.equal(results[0].passed, true);

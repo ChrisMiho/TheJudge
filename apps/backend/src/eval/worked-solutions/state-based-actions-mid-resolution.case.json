@@ -1,10 +1,23 @@
 {
   "id": "state-based-actions-mid-resolution",
+  "formatVersion": 2,
   "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-06",
+    "note": "approved by the owner's accept of REQ-185 at the define gate; migrated to format version 2"
+  },
+  "cards": [],
+  "gameState": null,
   "question": "I control a creature whose toughness equals my hand size. I cast a spell that reads: discard your hand, then draw seven cards. In the middle of that spell resolving, my hand is briefly empty, so the creature's toughness is 0. Does my creature die from a state-based action during that spell's resolution?",
-  "expectedSupplementalRuleIds": ["704.4"],
-  "workedSolution": "A player controls Maro, a creature with the ability “Maro’s power and toughness are each equal to the number of cards in your hand” and casts a spell whose effect is “Discard your hand, then draw seven cards.” Maro will temporarily have toughness 0 in the middle of the spell’s resolution but will be back up to toughness 7 when the spell finishes resolving. Thus Maro will survive when state-based actions are checked. In contrast, an ability that triggers when the player has no cards in hand goes on the stack after the spell resolves, because its trigger event happened during resolution.",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: state-based actions are not checked mid-resolution, so the creature survives.",
+    "answer": "A player controls Maro, a creature with the ability “Maro’s power and toughness are each equal to the number of cards in your hand” and casts a spell whose effect is “Discard your hand, then draw seven cards.” Maro will temporarily have toughness 0 in the middle of the spell’s resolution but will be back up to toughness 7 when the spell finishes resolving. Thus Maro will survive when state-based actions are checked. In contrast, an ability that triggers when the player has no cards in hand goes on the stack after the spell resolves, because its trigger event happened during resolution.",
+    "decidingRuleIds": ["704.4"]
+  },
   "source": {
+    "authority": "wotc-comprehensive-rules",
     "type": "Official Magic: The Gathering Comprehensive Rules worked example",
     "publisher": "Wizards of the Coast",
     "ruleId": "704.4",
@@ -14,6 +27,19 @@
     "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
     "retrievedOn": "2026-08-30",
     "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8c69949ff45f6cbd7dfa1c180177832bec02ae56da2a67c9f9fcc1ae8a19c0ef",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
   },
   "whyHard": "State-based actions are checked only between spell/ability resolutions, never mid-resolution -- a natural but wrong intuition is that a creature with 0 toughness dies the instant its toughness hits 0, even transiently inside one spell's effect."
 }

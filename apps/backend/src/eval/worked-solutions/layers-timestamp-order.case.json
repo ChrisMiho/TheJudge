@@ -1,10 +1,23 @@
 {
   "id": "layers-timestamp-order",
+  "formatVersion": 2,
   "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-06",
+    "note": "approved by the owner's accept of REQ-185 at the define gate; migrated to format version 2"
+  },
+  "cards": [],
+  "gameState": null,
   "question": "My creature is enchanted by an Aura that says the creature is white. A separate effect on the battlefield says white creatures get +1/+1. Does my creature actually get the +1/+1, even though it wasn't white to begin with?",
-  "expectedSupplementalRuleIds": ["613.9"],
-  "workedSolution": "One effect reads, “White creatures get +1/+1,” and another reads, “Enchanted creature is white.” The enchanted creature gets +1/+1 from the first effect, regardless of its previous color.",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the creature becomes white and gets the +1/+1 regardless of its earlier color.",
+    "answer": "One effect reads, “White creatures get +1/+1,” and another reads, “Enchanted creature is white.” The enchanted creature gets +1/+1 from the first effect, regardless of its previous color.",
+    "decidingRuleIds": ["613.9"]
+  },
   "source": {
+    "authority": "wotc-comprehensive-rules",
     "type": "Official Magic: The Gathering Comprehensive Rules worked example",
     "publisher": "Wizards of the Coast",
     "ruleId": "613.9",
@@ -14,6 +27,19 @@
     "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
     "retrievedOn": "2026-08-30",
     "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "1d4f27abc748d67d08f67628060af809f0197634ee9d58ba3d91caf9586e4d73",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
   },
   "whyHard": "Two continuous effects reference each other's output (one depends on the creature's color, which the other effect changes), which the layer system resolves by timestamp order rather than by re-checking dependency in a loop -- an easy case to get backward without knowing 613.9's \"one continuous effect can override another\" rule."
 }

@@ -1,10 +1,23 @@
 {
   "id": "damage-does-not-destroy-sba-does",
+  "formatVersion": 2,
   "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-06",
+    "note": "approved by the owner's accept of REQ-185 at the define gate; migrated to format version 2"
+  },
+  "cards": [],
+  "gameState": null,
   "question": "I cast a burn spell that deals 3 damage to a 2/2 creature. Does that spell destroy the creature directly, the moment the damage is dealt, or does something else actually put it in the graveyard?",
-  "expectedSupplementalRuleIds": ["120.5"],
-  "workedSolution": "A player casts Lightning Bolt, an instant that says “Lightning Bolt deals 3 damage to any target,” targeting a 2/2 creature. After Lightning Bolt deals 3 damage to that creature, the creature is destroyed as a state-based action. Neither Lightning Bolt nor the damage dealt by Lightning Bolt destroyed that creature.",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the burn spell only deals damage; a state-based action destroys the creature.",
+    "answer": "A player casts Lightning Bolt, an instant that says “Lightning Bolt deals 3 damage to any target,” targeting a 2/2 creature. After Lightning Bolt deals 3 damage to that creature, the creature is destroyed as a state-based action. Neither Lightning Bolt nor the damage dealt by Lightning Bolt destroyed that creature.",
+    "decidingRuleIds": ["120.5"]
+  },
   "source": {
+    "authority": "wotc-comprehensive-rules",
     "type": "Official Magic: The Gathering Comprehensive Rules worked example",
     "publisher": "Wizards of the Coast",
     "ruleId": "120.5",
@@ -14,6 +27,19 @@
     "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
     "retrievedOn": "2026-09-07",
     "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "6c5b661e4e414c8caf8d9d3721cbdb04ac61a620cdd77ab4831e1f24c1c353b0",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
   },
   "whyHard": "It feels natural to say the burn spell \"killed\" the creature, and most players describe it that way at the table. Mechanically, damage and destruction are separate events: the spell only marks damage, and it's a state-based action -- checked afterward, with no one needing to do anything -- that actually destroys a creature with lethal damage marked on it. The distinction matters whenever something cares about how a permanent left the battlefield."
 }

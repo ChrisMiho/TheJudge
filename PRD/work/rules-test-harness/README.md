@@ -28,7 +28,9 @@ Mapped 2026-10-06 (graph node 5). Full plan: [GAMEPLAN.md](GAMEPLAN.md). One cod
 
 PRD truth lands per slice by rule A21 (table in `GAMEPLAN.md`): B system-map entry; C REQ-186/187/190 + answer-quality entry; E REQ-189/222/224/225; F REQ-188/223, NFR-018, goals line, `## Eval harness`; G REQ-185. Q-007 and Q-008 accepted at the recommendation (255 mechanic cases; 0 extra tier-3).
 
-Next: `thejudge-implement` slice A (graph node 6, `build`).
+Build progress (graph node 6, `build`, one commit per slice on `thejudge-auto/rules-test-harness-work`):
+
+- A: done (format v2 loader, request builder, 18 migrated, README rewritten)
 
 ## Autonomous metadata
 

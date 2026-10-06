@@ -4,8 +4,8 @@
 // once per model in the answer-model lineup and once per excerpt cap,
 // through the production preparePromptInput path
 // (apps/backend/src/prompt/preparation.ts) with the same inputs a player's
-// lookup gets -- the committed card-detail and card-rulings indexes, a
-// tier-2 case's cited card attached (buildCaseRequest), and the question
+// lookup gets -- the committed card-detail and card-rulings indexes, every
+// card the case names attached (buildCaseRequest), and the question
 // embedded by the configured EMBEDDING_PROVIDER (default `local`, what
 // production runs) so System 3 ranks semantically, never silently lexically
 // (assertQueryEmbedded / describeRetrieval refuse to record a run whose
@@ -405,7 +405,7 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
         });
         const retrieval = describeRetrieval(
           prepared.enrichmentDebug?.supplemental,
-          caseEntry.expectedSupplementalRuleIds,
+          caseEntry.expected.decidingRuleIds,
           {
             requireSemantic: embedder.mode !== "mock",
             caseId: caseEntry.id
@@ -423,14 +423,14 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
         const inputTokens = response.usage?.input_tokens ?? Math.round(prepared.promptText.length / CHARS_PER_TOKEN_ESTIMATE);
         const outputTokens = response.usage?.output_tokens ?? Math.round(answerText.length / CHARS_PER_TOKEN_ESTIMATE);
 
-        const assertions = computeDeterministicAssertions(answerText, caseEntry.expectedSupplementalRuleIds);
+        const assertions = computeDeterministicAssertions(answerText, caseEntry.expected.decidingRuleIds);
         const judgeResult = await judgeAnswerAlone({
           client,
           judgeModel,
           question: caseEntry.question,
-          ruleIds: caseEntry.expectedSupplementalRuleIds,
+          ruleIds: caseEntry.expected.decidingRuleIds,
           answerText,
-          workedSolution: caseEntry.workedSolution
+          workedSolution: caseEntry.expected.answer
         });
 
         const record = {
@@ -461,7 +461,7 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
             retrieval,
             promptText: prepared.promptText,
             answerText,
-            workedSolution: caseEntry.workedSolution,
+            workedSolution: caseEntry.expected.answer,
             assertions,
             scores: judgeResult.undetermined ? undefined : judgeResult.scores,
             undetermined: judgeResult.undetermined,
@@ -477,7 +477,7 @@ export async function runLiveEvaluation({ client, judgeModel, models, excerptCap
         client,
         judgeModel,
         question: caseEntry.question,
-        workedSolution: caseEntry.workedSolution,
+        workedSolution: caseEntry.expected.answer,
         answers: answersForRanking
       });
       if (!rankingResult.undetermined) {
@@ -526,7 +526,7 @@ export function describePlan({ models, excerptCaps, outputDir, goldCaseCount, es
   return [
     "Answer-quality baseline plan (no provider request has been made):",
     "",
-    `  Gold cases: ${goldCaseCount} (tier-2 cases are asked with their cited card attached, as a player's lookup is)`,
+    `  Gold cases: ${goldCaseCount} (each case is asked with every card it names attached, as a player's lookup is)`,
     `  Answer-model lineup: ${models.join(", ")}`,
     `  Judge model: ${estimate.judgeModel}`,
     `  Excerpt caps: ${excerptCaps.join(", ")}`,
