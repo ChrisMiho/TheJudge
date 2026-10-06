@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rules-test-harness](rules-test-harness/) | Refined (define attempt 5, after gate-qc FAIL 4; the README `## Preparation gate` findings and advisories resolved). Proposal: DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-185–190, NFR-018 amended; REQ-222–225 new; Q-007, Q-008). Graph run `graph-20261006-181340` |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| [rules-test-harness](rules-test-harness/) | Refining (owner authorized up to 5 more define passes after the 4th gate-qc FAIL; define attempt 5 on the README `## Preparation gate` findings). Proposal: DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-185–190, NFR-018 amended; REQ-222–225 new; Q-007, Q-008). Graph run `graph-20261006-181340` |
 
 ## ideation
 
