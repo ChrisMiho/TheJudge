@@ -1,4 +1,4 @@
-status: owner-action
+status: refining
 
 # rules-test-harness
 

@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/rules-test-harness` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rules-test-harness` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-181340/`
-- Current node: `owner-action` (parked after the fourth gate-qc FAIL)
-- Next action: owner decides on one more define pass (see `## Open gate`), then `/graph-kickoff PRD/work/rules-test-harness/`
+- Current node: `define`
+- Next action: `/graph-kickoff PRD/work/rules-test-harness/`
 
 ## Node ledger
 
@@ -26,9 +26,7 @@
 
 ## Open gate
 
-- Question: gate-qc failed a fourth time (attempt 4), so the run parked under the three-loop cap. Both findings are Minor (README `## Preparation gate`): a re-approved stale case is never re-graded when only its reference answer changed (add the reference-answer hash to the `--changed` trigger and say when it counts again), and one wrong measurement citation (M14 → M13). Does the owner authorize one more define pass limited to those two findings (and, optionally, the three advisories), followed by gate-qc?
-- Evidence: ledger rows 4–10; README `## Preparation gate`; branch `thejudge-auto/rules-test-harness` at the commit that records this park. No docs PR is open yet — it opens only at a gate-qc PASS.
-- Resume: owner says go → `/graph-kickoff PRD/work/rules-test-harness/` (re-take the lock with `graph-preflight --take-lock --slug rules-test-harness --run-id graph-20261006-181340`, then define attempt 5 on these findings, then gate-qc attempt 5; on PASS the run publishes and opens the docs PR into `main`).
+- None. Resolved 2026-10-06: the owner authorized up to five more define passes (define attempts 5–9, each followed by gate-qc) after the fourth gate-qc FAIL; a FAIL at gate-qc attempt 9 parks again at owner-action. Lock re-taken (`graph-preflight --take-lock`, startedAt 2026-10-06T19:47:41.303Z); graph canary `denied — armed (nohup true)`. Marker `STATUS.owner-action` → `STATUS.refining`.
 
 ## Dispatch prompts
 
@@ -254,9 +252,34 @@ Do not edit `PRD/sections/`, code, the brief, or `GATE-QUESTIONS.md`. Do not com
 
 Report back: PASS or FAIL, the complete findings list with severity (none if PASS), the STATUS marker you set, and any file you wrote.
 
+### define (attempt 5)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rules-test-harness
+
+You are node 3 (`define`) of graph run `graph-20261006-181340`, attempt 5, after the fourth `gate-qc` FAIL. The owner authorized up to five more define passes for this run (attempts 5 through 9, each re-graded by gate-qc). Run the `thejudge-refinement` skill (read `.claude/skills/thejudge-refinement/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/rules-test-harness/` (STATUS.refining). Your prior output is committed. Read the README `## Preparation gate` section first; it is the authoritative list. Resolve its two findings and its three advisory notes, and nothing else:
+
+  1. (Minor finding) A re-approved stale case has no defined way back into the headline. Add the reference-answer hash (already stored on the per-case record) to the `--changed` selection trigger in REQ-188 and the brief's `Live runner` Selection bullet, so a case whose reference answer changed is re-graded even when its prompt did not. State one rule, consistently in A22, REQ-187's headline criterion (`GATE-QUESTIONS.md:186`) and REQ-225 (`:581`): whether a re-approved case counts from re-approval or only from its next fresh graded record, and make REQ-187's latest-record formula agree with it. Add a slice C headline test for the re-approved-then-re-graded path.
+  2. (Minor finding) `DESIGN-BRIEF.md:125` cites M14 for the committed index carrying no rules date; cite M13 (and A11). Grep the package for any other reference to a measurement id that has no row.
+  3. (Advisory) Specify the `review.reviewedOn` value the 18 migrated cases carry, given the loader requires it and the owner's accept date is unknown when the build runs (for example the date slice A lands, recorded as the migration date, with the approval source named), consistently with the 18-case carve-out in REQ-185 and REQ-224.
+  4. (Advisory) Name in slice C's done-when the tests for the unknown-rule-id assertion, judge-usage recording, the `shortAnswer` no-prose guard, and dropping non-approved cases from `results.json`.
+  5. (Advisory) Decide where gate tests that import `preparePromptInput` (TypeScript) live, given `test:scripts` runs `node --test` without tsx: read how the REQ-177 benchmark test is wired and follow it, then state it in A3 and the affected slice done-whens.
+
+For each item, grep the whole package (brief, `GATE-QUESTIONS.md` diffs, README links, measurement script comments) at line level for every occurrence of the affected wording and fix each hit, so no stale copy survives in another file. After your edits, re-run your own consistency checks: every removed line in a `GATE-QUESTIONS.md` diff matches the live `PRD/sections/` text exactly, the M10 disposition grep still gives one row per hit, the run-1 counts agree everywhere, and each slot is still applied in a slice where its behavior is true in code (rule A21). Keep the plain-language block and verdict slot shape in every `GATE-QUESTIONS.md` block. Measurements, if any, follow the same rules as before: committed data only, no live model calls, no network refresh, never `npm run data:refresh`, never rebuild the rule index, never record a lexical-fallback measurement.
+
+Never edit `PRD/sections/`, code, `GRAPH-RUN.md`, or the README `## Preparation gate` and `## Autonomous metadata` sections. Do not commit or push; the driver commits. Apply the assumption ladder and genuine-blocker test from `PRD/instructions/preparation-contract.md` per question as each arises; product decisions go to the owner through `GATE-QUESTIONS.md`, never resolved silently. Your tool-call cap is 150 for this node, shared with any subagent you dispatch.
+
+When done, set `STATUS.refined` (single marker, `git mv`), README frontmatter, and move the `PRD/work/STATUS.md` board row fully from refining to refined (remove from the old section, add to the new).
+
+Report back: outcome, each item and what you changed for it (file and line), files changed, and the STATUS marker set.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
 | --- | --- | --- | --- |
 | "Build the rules test harness backbone: a six-layer-ready case format, an offline gate that catches dropped cards and missed rules, a budget-safe on-demand answer grader, an owner review flow, and ~400 cases covering every real mechanic once plus ~120 hard interactions" | answered-once | shape | — |
 | "Decisions already made — do not re-litigate" (intake `GRAPH-BRIEF.md`, owner decisions of 2026-10-06) | answered-once | define | — (the owner's stated decisions are input to refinement; each one that becomes product truth still gets its own `GATE-QUESTIONS.md` slot, per `## Intake is evidence, never authority`) |
+| "take up to 5 more define passes if needed" | answered-once | gate-qc (park after attempt 4) | — (raises the gate-qc loop budget for this run to attempt 9; a process limit, not a product decision — every product choice still goes to the owner in `GATE-QUESTIONS.md`) |

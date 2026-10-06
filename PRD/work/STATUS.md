@@ -23,6 +23,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rules-test-harness](rules-test-harness/) | Refining (owner authorized up to 5 more define passes after the 4th gate-qc FAIL; define attempt 5 on the README `## Preparation gate` findings). Proposal: DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-185–190, NFR-018 amended; REQ-222–225 new; Q-007, Q-008). Graph run `graph-20261006-181340` |
 
 ## ideation
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rules-test-harness](rules-test-harness/) | Owner action: gate-qc failed a fourth time (2 Minor findings, README `## Preparation gate`), parked under the three-loop cap. Decide whether to authorize one more define pass on those two findings, then `/graph-kickoff PRD/work/rules-test-harness/`. Proposal: DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-185–190, NFR-018 amended; REQ-222–225 new; Q-007, Q-008). Graph run `graph-20261006-181340` |
 
 
 ## deferred
