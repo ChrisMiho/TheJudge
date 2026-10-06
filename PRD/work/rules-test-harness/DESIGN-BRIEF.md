@@ -385,6 +385,62 @@ data. It lists stale cases, through slice A's stale comparison, and cases
 awaiting a query-vector re-freeze, through slice B's re-freeze check. It
 never gates.
 
+### Tester case Q2 — Silence, Necropotence, Borne Upon a Wind (validation evidence)
+
+Added at the owner's direction, 2026-10-06, after gate-qc PASS. The owner wants
+this exact question answered correctly the next time a player asks it, so the
+case gets a fuller spec than the other drafts. It changes no slot, slice order or
+count.
+
+- **The question:** a player controls Necropotence and has more than seven cards
+  at their cleanup step. An opponent cast Silence during that turn's main phase.
+  Can the player cast Borne Upon a Wind in the cleanup step, after discarding to
+  hand size?
+- **Cards (all attached):** Necropotence, Borne Upon a Wind, Silence. Committed
+  oracle text: Necropotence — "Whenever you discard a card, exile that card from
+  your graveyard"; Silence — "Your opponents can't cast spells this turn"; Borne
+  Upon a Wind — "You may cast spells this turn as though they had flash. Draw a
+  card."
+- **Expected outcome:** `works`. Yes, the player can cast it.
+- **Deciding rules (all in the committed rule index):** 514.1 — the player
+  discards to hand size, and each discard triggers Necropotence; 514.2 — right
+  after that, every "this turn" effect ends, so Silence no longer applies;
+  514.3a — a triggered ability is waiting, so players receive priority in the
+  cleanup step, and Borne Upon a Wind is an instant. 514.3a also means another
+  cleanup step follows.
+- **Tier:** 3. No WotC ruling on any of the three cards covers the interaction
+  (checked against the committed rulings, 2026-10-06), so the answer is the
+  owner-approved derivation above. It stays `draft` until the owner approves it
+  through the review flow (REQ-224).
+- **Independent check (research, never the answer key):** Jon's Rulemancer
+  app, asked by Jon and shared with the owner as three screenshots on
+  2026-10-06. It answered the question without Silence (yes) and then with
+  Silence as a follow-up (still yes), citing 514.1, 514.2 and 514.3a among
+  others. Every rule number it cited exists in the committed index. One, 601.6,
+  is real but off-topic. That makes it a useful sample for the grader's
+  Grounding axis, because the made-up-rule-number check alone would pass it.
+  The screenshots are kept for review at `intake/jon-rulemancer/1.png`–`3.png`.
+- **What the committed case records:** `source.research` names "Jon's
+  Rulemancer app, screenshots shared with the owner, 2026-10-06" in words, never
+  the intake path, because cleanup deletes the work folder. The cleanup
+  receipt's `## Intake` section preserves the record. No text from Jon's app is
+  copied into the case. The answer is written from the CR derivation alone,
+  matching the brief's licensing constraint.
+- **Phrasing variant:** Jon's two-step wording is recorded in
+  `layers.variants` for later follow-up-question tests. The first question has
+  no Silence; the follow-up adds it, with "that turn" relying on the prior
+  answer. It is not a separate case in run 1.
+- **What makes it right next time:** the offline gate runs every non-rejected
+  case, drafts included. Once the explicit baseline command records this case
+  as a hit, the rule check (REQ-222) blocks any change that drops 514.1, 514.2
+  or 514.3a from the prompt. Once the owner approves the case, the live grader
+  scores it. That happens on demand, either selected by tag or picked up by
+  `--changed` when its prompt or answer changes, and shows whether the AI's
+  ruling matches. The harness detects a wrong answer here; it does not by
+  itself fix one. Fixing a wrong answer is the follow-up the deferred
+  `niche-interaction-rule-tests` package names. That package resumes on this
+  harness after run 1 lands, and this case is its yardstick.
+
 ## Measurements
 
 Every measurement was taken in this worktree on 2026-10-06 against committed
@@ -524,7 +580,7 @@ different slices' work is applied in parts, as listed.
 | D | Review command (render batches, including approved cases the stale comparison flags, marked stale with each changed dependency's current text) and apply command (writes `review.*`, and on `approve` re-records `snapshot`, A19). The apply command's `coverage.json` rewrite is added in E, which creates that file (A20) | — (REQ-224 is applied in E, where its coverage-file step lands) | Round-trip test: render, fill, apply changes only `review.*`, plus `snapshot` on an `approve` verdict. Stale path test: a fixture approved case whose ruling hash no longer matches is rendered marked stale; applying `approve` re-records its hashes, after which slice A's stale comparison passes and slice C's filter selects it again. Each refusal case is tested, including committed text changed between render and apply. Test placement follows A3 |
 | E | Coverage command and report (including counts per `outcome`), `coverage.json`, excluded list (per Q-007), the coverage gate as a tested function **not yet wired into `quality:check`** (A17), staleness command (stale cases through slice A's stale comparison, cases awaiting a re-freeze through slice B's re-freeze check), and the `coverage.json` rewrite at the end of slice D's apply command (A20) | REQ-189, REQ-222, REQ-224, REQ-225 | Fixture-corpus tests: an uncovered mechanic fails the gate, an excluded id the index lacks fails it, an out-of-date coverage file fails it, and a fully covered fixture passes. Applying a filled review batch that changes a status leaves the out-of-date check passing. Run on the real corpus, the coverage command lists the 255 mechanics still uncovered as report output, not a failure. `quality:check` is green. The staleness report is clean on unchanged data. Staleness fixture test: a fixture case with a changed ruling hash is listed as stale naming that dependency, and a fixture case whose stored query-text hash no longer matches is listed as awaiting a re-freeze (a backend vitest test, because slice B's re-freeze check rebuilds query text with `buildRetrievalQueryText`, A3); neither run fails any gate |
 | F | 255 mechanic cases as `draft` with frozen vectors; coverage file rewritten; the coverage gate wired into `quality:check`; map-out may split by family (701 actions 66; 702.2–702.100; 702.101–702.192) | REQ-188, REQ-223, NFR-018, goals line, system-map `## Eval harness` (from the REQ-222 slot) | The coverage gate runs in `quality:check` and passes. Every case passes the card check. The ratchet baseline is recorded |
-| G | 120 hard-area cases as `draft` with frozen vectors (A16: 60 from unused `Example:` lines, 58 from two-card rulings, the 2 tester cases as tier-3 drafts — Q1 via 614.1a, 616.1, 616.1e, 616.1f; Q2 via 514.1, 514.2, 514.3a), with any Q-008 tier-3 drafts taking two-card ruling slots; coverage file rewritten; the corpus README brought up to REQ-185's README criterion, including slice D's and E's commands | REQ-185 | The coverage report shows the 60 / 58 / 2 split and at least 40 of the 120 with `outcome` `does-not-work`. Both gates pass. The ratchet baseline is re-recorded at the end. No live run is needed to merge |
+| G | 120 hard-area cases as `draft` with frozen vectors (A16: 60 from unused `Example:` lines, 58 from two-card rulings, the 2 tester cases as tier-3 drafts — Q1 via 614.1a, 616.1, 616.1e, 616.1f; Q2 via 514.1, 514.2, 514.3a, specified in `### Tester case Q2` with its validation evidence), with any Q-008 tier-3 drafts taking two-card ruling slots; coverage file rewritten; the corpus README brought up to REQ-185's README criterion, including slice D's and E's commands | REQ-185 | The coverage report shows the 60 / 58 / 2 split and at least 40 of the 120 with `outcome` `does-not-work`. Both gates pass. The ratchet baseline is re-recorded at the end. No live run is needed to merge |
 
 The order is the intake's. Every slice builds and tests green on its own:
 slice E's gate does not run in `quality:check` until slice F gives it the
