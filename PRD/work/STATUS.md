@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rules-test-harness](rules-test-harness/) | Refined (define attempt 2, after gate-qc FAIL loop 1): DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-185–190, NFR-018 amended; REQ-222–225 new; Q-007 joke-only list, Q-008 tier-3 count). Run 1 of the rules test harness, 393 cases. Graph run `graph-20261006-181340`; intake is evidence only |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [rules-test-harness](rules-test-harness/) | Refining (gate-qc attempt 2 FAIL, loop 2): DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-185–190, NFR-018 amended; REQ-222–225 new; Q-007 joke-only list, Q-008 tier-3 count). Run 1 of the rules test harness, 393 cases. Graph run `graph-20261006-181340`; intake is evidence only |
 
 ## ideation
 
