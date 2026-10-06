@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rules-test-harness](rules-test-harness/) | Refined (define attempt 6, after gate-qc FAIL 5; the README `## Preparation gate` finding and advisory resolved). Proposal: DESIGN-BRIEF.md + GATE-QUESTIONS.md (REQ-185–190, NFR-018 amended; REQ-222–225 new; Q-007, Q-008). Graph run `graph-20261006-181340` |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rules-test-harness](rules-test-harness/) | Owner action: answer `PRD/work/rules-test-harness/GATE-QUESTIONS.md` (11 verdict slots: REQ-185–190 and NFR-018 amended, REQ-222–225 new; plus Q-007 joke-only list and Q-008 tier-3 count), then merge the docs PR to build. Gate-qc PASS at attempt 6. Graph run `graph-20261006-181340` |
 
 
 ## deferred
