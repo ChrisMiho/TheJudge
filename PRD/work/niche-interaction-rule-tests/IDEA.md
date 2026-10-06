@@ -1,10 +1,12 @@
 # Idea: niche-interaction-rule-tests
 
-**Problem.** A tester told the owner's friend that Ask AI got three hard rules interactions wrong: Academy Manufactor with Esix, Fractal Bloom (layered token replacement effects); and Silence with Necropotence and Borne Upon a Wind (using Necropotence's cleanup-step trigger to return to the end step and dodge Silence). The tester's verdict was "unreliable for difficult questions." These are the tester's claims, unverified; the exact inputs the tester typed are unknown (the owner is waiting on a reply from Ryan).
+**Problem.** A tester told the owner's friend that Ask AI got three hard rules interactions wrong: Academy Manufactor with Esix, Fractal Bloom (layered token replacement effects); and Silence with Necropotence and Borne Upon a Wind (using Necropotence's cleanup-step trigger to return to the end step and dodge Silence). The tester's verdict was "unreliable for difficult questions." These are the tester's claims, unverified. The tester's two verbatim questions arrived mid-run (`intake/screenwriter_temp_1791299243121.jpg`); whether he attached the cards is unknown.
 
-**Outcome.** A small set of repeatable tests that ask, for each of these interactions, whether the right Comprehensive Rules excerpts reach the prompt. A test that fails shows a retrieval gap the owner can see and fix. The tester's claim that an LLM cannot do this is then checked with evidence instead of argued.
+**Owner re-scope (2026-10-06, before answering docs PR #266).** Focus on questions where the player attaches every named card, and treat the tester as having attached them. Fix rule retrieval first ("lets start with making the rules correct, and then we can make the output pretty"); refining the prompt's output format is the next step, and must be tested too. Validation is "a full test of all use cases were using to validate output of rules, this is just expanding on it".
 
-**Non-goals.** No change to retrieval, prompts, or answers in this package. No new live model calls in `npm test` or `quality:check`. No copying text from the tester's chat or from web sources into the repo as truth; any gold answer must come from the committed rules corpus or a published, citable source.
+**Outcome.** With the cards attached, the Comprehensive Rules that decide each reported question reach the AI's prompt, and every existing rule-output test (the gating context-evaluation harness, the worked-solutions retrieval check, the hybrid-retrieval benchmark) gives the same result it gives today. The two reported questions join the rule-output tests so the fix stays fixed.
+
+**Non-goals.** No prompt output-format change in this package (the named follow-up). No handling of card names typed without attaching the cards. No new live model calls in `npm test` or `quality:check`. No copying text from the tester's chat or from web sources into the repo as truth; any expected rule comes from the committed rules corpus.
 
 ## Prior run
 

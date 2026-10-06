@@ -1,112 +1,322 @@
 # Gate questions — niche-interaction-rule-tests
 
-**Decide:** one new requirement, `REQ-220`. Answer its verdict slot below
-(accept, edit, or reject; a reason is required for edit or reject), then merge
-the docs PR to start the build.
+**Decide:** three items. Answer each verdict slot below (accept, edit, or
+reject; a reason is required for edit or reject), then merge the docs PR to
+start the build.
 
-Full evidence and measurements: `DESIGN-BRIEF.md` in this folder.
+- `REQ-220` (new) — the fix: a rules topic that switches on when two or more
+  cards replace or prevent.
+- `REQ-022` (amended) — the curated rules baseline stops being strictly
+  "card-agnostic" to allow that one switch.
+- `REQ-221` (new) — the tester's two questions become gating tests.
 
-## REQ-220 — a repeatable check that the right rules reach the AI for the tester's two hard questions
+Full evidence, the baseline across every rule-output suite, and every
+candidate tried with its measured result: `DESIGN-BRIEF.md` in this folder.
 
-**What this decides:** whether The Judge gets a small, separate, report-only test
-set that asks the tester's two failed questions word for word and says whether
-the rules that decide them reach the AI's prompt — and which rules count as
-"the right ones" for each.
+## REQ-220 — the replacement-effect interaction rules reach the AI when two or more cards replace or prevent
 
-**In plain terms:** a tester asked Quick Lookup two hard questions and says it got
-both wrong. This adds four test cases: each of his two questions, asked once with
-the cards only typed and once with the cards picked in Quick Lookup's card
-picker. For each, the check names the Comprehensive Rules that should be in the
-prompt and reports HIT or MISS, offline, with no AI call and no cost.
+**What this decides:** whether The Judge adds the Comprehensive Rules on how
+replacement and prevention effects interact to the AI's prompt whenever two or
+more cards in the question say "instead" or "prevent".
 
-The expected rules are labelled by hand from the official rules text:
+**In plain terms:** a tester attached Academy Manufactor and Esix, Fractal
+Bloom and asked how they combine when he makes a Treasure. Both cards are
+replacement effects — effects that swap one event for another, marked by the
+word "instead". The rule that answers it (616.1: the player picks which effect
+applies first; 616.1f: then whatever still applies gets its turn) never reached
+the AI; it got token definitions instead. With this change, two or more such
+cards in a Quick Lookup question, or on the stack or battlefield in an
+In-Depth game question, switch on a curated rules topic — "Interaction of
+Replacement and Prevention Effects", the full text of rules 616.1, 616.1a
+through 616.1g, and 616.2 — in the prompt's `GAME RULES (reference)` section.
+Measured offline: the Manufactor + Esix question goes from MISS to HIT, and
+every existing rule-output test gives exactly the result it gives today.
+Search-side alternatives (feeding card text into the rules search, or adding
+the term "replacement effect" to it) were measured too; none got 616.1 into the
+top ten, and two of them broke the Necropotence question and the retrieval
+benchmark. The rules search itself (System 3 — the scored search that adds up
+to ten rule excerpts) is not changed: it still searches the question plus each
+card's name, type line, and keywords, never its full text (REQ-178).
 
-- **Academy Manufactor + Esix, Fractal Bloom** (making a Treasure): rule 616.1 —
-  when two replacement effects (effects that swap one event for another, worded
-  with "instead") apply to the same event, the player chooses which goes first —
-  and rule 616.1f — after one applies, any effect that still applies gets its
-  turn. **Today: MISS.** Neither rule reaches the prompt, with or without the
-  cards picked; the AI gets token definitions instead.
-- **Silence + Necropotence + Borne Upon a Wind** (cleanup step): rule 514.2 —
-  "this turn" effects like Silence end in the cleanup step — and rule 514.3a — if
-  something triggers in the cleanup step, players get priority and can cast
-  spells. **Today: HIT.** Both rules already reach the prompt. The tester's wrong
-  answer here happened with the right rule in front of the AI, so this check
-  cannot catch it; it is recorded as such, not hidden.
-
-The cases live in their own folder, separate from the worked-solutions "gold
-set" (the 18 hard questions the answer-quality run grades, which only accepts a
-question whose answer is official text copied word for word — REQ-185; neither
-of these interactions has one). The check reports and never blocks a build, the
-same as the existing worked-solutions retrieval check (NFR-018 keeps that track
-"not a build-blocking gate unless the owner later promotes it"); it could not
-gate today anyway, because the Manufactor case misses and this package does not
-change how rules are found.
-
-**What happens if you say no:** no test cases are added. The tester's two
-questions stay unmeasured, and the evidence that the Manufactor question is a
-rule-finding gap while the Silence question is an answer gap lives only in this
-package's brief, which is deleted when the package closes.
+**What happens if you say no:** retrieval stays as it is. The Manufactor + Esix
+question keeps reaching the AI without the rules that decide it, and `REQ-221`'s
+Manufactor test could not pass.
 
 **Proposed diff** — `PRD/sections/functional-requirements.md`, appended after
 `REQ-219`:
 
 ```diff
 +### REQ-220
-+- Title: Interaction retrieval check for reported hard interactions
-+- Priority: medium
-+- Description: A committed, offline, report-only set of rules questions that real players reported The Judge got wrong, each asked word for word through the production prompt-preparation path, checks whether the Comprehensive Rules that decide the question reach the prompt (System 3 supplemental retrieval, top ten). Each case carries hand-labelled expected rule ids and no answer key. It is separate from the answer-quality gold set (REQ-185), never read by the answer-quality run (REQ-188), and never a build gate. A miss names a concrete retrieval gap; a hit says only that the rule reached the prompt, never that the answer built from it was right.
++- Title: Replacement-effect interaction rules when two or more cards replace or prevent
++- Priority: high
++- Description: When two or more cards in a request carry replacement or prevention wording, the assembled prompt's `GAME RULES (reference)` section includes the curated topic `replacement-effects-interaction` — the Comprehensive Rules for how replacement and prevention effects interact (the affected player chooses the order, the special cases that apply first, and the process repeating until no effect is left to apply). It applies in lookup mode and game mode alike. It is the one System 2 topic selected by card wording rather than game state.
 +- Acceptance Criteria:
-+  - cases live in `apps/backend/src/eval/interaction-retrieval/*.case.json`, outside `apps/backend/src/eval/fixtures/` (the directory the gating `contextEvaluationHarness.test.ts` reads), so no gating suite picks them up
-+  - the first-ship set is four cases, the two questions a tester reported on 2026-10-06, each asked bare (card names typed only) and with the named cards attached by oracle id the way Quick Lookup's card picker sends them:
-+    - `manufactor-esix-treasure-bare` and `manufactor-esix-treasure-cards` — question, verbatim: "How do academy manufactor and esix, fractal bloom interact when I'm attempting to create a treasure token?"; cards attached in the second, two cards: `Academy Manufactor` and `Esix, Fractal Bloom` (the comma is part of Esix's name); expected rule ids `616.1`, `616.1f`
-+    - `necropotence-silence-cleanup-bare` and `necropotence-silence-cleanup-cards` — question, verbatim: "Can I use the triggered ability of necropotence during my cleanup step to dodge silence effects and cast borne upon a wind?"; cards attached in the second: Silence, Necropotence, Borne Upon a Wind; expected rule ids `514.2`, `514.3a`
-+  - a case is valid only when it carries a non-empty `id`, `question`, and `whyHard`; at least one expected rule id, each present in the committed `apps/backend/data/gameRulesRuleIndex.json`; a `cards` list (may be empty) whose entries each carry `name` and `oracleId`; and a `source` block naming, in words, where the question came from (reporter, date, and channel — for the first-ship cases: tester feedback, 2026-10-06, a player's replies in a friend's Magic group chat, relayed to the owner as screenshots) and the Comprehensive Rules rule ids its labels are read from. The `source` block never names a repo path to the intake evidence: the work package that holds it is deleted at cleanup, and the screenshot is recorded only in that package's cleanup receipt, `## Intake` section. One shared loader validates every case and throws on a malformed one, naming each problem, rather than letting it score as a miss
-+  - `npm run eval:interaction-retrieval` runs every case offline through the unmodified production `preparePromptInput` with the inputs a player's lookup supplies — the committed rule, card-detail, and card-rulings indexes; the case's cards attached by oracle id; the question (plus attached cards' compact signal) embedded by `EMBEDDING_PROVIDER`, default `local` — reusing `scripts/lib/prompt-fidelity.mjs`, and refuses to report a run whose embedder silently fell back to lexical ranking, through the same `assertQueryEmbedded` and `describeRetrieval` guards REQ-188's answer-quality run and `scripts/eval-worked-solutions.mjs` use
-+  - the report prints one line per case — HIT when every expected rule id is in System 3's top ten, MISS otherwise; whether ranking was semantic or lexical; and each expected rule's System 3 rank or "not in prompt" — plus a summary line; a MISS exits 0
-+  - the command appears in none of the gate scripts (`package.json` `quality:check`, `test`, `coverage:check`, `test:scripts`; `apps/backend/package.json` `test:eval`), asserted by a regression-guard test, as REQ-188 does for the answer-quality run; the loader's own unit tests are pure and offline and run under `npm run test:scripts`
-+  - a README in the case directory states what the set is, what HIT and MISS mean, that it is not runtime prompt context and not a build gate, and the provenance rule below
++  - `apps/backend/data/gameRulesTopicManifest.json` gains topic `replacement-effects-interaction`, titled "Interaction of Replacement and Prevention Effects", with rule numbers `616.1`, `616.1a`, `616.1b`, `616.1c`, `616.1d`, `616.1e`, `616.1f`, `616.1g`, `616.2`; `npm run data:build` writes it into `gameRulesByTopic.json` as verbatim Comprehensive Rules text, like every other topic
++  - a card carries replacement or prevention wording when its oracle text contains the word "instead" (CR 614.1a: effects that use the word "instead" are replacement effects) or the word "prevent", "prevents", or "prevented"
++  - the topic is selected when two or more cards in the request carry that wording — in lookup mode the attached cards, in game mode every card on the stack and in populated zones; two copies of one card count as two. With fewer than two it is not selected
++  - one shared selection function serves both modes, so lookup and game mode cannot drift apart
++  - in lookup mode the topic is added alongside the four always-on core topics, never in place of them; in game mode it is added alongside the game-state-gated topics
++  - the topic's rule numbers join the curated exclusion set, so System 3 never repeats them (REQ-179)
++  - System 3's search text, scoring, cap, and embeddings are unchanged: the query stays the question plus each card's name, type line, and keywords, never oracle text (REQ-167, REQ-178, REQ-190)
++  - with Academy Manufactor and Esix, Fractal Bloom attached to the question "How do academy manufactor and esix, fractal bloom interact when I'm attempting to create a treasure token?", rules `616.1` and `616.1f` are in the prompt under both hybrid and lexical ranking (REQ-221 holds this as a gating fixture)
++  - no existing rule-output result moves from its 2026-10-06 measurement: worked-solutions retrieval 16/18 in System 3 under hybrid ranking and 14/18 under lexical; the context-evaluation harness's labelled System 3 checks 14/14 semantic and 14/14 lexical; none of the 31 existing prompt or context goldens changes; the retrieval benchmark's recall@5 stays at 0.5833 clean / 0.5769 polluted lexical and 0.8974 clean / 0.8910 polluted hybrid
 +- Constraints:
-+  - no live AI provider call, no live embedding call beyond the in-process local model, no network, no new runtime dependency (NFR-018)
-+  - questions come from real player reports, word for word; expected rule ids are hand-labelled from the committed Comprehensive Rules text and never copied from scorer output (REQ-032); outside sources (judge Q&A, articles, forums) may explain why a case matters and are cited in the case, never used as its answer
-+  - no case or label is added, edited, or removed to make a result look better (as REQ-185)
-+  - no `workedSolution` or other answer key; a case enters the answer-quality gold set only through REQ-185's own tiers
-+  - the worked-solutions retrieval check (`npm run eval:worked-solutions`) and its 18 cases are unchanged
++  - card wording selects this one topic only; card names and keywords never select a System 2 topic
++  - no live AI call, no new runtime dependency, no per-request external call
++  - verbatim rules text only; no paraphrase
 +- Dependencies:
-+  - REQ-032 (hand-labelled expected rule ids)
-+  - REQ-185 (the gold set this stays separate from, and the production-fidelity request path it reuses)
-+  - REQ-188 (the never-in-a-gate guard this mirrors, and the lexical-fallback refusal it reuses)
-+  - REQ-190 (the System 3 cap of ten that defines "reached the prompt")
-+  - NFR-018 (the non-gating validation track)
++  - REQ-022 (the curated baseline this topic joins; amended for the card-wording gate)
++  - REQ-074 (Quick Lookup prompt assembly)
++  - REQ-178 (the shared card signal that keeps lookup and game mode aligned; unchanged)
++  - REQ-179 (prefix-based curated exclusion)
++  - REQ-221 (the gating fixtures that hold this result)
 +- Notes:
-+  - measured 2026-10-06 (define, `niche-interaction-rule-tests`), production cap ten, local embedder (hybrid) and `EMBEDDING_PROVIDER=mock` (lexical): both Manufactor + Esix cases MISS under both rankings — 616.1 ranks 92 (bare) and beyond 300 (cards) semantically, 35 and 50 lexically, and 616.1f, 616.1e, 616.2, and 614.5 rank beyond 300 throughout; System 3's top ten is mostly token and copy rules (111.10a, the Treasure definition, ranks first to third). Both Necropotence + Silence cases HIT under both rankings — 514.2 at rank 5 to 7 and 514.3a at rank 3 to 4. The first build run's report is re-recorded here as the baseline
-+  - the Manufactor miss has a named cause: the question never says "replacement" or "instead", and System 3's search text is the question plus each attached card's name, type line, and keywords, never its oracle text (REQ-167, REQ-178), so the "instead" on both cards never reaches the search. A diagnostic rephrasing that names "replacement effects" pulled 616.1f to rank 10 but not 616.1. Fixing this is a retrieval change for its own package; this check is its before/after measure
-+  - the Necropotence + Silence hit means the rule that decides the question was in the prompt when the tester got a wrong answer; this check cannot detect that answer failure, and the answer-quality run (REQ-188) can only once an official published answer exists for it (REQ-185)
-+  - the tester also reported the answer did not know Necropotence has a discard trigger. With the cards attached the prompt carries Necropotence's oracle text and rulings; with names only typed it carries no card text. Which way the tester asked is unknown
++  - measured at define, 2026-10-06 (`niche-interaction-rule-tests`), offline against the committed corpus with the local embedder: before, with both cards attached, 616.1 ranked 50th (lexical) and beyond 300th (hybrid) and 616.1f beyond 300th; System 3's top ten was token and copy rules. After, both rules are in the prompt through this topic
++  - candidates measured and rejected: the attached cards' oracle text in the System 3 search (616.1 still out of the top ten; it pushed the Necropotence + Silence question's rule 514.2 out of the prompt; benchmark polluted recall@5 fell from 0.5769 to 0.3782 lexical and from 0.8910 to 0.7756 hybrid; 25 of 31 goldens changed); oracle text in the embedding only (514.2 pushed to 12th; hybrid polluted recall@5 0.8333); the terms "replacement effect" / "prevention effect" added to the search from card wording, card side or question side (616.1 reached 31st–35th hybrid; polluted recall@5 fell); the topic on any one marked card (fired on Questing Beast's "can't be prevented" alone and changed a golden)
++  - the full 616.1 family is shipped rather than a minimal subset because rule 616.1 directs the player through "the steps listed in rules 616.1a–f", and listing 616.1 bars System 3 from every 616.1 sub-rule; the topic adds 3,662 characters to a prompt when it fires (about 25% on the Manufactor + Esix prompt). 4.8% of cards carry the wording, so two random attached cards both carry it about 0.2% of the time
++  - the build re-runs every suite above and records its before/after here
 ```
 
-**Proposed diff** — `PRD/sections/system-map.md`, `## Eval harness`:
+Supporting product-truth edits that follow from this requirement (each listed in
+the brief's amendment-set table with its grep hit):
+
+`PRD/sections/system-map.md`, `## Game rules retrieval` and `### Curated game rules (System 2)`:
 
 ```diff
- ## Eval harness
- 
- - Status: shipped
--- Summary: Context-evaluation harness with fixtures, golden comparisons, labeled retrieval-relevance checks over prompt assembly and retrieval, and an on-demand answer-quality baseline that scores the model's final answer against published worked solutions.
-+- Summary: Context-evaluation harness with fixtures, golden comparisons, labeled retrieval-relevance checks over prompt assembly and retrieval, an on-demand answer-quality baseline that scores the model's final answer against published worked solutions, and an on-demand interaction retrieval check over hard interactions real players reported.
- - Lives in: `apps/backend/src/eval/`
+-- Summary: Retrieves card rulings, a card-agnostic curated game-rules baseline, and relevance-scored supplemental rules text to ground prompt reasoning; System 2 (curated) and System 3 (supplemental) are tuned and measured together.
++- Summary: Retrieves card rulings, a curated game-rules baseline (gated by game state, plus one card-wording gate for replacement-effect interactions), and relevance-scored supplemental rules text to ground prompt reasoning; System 2 (curated) and System 3 (supplemental) are tuned and measured together.
+ - Lives in: `apps/backend/src/cardRulings.ts`, `gameRules.ts`, `gameRulesTopicSelection.ts`, `gameRulesRetrieval.ts`
+-- Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032
++- Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-220
+```
+
+```diff
+-- Summary: Selects an always-on core plus card-agnostic, game-state-gated conditional topics (`turnPhase`, `combatStep`, populated zones) per request, replacing the prior "all topics every request" baseline.
++- Summary: Selects an always-on core plus game-state-gated conditional topics (`turnPhase`, `combatStep`, populated zones) per request, plus the replacement-effect interaction topic when two or more cards carry replacement or prevention wording (REQ-220), replacing the prior "all topics every request" baseline.
+ - Lives in: `apps/backend/src/gameRulesTopicSelection.ts`, `gameRules.ts`
+-- Backed by: DEC-030, DEC-045, REQ-022
++- Backed by: DEC-030, DEC-045, REQ-022, REQ-220
+```
+
+`PRD/sections/system-map/game-rules-retrieval.md`:
+
+```diff
+-Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-177, REQ-178, REQ-179, REQ-180, REQ-181
++Backed by: DEC-029, DEC-030, DEC-032, DEC-045, DEC-046, DEC-047, REQ-022, REQ-032, REQ-177, REQ-178, REQ-179, REQ-180, REQ-181, REQ-220
+```
+
+```diff
+ System 2 is the curated baseline. It always includes core rules topics, then adds
+-conditional buckets from card-agnostic game-state signals only: `turnPhase`,
+-`combatStep`, and populated zone presence. Card names, oracle text, and keywords do
+-not affect System 2. This replaces the prior "all topics every request" baseline with
++conditional buckets from game-state signals: `turnPhase`, `combatStep`, and populated
++zone presence. One topic is gated on card wording instead: when two or more submitted
++or attached cards carry replacement or prevention wording ("instead", "prevent"), it
++adds the replacement-effect interaction rules (CR 616.1, 616.1a–g, 616.2; REQ-220).
++Card names and keywords never affect System 2. This replaces the prior "all topics every request" baseline with
+ a smaller `GAME RULES (reference)` section that still covers the stable vocabulary the
+```
+
+```diff
+ vocabulary. Prompt preparation first collects submitted cards for System 1. It then
+-selects System 2 topics from game-state signals and derives the selected curated rule
+-IDs from those topics.
++selects System 2 topics from game-state signals and the card-wording gate (REQ-220)
++and derives the selected curated rule IDs from those topics.
+```
+
+```diff
+-- System 2 is intentionally card-agnostic. It is driven by `turnPhase`, `combatStep`,
+-  and populated-zone presence, not card names, oracle text, or keywords.
++- System 2 is driven by `turnPhase`, `combatStep`, and populated-zone presence, plus
++  one card-wording gate: two or more cards whose oracle text says "instead" or
++  "prevent" add the replacement-effect interaction topic (REQ-220). Card names and
++  keywords never select a System 2 topic, and relevance scoring stays System 3's job.
+```
+
+`PRD/sections/system-map/prompt-layout-spec.md`:
+
+```diff
+-| 7 | `GAME RULES (reference)` | Curated core-rules excerpts (System 2) — state-gated by submitted zones/cards in game mode, a fixed always-on set in lookup mode. |
++| 7 | `GAME RULES (reference)` | Curated core-rules excerpts (System 2) — state-gated by submitted zones/cards in game mode, an always-on set in lookup mode; in both, the replacement-effect interaction topic is added when two or more cards carry replacement or prevention wording (REQ-220). |
+```
+
+```diff
+-| `GAME RULES (reference)` | conditional — present when System 2 selects ≥1 topic from the submitted zones/cards; can be empty | conditional — present when the always-on core topic set renders; in practice always true (the set is fixed and non-empty) | conditional — same always-on set as lookup with cards | conditional — same rule as whichever mode the follow-up is in |
++| `GAME RULES (reference)` | conditional — present when System 2 selects ≥1 topic from the submitted zones/cards; can be empty | conditional — present when the always-on core topic set renders; in practice always true (the core set is fixed and non-empty), plus the replacement-effect interaction topic when two or more attached cards carry replacement or prevention wording (REQ-220) | conditional — the always-on core set only (no cards, so the REQ-220 topic never fires) | conditional — same rule as whichever mode the follow-up is in |
+```
+
+`PRD/sections/integrations-and-data.md`:
+
+```diff
+-- verbatim WotC Comprehensive Rules excerpts for curated general game-rules topics selected per DEC-045 (always-on core plus game-state-gated expansion) from the static backend artifact
++- verbatim WotC Comprehensive Rules excerpts for curated general game-rules topics selected per DEC-045 (always-on core plus game-state-gated expansion) plus the replacement-effect interaction topic when two or more cards carry replacement or prevention wording (REQ-220), from the static backend artifact
+```
+
+```diff
+-- include curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) from the committed artifact
++- include curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) and REQ-220 (the replacement-effect interaction topic, on card wording) from the committed artifact
+```
+
+`PRD/sections/quick-lookup/README.md`:
+
+```diff
+   table of contents and heading-only entries stripped (REQ-179), excluding by
+-  rule-number prefix the curated rule numbers the always-on core topics already
+-  carry, and returning a small capped set of the best-ranked rules. IDF-scored
++  rule-number prefix the curated rule numbers the selected curated topics already
++  carry, and returning a small capped set of the best-ranked rules. IDF-scored
+```
+
+```diff
+ - Built: the always-on core game-rules topics are a fixed curated set
+   (stack-and-priority, targets, zones, triggered-ability basics), not the
+   state-gated selector the game flow uses — lookup carries no game state to gate
+-  on. (DEC-045, REQ-074)
++  on. One topic is added on card wording: when two or more attached cards say
++  "instead" or "prevent" (replacement or prevention effects), the prompt also
++  carries the replacement-effect interaction rules (CR 616.1, 616.1a–g, 616.2),
++  so a question about two such cards — Academy Manufactor with Esix, Fractal
++  Bloom, say — gets the rule that the player chooses the order. (DEC-045,
++  REQ-074, REQ-220)
+```
+
+and in its header, `- Backed by:` gains `REQ-220` at the end of the list.
+
+`PRD/sections/in-depth/README.md`, `### Retrieval enrichment (machinery consumed)`:
+
+```diff
+ - Built: `GAME RULES (reference)` loads verbatim WotC Comprehensive Rules
+   excerpts from committed artifacts, selected by DEC-045's always-on core plus
+-  card-agnostic game-state-gated expansion (System 2, gated on `turnPhase`,
+-  `combatStep`, and populated zones only — no card names or oracle text). It is
+-  omitted only when the artifact is missing/empty, with a warning logged.
+-  (DEC-030, DEC-045, REQ-022)
++  game-state-gated expansion (System 2, gated on `turnPhase`, `combatStep`, and
++  populated zones), plus the replacement-effect interaction topic when two or
++  more cards on the stack or in play say "instead" or "prevent" (REQ-220); card
++  names and keywords never select a topic. It is omitted only when the artifact
++  is missing/empty, with a warning logged. (DEC-030, DEC-045, REQ-022, REQ-220)
+```
+
+and in its header, `- Backed by:` gains `REQ-220` at the end of the list.
+
+- Verdict:
+- Reason:
+
+## REQ-022 — the curated rules baseline gains one card-wording switch (amended)
+
+**What this decides:** whether the standing rule that the curated rules
+baseline ignores the cards entirely is relaxed for exactly one case: two or
+more cards with replacement or prevention wording.
+
+**In plain terms:** REQ-022 is the requirement that puts official rules text in
+every prompt, in two parts. System 2 is a curated set of rule topics picked by
+the game situation (turn phase, combat step, which zones have cards). System 3
+is a scored search over every rule. REQ-022 says today that System 2 uses
+"only card-agnostic game-state signals ... no card names, oracle text, or
+keywords", and that "System 3 owns all card/question-driven retrieval".
+`REQ-220` needs System 2 to read one thing from the cards: whether at least two
+of them say "instead" or "prevent". This amendment makes that the single
+allowed exception. Card names and keywords still never pick a topic, and
+relevance scoring stays with System 3.
+
+**What happens if you say no:** REQ-022 keeps forbidding card text in topic
+selection, so `REQ-220` as written cannot ship. Rejecting this means rejecting
+`REQ-220`, or editing it into a different mechanism.
+
+**Proposed diff** — `PRD/sections/functional-requirements.md`, `### REQ-022`:
+
+```diff
+-- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, selected by card-agnostic game-state signals for the baseline and by card/question-driven relevance scoring for supplemental rules, without changing the product API or UI.
++- Description: Every backend AI prompt must include a curated library of verbatim WotC Comprehensive Rules excerpts as reference context, selected by game-state signals for the baseline — plus one card-wording gate for replacement-effect interactions (REQ-220) — and by card/question-driven relevance scoring for supplemental rules, without changing the product API or UI.
+```
+
+```diff
+-  - every assembled prompt includes `GAME RULES (reference)` with curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) in stable `id` order when the artifact is present
++  - every assembled prompt includes `GAME RULES (reference)` with curated topics selected per DEC-045 (always-on core plus game-state-gated expansion) and REQ-220 (the replacement-effect interaction topic when two or more cards carry replacement or prevention wording) in stable `id` order when the artifact is present
+```
+
+```diff
+-  - System 2 selection uses only card-agnostic game-state signals (`turnPhase`, `combatStep`, populated zones); no card names, oracle text, or keywords
+-  - System 3 owns all card/question-driven retrieval including oracle-keyword signals
++  - System 2 selection uses game-state signals (`turnPhase`, `combatStep`, populated zones) plus exactly one card signal: whether two or more cards' oracle text says "instead" or "prevent", which selects the replacement-effect interaction topic (REQ-220); card names and keywords never select a System 2 topic
++  - System 3 owns all relevance-scored card/question-driven retrieval including oracle-keyword signals; REQ-220's wording gate is a fixed on/off switch, not scoring
+```
+
+and under `- Dependencies:`, after `  - REQ-182 (the hybrid blend that is now System 3's shipped ranking)`:
+
+```diff
++  - REQ-220 (the card-wording gate for the replacement-effect interaction topic)
+```
+
+and as the last bullet of `- Notes:`:
+
+```diff
++  - amended by `niche-interaction-rule-tests` (2026-10-06): System 2 is no longer strictly card-agnostic. One topic, the replacement-effect interaction rules, is selected when two or more cards carry replacement or prevention wording (REQ-220), because no change to System 3's search, measured offline, got rule 616.1 into the prompt for a question about two such cards attached together
+```
+
+- Verdict:
+- Reason:
+
+## REQ-221 — the tester's two questions become gating rule tests
+
+**What this decides:** whether the tester's two questions, asked word for word
+with every named card attached, join the rule tests that must pass before any
+change ships (`npm run quality:check`), or stay out of the gate.
+
+**In plain terms:** the repo already has a gating test set, the
+context-evaluation harness: about thirty saved example questions, each with the
+rules that must reach the prompt, checked on every quality check. This adds the
+tester's two questions to it. The Manufactor + Esix test passes when the
+replacement-effect interaction topic (`REQ-220`) is in the prompt — that topic
+carries rules 616.1 and 616.1f. The Necropotence + Silence test passes when
+rules 514.2 ("this turn" effects like Silence end in the cleanup step) and
+514.3a (a trigger in the cleanup step gives players priority) are in the rules
+search's top ten; they are today. If a later change drops either set, the
+build fails. Recommended because both pass once `REQ-220` ships, and a gate is
+what keeps a fix fixed; the owner asked for these cases to join "a full test of
+all use cases". They cannot join the worked-solutions gold set instead:
+REQ-185 admits only questions whose answer is official text copied word for
+word, and neither has one.
+
+**What happens if you say no:** the two questions are not added to any test
+set. `REQ-220`'s result is measured once at build and recorded in its Notes,
+but nothing stops a later retrieval change from losing it again.
+
+**Proposed diff** — `PRD/sections/functional-requirements.md`, appended after
+`REQ-220`:
+
+```diff
++### REQ-221
++- Title: Reported hard interactions are gating rule-retrieval fixtures
++- Priority: medium
++- Description: Rules questions that real players reported The Judge got wrong are added, word for word and with every named card attached, as labelled fixtures in the context-evaluation harness (REQ-032), so `npm run quality:check` fails if the rules that decide them stop reaching the prompt. Each fixture names the rules it needs by hand-labelled rule or topic id and carries no answer key.
++- Acceptance Criteria:
++  - two fixtures in `apps/backend/src/eval/fixtures/`, both `mode: "lookup"`, cards attached by real oracle id with their committed oracle text, type line, and keywords:
++    - `quick-lookup-replacement-interaction` — question, verbatim: "How do academy manufactor and esix, fractal bloom interact when I'm attempting to create a treasure token?"; cards `Academy Manufactor` and `Esix, Fractal Bloom` (two cards; the comma is part of Esix's name); expects System 2 topics `stack-and-priority`, `targets-basics`, `zones-basics`, `abilities-trigger-basics`, and `replacement-effects-interaction`, which carries rules `616.1` and `616.1f` (REQ-220)
++    - `quick-lookup-cleanup-trigger` — question, verbatim: "Can I use the triggered ability of necropotence during my cleanup step to dodge silence effects and cast borne upon a wind?"; cards `Silence`, `Necropotence`, `Borne Upon a Wind`; expects supplemental rule ids `514.2` and `514.3a` in System 3's top ten
++  - each fixture has committed prompt and context goldens and a frozen query embedding (`npm run eval:build-frozen-query-embeddings`), and passes both the golden-scenario check and the semantic-path relevance check in `contextEvaluationHarness.test.ts`
++  - each fixture's `description` says in words where the question came from — tester feedback, 2026-10-06, a player's replies in a friend's Magic group chat, relayed to the owner as screenshots — and never names a repo path to intake evidence (the work package holding it is deleted at cleanup)
++- Constraints:
++  - expected rule and topic ids are hand-labelled from the committed Comprehensive Rules text, never copied from scorer output (REQ-032); no fixture or label is added, edited, or removed to make a result pass
++  - no answer key; a reported question enters the answer-quality gold set only through REQ-185's own tiers
++  - offline: no live AI call, no live embedding call at test time
++- Dependencies:
++  - REQ-032 (labelled relevance checks in the gating harness)
++  - REQ-220 (the topic the Manufactor + Esix fixture expects)
++  - REQ-185 (the gold set these stay out of)
++- Notes:
++  - owner direction (2026-10-06): cases attach every named card; a question with the cards only typed is out of focus. The tester's own attachment is unknown and is treated as attached
++  - measured at define with the cards attached: the Necropotence + Silence case already passes (514.2 at System 3 #7, 514.3a at #3 hybrid; #7 and #4 lexical); the AI still answered it wrong, so a pass here says the rules reached the prompt, never that the answer was right
+```
+
+`PRD/sections/system-map.md`, `## Eval harness`:
+
+```diff
 -- Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032, NFR-018, REQ-185
-+- Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032, NFR-018, REQ-185, REQ-220
-```
-
-and a new child entry after `### Answer-quality baseline`:
-
-```diff
-+### Interaction retrieval check
-+
-+- Status: shipped
-+- Summary: On-demand, offline, report-only check that asks hard interaction questions real players reported, word for word, bare and with the named cards attached, through the production prompt-preparation path, and reports whether each case's hand-labelled Comprehensive Rules reach System 3's top ten. No answer key, no model call, never in `quality:check`, never a build gate.
-+- Lives in: `apps/backend/src/eval/interaction-retrieval/`, `scripts/eval-interaction-retrieval.mjs`, `scripts/lib/interaction-cases.mjs`
-+- Backed by: REQ-220, REQ-032, NFR-018
++- Backed by: DEC-025, DEC-030, DEC-032, DEC-047, REQ-032, NFR-018, REQ-185, REQ-221
 ```
 
 - Verdict:
@@ -114,7 +324,7 @@ and a new child entry after `### Answer-quality baseline`:
 
 ## Blocker questions
 
-None. Where the cases live, whether they gate a build, and which rules each case
-expects are all inside `REQ-220` above, each with a recommendation the PRD
-supports (REQ-185's official-answer bar, NFR-018's non-gating stance, REQ-032's
-hand-labelled rule ids). An `edit` verdict on `REQ-220` changes any of them.
+None. The one product choice the owner's direction left open — whether the new
+cases gate a build — is `REQ-221` above, with a recommendation. No live model
+spend is proposed: every retrieval measurement is offline, and answer
+correctness belongs to the prompt-format follow-up recorded in the brief.

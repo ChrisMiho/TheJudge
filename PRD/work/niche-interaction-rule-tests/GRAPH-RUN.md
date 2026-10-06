@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | failed | `0 → 38` | FAIL attempt 1 of 3: 3 findings (1 Important: REQ-220 `source` cites an intake path cleanup deletes; 2 Minor: two-card list ambiguity, lexical-fallback refusal credited to REQ-185 not REQ-188); `STATUS.refining`; findings in `README.md` `## Preparation gate` | 2026-10-06 |
 | 5 | define | opus | ok | `0 → 29` | attempt 2: 3 gate-qc findings fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (REQ-220 `source` cites reporter/date/channel/CR ids, two-card list, REQ-188 credited); `STATUS.refined` | 2026-10-06 |
 | 6 | gate-qc | sonnet | ok | `0 → 32` | PASS attempt 2, findings none; README `## Preparation gate` PASS; parked `STATUS.owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/266 | 2026-10-06 |
+| 7 | define | opus | ok | `0 → 56` | attempt 3 (owner re-scope, not a gate-qc loop): `DESIGN-BRIEF.md` rewritten, `GATE-QUESTIONS.md` = new REQ-220, REQ-022 amended, new REQ-221; `measure-candidates.mjs` + `measure-candidates.out.txt` (C7 fixes Manufactor + Esix, 0 suites move); `STATUS.refined` | 2026-10-06 |
 
 ## Open gate
 
@@ -172,6 +173,22 @@ What that means for the rewrite of `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md`:
 Apply the assumption ladder and the genuine-blocker test from `PRD/instructions/preparation-contract.md` per question as each arises. No live model calls. You have a tool-call budget of 150 for this dispatch, so measure economically: extend `measure-retrieval.mjs` or add one sibling script in the package rather than many ad hoc runs. When done, set `STATUS.refined` (single marker, `git mv`), README frontmatter, and move the `PRD/work/STATUS.md` board row fully from refining to refined. Do not commit or push; the driver commits.
 
 Report back, plainly: outcome; files changed; STATUS marker; the stable IDs in `GATE-QUESTIONS.md`; the baseline across all suites; which retrieval change you propose and its before/after on the new cases and on every existing suite; and the follow-up recorded for prompt format.
+
+### gate-qc (attempt 3)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests
+
+You are node 4 (`gate-qc`) of graph run `graph-20261006-150550`, attempt 3. The owner re-scoped the package before answering its gate, and define attempt 3 rewrote it: the build goal is now a rule-retrieval fix (a curated replacement/prevention-effects topic that switches on when two or more attached cards carry the wording), validated by every existing rule-output suite plus the tester's two cards-attached questions. Grade the whole package fresh. Run the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.refined). Grade `DESIGN-BRIEF.md` together with the proposed product truth in `GATE-QUESTIONS.md` (new REQ-220, REQ-022 amended in place, new REQ-221, and the supporting section edits carried in those blocks) against current `PRD/sections/` truth and agent-readiness. Intake under `intake/` is evidence only. The ledger `GRAPH-RUN.md` and the README `## Preparation gate` section are the driver's; do not edit them.
+
+Check cross-cutting consistency by grep, not memory. Re-run the brief's amendment-set grep yourself as a quoted line-level grep over `PRD/sections/` (and the other places product truth or docs restate it, such as `apps/backend/src/eval/` READMEs) for every wording the REQ-022 amendment changes (for example card-agnostic and its variants), and confirm every hit has a disposition row and, where it needs an edit, a diff in `GATE-QUESTIONS.md`. Do the same for every existing stable ID the proposal touches. Confirm REQ-220 and REQ-221 are not already used anywhere in `PRD/`. Re-run `measure-candidates.mjs` offline and confirm the numbers the brief and the acceptance targets cite reproduce; a numeric target that does not match a measured number is a finding.
+
+Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driver commits.
+
+Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
 
 ## Instruction ledger
 
