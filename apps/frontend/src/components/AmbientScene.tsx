@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef } from "react";
 import type { Palette } from "../lib/theme/palettes";
+import { blueLinkRadius, createBlueFamilyPicker, blueOutline, bluePlacement } from "../lib/theme/blueInscription";
 
 export type AmbientSceneProps = {
   /** The active profile's motif id (REQ-201); kept for the page/tray hook and the data attribute. */
@@ -249,9 +250,9 @@ const AMBIENCE = (() => {
   // in the air, glow, and fade as they drift up; the dust specks are threaded
   // into faint constellations (the renderer's `links`). Round 9 ("some of the
   // shapes are too large and detailed … larger shapes need to be less detailed
-  // like the ones in the colorless profile"): the big shape is a plain ring —
-  // one circle that inscribes itself, holds, and dissolves, with at most a
-  // thin second ring inside — no rune marks, no star of chords. The runes stay
+  // like the ones in the colorless profile"): large inscriptions remain simple
+  // outlines, now cycling through six geometric families — no rune marks or
+  // dense interior chords. The runes stay
   // small. The runes are drawn for this app — no real alphabet, no Wizards glyph.
   const RUNES = [
     [[[0, -1], [0, 1]], [[-0.6, -0.4], [0, 0.1], [0.6, -0.4]]],
@@ -269,22 +270,27 @@ const AMBIENCE = (() => {
     cyan: [56, 225, 255], pale: [190, 240, 255], deep: [0, 80, 216],
     init(W: any, H: any, k: any) {
       this.k = k;
-      this.maxRunes = Math.max(2, Math.round(7 * k * Math.sqrt(W * H / 1296000)));
       this.runes = [];
-      this.circle = null; this.nextCircle = 120;
+      this.inscription = null; this.nextInscription = 120;
+      this.nextFamily = createBlueFamilyPicker(() => random());
+      this.resize(W, H);
     },
     // a rune: writes itself (stroke by stroke), holds with a glow, fades as it rises
     rune(W: any, H: any) {
       return { g: pick(RUNES), x: rnd(0.04, 0.96) * W, y: rnd(0.12, 0.95) * H, s: rnd(7, 13), rot: rnd(-0.25, 0.25), age: 0, write: rnd(90, 150), hold: rnd(160, 300), fade: rnd(160, 240), vy: rnd(0.04, 0.12) };
     },
-    // the ring sits in open space: the side gutters on a wide screen, low on a phone or in the tray
-    spellCircle(W: any, H: any) {
-      const col = Math.min(768, W * 0.92), gutter = (W - col) / 2;
-      const wide = gutter > 150;
-      const r = wide ? Math.min(gutter * 0.5, H * 0.16, 110) : Math.min(W * 0.26, 90);
-      const x = wide ? (random() < 0.5 ? gutter / 2 : W - gutter / 2) : rnd(0.25, 0.75) * W;
-      const y = wide ? rnd(0.3, 0.78) * H : rnd(0.7, 0.9) * H;
-      return { x, y, r, age: 0, draw: 260, hold: 600, fade: 260, rot: rnd(0, 6.3), inner: random() < 0.5 };
+    // Store shape and placement choices once; rotation and resize keep the envelope contained.
+    spellInscription(W: any, H: any) {
+      const horizontal = random(), vertical = random();
+      const family = this.nextFamily();
+      return { ...bluePlacement(W, H, horizontal, vertical), horizontal, vertical, family,
+        outlines: blueOutline(family, rnd(0.6, 0.85), random() < 0.5),
+        age: 0, draw: 260, hold: 600, fade: 260, rot: rnd(0, 6.3) };
+    },
+    resize(W: any, H: any) {
+      this.maxRunes = Math.max(2, Math.round(7 * this.k * Math.sqrt(W * H / 1296000)));
+      const c = this.inscription;
+      if (c) Object.assign(c, bluePlacement(W, H, c.horizontal, c.vertical));
     },
     strokeRune(ctx: any, g: any, x: any, y: any, s: any, rot: any, prog: any) {
       // prog 0..1 across all of the rune's strokes
@@ -314,21 +320,24 @@ const AMBIENCE = (() => {
         return true;
       });
       ctx.shadowBlur = 0;
-      // the ring (round 9, plain): inscribe (the arc grows), hold and breathe, dissolve
-      if (!this.circle && --this.nextCircle <= 0) this.circle = this.spellCircle(W, H);
-      const c = this.circle;
+      // One simple inscription: trace its outline, hold and breathe, dissolve
+      if (!this.inscription && --this.nextInscription <= 0) this.inscription = this.spellInscription(W, H);
+      const c = this.inscription;
       if (c) {
         c.age += 1;
         const end = c.draw + c.hold + c.fade;
-        if (c.age > end) { this.circle = null; this.nextCircle = rnd(240, 600); return; }
+        if (c.age > end) { this.inscription = null; this.nextInscription = rnd(240, 600); return; }
         const p = Math.min(1, c.age / c.draw);
         const a = (c.age < c.draw + c.hold ? 1 : 1 - (c.age - c.draw - c.hold) / c.fade) * (0.85 + 0.15 * Math.sin(t / 70));
         const turn = c.rot + t * 0.0006;
         ctx.save(); ctx.translate(c.x, c.y);
         ctx.shadowColor = rgba(this.cyan, 0.6 * a); ctx.shadowBlur = 8;
         ctx.strokeStyle = rgba(this.pale, 0.16 * a); ctx.lineWidth = 1.1;
-        ctx.beginPath(); ctx.arc(0, 0, c.r, turn, turn + p * Math.PI * 2); ctx.stroke();
-        if (c.inner) { ctx.strokeStyle = rgba(this.pale, 0.09 * a); ctx.beginPath(); ctx.arc(0, 0, c.r * 0.7, -turn, -turn - p * Math.PI * 2, true); ctx.stroke(); }
+        this.strokeRune(ctx, [c.outlines[0]], 0, 0, c.r, turn, p);
+        if (c.outlines[1]) {
+          ctx.strokeStyle = rgba(this.pale, 0.09 * a);
+          this.strokeRune(ctx, [c.outlines[1]], 0, 0, c.r, c.family === 'ring' ? -turn : turn, p);
+        }
         ctx.restore(); ctx.shadowBlur = 0;
       }
     }
@@ -470,7 +479,7 @@ const AMBIENCE = (() => {
 
   // the Menu tray (round 9: "the blue profile side menu still has bubbles
   // floating around instead of the new abstract things"): every colour's tray
-  // plays the same scene as its page — Blue's runes and ring included. Round
+  // plays the same scene as its page — Blue's runes and inscriptions included. Round
   // 8's bubbles-and-wave tray scene is gone.
   const SCENES: any = { white: WHITE, blue: BLUE, black: BLACK, red: RED, green: GREEN, colorless: COLORLESS };
   // round 10 ("the colorless profile tray really lacks animation, or they're
@@ -499,7 +508,7 @@ const AMBIENCE = (() => {
     const k = opts.k ?? 1, dustK = opts.dust ?? 1, adaptive = opts.adaptive ?? false;
     let parts: any[] = [], recipe: any, scene: any, W = 0, H = 0, raf = 0, dpr = 1, t = 0, cache: HTMLCanvasElement | null = null;
     // adaptive-fallback probe (see shouldFallbackToStatic): sampled after start()
-    let probeDone = false, probeStart = 0, probeLast = 0;
+    let probeDone = false, probeStart = 0, probeLast = 0, frozen = false;
     const probeSamples: number[] = [];
     // Pre-rendered dust-mote sprites (the soft glow halo), built once per start()
     // and keyed to the active colour. Each dust particle is a drawImage of one of
@@ -538,7 +547,12 @@ const AMBIENCE = (() => {
       [W, H] = opts.size ? opts.size() : [window.innerWidth, window.innerHeight];
       canvas.width = Math.max(1, W * dpr); canvas.height = Math.max(1, H * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const refitted = typeof scene?.resize === 'function';
+      scene?.resize?.(W, H);
       buildCache();
+      if (refitted && reducedMotion()) start();
+      else if (refitted && frozen) tick(true);
+      return refitted;
     }
     function buildCache() {
       cache = null;
@@ -548,7 +562,7 @@ const AMBIENCE = (() => {
       scene.backdrop(c2, W, H, k);
     }
     function start() {
-      probeDone = false; probeStart = 0; probeLast = 0; probeSamples.length = 0;
+      probeDone = false; probeStart = 0; probeLast = 0; probeSamples.length = 0; frozen = false;
       random = reducedMotion() ? seededRandom(STILL_FRAME_SEED) : Math.random;
       t = Math.floor(rnd(0, 10000));
       const profile = document.documentElement.dataset.profile || 'blue';
@@ -585,7 +599,7 @@ const AMBIENCE = (() => {
       scene.draw(ctx, t, W, H);
       // Blue (round 8): specks near each other are threaded into faint constellations
       if (recipe.links && !opts.tray) {
-        const L = recipe.links * Math.min(1, 0.6 + 0.4 * k), L2 = L * L;
+        const L = blueLinkRadius(recipe.links * Math.min(1, 0.6 + 0.4 * k), W, H), L2 = L * L;
         ctx.lineWidth = 0.7;
         for (let i = 0; i < parts.length; i++) {
           const a = parts[i];
@@ -619,6 +633,7 @@ const AMBIENCE = (() => {
         // the crisp bright core: a tiny solid dot, cheap to fill
         ctx.fillStyle = rgba(col, alpha); ctx.beginPath(); ctx.arc(p.x, p.y, p.s * (p.spark ? 1.3 : 0.9), 0, Math.PI * 2); ctx.fill();
       }
+      if (freeze) frozen = true;
       if (once !== true && !freeze) raf = requestAnimationFrame(() => tick());
     }
     resize(); start();
@@ -662,8 +677,7 @@ export function AmbientScene({ motif, variant = "page" }: AmbientSceneProps): JS
         size: () => [root.clientWidth || 320, root.clientHeight || 200]
       });
       const refit = () => {
-        scene.resize();
-        scene.start();
+        if (!scene.resize()) scene.start();
       };
       if (typeof ResizeObserver === "undefined") {
         window.addEventListener("resize", refit);

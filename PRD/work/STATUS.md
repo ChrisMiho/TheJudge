@@ -8,6 +8,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [blue-ambient-personality](blue-ambient-personality/) | Direct Codex implementation verified; PR targets main |
 
 ## active
 
