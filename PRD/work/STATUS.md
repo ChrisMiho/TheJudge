@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Tests that check the right rules reach the prompt for tester-reported hard interactions (Academy Manufactor + Esix; Silence + Necropotence + Borne Upon a Wind) |
 
 ## owner-action
 
