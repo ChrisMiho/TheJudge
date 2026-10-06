@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-181340/`
-- Current node: `gate-qc` (attempt 7, build-half re-grade after gate resolution)
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/rules-test-harness/`
 
 ## Node ledger
@@ -28,6 +28,7 @@
 | 13 | define | opus | ok | `0 → 56` | attempt 6 (owner-authorized pass 2 of 5): 1 attempt-5 finding + 1 advisory fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (slice A adds `scripts/lib/gold-cases.d.mts` + `prompt-fidelity.d.mts`; backend vitest imports the `.mjs` statically, one copy; loader checks structural `gameState` rules, slice B vitest parses every `gameState` with `gameContextSchema`; typecheck-green in A and B done-when; records without hashes count as ungraded and are re-graded, ~$0.35 for 18); new M17 `measure/ts-boundary.mjs` (bare import TS7016 exit 2; `.d.mts` tsc exit 0 + vitest 1 pass; variable-path import rejected as untyped); `STATUS.refined` | 2026-10-06 |
 | 14 | gate-qc | sonnet | ok | `0 → 37` | PASS attempt 6, findings none (attempt-5 finding + advisory confirmed resolved; M17 re-run, plus a scratch `vitest run --coverage` with the real backend config importing both `.mjs`; 220 hits = 220 rows; 40 removed + 37 context lines exact; M1/M8/M12/M16 reproduced); README `## Preparation gate` PASS; parked `STATUS.owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/268 | 2026-10-06 |
 | 15 | gate-review | sonnet | ok | `0 → 13` | build-half claim: `.worktrees/kickoff-rules-test-harness` removed clean, `.worktrees/implement-rules-test-harness` on `thejudge-auto/rules-test-harness-work` cut from `origin/main` 652ed0e, claim commit pushed; lock re-taken (`graph-preflight --take-lock`), graph canary `nohup true` denied; `GRAPH-RUN.md` `## Gate verdicts` 11 accept + Q-007/Q-008 accept, brief reconciliation none; `STATUS.owner-action` → `STATUS.refined`; `PRD/work/STATUS.md` row moved to refined | 2026-10-06 |
+| 16 | gate-qc | sonnet | ok | `0 → 28` | PASS attempt 7 (build-half re-grade), findings none; base `origin/main` 652ed0e unchanged since attempt 6; live grep 219 hits all with disposition rows (220th was this package's board row, rewritten at the gate move — advisory only); 15 diff blocks, 40 removed lines exact; REQ-222–225 unused; M17, M6 (16/18), M1 (258), M16, M8, M12 reproduced; README `## Preparation gate` PASS; `STATUS.refined` | 2026-10-06 |
 
 ## Open gate
 
@@ -391,6 +392,20 @@ Check cross-cutting consistency by grep, not memory: re-run the brief's line-lev
 Do not edit `PRD/sections/`, code, the brief, or `GATE-QUESTIONS.md`. Do not commit or push; the driver commits. Your tool-call cap is 60 for this node, and any subagent you dispatch spends from the same budget. Earlier passes used up to 58 of 60: batch your greps and checks into few calls, and leave room to report.
 
 Report back: PASS or FAIL, the complete findings list with severity (none if PASS), the STATUS marker you set, and any file you wrote.
+
+### plan
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness
+
+You are node 5 (`plan`) of graph run `graph-20261006-181340` for package `PRD/work/rules-test-harness/`, on the shared branch `thejudge-auto/rules-test-harness-work`. Run the `thejudge-map-out` skill (read `.claude/skills/thejudge-map-out/SKILL.md` and its `reference.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+The README `## Preparation gate` records Quality-check PASS (gate-qc attempt 7, findings none); verify it there before writing anything. Slice the approved `DESIGN-BRIEF.md` (slices A through G, in the brief's order and with its apply-order rule A21) together with the finalized `GATE-QUESTIONS.md` (every verdict accept; Q-007 and Q-008 accept) into `GAMEPLAN.md`, one `slice-<letter>.md` per slice, and one `slice-<letter>.criteria.json` beside each with every criterion `false` and an evidence block, per the map-out reference. Each slice doc names which proposed stable IDs it applies to `PRD/sections/` at build, so product truth lands with the code that makes it true. Set `STATUS.active` (exactly one marker) and move the `PRD/work/STATUS.md` board row fully (remove from the old section, add to the new one).
+
+Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GRAPH-RUN.md`, or the README `## Preparation gate` and `## Autonomous metadata` sections. Do not commit or push; the driver commits. Your tool-call cap is 120 for this node.
+
+Report back: outcome (ok / failed / blocked), the slice list with one line each, every path you wrote (absolute), and the STATUS marker you set.
 
 ## Instruction ledger
 
