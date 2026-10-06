@@ -279,6 +279,13 @@
 .q-box:has(.deep) { padding-left: 0.45rem; }
 .q-box:has(.deep) textarea { padding-left: 0.3rem; }
 @media (max-width: 479px) { .q-box .deep .lbl { display: none; } .q-box .deep { padding: 0 0.6rem; } }
+/* indepth-chip-collapse (REQ-206): the label shows at rest and drops to the glyph alone while the
+   question field is focused or the box holds text. Keyed to the textarea itself, never a bare
+   focus-within, so tabbing onto the chip, mic or send keeps the label. */
+.q-box:has(textarea:focus) .deep .lbl,
+.q-box:not([data-fill="0"]) .deep .lbl { display: none; }
+.q-box:has(textarea:focus) .deep,
+.q-box:not([data-fill="0"]) .deep { padding: 0 0.6rem; }
 
 /* ---- card detail panel — round 3: the art leads, the close sits in the
    corner, the oracle text reads like a card's own text box ---- */

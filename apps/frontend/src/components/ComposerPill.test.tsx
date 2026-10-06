@@ -231,6 +231,34 @@ describe("Frontend - ComposerPill (REQ-206, REQ-132, REQ-012, REQ-121)", () => {
     expect(onAddInDepthDetails).toHaveBeenCalledTimes(1);
   });
 
+  it("collapses the In-depth label on textarea focus or a non-empty box, never on bare focus-within (flow.css)", () => {
+    expect(flowCss).toMatch(/\.q-box:has\(textarea:focus\) \.deep \.lbl/);
+    expect(flowCss).toMatch(/\.q-box:not\(\[data-fill="0"\]\) \.deep \.lbl\s*\{\s*display:\s*none/);
+    const focusWithinRules = flowCss.split("}").filter((r) => /\.q-box:focus-within/.test(r) && /\.lbl/.test(r));
+    expect(focusWithinRules).toEqual([]);
+  });
+
+  it("keeps the In-depth chip's accessible name and hides the label from assistive tech", () => {
+    render(
+      <ComposerPill
+        value="typed"
+        onChange={vi.fn()}
+        onSubmit={vi.fn()}
+        maxLength={300}
+        placeholder="What would you like to know?"
+        textareaAriaLabel="Magic question"
+        submitLabel="Ask TheJudge"
+        pendingLabel="Asking…"
+        onAddInDepthDetails={vi.fn()}
+      />
+    );
+
+    const pill = screen.getByTestId("composer-pill-in-depth");
+    expect(pill).toHaveAccessibleName("Add in-depth details");
+    expect(pill.querySelector(".lbl")).toHaveAttribute("aria-hidden", "true");
+    expect(screen.getByTestId("composer-pill")).toHaveAttribute("data-fill", "some");
+  });
+
   it("shows no mic control where the browser has no speech recognition (today's arrow alone)", () => {
     render(
       <ComposerPill

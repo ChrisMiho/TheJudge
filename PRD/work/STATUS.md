@@ -33,7 +33,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| indepth-chip-collapse | AWAITING OWNER — gate-qc PASS, docs PR open; answer the REQ-206 edit slot in `GATE-QUESTIONS.md`, then merge the docs PR to build. Coordinates with anchor-ask-composer (same REQ-206 line) |
 
 
 ## deferred
