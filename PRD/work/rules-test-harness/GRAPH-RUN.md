@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-181340/`
-- Current node: `owner-action` (gate-qc PASS; docs PR open)
-- Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; `/graph-implement` builds it
+- Current node: `gate-qc` (attempt 7, build-half re-grade after gate resolution)
+- Next action: `/graph-implement PRD/work/rules-test-harness/`
 
 ## Node ledger
 
@@ -27,11 +27,35 @@
 | 12 | gate-qc | sonnet | failed | `0 → 31` | FAIL attempt 5 (5th FAIL; owner-authorized loop to define 6 of 9): both attempt-4 findings + 3 advisories confirmed resolved, no regression; 1 Minor finding (backend vitest cannot import `scripts/lib/gold-cases.mjs` — TS7016 under `rootDir: src`, no `allowJs`, measured in a scratch tsconfig; `gameState` schema parse has no gate test); 1 advisory (records without hashes); 220 hits = 220 rows, diffs exact, M1/M1b/M3/M8/M9/M12 reproduced; `STATUS.refining`; findings in README `## Preparation gate` | 2026-10-06 |
 | 13 | define | opus | ok | `0 → 56` | attempt 6 (owner-authorized pass 2 of 5): 1 attempt-5 finding + 1 advisory fixed in `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` (slice A adds `scripts/lib/gold-cases.d.mts` + `prompt-fidelity.d.mts`; backend vitest imports the `.mjs` statically, one copy; loader checks structural `gameState` rules, slice B vitest parses every `gameState` with `gameContextSchema`; typecheck-green in A and B done-when; records without hashes count as ungraded and are re-graded, ~$0.35 for 18); new M17 `measure/ts-boundary.mjs` (bare import TS7016 exit 2; `.d.mts` tsc exit 0 + vitest 1 pass; variable-path import rejected as untyped); `STATUS.refined` | 2026-10-06 |
 | 14 | gate-qc | sonnet | ok | `0 → 37` | PASS attempt 6, findings none (attempt-5 finding + advisory confirmed resolved; M17 re-run, plus a scratch `vitest run --coverage` with the real backend config importing both `.mjs`; 220 hits = 220 rows; 40 removed + 37 context lines exact; M1/M8/M12/M16 reproduced); README `## Preparation gate` PASS; parked `STATUS.owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/268 | 2026-10-06 |
+| 15 | gate-review | sonnet | ok | `0 → 13` | build-half claim: `.worktrees/kickoff-rules-test-harness` removed clean, `.worktrees/implement-rules-test-harness` on `thejudge-auto/rules-test-harness-work` cut from `origin/main` 652ed0e, claim commit pushed; lock re-taken (`graph-preflight --take-lock`), graph canary `nohup true` denied; `GRAPH-RUN.md` `## Gate verdicts` 11 accept + Q-007/Q-008 accept, brief reconciliation none; `STATUS.owner-action` → `STATUS.refined`; `PRD/work/STATUS.md` row moved to refined | 2026-10-06 |
 
 ## Open gate
 
 - None. Resolved 2026-10-06: the owner authorized up to five more define passes (define attempts 5–9, each followed by gate-qc) after the fourth gate-qc FAIL; a FAIL at gate-qc attempt 9 parks again at owner-action. Lock re-taken (`graph-preflight --take-lock`, startedAt 2026-10-06T19:47:41.303Z); graph canary `denied — armed (nohup true)`. Marker `STATUS.owner-action` → `STATUS.refining`.
 - Answered 2026-10-06: the owner accepted all 11 slots and the recommendations for Q-007 and Q-008 (every slot `accept`). Remaining: merge the docs PR https://github.com/ChrisMiho/TheJudge/pull/268 to build. Evidence: ledger row 14; README `## Preparation gate` PASS. Resume: merging the docs PR is the build signal; `/graph-implement` picks it up.
+- Gate review 2026-10-06 (build half, node `gate-review`): define gate resolved with 11 verdicts (11 accept, 0 edit, 0 reject) plus Q-007 and Q-008 answered `accept`. `STATUS.owner-action` -> `STATUS.refined`; the resumed run enters at `gate-qc`.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-185` | accept | Owner accepted the recommendation, 2026-10-06 |
+| `REQ-186` | accept | Owner accepted the recommendation, 2026-10-06 |
+| `REQ-187` | accept | Owner accepted the recommendation, 2026-10-06 |
+| `REQ-188` | accept | Owner accepted the recommendation, 2026-10-06 |
+| `REQ-189` | accept | Owner accepted the recommendation, 2026-10-06 |
+| `REQ-190` | accept | Owner accepted the recommendation, 2026-10-06 |
+| `NFR-018` | accept | Owner accepted the recommendation, 2026-10-06 |
+| `REQ-222` | accept | Owner accepted the recommendation, 2026-10-06 |
+| `REQ-223` | accept | Owner accepted the recommendation, 2026-10-06 |
+| `REQ-224` | accept | Owner accepted the recommendation, 2026-10-06 |
+| `REQ-225` | accept | Owner accepted the recommendation, 2026-10-06 |
+
+Blocker questions: `Q-007` accept (exclude 701.45 Assemble and 702.158 Space Sculptor; 256 mechanics, 255 mechanic cases); `Q-008` accept (0 extra tier-3 drafts beyond the two tester cases). Both accept the recommendation the brief already carries.
+
+### Brief reconciliation
+
+none
 
 ## Dispatch prompts
 
@@ -333,6 +357,36 @@ Package: `PRD/work/rules-test-harness/` (STATUS.refined). Grade `DESIGN-BRIEF.md
 Check cross-cutting consistency by grep, not memory: re-run the brief's line-level grep for each amended or relied-on ID (REQ-177, REQ-185 through REQ-190, NFR-018) across `PRD/`, `apps/backend/src/eval/`, and `scripts/`, and confirm every hit has a disposition row and that each amendment the rows promise appears in a `GATE-QUESTIONS.md` diff. Confirm each diff's removed lines match the live file text exactly. Confirm REQ-222 through REQ-225, Q-007 and Q-008 are unused anywhere in `PRD/` outside this package. Re-run the new M17 (`measure/ts-boundary.mjs`, the TypeScript import-boundary proof) and spot-check at least one earlier measurement; no live model calls, no network refresh, never rebuild the rule index. Check the build slices are ordered so each one can be built and tested green on its own, and that every numeric acceptance target in a slice or proposed REQ traces to a recorded measurement, that the run-1 counts agree everywhere they appear in the package, and that each proposed slot is applied in a slice where its stated behavior is true in code (the brief's apply-order rule A21).
 
 Blocker questions Q-007 and Q-008 are owner decisions; grade whether each is stated to the plain-language standard with a recommendation and a clear default, not what the answer should be.
+
+Do not edit `PRD/sections/`, code, the brief, or `GATE-QUESTIONS.md`. Do not commit or push; the driver commits. Your tool-call cap is 60 for this node, and any subagent you dispatch spends from the same budget. Earlier passes used up to 58 of 60: batch your greps and checks into few calls, and leave room to report.
+
+Report back: PASS or FAIL, the complete findings list with severity (none if PASS), the STATUS marker you set, and any file you wrote.
+
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness
+
+You are node `gate-review` (define-gate resolution, build half) of graph run `graph-20261006-181340` for package `PRD/work/rules-test-harness/`, on the shared branch `thejudge-auto/rules-test-harness-work`. Invoke the `graph-gate-review` skill and follow it exactly. Work only inside the working directory above; copy that `Working directory:` line unchanged into any prompt you write.
+
+The owner answered every slot in `GATE-QUESTIONS.md` and merged docs PR https://github.com/ChrisMiho/TheJudge/pull/268 (the build signal). Read each verdict from the file itself; do not infer verdicts from this prompt. Apply them to the proposed diff inside `GATE-QUESTIONS.md` only — never edit `PRD/sections/`, never edit code. Reconcile `DESIGN-BRIEF.md` and the README's intake pointer to every `edit` or `reject` verdict (bounded to passages that contradict a verdict; `intake/` stays verbatim). Restore `STATUS.refined` (exactly one marker). Record the verdicts under `## Gate verdicts` in `GRAPH-RUN.md`.
+
+Do not commit, push, or open a PR — the driver commits between nodes. Do not touch the lock, the run-state file, or anything under `.worktrees/` outside this worktree.
+
+Report back: outcome (ok / failed / blocked); a `### Verdicts` list (id → verdict); a `### Brief reconciliation` list (each passage changed with its file:line, or the single word none when every verdict is accept); every path you wrote, as absolute paths; and the resume line the skill hands back.
+
+### gate-qc (attempt 7)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness
+
+You are node 4 (`gate-qc`) of graph run `graph-20261006-181340`, attempt 7 (the owner authorized passes through attempt 9), re-grading the package in the build half after `graph-gate-review` resolved the define gate: every verdict in `GATE-QUESTIONS.md` is accept and the brief reconciliation was none (see `## Gate verdicts` in `GRAPH-RUN.md`). Attempt 6 passed with no findings on the docs branch; this pass confirms the package is still consistent against current `origin/main` truth after the docs PR merged. Grade the whole package fresh. Run the `thejudge-quality-check` skill (read `.claude/skills/thejudge-quality-check/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/rules-test-harness/` (STATUS.refined). Grade `DESIGN-BRIEF.md` together with the finalized product truth in `GATE-QUESTIONS.md` (amended REQ-185 through REQ-190 and NFR-018; new REQ-222 through REQ-225; blocker questions Q-007 and Q-008, both answered accept) against current `PRD/sections/` truth and agent-readiness. Intake under `intake/` is evidence only. The ledger `GRAPH-RUN.md` and the README `## Preparation gate` and `## Autonomous metadata` sections are the driver's; do not edit them.
+
+Check cross-cutting consistency by grep, not memory: re-run the brief's line-level grep for each amended or relied-on ID (REQ-177, REQ-185 through REQ-190, NFR-018) across `PRD/`, `apps/backend/src/eval/`, and `scripts/`, and confirm every hit has a disposition row and that each amendment the rows promise appears in a `GATE-QUESTIONS.md` diff. Confirm each diff's removed lines still match the live file text exactly. Confirm REQ-222 through REQ-225 are unused anywhere in `PRD/` outside this package. Spot-check at least two recorded measurements (M17 included); no live model calls, no network refresh, never rebuild the rule index. Check the build slices are ordered so each one can be built and tested green on its own, and that every numeric acceptance target traces to a recorded measurement.
 
 Do not edit `PRD/sections/`, code, the brief, or `GATE-QUESTIONS.md`. Do not commit or push; the driver commits. Your tool-call cap is 60 for this node, and any subagent you dispatch spends from the same budget. Earlier passes used up to 58 of 60: batch your greps and checks into few calls, and leave room to report.
 

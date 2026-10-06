@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rules-test-harness](rules-test-harness/) | Gate resolved 2026-10-06: 11 verdicts + Q-007/Q-008 all `accept`, docs PR #268 merged; build half resumes at `gate-qc`. Graph run `graph-20261006-181340` |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rules-test-harness](rules-test-harness/) | Owner action: `GATE-QUESTIONS.md` answered 2026-10-06 (all 11 slots and Q-007/Q-008 `accept`); merge the docs PR to build. Gate-qc PASS at attempt 6. Graph run `graph-20261006-181340` |
 
 
 ## deferred
