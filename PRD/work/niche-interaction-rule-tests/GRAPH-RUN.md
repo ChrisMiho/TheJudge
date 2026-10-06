@@ -6,8 +6,8 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `owner-action`
-- Next action: owner resolves the open gate below, then `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
+- Current node: `owner-action` (package deferred)
+- Next action: restore with `/thejudge-defer PRD/work/niche-interaction-rule-tests/` once the rules test harness exists, then resolve the open gate below and `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
 
 ## Node ledger
 
@@ -28,6 +28,7 @@
 
 ## Open gate
 
+- Deferred by the owner 2026-10-06 (`thejudge-defer`): build a proper rules test harness that validates answers first; PR #266 marked draft. The gate below stands unanswered until restore.
 - Question: gate-qc failed a fourth time (attempt 5), so the run parked under the three-loop cap. Both findings are small (README `## Preparation gate`): one game-mode scope phrase used three different ways, and three missing disposition rows. Does the owner authorize one more define pass limited to those two findings, followed by gate-qc? Evidence: ledger rows 10–12; `build-topic-from-index.mjs` and `measure-candidates.mjs` re-verified clean at attempt 5. Docs PR: https://github.com/ChrisMiho/TheJudge/pull/266 (carries the re-scoped proposal; not ready to answer until gate-qc passes). Resume: owner says go → `/graph-kickoff PRD/work/niche-interaction-rule-tests/` (re-take lock, define attempt 6 on these two findings, gate-qc attempt 6).
 
 ## Dispatch prompts

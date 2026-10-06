@@ -33,10 +33,13 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Parked: 4th quality-check FAIL on two small wording/disposition gaps (game-mode scope phrase; three disposition rows). Owner decides whether to authorize one more refine + quality-check pass. Docs PR #266 |
 
 
 ## deferred
+
+| Package | Note |
+| --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Deferred 2026-10-06: rule-retrieval fix (REQ-220/221, REQ-022 amend) waits for a rebuilt rules test harness; branch `thejudge-auto/niche-interaction-rule-tests`, draft PR #266 |
 
 ## parked in ideasForLater
 
