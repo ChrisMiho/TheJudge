@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [rules-test-harness](rules-test-harness/) | Mapped 2026-10-06: slices A-G (format v2 loader, offline prompt gate, live runner, review flow, coverage and staleness, 255 mechanic cases, 120 hard-area cases), one code PR; build half resumes at `build`. Graph run `graph-20261006-181340` |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| [rules-test-harness](rules-test-harness/) | Gate resolved 2026-10-06: 11 verdicts + Q-007/Q-008 all `accept`, docs PR #268 merged; build half resumes at `gate-qc`. Graph run `graph-20261006-181340` |
 
 ## refining
 

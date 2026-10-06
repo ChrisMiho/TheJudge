@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main`
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-181340/`
-- Current node: `plan`
+- Current node: `build`
 - Next action: `/graph-implement PRD/work/rules-test-harness/`
 
 ## Node ledger
@@ -29,6 +29,7 @@
 | 14 | gate-qc | sonnet | ok | `0 → 37` | PASS attempt 6, findings none (attempt-5 finding + advisory confirmed resolved; M17 re-run, plus a scratch `vitest run --coverage` with the real backend config importing both `.mjs`; 220 hits = 220 rows; 40 removed + 37 context lines exact; M1/M8/M12/M16 reproduced); README `## Preparation gate` PASS; parked `STATUS.owner-action`; docs PR https://github.com/ChrisMiho/TheJudge/pull/268 | 2026-10-06 |
 | 15 | gate-review | sonnet | ok | `0 → 13` | build-half claim: `.worktrees/kickoff-rules-test-harness` removed clean, `.worktrees/implement-rules-test-harness` on `thejudge-auto/rules-test-harness-work` cut from `origin/main` 652ed0e, claim commit pushed; lock re-taken (`graph-preflight --take-lock`), graph canary `nohup true` denied; `GRAPH-RUN.md` `## Gate verdicts` 11 accept + Q-007/Q-008 accept, brief reconciliation none; `STATUS.owner-action` → `STATUS.refined`; `PRD/work/STATUS.md` row moved to refined | 2026-10-06 |
 | 16 | gate-qc | sonnet | ok | `0 → 28` | PASS attempt 7 (build-half re-grade), findings none; base `origin/main` 652ed0e unchanged since attempt 6; live grep 219 hits all with disposition rows (220th was this package's board row, rewritten at the gate move — advisory only); 15 diff blocks, 40 removed lines exact; REQ-222–225 unused; M17, M6 (16/18), M1 (258), M16, M8, M12 reproduced; README `## Preparation gate` PASS; `STATUS.refined` | 2026-10-06 |
+| 17 | plan | sonnet | ok | `0 → 29` | `GAMEPLAN.md`, `slice-a-format-v2-loader.md` … `slice-g-hard-area-depth.md` (7 slices), `slice-a.criteria.json` … `slice-g.criteria.json` (77 criteria, all `false`); `STATUS.refined` → `STATUS.active`; `PRD/work/STATUS.md` row moved refined → active; no provider call in any slice (GAMEPLAN non-goals) | 2026-10-06 |
 
 ## Open gate
 
@@ -406,6 +407,24 @@ The README `## Preparation gate` records Quality-check PASS (gate-qc attempt 7, 
 Do not edit `PRD/sections/`, code, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GRAPH-RUN.md`, or the README `## Preparation gate` and `## Autonomous metadata` sections. Do not commit or push; the driver commits. Your tool-call cap is 120 for this node.
 
 Report back: outcome (ok / failed / blocked), the slice list with one line each, every path you wrote (absolute), and the STATUS marker you set.
+
+### build
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness
+
+You are node 6 (`build`) of graph run `graph-20261006-181340` for package `PRD/work/rules-test-harness/`. Shared branch: `thejudge-auto/rules-test-harness-work` (already checked out in the working directory above and pushed to `origin`; build in place there, no second worktree, no contributor branch). Run the `thejudge-implement-all` skill (read `.claude/skills/thejudge-implement-all/SKILL.md` and its references in the working directory above and follow its graph-controlled mode) to implement every slice in `GAMEPLAN.md`, A through G, in order. Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch.
+
+Every read and write happens inside that working directory. Never write to `/Users/chrismiho/Coding/Projects/TheJudge/` outside `.worktrees/implement-rules-test-harness/` — the launch checkout stays byte-unchanged and the driver checks it after you return. Run `npm ci` inside the working directory if `node_modules` is missing.
+
+Apply product truth at build: each slice writes the `PRD/sections/` edits its slice doc names, by intent from the finalized `GATE-QUESTIONS.md` diff and `DESIGN-BRIEF.md` against current truth, together with that slice's code, never a blind replay. Every verdict is accept.
+
+Boundaries: no provider or model call of any kind (no `--confirm-live-calls`, no API key use), no `npm run data:refresh` or Scryfall/network refresh, no rule-index rebuild. Stage explicit paths only (never `git add -A`, `--all`, or `.`). Never force-push. Never merge or close a PR. For file edits use the Edit and Write tools, not `sed -i` or shell heredocs into files; run `npm run quality:check` as a standalone command. When you flip a criterion to `true`, edit its criteria file with the Edit tool, and only after you have actually run the check it names.
+
+Open the code PR `thejudge-auto/rules-test-harness-work → main` with `gh pr create --base main --head thejudge-auto/rules-test-harness-work`; this is a new PR, separate from the merged docs PR #268. Your tool-call cap is 4000 for this node.
+
+Report back: outcome (ok / failed / blocked); per slice, its commit SHA(s), the quality-check result, and its criteria count true / total; the PRD sections each slice applied; the PR URL; every path you wrote, as absolute paths; and any open question or deviation from the slice docs.
 
 ## Instruction ledger
 
