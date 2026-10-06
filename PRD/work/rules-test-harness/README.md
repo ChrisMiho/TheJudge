@@ -14,7 +14,7 @@ Next: `thejudge-quality-check`.
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/rules-test-harness
+- Autonomous base: origin/main
 
 ## Preparation gate
 

@@ -3,8 +3,8 @@
 - Run ID: `graph-20261006-181340`
 - Profile: `loaded (env sentinel)` (graph-preflight observation at node 1)
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph tier `denied — armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/rules-test-harness` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-rules-test-harness` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness` by the build half's claim)
+- Autonomous base: `origin/main`
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-rules-test-harness`
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-181340/`
 - Current node: `owner-action` (gate-qc PASS; docs PR open)
 - Next action: owner answers `GATE-QUESTIONS.md` and merges the docs PR; `/graph-implement` builds it
