@@ -376,7 +376,16 @@ language live here.
   fog, Red embers, Green leaves, Colorless turning geometry) — drawn by one
   hand-written canvas renderer ported from the mockup (`AmbientScene`), one
   density and one opacity number per scene, one still frame under reduced
-  motion, and at a whisper inside the Menu tray. The ground is one
+  motion, and at a whisper inside the Menu tray. Blue preserves its small floating
+  invented runes; at desktop canvas widths (1024px+) its connected dust nodes
+  form occasional shifting constellations with a modest desktop range increase
+  (25% of the area-scaled expansion; at page strength capped at 132px), with
+  phone/tablet connections unchanged. One larger, quiet invented sigil at a
+  time writes, holds and dissolves, cycling without consecutive repeats through
+  forked stems, branches, hooks, pillars, diamonds and spires drawn from Blue’s
+  unchanged small-glyph vocabulary, sometimes framed by a faint incomplete arc. Their complete rotating envelopes stay in the
+  wide side gutters or low on narrow canvases and in the tray; tray node
+  connections remain disabled. The ground is one
   flat colour per profile from the REQ-200 token set; one typeface (Inter,
   self-hosted) serves titles and body; no surface carries corner decoration.
   (REQ-207, REQ-200, REQ-201, NFR-006)

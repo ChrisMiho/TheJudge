@@ -469,7 +469,7 @@ describe("Frontend - Shared", () => {
         );
       }
 
-      it("keeps the gradient ombre fill for the default card style", () => {
+      it("keeps the gradient ombre fill when selected", () => {
         renderWithStyle("gradient");
         const card = screen.getByTestId("life-card-Player 1");
 

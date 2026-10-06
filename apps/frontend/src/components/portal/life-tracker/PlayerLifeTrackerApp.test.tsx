@@ -357,14 +357,14 @@ describe("Frontend - Shared", () => {
       const firstMount = render(<PlayerLifeTrackerApp />);
       await openGameSetup(user);
 
-      expect(trackerCards().every((card) => card.dataset.cardStyle === "gradient")).toBe(true);
-
-      await user.click(screen.getByRole("button", { name: "Use flat card style" }));
       expect(trackerCards().every((card) => card.dataset.cardStyle === "flat")).toBe(true);
+
+      await user.click(screen.getByRole("button", { name: "Use gradient card style" }));
+      expect(trackerCards().every((card) => card.dataset.cardStyle === "gradient")).toBe(true);
 
       firstMount.unmount();
       render(<PlayerLifeTrackerApp />);
-      expect(trackerCards().every((card) => card.dataset.cardStyle === "flat")).toBe(true);
+      expect(trackerCards().every((card) => card.dataset.cardStyle === "gradient")).toBe(true);
     });
 
     it("commits a typed life total from a life card", async () => {
