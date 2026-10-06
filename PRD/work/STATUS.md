@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [rules-test-harness](rules-test-harness/) | Built 2026-10-06: slices A-G (format v2 loader, offline prompt gate, live runner, review flow, coverage and staleness, 255 mechanic cases, 120 hard-area cases), one code PR awaiting review and owner merge. Graph run `graph-20261006-181340` |
 
 ## active
 
