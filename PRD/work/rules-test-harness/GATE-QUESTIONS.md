@@ -107,6 +107,7 @@ format to build on.
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## REQ-186 — live grading also catches made-up rule numbers
@@ -147,6 +148,7 @@ a ranking call that ranks a single answer.
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## REQ-187 — the headline score is reported per tier and over what was actually graded
@@ -195,6 +197,7 @@ the latest run, so a run that re-grades five changed cases would report
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## REQ-188 — live grading picks which cases to re-pay for, and defaults to the deployed setup
@@ -253,6 +256,7 @@ Also edits `PRD/sections/system-map.md` (the answer-quality entry):
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## REQ-189 — the scores file keeps each case's latest graded result
@@ -291,6 +295,7 @@ file, so the "re-pay only for changed cases" plan in REQ-188 cannot work.
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## REQ-190 — a live run defaults to the deployed excerpt cap only
@@ -315,6 +320,7 @@ per case, one at a cap production does not use.
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## NFR-018 — the prompt checks may block a pull request; answer grading never does
@@ -367,6 +373,7 @@ Also edits `PRD/sections/goals-and-non-goals.md` (Non-Goals):
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## REQ-222 — new: an offline check that every attached card and deciding rule reaches the AI
@@ -451,6 +458,7 @@ and adds a new entry after `### Answer-quality baseline`. It goes in as `partial
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## REQ-223 — new: every real mechanic has a case, and a coverage report shows where
@@ -500,6 +508,7 @@ no case, and coverage is only known by counting files by hand.
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## REQ-224 — new: you review every case, in batches, on your own schedule
@@ -550,6 +559,7 @@ hand-editing its file, and nothing records who approved what and when.
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## REQ-225 — new: cases whose official text changed are flagged for re-review, not blocked
@@ -600,6 +610,7 @@ at which ones to re-check.
 
 - Verdict: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ---
 
 ## Blocker questions
@@ -659,6 +670,7 @@ waits at this question until you answer it.
 
 - Answer: accept
 - Reason: Owner accepted the recommendation, 2026-10-06.
+
 ### Q-008 — how many extra cases use an answer you research yourself
 
 **What this decides:** how many of run 1's cases need you to research the
