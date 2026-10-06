@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Report-only tests that the right rules reach the prompt for two tester-reported interactions; gate proposes REQ-220 |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Report-only tests that the right rules reach the prompt for two tester-reported interactions; gate proposes REQ-220 |
 
 ## ideation
 
