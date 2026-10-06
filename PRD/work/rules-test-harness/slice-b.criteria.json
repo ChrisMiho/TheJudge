@@ -5,7 +5,7 @@
     {
       "id": "B1",
       "statement": "The gate's tests are backend vitest tests under `apps/backend/src/eval/` that read cases through `scripts/lib/gold-cases.mjs` and run in `coverage:check` (A3)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(vitest|test:coverage|npm run coverage:check|npm run quality:check|npm test|run test)",
         "paths": [
@@ -16,7 +16,7 @@
     {
       "id": "B2",
       "statement": "The gate passes on the 18 migrated cases with a committed baseline of 16 hits",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(vitest|test:coverage|npm run coverage:check|npm run quality:check|npm test|run test)"
       }
@@ -24,7 +24,7 @@
     {
       "id": "B3",
       "statement": "A planted fixture case with a dropped attached card fails the card check, and a planted case that lost a deciding rule fails the ratchet (tests)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(vitest|test:coverage|npm run coverage:check|npm run quality:check|npm test|run test)"
       }
@@ -32,7 +32,7 @@
     {
       "id": "B4",
       "statement": "State-fact check: a fixture case with a `gameState` (stack of two items with a caster, a battlefield card with an owner, a controller note) passes through `buildCaseRequest` and the real `preparePromptInput`, and a unit test fails the check when one stated fact's line is missing from the prompt",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(vitest|test:coverage|npm run coverage:check|npm run quality:check|npm test|run test)"
       }
@@ -40,7 +40,7 @@
     {
       "id": "B5",
       "statement": "Re-freeze test: a fixture case whose stored query-text hash differs from its rebuilt query text, and whose baseline records a hit, is reported as awaiting a re-freeze, does not fail the gate, is neither a hit nor a miss in the ratchet, and the summary prints an awaiting-re-freeze count of 1; the same case with no vector at all fails the gate",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(vitest|test:coverage|npm run coverage:check|npm run quality:check|npm test|run test)"
       }
@@ -48,7 +48,7 @@
     {
       "id": "B6",
       "statement": "Schema check: every non-null `gameState` in the corpus parses under `gameContextSchema`, and a planted fixture `gameState` the schema rejects (a turn phase outside `turnPhaseSchema`) fails the gate, naming the case",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(vitest|test:coverage|npm run coverage:check|npm run quality:check|npm test|run test)"
       }
@@ -56,7 +56,7 @@
     {
       "id": "B7",
       "statement": "No network or model call: the gate test fails if the embedder is invoked",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(vitest|test:coverage|npm run coverage:check|npm run quality:check|npm test|run test)"
       }
@@ -64,7 +64,7 @@
     {
       "id": "B8",
       "statement": "The frozen-vector build command stores a SHA-256 of each vector's query text, and the baseline raise command exists and is covered by a test",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(eval:build-frozen-query-embeddings|eval:rules-gate:baseline|vitest|npm run quality:check)"
       }
@@ -72,7 +72,7 @@
     {
       "id": "B9",
       "statement": "Lambda packaging does not pick up the frozen-vector file (dated observation line in `slice-b.evidence.md`)",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -80,7 +80,7 @@
     {
       "id": "B10",
       "statement": "The system-map entry `Rules test corpus gates and review` is in `PRD/sections/system-map.md` as `Status: partial`, with its `Lives in` line naming `apps/backend/src/eval/`",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/system-map.md"
@@ -90,7 +90,7 @@
     {
       "id": "B11",
       "statement": "`npm run typecheck` is green with the gate tests importing the two `.mjs` modules (A3, M17)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "(npm run typecheck|npm run quality:check|tsc --noEmit)"
       }
@@ -98,7 +98,7 @@
     {
       "id": "B12",
       "statement": "`npm run quality:check` is green",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }

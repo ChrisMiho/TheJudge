@@ -502,6 +502,13 @@ This catalog is the only place the shipped-vs-planned signal lives. It does **no
 - Lives in: `apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/answer-quality/`, `scripts/eval-answer-quality.mjs`
 - Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190
 
+### Rules test corpus gates and review
+
+- Status: partial
+- Summary: Offline checks over the rules test corpus that run in `quality:check` with no provider or live embedding call: every attached card's oracle text and rulings reach the prompt (absolute), each case's deciding rule reaches it at least as often as the recorded baseline (ratchet, frozen query vectors), stated game states are valid In-Depth game contexts and their facts reach it, and every real mechanic in the committed rule index has a case. Also the owner review command that turns `draft` cases into `approved` ones, the coverage report, and the staleness report that flags cases whose rule, oracle, or ruling text changed.
+- Lives in: `apps/backend/src/eval/worked-solutions/` (the cases), `apps/backend/src/eval/` (the offline gate's tests, run by `coverage:check`, and the frozen query vectors), `scripts/lib/gold-cases.mjs`, and the vector-build, baseline-raise, review, coverage, and staleness commands under `scripts/`
+- Backed by: REQ-185, REQ-222, REQ-223, REQ-224, REQ-225, NFR-018
+
 ## AWS production deployment
 
 - Status: shipped

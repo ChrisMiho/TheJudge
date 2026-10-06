@@ -1,0 +1,76 @@
+{
+  "cases": {
+    "combat-damage-assignment-order-multiple-blockers": {
+      "hit": ["510.1c"],
+      "miss": []
+    },
+    "copy-does-not-copy-etb-choices": {
+      "hit": ["707.6"],
+      "miss": []
+    },
+    "copy-effect-modification-becomes-copiable": {
+      "hit": ["707.9b"],
+      "miss": []
+    },
+    "damage-does-not-destroy-sba-does": {
+      "hit": ["120.5"],
+      "miss": []
+    },
+    "delayed-trigger-created-too-late": {
+      "hit": ["603.7a"],
+      "miss": []
+    },
+    "illegal-target-partial-resolution": {
+      "hit": ["608.2b"],
+      "miss": []
+    },
+    "last-known-information-simultaneous-sba": {
+      "hit": ["704.8"],
+      "miss": []
+    },
+    "layers-timestamp-order": {
+      "hit": ["613.9"],
+      "miss": []
+    },
+    "mana-ability-remains-mana-ability": {
+      "hit": ["605.2"],
+      "miss": []
+    },
+    "panharmonicon-controller-not-entering-permanent": {
+      "hit": [],
+      "miss": ["603.2"]
+    },
+    "regenerate-too-late-after-destroy-resolves": {
+      "hit": ["614.4"],
+      "miss": []
+    },
+    "replacement-effect-single-application": {
+      "hit": ["614.5"],
+      "miss": []
+    },
+    "restoration-angel-blink-resets-counters": {
+      "hit": [],
+      "miss": ["400.7"]
+    },
+    "sensei-top-leaves-battlefield-ability-on-stack": {
+      "hit": ["113.7a"],
+      "miss": []
+    },
+    "state-based-actions-mid-resolution": {
+      "hit": ["704.4"],
+      "miss": []
+    },
+    "token-created-by-name-uses-oracle-card": {
+      "hit": ["111.11"],
+      "miss": []
+    },
+    "trample-must-assign-lethal-first": {
+      "hit": ["702.19b"],
+      "miss": []
+    },
+    "trample-over-planeswalkers-assignment": {
+      "hit": ["702.19c"],
+      "miss": []
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # Slice B — Offline prompt gate
 
-## Status: planned
+## Status: done
 
 ## Goal
 
@@ -31,18 +31,18 @@ The build re-derives each edit by intent against current `PRD/sections/` truth, 
 
 ## Acceptance criteria
 
-- [ ] **B1.** The gate's tests are backend vitest tests under `apps/backend/src/eval/` that read cases through `scripts/lib/gold-cases.mjs` and run in `coverage:check` (A3)
-- [ ] **B2.** The gate passes on the 18 migrated cases with a committed baseline of 16 hits
-- [ ] **B3.** A planted fixture case with a dropped attached card fails the card check, and a planted case that lost a deciding rule fails the ratchet (tests)
-- [ ] **B4.** State-fact check: a fixture case with a `gameState` (stack of two items with a caster, a battlefield card with an owner, a controller note) passes through `buildCaseRequest` and the real `preparePromptInput`, and a unit test fails the check when one stated fact's line is missing from the prompt
-- [ ] **B5.** Re-freeze test: a fixture case whose stored query-text hash differs from its rebuilt query text, and whose baseline records a hit, is reported as awaiting a re-freeze, does not fail the gate, is neither a hit nor a miss in the ratchet, and the summary prints an awaiting-re-freeze count of 1; the same case with no vector at all fails the gate
-- [ ] **B6.** Schema check: every non-null `gameState` in the corpus parses under `gameContextSchema`, and a planted fixture `gameState` the schema rejects (a turn phase outside `turnPhaseSchema`) fails the gate, naming the case
-- [ ] **B7.** No network or model call: the gate test fails if the embedder is invoked
-- [ ] **B8.** The frozen-vector build command stores a SHA-256 of each vector's query text, and the baseline raise command exists and is covered by a test
-- [ ] **B9.** Lambda packaging does not pick up the frozen-vector file (dated observation line in `slice-b.evidence.md`)
-- [ ] **B10.** The system-map entry `Rules test corpus gates and review` is in `PRD/sections/system-map.md` as `Status: partial`, with its `Lives in` line naming `apps/backend/src/eval/`
-- [ ] **B11.** `npm run typecheck` is green with the gate tests importing the two `.mjs` modules (A3, M17)
-- [ ] **B12.** `npm run quality:check` is green
+- [x] **B1.** The gate's tests are backend vitest tests under `apps/backend/src/eval/` that read cases through `scripts/lib/gold-cases.mjs` and run in `coverage:check` (A3)
+- [x] **B2.** The gate passes on the 18 migrated cases with a committed baseline of 16 hits
+- [x] **B3.** A planted fixture case with a dropped attached card fails the card check, and a planted case that lost a deciding rule fails the ratchet (tests)
+- [x] **B4.** State-fact check: a fixture case with a `gameState` (stack of two items with a caster, a battlefield card with an owner, a controller note) passes through `buildCaseRequest` and the real `preparePromptInput`, and a unit test fails the check when one stated fact's line is missing from the prompt
+- [x] **B5.** Re-freeze test: a fixture case whose stored query-text hash differs from its rebuilt query text, and whose baseline records a hit, is reported as awaiting a re-freeze, does not fail the gate, is neither a hit nor a miss in the ratchet, and the summary prints an awaiting-re-freeze count of 1; the same case with no vector at all fails the gate
+- [x] **B6.** Schema check: every non-null `gameState` in the corpus parses under `gameContextSchema`, and a planted fixture `gameState` the schema rejects (a turn phase outside `turnPhaseSchema`) fails the gate, naming the case
+- [x] **B7.** No network or model call: the gate test fails if the embedder is invoked
+- [x] **B8.** The frozen-vector build command stores a SHA-256 of each vector's query text, and the baseline raise command exists and is covered by a test
+- [x] **B9.** Lambda packaging does not pick up the frozen-vector file (dated observation line in `slice-b.evidence.md`)
+- [x] **B10.** The system-map entry `Rules test corpus gates and review` is in `PRD/sections/system-map.md` as `Status: partial`, with its `Lives in` line naming `apps/backend/src/eval/`
+- [x] **B11.** `npm run typecheck` is green with the gate tests importing the two `.mjs` modules (A3, M17)
+- [x] **B12.** `npm run quality:check` is green
 
 ## Verification
 

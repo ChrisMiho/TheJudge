@@ -31,6 +31,7 @@ PRD truth lands per slice by rule A21 (table in `GAMEPLAN.md`): B system-map ent
 Build progress (graph node 6, `build`, one commit per slice on `thejudge-auto/rules-test-harness-work`):
 
 - A: done (format v2 loader, request builder, 18 migrated, README rewritten)
+- B: done (offline prompt gate in `apps/backend/src/eval/rules-gate/`, frozen vectors, baseline at 16 hits, system-map entry as partial)
 
 ## Autonomous metadata
 
