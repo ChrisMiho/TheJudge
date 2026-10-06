@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { useEffect, useRef } from "react";
 import type { Palette } from "../lib/theme/palettes";
-import { blueLinkRadius, createBlueFamilyPicker, blueOutline, bluePlacement } from "../lib/theme/blueInscription";
+import { blueLinkRadius, createBlueFamilyPicker, blueOutline, bluePlacement, BLUE_RUNES } from "../lib/theme/blueInscription";
 
 export type AmbientSceneProps = {
   /** The active profile's motif id (REQ-201); kept for the page/tray hook and the data attribute. */
@@ -245,27 +245,9 @@ const AMBIENCE = (() => {
     }
   };
 
-  // Blue (round 8: "more blue arcane focused" — the bubbles and the moving
-  // horizontal lines are gone): runes of an invented script write themselves
-  // in the air, glow, and fade as they drift up; the dust specks are threaded
-  // into faint constellations (the renderer's `links`). Round 9 ("some of the
-  // shapes are too large and detailed … larger shapes need to be less detailed
-  // like the ones in the colorless profile"): large inscriptions remain simple
-  // outlines, now cycling through six geometric families — no rune marks or
-  // dense interior chords. The runes stay
-  // small. The runes are drawn for this app — no real alphabet, no Wizards glyph.
-  const RUNES = [
-    [[[0, -1], [0, 1]], [[-0.6, -0.4], [0, 0.1], [0.6, -0.4]]],
-    [[[-0.6, -1], [0.6, -1], [0, 1]], [[-0.3, 0.2], [0.3, 0.2]]],
-    [[[0, -1], [0, 1]], [[0, -0.5], [0.6, -0.9]], [[0, 0], [-0.6, 0.4]]],
-    [[[-0.6, 1], [-0.6, -1], [0.6, -0.4], [-0.6, 0.2]]],
-    [[[-0.6, -0.6], [0.6, -0.6]], [[0, -0.6], [0, 1]], [[-0.4, 1], [0.4, 1]]],
-    [[[-0.5, -1], [0.5, 0], [-0.5, 1]], [[0.5, -1], [0.5, 1]]],
-    [[[0, -1], [0.6, 0], [0, 1], [-0.6, 0], [0, -1]], [[0, -0.3], [0, 0.3]]],
-    [[[-0.6, -1], [-0.6, 1], [0.6, 1]], [[-0.6, 0], [0.4, -0.6]]],
-    [[[0.6, -1], [-0.2, -0.2], [0.6, 0.6]], [[-0.6, -0.2], [-0.6, 1]]],
-    [[[-0.6, 0.8], [0, -1], [0.6, 0.8]], [[-0.35, 0.1], [0.35, 0.1]], [[0, 0.1], [0, 1]]]
-  ];
+  // Blue's small invented script stays intact. Large sigils reuse those same
+  // forked stems, hooks, chevrons and diamonds, with an occasional quiet broken
+  // arc around the sign. No dense interior marks or Colorless polygon silhouettes.
   const BLUE: any = {
     cyan: [56, 225, 255], pale: [190, 240, 255], deep: [0, 80, 216],
     init(W: any, H: any, k: any) {
@@ -277,15 +259,15 @@ const AMBIENCE = (() => {
     },
     // a rune: writes itself (stroke by stroke), holds with a glow, fades as it rises
     rune(W: any, H: any) {
-      return { g: pick(RUNES), x: rnd(0.04, 0.96) * W, y: rnd(0.12, 0.95) * H, s: rnd(7, 13), rot: rnd(-0.25, 0.25), age: 0, write: rnd(90, 150), hold: rnd(160, 300), fade: rnd(160, 240), vy: rnd(0.04, 0.12) };
+      return { g: pick(BLUE_RUNES), x: rnd(0.04, 0.96) * W, y: rnd(0.12, 0.95) * H, s: rnd(7, 13), rot: rnd(-0.25, 0.25), age: 0, write: rnd(90, 150), hold: rnd(160, 300), fade: rnd(160, 240), vy: rnd(0.04, 0.12) };
     },
     // Store shape and placement choices once; rotation and resize keep the envelope contained.
     spellInscription(W: any, H: any) {
       const horizontal = random(), vertical = random();
       const family = this.nextFamily();
       return { ...bluePlacement(W, H, horizontal, vertical), horizontal, vertical, family,
-        outlines: blueOutline(family, rnd(0.6, 0.85), random() < 0.5),
-        age: 0, draw: 260, hold: 600, fade: 260, rot: rnd(0, 6.3) };
+        outlines: blueOutline(family, rnd(0.85, 1.05), random() < 0.5),
+        age: 0, draw: 260, hold: 600, fade: 260, rot: rnd(-0.3, 0.3) };
     },
     resize(W: any, H: any) {
       this.maxRunes = Math.max(2, Math.round(7 * this.k * Math.sqrt(W * H / 1296000)));
@@ -329,14 +311,14 @@ const AMBIENCE = (() => {
         if (c.age > end) { this.inscription = null; this.nextInscription = rnd(240, 600); return; }
         const p = Math.min(1, c.age / c.draw);
         const a = (c.age < c.draw + c.hold ? 1 : 1 - (c.age - c.draw - c.hold) / c.fade) * (0.85 + 0.15 * Math.sin(t / 70));
-        const turn = c.rot + t * 0.0006;
+        const turn = c.rot + c.age * 0.0002;
         ctx.save(); ctx.translate(c.x, c.y);
         ctx.shadowColor = rgba(this.cyan, 0.6 * a); ctx.shadowBlur = 8;
         ctx.strokeStyle = rgba(this.pale, 0.16 * a); ctx.lineWidth = 1.1;
-        this.strokeRune(ctx, [c.outlines[0]], 0, 0, c.r, turn, p);
-        if (c.outlines[1]) {
+        this.strokeRune(ctx, c.outlines.glyph, 0, 0, c.r, turn, p);
+        if (c.outlines.arc) {
           ctx.strokeStyle = rgba(this.pale, 0.09 * a);
-          this.strokeRune(ctx, [c.outlines[1]], 0, 0, c.r, c.family === 'ring' ? -turn : turn, p);
+          this.strokeRune(ctx, [c.outlines.arc], 0, 0, c.r, turn, p);
         }
         ctx.restore(); ctx.shadowBlur = 0;
       }

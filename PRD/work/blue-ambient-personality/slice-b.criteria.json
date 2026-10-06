@@ -1,0 +1,46 @@
+{
+  "slug": "blue-ambient-personality",
+  "slice": "B",
+  "criteria": [
+    {
+      "id": "B1",
+      "statement": "Desktop connections are a modest lift above the original; small glyphs, phone and other-colour baselines remain intact.",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test.*AmbientScene"
+      }
+    },
+    {
+      "id": "B2",
+      "statement": "Six sparse invented sigils reuse Blue’s glyph vocabulary, optionally framed by a broken arc; variety, containment and lifecycle tests pass.",
+      "value": true,
+      "evidence": {
+        "command": "npm --workspace apps/frontend run test.*AmbientScene"
+      }
+    },
+    {
+      "id": "B3",
+      "statement": "Shared-chrome and REQ-207 match the revised presentation; quality gate and build pass.",
+      "value": true,
+      "evidence": {
+        "command": "npm run (quality:check|build)"
+      }
+    },
+    {
+      "id": "B4",
+      "statement": "Browser review confirms quieter desktop connections and glyph-derived large forms at 390×844, 1280×800, 1440×900, 1920×1080 and in the tray, with readable panels and reduced-motion still rendering.",
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
+    },
+    {
+      "id": "B5",
+      "statement": "Verification browser closed; owner-requested review runtime left running by explicit request; captures recorded under this work package.",
+      "value": true,
+      "evidence": {
+        "manual": true
+      }
+    }
+  ]
+}

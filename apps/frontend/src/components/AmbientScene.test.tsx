@@ -37,7 +37,7 @@ const GOLDEN: Record<string, string> = {
   white390: "193:180073385",
   white1280: "193:961196455",
   blue390: "339:2624013100",
-  blue1280: "355:4266266178",
+  blue1280: "239:3476751551",
   black390: "1196:3087704209",
   black1280: "22136:1430510574",
   red390: "205:4138612825",
@@ -269,9 +269,10 @@ describe("Frontend - Theme", () => {
     })
   })
   describe("Blue constellations and inscriptions", () => {
-    it("restores frequent desktop connections while keeping the phone still frame", () => {
+    it("adds a modest number of desktop connections while keeping the phone still frame", () => {
       const desktop = paintStill("blue", 1280, 800)
-      expect(desktop.filter((call) => call.name === "lineTo").length).toBeGreaterThan(25)
+      expect(desktop.filter((call) => call.name === "lineTo").length).toBeGreaterThan(14)
+      expect(desktop.filter((call) => call.name === "lineTo").length).toBeLessThan(30)
       expect(desktop.filter((call) => call.name === "drawImage")).toHaveLength(35)
       expect(fingerprint(paintStill("blue", 390, 844))).toBe(GOLDEN.blue390)
     })
@@ -294,7 +295,8 @@ describe("Frontend - Theme", () => {
       log.length = 0
       frame(0)
       const desktopLinks = log.filter((c) => c.name === "lineTo").length
-      expect(desktopLinks).toBeGreaterThan(25)
+      expect(desktopLinks).toBeGreaterThan(10)
+      expect(desktopLinks).toBeLessThan(35)
       setViewport(390, 844)
       window.dispatchEvent(new Event("resize"))
       log.length = 0
@@ -462,10 +464,10 @@ describe("Frontend - Theme", () => {
     it("keeps phone and tablet radii and caps desktop links from live dimensions", () => {
       expect(blueLinkRadius(96, 390, 844)).toBe(96)
       expect(blueLinkRadius(96, 1023, 900)).toBe(96)
-      expect(blueLinkRadius(96, 1280, 800)).toBeCloseTo(169.325, 2)
-      expect(blueLinkRadius(96, 1440, 900)).toBeCloseTo(190.494, 2)
-      expect(blueLinkRadius(96, 1920, 1080)).toBe(240)
-      expect(blueLinkRadius(96, 2560, 1440)).toBe(240)
+      expect(blueLinkRadius(96, 1280, 800)).toBeCloseTo(114.331, 2)
+      expect(blueLinkRadius(96, 1440, 900)).toBeCloseTo(119.623, 2)
+      expect(blueLinkRadius(96, 1920, 1080)).toBe(132)
+      expect(blueLinkRadius(96, 2560, 1440)).toBe(132)
     })
 
     it("visits every family in each bag without consecutive repeats across bags", () => {
@@ -480,15 +482,28 @@ describe("Frontend - Theme", () => {
       }
     })
 
-    it("bounds complete outlines including overlapping loops inside their radius", () => {
+    it("uses open invented-glyph strokes with an optional broken arc instead of polygon silhouettes", () => {
+      expect(BLUE_FAMILIES).toEqual(["fork", "branch", "hook", "pillar", "diamond", "spire"])
       for (const family of BLUE_FAMILIES) {
-        for (const ratio of [0.6, 0.75, 0.9]) {
-          const outlines = blueOutline(family, ratio, true)
-          expect(outlines.length).toBeLessThanOrEqual(2)
-          for (const outline of outlines) {
-            expect(outline.length).toBeGreaterThan(3)
-            expect(outline[outline.length - 1]).toEqual(outline[0])
-            for (const [x, y] of outline) expect(Math.hypot(x, y)).toBeLessThanOrEqual(1.000001)
+        const plain = blueOutline(family, 0.75, false)
+        const framed = blueOutline(family, 0.75, true)
+        expect(plain.arc).toBeUndefined()
+        expect(framed.glyph).toEqual(plain.glyph)
+        expect(plain.glyph.length).toBeGreaterThan(0)
+        expect(plain.glyph.length).toBeLessThanOrEqual(3)
+        const segments = plain.glyph.reduce((sum, stroke) => sum + stroke.length - 1, 0)
+        expect(segments).toBeLessThanOrEqual(6)
+        expect(plain.glyph.some((stroke) => JSON.stringify(stroke[0]) !== JSON.stringify(stroke.at(-1)))).toBe(true)
+        expect(framed.arc?.[0]).not.toEqual(framed.arc?.at(-1))
+      }
+    })
+
+    it("bounds every glyph stroke and broken arc inside the rotating envelope", () => {
+      for (const family of BLUE_FAMILIES) {
+        for (const ratio of [0.85, 1, 1.05]) {
+          const { glyph, arc } = blueOutline(family, ratio, true)
+          for (const stroke of [...glyph, ...(arc ? [arc] : [])]) {
+            for (const [x, y] of stroke) expect(Math.hypot(x, y)).toBeLessThanOrEqual(1.000001)
           }
         }
       }

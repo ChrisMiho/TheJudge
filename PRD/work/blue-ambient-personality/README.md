@@ -11,6 +11,9 @@ Direct implementation authorized by the owner on 2026-10-05 from the existing pr
 
 | Slice | Objective | Dependencies | Status |
 | --- | --- | --- | --- |
-| A | Desktop constellations and six simple inscription families | none | done |
+| A | Initial desktop constellations and geometric inscriptions | none | done |
+| B | Quieter links and Blue glyph-derived sigils | A done | done |
 
-Verification and runtime cleanup: slice-a.evidence.md. All 27 focused tests, full quality gate and production build pass. Independent code review approved the final diff. Prepared on `fix/blue-ambient-personality` for a PR into `main`; the related probe is included for provenance.
+Verification: `slice-b.evidence.md` (current) and `slice-a.evidence.md` (initial implementation). All 28 focused tests, full quality gate and production build pass. Independent review approved the revision. PR #264 targets `main` from `fix/blue-ambient-personality`; the related probe is included for provenance. Owner-requested review server remains running: `review-server.md`.
+
+2026-10-05 owner review: reduce the desktop links and derive the larger forms from Blue’s existing glyphs. Revision B tracks that refinement on PR #264; A remains the original verified implementation.

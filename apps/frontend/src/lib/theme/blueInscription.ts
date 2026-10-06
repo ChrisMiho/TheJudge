@@ -1,10 +1,134 @@
-export const BLUE_FAMILIES = ["ring", "triangle", "diamond", "hexagon", "ellipse", "loops"] as const
+export const BLUE_FAMILIES = ["fork", "branch", "hook", "pillar", "diamond", "spire"] as const
 export type BlueFamily = (typeof BLUE_FAMILIES)[number]
 export type BluePoint = [number, number]
 
+export const BLUE_RUNES: BluePoint[][][] = [
+  [
+    [
+      [0, -1],
+      [0, 1]
+    ],
+    [
+      [-0.6, -0.4],
+      [0, 0.1],
+      [0.6, -0.4]
+    ]
+  ],
+  [
+    [
+      [-0.6, -1],
+      [0.6, -1],
+      [0, 1]
+    ],
+    [
+      [-0.3, 0.2],
+      [0.3, 0.2]
+    ]
+  ],
+  [
+    [
+      [0, -1],
+      [0, 1]
+    ],
+    [
+      [0, -0.5],
+      [0.6, -0.9]
+    ],
+    [
+      [0, 0],
+      [-0.6, 0.4]
+    ]
+  ],
+  [
+    [
+      [-0.6, 1],
+      [-0.6, -1],
+      [0.6, -0.4],
+      [-0.6, 0.2]
+    ]
+  ],
+  [
+    [
+      [-0.6, -0.6],
+      [0.6, -0.6]
+    ],
+    [
+      [0, -0.6],
+      [0, 1]
+    ],
+    [
+      [-0.4, 1],
+      [0.4, 1]
+    ]
+  ],
+  [
+    [
+      [-0.5, -1],
+      [0.5, 0],
+      [-0.5, 1]
+    ],
+    [
+      [0.5, -1],
+      [0.5, 1]
+    ]
+  ],
+  [
+    [
+      [0, -1],
+      [0.6, 0],
+      [0, 1],
+      [-0.6, 0],
+      [0, -1]
+    ],
+    [
+      [0, -0.3],
+      [0, 0.3]
+    ]
+  ],
+  [
+    [
+      [-0.6, -1],
+      [-0.6, 1],
+      [0.6, 1]
+    ],
+    [
+      [-0.6, 0],
+      [0.4, -0.6]
+    ]
+  ],
+  [
+    [
+      [0.6, -1],
+      [-0.2, -0.2],
+      [0.6, 0.6]
+    ],
+    [
+      [-0.6, -0.2],
+      [-0.6, 1]
+    ]
+  ],
+  [
+    [
+      [-0.6, 0.8],
+      [0, -1],
+      [0.6, 0.8]
+    ],
+    [
+      [-0.35, 0.1],
+      [0.35, 0.1]
+    ],
+    [
+      [0, 0.1],
+      [0, 1]
+    ]
+  ]
+]
+
 /** Preserve phone/tablet density; desktop gains neighbours without extra nodes. */
 export function blueLinkRadius(base: number, width: number, height: number): number {
-  return width < 1024 ? base : Math.min(240, base * Math.sqrt((width * height) / (390 * 844)))
+  if (width < 1024) return base
+  const expanded = Math.max(base, Math.min(240, base * Math.sqrt((width * height) / (390 * 844))))
+  return base + (expanded - base) * 0.25
 }
 
 export function createBlueFamilyPicker(random: () => number): () => BlueFamily {
@@ -26,24 +150,24 @@ export function createBlueFamilyPicker(random: () => number): () => BlueFamily {
   }
 }
 
-/** Complete paths stay inside the unit circle, including both overlapping loops. */
-export function blueOutline(family: BlueFamily, ratio: number, inner: boolean): BluePoint[][] {
-  const ellipse = (rx: number, ry: number, cx = 0): BluePoint[] => {
-    const points: BluePoint[] = Array.from({ length: 64 }, (_, i) => {
-      const angle = (i / 64) * Math.PI * 2
-      return [cx + Math.cos(angle) * rx, Math.sin(angle) * ry]
-    })
-    return [...points, points[0]]
-  }
-  if (family === "ring") return inner ? [ellipse(1, 1), ellipse(0.7, 0.7)] : [ellipse(1, 1)]
-  if (family === "ellipse") return [ellipse(1, ratio)]
-  if (family === "loops") return [ellipse(0.7, 0.7, -0.3), ellipse(0.7, 0.7, 0.3)]
-  const sides = family === "triangle" ? 3 : family === "diamond" ? 4 : 6
-  const points: BluePoint[] = Array.from({ length: sides }, (_, i) => {
-    const angle = -Math.PI / 2 + (i / sides) * Math.PI * 2
-    return [Math.cos(angle) * (family === "diamond" ? ratio : 1), Math.sin(angle)]
-  })
-  return [[...points, points[0]]]
+/** Reuse Blue's own script; the smaller signs and large sigils share one vocabulary. */
+export function blueOutline(
+  family: BlueFamily,
+  ratio: number,
+  withArc: boolean
+): { glyph: BluePoint[][]; arc?: BluePoint[] } {
+  const runeIndex: Record<BlueFamily, number> = { fork: 0, branch: 2, hook: 3, pillar: 4, diamond: 6, spire: 9 }
+  const glyph: BluePoint[][] = BLUE_RUNES[runeIndex[family]].map((stroke) =>
+    stroke.map(([x, y]) => [x * ratio * 0.72, y * 0.72])
+  )
+  // An incomplete enclosing stroke leaves the sign airy; no dense ring decorations.
+  const arc: BluePoint[] | undefined = withArc
+    ? Array.from({ length: 49 }, (_, i) => {
+        const angle = -Math.PI * 0.8 + (i / 48) * Math.PI * 1.3
+        return [Math.cos(angle), Math.sin(angle)]
+      })
+    : undefined
+  return { glyph, arc }
 }
 
 /** Reuse spawn choices on resize, keeping the full rotating envelope on canvas. */
