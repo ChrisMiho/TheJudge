@@ -105,9 +105,8 @@ format to build on.
 +  - measured 2026-10-06, for the hard-area block: the committed rule index has 126 `Example:` lines in the hard areas, 13 of them used by the 18 cases, leaving 113 (20 negative-phrased); 2,651 committed WotC rulings name a second committed card and match a term for one of the same twelve areas (1,232 negative-phrased). Run 1 takes 60 and 58 from these two pools plus the two tester cases, so the at-least-a-third `does-not-work` target (40 of 120) is within the measured supply
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## REQ-186 — live grading also catches made-up rule numbers
@@ -146,9 +145,8 @@ a ranking call that ranks a single answer.
 +  - grounding the judge in an approved reference answer is what makes a model judge defensible here. It is only possible because every case carries that text (REQ-185), and it is the reason no answer an agent writes is ever a reference until the owner approves it as tier 3
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## REQ-187 — the headline score is reported per tier and over what was actually graded
@@ -195,9 +193,8 @@ the latest run, so a run that re-grades five changed cases would report
 +  - no axis for WotC card-ruling citation is defined: tier-2 and tier-3 cases (REQ-185) are scored by the same four axes as tier 1; a card-ruling-specific axis may be added once enough tier-2 signal exists to justify one, as an amendment to this requirement with a rubric-revision bump
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## REQ-188 — live grading picks which cases to re-pay for, and defaults to the deployed setup
@@ -254,9 +251,8 @@ Also edits `PRD/sections/system-map.md` (the answer-quality entry):
  - Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## REQ-189 — the scores file keeps each case's latest graded result
@@ -293,9 +289,8 @@ file, so the "re-pay only for changed cases" plan in REQ-188 cannot work.
 +  - a counts-only coverage file sits beside it (`apps/backend/src/eval/answer-quality/coverage.json`), written by the coverage command (REQ-223) and rewritten by the review apply command each time it writes a batch's verdicts (REQ-224): mechanics by approved / draft / none, case counts per Comprehensive Rules section, and case counts per tier, review status, and `outcome` — numbers and ids only, no prose
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## REQ-190 — a live run defaults to the deployed excerpt cap only
@@ -318,9 +313,8 @@ per case, one at a cap production does not use.
 +  - the run accepts a repeatable `--excerpt-cap` option, defaulting to `[10]` — the deployed cap — so a routine run grades only what production does; a cap comparison such as `--excerpt-cap 10 --excerpt-cap 15` is an explicit choice. Each cap value is one leg per answer model, and every selected case is answered once per model per cap in the same run
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## NFR-018 — the prompt checks may block a pull request; answer grading never does
@@ -371,9 +365,8 @@ Also edits `PRD/sections/goals-and-non-goals.md` (Non-Goals):
 +- automated answer-quality gating in `npm run quality:check`: combo enrichment's effect on answers is measured by an opt-in, human-reviewed live-provider A/B that never blocks a build (DEC-161), and the answer-quality baseline over the committed rules test corpus is the same shape — explicitly invoked, confirmation-gated, human-reviewed, never scheduled, never asserted against a golden, and never able to fail a build (NFR-018, REQ-185, REQ-188). The offline prompt checks over the same corpus (REQ-222, REQ-223) do gate; they check what reaches the prompt, never the answer
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## REQ-222 — new: an offline check that every attached card and deciding rule reaches the AI
@@ -456,9 +449,8 @@ and adds a new entry after `### Answer-quality baseline`. It goes in as `partial
 +- Backed by: REQ-185, REQ-222, REQ-223, REQ-224, REQ-225, NFR-018
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## REQ-223 — new: every real mechanic has a case, and a coverage report shows where
@@ -506,9 +498,8 @@ no case, and coverage is only known by counting files by hand.
 +  - measured 2026-10-06: the five mechanics in the local 2026-08-07 Comprehensive Rules that the committed index lacks (Heal, Recruit, Power-up, Teamwork, Storied) appear on 106 committed cards (33, 10, 37, 17, 9), so a player can attach those cards today while the rule text is missing from every prompt — a finding for the deferred rules-data refresh, not part of this gate
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## REQ-224 — new: you review every case, in batches, on your own schedule
@@ -557,9 +548,8 @@ hand-editing its file, and nothing records who approved what and when.
 +  - REQ-186 (grading only `approved` cases)
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## REQ-225 — new: cases whose official text changed are flagged for re-review, not blocked
@@ -608,9 +598,8 @@ at which ones to re-check.
 +  - the committed rule index carries no Comprehensive Rules date of its own (measured 2026-10-06), so a case records a hash of the index file rather than a rules date
 ```
 
-- Verdict:
-- Reason:
-
+- Verdict: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ---
 
 ## Blocker questions
@@ -668,9 +657,8 @@ mechanic cases; that list plus Assemble means 252.
 your own list, as above. Leaving it blank means nothing gets built: the build
 waits at this question until you answer it.
 
-- Answer:
-- Reason:
-
+- Answer: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.
 ### Q-008 — how many extra cases use an answer you research yourself
 
 **What this decides:** how many of run 1's cases need you to research the
@@ -699,5 +687,5 @@ extra tier-3 drafts the build writes.
 number from 1 to 13. Leaving it blank means nothing gets built: the build
 waits at this question until you answer it.
 
-- Answer:
-- Reason:
+- Answer: accept
+- Reason: Owner accepted the recommendation, 2026-10-06.

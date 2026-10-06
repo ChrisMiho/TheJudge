@@ -31,7 +31,7 @@
 ## Open gate
 
 - None. Resolved 2026-10-06: the owner authorized up to five more define passes (define attempts 5–9, each followed by gate-qc) after the fourth gate-qc FAIL; a FAIL at gate-qc attempt 9 parks again at owner-action. Lock re-taken (`graph-preflight --take-lock`, startedAt 2026-10-06T19:47:41.303Z); graph canary `denied — armed (nohup true)`. Marker `STATUS.owner-action` → `STATUS.refining`.
-- Answer `PRD/work/rules-test-harness/GATE-QUESTIONS.md` (11 accept/edit/reject slots plus blocker questions Q-007 and Q-008), then merge the docs PR https://github.com/ChrisMiho/TheJudge/pull/268 to build. Evidence: ledger row 14; README `## Preparation gate` PASS. Resume: merging the docs PR is the build signal; `/graph-implement` picks it up.
+- Answered 2026-10-06: the owner accepted all 11 slots and the recommendations for Q-007 and Q-008 (every slot `accept`). Remaining: merge the docs PR https://github.com/ChrisMiho/TheJudge/pull/268 to build. Evidence: ledger row 14; README `## Preparation gate` PASS. Resume: merging the docs PR is the build signal; `/graph-implement` picks it up.
 
 ## Dispatch prompts
 
@@ -346,3 +346,4 @@ Report back: PASS or FAIL, the complete findings list with severity (none if PAS
 | "Decisions already made — do not re-litigate" (intake `GRAPH-BRIEF.md`, owner decisions of 2026-10-06) | answered-once | define | — (the owner's stated decisions are input to refinement; each one that becomes product truth still gets its own `GATE-QUESTIONS.md` slot, per `## Intake is evidence, never authority`) |
 | "take up to 5 more define passes if needed" | answered-once | gate-qc (park after attempt 4) | — (raises the gate-qc loop budget for this run to attempt 9; a process limit, not a product decision — every product choice still goes to the owner in `GATE-QUESTIONS.md`) |
 | "id like to add it as context/research/assistance for validation of this use case, so that i can be sure that the next time this is asked, its correct" | answered-once | owner-action (after gate-qc PASS; no node dispatched) | — (driver added `intake/jon-rulemancer/1–3.png` verbatim, a `### Tester case Q2` subsection to `DESIGN-BRIEF.md`, and a README intake pointer; no slot, slice order or count changed, so gate-qc was not re-run) |
+| "accept all your recommendations and fill in the answers. Q007 and Q008, i accept your recommendation for both" | answered-once | owner-action (after gate-qc PASS; no node dispatched) | — (driver wrote `accept` into all 11 verdict slots and both blocker answer slots of `GATE-QUESTIONS.md`, as the owner stated) |
