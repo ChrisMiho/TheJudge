@@ -239,7 +239,7 @@ describe("Frontend - Shared", () => {
         expect(loaded).not.toBeNull();
         expect(loaded?.playerCount).toBe(3);
         expect(loaded?.players[0].namedCounters.poison).toBe(4);
-        expect(loaded?.cardStyle).toBe("gradient");
+        expect(loaded?.cardStyle).toBe("flat");
         expect(loaded?.dayNightPhase).toBe("day");
       });
 
@@ -256,7 +256,7 @@ describe("Frontend - Shared", () => {
         const loaded = loadTrackerState();
 
         expect(loaded).not.toBeNull();
-        expect(loaded?.cardStyle).toBe("gradient");
+        expect(loaded?.cardStyle).toBe("flat");
         expect(loaded?.dayNightPhase).toBe("day");
       });
 

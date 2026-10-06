@@ -110,6 +110,10 @@ game survives a phone lock or reload because it saves itself as you play.
   sheet (REQ-208) with today's confirmation copy; Game Setup fits one phone screen,
   with Layout and Card style as a labelled pair of segmented pills at its foot.
   (REQ-202)
+- Built: card style defaults to **Flat** for every seat in a fresh game and
+  for saves with a missing or invalid style. Game Setup still offers Ombre;
+  an existing saved style choice restores on load and survives New Game.
+  (REQ-081)
 
 ### Persistence
 

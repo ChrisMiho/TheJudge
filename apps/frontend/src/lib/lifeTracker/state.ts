@@ -15,8 +15,8 @@ export const MAX_PLAYER_COUNT = 8;
 export const DEFAULT_PLAYER_COUNT = 4;
 export const DEFAULT_STARTING_LIFE = 40;
 export const DEFAULT_LAYOUT_MODE: LayoutMode = "grid";
-/** Unchanged from the original shipped look, so existing games keep the ombre they already had. */
-export const DEFAULT_CARD_STYLE: CardStyle = "gradient";
+/** Flat for fresh games and missing preferences; saved explicit choices still take precedence. */
+export const DEFAULT_CARD_STYLE: CardStyle = "flat";
 export const DEFAULT_DAY_NIGHT_PHASE: DayNightPhase = "day";
 
 /** Every fixed player label, in seat order. The tracker roster is always a contiguous prefix of this list. */

@@ -1906,6 +1906,7 @@
   - each card exposes `+`/`−` controls (edge tap zones) that adjust that player's life; zone thickness follows REQ-112
   - a player whose life is ≤ 0 shows a skull death indicator overlay on their card; the indicator clears when life returns above 0; no elimination or auto-KO occurs
   - basic game setup lets the user choose player count (2–8) via `−`/`+` controls (not a pill row) and a starting-life preset (20, 25, 30, 40, or Custom); starting life seeds every player
+  - card style defaults to Flat for every seat in fresh games and saves with a missing or invalid style; Game Setup offers Flat and Ombre, and a saved style choice restores on load and survives New Game
   - the Custom starting-life slot defaults to 60 when opened/applied without a different typed value
   - changing player count applies the In-Depth starting-life defaults (2 players → 20, 3+ → 40) unless the user has already chosen a different starting life for this game
   - a reset returns all players' life and counters to the current starting values with no winner-selection step

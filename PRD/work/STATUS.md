@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [blue-ambient-personality](blue-ambient-personality/) | Revision B verified: quieter links and Blue sigils; PR #264 |
 
 ## active
 

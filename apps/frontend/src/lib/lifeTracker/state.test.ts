@@ -412,11 +412,11 @@ describe("Frontend - Shared", () => {
   });
 
   describe("lifeTracker presentation preferences", () => {
-    it("defaults to the shipped ombre card style and day at the day/night designation", () => {
+    it("defaults to flat card style and day at the day/night designation", () => {
       const state = createDefaultGame();
 
       expect(state.cardStyle).toBe(DEFAULT_CARD_STYLE);
-      expect(state.cardStyle).toBe("gradient");
+      expect(state.cardStyle).toBe("flat");
       expect(state.dayNightPhase).toBe("day");
     });
 
