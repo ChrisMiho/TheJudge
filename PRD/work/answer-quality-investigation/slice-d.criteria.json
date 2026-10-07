@@ -5,7 +5,7 @@
     {
       "id": "D1",
       "statement": "A test shows per-rule output has rank, selected-in-search, skipped-for-curated-topic, and available-to-answer, including a parent/lettered-subrule case (514.3 present, 514.3a absent)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -13,7 +13,7 @@
     {
       "id": "D2",
       "statement": "A test shows case-level per-rule coverage, complete-procedure coverage and `goldRuleInPrompt` are reported side by side",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -21,7 +21,7 @@
     {
       "id": "D3",
       "statement": "A test shows the trace refuses a dirty checkout and records its commit in `trace.json`",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -29,7 +29,7 @@
     {
       "id": "D4",
       "statement": "A test shows the compare command reports both commits, prompt-hash equality, coverage differences and one-sided cases from two fixture trace folders",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -37,7 +37,7 @@
     {
       "id": "D5",
       "statement": "`npm run eval:evidence-trace` runs over all approved cases on this checkout offline and its hit/miss agrees with `rules-gate/baseline.json` for every case, or lists each divergence by case id",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run eval:evidence-trace"
       }
@@ -45,7 +45,7 @@
     {
       "id": "D6",
       "statement": "`eval:evidence-trace` and `eval:evidence-trace:compare` exist in package.json and make no network call (test asserts no fetch)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -53,7 +53,7 @@
     {
       "id": "D7",
       "statement": "Typecheck passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run typecheck"
       }

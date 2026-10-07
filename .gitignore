@@ -67,6 +67,9 @@ output/combo-answer-quality/
 # file is apps/backend/src/eval/answer-quality/results.json, REQ-189)
 output/answer-quality/
 
+# Offline evidence-trace folders (developer-local; one per checkout it was run from, REQ-229)
+output/evidence-trace/
+
 # Rules test review batches (developer-local; the owner's verdicts land in the case
 # files under apps/backend/src/eval/worked-solutions/ through the apply command, REQ-224)
 output/rules-review/

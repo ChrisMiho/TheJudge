@@ -1,6 +1,6 @@
 # Slice D — Offline evidence trace
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
@@ -20,13 +20,13 @@ For every approved case, show offline where each deciding rule ranked, whether i
 
 ## Acceptance criteria
 
-- [ ] D1: A test shows per-rule output has rank, selected-in-search, skipped-for-curated-topic, and available-to-answer, including a parent/lettered-subrule case (514.3 present, 514.3a absent)
-- [ ] D2: A test shows case-level per-rule coverage, complete-procedure coverage and `goldRuleInPrompt` are reported side by side
-- [ ] D3: A test shows the trace refuses a dirty checkout and records its commit in `trace.json`
-- [ ] D4: A test shows the compare command reports both commits, prompt-hash equality, coverage differences and one-sided cases from two fixture trace folders
-- [ ] D5: `npm run eval:evidence-trace` runs over all approved cases on this checkout offline and its hit/miss agrees with `rules-gate/baseline.json` for every case, or lists each divergence by case id
-- [ ] D6: `eval:evidence-trace` and `eval:evidence-trace:compare` exist in package.json and make no network call (test asserts no fetch)
-- [ ] D7: Typecheck passes
+- [x] D1: A test shows per-rule output has rank, selected-in-search, skipped-for-curated-topic, and available-to-answer, including a parent/lettered-subrule case (514.3 present, 514.3a absent)
+- [x] D2: A test shows case-level per-rule coverage, complete-procedure coverage and `goldRuleInPrompt` are reported side by side
+- [x] D3: A test shows the trace refuses a dirty checkout and records its commit in `trace.json`
+- [x] D4: A test shows the compare command reports both commits, prompt-hash equality, coverage differences and one-sided cases from two fixture trace folders
+- [x] D5: `npm run eval:evidence-trace` runs over all approved cases on this checkout offline and its hit/miss agrees with `rules-gate/baseline.json` for every case, or lists each divergence by case id
+- [x] D6: `eval:evidence-trace` and `eval:evidence-trace:compare` exist in package.json and make no network call (test asserts no fetch)
+- [x] D7: Typecheck passes
 
 ## Verification
 
@@ -45,3 +45,5 @@ No live OpenAI call; fake clients and stored fixtures only.
 - `scripts/lib/evidence-trace.mjs (new)`
 - `scripts/lib/evidence-trace.test.mjs (new)`
 - `package.json`
+- `scripts/eval-evidence-trace-compare.mjs` is the compare command; `scripts/lib/rule-availability.mjs` (from slice C) decides availability
+- `.gitignore` (trace folders under `output/evidence-trace/` are developer-local)
