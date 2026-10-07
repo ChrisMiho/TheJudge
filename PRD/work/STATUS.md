@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [answer-quality-investigation](answer-quality-investigation/) | Before/after answer evaluation for PR #273, retrieval vs prompt failures, GPT-4.1 vs GPT-6 Luna; graph run `graph-20261007-134015` |
 
 ## owner-action
 
