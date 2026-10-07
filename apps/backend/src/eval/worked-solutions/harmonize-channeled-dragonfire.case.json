@@ -43,7 +43,7 @@
     "dependsOnHashes": {
       "rules": "efadb1391129076e71c023218b377640dec37a980b0ae54cfb455eb1d08b9921",
       "oracle": "7e0f59b912fd1ed32f1d56d0691c134178c6f0579b90542ee81bef880896ad71",
-      "rulings": "c802248b94a3466591674877108ec87bcc67a38eb08de1689169db915db93a58"
+      "rulings": "4202e751ee1f00b26e42d239f274bd75afce1c67a4cd3477d19aa8f40cdeb7e3"
     }
   },
   "whyHard": "The creature's power looks like it can pay for anything, but only generic mana is reduced."

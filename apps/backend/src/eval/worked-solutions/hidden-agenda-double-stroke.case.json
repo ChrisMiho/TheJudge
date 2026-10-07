@@ -1,23 +1,22 @@
 {
-  "id": "hidden-agenda-brago-s-favor",
+  "id": "hidden-agenda-double-stroke",
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Brago's Favor has only a static ability. Swap the attached card and citation to Double Stroke (e25ab152-e166-44df-8f92-668bab0e9619), a hidden-agenda conspiracy with a triggered ability that carries the identical 2016-08-23 ruling."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
-      "oracleId": "395b312b-8fe6-4c28-b91d-620b5fcb9e6d",
-      "name": "Brago's Favor"
+      "oracleId": "e25ab152-e166-44df-8f92-668bab0e9619",
+      "name": "Double Stroke"
     }
   ],
   "gameState": null,
-  "question": "Can I turn a conspiracy with hidden agenda face up after its trigger condition was met and still have its triggered ability trigger?",
+  "question": "I cast the instant I secretly named for my face-down Double Stroke, then turn Double Stroke face up while that spell is still on the stack. Does Double Stroke's ability trigger and copy the spell?",
   "expected": {
     "outcome": "does-not-work",
-    "shortAnswer": "No: it must be face up before the trigger condition is met, and turning it face up afterward has no effect.",
+    "shortAnswer": "No: Double Stroke must be face up before you cast the named spell, and turning it face up afterward has no effect on that spell.",
     "answer": "A conspiracy with hidden agenda that has a triggered ability must be face up before that ability's trigger condition is met in order for it to trigger. Turning it face up afterward won't have any effect.",
     "decidingRuleIds": ["702.106a"]
   },
@@ -26,8 +25,8 @@
     "pool": "mechanic",
     "type": "Official WotC card ruling",
     "publisher": "Wizards of the Coast",
-    "cardName": "Brago's Favor",
-    "oracleId": "395b312b-8fe6-4c28-b91d-620b5fcb9e6d",
+    "cardName": "Double Stroke",
+    "oracleId": "e25ab152-e166-44df-8f92-668bab0e9619",
     "rulingDate": "2016-08-23",
     "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
     "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
@@ -43,8 +42,8 @@
     "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
     "dependsOnHashes": {
       "rules": "5645b95ca65ba07302db39bed7e77572e2d9b511009e78f1d68307832b4158ec",
-      "oracle": "3e5feb24aa004a6b6ac122ff6aff8125b4d2d60a96f8de6a4c23d9ffea386104",
-      "rulings": "560a8bb00e8ed1afd42bfc75956f053f137eb4fe557fa173591ebb1ffe1a6625"
+      "oracle": "42697f2772d753877bb228f33b0beab974b0f7217e58a1c60ef10eead9dcc9d3",
+      "rulings": "0ea74283110d5135558b318550a304be19c22019a7f35b2cea3b7634c274a7f6"
     }
   },
   "whyHard": "Hidden agenda lets you flip the conspiracy at any time, so players think it can catch up on triggers it missed."

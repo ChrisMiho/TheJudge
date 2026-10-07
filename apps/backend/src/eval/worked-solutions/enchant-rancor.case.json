@@ -1,24 +1,23 @@
 {
-  "id": "enchant-animate-library",
+  "id": "enchant-rancor",
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Animate Library is an Unstable card and the scenario is a Contraption deck; excluded-mechanics.json already keeps Unstable content out. Re-author 702.5 on a black-border Aura, e.g. Rancor (9d2d6479-531c-4ce1-b52b-00e36fa63b64) ruling 2018-03-16 (an Aura spell whose target is illegal doesn't resolve and never enters) or Spreading Seas (af32757c-9d3c-4f6c-a6fa-d5729a440382) ruling 2009-10-01; keep 702.5a."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
-      "oracleId": "f785133a-636a-487d-8d56-e07012e5d732",
-      "name": "Animate Library"
+      "oracleId": "9d2d6479-531c-4ce1-b52b-00e36fa63b64",
+      "name": "Rancor"
     }
   ],
   "gameState": null,
-  "question": "Can Animate Library enchant my Contraption deck?",
+  "question": "I cast Rancor targeting my only creature, and in response my opponent destroys that creature. When Rancor ends up in my graveyard, does its ability return it to my hand?",
   "expected": {
     "outcome": "does-not-work",
-    "shortAnswer": "No: Animate Library cannot enchant your Contraption deck.",
-    "answer": "Animate Library can't enchant your Contraption deck.",
+    "shortAnswer": "No: Rancor's target is illegal when it tries to resolve, so the Aura spell doesn't resolve, never enters the battlefield, and its return-to-hand ability doesn't trigger.",
+    "answer": "If the creature this Aura would enchant is an illegal target by the time Rancor tries to resolve, the Aura spell doesn't resolve. It won't enter the battlefield, so it won't be put into a graveyard from the battlefield and its ability won't trigger.",
     "decidingRuleIds": ["702.5a"]
   },
   "source": {
@@ -26,9 +25,9 @@
     "pool": "mechanic",
     "type": "Official WotC card ruling",
     "publisher": "Wizards of the Coast",
-    "cardName": "Animate Library",
-    "oracleId": "f785133a-636a-487d-8d56-e07012e5d732",
-    "rulingDate": "2018-01-19",
+    "cardName": "Rancor",
+    "oracleId": "9d2d6479-531c-4ce1-b52b-00e36fa63b64",
+    "rulingDate": "2018-03-16",
     "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
     "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
     "retrievedOn": "2026-10-06",
@@ -43,9 +42,9 @@
     "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
     "dependsOnHashes": {
       "rules": "70bde518b62e0cd2a54fd2fe61ffed49d85c78f3616442713f390c6c3efc183a",
-      "oracle": "2e6385eeafb3725d0e0bd0ba97ca3829bb39232946f5817d64e1f81bd3239384",
-      "rulings": "b7d6153eee2da9f2208ab06ca99e18074a83ff8b5baf2bc4c5609d074a829f5a"
+      "oracle": "4752a5f79d7c62d4bc07ed7dd231c7ccec0d593071403099395d1828fb479034",
+      "rulings": "b4557b69e22dadfe99a87e6099dea274ddd2f48ea4274ec68488f494ad575a7a"
     }
   },
-  "whyHard": "'Enchant your library' suggests any deck of cards you own, but only the library is a legal object."
+  "whyHard": "Rancor really does land in the graveyard, so players assume its return trigger fires, but a fizzled Aura spell never touched the battlefield."
 }

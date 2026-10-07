@@ -3,9 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Reword: 'If Sever the Bloodline targets Village Ironsmith, are other creatures currently named Ironfang (its back face) exiled too?' The current wording reads as the same card's other face."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -18,7 +17,7 @@
     }
   ],
   "gameState": null,
-  "question": "If Sever the Bloodline targets Village Ironsmith, is the other face, Ironfang, exiled too since a double-faced creature has a name for each face?",
+  "question": "If Sever the Bloodline targets Village Ironsmith, are other creatures currently named Ironfang (its back face) exiled too?",
   "expected": {
     "outcome": "does-not-work",
     "shortAnswer": "No: a double-faced creature only has the name of the face that is up, so Ironfang wouldn't be exiled.",

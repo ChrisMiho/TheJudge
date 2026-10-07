@@ -3,9 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Tie the question to the exiling permanent per 702.75a: 'can any player who has controlled the permanent that exiled it since then look at that card?' The ruling text is verbatim and its 'with it' carries that meaning; the question drops it."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -14,7 +13,7 @@
     }
   ],
   "gameState": null,
-  "question": "After a card has been exiled with a hideaway ability, can any player who has controlled a permanent with hideaway since then look at that card?",
+  "question": "After a card has been exiled with a hideaway ability, can any player who has controlled the permanent that exiled it since then look at that card?",
   "expected": {
     "outcome": "works",
     "shortAnswer": "Yes: any player who has controlled a permanent with a hideaway ability since the card was exiled with it may look at it.",

@@ -3,9 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Reword to 'Can the assisting player pay the colored mana part of the spell's cost?' The assisting player may spend colored mana toward the generic part, so the current wording reads as yes while the outcome is does-not-work."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -14,7 +13,7 @@
     }
   ],
   "gameState": null,
-  "question": "Can the player who assists with a spell pay colored mana toward that spell's cost?",
+  "question": "If another player helps me cast Bloodborn Scoundrels using assist, can that player pay the {B} (the colored mana part of the spell's cost)?",
   "expected": {
     "outcome": "does-not-work",
     "shortAnswer": "No: assist can pay only the generic mana portion, and the spell's controller pays all colored mana.",
