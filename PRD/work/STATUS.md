@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [answer-quality-investigation](answer-quality-investigation/) | Refined 2026-10-07: comparison tooling (REQ-226–230 proposed) + free offline Phase 0; paid phases wait for owner caps; graph run `graph-20261007-134015` |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [answer-quality-investigation](answer-quality-investigation/) | Parked 2026-10-07 at gate-qc PASS: answer the 11 verdict slots in `GATE-QUESTIONS.md` (new REQ-226–230; amend REQ-185–189, NFR-018), then merge the docs PR to build; graph run `graph-20261007-134015` |
 
 
 ## deferred
