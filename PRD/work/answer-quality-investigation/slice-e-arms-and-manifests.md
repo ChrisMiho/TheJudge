@@ -1,6 +1,6 @@
 # Slice E — Diagnostic arms and manifests
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
@@ -20,14 +20,14 @@ Test-only prompt variants separate presentation from evidence, confined to a com
 
 ## Acceptance criteria
 
-- [ ] E1: A test shows, for every diagnostic case, arm B's evidence units equal arm A's, arm C adds only bundle rules, and arm D's units equal C's
-- [ ] E2: A test shows no arm output or arm input contains any reference answer text
-- [ ] E3: A test shows arm P is refused until the approved correction file exists
-- [ ] E4: A test shows arms C, D, P are refused on a case outside the diagnostic manifest and diagnostic records carry `diagnostic: true`
-- [ ] E5: A test asserts the diagnostic and held-out manifests are disjoint, hold ids and hashes only, and held-out runs only arm A
-- [ ] E6: The manifest generator is seeded and re-running it reproduces both committed files byte-for-byte
-- [ ] E7: Arm records carry an arm revision id; `apps/backend/src/prompt/`, routes and providers have no diff versus origin/main
-- [ ] E8: Typecheck passes
+- [x] E1: A test shows, for every diagnostic case, arm B's evidence units equal arm A's, arm C adds only bundle rules, and arm D's units equal C's
+- [x] E2: A test shows no arm output or arm input contains any reference answer text
+- [x] E3: A test shows arm P is refused until the approved correction file exists
+- [x] E4: A test shows arms C, D, P are refused on a case outside the diagnostic manifest and diagnostic records carry `diagnostic: true`
+- [x] E5: A test asserts the diagnostic and held-out manifests are disjoint, hold ids and hashes only, and held-out runs only arm A
+- [x] E6: The manifest generator is seeded and re-running it reproduces both committed files byte-for-byte
+- [x] E7: Arm records carry an arm revision id; `apps/backend/src/prompt/`, routes and providers have no diff versus origin/main
+- [x] E8: Typecheck passes
 
 ## Verification
 
@@ -49,3 +49,6 @@ No live OpenAI call; fake clients and stored fixtures only.
 - `apps/backend/src/eval/answer-quality/manifests/held-out.json (new)`
 - `scripts/eval-answer-quality.mjs`
 - `package.json`
+- `scripts/diagnostic-arms-check.mjs (new)`: the offline check over every diagnostic case against the real prompts (run by the arms test through tsx)
+- `scripts/build-answer-quality-manifests.test.mjs (new)`; the generator's package script is `eval:answer-quality:manifests` (`-- --check` re-runs it and compares byte for byte)
+- Build note: the shared proposal text (REQ-230) lets arms B and P run on a held-out case under a frozen revision, with `heldOut: true` on the record; the build implements that, so "held-out runs only arm A" holds until B's revision is frozen in slice G

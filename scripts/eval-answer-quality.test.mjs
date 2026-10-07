@@ -1427,3 +1427,110 @@ test("the judge is handed the same inputs for every model and cap: attached exce
   assert.deepEqual(seen[0].stateLines, [])
   for (const inputs of seen) assert.deepEqual(inputs, seen[0])
 })
+
+// ---------------------------------------------------------------------------
+// Slice E (REQ-230): --arm, and the cases an arm may run on
+// ---------------------------------------------------------------------------
+
+test("parseArgs reads repeatable --arm flags (A by default), refuses an unknown arm, and keeps --arm out of a routine run", () => {
+  assert.deepEqual(parseArgs(["--run-id", "r", "--manifest", "m.json"]).experiment.armIds, ["A"])
+  assert.deepEqual(parseArgs(["--run-id", "r", "--manifest", "m.json", "--arm", "A", "--arm", "C", "--arm", "C"]).experiment.armIds, ["A", "C"])
+  assert.throws(() => parseArgs(["--run-id", "r", "--manifest", "m.json", "--arm", "Z"]), /--arm Z is not an arm: the arms are A, B, C, D, P/)
+  assert.throws(() => parseArgs(["--arm", "C"]), /--arms belong to an experiment run/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--regrade-from", "e", "--arm", "C"]), /drop --arm/)
+})
+
+const armSets = (overrides = {}) => async () => ({
+  diagnosticIds: new Set(["arm-diag"]),
+  heldOutIds: new Set(["arm-held"]),
+  correction: null,
+  ...overrides
+})
+
+async function armFixture(ids) {
+  const cases = ids.map((id) => fixtureCase(id))
+  return experimentFixture({ manifestCases: cases.map((c) => manifestEntryFor(c)), cases })
+}
+
+test("arms C and D are refused on a case outside the diagnostic manifest, naming the case, before any client exists", async () => {
+  const { manifestPath, loadCases } = await armFixture(["arm-diag", "arm-held", "arm-other"])
+  let clientBuilt = false
+  for (const arm of ["C", "D"]) {
+    await assert.rejects(
+      () =>
+        run({
+          loadLocalEnv: noLocalEnv,
+          argv: ["--run-id", "arms", "--manifest", manifestPath, "--arm", arm],
+          env: {},
+          log: () => {},
+          loadCases,
+          isStale: notStale,
+          measure: fakeMeasure,
+          loadArmSets: armSets(),
+          buildClient: async () => {
+            clientBuilt = true
+          }
+        }),
+      (error) => /arm-held: arm [CD] reads deciding-rule labels/.test(error.message) && /arm-other: arm [CD]/.test(error.message) && !/arm-diag:/.test(error.message)
+    )
+  }
+  assert.equal(clientBuilt, false)
+})
+
+test("arm P is refused until its correction file exists, and a dry run of arm B prints the arm with its revision", async () => {
+  const { manifestPath, loadCases } = await armFixture(["arm-diag"])
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: ["--run-id", "p", "--manifest", manifestPath, "--arm", "P"],
+        env: {},
+        log: () => {},
+        loadCases,
+        isStale: notStale,
+        measure: fakeMeasure,
+        loadArmSets: armSets()
+      }),
+    /correction text file .* does not exist yet/
+  )
+  const logs = []
+  await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--run-id", "b-dry", "--manifest", manifestPath, "--arm", "A", "--arm", "B"],
+    env: {},
+    log: (line) => logs.push(line),
+    loadCases,
+    isStale: notStale,
+    measure: fakeMeasure,
+    loadArmSets: armSets()
+  })
+  assert.match(logs[0], /Arms: A \(A\.1\), B \(B\.1\)/)
+})
+
+test("a live run refuses an arm whose revision is not frozen, and hands the held-out ids, the correction and the arms to the runner otherwise", async () => {
+  const { manifestPath, loadCases } = await armFixture(["arm-diag"])
+  const base = {
+    loadLocalEnv: noLocalEnv,
+    env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+    log: () => {},
+    loadCases,
+    isStale: notStale,
+    loadArmSets: armSets(),
+    client: fakeAccessClient(["gpt-4.1", "gpt-5"])
+  }
+  await assert.rejects(
+    () => run({ ...base, argv: ["--run-id", "live-b", "--manifest", manifestPath, "--arm", "B", "--max-cost-usd", "5", CONFIRM_FLAG], runExperiment: async () => assert.fail("must not run") }),
+    /arm B \(B\.1\) is not frozen under its revision id yet/
+  )
+  let received
+  await run({
+    ...base,
+    argv: ["--run-id", "live-c", "--manifest", manifestPath, "--arm", "A", "--arm", "C", "--max-cost-usd", "5", CONFIRM_FLAG],
+    runExperiment: async (params) => {
+      received = params
+    }
+  })
+  assert.deepEqual(received.arms, [{ id: "A", revision: "A.1" }, { id: "C", revision: "C.1" }])
+  assert.deepEqual([...received.heldOutIds], ["arm-held"])
+  assert.equal(received.correction, null)
+})

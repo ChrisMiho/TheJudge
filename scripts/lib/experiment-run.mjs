@@ -477,6 +477,7 @@ export async function executeExperiment(params, deps) {
     resume = false,
     retryErrors = false,
     maxCostUsd = null,
+    heldOutIds = new Set(),
     env,
     log
   } = params;
@@ -585,7 +586,7 @@ export async function executeExperiment(params, deps) {
         vector: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
         knownRuleIds,
         folder,
-        state,
+        heldOutIds,
         passesCap,
         log
       });
@@ -664,6 +665,7 @@ async function answerAndGrade({
   vector,
   knownRuleIds,
   folder,
+  heldOutIds = new Set(),
   passesCap,
   log
 }) {
@@ -684,7 +686,9 @@ async function answerAndGrade({
     key: recordKey(key),
     ...key,
     armRevision: arm.revision,
+    // Every arm but A is a test-only variant, reported apart as a diagnostic control (REQ-230, REQ-228).
     diagnostic: arm.id !== DEFAULT_ARM,
+    heldOut: heldOutIds.has(caseEntry.id),
     tier: caseEntry.tier,
     strata: strataOf(caseEntry),
     goldRuleInPrompt: retrieval.goldRuleInPrompt,

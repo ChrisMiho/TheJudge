@@ -69,6 +69,15 @@ import {
   readUsage,
   validateManifestCases
 } from "./lib/experiment-run.mjs";
+import {
+  ARM_IDS,
+  ARM_P_CORRECTION_RELATIVE_PATH,
+  DIAGNOSTIC_MANIFEST_RELATIVE_PATH,
+  HELD_OUT_MANIFEST_RELATIVE_PATH,
+  buildArmPrompt,
+  describeArm,
+  validateArmUse
+} from "./lib/diagnostic-arms.mjs";
 import { attachedRuleIdsOf, buildJudgeInputs } from "./lib/judge-inputs.mjs";
 import { describeDecidingRules } from "./lib/rule-availability.mjs";
 import { loadLocalOpenAiEnv } from "./lib/local-openai-env.mjs";
@@ -175,6 +184,7 @@ export function parseArgs(argv) {
   let seed = DEFAULT_SAMPLE_SEED;
   // Experiment-mode flags (REQ-226): none of them exists in a routine run.
   const experimentFlags = {};
+  const armIds = [];
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -219,6 +229,9 @@ export function parseArgs(argv) {
       experimentFlags.retryErrors = true;
     } else if (arg === "--max-cost-usd") {
       experimentFlags.maxCostUsd = Number(argv[++i]);
+    } else if (arg === "--arm") {
+      armIds.push(argv[++i]);
+      experimentFlags.arms = armIds;
     }
   }
 
@@ -275,6 +288,10 @@ function parseExperimentFlags(flags, selectionFlags) {
   if (flags.retryErrors && flags.resume === undefined) {
     throw new Error("--retry-errors re-attempts the error records of a run you resume: add --resume <run-id>.");
   }
+  for (const armId of flags.arms ?? []) {
+    if (!ARM_IDS.includes(armId)) throw new Error(`--arm ${armId ?? ""} is not an arm: the arms are ${ARM_IDS.join(", ")}.`);
+  }
+  if (flags.arms && flags.regradeFrom) throw new Error("A regrade run keeps the arms of the run it regrades; drop --arm.");
   if (flags.maxCostUsd !== undefined && !(Number.isFinite(flags.maxCostUsd) && flags.maxCostUsd > 0)) {
     throw new Error("--max-cost-usd needs a positive dollar amount, such as --max-cost-usd 25.");
   }
@@ -303,6 +320,7 @@ function parseExperimentFlags(flags, selectionFlags) {
     repeats: flags.repeat ?? 1,
     expectCommit: flags.expectCommit ?? null,
     regradeFrom: flags.regradeFrom ?? null,
+    armIds: [...new Set(flags.arms ?? [DEFAULT_ARM])],
     resume: flags.resume !== undefined,
     retryErrors: flags.retryErrors === true,
     maxCostUsd: flags.maxCostUsd ?? null
@@ -922,6 +940,25 @@ export async function runLiveEvaluation(params) {
 }
 
 /**
+ * The committed case sets the arms are fenced by (REQ-230): the diagnostic and held-out manifests'
+ * ids, and arm P's owner-approved correction when its file exists. Read from this checkout.
+ */
+export async function defaultLoadArmSets() {
+  const readJson = async (relativePath) => JSON.parse(await readFile(resolve(repoRoot, relativePath), "utf8"));
+  const diagnostic = await readJson(DIAGNOSTIC_MANIFEST_RELATIVE_PATH);
+  const heldOut = await readJson(HELD_OUT_MANIFEST_RELATIVE_PATH);
+  const correction = await readJson(ARM_P_CORRECTION_RELATIVE_PATH).catch((error) => {
+    if (error?.code === "ENOENT") return null;
+    throw error;
+  });
+  return {
+    diagnosticIds: new Set(diagnostic.cases.map((entry) => entry.id)),
+    heldOutIds: new Set(heldOut.cases.map((entry) => entry.id)),
+    correction
+  };
+}
+
+/**
  * The real dependencies of an experiment run (REQ-226): the same TypeScript
  * modules and production prompt resources the routine loop loads, plus the
  * checkout's git state and the SHA-256 of every data file and case file read.
@@ -949,6 +986,16 @@ export async function runLiveExperiment(params) {
     describeRetrieval,
     computeCallCostUsd,
     estimateCallCostUsd,
+    // An arm is built from the prompt this checkout prepared and its committed rule index. The case's
+    // reference answer is not an input: only the deciding rule ids are (REQ-230).
+    buildArmPrompt: ({ arm, prepared, caseEntry }) =>
+      buildArmPrompt({
+        arm: arm.id,
+        promptText: prepared.promptText,
+        ruleIndex: resources.gameRulesRuleIndex,
+        decidingRuleIds: caseEntry.expected.decidingRuleIds,
+        correction: params.correction
+      }),
     resources,
     ruleIds: resources.gameRulesRuleIndex.map((entry) => entry.ruleId),
     embedQueries: (cases) => embedGoldCaseQueries({ goldCases: cases, embedder, cardDetailIndex: resources.cardDetailIndex }),
@@ -1015,11 +1062,17 @@ async function runExperimentCommand({
   buildClient,
   injectedClient,
   runExperiment,
+  loadArmSets = defaultLoadArmSets,
   log
 }) {
   const { experiment } = parsed;
   const runsRoot = resolve(repoRoot, EXPERIMENT_RUNS_DIR);
-  const arms = [{ id: DEFAULT_ARM, revision: ARM_A_REVISION }];
+  const arms = experiment.regradeFrom
+    ? [{ id: DEFAULT_ARM, revision: ARM_A_REVISION }]
+    : experiment.armIds.map((armId) => {
+        const { id, revision } = describeArm(armId);
+        return { id, revision };
+      });
 
   let manifest = null;
   let manifestSha256 = null;
@@ -1029,6 +1082,20 @@ async function runExperimentCommand({
   } else {
     ({ manifest, manifestSha256 } = await loadManifestFile(experiment.manifestPath));
     cases = validateManifestCases({ manifest, allCases, isStale });
+  }
+
+  // Test-only arms run only where REQ-230 lets them: C and D on the diagnostic manifest, B and P also on a
+  // held-out case once frozen, and a live run only with frozen arms.
+  const armSets = await loadArmSets();
+  if (!experiment.regradeFrom) {
+    validateArmUse({
+      armIds: experiment.armIds,
+      caseIds: cases.map((caseEntry) => caseEntry.id),
+      diagnosticIds: armSets.diagnosticIds,
+      heldOutIds: armSets.heldOutIds,
+      live: parsed.confirmed,
+      correction: armSets.correction
+    });
   }
 
   const folder = resolve(runsRoot, experiment.runId);
@@ -1090,6 +1157,8 @@ async function runExperimentCommand({
     resume: experiment.resume,
     retryErrors: experiment.retryErrors,
     maxCostUsd: experiment.maxCostUsd,
+    heldOutIds: armSets.heldOutIds,
+    correction: armSets.correction,
     env,
     log
   });
@@ -1166,6 +1235,7 @@ export async function run(options = {}) {
     client: injectedClient,
     runEvaluation = runLiveEvaluation,
     runExperiment = runLiveExperiment,
+    loadArmSets,
     loadLocalEnv = loadLocalOpenAiEnv,
     readResults = defaultReadResults,
     loadSources = loadSnapshotSources,
@@ -1197,6 +1267,7 @@ export async function run(options = {}) {
       buildClient,
       injectedClient,
       runExperiment,
+      loadArmSets,
       log
     });
   }

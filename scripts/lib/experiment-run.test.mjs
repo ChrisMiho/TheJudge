@@ -716,3 +716,19 @@ test("a regrade re-grades with the excerpts the stored prompt carried and carrie
   assert.ok(seen.every((excerpts) => excerpts.length === 1 && excerpts[0].ruleId === "100.1"));
   assert.ok(summary.records.every((record) => record.goldRuleInPrompt === true && record.inputTokens === 2000 && record.outputTokens === 300));
 });
+
+test("a record marks a held-out case with heldOut, and an arm's records with diagnostic and the arm's revision id", async () => {
+  const arms = [
+    { id: "A", revision: "A.1" },
+    { id: "B", revision: "B.1" }
+  ];
+  const params = await experimentParams({ arms, heldOutIds: new Set(["case-two"]) });
+  const { summary } = await executeExperiment(params, fakeDeps({ buildArmPrompt: ({ prepared }) => ({ promptText: `${prepared.promptText}\n[B]`, bundleRuleIds: [] }) }));
+  const flags = summary.records.map((record) => [record.caseId, record.arm, record.armRevision, record.diagnostic, record.heldOut]);
+  assert.deepEqual(flags, [
+    ["case-one", "A", "A.1", false, false],
+    ["case-one", "B", "B.1", true, false],
+    ["case-two", "A", "A.1", false, true],
+    ["case-two", "B", "B.1", true, true]
+  ]);
+});
