@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [answer-quality-investigation](answer-quality-investigation/) | define attempt 2 2026-10-07: REQ-228/229/230 re-proposed to the owner's REQ-226 rule (evidence trace runs from its own checkout and records its commit; two revisions compared from two trace folders; `--subject`/`--subject-b` dropped); awaiting gate-qc re-grade; graph run `graph-20261007-134015` |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| [answer-quality-investigation](answer-quality-investigation/) | gate-qc re-grade FAIL 2026-10-07: `--subject`/`--subject-b` in REQ-229 (and brief 4.5, Phase 0) still imply the cross-checkout import the owner dropped in REQ-226; graph run `graph-20261007-134015` |
 
 ## ideation
 

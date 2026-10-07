@@ -194,8 +194,8 @@ source pool and request kind. Cases whose prompt hash is identical on both sides
 form the **unchanged-input stratum**; their differences are reported as
 sampling noise, which is how a single sampling difference is kept from being
 called an effect. Per side it reports latency (mean, p50, p95), answers slower
-than the subject's production per-attempt timeout (15,000 ms today), errors and
-timeouts, tokens including reasoning tokens, and answer and judge cost apart. It
+than the production per-attempt timeout of the revision that side's run executed
+from (15,000 ms today), errors and timeouts, tokens including reasoning tokens, and answer and judge cost apart. It
 never names a winner.
 
 ### 4.5 Offline evidence trace (REQ-229)
@@ -210,21 +210,30 @@ the final prompt (a curated topic, an excerpt, or a card ruling quoting it). It
 also checks each deciding rule's parent and lettered subrules — the "514.3 is
 there but its exception 514.3a is not" pattern. Case level: per-rule coverage,
 complete-procedure coverage (every deciding rule available), and today's
-`goldRuleInPrompt` side by side. Ranking uses the subject's committed frozen
-query vectors (REQ-222), so it reproduces the gate; a case awaiting a re-freeze
-is embedded by the local embedder and labelled. With `--subject-b` it also reports
-per-case prompt-hash equality between two revisions.
+`goldRuleInPrompt` side by side. Ranking uses the committed frozen query vectors
+of the checkout it runs from (REQ-222), so it reproduces the gate; a case
+awaiting a re-freeze is embedded by the local embedder and labelled.
+
+Like an experiment run (§4.1), the trace measures the checkout it runs from,
+imports nothing from another checkout, refuses when that checkout has
+uncommitted changes, and records its commit in `trace.json`. Two revisions are
+compared offline: each revision's trace is produced from its own worktree (tooling
+commits applied on top), then `npm run eval:evidence-trace:compare --
+<trace-folder-a> <trace-folder-b>` reads the two trace output folders and reports
+both commits, per-case prompt-hash equality, how coverage differs, and any case
+in only one trace (REQ-229).
 
 ### 4.6 Diagnostic arms and the held-out split (REQ-230)
 
-Arms are evaluation-only prompt variants, each a pure function from the
-subject's prepared prompt and committed data to a prompt string, with a revision
+Arms are evaluation-only prompt variants, each a pure function from the prompt
+prepared by the checkout the run executes from, and its committed data, to a
+prompt string, with a revision
 id on every record. Nothing under `apps/backend/src/prompt/`, routes or
 providers changes.
 
 | Arm | Change | Question it answers |
 | --- | --- | --- |
-| A | the subject's production prompt, untouched | What does this revision do now? |
+| A | the production prompt of the checkout the run executes from, untouched | What does this revision do now? |
 | B | the same evidence units, regrouped, reordered and headed — none added, removed or reworded | Does presentation alone help? |
 | C | A plus the case's deciding-rule bundle (each deciding rule, its parent and its lettered subrules, as rule-index text in A's format, de-duplicated) | Does complete evidence rescue the answer? |
 | D | C's evidence in B's presentation | Do evidence and presentation interact? |
@@ -295,9 +304,10 @@ Each phase names who runs it, what it costs, and the decision it feeds.
 
 1. Create the base and head worktrees, tooling commits applied on top; record both SHAs, and record a
    new comparison rather than mixing revisions if either has moved.
-2. Run the evidence trace over all 392 approved cases on both revisions with
-   `--subject-b`: per-rule and complete-procedure coverage, the
-   unchanged-input stratum size, and the cases whose coverage changed.
+2. Run the evidence trace over all 392 approved cases from each worktree, then
+   compare the two trace folders with `eval:evidence-trace:compare`: per-rule
+   and complete-procedure coverage, the unchanged-input stratum size, and the
+   cases whose coverage changed.
 3. Run `npm run eval:rules-staleness` and `npm run eval:rules-coverage` on both
    worktrees. List the ten cases whose sources the refresh changed and the review
    provenance each carries at head (assumption A17).
@@ -477,6 +487,7 @@ requirements, 2 tested behavior, 3 local patterns, 4 smallest reversible scope,
 | A21 | The merge decision for #273 is a recommendation; the comparison uses pinned SHAs whether or not #273 merges first | 1, 4 | intake; owner merges all PRs |
 | A22 | The structured-state stratum is empty today and reported as such | 2 | 0 approved cases with a `gameState` |
 | A23 | Phase 2 defaults to the full paired cohort; falls back to changed stratum plus a seeded sample under a lower cap | 4 | unchanged-input stratum doubles as the noise control |
+| A24 | REQ-228, REQ-229 and REQ-230 follow the REQ-226 rule too: the evidence trace drops `--subject` / `--subject-b`, measures the checkout it runs from (refuses uncommitted changes, records its commit), and compares two revisions with `eval:evidence-trace:compare` over two trace folders, each produced from its own worktree; "subject" is reworded to the checkout a command runs from (or the revision), with no change of substance. The compare command's form copies REQ-228's `eval:answer-quality:compare -- <a> <b>` and the `eval:rules-review:render`/`:apply` naming | 1, 3 | owner's `edit` verdict on REQ-226, quoted in `GRAPH-RUN.md` `## Gate verdicts`: "Drop the cross-checkout `--subject` import: the run records the commit it executes from, and two revisions are compared by running the tooling from each revision's own worktree with the tooling commits applied on top."; gate-qc attempt 2 findings 1–2 (`QUALITY-CHECK.md`); `package.json` script names |
 
 ## 11. Blockers
 
@@ -493,8 +504,10 @@ Focused, offline, no network:
   `apps/backend/src/eval/**`;
 - `npm run eval:answer-quality` dry run (no key) prints unpriced models and every
   rate's check date, and makes no network call;
-- the evidence trace reproduces `baseline.json`'s hit and miss for every approved
-  case in the base worktree (parity check);
+- the evidence trace, run from the revision that wrote the committed
+  `baseline.json` (the base worktree, tooling commits applied on top), reproduces
+  its hit and miss for every approved case (parity check); no cross-checkout
+  import;
 - arms tests (same-evidence, bundle-only, no reference answer) pass for every
   diagnostic case;
 - the regression guard still shows `eval:answer-quality` and the new compare and

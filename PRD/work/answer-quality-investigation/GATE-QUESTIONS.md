@@ -166,13 +166,13 @@ Proposed diff — new entry after REQ-227 in `PRD/sections/functional-requiremen
 +- Description: A report command compares two experiment runs (REQ-226), or two arms or models within them, case by case, and shows which answers moved from right to wrong, wrong to right, or stayed, with denominators and case ids, so a regression can never hide inside an aggregate. It reports and never decides: no winner, no gate.
 +- Acceptance Criteria:
 +  - `npm run eval:answer-quality:compare -- <run-a> <run-b>` reads two run folders, with optional `--arm-a`, `--arm-b`, `--model-a`, `--model-b`, and `--cap` selectors; it makes no network call
-+  - it prints `incomparable` with every reason, and compares nothing, when the judge model or rubric revision differ between the selected records; a case whose reference-answer hash differs between the two sides is listed as a reference change and left out of the transition counts; differences in subject commit, embedding provider or model, excerpt cap, arm, or answer model are reported as the variable under study
++  - it prints `incomparable` with every reason, and compares nothing, when the judge model or rubric revision differ between the selected records; a case whose reference-answer hash differs between the two sides is listed as a reference change and left out of the transition counts; differences in the commit each run executed from, embedding provider or model, excerpt cap, arm, or answer model are reported as the variable under study
 +  - a side is `right` when its Correctness is 2 (REQ-187), `wrong` when 0 or 1, and `undetermined` when the judge returned undetermined or the record is an `error`; with repeats, a case's side is the majority of its repeats, and a case whose repeats disagree is listed as `unstable` with each repeat's score
 +  - it reports the counts right→right, wrong→right, right→wrong, wrong→wrong, and undetermined-or-error (on either side), plus cases present in only one run, each with its denominator; it lists every right→wrong case id with both transcript paths, every reference change, and every missing case
 +  - every count is broken down by tier (tiers 1 and 2 together, tier 3 apart, never pooled — REQ-187), by Comprehensive Rules section, by mechanic tag, by difficulty, by source pool, and by request kind (lookup or In-Depth)
 +  - cases whose prompt hash is identical on both sides are reported as the unchanged-input stratum, labelled as sampling variation rather than an effect of the change under study
 +  - arm C and D records (REQ-230) are reported under a "diagnostic control — not a product score" heading and never folded into any other count
-+  - per side it reports: answer latency mean, p50 and p95; the count of answers slower than the subject's production per-attempt client timeout (15,000 ms today); error and timeout counts; input, output and reasoning tokens; answer cost and judge cost apart, with unpriced models shown as unpriced (REQ-227)
++  - per side it reports: answer latency mean, p50 and p95; the count of answers slower than the production per-attempt client timeout of the revision that side's run executed from (15,000 ms today); error and timeout counts; input, output and reasoning tokens; answer cost and judge cost apart, with unpriced models shown as unpriced (REQ-227)
 +  - it writes a numbers-and-ids-only `compare-<run-a>-<run-b>.json` and a Markdown report under `output/answer-quality/` (gitignored)
 +  - unit tests over fixture run folders cover every transition, the unstable rule, the incomparable refusal, the reference-change exclusion, and the stratum
 +- Constraints:
@@ -189,6 +189,7 @@ Proposed diff — new entry after REQ-227 in `PRD/sections/functional-requiremen
 
 - Verdict: accept
 - Reason: 
+- Re-proposed 2026-10-07 (gate-qc loop 1): two criteria said "subject" — now "the commit each run executed from" and "the production timeout of the revision that side's run executed from"; no change of substance, derived from the owner's REQ-226 edit verdict
 
 ---
 
@@ -205,8 +206,10 @@ it), nor how far down the search ranked a missed rule, nor whether a rule's
 exception (like 514.3a, the exception to the cleanup rule 514.3) was left out.
 This report shows, per case and per deciding rule: its rank in the full search,
 whether the search picked it, and whether its text is anywhere in the final
-prompt — and whether every rule the case turns on is there. It can compare two
-versions of the app. No AI call, no cost, never a build failure.
+prompt — and whether every rule the case turns on is there. It traces the copy
+of the app it is run from and records which version that is; two versions are
+compared by tracing each from its own copy and then comparing the two saved
+results. No AI call, no cost, never a build failure.
 
 **What happens if you say no:** missing evidence and poor reasoning stay
 tangled, and the investigation cannot tell a retrieval problem from a prompt
@@ -220,15 +223,16 @@ Proposed diff — new entry after REQ-228 in `PRD/sections/functional-requiremen
 +- Priority: medium
 +- Description: An offline report follows each rules test case (REQ-185) from the player's question to the final prompt and shows, for every deciding rule, where it ranked in the System 3 search, whether it was selected, and whether its text is available to the model anywhere in the final prompt — separating "selected in search" from "available to answer". It makes no provider call and never fails a build.
 +- Acceptance Criteria:
-+  - `npm run eval:evidence-trace -- [--manifest <file>] [--case <id> ...] [--subject <path>] [--subject-b <path>]` runs with no provider call, no network call, and no live embedding call; with no manifest or case it traces every non-rejected case
-+  - each case's request is built by `buildCaseRequest` and prepared by the subject's unmodified `preparePromptInput` with the committed card-detail, card-rulings, rules, and (when combo enrichment is on, its production default) combo data, ranked with the subject's committed frozen query vector (REQ-222); a case awaiting a re-freeze is ranked with the local embedder and labelled so
++  - `npm run eval:evidence-trace -- [--manifest <file>] [--case <id> ...]` runs with no provider call, no network call, and no live embedding call; with no manifest or case it traces every non-rejected case
++  - the trace measures the checkout it runs from, as an experiment run does (REQ-226): it uses that checkout's prompt preparation, data loaders, embedder, `apps/backend/data/` files, and case files, and imports nothing from another checkout; it refuses when that checkout has uncommitted changes and records its full commit SHA in `trace.json`
++  - each case's request is built by `buildCaseRequest` and prepared by that checkout's unmodified `preparePromptInput` with its committed card-detail, card-rulings, rules, and (when combo enrichment is on, its production default) combo data, ranked with its committed frozen query vector (REQ-222); a case awaiting a re-freeze is ranked with the local embedder and labelled so
 +  - for every deciding rule it reports: its rank in the full System 3 ranking (read by preparing the prompt at an excerpt cap equal to the rule index's size through REQ-190's override, which reuses production's ranking); whether it was selected at the production cap (`selectedInSearch`); whether System 3 skipped it because a curated System 2 topic already carries it; and whether its rule text appears anywhere in the final prompt at the production cap — curated topic, supplemental excerpt, or a card ruling quoting it (`availableToAnswer`)
 +  - for every deciding rule it also reports its parent rule and its lettered subrules, and whether each reaches the final prompt, so a rule present without its exception is visible
 +  - per case it reports the retrieval query text and its hash, attached cards, request kind, prompt length and prompt hash, `goldRuleInPrompt` (one deciding rule among the System 3 selections — REQ-189's existing meaning), and `allDecidingRulesInPrompt` (every deciding rule available to answer)
 +  - a summary reports per-rule coverage and complete-procedure coverage, overall and by tier and rules section
-+  - with `--subject-b` it also reports, per case, whether the two subjects' prompts are byte-identical and how coverage differs
 +  - it writes `output/evidence-trace/<label>/trace.json` and a Markdown summary (gitignored)
-+  - at the subject that wrote the rules gate baseline, the trace's `selectedInSearch` matches `apps/backend/src/eval/rules-gate/baseline.json`'s hit and miss for every case the baseline scores — a parity test proves it
++  - two revisions are compared offline, never by importing one revision's code into the other: each revision's trace is produced from its own worktree (with the tooling commits applied on top), and `npm run eval:evidence-trace:compare -- <trace-folder-a> <trace-folder-b>` reads the two trace output folders and reports both recorded commits and, per case, whether the two prompts are byte-identical (equal prompt hashes) and how coverage differs, listing any case present in only one trace; it makes no provider, network, or embedding call and writes its result under `output/evidence-trace/` (gitignored)
++  - run from the revision that wrote the rules gate baseline, the trace's `selectedInSearch` matches `apps/backend/src/eval/rules-gate/baseline.json`'s hit and miss for every case the baseline scores — a parity test proves it
 +- Constraints:
 +  - observes only: no change to `preparePromptInput`, query construction, scoring, the excerpt cap, or any prompt text
 +  - never part of `npm run quality:check` or any gate; its unit tests are
@@ -245,6 +249,7 @@ Proposed diff — new entry after REQ-228 in `PRD/sections/functional-requiremen
 
 - Verdict: accept
 - Reason: 
+- Re-proposed 2026-10-07 (gate-qc loop 1): dropped `--subject <path>` and `--subject-b <path>`; the trace now measures the checkout it runs from (refuses uncommitted changes, records its commit), and two revisions are compared by a separate offline `eval:evidence-trace:compare -- <trace-folder-a> <trace-folder-b>` over two trace folders each produced from its own worktree; the parity criterion reads "run from the revision that wrote the rules gate baseline"; derived from the owner's REQ-226 edit verdict
 
 ---
 
@@ -277,17 +282,17 @@ Proposed diff — new entry after REQ-229 in `PRD/sections/functional-requiremen
 +### REQ-230
 +- Title: Diagnostic prompt arms and the held-out case split
 +- Priority: medium
-+- Description: An experiment run (REQ-226) can answer a case under labelled diagnostic variants ("arms") of the subject's production prompt, to separate missing evidence from poor presentation. Arms that use a case's deciding-rule labels answer "would complete evidence rescue this answer?", never "how good is the product?", so they run only on a committed diagnostic case set, are reported apart, and are kept away from a committed held-out set used to judge any later fix once.
++- Description: An experiment run (REQ-226) can answer a case under labelled diagnostic variants ("arms") of the production prompt built by the checkout the run executes from, to separate missing evidence from poor presentation. Arms that use a case's deciding-rule labels answer "would complete evidence rescue this answer?", never "how good is the product?", so they run only on a committed diagnostic case set, are reported apart, and are kept away from a committed held-out set used to judge any later fix once.
 +- Acceptance Criteria:
-+  - the arms are: `A` — the subject's production prompt, unchanged (the default, and the only arm a routine run uses); `B` — presentation only: the same evidence units as A (every curated topic, supplemental rule excerpt, card oracle text, and card ruling), regrouped, reordered, and given headings, with no unit added, removed, or reworded; `C` — A plus the case's deciding-rule bundle (each `decidingRuleIds` rule, its parent rule, and its lettered subrules, as text from the subject's committed rule index) added to the supplemental rules section in A's format and de-duplicated against what A already carries; `D` — C's evidence in B's presentation; `P` — A with one named preamble sentence replaced by a correction text held in a committed file
-+  - each arm is a pure function under `apps/backend/src/eval/answer-quality/` from the subject's prepared prompt (text and enrichment debug) and committed data to a prompt string, with a revision id recorded on every record; nothing under `apps/backend/src/prompt/`, routes, or providers changes
++  - the arms are: `A` — the production prompt built by the checkout the run executes from, unchanged (the default, and the only arm a routine run uses); `B` — presentation only: the same evidence units as A (every curated topic, supplemental rule excerpt, card oracle text, and card ruling), regrouped, reordered, and given headings, with no unit added, removed, or reworded; `C` — A plus the case's deciding-rule bundle (each `decidingRuleIds` rule, its parent rule, and its lettered subrules, as text from that checkout's committed rule index) added to the supplemental rules section in A's format and de-duplicated against what A already carries; `D` — C's evidence in B's presentation; `P` — A with one named preamble sentence replaced by a correction text held in a committed file
++  - each arm is a pure function under `apps/backend/src/eval/answer-quality/` from the prompt that checkout prepared (text and enrichment debug) and committed data to a prompt string, with a revision id recorded on every record; nothing under `apps/backend/src/prompt/`, routes, or providers changes
 +  - B's grouping is fixed under a revision id before any paid run uses it; P refuses to run until its correction text file carries the owner's approval date
 +  - tests prove, for every case in the diagnostic manifest: B's evidence units equal A's as a multiset; C adds only bundle rules to A; D's evidence units equal C's; and no arm's prompt contains the case's `expected.answer`, `expected.shortAnswer`, or `expected.outcome`
 +  - arms C and D run only on cases in the committed diagnostic manifest (`apps/backend/src/eval/answer-quality/manifests/diagnostic.json`); the run refuses either arm on any other case, and their records carry `diagnostic: true`
 +  - the committed held-out manifest (`apps/backend/src/eval/answer-quality/manifests/held-out.json`) lists approved cases disjoint from the diagnostic manifest, and a test asserts disjointness; arms B and P run on a held-out case only under a frozen revision id, and every such record carries `heldOut: true`
 +  - both manifests are written by one seeded command (`npm run eval:answer-quality:manifests`) from the evidence trace (REQ-229), recording its seed and selection rule: diagnostic — the two tester cases, `multiplayer-only-blood-ends-your-nightmares-opponents`, every approved case whose deciding rules are partly selected in search, a seeded sample of 20 cases with none selected, and a seeded sample of 10 fully selected cases as passing controls; held-out — a seeded sample of 80 of the remaining approved cases, stratified by Comprehensive Rules section; a sample size may change only with the reason recorded in the command's output
 +- Constraints:
-+  - arms are evaluation tooling and never become runtime prompt text; a later product change that adopts an arm's idea is its own package, and its result is judged with arm A of the changed subject on the held-out manifest
++  - arms are evaluation tooling and never become runtime prompt text; a later product change that adopts an arm's idea is its own package, and its result is judged with arm A run from the changed revision on the held-out manifest
 +  - a case's reference answer never enters any arm's prompt; deciding-rule labels shape only arms C and D
 +  - choosing B's grouping or any later candidate's settings reads diagnostic cases only, never held-out labels
 +  - manifests carry case ids and hashes only
@@ -303,6 +308,7 @@ Proposed diff — new entry after REQ-229 in `PRD/sections/functional-requiremen
 
 - Verdict: accept
 - Reason:
+- Re-proposed 2026-10-07 (gate-qc loop 1): every "subject" now reads "the checkout the run executes from" (arm A, arm C's rule-index text, each arm's input prompt) or "the changed revision" (judging a later fix); no change of substance, derived from the owner's REQ-226 edit verdict
 
 ---
 
