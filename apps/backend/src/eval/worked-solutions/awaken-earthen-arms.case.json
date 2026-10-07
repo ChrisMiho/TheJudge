@@ -1,0 +1,50 @@
+{
+  "id": "awaken-earthen-arms",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "2146fa14-dc6a-4e13-bed0-dda235784ee6",
+      "name": "Earthen Arms"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast Earthen Arms for its awaken cost, can the same land be both of its targets?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: a land you control can be both targets.",
+    "answer": "If you cast Earthen Arms for its awaken cost, a land you control can be both targets.",
+    "decidingRuleIds": ["702.113a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Earthen Arms",
+    "oracleId": "2146fa14-dc6a-4e13-bed0-dda235784ee6",
+    "rulingDate": "2015-08-25",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "f57dfd0b58678dbd3d3e698e265a0189381d2ebbb24a96e910b5ad6be414b09b",
+      "oracle": "22109e318a4e0d0cdc88568f914a4bc35adcfe78cf7978be5491d49e5747b6df",
+      "rulings": "ccf4f8a3b01f98f2d3f2e534dbc9185bd371815c239c3fb96f1cd8caae3d76c5"
+    }
+  },
+  "whyHard": "Two targets look like they must be different objects, but the spell asks for two separate target slots."
+}

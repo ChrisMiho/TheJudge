@@ -1,0 +1,50 @@
+{
+  "id": "madness-anje-s-ravager",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "8f1016c7-0551-4813-987d-36abf3b2ffeb",
+      "name": "Anje's Ravager"
+    }
+  ],
+  "gameState": null,
+  "question": "I discard several cards with madness to Anje's Ravager. Do I decide whether to cast them only after I have drawn the three cards?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you choose whether to cast the cards with madness after you have drawn three cards.",
+    "answer": "If any of the cards you discard have madness, you'll choose whether to cast them after you've drawn three cards.",
+    "decidingRuleIds": ["702.35a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Anje's Ravager",
+    "oracleId": "8f1016c7-0551-4813-987d-36abf3b2ffeb",
+    "rulingDate": "2019-08-23",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "61f2ae3045de725843432bd52c99dffd1b2c0d7b9abaaa50613b415041f6f673",
+      "oracle": "c6e8676961f5803fc4d2ef4d77127e4cad017eccaf865d6b0d6b95964474492b",
+      "rulings": "0a6a1dcf851e222baca07d303e9b159062c864efd14dbd50f0172194b7385099"
+    }
+  },
+  "whyHard": "Madness triggers when a card is discarded, so players think the decision comes immediately."
+}

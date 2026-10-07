@@ -1,0 +1,51 @@
+{
+  "id": "academy-manufactor-esix-treasure",
+  "formatVersion": 2,
+  "tier": 3,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "f36d1d8b-8303-44a9-ab56-531931641ea2",
+      "name": "Academy Manufactor"
+    },
+    {
+      "oracleId": "9d22960b-babc-4cf3-b228-d32e13bc6014",
+      "name": "Esix, Fractal Bloom"
+    }
+  ],
+  "gameState": null,
+  "question": "How do Academy Manufactor and Esix, Fractal Bloom interact when I create a Treasure?",
+  "expected": {
+    "outcome": "depends",
+    "shortAnswer": "You choose the order: Manufactor first gives three tokens that Esix can turn into copies; Esix first gives one copy and Manufactor has nothing left to replace.",
+    "answer": "You choose which replacement effect applies first (rules 616.1 and 616.1e), and then the process repeats with only the effects that still apply (616.1f). If you apply Academy Manufactor first, the Treasure becomes a Clue, a Food and a Treasure; Esix, Fractal Bloom may then replace that event, so you create three tokens that are copies of the creature you choose instead. If you apply Esix first, you create one token that is a copy of the chosen creature instead of the Treasure; Academy Manufactor then has nothing to replace, because that event no longer creates a Clue, Food or Treasure token, so you end up with one token. Esix's replacement effect is optional and applies only the first time you would create tokens during each of your turns. If you do not use Esix, Academy Manufactor alone gives you a Clue, a Food and a Treasure.",
+    "decidingRuleIds": ["614.1a", "616.1", "616.1e", "616.1f"]
+  },
+  "source": {
+    "authority": "owner-approved-derived",
+    "pool": "tester",
+    "publisher": "The project owner, derived from Comprehensive Rules text",
+    "license": "A derivation from Comprehensive Rules text this project already commits and serves in production (apps/backend/data/gameRulesRuleIndex.json); no outside text is copied. It counts as an answer only once the owner approves it as tier 3.",
+    "citation": "CR 614.1a, 616.1, 616.1e, 616.1f",
+    "research": [
+      "The committed WotC rulings on Academy Manufactor and on Esix, Fractal Bloom, read for discovery only: no committed ruling covers the pair, and none of their text is copied here."
+    ]
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c6cd8800eedc664b20756d7a3837e21f373211a9a1edcedb3dd55bb1bf5bdd8a",
+      "oracle": "ed414c4f2076af7c99692e941ce4262acb0e4300c8a8bc136bf1185d5a49ac5c",
+      "rulings": "9c846c69969312ffbf0cd645d9976515073800ce66ce2a61b60f95de944afd25"
+    }
+  },
+  "whyHard": "Two replacement effects apply to one event and the player picks the order, and the order decides whether Academy Manufactor still has anything to replace."
+}

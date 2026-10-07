@@ -1,0 +1,50 @@
+{
+  "id": "embalm-anointer-priest",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "4e0b9273-6614-41a8-9738-959349c0717b",
+      "name": "Anointer Priest"
+    }
+  ],
+  "gameState": null,
+  "question": "Once I activate embalm, can an opponent stop it by exiling the card from my graveyard in response?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the card is immediately exiled as a cost, so opponents cannot try to stop the ability by exiling it.",
+    "answer": "Once you've activated an embalm ability, the card is immediately exiled. Opponents can't try to stop the ability by exiling the card with an effect such as that of Crook of Condemnation.",
+    "decidingRuleIds": ["702.128a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Anointer Priest",
+    "oracleId": "4e0b9273-6614-41a8-9738-959349c0717b",
+    "rulingDate": "2017-07-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "40f54bd1d8c09635e7cb38f3eed852388cc05aecd2686bfc5e7b7681d30e172a",
+      "oracle": "775d31b8a88bd8d9ff37a926dd77229a56529ecea575fa2ac329d338529c4c3b",
+      "rulings": "35c3ef1a6cc4c2502606c2a62c7ebe18f5a26bdf3dc6542e57e87727fb9d91a7"
+    }
+  },
+  "whyHard": "The card is in the graveyard when the ability starts, and players expect it to stay there until the ability resolves."
+}

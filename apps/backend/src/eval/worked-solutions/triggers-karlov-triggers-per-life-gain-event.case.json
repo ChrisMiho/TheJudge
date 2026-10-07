@@ -1,0 +1,54 @@
+{
+  "id": "triggers-karlov-triggers-per-life-gain-event",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "647d7988-9a5d-4700-9238-938d0d5fae12",
+      "name": "Karlov of the Ghost Council"
+    },
+    {
+      "oracleId": "2b2d76f5-4c9b-49dc-b202-68095e2d9b29",
+      "name": "Faith's Fetters"
+    }
+  ],
+  "gameState": null,
+  "question": "Karlov of the Ghost Council triggers when I gain life. Does it trigger just once for each life-gaining event, whether it's 1 life from lifelink or 4 life from Faith's Fetters?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it triggers just once for each life-gaining event, however much life is gained.",
+    "answer": "The ability triggers just once for each life-gaining event, whether it's 1 life from an attacking creature with lifelink or 4 life from Faith's Fetters.",
+    "decidingRuleIds": ["603.2"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Karlov of the Ghost Council",
+    "oracleId": "647d7988-9a5d-4700-9238-938d0d5fae12",
+    "rulingDate": "2015-11-04"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e4ab803891cc7aafc86a3a6029ac5e40fa5323e4dd005f7ffa944ca02621df90",
+      "oracle": "db3180a6bfd5bd469c502348449683fa0870b0218ad7650f767b037daf589798",
+      "rulings": "6d659bbf12e35db4343b3e0484e3b1c4617a8f3cd6eb687c60e0608fa14e9d20"
+    }
+  },
+  "whyHard": "Players count the life gained instead of the number of events."
+}

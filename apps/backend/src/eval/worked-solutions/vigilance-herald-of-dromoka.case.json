@@ -1,0 +1,50 @@
+{
+  "id": "vigilance-herald-of-dromoka",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "dae8dc90-8047-434c-9e3a-a2eaa6aba575",
+      "name": "Herald of Dromoka"
+    }
+  ],
+  "gameState": null,
+  "question": "If an attacking creature loses vigilance after it was declared as an attacker, does it become tapped?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it remains untapped and attacking.",
+    "answer": "If an attacking creature loses vigilance, it remains untapped and attacking.",
+    "decidingRuleIds": ["702.20a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Herald of Dromoka",
+    "oracleId": "dae8dc90-8047-434c-9e3a-a2eaa6aba575",
+    "rulingDate": "2015-02-25",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "47acd4cb9229fefaf4d9804a896c0440d97e6a0faad44186766d078df817662e",
+      "oracle": "4c9d7b048b63611eb01dcc58570a268fbebd03df99dd1aeed7c3fbb16efcef9a",
+      "rulings": "1b0a475f7e76cc97ef40cd8b67829b9e66c5257f351634ab89dd283229a30cbf"
+    }
+  },
+  "whyHard": "Players think a creature has to tap when vigilance is gone."
+}

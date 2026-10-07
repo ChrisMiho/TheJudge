@@ -1,0 +1,54 @@
+{
+  "id": "triggers-dark-depths-leaves-before-resolving",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "c9b82110-7dfd-4617-9399-9510be449043",
+      "name": "Dark Depths"
+    },
+    {
+      "oracleId": "48e9147e-59f7-4693-83d7-7f514be871bc",
+      "name": "Marit Lage"
+    }
+  ],
+  "gameState": null,
+  "question": "If Dark Depths leaves the battlefield before its triggered ability resolves, do I still create Marit Lage?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you can't sacrifice Dark Depths, so you won't create Marit Lage.",
+    "answer": "If Dark Depths leaves the battlefield before its triggered ability resolves, you won't be able to sacrifice it, so you won't create Marit Lage.",
+    "decidingRuleIds": ["608.2"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Dark Depths",
+    "oracleId": "c9b82110-7dfd-4617-9399-9510be449043",
+    "rulingDate": "2022-12-08"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9af1ee66744bf88d9633c871e86dee8cfa082a524828ac22e2371db4e9aef357",
+      "oracle": "ed4a16bed493165a61db0d6b8d3751d227860cb8f29fab4444b6bfd4184012d7",
+      "rulings": "72d7527d6a06382176088b4d1d5b79fd7d37290486749feeb02bb7b4be31f38a"
+    }
+  },
+  "whyHard": "The trigger is already on the stack, and players think it will do all its work regardless."
+}

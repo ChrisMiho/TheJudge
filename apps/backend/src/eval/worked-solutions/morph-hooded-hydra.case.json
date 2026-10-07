@@ -1,0 +1,50 @@
+{
+  "id": "morph-hooded-hydra",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "637ddd65-112d-40f7-9bab-a61724d9165c",
+      "name": "Hooded Hydra"
+    }
+  ],
+  "gameState": null,
+  "question": "If a face-down Hooded Hydra is turned face up in some way other than paying its morph cost, does it still get its five +1/+1 counters?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the last ability still applies, however the Hydra is turned face up.",
+    "answer": "If Hooded Hydra is face down and it's turned face up some other way than by having its morph cost paid, the last ability will still apply.",
+    "decidingRuleIds": ["702.37a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Hooded Hydra",
+    "oracleId": "637ddd65-112d-40f7-9bab-a61724d9165c",
+    "rulingDate": "2014-09-20",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "12a673fb711bee6b4ff695ef48545a6a15f207c9ae736b89d963bfc3ab1e2b2f",
+      "oracle": "409dd68b9d08f2a3bc8192162538f38692815ce1f5d584e562388cecc1cfa6a7",
+      "rulings": "d80cbc747fb95e3d0c0460396630643cf01d3dd3c5f5a56eb669cbdd34ae7186"
+    }
+  },
+  "whyHard": "Players tie the counters to paying the morph cost instead of to the moment the card is turned face up."
+}

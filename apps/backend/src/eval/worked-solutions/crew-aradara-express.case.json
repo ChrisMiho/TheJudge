@@ -1,0 +1,50 @@
+{
+  "id": "crew-aradara-express",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "be96b9e1-10ef-4955-8d23-c39384def86d",
+      "name": "Aradara Express"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I tap more creatures than necessary to pay a crew cost?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you may tap more creatures than necessary to activate a crew ability.",
+    "answer": "You may tap more creatures than necessary to activate a crew ability.",
+    "decidingRuleIds": ["702.122a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Aradara Express",
+    "oracleId": "be96b9e1-10ef-4955-8d23-c39384def86d",
+    "rulingDate": "2017-09-29",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8001045e90a5541ad140fd0350d21c6fc851f059e5da88b4ef128b74f755c382",
+      "oracle": "375c0dc5d2741c2bf78f7e02fc8e9ee7e7d11da8bcd1f7b8a50ab87b06233b81",
+      "rulings": "3689ef2984a1f6b3592ff7375de4673c03191de52b5249cb9c3c05d314c24635"
+    }
+  },
+  "whyHard": "Costs usually require exactly what they name, so players think crew can only be paid with the minimum."
+}

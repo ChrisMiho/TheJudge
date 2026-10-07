@@ -1,0 +1,50 @@
+{
+  "id": "absorb-lymph-sliver",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "c3469de8-4bdb-42d4-9fc0-75fe31c3f6e5",
+      "name": "Lymph Sliver"
+    }
+  ],
+  "gameState": null,
+  "question": "If two sources deal damage at the same time to a Sliver that has absorb 1, is 1 damage prevented from each source?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: absorb prevents 1 damage from each of the sources.",
+    "answer": "If multiple sources would deal damage to a Sliver at once, prevent 1 damage from each of those sources.",
+    "decidingRuleIds": ["702.64a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Lymph Sliver",
+    "oracleId": "c3469de8-4bdb-42d4-9fc0-75fe31c3f6e5",
+    "rulingDate": "2021-03-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8c0f10d5ccd4a8b0c08b4246753bfabece4dea662d45f76ef1dd8c8a7423db7b",
+      "oracle": "90517d2a6f5f313ec50403dfbd72460a32a5c3701b8aa922c2865a8b986d6b61",
+      "rulings": "8ced01f41acb8f54cc2720e386098838aefc77067630150ab87167c06e827a06"
+    }
+  },
+  "whyHard": "Players read absorb as a single shield of N for all damage dealt at once."
+}

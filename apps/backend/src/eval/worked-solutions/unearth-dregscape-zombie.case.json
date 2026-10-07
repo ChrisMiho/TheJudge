@@ -1,0 +1,50 @@
+{
+  "id": "unearth-dregscape-zombie",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "be9d1346-4416-4ade-ae84-7a4121e0bd12",
+      "name": "Dregscape Zombie"
+    }
+  ],
+  "gameState": null,
+  "question": "If I activate unearth and the card is removed from my graveyard before the ability resolves, does the ability still return a creature to the battlefield?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the ability resolves and does nothing.",
+    "answer": "If you activate a card’s unearth ability but that card is removed from your graveyard before the ability resolves, that unearth ability will resolve and do nothing.",
+    "decidingRuleIds": ["702.84a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Dregscape Zombie",
+    "oracleId": "be9d1346-4416-4ade-ae84-7a4121e0bd12",
+    "rulingDate": "2008-10-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a9e43b93ac307ca0301775c0adfcc88be7c1aa71398f0d28152de56da2287cb7",
+      "oracle": "b27b43456710749a104edeb88bbe0204330abc551b826277e6944324e05b478a",
+      "rulings": "760d03b432fdac18d9152b727252b0e65cca6591aa1739e8ed3f161cc631cfd4"
+    }
+  },
+  "whyHard": "Unearth uses a card from the graveyard, and players assume the ability finds it wherever it went."
+}

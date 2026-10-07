@@ -1,0 +1,50 @@
+{
+  "id": "surveil-deadly-visit",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "04a3bb42-0464-4638-a6ac-d5f412c222cc",
+      "name": "Deadly Visit"
+    }
+  ],
+  "gameState": null,
+  "question": "Deadly Visit destroys a creature and then surveils 2. Does the surveil happen before the destroyed creature's death triggers are put on the stack?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you surveil before abilities that trigger on the creature dying resolve.",
+    "answer": "You'll surveil before resolving any abilities that trigger on the target creature dying.",
+    "decidingRuleIds": ["701.25a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Deadly Visit",
+    "oracleId": "04a3bb42-0464-4638-a6ac-d5f412c222cc",
+    "rulingDate": "2018-10-05",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b1d98fef490fac4277e8e938465797b5eaf8da5ed548f7cb9ed38dc429b98070",
+      "oracle": "0c0f2d4d98c1a5c35bc6c085d6a11124f30023a65823c1bda619179b02e8ddbf",
+      "rulings": "583b81fc2a9ead59c8f7eb7fb3babc452874d5805f158be8182a6e9819d2ec88"
+    }
+  },
+  "whyHard": "Players expect triggers from the death to be handled the moment the creature dies."
+}

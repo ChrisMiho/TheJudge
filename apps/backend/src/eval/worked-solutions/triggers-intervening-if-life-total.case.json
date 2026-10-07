@@ -1,0 +1,50 @@
+{
+  "id": "triggers-intervening-if-life-total",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "5ae3cbb9-9f0c-4077-ae7c-fba660d7fb4b",
+      "name": "Felidar Sovereign"
+    }
+  ],
+  "gameState": null,
+  "question": "Felidar Sovereign says 'At the beginning of your upkeep, if you have 40 or more life, you win the game.' If I have 40 life when my upkeep begins but 39 life as the ability resolves, do I win?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the life total is checked again as the ability resolves, and at 39 life the ability has no effect.",
+    "answer": "Felidar Sovereign reads, “At the beginning of your upkeep, if you have 40 or more life, you win the game.” Its controller’s life total is checked as that player’s upkeep begins. If that player has 39 or less life, the ability doesn’t trigger at all. If that player has 40 or more life, the ability triggers and goes on the stack. As the ability resolves, that player’s life total is checked again. If that player has 39 or less life at this time, the ability is removed from the stack and has no effect. If that player has 40 or more life at this time, the ability resolves and that player wins the game.",
+    "decidingRuleIds": ["603.4"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "603.4",
+    "sectionTitle": "Handling Triggered Abilities"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "62e12401e75d0d63ce1ff8d5adf29909a5750cc3421d85f7ea80c88a0744075d",
+      "oracle": "22cd18d800a6cae557426c1505151faa22eb9b4594e9a8c45f43c7f5cdc29098",
+      "rulings": "14fb578745f10474d811c7154d0917034079404255660b6e9f1130658fa18f11"
+    }
+  },
+  "whyHard": "Players think the condition is only checked when the ability triggers."
+}

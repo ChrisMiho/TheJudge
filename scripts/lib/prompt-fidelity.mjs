@@ -1,7 +1,9 @@
-// Production-fidelity helpers shared by the two offline instruments that
-// call `preparePromptInput` (REQ-185, REQ-188): the worked-solutions
-// retrieval check (scripts/eval-worked-solutions.mjs) and the answer-quality
-// run (scripts/eval-answer-quality.mjs).
+// Production-fidelity helpers shared by the instruments that call
+// `preparePromptInput` (REQ-185, REQ-188): the worked-solutions retrieval
+// check (scripts/eval-worked-solutions.mjs), the answer-quality run
+// (scripts/eval-answer-quality.mjs) and the offline prompt gate. Backend
+// tests reach this module through the sibling declaration
+// `prompt-fidelity.d.mts`.
 //
 // Calling the production prompt builder is not the same as producing the
 // production prompt. The route handler (apps/backend/src/routes/askAi.ts)
@@ -31,17 +33,38 @@ export function resolveEmbeddingProviderMode(env = process.env) {
 }
 
 /**
- * The request a gold case is asked as (REQ-185). A tier-2 case tests whether
- * the model honours the ruling the prompt attaches for its card, so it is
- * asked the way a player's lookup asks it: with the cited card attached, by
- * oracle id -- the key both the card-detail index (oracle text, type line)
- * and the card-rulings index resolve by -- so the prompt carries that card's
- * oracle text and every published ruling. A tier-1 case is the bare question.
+ * The request a rules test case is asked as (REQ-185, A15) -- the one request
+ * builder the offline gate and the live runner share. A case asks the way a
+ * player asks it, with every card it names attached:
+ *
+ * - a case without a `gameState` is a `mode: "lookup"` request with every
+ *   `cards` entry attached by oracle id -- the key both the card-detail index
+ *   (oracle text, type line) and the card-rulings index resolve by -- so the
+ *   prompt carries each card's oracle text and every published ruling. A case
+ *   naming no real card has an empty `cards` list and is the bare question;
+ * - a case with a `gameState` is an In-Depth `mode: "game"` request whose
+ *   `gameContext` is that `gameState`, each card sitting in its zone (the
+ *   case loader guarantees every zone card is one of `cards` and every card
+ *   in `cards` sits in a zone; a zone card missing its `name` takes it from
+ *   `cards`). Stack order is the order of the stack zone, bottom first.
  */
 export function buildCaseRequest(caseEntry) {
+  const cards = caseEntry.cards ?? [];
+  if (caseEntry.gameState) {
+    const nameByOracleId = new Map(cards.map((card) => [card.oracleId, card.name]));
+    const zones = {};
+    for (const [zoneId, items] of Object.entries(caseEntry.gameState.zones ?? {})) {
+      zones[zoneId] = items.map((item) => ({ ...item, name: item.name ?? nameByOracleId.get(item.cardId) }));
+    }
+    return {
+      mode: "game",
+      question: caseEntry.question,
+      gameContext: { ...caseEntry.gameState, zones }
+    };
+  }
   const request = { mode: "lookup", question: caseEntry.question };
-  if (caseEntry.tier === 2) {
-    request.cards = [{ cardId: caseEntry.source.oracleId, name: caseEntry.source.cardName }];
+  if (cards.length > 0) {
+    request.cards = cards.map((card) => ({ cardId: card.oracleId, name: card.name }));
   }
   return request;
 }

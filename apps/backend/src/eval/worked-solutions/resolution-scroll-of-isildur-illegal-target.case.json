@@ -1,0 +1,54 @@
+{
+  "id": "resolution-scroll-of-isildur-illegal-target",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "aa9a45a5-0250-465b-962e-f2d45dea26f9",
+      "name": "Scroll of Isildur"
+    },
+    {
+      "oracleId": "98737456-ac2a-420d-aa0e-778ba3a22cec",
+      "name": "The Ring // The Ring Tempts You"
+    }
+  ],
+  "gameState": null,
+  "question": "If the target of Scroll of Isildur's first chapter ability is not legal as it tries to resolve, does the Ring still tempt me?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the ability is removed from the stack and the Ring won't tempt you.",
+    "answer": "If the target is not legal as Scroll of Isildur's first chapter ability tries to resolve, the ability is removed from the stack. The Ring won't tempt you.",
+    "decidingRuleIds": ["608.2b"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Scroll of Isildur",
+    "oracleId": "aa9a45a5-0250-465b-962e-f2d45dea26f9",
+    "rulingDate": "2023-06-16"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e1030e4e00f144095416786e9a33fc3966603b7fabef76964f3f7ecb46658a6d",
+      "oracle": "f6c7232a8de29155f7f143f418bd69f9b9ba1e58834b50e9b5888d22bd0fb43a",
+      "rulings": "048532ec1911009b2c440f9b431bc04b59d827af27542573dd538e6e81ece5d5"
+    }
+  },
+  "whyHard": "The tempting looks like a separate effect from the targeted part, but a single illegal target stops the whole ability."
+}

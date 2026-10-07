@@ -1,0 +1,50 @@
+{
+  "id": "suspect-reasonable-doubt",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "020503f5-0915-4cd5-a617-1c7bde045e10",
+      "name": "Reasonable Doubt"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I cast Reasonable Doubt just to suspect a creature, when there is no spell on the stack?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: there must be a spell on the stack that Reasonable Doubt can legally target.",
+    "answer": "You can't cast Reasonable Doubt just to suspect a creature. There has to be a spell on the stack that's a legal target for Reasonable Doubt.",
+    "decidingRuleIds": ["701.60a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Reasonable Doubt",
+    "oracleId": "020503f5-0915-4cd5-a617-1c7bde045e10",
+    "rulingDate": "2024-02-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "6e9fea7d662cfbd8d667ddb1597817b91b74d0ac1d95dbb8f9087afea49baba6",
+      "oracle": "4e7a6cbcc9f969fd7a1619745a115d195e2fd79fed382bef9258a49fc5262c57",
+      "rulings": "9e34c9b668e3fa3d3d441683edbca27feb3b2316e2ac9e99bc6bc27e882b73d4"
+    }
+  },
+  "whyHard": "The suspect half of the spell is not targeted at the spell, so players think the spell can be cast without one."
+}

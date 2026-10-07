@@ -1,0 +1,50 @@
+{
+  "id": "transform-civilized-scholar-homicidal-brute",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "8662c9be-2244-4ea3-bf80-31a117f40a59",
+      "name": "Civilized Scholar // Homicidal Brute"
+    }
+  ],
+  "gameState": null,
+  "question": "Civilized Scholar's back face, Homicidal Brute, taps and transforms at my end step if it did not attack this turn. If it could not have attacked, does it still tap and transform?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it taps and transforms even if it could not attack.",
+    "answer": "You'll tap and transform Homicidal Brute even if it couldn't attack.",
+    "decidingRuleIds": ["701.27a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Civilized Scholar // Homicidal Brute",
+    "oracleId": "8662c9be-2244-4ea3-bf80-31a117f40a59",
+    "rulingDate": "2011-09-22",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9b96c6fd026b2c78859af290a50a583d000e48d60c28316f617e1d3c9d9571b0",
+      "oracle": "4ad542e9b640c3ba98d6ae7dfead8a2ef05ad3e952dd3422c6ccf1bdfddb6054",
+      "rulings": "60786f8ca4b41f05ba47ae740bddc60669ff4959f63cf3fd58f82cd86c687bd8"
+    }
+  },
+  "whyHard": "Players assume the condition means 'chose not to attack', which would excuse a creature that could not."
+}

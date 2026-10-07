@@ -1,0 +1,50 @@
+{
+  "id": "split-second-inventory-management",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "b20eae3d-d0ff-42c3-a060-d06629506781",
+      "name": "Inventory Management"
+    }
+  ],
+  "gameState": null,
+  "question": "While a spell with split second is on the stack, can players turn face-down creatures face up?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: players may turn face-down creatures face up while a spell with split second is on the stack.",
+    "answer": "Players may turn face-down creatures face up while a spell with split second is on the stack.",
+    "decidingRuleIds": ["702.61a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Inventory Management",
+    "oracleId": "b20eae3d-d0ff-42c3-a060-d06629506781",
+    "rulingDate": "2024-03-08",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "614f3c02ed3056db9004a4ec3972203ba35aa62eb5b70b15d76541c290f46ab7",
+      "oracle": "8a6d1b466bbb3394475bf5c6db96c56572fa853cb5d100366f5c9fd67dbbc335",
+      "rulings": "98fb546302327dc4b6ca44126413f62444d99a25a54e732a5b0c4434fe9bf304"
+    }
+  },
+  "whyHard": "Split second stops spells and abilities that use the stack, but turning a creature face up is a special action."
+}

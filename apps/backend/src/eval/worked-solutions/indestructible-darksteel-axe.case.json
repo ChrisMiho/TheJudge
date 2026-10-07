@@ -1,0 +1,50 @@
+{
+  "id": "indestructible-darksteel-axe",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "3b7ea3ac-ac0a-40aa-b743-d153e1c47d8c",
+      "name": "Darksteel Axe"
+    }
+  ],
+  "gameState": null,
+  "question": "Darksteel Axe is indestructible. Does the creature it equips become indestructible too?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the Axe itself has indestructible, not the creature it equips.",
+    "answer": "Darksteel Axe itself has indestructible, not the creature it's equipping.",
+    "decidingRuleIds": ["702.12a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Darksteel Axe",
+    "oracleId": "3b7ea3ac-ac0a-40aa-b743-d153e1c47d8c",
+    "rulingDate": "2013-07-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "719eb17112aea4ec531642aca0b41e66862bbc04c7994e5c996aa80854300074",
+      "oracle": "710146c220a18801ae78399e9f17fcb527e737c2c715e14adb63637576dd43f9",
+      "rulings": "52718e0b3ab2815614cafb963c12c85f5b544695be4e0a7aaf7ab78f0c48e27b"
+    }
+  },
+  "whyHard": "A keyword printed on an Equipment's rules text looks like something it would grant."
+}

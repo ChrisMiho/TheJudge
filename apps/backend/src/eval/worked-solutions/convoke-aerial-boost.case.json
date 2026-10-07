@@ -1,0 +1,50 @@
+{
+  "id": "convoke-aerial-boost",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "d7fa5c42-7cd5-42e7-a42e-724c1a3df96a",
+      "name": "Aerial Boost"
+    }
+  ],
+  "gameState": null,
+  "question": "Convoke is not an alternative cost. Can I use it together with an alternative cost to cast a spell?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: because convoke is not an alternative cost, it can be used together with alternative costs.",
+    "answer": "Because convoke isn't an alternative cost, it can be used in conjunction with alternative costs.",
+    "decidingRuleIds": ["702.51a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Aerial Boost",
+    "oracleId": "d7fa5c42-7cd5-42e7-a42e-724c1a3df96a",
+    "rulingDate": "2024-01-12",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "f9d7087f7898817b3bb235a6785df633b193f818a18dac637e8235c945e5d68d",
+      "oracle": "788fe04957239eda3e0d03d7fcdde6a4c03918162a9c6ed8ef76246adf8c82b9",
+      "rulings": "354762005ed392da64fb2969a4562d12d8845654d3c32a4e068f809859cfdf3a"
+    }
+  },
+  "whyHard": "Players think any special way of paying for a spell counts as the one alternative cost allowed."
+}

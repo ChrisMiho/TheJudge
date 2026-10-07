@@ -1,0 +1,54 @@
+{
+  "id": "triggers-enters-attacking-no-attack-triggers",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "26a623a1-60c9-47e3-af96-616e29551865",
+      "name": "Mishra, Claimed by Gix"
+    },
+    {
+      "oracleId": "3989308a-4c0f-493a-b38f-cb4f5019dfe7",
+      "name": "Mishra, Lost to Phyrexia"
+    }
+  ],
+  "gameState": null,
+  "question": "Mishra, Lost to Phyrexia enters the battlefield tapped and attacking. Do abilities that trigger when a creature attacks trigger for it?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it wasn't declared as an attacker, so no abilities that trigger when a creature attacks will trigger.",
+    "answer": "Mishra, Lost to Phyrexia enters the battlefield tapped and attacking, but since it wasn't declared as an attacker, no abilities that trigger when a creature attacks will trigger.",
+    "decidingRuleIds": ["508.2a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Mishra, Claimed by Gix",
+    "oracleId": "26a623a1-60c9-47e3-af96-616e29551865",
+    "rulingDate": "2022-10-14"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "047dd48b8e1adcba010bff5ad3bd7dee55142877b1b8febc1f07c0d8c4c295ae",
+      "oracle": "a9ed9b5120ddfdf10e59cd73bef88aa03065aa00e1227aeea4c602d2fb53d815",
+      "rulings": "e95e73178f23e36e4ce6c3704d80e35d4b59e0a426a446447a85aec0984e0d40"
+    }
+  },
+  "whyHard": "An attacking creature looks like it attacked, but only declared attackers trigger those abilities."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "jump-start-chemister-s-insight",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "a2cb30d7-c0a9-4f79-bc19-fc88c4986725",
+      "name": "Chemister's Insight"
+    }
+  ],
+  "gameState": null,
+  "question": "Is a spell cast using jump-start always exiled afterward, even if it is countered?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: it is always exiled afterward, whether it resolves, is countered or leaves the stack in another way.",
+    "answer": "A spell cast using jump-start will always be exiled afterward, whether it resolves, it's countered, or it leaves the stack in some other way.",
+    "decidingRuleIds": ["702.133a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Chemister's Insight",
+    "oracleId": "a2cb30d7-c0a9-4f79-bc19-fc88c4986725",
+    "rulingDate": "2018-10-05",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "bc5cdf7d2af65696bf519248a36a1a569575f597f8621453b3c153d784bbd794",
+      "oracle": "76a54847d027c3326682502b85ddbd590b21de7a913e8205fd19189e2f7ca4cc",
+      "rulings": "82db7c340e9a1fa6546544f9c1333a3203d201f3ba06e1e839c877266eeecc2a"
+    }
+  },
+  "whyHard": "Players expect a countered spell to go to the graveyard, where it could be used again."
+}

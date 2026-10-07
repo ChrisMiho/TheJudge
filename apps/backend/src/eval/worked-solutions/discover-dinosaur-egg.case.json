@@ -1,0 +1,50 @@
+{
+  "id": "discover-dinosaur-egg",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "ac4d5a97-6177-4eac-b0f2-cf10531ad879",
+      "name": "Dinosaur Egg"
+    }
+  ],
+  "gameState": null,
+  "question": "When I discover, is exiling cards from the top of my library optional?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you must exile cards; only casting the card or putting it into your hand is optional.",
+    "answer": "When you discover, you must exile cards. The only optional part of the ability is whether you cast the exiled card or put it into your hand.",
+    "decidingRuleIds": ["701.57a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Dinosaur Egg",
+    "oracleId": "ac4d5a97-6177-4eac-b0f2-cf10531ad879",
+    "rulingDate": "2023-11-10",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9c7399447e9e7aa8026c32e5a462b1fecb1cb662eb280020716bcbe8ffc1d2a5",
+      "oracle": "4d11d338b01ef572124d65069fbb787fa5fd685f00b3d475c70ae7e0ed2885b0",
+      "rulings": "328da030e22df1d7c29d4bb7a754f2d6dcfa566c560310ce458b06ce54828a03"
+    }
+  },
+  "whyHard": "The ability on Dinosaur Egg says 'you may discover', which makes players think each step is a choice."
+}

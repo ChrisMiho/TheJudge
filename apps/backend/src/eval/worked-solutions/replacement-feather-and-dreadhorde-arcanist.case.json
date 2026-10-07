@@ -1,0 +1,54 @@
+{
+  "id": "replacement-feather-and-dreadhorde-arcanist",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "aa219936-661b-4ccb-8741-78b70cff2b1a",
+      "name": "Feather, the Redeemed"
+    },
+    {
+      "oracleId": "4c05b382-58ab-4a2d-a81c-408ea273b6b6",
+      "name": "Dreadhorde Arcanist"
+    }
+  ],
+  "gameState": null,
+  "question": "If another replacement effect also tells me to exile an instant or sorcery spell, such as Dreadhorde Arcanist's, may I choose to apply Feather's replacement effect first?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you may apply Feather's replacement effect first, and its delayed trigger will return the card to your hand.",
+    "answer": "If another replacement effect instructs you to exile an instant or sorcery spell, such as that of Dreadhorde Arcanist or the flashback keyword, you may choose to apply Feather's replacement effect first. If you do, Feather's delayed triggered ability will return that card to your hand.",
+    "decidingRuleIds": ["616.1", "614.1a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Feather, the Redeemed",
+    "oracleId": "aa219936-661b-4ccb-8741-78b70cff2b1a",
+    "rulingDate": "2021-03-19"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e0633618a8e2d6dd1206e1cc2da5c477ffa3b0675ff7f0e04870f390f6f46b84",
+      "oracle": "4850dbb1490bfb164a5821c0e55f7f1bb5b7346a16e441d52e0dd17c47016848",
+      "rulings": "eb35ba8d3f301f747b357b670a28c17e470b7cfe4e520ac8d62a3fd141e9521b"
+    }
+  },
+  "whyHard": "Both effects exile the spell, and players think only the first one ever gets to apply."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "open-an-attraction-command-performance",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "f6c079cd-69c2-4da4-ba41-91844a4d2f06",
+      "name": "Command Performance"
+    }
+  ],
+  "gameState": null,
+  "question": "I choose the modes 'Roll to visit your Attractions' and 'Open an Attraction' on Command Performance. Do I roll to visit before I open the Attraction?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you always follow the modes in the order they are written, so you open an Attraction first.",
+    "answer": "No matter which two modes you choose, you always follow the instructions in the order they're written. You'll open an Attraction before rolling to visit them, if applicable, and similarly you'll get tickets before you may put a sticker on a nonland permanent you own.",
+    "decidingRuleIds": ["701.51a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Command Performance",
+    "oracleId": "f6c079cd-69c2-4da4-ba41-91844a4d2f06",
+    "rulingDate": "2022-10-07",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ca878506897c8d439a43b5b3a4212bde1517e029b269b5604eb27b807fd3dbd8",
+      "oracle": "e6867da5627e6e1a66bab3c98192a52882b29cb4959a69a78351990a73994aa4",
+      "rulings": "9a0d56c93aa747f8dc3cb9d1b18d63920231f6ecea3054dd32561122b8c43f38"
+    }
+  },
+  "whyHard": "Players pick modes in any order they like and assume the effects follow the order they chose."
+}

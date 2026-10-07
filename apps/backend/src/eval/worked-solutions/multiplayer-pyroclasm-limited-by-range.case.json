@@ -1,0 +1,50 @@
+{
+  "id": "multiplayer-pyroclasm-limited-by-range",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "e4bcd4ea-e7cd-4471-8f3b-18bb51d3d70c",
+      "name": "Pyroclasm"
+    }
+  ],
+  "gameState": null,
+  "question": "In a six-player game where each player has a range of influence of 1, Alex casts Pyroclasm. Does it deal damage to creatures controlled by players outside Alex's range of influence?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it deals damage only to creatures controlled by Alex and the players to the left and right of Alex.",
+    "answer": "In a six-player game in which each player has range of influence 1, Alex casts Pyroclasm, which reads, “Pyroclasm deals 2 damage to each creature.” Pyroclasm deals 2 damage to each creature controlled by Alex, the player to Alex’s left, and the player to Alex’s right. No other creatures are dealt damage.",
+    "decidingRuleIds": ["801.10"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "801.10",
+    "sectionTitle": "Limited Range of Influence Option"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "b8d9795bf1636d7cfb24b9bec44f623ac6407f056323df50a4ace5762ac58bca",
+      "oracle": "80185aa4c107d1a1767c272d1cdc370e58417b7ae2c7b8948031f49d9dd46281",
+      "rulings": "9a610fe20a3ea88741a20e0a1bccc0386034074a17c57c838a1e9f1c8a3454af"
+    }
+  },
+  "whyHard": "'Each creature' sounds like every creature in the game, but only objects in range are affected."
+}

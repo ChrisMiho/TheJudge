@@ -1,0 +1,50 @@
+{
+  "id": "reveal-scent-of-brine",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "c22b5968-adea-4f74-877d-8ac2ee452769",
+      "name": "Scent of Brine"
+    }
+  ],
+  "gameState": null,
+  "question": "I cast Scent of Brine and want to reveal blue cards from my hand to make the counter cost bigger. Do I reveal those cards as part of casting it?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you reveal the cards as Scent of Brine resolves.",
+    "answer": "You reveal cards during resolution.",
+    "decidingRuleIds": ["701.20a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Scent of Brine",
+    "oracleId": "c22b5968-adea-4f74-877d-8ac2ee452769",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4045bbabdeb9dbc922c9edc8eaf9bc388a9837d994b51a93555d511c13a5d9f2",
+      "oracle": "7eae616894cc3e093de899edfd5d2bf8d18fb1500a653e6f4742d160e56fe009",
+      "rulings": "4898a1f32bb4f2cfaf18cccf8bc5cabaf3c197e6ba417a08a6fdefaece1833bf"
+    }
+  },
+  "whyHard": "Players treat the reveal as a cost paid at casting rather than part of the spell's effect."
+}

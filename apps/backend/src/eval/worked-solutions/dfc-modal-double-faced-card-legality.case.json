@@ -1,0 +1,54 @@
+{
+  "id": "dfc-modal-double-faced-card-legality",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "c52fc8a1-43c6-41f8-b010-03be7c89ef1d",
+      "name": "Bloodsoaked Insight // Sanguine Morass"
+    },
+    {
+      "oracleId": "2699005b-a471-429f-a9d8-fbf2077ee2fd",
+      "name": "Disciple of Freyalise // Garden of Freyalise"
+    }
+  ],
+  "gameState": null,
+  "question": "If an effect stops me from casting creature spells, can I still play Garden of Freyalise, the land face of Disciple of Freyalise?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: to decide whether it's legal to play a modal double-faced card, consider only the face you're playing.",
+    "answer": "To determine whether it is legal to play a modal double-faced card, consider only the characteristics of the face you're playing and ignore the other face's characteristics. For example, if an effect stops you from casting creature spells, you can't cast Disciple of Freyalise, but you can still play Garden of Freyalise.",
+    "decidingRuleIds": ["712.4"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Bloodsoaked Insight // Sanguine Morass",
+    "oracleId": "c52fc8a1-43c6-41f8-b010-03be7c89ef1d",
+    "rulingDate": "2024-06-07"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "4cec0749aca985c40e9f004e76c4f86e1c36a32f580a260dd66bf5a9b89fa3cc",
+      "oracle": "340ff16e105e92e5ea2f02325b87ff58f7e134c7d9797549ef08b9774f5888be",
+      "rulings": "025fc46ced1634c6191e4d0fcfdcc05c0e8dc3a3b854d986af9b9d596260b409"
+    }
+  },
+  "whyHard": "Players think the creature half of the card blocks the whole card."
+}

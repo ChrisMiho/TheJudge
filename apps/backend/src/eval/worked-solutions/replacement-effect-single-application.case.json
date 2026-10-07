@@ -1,10 +1,23 @@
 {
   "id": "replacement-effect-single-application",
+  "formatVersion": 2,
   "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-06",
+    "note": "approved by the owner's accept of REQ-185 at the define gate; migrated to format version 2"
+  },
+  "cards": [],
+  "gameState": null,
   "question": "I control two permanents that each say: if a creature you control would deal damage to a permanent or player, it deals double that damage instead. My creature deals 2 damage. Does having two of these doubling effects mean it deals 8 damage, or does it double forever since each doubling effect could apply to the other's result?",
-  "expectedSupplementalRuleIds": ["614.5"],
-  "workedSolution": "A player controls two permanents, each with an ability that reads “If a creature you control would deal damage to a permanent or player, it deals double that damage to that permanent or player instead.” A creature that normally deals 2 damage will deal 8 damage—not just 4, and not an infinite amount.",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Each doubling applies once: 2 damage becomes 8, not 4 and not infinite.",
+    "answer": "A player controls two permanents, each with an ability that reads “If a creature you control would deal damage to a permanent or player, it deals double that damage to that permanent or player instead.” A creature that normally deals 2 damage will deal 8 damage—not just 4, and not an infinite amount.",
+    "decidingRuleIds": ["614.5"]
+  },
   "source": {
+    "authority": "wotc-comprehensive-rules",
     "type": "Official Magic: The Gathering Comprehensive Rules worked example",
     "publisher": "Wizards of the Coast",
     "ruleId": "614.5",
@@ -14,6 +27,19 @@
     "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
     "retrievedOn": "2026-08-30",
     "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "84e41e61ba25fabf726b62105b68f784ffd670b27962bbdd09292250fa869d22",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
   },
   "whyHard": "Replacement effects modify an event as it happens, not the resulting state, so each doubling effect gets exactly one chance to apply to the single damage event (2 -> 4 -> 8) -- it's tempting but wrong to treat this like an infinite feedback loop, since a replacement effect never re-triggers on its own modified result."
 }

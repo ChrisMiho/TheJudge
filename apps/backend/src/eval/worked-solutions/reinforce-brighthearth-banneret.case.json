@@ -1,0 +1,50 @@
+{
+  "id": "reinforce-brighthearth-banneret",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "04120095-74a5-4284-bfba-aeb0b509dc84",
+      "name": "Brighthearth Banneret"
+    }
+  ],
+  "gameState": null,
+  "question": "I cast a spell that is both an Elemental and a Warrior while I control Brighthearth Banneret. Does the Banneret make it cost {2} less?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: a spell that is both creature types costs {1} less, not {2} less.",
+    "answer": "A spell you cast that’s both creature types costs {1} less to cast, not {2} less.",
+    "decidingRuleIds": ["702.77a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Brighthearth Banneret",
+    "oracleId": "04120095-74a5-4284-bfba-aeb0b509dc84",
+    "rulingDate": "2008-04-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5fe1911cbc3dade5d12afa38f9feaf41c49001679d0cb564510eabaf46cc6e0d",
+      "oracle": "cfa5b81e499a910aabaa895ae1bb9b0756c8098c2647c5f888434f512c74425a",
+      "rulings": "53c8e489117b9ee26b4660fb24f528eb866d308868b4fab3fffdf38aea9ed614"
+    }
+  },
+  "whyHard": "Two separate cost reductions look like they should both apply, but they are one effect for a spell that matches either type."
+}

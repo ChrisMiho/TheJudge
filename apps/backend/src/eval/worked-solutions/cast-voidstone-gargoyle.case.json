@@ -1,0 +1,50 @@
+{
+  "id": "cast-voidstone-gargoyle",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "1a1a6548-26ef-49f4-9e6d-b98bea1bd149",
+      "name": "Voidstone Gargoyle"
+    }
+  ],
+  "gameState": null,
+  "question": "Voidstone Gargoyle has stopped spells with a chosen name from being cast. If my opponent has named a card that can be cast face down, can I still cast it face down?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the named card can still be cast face down.",
+    "answer": "The named card can be cast face down.",
+    "decidingRuleIds": ["701.5a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Voidstone Gargoyle",
+    "oracleId": "1a1a6548-26ef-49f4-9e6d-b98bea1bd149",
+    "rulingDate": "2007-02-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "80560cb207d89d9db992bbc8305f6307e38a7e99dcbe4f61d17a9286e556c6f9",
+      "oracle": "0ee10febf4007f011afd75909f0e9fdc42bc52362698a4285b58a2c164c74ab5",
+      "rulings": "0df20bf6ec3d5987bc39a27806ec667cff2dbe9ac3e282bc23ab0e42dc87d46c"
+    }
+  },
+  "whyHard": "A name lock looks total, but a card cast face down is not covered by it."
+}

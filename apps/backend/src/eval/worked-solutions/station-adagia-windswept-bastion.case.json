@@ -1,0 +1,50 @@
+{
+  "id": "station-adagia-windswept-bastion",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "70d35dbd-1d91-4a2a-a643-6870d168f4f5",
+      "name": "Adagia, Windswept Bastion"
+    }
+  ],
+  "gameState": null,
+  "question": "If the tapped creature used for station has negative power, are any charge counters put on the permanent with station?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if the tapped creature has negative power, no charge counters are put on or removed from it.",
+    "answer": "If the tapped creature has negative power, no charge counters are put onto or removed from the permanent with station.",
+    "decidingRuleIds": ["702.184a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Adagia, Windswept Bastion",
+    "oracleId": "70d35dbd-1d91-4a2a-a643-6870d168f4f5",
+    "rulingDate": "2025-07-25",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ff61d7ed79adb4475a9a8b8d36a756fb062bcce76b2775bd36de70291316871b",
+      "oracle": "e589ee3b0ccbcf37db61cb5cdc80b7da6727e712153c6322ca8620f57b74635b",
+      "rulings": "2e514484461c5d9b42c73e8f932690a397e1ca4126464526e739a3a322709b86"
+    }
+  },
+  "whyHard": "Counters equal to power sounds like negative power would remove counters, but it does nothing."
+}

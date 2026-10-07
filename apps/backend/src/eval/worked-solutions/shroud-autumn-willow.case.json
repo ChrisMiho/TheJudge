@@ -1,0 +1,50 @@
+{
+  "id": "shroud-autumn-willow",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "c8c868f8-19a5-4cc5-b769-aa382f7b97ad",
+      "name": "Autumn Willow"
+    }
+  ],
+  "gameState": null,
+  "question": "Autumn Willow has shroud, which keeps it from being the target of spells and abilities. Can the Willow be countered while it is on the stack?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the spell can be countered, because shroud does not work until it enters.",
+    "answer": "This spell can be countered. Shroud does not work until it enters.",
+    "decidingRuleIds": ["702.18a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Autumn Willow",
+    "oracleId": "c8c868f8-19a5-4cc5-b769-aa382f7b97ad",
+    "rulingDate": "2004-10-04",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d99e26d813a525997ee8528c90b626f1e5647e8bf3aff5983be1ea5225d142cb",
+      "oracle": "b9168ade1f52d112139e0cb9ae5f772ecea89a2f9305d97efb884b9a01a2694d",
+      "rulings": "6426b1eaa8d6c5cc7a9e84e32e016cb96b43646547fc907c0f03932b351d567f"
+    }
+  },
+  "whyHard": "Players treat shroud as a property of the card in every zone, not only on the battlefield."
+}

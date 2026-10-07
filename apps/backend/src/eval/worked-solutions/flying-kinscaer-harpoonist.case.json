@@ -1,0 +1,50 @@
+{
+  "id": "flying-kinscaer-harpoonist",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "8ee98d6a-6a7e-411d-818c-816d84cfb7cd",
+      "name": "Kinscaer Harpoonist"
+    }
+  ],
+  "gameState": null,
+  "question": "Can Kinscaer Harpoonist's attack trigger target a creature that does not have flying?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you may target a creature that does not have flying.",
+    "answer": "You may target a creature that doesn’t have flying.",
+    "decidingRuleIds": ["702.9a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Kinscaer Harpoonist",
+    "oracleId": "8ee98d6a-6a7e-411d-818c-816d84cfb7cd",
+    "rulingDate": "2008-05-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "325c6c75f66e773d28db26dd1708359b517af33c878c192444f82e463f022d08",
+      "oracle": "863ddfb0a1745f10d1f44e4e705d5689367316c1f74e31b064cfec927e5386ee",
+      "rulings": "bcdd6449d7a605670e9e0e32c48bd593960062d5df5303e4ccb0d86e935a53cd"
+    }
+  },
+  "whyHard": "Making a creature lose a keyword reads as needing the creature to have it first."
+}

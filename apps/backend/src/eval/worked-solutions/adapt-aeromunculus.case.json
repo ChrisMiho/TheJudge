@@ -1,0 +1,50 @@
+{
+  "id": "adapt-aeromunculus",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "a0cd19c1-9125-4627-83ba-d42c489b4e7d",
+      "name": "Aeromunculus"
+    }
+  ],
+  "gameState": null,
+  "question": "If Aeromunculus somehow loses all of its +1/+1 counters, can I adapt it again to get more counters?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: with no +1/+1 counters it can adapt again and get more.",
+    "answer": "If a creature somehow loses all of its +1/+1 counters, it can adapt again and get more +1/+1 counters.",
+    "decidingRuleIds": ["701.46a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Aeromunculus",
+    "oracleId": "a0cd19c1-9125-4627-83ba-d42c489b4e7d",
+    "rulingDate": "2019-01-25",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "25546f92a35fb16823c19831b382810ddfbee11f88cddd3ad7d477a4ecb4b6ff",
+      "oracle": "91a7528bc72a4259af4b5fbc39f6bd5512dffab0d51d11ba9494575667d555b0",
+      "rulings": "5225610ff624d6c9e84dcccaec3c0e7ff5c43dbffe08896ffc18ede55ae666cd"
+    }
+  },
+  "whyHard": "Players read adapt as a one-time effect for the whole game."
+}

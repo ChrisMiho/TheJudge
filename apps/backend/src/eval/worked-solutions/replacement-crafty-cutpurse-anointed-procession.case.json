@@ -1,0 +1,54 @@
+{
+  "id": "replacement-crafty-cutpurse-anointed-procession",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "2ef53e18-0baf-4eee-b671-4c19b464cbfb",
+      "name": "Crafty Cutpurse"
+    },
+    {
+      "oracleId": "7246d45b-2185-4cdd-981b-5419b7d52bce",
+      "name": "Anointed Procession"
+    }
+  ],
+  "gameState": null,
+  "question": "If an opponent controls Anointed Procession, do I get twice as many tokens from Crafty Cutpurse's replacement effect?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Crafty Cutpurse's effect is applied before Anointed Procession's, so you do not get twice as many tokens.",
+    "answer": "Crafty Cutpurse’s replacement effect is applied before any other replacement effects that would also modify how the token enters the battlefield. For example, if an opponent controls Anointed Procession, your Crafty Cutpurse’s effect applies before that of Anointed Procession and you won’t get twice as many tokens.",
+    "decidingRuleIds": ["616.1", "614.12"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Crafty Cutpurse",
+    "oracleId": "2ef53e18-0baf-4eee-b671-4c19b464cbfb",
+    "rulingDate": "2018-01-19"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5d2ec3cdf6bc1854046be9a9f44373ce527685e98675eb69ca75bdedb39e5d09",
+      "oracle": "a9e4d3978c5e7cf9ecd0d5dce119840aac790c504124451908efb8d8b27b81c5",
+      "rulings": "4097e05230ad834998b3f888a26f3c286e07127d3ea4f3b2bda2bc17855c166d"
+    }
+  },
+  "whyHard": "Replacement effects from different players are often chosen in an order, but this one is applied first by rule."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "evoke-meadowboon",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "708bf989-dd8d-4066-a463-96cc5eadbb06",
+      "name": "Meadowboon"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I use evoke when I cast a spell without paying its mana cost?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if you cast a spell without paying its mana cost, you cannot use its evoke ability.",
+    "answer": "If you're casting a spell \"without paying its mana cost,\" you can't use its evoke ability.",
+    "decidingRuleIds": ["702.74a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Meadowboon",
+    "oracleId": "708bf989-dd8d-4066-a463-96cc5eadbb06",
+    "rulingDate": "2008-04-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ffcc60517dcff808a1c4918bddacd056b86760f68ab03cf9ff8bf2febae39a06",
+      "oracle": "1ff135280eb654804aeeb39320618c5b0ca62c968abefc007143b6fb55518b32",
+      "rulings": "2b683446190e8c79d58a6195e9372fbf37e3b83d343c2bb2b2e851668824a012"
+    }
+  },
+  "whyHard": "Evoke is an alternative cost, so it cannot be combined with another alternative cost such as casting for free."
+}

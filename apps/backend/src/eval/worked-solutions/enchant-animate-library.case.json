@@ -1,0 +1,50 @@
+{
+  "id": "enchant-animate-library",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "f785133a-636a-487d-8d56-e07012e5d732",
+      "name": "Animate Library"
+    }
+  ],
+  "gameState": null,
+  "question": "Can Animate Library enchant my Contraption deck?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Animate Library cannot enchant your Contraption deck.",
+    "answer": "Animate Library can't enchant your Contraption deck.",
+    "decidingRuleIds": ["702.5a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Animate Library",
+    "oracleId": "f785133a-636a-487d-8d56-e07012e5d732",
+    "rulingDate": "2018-01-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "70bde518b62e0cd2a54fd2fe61ffed49d85c78f3616442713f390c6c3efc183a",
+      "oracle": "2e6385eeafb3725d0e0bd0ba97ca3829bb39232946f5817d64e1f81bd3239384",
+      "rulings": "b7d6153eee2da9f2208ab06ca99e18074a83ff8b5baf2bc4c5609d074a829f5a"
+    }
+  },
+  "whyHard": "'Enchant your library' suggests any deck of cards you own, but only the library is a legal object."
+}

@@ -1,0 +1,54 @@
+{
+  "id": "multiplayer-only-blood-ends-your-nightmares-opponents",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "147895ee-c438-4ebb-bf3c-a5ab522fd3fc",
+      "name": "Only Blood Ends Your Nightmares"
+    },
+    {
+      "oracleId": "d12d4b54-a13a-46ba-b176-3aaa453ce3e2",
+      "name": "Tajuru Preserver"
+    }
+  ],
+  "gameState": null,
+  "question": "In a multiplayer game, an opponent who controls Tajuru Preserver can't sacrifice a creature for Only Blood Ends Your Nightmares. Do they discard two cards instead?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: each opponent who can't sacrifice a creature, because they control none or control Tajuru Preserver, discards two cards, and they have no choice.",
+    "answer": "Each opponent who can sacrifice a creature must do so, and thus won’t discard any cards. Each opponent who can’t sacrifice a creature (either because they don’t control any, or because they control Tajuru Preserver) will wind up discarding two cards. Your opponents have no choice in the matter.",
+    "decidingRuleIds": ["608.2d", "701.21a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Only Blood Ends Your Nightmares",
+    "oracleId": "147895ee-c438-4ebb-bf3c-a5ab522fd3fc",
+    "rulingDate": "2010-06-15"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9a9ec6c280869a135a0ba29e7992ae72be8185ea6fd5259d4f228b14f9ba14d1",
+      "oracle": "9debc403fe15955edc2946e52ba130b51fcc0da9b9667370a9c536936c3d4f62",
+      "rulings": "266b9d765358d58e3cf862e2a60f36d1d157e28aa1db7c2b9693648d5efa9dfb"
+    }
+  },
+  "whyHard": "Each opponent gets a different outcome, and players expect everyone to be able to choose."
+}

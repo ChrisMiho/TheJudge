@@ -250,5 +250,73 @@ describe("Backend - Eval - Answer quality - judge (REQ-186)", () => {
       });
       expect(result.undetermined).toBe(true);
     });
+
+    it("refuses a single answer without any provider call: a one-model run has nothing to rank", async () => {
+      const client = fakeClient(JSON.stringify({ ranks: { A: 1 }, rationale: "Only one." }));
+      const result = await judgeBlindRanking({
+        client,
+        judgeModel: "gpt-5",
+        question: "Q",
+        workedSolution: "Reference.",
+        answers: [answers[0]!]
+      });
+      expect(result).toEqual({
+        undetermined: true,
+        reason: "ranking needs two or more answers",
+        usage: { inputTokens: 0, outputTokens: 0 }
+      });
+      expect(client.create).not.toHaveBeenCalled();
+    });
+
+    it("returns the ranking call's own token use", async () => {
+      const create = vi.fn(async () => ({
+        output_text: JSON.stringify({ ranks: { A: 1, B: 2, C: 3, D: 4 }, rationale: "Identity." }),
+        usage: { input_tokens: 3400, output_tokens: 1000 }
+      }));
+      const result = await judgeBlindRanking({
+        client: { responses: { create } },
+        judgeModel: "gpt-5",
+        question: "Q",
+        workedSolution: "Reference.",
+        answers,
+        shuffleIndices: [0, 1, 2, 3]
+      });
+      expect(result.undetermined).toBe(false);
+      expect(result.usage).toEqual({ inputTokens: 3400, outputTokens: 1000 });
+    });
+  });
+
+  describe("judge usage (REQ-188: judge cost is recorded)", () => {
+    const input = {
+      judgeModel: "gpt-5",
+      question: "Q",
+      ruleIds: ["603.7a"],
+      answerText: "An answer.",
+      workedSolution: "The reference."
+    };
+    const scored = JSON.stringify({ correctness: 2, grounding: 2, calibration: 2, readability: 2, rationale: "Agrees." });
+
+    it("returns the lone judge call's token use beside its scores", async () => {
+      const create = vi.fn(async () => ({ output_text: scored, usage: { input_tokens: 1500, output_tokens: 800 } }));
+      const result = await judgeAnswerAlone({ client: { responses: { create } }, ...input });
+      expect(result.undetermined).toBe(false);
+      expect(result.usage).toEqual({ inputTokens: 1500, outputTokens: 800 });
+    });
+
+    it("still reports the tokens a malformed response cost, and zero when the call itself failed", async () => {
+      const malformed = vi.fn(async () => ({ output_text: "not json", usage: { input_tokens: 1500, output_tokens: 20 } }));
+      const bad = await judgeAnswerAlone({ client: { responses: { create: malformed } }, ...input });
+      expect(bad.undetermined).toBe(true);
+      expect(bad.usage).toEqual({ inputTokens: 1500, outputTokens: 20 });
+
+      const failed = await judgeAnswerAlone({ client: fakeThrowingClient("boom"), ...input });
+      expect(failed.undetermined).toBe(true);
+      expect(failed.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
+    });
+
+    it("reports zero usage when the client reports none", async () => {
+      const result = await judgeAnswerAlone({ client: fakeClient(scored), ...input });
+      expect(result.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
+    });
   });
 });

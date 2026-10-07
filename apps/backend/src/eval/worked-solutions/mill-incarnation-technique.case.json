@@ -1,0 +1,50 @@
+{
+  "id": "mill-incarnation-technique",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "0ab9539d-3461-4936-95cd-4c229308c4a4",
+      "name": "Incarnation Technique"
+    }
+  ],
+  "gameState": null,
+  "question": "Incarnation Technique mills five cards and then returns a creature card from my graveyard to the battlefield. Do I choose the creature after I have milled?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you choose the creature after you mill five cards.",
+    "answer": "You choose which creature to bring back after you mill five cards.",
+    "decidingRuleIds": ["701.17a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Incarnation Technique",
+    "oracleId": "0ab9539d-3461-4936-95cd-4c229308c4a4",
+    "rulingDate": "2021-04-16",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "113d2b2389cdbeaf4eb27441dd6f8dc957cc60c4896ea8cd1b6a6a83503d8186",
+      "oracle": "3a445721d466052397274f92d01742d08b99a5f198b5b501a642c15d1aa1b0ef",
+      "rulings": "297cd263b84cd2c4e209d776132f6668b326a9bc266d66a5105ac6d67b7c6361"
+    }
+  },
+  "whyHard": "Players assume the choice has to be made from the graveyard as it was before the mill."
+}

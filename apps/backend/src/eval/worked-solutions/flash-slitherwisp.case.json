@@ -1,0 +1,50 @@
+{
+  "id": "flash-slitherwisp",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "ccc4f21f-cf8c-40bb-a6d6-1f624320c5b2",
+      "name": "Slitherwisp"
+    }
+  ],
+  "gameState": null,
+  "question": "An effect lets me cast a spell as though it had flash. Does Slitherwisp's ability to draw a card when I cast another spell with flash trigger?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: a spell that is only cast 'as though' it had flash does not trigger Slitherwisp.",
+    "answer": "If an effect allows you to cast a spell “as though” it has flash, Slitherwisp’s last ability won’t trigger.",
+    "decidingRuleIds": ["702.8a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Slitherwisp",
+    "oracleId": "ccc4f21f-cf8c-40bb-a6d6-1f624320c5b2",
+    "rulingDate": "2020-04-17",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "8175106d23fcb51dac61ef51bc935196fdafca005a40997a70b8fd48a1301812",
+      "oracle": "8fd9cf9624f06281a3f5605c0f47217126bfb4bb406d433d75e91d2bcda75dac",
+      "rulings": "649f5576324bd5db354bfd52b43237cdeac73e3b3c2588ca413a169a5541ac21"
+    }
+  },
+  "whyHard": "Being cast at instant speed looks the same as having flash, but only the keyword counts."
+}

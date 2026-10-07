@@ -1,0 +1,50 @@
+{
+  "id": "two-headed-giant-transcendence-two-headed-giant",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "f9279f8f-3d19-4f5b-b194-cb8c65313b7e",
+      "name": "Transcendence"
+    }
+  ],
+  "gameState": null,
+  "question": "In a Two-Headed Giant game, a player controls Transcendence, which says 'You don't lose the game for having 0 or less life.' If their team's life total is 0 or less, does the team lose?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the team doesn't lose the game.",
+    "answer": "In a Two-Headed Giant game, a player controls Transcendence, which reads, in part, “You don’t lose the game for having 0 or less life.” If that player’s team’s life total is 0 or less, that team doesn’t lose the game.",
+    "decidingRuleIds": ["810.8a"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "810.8a",
+    "sectionTitle": "Two-Headed Giant Variant"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "072e79da13d05953cf13cd089de1c72b79621c858e2532495ebfdb1df73fef2b",
+      "oracle": "958969c683ffb3e52ae6ebbb917c8dd7941e91c35bdaee77e2121b388506a7ce",
+      "rulings": "0e96c74071c1641887bdc56bd2def557bb7f4ffef126c57bee3ec996b1951c3f"
+    }
+  },
+  "whyHard": "Life is shared in Two-Headed Giant, and players doubt that one player's card protects the whole team."
+}

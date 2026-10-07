@@ -1,0 +1,50 @@
+{
+  "id": "banding-ayesha-tanaka",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "35e4ed0e-8ce2-4729-a009-0d6be8f47663",
+      "name": "Ayesha Tanaka"
+    }
+  ],
+  "gameState": null,
+  "question": "If my attacking creature with banding is blocked, do I as its controller assign the combat damage that the blocking creatures deal?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the controller of a creature with banding assigns damage for the creatures blocking or blocked by it.",
+    "answer": "If a creature in combat has banding, its controller assigns damage for creatures blocking or blocked by it.",
+    "decidingRuleIds": ["702.22a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Ayesha Tanaka",
+    "oracleId": "35e4ed0e-8ce2-4729-a009-0d6be8f47663",
+    "rulingDate": "2009-10-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ec8de47194eb42542bfc443d910cf556b56e0a4f8e436acad90bf6df731b6ad1",
+      "oracle": "966448c9da2d6e3146c94a851822496f33e986ef96c53bdf9f26b79c3d5ef277",
+      "rulings": "42b2dd0ec0e347d040ade116c12f9f6f547a73052ff4aecc017011fa7ce97496"
+    }
+  },
+  "whyHard": "Banding reverses the normal rule that a creature's own controller assigns its damage."
+}

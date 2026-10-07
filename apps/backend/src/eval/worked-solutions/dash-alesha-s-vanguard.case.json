@@ -1,0 +1,50 @@
+{
+  "id": "dash-alesha-s-vanguard",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "be662217-41c2-4caa-89da-ae7f6f817c34",
+      "name": "Alesha's Vanguard"
+    }
+  ],
+  "gameState": null,
+  "question": "Do I have to attack with a creature I cast with dash?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you do not have to attack unless another ability says you do.",
+    "answer": "You don’t have to attack with the creature with dash unless another ability says you do.",
+    "decidingRuleIds": ["702.109a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Alesha's Vanguard",
+    "oracleId": "be662217-41c2-4caa-89da-ae7f6f817c34",
+    "rulingDate": "2014-11-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "de4a87c3553b1e30210258882a3c2540b0b3d61c20c1af8bc175ef873310e6c1",
+      "oracle": "f00bf5357da43f544203396f20e6ceea6b0570cc5cb982ed09daf2462401e07a",
+      "rulings": "1f1a7db2fb5d90339729db7cdddb33914b0bc041e43451ef92ae618d76ba0871"
+    }
+  },
+  "whyHard": "Dash gives haste and returns the creature to hand at end of turn, which looks like it expects an attack."
+}

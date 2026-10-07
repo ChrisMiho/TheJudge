@@ -1,0 +1,50 @@
+{
+  "id": "sunburst-arcbound-wanderer",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "03436524-197a-4941-a2a1-c7c4b71c4709",
+      "name": "Arcbound Wanderer"
+    }
+  ],
+  "gameState": null,
+  "question": "Arcbound Wanderer has modular—sunburst. Does the sunburst ability set the number for the modular ability, so it enters with one counter for each color of mana spent to cast it?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: sunburst sets the number for modular, so the Wanderer enters with a counter for each color of mana spent.",
+    "answer": "This card has modular—sunburst, a combination of two keyword abilities. The sunburst ability sets the number for the modular ability. Basically, the number of +1/+1 counters the Wanderer gets as it enters is equal to the number of colors of mana used to pay its cost.",
+    "decidingRuleIds": ["702.44a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Arcbound Wanderer",
+    "oracleId": "03436524-197a-4941-a2a1-c7c4b71c4709",
+    "rulingDate": "2004-12-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "fdbe20d3eb8bd579a8e56c15074f910fe9eef0ef3f8a73f40f2f37d76a1b3746",
+      "oracle": "1557fde1711113805d9b275bfabf9990365cdde6aec88f37fd4a985c8fd474c8",
+      "rulings": "ca6c33a4839f5a1f8b29a5eba4a3365f7a938e9f0e24d6bd6ed99089849a9978"
+    }
+  },
+  "whyHard": "A combined keyword like this looks like a single ability, and players are unsure how its two halves fit."
+}

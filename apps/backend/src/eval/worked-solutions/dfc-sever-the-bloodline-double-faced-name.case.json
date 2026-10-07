@@ -1,0 +1,54 @@
+{
+  "id": "dfc-sever-the-bloodline-double-faced-name",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "b9019332-2f02-48d9-be0a-a2b41b79e136",
+      "name": "Sever the Bloodline"
+    },
+    {
+      "oracleId": "c7b1aaff-e2c3-427c-8478-1fd053f7ffb2",
+      "name": "Village Ironsmith // Ironfang"
+    }
+  ],
+  "gameState": null,
+  "question": "If Sever the Bloodline targets Village Ironsmith, is the other face, Ironfang, exiled too since a double-faced creature has a name for each face?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: a double-faced creature only has the name of the face that is up, so Ironfang wouldn't be exiled.",
+    "answer": "A double-faced creature only has the name of the face that's up. For example, if Village Ironsmith is targeted by Sever the Bloodline, Ironfang wouldn't be exiled.",
+    "decidingRuleIds": ["712.8d"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Sever the Bloodline",
+    "oracleId": "b9019332-2f02-48d9-be0a-a2b41b79e136",
+    "rulingDate": "2017-03-14"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "549ef45284a1b5f719c3c09dc14ebbe053b75dbeb7004fa2568ee6e14ce01c63",
+      "oracle": "bec6130539b635402b2ca5f93efbcf541fa0ace6c9f3c1cdef0d152c8b0a1e55",
+      "rulings": "501a3e1aebb8b02fa304ffd95fcb23552e60e83a60488e88f8a9c56cc317e51b"
+    }
+  },
+  "whyHard": "Both faces are part of one card, so players think the name covers both."
+}

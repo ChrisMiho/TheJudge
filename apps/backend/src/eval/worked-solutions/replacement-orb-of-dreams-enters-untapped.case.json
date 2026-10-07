@@ -1,0 +1,50 @@
+{
+  "id": "replacement-orb-of-dreams-enters-untapped",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "2c24b7c3-7c90-4109-a4aa-d9cae6febf34",
+      "name": "Orb of Dreams"
+    }
+  ],
+  "gameState": null,
+  "question": "Orb of Dreams says 'Permanents enter tapped.' Does Orb of Dreams itself enter the battlefield tapped?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it can't affect itself, so it enters untapped.",
+    "answer": "Orb of Dreams is an artifact that says “Permanents enter tapped.” It won’t affect itself, so Orb of Dreams enters the battlefield untapped.",
+    "decidingRuleIds": ["614.12"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "614.12",
+    "sectionTitle": "Replacement Effects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c3092e80b6d5d9d7b4580ea94f715c8146c34b421e7df24f8a371d34a070f691",
+      "oracle": "09930fa0c8c21c48b4bf6348bc17a62bdda8bf5b05c3bfb2e711de1ac60fddfc",
+      "rulings": "8217ec69616560cf4d49a44a675fc9151d1432023a620c14c2b253c310130717"
+    }
+  },
+  "whyHard": "'Permanents' includes the Orb once it is on the battlefield, but it is not on the battlefield when it enters."
+}

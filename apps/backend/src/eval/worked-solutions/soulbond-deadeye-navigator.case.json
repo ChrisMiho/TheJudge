@@ -1,0 +1,50 @@
+{
+  "id": "soulbond-deadeye-navigator",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "ebef6d84-b724-4a84-bcde-8eb6dc06717d",
+      "name": "Deadeye Navigator"
+    }
+  ],
+  "gameState": null,
+  "question": "If I use the ability Deadeye Navigator grants to exile a paired creature, can the pair be reunited when the creature returns?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the pair is broken and then the Navigator's soulbond triggers when the card returns, so they can be paired again.",
+    "answer": "If you activate the ability granted by Deadeye Navigator, the creature will be exiled, the pair will immediately be broken, and then the card will be returned to the battlefield. Deadeye Navigator’s soulbond ability triggers when that card enters the battlefield and the pair can then be reunited.",
+    "decidingRuleIds": ["702.95a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Deadeye Navigator",
+    "oracleId": "ebef6d84-b724-4a84-bcde-8eb6dc06717d",
+    "rulingDate": "2017-03-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e5eb6ed714dfd1f5f46f35e236e9b9d0adba0d96a0cb5c01ff8129021e8498c8",
+      "oracle": "6e7144a782eb831b23a341c18561c29073c98ca47c523687a269b6cbae3f73d7",
+      "rulings": "db991a9ad33bf81c9085724266bb432b4c95f29505a89738829596ad9de6dd4d"
+    }
+  },
+  "whyHard": "Players think breaking the pair by exile means the two stay unpaired for good."
+}

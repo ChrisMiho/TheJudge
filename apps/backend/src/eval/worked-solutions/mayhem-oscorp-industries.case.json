@@ -1,0 +1,50 @@
+{
+  "id": "mayhem-oscorp-industries",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "f432eb6a-f1bf-4ce7-b915-1488dccb4bb9",
+      "name": "Oscorp Industries"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I play a land from my graveyard with mayhem if I have no land plays left this turn?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you can play it with mayhem only if you have an available land play, since playing a land has no cost.",
+    "answer": "You can play Oscorp Industries using its mayhem ability only if you have available land plays remaining. There's no cost to playing a land; you're simply playing it from your graveyard.",
+    "decidingRuleIds": ["702.187a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Oscorp Industries",
+    "oracleId": "f432eb6a-f1bf-4ce7-b915-1488dccb4bb9",
+    "rulingDate": "2025-09-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e794c20af677c3a3fbf26c2fdd2800161212780bc21d552290cf85eb986a36b1",
+      "oracle": "2fdf8069bb5b328e56fa5b1d9daddc0ebe9033edf142283875d7d84226505752",
+      "rulings": "c5fa9b43b1f272704b9041bd2ac1cb43ef044c7ac53222109988a638281778bd"
+    }
+  },
+  "whyHard": "Mayhem sounds like a free cast, but playing a land is not casting a spell."
+}

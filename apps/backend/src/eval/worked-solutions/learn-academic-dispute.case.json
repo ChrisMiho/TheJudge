@@ -1,0 +1,50 @@
+{
+  "id": "learn-academic-dispute",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "b22de128-6dad-4e15-a547-1c9ca08df5ff",
+      "name": "Academic Dispute"
+    }
+  ],
+  "gameState": null,
+  "question": "When I learn from Academic Dispute, can I choose to do nothing?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: both parts of learn are optional, so you may do nothing.",
+    "answer": "If instructed to learn, you may do nothing. Discarding a card and putting a Lesson card into your hand are both optional.",
+    "decidingRuleIds": ["701.48a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Academic Dispute",
+    "oracleId": "b22de128-6dad-4e15-a547-1c9ca08df5ff",
+    "rulingDate": "2021-04-16",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "fbfb52a0698e2f01ea212b8fd60502d6af1c004772b2348237f91c1e0c15e044",
+      "oracle": "89d89c9e17d385660d31e161bc535c761a5267cb9ab49aaefe9deb61324cff94",
+      "rulings": "b691f6dc29a9bd9e2035a424c1e2ba95a280c5a02cff6b23bc70168e9b86339e"
+    }
+  },
+  "whyHard": "Players think learn forces at least the discard-and-draw option."
+}

@@ -1,0 +1,54 @@
+{
+  "id": "copies-copy-of-permanent-spell-not-created",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "4c340b82-22e1-445a-b236-82471b442031",
+      "name": "Frontline Heroism"
+    },
+    {
+      "oracleId": "01546b7d-a233-4176-8843-d732074dc5b6",
+      "name": "Doubling Season"
+    }
+  ],
+  "gameState": null,
+  "question": "When a resolving copy of a permanent spell becomes a token, does that count as the token being created for an ability like Doubling Season's?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the token isn't created and won't interact with abilities that care about tokens being created.",
+    "answer": "The token that a resolving copy of a permanent spell becomes isn't \"created\" and won't interact with abilities that care about tokens being created, such as the first ability of Doubling Season.",
+    "decidingRuleIds": ["707.10", "111.1"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Frontline Heroism",
+    "oracleId": "4c340b82-22e1-445a-b236-82471b442031",
+    "rulingDate": "2024-11-08"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "003c339f90904db0fe10b05bfcd0ada79086a2d2597ce95b2a59ff9298060b5b",
+      "oracle": "61a1f7dfd867d2c7dbb0d64e9751ad2eaa2f87fd233d841ea5a9be54859739f4",
+      "rulings": "05a0ed5346b543ad5fbfa1717948407bf61bb5d7dd11f79d9ca7ffc91d124b74"
+    }
+  },
+  "whyHard": "The copy becomes a token, and players treat that as a token creation event."
+}

@@ -1,0 +1,54 @@
+{
+  "id": "replacement-jailer-and-colossus-replacement",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "1f55303e-1369-4e42-9ed4-36609887c7c1",
+      "name": "Yixlid Jailer"
+    },
+    {
+      "oracleId": "1b09d0cf-403c-4a15-aeee-602a1bdaf0c1",
+      "name": "Darksteel Colossus"
+    }
+  ],
+  "gameState": null,
+  "question": "Darksteel Colossus shuffles itself into its owner's library instead of going to a graveyard. Does Yixlid Jailer, which makes cards in graveyards lose their abilities, stop that replacement effect?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the card never actually goes into the graveyard, so Yixlid Jailer does not affect that ability.",
+    "answer": "Some replacement effects cause a card to be put somewhere else instead of being put into a graveyard (such as that of Darksteel Colossus). These effects mean the card is never actually put into the graveyard, so Yixlid Jailer doesn't affect that ability.",
+    "decidingRuleIds": ["614.1a", "614.6"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Yixlid Jailer",
+    "oracleId": "1f55303e-1369-4e42-9ed4-36609887c7c1",
+    "rulingDate": "2021-03-19"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "3f17292d5d88c4ddf40882ff991caa46f02d1b59bf44bf2402b3e40ff9045fe0",
+      "oracle": "4666b225632129ea75f4d7d595ed90be0441f118d92261a8f733a151ffe98ae2",
+      "rulings": "ed96a101e1bca6a9dd589aa2dde90e63724378feeae4e5a81f3ce8da003013d9"
+    }
+  },
+  "whyHard": "Players expect the Jailer to shut off any ability the Colossus has in the graveyard, but the replacement happens before it gets there."
+}

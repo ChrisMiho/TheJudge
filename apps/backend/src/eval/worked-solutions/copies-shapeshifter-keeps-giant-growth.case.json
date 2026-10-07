@@ -1,0 +1,54 @@
+{
+  "id": "copies-shapeshifter-keeps-giant-growth",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "6a71deb3-6659-47ea-8687-136cf75fa381",
+      "name": "Unstable Shapeshifter"
+    },
+    {
+      "oracleId": "5748ebf1-24e3-499d-ab7c-c2cebd462a24",
+      "name": "Giant Growth"
+    }
+  ],
+  "gameState": null,
+  "question": "Unstable Shapeshifter has been affected by Giant Growth this turn. If a creature enters later and the Shapeshifter becomes a copy of it, does it still get +3/+3 from Giant Growth?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: Giant Growth's bonus is not a copiable value and still applies.",
+    "answer": "Unstable Shapeshifter reads, “Whenever another creature enters, this creature becomes a copy of that creature, except it has this ability.” It’s affected by Giant Growth, which reads “Target creature gets +3/+3 until end of turn.” If a creature enters the battlefield later this turn, Unstable Shapeshifter will become a copy of that creature, but it will still get +3/+3 from the Giant Growth.",
+    "decidingRuleIds": ["707.4"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "707.4",
+    "sectionTitle": "Copying Objects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9da67225a990391c4299a27f96f3e9781ad78a6c23eeb9a2fc9f83b835927850",
+      "oracle": "8237c4d6f85144e6220ed171f7a3e99129c5fdc98bc56e0ec3e41881ab708139",
+      "rulings": "b1dffe4889645e3263e8266dc10b5838fa3cbc18c6cfaf6bab3203d48118920e"
+    }
+  },
+  "whyHard": "Becoming a copy replaces characteristics, and players think it also removes earlier bonuses."
+}

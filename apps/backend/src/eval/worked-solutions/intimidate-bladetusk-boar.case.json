@@ -1,0 +1,50 @@
+{
+  "id": "intimidate-bladetusk-boar",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "f640a102-7ee8-4605-9e15-09938fb229b2",
+      "name": "Bladetusk Boar"
+    }
+  ],
+  "gameState": null,
+  "question": "If an attacking creature with intimidate has already been blocked, does changing its color afterward undo that block?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: its colors matter only as blockers are declared, so a later change does not undo the block.",
+    "answer": "If an attacking creature has intimidate, what colors it is matters only as the defending player declares blockers. Once it's blocked, changing its colors won't change that.",
+    "decidingRuleIds": ["702.13a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Bladetusk Boar",
+    "oracleId": "f640a102-7ee8-4605-9e15-09938fb229b2",
+    "rulingDate": "2009-10-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "be4b06ac01ca3b4f18216ae4d4f990012aaee534df4313719c3c31cddcc531de",
+      "oracle": "d3a05cb596af3d4ab884694bec0a14c442e572933092fdc956d01404986d2da4",
+      "rulings": "23b90e3230eebe378a263c33a34642ef030d8170904b1c96905183ef5accf802"
+    }
+  },
+  "whyHard": "Players think blocking restrictions are rechecked all through combat."
+}

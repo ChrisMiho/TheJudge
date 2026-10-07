@@ -1,0 +1,54 @@
+{
+  "id": "combat-brontodon-and-hunt-the-weak",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "fa2d8440-a44a-44fe-8624-0e8b4be53f44",
+      "name": "Belligerent Brontodon"
+    },
+    {
+      "oracleId": "37864d13-2aaa-477b-8453-a42f77ab4437",
+      "name": "Hunt the Weak"
+    }
+  ],
+  "gameState": null,
+  "question": "Belligerent Brontodon makes creatures assign combat damage using toughness instead of power. When Hunt the Weak makes a creature fight, does it deal damage equal to its toughness too?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: the ability changes only the combat damage a creature assigns, not its power, so a fight still uses the real power.",
+    "answer": "Belligerent Brontodon’s ability doesn’t actually change any creature’s power. It changes only the amount of combat damage it assigns. All other rules and effects that check power or toughness use the real values. For example, Hunt the Weak won’t cause a creature to fight with its toughness.",
+    "decidingRuleIds": ["510.1a", "701.14a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Belligerent Brontodon",
+    "oracleId": "fa2d8440-a44a-44fe-8624-0e8b4be53f44",
+    "rulingDate": "2017-09-29"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "dba8e3c98101157b049b891f539b3b77c949b79c4a09d6ebcef31d9eed2da84e",
+      "oracle": "16ccd19e7e552a568c363cb3805fabf91268c2268ececce0d88b77540d7c0569",
+      "rulings": "7a7437497fafa7301719d6fc90f5fbbcd9861d152809e633ec4a80b7da79ade1"
+    }
+  },
+  "whyHard": "The ability looks like a change to power, but the rules only change the amount of combat damage assigned."
+}

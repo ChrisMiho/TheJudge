@@ -1,0 +1,50 @@
+{
+  "id": "warp-astelli-reclaimer",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "bb956492-e3ed-483a-9169-5b795a8e619e",
+      "name": "Astelli Reclaimer"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast Astelli Reclaimer with warp for {2}{W}, is X equal to 3 for its enters ability?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: its ability counts the mana you actually spent, so X is 3.",
+    "answer": "Astelli Reclaimer’s enters ability cares about the mana you actually paid to cast Astelli Reclaimer, not its mana cost. If you cast Astelli Reclaimer for {3}{W}{W}, X is 5. If you cast it with warp for {2}{W}, X is 3. Any effects that increase or decrease the cost to cast it will also be taken into account.",
+    "decidingRuleIds": ["702.185a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Astelli Reclaimer",
+    "oracleId": "bb956492-e3ed-483a-9169-5b795a8e619e",
+    "rulingDate": "2025-07-25",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "ba4c080c67326f3688db4309f44ed11e6c0ab6fb7d4ee0764a846cdf45fe1862",
+      "oracle": "d7594248fa40d728d0b7a0e4fa49e785a6b44725e87138834bbd77edddd5252b",
+      "rulings": "55c05919466f64978353082f012240cad38a165c1c8d8b27f26c11b4f349519d"
+    }
+  },
+  "whyHard": "Players use the printed mana cost instead of the mana spent."
+}

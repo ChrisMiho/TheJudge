@@ -1,0 +1,50 @@
+{
+  "id": "defender-ageless-sentinels",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "9023c530-f329-4301-8b24-4cf676194265",
+      "name": "Ageless Sentinels"
+    }
+  ],
+  "gameState": null,
+  "question": "Ageless Sentinels becomes a Bird Giant and loses defender when it blocks. Once that has happened, can it attack on my later turns?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: once it stops being a Wall it can attack, because it also loses defender.",
+    "answer": "Once it stops being a Wall, it can attack because it also loses Defender.",
+    "decidingRuleIds": ["702.3a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Ageless Sentinels",
+    "oracleId": "9023c530-f329-4301-8b24-4cf676194265",
+    "rulingDate": "2005-08-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5231a51f317b91be447ba0a7a539e328bf54c516bcb82b2b7c519dd3fb3a9964",
+      "oracle": "8d17860a26ca778693684165b3eb60f8e1d1da14e1754729259e4ea4051babb0",
+      "rulings": "60f9afe26b89750bfabc293baa1b9d8e8cdce8526d980c51ac59eca8a4df3acb"
+    }
+  },
+  "whyHard": "Players think a card printed with defender can never attack, forgetting that the effect removes the keyword."
+}

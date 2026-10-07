@@ -1,0 +1,54 @@
+{
+  "id": "replacement-invoke-the-ancients-parallel-lives",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "868b3c65-d753-4f32-b6ca-31e58782ea92",
+      "name": "Invoke the Ancients"
+    },
+    {
+      "oracleId": "84dc94b2-95fb-4d53-aaa2-191cb645639f",
+      "name": "Parallel Lives"
+    }
+  ],
+  "gameState": null,
+  "question": "If I resolve Invoke the Ancients while I control Parallel Lives and create four tokens instead of two, do I choose a type of counter for each token individually?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you choose a type of counter separately for each of the four tokens.",
+    "answer": "If a replacement effect causes you to create more than two tokens, you will make that choice for each of those tokens individually. For example, if you resolve Invoke the Ancients while you control Parallel Lives, you will choose a type of counter for each of the four resulting tokens.",
+    "decidingRuleIds": ["616.1", "614.1a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Invoke the Ancients",
+    "oracleId": "868b3c65-d753-4f32-b6ca-31e58782ea92",
+    "rulingDate": "2022-02-18"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e0633618a8e2d6dd1206e1cc2da5c477ffa3b0675ff7f0e04870f390f6f46b84",
+      "oracle": "7c730cc6b1dcc44e455052f6611373c4fdc09874e22f280b10a5d1b72ac874f5",
+      "rulings": "859794b1c864fd579e44060c69cc119b78193f6fbc224e1d57890882ef16657b"
+    }
+  },
+  "whyHard": "A doubling effect looks like it copies one choice, but each token is made with its own choice."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "bargain-archon-s-glory",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "bc5631ae-494e-4987-8d17-57674bfbdb9f",
+      "name": "Archon's Glory"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I sacrifice more than one artifact, enchantment or token to pay a spell's bargain cost?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you may sacrifice only one artifact, enchantment or token to pay a spell's bargain cost.",
+    "answer": "You may sacrifice only one artifact, enchantment, or token to pay a spell's bargain cost.",
+    "decidingRuleIds": ["702.166a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Archon's Glory",
+    "oracleId": "bc5631ae-494e-4987-8d17-57674bfbdb9f",
+    "rulingDate": "2023-09-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "016a7869fd8aacb2d7c4c70c57e947798284f410aa6d25e694f574d98cbea533",
+      "oracle": "ee9d51c21ab38490ebc60734826c59144df3bd296651091f3cddefbf8b264560",
+      "rulings": "5a4e831731038247a632685c983a44954159e00067e4039dd283e63a9918671b"
+    }
+  },
+  "whyHard": "Bargain says 'an artifact, enchantment, or token', and players assume any number can be offered."
+}

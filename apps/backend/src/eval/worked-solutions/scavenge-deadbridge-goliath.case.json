@@ -1,0 +1,50 @@
+{
+  "id": "scavenge-deadbridge-goliath",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "1498f5a1-6df7-4f80-9470-c93528b64a9c",
+      "name": "Deadbridge Goliath"
+    }
+  ],
+  "gameState": null,
+  "question": "Once I have activated scavenge, can an opponent stop the ability by removing the card from my graveyard in response?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: exiling the card is part of the cost, so it is too late once the ability has been activated.",
+    "answer": "Exiling the creature card with scavenge is part of the cost of activating the scavenge ability. Once the ability is activated and the cost is paid, it’s too late to stop the ability from being activated by trying to remove the creature card from the graveyard.",
+    "decidingRuleIds": ["702.97a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Deadbridge Goliath",
+    "oracleId": "1498f5a1-6df7-4f80-9470-c93528b64a9c",
+    "rulingDate": "2013-04-15",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "9144d24673b5756cd18701d88e499e5ddd85693fef9feda5e7fa19ca965ad742",
+      "oracle": "d3d2c20389ff1acc43603d9b3d1ed201e25ff84cf22c469aafaf13aa412955c3",
+      "rulings": "31c72e4fabbc2e4bfe6fe06b818fe4e06fb188f56d2b5bcfa1c97e6623a51773"
+    }
+  },
+  "whyHard": "The card is in the graveyard when the ability goes on the stack, and players think it is a target an opponent can remove."
+}

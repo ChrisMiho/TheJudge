@@ -1,0 +1,50 @@
+{
+  "id": "transmute-tolaria-west",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "46eefc72-2d9e-4389-8ae1-26d9ee472b5c",
+      "name": "Tolaria West"
+    }
+  ],
+  "gameState": null,
+  "question": "Can Tolaria West's transmute find a card whose mana cost has X in it, such as a card with {X}{X} in its cost?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: cards with mana cost {X}, {X}{X} or {X}{X}{X} have mana value 0.",
+    "answer": "Cards with mana cost {X}, {X}{X}, or {X}{X}{X} have mana value 0.",
+    "decidingRuleIds": ["702.53a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Tolaria West",
+    "oracleId": "46eefc72-2d9e-4389-8ae1-26d9ee472b5c",
+    "rulingDate": "2021-03-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "591f89c985b932fa234151dbe3b9bfb48b16fff103d94be6a5430417558586e5",
+      "oracle": "ff533390e46e8f07d6c3161e7fd513b843a146fd64f81c9f6d890e586a363463",
+      "rulings": "1b05b2af5dd03927fd7e732ffec1fe6042e03033b5faa8fb4b0be75b36c10172"
+    }
+  },
+  "whyHard": "Players look at the printed cost instead of working out that X is zero when the card is not on the stack."
+}

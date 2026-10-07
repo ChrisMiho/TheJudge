@@ -1,0 +1,50 @@
+{
+  "id": "forecast-sky-hussar",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "21b41dd6-bff7-4e3d-aa28-551a30194225",
+      "name": "Sky Hussar"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I tap creatures that came under my control this turn to pay for Sky Hussar's forecast ability?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you can tap any two untapped white and/or blue creatures you control, even ones you have not controlled continuously.",
+    "answer": "You can tap any two untapped white and/or blue creatures you control, including ones you haven't controlled continuously since the beginning of your most recent turn, to pay the cost of Sky Hussar's forecast ability.",
+    "decidingRuleIds": ["702.57a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Sky Hussar",
+    "oracleId": "21b41dd6-bff7-4e3d-aa28-551a30194225",
+    "rulingDate": "2024-01-12",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "a9d041765c0bbeaff5e5a7b82fe1579ed69cf3352af4d1e28406769445986ebd",
+      "oracle": "3a8ca61afcac5b510494abcab4437f40cff042fbc7ddc6cbc928ebc4c7f8c514",
+      "rulings": "5eaa777838e75710a559fcce45439161a0504b38f32b2954587c8538500984c2"
+    }
+  },
+  "whyHard": "Tapping a creature as a cost usually needs it to have been under your control since the turn began, and players apply that rule here."
+}

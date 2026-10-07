@@ -1,0 +1,50 @@
+{
+  "id": "squad-galadhrim-brigade",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "da4bf807-93f3-41b7-8bfd-aa63a551754e",
+      "name": "Galadhrim Brigade"
+    }
+  ],
+  "gameState": null,
+  "question": "If a spell with squad is countered, are any tokens created?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: if the spell is countered, squad does not trigger and no tokens are created.",
+    "answer": "If the spell is countered, the squad ability will not trigger, and no tokens will be created.",
+    "decidingRuleIds": ["702.157a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Galadhrim Brigade",
+    "oracleId": "da4bf807-93f3-41b7-8bfd-aa63a551754e",
+    "rulingDate": "2023-11-03",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "53e0700173d79a80301cfea0bba898783c6aefc57a9f829a6a397ea52c90ceba",
+      "oracle": "653a326c9819786c3360016e1e5bcd375b65902c22d5b78ae7a56dd5c20ba60d",
+      "rulings": "f16be0422b73e996aeede640a97dac37f5294b6c3164b8e9902b44d599089479"
+    }
+  },
+  "whyHard": "Squad is paid for as a cost, so players expect the tokens even if the creature never enters."
+}

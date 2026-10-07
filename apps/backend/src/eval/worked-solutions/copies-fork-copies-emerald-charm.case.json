@@ -1,0 +1,54 @@
+{
+  "id": "copies-fork-copies-emerald-charm",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "50c53ae0-51ba-4046-ac74-87c65e688032",
+      "name": "Fork"
+    },
+    {
+      "oracleId": "904b3db5-70bc-4d49-9887-f504aff8666f",
+      "name": "Emerald Charm"
+    }
+  ],
+  "gameState": null,
+  "question": "I cast Fork targeting Emerald Charm. When Fork resolves, is the copy of Emerald Charm red and does it keep the mode chosen for the original?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the copy is red and has the same mode chosen for the original.",
+    "answer": "A player casts Fork, targeting an Emerald Charm. Fork reads, “Copy target instant or sorcery spell, except that the copy is red. You may choose new targets for the copy.” Emerald Charm is a modal green instant. When the Fork resolves, it puts a copy of the Emerald Charm on the stack except the copy is red, not green. The copy has the same mode that was chosen for the original Emerald Charm. It does not necessarily have the same target, but only because Fork allows choosing of new targets.",
+    "decidingRuleIds": ["707.10"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "707.10",
+    "sectionTitle": "Copying Objects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5d195126665f2f15cae2fb0be6cc1fb4da9713309b788bed48e92739cc382efd",
+      "oracle": "215a6081b69a2f2293efdaa00f8fd3b81879b80bd4d2f1917500f932ed0f4778",
+      "rulings": "1230f314a84b072963c1aa009abdfa98416f883308c7ff89bc4cc8100074f457"
+    }
+  },
+  "whyHard": "Players think a copy gets a fresh choice of mode, as it does of targets."
+}

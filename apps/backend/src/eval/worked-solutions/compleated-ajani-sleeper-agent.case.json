@@ -1,0 +1,50 @@
+{
+  "id": "compleated-ajani-sleeper-agent",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "37714eb9-a39d-4534-a2d3-27908c418f8a",
+      "name": "Ajani, Sleeper Agent"
+    }
+  ],
+  "gameState": null,
+  "question": "If I pay life for a compleated cost, do other replacement effects that change the number of loyalty counters still apply as normal?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: compleated is a replacement effect for loyalty counters, and any other replacement effect applies as normal.",
+    "answer": "Compleated is a replacement effect, and it applies only to a permanent that is entering the battlefield with loyalty counters. Any other replacement effect that would apply to the number of loyalty counters it enters the battlefield with will apply as normal.",
+    "decidingRuleIds": ["702.150a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Ajani, Sleeper Agent",
+    "oracleId": "37714eb9-a39d-4534-a2d3-27908c418f8a",
+    "rulingDate": "2022-09-09",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "e62818f5679bca91cacd1f8749ab328bfa8bd2f838b9ac9b1eff68e3fd33c4bb",
+      "oracle": "a038b1bf015f10503ccd7983e529e77986f356ecb1bc8eae99a3e5cf516eadc8",
+      "rulings": "59b4295a1794e2172099ff67741011c4ea881a419cdda980cc0fac4d7c0b993d"
+    }
+  },
+  "whyHard": "Two replacement effects on the same counters make players unsure whether they combine."
+}

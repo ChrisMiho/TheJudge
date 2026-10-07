@@ -1,0 +1,50 @@
+{
+  "id": "double-strike-terror-of-mount-velus",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "8161248c-16a3-47db-a3ae-cdfd878d49e0",
+      "name": "Terror of Mount Velus"
+    }
+  ],
+  "gameState": null,
+  "question": "If a creature that already has double strike gains double strike again, does it deal any extra combat damage?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: multiple instances of double strike on one creature are redundant.",
+    "answer": "Multiple instances of double strike on the same creature are redundant.",
+    "decidingRuleIds": ["702.4a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Terror of Mount Velus",
+    "oracleId": "8161248c-16a3-47db-a3ae-cdfd878d49e0",
+    "rulingDate": "2020-01-24",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "c2b9f4f7586173408109241a549a3e12445a2a8f8a8c6ec9b02bf04aee3f4c25",
+      "oracle": "69d65e916ebc64c62d4066abc86ad02f4300d44d36853512f7d15db1563aef06",
+      "rulings": "b4a40d0bf4445a7f85d53071b21a9a337b118ceb78319baa57119b1e184b07e2"
+    }
+  },
+  "whyHard": "Players stack the same keyword like a bonus, the way they would stack a +1/+1."
+}

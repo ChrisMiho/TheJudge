@@ -1,10 +1,23 @@
 {
   "id": "regenerate-too-late-after-destroy-resolves",
+  "formatVersion": 2,
   "tier": 1,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-06",
+    "note": "approved by the owner's accept of REQ-185 at the define gate; migrated to format version 2"
+  },
+  "cards": [],
+  "gameState": null,
   "question": "A spell that would destroy my creature is already resolving -- it's actually destroying the creature right now. Can I activate a regeneration ability in response, before the creature is actually put into the graveyard, to give it a regeneration shield in time?",
-  "expectedSupplementalRuleIds": ["614.4"],
-  "workedSolution": "A player can activate an ability to regenerate a creature in response to a spell that would destroy it. Once the spell resolves, though, it’s too late to regenerate the creature.",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: you must regenerate in response to the spell; once it resolves it is too late.",
+    "answer": "A player can activate an ability to regenerate a creature in response to a spell that would destroy it. Once the spell resolves, though, it’s too late to regenerate the creature.",
+    "decidingRuleIds": ["614.4"]
+  },
   "source": {
+    "authority": "wotc-comprehensive-rules",
     "type": "Official Magic: The Gathering Comprehensive Rules worked example",
     "publisher": "Wizards of the Coast",
     "ruleId": "614.4",
@@ -14,6 +27,19 @@
     "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
     "retrievedOn": "2026-09-07",
     "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the worked solution is the rule's official example text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "be41d81a4cc8705572cfd892a9cea8112a3215c30cd945db132d79c93fd647bf",
+      "oracle": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "rulings": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+    }
   },
   "whyHard": "Regeneration is a replacement effect, and replacement effects must be in place before the event they modify actually happens -- they can never reach back in time. A player can regenerate a creature only in response to the spell that would destroy it, i.e. before that spell resolves; once the destroy effect has already resolved, no regeneration shield created afterward can undo it."
 }

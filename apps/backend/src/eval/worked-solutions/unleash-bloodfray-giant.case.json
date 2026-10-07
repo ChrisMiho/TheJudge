@@ -1,0 +1,50 @@
+{
+  "id": "unleash-bloodfray-giant",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "5f83fd2f-c4cb-4bcf-a4db-0238df251740",
+      "name": "Bloodfray Giant"
+    }
+  ],
+  "gameState": null,
+  "question": "Does unleash apply no matter where the creature is entering the battlefield from?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the unleash ability applies no matter where the creature enters from.",
+    "answer": "The unleash ability applies no matter where the creature is entering the battlefield from.",
+    "decidingRuleIds": ["702.98a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Bloodfray Giant",
+    "oracleId": "5f83fd2f-c4cb-4bcf-a4db-0238df251740",
+    "rulingDate": "2013-04-15",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "f49130f09ad29da0925ad7acbf6cc6691f978bf49791e8e9f676b6cf2d42eef9",
+      "oracle": "468ed16dca18dce82d2ada884e8472731b3177f3041919712a0decda642bb2f8",
+      "rulings": "aadf64420fdd3da984b63e10a291b1c7b03bc29f0c34b3a7e0ed903e9848b5c1"
+    }
+  },
+  "whyHard": "Players link unleash to casting the creature from hand."
+}

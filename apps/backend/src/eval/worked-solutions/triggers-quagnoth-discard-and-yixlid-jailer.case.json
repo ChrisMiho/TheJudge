@@ -1,0 +1,54 @@
+{
+  "id": "triggers-quagnoth-discard-and-yixlid-jailer",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "9250eb9e-690f-4563-8132-d737f6d22883",
+      "name": "Quagnoth"
+    },
+    {
+      "oracleId": "1f55303e-1369-4e42-9ed4-36609887c7c1",
+      "name": "Yixlid Jailer"
+    }
+  ],
+  "gameState": null,
+  "question": "Quagnoth has an ability that triggers from the graveyard when it is discarded. If Yixlid Jailer is on the battlefield, does it still trigger?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: with Yixlid Jailer on the battlefield, Quagnoth's last ability won't trigger.",
+    "answer": "If Quagnoth is discarded normally (it moves from your hand to your graveyard), its last ability triggers from your graveyard. If Yixlid Jailer is on the battlefield, it won't trigger.",
+    "decidingRuleIds": ["113.6"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Quagnoth",
+    "oracleId": "9250eb9e-690f-4563-8132-d737f6d22883",
+    "rulingDate": "2007-05-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "460c9c39598c300c0ba984cf87152db9ac6e4ca940bce79c3ed155c3926b2d78",
+      "oracle": "bf7cc26f61837ad56ac194d7b99304068f67f070e507974d46e2fc5baa20b1fe",
+      "rulings": "59fc7a4305c13462ef73fb485abbd8aca089852afec885ad3dd4e6016de362f5"
+    }
+  },
+  "whyHard": "The trigger works from the graveyard because of a special rule, and the Jailer turns the abilities off there."
+}

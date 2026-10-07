@@ -1,0 +1,50 @@
+{
+  "id": "copies-token-copy-of-clone-not-double-faced",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "42226b87-0746-4ebf-9fd0-108d508462af",
+      "name": "Clone"
+    }
+  ],
+  "gameState": null,
+  "question": "If an effect creates a token that is a copy of a Clone that entered as a copy of a double-faced permanent, is the token a double-faced token?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Clone is not a double-faced card, so a token copy of it is not double-faced.",
+    "answer": "Clone is not a double-faced card, so a token that is created as a copy of a Clone is not a double-faced token, even if it enters the battlefield as a copy of a permanent due to Clone’s replacement effect.",
+    "decidingRuleIds": ["707.8a"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "707.8a",
+    "sectionTitle": "Copying Objects"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "126055f884d38a31ba5bb4f1e50f5e2f181fd7e8f9f3c21cb7f7241b2c8f0fdc",
+      "oracle": "a6f0b512b6f2a30e59068a7d236717ff18c4ccd59bb5f7b5dcdf1e946b10118e",
+      "rulings": "2bdd527c41b2877b061e3afc4f8ab0499c4431baf4a4d26744d5ac96116e414b"
+    }
+  },
+  "whyHard": "Players think the token copies whatever the Clone currently looks like."
+}

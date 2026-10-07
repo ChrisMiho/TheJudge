@@ -1,0 +1,50 @@
+{
+  "id": "cleave-lantern-flare",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "06a1c404-d76f-4206-8740-7ad7488fac33",
+      "name": "Lantern Flare"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast Lantern Flare for its cleave cost, do I choose the value of X?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: if you pay the cleave cost, you choose the value of X.",
+    "answer": "If you're paying the cleave cost, you choose the value of X.",
+    "decidingRuleIds": ["702.148a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Lantern Flare",
+    "oracleId": "06a1c404-d76f-4206-8740-7ad7488fac33",
+    "rulingDate": "2021-11-19",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "cc541cc37f49bf72654d6927e1c2a4d9d62f06a12284290514ab60604976d458",
+      "oracle": "51b2852cc7d4243b8cb2bda02bb74fcf22d34fad0f631f559f3673cc48e9bbc5",
+      "rulings": "464d64b7e19de038cb33b9cfdf56e16240c58447f4f65fd47922d1c3c8648664"
+    }
+  },
+  "whyHard": "Without cleave, X is the number of creatures you control, so players expect it to stay that count."
+}

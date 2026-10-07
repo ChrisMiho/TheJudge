@@ -1,0 +1,54 @@
+{
+  "id": "replacement-rukarumel-and-bramblewood-paragon",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "84391c32-5bb7-4c36-be50-bbb5f8732156",
+      "name": "Rukarumel, Biologist"
+    },
+    {
+      "oracleId": "be455184-c57d-4504-8c34-3be42bc3f04b",
+      "name": "Bramblewood Paragon"
+    }
+  ],
+  "gameState": null,
+  "question": "Rukarumel makes creatures enter as the chosen creature type. If the type is Warrior and I control Bramblewood Paragon, does a Runeclaw Bear enter with an additional +1/+1 counter?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: effects that modify creatures of a certain type as they enter apply after Rukarumel's effect, so the Bear gets the counter.",
+    "answer": "Replacement effects that modify creatures of a certain type as they enter will apply after you apply this effect. For example, if Warrior is the chosen creature type and you control Bramblewood Paragon, a Runeclaw Bear would enter the battlefield with an additional +1/+1 counter.",
+    "decidingRuleIds": ["614.12", "616.1"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Rukarumel, Biologist",
+    "oracleId": "84391c32-5bb7-4c36-be50-bbb5f8732156",
+    "rulingDate": "2023-07-28"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5d2ec3cdf6bc1854046be9a9f44373ce527685e98675eb69ca75bdedb39e5d09",
+      "oracle": "3ebcd83419d18eff2256e496173da528cb979c7b512920abfb41a6c4ce46b7d4",
+      "rulings": "bf9498a49bf012c40a920b0925f04660dbb271d88a9f8aa644b281748ddb2821"
+    }
+  },
+  "whyHard": "Two replacement effects that both change a creature as it enters make players unsure which one sets the creature type first."
+}

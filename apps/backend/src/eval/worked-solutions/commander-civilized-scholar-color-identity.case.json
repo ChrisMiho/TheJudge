@@ -1,0 +1,50 @@
+{
+  "id": "commander-civilized-scholar-color-identity",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "8662c9be-2244-4ea3-bf80-31a117f40a59",
+      "name": "Civilized Scholar // Homicidal Brute"
+    }
+  ],
+  "gameState": null,
+  "question": "Civilized Scholar costs {2}{U} and its back face, Homicidal Brute, has a red color indicator. Is the card's color identity blue and red?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the card's color identity is blue and red.",
+    "answer": "Civilized Scholar is the front face of a double-faced card with mana cost {2}{U}. Homicidal Brute is the back face of that double-faced card and has a red color indicator. The card’s color identity is blue and red.",
+    "decidingRuleIds": ["903.4d"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules worked example",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of the scenario the cited rule's official example describes; the answer is the rule's official example text, verbatim.",
+    "pool": "cr-example",
+    "ruleId": "903.4d",
+    "sectionTitle": "Commander"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "18e25d50ed9a7900ca4284263478c7d1f6b3c39cf6f5a453cdeff37d2df8ee4d",
+      "oracle": "4ad542e9b640c3ba98d6ae7dfead8a2ef05ad3e952dd3422c6ccf1bdfddb6054",
+      "rulings": "60786f8ca4b41f05ba47ae740bddc60669ff4959f63cf3fd58f82cd86c687bd8"
+    }
+  },
+  "whyHard": "Players look at the front face only and ignore the back face's color indicator."
+}

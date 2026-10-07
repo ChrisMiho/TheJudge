@@ -1,0 +1,54 @@
+{
+  "id": "copies-morphic-tide-and-sakashimas-student",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "302e4ac2-522b-4a0a-850a-d856639ea2a4",
+      "name": "Morphic Tide"
+    },
+    {
+      "oracleId": "afcc68e2-3634-43ce-ae99-dd2ec735d146",
+      "name": "Sakashima's Student"
+    }
+  ],
+  "gameState": null,
+  "question": "Can a card like Sakashima's Student, which enters as a copy of another permanent, enter as a copy of a permanent that is entering the battlefield at the same time?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it can't enter as a copy of a permanent that is entering at the same time.",
+    "answer": "Cards such as Sakashima's Student that can enter as a copy of another permanent won't be able to enter as a copy of a permanent that's entering at the same time.",
+    "decidingRuleIds": ["614.12", "707.2"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim.",
+    "pool": "two-card-ruling",
+    "cardName": "Morphic Tide",
+    "oracleId": "302e4ac2-522b-4a0a-850a-d856639ea2a4",
+    "rulingDate": "2012-06-01"
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "631096ea18eccafa95ba78fd8496f333ff72d163c2486c3eea6b3dc60000004e",
+      "oracle": "1429664f81a85bed48551e12a2f7965a4b16639311d3d5ba941fec5c57a2ea82",
+      "rulings": "61836b5070ca81ed3d877de1271e9baf3f07c9ed334eaf414dc9efa99352edd3"
+    }
+  },
+  "whyHard": "Everything is entering together, and players think the other permanent is on the battlefield first."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "afterlife-debtors-transport",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "72f89173-2998-45e6-94da-5b5bb9738a6b",
+      "name": "Debtors' Transport"
+    }
+  ],
+  "gameState": null,
+  "question": "Can I block with a creature that has afterlife, wait for it to die, and then block with the Spirit tokens it makes?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: blockers are chosen all at once, so the tokens cannot block later.",
+    "answer": "Because blockers are chosen all at once, you can’t block with a creature with afterlife, wait for it to die, then block with the resulting Spirit tokens.",
+    "decidingRuleIds": ["702.135a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Debtors' Transport",
+    "oracleId": "72f89173-2998-45e6-94da-5b5bb9738a6b",
+    "rulingDate": "2019-01-25",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "93c54b275d6bb500256f1e2b2691ffc05bb64c7a5ebf0620e0991ad999cefbe3",
+      "oracle": "3f8909225a76247fe30adda39df9a2e7cbfd033d8091cb9e4ca4921311211a22",
+      "rulings": "523a22fc34fb4d573a672b7bc731582993808d67fca3fe74a7ce9ff4fa79ca85"
+    }
+  },
+  "whyHard": "A creature that dies during the declare blockers step makes tokens, but blocking has already been decided."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "ingest-benthic-infiltrator",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "b2977807-5f46-424a-a6e9-14262f8a723a",
+      "name": "Benthic Infiltrator"
+    }
+  ],
+  "gameState": null,
+  "question": "Is the card exiled by an ingest ability exiled face up?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: the card exiled by ingest is exiled face up.",
+    "answer": "The card exiled by the ingest ability is exiled face up.",
+    "decidingRuleIds": ["702.115a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Benthic Infiltrator",
+    "oracleId": "b2977807-5f46-424a-a6e9-14262f8a723a",
+    "rulingDate": "2015-08-25",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "5fb04b72a28251d247176f8dc39e7e2f2a387a25c4dbc5e71fb987e8c198e7c2",
+      "oracle": "7d29fea0b2bc8488f3f4b3362e8f1142b4602511c6d28f19a785b4c06d267124",
+      "rulings": "f95efca910f6b7fb9a1e10356d167460e9af4347fd7c72aabee8a715ff66d977"
+    }
+  },
+  "whyHard": "Cards exiled from a library often go face down, so players assume this one does too."
+}

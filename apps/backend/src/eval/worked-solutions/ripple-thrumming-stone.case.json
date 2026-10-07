@@ -1,0 +1,50 @@
+{
+  "id": "ripple-thrumming-stone",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "b2bd40a1-1857-4f4c-aed6-d4e224ac0ef7",
+      "name": "Thrumming Stone"
+    }
+  ],
+  "gameState": null,
+  "question": "If I cast one half of a split card and ripple reveals the other split card, can I cast either half of it for free?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: you may cast either half of the revealed split card without paying its mana cost.",
+    "answer": "If you cast half of a split card (for example, Hit) and reveal another one of those split cards when the ripple ability resolves (for example, Hit // Run), you may cast either half of that split card (Hit or Run) without paying its mana cost.",
+    "decidingRuleIds": ["702.60a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Thrumming Stone",
+    "oracleId": "b2bd40a1-1857-4f4c-aed6-d4e224ac0ef7",
+    "rulingDate": "2006-07-15",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "7385c50baf12366fe54d27882a5d7d241a681ea510e4882d5f7aa2fd87378051",
+      "oracle": "bb8523dd78a870c8ef56cb4889a7015572aa517a92c25ea66959ff07222017e3",
+      "rulings": "135551c71f180d8e5807f913fea6a4f3abb100ba4b60bda1186b3399170ce4ee"
+    }
+  },
+  "whyHard": "Ripple looks for cards with the same name, and a split card has two halves with different names."
+}

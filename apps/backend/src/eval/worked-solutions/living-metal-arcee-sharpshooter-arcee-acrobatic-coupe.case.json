@@ -1,0 +1,50 @@
+{
+  "id": "living-metal-arcee-sharpshooter-arcee-acrobatic-coupe",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "9fba3097-d53f-4ea4-b5d2-8adddaa09524",
+      "name": "Arcee, Sharpshooter // Arcee, Acrobatic Coupe"
+    }
+  ],
+  "gameState": null,
+  "question": "Is a permanent with living metal an artifact creature during my opponents' turns?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: it is an artifact creature only as long as it is your turn.",
+    "answer": "\"Living metal\" means \"As long as it's your turn, this permanent is an artifact creature in addition to its other types.\"",
+    "decidingRuleIds": ["702.161a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Arcee, Sharpshooter // Arcee, Acrobatic Coupe",
+    "oracleId": "9fba3097-d53f-4ea4-b5d2-8adddaa09524",
+    "rulingDate": "2022-10-14",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "decd5fe8b70ccd0c2a2c30ee093355e31435b1a565fa353bbc0800c2d5378fef",
+      "oracle": "ab425242cfa3a204b90c303b4857592bd0fe4ace5908987443eef8eca8d44933",
+      "rulings": "4f7079d7ef0df09582464dc9c4b88e3454a7fec413c95006e7b90698c35d04f7"
+    }
+  },
+  "whyHard": "The Vehicle is a creature on your turn and an artifact when it is not, and players forget which is which."
+}

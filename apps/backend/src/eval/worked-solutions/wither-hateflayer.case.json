@@ -1,0 +1,50 @@
+{
+  "id": "wither-hateflayer",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "681d07e6-234f-4544-a2ea-bfbefe6b0b36",
+      "name": "Hateflayer"
+    }
+  ],
+  "gameState": null,
+  "question": "Does wither apply to the damage Hateflayer deals with its activated ability, as well as to its combat damage?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: wither applies to any damage Hateflayer deals to a creature.",
+    "answer": "Wither applies to any damage Hateflayer deals to a creature, which includes both its combat damage and damage from its activated ability.",
+    "decidingRuleIds": ["702.80a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Hateflayer",
+    "oracleId": "681d07e6-234f-4544-a2ea-bfbefe6b0b36",
+    "rulingDate": "2008-08-01",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "007fba0efc363d96dd37d49156ca67ce46b6e1fb3bb6df537f6b4b70b9ac372e",
+      "oracle": "89beece07b344a278543c216b3de25579166e5b27c1f481fa8078760c03cf17e",
+      "rulings": "5834b55bcdf0dc248757bc7c5b0f26167ed94e231ce2e6279fa804aaaec331ed"
+    }
+  },
+  "whyHard": "Wither is often explained in terms of combat, so players think it does not apply to damage from abilities."
+}

@@ -1,0 +1,50 @@
+{
+  "id": "airbend-aang-the-last-airbender",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "70564c3a-858f-498e-8b92-acb3ca54ae7e",
+      "name": "Aang, the Last Airbender"
+    }
+  ],
+  "gameState": null,
+  "question": "When Aang airbends a nonland permanent, is that permanent exiled, and can its owner cast it from exile for {2}?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: each airbended object is exiled and its owner may cast it from exile for {2} instead of its mana cost.",
+    "answer": "To airbend one or more permanents and/or spells means to exile each of those objects. For each card exiled this way, for as long as it's exiled, its owner may cast it from exile by paying {2} rather than paying its mana cost.",
+    "decidingRuleIds": ["701.65a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Aang, the Last Airbender",
+    "oracleId": "70564c3a-858f-498e-8b92-acb3ca54ae7e",
+    "rulingDate": "2025-10-02",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "678902dfb1e062c6030dabe4c6a16960761ce48be8e675c5c7d9e040873df5d9",
+      "oracle": "370fca85f4f6ffc39256111c952a0d4861d82371b1ca04cedda2a8e40fe316b5",
+      "rulings": "f71bfc72426613f9f1b5e5e7ed5da9423841dc63ee588867e2f096c1676d7f02"
+    }
+  },
+  "whyHard": "Exiling the permanent looks permanent, but the owner keeps a way to cast it as long as it stays in exile."
+}
