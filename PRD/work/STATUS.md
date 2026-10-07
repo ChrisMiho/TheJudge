@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [answer-quality-investigation](answer-quality-investigation/) | Gate answered 2026-10-07 (9 accept, 2 edit: REQ-226, REQ-188; 0 reject); brief reconciled; ready for gate-qc re-grade; graph run `graph-20261007-134015` |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
+| [answer-quality-investigation](answer-quality-investigation/) | gate-qc re-grade FAIL 2026-10-07: `--subject`/`--subject-b` in REQ-229 (and brief 4.5, Phase 0) still imply the cross-checkout import the owner dropped in REQ-226; graph run `graph-20261007-134015` |
 
 ## ideation
 
