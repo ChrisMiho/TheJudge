@@ -1,0 +1,50 @@
+{
+  "id": "teamwork-repulsor-blast-total-power",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "150f920c-c942-4feb-824f-79dd9b531687",
+      "name": "Repulsor Blast"
+    }
+  ],
+  "gameState": null,
+  "question": "I want to cast Repulsor Blast, which has teamwork 2, so that it also deals 2 damage to the creature's controller. The only untapped creatures I control are two 1/1s. Can I tap both of them together to pay the teamwork cost, even though neither has power 2 on its own?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: teamwork N lets you tap any number of creatures you control with total power N or more as an additional cost, so two 1/1s together pay teamwork 2.",
+    "answer": "702.194a Teamwork represents a static ability that functions while the spell with teamwork is on the stack. “Teamwork N” means “As an additional cost to cast this spell, you may tap any number of creatures you control with total power N or more.” Paying a spell’s teamwork cost follows the rules for paying additional costs in rules 601.2b and 601.2f–h.",
+    "decidingRuleIds": ["702.194a"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "pool": "mechanic",
+    "type": "Official Magic: The Gathering Comprehensive Rules text",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "702.194a",
+    "sectionTitle": "Keyword Abilities",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of what the cited rule states, asked about a real card with the keyword; the answer is the rule's own text, verbatim. Scryfall carried no WotC ruling for any Marvel Super Heroes card and the rule has no Example: line when this case was authored, so the rule's own text is the official source."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "704e89d7044bb91d8a57139c308b4dfb5b6aa6dbb4c08a15baab0b14c07871a6",
+      "oracle": "f3e2a4a2fbc9598dfaa37d19966fdfe2f62b08bd0df62c335c703382edcaff01",
+      "rulings": "b2908cfb5d2b30017eeb14b140d8bd43988b9fc7844f9b80678c723c5489b6ba"
+    }
+  },
+  "whyHard": "Players read \"teamwork 2\" as needing a single creature with power 2 or more, or as tapping exactly one creature, but the cost counts the total power of any number of tapped creatures."
+}

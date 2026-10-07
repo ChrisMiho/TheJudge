@@ -1,0 +1,50 @@
+{
+  "id": "heal-wolverine-fierce-fighter",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "8429ba6a-6c06-4a83-a6ee-023b64b825f8",
+      "name": "Wolverine, Fierce Fighter"
+    }
+  ],
+  "gameState": null,
+  "question": "Wolverine, Fierce Fighter has 3 damage marked on him from a fight earlier this turn, and now a blocker deals 2 damage to him. His last ability says that when damage would be dealt to him, all other damage already dealt to him is healed. Does healing that damage mean the 3 earlier damage is removed from him?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: healing damage already dealt to a permanent removes that marked damage, so his controller removes the earlier 3 and only the new 2 stays marked.",
+    "answer": "701.69a To heal damage already dealt to a permanent, remove that marked damage from that permanent. If an effect states that damage already dealt to a permanent “is healed,” that permanent’s controller removes all marked damage from that permanent.",
+    "decidingRuleIds": ["701.69a"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "pool": "mechanic",
+    "type": "Official Magic: The Gathering Comprehensive Rules text",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "701.69a",
+    "sectionTitle": "Keyword Actions",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of what the cited rule states, asked about a real card whose text uses the keyword action; the answer is the rule's own text, verbatim. Scryfall carried no WotC ruling for any Marvel Super Heroes card and the rule has no Example: line when this case was authored, so the rule's own text is the official source."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "bc6502ae60b4c2ac943840e4e9d0d106d5587897c9669a64b8a6fa3bd986d356",
+      "oracle": "338e120068d2288a07fba3db488186273cf2d8b6aad3aef075c5fa89d20981cf",
+      "rulings": "8ce35c097ab42cae55a0f49653adf199e0dec6ffd84a4c91323d6225cee692bb"
+    }
+  },
+  "whyHard": "Heal only became rules text with Marvel Super Heroes (it was reminder text before), and players read it as damage prevention or life gain rather than as removing the damage already marked on the permanent."
+}

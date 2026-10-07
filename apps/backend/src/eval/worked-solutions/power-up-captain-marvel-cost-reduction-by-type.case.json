@@ -1,0 +1,49 @@
+{
+  "id": "power-up-captain-marvel-cost-reduction-by-type",
+  "formatVersion": 2,
+  "tier": 1,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "2e665a03-bece-43df-bd15-b4496e233f2e",
+      "name": "Captain Marvel, Earth's Protector"
+    }
+  ],
+  "gameState": null,
+  "question": "Captain Marvel, Earth's Protector costs {3}{W}{W} and entered this turn. Her power-up ability costs {5}{W}{W}. Does her mana cost reduce only the generic {5}, leaving me to pay {2}{W}{W}, or does the {W}{W} in her mana cost also reduce the {W}{W} in the power-up cost?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "The white mana in her mana cost reduces the white mana in the power-up cost and the generic reduces the generic, so the ability costs {2} this turn.",
+    "answer": "702.193b Generic mana in the permanent’s mana cost reduces generic mana in the cost to activate its power-up ability. Colored and colorless mana in the permanent’s mana cost reduces mana of the same type, and any excess reduces that much generic mana. (See rule 118.7.)",
+    "decidingRuleIds": ["702.193b"]
+  },
+  "source": {
+    "authority": "wotc-comprehensive-rules",
+    "type": "Official Magic: The Gathering Comprehensive Rules text",
+    "publisher": "Wizards of the Coast",
+    "ruleId": "702.193b",
+    "sectionTitle": "Keyword Abilities",
+    "committedDataPath": "apps/backend/data/gameRulesRuleIndex.json",
+    "committedDataBuiltBy": "scripts/build-game-rules.mjs",
+    "license": "Reproduced under the Wizards of the Coast Fan Content Policy. This project already commits and serves this exact Comprehensive Rules corpus in production (see committedDataPath) as its retrieval and prompt-enrichment source; this case reuses that already-approved, already-committed data rather than introducing a new external source or license.",
+    "retrievedOn": "2026-10-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of what the cited rule states, asked about a real card with the keyword; the answer is the rule's own text, verbatim. Scryfall carried no WotC ruling for any Marvel Super Heroes card and the rule has no Example: line when this case was authored, so the rule's own text is the official source. This is a second rule-text case for Power-up (the mechanic-pool case is power-up-abomination-activate-once), so it carries no pool."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "ef4437ba60b2806bf611fbc5925da640bb187c2a9077df8b0ca6eec226a55b07",
+      "oracle": "302f589219595287a2472d37a0ee7374c9f7905441e1fc0eec6a731b4c51cf43",
+      "rulings": "b87debe5235984125a6039a04be2139bb8a621f8e470ed03060277d76eaf4d27"
+    }
+  },
+  "whyHard": "Most cost reductions in Magic reduce only generic mana, so players assume the colored part of a power-up cost must always be paid in full; power-up reduces colored mana by matching colored mana in the permanent's own mana cost."
+}

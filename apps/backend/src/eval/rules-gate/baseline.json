@@ -716,6 +716,10 @@
       "hit": ["702.55a"],
       "miss": []
     },
+    "heal-wolverine-fierce-fighter": {
+      "hit": ["701.69a"],
+      "miss": []
+    },
     "hexproof-slippery-bogbonder": {
       "hit": ["702.11a"],
       "miss": []
@@ -1022,6 +1026,14 @@
     },
     "populate-full-flowering": {
       "hit": ["701.36a"],
+      "miss": []
+    },
+    "power-up-abomination-activate-once": {
+      "hit": ["702.193a"],
+      "miss": []
+    },
+    "power-up-captain-marvel-cost-reduction-by-type": {
+      "hit": ["702.193b"],
       "miss": []
     },
     "proliferate-contagion-engine": {
@@ -1387,6 +1399,10 @@
     "tap-and-untap-snow-day": {
       "hit": [],
       "miss": ["701.26a"]
+    },
+    "teamwork-repulsor-blast-total-power": {
+      "hit": ["702.194a"],
+      "miss": []
     },
     "the-ring-tempts-you-elrond-lord-of-rivendell": {
       "hit": ["701.54a"],

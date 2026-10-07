@@ -9,21 +9,6 @@
       "id": "702.158",
       "name": "Space Sculptor",
       "reason": "On a single acorn-stamped Unfinity card (Space Beleren), joke-only (owner decision, run 1 of the rules test harness)"
-    },
-    {
-      "id": "701.69",
-      "name": "heal damage already dealt to",
-      "reason": "TEMPORARY, revisit: Marvel Super Heroes (MSH, 2026-06-26) keyword action. As of the 2026-10-07 data refresh Scryfall carries no WotC ruling for any MSH card and rule 701.69 has no worked example, so there is no official text a case can quote. Owner decision 2026-10-07: exclude until a ruling or example exists, or author a tier-3 owner-derived case."
-    },
-    {
-      "id": "702.193",
-      "name": "Power-up",
-      "reason": "TEMPORARY, revisit: Marvel Super Heroes (MSH, 2026-06-26) keyword. As of the 2026-10-07 data refresh Scryfall carries no WotC ruling for any of the 40 Power-up cards and rule 702.193 has no worked example. Owner decision 2026-10-07: exclude until a ruling or example exists, or author a tier-3 owner-derived case."
-    },
-    {
-      "id": "702.194",
-      "name": "Teamwork",
-      "reason": "TEMPORARY, revisit: Marvel Super Heroes (MSH, 2026-06-26) keyword. As of the 2026-10-07 data refresh Scryfall carries no WotC ruling for any of the 17 Teamwork cards and rule 702.194 has no worked example. Owner decision 2026-10-07: exclude until a ruling or example exists, or author a tier-3 owner-derived case."
     }
   ]
 }

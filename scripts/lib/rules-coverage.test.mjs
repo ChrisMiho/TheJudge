@@ -186,21 +186,21 @@ test("the excluded list's own checks: each entry names a rule number, a name and
   assert.ok(problems.some((problem) => /excluded twice/.test(problem)))
 })
 
-test("the committed excluded list holds the two joke-only mechanics and the three MSH mechanics with no official text yet, each with a reason, and every id is a mechanic the index contains", async () => {
+test("the committed excluded list holds exactly the two joke-only mechanics, each with a reason, and every id is a mechanic the index contains", async () => {
   const excluded = await loadExcludedMechanics()
   assert.deepEqual(
     excluded.map((entry) => entry.id),
-    ["701.45", "702.158", "701.69", "702.193", "702.194"]
+    ["701.45", "702.158"]
   )
   assert.deepEqual(
     excluded.map((entry) => entry.name),
-    ["Assemble", "Space Sculptor", "heal damage already dealt to", "Power-up", "Teamwork"]
+    ["Assemble", "Space Sculptor"]
   )
-  // The three Marvel Super Heroes entries are temporary (owner decision 2026-10-07): no WotC ruling or
-  // CR example existed to quote. Their reasons say so, so a later refresh knows to revisit them.
-  for (const id of ["701.69", "702.193", "702.194"]) {
-    assert.match(excluded.find((entry) => entry.id === id).reason, /TEMPORARY, revisit/, id)
-  }
+  // A mechanic with no WotC ruling and no CR `Example:` line is never a reason to exclude: REQ-185
+  // tier 1 takes the rule's own text when the question asks exactly what the rule states (see the
+  // approved `recover-rule-text` and `set-in-motion-rule-text` cases). The three Marvel Super Heroes
+  // mechanics (701.69 heal, 702.193 Power-up, 702.194 Teamwork) were briefly excluded on that wrong
+  // premise during the 2026-10-07 refresh and are covered by rule-text drafts instead.
   for (const entry of excluded) assert.ok(entry.reason.length > 20, `${entry.id} needs a real reason`)
   const { loadSnapshotSources } = await import("./gold-cases.mjs")
   const ids = new Set(listMechanics((await loadSnapshotSources()).ruleIndex).map((mechanic) => mechanic.id))
