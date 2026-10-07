@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Maro's Gone Nuts is a Mystery Booster playtest card, legal in no format; excluded-mechanics.json already keeps Un/playtest content out. Re-author 701.10 on a black-border card: Unleash Fury (4eaa100c-f1ef-4a2b-9370-5dad7f3a95f2), ruling 2020-06-23 (doubling power gives +X/+0, X fixed as the effect begins), deciding rule 701.10b."
   },
   "cards": [
     {

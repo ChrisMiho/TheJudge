@@ -3,8 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -17,7 +17,7 @@
     }
   ],
   "gameState": null,
-  "question": "Felix Five-Boots' last ability does not change replacement effects. When Charging Tuskodon deals double combat damage to a player, does Felix's ability double that damage again?",
+  "question": "I control Felix Five-Boots and Charging Tuskodon. When Charging Tuskodon deals double combat damage to a player, does Felix's last ability double that damage again?",
   "expected": {
     "outcome": "does-not-work",
     "shortAnswer": "No: Felix's ability won't cause the damage to be doubled an additional time.",

@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Question says a pile of two cards; Become Anonymous exiles the creature plus the top two, a three-card pile. Reword to 'a shuffled face-down pile of three cards (the creature and the top two cards of my library)'."
   },
   "cards": [
     {

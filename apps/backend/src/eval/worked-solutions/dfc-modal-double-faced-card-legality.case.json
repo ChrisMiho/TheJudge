@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Swap deciding rule 712.4 (meld definition in this rules text) for 712.8f (a modal double-faced spell or permanent has only the characteristics of the face that's up), optionally with 712.8a. Bloodsoaked Insight // Sanguine Morass stays attached only as the ruling's citation card; that is fine."
   },
   "cards": [
     {

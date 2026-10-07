@@ -3,17 +3,13 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
       "oracleId": "a06fa827-900b-46d4-8f48-b4e15964951a",
       "name": "Intellect Devourer"
-    },
-    {
-      "oracleId": "abf8264e-d020-4939-8092-83469b1a2244",
-      "name": "Devour Intellect"
     }
   ],
   "gameState": null,
@@ -22,7 +18,7 @@
     "outcome": "does-not-work",
     "shortAnswer": "No: opponents won't exile any cards from their hands.",
     "answer": "If Intellect Devourer leaves the battlefield before the Devour Intellect ability resolves, opponents won't exile any cards from their hands.",
-    "decidingRuleIds": ["608.2"]
+    "decidingRuleIds": ["610.3b"]
   },
   "source": {
     "authority": "wotc-card-ruling",
@@ -45,9 +41,9 @@
   "snapshot": {
     "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
     "dependsOnHashes": {
-      "rules": "9af1ee66744bf88d9633c871e86dee8cfa082a524828ac22e2371db4e9aef357",
-      "oracle": "ed9b9026917df75ec70219158d8fc1fa427d95e7bf3eeb98e60137fa7d6bdfa3",
-      "rulings": "89b9009dcb5ea202abb9f6db4c5546d55eebe7f1ead87a244f190286db3bccc1"
+      "rules": "035d4ec2475c10970c0af132906b142eceafa27d56c3b2b8e796735fd3889585",
+      "oracle": "c78ec75b2f157e991dc6e8a4393db5dbe315d86e7840943382d0880532dac1d6",
+      "rulings": "6a6faf54e26346f3244b186ab0d55392983b5b3085c061ba7862b72ea800c229"
     }
   },
   "whyHard": "The ability is on the stack and independent of its source, so players think it still gets its full effect."

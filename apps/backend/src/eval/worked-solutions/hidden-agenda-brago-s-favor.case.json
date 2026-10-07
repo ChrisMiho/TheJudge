@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Brago's Favor has only a static ability. Swap the attached card and citation to Double Stroke (e25ab152-e166-44df-8f92-668bab0e9619), a hidden-agenda conspiracy with a triggered ability that carries the identical 2016-08-23 ruling."
   },
   "cards": [
     {

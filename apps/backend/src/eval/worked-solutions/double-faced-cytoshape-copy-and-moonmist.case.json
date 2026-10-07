@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 1,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Attach Cytoshape (14221c18-7801-49c9-a2c8-53b8c5181d63) and state in the question that Elite Vanguard is a 2/1 Human Soldier creature (the committed card index has no name entry for Elite Vanguard, so it can't be attached by name); Moonmist's transform depends on the copy being a Human."
   },
   "cards": [
     {

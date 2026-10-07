@@ -3,8 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -13,10 +13,10 @@
     }
   ],
   "gameState": null,
-  "question": "Can Tolaria West's transmute find a card whose mana cost has X in it, such as a card with {X}{X} in its cost?",
+  "question": "Can Tolaria West's transmute find a card whose entire mana cost is X, such as a card costing {X}{X}?",
   "expected": {
     "outcome": "works",
-    "shortAnswer": "Yes: cards with mana cost {X}, {X}{X} or {X}{X}{X} have mana value 0.",
+    "shortAnswer": "Yes: a card whose whole mana cost is X symbols, like {X}, {X}{X} or {X}{X}{X}, has mana value 0 while it is in your library, so transmute can find it.",
     "answer": "Cards with mana cost {X}, {X}{X}, or {X}{X}{X} have mana value 0.",
     "decidingRuleIds": ["702.53a"]
   },
@@ -46,5 +46,5 @@
       "rulings": "1b05b2af5dd03927fd7e732ffec1fe6042e03033b5faa8fb4b0be75b36c10172"
     }
   },
-  "whyHard": "Players look at the printed cost instead of working out that X is zero when the card is not on the stack."
+  "whyHard": "Players look at the printed cost instead of working out that X is zero when the card is not on the stack, and then overshoot by assuming any cost containing X is mana value 0, when {X}{R} is mana value 1."
 }

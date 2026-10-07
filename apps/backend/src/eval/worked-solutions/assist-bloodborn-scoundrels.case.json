@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Reword to 'Can the assisting player pay the colored mana part of the spell's cost?' The assisting player may spend colored mana toward the generic part, so the current wording reads as yes while the outcome is does-not-work."
   },
   "cards": [
     {

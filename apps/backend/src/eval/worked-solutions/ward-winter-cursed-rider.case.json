@@ -3,8 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -13,7 +13,7 @@
     }
   ],
   "gameState": null,
-  "question": "A permanent has two instances of ward. When it becomes the target of a spell, do both ward abilities trigger?",
+  "question": "A permanent I control has two instances of ward. When it becomes the target of a spell an opponent controls, do both ward abilities trigger?",
   "expected": {
     "outcome": "works",
     "shortAnswer": "Yes: multiple instances of ward each trigger separately.",

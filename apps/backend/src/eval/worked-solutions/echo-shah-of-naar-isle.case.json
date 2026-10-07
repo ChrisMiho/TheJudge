@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Attach Thick-Skinned Goblin (e7436973-9ac8-45b2-9d79-769bfacef4b9): the question and ruling hinge on its pay-{0}-instead-of-echo ability and the prompt needs its oracle text."
   },
   "cards": [
     {

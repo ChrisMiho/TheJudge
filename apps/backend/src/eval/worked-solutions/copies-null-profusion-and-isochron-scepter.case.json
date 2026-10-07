@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Swap deciding rule 707.10 for 707.12: Isochron Scepter's copy IS cast (707.12), so 'a copy isn't cast' is the wrong mechanism; Null Profusion doesn't trigger because the cast copy is not a card. Keep 603.2."
   },
   "cards": [
     {
