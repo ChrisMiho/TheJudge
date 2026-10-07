@@ -43,7 +43,7 @@
     "dependsOnHashes": {
       "rules": "30a5150b724c939fe6da269baed9614842348038076f6f35874b4cd6debfae8e",
       "oracle": "50482e91921aed381705f136d6f51e4266f229124183ccdc8939500c78215044",
-      "rulings": "aeacbd088d81c6dbd965d219c5d67f4a26f6e6843acacf03db1b38ce7a0b69dd"
+      "rulings": "d14d1bb3a1ff7b118155fff1e251fc6409e8e715e950efd00d64bd1a26b86b41"
     }
   },
   "whyHard": "Start your engines! reads like an enters-the-battlefield trigger, but gaining speed 1 is a state-based action that also fires when you steal the permanent."
