@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [answer-quality-investigation](answer-quality-investigation/) | mapped out 2026-10-07: 7 slices A to G (G applies the product-truth proposal); offline-only build; graph run `graph-20261007-134015` |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| [answer-quality-investigation](answer-quality-investigation/) | define attempt 2 2026-10-07: REQ-228/229/230 re-proposed to the owner's REQ-226 rule (evidence trace runs from its own checkout and records its commit; two revisions compared from two trace folders; `--subject`/`--subject-b` dropped); awaiting gate-qc re-grade; graph run `graph-20261007-134015` |
 
 ## refining
 

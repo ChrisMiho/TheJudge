@@ -1,0 +1,78 @@
+{
+  "slug": "answer-quality-investigation",
+  "slice": "F",
+  "criteria": [
+    {
+      "id": "F1",
+      "statement": "A test shows the report refuses on a judge model, rubric revision, or reference-hash mismatch and prints each reason",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "F2",
+      "statement": "A test with fixture runs shows all five transition counts with denominators and every right-to-wrong case id with transcript paths",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "F3",
+      "statement": "A test shows tier 1-2 and tier 3 are never pooled and breakdowns by rules section, mechanic, difficulty, source pool and request kind appear",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "F4",
+      "statement": "A test shows repeats resolve by majority and disagreeing repeats are listed unstable",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "F5",
+      "statement": "A test shows identical-prompt-hash cases form the unchanged-input stratum labelled as sampling noise",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "F6",
+      "statement": "A test shows latency mean/p50/p95, slower-than-timeout count, errors, tokens with reasoning, and answer and judge cost apart",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "F7",
+      "statement": "A test shows diagnostic-arm results print under the diagnostic-control heading and the output never names a winner",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "F8",
+      "statement": "`npm run eval:answer-quality:compare` exists in package.json and runs offline on two fixture run folders",
+      "value": false,
+      "evidence": {
+        "command": "npm run eval:answer-quality:compare"
+      }
+    },
+    {
+      "id": "F9",
+      "statement": "Typecheck passes",
+      "value": false,
+      "evidence": {
+        "command": "npm run typecheck"
+      }
+    }
+  ]
+}

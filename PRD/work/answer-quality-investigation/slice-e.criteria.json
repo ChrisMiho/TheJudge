@@ -1,0 +1,70 @@
+{
+  "slug": "answer-quality-investigation",
+  "slice": "E",
+  "criteria": [
+    {
+      "id": "E1",
+      "statement": "A test shows, for every diagnostic case, arm B's evidence units equal arm A's, arm C adds only bundle rules, and arm D's units equal C's",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "E2",
+      "statement": "A test shows no arm output or arm input contains any reference answer text",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "E3",
+      "statement": "A test shows arm P is refused until the approved correction file exists",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "E4",
+      "statement": "A test shows arms C, D, P are refused on a case outside the diagnostic manifest and diagnostic records carry `diagnostic: true`",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "E5",
+      "statement": "A test asserts the diagnostic and held-out manifests are disjoint, hold ids and hashes only, and held-out runs only arm A",
+      "value": false,
+      "evidence": {
+        "command": "npm run test:scripts"
+      }
+    },
+    {
+      "id": "E6",
+      "statement": "The manifest generator is seeded and re-running it reproduces both committed files byte-for-byte",
+      "value": false,
+      "evidence": {
+        "command": "build-answer-quality-manifests"
+      }
+    },
+    {
+      "id": "E7",
+      "statement": "Arm records carry an arm revision id; `apps/backend/src/prompt/`, routes and providers have no diff versus origin/main",
+      "value": false,
+      "evidence": {
+        "command": "git diff --stat origin/main"
+      }
+    },
+    {
+      "id": "E8",
+      "statement": "Typecheck passes",
+      "value": false,
+      "evidence": {
+        "command": "npm run typecheck"
+      }
+    }
+  ]
+}
