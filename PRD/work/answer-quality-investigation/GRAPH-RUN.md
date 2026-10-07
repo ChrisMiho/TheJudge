@@ -3,8 +3,8 @@
 - Run ID: `graph-20261007-134015`
 - Profile: `loaded (env sentinel)`
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent; graph tier: nohup true denied while the lock is held)`
-- Autonomous base: `origin/thejudge-auto/answer-quality-investigation`
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-answer-quality-investigation`
+- Autonomous base: `origin/main` (rewritten by the build half's claim on 2026-10-07; was `origin/thejudge-auto/answer-quality-investigation`, docs PR #274 merged)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation` (rewritten by the build half's claim; the kickoff worktree was removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261007-134015/`
 - Current node: `owner-action` (parked after gate-qc PASS)
 - Next action: answer `PRD/work/answer-quality-investigation/GATE-QUESTIONS.md`, merge the docs PR; `graph-implement` builds it

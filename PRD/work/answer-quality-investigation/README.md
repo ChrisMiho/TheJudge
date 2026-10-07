@@ -12,7 +12,7 @@ Reproducible before/after answer evaluation for PR #273, isolation of retrieval 
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/answer-quality-investigation
+- Autonomous base: origin/main
 
 ## Preparation gate
 
