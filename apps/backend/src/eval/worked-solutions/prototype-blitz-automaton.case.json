@@ -1,16 +1,15 @@
 {
-  "id": "prototype-autonomous-assembler",
+  "id": "prototype-blitz-automaton",
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "The question names Blitz Automaton but Autonomous Assembler is attached. Swap the attached card and citation to Blitz Automaton (19f344ee-031d-4346-9553-c5d32b02df43), which carries the identical 2022-10-14 ruling."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
-      "oracleId": "3afdc98e-aeeb-43e9-bdcd-0c51da44d2f8",
-      "name": "Autonomous Assembler"
+      "oracleId": "19f344ee-031d-4346-9553-c5d32b02df43",
+      "name": "Blitz Automaton"
     }
   ],
   "gameState": null,
@@ -26,8 +25,8 @@
     "pool": "mechanic",
     "type": "Official WotC card ruling",
     "publisher": "Wizards of the Coast",
-    "cardName": "Autonomous Assembler",
-    "oracleId": "3afdc98e-aeeb-43e9-bdcd-0c51da44d2f8",
+    "cardName": "Blitz Automaton",
+    "oracleId": "19f344ee-031d-4346-9553-c5d32b02df43",
     "rulingDate": "2022-10-14",
     "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
     "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
@@ -43,9 +42,9 @@
     "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
     "dependsOnHashes": {
       "rules": "e47e6641408abe395d55096ac3bc4728acf8f2bad98eff89763124d50ff69ffe",
-      "oracle": "7acb2cf77ccff069e825fc4e2bb9bf484b0a27813ddef8f3f37c8a892f250886",
-      "rulings": "4a21cfac25e48acc4561f4fa598c126453bc24ebe723f17e427ed32d9870524d"
+      "oracle": "744c042a4a9e5b2c80862d34208c1f61f7c7e92cb43721558629b5a0c3e259fe",
+      "rulings": "d8c1bb56b51a2660b20a07f49cf2cca0a19cfe4a990dea4be87e82ac1502107d"
     }
   },
-  "whyHard": "Prototype is a choice made as you cast, and players expect it only from hand."
+  "whyHard": "Prototype is a choice made as you cast, so players assume it only applies when casting from hand."
 }

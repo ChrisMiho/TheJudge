@@ -3,11 +3,14 @@
   "formatVersion": 2,
   "tier": 1,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Attach Cytoshape (14221c18-7801-49c9-a2c8-53b8c5181d63) and state in the question that Elite Vanguard is a 2/1 Human Soldier creature (the committed card index has no name entry for Elite Vanguard, so it can't be attached by name); Moonmist's transform depends on the copy being a Human."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
+    {
+      "oracleId": "14221c18-7801-49c9-a2c8-53b8c5181d63",
+      "name": "Cytoshape"
+    },
     {
       "oracleId": "cf518f59-f083-42a0-9953-fac2757bf804",
       "name": "Kruin Outlaw // Terror of Kruin Pass"
@@ -18,7 +21,7 @@
     }
   ],
   "gameState": null,
-  "question": "Cytoshape makes Kruin Outlaw a copy of Elite Vanguard until end of turn, and then I cast Moonmist, which transforms all Humans. Does the copy transform?",
+  "question": "Cytoshape makes Kruin Outlaw a copy of Elite Vanguard, a 2/1 Human Soldier creature, until end of turn, and then I cast Moonmist, which transforms all Humans. Does the copy transform?",
   "expected": {
     "outcome": "works",
     "shortAnswer": "Yes: because it is a double-faced card it transforms, but it is still a copy of Elite Vanguard that turn.",
@@ -47,8 +50,8 @@
     "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
     "dependsOnHashes": {
       "rules": "b5058bbb4e6f1411745cc092d1e2950176706595ac3d327eb9de47dcd28327e2",
-      "oracle": "c1e156bc8ebdcd97f2b4ba67155df3899862280667635ac65b06812529059102",
-      "rulings": "60dafeb83b9520f32b9a2912b17e39a6ffc24908f4573f46206f1f0099364ac1"
+      "oracle": "b56e062f0f90d77c02afa5f74b8f53a3d49677fceffb6854156ae43a0504cd31",
+      "rulings": "3010536bb61a341a3e8df8053813ffb497341c54d90050b5eb2937901fa358c9"
     }
   },
   "whyHard": "Players think the copy effect removes the card's ability to transform."

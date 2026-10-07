@@ -3,9 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Swap deciding rule 712.4 (meld definition in this rules text) for 712.8f (a modal double-faced spell or permanent has only the characteristics of the face that's up), optionally with 712.8a. Bloodsoaked Insight // Sanguine Morass stays attached only as the ruling's citation card; that is fine."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -23,7 +22,7 @@
     "outcome": "works",
     "shortAnswer": "Yes: to decide whether it's legal to play a modal double-faced card, consider only the face you're playing.",
     "answer": "To determine whether it is legal to play a modal double-faced card, consider only the characteristics of the face you're playing and ignore the other face's characteristics. For example, if an effect stops you from casting creature spells, you can't cast Disciple of Freyalise, but you can still play Garden of Freyalise.",
-    "decidingRuleIds": ["712.4"]
+    "decidingRuleIds": ["712.8f", "712.12"]
   },
   "source": {
     "authority": "wotc-card-ruling",
@@ -46,7 +45,7 @@
   "snapshot": {
     "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
     "dependsOnHashes": {
-      "rules": "4cec0749aca985c40e9f004e76c4f86e1c36a32f580a260dd66bf5a9b89fa3cc",
+      "rules": "9f8382d038e3d6054468b32fbaf4c675ffc5bfafa84503fc22dc8b675de1575c",
       "oracle": "340ff16e105e92e5ea2f02325b87ff58f7e134c7d9797549ef08b9774f5888be",
       "rulings": "025fc46ced1634c6191e4d0fcfdcc05c0e8dc3a3b854d986af9b9d596260b409"
     }

@@ -3,9 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Duplicate of max-speed-amonkhet-raceway (same reference answer, which is about max speed, 702.178). Re-author on Avishkar Raceway's own 2025-02-07 ruling 'Start your engines! isn't a triggered ability. Increasing your speed to 1 is something that happens as a state-based action as soon as you control a permanent with the ability. Notably, this includes gaining control of a permanent with the ability that another player controls.' Question: 'I have no speed and gain control of an opponent's Avishkar Raceway. Does my speed become 1 right away, without a trigger?' Outcome works, deciding rule 702.179a."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -14,11 +13,11 @@
     }
   ],
   "gameState": null,
-  "question": "When my speed reaches 4 as a result of start your engines, do I count as having max speed?",
+  "question": "I have no speed and gain control of an opponent's Avishkar Raceway. Does my speed become 1 right away, without a trigger?",
   "expected": {
     "outcome": "works",
-    "shortAnswer": "Yes: a player has max speed if their speed is 4.",
-    "answer": "A player “has max speed” if their speed is 4.",
+    "shortAnswer": "Yes: start your engines! isn't a trigger, so your speed becomes 1 as a state-based action as soon as you control the Raceway, even one you took from an opponent.",
+    "answer": "Start your engines! isn’t a triggered ability. Increasing your speed to 1 is something that happens as a state-based action as soon as you control a permanent with the ability. Notably, this includes gaining control of a permanent with the ability that another player controls.",
     "decidingRuleIds": ["702.179a"]
   },
   "source": {
@@ -47,5 +46,5 @@
       "rulings": "aeacbd088d81c6dbd965d219c5d67f4a26f6e6843acacf03db1b38ce7a0b69dd"
     }
   },
-  "whyHard": "Speed is not a card property, so players do not know what counts as having max speed."
+  "whyHard": "Start your engines! reads like an enters-the-battlefield trigger, but gaining speed 1 is a state-based action that also fires when you steal the permanent."
 }

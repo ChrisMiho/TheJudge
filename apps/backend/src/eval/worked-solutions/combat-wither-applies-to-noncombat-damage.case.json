@@ -3,9 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Barbed Bloodletter is an Equipment that grants wither; it has no wither and deals no damage. Reword: 'The creature equipped by Barbed Bloodletter has wither until end of turn. Does wither also apply to noncombat damage that creature deals, such as from Assert Perfection?'"
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -18,7 +17,7 @@
     }
   ],
   "gameState": null,
-  "question": "Barbed Bloodletter has wither. Does wither also apply to noncombat damage it deals, such as from Assert Perfection?",
+  "question": "The creature equipped by Barbed Bloodletter has wither until end of turn. Does wither also apply to noncombat damage that creature deals, such as from Assert Perfection?",
   "expected": {
     "outcome": "works",
     "shortAnswer": "Yes: wither applies to any damage the creature deals to creatures, including noncombat damage.",

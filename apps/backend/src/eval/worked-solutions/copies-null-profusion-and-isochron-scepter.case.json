@@ -3,9 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Swap deciding rule 707.10 for 707.12: Isochron Scepter's copy IS cast (707.12), so 'a copy isn't cast' is the wrong mechanism; Null Profusion doesn't trigger because the cast copy is not a card. Keep 603.2."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -18,12 +17,12 @@
     }
   ],
   "gameState": null,
-  "question": "Does Null Profusion's triggered ability trigger when I play a copy of a card, such as with Isochron Scepter?",
+  "question": "I control Null Profusion and activate Isochron Scepter, copying the exiled instant card and casting the copy without paying its mana cost. Does Null Profusion's triggered ability trigger when I cast a copy of a card this way?",
   "expected": {
     "outcome": "does-not-work",
     "shortAnswer": "No: it triggers when you play a land card or cast a nonland card as a spell, not when you play a copy of a card.",
     "answer": "The triggered ability will trigger when you play a land card or cast a nonland card as a spell. It won't trigger when you play a copy of a card, such as with Isochron Scepter.",
-    "decidingRuleIds": ["603.2", "707.10"]
+    "decidingRuleIds": ["603.2", "707.12"]
   },
   "source": {
     "authority": "wotc-card-ruling",
@@ -46,10 +45,10 @@
   "snapshot": {
     "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
     "dependsOnHashes": {
-      "rules": "6288d45de46dbb4f232ffe4a8dab0852cba9f75141cef5d91bdabd425357d9fe",
+      "rules": "b63198d1e9d700f3fc93dfe8fd7383ece7cd1a7f99e1a9b916acad9d5a8a44e4",
       "oracle": "4e93368dd105109f2982714ab354be39f64e5f1163eb7d84f14564b61f8d5561",
       "rulings": "4a0517be5173119454fb3cfc3e424ee58ea6b6f2d064c22ce3c6b0db0ec4e67a"
     }
   },
-  "whyHard": "A copy cast from a card looks the same as casting the card itself."
+  "whyHard": "The copy really is cast, so players expect a 'whenever you play a card' trigger to see it, but a copy of a card is not a card."
 }

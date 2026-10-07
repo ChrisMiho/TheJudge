@@ -3,9 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Fix the why-hard line: the copies are made when the replicate trigger resolves, which can be after the original was countered in response to that trigger; they do not already exist. Ruling, answer and direction are right."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -47,5 +46,5 @@
       "rulings": "fb253a91529105545e0a7f5fd0d525e05c87ddaff2ad6f30086ab8f5610eac34"
     }
   },
-  "whyHard": "Replicate triggers on cast, so the copies already exist before the original can be countered."
+  "whyHard": "The copies are made when the replicate trigger resolves, which can be after the original was countered in response to that trigger, so players expect the counter to take the copies with it."
 }

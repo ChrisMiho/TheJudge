@@ -3,9 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Add where the damage goes: '...with Ward of Piety, redirecting it to my opponent, does Slith Firewalker's ability that triggers on combat damage to a player still trigger?' Redirected to a creature it would not trigger."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -18,7 +17,7 @@
     }
   ],
   "gameState": null,
-  "question": "If I redirect combat damage from Slith Firewalker with Ward of Piety, does Slith Firewalker's ability that triggers on combat damage to a player still trigger?",
+  "question": "If I redirect combat damage from Slith Firewalker with Ward of Piety, redirecting it to my opponent, does Slith Firewalker's ability that triggers on combat damage to a player still trigger?",
   "expected": {
     "outcome": "works",
     "shortAnswer": "Yes: redirected damage retains its information, so the Slith's ability triggers during the combat damage step.",

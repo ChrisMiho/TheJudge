@@ -3,9 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "needs-edit",
-    "reviewedOn": "2026-10-07",
-    "note": "Question says a pile of two cards; Become Anonymous exiles the creature plus the top two, a three-card pile. Reword to 'a shuffled face-down pile of three cards (the creature and the top two cards of my library)'."
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -14,7 +13,7 @@
     }
   ],
   "gameState": null,
-  "question": "When I cloak a shuffled face-down pile of two cards, can I look at them after they are cloaked?",
+  "question": "When Become Anonymous has me cloak a shuffled face-down pile of three cards (the creature and the top two cards of my library), can I look at them after they are cloaked?",
   "expected": {
     "outcome": "works",
     "shortAnswer": "Yes: after you cloak the cards you may look at them.",

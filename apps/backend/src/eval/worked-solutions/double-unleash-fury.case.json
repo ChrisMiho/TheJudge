@@ -1,0 +1,50 @@
+{
+  "id": "double-unleash-fury",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
+  },
+  "cards": [
+    {
+      "oracleId": "4eaa100c-f1ef-4a2b-9370-5dad7f3a95f2",
+      "name": "Unleash Fury"
+    }
+  ],
+  "gameState": null,
+  "question": "I cast Unleash Fury on my 3/3 creature, doubling its power to 6. Later in the same turn, my opponent gives that creature -2/-0. Does the bonus from Unleash Fury shrink to match the creature's new power?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: Unleash Fury gives +X/+0 with X locked in as the effect begins, so the bonus stays +3/+0 even if the creature's power changes later in the turn.",
+    "answer": "If an effect instructs you to \"double\" a creature's power, that creature gets +X/+0, where X is its power as that effect begins to apply. If its power is negative, instead it gets -X/-0 where X is how far below 0 its power is. The value of X won't change if another effect alters the creature's power later in the turn.",
+    "decidingRuleIds": ["701.10b"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Unleash Fury",
+    "oracleId": "4eaa100c-f1ef-4a2b-9370-5dad7f3a95f2",
+    "rulingDate": "2020-06-23",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-06",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "dependsOnHashes": {
+      "rules": "d93650f1d0c7a1286818a6f353033f14ebfb4c22e97fe3fc86f1aca807263d9c",
+      "oracle": "875ed650a2b66d6aa04a848c4ea5ca1b83d0497d4966e503339a6df0226a7044",
+      "rulings": "8920ceb49bba744a7bc2c64ca2017f8dd8bba926ca1fa958eb61d542593d89f8"
+    }
+  },
+  "whyHard": "Players read 'double' as a running relationship that tracks the creature's current power, but it is a one-time +X/+0 whose X is fixed when the effect begins."
+}

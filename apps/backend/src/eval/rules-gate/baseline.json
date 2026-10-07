@@ -52,7 +52,7 @@
       "hit": ["702.86a"],
       "miss": []
     },
-    "ascend-arch-of-orazca": {
+    "ascend-secrets-of-the-golden-city": {
       "hit": ["702.131a"],
       "miss": []
     },
@@ -304,10 +304,6 @@
       "hit": ["707.2"],
       "miss": []
     },
-    "copies-conjurers-ban-and-card-copies": {
-      "hit": ["707.10"],
-      "miss": []
-    },
     "copies-copy-of-card-ceases-to-exist": {
       "hit": ["707.10"],
       "miss": []
@@ -338,7 +334,7 @@
     },
     "copies-null-profusion-and-isochron-scepter": {
       "hit": [],
-      "miss": ["603.2", "707.10"]
+      "miss": ["603.2", "707.12"]
     },
     "copies-quicksilver-gargantuan-and-tarmogoyf": {
       "hit": ["707.9d"],
@@ -348,7 +344,7 @@
       "hit": ["707.4"],
       "miss": []
     },
-    "copies-siege-of-towers-replicate-countered": {
+    "copies-shattering-spree-replicate-countered": {
       "hit": ["702.56a", "707.10"],
       "miss": []
     },
@@ -454,7 +450,7 @@
     },
     "dfc-modal-double-faced-card-legality": {
       "hit": [],
-      "miss": ["712.4"]
+      "miss": ["712.8f", "712.12"]
     },
     "dfc-sever-the-bloodline-double-faced-name": {
       "hit": [],
@@ -496,12 +492,12 @@
       "hit": ["712.18"],
       "miss": []
     },
-    "double-maro-s-gone-nuts": {
-      "hit": [],
-      "miss": ["701.10a"]
-    },
     "double-strike-terror-of-mount-velus": {
       "hit": ["702.4a"],
+      "miss": []
+    },
+    "double-unleash-fury": {
+      "hit": ["701.10b"],
       "miss": []
     },
     "dredge-dakmor-salvage": {
@@ -524,9 +520,9 @@
       "hit": ["702.119a"],
       "miss": []
     },
-    "enchant-animate-library": {
-      "hit": ["702.5a"],
-      "miss": []
+    "enchant-rancor": {
+      "hit": [],
+      "miss": ["702.5a"]
     },
     "encore-broodmate-tyrant": {
       "hit": ["702.141a"],
@@ -720,9 +716,9 @@
       "hit": ["702.11a"],
       "miss": []
     },
-    "hidden-agenda-brago-s-favor": {
-      "hit": ["702.106a"],
-      "miss": []
+    "hidden-agenda-double-stroke": {
+      "hit": [],
+      "miss": ["702.106a"]
     },
     "hideaway-cemetery-tampering": {
       "hit": ["702.75a"],
@@ -1032,7 +1028,7 @@
       "hit": [],
       "miss": ["702.16a"]
     },
-    "prototype-autonomous-assembler": {
+    "prototype-blitz-automaton": {
       "hit": [],
       "miss": ["702.160a"]
     },
@@ -1206,7 +1202,7 @@
     },
     "resolution-intellect-devourer-leaves-before-resolving": {
       "hit": [],
-      "miss": ["608.2"]
+      "miss": ["610.3b"]
     },
     "resolution-scroll-of-isildur-illegal-target": {
       "hit": ["608.2b"],
@@ -1445,8 +1441,8 @@
       "miss": ["608.2"]
     },
     "triggers-dark-power-and-gaeas-cradle": {
-      "hit": ["603.7a"],
-      "miss": []
+      "hit": [],
+      "miss": ["106.12a"]
     },
     "triggers-devouring-hellion-and-kronch-wrangler": {
       "hit": ["603.6a"],
