@@ -11,9 +11,11 @@ import {
   DEFAULT_SIZES,
   MULTIPLAYER_CASE_ID,
   allocateStrata,
+  buildEmitManifest,
   buildManifests,
   classifyFromTrace,
   parseManifestArgs,
+  resolveEmitPath,
   runManifests,
   selectHeldOut
 } from "./build-answer-quality-manifests.mjs";
@@ -184,4 +186,35 @@ test("validateManifestCases accepts the committed diagnostic manifest against th
   const { manifest } = await loadManifestFile(join(repoRoot, DIAGNOSTIC_MANIFEST_RELATIVE_PATH));
   const cases = validateManifestCases({ manifest, allCases: await loadGoldCases() });
   assert.equal(cases.length, manifest.cases.length);
+});
+
+test("--emit writes a run manifest for a paid phase from the named sources, optionally narrowed to ids, under output/ only", () => {
+  const { cases } = syntheticCorpus();
+  const committedIds = { diagnostic: ["partial-0", "partial-1"], "held-out": ["full-00", "full-01", "none-00"] };
+  const all = buildEmitManifest({ approvedCases: cases, from: ["approved"], ids: null, committedIds });
+  assert.equal(all.caseCount, cases.length);
+  assert.equal(all.kind, "run-manifest");
+  assert.deepEqual(Object.keys(all.cases[0]).sort(), ["answerSha256", "id", "questionSha256"]);
+
+  const union = buildEmitManifest({ approvedCases: cases, from: ["diagnostic", "held-out"], ids: null, committedIds });
+  assert.deepEqual(union.cases.map((entry) => entry.id), ["full-00", "full-01", "none-00", "partial-0", "partial-1"]);
+  const narrowed = buildEmitManifest({ approvedCases: cases, from: ["approved"], ids: ["tester-a", "partial-2"], committedIds });
+  assert.deepEqual(narrowed.cases.map((entry) => entry.id), ["partial-2", "tester-a"]);
+  assert.throws(() => buildEmitManifest({ approvedCases: cases, from: ["diagnostic"], ids: ["full-00"], committedIds }), /not in diagnostic: full-00/);
+  const without = buildEmitManifest({ approvedCases: cases, from: ["diagnostic", "held-out"], ids: null, exclude: ["partial-0", "none-00"], committedIds });
+  assert.deepEqual(without.cases.map((entry) => entry.id), ["full-00", "full-01", "partial-1"], "excluded cases are left out");
+  assert.throws(() => buildEmitManifest({ approvedCases: cases, from: ["diagnostic"], ids: null, exclude: ["full-00"], committedIds }), /to exclude are not in diagnostic: full-00/);
+  assert.throws(() => buildEmitManifest({ approvedCases: cases, from: ["diagnostic"], ids: null, committedIds: { diagnostic: ["retired-case"] } }), /no longer approved .*retired-case/);
+
+  assert.equal(resolveEmitPath("output/answer-quality/manifests/x.json", "/repo"), "/repo/output/answer-quality/manifests/x.json");
+  assert.throws(() => resolveEmitPath("apps/backend/src/eval/answer-quality/manifests/diagnostic.json", "/repo"), /under output\/ only/);
+  assert.throws(() => resolveEmitPath("output/../PRD/x.json", "/repo"), /under output\/ only/);
+
+  assert.deepEqual(parseManifestArgs(["--emit", "output/x.json"]).from, ["approved"]);
+  assert.deepEqual(parseManifestArgs(["--emit", "output/x.json", "--from", "diagnostic", "--ids", "a,b"]).ids, ["a", "b"]);
+  assert.throws(() => parseManifestArgs(["--from", "diagnostic"]), /belong to --emit/);
+  assert.throws(() => parseManifestArgs(["--exclude", "a"]), /belong to --emit/);
+  assert.deepEqual(parseManifestArgs(["--emit", "output/x.json", "--exclude", "a,b"]).exclude, ["a", "b"]);
+  assert.throws(() => parseManifestArgs(["--emit", "output/x.json", "--from", "everything"]), /approved, diagnostic or held-out/);
+  assert.throws(() => parseManifestArgs(["--emit", "output/x.json", "--check"]), /cannot be combined/);
 });

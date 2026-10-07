@@ -16,6 +16,8 @@
 //   npm run eval:evidence-trace                        # folder named by the commit
 //   npm run eval:evidence-trace -- --out head          # output/evidence-trace/head/
 //   npm run eval:evidence-trace -- --expect-commit 07cc3ab6
+//   npm run eval:evidence-trace -- --manifest apps/backend/src/eval/answer-quality/manifests/diagnostic.json
+//   npm run eval:evidence-trace -- --case academy-manufactor-esix-treasure --case necropotence-silence-borne-upon-a-wind-cleanup
 //
 // Never a gate. Run via tsx so the backend TypeScript resolves.
 
@@ -29,11 +31,19 @@ import { buildEmbedder, loadPromptResources } from "./lib/prompt-fidelity.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
+async function defaultReadManifest(path) {
+  const { readFile } = await import("node:fs/promises");
+  return JSON.parse(await readFile(resolve(repoRoot, path), "utf8"));
+}
+
 export function parseTraceArgs(argv) {
-  const parsed = { out: null, expectCommit: null };
+  const parsed = { out: null, expectCommit: null, manifest: null, caseIds: [] };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--out") parsed.out = argv[++i];
     else if (argv[i] === "--expect-commit") parsed.expectCommit = argv[++i];
+    else if (argv[i] === "--manifest") parsed.manifest = argv[++i];
+    else if (argv[i] === "--case") parsed.caseIds.push(argv[++i]);
+    else throw new Error(`Unknown option ${argv[i]}.`);
   }
   if (parsed.out !== null) validateRunId(parsed.out);
   return parsed;
@@ -43,10 +53,22 @@ export function parseTraceArgs(argv) {
  * Runs the trace with every dependency injectable; `main` supplies the real ones.
  * Approved cases only: a draft or rejected case has no approved deciding rules to hold up.
  */
-export async function runEvidenceTrace({ argv = [], git, loadCases, loadResources, loadTs, outputRoot, log = console.log }) {
+export async function runEvidenceTrace({ argv = [], git, loadCases, loadResources, loadTs, outputRoot, readManifest, log = console.log }) {
   const args = parseTraceArgs(argv);
   const commit = await assertCheckoutReady({ git, expectCommit: args.expectCommit });
-  const cases = (await loadCases()).filter((caseEntry) => caseEntry.review.status === "approved");
+  let cases = (await loadCases()).filter((caseEntry) => caseEntry.review.status === "approved");
+  // Optionally narrowed to a manifest's cases and/or named cases; a name that is not an approved case is refused, not skipped.
+  const wanted = new Set(args.caseIds);
+  if (args.manifest) {
+    const manifest = await (readManifest ?? defaultReadManifest)(args.manifest);
+    for (const entry of manifest.cases) wanted.add(entry.id);
+  }
+  if (wanted.size > 0) {
+    const known = new Set(cases.map((caseEntry) => caseEntry.id));
+    const unknown = [...wanted].filter((id) => !known.has(id));
+    if (unknown.length > 0) throw new Error(`Cannot trace: not an approved case in this checkout: ${unknown.join(", ")}.`);
+    cases = cases.filter((caseEntry) => wanted.has(caseEntry.id));
+  }
   const resources = await loadResources();
   const ts = await loadTs(resources);
   log(`Tracing ${cases.length} approved cases from commit ${commit.slice(0, 8)} (offline).`);

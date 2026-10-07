@@ -5,7 +5,7 @@
     {
       "id": "G1",
       "statement": "`OFFLINE-FINDINGS.md` exists and records the commits measured, per-rule and complete-procedure coverage for the Academy Manufactor/Esix and Necropotence cases, the unchanged-input stratum size, the ten re-snapshotted cases with review provenance, and the staleness and coverage results",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "docs/eval/answer-quality-investigation/OFFLINE-FINDINGS.md"
@@ -15,7 +15,7 @@
     {
       "id": "G2",
       "statement": "The evidence trace run from the baseline-writing revision (or, if unavailable, this checkout with the reason stated) reproduces `baseline.json` hit and miss, recorded in the findings",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run eval:evidence-trace"
       }
@@ -23,7 +23,7 @@
     {
       "id": "G3",
       "statement": "`npm run eval:rules-staleness` and `npm run eval:rules-coverage` have been run and their results recorded in the findings",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run eval:rules-(staleness|coverage)"
       }
@@ -31,7 +31,7 @@
     {
       "id": "G4",
       "statement": "Both manifests are committed and arm B's revision id is frozen with its recorded observations",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "apps/backend/src/eval/answer-quality/manifests/diagnostic.json",
@@ -42,7 +42,7 @@
     {
       "id": "G5",
       "statement": "Every paid phase was dry-run (no key, no network) and `RUNBOOK.md` records call counts and dollar estimates with each rate's check date",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run eval:answer-quality"
       }
@@ -50,7 +50,7 @@
     {
       "id": "G6",
       "statement": "`RUNBOOK.md` exists, covers Phases 1 to 5 with owner inputs (cap per phase, judge model) and decisions D0 to D5, and states no paid phase was run in the build",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "docs/eval/answer-quality-investigation/RUNBOOK.md"
@@ -60,7 +60,7 @@
     {
       "id": "G7",
       "statement": "REQ-226 to REQ-230 are present in `PRD/sections/functional-requirements.md` and REQ-185 to REQ-189 and NFR-018 are amended as the finalized proposal says, with both owner edits honoured",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md",
@@ -71,7 +71,7 @@
     {
       "id": "G8",
       "statement": "The `system-map.md` answer-quality summary no longer says results are only merged per case, and `worked-solutions/README.md` describes experiment runs, trace, arms and manifests",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/system-map.md",
@@ -82,7 +82,7 @@
     {
       "id": "G9",
       "statement": "A grep over `PRD/sections/` finds no `--subject`, no new `DEC-` id, and no REQ id above REQ-230 added by this package",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep"
       }
@@ -90,7 +90,7 @@
     {
       "id": "G10",
       "statement": "A test or grep shows no gate script or CI workflow invokes `eval:answer-quality`, its compare command, or the trace commands",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep"
       }
@@ -98,7 +98,7 @@
     {
       "id": "G11",
       "statement": "`npm run quality:check` passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }
@@ -106,7 +106,7 @@
     {
       "id": "G12",
       "statement": "Backend tests pass",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run test"
       }
@@ -114,7 +114,7 @@
     {
       "id": "G13",
       "statement": "A dated observation confirms no live OpenAI call, data refresh, or Scryfall fetch occurred during the build",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

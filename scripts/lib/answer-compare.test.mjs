@@ -357,9 +357,10 @@ test("eval:answer-quality:compare exists in package.json and runs offline on two
   };
   const logs = [];
   try {
-    const result = await runCompare({ argv: ["before", "after"], log: (line) => logs.push(line), runsRoot, cwd: "/" });
+    const outputRoot = await mkdtemp(join(tmpdir(), "compare-out-"));
+    const result = await runCompare({ argv: ["before", "after"], log: (line) => logs.push(line), runsRoot, outputRoot, cwd: "/" });
     assert.equal(result.refused, false);
-    const byPath = await runCompare({ argv: [before, after], log: () => {}, runsRoot: "/nowhere", cwd: "/" });
+    const byPath = await runCompare({ argv: [before, after], log: () => {}, runsRoot: "/nowhere", outputRoot, cwd: "/" });
     assert.equal(byPath.overall.rightToWrong, 2);
   } finally {
     globalThis.fetch = realFetch;
@@ -382,4 +383,47 @@ test("a refusal exits non-zero and names the reasons", async () => {
   const a = await makeRun({ runId: "ra", runsRoot });
   const b = await makeRun({ runId: "rb", judgeModel: "gpt-5-other", runsRoot });
   await assert.rejects(execFileAsync(process.execPath, ["scripts/eval-answer-compare.mjs", a, b], { cwd: repoRoot }), (error) => error.code === 1 && /judge models differ/.test(error.stdout));
+});
+
+test("a cap selector picks one excerpt cap, and the unstable list shows each repeat's Correctness", async () => {
+  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const cases = [fixtureCase("mixed")];
+  const a = await makeRun({ runId: "cap-a", cases, repeats: 3, rightByRepeat: (id, i) => [true, false, true][i], runsRoot });
+  const b = await makeRun({ runId: "cap-b", cases, repeats: 3, rightByRepeat: () => true, runsRoot });
+  const [runA, runB] = await Promise.all([readRunFolder(a), readRunFolder(b)]);
+  const result = compareRunSides(selectSide(runA, { cap: 10 }), selectSide(runB, { cap: 10 }));
+  assert.deepEqual(result.unstable[0].scores, [2, 1, 2]);
+  assert.match(formatComparison(result), /Correctness per repeat: 2, 1, 2/);
+  assert.throws(() => selectSide(runA, { cap: 5 }), /no records for arm A at excerpt cap 5/);
+});
+
+test("the command writes a numbers-and-ids-only compare JSON and the report as Markdown under the output folder", async () => {
+  const { before, after } = await pairedRuns();
+  const outputRoot = await mkdtemp(join(tmpdir(), "compare-out-"));
+  const result = await runCompare({ argv: [before, after, "--cap", "10"], log: () => {}, outputRoot, cwd: "/" });
+  const json = JSON.parse(await readFile(join(outputRoot, "compare-before-after.json"), "utf8"));
+  assert.deepEqual(json.overall, result.overall);
+  assert.ok(!JSON.stringify(json).includes("An answer."), "no model prose in the compare JSON");
+  const markdown = await readFile(join(outputRoot, "compare-before-after.md"), "utf8");
+  assert.match(markdown, /Paired comparison of two experiment runs/);
+  // A refusal writes nothing.
+  const refusedOut = await mkdtemp(join(tmpdir(), "compare-out-"));
+  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const other = await makeRun({ runId: "other-judge", judgeModel: "gpt-5-other", runsRoot });
+  process.exitCode = 0;
+  const refused = await runCompare({ argv: [before, other], log: () => {}, outputRoot: refusedOut, cwd: "/" });
+  process.exitCode = 0;
+  assert.equal(refused.refused, true);
+  assert.deepEqual(await (await import("node:fs/promises")).readdir(refusedOut), []);
+});
+
+test("two answer models on the same prompts are not called sampling noise", async () => {
+  const runsRoot = await mkdtemp(join(tmpdir(), "compare-test-"));
+  const folder = await makeRun({ runId: "two-models", right: new Set(["r2r"]), runsRoot });
+  const loaded = await readRunFolder(folder);
+  const luna = { ...loaded, summary: { ...loaded.summary, records: loaded.summary.records.map((record) => ({ ...record, model: "gpt-6-luna" })) } };
+  const result = compareRunSides(selectSide(loaded, {}), selectSide(luna, {}));
+  assert.equal(result.unchangedInput.label, "same prompt, different answer models");
+  assert.match(formatComparison(result), /Identical-prompt stratum \(the same prompt on both sides, answered by different models/);
+  assert.doesNotMatch(formatComparison(result), /differences here are sampling noise/);
 });

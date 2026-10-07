@@ -8,10 +8,14 @@
 //   npm run eval:answer-quality:compare -- <run> <run> --arm-a A --arm-b C   # two arms of one run
 //
 // Selectors: --arm / --model apply to both sides; --arm-a, --arm-b, --model-a,
-// --model-b to one side. The default arm is A (the production prompt); the default
-// model is the run's only model.
+// --model-b to one side; --cap picks one excerpt cap on both. The default arm is A
+// (the production prompt); the default model is the run's only model.
+//
+// Besides printing, it writes a numbers-and-ids-only `compare-<a>-<b>.json` and the
+// same report as `compare-<a>-<b>.md` under output/answer-quality/ (gitignored).
 
-import { dirname, resolve } from "node:path";
+import { mkdir, writeFile } from "node:fs/promises";
+import { basename, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { compareRunSides, formatComparison, readRunFolder, selectSide } from "./lib/answer-compare.mjs";
@@ -21,8 +25,8 @@ const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 
 export function parseCompareArgs(argv) {
   const positional = [];
-  const selectors = { arm: undefined, armA: undefined, armB: undefined, model: undefined, modelA: undefined, modelB: undefined };
-  const flagToKey = { "--arm": "arm", "--arm-a": "armA", "--arm-b": "armB", "--model": "model", "--model-a": "modelA", "--model-b": "modelB" };
+  const selectors = { arm: undefined, armA: undefined, armB: undefined, model: undefined, modelA: undefined, modelB: undefined, cap: undefined };
+  const flagToKey = { "--arm": "arm", "--arm-a": "armA", "--arm-b": "armB", "--model": "model", "--model-a": "modelA", "--model-b": "modelB", "--cap": "cap" };
   for (let i = 0; i < argv.length; i++) {
     const key = flagToKey[argv[i]];
     if (key) selectors[key] = argv[++i];
@@ -42,6 +46,7 @@ export async function runCompare({
   argv = process.argv.slice(2),
   log = console.log,
   runsRoot = resolve(repoRoot, EXPERIMENT_RUNS_DIR),
+  outputRoot = resolve(repoRoot, "output/answer-quality"),
   cwd = process.cwd()
 } = {}) {
   if (argv.length === 0) {
@@ -58,11 +63,19 @@ export async function runCompare({
   }
   const { runs, selectors } = parseCompareArgs(argv);
   const [runA, runB] = await Promise.all(runs.map((arg) => readRunFolder(resolveRunFolder(arg, { runsRoot, cwd }))));
-  const sideA = selectSide(runA, { arm: selectors.armA ?? selectors.arm, model: selectors.modelA ?? selectors.model });
-  const sideB = selectSide(runB, { arm: selectors.armB ?? selectors.arm, model: selectors.modelB ?? selectors.model });
+  const sideA = selectSide(runA, { arm: selectors.armA ?? selectors.arm, model: selectors.modelA ?? selectors.model, cap: selectors.cap });
+  const sideB = selectSide(runB, { arm: selectors.armB ?? selectors.arm, model: selectors.modelB ?? selectors.model, cap: selectors.cap });
   const result = compareRunSides(sideA, sideB);
-  log(formatComparison(result, { labelA: runs[0], labelB: runs[1] }));
-  if (result.refused) process.exitCode = 1;
+  const report = formatComparison(result, { labelA: runs[0], labelB: runs[1] });
+  log(report);
+  if (result.refused) {
+    process.exitCode = 1;
+    return result;
+  }
+  const stem = `compare-${basename(runs[0])}-${basename(runs[1])}`;
+  await mkdir(outputRoot, { recursive: true });
+  await writeFile(resolve(outputRoot, `${stem}.json`), `${JSON.stringify(result, null, 2)}\n`, "utf8");
+  await writeFile(resolve(outputRoot, `${stem}.md`), `\`\`\`text\n${report}\n\`\`\`\n`, "utf8");
   return result;
 }
 

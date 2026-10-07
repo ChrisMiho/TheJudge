@@ -8,6 +8,9 @@
 //   - D's evidence units equal C's;
 //   - no arm's prompt contains the case's reference answer or its short answer.
 // Prints one JSON object (`{ cases, problems }`) and exits 1 on any problem.
+// With `--observations` it prints instead what arm B's grouping was chosen from
+// (REQ-230): how the production prompt orders and repeats its evidence across the
+// diagnostic cases. Nothing in it reads a reference answer.
 // No provider, no network. Run via tsx (it prepares prompts with the backend):
 //
 //   node --import tsx scripts/diagnostic-arms-check.mjs
@@ -28,6 +31,7 @@ import {
   unitMultiset
 } from "./lib/diagnostic-arms.mjs";
 import { loadGoldCases } from "./lib/gold-cases.mjs";
+import { parentRuleId } from "./lib/rule-availability.mjs";
 import { loadPromptResources } from "./lib/prompt-fidelity.mjs";
 
 const repoRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -152,6 +156,78 @@ function parseBPrompt(promptText, like) {
   return parsed;
 }
 
+/** What the production prompt does with its evidence, measured over the given arm-A prompts (no reference answers involved). */
+export function observeArmAPrompts(prompts) {
+  const stats = {
+    prompts: prompts.length,
+    meanChars: 0,
+    meanExcerpts: 0,
+    excerptsInRuleNumberOrder: 0,
+    excerptsNotInRuleNumberOrder: 0,
+    promptsWithRuleAndExceptionBothAttached: 0,
+    ruleExceptionPairs: 0,
+    pairsAdjacentInA: 0,
+    pairsAdjacentInB: 0,
+    duplicateUnitsAcrossSections: 0,
+    excerptsAlsoInCuratedTopics: 0,
+    promptsWithRulingsFarFromTheirCard: 0,
+    cardRulingDistanceMeanCharsA: 0,
+    cardRulingDistanceMeanCharsB: 0
+  };
+  let distanceA = 0;
+  let distanceB = 0;
+  let distanceCount = 0;
+  for (const a of prompts) {
+    const parsed = parseLookupPrompt(a);
+    const b = buildArmPrompt({ arm: "B", promptText: a, ruleIndex: [] }).promptText;
+    stats.meanChars += a.length;
+    const blocks = parsed.excerpts?.blocks ?? [];
+    stats.meanExcerpts += blocks.length;
+    const ids = blocks.map((block) => /^(\d+\.\d+[a-z]*)\. /.exec(block)[1]);
+    const sortedIds = [...ids].sort((x, y) => x.localeCompare(y, "en", { numeric: true }));
+    if (JSON.stringify(ids) === JSON.stringify(sortedIds)) stats.excerptsInRuleNumberOrder += 1;
+    else stats.excerptsNotInRuleNumberOrder += 1;
+    let hadPair = false;
+    for (const id of ids) {
+      const parent = parentRuleId(id);
+      if (!parent || !ids.includes(parent)) continue;
+      hadPair = true;
+      stats.ruleExceptionPairs += 1;
+      if (Math.abs(ids.indexOf(id) - ids.indexOf(parent)) === 1) stats.pairsAdjacentInA += 1;
+      const idsB = (parseBExcerptIds(b));
+      if (Math.abs(idsB.indexOf(id) - idsB.indexOf(parent)) === 1) stats.pairsAdjacentInB += 1;
+    }
+    if (hadPair) stats.promptsWithRuleAndExceptionBothAttached += 1;
+    const topicRuleIds = new Set((parsed.topics?.blocks ?? []).flatMap((block) => block.split("\n").map((line) => /^(\d+\.\d+[a-z]*)\. /.exec(line)?.[1]).filter(Boolean)));
+    stats.excerptsAlsoInCuratedTopics += ids.filter((id) => topicRuleIds.has(id)).length;
+    const units = unitMultiset(evidenceUnits(parsed));
+    stats.duplicateUnitsAcrossSections += units.length - new Set(units).size;
+    const names = (parsed.cards?.blocks ?? []).map((block) => /^name: (.*)$/m.exec(block)?.[1]);
+    for (const name of names) {
+      const cardAt = (text) => text.indexOf(`name: ${name}\n`);
+      const rulingAt = (text) => text.indexOf(`\n${name}\n- `);
+      if (cardAt(a) < 0 || rulingAt(a) < 0) continue;
+      distanceCount += 1;
+      distanceA += Math.abs(rulingAt(a) - cardAt(a));
+      distanceB += Math.abs(rulingAt(b) - cardAt(b));
+    }
+  }
+  const mean = (total, n) => (n === 0 ? 0 : Math.round((total / n) * 10) / 10);
+  stats.meanChars = mean(stats.meanChars, prompts.length);
+  stats.meanExcerpts = mean(stats.meanExcerpts, prompts.length);
+  stats.cardRulingDistanceMeanCharsA = mean(distanceA, distanceCount);
+  stats.cardRulingDistanceMeanCharsB = mean(distanceB, distanceCount);
+  stats.promptsWithRulingsFarFromTheirCard = prompts.length; // in arm A the rulings always sit in a separate section after every card
+  return stats;
+}
+
+function parseBExcerptIds(b) {
+  const start = b.indexOf(`\n${ARM_B_HEADINGS.excerpts}\n`);
+  const stop = b.indexOf(`\n${ARM_B_HEADINGS.topics}\n`);
+  const body = b.slice(start, stop < 0 ? undefined : stop);
+  return [...body.matchAll(/^(\d+\.\d+[a-z]*)\. /gm)].map((match) => match[1]);
+}
+
 async function main() {
   const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
   const { loadFrozenVectors, checkReFreeze } = await import("../apps/backend/src/eval/rules-gate/frozenVectors.ts");
@@ -159,6 +235,18 @@ async function main() {
   const resources = await loadPromptResources();
   const vectors = loadFrozenVectors();
   const manifest = JSON.parse(await readFile(resolve(repoRoot, DIAGNOSTIC_MANIFEST_RELATIVE_PATH), "utf8"));
+  if (process.argv.includes("--observations")) {
+    const casesById = new Map((await loadGoldCases()).map((caseEntry) => [caseEntry.id, caseEntry]));
+    const prompts = [];
+    for (const entry of manifest.cases) {
+      const caseEntry = casesById.get(entry.id);
+      const request = await parseCaseRequest(caseEntry);
+      const freeze = checkReFreeze(caseEntry.id, request, resources.cardDetailIndex, vectors);
+      prompts.push(preparePromptInput(request, { ...resources, queryEmbedding: freeze.state === "fresh" ? freeze.vector : null, supplementalRuleCap: 10 }).promptText);
+    }
+    console.log(JSON.stringify(observeArmAPrompts(prompts), null, 2));
+    return;
+  }
   const result = await checkDiagnosticArms({
     cases: await loadGoldCases(),
     manifest,

@@ -158,17 +158,23 @@ test("case level: per-rule coverage, complete-procedure coverage and goldRuleInP
   const traced = await buildTrace({ cases: [partial, full, none], ...deps });
   const coverage = Object.fromEntries(traced.map((entry) => [entry.caseId, entry.coverage]));
 
-  assert.deepEqual(coverage.partial, { availableRules: 1, decidingRules: 2, completeProcedure: false, goldRuleInPrompt: true });
-  assert.deepEqual(coverage.full, { availableRules: 2, decidingRules: 2, completeProcedure: true, goldRuleInPrompt: true });
-  assert.deepEqual(coverage.none, { availableRules: 0, decidingRules: 2, completeProcedure: false, goldRuleInPrompt: false });
-  assert.deepEqual(summarizeTrace(traced), {
-    cases: 3,
-    everyDecidingRuleSelected: 1,
-    goldRuleInPrompt: 2,
-    completeProcedure: 1,
-    awaitingRefreeze: 0
-  });
+  assert.deepEqual(coverage.partial, { availableRules: 1, decidingRules: 2, completeProcedure: false, allDecidingRulesInPrompt: false, goldRuleInPrompt: true });
+  assert.deepEqual(coverage.full, { availableRules: 2, decidingRules: 2, completeProcedure: true, allDecidingRulesInPrompt: true, goldRuleInPrompt: true });
+  assert.deepEqual(coverage.none, { availableRules: 0, decidingRules: 2, completeProcedure: false, allDecidingRulesInPrompt: false, goldRuleInPrompt: false });
+  const summary = summarizeTrace(traced);
+  assert.deepEqual(
+    { cases: summary.cases, every: summary.everyDecidingRuleSelected, gold: summary.goldRuleInPrompt, complete: summary.completeProcedure, awaiting: summary.awaitingRefreeze },
+    { cases: 3, every: 1, gold: 2, complete: 1, awaiting: 0 }
+  );
+  assert.deepEqual(summary.overall, { cases: 3, rules: 6, rulesSelected: 3, rulesAvailable: 3, completeProcedure: 1, goldRuleInPrompt: 2 });
+  assert.deepEqual(Object.keys(summary.byTier), ["3"]);
+  assert.deepEqual(Object.keys(summary.bySection), ["514", "614", "701"], "by Comprehensive Rules section");
+  // Section 514 holds one deciding rule from each case: 514.2 (not selected), 514.1 (selected), 514.3a (not selected).
+  assert.deepEqual(summary.bySection["514"], { cases: 3, rules: 3, rulesSelected: 1, rulesAvailable: 1, completeProcedure: 1, goldRuleInPrompt: 1 });
   assert.ok(traced.every((entry) => entry.promptHash.length === 64));
+  // Per case: the request kind, attached cards, retrieval query text and its hash.
+  assert.ok(traced.every((entry) => entry.requestKind === "lookup" && Array.isArray(entry.attachedCards) && entry.queryTextHash.length === 64));
+  assert.equal(traced[0].queryText, "", "the fake pipeline reports no query text");
 });
 
 test("a case awaiting a re-freeze, or with no frozen vector, is embedded locally and labelled", async () => {
@@ -257,6 +263,26 @@ test("the trace refuses a dirty checkout and records its commit in trace.json", 
   const named = await run({ argv: ["--out", "head"] });
   assert.equal(named.folder, join(outputRoot, "head"));
   assert.throws(() => parseTraceArgs(["--out", "../escape"]), /not usable/);
+  assert.throws(() => parseTraceArgs(["--subject", "/other/checkout"]), /Unknown option --subject/, "no cross-checkout subject");
+
+  // A Markdown summary sits beside trace.json.
+  const markdown = await readFile(join(folder, "summary.md"), "utf8");
+  assert.match(markdown, /# Evidence trace at commit 0123456789abcdef/);
+  assert.match(markdown, /\| overall \| 2 \|/);
+  assert.match(markdown, /rules section 701/);
+});
+
+test("the trace can be narrowed to named cases or a manifest, and refuses a name that is not an approved case", async () => {
+  const { run } = await traceRunDeps();
+  const one = await run({ argv: ["--case", "one"] });
+  assert.deepEqual(one.trace.cases.map((entry) => entry.caseId), ["one"]);
+  const both = await run({
+    argv: ["--manifest", "m.json", "--out", "by-manifest"],
+    readManifest: async () => ({ cases: [{ id: "two" }] })
+  });
+  assert.deepEqual(both.trace.cases.map((entry) => entry.caseId), ["two"]);
+  await assert.rejects(() => run({ argv: ["--case", "draft"] }), /not an approved case in this checkout: draft/);
+  await assert.rejects(() => run({ argv: ["--case", "ghost", "--case", "one"] }), /ghost/);
 });
 
 // D4 ------------------------------------------------------------------------
@@ -297,7 +323,10 @@ test("the compare command reports both commits, prompt-hash equality, coverage d
   await writeFile(join(b.folder, "trace.json"), `${JSON.stringify(traceB, null, 2)}\n`);
 
   const logs = [];
-  const result = await runTraceCompare({ argv: [a.folder, b.folder], log: (line) => logs.push(line), cwd: "/" });
+  const compareOut = await mkdtemp(join(tmpdir(), "evidence-trace-compare-out-"));
+  const result = await runTraceCompare({ argv: [a.folder, b.folder], log: (line) => logs.push(line), cwd: "/", outputRoot: compareOut });
+  const written = JSON.parse(await readFile(join(compareOut, "compare-a-b.json"), "utf8"));
+  assert.deepEqual(written.commits, result.commits, "the comparison is kept as numbers and ids under the output folder");
 
   assert.deepEqual(result.commits, { a: "3e973ced0000000000000000000000000000aaaa", b: "07cc3ab60000000000000000000000000000bbbb" });
   assert.equal(result.sharedCases, 3);
@@ -340,7 +369,7 @@ test("eval:evidence-trace and eval:evidence-trace:compare exist in package.json,
   try {
     const { run } = await traceRunDeps();
     const { folder } = await run();
-    await runTraceCompare({ argv: [folder, folder], log: () => {}, cwd: "/" });
+    await runTraceCompare({ argv: [folder, folder], log: () => {}, cwd: "/", outputRoot: await mkdtemp(join(tmpdir(), "evidence-trace-compare-out-")) });
   } finally {
     globalThis.fetch = realFetch;
   }

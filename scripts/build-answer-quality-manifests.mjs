@@ -18,6 +18,13 @@
 //   npm run eval:answer-quality:manifests -- --check    # exits 1 if they would change
 //   npm run eval:answer-quality:manifests -- --seed 7 --held-out 60 --reason "..."
 //
+// It can also write a run manifest for a paid phase without touching the committed
+// files (the path must be under output/, which is gitignored):
+//   npm run eval:answer-quality:manifests -- --emit output/answer-quality/manifests/all-approved.json --from approved
+//   npm run eval:answer-quality:manifests -- --emit output/answer-quality/manifests/phase-4.json --from diagnostic --from held-out
+//   npm run eval:answer-quality:manifests -- --emit output/answer-quality/manifests/named.json --from approved --ids a,b,c
+//   npm run eval:answer-quality:manifests -- --emit output/answer-quality/manifests/primary.json --from approved --exclude a,b,c
+//
 // Offline, no provider, never a gate. Run via tsx (the trace reads the backend).
 
 import { dirname, resolve } from "node:path";
@@ -182,21 +189,74 @@ async function formatJson(value, filePath) {
 }
 
 export function parseManifestArgs(argv) {
-  const parsed = { check: false, seed: DEFAULT_SEED, sizes: { ...DEFAULT_SIZES }, reason: null };
+  const parsed = { check: false, seed: DEFAULT_SEED, sizes: { ...DEFAULT_SIZES }, reason: null, emit: null, from: [], ids: null, exclude: [] };
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
     if (arg === "--check") parsed.check = true;
+    else if (arg === "--emit") parsed.emit = argv[++i];
+    else if (arg === "--from") parsed.from.push(argv[++i]);
+    else if (arg === "--ids") parsed.ids = String(argv[++i] ?? "").split(",").filter(Boolean);
+    else if (arg === "--exclude") parsed.exclude = String(argv[++i] ?? "").split(",").filter(Boolean);
     else if (arg === "--seed") parsed.seed = Number(argv[++i]);
     else if (arg === "--diagnostic-none") parsed.sizes.diagnosticNone = Number(argv[++i]);
     else if (arg === "--diagnostic-full") parsed.sizes.diagnosticFull = Number(argv[++i]);
     else if (arg === "--held-out") parsed.sizes.heldOut = Number(argv[++i]);
     else if (arg === "--reason") parsed.reason = argv[++i];
   }
+  if (parsed.emit === null && (parsed.from.length > 0 || parsed.ids !== null || parsed.exclude.length > 0)) {
+    throw new Error("--from, --ids and --exclude belong to --emit <path>.");
+  }
+  if (parsed.emit !== null) {
+    if (parsed.check) throw new Error("--check compares the committed manifests; it cannot be combined with --emit.");
+    const bad = parsed.from.filter((source) => !["approved", "diagnostic", "held-out"].includes(source));
+    if (bad.length > 0) throw new Error(`--from names approved, diagnostic or held-out, not ${bad.join(", ")}.`);
+    if (parsed.from.length === 0) parsed.from.push("approved");
+  }
   if (!Number.isInteger(parsed.seed)) throw new Error("--seed needs a whole number.");
   for (const [key, value] of Object.entries(parsed.sizes)) {
     if (!Number.isInteger(value) || value < 0) throw new Error(`The sample size for ${key} needs a whole number of at least 0.`);
   }
   return parsed;
+}
+
+/**
+ * A run manifest for one paid phase, written outside the committed files: the union of
+ * the named sources (`approved`, `diagnostic`, `held-out`), optionally narrowed to
+ * `ids`. Ids and hashes only. A named id outside the sources is refused, not skipped.
+ */
+export function buildEmitManifest({ approvedCases, from, ids, exclude = [], committedIds }) {
+  const byId = new Map(approvedCases.map((caseEntry) => [caseEntry.id, caseEntry]));
+  const chosen = new Set();
+  for (const source of from) {
+    if (source === "approved") for (const caseEntry of approvedCases) chosen.add(caseEntry.id);
+    else for (const id of committedIds[source] ?? []) chosen.add(id);
+  }
+  let list = [...chosen].sort();
+  if (ids) {
+    const missing = ids.filter((id) => !chosen.has(id));
+    if (missing.length > 0) throw new Error(`These cases are not in ${from.join(" + ")}: ${missing.join(", ")}.`);
+    list = list.filter((id) => ids.includes(id));
+  }
+  const unknownExcluded = exclude.filter((id) => !chosen.has(id));
+  if (unknownExcluded.length > 0) throw new Error(`These cases to exclude are not in ${from.join(" + ")}: ${unknownExcluded.join(", ")}.`);
+  list = list.filter((id) => !exclude.includes(id));
+  const gone = list.filter((id) => !byId.has(id));
+  if (gone.length > 0) throw new Error(`These cases are no longer approved in this checkout: ${gone.join(", ")}. Re-run the seeded command.`);
+  return {
+    formatVersion: MANIFEST_FORMAT_VERSION,
+    kind: "run-manifest",
+    sources: from,
+    command: MANIFEST_COMMAND,
+    caseCount: list.length,
+    cases: list.map((id) => manifestEntryFor(byId.get(id)))
+  };
+}
+
+/** The emit path must sit under output/ (gitignored): this command never overwrites a committed file by accident. */
+export function resolveEmitPath(path, root = repoRoot) {
+  const resolved = resolve(root, path);
+  if (!resolved.startsWith(`${resolve(root, "output")}/`)) throw new Error(`--emit writes under output/ only, not ${path}.`);
+  return resolved;
 }
 
 /** Generates (or checks) both files. `traced` is the evidence trace over the approved cases. */
@@ -238,11 +298,30 @@ export async function runManifests({ argv = [], approvedCases, traced, write, re
 
 async function main() {
   const { writeFile, mkdir } = await import("node:fs/promises");
+  const parsedArgs = parseManifestArgs(process.argv.slice(2));
   const { buildTrace, PRODUCTION_CAP } = await import("./lib/evidence-trace.mjs");
   const { defaultTraceDeps } = await import("./eval-evidence-trace.mjs");
   const { loadGoldCases } = await import("./lib/gold-cases.mjs");
-  const deps = await defaultTraceDeps();
   const approvedCases = (await loadGoldCases()).filter((caseEntry) => caseEntry.review.status === "approved");
+  if (parsedArgs.emit !== null) {
+    const readIds = async (relativePath) => JSON.parse(await readFile(resolve(repoRoot, relativePath), "utf8")).cases.map((entry) => entry.id);
+    const manifest = buildEmitManifest({
+      approvedCases,
+      from: parsedArgs.from,
+      ids: parsedArgs.ids,
+      exclude: parsedArgs.exclude,
+      committedIds: {
+        diagnostic: parsedArgs.from.includes("diagnostic") ? await readIds(DIAGNOSTIC_MANIFEST_RELATIVE_PATH) : [],
+        "held-out": parsedArgs.from.includes("held-out") ? await readIds(HELD_OUT_MANIFEST_RELATIVE_PATH) : []
+      }
+    });
+    const path = resolveEmitPath(parsedArgs.emit);
+    await mkdir(dirname(path), { recursive: true });
+    await writeFile(path, await formatJson(manifest, path), "utf8");
+    console.log(`Wrote a run manifest of ${manifest.caseCount} cases (${manifest.sources.join(" + ")}) to ${path}.`);
+    return;
+  }
+  const deps = await defaultTraceDeps();
   const resources = await deps.loadResources();
   const ts = await deps.loadTs(resources);
   // The frozen vectors rank every case; a case awaiting a re-freeze would be embedded here and labelled, but the manifests need the committed ranking.

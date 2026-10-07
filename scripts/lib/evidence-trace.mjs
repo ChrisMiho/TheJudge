@@ -26,6 +26,7 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { hashPrompt } from "./answer-quality-run.mjs";
+import { ruleSections } from "./gold-cases.mjs";
 import { describeDecidingRules, letteredSubrules, parentRuleId, ruleAvailability, availabilityInputsFrom } from "./rule-availability.mjs";
 
 export const TRACE_FORMAT_VERSION = 1;
@@ -64,6 +65,17 @@ function relatedEntry(relatedId, context) {
   };
 }
 
+function attachedCardsOf(request) {
+  const cards = [];
+  for (const card of request?.cards ?? []) cards.push({ cardId: card.cardId, name: card.name });
+  for (const items of Object.values(request?.gameContext?.zones ?? {})) {
+    for (const item of items ?? []) {
+      if (item?.cardId && !cards.some((card) => card.cardId === item.cardId)) cards.push({ cardId: item.cardId, name: item.name ?? "" });
+    }
+  }
+  return cards;
+}
+
 /**
  * Traces one case. `full` is the prompt prepared at the cap equal to the rule
  * index's size (the full ranking); `production` is the prompt at the
@@ -99,9 +111,15 @@ export function traceCase({ caseEntry, request, full, production, ruleEntryById,
     request,
     cardRulingsIndex
   });
+  const queryText = production?.enrichmentDebug?.supplemental?.queryText ?? "";
   return {
     caseId: caseEntry.id,
     tier: caseEntry.tier,
+    requestKind: request?.mode === "game" ? "game" : "lookup",
+    attachedCards: attachedCardsOf(request),
+    // What System 3 ranked from: the retrieval query text production embeds, and its hash.
+    queryText,
+    queryTextHash: hashPrompt(queryText),
     vectorSource,
     promptHash: hashPrompt(production.promptText),
     promptChars: production.promptText.length,
@@ -110,6 +128,8 @@ export function traceCase({ caseEntry, request, full, production, ruleEntryById,
       availableRules: rules.filter((rule) => rule.availableToAnswer).length,
       decidingRules: rules.length,
       completeProcedure: described.allDecidingRulesInPrompt,
+      // The same fact under REQ-189's record field name: every deciding rule's text is somewhere in the final prompt.
+      allDecidingRulesInPrompt: described.allDecidingRulesInPrompt,
       goldRuleInPrompt: described.anyDecidingRuleSelected
     }
   };
@@ -171,14 +191,72 @@ export function checkBaselineParity({ traced, baseline }) {
   return { checked, skipped, agree: checked - divergences.length, divergences };
 }
 
+function coverageOf(entries) {
+  const rules = entries.flatMap((entry) => entry.rules);
+  return {
+    cases: entries.length,
+    rules: rules.length,
+    rulesSelected: rules.filter((rule) => rule.selectedInSearch).length,
+    rulesAvailable: rules.filter((rule) => rule.availableToAnswer).length,
+    completeProcedure: entries.filter((entry) => entry.coverage.completeProcedure).length,
+    goldRuleInPrompt: entries.filter((entry) => entry.coverage.goldRuleInPrompt).length
+  };
+}
+
+/** Coverage for one Comprehensive Rules section: only the deciding rules in that section count, over the cases that have any. */
+function coverageOfSection(entries, section) {
+  const inSection = (rule) => ruleSections([rule.ruleId])[0] === section;
+  const touching = entries.filter((entry) => entry.rules.some(inSection));
+  const rules = touching.flatMap((entry) => entry.rules.filter(inSection));
+  return {
+    cases: touching.length,
+    rules: rules.length,
+    rulesSelected: rules.filter((rule) => rule.selectedInSearch).length,
+    rulesAvailable: rules.filter((rule) => rule.availableToAnswer).length,
+    completeProcedure: touching.filter((entry) => entry.rules.filter(inSection).every((rule) => rule.availableToAnswer)).length,
+    goldRuleInPrompt: touching.filter((entry) => entry.rules.filter(inSection).some((rule) => rule.selectedInSearch)).length
+  };
+}
+
+const byKey = ([a], [b]) => a.localeCompare(b, "en", { numeric: true });
+
+/**
+ * Per-rule and complete-procedure coverage, overall and by tier and by
+ * Comprehensive Rules section. A section's figures count only the deciding rules
+ * in that section, over the cases that have one.
+ */
 export function summarizeTrace(traced) {
+  const byTier = {};
+  for (const entry of traced) (byTier[entry.tier] ??= []).push(entry);
+  const sections = new Set(traced.flatMap((entry) => ruleSections(entry.rules.map((rule) => rule.ruleId))));
   return {
     cases: traced.length,
     everyDecidingRuleSelected: traced.filter((entry) => entry.rules.every((rule) => rule.selectedInSearch)).length,
     goldRuleInPrompt: traced.filter((entry) => entry.coverage.goldRuleInPrompt).length,
     completeProcedure: traced.filter((entry) => entry.coverage.completeProcedure).length,
-    awaitingRefreeze: traced.filter((entry) => entry.vectorSource !== VECTOR_SOURCES.frozen).length
+    awaitingRefreeze: traced.filter((entry) => entry.vectorSource !== VECTOR_SOURCES.frozen).length,
+    overall: coverageOf(traced),
+    byTier: Object.fromEntries(Object.entries(byTier).sort(byKey).map(([tier, entries]) => [tier, coverageOf(entries)])),
+    bySection: Object.fromEntries([...sections].sort((a, b) => a.localeCompare(b, "en", { numeric: true })).map((section) => [section, coverageOfSection(traced, section)]))
   };
+}
+
+/** A short Markdown summary of a trace folder, written beside trace.json. */
+export function formatTraceSummaryMarkdown(trace) {
+  const { summary } = trace;
+  const row = (label, c) => `| ${label} | ${c.cases} | ${c.rulesSelected}/${c.rules} | ${c.rulesAvailable}/${c.rules} | ${c.completeProcedure}/${c.cases} | ${c.goldRuleInPrompt}/${c.cases} |`;
+  return [
+    `# Evidence trace at commit ${trace.commit}`,
+    "",
+    `${summary.cases} cases traced offline; production excerpt cap ${trace.productionCap}; ${trace.ruleIndexSize} rules in the index.`,
+    "",
+    "| Group | Cases | Rules selected in search | Rules available to answer | Complete procedure | goldRuleInPrompt |",
+    "| --- | --- | --- | --- | --- | --- |",
+    row("overall", summary.overall),
+    ...Object.entries(summary.byTier).map(([tier, c]) => row(`tier ${tier}`, c)),
+    ...Object.entries(summary.bySection).map(([section, c]) => row(`rules section ${section}`, c)),
+    ""
+  ].join("\n");
 }
 
 /** Writes the trace folder: `trace.json` with the commit it was produced from. */
@@ -196,6 +274,7 @@ export async function writeTraceFolder({ outputRoot, name, commit, productionCap
   };
   await mkdir(folder, { recursive: true });
   await writeFile(join(folder, TRACE_FILE), `${JSON.stringify(trace, null, 2)}\n`, "utf8");
+  await writeFile(join(folder, "summary.md"), formatTraceSummaryMarkdown(trace), "utf8");
   return { folder, trace };
 }
 

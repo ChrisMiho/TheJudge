@@ -135,21 +135,13 @@ export type LoneJudgeResult =
  * judge sees the same thing however the answer was produced (REQ-186).
  */
 export function buildLoneJudgePrompt(input: Omit<LoneJudgeInput, "client" | "judgeModel">): string {
-  const excerptLines =
-    input.attachedExcerpts.length > 0
-      ? input.attachedExcerpts.map((excerpt) => `  ${excerpt.ruleId}. ${excerpt.text}`)
-      : ["  (none)"];
-  const stateLines = input.stateLines ?? [];
   return [
     "You are grading one Magic: The Gathering rules answer against an approved reference answer.",
     "The reference answer is authoritative. Your task is agreement with it, not independent adjudication from your own rules knowledge.",
     "You are not told which model produced this answer or what retrieval settings were used -- score only what is written below.",
     "",
     `Question: ${input.question}`,
-    "Rule excerpts attached to the answer prompt (the rules the answer could draw on):",
-    ...excerptLines,
-    `Rules the reference answer turns on (deciding rule ids; they may or may not be attached above): ${input.decidingRuleIds.join(", ") || "(none)"}`,
-    ...(stateLines.length > 0 ? ["Game state the prompt printed:", ...stateLines.map((line) => `  ${line}`)] : []),
+    ...evidenceLines(input),
     `Reference answer (approved, authoritative): ${input.workedSolution}`,
     `Answer under review: ${input.answerText}`,
     "",
@@ -211,6 +203,10 @@ export type BlindRankingInput = {
   client: JudgeClient;
   judgeModel: string;
   question: string;
+  /** The same attached-excerpt, deciding-rule and game-state inputs the lone judge receives (REQ-186): every answer ranked here came from one prompt. */
+  attachedExcerpts?: readonly JudgeExcerpt[];
+  decidingRuleIds?: readonly string[];
+  stateLines?: readonly string[];
   workedSolution: string;
   answers: readonly BlindRankingEntry[];
   /**
@@ -239,8 +235,28 @@ function labelFor(index: number): string {
   return String.fromCharCode(65 + index); // A, B, C, ...
 }
 
-function buildRankingPrompt(params: {
+/** The evidence lines shared by the lone judge and the blind ranking, so both are told the same about the prompt (REQ-186). */
+function evidenceLines(input: {
+  attachedExcerpts?: readonly JudgeExcerpt[];
+  decidingRuleIds?: readonly string[];
+  stateLines?: readonly string[];
+}): string[] {
+  const attached = input.attachedExcerpts ?? [];
+  const excerptLines = attached.length > 0 ? attached.map((excerpt) => `  ${excerpt.ruleId}. ${excerpt.text}`) : ["  (none)"];
+  const stateLines = input.stateLines ?? [];
+  return [
+    "Rule excerpts attached to the answer prompt (the rules the answer could draw on):",
+    ...excerptLines,
+    `Rules the reference answer turns on (deciding rule ids; they may or may not be attached above): ${(input.decidingRuleIds ?? []).join(", ") || "(none)"}`,
+    ...(stateLines.length > 0 ? ["Game state the prompt printed:", ...stateLines.map((line) => `  ${line}`)] : [])
+  ];
+}
+
+export function buildRankingPrompt(params: {
   question: string;
+  attachedExcerpts?: readonly JudgeExcerpt[];
+  decidingRuleIds?: readonly string[];
+  stateLines?: readonly string[];
   workedSolution: string;
   labeledAnswers: Array<{ label: string; answerText: string }>;
 }): string {
@@ -249,6 +265,7 @@ function buildRankingPrompt(params: {
     "You are not told which model produced any answer, or in what order they were originally generated -- the labels below are arbitrary and shuffled.",
     "",
     `Question: ${params.question}`,
+    ...evidenceLines(params),
     `Reference answer (approved, authoritative): ${params.workedSolution}`,
     "",
     formatRubricForJudge(),
@@ -319,7 +336,14 @@ export async function judgeBlindRanking(input: BlindRankingInput): Promise<Blind
   try {
     const response = await input.client.responses.create({
       model: input.judgeModel,
-      input: buildRankingPrompt({ question: input.question, workedSolution: input.workedSolution, labeledAnswers })
+      input: buildRankingPrompt({
+        question: input.question,
+        attachedExcerpts: input.attachedExcerpts,
+        decidingRuleIds: input.decidingRuleIds,
+        stateLines: input.stateLines,
+        workedSolution: input.workedSolution,
+        labeledAnswers
+      })
     });
     responseText = response.output_text ?? "";
     usage = usageOf(response);

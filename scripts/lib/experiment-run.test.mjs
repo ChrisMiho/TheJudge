@@ -734,3 +734,95 @@ test("a record marks a held-out case with heldOut, and an arm's records with dia
     ["case-two", "B", "B.1", true, true]
   ]);
 });
+
+// ---------------------------------------------------------------------------
+// Slice G alignment with the finalized proposal (REQ-226, REQ-227, REQ-186)
+// ---------------------------------------------------------------------------
+
+const PRICED_RATES = { "gpt-4.1": { inputUsdPerMillion: 2, outputUsdPerMillion: 8 }, "gpt-5": { inputUsdPerMillion: 1.25, outputUsdPerMillion: 10 } };
+
+test("a resume continues against the recorded cap unless a new one is given, which is recorded", async () => {
+  const cases = [fixtureCase("c1"), fixtureCase("c2"), fixtureCase("c3")];
+  const deps = fakeDeps({ estimateCallCostUsd: ({ kind }) => (kind === "answer" ? 0.02 : 0.01), computeCallCostUsd: (model) => (model === "gpt-5" ? 0.01 : 0.02), rateTable: PRICED_RATES });
+  const params = await experimentParams({ cases, manifest: manifestFor(cases), maxCostUsd: 0.05 });
+  const first = await executeExperiment(params, deps);
+  assert.equal(first.summary.stoppedReason.maxCostUsd, 0.05);
+  assert.equal(params.client.calls.length, 1);
+
+  // Resuming with no cap given continues against the recorded 0.05: no further call fits, so it stops again.
+  const sameCap = { ...params, client: fakeClient(), resume: true, maxCostUsd: null };
+  const again = await executeExperiment(sameCap, deps);
+  assert.equal(sameCap.client.calls.length, 0);
+  assert.equal(again.summary.stoppedReason.maxCostUsd, 0.05);
+
+  // A new cap is recorded and lets the run finish; the identity record keeps the history.
+  const higher = { ...params, client: fakeClient(), resume: true, maxCostUsd: 1 };
+  const finished = await executeExperiment(higher, deps);
+  assert.equal(higher.client.calls.length, 2, "the two cases that never ran are answered");
+  assert.equal(finished.summary.stoppedReason, null);
+  const onDisk = JSON.parse(await readFile(join(params.runsRoot, "run-one", "manifest.json"), "utf8"));
+  assert.equal(onDisk.maxCostUsd, 1);
+  assert.deepEqual(onDisk.capChanges.map((change) => [change.from, change.to]), [[0.05, 1]]);
+  assert.deepEqual(finished.summary.notCompleted, []);
+});
+
+test("the summary lists every record key not completed, on a stop and on an error", async () => {
+  const cases = [fixtureCase("c1"), fixtureCase("c2"), fixtureCase("c3")];
+  const deps = fakeDeps({ estimateCallCostUsd: ({ kind }) => (kind === "answer" ? 0.02 : 0.01), computeCallCostUsd: (model) => (model === "gpt-5" ? 0.01 : 0.02), rateTable: PRICED_RATES });
+  const stopped = await executeExperiment(await experimentParams({ cases, manifest: manifestFor(cases), maxCostUsd: 0.05 }), deps);
+  assert.deepEqual(stopped.summary.notCompleted, ["c2|gpt-4.1|10|A|1", "c3|gpt-4.1|10|A|1"]);
+  assert.ok(Array.isArray(stopped.summary.notCompleted));
+
+  const errored = await experimentParams({ cases, manifest: manifestFor(cases) });
+  let n = 0;
+  errored.client.responses.create = async (call) => {
+    n += 1;
+    errored.client.calls.push(call);
+    if (n === 2) throw new Error("500");
+    return { output_text: "Per rule 100.1, yes.", usage: { input_tokens: 1, output_tokens: 1 } };
+  };
+  const { summary } = await executeExperiment(errored, fakeDeps());
+  assert.deepEqual(summary.notCompleted, ["c2|gpt-4.1|10|A|1"]);
+});
+
+test("a regrade refuses a stored answer that lacks its answer text or the prompt it answered", async () => {
+  const source = await experimentParams({ runId: "src-bad" });
+  await executeExperiment(source, fakeDeps());
+  const folder = join(source.runsRoot, "src-bad", "transcripts");
+  const names = await readdir(folder);
+  const target = join(folder, names[0]);
+  const stored = JSON.parse(await readFile(target, "utf8"));
+  delete stored.promptText;
+  await writeFile(target, JSON.stringify(stored));
+  await assert.rejects(
+    () => executeRegrade({ runId: "regrade-bad", runsRoot: source.runsRoot, client: fakeClient(), judgeModel: "gpt-5", regradeFrom: "src-bad", cases: CASES, log: () => {} }, fakeDeps()),
+    /1 stored answer\(s\) lack the answer text or the prompt hash source/
+  );
+  await assert.rejects(() => stat(join(source.runsRoot, "regrade-bad")), { code: "ENOENT" });
+});
+
+test("the blind ranking is handed the same attached-excerpt, deciding-rule and game-state inputs as the lone judge", async () => {
+  const caseEntry = fixtureCase("rank-inputs", { expected: { outcome: "works", shortAnswer: "Yes.", answer: "Reference.", decidingRuleIds: ["100.1", "200.2"] } });
+  const params = await experimentParams({ cases: [caseEntry], manifest: manifestFor([caseEntry]), models: ["gpt-4.1", "gpt-5-mini"] });
+  const lone = [];
+  const ranking = [];
+  await executeExperiment(
+    params,
+    fakeDeps({
+      preparePromptInput: (request) => ({ promptText: `PROMPT ${request.question}`, enrichmentDebug: { supplemental: { usedSemantic: true, selected: [{ ruleId: "100.1" }] } } }),
+      resources: { gameRulesRuleIndex: [{ ruleId: "100.1", text: "Rule text." }] },
+      judgeAnswerAlone: async (input) => {
+        lone.push({ attachedExcerpts: input.attachedExcerpts, decidingRuleIds: input.decidingRuleIds, stateLines: input.stateLines });
+        return { undetermined: false, scores: { correctness: 2, grounding: 2, calibration: 2, readability: 2 }, rationale: "ok", usage: { inputTokens: 1, outputTokens: 1, reasoningTokens: 0 } };
+      },
+      judgeBlindRanking: async (input) => {
+        ranking.push({ attachedExcerpts: input.attachedExcerpts, decidingRuleIds: input.decidingRuleIds, stateLines: input.stateLines });
+        return { undetermined: true, reason: "n/a", usage: { inputTokens: 0, outputTokens: 0, reasoningTokens: 0 } };
+      }
+    })
+  );
+  assert.equal(ranking.length, 1);
+  assert.deepEqual(ranking[0], lone[0]);
+  assert.deepEqual(ranking[0].attachedExcerpts, [{ ruleId: "100.1", text: "Rule text." }]);
+  assert.deepEqual(ranking[0].decidingRuleIds, ["100.1", "200.2"]);
+});

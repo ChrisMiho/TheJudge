@@ -34,15 +34,18 @@ export const ARM_P_CORRECTION_RELATIVE_PATH = "apps/backend/src/eval/answer-qual
 
 /**
  * Arm registry. `frozen` means the arm's revision id is fixed and may be used by
- * a live run and, for B and P, on a held-out case (REQ-230). B stays unfrozen
- * until its grouping is chosen from observed prompts and frozen under this
- * revision id; D inherits B's status; P is frozen only while its approved
+ * a live run and, for B and P, on a held-out case (REQ-230). B.1 was chosen from
+ * what the production prompt does with its evidence across the diagnostic cases
+ * (`node --import tsx scripts/diagnostic-arms-check.mjs --observations`, recorded in
+ * docs/eval/answer-quality-investigation/OFFLINE-FINDINGS.md) and frozen on
+ * 2026-10-07: any later change to its grouping is a new revision id (B.2), never an
+ * edit of B.1. D inherits B's status; P is frozen only while its approved
  * correction file exists. `usesDecidingRules` marks the arms that read a case's
  * deciding-rule labels (C and D): diagnostic manifest only.
  */
 export const ARM_REGISTRY = {
   A: { id: "A", revision: "A.1", title: "production prompt, untouched", frozen: true, usesDecidingRules: false },
-  B: { id: "B", revision: "B.1", title: "same evidence, regrouped and headed", frozen: false, usesDecidingRules: false },
+  B: { id: "B", revision: "B.1", title: "same evidence, regrouped and headed", frozen: true, usesDecidingRules: false },
   C: { id: "C", revision: "C.1", title: "production prompt plus the deciding-rule bundle", frozen: true, usesDecidingRules: true },
   D: { id: "D", revision: "D.1", title: "the bundle's evidence in B's presentation", frozen: true, usesDecidingRules: true },
   P: { id: "P", revision: "P.1", title: "preamble sentence corrected", frozen: false, usesDecidingRules: false }

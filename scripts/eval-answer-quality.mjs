@@ -71,6 +71,7 @@ import {
 } from "./lib/experiment-run.mjs";
 import {
   ARM_IDS,
+  ARM_REGISTRY,
   ARM_P_CORRECTION_RELATIVE_PATH,
   DIAGNOSTIC_MANIFEST_RELATIVE_PATH,
   HELD_OUT_MANIFEST_RELATIVE_PATH,
@@ -717,6 +718,7 @@ export async function executeEvaluation(
       const answersForRanking = [];
       const request = buildCaseRequest(caseEntry);
       const referenceHash = referenceAnswerHash(caseEntry);
+      let rankingInputs = {};
 
       for (const model of models) {
         const prepared = deps.preparePromptInput(request, {
@@ -744,17 +746,19 @@ export async function executeEvaluation(
         const outputTokens = usage.outputTokens ?? Math.round(answerText.length / CHARS_PER_TOKEN_ESTIMATE);
 
         const assertions = deps.computeDeterministicAssertions(answerText, caseEntry.expected.decidingRuleIds, knownRuleIds);
+        // What the answer prompt actually carried, and the deciding rules apart (REQ-186).
+        const judgeInputs = buildJudgeInputs({
+          caseEntry,
+          promptText: prepared.promptText,
+          attachedRuleIds: attachedRuleIdsOf(prepared),
+          ruleIndex: deps.resources?.gameRulesRuleIndex
+        });
+        rankingInputs = judgeInputs;
         const judgeResult = await deps.judgeAnswerAlone({
           client,
           judgeModel,
           question: caseEntry.question,
-          // What the answer prompt actually carried, and the deciding rules apart (REQ-186).
-          ...buildJudgeInputs({
-            caseEntry,
-            promptText: prepared.promptText,
-            attachedRuleIds: attachedRuleIdsOf(prepared),
-            ruleIndex: deps.resources?.gameRulesRuleIndex
-          }),
+          ...judgeInputs,
           answerText,
           workedSolution: caseEntry.expected.answer
         });
@@ -834,6 +838,8 @@ export async function executeEvaluation(
           client,
           judgeModel,
           question: caseEntry.question,
+          // The same attached-excerpt, deciding-rule and game-state inputs the lone judge got (REQ-186): the models share one prompt.
+          ...rankingInputs,
           workedSolution: caseEntry.expected.answer,
           answers: answersForRanking
         });
@@ -1075,6 +1081,7 @@ async function runExperimentCommand({
   injectedClient,
   runExperiment,
   loadArmSets = defaultLoadArmSets,
+  armRegistry = ARM_REGISTRY,
   log
 }) {
   const { experiment } = parsed;
@@ -1082,7 +1089,7 @@ async function runExperimentCommand({
   const arms = experiment.regradeFrom
     ? [{ id: DEFAULT_ARM, revision: ARM_A_REVISION }]
     : experiment.armIds.map((armId) => {
-        const { id, revision } = describeArm(armId);
+        const { id, revision } = describeArm(armId, armRegistry);
         return { id, revision };
       });
 
@@ -1106,6 +1113,7 @@ async function runExperimentCommand({
       diagnosticIds: armSets.diagnosticIds,
       heldOutIds: armSets.heldOutIds,
       live: parsed.confirmed,
+      registry: armRegistry,
       correction: armSets.correction
     });
   }
@@ -1136,7 +1144,8 @@ async function runExperimentCommand({
   }
 
   // A live experiment run spends only under a cap it can enforce (REQ-227): refuse before any client exists.
-  if (experiment.maxCostUsd === null) {
+  // A resume continues against the cap its run recorded unless a new one is given.
+  if (experiment.maxCostUsd === null && !experiment.resume) {
     throw new Error(`${CONFIRM_FLAG} in an experiment run also needs --max-cost-usd <dollars>: the run stops cleanly before it would pass that cap.`);
   }
   assertAllPriced({
@@ -1248,6 +1257,7 @@ export async function run(options = {}) {
     runEvaluation = runLiveEvaluation,
     runExperiment = runLiveExperiment,
     loadArmSets,
+    armRegistry,
     loadLocalEnv = loadLocalOpenAiEnv,
     readResults = defaultReadResults,
     loadSources = loadSnapshotSources,
@@ -1280,6 +1290,7 @@ export async function run(options = {}) {
       injectedClient,
       runExperiment,
       loadArmSets,
+      armRegistry,
       log
     });
   }

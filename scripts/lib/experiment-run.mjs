@@ -292,7 +292,14 @@ function sumOf(records, field) {
   return records.reduce((sum, record) => sum + (record[field] ?? 0), 0);
 }
 
-export function buildSummary({ identity, records, finishedAt, stoppedReason = null, rankingUsage = { inputTokens: 0, outputTokens: 0, costUsd: 0 } }) {
+export function buildSummary({
+  identity,
+  records,
+  finishedAt,
+  stoppedReason = null,
+  notCompleted = [],
+  rankingUsage = { inputTokens: 0, outputTokens: 0, costUsd: 0 }
+}) {
   const ok = records.filter((record) => record.status === "ok");
   const summary = {
     runId: identity.runId,
@@ -303,6 +310,8 @@ export function buildSummary({ identity, records, finishedAt, stoppedReason = nu
     rubricRevision: identity.rubricRevision,
     regrade: identity.regrade,
     stoppedReason,
+    // Every record key the run did not complete (an error, or a stop at the cap): the cap is a stop, never a silent skip (REQ-227).
+    notCompleted,
     counts: {
       records: records.length,
       ok: ok.length,
@@ -431,6 +440,9 @@ export function diffIdentity(onDisk, fresh) {
   const comparable = (identity) => {
     const rest = { ...identity };
     delete rest.startedAt;
+    // A resume may carry a new spending cap, which is recorded rather than refused (REQ-227).
+    delete rest.maxCostUsd;
+    delete rest.capChanges;
     return { ...rest, models: { requested: identity.models?.requested } };
   };
   const a = comparable(onDisk);
@@ -527,9 +539,19 @@ export async function executeExperiment(params, deps) {
       );
     }
     identity = onDisk;
+    // A resume continues against the recorded cap unless a new one is given, which is recorded (REQ-227).
+    if (maxCostUsd !== null && maxCostUsd !== identity.maxCostUsd) {
+      identity.capChanges = [...(identity.capChanges ?? []), { from: identity.maxCostUsd ?? null, to: maxCostUsd, at: deps.nowIso() }];
+      identity.maxCostUsd = maxCostUsd;
+      await writeJson(join(folder, "manifest.json"), identity);
+    }
+    if (identity.maxCostUsd !== null && identity.maxCostUsd !== undefined) {
+      assertAllPriced({ models, judgeModel, rateTable: deps.rateTable });
+    }
   } else {
     await writeJson(join(folder, "manifest.json"), identity);
   }
+  const capUsd = identity.maxCostUsd ?? null;
 
   const knownRuleIds = new Set(deps.ruleIds);
   const queryEmbeddingByCaseId = await deps.embedQueries(cases);
@@ -546,9 +568,9 @@ export async function executeExperiment(params, deps) {
   if (resume) log?.(`Resuming ${runId}: ${calls.records.size} record(s) already on disk, $${state.spent.toFixed(4)} already spent.`);
 
   const passesCap = (estimateUsd, nextCall) => {
-    if (maxCostUsd === null || estimateUsd === null) return false;
-    if (state.spent + estimateUsd <= maxCostUsd) return false;
-    state.stopped = { kind: "cap", maxCostUsd, spentUsd: state.spent, estimateUsd, nextCall };
+    if (capUsd === null || estimateUsd === null) return false;
+    if (state.spent + estimateUsd <= capUsd) return false;
+    state.stopped = { kind: "cap", maxCostUsd: capUsd, spentUsd: state.spent, estimateUsd, nextCall };
     return true;
   };
 
@@ -571,7 +593,7 @@ export async function executeExperiment(params, deps) {
       const key = { caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat };
       const existing = calls.records.get(recordKey(key));
       if (existing && (existing.status === "ok" || !retryErrors)) {
-        if (existing.status === "ok") group.push({ record: existing, answerText: await readStoredAnswer(folder, existing) });
+        if (existing.status === "ok") group.push({ record: existing, ...(await readStoredAnswer(folder, existing)) });
         else groupComplete = false;
         continue;
       }
@@ -631,10 +653,17 @@ export async function executeExperiment(params, deps) {
       records.push(ranking && !ranking.undetermined ? { ...record, blindRank: ranking.ranks[model] ?? null } : record);
     }
   }
+  const notCompleted = [];
+  for (const { cap, caseEntry, arm, repeat } of ordered) {
+    for (const model of models) {
+      const key = recordKey({ caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat });
+      if (calls.records.get(key)?.status !== "ok") notCompleted.push(key);
+    }
+  }
   const stoppedReason = state.stopped
     ? { kind: state.stopped.kind, maxCostUsd: state.stopped.maxCostUsd, spentUsd: state.stopped.spentUsd, nextEstimateUsd: state.stopped.estimateUsd }
     : null;
-  const summary = buildSummary({ identity, records, rankingUsage, stoppedReason, finishedAt: deps.nowIso() });
+  const summary = buildSummary({ identity, records, rankingUsage, stoppedReason, notCompleted, finishedAt: deps.nowIso() });
   await writeJson(join(folder, "summary.json"), summary);
   if (state.stopped) {
     log?.(
@@ -646,11 +675,13 @@ export async function executeExperiment(params, deps) {
   return { identity, summary, folder };
 }
 
+/** A finished record's stored answer and the prompt it answered, so a resumed run can rank it without a second call. */
 async function readStoredAnswer(folder, record) {
   try {
-    return JSON.parse(await readFile(join(folder, record.transcript), "utf8")).answerText ?? "";
+    const stored = JSON.parse(await readFile(join(folder, record.transcript), "utf8"));
+    return { answerText: stored.answerText ?? "", promptText: stored.promptText ?? "", attachedRuleIds: stored.attachedRuleIds ?? extractExcerptRuleIds(stored.promptText) };
   } catch {
-    return "";
+    return { answerText: "", promptText: "", attachedRuleIds: [] };
   }
 }
 
@@ -795,7 +826,7 @@ async function answerAndGrade({
     rationale: grade.judgeResult.undetermined ? undefined : grade.judgeResult.rationale
   });
   log?.(`  ${caseEntry.id} / ${model} / cap ${cap} / arm ${arm.id} / repeat ${repeat}: answered (${latencyMs}ms)`);
-  return { record, answerText };
+  return { record, answerText, promptText, attachedRuleIds };
 }
 
 /**
@@ -808,6 +839,8 @@ async function rankGroup({ deps, client, judgeModel, caseEntry, arm, repeat, cap
     client,
     judgeModel,
     question: caseEntry.question,
+    // The same attached-excerpt, deciding-rule and game-state inputs the lone judge got (REQ-186): the models share one prompt.
+    ...buildJudgeInputs({ caseEntry, promptText: group[0].promptText, attachedRuleIds: group[0].attachedRuleIds, ruleIndex: deps.resources?.gameRulesRuleIndex }),
     workedSolution: caseEntry.expected.answer,
     answers: group.map(({ record, answerText }) => ({ modelId: record.model, answerText }))
   });
@@ -894,6 +927,17 @@ export async function executeRegrade(params, deps) {
   const source = await (deps.readSourceRun ?? readSourceRun)(runsRoot, regradeFrom);
   if (source.transcripts.length === 0) throw new Error(`Cannot regrade from "${regradeFrom}": it stored no answer transcripts.`);
 
+  const unusable = source.transcripts.filter(
+    (stored) => typeof stored.answerText !== "string" || typeof stored.promptText !== "string" || stored.promptText.length === 0
+  );
+  if (unusable.length > 0) {
+    throw new Error(
+      `Cannot regrade from "${regradeFrom}": ${unusable.length} stored answer(s) lack the answer text or the prompt hash source (${unusable
+        .slice(0, 5)
+        .map((stored) => `${stored.caseId}/${stored.model}`)
+        .join(", ")}).`
+    );
+  }
   const byId = new Map(cases.map((caseEntry) => [caseEntry.id, caseEntry]));
   const fileHashes = await deps.fileHashes(cases);
   const sourceManifest = { cases: source.identity.caseList };

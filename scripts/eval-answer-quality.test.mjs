@@ -39,6 +39,7 @@ import {
 } from "./eval-answer-quality.mjs"
 import { loadGoldCases } from "./lib/gold-cases.mjs"
 import { manifestEntryFor } from "./lib/experiment-run.mjs"
+import { ARM_REGISTRY } from "./lib/diagnostic-arms.mjs"
 import {
   computeHeadline,
   formatHeadline,
@@ -1519,8 +1520,15 @@ test("a live run refuses an arm whose revision is not frozen, and hands the held
     loadArmSets: armSets(),
     client: fakeAccessClient(["gpt-4.1", "gpt-5"])
   }
+  const unfrozenB = { ...ARM_REGISTRY, B: { ...ARM_REGISTRY.B, frozen: false } }
   await assert.rejects(
-    () => run({ ...base, argv: ["--run-id", "live-b", "--manifest", manifestPath, "--arm", "B", "--max-cost-usd", "5", CONFIRM_FLAG], runExperiment: async () => assert.fail("must not run") }),
+    () =>
+      run({
+        ...base,
+        armRegistry: unfrozenB,
+        argv: ["--run-id", "live-b", "--manifest", manifestPath, "--arm", "B", "--max-cost-usd", "5", CONFIRM_FLAG],
+        runExperiment: async () => assert.fail("must not run")
+      }),
     /arm B \(B\.1\) is not frozen under its revision id yet/
   )
   let received
@@ -1539,4 +1547,24 @@ test("a live run refuses an arm whose revision is not frozen, and hands the held
 test("the production per-attempt timeout is read from the checkout's own config source", async () => {
   assert.equal(await readProductionTimeoutMs(), 15000)
   assert.equal(await readProductionTimeoutMs("/no/such/config.ts"), null)
+})
+
+test("the routine run's blind ranking is handed the lone judge's attached-excerpt, deciding-rule and game-state inputs (REQ-186)", async () => {
+  const caseEntry = fixtureCase("routine-rank", { expected: { outcome: "works", shortAnswer: "Yes.", answer: "Reference.", decidingRuleIds: ["100.1", "200.2"] } })
+  const seen = { lone: [], ranking: [] }
+  const { deps } = fakeDeps({
+    resources: { gameRulesRuleIndex: [{ ruleId: "100.1", text: "Rule text." }] },
+    judgeAnswerAlone: async (input) => {
+      seen.lone.push({ attachedExcerpts: input.attachedExcerpts, decidingRuleIds: input.decidingRuleIds, stateLines: input.stateLines })
+      return { undetermined: true, reason: "skipped", usage: { inputTokens: 0, outputTokens: 0, reasoningTokens: 0 } }
+    },
+    judgeBlindRanking: async (input) => {
+      seen.ranking.push({ attachedExcerpts: input.attachedExcerpts, decidingRuleIds: input.decidingRuleIds, stateLines: input.stateLines })
+      return { undetermined: true, reason: "skipped", usage: { inputTokens: 0, outputTokens: 0, reasoningTokens: 0 } }
+    }
+  })
+  await executeEvaluation(evaluationParams({ models: ["gpt-4.1", "gpt-5-mini"], selectedCases: [caseEntry], allCases: [caseEntry] }), deps)
+  assert.equal(seen.ranking.length, 1)
+  assert.deepEqual(seen.ranking[0], seen.lone[0])
+  assert.deepEqual(seen.ranking[0].attachedExcerpts, [{ ruleId: "100.1", text: "Rule text." }])
 })

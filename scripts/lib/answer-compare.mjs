@@ -47,9 +47,11 @@ const isRight = (record) => record.scores.correctness === 2;
  * prompt) and model (default: the run's only model). Refuses an ambiguous
  * model rather than guessing.
  */
-export function selectSide(run, { arm = "A", model } = {}) {
-  const records = run.summary.records.filter((record) => record.arm === arm);
-  if (records.length === 0) throw new Error(`Run ${run.identity.runId} has no records for arm ${arm}.`);
+export function selectSide(run, { arm = "A", model, cap } = {}) {
+  const records = run.summary.records.filter((record) => record.arm === arm && (cap === undefined || record.excerptCap === Number(cap)));
+  if (records.length === 0) {
+    throw new Error(`Run ${run.identity.runId} has no records for arm ${arm}${cap === undefined ? "" : ` at excerpt cap ${cap}`}.`);
+  }
   const models = [...new Set(records.map((record) => record.model))].sort();
   const chosenModel = model ?? (models.length === 1 ? models[0] : null);
   if (chosenModel === null) {
@@ -92,7 +94,17 @@ export function resolveGroup(records) {
     }
   }
   const hashes = [...new Set(records.map((record) => record.promptHash).filter(Boolean))].sort();
-  return { result, reason: result === "missing" || result === "tied" ? reason : null, unstable, right, wrong, repeats: records.length, promptHashes: hashes, records };
+  return {
+    result,
+    reason: result === "missing" || result === "tied" ? reason : null,
+    unstable,
+    right,
+    wrong,
+    scores: graded.map((record) => record.scores.correctness),
+    repeats: records.length,
+    promptHashes: hashes,
+    records
+  };
 }
 
 // ---------------------------------------------------------------------------
@@ -262,7 +274,9 @@ export function compareRunSides(sideA, sideB) {
       });
     }
     for (const [label, resolved] of [["a", a], ["b", b]]) {
-      if (resolved.unstable) unstable.push({ caseId, excerptCap: Number(cap), side: label, right: resolved.right, wrong: resolved.wrong });
+      if (resolved.unstable) {
+        unstable.push({ caseId, excerptCap: Number(cap), side: label, right: resolved.right, wrong: resolved.wrong, scores: resolved.scores });
+      }
     }
     pairs.push({ caseId, excerptCap: Number(cap), a: a.result, b: b.result, transition });
   }
@@ -278,7 +292,8 @@ export function compareRunSides(sideA, sideB) {
     breakdowns: Object.fromEntries(
       Object.entries(breakdowns).map(([group, tables]) => [group, Object.fromEntries(Object.entries(tables).map(([name, table]) => [name, tableToObject(table)]))])
     ),
-    unchangedInput: { label: "sampling noise", cases: Object.values(unchanged).reduce((x, y) => x + y, 0), counts: unchanged },
+    // With one answer model on both sides, a difference on an identical prompt is sampling noise; with two models it is the model.
+    unchangedInput: { label: sideA.model === sideB.model ? "sampling noise" : "same prompt, different answer models", cases: Object.values(unchanged).reduce((x, y) => x + y, 0), counts: unchanged },
     changedInput: { cases: Object.values(changedInput).reduce((x, y) => x + y, 0), counts: changedInput },
     rightToWrong: rightToWrong.sort((x, y) => x.caseId.localeCompare(y.caseId)),
     unstable,
@@ -338,7 +353,9 @@ export function formatComparison(result, { labelA = "A", labelB = "B" } = {}) {
   lines.push(`Overall: ${countsLine(result.overall, result.denominators.cases)}`);
   for (const [group, counts] of Object.entries(result.byTierGroup)) lines.push(`  ${group}: ${countsLine(counts, total(counts))}`);
   lines.push(
-    `Unchanged-input stratum (identical prompt hash on both sides; differences here are sampling noise, not an effect): ${result.unchangedInput.cases} cases: ${countsLine(result.unchangedInput.counts, result.unchangedInput.cases)}`
+    result.unchangedInput.label === "sampling noise"
+      ? `Unchanged-input stratum (identical prompt hash on both sides; differences here are sampling noise, not an effect): ${result.unchangedInput.cases} cases: ${countsLine(result.unchangedInput.counts, result.unchangedInput.cases)}`
+      : `Identical-prompt stratum (the same prompt on both sides, answered by different models, so a difference here is the model, not sampling noise): ${result.unchangedInput.cases} cases: ${countsLine(result.unchangedInput.counts, result.unchangedInput.cases)}`
   );
   lines.push(`Changed-input cases: ${result.changedInput.cases}: ${countsLine(result.changedInput.counts, result.changedInput.cases)}`);
 
@@ -351,7 +368,7 @@ export function formatComparison(result, { labelA = "A", labelB = "B" } = {}) {
   }
 
   lines.push("", `Unstable cases (repeats disagree): ${result.unstable.length === 0 ? "none" : ""}`);
-  for (const item of result.unstable) lines.push(`  ${item.caseId} (cap ${item.excerptCap}, ${item.side === "a" ? labelA : labelB}): ${item.right} right, ${item.wrong} wrong`);
+  for (const item of result.unstable) lines.push(`  ${item.caseId} (cap ${item.excerptCap}, ${item.side === "a" ? labelA : labelB}): ${item.right} right, ${item.wrong} wrong (Correctness per repeat: ${item.scores.join(", ")})`);
 
   for (const [group, tables] of Object.entries(result.breakdowns)) {
     lines.push("", `Breakdown within ${group} (never pooled with the other tier group):`);

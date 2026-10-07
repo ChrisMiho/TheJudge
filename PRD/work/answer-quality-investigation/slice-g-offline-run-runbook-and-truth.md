@@ -1,6 +1,6 @@
 # Slice G — Phase 0 run, findings, runbook, and product-truth apply
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
@@ -20,19 +20,19 @@ Run the free offline half of the investigation, commit findings and the paid-pha
 
 ## Acceptance criteria
 
-- [ ] G1: `OFFLINE-FINDINGS.md` exists and records the commits measured, per-rule and complete-procedure coverage for the Academy Manufactor/Esix and Necropotence cases, the unchanged-input stratum size, the ten re-snapshotted cases with review provenance, and the staleness and coverage results
-- [ ] G2: The evidence trace run from the baseline-writing revision (or, if unavailable, this checkout with the reason stated) reproduces `baseline.json` hit and miss, recorded in the findings
-- [ ] G3: `npm run eval:rules-staleness` and `npm run eval:rules-coverage` have been run and their results recorded in the findings
-- [ ] G4: Both manifests are committed and arm B's revision id is frozen with its recorded observations
-- [ ] G5: Every paid phase was dry-run (no key, no network) and `RUNBOOK.md` records call counts and dollar estimates with each rate's check date
-- [ ] G6: `RUNBOOK.md` exists, covers Phases 1 to 5 with owner inputs (cap per phase, judge model) and decisions D0 to D5, and states no paid phase was run in the build
-- [ ] G7: REQ-226 to REQ-230 are present in `PRD/sections/functional-requirements.md` and REQ-185 to REQ-189 and NFR-018 are amended as the finalized proposal says, with both owner edits honoured
-- [ ] G8: The `system-map.md` answer-quality summary no longer says results are only merged per case, and `worked-solutions/README.md` describes experiment runs, trace, arms and manifests
-- [ ] G9: A grep over `PRD/sections/` finds no `--subject`, no new `DEC-` id, and no REQ id above REQ-230 added by this package
-- [ ] G10: A test or grep shows no gate script or CI workflow invokes `eval:answer-quality`, its compare command, or the trace commands
-- [ ] G11: `npm run quality:check` passes
-- [ ] G12: Backend tests pass
-- [ ] G13: A dated observation confirms no live OpenAI call, data refresh, or Scryfall fetch occurred during the build
+- [x] G1: `OFFLINE-FINDINGS.md` exists and records the commits measured, per-rule and complete-procedure coverage for the Academy Manufactor/Esix and Necropotence cases, the unchanged-input stratum size, the ten re-snapshotted cases with review provenance, and the staleness and coverage results
+- [x] G2: The evidence trace run from the baseline-writing revision (or, if unavailable, this checkout with the reason stated) reproduces `baseline.json` hit and miss, recorded in the findings
+- [x] G3: `npm run eval:rules-staleness` and `npm run eval:rules-coverage` have been run and their results recorded in the findings
+- [x] G4: Both manifests are committed and arm B's revision id is frozen with its recorded observations
+- [x] G5: Every paid phase was dry-run (no key, no network) and `RUNBOOK.md` records call counts and dollar estimates with each rate's check date
+- [x] G6: `RUNBOOK.md` exists, covers Phases 1 to 5 with owner inputs (cap per phase, judge model) and decisions D0 to D5, and states no paid phase was run in the build
+- [x] G7: REQ-226 to REQ-230 are present in `PRD/sections/functional-requirements.md` and REQ-185 to REQ-189 and NFR-018 are amended as the finalized proposal says, with both owner edits honoured
+- [x] G8: The `system-map.md` answer-quality summary no longer says results are only merged per case, and `worked-solutions/README.md` describes experiment runs, trace, arms and manifests
+- [x] G9: A grep over `PRD/sections/` finds no `--subject`, no new `DEC-` id, and no REQ id above REQ-230 added by this package
+- [x] G10: A test or grep shows no gate script or CI workflow invokes `eval:answer-quality`, its compare command, or the trace commands
+- [x] G11: `npm run quality:check` passes
+- [x] G12: Backend tests pass
+- [x] G13: A dated observation confirms no live OpenAI call, data refresh, or Scryfall fetch occurred during the build
 
 ## Verification
 
@@ -69,8 +69,11 @@ No live OpenAI call; fake clients and stored fixtures only.
 
 ## Ship gates
 
-- [ ] Slice acceptance criteria satisfied and verified
-- [ ] Tests updated; `npm run quality:check` green for touched areas
-- [ ] Public contract unchanged unless slice scoped a change
-- [ ] No secrets committed
-- [ ] Durable outcomes promoted; `PRD/work/answer-quality-investigation/` ready to delete
+- [x] Slice acceptance criteria satisfied and verified
+- [x] Tests updated; `npm run quality:check` green for touched areas
+- [x] Public contract unchanged unless slice scoped a change
+- [x] No secrets committed
+- [x] Durable outcomes promoted; `PRD/work/answer-quality-investigation/` ready to delete
+- `PRD/sections/functional-requirements.md` also carries the REQ-185 to REQ-189 amendments and REQ-226 to REQ-230; `scripts/answer-quality-no-gate.test.mjs (new)` is the regression guard (G10)
+- Build notes (by-intent differences from the shared proposal text, all recorded in the applied requirements): the arms live in `scripts/lib/diagnostic-arms.mjs`, not under `apps/backend/src/eval/answer-quality/`; the reference-answer test asks that no arm *adds* the answer, because arm A's own prompt already quotes rule text that equals many tier 1 and 2 answers; the compare report refuses on a reference-hash mismatch (the design brief and slice F1) instead of excluding the case; a judge failure is `undetermined` (REQ-186), only an answer failure is an `error` record; the evidence trace and compare gained `--manifest`, `--case`, written summaries and compare files so the applied text matches the code
+- Phase 0 ran from the build checkout only (no second worktree); step 0 of `RUNBOOK.md` sets up the base and head worktrees

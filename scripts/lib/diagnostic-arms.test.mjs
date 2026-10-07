@@ -260,9 +260,13 @@ test("the held-out manifest runs arm A; B and P run on a held-out case only unde
   const heldOutIds = new Set(["held-1"]);
   const approved = { replaces: "x", correction: "y", approvedOn: "2026-10-08" };
   assert.doesNotThrow(() => validateArmUse({ armIds: ["A"], caseIds: ["held-1"], diagnosticIds, heldOutIds }));
-  // As registered today B is not frozen: refused on held-out.
-  assert.equal(describeArm("B").frozen, false);
-  assert.throws(() => validateArmUse({ armIds: ["B"], caseIds: ["held-1"], diagnosticIds, heldOutIds }), /held-1: arm B \(B\.1\) may run on a held-out case only under a frozen revision id/);
+  // B.1 is frozen in the registry (slice G); the refusal is what an unfrozen B would get.
+  assert.equal(describeArm("B").frozen, true);
+  assert.equal(describeArm("D").frozen, true);
+  const unfrozenB = { ...ARM_REGISTRY, B: { ...ARM_REGISTRY.B, frozen: false } };
+  assert.equal(describeArm("D", unfrozenB).frozen, false, "D is no firmer than B");
+  assert.throws(() => validateArmUse({ armIds: ["B"], caseIds: ["held-1"], diagnosticIds, heldOutIds, registry: unfrozenB }), /held-1: arm B \(B\.1\) may run on a held-out case only under a frozen revision id/);
+  assert.doesNotThrow(() => validateArmUse({ armIds: ["B"], caseIds: ["held-1"], diagnosticIds, heldOutIds }));
   // P is frozen by the owner's approval of its correction text, and is refused without it.
   assert.doesNotThrow(() => validateArmUse({ armIds: ["P"], caseIds: ["held-1"], diagnosticIds, heldOutIds, correction: approved }));
   assert.throws(() => validateArmUse({ armIds: ["P"], caseIds: ["held-1"], diagnosticIds, heldOutIds }), /does not exist yet/);
@@ -270,7 +274,6 @@ test("the held-out manifest runs arm A; B and P run on a held-out case only unde
   const frozenB = { ...ARM_REGISTRY, B: { ...ARM_REGISTRY.B, frozen: true } };
   assert.doesNotThrow(() => validateArmUse({ armIds: ["B"], caseIds: ["held-1", "diag-1"], diagnosticIds, heldOutIds, registry: frozenB }));
   assert.equal(describeArm("D", frozenB).frozen, true, "D is as frozen as B");
-  assert.equal(describeArm("D").frozen, false);
   assert.deepEqual(armRecordFlags({ armId: "B", caseId: "held-1", heldOutIds }), { diagnostic: true, heldOut: true });
   // C and D never run on held-out, frozen or not.
   assert.throws(() => validateArmUse({ armIds: ["C"], caseIds: ["held-1"], diagnosticIds, heldOutIds, registry: frozenB }), /held-1: arm C/);
@@ -278,8 +281,11 @@ test("the held-out manifest runs arm A; B and P run on a held-out case only unde
 
 test("a live run needs every non-A arm frozen under its revision id; a dry run does not", () => {
   const diagnosticIds = new Set(["diag-1"]);
-  assert.doesNotThrow(() => validateArmUse({ armIds: ["B"], caseIds: ["diag-1"], diagnosticIds, heldOutIds: new Set(), live: false }));
-  assert.throws(() => validateArmUse({ armIds: ["B"], caseIds: ["diag-1"], diagnosticIds, heldOutIds: new Set(), live: true }), /arm B \(B\.1\) is not frozen under its revision id yet/);
+  const unfrozenB = { ...ARM_REGISTRY, B: { ...ARM_REGISTRY.B, frozen: false } };
+  assert.doesNotThrow(() => validateArmUse({ armIds: ["B"], caseIds: ["diag-1"], diagnosticIds, heldOutIds: new Set(), live: false, registry: unfrozenB }));
+  assert.throws(() => validateArmUse({ armIds: ["B"], caseIds: ["diag-1"], diagnosticIds, heldOutIds: new Set(), live: true, registry: unfrozenB }), /arm B \(B\.1\) is not frozen under its revision id yet/);
+  assert.throws(() => validateArmUse({ armIds: ["D"], caseIds: ["diag-1"], diagnosticIds, heldOutIds: new Set(), live: true, registry: unfrozenB }), /arm D/);
+  assert.doesNotThrow(() => validateArmUse({ armIds: ["B", "D"], caseIds: ["diag-1"], diagnosticIds, heldOutIds: new Set(), live: true }), "frozen B.1 and D.1 may run live");
   assert.doesNotThrow(() => validateArmUse({ armIds: ["A", "C"], caseIds: ["diag-1"], diagnosticIds, heldOutIds: new Set(), live: true }));
   assert.throws(() => describeArm("Z"), /Unknown arm "Z"/);
 });

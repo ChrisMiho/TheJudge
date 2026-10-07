@@ -4,6 +4,7 @@ import {
   judgeAnswerAlone,
   judgeBlindRanking,
   buildLoneJudgePrompt,
+  buildRankingPrompt,
   judgeMatchesAnswerModel,
   resolveJudgeModel,
   type JudgeClient
@@ -373,6 +374,39 @@ describe("Backend - Eval - Answer quality - judge (REQ-186)", () => {
       }
       expect(sent).toEqual([reference, reference]);
       expect(Object.keys(base)).not.toEqual(expect.arrayContaining(["model", "excerptCap", "arm"]));
+    });
+
+    it("the blind ranking receives the same attached-excerpt, deciding-rule and game-state inputs as the lone judge", async () => {
+      const inputs = {
+        attachedExcerpts: excerpts,
+        decidingRuleIds: ["614.1a", "616.1", "616.1e"],
+        stateLines: ["turnPhase: cleanup", "ZONE: STACK (BOTTOM TO TOP)"]
+      };
+      const lone = buildLoneJudgePrompt({ ...base, ...inputs });
+      const create = vi.fn(async (params: { model: string; input: string }) => ({
+        output_text: JSON.stringify({ ranks: { A: 1, B: 2 }, rationale: "r" }),
+        usage: { input_tokens: 1, output_tokens: 1 },
+        params
+      }));
+      const result = await judgeBlindRanking({
+        client: { responses: { create } },
+        judgeModel: "gpt-5",
+        question: base.question,
+        workedSolution: base.workedSolution,
+        ...inputs,
+        answers: [
+          { modelId: "gpt-4.1", answerText: "One." },
+          { modelId: "gpt-6-luna", answerText: "Two." }
+        ],
+        shuffleIndices: [0, 1]
+      });
+      expect(result.undetermined).toBe(false);
+      const sent = create.mock.calls[0]![0].input;
+      for (const line of lone.split("\n").filter((candidate) => /^( {2}\S|Rule excerpts|Rules the reference|Game state)/.test(candidate))) {
+        expect(sent).toContain(line);
+      }
+      expect(sent).toContain("Answer A: One.");
+      expect(buildRankingPrompt({ question: "Q", workedSolution: "W", labeledAnswers: [{ label: "A", answerText: "x" }] })).toContain("  (none)");
     });
 
     it("reports the judge's reasoning tokens inside its output tokens", async () => {
