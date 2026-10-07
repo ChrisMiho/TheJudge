@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim on 2026-10-07; was `origin/thejudge-auto/answer-quality-investigation`, docs PR #274 merged)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation` (rewritten by the build half's claim; the kickoff worktree was removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261007-134015/`
-- Current node: `define` (attempt 2 — gate-qc→define loop 1 of 3, correcting the REQ-229 / "subject" consequence of the owner's REQ-226 edit)
+- Current node: `gate-qc` (attempt 3 — re-grade after define attempt 2's REQ-228/229/230 correction)
 - Next action: `/graph-implement PRD/work/answer-quality-investigation/` (build half in progress: gate-qc → plan → build → review → close)
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | — | claim (driver) | — | ok | — | docs PR #274 merged 2026-10-07T21:48Z; kickoff worktree removed clean (`git worktree remove`, porcelain empty); `.worktrees/implement-answer-quality-investigation` cut on `thejudge-auto/answer-quality-investigation-work` from `origin/main` (1a8e61d5); claim commit fa12f0d0 pushed; lock re-taken (`graph:preflight --take-lock`, pid 19439); graph canary `nohup true` denied | 2026-10-07 |
 | 4b | gate-review | sonnet | ok | `0 → 21` | commit 75b85c00: 11 verdicts applied inside `GATE-QUESTIONS.md` (9 accept, 2 edit: REQ-226 drops the cross-checkout `--subject` import and adds a regrade mode; REQ-188 drops the production timeout/retry criterion, keeps combo-catalog parity); `DESIGN-BRIEF.md` reconciled (§2, §4.1, §4.2, §4.8, Phase 0/2/3 steps, §12, truth-changes rows, A6/A9); README note none; `## Gate verdicts` + `### Brief reconciliation` written; marker `STATUS.refined`; board row refined; `git diff --stat HEAD~1 -- PRD/sections apps scripts` empty | 2026-10-07 |
 | 4 (attempt 2) | gate-qc | sonnet | failed (FAIL) | `0 → 21` | commit 3bb5bdd2: `QUALITY-CHECK.md` overwritten — Verdict: FAIL, 2 findings: (1) accepted REQ-229 still carries the `--subject`/`--subject-b` cross-checkout import the owner's REQ-226 edit dropped (brief §4.5, Phase 0 step 2 repeat it); (2) "subject" is an undefined term in REQ-228/229/230 and brief §4.4–4.6; both edits (REQ-226, REQ-188) themselves confirmed consistent; marker `STATUS.refining`, board row refining; driver rewrote README `## Preparation gate` (FAIL + findings) and `status: refining` → loop to `define` (gate-qc→define loop 1 of 3) | 2026-10-07 |
+| 3 (attempt 2) | define | opus | ok | `0 → 45` | commit e5e3d8cb: REQ-229 re-proposed (no `--subject`/`--subject-b`; the trace measures the checkout it runs from, refuses a dirty checkout, records its commit; two revisions compared offline by `eval:evidence-trace:compare -- <folder-a> <folder-b>`, each folder from its own worktree); REQ-228 and REQ-230 reworded (the checkout the run executes from / the changed revision), substance unchanged; all 11 `- Verdict:`/`- Reason:` lines untouched (diff grep count 0), one `Re-proposed 2026-10-07` line under each of the three blocks; brief §4.4–4.6, Phase 0 step 2, §12 parity rewritten, assumption A24 added (evidence: the owner's REQ-226 verdict); genuine blocker none; marker `STATUS.refined`; `git diff --stat HEAD~1 -- PRD/sections apps scripts` empty. Driver judgment: the moved diffs are consequences of the owner's own REQ-226 rule (blocker test condition 2 fails — an authoritative basis exists), so no fresh verdict park; the owner reads the finalized proposal in the code PR before `land` | 2026-10-07 |
 
 ## Open gate
 
@@ -269,6 +270,26 @@ Do exactly this:
 Hard rules: never edit `PRD/sections/` or any code; never add a `DEC-###`; never allocate a new stable ID (REQ-220/221 stay reserved by draft PR #266; REQ-226–230 are already proposed); never edit `intake/`, `QUALITY-CHECK.md`, or the `## Node ledger` / `## Dispatch prompts` / `## Gate verdicts` sections of `GRAPH-RUN.md`. Boundaries: no pushes, no PR actions, no `.secrets/`, no `thejudge-*` skill edits, no `rm -rf`, no `nohup`, no background `&`, no `npm run data:refresh`, no live OpenAI calls. If a hook denies a command, do not retry it — report it verbatim and stop.
 
 Report back, plain language, ask first: the blocks you re-proposed and what each now says (one line each, substance inlined), the brief passages rewritten (the grep you used, before → after), the assumption row added, any genuine blocker (or `none`), the commit hash, and the final marker.
+
+### gate-qc (attempt 3)
+
+graph is controlling. You are node 4 (`gate-qc`, attempt 3 — the re-grade after define attempt 2's correction) of graph run `graph-20261007-134015`, dispatched by the `graph-implement` driver.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation
+
+Every file you read, write, or commit lives under that working directory (a git worktree on the shared build branch `thejudge-auto/answer-quality-investigation-work`, cut from `origin/main`). Never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/...` directly — that is the owner's launch checkout. Copy the `Working directory:` line above, unchanged, into any prompt you write for a subagent.
+
+Invoke the `thejudge-quality-check` skill: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-quality-check/SKILL.md` in full and follow its `## Mode` section for `graph is controlling` (read `PRD/instructions/preparation-contract.md`; emit an explicit PASS or FAIL verdict; return every FAIL issue to the driver; never self-certify, never create map-out artifacts).
+
+Package: `PRD/work/answer-quality-investigation/` (status `refined`). History: attempt 1 PASSed; the owner answered the eleven slots (9 accept, 2 edit: REQ-226, REQ-188); `graph-gate-review` applied them (commit 75b85c00); attempt 2 FAILed on two findings (accepted REQ-229 still carried the `--subject`/`--subject-b` cross-checkout import the owner's REQ-226 edit dropped; the word subject was left undefined in REQ-228/229/230 and brief §4.4–4.6); define attempt 2 (commit e5e3d8cb) re-proposed REQ-229 and reworded REQ-228/REQ-230 to the REQ-226 rule, left every `- Verdict:`/`- Reason:` line as the owner wrote it, added a `Re-proposed 2026-10-07` line under each of those three blocks, rewrote brief §4.4–4.6, Phase 0 step 2 and §12, and added assumption A24. The driver has recorded its judgment that the moved diffs are consequences of the owner's own REQ-226 verdict and need no fresh owner verdict before `plan` (`GRAPH-RUN.md` `## Node ledger`, define attempt 2 row); grade the package on its consistency and agent-readiness, not on whether the owner has re-answered.
+
+Grade `DESIGN-BRIEF.md` against PRD alignment and agent-readiness per the skill's checklist, and check the package is one consistent whole: the brief, the finalized proposal, and every accepted or edited ID must agree with each other and with the owner's two edits; the two attempt-2 findings must be closed. Treat the `GATE-QUESTIONS.md` diffs as the brief's product-truth proposal (not yet applied to `PRD/sections/` — correct in this workflow; do not fail the brief for the live sections being unchanged). Check each proposed stable-ID block opens with the three plain-language lines (**What this decides** · **In plain terms** · **What happens if you say no**), carries a complete diff, and has a filled `- Verdict:` slot. Intake under `intake/` is evidence, never authority; never open a document the intake cites.
+
+Writes allowed: overwrite `PRD/work/answer-quality-investigation/QUALITY-CHECK.md` with this attempt's report, and on FAIL the marker change to `STATUS.refining` plus the `PRD/work/STATUS.md` board row. Never edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GRAPH-RUN.md`, `README.md`, `PRD/sections/`, or code. Commit from inside the working directory with explicit paths only (`git add PRD/work/answer-quality-investigation PRD/work/STATUS.md` — never `git add -A`, `--all`, or `.`). Do not push.
+
+Boundaries: no pushes, no PR actions, no `.secrets/`, no `thejudge-*` skill edits, no `rm -rf`, no `nohup`, no background `&`. If a hook denies a command, do not retry it — report it verbatim and stop.
+
+Report back: the verdict (PASS or FAIL), the complete findings list (empty on PASS), the report file path, the commit hash, and the final marker.
 
 ## Instruction ledger
 
