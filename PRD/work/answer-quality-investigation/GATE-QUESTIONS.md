@@ -298,7 +298,7 @@ Proposed diff — new entry after REQ-229 in `PRD/sections/functional-requiremen
 +  - the preamble sentence P targets is the one the owner's intake brief reports as mixing up continuous effects, state-based actions, and layers; its correction is verified and owner-approved before P runs
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
@@ -334,7 +334,7 @@ Proposed diff — `PRD/sections/functional-requirements.md`, REQ-185 `Constraint
 +  - REQ-230 (the diagnostic arms the gold-data constraint names)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ---
