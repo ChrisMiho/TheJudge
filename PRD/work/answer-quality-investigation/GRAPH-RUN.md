@@ -16,7 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 8` | branch `thejudge-auto/answer-quality-investigation` pushed at 3e973ced from `.worktrees/kickoff-answer-quality-investigation`; launch checkout untouched (still `main`); lock `.worktrees/.graph-run.lock` taken (pid 19439) | 2026-10-07 |
 | 2 | shape | sonnet | ok | `8 → 20` | package `PRD/work/answer-quality-investigation/` created on the branch: commits 0bb3b193 (intake copied verbatim, staged copy deleted) and 7067c63e (IDEA.md with six `## Prior run` lines, README.md with `## Autonomous metadata`, GRAPH-RUN.md, `STATUS.ideation`, board row); launch checkout untouched | 2026-10-07 |
 | 3 | define | opus | ok | `22 → 79` (two driver bookkeeping calls charged to shape/1 before run-state moved) | commit b771735d: `DESIGN-BRIEF.md` (14 sections, decision points D0–D5, 23 assumptions, no blocker) + `GATE-QUESTIONS.md` (11 stable-ID blocks: new REQ-226–230; amend REQ-185/186/187/188/189, NFR-018; `## Blocker questions` empty) + `STATUS.refined` + board row; `git diff --stat HEAD~1 -- PRD/sections apps` empty → gate: proposal present, continue to gate-qc | 2026-10-07 |
-| 4 | gate-qc | sonnet | ok (PASS) | `79 → 97` (one driver bookkeeping call charged to define/1) | commit 05ecc20b: `PRD/work/answer-quality-investigation/QUALITY-CHECK.md` — Verdict: PASS, findings none; 12/12 removed diff lines match live `PRD/sections/` text; marker left `STATUS.refined`; driver then wrote `## Preparation gate` (PASS) and parked at `owner-action` | 2026-10-07 |
+| 4 | gate-qc | sonnet | ok (PASS) | `79 → 97` (one driver bookkeeping call charged to define/1) | commit 05ecc20b: `PRD/work/answer-quality-investigation/QUALITY-CHECK.md` — Verdict: PASS, findings none; 12/12 removed diff lines match live `PRD/sections/` text; marker left `STATUS.refined`; driver then wrote `## Preparation gate` (PASS), parked at `owner-action`, pushed 2ff207af, opened docs PR https://github.com/ChrisMiho/TheJudge/pull/274 | 2026-10-07 |
 
 ## Open gate
 
@@ -24,7 +24,7 @@
 - Owner action: answer the eleven `accept` / `edit` / `reject` slots in `PRD/work/answer-quality-investigation/GATE-QUESTIONS.md`, then merge the docs PR to build (PR URL recorded below once opened).
 - Evidence: `PRD/work/answer-quality-investigation/QUALITY-CHECK.md` (PASS, findings none).
 - Resume: the owner's merge is the build signal; `graph-implement` claims the spec from `origin/main`. The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-answer-quality-investigation` stays through the park for `graph-gate-review`; `graph-implement` removes it at claim time.
-- Docs PR: (pending)
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/274 (docs-only, into `main`; the owner's merge is the build signal)
 
 ## Dispatch prompts
 
