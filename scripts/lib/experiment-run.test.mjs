@@ -110,6 +110,7 @@ function fakeDeps(overrides = {}) {
     rubricRevision: "test-rubric",
     rateTable: { "gpt-4.1": { inputUsdPerMillion: 2, outputUsdPerMillion: 8 } },
     clientOptions: { timeoutMs: "sdk-default", maxRetries: "sdk-default" },
+    productionTimeoutMs: 15000,
     git: fakeGit(),
     fileHashes: async (cases) => ({
       dataFiles: { "gameRulesRuleIndex.json": "a".repeat(64) },
@@ -265,6 +266,7 @@ test("the identity record carries every field the design lists, including the co
   assert.equal(identity.rubricRevision, "test-rubric");
   assert.deepEqual(identity.rateTable, { "gpt-4.1": { inputUsdPerMillion: 2, outputUsdPerMillion: 8 } });
   assert.equal(identity.maxCostUsd, null);
+  assert.equal(identity.productionTimeoutMs, 15000);
   assert.equal(identity.regrade, null);
   assert.equal(identity.startedAt, "2026-10-07T12:00:00.000Z");
   assert.deepEqual(identity.caseList.map((entry) => entry.id), ["case-one", "case-two"]);

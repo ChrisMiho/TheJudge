@@ -19,7 +19,7 @@ Reproducible before/after answer evaluation for PR #273, isolation of retrieval 
 | C | [Grader repair and runtime parity](slice-c-grader-repair-runtime-parity.md) | done | Slice A (identity record and record shape) | 9 (0 manual) |
 | D | [Offline evidence trace](slice-d-evidence-trace.md) | done | none (independent of A to C; shares only the read-only rules gate inputs) | 7 (0 manual) |
 | E | [Diagnostic arms and manifests](slice-e-arms-and-manifests.md) | done | Slices A (arm key), C (judge and record shape), D (trace feeds manifest selection) | 8 (0 manual) |
-| F | [Paired comparison report](slice-f-compare-report.md) | planned | Slices A (run folders) and C (record fields) | 9 (0 manual) |
+| F | [Paired comparison report](slice-f-compare-report.md) | done | Slices A (run folders) and C (record fields) | 9 (0 manual) |
 | G | [Phase 0 run, findings, runbook, and product-truth apply](slice-g-offline-run-runbook-and-truth.md) | planned | Slices A to F | 13 (1 manual) |
 
 Plan: [GAMEPLAN.md](GAMEPLAN.md). Build order A, B, C, D, E, F, G. Slice G applies the finalized product-truth proposal.

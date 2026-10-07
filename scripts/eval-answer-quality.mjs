@@ -958,6 +958,16 @@ export async function defaultLoadArmSets() {
   };
 }
 
+/** `DEFAULT_OPENAI_TIMEOUT_MS` from the config source of the checkout this runs from; null when it cannot be read. */
+export async function readProductionTimeoutMs(configPath = resolve(repoRoot, "apps/backend/src/config/index.ts")) {
+  try {
+    const match = /const DEFAULT_OPENAI_TIMEOUT_MS = (\d+)/.exec(await readFile(configPath, "utf8"));
+    return match ? Number(match[1]) : null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * The real dependencies of an experiment run (REQ-226): the same TypeScript
  * modules and production prompt resources the routine loop loads, plus the
@@ -1006,6 +1016,8 @@ export async function runLiveExperiment(params) {
     rubricRevision: RUBRIC_REVISION,
     rateTable: buildRateTable(),
     clientOptions: { timeoutMs: "sdk-default", maxRetries: "sdk-default" },
+    // Production's per-attempt timeout at this checkout's revision, read from its own config source (REQ-228 holds latency against it).
+    productionTimeoutMs: await readProductionTimeoutMs(),
     git: await defaultGit(repoRoot),
     fileHashes: async (cases) => {
       const dataFiles = {};

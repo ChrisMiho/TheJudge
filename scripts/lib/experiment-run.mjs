@@ -235,6 +235,7 @@ export function buildIdentityRecord({
   embeddingModel,
   comboCatalogLoaded,
   client,
+  productionTimeoutMs = null,
   regrade = null,
   startedAt
 }) {
@@ -251,6 +252,8 @@ export function buildIdentityRecord({
     models: { requested: [...models], reported: {} },
     requestOptions: { fields: ["model", "input"] },
     client: { timeoutMs: client?.timeoutMs ?? "sdk-default", maxRetries: client?.maxRetries ?? "sdk-default" },
+    // Production's per-attempt timeout at the revision this run executed from: what the compare report holds latency against (REQ-228).
+    productionTimeoutMs,
     askAiProvider: askAiProvider ?? "",
     embeddingProvider: embeddingProvider ?? "",
     embeddingModel: embeddingModel ?? "",
@@ -512,6 +515,7 @@ export async function executeExperiment(params, deps) {
     embeddingModel: deps.embeddingModel ?? "",
     comboCatalogLoaded: deps.comboCatalogLoaded ?? false,
     client: deps.clientOptions,
+    productionTimeoutMs: deps.productionTimeoutMs ?? null,
     startedAt: deps.nowIso()
   });
   if (resume) {
@@ -912,6 +916,7 @@ export async function executeRegrade(params, deps) {
     embeddingModel: source.identity.embeddingModel,
     comboCatalogLoaded: source.identity.comboCatalogLoaded,
     client: deps.clientOptions,
+    productionTimeoutMs: deps.productionTimeoutMs ?? source.identity.productionTimeoutMs ?? null,
     regrade: { sourceRunId: regradeFrom, sourceManifestSha256: source.manifestSha256 },
     startedAt: deps.nowIso()
   });
