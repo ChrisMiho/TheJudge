@@ -56,6 +56,16 @@ import {
   referenceAnswerHash,
   selectCases
 } from "./lib/answer-quality-run.mjs";
+import {
+  DEFAULT_ARM,
+  ARM_A_REVISION,
+  EXPERIMENT_RUNS_DIR,
+  defaultGit,
+  executeExperiment,
+  executeRegrade,
+  loadManifestFile,
+  validateManifestCases
+} from "./lib/experiment-run.mjs";
 import { loadLocalOpenAiEnv } from "./lib/local-openai-env.mjs";
 import {
   DEFAULT_EMBEDDING_PROVIDER,
@@ -130,6 +140,8 @@ export function parseArgs(argv) {
   let tier;
   let sampleCount;
   let seed = DEFAULT_SAMPLE_SEED;
+  // Experiment-mode flags (REQ-226): none of them exists in a routine run.
+  const experimentFlags = {};
 
   for (let i = 0; i < argv.length; i++) {
     const arg = argv[i];
@@ -158,6 +170,16 @@ export function parseArgs(argv) {
       sampleCount = Number(argv[++i]);
     } else if (arg === "--seed") {
       seed = Number(argv[++i]);
+    } else if (arg === "--run-id") {
+      experimentFlags.runId = argv[++i];
+    } else if (arg === "--manifest") {
+      experimentFlags.manifest = argv[++i];
+    } else if (arg === "--repeat") {
+      experimentFlags.repeat = Number(argv[++i]);
+    } else if (arg === "--expect-commit") {
+      experimentFlags.expectCommit = argv[++i];
+    } else if (arg === "--regrade-from") {
+      experimentFlags.regradeFrom = argv[++i];
     }
   }
 
@@ -180,13 +202,53 @@ export function parseArgs(argv) {
     mode = { kind: "sample", count: sampleCount, seed };
   }
 
+  const experiment = parseExperimentFlags(experimentFlags, selectionFlags);
+
   const lineup = models.length > 0 ? models : bakeOff ? [...BAKE_OFF_LINEUP] : [...DEFAULT_LINEUP];
   return {
     confirmed,
     models: lineup,
     excerptCaps: excerptCaps.length > 0 ? excerptCaps : [...DEFAULT_EXCERPT_CAPS],
     outputDir: resolve(repoRoot, outputDir ?? DEFAULT_OUTPUT_DIR),
-    mode
+    mode,
+    experiment
+  };
+}
+
+/**
+ * Experiment mode (REQ-226) is on exactly when `--run-id` is named; every other
+ * experiment flag without it is a mistake, refused by name rather than
+ * silently running a routine run that merges into the committed file.
+ */
+function parseExperimentFlags(flags, selectionFlags) {
+  const named = Object.keys(flags);
+  if (named.length === 0) return null;
+  const flagName = (key) => `--${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
+  if (!flags.runId) {
+    throw new Error(`${named.map(flagName).join(", ")} belong to an experiment run: name it with --run-id <id>.`);
+  }
+  if (selectionFlags.length > 0) {
+    throw new Error(`An experiment run answers the cases its manifest lists; drop ${selectionFlags.join(" and ")}.`);
+  }
+  if (flags.regradeFrom !== undefined && !flags.regradeFrom) throw new Error("--regrade-from needs the run id to regrade.");
+  if (flags.regradeFrom && flags.manifest) {
+    throw new Error("A regrade run takes its cases from the run it regrades; drop --manifest.");
+  }
+  if (!flags.regradeFrom && !flags.manifest) {
+    throw new Error("An experiment run needs --manifest <file> listing its cases (ids with the SHA-256 of each question and reference answer).");
+  }
+  if (flags.repeat !== undefined && (!Number.isInteger(flags.repeat) || flags.repeat < 1)) {
+    throw new Error("--repeat needs a whole number of at least 1.");
+  }
+  if (flags.regradeFrom && flags.repeat !== undefined) {
+    throw new Error("A regrade run grades each stored answer once; drop --repeat.");
+  }
+  return {
+    runId: flags.runId,
+    manifestPath: flags.manifest ? resolve(repoRoot, flags.manifest) : null,
+    repeats: flags.repeat ?? 1,
+    expectCommit: flags.expectCommit ?? null,
+    regradeFrom: flags.regradeFrom ?? null
   };
 }
 
@@ -231,8 +293,17 @@ export function assertLiveProviderConfigured(env) {
  * the mock-first default for everything that is not this command is untouched
  * (an unconfirmed run leaves `ASK_AI_PROVIDER` exactly as it found it).
  */
+export const NO_LOCAL_ENV_VARIABLE = "ANSWER_QUALITY_NO_LOCAL_ENV";
+
+/**
+ * Setting `ANSWER_QUALITY_NO_LOCAL_ENV=1` skips the local env files entirely,
+ * so a run sees only the process environment: no key can be filled in from a
+ * file, and an offline dry run can promise it builds no client. Anything that
+ * must stay free of a provider -- a verification, a build session -- sets it.
+ */
 export function resolveRunEnv({ processEnv, confirmed, loadLocalEnv = loadLocalOpenAiEnv }) {
-  const { env, sources } = loadLocalEnv({ repoRoot, env: processEnv });
+  const skipLocalFiles = ["1", "true", "yes"].includes(String(processEnv?.[NO_LOCAL_ENV_VARIABLE] ?? "").trim().toLowerCase());
+  const { env, sources } = skipLocalFiles ? { env: { ...processEnv }, sources: [] } : loadLocalEnv({ repoRoot, env: processEnv });
   const hasKey = Boolean(env.OPENAI_API_KEY?.trim());
   const providerUnset = !env.ASK_AI_PROVIDER || env.ASK_AI_PROVIDER.trim() === "";
   const resolved = { ...env };
@@ -371,6 +442,16 @@ export function computeCallCostUsd(model, inputTokens, outputTokens) {
   const price = MODEL_PRICING_USD_PER_MILLION_TOKENS[model];
   if (!price) return 0;
   return (inputTokens * price.input + outputTokens * price.output) / 1_000_000;
+}
+
+/** The rate table an experiment run records in its identity record (REQ-226): every known rate, USD per million tokens. */
+export function buildRateTable() {
+  return Object.fromEntries(
+    Object.entries(MODEL_PRICING_USD_PER_MILLION_TOKENS).map(([model, price]) => [
+      model,
+      { inputUsdPerMillion: price.input, outputUsdPerMillion: price.output }
+    ])
+  );
 }
 
 function sumOf(records, field) {
@@ -707,6 +788,163 @@ export async function runLiveEvaluation(params) {
   });
 }
 
+/**
+ * The real dependencies of an experiment run (REQ-226): the same TypeScript
+ * modules and production prompt resources the routine loop loads, plus the
+ * checkout's git state and the SHA-256 of every data file and case file read.
+ * Lazy, like `runLiveEvaluation`; only an owner-confirmed run calls it.
+ */
+export async function runLiveExperiment(params) {
+  const { preparePromptInput } = await import("../apps/backend/src/prompt/preparation.ts");
+  const { computeDeterministicAssertions } = await import("../apps/backend/src/eval/answer-quality/assertions.ts");
+  const { judgeAnswerAlone, judgeBlindRanking } = await import("../apps/backend/src/eval/answer-quality/judge.ts");
+  const { RUBRIC_REVISION } = await import("../apps/backend/src/eval/answer-quality/rubric.ts");
+  const resources = await loadPromptResources();
+  const embedder = await buildEmbedder(params.env);
+  const { createHash } = await import("node:crypto");
+  const { readdir } = await import("node:fs/promises");
+  const { join } = await import("node:path");
+  const { CASES_DIR, DATA_DIR } = await import("./lib/gold-cases.mjs");
+
+  const hashFile = async (path) => createHash("sha256").update(await readFile(path)).digest("hex");
+  const deps = {
+    preparePromptInput,
+    computeDeterministicAssertions,
+    judgeAnswerAlone,
+    judgeBlindRanking,
+    buildCaseRequest,
+    describeRetrieval,
+    computeCallCostUsd,
+    resources,
+    ruleIds: resources.gameRulesRuleIndex.map((entry) => entry.ruleId),
+    embedQueries: (cases) => embedGoldCaseQueries({ goldCases: cases, embedder, cardDetailIndex: resources.cardDetailIndex }),
+    embeddingProvider: embedder.mode,
+    embeddingModel: embedder.mode === "local" ? "Xenova/all-MiniLM-L6-v2" : "",
+    requireSemantic: embedder.mode !== "mock",
+    comboCatalogLoaded: Boolean(resources.comboCatalog),
+    rubricRevision: RUBRIC_REVISION,
+    rateTable: buildRateTable(),
+    clientOptions: { timeoutMs: "sdk-default", maxRetries: "sdk-default" },
+    git: await defaultGit(repoRoot),
+    fileHashes: async (cases) => {
+      const dataFiles = {};
+      for (const entry of (await readdir(DATA_DIR, { withFileTypes: true })).filter((e) => e.isFile()).sort((a, b) => a.name.localeCompare(b.name))) {
+        dataFiles[entry.name] = await hashFile(join(DATA_DIR, entry.name));
+      }
+      const caseFiles = {};
+      for (const caseEntry of cases) caseFiles[caseEntry.id] = await hashFile(join(CASES_DIR, `${caseEntry.id}.case.json`));
+      return { dataFiles, caseFiles, rulesIndexSha256: dataFiles["gameRulesRuleIndex.json"] ?? "" };
+    },
+    now: () => Date.now(),
+    nowIso: () => new Date().toISOString()
+  };
+  return params.regradeFrom ? executeRegrade(params, deps) : executeExperiment(params, deps);
+}
+
+export function describeExperimentPlan({ experiment, models, excerptCaps, arms, estimate, caseCount, folder, judgeModel }) {
+  return [
+    "Experiment run plan (no provider request has been made):",
+    "",
+    `  Run id: ${experiment.runId}  ->  ${folder}/ (the committed ${RESULTS_RELATIVE_PATH} is never read or written)`,
+    experiment.regradeFrom
+      ? `  Regrade: re-grades the stored answers of run ${experiment.regradeFrom}; makes no answer call.`
+      : `  Cases: ${caseCount} from the manifest, each answered ${experiment.repeats} time${experiment.repeats === 1 ? "" : "s"}.`,
+    `  Answer-model lineup: ${models.join(", ")}`,
+    `  Judge model: ${judgeModel}`,
+    `  Excerpt caps: ${excerptCaps.join(", ")}`,
+    `  Arms: ${arms.map((arm) => `${arm.id} (${arm.revision})`).join(", ")}`,
+    `  Calls: ${estimate.answerCalls} answer calls, ${estimate.loneJudgeCalls} lone judge calls,`,
+    `  ${estimate.rankingCalls} blind-ranking calls (${estimate.totalCalls} total, sequential).`,
+    `  Estimated cost: $${estimate.totalCostUsd.toFixed(2)} (character-count estimate; the live run records its own actual cost).`,
+    "",
+    `Re-run with ${CONFIRM_FLAG} to make the live provider calls.`
+  ].join("\n");
+}
+
+/**
+ * Experiment mode (REQ-226): validates the manifest against this checkout's
+ * corpus, prints the plan when unconfirmed, and otherwise hands the run to
+ * `runExperiment`. It never reads or writes the committed scores file.
+ */
+async function runExperimentCommand({
+  parsed,
+  env,
+  judgeModel,
+  allCases,
+  isStale,
+  measure,
+  buildClient,
+  injectedClient,
+  runExperiment,
+  log
+}) {
+  const { experiment } = parsed;
+  const runsRoot = resolve(repoRoot, EXPERIMENT_RUNS_DIR);
+  const arms = [{ id: DEFAULT_ARM, revision: ARM_A_REVISION }];
+
+  let manifest = null;
+  let manifestSha256 = null;
+  let cases;
+  if (experiment.regradeFrom) {
+    cases = allCases.filter((caseEntry) => caseEntry.review.status === "approved" && !isStale(caseEntry));
+  } else {
+    ({ manifest, manifestSha256 } = await loadManifestFile(experiment.manifestPath));
+    cases = validateManifestCases({ manifest, allCases, isStale });
+  }
+
+  const folder = resolve(runsRoot, experiment.runId);
+  if (!parsed.confirmed) {
+    const measured = cases.length > 0 && !experiment.regradeFrom ? await measure({ cases, excerptCaps: parsed.excerptCaps, env }) : new Map();
+    const estimate = estimateCost({
+      models: parsed.models,
+      judgeModel,
+      excerptCaps: parsed.excerptCaps,
+      goldCaseCount: experiment.regradeFrom ? 0 : cases.length * experiment.repeats * arms.length,
+      avgPromptCharsByCap: averagePromptChars(cases, parsed.excerptCaps, measured)
+    });
+    log(
+      describeExperimentPlan({
+        experiment,
+        models: parsed.models,
+        excerptCaps: parsed.excerptCaps,
+        arms,
+        estimate,
+        caseCount: cases.length,
+        folder,
+        judgeModel
+      })
+    );
+    return { ran: false, experiment: true, caseIds: cases.map((c) => c.id), accessChecked: false, estimate };
+  }
+
+  assertLiveProviderConfigured(env);
+  const client = injectedClient ?? (await buildClient(env));
+  const modelIds = experiment.regradeFrom ? [judgeModel] : [...parsed.models, judgeModel];
+  const { missing } = await checkModelAccess({ client, modelIds });
+  if (missing.length > 0) {
+    throw new Error(`The configured OpenAI credentials do not have access to: ${missing.join(", ")}. Fix access and re-run.`);
+  }
+  log(`Model access verified. Running experiment ${experiment.runId} over ${cases.length} cases...`);
+  const result = await runExperiment({
+    runId: experiment.runId,
+    runsRoot,
+    client,
+    judgeModel,
+    models: parsed.models,
+    excerptCaps: parsed.excerptCaps,
+    arms,
+    repeats: experiment.repeats,
+    cases,
+    manifest,
+    manifestSha256,
+    expectCommit: experiment.expectCommit,
+    regradeFrom: experiment.regradeFrom,
+    env,
+    log
+  });
+  return { ran: true, experiment: true, caseIds: cases.map((c) => c.id), accessChecked: true, result };
+}
+
 /** The prior committed scores file, or null when none exists yet. */
 async function defaultReadResults(resultsPath) {
   try {
@@ -774,6 +1012,7 @@ export async function run(options = {}) {
     buildClient = defaultBuildClient,
     client: injectedClient,
     runEvaluation = runLiveEvaluation,
+    runExperiment = runLiveExperiment,
     loadLocalEnv = loadLocalOpenAiEnv,
     readResults = defaultReadResults,
     loadSources = loadSnapshotSources,
@@ -792,6 +1031,21 @@ export async function run(options = {}) {
   if (!isStale) {
     const sources = await loadSources();
     isStale = (caseEntry) => compareSnapshot(caseEntry, sources).stale;
+  }
+  if (parsed.experiment) {
+    // An experiment run never reads or writes the committed scores file (REQ-226).
+    return runExperimentCommand({
+      parsed,
+      env,
+      judgeModel,
+      allCases,
+      isStale,
+      measure,
+      buildClient,
+      injectedClient,
+      runExperiment,
+      log
+    });
   }
   const previousResults = await readResults(resultsPath);
   const records = previousResults?.caseLegScores ?? [];

@@ -5,7 +5,7 @@
     {
       "id": "A1",
       "statement": "A fake-client test shows a manifest with a missing, unapproved, or hash-mismatched case refuses the run and names that case",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -13,7 +13,7 @@
     {
       "id": "A2",
       "statement": "A test shows `--repeat 3` produces three independent records per case keyed by case, model, cap, arm and repeat index",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -21,7 +21,7 @@
     {
       "id": "A3",
       "statement": "A test shows the identity record contains every field listed in brief section 4.2, including the commit run from",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -29,7 +29,7 @@
     {
       "id": "A4",
       "statement": "A test shows a dirty checkout and a commit different from `--expect-commit` each refuse the run before any call",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -37,7 +37,7 @@
     {
       "id": "A5",
       "statement": "A test shows an experiment run writes only under its own run folder and leaves `apps/backend/src/eval/answer-quality/results.json` byte-identical; a routine run still merges as before",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -45,7 +45,7 @@
     {
       "id": "A6",
       "statement": "A test shows a regrade run makes zero answer calls, never writes into the source run folder, and records the source run id and manifest hash",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -53,7 +53,7 @@
     {
       "id": "A7",
       "statement": "`npm run eval:answer-quality` with no key and no experiment flags still dry-runs without a network call",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run eval:answer-quality"
       }
@@ -61,7 +61,7 @@
     {
       "id": "A8",
       "statement": "Typecheck passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run typecheck"
       }

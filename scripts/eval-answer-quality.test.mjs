@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import test from "node:test"
+import { mkdtemp, readFile as readFileAsync, writeFile as writeFileAsync } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 
 import {
   BAKE_OFF_LINEUP,
@@ -17,15 +20,18 @@ import {
   checkModelAccess,
   computeCallCostUsd,
   describeRetrieval,
+  describeExperimentPlan,
   estimateCost,
   executeEvaluation,
   formatCommittedJson,
+  NO_LOCAL_ENV_VARIABLE,
   parseArgs,
   resolveJudgeModel,
   resolveRunEnv,
   run
 } from "./eval-answer-quality.mjs"
 import { loadGoldCases } from "./lib/gold-cases.mjs"
+import { manifestEntryFor } from "./lib/experiment-run.mjs"
 import {
   computeHeadline,
   formatHeadline,
@@ -1022,4 +1028,179 @@ test("the live loop refuses a lexical pass when a real embedder is configured, t
     })
   })
   await assert.rejects(() => executeEvaluation(evaluationParams(), deps), /lexical retrieval/)
+})
+
+// ---------------------------------------------------------------------------
+// Experiment mode (REQ-226): flags, the manifest refusal, and the committed file left alone
+// ---------------------------------------------------------------------------
+
+test("parseArgs leaves experiment mode off for a routine run and turns it on with --run-id", () => {
+  assert.equal(parseArgs([]).experiment, null)
+  assert.equal(parseArgs(["--model", "gpt-4.1", "--all"]).experiment, null)
+  const parsed = parseArgs([
+    "--run-id",
+    "phase-2-head",
+    "--manifest",
+    "manifests/diagnostic.json",
+    "--repeat",
+    "3",
+    "--expect-commit",
+    "07cc3ab6"
+  ])
+  assert.equal(parsed.experiment.runId, "phase-2-head")
+  assert.equal(parsed.experiment.repeats, 3)
+  assert.equal(parsed.experiment.expectCommit, "07cc3ab6")
+  assert.equal(parsed.experiment.regradeFrom, null)
+  assert.match(parsed.experiment.manifestPath, /manifests\/diagnostic\.json$/)
+  assert.equal(parseArgs(["--run-id", "r", "--regrade-from", "earlier"]).experiment.regradeFrom, "earlier")
+})
+
+test("parseArgs refuses an experiment flag without --run-id, a missing manifest, a bad repeat, and a selection flag", () => {
+  assert.throws(() => parseArgs(["--repeat", "3"]), /--repeat belong to an experiment run: name it with --run-id/)
+  assert.throws(() => parseArgs(["--manifest", "m.json"]), /--manifest belong to an experiment run/)
+  assert.throws(() => parseArgs(["--run-id", "r"]), /needs --manifest/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--manifest", "m.json", "--repeat", "0"]), /--repeat needs a whole number/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--manifest", "m.json", "--all"]), /drop --all/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--regrade-from", "e", "--manifest", "m.json"]), /drop --manifest/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--regrade-from", "e", "--repeat", "2"]), /drop --repeat/)
+})
+
+async function experimentFixture({ manifestCases, cases }) {
+  const root = await mkdtemp(join(tmpdir(), "aq-experiment-"))
+  const manifestPath = join(root, "manifest.json")
+  await writeFileAsync(manifestPath, JSON.stringify({ formatVersion: 1, cases: manifestCases }))
+  return { root, manifestPath, loadCases: async () => cases }
+}
+
+test("an experiment run whose manifest names a missing, unapproved or changed case refuses by name and makes no call", async () => {
+  const good = fixtureCase("exp-good")
+  const draft = fixtureCase("exp-draft", { review: { status: "draft" } })
+  const changed = fixtureCase("exp-changed")
+  const cases = [good, draft, fixtureCase("exp-changed", { question: "Reworded since the manifest was written?" })]
+  const { manifestPath, loadCases } = await experimentFixture({
+    manifestCases: [manifestEntryFor(good), manifestEntryFor(draft), manifestEntryFor(changed), { id: "exp-ghost", questionSha256: "x", answerSha256: "y" }],
+    cases
+  })
+  const client = fakeAccessClient(["gpt-4.1", "gpt-5"])
+  let runnerCalled = false
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: ["--run-id", "refused", "--manifest", manifestPath, CONFIRM_FLAG],
+        env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+        log: () => {},
+        loadCases,
+        isStale: notStale,
+        client,
+        runExperiment: async () => {
+          runnerCalled = true
+        }
+      }),
+    (error) =>
+      /exp-ghost: missing/.test(error.message) &&
+      /exp-draft: unapproved/.test(error.message) &&
+      /exp-changed: hash mismatch/.test(error.message)
+  )
+  assert.deepEqual(client.calls, [], "not even the model-access list request is made")
+  assert.equal(runnerCalled, false)
+})
+
+test("an experiment dry run prints the plan, reads and writes no committed scores file, and makes no network call", async () => {
+  const a = fixtureCase("exp-a")
+  const b = fixtureCase("exp-b")
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a), manifestEntryFor(b)], cases: [a, b] })
+  const logs = []
+  const client = fakeAccessClient(["gpt-4.1", "gpt-5"])
+  const result = await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--run-id", "dry", "--manifest", manifestPath, "--repeat", "3"],
+    env: {},
+    log: (line) => logs.push(line),
+    loadCases,
+    isStale: notStale,
+    measure: fakeMeasure,
+    client,
+    readResults: async () => {
+      throw new Error("an experiment run must never read the committed scores file")
+    }
+  })
+  assert.equal(result.ran, false)
+  assert.equal(result.experiment, true)
+  assert.deepEqual(client.calls, [])
+  assert.match(logs[0], /Run id: dry/)
+  assert.match(logs[0], /the committed apps\/backend\/src\/eval\/answer-quality\/results\.json is never read or written/)
+  assert.match(logs[0], /Cases: 2 from the manifest, each answered 3 times/)
+  assert.match(logs[0], /6 answer calls, 6 lone judge calls/)
+})
+
+test("a confirmed experiment run hands the validated cases to the experiment runner and leaves results.json byte-identical", async () => {
+  const a = fixtureCase("exp-a")
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a)], cases: [a] })
+  const repoRootForTest = resolve(dirname(fileURLToPath(import.meta.url)), "..")
+  const committed = resolve(repoRootForTest, "apps/backend/src/eval/answer-quality/results.json")
+  const before = await readFileAsync(committed, "utf8")
+  let received
+  const client = fakeAccessClient(["gpt-4.1", "gpt-5"])
+  const result = await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--run-id", "live", "--manifest", manifestPath, "--repeat", "2", "--expect-commit", "abcdef1", CONFIRM_FLAG],
+    env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+    log: () => {},
+    loadCases,
+    isStale: notStale,
+    client,
+    readResults: async () => {
+      throw new Error("an experiment run must never read the committed scores file")
+    },
+    runExperiment: async (params) => {
+      received = params
+      return { summary: "fake" }
+    }
+  })
+  assert.equal(result.ran, true)
+  assert.equal(received.runId, "live")
+  assert.equal(received.repeats, 2)
+  assert.equal(received.expectCommit, "abcdef1")
+  assert.deepEqual(received.cases.map((c) => c.id), ["exp-a"])
+  assert.equal(received.manifestSha256.length, 64)
+  assert.match(received.runsRoot, /output\/answer-quality\/runs$/)
+  assert.deepEqual(client.calls, ["list"], "only the models-list access check; no completion")
+  assert.equal(await readFileAsync(committed, "utf8"), before, "the committed scores file is byte-identical")
+})
+
+test("a routine run still merges into the committed scores file exactly as before (REQ-189)", async () => {
+  const { deps, written } = fakeDeps()
+  await executeEvaluation(evaluationParams(), deps)
+  assert.equal(written.results.caseLegScores.length, 1)
+  assert.ok(written.results.runMetadata.selectionMode)
+})
+
+test("ANSWER_QUALITY_NO_LOCAL_ENV keeps every local env file out of a run, so a dry run builds no client", () => {
+  const loaded = []
+  const loadLocalEnv = () => {
+    loaded.push("read")
+    return { env: { OPENAI_API_KEY: "sk-from-a-file" }, sources: ["a-file"] }
+  }
+  const guarded = resolveRunEnv({ processEnv: { [NO_LOCAL_ENV_VARIABLE]: "1" }, confirmed: false, loadLocalEnv })
+  assert.deepEqual(loaded, [], "no local env file is read")
+  assert.equal(guarded.OPENAI_API_KEY, undefined)
+  const unguarded = resolveRunEnv({ processEnv: {}, confirmed: false, loadLocalEnv })
+  assert.equal(unguarded.OPENAI_API_KEY, "sk-from-a-file")
+})
+
+test("describeExperimentPlan names the arms and revisions, the calls and the folder", () => {
+  const text = describeExperimentPlan({
+    experiment: { runId: "plan", repeats: 1, regradeFrom: null },
+    models: ["gpt-4.1"],
+    excerptCaps: [10],
+    arms: [{ id: "A", revision: "A.1" }],
+    estimate: { answerCalls: 2, loneJudgeCalls: 2, rankingCalls: 0, totalCalls: 4, totalCostUsd: 0.05 },
+    caseCount: 2,
+    folder: "/runs/plan",
+    judgeModel: "gpt-5"
+  })
+  assert.match(text, /Arms: A \(A\.1\)/)
+  assert.match(text, /4 total, sequential/)
+  assert.match(text, /\/runs\/plan\//)
 })

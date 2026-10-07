@@ -1,6 +1,6 @@
 # Slice A — Experiment runs and identity record
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
@@ -21,14 +21,14 @@ A named experiment run answers a fixed list of approved cases, repeats them, rec
 
 ## Acceptance criteria
 
-- [ ] A1: A fake-client test shows a manifest with a missing, unapproved, or hash-mismatched case refuses the run and names that case
-- [ ] A2: A test shows `--repeat 3` produces three independent records per case keyed by case, model, cap, arm and repeat index
-- [ ] A3: A test shows the identity record contains every field listed in brief section 4.2, including the commit run from
-- [ ] A4: A test shows a dirty checkout and a commit different from `--expect-commit` each refuse the run before any call
-- [ ] A5: A test shows an experiment run writes only under its own run folder and leaves `apps/backend/src/eval/answer-quality/results.json` byte-identical; a routine run still merges as before
-- [ ] A6: A test shows a regrade run makes zero answer calls, never writes into the source run folder, and records the source run id and manifest hash
-- [ ] A7: `npm run eval:answer-quality` with no key and no experiment flags still dry-runs without a network call
-- [ ] A8: Typecheck passes
+- [x] A1: A fake-client test shows a manifest with a missing, unapproved, or hash-mismatched case refuses the run and names that case
+- [x] A2: A test shows `--repeat 3` produces three independent records per case keyed by case, model, cap, arm and repeat index
+- [x] A3: A test shows the identity record contains every field listed in brief section 4.2, including the commit run from
+- [x] A4: A test shows a dirty checkout and a commit different from `--expect-commit` each refuse the run before any call
+- [x] A5: A test shows an experiment run writes only under its own run folder and leaves `apps/backend/src/eval/answer-quality/results.json` byte-identical; a routine run still merges as before
+- [x] A6: A test shows a regrade run makes zero answer calls, never writes into the source run folder, and records the source run id and manifest hash
+- [x] A7: `npm run eval:answer-quality` with no key and no experiment flags still dry-runs without a network call
+- [x] A8: Typecheck passes
 
 ## Verification
 
