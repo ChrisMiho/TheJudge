@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "The question names Blitz Automaton but Autonomous Assembler is attached. Swap the attached card and citation to Blitz Automaton (19f344ee-031d-4346-9553-c5d32b02df43), which carries the identical 2022-10-14 ruling."
   },
   "cards": [
     {

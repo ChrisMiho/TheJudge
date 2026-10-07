@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Fix the why-hard line: the copies are made when the replicate trigger resolves, which can be after the original was countered in response to that trigger; they do not already exist. Ruling, answer and direction are right."
   },
   "cards": [
     {

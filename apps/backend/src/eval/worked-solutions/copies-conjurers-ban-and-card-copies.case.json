@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "rejected",
+    "reviewedOn": "2026-10-07",
+    "note": "The 2006 ruling says Conjurer's Ban only affects cards, but the current Oracle text reads 'spells with the chosen name can't be cast'; a copy cast with Eye of the Storm is a spell with that name (707.10, 707.12), so under current wording it is stopped. Stale ruling that contradicts the shown Oracle text."
   },
   "cards": [
     {

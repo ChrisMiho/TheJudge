@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "The question is about Shattering Spree: cite Shattering Spree's own identical 2024-01-12 ruling (fe725b27-49ef-41bc-91f9-9cd9871ad863) and drop Siege of Towers, which plays no part. The current text is verbatim on Siege of Towers' ruling list, so the wording itself stands."
   },
   "cards": [
     {

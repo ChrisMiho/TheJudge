@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Animate Library is an Unstable card and the scenario is a Contraption deck; excluded-mechanics.json already keeps Unstable content out. Re-author 702.5 on a black-border Aura, e.g. Rancor (9d2d6479-531c-4ce1-b52b-00e36fa63b64) ruling 2018-03-16 (an Aura spell whose target is illegal doesn't resolve and never enters) or Spreading Seas (af32757c-9d3c-4f6c-a6fa-d5729a440382) ruling 2009-10-01; keep 702.5a."
   },
   "cards": [
     {

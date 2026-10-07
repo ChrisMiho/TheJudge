@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Add the premise the ruling depends on: 'I control the ongoing scheme I Know All, I See All, which untaps all permanents I control during each opponent's untap step. Deep-Slumber Titan doesn't untap during my untap step. Does it untap during an opponent's untap step?' Without the scheme nothing of yours untaps on an opponent's untap step (502.3), so 'Yes' is wrong as asked."
   },
   "cards": [
     {

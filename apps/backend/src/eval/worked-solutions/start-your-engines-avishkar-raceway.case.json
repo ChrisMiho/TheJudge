@@ -3,8 +3,9 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "needs-edit",
+    "reviewedOn": "2026-10-07",
+    "note": "Duplicate of max-speed-amonkhet-raceway (same reference answer, which is about max speed, 702.178). Re-author on Avishkar Raceway's own 2025-02-07 ruling 'Start your engines! isn't a triggered ability. Increasing your speed to 1 is something that happens as a state-based action as soon as you control a permanent with the ability. Notably, this includes gaining control of a permanent with the ability that another player controls.' Question: 'I have no speed and gain control of an opponent's Avishkar Raceway. Does my speed become 1 right away, without a trigger?' Outcome works, deciding rule 702.179a."
   },
   "cards": [
     {

@@ -3,8 +3,8 @@
   "formatVersion": 2,
   "tier": 2,
   "review": {
-    "status": "draft",
-    "reviewedOn": null
+    "status": "approved",
+    "reviewedOn": "2026-10-07"
   },
   "cards": [
     {
@@ -16,7 +16,7 @@
   "question": "If I have no cards in my library when I cast Undying Flames, does it deal any damage?",
   "expected": {
     "outcome": "does-not-work",
-    "shortAnswer": "No: with no cards in your library, Undying Flames does nothing.",
+    "shortAnswer": "No damage is dealt: there is no card to exile, so there is no mana value to deal. The spell still resolves, though, so the epic lock and the upkeep copies still apply.",
     "answer": "If you have no cards in your library, Undying Flames does nothing.",
     "decidingRuleIds": ["702.50a"]
   },
@@ -46,5 +46,5 @@
       "rulings": "ac9a53db6be638783821f49b73f0090f8106c763295ad26268b405b7783f0c24"
     }
   },
-  "whyHard": "Players expect a minimum effect from a spell with epic instead of a spell that needs a card to exile."
+  "whyHard": "Players expect a minimum effect from a spell with epic instead of a spell that needs a card to exile, and the ruling's \"does nothing\" tempts them to treat the spell as if it never resolved, which would wrongly lift the epic lock."
 }
