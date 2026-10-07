@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [answer-quality-investigation](answer-quality-investigation/) | Refined 2026-10-07: comparison tooling (REQ-226–230 proposed) + free offline Phase 0; paid phases wait for owner caps; graph run `graph-20261007-134015` |
 
 ## refining
 
@@ -28,7 +29,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [answer-quality-investigation](answer-quality-investigation/) | Before/after answer evaluation for PR #273, retrieval vs prompt failures, GPT-4.1 vs GPT-6 Luna; graph run `graph-20261007-134015` |
 
 ## owner-action
 
