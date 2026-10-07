@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim on 2026-10-07; was `origin/thejudge-auto/answer-quality-investigation`, docs PR #274 merged)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation` (rewritten by the build half's claim; the kickoff worktree was removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261007-134015/`
-- Current node: `gate-qc` (attempt 3 — re-grade after define attempt 2's REQ-228/229/230 correction)
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/answer-quality-investigation/` (build half in progress: gate-qc → plan → build → review → close)
 
 ## Node ledger
@@ -21,6 +21,7 @@
 | 4b | gate-review | sonnet | ok | `0 → 21` | commit 75b85c00: 11 verdicts applied inside `GATE-QUESTIONS.md` (9 accept, 2 edit: REQ-226 drops the cross-checkout `--subject` import and adds a regrade mode; REQ-188 drops the production timeout/retry criterion, keeps combo-catalog parity); `DESIGN-BRIEF.md` reconciled (§2, §4.1, §4.2, §4.8, Phase 0/2/3 steps, §12, truth-changes rows, A6/A9); README note none; `## Gate verdicts` + `### Brief reconciliation` written; marker `STATUS.refined`; board row refined; `git diff --stat HEAD~1 -- PRD/sections apps scripts` empty | 2026-10-07 |
 | 4 (attempt 2) | gate-qc | sonnet | failed (FAIL) | `0 → 21` | commit 3bb5bdd2: `QUALITY-CHECK.md` overwritten — Verdict: FAIL, 2 findings: (1) accepted REQ-229 still carries the `--subject`/`--subject-b` cross-checkout import the owner's REQ-226 edit dropped (brief §4.5, Phase 0 step 2 repeat it); (2) "subject" is an undefined term in REQ-228/229/230 and brief §4.4–4.6; both edits (REQ-226, REQ-188) themselves confirmed consistent; marker `STATUS.refining`, board row refining; driver rewrote README `## Preparation gate` (FAIL + findings) and `status: refining` → loop to `define` (gate-qc→define loop 1 of 3) | 2026-10-07 |
 | 3 (attempt 2) | define | opus | ok | `0 → 45` | commit e5e3d8cb: REQ-229 re-proposed (no `--subject`/`--subject-b`; the trace measures the checkout it runs from, refuses a dirty checkout, records its commit; two revisions compared offline by `eval:evidence-trace:compare -- <folder-a> <folder-b>`, each folder from its own worktree); REQ-228 and REQ-230 reworded (the checkout the run executes from / the changed revision), substance unchanged; all 11 `- Verdict:`/`- Reason:` lines untouched (diff grep count 0), one `Re-proposed 2026-10-07` line under each of the three blocks; brief §4.4–4.6, Phase 0 step 2, §12 parity rewritten, assumption A24 added (evidence: the owner's REQ-226 verdict); genuine blocker none; marker `STATUS.refined`; `git diff --stat HEAD~1 -- PRD/sections apps scripts` empty. Driver judgment: the moved diffs are consequences of the owner's own REQ-226 rule (blocker test condition 2 fails — an authoritative basis exists), so no fresh verdict park; the owner reads the finalized proposal in the code PR before `land` | 2026-10-07 |
+| 4 (attempt 3) | gate-qc | sonnet | ok (PASS) | `0 → 16` | commit d075389f: `QUALITY-CHECK.md` — Verdict: PASS, findings none; both attempt-2 findings closed (REQ-229 traces its own checkout and compares two trace folders; no undefined term left — remaining hits are quoted history); 11/11 blocks well-formed, verdict lines untouched; marker `STATUS.refined`; driver rewrote README `## Preparation gate` to PASS / findings none → advance to `plan` | 2026-10-07 |
 
 ## Open gate
 
@@ -290,6 +291,32 @@ Writes allowed: overwrite `PRD/work/answer-quality-investigation/QUALITY-CHECK.m
 Boundaries: no pushes, no PR actions, no `.secrets/`, no `thejudge-*` skill edits, no `rm -rf`, no `nohup`, no background `&`. If a hook denies a command, do not retry it — report it verbatim and stop.
 
 Report back: the verdict (PASS or FAIL), the complete findings list (empty on PASS), the report file path, the commit hash, and the final marker.
+
+### plan
+
+graph is controlling. You are node 5 (`plan`) of graph run `graph-20261007-134015`, dispatched by the `graph-implement` driver.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation
+
+Every file you read, write, or commit lives under that working directory (a git worktree on the shared build branch `thejudge-auto/answer-quality-investigation-work`, cut from `origin/main`). Never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/...` directly — that is the owner's launch checkout. Copy the `Working directory:` line above, unchanged, into any prompt you write for a subagent.
+
+Invoke the `thejudge-map-out` skill: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-map-out/SKILL.md` and its `reference.md` in full (the slice template, the `.criteria.json` schema with its worked example, and the Ship gates block) and follow its `## Mode` section for `graph is controlling` (read `PRD/instructions/preparation-contract.md`; require `Quality-check: PASS` in the package README's `## Preparation gate` — it is recorded there from gate-qc attempt 3, commit d075389f — and never self-certify one). Also read `PRD/instructions/graph-workflow-contract.md` sections `## Propose / apply / close` and `## Acceptance criteria are earned, not written`.
+
+Package: `PRD/work/answer-quality-investigation/` (status `refined`). Reads: `DESIGN-BRIEF.md` (the design, decision points, assumptions A1–A24, the slice sketch), `GATE-QUESTIONS.md` (the finalized product-truth proposal: new REQ-226–230, amended REQ-185–189 and NFR-018, all verdicts applied — 9 accept, 2 edit; three blocks carry a `Re-proposed 2026-10-07` line), `README.md`, `QUALITY-CHECK.md`, the `PRD/sections/` entries the brief cites, and the existing evaluator code the brief names (`scripts/eval-answer-quality.mjs`, `scripts/lib/prompt-fidelity.mjs`, `apps/backend/src/eval/`). Intake under `intake/` is evidence, never authority; never open a document the intake cites.
+
+Write `GAMEPLAN.md`, one `slice-<letter>-*.md` per slice with its `slice-<letter>.criteria.json` emitted beside it (every criterion initialised `false`, each with an `evidence` block naming the command pattern or file paths that prove it, `"manual": true` only where no command can), the README slice table and implementation map with `status: active`, the `STATUS.active` marker (remove `STATUS.refined`; exactly one marker), and the board row under `## active` in `PRD/work/STATUS.md`.
+
+Planning constraints from the brief and the contract:
+
+- Exactly one slice applies the finalized proposal to `PRD/sections/` by intent (the GAMEPLAN names which); the build node writes that truth together with the code that realizes it, and a `reject`ed id would stay burned (none here).
+- The build runs unattended with no live OpenAI spend: every slice's verification must be offline and free (mock provider, stored transcripts, fixtures, the offline evidence trace, unit tests). The brief's Phase 0 offline run is in scope at build; the paid Phases 1–5 are an owner-run runbook the slices document, never execute. No `npm run data:refresh`, no Scryfall fetch.
+- Every acceptance criterion is verifiable by a named command or file path; a dev server or browser is not expected for this tooling package — if a slice needs one, encode the `runtime-process-hygiene.md` cleanup evidence criterion.
+- Keep slices sequential only where a stated dependency forces it; the final slice carries the PRD promotion checklist and the Ship gates block.
+- Never write product code or `PRD/sections/` edits from this node; never add a `DEC-###`; never allocate a stable ID beyond those the proposal already names.
+
+Commit from inside the working directory with explicit paths only (`git add PRD/work/answer-quality-investigation PRD/work/STATUS.md` — never `git add -A`, `--all`, or `.`). Do not push. Boundaries: no pushes, no PR actions, no `.secrets/`, no `thejudge-*` skill edits, no `rm -rf`, no `nohup`, no background `&`. If a hook denies a command, do not retry it — report it verbatim and stop.
+
+Report back: the slice list (letter, title, one-line goal, dependencies), which slice applies the proposal, the criteria count per slice and how many are `manual`, every verification command the slices name, the commit hash, and the final marker.
 
 ## Instruction ledger
 
