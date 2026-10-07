@@ -27,9 +27,12 @@ on the same cases overwrite each other, and there is no way to fix exactly
 which cases a run asks or to ask a case three times. This adds a named run that
 answers only the cases on a fixed list (each checked by a fingerprint of its
 question and approved answer), can repeat each one, writes everything into its
-own folder, records exactly what was measured, and can measure an older copy of
-the app with today's tooling — which is what comparing PR #273's before and
-after needs. The routine run (on demand, confirmation-gated, never a build gate
+own folder, and records exactly what was measured, including the commit it ran
+from. An older revision is measured by running the tooling from that revision's
+own worktree with the tooling commits applied on top — which is what comparing
+PR #273's before and after needs. A regrade mode re-grades an earlier run's
+stored answers under the current judge and rubric, so old answers stay
+comparable after the grader changes. The routine run (on demand, confirmation-gated, never a build gate
 — REQ-188) is unchanged. The system map's description of the answer-quality
 tooling is updated in the same change.
 
@@ -42,20 +45,20 @@ Proposed diff — new entry after REQ-225 in `PRD/sections/functional-requiremen
 +### REQ-226
 +- Title: Answer-quality experiment runs are named, frozen, and kept apart from the routine scorecard
 +- Priority: medium
-+- Description: Beside the routine answer-quality run (REQ-188), the run command offers an experiment mode for deliberate comparisons — before and after a data refresh, diagnostic prompt arms (REQ-230), or two answer models. An experiment run has its own run id, answers exactly the cases a manifest lists, may answer each case more than once, records everything needed to reproduce it, and writes only to its own run folder, never to the committed scores file. It can measure a different checkout of the product (the subject) than the one the tooling runs from (the harness), so an older revision is measured with today's tooling without being edited.
++- Description: Beside the routine answer-quality run (REQ-188), the run command offers an experiment mode for deliberate comparisons — before and after a data refresh, diagnostic prompt arms (REQ-230), or two answer models. An experiment run has its own run id, answers exactly the cases a manifest lists, may answer each case more than once, records everything needed to reproduce it, and writes only to its own run folder, never to the committed scores file. It records the commit it executes from; an older revision is measured by running the tooling from that revision's own worktree with the tooling commits applied on top, never by importing code across checkouts. A regrade run takes its answers from an earlier run's stored transcripts and only grades them under the current judge and rubric, so earlier answers stay comparable after a grader or rubric change and progress can be tracked run over run.
 +- Acceptance Criteria:
-+  - `npm run eval:answer-quality -- --run-id <id> --manifest <file>` selects experiment mode; `--run-id` and `--manifest` are required together, and experiment mode cannot be combined with `--changed`, `--tag`, `--tier`, `--sample`, or `--all`
++  - `npm run eval:answer-quality -- --run-id <id> --manifest <file>` selects experiment mode; `--run-id` and `--manifest` are required together, and experiment mode cannot be combined with `--changed`, `--tag`, `--tier`, `--sample`, or `--all`; `--regrade-from <run-id>` selects regrade mode inside an experiment run (below)
 +  - a manifest is a JSON file listing case ids, each with the SHA-256 of the case's `question` and of its `expected.answer`; the run refuses, naming each case, when a listed case is missing, is not `approved`, is flagged stale (REQ-225), or has a question or reference-answer hash that differs from the manifest; it never answers a case the manifest does not list
-+  - `--subject <path>` names the checkout whose product code, committed data, and case files are measured (default: the checkout the command runs from, so every routine command behaves as before); the run refuses when the subject has uncommitted changes, records the subject's full commit SHA, and with `--expect-commit <sha>` refuses when the subject's HEAD differs
-+  - the run imports the subject's prompt preparation, data loaders, and embedder and reads the subject's `apps/backend/data/` files and case files, so each prompt is the one that revision builds; when the subject lacks a module or export the harness needs, the run refuses naming it, and never falls back to the harness's own copy
++  - the run measures the checkout it executes from: it uses that checkout's prompt preparation, data loaders, embedder, `apps/backend/data/` files, and case files, and imports nothing from another checkout; it refuses when that checkout has uncommitted changes, records its full commit SHA, and with `--expect-commit <sha>` refuses when its HEAD differs
++  - `--regrade-from <run-id>` answers nothing: for each record key in the source run folder that the manifest lists, it reads the stored answer transcript and grades it under the current judge model and rubric revision, writing new records only to the new run's own folder; it refuses when the source run folder is missing, when a listed key has no stored answer, or when a stored answer's prompt hash is absent; the identity record names the source run id and the SHA-256 of its `manifest.json`; the source run folder is read, never written
 +  - `--repeat <n>` (default 1) answers each case `n` independent times per answer model, excerpt cap, and arm; every record is keyed by case id, model, excerpt cap, arm (REQ-230), and repeat index
 +  - the run writes only under `output/answer-quality/runs/<run-id>/` (gitignored): `manifest.json` (the identity record), `calls.jsonl` (the checkpoint, REQ-227), one transcript per record, and a numbers-and-ids-only `summary.json`; it refuses to start when that folder already exists, except to resume (REQ-227)
-+  - the identity record holds: run id; harness commit; subject commit; the SHA-256 of each subject data file read and of each listed case file; the manifest's SHA-256; answer model ids as requested and as the provider reports them; the request options sent (model and input only, REQ-188); the client timeout and retry count; `ASK_AI_PROVIDER`; `EMBEDDING_PROVIDER` and the embedding model id; whether the combo catalog was loaded; excerpt caps; arms and their revision ids; repeat count; judge model; rubric revision; the rate table with the date each rate was checked; the spending cap; and the UTC start time
++  - the identity record holds: run id; the commit executed from; the SHA-256 of each data file read and of each listed case file; the manifest's SHA-256; answer model ids as requested and as the provider reports them; the request options sent (model and input only, REQ-188); the client timeout and retry count; `ASK_AI_PROVIDER`; `EMBEDDING_PROVIDER` and the embedding model id; whether the combo catalog was loaded; excerpt caps; arms and their revision ids; repeat count; judge model; rubric revision; the rate table with the date each rate was checked; the spending cap; for a regrade run, the source run id and manifest hash; and the UTC start time
 +  - an experiment run never reads or writes `apps/backend/src/eval/answer-quality/results.json`
-+  - unit tests with an injected fake client prove every manifest refusal, the dirty-subject and wrong-commit refusals, record keying with repeats, and that `results.json` is untouched; no test makes a network call
++  - unit tests with an injected fake client prove every manifest refusal, the dirty-checkout and wrong-commit refusals, record keying with repeats, that a regrade run makes no answer call and leaves the source run folder unchanged, and that `results.json` is untouched; no test makes a network call
 +- Constraints:
 +  - REQ-188's confirmation gate, credential loading, sequential calls, mock-first default, and never-in-a-gate rules apply unchanged
-+  - no change to `preparePromptInput`, System 3, any route, the provider factory, or any runtime code; the subject checkout is read, never written
++  - no change to `preparePromptInput`, System 3, any route, the provider factory, or any runtime code; no experiment run writes outside its own run folder
 +  - a manifest carries ids and hashes only, never question or answer text
 +- Dependencies:
 +  - REQ-188 (the routine run and its gates)
@@ -66,7 +69,7 @@ Proposed diff — new entry after REQ-225 in `PRD/sections/functional-requiremen
 +  - REQ-230 (the arms a record may carry)
 +- Notes:
 +  - measured 2026-10-07: `--output-dir` moves only the transcripts; every recorded run merges into the committed results file at the fixed `RESULTS_RELATIVE_PATH` (`scripts/eval-answer-quality.mjs`), so two comparison runs over shared cases overwrite each other's records
-+  - proposed by the `answer-quality-investigation` package to compare PR #273's base `3e973ced` with its head `07cc3ab6`, neither of which contains this tooling — the reason the harness and subject are separate
++  - proposed by the `answer-quality-investigation` package to compare PR #273's base `3e973ced` with its head `07cc3ab6`, neither of which contains this tooling — the reason each revision is measured from its own worktree with the tooling commits applied on top
 ```
 
 Proposed diff — `PRD/sections/system-map.md`, `## Eval harness` → `### Answer-quality baseline`:
@@ -75,7 +78,7 @@ Proposed diff — `PRD/sections/system-map.md`, `## Eval harness` → `### Answe
 -- Summary: On-demand, confirmation-gated run that asks the selected approved cases of the rules test corpus — by default the cases whose prompt or reference answer changed since they were last graded, or whose last graded record predates those hashes, answered by the deployed model at the deployed ten-excerpt cap — and scores each answer against that case's approved reference answer: deterministic assertions (including rule ids the answer cites that are not in the committed rule index), a reference-grounded judge model stronger than every contestant, a blind side-by-side ranking when two or more models answer, over four 0–2 axes, then a human review pass. The four-model bake-off and other excerpt caps are explicit options. Never in `quality:check`, never asserted against a golden, never a build gate. Writes a small committed scores file merged per case and gitignored transcripts; tier-3 scores are always reported apart from the official tiers.
 -- Lives in: `apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/answer-quality/`, `scripts/eval-answer-quality.mjs`
 -- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190
-+- Summary: On-demand, confirmation-gated run that asks the selected approved cases of the rules test corpus — by default the cases whose prompt or reference answer changed since they were last graded, or whose last graded record predates those hashes, answered by the deployed model at the deployed ten-excerpt cap — and scores each answer against that case's approved reference answer: deterministic assertions (including rule ids the answer cites that are not in the committed rule index), a reference-grounded judge model stronger than every contestant, a blind side-by-side ranking when two or more models answer, over four 0–2 axes, then a human review pass. The four-model bake-off and other excerpt caps are explicit options. Never in `quality:check`, never asserted against a golden, never a build gate. A routine run writes a small committed scores file merged per case and gitignored transcripts; tier-3 scores are always reported apart from the official tiers. Experiment runs (REQ-226) answer a fixed manifest of cases, optionally repeated and optionally against another checkout, save each record as it completes and stop at an owner-set spending cap (REQ-227), and write only to their own gitignored run folder; a paired comparison report reads two runs (REQ-228); an offline evidence trace shows where each deciding rule ranks and whether it reaches the prompt (REQ-229); labelled diagnostic prompt arms run only on a committed diagnostic case set, apart from a held-out set (REQ-230).
++- Summary: On-demand, confirmation-gated run that asks the selected approved cases of the rules test corpus — by default the cases whose prompt or reference answer changed since they were last graded, or whose last graded record predates those hashes, answered by the deployed model at the deployed ten-excerpt cap — and scores each answer against that case's approved reference answer: deterministic assertions (including rule ids the answer cites that are not in the committed rule index), a reference-grounded judge model stronger than every contestant, a blind side-by-side ranking when two or more models answer, over four 0–2 axes, then a human review pass. The four-model bake-off and other excerpt caps are explicit options. Never in `quality:check`, never asserted against a golden, never a build gate. A routine run writes a small committed scores file merged per case and gitignored transcripts; tier-3 scores are always reported apart from the official tiers. Experiment runs (REQ-226) answer a fixed manifest of cases, optionally repeated and optionally regraded from an earlier run's stored answers, save each record as it completes and stop at an owner-set spending cap (REQ-227), and write only to their own gitignored run folder; a paired comparison report reads two runs (REQ-228); an offline evidence trace shows where each deciding rule ranks and whether it reaches the prompt (REQ-229); labelled diagnostic prompt arms run only on a committed diagnostic case set, apart from a held-out set (REQ-230).
 +- Lives in: `apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/answer-quality/` (including `manifests/`), `scripts/eval-answer-quality.mjs`, and the compare and evidence-trace scripts beside it
 +- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190, REQ-226, REQ-227, REQ-228, REQ-229, REQ-230
 ```
@@ -414,21 +417,21 @@ Proposed diff — `PRD/sections/functional-requirements.md`, REQ-187 `Notes`:
 
 ## REQ-188 — evaluation answers are asked exactly the way production asks
 
-**What this decides:** four corrections so a graded answer is the answer a
+**What this decides:** three corrections so a graded answer is the answer a
 player would really get, plus the hook for experiment runs.
 
 **In plain terms:** the grader exists to grade what players get, so its
-questions must match production's. Today they differ in three ways. Production
-loads the Commander Spellbook combo data by default; the grader does not.
-Production gives the AI 15 seconds per attempt with 2 retries; the grader uses
-the library's much longer defaults, so a slow model looks fine when a player
-would have seen a timeout. Cost ignores reasoning tokens and counts an unknown
+questions must match production's. Today they differ in two ways that this
+fixes. Production loads the Commander Spellbook combo data by default; the
+grader does not. Cost ignores reasoning tokens and counts an unknown
 model as $0. This loads the combo data the way production does (and records
-it), uses production's timeout and retries by default (an override is recorded),
-records reasoning tokens and the reasoning effort the provider reports, and
+it), records reasoning tokens and the reasoning effort the provider reports, and
 reports an unknown price as "unpriced". The standing rule stays: no
 reasoning-effort setting is sent, so reasoning models such as GPT-6 Luna run at
-their default; tuning effort remains a separate follow-up. It also names the
+their default; tuning effort remains a separate follow-up. Evaluation answer calls keep the
+SDK's default timeout and retries; whether a model is fast enough for players
+is read from the recorded latency and the comparison report's count of answers
+slower than 15 seconds (REQ-228). It also names the
 experiment mode (REQ-226) as a selection alongside the routine ones.
 
 **What happens if you say no:** grades keep describing a request production
@@ -444,7 +447,6 @@ Proposed diff — `PRD/sections/functional-requirements.md`, REQ-188:
 ```diff
 -  - the prompt is the one a player's lookup would get: `preparePromptInput` receives the committed card-detail and card-rulings indexes (the four data files `createConfiguredApp.ts` loads), every card in the case's `cards` attached by oracle id — or, for a case with a `gameState`, placed in its zones on an In-Depth request (REQ-185) — and the question embedded — once per case, from the same retrieval query text the route handler embeds (`buildRetrievalQueryText`), by the provider `EMBEDDING_PROVIDER` names; unset, the run defaults it to `local`, the deployed provider (REQ-184), and an explicit value always wins. Under a real provider the run refuses to continue when the embedder returns no vector or System 3 reports a lexical pass (`assertQueryEmbedded`, `describeRetrieval`), so the `EMBEDDING_PROVIDER` the artifact records is always the provider that actually ranked the excerpts
 +  - the prompt is the one a player's lookup would get: `preparePromptInput` receives the committed card-detail and card-rulings indexes and rules data, and — when combo enrichment is on, as it is in production by default (`COMBO_ENRICHMENT_ENABLED` unset) — the Commander Spellbook combo catalog, each loaded as `createConfiguredApp.ts` loads it, with the run artifact recording whether the combo catalog was loaded; every card in the case's `cards` attached by oracle id — or, for a case with a `gameState`, placed in its zones on an In-Depth request (REQ-185) — and the question embedded — once per case, from the same retrieval query text the route handler embeds (`buildRetrievalQueryText`), by the provider `EMBEDDING_PROVIDER` names; unset, the run defaults it to `local`, the deployed provider (REQ-184), and an explicit value always wins. Under a real provider the run refuses to continue when the embedder returns no vector or System 3 reports a lexical pass (`assertQueryEmbedded`, `describeRetrieval`), so the `EMBEDDING_PROVIDER` the artifact records is always the provider that actually ranked the excerpts
-+  - answer calls use the same client timeout and retry count production uses (`OPENAI_TIMEOUT_MS` 15,000 ms and `OPENAI_MAX_RETRIES` 2, the `createAskAiProvider.ts` defaults the deploy keeps) unless `--answer-timeout-ms` overrides the timeout for a diagnostic run; the values used are recorded in the artifact, and a call that times out is recorded as a timeout, never retried beyond production's count
 ```
 
 ```diff
@@ -469,7 +471,7 @@ Proposed diff — `PRD/sections/functional-requirements.md`, REQ-188:
 
 ```diff
  - Notes:
-+  - measured 2026-10-07: the run's client was `new OpenAI({ apiKey })` (`defaultBuildClient`, `scripts/eval-answer-quality.mjs`), using the SDK's default timeout and retries rather than production's 15,000 ms and 2; and `loadPromptResources` (`scripts/lib/prompt-fidelity.mjs`) loaded four data files and no combo catalog while production loads the catalog by default (`createConfiguredApp.ts`, `comboEnrichmentEnabled` true when `COMBO_ENRICHMENT_ENABLED` is unset, which `scripts/aws-deploy.sh` leaves unset). Corrected by the `answer-quality-investigation` package
++  - measured 2026-10-07: `loadPromptResources` (`scripts/lib/prompt-fidelity.mjs`) loaded four data files and no combo catalog while production loads the catalog by default (`createConfiguredApp.ts`, `comboEnrichmentEnabled` true when `COMBO_ENRICHMENT_ENABLED` is unset, which `scripts/aws-deploy.sh` leaves unset). Corrected by the `answer-quality-investigation` package
 ```
 
 - Verdict: edit

@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim on 2026-10-07; was `origin/thejudge-auto/answer-quality-investigation`, docs PR #274 merged)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation` (rewritten by the build half's claim; the kickoff worktree was removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261007-134015/`
-- Current node: `owner-action` (parked after gate-qc PASS)
+- Current node: `gate-review` complete (gate resolved 2026-10-07; resumes at `gate-qc`)
 - Next action: answer `PRD/work/answer-quality-investigation/GATE-QUESTIONS.md`, merge the docs PR; `graph-implement` builds it
 
 ## Node ledger
@@ -20,11 +20,40 @@
 
 ## Open gate
 
-- Parked at `owner-action` after `gate-qc` PASS (first attempt, no loops).
-- Owner action: answer the eleven `accept` / `edit` / `reject` slots in `PRD/work/answer-quality-investigation/GATE-QUESTIONS.md`, then merge the docs PR to build (PR URL recorded below once opened).
+- RESOLVED 2026-10-07: 11 verdicts applied (9 accept, 2 edit, 0 reject) by `gate-review`; brief reconciled; package restored to `refined`, resumes at `gate-qc`.
+- Was: parked at `owner-action` after `gate-qc` PASS (first attempt, no loops); the owner answered the eleven slots in `PRD/work/answer-quality-investigation/GATE-QUESTIONS.md` and merged the docs PR.
 - Evidence: `PRD/work/answer-quality-investigation/QUALITY-CHECK.md` (PASS, findings none).
-- Resume: the owner's merge is the build signal; `graph-implement` claims the spec from `origin/main`. The kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-answer-quality-investigation` stays through the park for `graph-gate-review`; `graph-implement` removes it at claim time.
-- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/274 (docs-only, into `main`; the owner's merge is the build signal)
+- Docs PR: https://github.com/ChrisMiho/TheJudge/pull/274 (merged)
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-226` | edit | "Drop the cross-checkout `--subject` import: the run records the commit it executes from, and two revisions are compared by running the tooling from each revision's own worktree with the tooling commits applied on top. Add a regrade mode: a run may take its answers from an earlier run's stored transcripts and only grade them under the current judge and rubric, so earlier answers stay comparable after a grader or rubric change and progress can be tracked run over run." |
+| `REQ-227` | accept | — |
+| `REQ-228` | accept | — |
+| `REQ-229` | accept | — |
+| `REQ-230` | accept | — |
+| `REQ-185` | accept | — |
+| `REQ-186` | accept | — |
+| `REQ-187` | accept | — |
+| `REQ-188` | edit | "Keep the combo-catalog parity (the evaluation prompt must be byte-identical to the one production builds), the experiment-mode selection, reasoning-token recording, and unpriced reporting. Drop the production timeout/retry criterion: evaluation answer calls keep the SDK defaults, and runtime suitability is read from the recorded latency and REQ-228's slower-than-15-seconds count instead." |
+| `REQ-189` | accept | — |
+| `NFR-018` | accept | — |
+
+### Brief reconciliation
+
+- grep: `grep -nEi 'subject|harness|checkout|older revision|--expect-commit' DESIGN-BRIEF.md README.md` and `grep -nEi 'timeout|retries|retry|15,000|15 seconds|answer-timeout' DESIGN-BRIEF.md README.md`, re-run after the rewrite; remaining hits are measured findings (rows describing today's code), text of accepted IDs (REQ-228/229/230), or the 15-second latency reading, none stating a superseded behaviour
+- `DESIGN-BRIEF.md` §2 scope bullet 1 (experiment runs) — said the run measures an older checkout → now says the identity record includes the commit run from, plus a regrade mode (REQ-226 edit)
+- `DESIGN-BRIEF.md` §2 scope (grader repair and runtime parity) — said answer calls use production's timeout and retries → now says answer calls keep the SDK defaults (REQ-188 edit)
+- `DESIGN-BRIEF.md` §4.1 — "Harness and subject" with `--subject` rewritten as "Measuring an older revision": no cross-checkout import, tooling run from each revision's own worktree with the tooling commits applied on top (REQ-226 edit)
+- `DESIGN-BRIEF.md` §4.2 — identity record now holds the commit run from (not both commits); regrade run paragraph added (REQ-226 edit)
+- `DESIGN-BRIEF.md` §4.8 — production timeout/retry bullet and `--answer-timeout-ms` replaced by SDK defaults with latency read from REQ-228's count (REQ-188 edit)
+- `DESIGN-BRIEF.md` Phase 0 steps 1-3, Phases 2-3, §12 parity check — "subject checkouts" now "worktrees, tooling commits applied on top" (REQ-226 edit)
+- `DESIGN-BRIEF.md` product-truth-changes list rows REQ-226 and REQ-188 — descriptions updated (regrade mode; timeout/retries removed)
+- `DESIGN-BRIEF.md` A6 and A9 — assumption rows rewritten; evidence is now the owner's verdicts
+- `README.md` pointer — no note: `intake/GRAPH-BRIEF.md` line 49 (isolated checkouts of the base and head) is consistent with the verdicts; no intake file states a superseded behaviour
+- left for the re-grade: REQ-228/229/230 accepted text and brief §4.4–4.6 still use the word "subject" (and `--subject`/`--subject-b` on the evidence trace), defined by the dropped REQ-226 import; not touched because those IDs were accepted
 
 ## Dispatch prompts
 
@@ -173,6 +202,26 @@ Writes allowed: the quality-check report the skill produces inside the package f
 Boundaries: no pushes, no PR actions, no `.secrets/`, no `thejudge-*` skill edits, no `rm -rf`, no `nohup`, no background `&`. If a hook denies a command, do not retry it — report it verbatim and stop.
 
 Report back: the verdict (PASS or FAIL), the complete findings list (empty on PASS), the report file path, the commit hash, and the final marker.
+
+### gate-review
+
+graph is controlling. You are the gate-resolution node (`gate-review`) of graph run `graph-20261007-134015`, dispatched by the `graph-implement` driver after claiming the spec.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation
+
+Every file you read, write, or commit lives under that working directory (a git worktree on the shared build branch `thejudge-auto/answer-quality-investigation-work`, cut from `origin/main` after docs PR #274 merged). Never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/...` directly — that is the owner's launch checkout. Copy the `Working directory:` line above, unchanged, into any prompt you write for a subagent (you should need none).
+
+Invoke the `graph-gate-review` skill: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/graph-gate-review/SKILL.md` in full and follow its `## Procedure` exactly. Also read `PRD/instructions/graph-workflow-contract.md` sections `## Propose / apply / close` and `## The two runs`, and `PRD/instructions/plain-language-standard.md`.
+
+Package: `PRD/work/answer-quality-investigation/` (marker `STATUS.owner-action`, parked after gate-qc PASS; the owner answered all eleven verdict slots in `GATE-QUESTIONS.md` and merged the docs PR). Expected split from the driver's read: 9 accept, 2 edit (REQ-226 and NFR-018 carry `edit` with a `Reason:`), 0 reject — confirm by parsing the file yourself; the file is the only source of verdicts.
+
+Apply every verdict inside that ID's proposed diff in `GATE-QUESTIONS.md` only — never in `PRD/sections/`. Then reconcile `DESIGN-BRIEF.md` (design sections, `## Assumptions` rows, the slice sketch, the product-truth-changes list) and, if a verbatim `intake/` file still states a superseded behaviour, the package README's intake pointer with one supersession note, to each `edit`. Enumerate the passages by a grep you quote; re-run it and require zero hits before resolving. `intake/` is never edited. An `accept` touches nothing.
+
+Writes: `GATE-QUESTIONS.md` (edit application only), `DESIGN-BRIEF.md` (reconciliation only), the package `README.md` (`status:` field, and the intake-pointer supersession note if needed), `GRAPH-RUN.md` (`## Gate verdicts` with its `### Brief reconciliation` list; `## Open gate` marked resolved with the date and verdict count — leave the rest of the ledger, including `## Node ledger` and `## Dispatch prompts`, untouched), the marker (`STATUS.owner-action` → `STATUS.refined`, exactly one marker), and the `PRD/work/STATUS.md` board row (restored to refined / ready for gate-qc re-grade). Commit from inside the working directory with explicit paths only (`git add PRD/work/answer-quality-investigation PRD/work/STATUS.md` — never `git add -A`, `--all`, or `.`). Do not push.
+
+Boundaries: never edit `PRD/sections/` or any code, never dispatch a subagent or run a `thejudge-*` skill, never write `GAMEPLAN.md` or `slice-*.md`, no pushes, no PR actions, no `.secrets/`, no `thejudge-*` skill edits, no `rm -rf`, no `nohup`, no background `&`. If a hook denies a command, do not retry it — report it verbatim and stop. If any `Verdict:` slot is blank or malformed, refuse and name every offending ID.
+
+Report back, in plain language with the ask first and the substance of each ID inlined: the verdict counts, each `edit` with the owner's reason quoted and the exact passages rewritten in `GATE-QUESTIONS.md` and `DESIGN-BRIEF.md` (the grep you used), the README note or `none`, the commit hash, and the final marker.
 
 ## Instruction ledger
 

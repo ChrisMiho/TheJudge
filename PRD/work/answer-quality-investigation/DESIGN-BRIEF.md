@@ -49,8 +49,9 @@ chosen.
 1. **Comparison tooling** (code in this package's build, offline-tested with
    fake clients; proposed truth REQ-226 to REQ-230 plus amendments):
    - named **experiment runs** with a fixed case list, repeats, a full identity
-     record, their own result folder, and the ability to measure an older
-     checkout with today's tooling (REQ-226);
+     record that includes the commit run from, their own result folder, and a
+     regrade mode that re-grades an earlier run's stored answers under the
+     current judge and rubric (REQ-226);
    - **save-as-you-go and resume**, and a **hard spending cap** that stops the
      run before it overspends (REQ-227);
    - a **paired comparison report** — right→right, wrong→right, right→wrong,
@@ -62,8 +63,8 @@ chosen.
      confined to a committed diagnostic case set and kept away from a held-out
      set (REQ-230);
    - **grader repair and runtime parity** — the judge is told what the prompt
-     actually carried; evaluation answer calls use production's timeout,
-     retries and combo data; unknown prices are "unpriced", never $0
+     actually carried; evaluation prompts include production's combo data
+     (answer calls keep the SDK's default timeout and retries); unknown prices are "unpriced", never $0
      (amendments to REQ-185 to REQ-189 and NFR-018).
 2. **The offline half of the investigation**, run in this package's build at
    no cost (Phase 0 below), with its findings committed outside the work folder.
@@ -122,24 +123,21 @@ actions and layers. These claims are re-measured by Phase 0, not adopted.
 
 ## 4. Design — the tooling
 
-### 4.1 Harness and subject
+### 4.1 Measuring an older revision
 
 Today's tooling must measure two older revisions (`3e973ced` and `07cc3ab6`),
-neither of which contains it. So a run separates the **harness** (the checkout
-the command runs from, holding the tooling) from the **subject** (the checkout
-being measured, holding the product code, data and cases). `--subject <path>`
-points at a clean checkout; the run imports the subject's prompt preparation,
-data loaders and embedder, reads the subject's data and case files, and records
-both commit SHAs. It refuses — never silently falls back to its own copy — when
-the subject is dirty, sits on a different commit than `--expect-commit`, or
-lacks a module the harness needs. With no `--subject`, the subject is the
-harness, so every routine command behaves as today (REQ-226).
+neither of which contains it. Per the owner's verdict on REQ-226, a run does not
+import code across checkouts: it measures the checkout it executes from and
+records that commit. The two revisions are compared by running the tooling from
+each revision's own worktree, with the tooling commits applied on top. The run
+refuses when its checkout has uncommitted changes or sits on a different commit
+than `--expect-commit` (REQ-226).
 
-Subject checkouts are created by the owner (or an authorised session) with
+The worktrees are created by the owner (or an authorised session) with
 `git worktree add --detach .worktrees/aq-base 3e973ced` and
-`git worktree add --detach .worktrees/aq-head 07cc3ab6`, plus `npm ci` and the
-embedding-model cache warm-up in each. They never touch the owner's main
-checkout or other worktrees.
+`git worktree add --detach .worktrees/aq-head 07cc3ab6`, the tooling commits
+applied on top of each, plus `npm ci` and the embedding-model cache warm-up in
+each. They never touch the owner's main checkout or other worktrees.
 
 ### 4.2 Experiment runs (REQ-226)
 
@@ -151,14 +149,20 @@ times. Each record is keyed by case, model, excerpt cap, arm and repeat index.
 
 Everything goes to `output/answer-quality/runs/<run-id>/` (already gitignored):
 `manifest.json` (the identity record), `calls.jsonl` (the checkpoint),
-transcripts, and a numbers-only `summary.json`. The identity record holds both
-commits, a SHA-256 for each subject data file and case file, the rules-index
+transcripts, and a numbers-only `summary.json`. The identity record holds the
+commit run from, a SHA-256 for each data file and case file, the rules-index
 hash, models as requested and as reported, request options, client timeout and
 retries, `ASK_AI_PROVIDER`, `EMBEDDING_PROVIDER` and embedding model, whether
 the combo catalog loaded, caps, arms and their revisions, repeats, judge model,
 rubric revision, the rate table with each rate's check date, the spending cap,
-and the start time. An experiment run never reads or writes the committed
-`results.json`.
+the source run for a regrade run, and the start time. An experiment run never
+reads or writes the committed `results.json`.
+
+A **regrade run** (`--regrade-from <run-id>`, owner's verdict on REQ-226) makes
+no answer call. It reads the stored answer transcripts of an earlier run, grades
+them under the current judge model and rubric revision, and writes only to its
+own run folder, so earlier answers stay comparable after a grader or rubric
+change and progress can be tracked run over run.
 
 ### 4.3 Save as you go, resume, spending cap (REQ-227)
 
@@ -270,9 +274,9 @@ head are then graded under the new revision.
 
 - The evaluation loader also loads the combo catalog when combo enrichment is
   on — production's default — and records whether it did.
-- Evaluation answer calls use production's client timeout (15,000 ms) and retry
-  count (2) by default; `--answer-timeout-ms` may override for a diagnostic
-  run and is recorded.
+- Evaluation answer calls keep the SDK's default timeout and retries (owner's
+  verdict on REQ-188); runtime suitability is read from the recorded latency and
+  the compare report's count of answers slower than 15 seconds (REQ-228).
 - Records gain `allDecidingRulesInPrompt` beside `goldRuleInPrompt` (which keeps
   its meaning: one deciding rule among the System 3 selections), reasoning
   tokens and the reasoning effort the provider reports, and `unpriced` in place
@@ -289,13 +293,13 @@ Each phase names who runs it, what it costs, and the decision it feeds.
 
 ### Phase 0 — offline evidence (build, free)
 
-1. Create the base and head subject checkouts; record both SHAs, and record a
+1. Create the base and head worktrees, tooling commits applied on top; record both SHAs, and record a
    new comparison rather than mixing revisions if either has moved.
-2. Run the evidence trace over all 392 approved cases on both subjects with
+2. Run the evidence trace over all 392 approved cases on both revisions with
    `--subject-b`: per-rule and complete-procedure coverage, the
    unchanged-input stratum size, and the cases whose coverage changed.
 3. Run `npm run eval:rules-staleness` and `npm run eval:rules-coverage` on both
-   subjects. List the ten cases whose sources the refresh changed and the review
+   worktrees. List the ten cases whose sources the refresh changed and the review
    provenance each carries at head (assumption A17).
 4. Generate the diagnostic and held-out manifests from the trace.
 5. Build arms A to D offline for every diagnostic case; record the observations
@@ -316,7 +320,7 @@ named cases is read by a person; a second model's score alone is not proof.
 
 ### Phase 2 — the data refresh on GPT-4.1 (paid, owner cap)
 
-Same manifest of eligible approved cases, base subject then head subject,
+Same manifest of eligible approved cases, base worktree then head worktree,
 identical GPT-4.1 settings and grader, arm A. Default: the full paired cohort,
 so the unchanged-input stratum doubles as the run-to-run noise control. If the
 owner's cap is lower, run the changed-input stratum plus a seeded sample of the
@@ -325,7 +329,7 @@ unchanged stratum. The compare report lists every newly wrong case; the lost
 
 ### Phase 3 — evidence versus presentation (paid, owner cap)
 
-GPT-4.1 fixed, head subject, diagnostic manifest, arms A, B, C, D (and P once
+GPT-4.1 fixed, head worktree, diagnostic manifest, arms A, B, C, D (and P once
 approved), three independent answers per case for the named and disputed cases.
 Every case is traced question → query → ranks → selected and dropped rules →
 final evidence → answer → grade. **Decision D2** follows.
@@ -397,7 +401,7 @@ GPT-4.1 case at about $0.02 with grading.
 
 | ID | Kind | One line |
 | --- | --- | --- |
-| REQ-226 | new | Named experiment runs with fixed case lists, repeats, identity record, own folder, and a measurable older checkout (also carries the system-map edit) |
+| REQ-226 | new | Named experiment runs with fixed case lists, repeats, identity record, own folder, and a regrade mode (also carries the system-map edit) |
 | REQ-227 | new | Save as you go, resume, hard spending cap, unpriced models refused |
 | REQ-228 | new | Paired before/after comparison report, never a verdict |
 | REQ-229 | new | Offline evidence trace: rank, selected, available-to-answer, exceptions |
@@ -405,7 +409,7 @@ GPT-4.1 case at about $0.02 with grading.
 | REQ-185 | amend | Defines "live prompt" as a player's prompt and names the arm exception |
 | REQ-186 | amend | Judge told what the prompt actually carried; inputs part of rubric revision |
 | REQ-187 | amend | Rubric revision note for the judge-input change |
-| REQ-188 | amend | Combo catalog, production timeout and retries, reasoning tokens, unpriced, experiment mode |
+| REQ-188 | amend | Combo catalog, reasoning tokens, unpriced, experiment mode |
 | REQ-189 | amend | New record fields; experiment runs never write the committed file |
 | NFR-018 | amend | The validation track names the experiment tooling |
 
@@ -455,10 +459,10 @@ requirements, 2 tested behavior, 3 local patterns, 4 smallest reversible scope,
 | A3 | No paid call in this package's build; paid phases run after merge under owner caps | 1, 4 | REQ-188 confirmation gate; driver's authorised scope; intake's "do not add `--confirm-live-calls` until … authorized" |
 | A4 | Extend the existing command and modules rather than add a new tool | 3 | `executeEvaluation`'s injected `deps`; REQ-188/189 structure |
 | A5 | Experiment runs never touch the committed `results.json`; routine runs unchanged | 4, 5 | REQ-189 merge rule; fixed `RESULTS_RELATIVE_PATH` |
-| A6 | Separate harness from subject so old revisions are measured with new tooling and never edited | 4 | base and head predate the tooling |
+| A6 | Old revisions are measured by running the tooling from each revision's own worktree with the tooling commits applied on top, with no cross-checkout import; a run records the commit it executes from | 4 | owner's `edit` verdict on REQ-226 (2026-10-07); base and head predate the tooling |
 | A7 | The judge fix restores REQ-186's stated input and adds excerpt text and labelled deciding ids; the rubric revision bumps | 1 | REQ-186 layer 2 vs `judge.ts` line 112 and `ruleIds: caseEntry.expected.decidingRuleIds` |
 | A8 | No reasoning-effort parameter; Luna at its default; reported effort recorded | 1 | REQ-188 constraint |
-| A9 | Evaluation answer calls use production timeout and retries by default | 2, 3 | `createAskAiProvider.ts` 15000/2 vs `new OpenAI({ apiKey })`; standing feedback that an eval must mirror the production request |
+| A9 | Evaluation answer calls keep the SDK's default timeout and retries; runtime suitability is read from recorded latency and REQ-228's slower-than-15-seconds count | 1 | owner's `edit` verdict on REQ-188 (2026-10-07) |
 | A10 | Evaluation loads the combo catalog when combo enrichment is on | 2 | `comboEnrichmentEnabled` defaults true; deploy does not set it; `loadPromptResources` omits it |
 | A11 | An unpriced model blocks a capped live run | 4 | `computeCallCostUsd` returns 0 for unknown models |
 | A12 | Luna's rate enters the table with a check date; the owner re-checks before spending | 4 | intake rates are evidence only; REQ-188 note "re-checked before a live run" |
@@ -490,7 +494,7 @@ Focused, offline, no network:
 - `npm run eval:answer-quality` dry run (no key) prints unpriced models and every
   rate's check date, and makes no network call;
 - the evidence trace reproduces `baseline.json`'s hit and miss for every approved
-  case at the base subject (parity check);
+  case in the base worktree (parity check);
 - arms tests (same-evidence, bundle-only, no reference answer) pass for every
   diagnostic case;
 - the regression guard still shows `eval:answer-quality` and the new compare and
