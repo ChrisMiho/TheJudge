@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim on 2026-10-07; was `origin/thejudge-auto/answer-quality-investigation`, docs PR #274 merged)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation` (rewritten by the build half's claim; the kickoff worktree was removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261007-134015/`
-- Current node: `gate-qc` (attempt 2, re-grade after the owner's verdicts)
+- Current node: `define` (attempt 2 — gate-qc→define loop 1 of 3, correcting the REQ-229 / "subject" consequence of the owner's REQ-226 edit)
 - Next action: `/graph-implement PRD/work/answer-quality-investigation/` (build half in progress: gate-qc → plan → build → review → close)
 
 ## Node ledger
@@ -19,6 +19,7 @@
 | 4 | gate-qc | sonnet | ok (PASS) | `79 → 97` (one driver bookkeeping call charged to define/1) | commit 05ecc20b: `PRD/work/answer-quality-investigation/QUALITY-CHECK.md` — Verdict: PASS, findings none; 12/12 removed diff lines match live `PRD/sections/` text; marker left `STATUS.refined`; driver then wrote `## Preparation gate` (PASS), parked at `owner-action`, pushed 2ff207af, opened docs PR https://github.com/ChrisMiho/TheJudge/pull/274 | 2026-10-07 |
 | — | claim (driver) | — | ok | — | docs PR #274 merged 2026-10-07T21:48Z; kickoff worktree removed clean (`git worktree remove`, porcelain empty); `.worktrees/implement-answer-quality-investigation` cut on `thejudge-auto/answer-quality-investigation-work` from `origin/main` (1a8e61d5); claim commit fa12f0d0 pushed; lock re-taken (`graph:preflight --take-lock`, pid 19439); graph canary `nohup true` denied | 2026-10-07 |
 | 4b | gate-review | sonnet | ok | `0 → 21` | commit 75b85c00: 11 verdicts applied inside `GATE-QUESTIONS.md` (9 accept, 2 edit: REQ-226 drops the cross-checkout `--subject` import and adds a regrade mode; REQ-188 drops the production timeout/retry criterion, keeps combo-catalog parity); `DESIGN-BRIEF.md` reconciled (§2, §4.1, §4.2, §4.8, Phase 0/2/3 steps, §12, truth-changes rows, A6/A9); README note none; `## Gate verdicts` + `### Brief reconciliation` written; marker `STATUS.refined`; board row refined; `git diff --stat HEAD~1 -- PRD/sections apps scripts` empty | 2026-10-07 |
+| 4 (attempt 2) | gate-qc | sonnet | failed (FAIL) | `0 → 21` | commit 3bb5bdd2: `QUALITY-CHECK.md` overwritten — Verdict: FAIL, 2 findings: (1) accepted REQ-229 still carries the `--subject`/`--subject-b` cross-checkout import the owner's REQ-226 edit dropped (brief §4.5, Phase 0 step 2 repeat it); (2) "subject" is an undefined term in REQ-228/229/230 and brief §4.4–4.6; both edits (REQ-226, REQ-188) themselves confirmed consistent; marker `STATUS.refining`, board row refining; driver rewrote README `## Preparation gate` (FAIL + findings) and `status: refining` → loop to `define` (gate-qc→define loop 1 of 3) | 2026-10-07 |
 
 ## Open gate
 
@@ -242,6 +243,32 @@ Writes allowed: overwrite `PRD/work/answer-quality-investigation/QUALITY-CHECK.m
 Boundaries: no pushes, no PR actions, no `.secrets/`, no `thejudge-*` skill edits, no `rm -rf`, no `nohup`, no background `&`. If a hook denies a command, do not retry it — report it verbatim and stop.
 
 Report back: the verdict (PASS or FAIL), the complete findings list (empty on PASS), the report file path, the commit hash, and the final marker.
+
+### define (attempt 2)
+
+graph is controlling. You are node 3 (`define`, attempt 2 — a bounded correction loop after a gate-qc FAIL) of graph run `graph-20261007-134015`, dispatched by the `graph-implement` driver.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation
+
+Every file you read, write, or commit lives under that working directory (a git worktree on the shared build branch `thejudge-auto/answer-quality-investigation-work`, cut from `origin/main`). Never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/...` directly — that is the owner's launch checkout. Copy the `Working directory:` line above, unchanged, into any prompt you write for a subagent.
+
+Invoke the `thejudge-refinement` skill: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-refinement/SKILL.md` in full and follow its `## Mode` section for `graph is controlling` (read `PRD/instructions/preparation-contract.md`; apply its conservative assumption ladder and three-condition genuine-blocker test per question; record every material assumption and its evidence in `DESIGN-BRIEF.md`). Also read `PRD/instructions/graph-workflow-contract.md` sections `## Propose / apply / close` and `## The two runs`, and `PRD/instructions/plain-language-standard.md`.
+
+Package: `PRD/work/answer-quality-investigation/` (status `refining`). This is a correction pass, not a fresh refinement. Read in this order: `QUALITY-CHECK.md` (the FAIL, two findings, and the required correction), `GRAPH-RUN.md` `## Gate verdicts` and `### Brief reconciliation` (the owner's eleven verdicts; the REQ-226 and REQ-188 edits with the owner's reasons quoted), then `GATE-QUESTIONS.md` and `DESIGN-BRIEF.md`.
+
+The owner's REQ-226 edit verdict is the authority for this pass. Its rule: no cross-checkout code import; a run records the commit it executes from; two revisions are compared by running the tooling from each revision's own worktree with the tooling commits applied on top. The FAIL is that this rule was carried into REQ-226 and the brief's §4.1/§4.2/A6 but not into the accepted REQ-229 (evidence-trace compare still defines `--subject <path>` / `--subject-b <path>`, prepares each case with the subject's unmodified `preparePromptInput`, and compares the two subjects' prompts) nor into the word subject as used in REQ-228 and REQ-230, nor brief §4.4–4.6, Phase 0 step 2, and the parity test.
+
+Do exactly this:
+
+1. In `GATE-QUESTIONS.md`, inside the REQ-229 block's proposed diff: drop `--subject` and `--subject-b`; the trace command measures the checkout it runs from (same dirty-checkout refusal and commit record as REQ-226); two revisions are compared by diffing two trace output folders, each produced from its own worktree (name the compare form, e.g. a `--compare <run-folder-a> <run-folder-b>` step or the equivalent, chosen by the ladder from existing script patterns). Inside the REQ-228 and REQ-230 blocks: reword every "subject" to the checkout the command runs from (or the revision, where that is the meaning), with no change of substance. Update each touched block's plain-language lines if they repeat the dropped wording. Leave the eleven `- Verdict:` / `- Reason:` lines exactly as the owner wrote them — never fill, change, or blank a verdict — and add, directly under the Verdict/Reason lines of each block you touched, one line `- Re-proposed 2026-10-07 (gate-qc loop 1): <what changed>, derived from the owner's REQ-226 edit verdict` so the owner's record shows the diff moved after their accept and why. Touch no other block.
+2. In `DESIGN-BRIEF.md`: rewrite §4.4–4.6, Phase 0 step 2, the §12 parity check, and any other passage a grep for `subject|--subject-b|--subject` (quote the grep) still finds stating the dropped behaviour, to the same rule; add or amend an `## Assumptions` row recording that the REQ-228/229/230 correction is derived from the owner's REQ-226 verdict (evidence: the verdict quoted in `GRAPH-RUN.md`). Re-run the grep and report the remaining hits with one line each on why each stays (measured findings about today's code may stay). Add no new design.
+3. Apply the genuine-blocker test to the correction. If any part of it would decide product behaviour the REQ-226 verdict does not already settle, do not guess: say so in your report with the Q-### question, leave that block as it was, and stop short of resolving it. The driver parks for the owner in that case.
+4. Set the marker to `STATUS.refined` (remove `STATUS.refining`; exactly one marker), set the README `status:` field to `refined`, and update the `PRD/work/STATUS.md` board row.
+5. Commit from inside the working directory with explicit paths only (`git add PRD/work/answer-quality-investigation PRD/work/STATUS.md` — never `git add -A`, `--all`, or `.`). Do not push.
+
+Hard rules: never edit `PRD/sections/` or any code; never add a `DEC-###`; never allocate a new stable ID (REQ-220/221 stay reserved by draft PR #266; REQ-226–230 are already proposed); never edit `intake/`, `QUALITY-CHECK.md`, or the `## Node ledger` / `## Dispatch prompts` / `## Gate verdicts` sections of `GRAPH-RUN.md`. Boundaries: no pushes, no PR actions, no `.secrets/`, no `thejudge-*` skill edits, no `rm -rf`, no `nohup`, no background `&`, no `npm run data:refresh`, no live OpenAI calls. If a hook denies a command, do not retry it — report it verbatim and stop.
+
+Report back, plain language, ask first: the blocks you re-proposed and what each now says (one line each, substance inlined), the brief passages rewritten (the grep you used, before → after), the assumption row added, any genuine blocker (or `none`), the commit hash, and the final marker.
 
 ## Instruction ledger
 

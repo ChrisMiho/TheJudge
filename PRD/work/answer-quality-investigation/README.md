@@ -1,4 +1,4 @@
-status: refined
+status: refining
 
 # answer-quality-investigation
 
@@ -16,6 +16,6 @@ Reproducible before/after answer evaluation for PR #273, isolation of retrieval 
 
 ## Preparation gate
 
-- Quality-check: PASS
+- Quality-check: FAIL
 - Checked artifact: `PRD/work/answer-quality-investigation/DESIGN-BRIEF.md`
-- Findings: none
+- Findings: (attempt 2, 2026-10-07, re-grade after the owner's verdicts — full text in `QUALITY-CHECK.md`) (1) accepted REQ-229 still defines `eval:evidence-trace [--subject <path>] [--subject-b <path>]`, prepares cases with "the subject's unmodified `preparePromptInput`" and compares "the two subjects' prompts" — the cross-checkout code import the owner dropped in the REQ-226 edit; brief §4.5 and Phase 0 step 2 ("on both revisions with `--subject-b`") repeat it and contradict §4.1 / A6; (2) the term "subject" has no definition left (it was defined by the dropped REQ-226 text) yet is still used in REQ-228, REQ-229, REQ-230 and brief §4.4–4.6. Required correction: re-propose REQ-229 and the "subject" wording in REQ-228/REQ-230, drop `--subject`/`--subject-b`, compare two revisions by diffing two trace output folders each produced from its own worktree, reword "subject" to the checkout the command runs from, and update brief §4.4–4.6, Phase 0 step 2 and the parity test to match.
