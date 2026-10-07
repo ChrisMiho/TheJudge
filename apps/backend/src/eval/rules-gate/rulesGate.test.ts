@@ -116,8 +116,16 @@ describe("Backend - Eval - offline prompt gate (REQ-222)", () => {
       expect(outcome.results.filter((result) => result.regressions.length > 0)).toEqual([]);
       expect(outcome.ok).toBe(true);
 
-      const firstShip = cases.filter((caseEntry) => caseEntry.review.reviewedOn !== null && caseEntry.tier !== 3);
-      expect(firstShip.length).toBeGreaterThanOrEqual(18);
+      // Every scored case has a baseline entry (the ratchet covers the whole corpus, not just the first ship).
+      const scored = cases.filter((caseEntry) => caseEntry.review.status !== "rejected");
+      expect(scored.filter((caseEntry) => !baseline.cases[caseEntry.id])).toEqual([]);
+
+      // The 18 first-ship cases predate the source pools (REQ-222 authored them without one); the
+      // later pooled cases are reviewed too, so review status alone no longer picks the first ship out.
+      const firstShip = cases.filter(
+        (caseEntry) => caseEntry.source.pool === undefined && caseEntry.review.reviewedOn !== null && caseEntry.tier !== 3
+      );
+      expect(firstShip.length).toBe(18);
       const recorded = firstShip.filter((caseEntry) => baseline.cases[caseEntry.id]);
       const hits = recorded.filter((caseEntry) => baseline.cases[caseEntry.id].miss.length === 0);
       const misses = recorded.filter((caseEntry) => baseline.cases[caseEntry.id].miss.length > 0).map((c) => c.id);
