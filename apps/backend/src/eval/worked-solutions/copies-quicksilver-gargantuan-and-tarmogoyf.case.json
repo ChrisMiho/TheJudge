@@ -43,11 +43,11 @@
     "variants": []
   },
   "snapshot": {
-    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
     "dependsOnHashes": {
       "rules": "2b8502f62511d7535c29aa87d0470b141d6b3291fe0df12c1728ac8deaf82fa5",
       "oracle": "d2a94933eeb50cdba415d7118a410cc05940345c5049d040bbfa9171ad5e96fe",
-      "rulings": "18d057cb67f4322d3d27f189a262506e8b9ac39604fc8cdae7186559aedec741"
+      "rulings": "4d4ef5bfd53daacedaf439cf161efebd408890d71caf013787ad1a5eff2f741e"
     }
   },
   "whyHard": "Characteristic-defining abilities are copied, and players do not see how the 'except it's 7/7' text overrides them."

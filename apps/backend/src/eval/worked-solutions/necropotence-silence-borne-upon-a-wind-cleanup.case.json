@@ -53,9 +53,9 @@
     ]
   },
   "snapshot": {
-    "ruleIndexHash": "0201009f91facef5e4e8d2ab7e5178ad77a24dc7e8d0e6db78cf1d9313bf709d",
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
     "dependsOnHashes": {
-      "rules": "17dfff391412229b1a05fc6b8c6e358d64fbb29b2f731423ab8cd2124017a13d",
+      "rules": "5d46ad4b2a35207ae5522f787b1080a3afb1aff98a7cb79d3a328ddd4fc4995a",
       "oracle": "f80583be5b931087b5461cf98ea903569ff56bdff4091674950a1dd143704f75",
       "rulings": "e30afb5cc015df38a1d1c238330b5256b237c8da82cf3d64fd5b7d25328cc835"
     }

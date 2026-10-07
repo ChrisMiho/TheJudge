@@ -1,0 +1,50 @@
+{
+  "id": "storied-thorin-oakenshield",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "bdd41af0-bbd1-4ecd-a699-99f006f5e5ce",
+      "name": "Thorin Oakenshield"
+    }
+  ],
+  "gameState": null,
+  "question": "I control Thorin Oakenshield and two artifacts, so I have an enduring story. My opponent then destroys both artifacts and Thorin, leaving me with no legendary, Saga or artifact permanents at all. Do I still have an enduring story?",
+  "expected": {
+    "outcome": "works",
+    "shortAnswer": "Yes: once you have an enduring story you keep it for the rest of the game, even after losing every storied permanent.",
+    "answer": "Once you have an enduring story, you have it for the rest of the game, even if you lose control of some or all of your storied permanents. The enduring story designation is on the player and can't be removed by any effect.",
+    "decidingRuleIds": ["702.195a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Thorin Oakenshield",
+    "oracleId": "bdd41af0-bbd1-4ecd-a699-99f006f5e5ce",
+    "rulingDate": "2026-06-29",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "e97734e2152136221dbe39a5cf7a395dab3438ed06b9a9c1c04f47875ab10549",
+      "oracle": "eb1a37d04bf2057bef4f0724cd54697f29cc7b9292bff77f79758b38dbb6e898",
+      "rulings": "4e7cde1d9184e90caeb3eb5c9f4025625660cf14bbebbc1fca195e13e43ede89"
+    }
+  },
+  "whyHard": "Players expect the enduring story to switch off like a static bonus when they drop below three qualifying permanents, but it is a permanent designation on the player."
+}

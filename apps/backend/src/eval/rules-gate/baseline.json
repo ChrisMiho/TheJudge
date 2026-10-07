@@ -401,8 +401,8 @@
       "miss": ["702.145a"]
     },
     "deathtouch-wurmcoil-engine": {
-      "hit": [],
-      "miss": ["702.2a"]
+      "hit": ["702.2a"],
+      "miss": []
     },
     "decayed-rule-text": {
       "hit": ["702.147a"],
@@ -518,6 +518,10 @@
     },
     "emerge-abundant-maw": {
       "hit": ["702.119a"],
+      "miss": []
+    },
+    "empower-jace-theorists-proxy": {
+      "hit": ["701.71a"],
       "miss": []
     },
     "enchant-rancor": {
@@ -673,8 +677,8 @@
       "miss": []
     },
     "frenzy-frenzy-sliver": {
-      "hit": [],
-      "miss": ["702.68a"]
+      "hit": ["702.68a"],
+      "miss": []
     },
     "fuse-alive-well": {
       "hit": ["702.102a"],
@@ -925,8 +929,8 @@
       "miss": []
     },
     "multiplayer-only-blood-ends-your-nightmares-opponents": {
-      "hit": ["608.2d", "701.21a"],
-      "miss": []
+      "hit": ["701.21a"],
+      "miss": ["608.2d"]
     },
     "multiplayer-player-leaves-range-expands": {
       "hit": ["801.2c"],
@@ -1070,6 +1074,10 @@
     },
     "recover-rule-text": {
       "hit": ["702.59a"],
+      "miss": []
+    },
+    "recruit-esgaroth-garrison": {
+      "hit": ["701.70a"],
       "miss": []
     },
     "regenerate-boneknitter": {
@@ -1342,6 +1350,10 @@
     },
     "station-adagia-windswept-bastion": {
       "hit": ["702.184a"],
+      "miss": []
+    },
+    "storied-thorin-oakenshield": {
+      "hit": ["702.195a"],
       "miss": []
     },
     "storm-fiery-encore": {

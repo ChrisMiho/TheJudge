@@ -79,13 +79,14 @@ test("runPipeline: a thrown first step means the second step's runner is never c
 
 // ---- A4: explicit path list ----
 
-test("buildAddPathList: exactly the eleven documented paths, hard-coded", () => {
+test("buildAddPathList: exactly the twelve documented paths, hard-coded", () => {
   const paths = buildAddPathList()
-  assert.equal(paths.length, 11)
+  assert.equal(paths.length, 12)
   assert.deepEqual(paths, COMMITTED_ARTIFACT_PATHS)
+  assert.ok(paths.includes("apps/backend/data/commanderSpellbookComboSource.meta.json"), "the REQ-196 combo source marker is staged")
   // A copy, not the live array — mutating the result must not mutate the constant.
   paths.push("apps/frontend/public/data/extra.json")
-  assert.equal(buildAddPathList().length, 11)
+  assert.equal(buildAddPathList().length, 12)
 })
 
 // ---- A5: commit-message date ----

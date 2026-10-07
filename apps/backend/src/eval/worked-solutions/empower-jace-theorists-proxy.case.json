@@ -1,0 +1,54 @@
+{
+  "id": "empower-jace-theorists-proxy",
+  "formatVersion": 2,
+  "tier": 2,
+  "review": {
+    "status": "draft",
+    "reviewedOn": null
+  },
+  "cards": [
+    {
+      "oracleId": "0089acfe-da66-4dd7-b1e5-4d7407f58257",
+      "name": "Theorist's Proxy"
+    },
+    {
+      "oracleId": "7f77a84e-5a4b-4834-aefa-3cecc175ae8e",
+      "name": "Jace, the Mind Sculptor"
+    }
+  ],
+  "gameState": null,
+  "question": "I control Jace, the Mind Sculptor, the actual planeswalker card, and no Jace tokens. Theorist's Proxy enters and I empower Jace 3. Can I put the three loyalty counters on Jace, the Mind Sculptor?",
+  "expected": {
+    "outcome": "does-not-work",
+    "shortAnswer": "No: empower Jace only puts loyalty counters on a Jace planeswalker token, so you create a Jace token and put the counters on it instead of on the nontoken Jace.",
+    "answer": "Empower Jace won't let you put loyalty counters on nontoken Jace planeswalkers. However, if you control a Jace planeswalker token that you got another way (such as an effect that creates a token that's a copy of a permanent), empower Jace will put loyalty counters on that.",
+    "decidingRuleIds": ["701.71a"]
+  },
+  "source": {
+    "authority": "wotc-card-ruling",
+    "pool": "mechanic",
+    "type": "Official WotC card ruling",
+    "publisher": "Wizards of the Coast",
+    "cardName": "Theorist's Proxy",
+    "oracleId": "0089acfe-da66-4dd7-b1e5-4d7407f58257",
+    "rulingDate": "2026-08-21",
+    "committedDataPath": "apps/backend/data/cardRulingsByOracleId.json.br",
+    "license": "Reproduced from the official Wizards of the Coast card-ruling text distributed for use by Magic: The Gathering tools and reference sites; this project already commits and serves this exact rulings corpus in production (see committedDataPath) as its card-ruling retrieval source.",
+    "retrievedOn": "2026-10-07",
+    "questionAuthorship": "The question is this project's own natural-language phrasing of a scenario the cited card's official ruling directly answers; the answer is the ruling's text, verbatim."
+  },
+  "layers": {
+    "requiredFacts": [],
+    "irrelevantFacts": [],
+    "variants": []
+  },
+  "snapshot": {
+    "ruleIndexHash": "83542d5c015e3ef6a1e196f5a644d71c4fb0c0d2bf44cb831fd914249f309123",
+    "dependsOnHashes": {
+      "rules": "4fb5fb4695fb610bdf9e384b3d7ef64efb678a2625163ca3d7852c47365a66a5",
+      "oracle": "9919381ce19b970adf3710d0e2ba6e7c189e5f314d8884ff8641aa31ac9f4cad",
+      "rulings": "00dff56e81a8ff4ce81e19cd80c348e8738361bd9f4630c084fc907973f6753c"
+    }
+  },
+  "whyHard": "Players read \"Jace\" in empower Jace as any Jace planeswalker they control, but the action only ever puts loyalty counters on a Jace planeswalker token."
+}
