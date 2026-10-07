@@ -80,8 +80,8 @@ Proposed diff — `PRD/sections/system-map.md`, `## Eval harness` → `### Answe
 +- Backed by: NFR-018, REQ-185, REQ-186, REQ-187, REQ-188, REQ-189, REQ-190, REQ-226, REQ-227, REQ-228, REQ-229, REQ-230
 ```
 
-- Verdict:
-- Reason:
+- Verdict: edit
+- Reason: Drop the cross-checkout `--subject` import: the run records the commit it executes from, and two revisions are compared by running the tooling from each revision's own worktree with the tooling commits applied on top. Add a regrade mode: a run may take its answers from an earlier run's stored transcripts and only grade them under the current judge and rubric, so earlier answers stay comparable after a grader or rubric change and progress can be tracked run over run.
 
 ---
 
@@ -129,8 +129,8 @@ Proposed diff — new entry after REQ-226 in `PRD/sections/functional-requiremen
 +  - measured 2026-10-07: `executeEvaluation` (`scripts/eval-answer-quality.mjs`) writes scores only after every case, and an exception from `client.responses.create` or the judge propagates out of the loop, so graded records are lost (transcripts already written survive); `computeCallCostUsd` returns `0` for a model missing from `MODEL_PRICING_USD_PER_MILLION_TOKENS`, which has no `gpt-6-luna` entry
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: 
 
 ---
 
@@ -184,8 +184,8 @@ Proposed diff — new entry after REQ-227 in `PRD/sections/functional-requiremen
 +  - REQ-189's `compareRecords` already labels two records incomparable per case when the reference answer, judge, rubric, or embedding provider differ; this report builds on that per-case rule and adds the paired transition counts the routine run has no use for
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: 
 
 ---
 
@@ -240,8 +240,8 @@ Proposed diff — new entry after REQ-228 in `PRD/sections/functional-requiremen
 +  - `retrieveRulesForQueryWithDebug` returns only ten ranks below the cap as `runnerUp`; a full rank needs the larger-cap preparation above
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: 
 
 ---
 
@@ -381,8 +381,8 @@ Proposed diff — `PRD/sections/functional-requirements.md`, REQ-186:
 +  - REQ-230 (the arm whose prompt the attached excerpts come from)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: 
 
 ---
 
@@ -407,8 +407,8 @@ Proposed diff — `PRD/sections/functional-requirements.md`, REQ-187 `Notes`:
 +  - it moves again, to a revision dated the day the build changes the judge's inputs, when the judge starts receiving the attached excerpts' rule ids and text, the deciding rule ids labelled apart, and any game-state lines (REQ-186); the four axis definitions are unchanged, and records graded under `2026-10-06.1` are incomparable per case with later ones
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: 
 
 ---
 
@@ -472,8 +472,8 @@ Proposed diff — `PRD/sections/functional-requirements.md`, REQ-188:
 +  - measured 2026-10-07: the run's client was `new OpenAI({ apiKey })` (`defaultBuildClient`, `scripts/eval-answer-quality.mjs`), using the SDK's default timeout and retries rather than production's 15,000 ms and 2; and `loadPromptResources` (`scripts/lib/prompt-fidelity.mjs`) loaded four data files and no combo catalog while production loads the catalog by default (`createConfiguredApp.ts`, `comboEnrichmentEnabled` true when `COMBO_ENRICHMENT_ENABLED` is unset, which `scripts/aws-deploy.sh` leaves unset). Corrected by the `answer-quality-investigation` package
 ```
 
-- Verdict:
-- Reason:
+- Verdict: edit
+- Reason: Keep the combo-catalog parity (the evaluation prompt must be byte-identical to the one production builds), the experiment-mode selection, reasoning-token recording, and unpriced reporting. Drop the production timeout/retry criterion: evaluation answer calls keep the SDK defaults, and runtime suitability is read from the recorded latency and REQ-228's slower-than-15-seconds count instead.
 
 ---
 
@@ -516,8 +516,8 @@ begins "a recorded run **merges** into the committed results file"):
 +  - REQ-229 (the availability check behind `allDecidingRulesInPrompt`)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: 
 
 ---
 
@@ -551,8 +551,8 @@ Proposed diff — `PRD/sections/non-functional-requirements.md`, NFR-018:
 +  - REQ-226, REQ-227, REQ-228, REQ-229, REQ-230 (experiment runs, checkpoint and spending cap, the paired comparison report, the evidence trace, and the diagnostic arms over that corpus)
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: 
 
 ---
 
