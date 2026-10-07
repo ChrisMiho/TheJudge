@@ -56,3 +56,51 @@ test("buildCaseRequest asks a case with a gameState as an In-Depth game request 
   // The case's own gameState is left untouched.
   assert.equal(gameState.zones.stack[0].name, undefined);
 });
+
+// ---------------------------------------------------------------------------
+// loadPromptResources (REQ-188): the evaluation loader matches production's combo default
+// ---------------------------------------------------------------------------
+
+import { COMBO_ENRICHMENT_ENV, loadPromptResources } from "./prompt-fidelity.mjs";
+
+function fakeModules() {
+  const loaded = [];
+  const resolveBooleanEnv = (value, name, fallback) => {
+    if (value === undefined || value === "") return fallback;
+    if (["false", "0", "no"].includes(String(value).toLowerCase())) return false;
+    if (["true", "1", "yes"].includes(String(value).toLowerCase())) return true;
+    throw new Error(`${name} must be a boolean`);
+  };
+  return {
+    loaded,
+    modules: {
+      loadGameRulesTopics: (path) => (loaded.push(path), [{ id: "topic" }]),
+      loadGameRulesRuleIndex: (path) => (loaded.push(path), [{ ruleId: "100.1" }]),
+      loadCardRulingsIndex: (path) => (loaded.push(path), new Map()),
+      loadCardDetailIndex: (path) => (loaded.push(path), new Map()),
+      loadComboCatalog: (detailPath, indexPath) => (loaded.push(detailPath, indexPath), { variantCount: 3 }),
+      resolveBooleanEnv
+    }
+  };
+}
+
+test("loadPromptResources loads the combo catalog by default (production's default) and the flag is readable from the resources", async () => {
+  const { loaded, modules } = fakeModules();
+  const resources = await loadPromptResources({ env: {}, modules });
+  assert.deepEqual(resources.comboCatalog, { variantCount: 3 })
+  assert.equal(Boolean(resources.comboCatalog), true, "the run records comboCatalogLoaded from this")
+  assert.ok(loaded.some((path) => path.endsWith("commanderSpellbookComboBlocks.br")))
+  assert.ok(loaded.some((path) => path.endsWith("commanderSpellbookComboIndex.json.br")))
+  // The four files createConfiguredApp always loads are still loaded.
+  assert.ok(loaded.some((path) => path.endsWith("gameRulesByTopic.json")))
+  assert.ok(loaded.some((path) => path.endsWith("gameRulesRuleIndex.json")))
+  assert.ok(loaded.some((path) => path.endsWith("cardRulingsByOracleId.json.br")))
+  assert.ok(loaded.some((path) => path.endsWith("cardDetailByOracleId.json.br")))
+});
+
+test("loadPromptResources leaves the combo catalog out, and loads nothing for it, when combo enrichment is turned off", async () => {
+  const { loaded, modules } = fakeModules();
+  const resources = await loadPromptResources({ env: { [COMBO_ENRICHMENT_ENV]: "false" }, modules });
+  assert.equal("comboCatalog" in resources, false);
+  assert.ok(!loaded.some((path) => path.includes("commanderSpellbook")));
+});

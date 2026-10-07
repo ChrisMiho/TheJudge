@@ -25,7 +25,12 @@ import {
   estimateCost,
   executeEvaluation,
   formatCommittedJson,
+  MODEL_PRICING_USD_PER_MILLION_TOKENS,
+  MODEL_RATE_CHECKED_ON,
   NO_LOCAL_ENV_VARIABLE,
+  buildRateTable,
+  describeRates,
+  openAiClientOptions,
   parseArgs,
   resolveJudgeModel,
   resolveRunEnv,
@@ -278,10 +283,10 @@ test("estimateCost sets no numeric target and scales with lineup size, excerpt c
   assert.ok(Number.isFinite(large.totalCostUsd))
 })
 
-test("computeCallCostUsd derives cost from real token counts and a known model's price, and is zero for an unrecognized model", () => {
+test("computeCallCostUsd derives cost from real token counts and a known model's price, and is null (unpriced), never $0, for an unrecognized model", () => {
   const cost = computeCallCostUsd("gpt-4.1-mini", 1_000_000, 1_000_000)
   assert.ok(Math.abs(cost - (0.4 + 1.6)) < 1e-9)
-  assert.equal(computeCallCostUsd("not-a-real-model", 1000, 1000), 0)
+  assert.equal(computeCallCostUsd("not-a-real-model", 1000, 1000), null)
 })
 
 test("buildRunArtifact aggregates per-leg headline counts, tier counts, judge-mismatch flag, and totals from raw per-call records", () => {
@@ -1257,26 +1262,26 @@ test("a model with no rate prints as unpriced in the dry run, and a live capped 
   const routineLogs = []
   await run({
     loadLocalEnv: noLocalEnv,
-    argv: ["--model", "gpt-6-luna"],
+    argv: ["--model", "gpt-7-mystery"],
     env: {},
     log: (line) => routineLogs.push(line),
     loadCases,
     measure: fakeMeasure,
     isStale: notStale
   })
-  assert.match(routineLogs[0], /Unpriced \(no rate in the table\): gpt-6-luna/)
+  assert.match(routineLogs[0], /Unpriced \(no rate in the table\): gpt-7-mystery/)
 
   const experimentLogs = []
   await run({
     loadLocalEnv: noLocalEnv,
-    argv: ["--run-id", "luna", "--manifest", manifestPath, "--model", "gpt-6-luna", "--max-cost-usd", "5"],
+    argv: ["--run-id", "mystery", "--manifest", manifestPath, "--model", "gpt-7-mystery", "--max-cost-usd", "5"],
     env: {},
     log: (line) => experimentLogs.push(line),
     loadCases,
     isStale: notStale,
     measure: fakeMeasure
   })
-  assert.match(experimentLogs[0], /Unpriced \(no rate in the table\): gpt-6-luna/)
+  assert.match(experimentLogs[0], /Unpriced \(no rate in the table\): gpt-7-mystery/)
   assert.match(experimentLogs[0], /Spending cap: \$5/)
 
   // Live capped run: refused before a client is built.
@@ -1285,7 +1290,7 @@ test("a model with no rate prints as unpriced in the dry run, and a live capped 
     () =>
       run({
         loadLocalEnv: noLocalEnv,
-        argv: ["--run-id", "luna-live", "--manifest", manifestPath, "--model", "gpt-6-luna", "--max-cost-usd", "5", CONFIRM_FLAG],
+        argv: ["--run-id", "mystery-live", "--manifest", manifestPath, "--model", "gpt-7-mystery", "--max-cost-usd", "5", CONFIRM_FLAG],
         env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
         log: () => {},
         loadCases,
@@ -1295,7 +1300,7 @@ test("a model with no rate prints as unpriced in the dry run, and a live capped 
           return fakeAccessClient([])
         }
       }),
-    /no rate is known for gpt-6-luna \(unpriced\)/
+    /no rate is known for gpt-7-mystery \(unpriced\)/
   )
   assert.equal(clientBuilt, false)
 })
@@ -1307,4 +1312,118 @@ test("estimateCallCostUsd follows the dry-run method and is null for a model wit
   const judge = estimateCallCostUsd({ kind: "judge", model: "gpt-5" })
   assert.ok(Math.abs(judge - (1500 * 1.25 + 800 * 10) / 1_000_000) < 1e-12)
   assert.ok(estimateCallCostUsd({ kind: "ranking", model: "gpt-5" }) > judge)
+})
+
+// ---------------------------------------------------------------------------
+// Slice C (REQ-186 to REQ-189): grader repair, runtime parity, accounting
+// ---------------------------------------------------------------------------
+
+test("gpt-6-luna is in the rate table with a check date, and the dry run prints every rate with its date", async () => {
+  assert.deepEqual(MODEL_PRICING_USD_PER_MILLION_TOKENS["gpt-6-luna"], { input: 0.1, output: 0.5 })
+  assert.equal(MODEL_RATE_CHECKED_ON["gpt-6-luna"], "2026-10-07")
+  for (const model of Object.keys(MODEL_PRICING_USD_PER_MILLION_TOKENS)) {
+    assert.ok(MODEL_RATE_CHECKED_ON[model], `${model} has a recorded check date`)
+  }
+  assert.ok(!BAKE_OFF_LINEUP.includes("gpt-6-luna"), "--bake-off is unchanged")
+  assert.equal(buildRateTable()["gpt-6-luna"].checkedOn, "2026-10-07")
+
+  const rateLines = describeRates().join("\n")
+  for (const model of Object.keys(MODEL_PRICING_USD_PER_MILLION_TOKENS)) assert.match(rateLines, new RegExp(`${model}: \\$`))
+  assert.match(rateLines, /gpt-6-luna: \$0\.1 \/ \$0\.5 -- check date: 2026-10-07/)
+
+  const logs = []
+  await run({ loadLocalEnv: noLocalEnv, argv: ["--model", "gpt-6-luna"], env: {}, log: (line) => logs.push(line), measure: fakeMeasure, isStale: notStale })
+  assert.match(logs[0], /Rates \(USD per million tokens/)
+  assert.match(logs[0], /gpt-6-luna: \$0\.1 \/ \$0\.5 -- check date: 2026-10-07/)
+  assert.doesNotMatch(logs[0], /Unpriced/, "Luna now has a rate")
+})
+
+test("evaluation answer calls are built with the key alone and sent with model and input alone -- no timeout, retry or reasoning-effort override (REQ-188)", async () => {
+  assert.deepEqual(Object.keys(openAiClientOptions({ OPENAI_API_KEY: "sk-test" })), ["apiKey"])
+
+  const sent = []
+  const client = {
+    responses: {
+      create: async (params) => {
+        sent.push(params)
+        return { output_text: "Per rule 613.9, yes.", usage: { input_tokens: 10, output_tokens: 5 } }
+      }
+    }
+  }
+  const { deps } = fakeDeps({ judgeAnswerAlone: async () => ({ undetermined: true, reason: "skipped", usage: { inputTokens: 0, outputTokens: 0, reasoningTokens: 0 } }) })
+  await executeEvaluation(evaluationParams({ client }), deps)
+  assert.equal(sent.length, 1)
+  assert.deepEqual(Object.keys(sent[0]).sort(), ["input", "model"])
+})
+
+test("records carry allDecidingRulesInPrompt beside the unchanged goldRuleInPrompt, reasoning tokens, the reported effort, and unpriced instead of $0", async () => {
+  const caseEntry = fixtureCase("deciding", { expected: { outcome: "works", shortAnswer: "Yes.", answer: "Reference.", decidingRuleIds: ["100.1", "200.2"] } })
+  const client = {
+    responses: {
+      create: async () => ({
+        output_text: "Per rule 100.1, yes.",
+        reasoning: { effort: "medium" },
+        usage: { input_tokens: 2000, output_tokens: 1700, output_tokens_details: { reasoning_tokens: 1500 } }
+      })
+    }
+  }
+  const { deps, written } = fakeDeps({
+    judgeAnswerAlone: async () => ({
+      undetermined: false,
+      scores: { correctness: 2, grounding: 2, calibration: 2, readability: 2 },
+      rationale: "Agrees.",
+      usage: { inputTokens: 1500, outputTokens: 2300, reasoningTokens: 1500 }
+    })
+  })
+  await executeEvaluation(evaluationParams({ client, models: ["gpt-7-mystery"], selectedCases: [caseEntry], allCases: [caseEntry] }), deps)
+  const [record] = written.results.caseLegScores
+  // One deciding rule (100.1) is among the System 3 selections; the other (200.2) is nowhere in the prompt.
+  assert.equal(record.goldRuleInPrompt, true, "goldRuleInPrompt keeps its meaning: one deciding rule among the selections")
+  assert.equal(record.allDecidingRulesInPrompt, false)
+  assert.equal(record.reasoningTokens, 1500)
+  assert.equal(record.judgeReasoningTokens, 1500)
+  assert.equal(record.reportedEffort, "medium")
+  assert.equal(record.unpriced, true, "an unknown price is unpriced")
+  assert.ok(!("costUsd" in record) && !("judgeCostUsd" in record), "the committed record carries no per-call dollar field, so no $0 either")
+  assert.deepEqual(written.results.runMetadata.unpricedModels, ["gpt-7-mystery"])
+  assert.equal(written.results.runMetadata.totalReasoningTokens, 1500)
+  assert.equal(written.results.runMetadata.answerClientTimeoutMs, "sdk-default")
+  assert.equal(written.results.runMetadata.answerClientMaxRetries, "sdk-default")
+  assert.equal(Number.isFinite(written.results.runMetadata.totalCostUsd), true)
+
+  // A priced model is not flagged; a curated topic carrying the other rule makes every deciding rule available.
+  const priced = fakeDeps({
+    preparePromptInput: (request) => ({
+      promptText: `PROMPT for ${request.question}`,
+      enrichmentDebug: {
+        supplemental: { usedSemantic: true, selected: [{ ruleId: "100.1" }] },
+        curatedGameRules: { topics: [{ id: "t", title: "T", ruleNumbers: ["200.2"] }] }
+      }
+    })
+  })
+  await executeEvaluation(evaluationParams({ selectedCases: [caseEntry], allCases: [caseEntry] }), priced.deps)
+  const [pricedRecord] = priced.written.results.caseLegScores
+  assert.equal(pricedRecord.unpriced, false)
+  assert.equal(pricedRecord.allDecidingRulesInPrompt, true)
+})
+
+test("the judge is handed the same inputs for every model and cap: attached excerpts with text, deciding ids apart", async () => {
+  const caseEntry = fixtureCase("judge-inputs", { expected: { outcome: "works", shortAnswer: "Yes.", answer: "Reference.", decidingRuleIds: ["100.1", "200.2"] } })
+  const seen = []
+  const { deps } = fakeDeps({
+    resources: { gameRulesRuleIndex: [{ ruleId: "100.1", text: "Rule one hundred point one." }] },
+    judgeAnswerAlone: async (input) => {
+      const inputs = { ...input }
+      delete inputs.client
+      delete inputs.judgeModel
+      seen.push(inputs)
+      return { undetermined: true, reason: "skipped", usage: { inputTokens: 0, outputTokens: 0, reasoningTokens: 0 } }
+    }
+  })
+  await executeEvaluation(evaluationParams({ models: ["gpt-4.1", "gpt-5-mini"], excerptCaps: [5, 10], selectedCases: [caseEntry], allCases: [caseEntry] }), deps)
+  assert.equal(seen.length, 4)
+  assert.deepEqual(seen[0].attachedExcerpts, [{ ruleId: "100.1", text: "Rule one hundred point one." }])
+  assert.deepEqual(seen[0].decidingRuleIds, ["100.1", "200.2"])
+  assert.deepEqual(seen[0].stateLines, [])
+  for (const inputs of seen) assert.deepEqual(inputs, seen[0])
 })

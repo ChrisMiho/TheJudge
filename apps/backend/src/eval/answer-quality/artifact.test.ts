@@ -5,6 +5,7 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { afterEach, describe, expect, it } from "vitest";
+import { RUBRIC_REVISION } from "./rubric.js";
 import {
   compareRecords,
   compareRuns,
@@ -299,6 +300,37 @@ describe("Backend - Eval - Answer quality - artifact (REQ-189)", () => {
         comparable: false,
         reason: "EMBEDDING_PROVIDER differs"
       });
+    });
+
+    it("refuses a per-case comparison between grades under the previous rubric revision and the current one (REQ-187)", () => {
+      const previous = { ...base, rubricRevision: "2026-10-06.1" };
+      const current = { ...base, rubricRevision: RUBRIC_REVISION };
+      expect(RUBRIC_REVISION).not.toBe("2026-10-06.1");
+      expect(compareRecords(previous, current)).toEqual({ comparable: false, reason: "rubric revisions differ" });
+      expect(compareRecords(current, { ...current })).toEqual({ comparable: true, kind: "same-model" });
+    });
+
+    it("accepts the new record fields beside the unchanged goldRuleInPrompt, and marks an unknown cost as unpriced, not zero (REQ-189, REQ-227)", () => {
+      const record = {
+        ...base,
+        goldRuleInPrompt: true,
+        allDecidingRulesInPrompt: false,
+        reasoningTokens: 1500,
+        judgeReasoningTokens: 900,
+        reportedEffort: "medium",
+        unpriced: true
+      };
+      const results = sampleResults({ caseLegScores: [record] });
+      results.runMetadata.comboCatalogLoaded = true;
+      results.runMetadata.answerClientTimeoutMs = "sdk-default";
+      results.runMetadata.answerClientMaxRetries = "sdk-default";
+      results.runMetadata.totalReasoningTokens = 1500;
+      results.runMetadata.unpricedModels = ["gpt-6-luna"];
+      expect(validateResultsShape(results)).toEqual([]);
+      expect(record.goldRuleInPrompt).toBe(true);
+      expect(record.allDecidingRulesInPrompt).toBe(false);
+      expect(record.unpriced).toBe(true);
+      expect("costUsd" in record).toBe(false);
     });
 
     it("never claims a legacy record (no hashes) comparable to one that carries them", () => {

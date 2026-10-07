@@ -5,7 +5,7 @@
     {
       "id": "C1",
       "statement": "A backend test shows the judge input carries attached excerpt ids and text, deciding rule ids under a separate label, and game-state lines when the case has a state",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run test"
       }
@@ -13,7 +13,7 @@
     {
       "id": "C2",
       "statement": "A test shows the judge input is built identically for different models, caps and arms",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run test"
       }
@@ -21,7 +21,7 @@
     {
       "id": "C3",
       "statement": "A test shows the rubric revision identifier changed and per-case comparison across revisions is refused",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run test"
       }
@@ -29,7 +29,7 @@
     {
       "id": "C4",
       "statement": "A test shows the evaluation prompt loader loads the combo catalog when combo enrichment is on and records the flag",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -37,7 +37,7 @@
     {
       "id": "C5",
       "statement": "A test shows evaluation answer calls pass no timeout, retry, or reasoning-effort override beyond the SDK default",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -45,7 +45,7 @@
     {
       "id": "C6",
       "statement": "A test shows records carry `allDecidingRulesInPrompt`, reasoning tokens, reported effort, and `unpriced` instead of a $0 cost; `goldRuleInPrompt` keeps its meaning",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm --workspace apps/backend run test"
       }
@@ -53,7 +53,7 @@
     {
       "id": "C7",
       "statement": "`gpt-6-luna` is in the rate table with a check date and the dry run prints each rate with its date",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run eval:answer-quality"
       }
@@ -61,7 +61,7 @@
     {
       "id": "C8",
       "statement": "Script tests pass",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run test:scripts"
       }
@@ -69,7 +69,7 @@
     {
       "id": "C9",
       "statement": "Typecheck passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run typecheck"
       }

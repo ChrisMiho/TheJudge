@@ -16,7 +16,7 @@ Reproducible before/after answer evaluation for PR #273, isolation of retrieval 
 | --- | --- | --- | --- | --- |
 | A | [Experiment runs and identity record](slice-a-experiment-runs.md) | done | none | 8 (0 manual) |
 | B | [Save as you go, resume, spending cap, unpriced models](slice-b-checkpoint-resume-cap.md) | done | Slice A (run folder, record key, identity record) | 9 (0 manual) |
-| C | [Grader repair and runtime parity](slice-c-grader-repair-runtime-parity.md) | planned | Slice A (identity record and record shape) | 9 (0 manual) |
+| C | [Grader repair and runtime parity](slice-c-grader-repair-runtime-parity.md) | done | Slice A (identity record and record shape) | 9 (0 manual) |
 | D | [Offline evidence trace](slice-d-evidence-trace.md) | planned | none (independent of A to C; shares only the read-only rules gate inputs) | 7 (0 manual) |
 | E | [Diagnostic arms and manifests](slice-e-arms-and-manifests.md) | planned | Slices A (arm key), C (judge and record shape), D (trace feeds manifest selection) | 8 (0 manual) |
 | F | [Paired comparison report](slice-f-compare-report.md) | planned | Slices A (run folders) and C (record fields) | 9 (0 manual) |

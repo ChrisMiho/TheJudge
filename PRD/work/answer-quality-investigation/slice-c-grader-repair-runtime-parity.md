@@ -1,6 +1,6 @@
 # Slice C — Grader repair and runtime parity
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
@@ -20,15 +20,15 @@ The grading model is told what the prompt actually carried, evaluation prompts m
 
 ## Acceptance criteria
 
-- [ ] C1: A backend test shows the judge input carries attached excerpt ids and text, deciding rule ids under a separate label, and game-state lines when the case has a state
-- [ ] C2: A test shows the judge input is built identically for different models, caps and arms
-- [ ] C3: A test shows the rubric revision identifier changed and per-case comparison across revisions is refused
-- [ ] C4: A test shows the evaluation prompt loader loads the combo catalog when combo enrichment is on and records the flag
-- [ ] C5: A test shows evaluation answer calls pass no timeout, retry, or reasoning-effort override beyond the SDK default
-- [ ] C6: A test shows records carry `allDecidingRulesInPrompt`, reasoning tokens, reported effort, and `unpriced` instead of a $0 cost; `goldRuleInPrompt` keeps its meaning
-- [ ] C7: `gpt-6-luna` is in the rate table with a check date and the dry run prints each rate with its date
-- [ ] C8: Script tests pass
-- [ ] C9: Typecheck passes
+- [x] C1: A backend test shows the judge input carries attached excerpt ids and text, deciding rule ids under a separate label, and game-state lines when the case has a state
+- [x] C2: A test shows the judge input is built identically for different models, caps and arms
+- [x] C3: A test shows the rubric revision identifier changed and per-case comparison across revisions is refused
+- [x] C4: A test shows the evaluation prompt loader loads the combo catalog when combo enrichment is on and records the flag
+- [x] C5: A test shows evaluation answer calls pass no timeout, retry, or reasoning-effort override beyond the SDK default
+- [x] C6: A test shows records carry `allDecidingRulesInPrompt`, reasoning tokens, reported effort, and `unpriced` instead of a $0 cost; `goldRuleInPrompt` keeps its meaning
+- [x] C7: `gpt-6-luna` is in the rate table with a check date and the dry run prints each rate with its date
+- [x] C8: Script tests pass
+- [x] C9: Typecheck passes
 
 ## Verification
 
@@ -53,3 +53,6 @@ No live OpenAI call; fake clients and stored fixtures only.
 - `scripts/lib/prompt-fidelity.test.mjs`
 - `scripts/eval-answer-quality.mjs`
 - `scripts/eval-answer-quality.test.mjs`
+- `scripts/lib/judge-inputs.mjs (new)` and `scripts/lib/judge-inputs.test.mjs (new)`: one builder of the judge's inputs, shared by the routine loop, the experiment loop and a regrade
+- `scripts/lib/rule-availability.mjs (new)` and `scripts/lib/rule-availability.test.mjs (new)`: where a deciding rule's text can reach the prompt; computes `allDecidingRulesInPrompt` here and is reused by the slice D trace
+- `scripts/lib/prompt-fidelity.d.mts`, `scripts/lib/experiment-run.mjs`, `scripts/lib/experiment-run.test.mjs`

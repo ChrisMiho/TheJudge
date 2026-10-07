@@ -17,6 +17,12 @@ describe("Backend - Eval - Answer quality - rubric (REQ-187)", () => {
     expect(RUBRIC_REVISION.length).toBeGreaterThan(0);
   });
 
+  it("moved to a new revision when the judge's inputs changed (REQ-186, REQ-187)", () => {
+    expect(RUBRIC_REVISION).not.toBe("2026-10-06.1");
+    expect(RUBRIC_REVISION).toBe("2026-10-07.1");
+    expect(formatRubricForJudge()).toContain(`revision ${RUBRIC_REVISION}`);
+  });
+
   it("formatRubricForJudge includes every axis title and the revision, and is the exact text sent to the judge", () => {
     const text = formatRubricForJudge();
     for (const axis of RUBRIC_AXES) {

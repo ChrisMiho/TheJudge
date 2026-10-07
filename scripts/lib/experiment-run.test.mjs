@@ -662,3 +662,57 @@ test("a capped live run refuses to start while any answer or judge model is unpr
   assert.equal(params.client.calls.length, 0);
   await assert.rejects(() => stat(join(params.runsRoot, "run-one")), { code: "ENOENT" });
 });
+
+// ---------------------------------------------------------------------------
+// Slice C: the record fields and the judge's inputs in an experiment run (REQ-186, REQ-189)
+// ---------------------------------------------------------------------------
+
+test("an experiment record carries allDecidingRulesInPrompt beside goldRuleInPrompt, the reported effort and an unpriced flag, and the judge gets the prompt's excerpts", async () => {
+  const caseEntry = fixtureCase("fields", { expected: { outcome: "works", shortAnswer: "Yes.", answer: "Reference.", decidingRuleIds: ["100.1", "200.2"] } });
+  const params = await experimentParams({ cases: [caseEntry], manifest: manifestFor([caseEntry]), models: ["gpt-7-mystery"] });
+  params.client.responses.create = async (call) => {
+    params.client.calls.push(call);
+    return { output_text: "Per rule 100.1, yes.", reasoning: { effort: "medium" }, usage: { input_tokens: 100, output_tokens: 90, output_tokens_details: { reasoning_tokens: 60 } } };
+  };
+  const judgeInputs = [];
+  const { summary } = await executeExperiment(
+    params,
+    fakeDeps({
+      resources: { gameRulesRuleIndex: [{ ruleId: "100.1", text: "Rule one hundred point one." }] },
+      computeCallCostUsd: (model) => (model === "gpt-5" ? 0.01 : null),
+      judgeAnswerAlone: async (input) => {
+        judgeInputs.push(input);
+        return { undetermined: false, scores: { correctness: 2, grounding: 2, calibration: 2, readability: 2 }, rationale: "ok", usage: { inputTokens: 5, outputTokens: 6, reasoningTokens: 2 } };
+      }
+    })
+  );
+  const [record] = summary.records;
+  assert.equal(record.goldRuleInPrompt, true);
+  assert.equal(record.allDecidingRulesInPrompt, false);
+  assert.equal(record.reasoningTokens, 60);
+  assert.equal(record.judgeReasoningTokens, 2);
+  assert.equal(record.reportedEffort, "medium");
+  assert.equal(record.unpriced, true);
+  assert.equal(record.costUsd, null, "unpriced is null, not zero");
+  assert.deepEqual(judgeInputs[0].attachedExcerpts, [{ ruleId: "100.1", text: "Rule one hundred point one." }]);
+  assert.deepEqual(judgeInputs[0].decidingRuleIds, ["100.1", "200.2"]);
+  assert.equal("ruleIds" in judgeInputs[0], false, "the old single rule-id label is gone");
+});
+
+test("a regrade re-grades with the excerpts the stored prompt carried and carries the answer-call telemetry forward", async () => {
+  const source = await experimentParams({ runId: "src-fields" });
+  await executeExperiment(source, fakeDeps({ resources: { gameRulesRuleIndex: [{ ruleId: "100.1", text: "Rule text." }] } }));
+  const seen = [];
+  const { summary } = await executeRegrade(
+    { runId: "regrade-fields", runsRoot: source.runsRoot, client: fakeClient(), judgeModel: "gpt-5", regradeFrom: "src-fields", cases: CASES, log: () => {} },
+    fakeDeps({
+      resources: { gameRulesRuleIndex: [{ ruleId: "100.1", text: "Rule text." }] },
+      judgeAnswerAlone: async (input) => {
+        seen.push(input.attachedExcerpts);
+        return { undetermined: false, scores: { correctness: 2, grounding: 2, calibration: 2, readability: 2 }, rationale: "ok", usage: { inputTokens: 1, outputTokens: 1, reasoningTokens: 0 } };
+      }
+    })
+  );
+  assert.ok(seen.every((excerpts) => excerpts.length === 1 && excerpts[0].ruleId === "100.1"));
+  assert.ok(summary.records.every((record) => record.goldRuleInPrompt === true && record.inputTokens === 2000 && record.outputTokens === 300));
+});

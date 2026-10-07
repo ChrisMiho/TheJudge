@@ -23,6 +23,8 @@ import { join } from "node:path";
 
 import { mechanicPrefixes, ruleSections, sha256 } from "./gold-cases.mjs";
 import { hashPrompt, referenceAnswerHash } from "./answer-quality-run.mjs";
+import { attachedRuleIdsOf, buildJudgeInputs, extractExcerptRuleIds } from "./judge-inputs.mjs";
+import { describeDecidingRules } from "./rule-availability.mjs";
 
 export const EXPERIMENT_RUNS_DIR = "output/answer-quality/runs";
 export const IDENTITY_FORMAT_VERSION = 1;
@@ -369,7 +371,9 @@ export function readUsage(response) {
   return {
     inputTokens: usage.input_tokens,
     outputTokens: usage.output_tokens,
-    reasoningTokens: usage.output_tokens_details?.reasoning_tokens ?? 0
+    reasoningTokens: usage.output_tokens_details?.reasoning_tokens ?? 0,
+    // The effort the provider reports for a reasoning model; none is ever sent (REQ-188).
+    reportedEffort: response?.reasoning?.effort ?? null
   };
 }
 
@@ -663,7 +667,7 @@ async function answerAndGrade({
   passesCap,
   log
 }) {
-  const { prepared, promptText } = buildPromptFor({ deps, arm, request, cap, vector, caseEntry });
+  const { prepared, promptText, bundleRuleIds = [] } = buildPromptFor({ deps, arm, request, cap, vector, caseEntry });
   const retrieval = deps.describeRetrieval(prepared.enrichmentDebug?.supplemental, caseEntry.expected.decidingRuleIds, {
     requireSemantic: deps.requireSemantic,
     caseId: caseEntry.id
@@ -717,11 +721,22 @@ async function answerAndGrade({
   const inputTokens = usage.inputTokens ?? Math.round(promptText.length / CHARS_PER_TOKEN_ESTIMATE);
   const outputTokens = usage.outputTokens ?? Math.round(answerText.length / CHARS_PER_TOKEN_ESTIMATE);
 
-  const grade = await gradeOne({ deps, client, judgeModel, caseEntry, answerText, promptText, prepared, knownRuleIds });
+  const attachedRuleIds = attachedRuleIdsOf(prepared, bundleRuleIds);
+  const grade = await gradeOne({ deps, client, judgeModel, caseEntry, answerText, promptText, attachedRuleIds, knownRuleIds });
+  const availability = describeDecidingRules({
+    decidingRuleIds: caseEntry.expected.decidingRuleIds,
+    prepared: { ...prepared, promptText },
+    request,
+    cardRulingsIndex: deps.resources?.cardRulingsIndex,
+    extraRuleIds: bundleRuleIds
+  });
+  const costUsd = deps.computeCallCostUsd(model, inputTokens, outputTokens);
+  const judgeCostUsd = deps.computeCallCostUsd(judgeModel, grade.judgeResult.usage.inputTokens, grade.judgeResult.usage.outputTokens);
 
   const transcript = transcriptRelativePath(key);
   const record = {
     ...common,
+    allDecidingRulesInPrompt: availability.allDecidingRulesInPrompt,
     status: "ok",
     undetermined: grade.judgeResult.undetermined,
     scores: grade.judgeResult.undetermined ? undefined : grade.judgeResult.scores,
@@ -730,13 +745,17 @@ async function answerAndGrade({
     inputTokens,
     outputTokens,
     reasoningTokens: usage.reasoningTokens,
+    judgeReasoningTokens: grade.judgeResult.usage.reasoningTokens ?? 0,
     reportedModel: response.model ?? null,
+    reportedEffort: usage.reportedEffort,
     judgeInputTokens: grade.judgeResult.usage.inputTokens,
     judgeOutputTokens: grade.judgeResult.usage.outputTokens,
     latencyMs,
     gradedAt: deps.nowIso(),
-    costUsd: deps.computeCallCostUsd(model, inputTokens, outputTokens),
-    judgeCostUsd: deps.computeCallCostUsd(judgeModel, grade.judgeResult.usage.inputTokens, grade.judgeResult.usage.outputTokens),
+    // An unknown price is unpriced, never $0 (REQ-227): the cost is null and the flag is set.
+    costUsd,
+    judgeCostUsd,
+    unpriced: costUsd === null || judgeCostUsd === null,
     transcript
   };
 
@@ -749,6 +768,17 @@ async function answerAndGrade({
     repeat,
     question: caseEntry.question,
     promptText,
+    attachedRuleIds,
+    // What a regrade needs to carry forward without a second answer call.
+    telemetry: {
+      goldRuleInPrompt: record.goldRuleInPrompt,
+      allDecidingRulesInPrompt: record.allDecidingRulesInPrompt,
+      inputTokens,
+      outputTokens,
+      reasoningTokens: usage.reasoningTokens,
+      reportedEffort: usage.reportedEffort,
+      latencyMs
+    },
     answerText,
     workedSolution: caseEntry.expected.answer,
     assertions: grade.assertions,
@@ -796,17 +826,16 @@ async function rankGroup({ deps, client, judgeModel, caseEntry, arm, repeat, cap
   };
 }
 
-async function gradeOne({ deps, client, judgeModel, caseEntry, answerText, promptText, prepared, knownRuleIds }) {
+async function gradeOne({ deps, client, judgeModel, caseEntry, answerText, promptText, attachedRuleIds, knownRuleIds }) {
   const assertions = deps.computeDeterministicAssertions(answerText, caseEntry.expected.decidingRuleIds, knownRuleIds);
   const judgeResult = await deps.judgeAnswerAlone({
     client,
     judgeModel,
     question: caseEntry.question,
-    ruleIds: caseEntry.expected.decidingRuleIds,
+    // Built the same way for every model, cap and arm (scripts/lib/judge-inputs.mjs, REQ-186).
+    ...buildJudgeInputs({ caseEntry, promptText, attachedRuleIds, ruleIndex: deps.resources?.gameRulesRuleIndex }),
     answerText,
-    workedSolution: caseEntry.expected.answer,
-    promptText,
-    prepared
+    workedSolution: caseEntry.expected.answer
   });
   return { assertions, judgeResult };
 }
@@ -905,12 +934,12 @@ export async function executeRegrade(params, deps) {
       caseEntry,
       answerText: stored.answerText,
       promptText: stored.promptText,
-      prepared: null,
+      attachedRuleIds: stored.attachedRuleIds ?? extractExcerptRuleIds(stored.promptText),
       knownRuleIds
     });
     const key = { caseId: stored.caseId, model: stored.model, excerptCap: stored.excerptCap, arm: arm.id, repeat: stored.repeat ?? 1 };
     const transcript = transcriptRelativePath(key);
-    const sourceRecord = (await (deps.readSourceRecord?.(regradeFrom, key))) ?? null;
+    const telemetry = stored.telemetry ?? {};
     const record = {
       key: recordKey(key),
       ...key,
@@ -923,15 +952,18 @@ export async function executeRegrade(params, deps) {
       scores: grade.judgeResult.undetermined ? undefined : grade.judgeResult.scores,
       namesGoldRuleId: grade.assertions.namesGoldRuleId,
       unknownRuleIds: grade.assertions.unknownRuleIds ?? [],
-      goldRuleInPrompt: sourceRecord?.goldRuleInPrompt,
+      goldRuleInPrompt: telemetry.goldRuleInPrompt,
+      allDecidingRulesInPrompt: telemetry.allDecidingRulesInPrompt,
       promptChars: stored.promptText.length,
       promptHash: hashPrompt(stored.promptText),
       referenceAnswerHash: referenceAnswerHash(caseEntry),
-      inputTokens: sourceRecord?.inputTokens ?? 0,
-      outputTokens: sourceRecord?.outputTokens ?? 0,
+      inputTokens: telemetry.inputTokens ?? 0,
+      outputTokens: telemetry.outputTokens ?? 0,
+      reasoningTokens: telemetry.reasoningTokens ?? 0,
+      reportedEffort: telemetry.reportedEffort ?? null,
       judgeInputTokens: grade.judgeResult.usage.inputTokens,
       judgeOutputTokens: grade.judgeResult.usage.outputTokens,
-      latencyMs: sourceRecord?.latencyMs ?? null,
+      latencyMs: telemetry.latencyMs ?? null,
       judgeModel,
       rubricRevision: identity.rubricRevision,
       embeddingProvider: identity.embeddingProvider,
@@ -939,6 +971,7 @@ export async function executeRegrade(params, deps) {
       commit: identity.commit,
       costUsd: 0,
       judgeCostUsd: deps.computeCallCostUsd(judgeModel, grade.judgeResult.usage.inputTokens, grade.judgeResult.usage.outputTokens),
+      judgeReasoningTokens: grade.judgeResult.usage.reasoningTokens ?? 0,
       regradedFrom: regradeFrom,
       transcript
     };
@@ -953,7 +986,7 @@ export async function executeRegrade(params, deps) {
       regradedFrom: regradeFrom
     });
     records.push(record);
-    spent += record.judgeCostUsd;
+    spent += record.judgeCostUsd ?? 0;
     log?.(`  ${stored.caseId} / ${stored.model}: regraded`);
   }
 

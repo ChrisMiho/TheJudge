@@ -66,8 +66,11 @@ import {
   executeRegrade,
   findUnpricedModels,
   loadManifestFile,
+  readUsage,
   validateManifestCases
 } from "./lib/experiment-run.mjs";
+import { attachedRuleIdsOf, buildJudgeInputs } from "./lib/judge-inputs.mjs";
+import { describeDecidingRules } from "./lib/rule-availability.mjs";
 import { loadLocalOpenAiEnv } from "./lib/local-openai-env.mjs";
 import {
   DEFAULT_EMBEDDING_PROVIDER,
@@ -110,8 +113,36 @@ export const MODEL_PRICING_USD_PER_MILLION_TOKENS = {
   "gpt-4.1": { input: 2.0, output: 8.0 },
   "gpt-5-mini": { input: 0.25, output: 2.0 },
   "gpt-5-nano": { input: 0.05, output: 0.4 },
-  "gpt-5": { input: 1.25, output: 10.0 }
+  "gpt-5": { input: 1.25, output: 10.0 },
+  // A reasoning model: its reasoning tokens are billed as output (REQ-227). Named with `--model gpt-6-luna`; not in `--bake-off`.
+  "gpt-6-luna": { input: 0.1, output: 0.5 }
 };
+
+const RATE_NOT_RECHECKED = "not re-checked since the table was written";
+
+/**
+ * The date each rate above was last checked against the provider's published
+ * pricing (REQ-188, REQ-226). The owner re-checks before spending; the dry run
+ * prints every rate with this date so a stale one is seen, not assumed.
+ */
+export const MODEL_RATE_CHECKED_ON = {
+  "gpt-4.1-mini": RATE_NOT_RECHECKED,
+  "gpt-4.1": "2026-10-07",
+  "gpt-5-mini": RATE_NOT_RECHECKED,
+  "gpt-5-nano": RATE_NOT_RECHECKED,
+  "gpt-5": RATE_NOT_RECHECKED,
+  "gpt-6-luna": "2026-10-07"
+};
+
+/** The dry run's rate lines: every rate in the table with the date it was checked. */
+export function describeRates() {
+  return [
+    "  Rates (USD per million tokens, input / output; re-check before spending):",
+    ...Object.entries(MODEL_PRICING_USD_PER_MILLION_TOKENS).map(
+      ([model, price]) => `    ${model}: $${price.input} / $${price.output} -- check date: ${MODEL_RATE_CHECKED_ON[model] ?? "none recorded"}`
+    )
+  ];
+}
 
 // Output-token assumptions behind the printed dry-run estimate only (REQ-188's
 // M3 estimate methodology). No numeric cost target is set anywhere in this
@@ -367,9 +398,19 @@ export async function checkModelAccess({ client, modelIds }) {
   return { missing, available: missing.length === 0 };
 }
 
+/**
+ * What the evaluation's answer client is built with: the key and nothing else.
+ * No timeout and no retry count, so the SDK defaults apply (REQ-188); runtime
+ * suitability against production's 15 s per attempt is read from the recorded
+ * latency, not forced by the client. Exported so a test can pin it.
+ */
+export function openAiClientOptions(env) {
+  return { apiKey: env.OPENAI_API_KEY };
+}
+
 async function defaultBuildClient(env) {
   const { default: OpenAI } = await import("openai");
-  return new OpenAI({ apiKey: env.OPENAI_API_KEY });
+  return new OpenAI(openAiClientOptions(env));
 }
 
 /**
@@ -493,10 +534,15 @@ export function describeUnpriced(estimate) {
   ];
 }
 
-/** The actual dollar cost of one call, from its real token counts (falls back to $0 for an unrecognized model id, never a guess). */
+/**
+ * The actual dollar cost of one call, from its real token counts. `outputTokens`
+ * is the provider's output count, which already includes reasoning tokens, so
+ * they are costed as output (REQ-227). A model with no rate is unpriced: the
+ * cost is `null`, never $0.
+ */
 export function computeCallCostUsd(model, inputTokens, outputTokens) {
   const price = MODEL_PRICING_USD_PER_MILLION_TOKENS[model];
-  if (!price) return 0;
+  if (!price) return null;
   return (inputTokens * price.input + outputTokens * price.output) / 1_000_000;
 }
 
@@ -505,7 +551,7 @@ export function buildRateTable() {
   return Object.fromEntries(
     Object.entries(MODEL_PRICING_USD_PER_MILLION_TOKENS).map(([model, price]) => [
       model,
-      { inputUsdPerMillion: price.input, outputUsdPerMillion: price.output }
+      { inputUsdPerMillion: price.input, outputUsdPerMillion: price.output, checkedOn: MODEL_RATE_CHECKED_ON[model] ?? null }
     ])
   );
 }
@@ -541,7 +587,9 @@ export function buildRunArtifact({
   gitCommit,
   generatedAt,
   caseLegScores,
-  rankingJudgeUsage = { inputTokens: 0, outputTokens: 0, costUsd: 0 }
+  rankingJudgeUsage = { inputTokens: 0, outputTokens: 0, costUsd: 0 },
+  comboCatalogLoaded,
+  unpricedModels = []
 }) {
   const corpus = allCases ?? goldCases;
   const merged = mergeCaseLegScores({
@@ -596,7 +644,13 @@ export function buildRunArtifact({
       judgeInputTokens: sumOf(caseLegScores, "judgeInputTokens") + (rankingJudgeUsage.inputTokens ?? 0),
       judgeOutputTokens: sumOf(caseLegScores, "judgeOutputTokens") + (rankingJudgeUsage.outputTokens ?? 0),
       answerCostUsd,
-      judgeCostUsd
+      judgeCostUsd,
+      comboCatalogLoaded,
+      answerClientTimeoutMs: "sdk-default",
+      answerClientMaxRetries: "sdk-default",
+      totalReasoningTokens: sumOf(caseLegScores, "reasoningTokens"),
+      judgeReasoningTokens: sumOf(caseLegScores, "judgeReasoningTokens"),
+      unpricedModels
     },
     legs,
     caseLegScores: merged
@@ -659,6 +713,7 @@ export async function executeEvaluation(
         });
 
         const startedAt = deps.now();
+        // Model and input only: no timeout, retry or reasoning-effort override (REQ-188).
         const response = await client.responses.create({ model, input: prepared.promptText });
         const latencyMs = deps.now() - startedAt;
         const answerText = response.output_text?.trim() ?? "";
@@ -666,18 +721,33 @@ export async function executeEvaluation(
         // Real usage from the API when the client reports it; a character
         // estimate (consistent with the dry-run plan's methodology) when it
         // does not, so an injected fake test client never needs to fabricate it.
-        const inputTokens = response.usage?.input_tokens ?? Math.round(prepared.promptText.length / CHARS_PER_TOKEN_ESTIMATE);
-        const outputTokens = response.usage?.output_tokens ?? Math.round(answerText.length / CHARS_PER_TOKEN_ESTIMATE);
+        const usage = readUsage(response);
+        const inputTokens = usage.inputTokens ?? Math.round(prepared.promptText.length / CHARS_PER_TOKEN_ESTIMATE);
+        const outputTokens = usage.outputTokens ?? Math.round(answerText.length / CHARS_PER_TOKEN_ESTIMATE);
 
         const assertions = deps.computeDeterministicAssertions(answerText, caseEntry.expected.decidingRuleIds, knownRuleIds);
         const judgeResult = await deps.judgeAnswerAlone({
           client,
           judgeModel,
           question: caseEntry.question,
-          ruleIds: caseEntry.expected.decidingRuleIds,
+          // What the answer prompt actually carried, and the deciding rules apart (REQ-186).
+          ...buildJudgeInputs({
+            caseEntry,
+            promptText: prepared.promptText,
+            attachedRuleIds: attachedRuleIdsOf(prepared),
+            ruleIndex: deps.resources?.gameRulesRuleIndex
+          }),
           answerText,
           workedSolution: caseEntry.expected.answer
         });
+        const availability = describeDecidingRules({
+          decidingRuleIds: caseEntry.expected.decidingRuleIds,
+          prepared,
+          request,
+          cardRulingsIndex: deps.resources?.cardRulingsIndex
+        });
+        const answerCostUsd = computeCallCostUsd(model, inputTokens, outputTokens);
+        const judgeCallCostUsd = computeCallCostUsd(judgeModel, judgeResult.usage.inputTokens, judgeResult.usage.outputTokens);
 
         const record = {
           caseId: caseEntry.id,
@@ -689,6 +759,7 @@ export async function executeEvaluation(
           namesGoldRuleId: assertions.namesGoldRuleId,
           unknownRuleIds: assertions.unknownRuleIds ?? [],
           goldRuleInPrompt: retrieval.goldRuleInPrompt,
+          allDecidingRulesInPrompt: availability.allDecidingRulesInPrompt,
           promptChars: prepared.promptText.length,
           promptHash: hashPrompt(prepared.promptText),
           referenceAnswerHash: referenceHash,
@@ -696,6 +767,10 @@ export async function executeEvaluation(
           outputTokens,
           judgeInputTokens: judgeResult.usage.inputTokens,
           judgeOutputTokens: judgeResult.usage.outputTokens,
+          reasoningTokens: usage.reasoningTokens,
+          judgeReasoningTokens: judgeResult.usage.reasoningTokens ?? 0,
+          reportedEffort: usage.reportedEffort,
+          unpriced: answerCostUsd === null || judgeCallCostUsd === null,
           latencyMs,
           blindRank: null,
           judgeModel,
@@ -703,8 +778,8 @@ export async function executeEvaluation(
           embeddingProvider: deps.embeddingProvider,
           gradedAt: deps.nowIso(),
           commit: deps.gitCommit,
-          costUsd: computeCallCostUsd(model, inputTokens, outputTokens),
-          judgeCostUsd: computeCallCostUsd(judgeModel, judgeResult.usage.inputTokens, judgeResult.usage.outputTokens)
+          costUsd: answerCostUsd ?? 0,
+          judgeCostUsd: judgeCallCostUsd ?? 0
         };
         perModelRecord.set(model, record);
         answersForRanking.push({ modelId: model, answerText });
@@ -716,7 +791,7 @@ export async function executeEvaluation(
             excerptCap: cap,
             question: caseEntry.question,
             cards: request.cards ?? [],
-            retrieval,
+            retrieval: { ...retrieval, allDecidingRulesInPrompt: availability.allDecidingRulesInPrompt },
             promptText: prepared.promptText,
             answerText,
             workedSolution: caseEntry.expected.answer,
@@ -746,7 +821,7 @@ export async function executeEvaluation(
         });
         rankingJudgeUsage.inputTokens += rankingResult.usage.inputTokens;
         rankingJudgeUsage.outputTokens += rankingResult.usage.outputTokens;
-        rankingJudgeUsage.costUsd += computeCallCostUsd(judgeModel, rankingResult.usage.inputTokens, rankingResult.usage.outputTokens);
+        rankingJudgeUsage.costUsd += computeCallCostUsd(judgeModel, rankingResult.usage.inputTokens, rankingResult.usage.outputTokens) ?? 0;
         if (!rankingResult.undetermined) {
           for (const [modelId, rank] of Object.entries(rankingResult.ranks)) {
             const record = perModelRecord.get(modelId);
@@ -785,7 +860,9 @@ export async function executeEvaluation(
     gitCommit: deps.gitCommit,
     generatedAt: deps.nowIso(),
     caseLegScores,
-    rankingJudgeUsage
+    rankingJudgeUsage,
+    comboCatalogLoaded: deps.comboCatalogLoaded ?? Boolean(deps.resources?.comboCatalog),
+    unpricedModels: findUnpricedModels([...models, judgeModel], MODEL_PRICING_USD_PER_MILLION_TOKENS)
   });
 
   await deps.writeResults(results, resultsPath);
@@ -914,6 +991,7 @@ export function describeExperimentPlan({ experiment, models, excerptCaps, arms, 
     `  ${estimate.rankingCalls} blind-ranking calls (${estimate.totalCalls} total, sequential).`,
     `  Estimated cost: $${estimate.totalCostUsd.toFixed(2)} (character-count estimate; the live run records its own actual cost).`,
     ...describeUnpriced(estimate),
+    ...describeRates(),
     experiment.maxCostUsd !== null && experiment.maxCostUsd !== undefined
       ? `  Spending cap: $${experiment.maxCostUsd} (the run stops cleanly before passing it).`
       : `  Spending cap: none given -- a live experiment run needs --max-cost-usd.`,
@@ -1063,6 +1141,7 @@ export function describePlan({
     `  Estimated cost: $${estimate.totalCostUsd.toFixed(2)} (character-count estimate, ~${CHARS_PER_TOKEN_ESTIMATE} chars/token, answers and judge;`,
     "  no numeric target is set -- the live run records its own actual cost, judge included).",
     ...describeUnpriced(estimate),
+    ...describeRates(),
     "",
     "  Headline as recorded now (approved, non-stale cases judged against their current reference answer):",
     ...headlineLines.map((line) => `    ${line}`),

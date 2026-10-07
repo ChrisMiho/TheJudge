@@ -44,6 +44,16 @@ export type RunMetadata = {
   judgeOutputTokens?: number;
   answerCostUsd?: number;
   judgeCostUsd?: number;
+  /** Whether the evaluation prompt loader loaded the Commander Spellbook combo catalog, as production does by default (REQ-188). */
+  comboCatalogLoaded?: boolean;
+  /** The answer client's timeout and retry count: the SDK defaults, recorded as such (REQ-188). */
+  answerClientTimeoutMs?: number | string;
+  answerClientMaxRetries?: number | string;
+  /** Reasoning tokens inside the output totals (REQ-227 counts them as output). */
+  totalReasoningTokens?: number;
+  judgeReasoningTokens?: number;
+  /** Models with no rate in the run's rate table; their cost is not in the totals, never counted as $0 (REQ-227). */
+  unpricedModels?: string[];
 };
 
 /** The count REQ-187's headline reports for one group of tiers at one leg. */
@@ -81,6 +91,8 @@ export type CaseLegScore = {
   unknownRuleIds?: string[];
   /** Whether one of the case's deciding rule ids was among the System 3 excerpts the prompt carried (from the enrichment debug block). */
   goldRuleInPrompt?: boolean;
+  /** Whether every deciding rule's text appears anywhere in the final prompt -- curated topic, supplemental excerpt, or card ruling (REQ-229's check). */
+  allDecidingRulesInPrompt?: boolean;
   promptChars: number;
   /** SHA-256 of the assembled prompt text. A record without it is selected again by `--changed` and counts as ungraded. */
   promptHash?: string;
@@ -91,6 +103,13 @@ export type CaseLegScore = {
   /** The lone judge call's token use, shown apart from the answer call's. */
   judgeInputTokens?: number;
   judgeOutputTokens?: number;
+  /** Reasoning tokens inside `outputTokens` / `judgeOutputTokens` (the provider bills them as output). */
+  reasoningTokens?: number;
+  judgeReasoningTokens?: number;
+  /** The reasoning effort the provider reported for the answer, when it reported one (no effort parameter is ever sent). */
+  reportedEffort?: string | null;
+  /** True when the answer or judge model has no rate: the cost is unknown, never $0 (REQ-227). */
+  unpriced?: boolean;
   latencyMs: number;
   /** This leg's model's rank among every model's answer to this case at this cap (1 = best), from the blind ranking pass. Null when undetermined or when only one model answered. */
   blindRank: number | null;
@@ -188,7 +207,7 @@ export type FullTranscript = {
   /** The cards attached to the request (every card the case names, by oracle id); empty for a bare question. */
   cards?: Array<{ cardId: string; name: string }>;
   /** What System 3 did for this prompt: semantic or lexical, which excerpts it attached, whether a gold rule was among them. */
-  retrieval?: { usedSemantic: boolean; selectedRuleIds: string[]; goldRuleInPrompt: boolean };
+  retrieval?: { usedSemantic: boolean; selectedRuleIds: string[]; goldRuleInPrompt: boolean; allDecidingRulesInPrompt?: boolean };
   promptText: string;
   answerText: string;
   /** The transcript key for the case's reference answer (`expected.answer`); gitignored, never in the committed file. */
