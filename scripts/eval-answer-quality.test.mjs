@@ -21,6 +21,7 @@ import {
   computeCallCostUsd,
   describeRetrieval,
   describeExperimentPlan,
+  estimateCallCostUsd,
   estimateCost,
   executeEvaluation,
   formatCommittedJson,
@@ -1144,7 +1145,7 @@ test("a confirmed experiment run hands the validated cases to the experiment run
   const client = fakeAccessClient(["gpt-4.1", "gpt-5"])
   const result = await run({
     loadLocalEnv: noLocalEnv,
-    argv: ["--run-id", "live", "--manifest", manifestPath, "--repeat", "2", "--expect-commit", "abcdef1", CONFIRM_FLAG],
+    argv: ["--run-id", "live", "--manifest", manifestPath, "--repeat", "2", "--expect-commit", "abcdef1", "--max-cost-usd", "5", CONFIRM_FLAG],
     env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
     log: () => {},
     loadCases,
@@ -1203,4 +1204,107 @@ test("describeExperimentPlan names the arms and revisions, the calls and the fol
   assert.match(text, /Arms: A \(A\.1\)/)
   assert.match(text, /4 total, sequential/)
   assert.match(text, /\/runs\/plan\//)
+})
+
+// ---------------------------------------------------------------------------
+// Slice B (REQ-227): flags, the cap requirement, unpriced models
+// ---------------------------------------------------------------------------
+
+test("parseArgs reads --resume, --retry-errors and --max-cost-usd, and refuses the unusable combinations", () => {
+  const parsed = parseArgs(["--resume", "phase-2", "--manifest", "m.json", "--retry-errors", "--max-cost-usd", "12.5"])
+  assert.equal(parsed.experiment.runId, "phase-2")
+  assert.equal(parsed.experiment.resume, true)
+  assert.equal(parsed.experiment.retryErrors, true)
+  assert.equal(parsed.experiment.maxCostUsd, 12.5)
+  assert.equal(parseArgs(["--run-id", "x", "--manifest", "m.json"]).experiment.maxCostUsd, null)
+  assert.throws(() => parseArgs(["--run-id", "x", "--manifest", "m.json", "--retry-errors"]), /add --resume/)
+  assert.throws(() => parseArgs(["--run-id", "x", "--manifest", "m.json", "--max-cost-usd", "0"]), /positive dollar amount/)
+  assert.throws(() => parseArgs(["--run-id", "a", "--resume", "b", "--manifest", "m.json"]), /name different runs/)
+  assert.throws(() => parseArgs(["--max-cost-usd", "5"]), /belong to an experiment run/)
+})
+
+test("--confirm-live-calls in experiment mode without --max-cost-usd refuses before any client or call exists", async () => {
+  const a = fixtureCase("cap-a")
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a)], cases: [a] })
+  let clientBuilt = false
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: ["--run-id", "uncapped", "--manifest", manifestPath, CONFIRM_FLAG],
+        env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+        log: () => {},
+        loadCases,
+        isStale: notStale,
+        buildClient: async () => {
+          clientBuilt = true
+          return fakeAccessClient(["gpt-4.1", "gpt-5"])
+        },
+        runExperiment: async () => {
+          throw new Error("must not run")
+        }
+      }),
+    /also needs --max-cost-usd/
+  )
+  assert.equal(clientBuilt, false)
+})
+
+test("a model with no rate prints as unpriced in the dry run, and a live capped run refuses to start", async () => {
+  const a = fixtureCase("unpriced-a")
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a)], cases: [a] })
+
+  // Dry run: unpriced, never $0 -- routine plan and experiment plan alike.
+  const routineLogs = []
+  await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--model", "gpt-6-luna"],
+    env: {},
+    log: (line) => routineLogs.push(line),
+    loadCases,
+    measure: fakeMeasure,
+    isStale: notStale
+  })
+  assert.match(routineLogs[0], /Unpriced \(no rate in the table\): gpt-6-luna/)
+
+  const experimentLogs = []
+  await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--run-id", "luna", "--manifest", manifestPath, "--model", "gpt-6-luna", "--max-cost-usd", "5"],
+    env: {},
+    log: (line) => experimentLogs.push(line),
+    loadCases,
+    isStale: notStale,
+    measure: fakeMeasure
+  })
+  assert.match(experimentLogs[0], /Unpriced \(no rate in the table\): gpt-6-luna/)
+  assert.match(experimentLogs[0], /Spending cap: \$5/)
+
+  // Live capped run: refused before a client is built.
+  let clientBuilt = false
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: ["--run-id", "luna-live", "--manifest", manifestPath, "--model", "gpt-6-luna", "--max-cost-usd", "5", CONFIRM_FLAG],
+        env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+        log: () => {},
+        loadCases,
+        isStale: notStale,
+        buildClient: async () => {
+          clientBuilt = true
+          return fakeAccessClient([])
+        }
+      }),
+    /no rate is known for gpt-6-luna \(unpriced\)/
+  )
+  assert.equal(clientBuilt, false)
+})
+
+test("estimateCallCostUsd follows the dry-run method and is null for a model with no rate", () => {
+  assert.equal(estimateCallCostUsd({ kind: "answer", model: "mystery" }), null)
+  const answer = estimateCallCostUsd({ kind: "answer", model: "gpt-4.1", promptChars: 40000 })
+  assert.ok(Math.abs(answer - (10000 * 2 + 600 * 8) / 1_000_000) < 1e-12)
+  const judge = estimateCallCostUsd({ kind: "judge", model: "gpt-5" })
+  assert.ok(Math.abs(judge - (1500 * 1.25 + 800 * 10) / 1_000_000) < 1e-12)
+  assert.ok(estimateCallCostUsd({ kind: "ranking", model: "gpt-5" }) > judge)
 })

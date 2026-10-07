@@ -7,7 +7,10 @@ import test from "node:test";
 import {
   ARM_A_REVISION,
   DEFAULT_ARM,
+  CALLS_FILE,
+  assertAllPriced,
   assertCheckoutReady,
+  diffIdentity,
   executeExperiment,
   executeRegrade,
   loadManifestFile,
@@ -417,4 +420,245 @@ test("arms other than A build their prompt through the arm builder and are marke
   assert.ok(armC.every((record) => record.diagnostic === true && record.armRevision === "C.1"));
   assert.ok(summary.records.filter((record) => record.arm === "A").every((record) => record.diagnostic === false));
   assert.ok(params.client.calls.some((call) => call.input.includes("[arm C]")));
+});
+
+// ---------------------------------------------------------------------------
+// Slice B: save as you go, resume, the spending cap, unpriced models (REQ-227)
+// ---------------------------------------------------------------------------
+
+async function readCallLines(params, runId = "run-one") {
+  try {
+    const text = await readFile(join(params.runsRoot, runId, CALLS_FILE), "utf8");
+    return text.split("\n").filter((line) => line.trim().length > 0).map((line) => JSON.parse(line));
+  } catch (error) {
+    if (error?.code === "ENOENT") return [];
+    throw error;
+  }
+}
+
+test("each record is on disk in calls.jsonl before the next call starts, and a crash leaves every finished record", async () => {
+  const cases = [fixtureCase("c1"), fixtureCase("c2"), fixtureCase("c3"), fixtureCase("c4")];
+  const params = await experimentParams({ cases, manifest: manifestFor(cases) });
+  const seenOnDisk = [];
+  params.client.responses.create = async (call) => {
+    seenOnDisk.push((await readCallLines(params)).length);
+    params.client.calls.push(call);
+    return { output_text: "Per rule 100.1, yes.", usage: { input_tokens: 10, output_tokens: 5 } };
+  };
+  await executeExperiment(params, fakeDeps());
+  assert.deepEqual(seenOnDisk, [0, 1, 2, 3], "at the start of call N, the N-1 finished records are already on disk");
+
+  // A crash in the middle (a code fault, not a provider error) keeps what finished.
+  const crashing = await experimentParams({ runId: "crash", cases, manifest: manifestFor(cases) });
+  let prepared = 0;
+  await assert.rejects(
+    () =>
+      executeExperiment(
+        crashing,
+        fakeDeps({
+          preparePromptInput: (request) => {
+            prepared += 1;
+            if (prepared === 3) throw new Error("boom: a fault outside the provider");
+            return { promptText: `PROMPT for ${request.question}`, enrichmentDebug: { supplemental: { usedSemantic: true, selected: [] } } };
+          }
+        })
+      ),
+    /boom/
+  );
+  const lines = await readCallLines(crashing, "crash");
+  assert.equal(lines.length, 2);
+  assert.ok(lines.every((line) => line.type === "record" && line.record.status === "ok"));
+});
+
+test("a provider error and a timeout become error records and the run continues", async () => {
+  const cases = [fixtureCase("c1"), fixtureCase("c2"), fixtureCase("c3")];
+  const params = await experimentParams({ cases, manifest: manifestFor(cases) });
+  let n = 0;
+  params.client.responses.create = async (call) => {
+    n += 1;
+    params.client.calls.push(call);
+    if (n === 1) throw Object.assign(new Error("Request timed out."), { name: "APIConnectionTimeoutError" });
+    if (n === 2) throw new Error("500 server error");
+    return { output_text: "Per rule 100.1, yes.", usage: { input_tokens: 10, output_tokens: 5 } };
+  };
+  const { summary } = await executeExperiment(params, fakeDeps());
+  assert.deepEqual(summary.records.map((record) => [record.caseId, record.status, record.errorKind]), [
+    ["c1", "error", "timeout"],
+    ["c2", "error", "provider"],
+    ["c3", "ok", undefined]
+  ]);
+  assert.equal(summary.counts.errors, 2);
+  assert.equal(summary.counts.ok, 1);
+  assert.equal(summary.records[0].costUsd, 0);
+  assert.equal((await readCallLines(params)).length, 3, "the error records are on disk too");
+});
+
+test("--resume skips completed keys and refuses when any identity field changed", async () => {
+  const cases = [fixtureCase("c1"), fixtureCase("c2"), fixtureCase("c3")];
+  const params = await experimentParams({ cases, manifest: manifestFor(cases) });
+  let prepared = 0;
+  await assert.rejects(
+    () =>
+      executeExperiment(
+        params,
+        fakeDeps({
+          preparePromptInput: (request) => {
+            prepared += 1;
+            if (prepared === 3) throw new Error("interrupted");
+            return { promptText: `PROMPT for ${request.question}`, enrichmentDebug: { supplemental: { usedSemantic: true, selected: [] } } };
+          }
+        })
+      ),
+    /interrupted/
+  );
+  assert.equal((await readCallLines(params)).length, 2);
+
+  // A changed identity field refuses, naming the field.
+  for (const [field, change] of [
+    ["judgeModel", { judgeModel: "gpt-5-other" }],
+    ["models", { models: ["gpt-4.1", "gpt-5-mini"] }],
+    ["repeats", { repeats: 2 }],
+    ["excerptCaps", { excerptCaps: [10, 15] }]
+  ]) {
+    const refused = { ...params, ...change, client: fakeClient(), resume: true };
+    await assert.rejects(() => executeExperiment(refused, fakeDeps()), new RegExp(`identity record changed \\(.*${field}`));
+    assert.equal(refused.client.calls.length, 0, `a changed ${field} makes no call`);
+  }
+  await assert.rejects(
+    () => executeExperiment({ ...params, client: fakeClient(), resume: true }, fakeDeps({ rubricRevision: "other-rubric" })),
+    /rubricRevision/
+  );
+  await assert.rejects(
+    () => executeExperiment({ ...params, client: fakeClient(), resume: true }, fakeDeps({ git: fakeGit({ head: async () => "f".repeat(40) }) })),
+    /commit/
+  );
+  await assert.rejects(() => executeExperiment({ ...params, runId: "never-started", resume: true }, fakeDeps()), /no run folder/);
+
+  // The unchanged identity resumes and answers only what is missing.
+  const resumed = { ...params, client: fakeClient(), resume: true };
+  const { summary } = await executeExperiment(resumed, fakeDeps());
+  assert.equal(resumed.client.calls.length, 1, "only the one case that never finished is answered");
+  assert.deepEqual(summary.records.map((record) => record.caseId), ["c1", "c2", "c3"]);
+  assert.equal((await readCallLines(params)).length, 3);
+
+  // A second resume of a finished run makes no call at all.
+  const again = { ...params, client: fakeClient(), resume: true };
+  await executeExperiment(again, fakeDeps());
+  assert.equal(again.client.calls.length, 0);
+
+  // Starting the same run id without --resume is still refused.
+  await assert.rejects(() => executeExperiment({ ...params, client: fakeClient() }, fakeDeps()), /already exists.*--resume run-one/);
+});
+
+test("diffIdentity ignores the start time and the observed model ids and nothing else", () => {
+  const base = { runId: "r", commit: "c", startedAt: "t1", models: { requested: ["m"], reported: {} }, repeats: 1 };
+  assert.deepEqual(diffIdentity(base, { ...base, startedAt: "t2", models: { requested: ["m"], reported: { m: "m-2026" } } }), []);
+  assert.deepEqual(diffIdentity(base, { ...base, repeats: 2 }), ["repeats"]);
+  assert.deepEqual(diffIdentity(base, { ...base, models: { requested: ["x"], reported: {} } }), ["models"]);
+});
+
+test("--retry-errors re-attempts only the error records", async () => {
+  const cases = [fixtureCase("c1"), fixtureCase("c2"), fixtureCase("c3")];
+  const params = await experimentParams({ cases, manifest: manifestFor(cases) });
+  let n = 0;
+  params.client.responses.create = async (call) => {
+    n += 1;
+    params.client.calls.push(call);
+    if (n === 2) throw new Error("503 try later");
+    return { output_text: "Per rule 100.1, yes.", usage: { input_tokens: 10, output_tokens: 5 } };
+  };
+  await executeExperiment(params, fakeDeps());
+  assert.equal((await readCallLines(params)).filter((line) => line.record.status === "error").length, 1);
+
+  // Plain resume leaves the error alone.
+  const plain = { ...params, client: fakeClient(), resume: true };
+  await executeExperiment(plain, fakeDeps());
+  assert.equal(plain.client.calls.length, 0);
+
+  // --retry-errors answers exactly the one failed case and the later record supersedes the error.
+  const retry = { ...params, client: fakeClient(), resume: true, retryErrors: true };
+  const { summary } = await executeExperiment(retry, fakeDeps());
+  assert.equal(retry.client.calls.length, 1);
+  assert.equal(retry.client.calls[0].input, "PROMPT for Question c2?");
+  assert.deepEqual(summary.records.map((record) => [record.caseId, record.status]), [["c1", "ok"], ["c2", "ok"], ["c3", "ok"]]);
+});
+
+test("the run stops cleanly before a call whose estimate would pass the cap, and the summary names the cap and the spend", async () => {
+  const cases = [fixtureCase("c1"), fixtureCase("c2"), fixtureCase("c3")];
+  const logs = [];
+  // Each answer costs (2000*2 + 300*8)/1e6 = 0.0064 and each grade (1500*2 + 800*8)/1e6 = 0.0094; estimates below are the dry-run method's.
+  const params = await experimentParams({ cases, manifest: manifestFor(cases), maxCostUsd: 0.05, log: (line) => logs.push(line) });
+  const deps = fakeDeps({
+    estimateCallCostUsd: ({ kind }) => (kind === "answer" ? 0.02 : 0.01),
+    computeCallCostUsd: (model) => (model === "gpt-5" ? 0.01 : 0.02),
+    rateTable: { "gpt-4.1": { inputUsdPerMillion: 2, outputUsdPerMillion: 8 }, "gpt-5": { inputUsdPerMillion: 1.25, outputUsdPerMillion: 10 } }
+  });
+  const { summary } = await executeExperiment(params, deps);
+
+  // Call 1 spends 0.03 (estimate 0.03 <= 0.05), call 2 would end at 0.06: stopped before it.
+  assert.equal(params.client.calls.length, 1);
+  assert.equal(summary.records.length, 1);
+  assert.equal(summary.stoppedReason.kind, "cap");
+  assert.equal(summary.stoppedReason.maxCostUsd, 0.05);
+  assert.ok(Math.abs(summary.stoppedReason.spentUsd - 0.03) < 1e-9);
+  assert.ok(logs.some((line) => /Stopped before passing the spending cap: \$0\.0300 spent of the \$0\.05 cap/.test(line)));
+
+  // A resume with the same cap cannot spend past it either; the stop is repeatable, not a crash.
+  const again = { ...params, client: fakeClient(), resume: true };
+  const second = await executeExperiment(again, deps);
+  assert.equal(again.client.calls.length, 0);
+  assert.equal(second.summary.stoppedReason.kind, "cap");
+});
+
+test("a capped run with no cap trouble finishes and records no stop", async () => {
+  const params = await experimentParams({ maxCostUsd: 100 });
+  const { summary } = await executeExperiment(
+    params,
+    fakeDeps({
+      estimateCallCostUsd: () => 0.01,
+      rateTable: { "gpt-4.1": { inputUsdPerMillion: 2, outputUsdPerMillion: 8 }, "gpt-5": { inputUsdPerMillion: 1.25, outputUsdPerMillion: 10 } }
+    })
+  );
+  assert.equal(summary.stoppedReason, null);
+  assert.equal(summary.records.length, CASES.length);
+});
+
+test("reasoning tokens are costed as output tokens and recorded apart", async () => {
+  const params = await experimentParams({ models: ["gpt-6-luna"] });
+  params.client.responses.create = async (call) => {
+    params.client.calls.push(call);
+    return {
+      output_text: "Per rule 100.1, yes.",
+      model: "gpt-6-luna-2026-09-30",
+      usage: { input_tokens: 1000, output_tokens: 1700, output_tokens_details: { reasoning_tokens: 1500 } }
+    };
+  };
+  const rates = { "gpt-6-luna": { input: 0.1, output: 0.5 } };
+  const { summary, identity } = await executeExperiment(
+    params,
+    fakeDeps({ computeCallCostUsd: (model, input, output) => ((rates[model]?.input ?? 0) * input + (rates[model]?.output ?? 0) * output) / 1_000_000 })
+  );
+  const [record] = summary.records;
+  assert.equal(record.outputTokens, 1700, "the provider's output tokens include the reasoning tokens");
+  assert.equal(record.reasoningTokens, 1500);
+  assert.ok(Math.abs(record.costUsd - (0.1 * 1000 + 0.5 * 1700) / 1_000_000) < 1e-12, "all 1700 output tokens, reasoning included, are costed at the output rate");
+  assert.equal(record.reportedModel, "gpt-6-luna-2026-09-30");
+  assert.equal(summary.totals.reasoningTokens, 1500 * CASES.length);
+  const onDisk = JSON.parse(await readFile(join(params.runsRoot, "run-one", "manifest.json"), "utf8"));
+  assert.deepEqual(onDisk.models.reported, { "gpt-6-luna": "gpt-6-luna-2026-09-30" });
+  assert.deepEqual(identity.models.reported, onDisk.models.reported);
+});
+
+test("a capped live run refuses to start while any answer or judge model is unpriced", async () => {
+  assert.throws(
+    () => assertAllPriced({ models: ["gpt-4.1", "gpt-6-luna"], judgeModel: "gpt-5", rateTable: { "gpt-4.1": {}, "gpt-5": {} } }),
+    /no rate is known for gpt-6-luna \(unpriced\)/
+  );
+  assert.throws(() => assertAllPriced({ models: ["gpt-4.1"], judgeModel: "mystery-judge", rateTable: { "gpt-4.1": {} } }), /mystery-judge/);
+  assert.doesNotThrow(() => assertAllPriced({ models: ["gpt-4.1"], judgeModel: "gpt-5", rateTable: { "gpt-4.1": {}, "gpt-5": {} } }));
+
+  const params = await experimentParams({ models: ["gpt-6-luna"], maxCostUsd: 5 });
+  await assert.rejects(() => executeExperiment(params, fakeDeps()), /unpriced/);
+  assert.equal(params.client.calls.length, 0);
+  await assert.rejects(() => stat(join(params.runsRoot, "run-one")), { code: "ENOENT" });
 });

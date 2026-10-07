@@ -18,7 +18,7 @@
 // runs under `node --test` with fakes: no TypeScript loader, no provider, no
 // network. scripts/eval-answer-quality.mjs wires the real ones.
 
-import { mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
+import { appendFile, mkdir, readFile, readdir, stat, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
 import { mechanicPrefixes, ruleSections, sha256 } from "./gold-cases.mjs";
@@ -339,8 +339,11 @@ async function pathExists(path) {
 }
 
 // ---------------------------------------------------------------------------
-// The loop
+// The loop (REQ-226, REQ-227)
 // ---------------------------------------------------------------------------
+
+export const CALLS_FILE = "calls.jsonl";
+const MAX_ERROR_MESSAGE_CHARS = 300;
 
 /**
  * Builds one record's prompt. Arm A is the checkout's own production prompt
@@ -360,12 +363,98 @@ function buildPromptFor({ deps, arm, request, cap, vector, caseEntry }) {
   return { prepared, promptText: built.promptText, bundleRuleIds: built.bundleRuleIds };
 }
 
+/** Reasoning tokens are billed as output tokens: the provider's `output_tokens` already includes them (REQ-227). */
+export function readUsage(response) {
+  const usage = response?.usage ?? {};
+  return {
+    inputTokens: usage.input_tokens,
+    outputTokens: usage.output_tokens,
+    reasoningTokens: usage.output_tokens_details?.reasoning_tokens ?? 0
+  };
+}
+
+function classifyProviderError(error) {
+  const text = `${error?.name ?? ""} ${error?.code ?? ""} ${error?.message ?? ""}`;
+  return /timeout|timed out|ETIMEDOUT/i.test(text) ? "timeout" : "provider";
+}
+
+/** The model ids with no entry in the rate table: the cap could not be enforced for them (REQ-227). */
+export function findUnpricedModels(modelIds, rateTable) {
+  return [...new Set(modelIds)].filter((model) => !rateTable?.[model]);
+}
+
+export function assertAllPriced({ models, judgeModel, rateTable }) {
+  const unpriced = findUnpricedModels([...models, judgeModel], rateTable);
+  if (unpriced.length > 0) {
+    throw new Error(
+      `A capped live run cannot start: no rate is known for ${unpriced.join(", ")} (unpriced), so the spending cap could not be enforced. Add its rate and the date it was checked to the rate table, then run again.`
+    );
+  }
+}
+
+async function readCalls(folder) {
+  const records = new Map();
+  const rankings = new Map();
+  let text = "";
+  try {
+    text = await readFile(join(folder, CALLS_FILE), "utf8");
+  } catch (error) {
+    if (error?.code !== "ENOENT") throw error;
+  }
+  for (const line of text.split("\n")) {
+    if (line.trim().length === 0) continue;
+    const parsed = JSON.parse(line);
+    if (parsed.type === "record") records.set(parsed.record.key, parsed.record);
+    else if (parsed.type === "ranking") rankings.set(parsed.groupKey, parsed);
+  }
+  return { records, rankings };
+}
+
+async function appendCall(folder, line) {
+  await mkdir(folder, { recursive: true });
+  await appendFile(join(folder, CALLS_FILE), `${JSON.stringify(line)}\n`, "utf8");
+}
+
+function groupKeyOf({ caseId, excerptCap, arm, repeat }) {
+  return `${caseId}|${excerptCap}|${arm}|${repeat}`;
+}
+
+/** Compares the identity record on disk with the one this invocation would write; startedAt and the observed model ids may differ. */
+export function diffIdentity(onDisk, fresh) {
+  const comparable = (identity) => {
+    const rest = { ...identity };
+    delete rest.startedAt;
+    return { ...rest, models: { requested: identity.models?.requested } };
+  };
+  const a = comparable(onDisk);
+  const b = comparable(fresh);
+  const fields = new Set([...Object.keys(a), ...Object.keys(b)]);
+  return [...fields].filter((field) => JSON.stringify(a[field]) !== JSON.stringify(b[field])).sort();
+}
+
+function totalSpend(calls) {
+  let spent = 0;
+  for (const record of calls.records.values()) spent += (record.costUsd ?? 0) + (record.judgeCostUsd ?? 0);
+  for (const ranking of calls.rankings.values()) spent += ranking.costUsd ?? 0;
+  return spent;
+}
+
+function errorMessageOf(error) {
+  return String(error?.message ?? error).slice(0, MAX_ERROR_MESSAGE_CHARS);
+}
+
 /**
  * Runs one experiment: for every excerpt cap, case, arm and repeat, answers
- * with every model, grades the answer alone, and records the result. Writes
- * the identity record first, a transcript per record, and a numbers-only
- * `summary.json` last, all inside the run's own folder. Never touches the
- * committed scores file.
+ * with every model, grades the answer alone, and records the result. Each
+ * record is appended to `calls.jsonl` the moment its judge call returns, so a
+ * crash keeps every finished call (REQ-227). A provider error or timeout on an
+ * answer becomes an `error` record and the run moves on. `resume` continues a
+ * run folder whose identity record is unchanged, skipping completed keys;
+ * `retryErrors` re-attempts the error records. With `maxCostUsd`, the run adds
+ * each call's estimate to what it has spent and stops cleanly before passing
+ * the cap. Writes the identity record first, a transcript per record, and a
+ * numbers-only `summary.json` last, all inside the run's own folder. Never
+ * touches the committed scores file.
  */
 export async function executeExperiment(params, deps) {
   const {
@@ -381,6 +470,9 @@ export async function executeExperiment(params, deps) {
     manifest,
     manifestSha256,
     expectCommit,
+    resume = false,
+    retryErrors = false,
+    maxCostUsd = null,
     env,
     log
   } = params;
@@ -388,12 +480,15 @@ export async function executeExperiment(params, deps) {
 
   // Refuse before any call, and before the folder exists.
   const commit = await assertCheckoutReady({ git: deps.git, expectCommit });
-  if (await pathExists(folder)) {
-    throw new Error(`The run folder ${folder} already exists. Use a new --run-id; runs are never overwritten.`);
+  if (maxCostUsd !== null) assertAllPriced({ models, judgeModel, rateTable: deps.rateTable });
+  const folderExists = await pathExists(folder);
+  if (folderExists && !resume) {
+    throw new Error(`The run folder ${folder} already exists. Use a new --run-id, or --resume ${runId} to continue it; runs are never overwritten.`);
   }
+  if (!folderExists && resume) throw new Error(`Cannot resume "${runId}": there is no run folder ${folder}.`);
 
   const fileHashes = await deps.fileHashes(cases);
-  const identity = buildIdentityRecord({
+  let identity = buildIdentityRecord({
     runId,
     commit,
     manifest,
@@ -406,6 +501,7 @@ export async function executeExperiment(params, deps) {
     judgeModel,
     rubricRevision: deps.rubricRevision,
     rateTable: deps.rateTable,
+    maxCostUsd,
     askAiProvider: env?.ASK_AI_PROVIDER ?? "",
     embeddingProvider: deps.embeddingProvider,
     embeddingModel: deps.embeddingModel ?? "",
@@ -413,55 +509,140 @@ export async function executeExperiment(params, deps) {
     client: deps.clientOptions,
     startedAt: deps.nowIso()
   });
-  await writeJson(join(folder, "manifest.json"), identity);
+  if (resume) {
+    const onDisk = JSON.parse(await readFile(join(folder, "manifest.json"), "utf8"));
+    const changed = diffIdentity(onDisk, identity);
+    if (changed.length > 0) {
+      throw new Error(
+        `Cannot resume "${runId}": the identity record changed (${changed.join(", ")}). A resumed run must measure exactly what it started with; start a new run id instead.`
+      );
+    }
+    identity = onDisk;
+  } else {
+    await writeJson(join(folder, "manifest.json"), identity);
+  }
 
   const knownRuleIds = new Set(deps.ruleIds);
   const queryEmbeddingByCaseId = await deps.embedQueries(cases);
   log?.(`Embedded ${cases.length} case queries with EMBEDDING_PROVIDER=${deps.embeddingProvider}.`);
 
-  const records = [];
+  const calls = await readCalls(folder);
+  const state = { spent: totalSpend(calls), stopped: null };
   const rankingUsage = { inputTokens: 0, outputTokens: 0, costUsd: 0 };
+  for (const ranking of calls.rankings.values()) {
+    rankingUsage.inputTokens += ranking.inputTokens ?? 0;
+    rankingUsage.outputTokens += ranking.outputTokens ?? 0;
+    rankingUsage.costUsd += ranking.costUsd ?? 0;
+  }
+  if (resume) log?.(`Resuming ${runId}: ${calls.records.size} record(s) already on disk, $${state.spent.toFixed(4)} already spent.`);
+
+  const passesCap = (estimateUsd, nextCall) => {
+    if (maxCostUsd === null || estimateUsd === null) return false;
+    if (state.spent + estimateUsd <= maxCostUsd) return false;
+    state.stopped = { kind: "cap", maxCostUsd, spentUsd: state.spent, estimateUsd, nextCall };
+    return true;
+  };
+
+  const ordered = [];
   for (const cap of excerptCaps) {
     for (const caseEntry of cases) {
-      const request = deps.buildCaseRequest(caseEntry);
-      const referenceHash = referenceAnswerHash(caseEntry);
       for (const arm of arms) {
-        for (let repeat = 1; repeat <= repeats; repeat++) {
-          const group = [];
-          for (const model of models) {
-            const answered = await answerAndGrade({
-              deps,
-              client,
-              judgeModel,
-              identity,
-              caseEntry,
-              request,
-              referenceHash,
-              arm,
-              repeat,
-              model,
-              cap,
-              vector: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
-              knownRuleIds,
-              folder,
-              log
-            });
-            group.push(answered);
-            records.push(answered.record);
-          }
-          // Ranking one answer against itself means nothing: a one-model run makes no ranking call (REQ-186).
-          if (models.length > 1) {
-            await rankGroup({ deps, client, judgeModel, caseEntry, arm, repeat, cap, group, folder, rankingUsage });
-          }
-        }
+        for (let repeat = 1; repeat <= repeats; repeat++) ordered.push({ cap, caseEntry, arm, repeat });
       }
     }
   }
 
-  const summary = buildSummary({ identity, records, rankingUsage, finishedAt: deps.nowIso() });
+  for (const { cap, caseEntry, arm, repeat } of ordered) {
+    if (state.stopped) break;
+    const request = deps.buildCaseRequest(caseEntry);
+    const referenceHash = referenceAnswerHash(caseEntry);
+    const group = [];
+    let groupComplete = true;
+    for (const model of models) {
+      const key = { caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat };
+      const existing = calls.records.get(recordKey(key));
+      if (existing && (existing.status === "ok" || !retryErrors)) {
+        if (existing.status === "ok") group.push({ record: existing, answerText: await readStoredAnswer(folder, existing) });
+        else groupComplete = false;
+        continue;
+      }
+      const result = await answerAndGrade({
+        deps,
+        client,
+        judgeModel,
+        identity,
+        caseEntry,
+        request,
+        referenceHash,
+        arm,
+        repeat,
+        model,
+        cap,
+        vector: queryEmbeddingByCaseId.get(caseEntry.id) ?? null,
+        knownRuleIds,
+        folder,
+        state,
+        passesCap,
+        log
+      });
+      if (!result) break; // stopped before the call: the cap
+      calls.records.set(result.record.key, result.record);
+      state.spent += (result.record.costUsd ?? 0) + (result.record.judgeCostUsd ?? 0);
+      await appendCall(folder, { type: "record", record: result.record });
+      if (result.record.status === "ok") group.push(result);
+      else groupComplete = false;
+      if (result.record.reportedModel && identity.models.reported[model] !== result.record.reportedModel) {
+        identity.models.reported[model] = result.record.reportedModel;
+        await writeJson(join(folder, "manifest.json"), identity);
+      }
+    }
+    if (state.stopped) break;
+
+    // Ranking one answer against itself means nothing: a one-model run makes no ranking call (REQ-186).
+    const groupKey = groupKeyOf({ caseId: caseEntry.id, excerptCap: cap, arm: arm.id, repeat });
+    if (models.length > 1 && groupComplete && group.length === models.length && !calls.rankings.has(groupKey)) {
+      const estimate = deps.estimateCallCostUsd?.({ kind: "ranking", model: judgeModel }) ?? null;
+      if (passesCap(estimate, { caseId: caseEntry.id, kind: "ranking" })) break;
+      const ranking = await rankGroup({ deps, client, judgeModel, caseEntry, arm, repeat, cap, group, folder, groupKey });
+      calls.rankings.set(groupKey, ranking);
+      state.spent += ranking.costUsd;
+      rankingUsage.inputTokens += ranking.inputTokens;
+      rankingUsage.outputTokens += ranking.outputTokens;
+      rankingUsage.costUsd += ranking.costUsd;
+      await appendCall(folder, ranking);
+    }
+  }
+
+  const records = [];
+  for (const { cap, caseEntry, arm, repeat } of ordered) {
+    for (const model of models) {
+      const record = calls.records.get(recordKey({ caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat }));
+      if (!record) continue;
+      const ranking = calls.rankings.get(groupKeyOf({ caseId: caseEntry.id, excerptCap: cap, arm: arm.id, repeat }));
+      records.push(ranking && !ranking.undetermined ? { ...record, blindRank: ranking.ranks[model] ?? null } : record);
+    }
+  }
+  const stoppedReason = state.stopped
+    ? { kind: state.stopped.kind, maxCostUsd: state.stopped.maxCostUsd, spentUsd: state.stopped.spentUsd, nextEstimateUsd: state.stopped.estimateUsd }
+    : null;
+  const summary = buildSummary({ identity, records, rankingUsage, stoppedReason, finishedAt: deps.nowIso() });
   await writeJson(join(folder, "summary.json"), summary);
-  log?.(`\nWrote the run folder ${folder}/ (manifest.json, transcripts/, summary.json).`);
+  if (state.stopped) {
+    log?.(
+      `\nStopped before passing the spending cap: $${state.stopped.spentUsd.toFixed(4)} spent of the $${state.stopped.maxCostUsd} cap (the next call is estimated at $${state.stopped.estimateUsd.toFixed(4)}). Every finished call is in ${join(folder, CALLS_FILE)}; resume with --resume ${runId}.`
+    );
+  } else {
+    log?.(`\nWrote the run folder ${folder}/ (manifest.json, calls.jsonl, transcripts/, summary.json).`);
+  }
   return { identity, summary, folder };
+}
+
+async function readStoredAnswer(folder, record) {
+  try {
+    return JSON.parse(await readFile(join(folder, record.transcript), "utf8")).answerText ?? "";
+  } catch {
+    return "";
+  }
 }
 
 async function answerAndGrade({
@@ -479,6 +660,7 @@ async function answerAndGrade({
   vector,
   knownRuleIds,
   folder,
+  passesCap,
   log
 }) {
   const { prepared, promptText } = buildPromptFor({ deps, arm, request, cap, vector, caseEntry });
@@ -487,43 +669,72 @@ async function answerAndGrade({
     caseId: caseEntry.id
   });
 
-  const startedAt = deps.now();
-  const response = await client.responses.create({ model, input: promptText });
-  const latencyMs = deps.now() - startedAt;
-  const answerText = response.output_text?.trim() ?? "";
-  const inputTokens = response.usage?.input_tokens ?? Math.round(promptText.length / CHARS_PER_TOKEN_ESTIMATE);
-  const outputTokens = response.usage?.output_tokens ?? Math.round(answerText.length / CHARS_PER_TOKEN_ESTIMATE);
-
-  const grade = await gradeOne({ deps, client, judgeModel, caseEntry, answerText, promptText, prepared, knownRuleIds });
+  // The answer and the grade that follows are checked together, so a run never pays for an answer it cannot grade.
+  const answerEstimate = deps.estimateCallCostUsd?.({ kind: "answer", model, promptChars: promptText.length }) ?? null;
+  const judgeEstimate = deps.estimateCallCostUsd?.({ kind: "judge", model: judgeModel }) ?? null;
+  const callEstimate = answerEstimate === null || judgeEstimate === null ? null : answerEstimate + judgeEstimate;
+  if (passesCap(callEstimate, { caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat, kind: "answer" })) return null;
 
   const key = { caseId: caseEntry.id, model, excerptCap: cap, arm: arm.id, repeat };
-  const transcript = transcriptRelativePath(key);
-  const record = {
+  const common = {
     key: recordKey(key),
     ...key,
     armRevision: arm.revision,
     diagnostic: arm.id !== DEFAULT_ARM,
-    status: "ok",
     tier: caseEntry.tier,
     strata: strataOf(caseEntry),
-    undetermined: grade.judgeResult.undetermined,
-    scores: grade.judgeResult.undetermined ? undefined : grade.judgeResult.scores,
-    namesGoldRuleId: grade.assertions.namesGoldRuleId,
-    unknownRuleIds: grade.assertions.unknownRuleIds ?? [],
     goldRuleInPrompt: retrieval.goldRuleInPrompt,
     promptChars: promptText.length,
     promptHash: hashPrompt(promptText),
     referenceAnswerHash: referenceHash,
-    inputTokens,
-    outputTokens,
-    judgeInputTokens: grade.judgeResult.usage.inputTokens,
-    judgeOutputTokens: grade.judgeResult.usage.outputTokens,
-    latencyMs,
     judgeModel,
     rubricRevision: identity.rubricRevision,
     embeddingProvider: identity.embeddingProvider,
+    commit: identity.commit
+  };
+
+  const startedAt = deps.now();
+  let response;
+  try {
+    response = await client.responses.create({ model, input: promptText });
+  } catch (error) {
+    const record = {
+      ...common,
+      status: "error",
+      errorKind: classifyProviderError(error),
+      errorMessage: errorMessageOf(error),
+      latencyMs: deps.now() - startedAt,
+      gradedAt: deps.nowIso(),
+      costUsd: 0,
+      judgeCostUsd: 0
+    };
+    log?.(`  ${caseEntry.id} / ${model} / cap ${cap} / arm ${arm.id} / repeat ${repeat}: ${record.errorKind} error -- ${record.errorMessage}`);
+    return { record, answerText: "" };
+  }
+  const latencyMs = deps.now() - startedAt;
+  const answerText = response.output_text?.trim() ?? "";
+  const usage = readUsage(response);
+  const inputTokens = usage.inputTokens ?? Math.round(promptText.length / CHARS_PER_TOKEN_ESTIMATE);
+  const outputTokens = usage.outputTokens ?? Math.round(answerText.length / CHARS_PER_TOKEN_ESTIMATE);
+
+  const grade = await gradeOne({ deps, client, judgeModel, caseEntry, answerText, promptText, prepared, knownRuleIds });
+
+  const transcript = transcriptRelativePath(key);
+  const record = {
+    ...common,
+    status: "ok",
+    undetermined: grade.judgeResult.undetermined,
+    scores: grade.judgeResult.undetermined ? undefined : grade.judgeResult.scores,
+    namesGoldRuleId: grade.assertions.namesGoldRuleId,
+    unknownRuleIds: grade.assertions.unknownRuleIds ?? [],
+    inputTokens,
+    outputTokens,
+    reasoningTokens: usage.reasoningTokens,
+    reportedModel: response.model ?? null,
+    judgeInputTokens: grade.judgeResult.usage.inputTokens,
+    judgeOutputTokens: grade.judgeResult.usage.outputTokens,
+    latencyMs,
     gradedAt: deps.nowIso(),
-    commit: identity.commit,
     costUsd: deps.computeCallCostUsd(model, inputTokens, outputTokens),
     judgeCostUsd: deps.computeCallCostUsd(judgeModel, grade.judgeResult.usage.inputTokens, grade.judgeResult.usage.outputTokens),
     transcript
@@ -551,10 +762,10 @@ async function answerAndGrade({
 
 /**
  * The blind side-by-side rank (REQ-186 layer 2b) for one case at one cap, arm
- * and repeat, once every model has answered. Sets `blindRank` on each record
- * and writes a ranking transcript; its judge usage is counted apart.
+ * and repeat, once every model has answered. Writes a ranking transcript and
+ * returns the `calls.jsonl` line; its judge usage is counted apart.
  */
-async function rankGroup({ deps, client, judgeModel, caseEntry, arm, repeat, cap, group, folder, rankingUsage }) {
+async function rankGroup({ deps, client, judgeModel, caseEntry, arm, repeat, cap, group, folder, groupKey }) {
   const result = await deps.judgeBlindRanking({
     client,
     judgeModel,
@@ -562,12 +773,6 @@ async function rankGroup({ deps, client, judgeModel, caseEntry, arm, repeat, cap
     workedSolution: caseEntry.expected.answer,
     answers: group.map(({ record, answerText }) => ({ modelId: record.model, answerText }))
   });
-  rankingUsage.inputTokens += result.usage.inputTokens;
-  rankingUsage.outputTokens += result.usage.outputTokens;
-  rankingUsage.costUsd += deps.computeCallCostUsd(judgeModel, result.usage.inputTokens, result.usage.outputTokens);
-  if (!result.undetermined) {
-    for (const { record } of group) record.blindRank = result.ranks[record.model] ?? null;
-  }
   await writeJson(
     join(folder, `transcripts/${safeSegment(caseEntry.id)}--cap${cap}--arm${safeSegment(arm.id)}--r${repeat}--ranking.json`),
     {
@@ -580,6 +785,15 @@ async function rankGroup({ deps, client, judgeModel, caseEntry, arm, repeat, cap
       reason: result.undetermined ? result.reason : undefined
     }
   );
+  return {
+    type: "ranking",
+    groupKey,
+    undetermined: result.undetermined,
+    ranks: result.undetermined ? {} : result.ranks,
+    inputTokens: result.usage.inputTokens,
+    outputTokens: result.usage.outputTokens,
+    costUsd: deps.computeCallCostUsd(judgeModel, result.usage.inputTokens, result.usage.outputTokens)
+  };
 }
 
 async function gradeOne({ deps, client, judgeModel, caseEntry, answerText, promptText, prepared, knownRuleIds }) {
@@ -631,11 +845,12 @@ export async function readSourceRun(runsRoot, sourceRunId) {
  * names the source run and the source manifest's hash.
  */
 export async function executeRegrade(params, deps) {
-  const { runId, runsRoot, client, judgeModel, regradeFrom, cases, expectCommit, env, log } = params;
+  const { runId, runsRoot, client, judgeModel, regradeFrom, cases, expectCommit, maxCostUsd = null, env, log } = params;
   const folder = runFolder(runsRoot, runId);
   if (runId === regradeFrom) throw new Error("A regrade run needs its own run id, different from the run it regrades.");
 
   const commit = await assertCheckoutReady({ git: deps.git, expectCommit });
+  if (maxCostUsd !== null) assertAllPriced({ models: [], judgeModel, rateTable: deps.rateTable });
   if (await pathExists(folder)) {
     throw new Error(`The run folder ${folder} already exists. Use a new --run-id; runs are never overwritten.`);
   }
@@ -658,6 +873,7 @@ export async function executeRegrade(params, deps) {
     judgeModel,
     rubricRevision: deps.rubricRevision,
     rateTable: deps.rateTable,
+    maxCostUsd,
     askAiProvider: env?.ASK_AI_PROVIDER ?? "",
     embeddingProvider: source.identity.embeddingProvider,
     embeddingModel: source.identity.embeddingModel,
@@ -670,7 +886,15 @@ export async function executeRegrade(params, deps) {
 
   const knownRuleIds = new Set(deps.ruleIds);
   const records = [];
+  let spent = 0;
+  let stopped = null;
   for (const stored of source.transcripts) {
+    const estimate = deps.estimateCallCostUsd?.({ kind: "judge", model: judgeModel }) ?? null;
+    if (maxCostUsd !== null && estimate !== null && spent + estimate > maxCostUsd) {
+      stopped = { kind: "cap", maxCostUsd, spentUsd: spent, nextEstimateUsd: estimate };
+      log?.(`\nStopped before passing the spending cap: $${spent.toFixed(4)} spent of the $${maxCostUsd} cap.`);
+      break;
+    }
     const caseEntry = byId.get(stored.caseId);
     if (!caseEntry) throw new Error(`Cannot regrade ${stored.caseId}: it is not an approved case in this checkout's corpus.`);
     const arm = { id: stored.arm ?? DEFAULT_ARM, revision: stored.armRevision ?? ARM_A_REVISION };
@@ -729,10 +953,11 @@ export async function executeRegrade(params, deps) {
       regradedFrom: regradeFrom
     });
     records.push(record);
+    spent += record.judgeCostUsd;
     log?.(`  ${stored.caseId} / ${stored.model}: regraded`);
   }
 
-  const summary = buildSummary({ identity, records, finishedAt: deps.nowIso() });
+  const summary = buildSummary({ identity, records, stoppedReason: stopped, finishedAt: deps.nowIso() });
   await writeJson(join(folder, "summary.json"), summary);
   log?.(`\nWrote the regrade run folder ${folder}/ (the source run ${regradeFrom} was only read).`);
   return { identity, summary, folder };

@@ -1,6 +1,6 @@
 # Slice B — Save as you go, resume, spending cap, unpriced models
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
@@ -20,15 +20,15 @@ A paid run keeps every finished call on disk, resumes after a crash, stops befor
 
 ## Acceptance criteria
 
-- [ ] B1: A test shows each record is on disk in `calls.jsonl` before the next call starts (a fake client that throws on call N leaves N-1 records)
-- [ ] B2: A test shows a provider error and a timeout become `error` records and the run continues
-- [ ] B3: A test shows `--resume` skips completed keys and refuses when any identity field changed
-- [ ] B4: A test shows `--retry-errors` re-attempts only error records
-- [ ] B5: A test shows `--confirm-live-calls` without `--max-cost-usd` refuses in experiment mode
-- [ ] B6: A test shows the run stops cleanly before a call whose estimate would pass the cap, with a summary naming the cap and spend
-- [ ] B7: A test shows reasoning tokens are costed as output tokens
-- [ ] B8: A test shows a model with no rate prints as unpriced in the dry run and a live capped run refuses to start
-- [ ] B9: Typecheck passes
+- [x] B1: A test shows each record is on disk in `calls.jsonl` before the next call starts (a fake client that throws on call N leaves N-1 records)
+- [x] B2: A test shows a provider error and a timeout become `error` records and the run continues
+- [x] B3: A test shows `--resume` skips completed keys and refuses when any identity field changed
+- [x] B4: A test shows `--retry-errors` re-attempts only error records
+- [x] B5: A test shows `--confirm-live-calls` without `--max-cost-usd` refuses in experiment mode
+- [x] B6: A test shows the run stops cleanly before a call whose estimate would pass the cap, with a summary naming the cap and spend
+- [x] B7: A test shows reasoning tokens are costed as output tokens
+- [x] B8: A test shows a model with no rate prints as unpriced in the dry run and a live capped run refuses to start
+- [x] B9: Typecheck passes
 
 ## Verification
 

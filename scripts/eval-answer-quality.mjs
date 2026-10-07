@@ -61,8 +61,10 @@ import {
   ARM_A_REVISION,
   EXPERIMENT_RUNS_DIR,
   defaultGit,
+  assertAllPriced,
   executeExperiment,
   executeRegrade,
+  findUnpricedModels,
   loadManifestFile,
   validateManifestCases
 } from "./lib/experiment-run.mjs";
@@ -180,6 +182,12 @@ export function parseArgs(argv) {
       experimentFlags.expectCommit = argv[++i];
     } else if (arg === "--regrade-from") {
       experimentFlags.regradeFrom = argv[++i];
+    } else if (arg === "--resume") {
+      experimentFlags.resume = argv[++i];
+    } else if (arg === "--retry-errors") {
+      experimentFlags.retryErrors = true;
+    } else if (arg === "--max-cost-usd") {
+      experimentFlags.maxCostUsd = Number(argv[++i]);
     }
   }
 
@@ -224,6 +232,21 @@ function parseExperimentFlags(flags, selectionFlags) {
   const named = Object.keys(flags);
   if (named.length === 0) return null;
   const flagName = (key) => `--${key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`)}`;
+  // `--resume <run-id>` names the run it continues, so it stands in for --run-id.
+  if (flags.resume !== undefined) {
+    if (!flags.resume) throw new Error("--resume needs the run id to continue.");
+    if (flags.runId && flags.runId !== flags.resume) {
+      throw new Error(`--resume ${flags.resume} and --run-id ${flags.runId} name different runs.`);
+    }
+    flags.runId = flags.resume;
+    if (flags.regradeFrom) throw new Error("--resume continues an answer run; a regrade run is cheap to start again under a new --run-id.");
+  }
+  if (flags.retryErrors && flags.resume === undefined) {
+    throw new Error("--retry-errors re-attempts the error records of a run you resume: add --resume <run-id>.");
+  }
+  if (flags.maxCostUsd !== undefined && !(Number.isFinite(flags.maxCostUsd) && flags.maxCostUsd > 0)) {
+    throw new Error("--max-cost-usd needs a positive dollar amount, such as --max-cost-usd 25.");
+  }
   if (!flags.runId) {
     throw new Error(`${named.map(flagName).join(", ")} belong to an experiment run: name it with --run-id <id>.`);
   }
@@ -248,7 +271,10 @@ function parseExperimentFlags(flags, selectionFlags) {
     manifestPath: flags.manifest ? resolve(repoRoot, flags.manifest) : null,
     repeats: flags.repeat ?? 1,
     expectCommit: flags.expectCommit ?? null,
-    regradeFrom: flags.regradeFrom ?? null
+    regradeFrom: flags.regradeFrom ?? null,
+    resume: flags.resume !== undefined,
+    retryErrors: flags.retryErrors === true,
+    maxCostUsd: flags.maxCostUsd ?? null
   };
 }
 
@@ -403,6 +429,9 @@ export function estimateCost({ models, judgeModel, excerptCaps, goldCaseCount, a
   // A single answer has nothing to be ranked against: a one-model run makes no ranking call (REQ-186).
   const rankingCalls = models.length > 1 ? goldCaseCount * excerptCaps.length : 0;
 
+  // A model with no rate is reported as unpriced, never counted as $0 (REQ-227).
+  const unpricedModels = findUnpricedModels([...models, judgeModel], MODEL_PRICING_USD_PER_MILLION_TOKENS);
+
   let answersCostUsd = 0;
   for (const model of models) {
     const price = MODEL_PRICING_USD_PER_MILLION_TOKENS[model];
@@ -433,8 +462,35 @@ export function estimateCost({ models, judgeModel, excerptCaps, goldCaseCount, a
     loneJudgeCalls,
     rankingCalls,
     totalCalls: answerCalls + loneJudgeCalls + rankingCalls,
-    totalCostUsd: answersCostUsd + judgeCostUsd
+    totalCostUsd: answersCostUsd + judgeCostUsd,
+    unpricedModels
   };
+}
+
+/**
+ * One call's estimated dollar cost by the dry run's method (REQ-227): `answer`
+ * from the prompt's character count, `judge` and `ranking` from the assumed
+ * judge token counts. Null for a model with no rate -- the cap could not be
+ * enforced for it, so a capped live run refuses to start instead.
+ */
+export function estimateCallCostUsd({ kind, model, promptChars = 0 }) {
+  const price = MODEL_PRICING_USD_PER_MILLION_TOKENS[model];
+  if (!price) return null;
+  const tokens =
+    kind === "answer"
+      ? { input: promptChars / CHARS_PER_TOKEN_ESTIMATE, output: ASSUMED_ANSWER_OUTPUT_TOKENS }
+      : kind === "judge"
+        ? { input: ASSUMED_LONE_JUDGE_INPUT_TOKENS, output: ASSUMED_LONE_JUDGE_OUTPUT_TOKENS }
+        : { input: ASSUMED_RANKING_JUDGE_INPUT_TOKENS, output: ASSUMED_RANKING_JUDGE_OUTPUT_TOKENS };
+  return (tokens.input * price.input + tokens.output * price.output) / 1_000_000;
+}
+
+/** The plan line for models with no rate, or no line when every model is priced. */
+export function describeUnpriced(estimate) {
+  if (!estimate.unpricedModels?.length) return [];
+  return [
+    `  Unpriced (no rate in the table): ${estimate.unpricedModels.join(", ")} -- their cost is not in the estimate, and a live capped run refuses to start until a rate is added.`
+  ];
 }
 
 /** The actual dollar cost of one call, from its real token counts (falls back to $0 for an unrecognized model id, never a guess). */
@@ -815,6 +871,7 @@ export async function runLiveExperiment(params) {
     buildCaseRequest,
     describeRetrieval,
     computeCallCostUsd,
+    estimateCallCostUsd,
     resources,
     ruleIds: resources.gameRulesRuleIndex.map((entry) => entry.ruleId),
     embedQueries: (cases) => embedGoldCaseQueries({ goldCases: cases, embedder, cardDetailIndex: resources.cardDetailIndex }),
@@ -856,6 +913,10 @@ export function describeExperimentPlan({ experiment, models, excerptCaps, arms, 
     `  Calls: ${estimate.answerCalls} answer calls, ${estimate.loneJudgeCalls} lone judge calls,`,
     `  ${estimate.rankingCalls} blind-ranking calls (${estimate.totalCalls} total, sequential).`,
     `  Estimated cost: $${estimate.totalCostUsd.toFixed(2)} (character-count estimate; the live run records its own actual cost).`,
+    ...describeUnpriced(estimate),
+    experiment.maxCostUsd !== null && experiment.maxCostUsd !== undefined
+      ? `  Spending cap: $${experiment.maxCostUsd} (the run stops cleanly before passing it).`
+      : `  Spending cap: none given -- a live experiment run needs --max-cost-usd.`,
     "",
     `Re-run with ${CONFIRM_FLAG} to make the live provider calls.`
   ].join("\n");
@@ -917,6 +978,15 @@ async function runExperimentCommand({
     return { ran: false, experiment: true, caseIds: cases.map((c) => c.id), accessChecked: false, estimate };
   }
 
+  // A live experiment run spends only under a cap it can enforce (REQ-227): refuse before any client exists.
+  if (experiment.maxCostUsd === null) {
+    throw new Error(`${CONFIRM_FLAG} in an experiment run also needs --max-cost-usd <dollars>: the run stops cleanly before it would pass that cap.`);
+  }
+  assertAllPriced({
+    models: experiment.regradeFrom ? [] : parsed.models,
+    judgeModel,
+    rateTable: MODEL_PRICING_USD_PER_MILLION_TOKENS
+  });
   assertLiveProviderConfigured(env);
   const client = injectedClient ?? (await buildClient(env));
   const modelIds = experiment.regradeFrom ? [judgeModel] : [...parsed.models, judgeModel];
@@ -939,6 +1009,9 @@ async function runExperimentCommand({
     manifestSha256,
     expectCommit: experiment.expectCommit,
     regradeFrom: experiment.regradeFrom,
+    resume: experiment.resume,
+    retryErrors: experiment.retryErrors,
+    maxCostUsd: experiment.maxCostUsd,
     env,
     log
   });
@@ -989,6 +1062,7 @@ export function describePlan({
     `  ${estimate.rankingCalls} blind-ranking calls (${estimate.totalCalls} total, sequential).`,
     `  Estimated cost: $${estimate.totalCostUsd.toFixed(2)} (character-count estimate, ~${CHARS_PER_TOKEN_ESTIMATE} chars/token, answers and judge;`,
     "  no numeric target is set -- the live run records its own actual cost, judge included).",
+    ...describeUnpriced(estimate),
     "",
     "  Headline as recorded now (approved, non-stale cases judged against their current reference answer):",
     ...headlineLines.map((line) => `    ${line}`),
