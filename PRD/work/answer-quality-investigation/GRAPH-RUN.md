@@ -6,8 +6,8 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim on 2026-10-07; was `origin/thejudge-auto/answer-quality-investigation`, docs PR #274 merged)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation` (rewritten by the build half's claim; the kickoff worktree was removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261007-134015/`
-- Current node: `gate-review` complete (gate resolved 2026-10-07; resumes at `gate-qc`)
-- Next action: answer `PRD/work/answer-quality-investigation/GATE-QUESTIONS.md`, merge the docs PR; `graph-implement` builds it
+- Current node: `gate-qc` (attempt 2, re-grade after the owner's verdicts)
+- Next action: `/graph-implement PRD/work/answer-quality-investigation/` (build half in progress: gate-qc → plan → build → review → close)
 
 ## Node ledger
 
@@ -17,6 +17,8 @@
 | 2 | shape | sonnet | ok | `8 → 20` | package `PRD/work/answer-quality-investigation/` created on the branch: commits 0bb3b193 (intake copied verbatim, staged copy deleted) and 7067c63e (IDEA.md with six `## Prior run` lines, README.md with `## Autonomous metadata`, GRAPH-RUN.md, `STATUS.ideation`, board row); launch checkout untouched | 2026-10-07 |
 | 3 | define | opus | ok | `22 → 79` (two driver bookkeeping calls charged to shape/1 before run-state moved) | commit b771735d: `DESIGN-BRIEF.md` (14 sections, decision points D0–D5, 23 assumptions, no blocker) + `GATE-QUESTIONS.md` (11 stable-ID blocks: new REQ-226–230; amend REQ-185/186/187/188/189, NFR-018; `## Blocker questions` empty) + `STATUS.refined` + board row; `git diff --stat HEAD~1 -- PRD/sections apps` empty → gate: proposal present, continue to gate-qc | 2026-10-07 |
 | 4 | gate-qc | sonnet | ok (PASS) | `79 → 97` (one driver bookkeeping call charged to define/1) | commit 05ecc20b: `PRD/work/answer-quality-investigation/QUALITY-CHECK.md` — Verdict: PASS, findings none; 12/12 removed diff lines match live `PRD/sections/` text; marker left `STATUS.refined`; driver then wrote `## Preparation gate` (PASS), parked at `owner-action`, pushed 2ff207af, opened docs PR https://github.com/ChrisMiho/TheJudge/pull/274 | 2026-10-07 |
+| — | claim (driver) | — | ok | — | docs PR #274 merged 2026-10-07T21:48Z; kickoff worktree removed clean (`git worktree remove`, porcelain empty); `.worktrees/implement-answer-quality-investigation` cut on `thejudge-auto/answer-quality-investigation-work` from `origin/main` (1a8e61d5); claim commit fa12f0d0 pushed; lock re-taken (`graph:preflight --take-lock`, pid 19439); graph canary `nohup true` denied | 2026-10-07 |
+| 4b | gate-review | sonnet | ok | `0 → 21` | commit 75b85c00: 11 verdicts applied inside `GATE-QUESTIONS.md` (9 accept, 2 edit: REQ-226 drops the cross-checkout `--subject` import and adds a regrade mode; REQ-188 drops the production timeout/retry criterion, keeps combo-catalog parity); `DESIGN-BRIEF.md` reconciled (§2, §4.1, §4.2, §4.8, Phase 0/2/3 steps, §12, truth-changes rows, A6/A9); README note none; `## Gate verdicts` + `### Brief reconciliation` written; marker `STATUS.refined`; board row refined; `git diff --stat HEAD~1 -- PRD/sections apps scripts` empty | 2026-10-07 |
 
 ## Open gate
 
@@ -222,6 +224,24 @@ Writes: `GATE-QUESTIONS.md` (edit application only), `DESIGN-BRIEF.md` (reconcil
 Boundaries: never edit `PRD/sections/` or any code, never dispatch a subagent or run a `thejudge-*` skill, never write `GAMEPLAN.md` or `slice-*.md`, no pushes, no PR actions, no `.secrets/`, no `thejudge-*` skill edits, no `rm -rf`, no `nohup`, no background `&`. If a hook denies a command, do not retry it — report it verbatim and stop. If any `Verdict:` slot is blank or malformed, refuse and name every offending ID.
 
 Report back, in plain language with the ask first and the substance of each ID inlined: the verdict counts, each `edit` with the owner's reason quoted and the exact passages rewritten in `GATE-QUESTIONS.md` and `DESIGN-BRIEF.md` (the grep you used), the README note or `none`, the commit hash, and the final marker.
+
+### gate-qc (attempt 2)
+
+graph is controlling. You are node 4 (`gate-qc`, attempt 2 — the re-grade after the owner's verdicts) of graph run `graph-20261007-134015`, dispatched by the `graph-implement` driver.
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-answer-quality-investigation
+
+Every file you read, write, or commit lives under that working directory (a git worktree on the shared build branch `thejudge-auto/answer-quality-investigation-work`, cut from `origin/main`). Never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/...` directly — that is the owner's launch checkout. Copy the `Working directory:` line above, unchanged, into any prompt you write for a subagent.
+
+Invoke the `thejudge-quality-check` skill: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-quality-check/SKILL.md` in full and follow its `## Mode` section for `graph is controlling` (read `PRD/instructions/preparation-contract.md`; emit an explicit PASS or FAIL verdict; return every FAIL issue to the driver; never self-certify, never create map-out artifacts).
+
+Package: `PRD/work/answer-quality-investigation/` (status `refined`). This is a re-grade: the first grade PASSed (`QUALITY-CHECK.md`, commit 05ecc20b), the owner then answered the eleven verdict slots in `GATE-QUESTIONS.md` (9 accept, 2 edit — REQ-226 and REQ-188; the owner's reasons are quoted in `GRAPH-RUN.md` `## Gate verdicts`), and `graph-gate-review` applied the edits inside the proposal and reconciled `DESIGN-BRIEF.md` to them (commit 75b85c00, `### Brief reconciliation` lists every rewritten passage). Grade `DESIGN-BRIEF.md` against PRD alignment and agent-readiness per the skill's checklist, and check the package is one consistent whole after the verdicts: the brief, the finalized proposal, and the accepted IDs must not contradict each other or the owner's two edits. Treat the `GATE-QUESTIONS.md` diffs as the brief's product-truth proposal (not yet applied to `PRD/sections/` — correct in this workflow; do not fail the brief for the live sections being unchanged). Check each proposed stable-ID block opens with the three plain-language lines (**What this decides** · **In plain terms** · **What happens if you say no**), carries a complete diff, and has a filled `- Verdict:` slot. Intake under `intake/` is evidence, never authority; never open a document the intake cites.
+
+Writes allowed: overwrite `PRD/work/answer-quality-investigation/QUALITY-CHECK.md` with this attempt's report, and on FAIL the marker change to `STATUS.refining` plus the `PRD/work/STATUS.md` board row. Never edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `GRAPH-RUN.md`, `PRD/sections/`, or code. Commit from inside the working directory with explicit paths only (`git add PRD/work/answer-quality-investigation PRD/work/STATUS.md` — never `git add -A`, `--all`, or `.`). Do not push.
+
+Boundaries: no pushes, no PR actions, no `.secrets/`, no `thejudge-*` skill edits, no `rm -rf`, no `nohup`, no background `&`. If a hook denies a command, do not retry it — report it verbatim and stop.
+
+Report back: the verdict (PASS or FAIL), the complete findings list (empty on PASS), the report file path, the commit hash, and the final marker.
 
 ## Instruction ledger
 
