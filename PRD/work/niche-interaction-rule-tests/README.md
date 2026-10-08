@@ -1,5 +1,5 @@
 ---
-status: deferred
+status: owner-action
 ---
 
 # niche-interaction-rule-tests
@@ -12,11 +12,6 @@ Make the Comprehensive Rules that decide a hard interaction reach the AI when th
 - Measurement (offline): `measure-candidates.mjs` with its output `measure-candidates.out.txt` — baseline and every candidate retrieval change across all rule-output suites (`npx tsx PRD/work/niche-interaction-rule-tests/measure-candidates.mjs`); `measure-retrieval.mjs` is the first define's single-case probe, kept as earlier evidence
 - Build step for the new topic: `build-topic-from-index.mjs` — adds REQ-220's topic to `gameRulesByTopic.json` from the committed rule index and writes nothing else (brief, Scope 1)
 - Starting evidence in the repo: the gating context-evaluation harness (`apps/backend/src/eval/contextEvaluationHarness.test.ts`, REQ-032), the worked-solutions retrieval check (`apps/backend/src/eval/worked-solutions/README.md`, REQ-185, NFR-018), and the hybrid-retrieval benchmark (`apps/backend/src/eval/ragRetrievalBenchmark.test.ts`, REQ-177, REQ-182)
-
-## Deferral record
-
-- Previous status: owner-action
-- Reason: owner wants a proper rules test harness (answer-level validation) built first; resume this package after it exists, re-measure REQ-220 on that harness, and fold REQ-221's two cases into it
 
 ## Autonomous metadata
 

@@ -6,8 +6,9 @@
 - Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
-- Current node: `owner-action` (package deferred)
-- Next action: restore with `/thejudge-defer PRD/work/niche-interaction-rule-tests/` once the rules test harness exists, then resolve the open gate below and `/graph-kickoff PRD/work/niche-interaction-rule-tests/`
+- Resume 2026-10-07: owner invoked `/graph-kickoff niche-interaction-rule-tests` after the rules test harness shipped (PR #269 merged 2026-10-07). Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19439`); graph canary `nohup true` denied — graph tier armed; this session's profile `loaded (env sentinel)`. Package restored from `deferred` to `owner-action` by `thejudge-defer` (restore direction). `origin/main` merged into the run branch in the kickoff worktree (merge commit `92031511`, clean; brings REQ-222–230, the rules test corpus, and the rules-review sweeps). REQ-220 and REQ-221 confirmed unused on `origin/main` (new IDs there run REQ-222–230).
+- Current node: `define` (attempt 6)
+- Next action: `/graph-kickoff PRD/work/niche-interaction-rule-tests/` (resumes at the node recorded here)
 
 ## Node ledger
 
@@ -28,8 +29,7 @@
 
 ## Open gate
 
-- Deferred by the owner 2026-10-06 (`thejudge-defer`): build a proper rules test harness that validates answers first; PR #266 marked draft. The gate below stands unanswered until restore.
-- Question: gate-qc failed a fourth time (attempt 5), so the run parked under the three-loop cap. Both findings are small (README `## Preparation gate`): one game-mode scope phrase used three different ways, and three missing disposition rows. Does the owner authorize one more define pass limited to those two findings, followed by gate-qc? Evidence: ledger rows 10–12; `build-topic-from-index.mjs` and `measure-candidates.mjs` re-verified clean at attempt 5. Docs PR: https://github.com/ChrisMiho/TheJudge/pull/266 (carries the re-scoped proposal; not ready to answer until gate-qc passes). Resume: owner says go → `/graph-kickoff PRD/work/niche-interaction-rule-tests/` (re-take lock, define attempt 6 on these two findings, gate-qc attempt 6).
+- None. The 2026-10-06 gate (deferred until a rules test harness exists; then one more define pass on the two attempt-5 findings) was resolved 2026-10-07: the harness shipped (PR #269, REQ-222–225) and the owner resumed the run by invoking `/graph-kickoff niche-interaction-rule-tests`, which the parked gate named as the go signal. Define attempt 6 covers the two attempt-5 findings plus the deferral record's two asks (re-measure REQ-220 on the harness; fold REQ-221's two cases into it).
 
 ## Dispatch prompts
 
@@ -277,6 +277,34 @@ Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driv
 
 Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
 
+### define (attempt 6)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests
+
+You are node 3 (`define`) of graph run `graph-20261006-150550`, attempt 6. The run parked on 2026-10-06 after a fourth `gate-qc` FAIL, was deferred until a rules test harness existed, and was resumed by the owner on 2026-10-07 now that the harness has shipped. Run the `thejudge-refinement` skill (read `.claude/skills/thejudge-refinement/SKILL.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Do all reads and writes inside that working directory; never write to `/Users/chrismiho/Coding/Projects/TheJudge/PRD/` (the launch checkout).
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.owner-action, restored from deferred). The attempt-5 package is committed, and `origin/main` has since been merged into this branch (merge commit `92031511`). Read `README.md`, `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, and `IDEA.md`. The ledger `GRAPH-RUN.md` and the README `## Preparation gate` section are the driver's; do not edit them.
+
+What changed on `main` since attempt 5, which this pass must take into account: the rules test harness (receipt `PRD/instructions/receipts/rules-test-harness-2026-10-06.md`; REQ-185 amended, REQ-222 to REQ-225 new; `apps/backend/src/eval/rules-gate/`, the corpus under `apps/backend/src/eval/worked-solutions/`, the shared loader `scripts/lib/gold-cases.mjs`), the owner's review sweeps over that corpus, and the answer-quality investigation (REQ-226 to REQ-230, receipt in `PRD/instructions/receipts/`). Facts the driver observed on the merged tree, for you to verify by measurement rather than take on faith: both tester questions are already in the corpus as approved tier-3 cases with `source.pool` `tester` (`academy-manufactor-esix-treasure.case.json`, deciding rules 614.1a, 616.1, 616.1e, 616.1f; `necropotence-silence-borne-upon-a-wind-cleanup.case.json`, deciding rules 514.1, 514.2, 514.3a); the offline rules gate's committed baseline (`apps/backend/src/eval/rules-gate/baseline.json`) records the Manufactor case at zero of four deciding rules reaching the prompt and the Necropotence case at one of three (514.1 hit; 514.2 and 514.3a miss); the gate's comment and REQ-222 say the ratchet counts deciding rules among the System 3 excerpts at the production cap, ranked from frozen query vectors. PR #273 (the 2026-10-07 data refresh, which moves the Comprehensive Rules text to 2026-09-25 and regenerates goldens) is open and not merged; treat it as a stated dependency or risk in the brief, not something to solve here.
+
+Scope of this pass, in order:
+
+1. Resolve the two gate-qc attempt-5 findings recorded in the README `## Preparation gate` section: (a) the game-mode topic scope is phrased three different ways (`GATE-QUESTIONS.md` around lines 31 and 219, `DESIGN-BRIEF.md` around line 196) while the selector reads every card on the stack plus every populated zone; use one phrase everywhere, matching REQ-220's criterion, or narrow the selector and re-measure; (b) add disposition rows for `user-flows.md` FLOW-023 step 5, the one-or-more-cards-attached bullet in `quick-lookup/README.md`, and REQ-074's second criterion in `functional-requirements.md` (unchanged, still true, or a one-clause edit). Re-find the line numbers on the merged tree; the files moved.
+
+2. Re-measure REQ-220 on the rules test harness, per the deferral record. Determine by measurement, not reasoning, whether the proposed curated topic (a System 2 topic) registers as a hit in the offline rules gate for the Manufactor case, given that the gate counts System 3 excerpts; if it does not, say so in the brief and propose what the acceptance target on the harness is (for example the gate's card check plus a stated prompt-contains check, or an amendment to how REQ-222's ratchet counts a deciding rule), as its own gate question with a recommendation. Reconcile the brief's earlier top-ten numbers for the Necropotence case (hybrid #7 and #3) with the baseline's recorded misses for 514.2 and 514.3a; the query text, the cap, or the ranking differs, and the brief must say which. Check whether the topic's nine rules cover the two cases' deciding rules the harness names (614.1a and 616.1e are deciding for the Manufactor case) and state the gap if any. Re-run `measure-candidates.mjs` and `build-topic-from-index.mjs` on the merged tree and confirm every number the brief and the acceptance targets cite still reproduces; a number that moved is updated, never left stale.
+
+3. Fold REQ-221's two cases into the harness, per the deferral record. The two context-eval fixtures REQ-221 proposes now duplicate approved corpus cases. Reshape REQ-221 so it is true against the harness: say what it becomes (for example the two tester cases' deciding rules recorded as hits in the rules-gate baseline after REQ-220 ships, raised by `npm run eval:rules-gate:baseline`, so a later regression fails the gate), or withdraw it. A withdrawn or reshaped proposed ID stays in `GATE-QUESTIONS.md` with its own plain-language block, complete diff, and verdict slot, so the owner sees the change. REQ-220 and REQ-221 are still unused on `origin/main`; keep those IDs.
+
+4. Re-run the brief's amendment-set grep as a quoted, line-level, case-insensitive grep over the merged `PRD/sections/` and the eval READMEs, because the harness rewrote the eval landscape: the brief's full rule-output test-set table must now name the rules gate (REQ-222), the coverage gate (REQ-223), and the staleness report (REQ-225), and every new hit gets a disposition row. Grep the whole package (brief, every `GATE-QUESTIONS.md` block and diff, README, IDEA, script comments) for every wording you change and fix each hit.
+
+Before you finish, re-read the brief's build instructions as the builder will and confirm each step can be executed in a fresh `.worktrees/implement-niche-interaction-rule-tests` worktree cut from `origin/main`, and that every existing gating test the change touches is named (`rulesGate.test.ts` and the coverage gate included). Keep the plain-language block and verdict slot shape in `GATE-QUESTIONS.md`. When done, set `STATUS.refined` (single marker, `git mv` from `STATUS.owner-action`), set the README frontmatter `status:` to `refined`, and move the `PRD/work/STATUS.md` board row fully from owner-action to refined (remove from the old section, add to the new).
+
+Never edit `PRD/sections/`, code, `GRAPH-RUN.md`, or the README `## Preparation gate` section. Do not commit or push; the driver commits. No live model calls, no network calls; every measurement is offline. Apply the assumption ladder and genuine-blocker test from `PRD/instructions/preparation-contract.md` per question as each arises; a product choice you cannot settle from the owner's recorded direction goes to the owner as a gate question in `GATE-QUESTIONS.md`, never decided silently.
+
+Report back: outcome, each scope item and the lines you changed for it, the measured answer to whether the topic registers in the rules gate, the reconciliation of the Necropotence numbers, what REQ-221 became and why, files changed, and the STATUS marker set.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -289,3 +317,4 @@ Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS
 | "we should be doing a full test of all use cases were using to validate output of rules, this is just expanding on it" | answered-once | define | — |
 | "if were going to adjust the output format, we again need to test, lets start with making the rules correct, and then we can make the output pretty" | answered-once | define | — |
 | "dont worry about usage, keep going" | answered-once | gate-qc | — |
+| "/graph-kickoff niche-interaction-rule-tests" (2026-10-07, the go signal the parked gate named: restore, define attempt 6, gate-qc attempt 6) | answered-once | define | — |

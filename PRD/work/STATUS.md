@@ -33,13 +33,13 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Restored 2026-10-07 after the rules test harness shipped (PR #269); parked at a 4th gate-qc FAIL, define attempt 6 next; branch `thejudge-auto/niche-interaction-rule-tests`, draft PR #266 |
 
 
 ## deferred
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Deferred 2026-10-06: rule-retrieval fix (REQ-220/221, REQ-022 amend) waits for a rebuilt rules test harness; branch `thejudge-auto/niche-interaction-rule-tests`, draft PR #266 |
 
 ## parked in ideasForLater
 
