@@ -698,11 +698,11 @@ function scoreIndex(
     const candidates: HybridCandidate[] = [];
 
     for (const entry of index) {
-      // REQ-179: prefix match, not exact-id-only — a curated parent rule (e.g.
-      // 603.1) also excludes its own lettered sub-rules (603.1a) via
-      // `parentRuleIds`, so a curated baseline entry can never let its own
-      // children reappear as supplemental excerpts.
-      if (excludeRuleIds.has(entry.ruleId) || entry.parentRuleIds.some((parentId) => excludeRuleIds.has(parentId))) {
+      // REQ-179: exact-id exclusion — only a rule number a selected curated
+      // topic lists is dropped. Its unlisted sub-rules (603.2e under a listed
+      // 603.2) stay rankable. Safe because a topic's excerpt carries exactly
+      // the rules it lists, which gameRulesTopicData.test.ts holds.
+      if (excludeRuleIds.has(entry.ruleId)) {
         excludedCuratedRuleCount++;
         continue;
       }
@@ -733,11 +733,11 @@ function scoreIndex(
     }
   } else {
     for (const entry of index) {
-      // REQ-179: prefix match, not exact-id-only — a curated parent rule (e.g.
-      // 603.1) also excludes its own lettered sub-rules (603.1a) via
-      // `parentRuleIds`, so a curated baseline entry can never let its own
-      // children reappear as supplemental excerpts.
-      if (excludeRuleIds.has(entry.ruleId) || entry.parentRuleIds.some((parentId) => excludeRuleIds.has(parentId))) {
+      // REQ-179: exact-id exclusion — only a rule number a selected curated
+      // topic lists is dropped. Its unlisted sub-rules (603.2e under a listed
+      // 603.2) stay rankable. Safe because a topic's excerpt carries exactly
+      // the rules it lists, which gameRulesTopicData.test.ts holds.
+      if (excludeRuleIds.has(entry.ruleId)) {
         excludedCuratedRuleCount++;
         continue;
       }

@@ -32,7 +32,7 @@ const RULE_INDEX = [
 ];
 
 const CURATED_TOPICS = [{ id: "cleanup", title: "Cleanup", ruleNumbers: ["514.3"] }];
-// The full System 3 ranking of the fake pipeline (curated rules are not scored, so 514.3 is absent from it).
+// The full System 3 ranking of the fake pipeline (a curated rule is not scored, so 514.3 is absent; its unlisted sub-rule 514.3a is, REQ-179 exact-id exclusion).
 const RANKING = ["701.21a", "514.1", "514.3a", "614.1a", "514.2"];
 
 function fakePrepare(request, options) {
@@ -100,8 +100,9 @@ test("per-rule output has the rank, selected-in-search, skipped-for-curated-topi
   assert.equal(byId["514.2"].selectedInSearch, false);
   assert.equal(byId["514.2"].availableToAnswer, false);
 
-  // 514.3a: its curated parent 514.3 is excluded from scoring along with it, and the topic carries 514.3 only.
-  assert.equal(byId["514.3a"].skippedForCuratedTopic, true);
+  // 514.3a: the topic lists 514.3 only, so 514.3a is not skipped; it ranks 3rd and cap 2 leaves it unselected.
+  assert.equal(byId["514.3a"].skippedForCuratedTopic, false);
+  assert.equal(byId["514.3a"].rank, 3);
   assert.equal(byId["514.3a"].selectedInSearch, false);
   assert.equal(byId["514.3a"].availableToAnswer, false);
   assert.equal(byId["514.3a"].parent.ruleId, "514.3");
@@ -140,12 +141,12 @@ test("a card ruling that quotes a deciding rule makes it available to the answer
   assert.equal(entry.coverage.completeProcedure, true);
 });
 
-test("skippedForCuratedTopic covers a curated rule and the lettered subrules of a curated parent", () => {
-  const entries = new Map(RULE_INDEX.map((rule) => [rule.ruleId, rule]));
+test("skippedForCuratedTopic is true only for a rule number a curated topic lists", () => {
   const curated = new Set(["514.3"]);
-  assert.equal(skippedForCuratedTopic("514.3", curated, entries), true);
-  assert.equal(skippedForCuratedTopic("514.3a", curated, entries), true);
-  assert.equal(skippedForCuratedTopic("514.1", curated, entries), false);
+  assert.equal(skippedForCuratedTopic("514.3", curated), true);
+  assert.equal(skippedForCuratedTopic("514.3a", curated), false, "an unlisted sub-rule of a curated parent is not skipped");
+  assert.equal(skippedForCuratedTopic("514.1", curated), false);
+  assert.equal(skippedForCuratedTopic("514.3a", new Set(["514.3a"])), true, "a listed sub-rule is skipped");
 });
 
 // D2 ------------------------------------------------------------------------

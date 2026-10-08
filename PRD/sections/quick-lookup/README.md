@@ -273,9 +273,9 @@ both providers. (DEC-020, REQ-072)
   cosine-ranked against the committed per-rule embeddings and blended with the
   IDF keyword score, both normalised per query, with the exact-rule-id boost
   merged into the blended score — over a rule index with the source document's
-  table of contents and heading-only entries stripped (REQ-179), excluding by
-  rule-number prefix the curated rule numbers the selected curated topics already
-  carry, and returning a small capped set of the best-ranked rules. IDF-scored
+  table of contents and heading-only entries stripped (REQ-179), excluding
+  exactly the curated rule numbers the selected curated topics already carry,
+  and returning a small capped set of the best-ranked rules. IDF-scored
   keyword retrieval alone is retained as the mock/offline default and the
   fallback on any embedding failure, so those settings are never worse than the
   prior lexical behaviour. The blend exists for exactly this screen's query
@@ -342,7 +342,7 @@ as the current shipped configuration, not product truth.
   ending with assistant, per-message cap — shared with the main flow, not a
   Quick-Lookup-specific policy. (REQ-072, REQ-075)
 - Retrieval: System 3 returns a small capped best-ranked set (top 10), curated
-  core-topic rule numbers excluded by prefix; ranking is a hybrid blend of
+  core-topic rule numbers excluded by exact number; ranking is a hybrid blend of
   normalised cosine over the committed per-rule embeddings and normalised
   lexical IDF overlap, with the exact-rule-id boost merged into the blended
   score, and lexical scoring alone retained as the mock/offline default and

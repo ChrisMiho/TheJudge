@@ -46,11 +46,9 @@ function curatedRuleIdsOf(prepared) {
   return new Set((prepared?.enrichmentDebug?.curatedGameRules?.topics ?? []).flatMap((topic) => topic.ruleNumbers ?? []));
 }
 
-/** True when System 3 would not score this rule: its own number or a curated parent's is in a curated topic. */
-export function skippedForCuratedTopic(ruleId, curatedRuleIds, ruleEntryById) {
-  if (curatedRuleIds.has(ruleId)) return true;
-  const entry = ruleEntryById.get(ruleId);
-  return (entry?.parentRuleIds ?? []).some((parentId) => curatedRuleIds.has(parentId));
+/** True when System 3 would not score this rule: its own number is one a curated topic lists (exact id, REQ-179). */
+export function skippedForCuratedTopic(ruleId, curatedRuleIds) {
+  return curatedRuleIds.has(ruleId);
 }
 
 function relatedEntry(relatedId, context) {
@@ -60,7 +58,7 @@ function relatedEntry(relatedId, context) {
     inRuleIndex: context.ruleEntryById.has(relatedId),
     rank: context.rankById.get(relatedId) ?? null,
     selectedInSearch: availability.selectedInSearch,
-    skippedForCuratedTopic: skippedForCuratedTopic(relatedId, context.curatedRuleIds, context.ruleEntryById),
+    skippedForCuratedTopic: skippedForCuratedTopic(relatedId, context.curatedRuleIds),
     availableToAnswer: availability.availableToAnswer
   };
 }
@@ -97,7 +95,7 @@ export function traceCase({ caseEntry, request, full, production, ruleEntryById,
       rank: rankById.get(ruleId) ?? null,
       rankedOf: ranking.length,
       selectedInSearch: availability.selectedInSearch,
-      skippedForCuratedTopic: skippedForCuratedTopic(ruleId, curatedRuleIds, ruleEntryById),
+      skippedForCuratedTopic: skippedForCuratedTopic(ruleId, curatedRuleIds),
       availableVia: { excerpt: availability.selectedInSearch, curatedTopic: availability.curatedTopic, cardRuling: availability.rulingQuote },
       availableToAnswer: availability.availableToAnswer,
       parent: parentId ? relatedEntry(parentId, context) : null,
