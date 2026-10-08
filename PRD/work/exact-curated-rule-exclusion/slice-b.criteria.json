@@ -5,7 +5,7 @@
     {
       "id": "B1",
       "statement": "Whether PR #273's data change is in the committed data is recorded; if it is, every number below was re-measured on the refreshed index",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -13,7 +13,7 @@
     {
       "id": "B2",
       "statement": "Exactly three fixtures' goldens changed (`commander-spellbook-lookup-attached-intent`, `commander-spellbook-wrong-zone`, `upkeep-trigger`), each the named swap, and no other golden under `apps/backend/src/eval/fixtures/` changed",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "git (diff|status)"
       }
@@ -21,7 +21,7 @@
     {
       "id": "B3",
       "statement": "`npm --workspace apps/backend run test:eval` passes without the update flag after regeneration",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "run test:eval"
       }
@@ -29,7 +29,7 @@
     {
       "id": "B4",
       "statement": "`npm run eval:rules-gate:baseline` ran without `--allow-regressions`, printed no `Accepted regressions` line, and the raised baseline file is written",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "eval:rules-gate:baseline(?!.*--allow-regressions)"
       }
@@ -37,7 +37,7 @@
     {
       "id": "B5",
       "statement": "`npm run eval:worked-solutions` reports 289 of 392 (or the re-measured value, with no recorded rule lost)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "eval:worked-solutions"
       }
@@ -45,7 +45,7 @@
     {
       "id": "B6",
       "statement": "The two closing cases show 603.2e and 603.2g as System 3 excerpts under hybrid ranking from their committed frozen vectors",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "eval:evidence-trace"
       }
@@ -53,7 +53,7 @@
     {
       "id": "B7",
       "statement": "The lexical first-ship count and the two closing cases' lexical result are recorded from `EMBEDDING_PROVIDER=mock npm run eval:worked-solutions` (recorded, not gated)",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "EMBEDDING_PROVIDER=mock"
       }
@@ -61,7 +61,7 @@
     {
       "id": "B8",
       "statement": "The retrieval benchmark's recall@5 is unchanged under both lexical and `--semantic` scoring",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "benchmark:rag-retrieval"
       }
@@ -69,7 +69,7 @@
     {
       "id": "B9",
       "statement": "Every measured value, its command and its date is written into `slice-b.evidence.md`, including first-ship hybrid 16 of 18 and context-eval 14 of 14 each way",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
