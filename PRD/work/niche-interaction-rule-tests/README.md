@@ -17,7 +17,7 @@ Make the Comprehensive Rules that decide a hard interaction reach the AI when th
 
 | Slice | Title | Status | Depends on | Criteria |
 | --- | --- | --- | --- | --- |
-| A | [Topic data and size guard](slice-a-topic-data-and-size-guard.md) | planned | none | 8 (1 manual) |
+| A | [Topic data and size guard](slice-a-topic-data-and-size-guard.md) | done | none | 8 (1 manual) |
 | B | [Card-wording selector and the rules-retrieval product truth](slice-b-card-wording-selector-and-rules-truth.md) | planned | Slice A (the topic must exist in the committed artifact for the lookup and prompt tests) | 12 (0 manual) |
 | C | [The rules gate counts a rule a curated topic carries](slice-c-rules-gate-counts-topic-rules.md) | planned | Slices A and B (the baseline records the topic only once the selector fires it) | 11 (0 manual) |
 | D | [Re-measure against every rule-output suite and ship](slice-d-remeasure-and-ship.md) | planned | Slices A, B, and C | 14 (4 manual) |

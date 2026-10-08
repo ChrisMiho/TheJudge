@@ -1,6 +1,6 @@
 # Slice A — Topic data and size guard
 
-## Status: planned
+## Status: done
 
 ## Dependencies
 
