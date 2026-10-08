@@ -24,7 +24,8 @@
 
 - Gate: `define` product-truth proposal (gate-qc PASS, run stopped by design).
 - Question: answer the five verdict slots (REQ-179, REQ-022, REQ-181, REQ-182, REQ-220) in `PRD/work/exact-curated-rule-exclusion/GATE-QUESTIONS.md` — accept / edit / reject, with a reason for edit or reject — then merge to build.
-- Evidence: `QUALITY-CHECK.md` (PASS, attempt 2); docs PR (URL below).
+- Evidence: `QUALITY-CHECK.md` (PASS, attempt 2); docs PR https://github.com/ChrisMiho/TheJudge/pull/277 (`gh pr create --base main --head thejudge-auto/exact-curated-rule-exclusion`).
+- Terminal state: PARKED (owner-action) — lock released.
 - Resume: merging the docs PR is the build signal; `/graph-implement PRD/work/exact-curated-rule-exclusion/` (the background build loop) resolves the gate and builds it.
 
 ## Dispatch prompts
