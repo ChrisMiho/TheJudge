@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim; spec-forming half: `origin/thejudge-auto/exact-curated-rule-exclusion`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` (rewritten by the build half's claim; spec-forming half: `.worktrees/kickoff-exact-curated-rule-exclusion`, removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
-- Current node: `gate-qc` (build half, re-grade after gate resolution)
+- Current node: `plan`
 - Next action: `/graph-implement PRD/work/exact-curated-rule-exclusion/`
 
 ## Node ledger
@@ -20,6 +20,7 @@
 | 5 | define | opus | ok | `0 → 28` | attempt 2: `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` edited in place — F1 803 chars (measured offline, brief `## Measured at define`); F2 125 distinct / 127 per-topic sum; F3 closing cases bound to hybrid frozen-vector path, lexical recorded at build (new D11); M1–M4 addressed (M3 adds amendment row 47 → 47 rows: 20 amend / 27 no change); verdict slots blank; `STATUS.refining` → `STATUS.refined`, board row → refined; no `PRD/sections/` or code diff; launch checkout unchanged | 2026-10-08 |
 | 6 | gate-qc | sonnet | ok | `0 → 33` | PASS attempt 2 — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: F1–F3 and M1–M4 resolved; 0 must-fix; N1/N2 non-blocking for map-out. Observation: the checker traced numbers to the intake-cited probe outputs (`PRD/work/probe-keyword-rule-retrieval/measure-two-fixes.out.txt`, `FINDINGS-missing.md`, launch checkout, read-only) — the contract says intake-cited documents are never opened; no file was written and the proposal is unaffected. Driver recorded PASS in README `## Preparation gate`; `STATUS.refined` → `STATUS.owner-action`; board row → owner-action | 2026-10-08 |
 | — | gate-review | sonnet | ok | `0 → 13` | build-half run `graph-20261008-061643`: 5/5 verdicts `accept` (REQ-179, REQ-022, REQ-181, REQ-182, REQ-220); `GATE-QUESTIONS.md` unchanged; `### Brief reconciliation` none; `## Gate verdicts` written; `## Open gate` RESOLVED; `STATUS.owner-action` → `STATUS.refined`; board row → refined; launch checkout `git status --porcelain` unchanged | 2026-10-08 |
+| 4 | gate-qc | sonnet | ok | `0 → 17` | PASS (build-half re-grade, run `graph-20261008-061643`) — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: 0 must-fix; 28/28 removed lines verbatim at the brief's line numbers; 47-row amendment set complete; code sites + numbers re-confirmed (803 chars, 125 distinct / 127 sum); PR #273 still open so intake numbers stand; N1/N2 non-blocking for map-out. Driver recorded PASS in README `## Preparation gate`; `STATUS.refined` kept; launch checkout unchanged | 2026-10-08 |
 
 ## Open gate
 
@@ -215,6 +216,26 @@ Context:
 - Verify directly. Spawn no subagents or forks. No sleeping or polling. Stay well under the 60 tool-call budget.
 
 Report back: PASS or FAIL, the complete findings list (must-fix and minor), every path you wrote (absolute), and `git status --porcelain` from the working directory.
+
+### plan
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion
+
+You are node 5 (`plan`) of graph run `graph-20261008-061643`. Run the `thejudge-map-out` skill: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-map-out/SKILL.md` and its `reference.md`, and follow them against the package `PRD/work/exact-curated-rule-exclusion/` inside the working directory above. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Context:
+- Branch: `thejudge-auto/exact-curated-rule-exclusion-work`. The README `## Preparation gate` records `Quality-check: PASS` (build-half re-grade); verify it there before writing anything.
+- The finalized proposal is `GATE-QUESTIONS.md` (all five IDs accepted unchanged); `DESIGN-BRIEF.md` is the intent. Build (node 6) applies the `PRD/sections/` truth by intent together with the code, so the slices must include that apply step.
+- Fold the gate-qc notes N1 (data test matching method; plain substring works today) and N2 (confirm the data test location and the evidence-trace test file path) into the slice docs by checking the code now.
+- Emit one `slice-<letter>.criteria.json` beside each slice doc, every criterion `false`, with evidence blocks per the map-out reference. Prefer command evidence that `thejudge-implement-all` will naturally issue (the repo npm scripts) over `manual`.
+- Every deliverable must land outside `PRD/work/` — node 8 deletes the package folder on this branch before the merge. Only GAMEPLAN, slice docs, criteria files and bookkeeping go in the package.
+- Set `STATUS.active` per the skill and update the `PRD/work/STATUS.md` board row. The driver owns the ledger and the README `## Preparation gate` / `## Autonomous metadata`; leave them.
+- Never edit `PRD/sections/`, code, or anything outside the working directory; the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge` stays untouched. Do not commit or push.
+- Verify directly. Spawn no subagents or forks. No sleeping or polling. Stay well under the 120 tool-call budget.
+
+Report back: the slice list (letter, title, one line each), every path you wrote (absolute), the marker before and after, and `git status --porcelain` from the working directory.
 
 ## Instruction ledger
 

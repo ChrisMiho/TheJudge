@@ -8,7 +8,7 @@ Rule search stops hiding curated parents' sub-rules: exclude only the exact rule
 - Intake (verbatim, evidence only): [intake/GRAPH-BRIEF.md](intake/GRAPH-BRIEF.md)
 - Design brief: [DESIGN-BRIEF.md](DESIGN-BRIEF.md)
 - Proposal (owner verdict slots: REQ-179, REQ-022, REQ-181, REQ-182, REQ-220): [GATE-QUESTIONS.md](GATE-QUESTIONS.md)
-- Next: `thejudge-quality-check` re-grade (build half `graph-20261008-061643`, node 4 `gate-qc`), then `plan`.
+- Next: `thejudge-map-out` (build half `graph-20261008-061643`, node 5 `plan`).
 
 ## Autonomous metadata
 
@@ -18,4 +18,4 @@ Rule search stops hiding curated parents' sub-rules: exclude only the exact rule
 
 - Quality-check: PASS
 - Checked artifact: `PRD/work/exact-curated-rule-exclusion/DESIGN-BRIEF.md`
-- Findings: none (attempt 2 of 3; full report `QUALITY-CHECK.md`; two non-blocking notes for map-out — N1 the topic-excerpt data test's matching method is left to build, a substring check over the committed index gives zero mismatches today; N2 the outline's code paths come from the intake, the two exclusion sites and the trace helper are confirmed, map-out confirms the rest)
+- Findings: none (build-half re-grade, run `graph-20261008-061643`, after the owner accepted all five IDs; full report `QUALITY-CHECK.md`; two non-blocking notes for map-out — N1 the topic-excerpt data test's matching method is left to build, a substring check over the committed index gives zero mismatches today; N2 map-out confirms the data test location and the evidence-trace test file path)
