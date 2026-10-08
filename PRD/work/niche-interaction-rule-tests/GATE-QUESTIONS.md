@@ -242,8 +242,8 @@ and in its header, `- Backed by:` gains `REQ-220` at the end of the list.
 
 and in its header, `- Backed by:` gains `REQ-220` at the end of the list.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner, 2026-10-07
 
 ## REQ-022 — the curated rules baseline gains one card-wording switch (amended)
 
@@ -297,8 +297,8 @@ and as the last bullet of `- Notes:`:
 +  - amended by `niche-interaction-rule-tests` (2026-10-07): System 2 is no longer strictly card-agnostic. One topic, the replacement-effect interaction rules, is selected when two or more cards carry replacement or prevention wording (REQ-220), because no change to System 3's search, measured offline, got the rules that decide a question about two such cards attached together (614.1a, 616.1, 616.1e, 616.1f) into the prompt under both rankings
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner, 2026-10-07
 
 ## REQ-222 — the rules gate counts a rule that reaches the prompt through a curated topic (amended)
 
@@ -370,8 +370,8 @@ and as the last bullet of `- Notes:`:
 +  - measured 2026-10-07 from the committed `baseline.json` at `3e973ced`: of 392 approved cases, System 3 selects every deciding rule for 287, some for 14, and none for 91. `academy-manufactor-esix-treasure` misses all of 614.1a, 616.1, 616.1e and 616.1f; `necropotence-silence-borne-upon-a-wind-cleanup` selects 514.1 and misses 514.2 and 514.3a. The baseline's hit and miss lists record System 3 selections only, which is why this trace adds availability
 ```
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner, 2026-10-07
 
 ## REQ-221 — the tester's two questions as gating fixtures (withdrawn)
 
@@ -403,8 +403,8 @@ tester's verbatim wording) and the next define pass restores it as REQ-221.
 `- Backed by:` line of `## Eval harness` in `PRD/sections/system-map.md` — is
 withdrawn and not applied.
 
-- Verdict:
-- Reason:
+- Verdict: accept
+- Reason: owner, 2026-10-07
 
 ## Blocker questions
 
