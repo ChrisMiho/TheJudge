@@ -8,7 +8,7 @@
 - Build-half resume 2026-10-07: owner merged docs PR #266 (2026-10-08T02:40Z) and invoked `/graph-implement PRD/work/niche-interaction-rule-tests/`. Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19738`); graph canary `nohup true` denied — graph tier armed. Claimed on `thejudge-auto/niche-interaction-rule-tests-work` cut from `origin/main` (`c1188dc8`).
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
 - Resume 2026-10-07: owner invoked `/graph-kickoff niche-interaction-rule-tests` after the rules test harness shipped (PR #269 merged 2026-10-07). Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19439`); graph canary `nohup true` denied — graph tier armed; this session's profile `loaded (env sentinel)`. Package restored from `deferred` to `owner-action` by `thejudge-defer` (restore direction). `origin/main` merged into the run branch in the kickoff worktree (merge commit `92031511`, clean; brings REQ-222–230, the rules test corpus, and the rules-review sweeps). REQ-220 and REQ-221 confirmed unused on `origin/main` (new IDs there run REQ-222–230).
-- Current node: `build` (attempt 1, dispatched 2026-10-07)
+- Current node: `review` (attempt 1, dispatched 2026-10-07)
 - Next action: on define ok, re-enter `gate-qc` (attempt 8; a FAIL parks), then `plan → build → review → close`
 
 ## Node ledger
@@ -34,6 +34,7 @@
 | 17 | define | opus | ok | `1 → 29` | attempt 7 (owner-authorized, bounded to the gate-qc attempt 7 finding): `DESIGN-BRIEF.md` only — Method (lines 169–172), Scope 6 (609–610), Build in a fresh worktree (682–713): new step 7 copies `apps/backend/data/models/` from the main checkout (stop if absent, never download), no-gitignored-file claim names the one exception; scratch export reproduced `npm run eval:worked-solutions` exit 1 without the folder, exit 0 and 287/392 with it; `GATE-QUESTIONS.md`, `PRD/sections/`, code untouched; `STATUS.refined`; board row under refined; launch checkout porcelain unchanged | 2026-10-07 |
 | 18 | gate-qc | sonnet | ok | `2 → 23` (includes 1 driver commit call) | PASS attempt 8, findings none (1 non-blocking path nit): tree unchanged since `c1188dc8`; scratch export ran the brief's fresh-worktree sequence — `npm run eval:worked-solutions` exit 1 without `apps/backend/data/models/`, exit 0 and 287/392 after step 7's copy; quality-check suites pass without the folder (43/43 backend gating tests, 1559/1559 frontend); README `## Preparation gate` PASS; `STATUS.refined` | 2026-10-07 |
 | 19 | plan | sonnet | ok | `1 → 40` | `GAMEPLAN.md` + 4 slices with criteria files (A topic data and size guard, 8 criteria; B card-wording selector and rules truth, 12; C rules gate counts topic rules, 11; D re-measure and ship, 14; manual criteria A8, D2, D8, D9, D14); Preparation gate PASS verified first; `STATUS.active`; board row under active; launch checkout porcelain unchanged | 2026-10-07 |
+| 20 | build | sonnet | ok | `1 → 157` | code PR https://github.com/ChrisMiho/TheJudge/pull/276 (OPEN, `[THEJUDGE-AUTO][READY]`); commits `07825592` (A), `7101386c` (B+C combined — no B-only tree passes the rules gate; noted in README), `0827b5db` (D, `STATUS.ship-ready`); 45/45 criteria `true` read from the four `slice-*.criteria.json` (self-reported — evidence log got no new entries, known evidence-root gap); reported `quality:check` exit 0, `eval:worked-solutions` 287/392, rules-staleness 0/0, evidence trace 614.1a/616.1/616.1e/616.1f available; launch checkout porcelain identical to `.worktrees/.graph-intake/launch-status-before-build-niche-interaction-rule-tests.txt`; `classifyBuildWrites` over `git diff --name-only origin/main..HEAD` (36 paths) → ok, all inside `.worktrees/implement-niche-interaction-rule-tests/` | 2026-10-07 |
 
 ## Open gate
 
@@ -461,6 +462,79 @@ This is the apply step: write the `PRD/sections/` truth by intent from the owner
 Every write — code, tests, `PRD/sections/`, slice status, criteria files, evidence files — goes inside the working directory above. Never write to `/Users/chrismiho/Coding/Projects/TheJudge/` outside `.worktrees/implement-niche-interaction-rule-tests/`; a bare `PRD/work/niche-interaction-rule-tests/` path resolved against the launch checkout is a scope violation that fails this node. Commit with explicit paths only (never `git add -A` or `.`), push with `git push` (never force), never `git -C`. No live model calls, no `npm run data:refresh`, no network refresh.
 
 Report `ok` only when every criterion in every slice's `.criteria.json` is `true` (read the files). Report back: ok or failed, the PR URL, the commit list per slice, the final `quality:check` and `eval:worked-solutions` results, every path you wrote (absolute or worktree-relative), and any criterion left `false` with the reason. Use the Edit/Write tools for file changes (shell `sed -i` and heredoc writes are denied by the session's auto-mode guard; a harness auto-mode denial is not the graph criteria guard). Commit messages end with the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`; PR bodies end with the line `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
+
+### review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests
+
+You are node 7 (`review`) of graph run `graph-20261006-150550`, attempt 1: a fresh-context, no-write reviewer. You hold no Write, Edit, or NotebookEdit tool, and you must not change any file by any other means either — no shell redirection, no `git checkout`/`git restore`/`git commit`/`git push`, no `npm` command that rewrites a tracked file (do not run the retrieval benchmark or `eval:rules-gate:baseline`; they rewrite tracked result files). Read-only git, file reads, searches, and targeted test runs (`npx vitest run <file>` in `apps/backend` or `apps/frontend`, `npm run typecheck`, `npm run lint`) are fine. `git status --porcelain` in the working directory must be empty when you finish. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+What you grade: the code PR https://github.com/ChrisMiho/TheJudge/pull/276 (`thejudge-auto/niche-interaction-rule-tests-work` into `main`), i.e. `git diff origin/main...HEAD` in the working directory, against the four slice docs in `PRD/work/niche-interaction-rule-tests/` (`slice-a-topic-data-and-size-guard.md`, `slice-b-card-wording-selector-and-rules-truth.md`, `slice-c-rules-gate-counts-topic-rules.md`, `slice-d-remeasure-and-ship.md`) and the package artifacts (`GAMEPLAN.md`, `DESIGN-BRIEF.md`, the owner-accepted `GATE-QUESTIONS.md`, `slice-a.evidence.md`, `slice-d.evidence.md`). The product change: when two or more attached cards carry the whole word instead/prevent/prevents/prevented, the AI prompt gains a curated replacement-and-prevention-effects rules topic (614.1a, 616.1, 616.1a to 616.1g, 616.2), and the offline rules gate counts a deciding rule carried by a selected curated topic as reaching the prompt. `PRD/sections/` product truth (REQ-220 new; REQ-022, REQ-222, REQ-229 amended; REQ-221 never written) is applied in the same PR; check it matches the accepted `GATE-QUESTIONS.md` diffs by intent. Slices B and C were committed together in one commit; the build says no B-only tree passes the rules gate.
+
+Rubric — the slices' own acceptance criteria, quoted (double quotes rendered as single quotes):
+
+=== slice-a-topic-data-and-size-guard.md
+
+- A1: The committed rule index on `origin/main` was compared with `c1188dc8`; it is unchanged, or the rules-text-dependent numbers were re-measured and the 26,000 ceiling still holds
+- A2: `gameRulesTopicManifest.json` gains topic `replacement-effects-interaction` titled 'Interaction of Replacement and Prevention Effects' with rule numbers 614.1a, 616.1, 616.1a to 616.1g, 616.2, in id order right after `replacement-effects-basics`
+- A3: `build-topic-from-index.mjs` ran from the repo root and did not refuse
+- A4: Among the game-rules data files, `git diff --stat` lists only `gameRulesTopicManifest.json` and `gameRulesByTopic.json`; `gameRulesRuleIndex.json`, `gameRulesTokenStats.json`, `gameRulesRuleEmbeddings.json`, and `apps/frontend/public/data/gameRulesCoreTopics.json` are byte-identical
+- A5: `gameRulesBuildPolicy.test.ts` expects 24 topics and a 26,000-character ceiling, with the 18,000 floor and its other checks unchanged
+- A6: The build-policy test passes (24 topics, total topic text 25,808 under 26,000 on the 2026-06-05 text)
+- A7: `npm run format:check` passes
+- A8: A dated observation confirms no `source.txt` copy, no `npm run data:build`, no `scripts/build-game-rules.mjs` run, and no network call beyond `npm ci`
+
+=== slice-b-card-wording-selector-and-rules-truth.md
+
+- B1: One shared selector in `gameRulesTopicSelection.ts` reads only `oracleText` and fires on two or more cards carrying the whole word 'instead', 'prevent', 'prevents', or 'prevented' in any letter case, and not on 'prevention' or 'preventing'
+- B2: Lookup mode (`preparation.ts`) adds the topic alongside the four always-on topics through that function, never in place of them
+- B3: Game mode (`selectGameRulesTopics`) adds the topic through the same function over every card on the stack and in any populated zone, in id order
+- B4: The `gameRulesTopicSelection.ts` header and the `selectGameRulesTopics` JSDoc no longer claim selection is card-agnostic
+- B5: The selector tests (two fire, one does not, 'prevention' and 'preventing' do not count, zone card counts, two copies count, letter case) pass
+- B6: The `preparation.test.ts` and `promptAssembly.test.ts` tests (lookup topic list, `GAME RULES (reference)` carries the topic when it fires and not otherwise, System 3 never repeats its rule numbers) pass
+- B7: The context-evaluation harness, retrieval-report parity and inputs tests, and the retrieval benchmark pass with no golden file changed
+- B8: `functional-requirements.md` has `### REQ-220` between `### REQ-219` and `### REQ-222`, and no `### REQ-221`
+- B9: REQ-022 is amended: description, the `GAME RULES (reference)` bullet, the System 2 and System 3 constraint bullets, the REQ-220 dependency, and the last Notes bullet
+- B10: The system-map, game-rules-retrieval, prompt-layout-spec, integrations-and-data, quick-lookup, and in-depth lines in Requirement 7 are amended, and `prompt-assembly.md:40-41` is untouched
+- B11: Re-running the Invariant 1 grep (`card-agnostic|game-state-gated|state-gated|game-state signals|always-on core|fixed always-on|fixed curated set|DEC-045 core set|no card names|not card names|affect System 2|oracle text, or keywords|owns all card` over `PRD/sections`) leaves only hits the brief dispositions as unchanged
+- B12: `npm run typecheck`, `npm run lint`, and `npm run format:check` pass
+
+=== slice-c-rules-gate-counts-topic-rules.md
+
+- C1: `rulesGate.ts` reads the selected topics' rule numbers from `enrichmentDebug.curatedGameRules.topics`, computes `inTopic`, and treats a rule recorded in `hit` or `inTopic` that reaches the prompt by neither route as a regression, with `preparePromptInput` unchanged
+- C2: `BaselineCase` has an optional `inTopic`, `raiseBaseline` writes it only when non-empty, and the summary and report line count cases with a topic-carried rule
+- C3: The new rules-gate tests (topic-carried rule recorded, a System 3 hit moving into a topic is not a regression, a recorded `inTopic` rule that leaves the prompt fails, `raiseBaseline` writes `inTopic` only when non-empty, the committed baseline records the Manufactor case's four rules as `inTopic`) pass alongside every existing rules-gate test, including '16 of 18 first-ship cases hitting'
+- C4: `npm run eval:rules-gate:baseline` ran without `--allow-regressions` and did not refuse
+- C5: The committed `baseline.json` differs from the old one only as expected: `hit` and `miss` identical except `replacement-bard-and-bilbo-tokens`, 11 cases carry `inTopic`, `academy-manufactor-esix-treasure` records 614.1a, 616.1, 616.1e, 616.1f as `inTopic`, and 287 cases still have every deciding rule a System 3 excerpt
+- C6: No frozen query vector file, `raise-rules-gate-baseline.mjs`, or `eval-evidence-trace.mjs` changed (`git diff --stat`)
+- C7: The scripts test suite (evidence-trace parity with the baseline, coverage gate) passes
+- C8: REQ-222 is amended (ratchet bullet, summary bullet, REQ-022 dependency, last Notes bullet, 'a System 3 excerpt' wording on the first-ship sentence) and REQ-229's first Notes bullet carries the one clause
+- C9: `worked-solutions/README.md` has the one sentence beside `:151` about topic-carried rules and `inTopic`
+- C10: Re-running the Invariant 2 grep (`ratchet|baseline\.json|System 3 excerpts|selectedInSearch|records System 3|System 3 selections|hit and miss` over `PRD/sections` and the two eval READMEs) leaves only hits the brief dispositions as unchanged
+- C11: `npm run typecheck`, `npm run lint`, and `npm run format:check` pass
+
+=== slice-d-remeasure-and-ship.md
+
+- D1: `apps/backend/data/models/` was copied from the main checkout with `cp -R`, and not committed
+- D2: A dated observation confirms `scripts/warm-embedding-model-cache.mjs` was not run and no network call was made during the re-measure
+- D3: `git fetch origin` was run and the rule index on `origin/main` was compared with `c1188dc8` again before the final numbers; unchanged, or the rules-text-dependent numbers were re-measured and the 26,000 ceiling still holds
+- D4: `npm run quality:check` passes
+- D5: `npm run eval:worked-solutions` ran and reports 287/392 with 392/392 cases ranked semantically, unchanged
+- D6: `npm run eval:rules-staleness` ran and lists 0 stale cases and 0 awaiting a re-freeze
+- D7: `npm run eval:evidence-trace -- --case academy-manufactor-esix-treasure` ran on the committed tree and shows `availableToAnswer` true for 614.1a, 616.1, 616.1e, 616.1f
+- D8: A dated observation records the tester's verbatim Manufactor + Esix question with both cards attached: 614.1a, 616.1, 616.1e, 616.1f all in the prompt under hybrid and lexical ranking
+- D9: A dated observation records Necropotence + Silence unchanged in both wordings (corpus: 514.1 #3 hybrid and #2 lexical, 514.2 and 514.3a outside the top ten; verbatim: 514.2 #7 and 514.3a #3 hybrid, #7 and #4 lexical)
+- D10: The context-evaluation harness labelled checks are 14/14 semantic and 14/14 lexical, the benchmark numbers are unchanged (0.5833 / 0.5769 lexical, 0.8974 / 0.8910 hybrid), and no golden file is changed
+- D11: Among the game-rules data files, `git diff --stat origin/main` lists only `gameRulesTopicManifest.json` and `gameRulesByTopic.json`, and `baseline.json` records the Manufactor case's four rules as `inTopic`
+- D12: REQ-220's last Notes bullet records the measured before and after for every suite, replacing the 'records its before/after here' placeholder
+- D13: The Invariant 1 grep, the Invariant 2 grep, and the '23 curated|23 topics' grep leave only hits the brief dispositions as unchanged, and `PRD/sections` has no REQ-221 and no new `DEC-###`
+- D14: A dated observation confirms no live OpenAI call, data refresh, or Scryfall fetch occurred during the build
+
+Severity rule: rate each finding Critical, Important, or Minor. Critical or Important means a stated acceptance criterion above is not actually met, or the change is incorrect for a player (wrong rules reach the prompt, a rule is lost, a gating test is weakened or a guard bypassed), or the applied product truth contradicts the accepted proposal. A preference, a style note, or an improvement outside these stated criteria is never Critical or Important and never loops back to build — mark it Minor or leave it out. The criteria files were flipped by the build without hook evidence (a known gap), so verify substance yourself rather than trusting the `true` values: read the code, the tests, the baseline diff, and the PRD diffs, and re-run the targeted tests that back the claims.
+
+Report back: APPROVE or CHANGES REQUIRED; a findings list with severity, file:line, the criterion id it breaks, and the evidence; the commands you ran; and the final `git status --porcelain` (must be empty).
 
 ## Instruction ledger
 
