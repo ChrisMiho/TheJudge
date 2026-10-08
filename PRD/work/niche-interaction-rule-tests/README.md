@@ -15,7 +15,7 @@ Make the Comprehensive Rules that decide a hard interaction reach the AI when th
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/niche-interaction-rule-tests
+- Autonomous base: origin/main
 
 ## Preparation gate
 

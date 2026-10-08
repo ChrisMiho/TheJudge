@@ -3,8 +3,9 @@
 - Run ID: `graph-20261006-150550`
 - Profile: `loaded (env sentinel)` (graph-preflight observation at node 1)
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph tier `denied — armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/niche-interaction-rule-tests` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` by the build half's claim)
+- Autonomous base: `origin/main` (rewritten by the build half's claim 2026-10-07; was `origin/thejudge-auto/niche-interaction-rule-tests`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests` (rewritten by the build half's claim 2026-10-07; was `.worktrees/kickoff-niche-interaction-rule-tests`, removed clean at claim)
+- Build-half resume 2026-10-07: owner merged docs PR #266 (2026-10-08T02:40Z) and invoked `/graph-implement PRD/work/niche-interaction-rule-tests/`. Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19738`); graph canary `nohup true` denied — graph tier armed. Claimed on `thejudge-auto/niche-interaction-rule-tests-work` cut from `origin/main` (`c1188dc8`).
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
 - Resume 2026-10-07: owner invoked `/graph-kickoff niche-interaction-rule-tests` after the rules test harness shipped (PR #269 merged 2026-10-07). Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19439`); graph canary `nohup true` denied — graph tier armed; this session's profile `loaded (env sentinel)`. Package restored from `deferred` to `owner-action` by `thejudge-defer` (restore direction). `origin/main` merged into the run branch in the kickoff worktree (merge commit `92031511`, clean; brings REQ-222–230, the rules test corpus, and the rules-review sweeps). REQ-220 and REQ-221 confirmed unused on `origin/main` (new IDs there run REQ-222–230).
 - Current node: `owner-action` (gate-qc PASS; spec-forming half complete)
