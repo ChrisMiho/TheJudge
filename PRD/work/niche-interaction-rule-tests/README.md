@@ -1,5 +1,5 @@
 ---
-status: refined
+status: owner-action
 ---
 
 # niche-interaction-rule-tests
@@ -19,8 +19,11 @@ Make the Comprehensive Rules that decide a hard interaction reach the AI when th
 
 ## Preparation gate
 
-- Quality-check: FAIL
+- Quality-check: PASS
 - Checked artifact: `PRD/work/niche-interaction-rule-tests/DESIGN-BRIEF.md`
-- Findings:
-  1. (Important) The new topic's game-mode scope is misdescribed in three owner-facing places. The selector (`contextCards`, `selectGameRulesTopics`) reads every card on the stack plus every populated zone (battlefield, hand, graveyard, exile, library, command). `GATE-QUESTIONS.md:31` says on the stack or battlefield; the in-depth README diff at `GATE-QUESTIONS.md:219` says two or more cards on the stack or in play; `DESIGN-BRIEF.md:196` says on the stack or in play. REQ-220's criterion (`GATE-QUESTIONS.md:77`) and brief Scope 3 correctly say every card on the stack and in populated zones. As written, the in-depth README text that would become product truth contradicts REQ-220. Fix: one phrase everywhere (for example, on the stack or in any zone), or narrow the selector and re-measure.
-  2. (Minor) Three restatements of what a lookup prompt assembles lack disposition rows: `user-flows.md:527` (FLOW-023 step 5), `quick-lookup/README.md:203-211` (the one-or-more-cards-attached bullet), `functional-requirements.md:1781` (REQ-074 second criterion). None contradicts REQ-220; the new topic is simply absent from each list. Fix: add disposition rows (unchanged, still true; carried by REQ-220 and the `quick-lookup/README.md:288` bullet), or add one clause to FLOW-023 step 5.
+- Findings: none
+- Verified at gate-qc attempt 6 (2026-10-07, on the tree with `origin/main` merged at `92031511`): both amendment-set greps re-run as quoted (Invariant 1: 28 hits, Invariant 2: 12 hits, every hit with a disposition row and every amend row with a diff); the old side of all 19 diff blocks matches `PRD/sections/` exactly; REQ-220 and REQ-221 unused; `measure-rules-gate.mjs` (ten-rule and nine-rule) and `measure-candidates.mjs` outputs byte-identical to the committed `.out.txt` files; `build-topic-from-index.mjs` on a scratch export: 23 → 24 topics, 3,846-character excerpt, 25,808 total under the 26,000 cap, only the manifest and `gameRulesByTopic.json` change; `gameRulesBuildPolicy.test.ts` fails 23 vs 24 then passes 9/9 with the proposed numbers; the fresh-worktree build sequence needs no gitignored file and names every gating test it touches.
+- Non-blocking notes for the build (no scope or number changes):
+  1. `PRD/sections/system-map/prompt-assembly.md:40-41` (selects curated game-rule topics from the normalized game state) is outside the grep and has no disposition row; not contradicted, since the normalized context includes the cards. A one-line unchanged row would match the brief's pattern.
+  2. The REQ-222 line being rewritten (`functional-requirements.md:5791`) keeps the dated first-ship sentence (16 cases with every deciding rule reaching the prompt; 603.2 and 400.7 recorded as misses). Under the amended counting that literal count would be 18; it is a historical System 3 count and the `hit`/`miss` lists keep their System 3 meaning, so it is not wrong. The build may add the words a System 3 excerpt to remove the ambiguity.
+  3. The brief's assumption table (`DESIGN-BRIEF.md:704`) names `contextCards` as the card set the selector reads; that name exists only in the measure scripts. The production equivalent is `buildQueryParts` in `gameRulesRetrieval.ts` (stack plus populated zones).

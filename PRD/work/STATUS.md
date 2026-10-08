@@ -18,7 +18,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Define attempt 6 done 2026-10-07 on the rules test harness: REQ-220 topic (614.1a + 616 family), REQ-022 and REQ-222 amended, REQ-221 withdrawn; gate-qc attempt 6 next; branch `thejudge-auto/niche-interaction-rule-tests`, draft PR #266 |
 
 ## refining
 
@@ -34,6 +33,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Gate-qc PASS 2026-10-07 (attempt 6, on the rules test harness): answer the four verdict slots in `GATE-QUESTIONS.md` (REQ-220 new, REQ-022 and REQ-222 amended, REQ-221 withdrawn), then merge docs PR #266 to build; branch `thejudge-auto/niche-interaction-rule-tests` |
 
 
 ## deferred
