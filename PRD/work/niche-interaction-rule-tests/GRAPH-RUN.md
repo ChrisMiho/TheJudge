@@ -8,7 +8,7 @@
 - Build-half resume 2026-10-07: owner merged docs PR #266 (2026-10-08T02:40Z) and invoked `/graph-implement PRD/work/niche-interaction-rule-tests/`. Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19738`); graph canary `nohup true` denied — graph tier armed. Claimed on `thejudge-auto/niche-interaction-rule-tests-work` cut from `origin/main` (`c1188dc8`).
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
 - Resume 2026-10-07: owner invoked `/graph-kickoff niche-interaction-rule-tests` after the rules test harness shipped (PR #269 merged 2026-10-07). Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19439`); graph canary `nohup true` denied — graph tier armed; this session's profile `loaded (env sentinel)`. Package restored from `deferred` to `owner-action` by `thejudge-defer` (restore direction). `origin/main` merged into the run branch in the kickoff worktree (merge commit `92031511`, clean; brings REQ-222–230, the rules test corpus, and the rules-review sweeps). REQ-220 and REQ-221 confirmed unused on `origin/main` (new IDs there run REQ-222–230).
-- Current node: `plan` (attempt 1, dispatched 2026-10-07)
+- Current node: `build` (attempt 1, dispatched 2026-10-07)
 - Next action: on define ok, re-enter `gate-qc` (attempt 8; a FAIL parks), then `plan → build → review → close`
 
 ## Node ledger
@@ -33,6 +33,7 @@
 | 16 | gate-qc | sonnet | parked | `1 → 53` | FAIL attempt 7 (build-half re-entry; loops spent → park at owner-action): 1 finding — the brief's fresh-worktree build section claims no gitignored file, but step 7's `npm run eval:worked-solutions` needs `apps/backend/data/models/` (gitignored, absent in a fresh worktree; scratch run exits 1). Re-verified clean: 28 + 12 amendment-grep hits dispositioned, 24 diff blocks match `PRD/sections/` on `c1188dc8`, REQ-220/221 unused, three measure outputs byte-identical, topic build 23 → 24 / 25,808 chars, build-policy 9/9, rules-gate + context-eval + topic tests 50/50; README `## Preparation gate` FAIL; `STATUS.owner-action`; board row under owner-action | 2026-10-07 |
 | 17 | define | opus | ok | `1 → 29` | attempt 7 (owner-authorized, bounded to the gate-qc attempt 7 finding): `DESIGN-BRIEF.md` only — Method (lines 169–172), Scope 6 (609–610), Build in a fresh worktree (682–713): new step 7 copies `apps/backend/data/models/` from the main checkout (stop if absent, never download), no-gitignored-file claim names the one exception; scratch export reproduced `npm run eval:worked-solutions` exit 1 without the folder, exit 0 and 287/392 with it; `GATE-QUESTIONS.md`, `PRD/sections/`, code untouched; `STATUS.refined`; board row under refined; launch checkout porcelain unchanged | 2026-10-07 |
 | 18 | gate-qc | sonnet | ok | `2 → 23` (includes 1 driver commit call) | PASS attempt 8, findings none (1 non-blocking path nit): tree unchanged since `c1188dc8`; scratch export ran the brief's fresh-worktree sequence — `npm run eval:worked-solutions` exit 1 without `apps/backend/data/models/`, exit 0 and 287/392 after step 7's copy; quality-check suites pass without the folder (43/43 backend gating tests, 1559/1559 frontend); README `## Preparation gate` PASS; `STATUS.refined` | 2026-10-07 |
+| 19 | plan | sonnet | ok | `1 → 40` | `GAMEPLAN.md` + 4 slices with criteria files (A topic data and size guard, 8 criteria; B card-wording selector and rules truth, 12; C rules gate counts topic rules, 11; D re-measure and ship, 14; manual criteria A8, D2, D8, D9, D14); Preparation gate PASS verified first; `STATUS.active`; board row under active; launch checkout porcelain unchanged | 2026-10-07 |
 
 ## Open gate
 
@@ -444,6 +445,22 @@ Carry into the slice docs where they apply:
 Emit `GAMEPLAN.md`, lettered slice docs, and one `slice-<letter>.criteria.json` per slice (every criterion `false`, each with an evidence block per the map-out reference). Set `STATUS.active` (the only marker), the README frontmatter status, and move the `PRD/work/STATUS.md` board row fully to active. Do not edit `PRD/sections/`, code, `GATE-QUESTIONS.md`, `DESIGN-BRIEF.md`, `intake/`, or the driver's `GRAPH-RUN.md`, README `## Autonomous metadata`, and README `## Preparation gate`. Do not commit or push; the driver commits and publishes before `build`. No live model calls. Use the Edit/Write tools for file changes (shell `sed -i` and heredoc writes are denied by the session's auto-mode guard).
 
 Report back: ok or failed, the slice list (letter, title, one line each), the marker you set, and every path you wrote.
+
+### build
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests
+
+You are node 6 (`build`) of graph run `graph-20261006-150550`. Run the `thejudge-implement-all` skill (read `.claude/skills/thejudge-implement-all/SKILL.md` and its `reference.md` in the working directory above and follow its graph-controlled mode). Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Package: `PRD/work/niche-interaction-rule-tests/` (STATUS.active), slices A, B, C, D in `GAMEPLAN.md` order. Shared branch: `thejudge-auto/niche-interaction-rule-tests-work` — already checked out in the working directory above, which is the driver's build worktree; work there in place (no second worktree, no contributor branch). Recorded autonomous base: `origin/main`. Open the code PR `thejudge-auto/niche-interaction-rule-tests-work → main` after the first push (`gh pr create --base main --head thejudge-auto/niche-interaction-rule-tests-work`), body opening with the PR-body plain-language block from `PRD/instructions/plain-language-standard.md`. Never merge or close it.
+
+This is the apply step: write the `PRD/sections/` truth by intent from the owner-accepted `GATE-QUESTIONS.md` (REQ-220 new, REQ-022 and REQ-222 amended, REQ-221 withdrawn and never written) and `DESIGN-BRIEF.md`, against current truth, together with the code, in each slice's commits. Follow each slice doc, including the model-folder copy (from `/Users/chrismiho/Coding/Projects/TheJudge/apps/backend/data/models/`, read-only; never run the network warm script) and the PR #273 stop-and-report rule.
+
+Every write — code, tests, `PRD/sections/`, slice status, criteria files, evidence files — goes inside the working directory above. Never write to `/Users/chrismiho/Coding/Projects/TheJudge/` outside `.worktrees/implement-niche-interaction-rule-tests/`; a bare `PRD/work/niche-interaction-rule-tests/` path resolved against the launch checkout is a scope violation that fails this node. Commit with explicit paths only (never `git add -A` or `.`), push with `git push` (never force), never `git -C`. No live model calls, no `npm run data:refresh`, no network refresh.
+
+Report `ok` only when every criterion in every slice's `.criteria.json` is `true` (read the files). Report back: ok or failed, the PR URL, the commit list per slice, the final `quality:check` and `eval:worked-solutions` results, every path you wrote (absolute or worktree-relative), and any criterion left `false` with the reason. Use the Edit/Write tools for file changes (shell `sed -i` and heredoc writes are denied by the session's auto-mode guard; a harness auto-mode denial is not the graph criteria guard). Commit messages end with the line `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`; PR bodies end with the line `🤖 Generated with [Claude Code](https://claude.com/claude-code)`.
 
 ## Instruction ledger
 

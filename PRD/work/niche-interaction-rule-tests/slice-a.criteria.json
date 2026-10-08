@@ -1,0 +1,54 @@
+{
+  "slug": "niche-interaction-rule-tests",
+  "slice": "A",
+  "criteria": [
+    {
+      "id": "A1",
+      "statement": "The committed rule index on `origin/main` was compared with `c1188dc8`; it is unchanged, or the rules-text-dependent numbers were re-measured and the 26,000 ceiling still holds",
+      "value": false,
+      "evidence": { "command": "git (diff|log|show).*gameRulesRuleIndex\\.json" }
+    },
+    {
+      "id": "A2",
+      "statement": "`gameRulesTopicManifest.json` gains topic `replacement-effects-interaction` titled \"Interaction of Replacement and Prevention Effects\" with rule numbers 614.1a, 616.1, 616.1a to 616.1g, 616.2, in id order right after `replacement-effects-basics`",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/data/gameRulesTopicManifest.json"] }
+    },
+    {
+      "id": "A3",
+      "statement": "`build-topic-from-index.mjs` ran from the repo root and did not refuse",
+      "value": false,
+      "evidence": { "command": "build-topic-from-index\\.mjs" }
+    },
+    {
+      "id": "A4",
+      "statement": "Among the game-rules data files, `git diff --stat` lists only `gameRulesTopicManifest.json` and `gameRulesByTopic.json`; `gameRulesRuleIndex.json`, `gameRulesTokenStats.json`, `gameRulesRuleEmbeddings.json`, and `apps/frontend/public/data/gameRulesCoreTopics.json` are byte-identical",
+      "value": false,
+      "evidence": { "command": "git diff .*--stat|git diff --stat" }
+    },
+    {
+      "id": "A5",
+      "statement": "`gameRulesBuildPolicy.test.ts` expects 24 topics and a 26,000-character ceiling, with the 18,000 floor and its other checks unchanged",
+      "value": false,
+      "evidence": { "paths": ["apps/frontend/src/lib/gameRulesBuildPolicy.test.ts"] }
+    },
+    {
+      "id": "A6",
+      "statement": "The build-policy test passes (24 topics, total topic text 25,808 under 26,000 on the 2026-06-05 text)",
+      "value": false,
+      "evidence": { "command": "gameRulesBuildPolicy|apps/frontend run (test|test:coverage)( |$)|npm run (coverage:check|quality:check)" }
+    },
+    {
+      "id": "A7",
+      "statement": "`npm run format:check` passes",
+      "value": false,
+      "evidence": { "command": "npm run (format:check|quality:check)" }
+    },
+    {
+      "id": "A8",
+      "statement": "A dated observation confirms no `source.txt` copy, no `npm run data:build`, no `scripts/build-game-rules.mjs` run, and no network call beyond `npm ci`",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}

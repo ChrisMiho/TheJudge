@@ -1,0 +1,72 @@
+{
+  "slug": "niche-interaction-rule-tests",
+  "slice": "C",
+  "criteria": [
+    {
+      "id": "C1",
+      "statement": "`rulesGate.ts` reads the selected topics' rule numbers from `enrichmentDebug.curatedGameRules.topics`, computes `inTopic`, and treats a rule recorded in `hit` or `inTopic` that reaches the prompt by neither route as a regression, with `preparePromptInput` unchanged",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/eval/rules-gate/rulesGate.ts"] }
+    },
+    {
+      "id": "C2",
+      "statement": "`BaselineCase` has an optional `inTopic`, `raiseBaseline` writes it only when non-empty, and the summary and report line count cases with a topic-carried rule",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/eval/rules-gate/rulesGate.ts", "apps/backend/src/eval/rules-gate/baseline.ts"] }
+    },
+    {
+      "id": "C3",
+      "statement": "The new rules-gate tests (topic-carried rule recorded, a System 3 hit moving into a topic is not a regression, a recorded `inTopic` rule that leaves the prompt fails, `raiseBaseline` writes `inTopic` only when non-empty, the committed baseline records the Manufactor case's four rules as `inTopic`) pass alongside every existing rules-gate test, including \"16 of 18 first-ship cases hitting\"",
+      "value": false,
+      "evidence": { "command": "(vitest|run test|test:coverage).*rulesGate|apps/backend run (test|test:coverage)( |$)|npm run (coverage:check|quality:check)" }
+    },
+    {
+      "id": "C4",
+      "statement": "`npm run eval:rules-gate:baseline` ran without `--allow-regressions` and did not refuse",
+      "value": false,
+      "evidence": { "command": "eval:rules-gate:baseline(?!.*allow-regressions)" }
+    },
+    {
+      "id": "C5",
+      "statement": "The committed `baseline.json` differs from the old one only as expected: `hit` and `miss` identical except `replacement-bard-and-bilbo-tokens`, 11 cases carry `inTopic`, `academy-manufactor-esix-treasure` records 614.1a, 616.1, 616.1e, 616.1f as `inTopic`, and 287 cases still have every deciding rule a System 3 excerpt",
+      "value": false,
+      "evidence": { "command": "git (diff|show).*baseline\\.json" }
+    },
+    {
+      "id": "C6",
+      "statement": "No frozen query vector file, `raise-rules-gate-baseline.mjs`, or `eval-evidence-trace.mjs` changed (`git diff --stat`)",
+      "value": false,
+      "evidence": { "command": "git (diff|status)( .*)?(--stat|--name-only|--short|-s)" }
+    },
+    {
+      "id": "C7",
+      "statement": "The scripts test suite (evidence-trace parity with the baseline, coverage gate) passes",
+      "value": false,
+      "evidence": { "command": "npm run (test:scripts|quality:check)" }
+    },
+    {
+      "id": "C8",
+      "statement": "REQ-222 is amended (ratchet bullet, summary bullet, REQ-022 dependency, last Notes bullet, \"a System 3 excerpt\" wording on the first-ship sentence) and REQ-229's first Notes bullet carries the one clause",
+      "value": false,
+      "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
+    },
+    {
+      "id": "C9",
+      "statement": "`worked-solutions/README.md` has the one sentence beside `:151` about topic-carried rules and `inTopic`",
+      "value": false,
+      "evidence": { "paths": ["apps/backend/src/eval/worked-solutions/README.md"] }
+    },
+    {
+      "id": "C10",
+      "statement": "Re-running the Invariant 2 grep over `PRD/sections` and the two eval READMEs leaves only hits the brief dispositions as unchanged",
+      "value": false,
+      "evidence": { "command": "grep.*ratchet" }
+    },
+    {
+      "id": "C11",
+      "statement": "`npm run typecheck`, `npm run lint`, and `npm run format:check` pass",
+      "value": false,
+      "evidence": { "command": "npm run (typecheck|lint|format:check|quality:check)" }
+    }
+  ]
+}

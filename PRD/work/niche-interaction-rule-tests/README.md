@@ -1,5 +1,5 @@
 ---
-status: refined
+status: active
 ---
 
 # niche-interaction-rule-tests
@@ -12,6 +12,27 @@ Make the Comprehensive Rules that decide a hard interaction reach the AI when th
 - Measurement (offline): `measure-candidates.mjs` with its output `measure-candidates.out.txt` — baseline and every candidate retrieval change across the context-eval, first-ship worked-solutions, and benchmark suites (`npx tsx PRD/work/niche-interaction-rule-tests/measure-candidates.mjs`); `measure-rules-gate.mjs` with `measure-rules-gate.out.txt` (and `measure-rules-gate.nine.out.txt`, the topic without 614.1a) — the topic on the rules test harness: the real rules gate, the whole corpus, both tester cases in both wordings, production code with the topic patched in (`npx tsx PRD/work/niche-interaction-rule-tests/measure-rules-gate.mjs`); `measure-retrieval.mjs` is the first define's single-case probe, kept as earlier evidence
 - Build step for the new topic: `build-topic-from-index.mjs` — adds REQ-220's topic to `gameRulesByTopic.json` from the committed rule index and writes nothing else (brief, Scope 1)
 - Starting evidence in the repo: the rules test corpus and its offline rules gate (`apps/backend/src/eval/worked-solutions/`, `apps/backend/src/eval/rules-gate/`, REQ-185, REQ-222), the coverage gate and staleness report (REQ-223, REQ-225), the gating context-evaluation harness (`apps/backend/src/eval/contextEvaluationHarness.test.ts`, REQ-032), the worked-solutions retrieval check (`npm run eval:worked-solutions`, NFR-018), and the hybrid-retrieval benchmark (`apps/backend/src/eval/ragRetrievalBenchmark.test.ts`, REQ-177, REQ-182)
+
+## Slices
+
+| Slice | Title | Status | Depends on | Criteria |
+| --- | --- | --- | --- | --- |
+| A | [Topic data and size guard](slice-a-topic-data-and-size-guard.md) | planned | none | 8 (1 manual) |
+| B | [Card-wording selector and the rules-retrieval product truth](slice-b-card-wording-selector-and-rules-truth.md) | planned | Slice A (the topic must exist in the committed artifact for the lookup and prompt tests) | 12 (0 manual) |
+| C | [The rules gate counts a rule a curated topic carries](slice-c-rules-gate-counts-topic-rules.md) | planned | Slices A and B (the baseline records the topic only once the selector fires it) | 11 (0 manual) |
+| D | [Re-measure against every rule-output suite and ship](slice-d-remeasure-and-ship.md) | planned | Slices A, B, and C | 14 (4 manual) |
+
+Plan: [GAMEPLAN.md](GAMEPLAN.md). Build order A, B, C, D. Slices B and C apply the owner-accepted product truth (REQ-220 new; REQ-022 and REQ-222 amended; REQ-221 withdrawn and unused) to `PRD/sections/` with the code; Slice D replaces REQ-220's last Notes bullet with the measured before and after. Build step 7 (copy `apps/backend/data/models/` from the main checkout, never download) and the PR #273 rule-index check are carried in Slices A and D.
+
+## Implementation map
+
+| Area | Files |
+| --- | --- |
+| Topic data and size guard (A) | `apps/backend/data/gameRulesTopicManifest.json`, `apps/backend/data/gameRulesByTopic.json` (via `build-topic-from-index.mjs`), `apps/frontend/src/lib/gameRulesBuildPolicy.test.ts` |
+| Selector and call sites (B) | `apps/backend/src/gameRulesTopicSelection.ts`, `apps/backend/src/prompt/preparation.ts`, and their tests |
+| Rules gate (C) | `apps/backend/src/eval/rules-gate/rulesGate.ts`, `baseline.ts`, `rulesGate.test.ts`, `baseline.json` |
+| Product truth (B, C, D) | `PRD/sections/functional-requirements.md`, `system-map.md`, `system-map/game-rules-retrieval.md`, `system-map/prompt-layout-spec.md`, `integrations-and-data.md`, `quick-lookup/README.md`, `in-depth/README.md`; `apps/backend/src/eval/worked-solutions/README.md` |
+| Re-measure (D) | `npm run quality:check`, `eval:worked-solutions`, `eval:rules-staleness`, `eval:evidence-trace`; `slice-d.evidence.md` |
 
 ## Autonomous metadata
 

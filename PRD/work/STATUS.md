@@ -13,12 +13,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | mapped out 2026-10-07: 4 slices A to D (B and C apply the product-truth proposal); offline-only build; branch `thejudge-auto/niche-interaction-rule-tests-work`; graph run `graph-20261006-150550` |
 
 ## refined
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Build half: define attempt 7 (2026-10-07) refined — brief adds the copy-the-model-folder step before the re-measure (287/392 reproduced on a scratch export); next gate-qc attempt 8; branch `thejudge-auto/niche-interaction-rule-tests-work` |
 
 ## refining
 

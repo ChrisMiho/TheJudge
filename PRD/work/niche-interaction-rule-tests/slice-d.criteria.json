@@ -1,0 +1,90 @@
+{
+  "slug": "niche-interaction-rule-tests",
+  "slice": "D",
+  "criteria": [
+    {
+      "id": "D1",
+      "statement": "`apps/backend/data/models/` was copied from the main checkout with `cp -R`, and not committed",
+      "value": false,
+      "evidence": { "command": "cp -R .*apps/backend/data/models" }
+    },
+    {
+      "id": "D2",
+      "statement": "A dated observation confirms `scripts/warm-embedding-model-cache.mjs` was not run and no network call was made during the re-measure",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D3",
+      "statement": "`git fetch origin` was run and the rule index on `origin/main` was compared with `c1188dc8` again before the final numbers; unchanged, or the rules-text-dependent numbers were re-measured and the 26,000 ceiling still holds",
+      "value": false,
+      "evidence": { "command": "git (diff|log|show).*gameRulesRuleIndex\\.json" }
+    },
+    {
+      "id": "D4",
+      "statement": "`npm run quality:check` passes",
+      "value": false,
+      "evidence": { "command": "npm run quality:check" }
+    },
+    {
+      "id": "D5",
+      "statement": "`npm run eval:worked-solutions` ran and reports 287/392 with 392/392 cases ranked semantically, unchanged",
+      "value": false,
+      "evidence": { "command": "npm run eval:worked-solutions" }
+    },
+    {
+      "id": "D6",
+      "statement": "`npm run eval:rules-staleness` ran and lists 0 stale cases and 0 awaiting a re-freeze",
+      "value": false,
+      "evidence": { "command": "npm run eval:rules-staleness" }
+    },
+    {
+      "id": "D7",
+      "statement": "`npm run eval:evidence-trace -- --case academy-manufactor-esix-treasure` ran on the committed tree and shows `availableToAnswer` true for 614.1a, 616.1, 616.1e, 616.1f",
+      "value": false,
+      "evidence": { "command": "npm run eval:evidence-trace.*academy-manufactor-esix-treasure" }
+    },
+    {
+      "id": "D8",
+      "statement": "A dated observation records the tester's verbatim Manufactor + Esix question with both cards attached: 614.1a, 616.1, 616.1e, 616.1f all in the prompt under hybrid and lexical ranking",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D9",
+      "statement": "A dated observation records Necropotence + Silence unchanged in both wordings (corpus: 514.1 #3 hybrid and #2 lexical, 514.2 and 514.3a outside the top ten; verbatim: 514.2 #7 and 514.3a #3 hybrid, #7 and #4 lexical)",
+      "value": false,
+      "evidence": { "manual": true }
+    },
+    {
+      "id": "D10",
+      "statement": "The context-evaluation harness labelled checks are 14/14 semantic and 14/14 lexical, the benchmark numbers are unchanged (0.5833 / 0.5769 lexical, 0.8974 / 0.8910 hybrid), and no golden file is changed",
+      "value": false,
+      "evidence": { "command": "(vitest|run test|test:coverage).*(contextEvaluationHarness|ragRetrievalBenchmark)|benchmark:rag-retrieval|apps/backend run (test|test:coverage)( |$)|npm run (coverage:check|quality:check)" }
+    },
+    {
+      "id": "D11",
+      "statement": "Among the game-rules data files, `git diff --stat origin/main` lists only `gameRulesTopicManifest.json` and `gameRulesByTopic.json`, and `baseline.json` records the Manufactor case's four rules as `inTopic`",
+      "value": false,
+      "evidence": { "command": "git diff.*origin/main.*--stat|git diff --stat.*origin/main" }
+    },
+    {
+      "id": "D12",
+      "statement": "REQ-220's last Notes bullet records the measured before and after for every suite, replacing the \"records its before/after here\" placeholder",
+      "value": false,
+      "evidence": { "paths": ["PRD/sections/functional-requirements.md"] }
+    },
+    {
+      "id": "D13",
+      "statement": "The Invariant 1 grep, the Invariant 2 grep, and the \"23 curated|23 topics\" grep leave only hits the brief dispositions as unchanged, and `PRD/sections` has no REQ-221 and no new `DEC-###`",
+      "value": false,
+      "evidence": { "command": "grep.*(23 curated|23 topics)" }
+    },
+    {
+      "id": "D14",
+      "statement": "A dated observation confirms no live OpenAI call, data refresh, or Scryfall fetch occurred during the build",
+      "value": false,
+      "evidence": { "manual": true }
+    }
+  ]
+}
