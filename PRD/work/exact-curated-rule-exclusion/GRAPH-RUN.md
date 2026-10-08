@@ -1,13 +1,13 @@
 # Graph run — exact-curated-rule-exclusion
 
-- Run ID: `graph-20261008-053030`
+- Run ID: `graph-20261008-053030` (build half `graph-20261008-061643`: lock retaken pid 19738, canary `rm -rf .worktrees/.graph-canary-nonexistent` not re-run; graph canary `denied — graph tier armed (nohup true)`)
 - Profile: `loaded (env sentinel)` — printed by preflight; the session process is `claude --settings .claude/graph-profile.json` (pid 19738, observed via `ps`, not stated by the user)
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
 - Autonomous base: `origin/main` (rewritten by the build half's claim; spec-forming half: `origin/thejudge-auto/exact-curated-rule-exclusion`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` (rewritten by the build half's claim; spec-forming half: `.worktrees/kickoff-exact-curated-rule-exclusion`, removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
-- Current node: `owner-action` (parked after gate-qc PASS)
-- Next action: owner answers `PRD/work/exact-curated-rule-exclusion/GATE-QUESTIONS.md` in the docs PR and merges it; `/graph-implement PRD/work/exact-curated-rule-exclusion/` builds it
+- Current node: `gate-review` (build half; owner answered all five verdicts `accept` and merged docs PR #277)
+- Next action: `/graph-implement PRD/work/exact-curated-rule-exclusion/`
 
 ## Node ledger
 
@@ -161,6 +161,25 @@ Check in particular:
 Replace `QUALITY-CHECK.md` with this attempt's PASS/FAIL report. Do not edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `PRD/sections/`, code, or the package `README.md` — the driver writes the `## Preparation gate` section and any status change. Do not commit. Do not write `GRAPH-RUN.md`.
 
 Report back: PASS or FAIL, the report path, and the complete findings list.
+
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion
+
+You are the gate-resolution step of the build half of graph run `graph-20261008-061643` (spec-forming run `graph-20261008-053030`). Run the `graph-gate-review` skill: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/graph-gate-review/SKILL.md` and follow its Procedure exactly against the package `PRD/work/exact-curated-rule-exclusion/` inside the working directory above. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Context:
+- Branch: `thejudge-auto/exact-curated-rule-exclusion-work` (checked out in the working directory; cut from origin/main after docs PR #277 merged).
+- The owner answered all five verdict slots in `GATE-QUESTIONS.md` (REQ-179, REQ-022, REQ-181, REQ-182, REQ-220) and merged the docs PR; every verdict reads `accept`.
+- Apply the verdicts inside `GATE-QUESTIONS.md` only. Never edit `PRD/sections/`, code, or the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge` (it stays on main, untouched).
+- Reconcile `DESIGN-BRIEF.md` and the README intake pointer to every `edit` or `reject` verdict (there are none, so the reconciliation list should read none — confirm by reading, do not assume). `intake/` stays verbatim.
+- Write `## Gate verdicts` into `GRAPH-RUN.md`, mark `## Open gate` resolved, and restore `STATUS.owner-action` to `STATUS.refined` (exactly one marker) and the `PRD/work/STATUS.md` board row to refined. Leave the ledger header lines (Run ID, Current node, Next action) to the driver.
+- Do not commit or push; the driver commits between nodes.
+- Verify directly. Spawn no subagents or forks. No sleeping or polling. Stay well under the 60 tool-call budget.
+
+Report back: each verdict as applied, a `### Brief reconciliation` list (or none), every path you wrote (absolute), the marker before and after, and `git status --porcelain` from the working directory.
 
 ## Instruction ledger
 
