@@ -166,7 +166,10 @@ merged tree (2026-10-07). "Gating" means a failure fails `npm run quality:check`
 
 Two scripts in this folder, run from the repo root, offline: committed rule,
 card, and rulings indexes; committed frozen query vectors; the local MiniLM
-embedder in process; no network; no model call.
+embedder in process; no network; no model call. The embedder's model files
+live in `apps/backend/data/models/`, which is gitignored (`.gitignore:89`), so a
+fresh worktree has none; copy that folder from the main checkout before re-running
+any script in this folder (see `## Build in a fresh worktree`, step 7).
 
 - `measure-candidates.mjs` (output `measure-candidates.out.txt`):
   `npx tsx PRD/work/niche-interaction-rule-tests/measure-candidates.mjs`. Each
@@ -603,7 +606,8 @@ adds tests), `scripts/raise-rules-gate-baseline.mjs` (no edit: it calls
 6. **Re-measure after the build** — the define scripts simulate the topic on
    top of production, so once production carries it their parity checks no
    longer hold; re-measure with the suites themselves and record before/after
-   in REQ-220's Notes: `npm run eval:worked-solutions` (287/392),
+   in REQ-220's Notes (the local model folder must be in place first; build
+   step 7): `npm run eval:worked-solutions` (287/392),
    `npm run eval:rules-staleness`, `npm run quality:check` (rules gate, coverage
    gate, context-eval harness, benchmark, build-policy), and, after committing,
    `npm run eval:evidence-trace -- --case academy-manufactor-esix-treasure`
@@ -675,10 +679,38 @@ The build half cuts `.worktrees/implement-niche-interaction-rule-tests` from
    then run `npm run eval:rules-gate:baseline` and commit `baseline.json`. If
    it refuses, stop and report.
 6. Apply the PRD truth (Scope 5).
-7. `npm run quality:check`, then the re-measurement (Scope 6).
+7. Copy the local embedding model into the worktree, from the repo root:
+   `cp -R /Users/chrismiho/Coding/Projects/TheJudge/apps/backend/data/models apps/backend/data/models`.
+   The re-measure's `npm run eval:worked-solutions` ranks each case with the
+   local MiniLM embedder, which loads from `apps/backend/data/models/`. That
+   folder is gitignored (`.gitignore:89`), so a fresh worktree has none, and
+   without it the script exits 1 ("EMBEDDING_PROVIDER=local returned no
+   embedding for gold case abandon-rule-text … Refusing to record that"). Its
+   own hint, `node scripts/warm-embedding-model-cache.mjs`, downloads the model
+   over the network: do not run it. If the folder is absent from the main
+   checkout too, stop and report rather than download. The same copy covers the
+   define scripts in this folder if they are re-run. `npm run quality:check`
+   does not need it (its suites rank from committed frozen vectors).
+8. `npm run quality:check`, then the re-measurement (Scope 6).
 
-No step needs the gitignored `source.txt`, a network call, an API key, or a
-frozen-vector rebuild.
+One gitignored input is needed, and only for the re-measure: the local
+embedding model folder `apps/backend/data/models/` (step 7), copied from the
+main checkout, never downloaded. No step needs the gitignored `source.txt`, a
+network call (beyond step 1's package install), an API key, or a frozen-vector
+rebuild.
+
+**Checked at define attempt 7 (2026-10-07).** The main checkout holds the
+folder (`Xenova/all-MiniLM-L6-v2/`: `config.json`, `tokenizer.json`,
+`tokenizer_config.json`, `onnx/model_quantized.onnx`; 4 files, 23 MB). On a
+scratch export of this branch (`git archive HEAD`, with the main checkout's
+installed dependencies linked in), `npm run eval:worked-solutions` without the
+folder exited 1 with the error above. After
+`cp -R /Users/chrismiho/Coding/Projects/TheJudge/apps/backend/data/models apps/backend/data/models`
+it exited 0 with "Embedding provider: local (392/392 cases ranked
+semantically)" and "Summary: 287/392 cases retrieved their expected rule.",
+the merged tree's number. The embedder runs with remote models switched off
+(`localEmbeddingProvider.ts:31`, `env.allowRemoteModels = false`), so the run
+made no network call.
 
 **Dependency and risk: PR #273.** The 2026-10-07 data refresh (open, not merged)
 moves the Comprehensive Rules text to 2026-09-25, regenerates goldens, and

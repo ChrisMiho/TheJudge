@@ -18,12 +18,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Build half: define attempt 7 (2026-10-07) refined — brief adds the copy-the-model-folder step before the re-measure (287/392 reproduced on a scratch export); next gate-qc attempt 8; branch `thejudge-auto/niche-interaction-rule-tests-work` |
 
 ## refining
 
 | Package | Note |
 | --- | --- |
-| [niche-interaction-rule-tests](niche-interaction-rule-tests/) | Build half: owner-authorized define attempt 7 (2026-10-07) adding the copy-the-model-folder step for the re-measure; then gate-qc attempt 8; branch `thejudge-auto/niche-interaction-rule-tests-work` |
 
 ## ideation
 
