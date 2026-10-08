@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/exact-curated-rule-exclusion` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-exact-curated-rule-exclusion` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
-- Current node: `gate-qc`
+- Current node: `define`
 - Next action: `/graph-kickoff` (spec-forming half; resume reads this ledger)
 
 ## Node ledger
@@ -16,6 +16,7 @@
 | 1 | preflight | haiku | ok | `0 → 9` | `npm run graph:preflight -- --branch thejudge-auto/exact-curated-rule-exclusion --slug exact-curated-rule-exclusion --run-id graph-20261008-053030 --pid 19738` exit 0; branch `thejudge-auto/exact-curated-rule-exclusion` pushed from `.worktrees/kickoff-exact-curated-rule-exclusion` (`git ls-remote` → 5a65c91d); lock `.worktrees/.graph-run.lock` runId graph-20261008-053030 pid 19738; launch checkout still on `main` | 2026-10-08 |
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/exact-curated-rule-exclusion/IDEA.md`, `README.md`, `STATUS.ideation`, `intake/GRAPH-BRIEF.md` (`cmp` identical to staging); `PRD/work/STATUS.md` ideation row; 6 `## Prior run` lines in IDEA.md; launch checkout `git status --porcelain` unchanged | 2026-10-08 |
 | 3 | define | opus | ok | `0 → 42` | `PRD/work/exact-curated-rule-exclusion/DESIGN-BRIEF.md` (270 lines, 46-row line-level amendment set: 19 amend / 27 no change); `GATE-QUESTIONS.md` present → product truth proposed, gates (5 slots: REQ-179, REQ-022, REQ-181, REQ-182, REQ-220; blank verdicts; Blocker questions: none); `STATUS.ideation` → `STATUS.refined`; board row moved ideation → refined; `git diff HEAD -- PRD/sections apps scripts` empty; launch checkout unchanged | 2026-10-08 |
+| 4 | gate-qc | sonnet | failed | `0 → 45` | FAIL attempt 1 of 3 — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: 3 must-fix (F1 803-not-926 excerpt size; F2 127 per-topic sum vs 125 distinct; F3 closing-case criterion names no ranking path / evidence-trace provider) + 4 minor; amendment set, verbatim removed lines and block format passed. Driver recorded FAIL in README `## Preparation gate`, `STATUS.refined` → `STATUS.refining`, board row → refining; loops to define | 2026-10-08 |
 
 ## Open gate
 
@@ -118,6 +119,22 @@ Check in particular:
 Write the PASS/FAIL report the skill prescribes, inside the package. Do not edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `PRD/sections/`, code, or the package `README.md` `## Preparation gate` section — the driver writes that section. Do not commit. Do not write `GRAPH-RUN.md`.
 
 Report back: PASS or FAIL, the report path, and the complete findings list.
+
+### define (attempt 2)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-exact-curated-rule-exclusion
+
+You are node 3 (`define`) of graph run `graph-20261008-053030`, attempt 2, re-entered after a `gate-qc` FAIL (attempt 1 of 3). Run the `thejudge-refinement` skill: read `.claude/skills/thejudge-refinement/SKILL.md` (and any reference it names) inside the working directory above and follow it in graph mode. Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Work only inside that working directory; never write to any path in the launch checkout `/Users/chrismiho/Coding/Projects/TheJudge/` outside `.worktrees/kickoff-exact-curated-rule-exclusion/`.
+
+Package: `PRD/work/exact-curated-rule-exclusion/`. Your attempt-1 output is `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md`. The quality-check findings are in `QUALITY-CHECK.md` and in the README `## Preparation gate` section: three must-fix items (F1, F2, F3) and four minor items (M1–M4). Resolve every must-fix item and address the minor ones, editing `DESIGN-BRIEF.md` and `GATE-QUESTIONS.md` in place. Keep everything attempt 1 got right (the amendment set, verbatim removed lines, block format, measurement traces) unchanged except where a finding requires.
+
+For F3, the choice between binding the closing-case criterion to the measured ranking path and measuring the lexical ranks now is yours under the assumption ladder in `PRD/instructions/preparation-contract.md`, applied to that one question. If you measure, do it offline against committed data inside the working directory (no network, no live model call) and record the command and output in the brief. Any number you write must trace to a recorded measurement or to the committed data.
+
+Rules unchanged from attempt 1: propose, never apply — no edits to `PRD/sections/`, code, data, or tests; amend in place, no DEC entry; intake is evidence, never authority, and documents it cites are never opened; every `- Verdict:` / `- Reason:` slot stays blank. Do not edit the README `## Preparation gate` section or `QUALITY-CHECK.md`. Do not commit. Do not write `GRAPH-RUN.md`.
+
+When done, set the package status marker the skill prescribes for a completed proposal and move the board row in `PRD/work/STATUS.md` to match (remove from the old section, add to the new). Report back: outcome, each finding and how it was resolved, every path written, and any blocker question raised.
 
 ## Instruction ledger
 
