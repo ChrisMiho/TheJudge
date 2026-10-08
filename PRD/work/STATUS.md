@@ -28,6 +28,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [exact-curated-rule-exclusion](exact-curated-rule-exclusion/) | Rule search should exclude only the exact rule numbers a curated topic lists, so its sub-rules (603.2e, 603.2g) can reach the prompt (REQ-179). Graph run graph-20261008-053030. |
 
 ## owner-action
 
