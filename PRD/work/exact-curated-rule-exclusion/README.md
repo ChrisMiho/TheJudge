@@ -9,7 +9,7 @@ Rule search stops hiding curated parents' sub-rules: exclude only the exact rule
 - Design brief: [DESIGN-BRIEF.md](DESIGN-BRIEF.md)
 - Proposal (owner verdict slots: REQ-179, REQ-022, REQ-181, REQ-182, REQ-220): [GATE-QUESTIONS.md](GATE-QUESTIONS.md)
 - Plan: [GAMEPLAN.md](GAMEPLAN.md)
-- Next: no-write review (build half `graph-20261008-061643`, node 7 `review`) of PR #278.
+- Next: `thejudge-cleanup` (build half `graph-20261008-061643`, node 8 `close`) on the code branch before the owner merges PR #278.
 
 ## Slices
 

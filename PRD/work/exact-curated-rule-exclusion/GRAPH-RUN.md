@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim; spec-forming half: `origin/thejudge-auto/exact-curated-rule-exclusion`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` (rewritten by the build half's claim; spec-forming half: `.worktrees/kickoff-exact-curated-rule-exclusion`, removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
-- Current node: `review`
+- Current node: `close`
 - Next action: `/graph-implement PRD/work/exact-curated-rule-exclusion/`
 
 ## Node ledger
@@ -23,6 +23,7 @@
 | 4 | gate-qc | sonnet | ok | `0 → 17` | PASS (build-half re-grade, run `graph-20261008-061643`) — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: 0 must-fix; 28/28 removed lines verbatim at the brief's line numbers; 47-row amendment set complete; code sites + numbers re-confirmed (803 chars, 125 distinct / 127 sum); PR #273 still open so intake numbers stand; N1/N2 non-blocking for map-out. Driver recorded PASS in README `## Preparation gate`; `STATUS.refined` kept; launch checkout unchanged | 2026-10-08 |
 | 5 | plan | sonnet | ok | `0 → 24` | `GAMEPLAN.md` + 3 slices: `slice-a-exact-exclusion-code.md` (exact exclusion in both `scoreIndex` branches, evidence trace, tests, new `apps/backend/src/gameRulesTopicData.test.ts`), `slice-b-goldens-baseline-measure.md` (3 goldens, baseline without `--allow-regressions`, re-measure; 603.2e/603.2g hybrid gate), `slice-c-prd-truth-and-close.md` (apply 5 accepted slots by intent); `slice-{a,b,c}.criteria.json` 7/9/8 criteria all false; `STATUS.refined` → `STATUS.active`; board row → active; no deliverable under `PRD/work/` except bookkeeping `slice-b.evidence.md` (copied into REQ-179 Notes by C); launch checkout unchanged. Driver: copied ignored `apps/backend/data/models/` into the worktree (local embedder) | 2026-10-08 |
 | 6 | build | sonnet | ok | `0 → 124` | code PR https://github.com/ChrisMiho/TheJudge/pull/278 (OPEN, MERGEABLE, `thejudge-auto/exact-curated-rule-exclusion-work` → main); commits f0f16d76 (A), eba01255 + 26f74798 (B), f34db0cc (C); criteria 7/7, 9/9, 8/8 true at `origin/thejudge-auto/exact-curated-rule-exclusion-work`; reported quality:check green, backend 630/630, test:scripts 766/766; rules gate 293 → 295 of 392 (baseline 289 hit, 0 regressed, no accepted regressions), worked-solutions 287 → 289, hybrid first-ship 16/18, lexical 14/18, context-eval 14/14 each way, 603.2e/603.2g selected rank 1 under hybrid; 3 prompt goldens swapped. Return-side: launch checkout `git status --porcelain` identical to `.worktrees/.graph-intake/launch-status-before-build-exact-curated-rule-exclusion.txt`; `classifyBuildWrites` over 30 branch paths → ok (all inside `.worktrees/implement-exact-curated-rule-exclusion/`). Hook evidence log: 0 entries for this run (known evidence-root gap; criteria flips self-reported, review is the integrity gate). Deviation: goldens regenerated in slice A's commit (golden test runs in quality:check) | 2026-10-08 |
+| 7 | review | opus | ok | `0 → 57` | APPROVE on PR #278 head `70c4a1b4` (no-write `Plan`-type reviewer): all 24 criteria met with re-run evidence — quality:check exit 0 (frontend 1559, backend 630, scripts 766), test:eval green without update flag, rules-gate baseline re-run 289 hit / 0 regressed and byte-identical, worked-solutions 289/392 local, evidence-trace 603.2e/603.2g rank 1 selected from frozen vectors, recall@5 unchanged via direct `runBenchmark`/`scoreBenchmarkSemantic`; 0 Critical, 0 Important; 4 Minor (M1 stale module header `scripts/lib/evidence-trace.mjs:11-13`; M2 goldens in slice A commit, known deviation; M3 evidence B7 16/18 line names no own command; M4 stale committed polluted recall5 in `results.json`, pre-existing); worktree clean after review | 2026-10-08 |
 
 ## Open gate
 
@@ -311,6 +312,27 @@ Known build deviation to judge against the criteria: the three prompt goldens we
 Severity rule: flag only gaps affecting correctness or the stated criteria above. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important and never loops back to build; list such items as Minor at most.
 
 Report back: a verdict (APPROVE, or REQUEST CHANGES with Critical/Important findings), then one line per criterion (met / not met, with the evidence: file and line, or command and output), then findings ranked Critical / Important / Minor with file:line and a concrete failure scenario. Name every command you ran and any tracked file it rewrote.
+
+### close
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion
+
+You are node 8 (`close`) of graph run `graph-20261008-061643`. Run the `thejudge-cleanup` skill on its PR-ready path: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-cleanup/SKILL.md` (and any reference it names) and follow it against `PRD/work/exact-curated-rule-exclusion/` inside the working directory above, on the code branch, before the owner merges. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Context:
+- Branch: `thejudge-auto/exact-curated-rule-exclusion-work`; code PR https://github.com/ChrisMiho/TheJudge/pull/278 is open into main. The package is `STATUS.ship-ready`; review (node 7) approved with 0 Critical and 0 Important findings.
+- Durable `PRD/sections/` truth was already applied at build (slice C). Confirm it is present; promote only a genuine leftover; never re-write it.
+- Write the receipt under `PRD/instructions/receipts/` named `exact-curated-rule-exclusion-2026-10-08.md`. Its `## Graph run` section folds the ledger `## Node ledger` and `## Instruction ledger` from `GRAPH-RUN.md` verbatim (both runs: spec-forming `graph-20261008-053030` and build half `graph-20261008-061643`), carries a `- PR:` line for #278 and the line `Terminal state: COMPLETE — land: the owner's merge of https://github.com/ChrisMiho/TheJudge/pull/278`. Also write the `## Intake` section naming `intake/GRAPH-BRIEF.md` and its stated origin.
+- Record the review's four Minor findings in the receipt as follow-ups: M1 the module header comment at `scripts/lib/evidence-trace.mjs` lines 11-13 still describes curated parents whose lettered subrules are excluded with them; M2 the three prompt goldens landed in slice A's commit, not slice B's (commit order only); M3 `slice-b.evidence.md` B7 hybrid 16/18 line names no command of its own (it comes from the B5 worked-solutions run); M4 committed `apps/backend/src/eval/benchmark/results.json` polluted recall5 is stale (0.5256 committed vs 0.5769 fresh), pre-existing. Also record that the hook evidence log earned 0 entries for this run (known evidence-root gap), so criteria flips are self-reported and review is the integrity gate. Do not fix any of these in this node.
+- Carry slice B's measured values into the receipt (the package and `slice-b.evidence.md` are deleted).
+- Update `PRD/work/STATUS.md` (remove the package row from ship-ready per the skill) and delete `PRD/work/exact-curated-rule-exclusion/` with `git rm -r`.
+- Commit on the branch with explicit paths (never `git add -A`, `--all`, or `.`), trailer `Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>`, and push to `origin thejudge-auto/exact-curated-rule-exclusion-work`. Never merge or close a PR, never force-push, never push main.
+- Every file you write stays inside the working directory; the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge` stays untouched. A denied command is never retried verbatim; switch to Edit/Write or report.
+- Verify directly. Spawn no subagents or forks. No sleeping or polling. Stay well under the 120 tool-call budget.
+
+Report back: the receipt path, the commit hash, confirmation the package folder is gone from the branch tip on origin, every path you wrote (absolute), and `git status --porcelain` from the working directory.
 
 ## Instruction ledger
 
