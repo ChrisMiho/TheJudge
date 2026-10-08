@@ -4,7 +4,7 @@
 
 **Owner re-scope (2026-10-06, before answering docs PR #266).** Focus on questions where the player attaches every named card, and treat the tester as having attached them. Fix rule retrieval first ("lets start with making the rules correct, and then we can make the output pretty"); refining the prompt's output format is the next step, and must be tested too. Validation is "a full test of all use cases were using to validate output of rules, this is just expanding on it".
 
-**Outcome.** With the cards attached, the Comprehensive Rules that decide each reported question reach the AI's prompt, and every existing rule-output test (the gating context-evaluation harness, the worked-solutions retrieval check, the hybrid-retrieval benchmark) gives the same result it gives today. The two reported questions join the rule-output tests so the fix stays fixed.
+**Outcome.** With the cards attached, the Comprehensive Rules that decide each reported question reach the AI's prompt, and every existing rule-output test (the rules test harness's gates, the gating context-evaluation harness, the worked-solutions retrieval check, the hybrid-retrieval benchmark) gives the same result it gives today. The two reported questions join the rule-output tests so the fix stays fixed (since 2026-10-07 both are approved cases in the rules test corpus; the brief records which of their rules this package delivers).
 
 **Non-goals.** No prompt output-format change in this package (the named follow-up). No handling of card names typed without attaching the cards. No new live model calls in `npm test` or `quality:check`. No copying text from the tester's chat or from web sources into the repo as truth; any expected rule comes from the committed rules corpus.
 

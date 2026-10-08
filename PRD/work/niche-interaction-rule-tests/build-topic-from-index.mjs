@@ -2,9 +2,9 @@
 //
 // Adds every manifest topic that is not yet in apps/backend/data/gameRulesByTopic.json,
 // taking the rules text from the committed rule index
-// (apps/backend/data/gameRulesRuleIndex.json — the 2026-06-05 Comprehensive Rules
-// text every shipped game-rules artifact was built from). It runs the build script's
-// own `transformGameRules` over that text, so the excerpt is exactly what
+// (apps/backend/data/gameRulesRuleIndex.json — the Comprehensive Rules text every
+// shipped game-rules artifact was built from; the 2026-06-05 text at define). It
+// runs the build script's own `transformGameRules` over that text, so the excerpt is exactly what
 // `scripts/build-game-rules.mjs` would extract, and writes the file with the build
 // script's formatting.
 //
@@ -19,9 +19,11 @@
 // after the repo's dependencies are installed (prettier):
 //   node PRD/work/niche-interaction-rule-tests/build-topic-from-index.mjs
 //
-// Measured at define (2026-10-06) on a clean export of origin/main: 23 of 23 existing
-// topics come out byte-identical, the new topic's excerpt is 3,670 characters, and the
-// file diff is the six added lines of the new topic only.
+// Measured at define attempt 6 (2026-10-07) on a clean export of the merged tree, with
+// the proposed ten-rule entry (614.1a, 616.1, 616.1a-g, 616.2): 23 of 23 existing topics
+// come out byte-identical, the new topic's excerpt is 3,846 characters (total topic text
+// 25,808), and the file diff is the six added lines of the new topic only. (Attempt 5's
+// nine-rule entry measured 3,670 and 25,632.)
 
 import fs from "node:fs";
 import path from "node:path";

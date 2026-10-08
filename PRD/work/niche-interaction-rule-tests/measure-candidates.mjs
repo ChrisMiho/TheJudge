@@ -1,4 +1,6 @@
-// Define-node measurement for niche-interaction-rule-tests (graph-20261006-150550, attempt 3).
+// Define-node measurement for niche-interaction-rule-tests (graph-20261006-150550, attempt 3;
+// re-run on the merged tree at attempt 6, 2026-10-07, with candidate C8 and the new cases'
+// expected rules set to the deciding rules of the approved corpus cases).
 //
 // Measures candidate System 3 retrieval changes against EVERY existing suite that
 // checks which rules reach the prompt, plus the two new cards-attached cases:
@@ -64,6 +66,7 @@ const compact = (c) => gr.buildCompactCardSignal(c.name, c.typeLine, c.keywords)
 const marked = (cards) => cards.filter((c) => tagsFor(c).length > 0).length;
 const T_MIN = ["616.1", "616.1e", "616.1f", "616.2"];
 const T_FULL = ["616.1", "616.1a", "616.1b", "616.1c", "616.1d", "616.1e", "616.1f", "616.1g", "616.2"];
+const T_PROPOSED = ["614.1a", ...T_FULL]; // define attempt 6: 614.1a is a deciding rule of the approved tester case
 const topic = (ruleNumbers) => [{ id: "replacement-effects-interaction", ruleNumbers }];
 
 const CANDIDATES = {
@@ -74,7 +77,8 @@ const CANDIDATES = {
   "C4 rules-term tag (question side)": { questionExtra: (cards) => [...new Set(cards.flatMap(tagsFor))].join(" ") },
   "C5 616 topic, any marked card (min)": { topics: (cards) => (marked(cards) >= 1 ? topic(T_MIN) : []) },
   "C6 616 topic, 2+ marked cards (min)": { topics: (cards) => (marked(cards) >= 2 ? topic(T_MIN) : []) },
-  "C7 616 topic, 2+ marked cards (full)": { topics: (cards) => (marked(cards) >= 2 ? topic(T_FULL) : []) }
+  "C7 616 topic, 2+ marked cards (full)": { topics: (cards) => (marked(cards) >= 2 ? topic(T_FULL) : []) },
+  "C8 616 topic + 614.1a, 2+ marked cards": { topics: (cards) => (marked(cards) >= 2 ? topic(T_PROPOSED) : []) }
 };
 
 // ------------------------------------------------------------- System 3 runner
@@ -128,15 +132,23 @@ const NEW_CASES = [
   {
     id: "manufactor-esix-treasure",
     request: { mode: "lookup", question: "How do academy manufactor and esix, fractal bloom interact when I'm attempting to create a treasure token?", cards: [CARDS.manufactor, CARDS.esix] },
-    expected: ["616.1", "616.1f"]
+    // attempt 6: the deciding rules the approved corpus case names (academy-manufactor-esix-treasure)
+    expected: ["614.1a", "616.1", "616.1e", "616.1f"]
   },
   {
     id: "necropotence-silence-cleanup",
     request: { mode: "lookup", question: "Can I use the triggered ability of necropotence during my cleanup step to dodge silence effects and cast borne upon a wind?", cards: [CARDS.silence, CARDS.necro, CARDS.borne] },
-    expected: ["514.2", "514.3a"]
+    // attempt 6: the deciding rules the approved corpus case names (necropotence-silence-borne-upon-a-wind-cleanup)
+    expected: ["514.1", "514.2", "514.3a"]
   }
 ];
-const goldCases = await loadGoldCases();
+// Define attempt 6 (2026-10-07): the shared loader now reads the format-version-2
+// rules test corpus (393 cases). The worked-solutions suite here stays the 18
+// first-ship cases (the cases with no `source.pool`), scored on their
+// `expected.decidingRuleIds`; the whole corpus is measured by measure-rules-gate.mjs.
+const goldCases = (await loadGoldCases()).filter((g) => g.source?.pool === undefined && g.review.status !== "rejected");
+if (goldCases.length !== 18) throw new Error(`expected the 18 first-ship cases, got ${goldCases.length}`);
+for (const g of goldCases) g.expectedSupplementalRuleIds = g.expected.decidingRuleIds;
 const fixtures = readdirSync(fixtureDir).filter((f) => f.endsWith(".fixture.json")).sort().map((f) => JSON.parse(readFileSync(join(fixtureDir, f), "utf8")));
 const frozen = JSON.parse(readFileSync(join(fixtureDir, "frozen-query-embeddings.json"), "utf8"));
 const labelled = fixtures.filter((f) => f.expected?.expectedSupplementalRuleIds || f.expected?.forbiddenSupplementalRuleIds);
@@ -277,8 +289,9 @@ const lexicalParity = bench.scoreBenchmark(corpus, index, bench.buildPollutionTe
 console.log(`Benchmark parity (production scoreBenchmark, lexical): clean ${f4(lexicalParity.clean.recall5)} polluted ${f4(lexicalParity.polluted.recall5)}`);
 // Rule text only (the sum of the rules' own text). Through `formatGameRulesSection`
 // the prompt grows by more: line breaks between rules, the topic's title line, and
-// the blank line between topics. Measured at define attempt 5: full set 3,722.
-console.log(`Prompt cost of the 616 topic: min ${T_MIN.reduce((s, id) => s + ruleText.get(id).length, 0)} chars, full ${T_FULL.reduce((s, id) => s + ruleText.get(id).length, 0)} chars\n`);
+// the blank line between topics. Measured at define attempt 5: full set 3,722; at attempt 6,
+// full set + 614.1a (C8, the proposal): 3,898 (measure-rules-gate.mjs, G5 and G8).
+console.log(`Prompt cost of the 616 topic: min ${T_MIN.reduce((s, id) => s + ruleText.get(id).length, 0)} chars, full ${T_FULL.reduce((s, id) => s + ruleText.get(id).length, 0)} chars, full + 614.1a ${T_PROPOSED.reduce((s, id) => s + ruleText.get(id).length, 0)} chars\n`);
 
 for (const [name, cand] of Object.entries(CANDIDATES)) {
   console.log(`==================== ${name}`);
