@@ -3,8 +3,8 @@
 - Run ID: `graph-20261008-053030`
 - Profile: `loaded (env sentinel)` — printed by preflight; the session process is `claude --settings .claude/graph-profile.json` (pid 19738, observed via `ps`, not stated by the user)
 - Canary: `denied — hook live (rm -rf .worktrees/.graph-canary-nonexistent)`; graph canary `denied — graph tier armed (nohup true)`
-- Autonomous base: `origin/thejudge-auto/exact-curated-rule-exclusion` (rewritten to `origin/main` by the build half's claim)
-- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-exact-curated-rule-exclusion` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` by the build half's claim)
+- Autonomous base: `origin/main` (rewritten by the build half's claim; spec-forming half: `origin/thejudge-auto/exact-curated-rule-exclusion`)
+- Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` (rewritten by the build half's claim; spec-forming half: `.worktrees/kickoff-exact-curated-rule-exclusion`, removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
 - Current node: `owner-action` (parked after gate-qc PASS)
 - Next action: owner answers `PRD/work/exact-curated-rule-exclusion/GATE-QUESTIONS.md` in the docs PR and merges it; `/graph-implement PRD/work/exact-curated-rule-exclusion/` builds it

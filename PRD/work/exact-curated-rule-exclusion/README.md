@@ -12,7 +12,7 @@ Rule search stops hiding curated parents' sub-rules: exclude only the exact rule
 
 ## Autonomous metadata
 
-- Autonomous base: origin/thejudge-auto/exact-curated-rule-exclusion
+- Autonomous base: origin/main
 
 ## Preparation gate
 
