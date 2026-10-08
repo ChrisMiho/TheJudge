@@ -216,7 +216,7 @@ and as the last bullets of `- Notes:`:
 +  core-topic rule numbers excluded by exact number; ranking is a hybrid blend of
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-022 — the rules-in-every-prompt requirement stops saying "prefix" (amended)
@@ -251,7 +251,7 @@ and under `- Dependencies:`:
 +  - REQ-179 (rule-index hygiene and exact-number curated exclusion)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-181 — the meaning-based rule search stops saying "prefix" (amended)
@@ -280,7 +280,7 @@ and contradicts `REQ-179` once it ships. Say no only if you also reject
 +  - System 3 is capped at 10 excerpts, still deduplicated against the curated System 2 selection by exact rule number (REQ-179)
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-182 — the blended rule search stops saying "prefix" (amended)
@@ -309,7 +309,7 @@ and contradicts `REQ-179` once it ships. Say no only if you also reject
 +  - System 3 is capped at 10 excerpts, still deduplicated against the curated System 2 selection by exact rule number (REQ-179), and the prompt's section placement is unchanged
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## REQ-220 — the replacement-effects topic's rationale stops describing the prefix rule (amended)
@@ -347,7 +347,7 @@ and in `- Notes:`:
 +  - the full 616.1 family is shipped rather than a minimal subset because rule 616.1 directs the player through "the steps listed in rules 616.1a–f", and, under the prefix exclusion REQ-179 applied when this topic shipped, listing 616.1 barred System 3 from every 616.1 sub-rule (REQ-179 now excludes exact rule numbers only; this topic lists each 616.1 sub-rule it prints, so what it excludes is unchanged); 614.1a is included because the approved case names it as deciding and System 3 ranks it beyond 400th for this question. The topic adds 3,898 characters to a prompt when it fires (3,837 of rule text plus the title line and line breaks; about 27% on the tester's Manufactor + Esix prompt). 4.8% of cards carry the wording (matched as whole words in any letter case), so two random attached cards both carry it about 0.2% of the time; in the 392 approved rules test cases it fires on 6
 ```
 
-- Verdict:
+- Verdict: accept
 - Reason:
 
 ## Blocker questions
