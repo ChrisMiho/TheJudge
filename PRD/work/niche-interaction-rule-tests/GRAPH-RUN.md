@@ -327,6 +327,28 @@ Do not edit `PRD/sections/`, code, or the brief. Do not commit or push; the driv
 
 Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS marker you set, and any file you wrote.
 
+### gate-review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-niche-interaction-rule-tests
+
+You are the gate-resolution step of graph run `graph-20261006-150550` (build half), before node 4 (`gate-qc`) is re-entered. Follow the `graph-gate-review` skill at `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/graph-gate-review/SKILL.md` exactly (read it first, and read `PRD/instructions/graph-workflow-contract.md`). Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Inputs:
+- Package: `PRD/work/niche-interaction-rule-tests/` (inside the working directory above; never the launch checkout's copy)
+- Shared branch: `thejudge-auto/niche-interaction-rule-tests-work` (checked out in the working directory; the claim commit is its tip)
+- The owner answered all four verdict slots in `GATE-QUESTIONS.md` and merged docs PR #266 to `main` (the build signal). Every verdict comes from that file, never from this prompt.
+
+Do:
+1. Apply each verdict inside `GATE-QUESTIONS.md` (finalize the proposal; never edit `PRD/sections/`).
+2. Reconcile `DESIGN-BRIEF.md`, and the README's pointer to any verbatim `intake/` file, to every `edit` or `reject` verdict. Bounded to passages that contradict a verdict; `intake/` stays verbatim. Report a `### Brief reconciliation` list (state none needed if every verdict is accept).
+3. Record `## Gate verdicts` in `GRAPH-RUN.md`, resolve `## Open gate`, restore `STATUS.refined` (the only marker), set the README frontmatter status, and move the `PRD/work/STATUS.md` board row fully (remove from the old section, add under refined).
+4. Commit with explicit paths only (`cd <working directory> && git add <paths> && git commit`), then `git push -u origin thejudge-auto/niche-interaction-rule-tests-work` from inside the working directory. Never `git -C`, never `git add -A`/`.`, never force-push.
+5. Confirm `git status --porcelain` is empty in the working directory and that the launch checkout `/Users/chrismiho/Coding/Projects/TheJudge` was not written.
+
+Report: outcome (ok/failed), the commit hash, the verdict tally, the `### Brief reconciliation` list, and every path you wrote.
+
 ## Instruction ledger
 
 | Instruction | Class | Node | Rule |
@@ -340,3 +362,4 @@ Report back: PASS or FAIL, the complete findings list (none if PASS), the STATUS
 | "if were going to adjust the output format, we again need to test, lets start with making the rules correct, and then we can make the output pretty" | answered-once | define | — |
 | "dont worry about usage, keep going" | answered-once | gate-qc | — |
 | "/graph-kickoff niche-interaction-rule-tests" (2026-10-07, the go signal the parked gate named: restore, define attempt 6, gate-qc attempt 6) | answered-once | define | — |
+| "/graph-implement PRD/work/niche-interaction-rule-tests/" (2026-10-07, after the owner merged docs PR #266: build half) | answered-once | gate-review | — |
