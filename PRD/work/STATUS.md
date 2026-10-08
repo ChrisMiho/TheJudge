@@ -8,7 +8,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [answer-quality-investigation](answer-quality-investigation/) | all 7 slices done 2026-10-07 (build only, no paid call); code PR #275 awaits the owner's merge; findings and runbook in `docs/eval/answer-quality-investigation/`; graph run `graph-20261007-134015` |
 
 ## active
 
