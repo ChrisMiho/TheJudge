@@ -1434,16 +1434,16 @@
       "miss": []
     },
     "triggers-becomes-tapped-not-entering-tapped": {
-      "hit": [],
-      "miss": ["603.2e"]
+      "hit": ["603.2e"],
+      "miss": []
     },
     "triggers-cycling-triggers-are-not-spells": {
       "hit": ["702.29a"],
       "miss": []
     },
     "triggers-damage-prevented-no-trigger": {
-      "hit": [],
-      "miss": ["603.2g"]
+      "hit": ["603.2g"],
+      "miss": []
     },
     "triggers-dark-depths-leaves-before-resolving": {
       "hit": [],

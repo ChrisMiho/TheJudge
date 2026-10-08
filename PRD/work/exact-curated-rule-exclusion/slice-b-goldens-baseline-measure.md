@@ -1,6 +1,6 @@
 # Slice B — Regenerate three goldens, raise baseline, re-measure
 
-## Status: planned
+## Status: in-progress
 
 ## Goal
 
