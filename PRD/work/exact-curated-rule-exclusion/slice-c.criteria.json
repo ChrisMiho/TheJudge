@@ -5,7 +5,7 @@
     {
       "id": "C1",
       "statement": "REQ-179's Description, acceptance, constraint, dependency and note bullets in `functional-requirements.md` match the accepted slot, with its title and id kept and no new REQ or DEC id added",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md"
@@ -15,7 +15,7 @@
     {
       "id": "C2",
       "statement": "The dependent current-state lines (`system-map.md`, `system-map/game-rules-retrieval.md` lines 43-44, 75, 107 and 124, `integrations-and-data.md`, `in-depth/README.md`, `quick-lookup/README.md` lines 276-277 and 345) describe exact-id exclusion",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/system-map.md",
@@ -29,7 +29,7 @@
     {
       "id": "C3",
       "statement": "REQ-022, REQ-181, REQ-182 and REQ-220 are amended per their accepted slots (REQ-022 lines 378 and 396, REQ-181 line 4280, REQ-182 line 4320, REQ-220 lines 5810 and 5816)",
-      "value": false,
+      "value": true,
       "evidence": {
         "paths": [
           "PRD/sections/functional-requirements.md"
@@ -39,7 +39,7 @@
     {
       "id": "C4",
       "statement": "A line-level grep for the stale phrases over `PRD/sections/` returns no retrieval hit, and the rows the amendment set marks no change are untouched",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "grep .*(prefix|lettered sub-rules)"
       }
@@ -47,7 +47,7 @@
     {
       "id": "C5",
       "statement": "REQ-179's Notes carry a build record with the measured values, the lexical first-ship count and the two closing cases' lexical result from slice B",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }
@@ -55,7 +55,7 @@
     {
       "id": "C6",
       "statement": "`npm run quality:check` passes",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "npm run quality:check"
       }
@@ -63,7 +63,7 @@
     {
       "id": "C7",
       "statement": "The backend test suite and the script test suite pass",
-      "value": false,
+      "value": true,
       "evidence": {
         "command": "apps/backend run test|npm run test:scripts|npm test"
       }
@@ -71,7 +71,7 @@
     {
       "id": "C8",
       "statement": "Ship gates: slice criteria satisfied, no secrets committed, public contract unchanged, durable outcomes promoted and the package ready to delete",
-      "value": false,
+      "value": true,
       "evidence": {
         "manual": true
       }

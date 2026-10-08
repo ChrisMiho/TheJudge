@@ -1,4 +1,4 @@
-status: active
+status: ship-ready
 
 # exact-curated-rule-exclusion
 
@@ -9,7 +9,7 @@ Rule search stops hiding curated parents' sub-rules: exclude only the exact rule
 - Design brief: [DESIGN-BRIEF.md](DESIGN-BRIEF.md)
 - Proposal (owner verdict slots: REQ-179, REQ-022, REQ-181, REQ-182, REQ-220): [GATE-QUESTIONS.md](GATE-QUESTIONS.md)
 - Plan: [GAMEPLAN.md](GAMEPLAN.md)
-- Next: `thejudge-implement-all` (build half `graph-20261008-061643`, node 6 `build`).
+- Next: review the code PR, then cleanup (build half `graph-20261008-061643`; slices A, B, C done).
 
 ## Slices
 

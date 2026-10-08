@@ -388,7 +388,7 @@ the game-mode request drives them. (DEC-020, DEC-010)
   mock/offline default and the fallback on any embedding failure (REQ-181,
   REQ-182), from a query built from the question plus each submitted card's
   name, type line, and keywords rather than its full oracle text (REQ-178),
-  deduplicated against the System 2 selection by rule-number prefix (REQ-179) —
+  deduplicated against the System 2 selection by exact rule number (REQ-179) —
   omitted when nothing scores above 0. (DEC-032, DEC-046, REQ-022, REQ-178,
   REQ-179, REQ-181, REQ-182)
 - Built: `OFFICIAL RULINGS` carries published WotC Oracle rulings for submitted

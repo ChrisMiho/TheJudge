@@ -1,6 +1,6 @@
 # Slice C — Apply the PRD truth and close
 
-## Status: planned
+## Status: done
 
 ## Goal
 

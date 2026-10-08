@@ -8,12 +8,12 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [exact-curated-rule-exclusion](exact-curated-rule-exclusion/) | Rule search should exclude only the exact rule numbers a curated topic lists, so its sub-rules (603.2e, 603.2g) can reach the prompt (REQ-179). Slices A, B, C done; PRD truth applied; code PR awaits the owner's merge. Graph run graph-20261008-061643. |
 
 ## active
 
 | Package | Note |
 | --- | --- |
-| [exact-curated-rule-exclusion](exact-curated-rule-exclusion/) | Rule search should exclude only the exact rule numbers a curated topic lists, so its sub-rules (603.2e, 603.2g) can reach the prompt (REQ-179). Mapped out: slices A (code + tests + data test), B (goldens, baseline, measure), C (PRD truth). Build half running. Graph run graph-20261008-061643. |
 
 ## refined
 
