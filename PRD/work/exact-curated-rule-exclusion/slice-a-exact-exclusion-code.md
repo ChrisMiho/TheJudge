@@ -1,6 +1,8 @@
 # Slice A — Exact exclusion in code, evidence trace, tests, data test
 
-## Status: planned
+## Status: done
+
+Build note: the backend suite and `npm run quality:check` (through `coverage:check`) run the context-evaluation golden test, which fails the moment the scorer changes. To keep this commit green, the three prompt goldens were regenerated here with `UPDATE_CONTEXT_EVAL_FIXTURES=1`. Slice B reads that diff against the base (`git diff origin/main -- apps/backend/src/eval/fixtures`) and does the rest of its measuring.
 
 ## Goal
 
