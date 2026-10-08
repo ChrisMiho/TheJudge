@@ -6,7 +6,7 @@
 - Autonomous base: `origin/thejudge-auto/exact-curated-rule-exclusion` (rewritten to `origin/main` by the build half's claim)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-exact-curated-rule-exclusion` (rewritten to `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` by the build half's claim)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
-- Current node: `define`
+- Current node: `gate-qc`
 - Next action: `/graph-kickoff` (spec-forming half; resume reads this ledger)
 
 ## Node ledger
@@ -15,6 +15,7 @@
 | --- | --- | --- | --- | --- | --- | --- |
 | 1 | preflight | haiku | ok | `0 → 9` | `npm run graph:preflight -- --branch thejudge-auto/exact-curated-rule-exclusion --slug exact-curated-rule-exclusion --run-id graph-20261008-053030 --pid 19738` exit 0; branch `thejudge-auto/exact-curated-rule-exclusion` pushed from `.worktrees/kickoff-exact-curated-rule-exclusion` (`git ls-remote` → 5a65c91d); lock `.worktrees/.graph-run.lock` runId graph-20261008-053030 pid 19738; launch checkout still on `main` | 2026-10-08 |
 | 2 | shape | sonnet | ok | `0 → 15` | `PRD/work/exact-curated-rule-exclusion/IDEA.md`, `README.md`, `STATUS.ideation`, `intake/GRAPH-BRIEF.md` (`cmp` identical to staging); `PRD/work/STATUS.md` ideation row; 6 `## Prior run` lines in IDEA.md; launch checkout `git status --porcelain` unchanged | 2026-10-08 |
+| 3 | define | opus | ok | `0 → 42` | `PRD/work/exact-curated-rule-exclusion/DESIGN-BRIEF.md` (270 lines, 46-row line-level amendment set: 19 amend / 27 no change); `GATE-QUESTIONS.md` present → product truth proposed, gates (5 slots: REQ-179, REQ-022, REQ-181, REQ-182, REQ-220; blank verdicts; Blocker questions: none); `STATUS.ideation` → `STATUS.refined`; board row moved ideation → refined; `git diff HEAD -- PRD/sections apps scripts` empty; launch checkout unchanged | 2026-10-08 |
 
 ## Open gate
 
@@ -97,6 +98,26 @@ Hits: `system-map.md:88`, `system-map.md:90`, `integrations-and-data.md:272`, `i
 Quantitative targets. Any numeric acceptance target in the brief must come from a measurement, not from proportions. The intake's numbers were measured on commit `f98b8feb`, whose content is the current `origin/main` (`5a65c91d`, the merge of PR #276). PR #273 (data refresh) is still open; name the re-measure it would force as a build-time condition rather than re-measuring now.
 
 When done, set the package status marker the skill prescribes for a completed proposal. Report back: outcome, every path written, the stable IDs with a slot in `GATE-QUESTIONS.md`, the amendment-set disposition counts, and any blocker question raised.
+
+### gate-qc
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-exact-curated-rule-exclusion
+
+You are node 4 (`gate-qc`) of graph run `graph-20261008-053030`, attempt 1. Run the `thejudge-quality-check` skill: read `.claude/skills/thejudge-quality-check/SKILL.md` (and any reference it names) inside the working directory above and follow it in graph mode. Copy the `Working directory:` line above, unchanged, into any prompt you write, including any subagent you dispatch. Work only inside that working directory; never write to any path in the launch checkout `/Users/chrismiho/Coding/Projects/TheJudge/` outside `.worktrees/kickoff-exact-curated-rule-exclusion/`.
+
+Package: `PRD/work/exact-curated-rule-exclusion/`. Checked artifact: `DESIGN-BRIEF.md`, graded together with the proposal in `GATE-QUESTIONS.md` (five amend-in-place slots: REQ-179, REQ-022, REQ-181, REQ-182, REQ-220). The proposal is not yet applied to `PRD/sections/` by design — build applies it — so grade the brief against current `PRD/sections/` truth as amended by that proposal, and grade the proposal's diffs for accuracy against current `PRD/sections/` text.
+
+Check in particular:
+- Amendment-set completeness at line level: re-run `grep -rnE 'REQ-179|rule-number prefix|lettered sub-rules|sub-rules are excluded|parent rule ids?' PRD/sections/` and case-insensitive greps for `prefix`, `sub-rule`, and `parent rule` over `PRD/sections/`; every hit describing curated exclusion must have a disposition row in the brief, and every amend row a matching diff in `GATE-QUESTIONS.md`.
+- Every removed line in each diff matches `PRD/sections/` verbatim.
+- Each `GATE-QUESTIONS.md` block opens with the three plain-language lines and leaves `- Verdict:` / `- Reason:` blank.
+- Numeric acceptance targets trace to a recorded measurement.
+
+Write the PASS/FAIL report the skill prescribes, inside the package. Do not edit `DESIGN-BRIEF.md`, `GATE-QUESTIONS.md`, `PRD/sections/`, code, or the package `README.md` `## Preparation gate` section — the driver writes that section. Do not commit. Do not write `GRAPH-RUN.md`.
+
+Report back: PASS or FAIL, the report path, and the complete findings list.
 
 ## Instruction ledger
 
