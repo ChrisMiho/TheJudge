@@ -8,8 +8,8 @@
 - Build-half resume 2026-10-07: owner merged docs PR #266 (2026-10-08T02:40Z) and invoked `/graph-implement PRD/work/niche-interaction-rule-tests/`. Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19738`); graph canary `nohup true` denied — graph tier armed. Claimed on `thejudge-auto/niche-interaction-rule-tests-work` cut from `origin/main` (`c1188dc8`).
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261006-150550/`
 - Resume 2026-10-07: owner invoked `/graph-kickoff niche-interaction-rule-tests` after the rules test harness shipped (PR #269 merged 2026-10-07). Lock re-taken at the launch root (`npm run graph:preflight -- --take-lock --slug niche-interaction-rule-tests --run-id graph-20261006-150550 --pid 19439`); graph canary `nohup true` denied — graph tier armed; this session's profile `loaded (env sentinel)`. Package restored from `deferred` to `owner-action` by `thejudge-defer` (restore direction). `origin/main` merged into the run branch in the kickoff worktree (merge commit `92031511`, clean; brings REQ-222–230, the rules test corpus, and the rules-review sweeps). REQ-220 and REQ-221 confirmed unused on `origin/main` (new IDs there run REQ-222–230).
-- Current node: `owner-action` (gate-qc PASS; spec-forming half complete)
-- Next action: the owner answers the four verdict slots in `PRD/work/niche-interaction-rule-tests/GATE-QUESTIONS.md` (on this branch, in the kickoff worktree or on the PR) and merges docs PR https://github.com/ChrisMiho/TheJudge/pull/266 into `main`; that merge is the build signal, and `/graph-implement PRD/work/niche-interaction-rule-tests/` picks it up
+- Current node: `gate-review` done (build half, 2026-10-07); next is `gate-qc` re-entry
+- Next action: re-enter node 4 (`gate-qc`) on the finalized package; `STATUS.refined`
 
 ## Node ledger
 
@@ -32,8 +32,24 @@
 
 ## Open gate
 
+- RESOLVED 2026-10-07 (build half, gate-review): the owner answered all four verdict slots in `GATE-QUESTIONS.md` (4 accept, 0 edit, 0 reject) and merged docs PR #266 to `main` (`c1188dc8`). See `## Gate verdicts`. The entry below is the gate as it was parked.
 - Owner action (2026-10-07, gate-qc PASS at attempt 6): answer `PRD/work/niche-interaction-rule-tests/GATE-QUESTIONS.md` — four verdict slots: REQ-220 (new ten-rule replacement/prevention topic, switched on by card wording), REQ-022 (amended: the curated baseline gains that one card-wording switch), REQ-222 (amended: the offline rules gate counts a deciding rule carried by a selected curated topic as reaching the prompt, via a new per-case `inTopic` list), REQ-221 (withdrawn: both tester questions are already approved corpus cases). Then merge docs PR https://github.com/ChrisMiho/TheJudge/pull/266 to build. Evidence: ledger rows 13–14; README `## Preparation gate`; `measure-rules-gate.out.txt`, `measure-candidates.out.txt`. Resume: `/graph-implement PRD/work/niche-interaction-rule-tests/` after the merge (the build loop watches `main`). Kickoff worktree `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/kickoff-niche-interaction-rule-tests` stays through the park.
 - History: the 2026-10-06 gate (deferred until a rules test harness exists; then one more define pass on the two attempt-5 findings) was resolved 2026-10-07 when the harness shipped (PR #269) and the owner resumed the run by invoking `/graph-kickoff niche-interaction-rule-tests`, the go signal the parked gate named.
+
+## Gate verdicts
+
+Read from the answered `GATE-QUESTIONS.md` on 2026-10-07 (owner reason on every slot: "owner, 2026-10-07"). Tally: 4 accept, 0 edit, 0 reject. No proposed diff was changed; the proposal stands as refinement wrote it.
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-220` | accept | — |
+| `REQ-022` | accept | — |
+| `REQ-222` | accept | — |
+| `REQ-221` | accept | — (withdrawal confirmed; the number stays unused) |
+
+### Brief reconciliation
+
+none — every verdict was `accept`, so `DESIGN-BRIEF.md` and the README intake pointer were not touched.
 
 ## Dispatch prompts
 

@@ -1,5 +1,5 @@
 ---
-status: owner-action
+status: refined
 ---
 
 # niche-interaction-rule-tests
