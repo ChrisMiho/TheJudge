@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim; spec-forming half: `origin/thejudge-auto/exact-curated-rule-exclusion`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` (rewritten by the build half's claim; spec-forming half: `.worktrees/kickoff-exact-curated-rule-exclusion`, removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
-- Current node: `build`
+- Current node: `review`
 - Next action: `/graph-implement PRD/work/exact-curated-rule-exclusion/`
 
 ## Node ledger
@@ -22,6 +22,7 @@
 | — | gate-review | sonnet | ok | `0 → 13` | build-half run `graph-20261008-061643`: 5/5 verdicts `accept` (REQ-179, REQ-022, REQ-181, REQ-182, REQ-220); `GATE-QUESTIONS.md` unchanged; `### Brief reconciliation` none; `## Gate verdicts` written; `## Open gate` RESOLVED; `STATUS.owner-action` → `STATUS.refined`; board row → refined; launch checkout `git status --porcelain` unchanged | 2026-10-08 |
 | 4 | gate-qc | sonnet | ok | `0 → 17` | PASS (build-half re-grade, run `graph-20261008-061643`) — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: 0 must-fix; 28/28 removed lines verbatim at the brief's line numbers; 47-row amendment set complete; code sites + numbers re-confirmed (803 chars, 125 distinct / 127 sum); PR #273 still open so intake numbers stand; N1/N2 non-blocking for map-out. Driver recorded PASS in README `## Preparation gate`; `STATUS.refined` kept; launch checkout unchanged | 2026-10-08 |
 | 5 | plan | sonnet | ok | `0 → 24` | `GAMEPLAN.md` + 3 slices: `slice-a-exact-exclusion-code.md` (exact exclusion in both `scoreIndex` branches, evidence trace, tests, new `apps/backend/src/gameRulesTopicData.test.ts`), `slice-b-goldens-baseline-measure.md` (3 goldens, baseline without `--allow-regressions`, re-measure; 603.2e/603.2g hybrid gate), `slice-c-prd-truth-and-close.md` (apply 5 accepted slots by intent); `slice-{a,b,c}.criteria.json` 7/9/8 criteria all false; `STATUS.refined` → `STATUS.active`; board row → active; no deliverable under `PRD/work/` except bookkeeping `slice-b.evidence.md` (copied into REQ-179 Notes by C); launch checkout unchanged. Driver: copied ignored `apps/backend/data/models/` into the worktree (local embedder) | 2026-10-08 |
+| 6 | build | sonnet | ok | `0 → 124` | code PR https://github.com/ChrisMiho/TheJudge/pull/278 (OPEN, MERGEABLE, `thejudge-auto/exact-curated-rule-exclusion-work` → main); commits f0f16d76 (A), eba01255 + 26f74798 (B), f34db0cc (C); criteria 7/7, 9/9, 8/8 true at `origin/thejudge-auto/exact-curated-rule-exclusion-work`; reported quality:check green, backend 630/630, test:scripts 766/766; rules gate 293 → 295 of 392 (baseline 289 hit, 0 regressed, no accepted regressions), worked-solutions 287 → 289, hybrid first-ship 16/18, lexical 14/18, context-eval 14/14 each way, 603.2e/603.2g selected rank 1 under hybrid; 3 prompt goldens swapped. Return-side: launch checkout `git status --porcelain` identical to `.worktrees/.graph-intake/launch-status-before-build-exact-curated-rule-exclusion.txt`; `classifyBuildWrites` over 30 branch paths → ok (all inside `.worktrees/implement-exact-curated-rule-exclusion/`). Hook evidence log: 0 entries for this run (known evidence-root gap; criteria flips self-reported, review is the integrity gate). Deviation: goldens regenerated in slice A's commit (golden test runs in quality:check) | 2026-10-08 |
 
 ## Open gate
 
@@ -259,6 +260,57 @@ Context:
 - Subagent fan-out is off for this run: do the work yourself, spawn no subagents or forks. No sleeping or polling.
 
 Report back: per slice — outcome, commits, test and eval commands with their pass/fail results and the measured values; the criteria still `false` (if any) with the reason; the PR URL; every path you wrote (absolute); and `git status --porcelain` from the working directory.
+
+### review
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion
+
+You are node 7 (`review`) of graph run `graph-20261008-061643`: a fresh-context, no-write reviewer. You hold no Write, Edit or NotebookEdit tool and must not change any file, commit, push, or comment on the PR. Copy the `Working directory:` line above, unchanged, into any prompt you write (you should write none: spawn no subagents).
+
+Grade code PR #278 (`thejudge-auto/exact-curated-rule-exclusion-work` into `main`) against each slice's own acceptance criteria, quoted below. Read the diff with `git diff origin/main...HEAD` from the working directory, the slice docs, `GAMEPLAN.md`, `DESIGN-BRIEF.md`, the finalized `GATE-QUESTIONS.md` (all five IDs accepted unchanged) and `slice-b.evidence.md` under `PRD/work/exact-curated-rule-exclusion/`. You may re-run read-only verification (tests, `npm run quality:check`, the rules-gate and worked-solutions evals, `eval:evidence-trace` on the two closing cases) to confirm claims; `node_modules` and the local embedder are present. If a command rewrites a tracked file, report it; do not restore it. Never run `npm run data:refresh`, a Scryfall call, or any paid OpenAI call.
+
+Rubric — the slices' own acceptance criteria:
+
+Slice A (`slice-a-exact-exclusion-code.md`):
+
+- [ ] Neither exclusion branch in `scoreIndex` consults `parentRuleIds`; each drops a candidate only when `excludeRuleIds.has(entry.ruleId)`, and the REQ-179 comments describe exact-id exclusion
+- [ ] The retrieval tests prove, on the hybrid path and on the lexical path, that an unlisted sub-rule of a listed parent is ranked and selected and that a listed id is still excluded; the suite passes
+- [ ] `skippedForCuratedTopic` in the evidence trace returns true only for a rule number a curated topic lists, and its tests assert 514.3a is no longer skipped while 514.3 still is; `npm run test:scripts` passes
+- [ ] `apps/backend/src/gameRulesTopicData.test.ts` asserts, with plain substring matching, that each of the 24 topics' excerpts carries the full text of every rule it lists and of no other rule, and it passes on the committed data
+- [ ] The data test's helper fails on a synthetic topic that carries an unlisted rule's text and on one that omits a listed rule's text (a test of the test)
+- [ ] The `upkeep-trigger.fixture.json` description no longer says rule 603.3b is dropped by prefix exclusion
+- [ ] `npm run typecheck` and `npm run lint` pass
+
+Slice B (`slice-b-goldens-baseline-measure.md`):
+
+- [ ] Whether PR #273's data change is in the committed data is recorded; if it is, every number below was re-measured on the refreshed index
+- [ ] Exactly three fixtures' goldens changed (`commander-spellbook-lookup-attached-intent`, `commander-spellbook-wrong-zone`, `upkeep-trigger`), each the named swap, and no other golden under `apps/backend/src/eval/fixtures/` changed
+- [ ] `npm --workspace apps/backend run test:eval` passes without the update flag after regeneration
+- [ ] `npm run eval:rules-gate:baseline` ran without `--allow-regressions`, printed no `Accepted regressions` line, and the raised baseline file is written
+- [ ] `npm run eval:worked-solutions` reports 289 of 392 (or the re-measured value, with no recorded rule lost)
+- [ ] The two closing cases show 603.2e and 603.2g as System 3 excerpts under hybrid ranking from their committed frozen vectors
+- [ ] The lexical first-ship count and the two closing cases' lexical result are recorded from `EMBEDDING_PROVIDER=mock npm run eval:worked-solutions` (recorded, not gated)
+- [ ] The retrieval benchmark's recall@5 is unchanged under both lexical and `--semantic` scoring
+- [ ] Every measured value, its command and its date is written into `slice-b.evidence.md`, including first-ship hybrid 16 of 18 and context-eval 14 of 14 each way
+
+Slice C (`slice-c-prd-truth-and-close.md`):
+
+- [ ] REQ-179's Description, acceptance, constraint, dependency and note bullets in `functional-requirements.md` match the accepted slot, with its title and id kept and no new REQ or DEC id added
+- [ ] The dependent current-state lines (`system-map.md`, `system-map/game-rules-retrieval.md` lines 43-44, 75, 107 and 124, `integrations-and-data.md`, `in-depth/README.md`, `quick-lookup/README.md` lines 276-277 and 345) describe exact-id exclusion
+- [ ] REQ-022, REQ-181, REQ-182 and REQ-220 are amended per their accepted slots (REQ-022 lines 378 and 396, REQ-181 line 4280, REQ-182 line 4320, REQ-220 lines 5810 and 5816)
+- [ ] A line-level grep for the stale phrases over `PRD/sections/` returns no retrieval hit, and the rows the amendment set marks no change are untouched
+- [ ] REQ-179's Notes carry a build record with the measured values, the lexical first-ship count and the two closing cases' lexical result from slice B
+- [ ] `npm run quality:check` passes
+- [ ] The backend test suite and the script test suite pass
+- [ ] Ship gates: slice criteria satisfied, no secrets committed, public contract unchanged, durable outcomes promoted and the package ready to delete
+
+Known build deviation to judge against the criteria: the three prompt goldens were regenerated in slice A's commit rather than slice B's, because the golden test runs in `quality:check`.
+
+Severity rule: flag only gaps affecting correctness or the stated criteria above. A preference, a style note, or an improvement outside the slices' stated requirements is never Critical or Important and never loops back to build; list such items as Minor at most.
+
+Report back: a verdict (APPROVE, or REQUEST CHANGES with Critical/Important findings), then one line per criterion (met / not met, with the evidence: file and line, or command and output), then findings ranked Critical / Important / Minor with file:line and a concrete failure scenario. Name every command you ran and any tracked file it rewrote.
 
 ## Instruction ledger
 
