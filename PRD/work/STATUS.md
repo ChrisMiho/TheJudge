@@ -18,6 +18,7 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
+| [exact-curated-rule-exclusion](exact-curated-rule-exclusion/) | Rule search should exclude only the exact rule numbers a curated topic lists, so its sub-rules (603.2e, 603.2g) can reach the prompt (REQ-179). gate-qc PASS (attempt 2). Owner answered all 5 slots (accept) and merged docs PR #277; gate resolved, build half running. Graph run graph-20261008-053030. |
 
 ## refining
 
@@ -33,7 +34,6 @@ Do not rename package folders to encode status.
 
 | Package | Note |
 | --- | --- |
-| [exact-curated-rule-exclusion](exact-curated-rule-exclusion/) | Rule search should exclude only the exact rule numbers a curated topic lists, so its sub-rules (603.2e, 603.2g) can reach the prompt (REQ-179). gate-qc PASS (attempt 2). Owner: answer the 5 slots in `GATE-QUESTIONS.md`, then merge the docs PR to build. Graph run graph-20261008-053030. |
 
 ## deferred
 

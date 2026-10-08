@@ -6,7 +6,7 @@
 - Autonomous base: `origin/main` (rewritten by the build half's claim; spec-forming half: `origin/thejudge-auto/exact-curated-rule-exclusion`)
 - Worktree: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion` (rewritten by the build half's claim; spec-forming half: `.worktrees/kickoff-exact-curated-rule-exclusion`, removed clean)
 - Staging: `/Users/chrismiho/Coding/Projects/TheJudge/.worktrees/.graph-intake/graph-20261008-053030/`
-- Current node: `gate-review` (build half; owner answered all five verdicts `accept` and merged docs PR #277)
+- Current node: `gate-qc` (build half, re-grade after gate resolution)
 - Next action: `/graph-implement PRD/work/exact-curated-rule-exclusion/`
 
 ## Node ledger
@@ -19,14 +19,31 @@
 | 4 | gate-qc | sonnet | failed | `0 → 45` | FAIL attempt 1 of 3 — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: 3 must-fix (F1 803-not-926 excerpt size; F2 127 per-topic sum vs 125 distinct; F3 closing-case criterion names no ranking path / evidence-trace provider) + 4 minor; amendment set, verbatim removed lines and block format passed. Driver recorded FAIL in README `## Preparation gate`, `STATUS.refined` → `STATUS.refining`, board row → refining; loops to define | 2026-10-08 |
 | 5 | define | opus | ok | `0 → 28` | attempt 2: `DESIGN-BRIEF.md` + `GATE-QUESTIONS.md` edited in place — F1 803 chars (measured offline, brief `## Measured at define`); F2 125 distinct / 127 per-topic sum; F3 closing cases bound to hybrid frozen-vector path, lexical recorded at build (new D11); M1–M4 addressed (M3 adds amendment row 47 → 47 rows: 20 amend / 27 no change); verdict slots blank; `STATUS.refining` → `STATUS.refined`, board row → refined; no `PRD/sections/` or code diff; launch checkout unchanged | 2026-10-08 |
 | 6 | gate-qc | sonnet | ok | `0 → 33` | PASS attempt 2 — `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md`: F1–F3 and M1–M4 resolved; 0 must-fix; N1/N2 non-blocking for map-out. Observation: the checker traced numbers to the intake-cited probe outputs (`PRD/work/probe-keyword-rule-retrieval/measure-two-fixes.out.txt`, `FINDINGS-missing.md`, launch checkout, read-only) — the contract says intake-cited documents are never opened; no file was written and the proposal is unaffected. Driver recorded PASS in README `## Preparation gate`; `STATUS.refined` → `STATUS.owner-action`; board row → owner-action | 2026-10-08 |
+| — | gate-review | sonnet | ok | `0 → 13` | build-half run `graph-20261008-061643`: 5/5 verdicts `accept` (REQ-179, REQ-022, REQ-181, REQ-182, REQ-220); `GATE-QUESTIONS.md` unchanged; `### Brief reconciliation` none; `## Gate verdicts` written; `## Open gate` RESOLVED; `STATUS.owner-action` → `STATUS.refined`; board row → refined; launch checkout `git status --porcelain` unchanged | 2026-10-08 |
 
 ## Open gate
 
+- RESOLVED 2026-10-08 (graph-gate-review, build half `graph-20261008-061643`): 5 of 5 verdicts `accept`, 0 edit, 0 reject; docs PR #277 merged.
 - Gate: `define` product-truth proposal (gate-qc PASS, run stopped by design).
 - Question: answer the five verdict slots (REQ-179, REQ-022, REQ-181, REQ-182, REQ-220) in `PRD/work/exact-curated-rule-exclusion/GATE-QUESTIONS.md` — accept / edit / reject, with a reason for edit or reject — then merge to build.
 - Evidence: `QUALITY-CHECK.md` (PASS, attempt 2); docs PR https://github.com/ChrisMiho/TheJudge/pull/277 (`gh pr create --base main --head thejudge-auto/exact-curated-rule-exclusion`).
-- Terminal state: PARKED (owner-action) — lock released.
-- Resume: merging the docs PR is the build signal; `/graph-implement PRD/work/exact-curated-rule-exclusion/` (the background build loop) resolves the gate and builds it.
+- Terminal state: was PARKED (owner-action); resolved, `STATUS.owner-action` restored to `STATUS.refined`.
+
+## Gate verdicts
+
+| Stable ID | Verdict | Reason |
+| --- | --- | --- |
+| `REQ-179` | accept | — |
+| `REQ-022` | accept | — |
+| `REQ-181` | accept | — |
+| `REQ-182` | accept | — |
+| `REQ-220` | accept | — |
+
+Blocker questions: none (the file's `## Blocker questions` reads "None").
+
+### Brief reconciliation
+
+none — every verdict is `accept`; no `edit` or `reject` to carry. Confirmed by reading: `grep -n 'Verdict' GATE-QUESTIONS.md` shows five `- Verdict: accept` lines and every `- Reason:` slot is empty. `DESIGN-BRIEF.md`, the README intake pointer, and `intake/` are untouched.
 
 ## Dispatch prompts
 
@@ -180,6 +197,24 @@ Context:
 - Verify directly. Spawn no subagents or forks. No sleeping or polling. Stay well under the 60 tool-call budget.
 
 Report back: each verdict as applied, a `### Brief reconciliation` list (or none), every path you wrote (absolute), the marker before and after, and `git status --porcelain` from the working directory.
+
+### gate-qc (build half)
+
+graph is controlling
+
+Working directory: /Users/chrismiho/Coding/Projects/TheJudge/.worktrees/implement-exact-curated-rule-exclusion
+
+You are node 4 (`gate-qc`) of graph run `graph-20261008-061643`, the build half re-entering at the quality check after gate resolution. Run the `thejudge-quality-check` skill: read `/Users/chrismiho/Coding/Projects/TheJudge/.claude/skills/thejudge-quality-check/SKILL.md` and follow it against `PRD/work/exact-curated-rule-exclusion/DESIGN-BRIEF.md` inside the working directory above. Copy the `Working directory:` line above, unchanged, into any prompt you write.
+
+Context:
+- The owner accepted all five proposed IDs unchanged (see `## Gate verdicts` in `GRAPH-RUN.md`); `GATE-QUESTIONS.md` is the finalized proposal and the brief needed no reconciliation. The prior PASS (attempt 2, run `graph-20261008-053030`) is in `QUALITY-CHECK.md`; re-grade the package as it stands now against current `PRD/sections/` and code on this branch, which was cut from origin/main after docs PR #277 and code PR #276 merged. Confirm the brief and proposal still match current truth (line numbers and quoted removed lines in the proposed diffs, the cited code paths) rather than trusting the earlier report.
+- Data refresh PR #273 is still open and unmerged, so the measured numbers in the brief stand against current data.
+- Intake is evidence only: never open a document `intake/` cites (for example files under `PRD/work/probe-keyword-rule-retrieval/`); record only its path.
+- Write the result to `PRD/work/exact-curated-rule-exclusion/QUALITY-CHECK.md` (replace it, keeping a one-line note of prior attempts). On FAIL set `STATUS.refining` per the skill; on PASS leave `STATUS.refined`. The driver owns the README `## Preparation gate` section and the ledger; do not edit them. Never edit `PRD/sections/`, code, or anything outside the working directory; the launch checkout at `/Users/chrismiho/Coding/Projects/TheJudge` stays untouched.
+- Do not commit or push. Do not run benchmarks or anything that rewrites tracked result files.
+- Verify directly. Spawn no subagents or forks. No sleeping or polling. Stay well under the 60 tool-call budget.
+
+Report back: PASS or FAIL, the complete findings list (must-fix and minor), every path you wrote (absolute), and `git status --porcelain` from the working directory.
 
 ## Instruction ledger
 
