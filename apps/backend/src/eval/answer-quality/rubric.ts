@@ -74,7 +74,11 @@ export const RUBRIC_AXIS_IDS: readonly RubricAxisId[] = RUBRIC_AXES.map((axis) =
  * comparable only when their judge model AND rubric revision match
  * (REQ-186, REQ-189).
  */
-export const RUBRIC_REVISION = "2026-10-06.1";
+export const RUBRIC_REVISION = "2026-10-07.1";
+// 2026-10-07.1: the judge's inputs changed (REQ-186) -- it now receives the text of
+// the excerpts the answer prompt carried and the deciding rule ids under a separate
+// label -- so the revision moved, and grades under 2026-10-06.1 are never compared
+// per case with grades under this one (REQ-187, REQ-189).
 
 /** Renders the rubric as the exact text sent to the judge (REQ-186 layer 2). */
 export function formatRubricForJudge(): string {

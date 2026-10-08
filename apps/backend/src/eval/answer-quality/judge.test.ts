@@ -3,6 +3,8 @@ import {
   DEFAULT_JUDGE_MODEL,
   judgeAnswerAlone,
   judgeBlindRanking,
+  buildLoneJudgePrompt,
+  buildRankingPrompt,
   judgeMatchesAnswerModel,
   resolveJudgeModel,
   type JudgeClient
@@ -48,7 +50,8 @@ describe("Backend - Eval - Answer quality - judge (REQ-186)", () => {
     const baseInput = {
       judgeModel: "gpt-5",
       question: "Does the delayed trigger still fire?",
-      ruleIds: ["603.7a"],
+      attachedExcerpts: [{ ruleId: "603.7a", text: "A delayed triggered ability is created by a resolving spell or ability." }],
+      decidingRuleIds: ["603.7a", "603.7c"],
       answerText: "No, the delayed ability never triggers once the creature is already gone.",
       workedSolution: "In this case, the delayed ability never triggers."
     };
@@ -69,7 +72,8 @@ describe("Backend - Eval - Answer quality - judge (REQ-186)", () => {
       expect(client.create).toHaveBeenCalledTimes(1);
       const sentInput = client.create.mock.calls[0][0].input as string;
       expect(sentInput).toContain(baseInput.question);
-      expect(sentInput).toContain(baseInput.ruleIds[0]);
+      expect(sentInput).toContain(baseInput.attachedExcerpts[0]!.ruleId);
+      expect(sentInput).toContain(baseInput.attachedExcerpts[0]!.text);
       expect(sentInput).toContain(baseInput.answerText);
       expect(sentInput).toContain(baseInput.workedSolution);
       expect(sentInput).toContain("Correctness:");
@@ -263,7 +267,7 @@ describe("Backend - Eval - Answer quality - judge (REQ-186)", () => {
       expect(result).toEqual({
         undetermined: true,
         reason: "ranking needs two or more answers",
-        usage: { inputTokens: 0, outputTokens: 0 }
+        usage: { inputTokens: 0, outputTokens: 0, reasoningTokens: 0 }
       });
       expect(client.create).not.toHaveBeenCalled();
     });
@@ -282,7 +286,7 @@ describe("Backend - Eval - Answer quality - judge (REQ-186)", () => {
         shuffleIndices: [0, 1, 2, 3]
       });
       expect(result.undetermined).toBe(false);
-      expect(result.usage).toEqual({ inputTokens: 3400, outputTokens: 1000 });
+      expect(result.usage).toEqual({ inputTokens: 3400, outputTokens: 1000, reasoningTokens: 0 });
     });
   });
 
@@ -290,7 +294,8 @@ describe("Backend - Eval - Answer quality - judge (REQ-186)", () => {
     const input = {
       judgeModel: "gpt-5",
       question: "Q",
-      ruleIds: ["603.7a"],
+      attachedExcerpts: [{ ruleId: "603.7a", text: "A delayed triggered ability." }],
+      decidingRuleIds: ["603.7a"],
       answerText: "An answer.",
       workedSolution: "The reference."
     };
@@ -300,23 +305,117 @@ describe("Backend - Eval - Answer quality - judge (REQ-186)", () => {
       const create = vi.fn(async () => ({ output_text: scored, usage: { input_tokens: 1500, output_tokens: 800 } }));
       const result = await judgeAnswerAlone({ client: { responses: { create } }, ...input });
       expect(result.undetermined).toBe(false);
-      expect(result.usage).toEqual({ inputTokens: 1500, outputTokens: 800 });
+      expect(result.usage).toEqual({ inputTokens: 1500, outputTokens: 800, reasoningTokens: 0 });
     });
 
     it("still reports the tokens a malformed response cost, and zero when the call itself failed", async () => {
       const malformed = vi.fn(async () => ({ output_text: "not json", usage: { input_tokens: 1500, output_tokens: 20 } }));
       const bad = await judgeAnswerAlone({ client: { responses: { create: malformed } }, ...input });
       expect(bad.undetermined).toBe(true);
-      expect(bad.usage).toEqual({ inputTokens: 1500, outputTokens: 20 });
+      expect(bad.usage).toEqual({ inputTokens: 1500, outputTokens: 20, reasoningTokens: 0 });
 
       const failed = await judgeAnswerAlone({ client: fakeThrowingClient("boom"), ...input });
       expect(failed.undetermined).toBe(true);
-      expect(failed.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
+      expect(failed.usage).toEqual({ inputTokens: 0, outputTokens: 0, reasoningTokens: 0 });
     });
 
     it("reports zero usage when the client reports none", async () => {
       const result = await judgeAnswerAlone({ client: fakeClient(scored), ...input });
-      expect(result.usage).toEqual({ inputTokens: 0, outputTokens: 0 });
+      expect(result.usage).toEqual({ inputTokens: 0, outputTokens: 0, reasoningTokens: 0 });
+    });
+  });
+  describe("judge inputs (REQ-186: the judge is told what the prompt actually carried)", () => {
+    const excerpts = [
+      { ruleId: "614.1a", text: "Effects that use the word instead are replacement effects." },
+      { ruleId: "616.1", text: "If two or more replacement effects would apply, the affected player chooses." }
+    ];
+    const base = {
+      question: "What happens when a Treasure would be created?",
+      attachedExcerpts: excerpts,
+      decidingRuleIds: ["614.1a", "616.1", "616.1e"],
+      answerText: "Two Treasures are created.",
+      workedSolution: "The affected player orders the replacement effects."
+    };
+
+    it("carries the id and text of each attached excerpt, labelled as attached, and the deciding ids under a separate label", () => {
+      const prompt = buildLoneJudgePrompt(base);
+      expect(prompt).toContain("Rule excerpts attached to the answer prompt");
+      expect(prompt).toContain("614.1a. Effects that use the word instead are replacement effects.");
+      expect(prompt).toContain("616.1. If two or more replacement effects would apply");
+      expect(prompt).toContain("Rules the reference answer turns on (deciding rule ids; they may or may not be attached above): 614.1a, 616.1, 616.1e");
+      // 616.1e is deciding but not attached: it appears only on the deciding line.
+      expect(prompt.split("616.1e")).toHaveLength(2);
+      expect(prompt.indexOf("Rule excerpts attached")).toBeLessThan(prompt.indexOf("Rules the reference answer turns on"));
+    });
+
+    it("says so when nothing was attached, and prints no game-state block for a lookup", () => {
+      const prompt = buildLoneJudgePrompt({ ...base, attachedExcerpts: [] });
+      expect(prompt).toContain("Rule excerpts attached to the answer prompt (the rules the answer could draw on):\n  (none)");
+      expect(prompt).not.toContain("Game state the prompt printed");
+    });
+
+    it("prints the state lines the prompt printed for a case with a game state", () => {
+      const prompt = buildLoneJudgePrompt({
+        ...base,
+        stateLines: ["turnPhase: cleanup", "ZONE: STACK (BOTTOM TO TOP)", "card: Academy Manufactor"]
+      });
+      expect(prompt).toContain("Game state the prompt printed:\n  turnPhase: cleanup\n  ZONE: STACK (BOTTOM TO TOP)\n  card: Academy Manufactor");
+    });
+
+    it("is built identically however the answer was produced: the model, cap and arm are not inputs", async () => {
+      const reference = buildLoneJudgePrompt(base);
+      const sent: string[] = [];
+      for (const judgeModel of ["gpt-5", "gpt-5-mini"]) {
+        const create = vi.fn(async (params: { model: string; input: string }) => {
+          sent.push(params.input);
+          return { output_text: "not json" };
+        });
+        await judgeAnswerAlone({ client: { responses: { create } }, judgeModel, ...base });
+      }
+      expect(sent).toEqual([reference, reference]);
+      expect(Object.keys(base)).not.toEqual(expect.arrayContaining(["model", "excerptCap", "arm"]));
+    });
+
+    it("the blind ranking receives the same attached-excerpt, deciding-rule and game-state inputs as the lone judge", async () => {
+      const inputs = {
+        attachedExcerpts: excerpts,
+        decidingRuleIds: ["614.1a", "616.1", "616.1e"],
+        stateLines: ["turnPhase: cleanup", "ZONE: STACK (BOTTOM TO TOP)"]
+      };
+      const lone = buildLoneJudgePrompt({ ...base, ...inputs });
+      const create = vi.fn(async (params: { model: string; input: string }) => ({
+        output_text: JSON.stringify({ ranks: { A: 1, B: 2 }, rationale: "r" }),
+        usage: { input_tokens: 1, output_tokens: 1 },
+        params
+      }));
+      const result = await judgeBlindRanking({
+        client: { responses: { create } },
+        judgeModel: "gpt-5",
+        question: base.question,
+        workedSolution: base.workedSolution,
+        ...inputs,
+        answers: [
+          { modelId: "gpt-4.1", answerText: "One." },
+          { modelId: "gpt-6-luna", answerText: "Two." }
+        ],
+        shuffleIndices: [0, 1]
+      });
+      expect(result.undetermined).toBe(false);
+      const sent = create.mock.calls[0]![0].input;
+      for (const line of lone.split("\n").filter((candidate) => /^( {2}\S|Rule excerpts|Rules the reference|Game state)/.test(candidate))) {
+        expect(sent).toContain(line);
+      }
+      expect(sent).toContain("Answer A: One.");
+      expect(buildRankingPrompt({ question: "Q", workedSolution: "W", labeledAnswers: [{ label: "A", answerText: "x" }] })).toContain("  (none)");
+    });
+
+    it("reports the judge's reasoning tokens inside its output tokens", async () => {
+      const create = vi.fn(async () => ({
+        output_text: JSON.stringify({ correctness: 2, grounding: 2, calibration: 2, readability: 2, rationale: "Agrees." }),
+        usage: { input_tokens: 1500, output_tokens: 2300, output_tokens_details: { reasoning_tokens: 1500 } }
+      }));
+      const result = await judgeAnswerAlone({ client: { responses: { create } }, judgeModel: "gpt-5", ...base });
+      expect(result.usage).toEqual({ inputTokens: 1500, outputTokens: 2300, reasoningTokens: 1500 });
     });
   });
 });

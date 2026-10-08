@@ -225,12 +225,56 @@ a gitignored folder (`output/answer-quality/`). See
 `apps/backend/src/eval/answer-quality/` for the rubric, judge and artifact
 modules, and `PRD/sections/functional-requirements.md` REQ-186 through REQ-190.
 
+### Experiment runs, the paired report, the evidence trace, arms and manifests (REQ-226 to REQ-230)
+
+For a deliberate comparison (before and after a data refresh, a prompt change, two
+models) the answer-quality command also has an **experiment mode**. It never
+touches `results.json`.
+
+- **Experiment run** (REQ-226, REQ-227): `npm run eval:answer-quality -- --run-id <id>
+  --manifest <file>` answers exactly the manifest's cases (ids plus the SHA-256 of each
+  question and reference answer), `--repeat <n>` times each, and `--arm <A|B|C|D|P>`
+  picks prompt variants. Everything goes into `output/answer-quality/runs/<run-id>/`:
+  `manifest.json` (the identity record: the commit it ran from, file hashes, models,
+  caps, arms, judge, rubric, rates with their check dates, spending cap),
+  `calls.jsonl` (each record is saved the moment its judge call returns), a transcript
+  per record and a numbers-only `summary.json`. It measures the checkout it runs from
+  (it refuses uncommitted changes, and `--expect-commit <sha>` pins the commit), so an
+  older revision is measured by running the tooling from that revision's own worktree.
+  A live run needs `--confirm-live-calls` **and** `--max-cost-usd`, stops cleanly
+  before passing the cap, and refuses while a model has no rate (`unpriced`).
+  `--resume <run-id>` continues a stopped run (`--retry-errors` re-asks failed answers);
+  `--regrade-from <run-id>` grades an earlier run's stored answers again under the current
+  judge and rubric, with no answer call. A dry run prints the plan, the calls, the
+  estimate and every rate with its check date.
+- **Paired report** (REQ-228): `npm run eval:answer-quality:compare -- <run-a> <run-b>`
+  (offline) counts right-to-right, wrong-to-right, right-to-wrong, wrong-to-wrong and
+  missing, lists every right-to-wrong case with its transcripts, breaks the counts down by
+  tier (1-2 and 3 never pooled), rules section, mechanic, difficulty, source pool and
+  request kind, reports the unchanged-input stratum as sampling noise, and names no winner.
+- **Evidence trace** (REQ-229): `npm run eval:evidence-trace` (offline) shows, per deciding
+  rule, its rank in the full System 3 ranking, whether it was selected, and whether its text
+  reached the final prompt (curated topic, excerpt, or card ruling), with the rule's parent
+  and lettered subrules. `npm run eval:evidence-trace:compare -- <folder-a> <folder-b>`
+  compares two traces made from two revisions' worktrees.
+- **Arms and manifests** (REQ-230): `scripts/lib/diagnostic-arms.mjs` builds test-only
+  prompt variants (B regroups the same evidence, C adds the deciding-rule bundle, D is both,
+  P swaps one approved preamble sentence). `manifests/diagnostic.json` and
+  `manifests/held-out.json` (case ids and hashes only, written by
+  `npm run eval:answer-quality:manifests`) fence them: C and D run only on the diagnostic set,
+  and a later fix is judged once on the held-out set.
+
+None of these is a build gate. The findings and the owner's runbook for the paid phases are
+in `docs/eval/answer-quality-investigation/`.
+
 ## Running it
 
 ```bash
 npm run eval:worked-solutions                          # retrieval check, offline
 npm run eval:answer-quality                             # answer-quality plan, dry
 npm run eval:answer-quality -- --confirm-live-calls     # answer-quality, live (costs money)
+npm run eval:evidence-trace                             # where each deciding rule goes, offline
+npm run eval:answer-quality:compare -- <run-a> <run-b>  # paired before/after report, offline
 ```
 
 `eval:worked-solutions` prints one line per case (hit/miss against the deciding
@@ -247,3 +291,7 @@ cost; it makes no provider call when no key is configured.
 - Checked for retrieval by `scripts/eval-worked-solutions.mjs`.
 - Checked for answer quality by `scripts/eval-answer-quality.mjs` and
   `apps/backend/src/eval/answer-quality/` (rubric, assertions, judge, artifact).
+- Experiment runs, the paired report, the evidence trace, the arms and the manifests:
+  `scripts/lib/experiment-run.mjs`, `scripts/eval-answer-compare.mjs`,
+  `scripts/eval-evidence-trace.mjs`, `scripts/lib/diagnostic-arms.mjs`,
+  `scripts/build-answer-quality-manifests.mjs`, and `apps/backend/src/eval/answer-quality/manifests/`.

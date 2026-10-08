@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs"
 import { dirname, resolve } from "node:path"
 import { fileURLToPath } from "node:url"
 import test from "node:test"
+import { mkdtemp, readFile as readFileAsync, writeFile as writeFileAsync } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 
 import {
   BAKE_OFF_LINEUP,
@@ -17,15 +20,26 @@ import {
   checkModelAccess,
   computeCallCostUsd,
   describeRetrieval,
+  describeExperimentPlan,
+  estimateCallCostUsd,
   estimateCost,
   executeEvaluation,
   formatCommittedJson,
+  MODEL_PRICING_USD_PER_MILLION_TOKENS,
+  MODEL_RATE_CHECKED_ON,
+  NO_LOCAL_ENV_VARIABLE,
+  buildRateTable,
+  describeRates,
+  openAiClientOptions,
+  readProductionTimeoutMs,
   parseArgs,
   resolveJudgeModel,
   resolveRunEnv,
   run
 } from "./eval-answer-quality.mjs"
 import { loadGoldCases } from "./lib/gold-cases.mjs"
+import { manifestEntryFor } from "./lib/experiment-run.mjs"
+import { ARM_REGISTRY } from "./lib/diagnostic-arms.mjs"
 import {
   computeHeadline,
   formatHeadline,
@@ -271,10 +285,10 @@ test("estimateCost sets no numeric target and scales with lineup size, excerpt c
   assert.ok(Number.isFinite(large.totalCostUsd))
 })
 
-test("computeCallCostUsd derives cost from real token counts and a known model's price, and is zero for an unrecognized model", () => {
+test("computeCallCostUsd derives cost from real token counts and a known model's price, and is null (unpriced), never $0, for an unrecognized model", () => {
   const cost = computeCallCostUsd("gpt-4.1-mini", 1_000_000, 1_000_000)
   assert.ok(Math.abs(cost - (0.4 + 1.6)) < 1e-9)
-  assert.equal(computeCallCostUsd("not-a-real-model", 1000, 1000), 0)
+  assert.equal(computeCallCostUsd("not-a-real-model", 1000, 1000), null)
 })
 
 test("buildRunArtifact aggregates per-leg headline counts, tier counts, judge-mismatch flag, and totals from raw per-call records", () => {
@@ -1022,4 +1036,535 @@ test("the live loop refuses a lexical pass when a real embedder is configured, t
     })
   })
   await assert.rejects(() => executeEvaluation(evaluationParams(), deps), /lexical retrieval/)
+})
+
+// ---------------------------------------------------------------------------
+// Experiment mode (REQ-226): flags, the manifest refusal, and the committed file left alone
+// ---------------------------------------------------------------------------
+
+test("parseArgs leaves experiment mode off for a routine run and turns it on with --run-id", () => {
+  assert.equal(parseArgs([]).experiment, null)
+  assert.equal(parseArgs(["--model", "gpt-4.1", "--all"]).experiment, null)
+  const parsed = parseArgs([
+    "--run-id",
+    "phase-2-head",
+    "--manifest",
+    "manifests/diagnostic.json",
+    "--repeat",
+    "3",
+    "--expect-commit",
+    "07cc3ab6"
+  ])
+  assert.equal(parsed.experiment.runId, "phase-2-head")
+  assert.equal(parsed.experiment.repeats, 3)
+  assert.equal(parsed.experiment.expectCommit, "07cc3ab6")
+  assert.equal(parsed.experiment.regradeFrom, null)
+  assert.match(parsed.experiment.manifestPath, /manifests\/diagnostic\.json$/)
+  assert.equal(parseArgs(["--run-id", "r", "--regrade-from", "earlier"]).experiment.regradeFrom, "earlier")
+})
+
+test("parseArgs refuses an experiment flag without --run-id, a missing manifest, a bad repeat, and a selection flag", () => {
+  assert.throws(() => parseArgs(["--repeat", "3"]), /--repeat belong to an experiment run: name it with --run-id/)
+  assert.throws(() => parseArgs(["--manifest", "m.json"]), /--manifest belong to an experiment run/)
+  assert.throws(() => parseArgs(["--run-id", "r"]), /needs --manifest/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--manifest", "m.json", "--repeat", "0"]), /--repeat needs a whole number/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--manifest", "m.json", "--all"]), /drop --all/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--regrade-from", "e", "--manifest", "m.json"]), /drop --manifest/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--regrade-from", "e", "--repeat", "2"]), /drop --repeat/)
+})
+
+async function experimentFixture({ manifestCases, cases }) {
+  const root = await mkdtemp(join(tmpdir(), "aq-experiment-"))
+  const manifestPath = join(root, "manifest.json")
+  await writeFileAsync(manifestPath, JSON.stringify({ formatVersion: 1, cases: manifestCases }))
+  return { root, manifestPath, loadCases: async () => cases }
+}
+
+test("an experiment run whose manifest names a missing, unapproved or changed case refuses by name and makes no call", async () => {
+  const good = fixtureCase("exp-good")
+  const draft = fixtureCase("exp-draft", { review: { status: "draft" } })
+  const changed = fixtureCase("exp-changed")
+  const cases = [good, draft, fixtureCase("exp-changed", { question: "Reworded since the manifest was written?" })]
+  const { manifestPath, loadCases } = await experimentFixture({
+    manifestCases: [manifestEntryFor(good), manifestEntryFor(draft), manifestEntryFor(changed), { id: "exp-ghost", questionSha256: "x", answerSha256: "y" }],
+    cases
+  })
+  const client = fakeAccessClient(["gpt-4.1", "gpt-5"])
+  let runnerCalled = false
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: ["--run-id", "refused", "--manifest", manifestPath, CONFIRM_FLAG],
+        env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+        log: () => {},
+        loadCases,
+        isStale: notStale,
+        client,
+        runExperiment: async () => {
+          runnerCalled = true
+        }
+      }),
+    (error) =>
+      /exp-ghost: missing/.test(error.message) &&
+      /exp-draft: unapproved/.test(error.message) &&
+      /exp-changed: hash mismatch/.test(error.message)
+  )
+  assert.deepEqual(client.calls, [], "not even the model-access list request is made")
+  assert.equal(runnerCalled, false)
+})
+
+test("an experiment dry run prints the plan, reads and writes no committed scores file, and makes no network call", async () => {
+  const a = fixtureCase("exp-a")
+  const b = fixtureCase("exp-b")
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a), manifestEntryFor(b)], cases: [a, b] })
+  const logs = []
+  const client = fakeAccessClient(["gpt-4.1", "gpt-5"])
+  const result = await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--run-id", "dry", "--manifest", manifestPath, "--repeat", "3"],
+    env: {},
+    log: (line) => logs.push(line),
+    loadCases,
+    isStale: notStale,
+    measure: fakeMeasure,
+    client,
+    readResults: async () => {
+      throw new Error("an experiment run must never read the committed scores file")
+    }
+  })
+  assert.equal(result.ran, false)
+  assert.equal(result.experiment, true)
+  assert.deepEqual(client.calls, [])
+  assert.match(logs[0], /Run id: dry/)
+  assert.match(logs[0], /the committed apps\/backend\/src\/eval\/answer-quality\/results\.json is never read or written/)
+  assert.match(logs[0], /Cases: 2 from the manifest, each answered 3 times/)
+  assert.match(logs[0], /6 answer calls, 6 lone judge calls/)
+})
+
+test("a confirmed experiment run hands the validated cases to the experiment runner and leaves results.json byte-identical", async () => {
+  const a = fixtureCase("exp-a")
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a)], cases: [a] })
+  const repoRootForTest = resolve(dirname(fileURLToPath(import.meta.url)), "..")
+  const committed = resolve(repoRootForTest, "apps/backend/src/eval/answer-quality/results.json")
+  const before = await readFileAsync(committed, "utf8")
+  let received
+  const client = fakeAccessClient(["gpt-4.1", "gpt-5"])
+  const result = await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--run-id", "live", "--manifest", manifestPath, "--repeat", "2", "--expect-commit", "abcdef1", "--max-cost-usd", "5", CONFIRM_FLAG],
+    env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+    log: () => {},
+    loadCases,
+    isStale: notStale,
+    client,
+    readResults: async () => {
+      throw new Error("an experiment run must never read the committed scores file")
+    },
+    runExperiment: async (params) => {
+      received = params
+      return { summary: "fake" }
+    }
+  })
+  assert.equal(result.ran, true)
+  assert.equal(received.runId, "live")
+  assert.equal(received.repeats, 2)
+  assert.equal(received.expectCommit, "abcdef1")
+  assert.deepEqual(received.cases.map((c) => c.id), ["exp-a"])
+  assert.equal(received.manifestSha256.length, 64)
+  assert.match(received.runsRoot, /output\/answer-quality\/runs$/)
+  assert.deepEqual(client.calls, ["list"], "only the models-list access check; no completion")
+  assert.equal(await readFileAsync(committed, "utf8"), before, "the committed scores file is byte-identical")
+})
+
+test("a routine run still merges into the committed scores file exactly as before (REQ-189)", async () => {
+  const { deps, written } = fakeDeps()
+  await executeEvaluation(evaluationParams(), deps)
+  assert.equal(written.results.caseLegScores.length, 1)
+  assert.ok(written.results.runMetadata.selectionMode)
+})
+
+test("ANSWER_QUALITY_NO_LOCAL_ENV keeps every local env file out of a run, so a dry run builds no client", () => {
+  const loaded = []
+  const loadLocalEnv = () => {
+    loaded.push("read")
+    return { env: { OPENAI_API_KEY: "sk-from-a-file" }, sources: ["a-file"] }
+  }
+  const guarded = resolveRunEnv({ processEnv: { [NO_LOCAL_ENV_VARIABLE]: "1" }, confirmed: false, loadLocalEnv })
+  assert.deepEqual(loaded, [], "no local env file is read")
+  assert.equal(guarded.OPENAI_API_KEY, undefined)
+  const unguarded = resolveRunEnv({ processEnv: {}, confirmed: false, loadLocalEnv })
+  assert.equal(unguarded.OPENAI_API_KEY, "sk-from-a-file")
+})
+
+test("describeExperimentPlan names the arms and revisions, the calls and the folder", () => {
+  const text = describeExperimentPlan({
+    experiment: { runId: "plan", repeats: 1, regradeFrom: null },
+    models: ["gpt-4.1"],
+    excerptCaps: [10],
+    arms: [{ id: "A", revision: "A.1" }],
+    estimate: { answerCalls: 2, loneJudgeCalls: 2, rankingCalls: 0, totalCalls: 4, totalCostUsd: 0.05 },
+    caseCount: 2,
+    folder: "/runs/plan",
+    judgeModel: "gpt-5"
+  })
+  assert.match(text, /Arms: A \(A\.1\)/)
+  assert.match(text, /4 total, sequential/)
+  assert.match(text, /\/runs\/plan\//)
+})
+
+// ---------------------------------------------------------------------------
+// Slice B (REQ-227): flags, the cap requirement, unpriced models
+// ---------------------------------------------------------------------------
+
+test("parseArgs reads --resume, --retry-errors and --max-cost-usd, and refuses the unusable combinations", () => {
+  const parsed = parseArgs(["--resume", "phase-2", "--manifest", "m.json", "--retry-errors", "--max-cost-usd", "12.5"])
+  assert.equal(parsed.experiment.runId, "phase-2")
+  assert.equal(parsed.experiment.resume, true)
+  assert.equal(parsed.experiment.retryErrors, true)
+  assert.equal(parsed.experiment.maxCostUsd, 12.5)
+  assert.equal(parseArgs(["--run-id", "x", "--manifest", "m.json"]).experiment.maxCostUsd, null)
+  assert.throws(() => parseArgs(["--run-id", "x", "--manifest", "m.json", "--retry-errors"]), /add --resume/)
+  assert.throws(() => parseArgs(["--run-id", "x", "--manifest", "m.json", "--max-cost-usd", "0"]), /positive dollar amount/)
+  assert.throws(() => parseArgs(["--run-id", "a", "--resume", "b", "--manifest", "m.json"]), /name different runs/)
+  assert.throws(() => parseArgs(["--max-cost-usd", "5"]), /belong to an experiment run/)
+})
+
+test("--confirm-live-calls in experiment mode without --max-cost-usd refuses before any client or call exists", async () => {
+  const a = fixtureCase("cap-a")
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a)], cases: [a] })
+  let clientBuilt = false
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: ["--run-id", "uncapped", "--manifest", manifestPath, CONFIRM_FLAG],
+        env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+        log: () => {},
+        loadCases,
+        isStale: notStale,
+        buildClient: async () => {
+          clientBuilt = true
+          return fakeAccessClient(["gpt-4.1", "gpt-5"])
+        },
+        runExperiment: async () => {
+          throw new Error("must not run")
+        }
+      }),
+    /also needs --max-cost-usd/
+  )
+  assert.equal(clientBuilt, false)
+})
+
+test("a model with no rate prints as unpriced in the dry run, and a live capped run refuses to start", async () => {
+  const a = fixtureCase("unpriced-a")
+  const { manifestPath, loadCases } = await experimentFixture({ manifestCases: [manifestEntryFor(a)], cases: [a] })
+
+  // Dry run: unpriced, never $0 -- routine plan and experiment plan alike.
+  const routineLogs = []
+  await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--model", "gpt-7-mystery"],
+    env: {},
+    log: (line) => routineLogs.push(line),
+    loadCases,
+    measure: fakeMeasure,
+    isStale: notStale
+  })
+  assert.match(routineLogs[0], /Unpriced \(no rate in the table\): gpt-7-mystery/)
+
+  const experimentLogs = []
+  await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--run-id", "mystery", "--manifest", manifestPath, "--model", "gpt-7-mystery", "--max-cost-usd", "5"],
+    env: {},
+    log: (line) => experimentLogs.push(line),
+    loadCases,
+    isStale: notStale,
+    measure: fakeMeasure
+  })
+  assert.match(experimentLogs[0], /Unpriced \(no rate in the table\): gpt-7-mystery/)
+  assert.match(experimentLogs[0], /Spending cap: \$5/)
+
+  // Live capped run: refused before a client is built.
+  let clientBuilt = false
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: ["--run-id", "mystery-live", "--manifest", manifestPath, "--model", "gpt-7-mystery", "--max-cost-usd", "5", CONFIRM_FLAG],
+        env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+        log: () => {},
+        loadCases,
+        isStale: notStale,
+        buildClient: async () => {
+          clientBuilt = true
+          return fakeAccessClient([])
+        }
+      }),
+    /no rate is known for gpt-7-mystery \(unpriced\)/
+  )
+  assert.equal(clientBuilt, false)
+})
+
+test("estimateCallCostUsd follows the dry-run method and is null for a model with no rate", () => {
+  assert.equal(estimateCallCostUsd({ kind: "answer", model: "mystery" }), null)
+  const answer = estimateCallCostUsd({ kind: "answer", model: "gpt-4.1", promptChars: 40000 })
+  assert.ok(Math.abs(answer - (10000 * 2 + 600 * 8) / 1_000_000) < 1e-12)
+  const judge = estimateCallCostUsd({ kind: "judge", model: "gpt-5" })
+  assert.ok(Math.abs(judge - (1500 * 1.25 + 800 * 10) / 1_000_000) < 1e-12)
+  assert.ok(estimateCallCostUsd({ kind: "ranking", model: "gpt-5" }) > judge)
+})
+
+// ---------------------------------------------------------------------------
+// Slice C (REQ-186 to REQ-189): grader repair, runtime parity, accounting
+// ---------------------------------------------------------------------------
+
+test("gpt-6-luna is in the rate table with a check date, and the dry run prints every rate with its date", async () => {
+  assert.deepEqual(MODEL_PRICING_USD_PER_MILLION_TOKENS["gpt-6-luna"], { input: 0.1, output: 0.5 })
+  assert.equal(MODEL_RATE_CHECKED_ON["gpt-6-luna"], "2026-10-07")
+  for (const model of Object.keys(MODEL_PRICING_USD_PER_MILLION_TOKENS)) {
+    assert.ok(MODEL_RATE_CHECKED_ON[model], `${model} has a recorded check date`)
+  }
+  assert.ok(!BAKE_OFF_LINEUP.includes("gpt-6-luna"), "--bake-off is unchanged")
+  assert.equal(buildRateTable()["gpt-6-luna"].checkedOn, "2026-10-07")
+
+  const rateLines = describeRates().join("\n")
+  for (const model of Object.keys(MODEL_PRICING_USD_PER_MILLION_TOKENS)) assert.match(rateLines, new RegExp(`${model}: \\$`))
+  assert.match(rateLines, /gpt-6-luna: \$0\.1 \/ \$0\.5 -- check date: 2026-10-07/)
+
+  const logs = []
+  await run({ loadLocalEnv: noLocalEnv, argv: ["--model", "gpt-6-luna"], env: {}, log: (line) => logs.push(line), measure: fakeMeasure, isStale: notStale })
+  assert.match(logs[0], /Rates \(USD per million tokens/)
+  assert.match(logs[0], /gpt-6-luna: \$0\.1 \/ \$0\.5 -- check date: 2026-10-07/)
+  assert.doesNotMatch(logs[0], /Unpriced/, "Luna now has a rate")
+})
+
+test("evaluation answer calls are built with the key alone and sent with model and input alone -- no timeout, retry or reasoning-effort override (REQ-188)", async () => {
+  assert.deepEqual(Object.keys(openAiClientOptions({ OPENAI_API_KEY: "sk-test" })), ["apiKey"])
+
+  const sent = []
+  const client = {
+    responses: {
+      create: async (params) => {
+        sent.push(params)
+        return { output_text: "Per rule 613.9, yes.", usage: { input_tokens: 10, output_tokens: 5 } }
+      }
+    }
+  }
+  const { deps } = fakeDeps({ judgeAnswerAlone: async () => ({ undetermined: true, reason: "skipped", usage: { inputTokens: 0, outputTokens: 0, reasoningTokens: 0 } }) })
+  await executeEvaluation(evaluationParams({ client }), deps)
+  assert.equal(sent.length, 1)
+  assert.deepEqual(Object.keys(sent[0]).sort(), ["input", "model"])
+})
+
+test("records carry allDecidingRulesInPrompt beside the unchanged goldRuleInPrompt, reasoning tokens, the reported effort, and unpriced instead of $0", async () => {
+  const caseEntry = fixtureCase("deciding", { expected: { outcome: "works", shortAnswer: "Yes.", answer: "Reference.", decidingRuleIds: ["100.1", "200.2"] } })
+  const client = {
+    responses: {
+      create: async () => ({
+        output_text: "Per rule 100.1, yes.",
+        reasoning: { effort: "medium" },
+        usage: { input_tokens: 2000, output_tokens: 1700, output_tokens_details: { reasoning_tokens: 1500 } }
+      })
+    }
+  }
+  const { deps, written } = fakeDeps({
+    judgeAnswerAlone: async () => ({
+      undetermined: false,
+      scores: { correctness: 2, grounding: 2, calibration: 2, readability: 2 },
+      rationale: "Agrees.",
+      usage: { inputTokens: 1500, outputTokens: 2300, reasoningTokens: 1500 }
+    })
+  })
+  await executeEvaluation(evaluationParams({ client, models: ["gpt-7-mystery"], selectedCases: [caseEntry], allCases: [caseEntry] }), deps)
+  const [record] = written.results.caseLegScores
+  // One deciding rule (100.1) is among the System 3 selections; the other (200.2) is nowhere in the prompt.
+  assert.equal(record.goldRuleInPrompt, true, "goldRuleInPrompt keeps its meaning: one deciding rule among the selections")
+  assert.equal(record.allDecidingRulesInPrompt, false)
+  assert.equal(record.reasoningTokens, 1500)
+  assert.equal(record.judgeReasoningTokens, 1500)
+  assert.equal(record.reportedEffort, "medium")
+  assert.equal(record.unpriced, true, "an unknown price is unpriced")
+  assert.ok(!("costUsd" in record) && !("judgeCostUsd" in record), "the committed record carries no per-call dollar field, so no $0 either")
+  assert.deepEqual(written.results.runMetadata.unpricedModels, ["gpt-7-mystery"])
+  assert.equal(written.results.runMetadata.totalReasoningTokens, 1500)
+  assert.equal(written.results.runMetadata.answerClientTimeoutMs, "sdk-default")
+  assert.equal(written.results.runMetadata.answerClientMaxRetries, "sdk-default")
+  assert.equal(Number.isFinite(written.results.runMetadata.totalCostUsd), true)
+
+  // A priced model is not flagged; a curated topic carrying the other rule makes every deciding rule available.
+  const priced = fakeDeps({
+    preparePromptInput: (request) => ({
+      promptText: `PROMPT for ${request.question}`,
+      enrichmentDebug: {
+        supplemental: { usedSemantic: true, selected: [{ ruleId: "100.1" }] },
+        curatedGameRules: { topics: [{ id: "t", title: "T", ruleNumbers: ["200.2"] }] }
+      }
+    })
+  })
+  await executeEvaluation(evaluationParams({ selectedCases: [caseEntry], allCases: [caseEntry] }), priced.deps)
+  const [pricedRecord] = priced.written.results.caseLegScores
+  assert.equal(pricedRecord.unpriced, false)
+  assert.equal(pricedRecord.allDecidingRulesInPrompt, true)
+})
+
+test("the judge is handed the same inputs for every model and cap: attached excerpts with text, deciding ids apart", async () => {
+  const caseEntry = fixtureCase("judge-inputs", { expected: { outcome: "works", shortAnswer: "Yes.", answer: "Reference.", decidingRuleIds: ["100.1", "200.2"] } })
+  const seen = []
+  const { deps } = fakeDeps({
+    resources: { gameRulesRuleIndex: [{ ruleId: "100.1", text: "Rule one hundred point one." }] },
+    judgeAnswerAlone: async (input) => {
+      const inputs = { ...input }
+      delete inputs.client
+      delete inputs.judgeModel
+      seen.push(inputs)
+      return { undetermined: true, reason: "skipped", usage: { inputTokens: 0, outputTokens: 0, reasoningTokens: 0 } }
+    }
+  })
+  await executeEvaluation(evaluationParams({ models: ["gpt-4.1", "gpt-5-mini"], excerptCaps: [5, 10], selectedCases: [caseEntry], allCases: [caseEntry] }), deps)
+  assert.equal(seen.length, 4)
+  assert.deepEqual(seen[0].attachedExcerpts, [{ ruleId: "100.1", text: "Rule one hundred point one." }])
+  assert.deepEqual(seen[0].decidingRuleIds, ["100.1", "200.2"])
+  assert.deepEqual(seen[0].stateLines, [])
+  for (const inputs of seen) assert.deepEqual(inputs, seen[0])
+})
+
+// ---------------------------------------------------------------------------
+// Slice E (REQ-230): --arm, and the cases an arm may run on
+// ---------------------------------------------------------------------------
+
+test("parseArgs reads repeatable --arm flags (A by default), refuses an unknown arm, and keeps --arm out of a routine run", () => {
+  assert.deepEqual(parseArgs(["--run-id", "r", "--manifest", "m.json"]).experiment.armIds, ["A"])
+  assert.deepEqual(parseArgs(["--run-id", "r", "--manifest", "m.json", "--arm", "A", "--arm", "C", "--arm", "C"]).experiment.armIds, ["A", "C"])
+  assert.throws(() => parseArgs(["--run-id", "r", "--manifest", "m.json", "--arm", "Z"]), /--arm Z is not an arm: the arms are A, B, C, D, P/)
+  assert.throws(() => parseArgs(["--arm", "C"]), /--arms belong to an experiment run/)
+  assert.throws(() => parseArgs(["--run-id", "r", "--regrade-from", "e", "--arm", "C"]), /drop --arm/)
+})
+
+const armSets = (overrides = {}) => async () => ({
+  diagnosticIds: new Set(["arm-diag"]),
+  heldOutIds: new Set(["arm-held"]),
+  correction: null,
+  ...overrides
+})
+
+async function armFixture(ids) {
+  const cases = ids.map((id) => fixtureCase(id))
+  return experimentFixture({ manifestCases: cases.map((c) => manifestEntryFor(c)), cases })
+}
+
+test("arms C and D are refused on a case outside the diagnostic manifest, naming the case, before any client exists", async () => {
+  const { manifestPath, loadCases } = await armFixture(["arm-diag", "arm-held", "arm-other"])
+  let clientBuilt = false
+  for (const arm of ["C", "D"]) {
+    await assert.rejects(
+      () =>
+        run({
+          loadLocalEnv: noLocalEnv,
+          argv: ["--run-id", "arms", "--manifest", manifestPath, "--arm", arm],
+          env: {},
+          log: () => {},
+          loadCases,
+          isStale: notStale,
+          measure: fakeMeasure,
+          loadArmSets: armSets(),
+          buildClient: async () => {
+            clientBuilt = true
+          }
+        }),
+      (error) => /arm-held: arm [CD] reads deciding-rule labels/.test(error.message) && /arm-other: arm [CD]/.test(error.message) && !/arm-diag:/.test(error.message)
+    )
+  }
+  assert.equal(clientBuilt, false)
+})
+
+test("arm P is refused until its correction file exists, and a dry run of arm B prints the arm with its revision", async () => {
+  const { manifestPath, loadCases } = await armFixture(["arm-diag"])
+  await assert.rejects(
+    () =>
+      run({
+        loadLocalEnv: noLocalEnv,
+        argv: ["--run-id", "p", "--manifest", manifestPath, "--arm", "P"],
+        env: {},
+        log: () => {},
+        loadCases,
+        isStale: notStale,
+        measure: fakeMeasure,
+        loadArmSets: armSets()
+      }),
+    /correction text file .* does not exist yet/
+  )
+  const logs = []
+  await run({
+    loadLocalEnv: noLocalEnv,
+    argv: ["--run-id", "b-dry", "--manifest", manifestPath, "--arm", "A", "--arm", "B"],
+    env: {},
+    log: (line) => logs.push(line),
+    loadCases,
+    isStale: notStale,
+    measure: fakeMeasure,
+    loadArmSets: armSets()
+  })
+  assert.match(logs[0], /Arms: A \(A\.1\), B \(B\.1\)/)
+})
+
+test("a live run refuses an arm whose revision is not frozen, and hands the held-out ids, the correction and the arms to the runner otherwise", async () => {
+  const { manifestPath, loadCases } = await armFixture(["arm-diag"])
+  const base = {
+    loadLocalEnv: noLocalEnv,
+    env: { ASK_AI_PROVIDER: "openai", OPENAI_API_KEY: "sk-test" },
+    log: () => {},
+    loadCases,
+    isStale: notStale,
+    loadArmSets: armSets(),
+    client: fakeAccessClient(["gpt-4.1", "gpt-5"])
+  }
+  const unfrozenB = { ...ARM_REGISTRY, B: { ...ARM_REGISTRY.B, frozen: false } }
+  await assert.rejects(
+    () =>
+      run({
+        ...base,
+        armRegistry: unfrozenB,
+        argv: ["--run-id", "live-b", "--manifest", manifestPath, "--arm", "B", "--max-cost-usd", "5", CONFIRM_FLAG],
+        runExperiment: async () => assert.fail("must not run")
+      }),
+    /arm B \(B\.1\) is not frozen under its revision id yet/
+  )
+  let received
+  await run({
+    ...base,
+    argv: ["--run-id", "live-c", "--manifest", manifestPath, "--arm", "A", "--arm", "C", "--max-cost-usd", "5", CONFIRM_FLAG],
+    runExperiment: async (params) => {
+      received = params
+    }
+  })
+  assert.deepEqual(received.arms, [{ id: "A", revision: "A.1" }, { id: "C", revision: "C.1" }])
+  assert.deepEqual([...received.heldOutIds], ["arm-held"])
+  assert.equal(received.correction, null)
+})
+
+test("the production per-attempt timeout is read from the checkout's own config source", async () => {
+  assert.equal(await readProductionTimeoutMs(), 15000)
+  assert.equal(await readProductionTimeoutMs("/no/such/config.ts"), null)
+})
+
+test("the routine run's blind ranking is handed the lone judge's attached-excerpt, deciding-rule and game-state inputs (REQ-186)", async () => {
+  const caseEntry = fixtureCase("routine-rank", { expected: { outcome: "works", shortAnswer: "Yes.", answer: "Reference.", decidingRuleIds: ["100.1", "200.2"] } })
+  const seen = { lone: [], ranking: [] }
+  const { deps } = fakeDeps({
+    resources: { gameRulesRuleIndex: [{ ruleId: "100.1", text: "Rule text." }] },
+    judgeAnswerAlone: async (input) => {
+      seen.lone.push({ attachedExcerpts: input.attachedExcerpts, decidingRuleIds: input.decidingRuleIds, stateLines: input.stateLines })
+      return { undetermined: true, reason: "skipped", usage: { inputTokens: 0, outputTokens: 0, reasoningTokens: 0 } }
+    },
+    judgeBlindRanking: async (input) => {
+      seen.ranking.push({ attachedExcerpts: input.attachedExcerpts, decidingRuleIds: input.decidingRuleIds, stateLines: input.stateLines })
+      return { undetermined: true, reason: "skipped", usage: { inputTokens: 0, outputTokens: 0, reasoningTokens: 0 } }
+    }
+  })
+  await executeEvaluation(evaluationParams({ models: ["gpt-4.1", "gpt-5-mini"], selectedCases: [caseEntry], allCases: [caseEntry] }), deps)
+  assert.equal(seen.ranking.length, 1)
+  assert.deepEqual(seen.ranking[0], seen.lone[0])
+  assert.deepEqual(seen.ranking[0].attachedExcerpts, [{ ruleId: "100.1", text: "Rule text." }])
 })
